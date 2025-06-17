@@ -1,19 +1,20 @@
-// js/app.js - اپلیکیشن اصلی بروزرسانی شده
+// js/app.js - نسخه کامل‌شده با چارت
 
-// متغیرهای global
+// --- متغیرهای global ---
 let userAddress = null;
 let userData = null;
 let tokenPrice = 0;
 let maticBalance = 0;
 let tokenBalance = 0;
 let isConnecting = false;
+let chart;
 
-// رویدادهای صفحه
+// --- آغاز اجرا ---
 document.addEventListener('DOMContentLoaded', async () => {
     await initializeApp();
+    initializeChart();
     setupEventListeners();
-    
-    // بررسی اتصال خودکار کیف پول
+
     if (window.ethereum) {
         try {
             const accounts = await window.ethereum.request({ method: 'eth_accounts' });
@@ -26,26 +27,108 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// راه‌اندازی اولیه اپلیکیشن
 async function initializeApp() {
+  try {
+    if (!window.ethereum) {
+      showPersistentAlert('کیف پول Web3 یافت نشد. لطفا MetaMask یا کیف پول مشابه نصب کنید.', 'warning');
+      return;
+    }
+
+    await window.contractConfig.initializeWeb3();
+    const { provider: p, signer: s, contract: c } = window.contractConfig;
+    window.provider = p;
+    window.signer = s;
+    window.contract = c;
+
+    console.log('اپلیکیشن با موفقیت راه‌اندازی شد');
+  } catch (error) {
+    console.error('خطا در راه‌اندازی اپلیکیشن:', error);
+    showPersistentAlert('خطا در راه‌اندازی اپلیکیشن: ' + error.message, 'error');
+  }
+}
+
+// --- مقداردهی چارت ---
+
+function initializeChart() {
+    const ctx = document.getElementById("priceChart")?.getContext("2d");
+    if (!ctx) {
+        console.warn("عنصر priceChart یافت نشد");
+        return;
+    }
+    chart = new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: [],
+            datasets: [
+                {
+                    label: "Token Price (USD)",
+                    data: [],
+                    borderColor: "rgba(75,192,192,1)",
+                    fill: false,
+                },
+                {
+                    label: "MATIC Price (USD)",
+                    data: [],
+                    borderColor: "rgba(255,99,132,1)",
+                    fill: false,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    display: true,
+                    title: { display: true, text: "زمان (HH:MM:SS)" }
+                },
+                y: {
+                    display: true,
+                    title: { display: true, text: "قیمت (USD)" }
+                }
+            }
+        }
+    });
+}
+
+// --- رویداد اتصال کیف پول ---
+document.addEventListener('walletConnected', () => {
+    if (!chart || !contract) {
+        console.warn("📉 چارت یا قرارداد هنوز آماده نیست!");
+        return;
+    }
+    fetchPrices();
+    setInterval(fetchPrices, 5000);
+});
+
+// --- تابع fetchPrices ---
+async function fetchPrices() {
+    if (!chart) {
+        console.warn("⛔️ chart هنوز تعریف نشده.");
+        return;
+    }
+
     try {
-        // بررسی پشتیبانی از Web3
-        if (!window.ethereum) {
-            showPersistentAlert('کیف پول Web3 یافت نشد. لطفا MetaMask یا کیف پول مشابه نصب کنید.', 'warning');
-            return;
+        const [maticRaw, tokenRaw] = await Promise.all([
+            contract.getLatestMaticPrice(),
+            contract.getLatestLvlPrice()
+        ]);
+
+        const matic = Number(maticRaw) / 1e8;
+        const token = Number(tokenRaw) / 1e8;
+        const now = new Date().toLocaleTimeString();
+
+        chart.data.labels.push(now);
+        chart.data.datasets[0].data.push(token);
+        chart.data.datasets[1].data.push(matic);
+
+        if (chart.data.labels.length > 20) {
+            chart.data.labels.shift();
+            chart.data.datasets.forEach(ds => ds.data.shift());
         }
 
-        // راه‌اندازی Web3
-        await window.contractConfig.initializeWeb3();
-        
-        // بروزرسانی متغیرهای global
-        ({ provider, signer, contract } = window.contractConfig);
-        
-        console.log('اپلیکیشن با موفقیت راه‌اندازی شد');
-        
-    } catch (error) {
-        console.error('خطا در راه‌اندازی اپلیکیشن:', error);
-        showPersistentAlert('خطا در راه‌اندازی اپلیکیشن: ' + error.message, 'error');
+        chart.update();
+    } catch (e) {
+        console.error("⚠️ خطا در دریافت قیمت:", e);
     }
 }
 
@@ -268,23 +351,34 @@ function updateBinaryInfo() {
     }
 }
 
-// بارگذاری قیمت توکن
+let lastTokenPrice = null;
+
 async function loadTokenPrice() {
     if (!contract) return;
-    
+
     try {
-        tokenPrice = await contract.updateTokenPrice();
-        const priceFormatted = ethers.utils.formatEther(tokenPrice);
-        document.getElementById('token-price').textContent = parseFloat(priceFormatted).toFixed(8);
-        
-        // شبیه‌سازی تغییر قیمت (در پروژه واقعی از API استفاده کنید)
-        const randomChange = (Math.random() - 0.5) * 10;
-        const changeElement = document.getElementById('price-change');
-        changeElement.textContent = `${randomChange > 0 ? '+' : ''}${randomChange.toFixed(2)}%`;
-        changeElement.className = randomChange > 0 ? 'text-success' : 'text-danger';
-        
+        // دریافت قیمت واقعی از کانترکت
+        const rawPrice = await contract.getLatestLvlPrice();
+        const newPrice = Number(rawPrice) / 1e8; // چون معمولا قیمت با 8 رقم اعشار داده میشه
+
+        // نمایش قیمت در UI
+        document.getElementById('token-price').textContent = newPrice.toFixed(8);
+
+        // محاسبه تغییر قیمت
+        if (lastTokenPrice !== null) {
+            const diff = newPrice - lastTokenPrice;
+            const percentChange = (diff / lastTokenPrice) * 100;
+
+            const changeElement = document.getElementById('price-change');
+            changeElement.textContent = `${diff >= 0 ? '+' : ''}${percentChange.toFixed(2)}%`;
+            changeElement.className = diff >= 0 ? 'text-success' : 'text-danger';
+        }
+
+        // به‌روزرسانی مقدار قبلی
+        lastTokenPrice = newPrice;
+
     } catch (error) {
-        console.error("خطا در بارگذاری قیمت توکن:", error);
+        console.error("❌ خطا در بارگذاری قیمت توکن:", error);
     }
 }
 
@@ -305,11 +399,25 @@ async function loadBalances() {
         document.getElementById('token-balance').value = 
             parseFloat(ethers.utils.formatEther(tokenBal)).toFixed(6);
         
-        // محاسبه ارزش دلاری (شبیه‌سازی)
-        const maticPrice = 0.8; // قیمت فرضی MATIC
+        // محاسبه ارزش دلاری 
+        const maticPrice = await contract.getLatestMaticPrice();
+        const maticPriceUsd = Number(maticPrice) / 1e8;
         const totalMaticValue = parseFloat(ethers.utils.formatEther(maticBal));
-        const usdValue = totalMaticValue * maticPrice;
-        document.getElementById('usd-value').value = `$${usdValue.toFixed(2)}`;
+        const usdValue = totalMaticValue * maticPriceUsd;
+        if(document.getElementById('Musd-value'))
+            document.getElementById('Musd-value').value = `$${usdValue.toFixed(2)}`;
+        if(document.getElementById('matic-price-userbox'))
+            document.getElementById('matic-price-userbox').textContent = maticPriceUsd.toFixed(4);
+
+        // محاسبه ارزش دلاری توکن LVL (فرض می‌گیریم تابعی مشابه برای قیمتش هست)
+        const tokenPrice = await contract.getLatestLvlPrice();
+        const tokenPriceUsd = Number(tokenPrice) / 1e8;
+        const totalTokenValue = parseFloat(ethers.utils.formatEther(tokenBal));
+        const tokenUsdValue = totalTokenValue * tokenPriceUsd;
+        if(document.getElementById('Tusd-value'))
+            document.getElementById('Tusd-value').value = `$${tokenUsdValue.toFixed(2)}`;
+        if(document.getElementById('lvl-price-userbox'))
+            document.getElementById('lvl-price-userbox').textContent = tokenPriceUsd.toFixed(4);
         
     } catch (error) {
         console.error("خطا در بارگذاری موجودی‌ها:", error);
@@ -365,8 +473,8 @@ async function updateTokenPrice() {
 async function registerAndActivate() {
     const referrerAddress = document.getElementById('referrer-address').value.trim();
     const activationAmount = document.getElementById('activation-amount').value;
-    
-    if (!activationAmount || parseFloat(activationAmount) <= 0) {
+    lvlusd=await contract.getTokenPriceInUSD();
+    if (!activationAmount || parseFloat(activationAmount) <= lvlusd*20) {
         showToast('لطفا مقدار معتبری برای فعالسازی وارد کنید', 'error');
         return;
     }
@@ -653,3 +761,12 @@ function checkReferralInUrl() {
 
 // اجرای بررسی معرف هنگام بارگذاری صفحه
 document.addEventListener('DOMContentLoaded', checkReferralInUrl);
+
+document.addEventListener('walletConnected', (event) => {
+  // اکنون مطمئنیم contract مقدار گرفته
+
+  // شروع دریافت قیمت
+  fetchPrices();
+  setInterval(fetchPrices, 5000);
+});
+
