@@ -8,6 +8,8 @@ let maticBalance = 0;
 let tokenBalance = 0;
 let isConnecting = false;
 let chart;
+let chartDataHistory = [];
+let chartRange = '1d';
 
 // --- آغاز اجرا ---
 document.addEventListener('DOMContentLoaded', async () => {
@@ -88,6 +90,34 @@ function initializeChart() {
             }
         }
     });
+
+    // کنترل بازه زمانی
+    const rangeSelect = document.getElementById('chart-range');
+    if (rangeSelect) {
+        rangeSelect.addEventListener('change', (e) => {
+            chartRange = e.target.value;
+            updateChartRange();
+        });
+    }
+}
+
+function updateChartRange() {
+    // فیلتر داده‌ها بر اساس بازه انتخابی
+    let filtered = [];
+    const now = Date.now();
+    if (chartRange === '1d') {
+        filtered = chartDataHistory.filter(d => now - d.ts <= 24*60*60*1000);
+    } else if (chartRange === '7d') {
+        filtered = chartDataHistory.filter(d => now - d.ts <= 7*24*60*60*1000);
+    } else if (chartRange === '30d') {
+        filtered = chartDataHistory.filter(d => now - d.ts <= 30*24*60*60*1000);
+    } else {
+        filtered = chartDataHistory;
+    }
+    chart.data.labels = filtered.map(d => d.label);
+    chart.data.datasets[0].data = filtered.map(d => d.token);
+    chart.data.datasets[1].data = filtered.map(d => d.matic);
+    chart.update();
 }
 
 // --- رویداد اتصال کیف پول ---
@@ -115,22 +145,23 @@ async function fetchPrices() {
 
         const matic = Number(maticRaw) / 1e8;
         const token = Number(tokenRaw) / 1e8;
-        const now = new Date().toLocaleTimeString();
-
-        chart.data.labels.push(now);
-        chart.data.datasets[0].data.push(token);
-        chart.data.datasets[1].data.push(matic);
-
-        if (chart.data.labels.length > 20) {
-            chart.data.labels.shift();
-            chart.data.datasets.forEach(ds => ds.data.shift());
-        }
-
-        chart.update();
+        const now = new Date();
+        const label = now.toLocaleTimeString();
+        chartDataHistory.push({
+            ts: now.getTime(),
+            label,
+            token,
+            matic
+        });
+        // فقط 1000 داده آخر را نگه دار
+        if (chartDataHistory.length > 1000) chartDataHistory.shift();
+        updateChartRange();
     } catch (e) {
         console.error("⚠️ خطا در دریافت قیمت:", e);
     }
 }
+
+
 
 // تنظیم event listeners
 function setupEventListeners() {
@@ -434,16 +465,24 @@ async function loadSystemStats() {
         const totalUsers = await contract.totalUsers();
         const binaryPool = await contract.binaryPool();
         
-        document.getElementById('total-supply').textContent = 
-            parseFloat(ethers.utils.formatEther(totalSupply)).toFixed(0);
-        document.getElementById('total-holders').textContent = totalUsers.toString();
-        document.getElementById('binary-pool-amount').textContent = 
-            parseFloat(ethers.utils.formatEther(binaryPool)).toFixed(2);
+        document.getElementById('total-supply').textContent =
+            ethers.utils.formatEther(totalSupply).replace(/\.0+$/, '');
+        document.getElementById('total-holders').textContent = totalUsers.String();
+        document.getElementById('binary-pool-amount').textContent =
+            Number(ethers.utils.formatEther(binaryPool)).toLocaleString('fa-IR', {maximumFractionDigits: 4});
         
-        // شبیه‌سازی حجم معاملات
-        document.getElementById('total-volume').textContent = 
-            (Math.random() * 10000).toFixed(0);
-            
+        // حجم معاملات واقعی (جمع خرید و فروش توکن) با BigNumber
+        let totalVolume = ethers.BigNumber.from(0);
+        if (contract.filters && contract.queryFilter) {
+            const buyEvents = await contract.queryFilter(contract.filters.TokensBought());
+            const sellEvents = await contract.queryFilter(contract.filters.TokensSold());
+            let buySum = buyEvents.reduce((sum, ev) => sum.add(ev.args.maticAmount), ethers.BigNumber.from(0));
+            let sellSum = sellEvents.reduce((sum, ev) => sum.add(ev.args.maticAmount), ethers.BigNumber.from(0));
+            totalVolume = buySum.add(sellSum);
+        }
+        document.getElementById('total-volume').textContent =
+            Number(ethers.utils.formatEther(totalVolume)).toLocaleString('fa-IR', {maximumFractionDigits: 4});
+        
     } catch (error) {
         console.error("خطا در بارگذاری آمار سیستم:", error);
     }
