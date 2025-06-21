@@ -111,7 +111,7 @@ const LEVELUP_ABI =[
 			{
 				"indexed": false,
 				"internalType": "uint256",
-				"name": "amountMATIC",
+				"name": "amountlvl",
 				"type": "uint256"
 			}
 		],
@@ -228,6 +228,31 @@ const LEVELUP_ABI =[
 			}
 		],
 		"name": "BinaryRewardDistributed",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "newTokenPrice",
+				"type": "uint256"
+			}
+		],
+		"name": "DirectMATICReceived",
 		"type": "event"
 	},
 	{
@@ -618,36 +643,11 @@ const LEVELUP_ABI =[
 	},
 	{
 		"inputs": [],
-		"name": "getNetworkOverview",
+		"name": "getPointValue",
 		"outputs": [
 			{
 				"internalType": "uint256",
-				"name": "totalNodes",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "activeNodes",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "totalBinaryPoints",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "totalBinaryPointCaps",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "currentBinaryPool",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "averagePurchase",
+				"name": "",
 				"type": "uint256"
 			}
 		],
@@ -656,7 +656,7 @@ const LEVELUP_ABI =[
 	},
 	{
 		"inputs": [],
-		"name": "getPointValue",
+		"name": "getPrice",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -805,6 +805,25 @@ const LEVELUP_ABI =[
 	{
 		"inputs": [
 			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "oracles",
+		"outputs": [
+			{
+				"internalType": "contract AggregatorV3Interface",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
 				"internalType": "address",
 				"name": "",
 				"type": "address"
@@ -825,7 +844,7 @@ const LEVELUP_ABI =[
 		"inputs": [
 			{
 				"internalType": "uint256",
-				"name": "amountlvl",
+				"name": "amountLvl",
 				"type": "uint256"
 			},
 			{
@@ -834,9 +853,9 @@ const LEVELUP_ABI =[
 				"type": "uint256"
 			}
 		],
-		"name": "pourchase",
+		"name": "purchase",
 		"outputs": [],
-		"stateMutability": "payable",
+		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -845,11 +864,16 @@ const LEVELUP_ABI =[
 				"internalType": "address",
 				"name": "referrer",
 				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "tokenAmount",
+				"type": "uint256"
 			}
 		],
 		"name": "registerAndActivate",
 		"outputs": [],
-		"stateMutability": "payable",
+		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -932,6 +956,19 @@ const LEVELUP_ABI =[
 	{
 		"inputs": [],
 		"name": "totalClaimableBinaryPoints",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "totalDirectDeposits",
 		"outputs": [
 			{
 				"internalType": "uint256",
