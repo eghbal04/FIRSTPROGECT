@@ -4,7 +4,7 @@ if (typeof ethers === 'undefined') {
 }
 
 // آدرس قرارداد بروزرسانی شده
-const CONTRACT_ADDRESS = "0x0498B7c793D7432Cd9dB27fb02fc9cfdBAfA1Fd3";
+const CONTRACT_ADDRESS = "0xd7B9480F7ceac87a8AC3AF12F5c99Aa19e5f802e";
 
 // ABI کامل و بروزرسانی شده
 const LEVELUP_ABI =[
