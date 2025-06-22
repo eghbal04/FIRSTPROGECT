@@ -162,15 +162,30 @@ class SwapManager {
       }
   }
 
-  updateSwapInfo(rate, toAmount) {
+  async updateSwapInfo(rate, toAmount) {
       // Update exchange rate
-      document.getElementById('exchange-rate').textContent = 
-          `1 ${this.fromToken} = ${rate.toFixed(6)} ${this.toToken}`;
+      let exchangeText = `1 ${this.fromToken} = ${rate.toFixed(6)} ${this.toToken}`;
+
+      // نمایش قیمت LVL به دلار و متیک در سواپ اینفو باکس
+      if (this.fromToken === 'MATIC' && this.toToken === 'LVL') {
+          // قیمت LVL به دلار و متیک را از قرارداد بگیر
+          try {
+              const [tokenPriceMaticRaw, tokenPriceUsdRaw] = await Promise.all([
+                  contract.getLatestLvlPrice(),
+                  contract.getTokenPriceInUSD()
+              ]);
+              const tokenPriceMatic = Number(tokenPriceMaticRaw) / 1e8;
+              const tokenPriceUsd = Number(tokenPriceUsdRaw) / 1e8;
+              exchangeText += `<br><span class='text-muted small'>LVL: <span class='fw-bold text-success'>$${tokenPriceUsd.toFixed(4)}</span> / <span class='fw-bold text-primary'>${tokenPriceMatic.toFixed(4)} MATIC</span></span>`;
+          } catch (e) {
+              // اگر خطا بود، فقط نرخ تبدیل را نمایش بده
+          }
+      }
+      document.getElementById('exchange-rate').innerHTML = exchangeText;
 
       // Calculate price impact (simplified)
       const priceImpact = this.fromAmount > 0 ? (this.fromAmount * 0.001) : 0;
       document.getElementById('price-impact').textContent = `${priceImpact.toFixed(3)}%`;
-      
       // Update price impact color
       const priceImpactElement = document.getElementById('price-impact');
       if (priceImpact < 1) {
@@ -180,7 +195,6 @@ class SwapManager {
       } else {
           priceImpactElement.className = 'text-danger';
       }
-
       // Update swap button
       this.updateSwapButton();
   }

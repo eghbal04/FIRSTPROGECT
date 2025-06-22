@@ -5,17 +5,44 @@
   --primary-color: #6366f1;
   --primary-dark: #4f46e5;
   --secondary-color: #ec4899;
-  --success-color: #10b981;
-  --warning-color: #f59e0b;
-  --danger-color: #ef4444;
-  --info-color: #06b6d4;
-  --dark-color: #1f2937;
-  --light-color: #f8fafc;
+  --success-color: #6366f1;
+  --warning-color: #ec4899;
+  --danger-color: #ec4899;
+  --info-color: #6366f1;
+  --dark-color: #181c1f;
+  --light-color: #fff;
   --border-radius: 16px;
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+body, .card, .glass-card, .modern-info-block, .swap-container, .tree-node-rect, .node-info-box, .node-rect-content, .children-rect {
+  color: #fff !important;
+  background: #181c1f !important;
+}
+
+/* اضافه کردن به فایل style.css */
+.card {
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.card-header {
+    border-radius: 12px 12px 0 0 !important;
+    padding: 15px 20px;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+.form-control:read-only {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+}
+
+.input-group-text {
+    min-width: 80px;
+    justify-content: center;
 }
 
 * {
@@ -26,7 +53,8 @@
 }
 
 body {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
+  /* گرادینت زنده‌تر */
   color: #1f2937;
   line-height: 1.6;
   min-height: 100vh;
@@ -36,11 +64,10 @@ body {
 
 /* گلس مورفیسم پیشرفته */
 .glass-card {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: var(--border-radius);
-  backdrop-filter: blur(20px);
-  box-shadow: var(--shadow-xl);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255,255,255,0.18);
+  backdrop-filter: blur(32px); /* blur بیشتر */
+  box-shadow: 0 12px 32px 0 rgba(99,102,241,0.10), 0 2px 4px -2px rgba(236,72,153,0.10);
+  border: 1.5px solid rgba(255,255,255,0.25);
   padding: 2rem;
   transition: all 0.3s ease;
 }
@@ -206,42 +233,76 @@ input:focus, select:focus, textarea:focus {
 }
 
 .swap-input-group {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.95); /* افزایش سفیدی برای خوانایی */
   border-radius: var(--border-radius);
   padding: 1.5rem;
   margin: 1rem 0;
   transition: all 0.3s ease;
+  color: #1f2937; /* متن تیره برای خوانایی */
 }
 
-.swap-input-group:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+.swap-input-group label,
+.swap-input-group .form-label,
+.swap-input-group .text-muted {
+  color: #374151 !important; /* متن تیره‌تر */
+  font-weight: 600;
+}
+
+.swap-input-group input,
+.swap-input-group .form-control {
+  background: #fff !important;
+  color: #1f2937 !important;
+  border: 1.5px solid #d1d5db !important;
 }
 
 .swap-arrow {
   display: flex;
   justify-content: center;
-  margin: 1rem 0;
+  align-items: center;
+  margin: 1.2rem 0 1.2rem 0;
 }
-
 .swap-arrow-btn {
-  background: var(--primary-color);
-  color: white;
-  border: none;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  width: 50px;
-  height: 50px;
+  background: linear-gradient(45deg, #6366f1, #ec4899) !important;
+  color: #fff !important;
+  border: none;
+  box-shadow: 0 4px 16px 0 rgba(99,102,241,0.13);
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 2rem;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 1.2rem;
+  margin: 0 auto;
+}
+.swap-arrow-btn:hover, .swap-arrow-btn:focus {
+  background: linear-gradient(90deg, #6366f1, #ec4899) !important;
+  box-shadow: 0 8px 32px 0 rgba(99,102,241,0.18);
+  transform: scale(1.08) rotate(90deg);
+  color: #fff !important;
 }
 
-.swap-arrow-btn:hover {
-  transform: rotate(180deg) scale(1.1);
-  background: var(--primary-dark);
+/* حالت تاریک برای سواپ */
+body.dark-mode .swap-container {
+  background: rgba(30,32,60,0.7);
+  border: 1.5px solid rgba(255,255,255,0.08);
+}
+body.dark-mode .swap-input-group {
+  background: rgba(40,40,60,0.98) !important;
+  color: #e5e7eb !important;
+}
+body.dark-mode .swap-input-group label,
+body.dark-mode .swap-input-group .form-label,
+body.dark-mode .swap-input-group .text-muted {
+  color: #e5e7eb !important;
+}
+body.dark-mode .swap-input-group input,
+body.dark-mode .swap-input-group .form-control {
+  background: #23243a !important;
+  color: #e5e7eb !important;
+  border: 1.5px solid #6366f1 !important;
 }
 
 /* انیمیشن‌های مدرن */
@@ -289,7 +350,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .progress-bar {
-  background: linear-gradient(45deg, var(--success-color), #059669);
+  background: linear-gradient(90deg, #6366f1 0%, #ec4899 100%) !important;
   height: 100%;
   border-radius: 6px;
   transition: width 0.6s ease;
@@ -334,6 +395,12 @@ input:focus, select:focus, textarea:focus {
   align-items: center;
   margin: 10px;
   animation: fadeInUp 0.6s ease-out;
+  position: relative;
+}
+
+.tree-node > .d-flex {
+  width: 100%;
+  justify-content: space-between;
 }
 
 .node-content {
@@ -344,6 +411,7 @@ input:focus, select:focus, textarea:focus {
   width: 80px;
   height: 80px;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   font-weight: bold;
@@ -351,92 +419,180 @@ input:focus, select:focus, textarea:focus {
   z-index: 2;
   transition: all 0.3s ease;
   cursor: pointer;
+  font-size: 1rem;
 }
 
-.node-content:hover {
-  transform: scale(1.1);
-  box-shadow: var(--shadow-lg);
+.node-content.vertical {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  margin-bottom: 1px;
+  background: linear-gradient(45deg, var(--primary-color), var(--primary-dark));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  padding: 0;
 }
 
-.node-active {
-  background: linear-gradient(45deg, var(--success-color), #059669);
+.expand-btn {
+  background: rgba(255,255,255,0.15);
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 0.65rem;
+  padding: 1px 5px;
+  margin-top: 2px;
+  cursor: pointer;
+  transition: background 0.2s;
+  line-height: 1;
+}
+.expand-btn:hover {
+  background: var(--primary-color);
 }
 
-.node-inactive {
-  background: linear-gradient(45deg, var(--danger-color), #dc2626);
+.tree-node .tree-node {
+  margin-top: 2px;
 }
 
-/* فوتر مدرن */
-footer {
-  text-align: center;
-  padding: 3rem 0;
-  background: rgba(0, 0, 0, 0.1);
-  margin-top: auto;
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
+.tree-node-vertical {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: 4px 0 4px 10px;
+  position: relative;
 }
 
-/* Loading Spinner */
-.loading-spinner {
-  border: 4px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  border-top: 4px solid var(--primary-color);
-  width: 40px;
-  height: 40px;
-  animation: spin 1s linear infinite;
-  margin: 0 auto;
+.children-vertical {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 2px;
+  margin-right: 8px;
+  border-right: 1px dashed var(--primary-color, #06b6d4);
+  padding-right: 6px;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.tree-node-rect {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: 8px 0 0 0;
 }
 
-/* Toast Notifications */
-.toast {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background: rgba(255, 255, 255, 0.95);
-  color: var(--dark-color);
-  padding: 1rem 1.5rem;
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow-lg);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  z-index: 9999;
-  animation: slideInRight 0.3s ease-out;
+.node-rect-content {
+  display: flex;
+  align-items: center;
+  background: #111;
+  color: var(--phosphor);
+  border-radius: 12px;
+  padding: 7px 18px 7px 10px;
+  min-width: 160px;
+  min-height: 36px;
+  font-size: 1rem;
+  font-family: inherit;
+  font-weight: 600;
+  margin-bottom: 4px;
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.10);
+  border: 1.5px solid var(--phosphor);
+  transition: background 0.18s, color 0.18s, border 0.18s;
 }
-
-@keyframes slideInRight {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
+.node-rect-content.node-main {
+  background: #181818;
+  color: var(--phosphor);
+  border: 2px solid var(--phosphor);
 }
-
-.toast.success {
-  border-left: 4px solid var(--success-color);
+.node-rect-content.node-inactive {
+  background: #222;
+  color: #444;
+  border: 1.5px solid #333;
 }
-
-.toast.error {
-  border-left: 4px solid var(--danger-color);
+.node-rect-content:hover {
+  background: #181818;
+  color: var(--phosphor);
+  border-color: var(--phosphor);
 }
-
-.toast.warning {
-  border-left: 4px solid var(--warning-color);
+.wallet-short {
+  font-family: inherit;
+  font-size: 1em;
+  margin-left: 10px;
+  margin-right: 10px;
+  letter-spacing: 0.5px;
+  direction: ltr;
+  color: var(--phosphor);
 }
-
-.toast.info {
-  border-left: 4px solid var(--info-color);
+.expand-btn {
+  background: var(--phosphor);
+  border: none;
+  border-radius: 7px;
+  color: #111;
+  font-size: 1.15em;
+  width: 28px;
+  height: 28px;
+  margin-right: 10px;
+  margin-left: 2px;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
 }
-
-/* ریسپانسیو */
+.expand-btn:hover {
+  background: #fff;
+  color: var(--phosphor);
+}
+.info-btn {
+  background: none;
+  border: none;
+  color: var(--phosphor);
+  font-size: 1.15em;
+  margin-right: 4px;
+  margin-left: 2px;
+  cursor: pointer;
+  transition: color 0.18s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.info-btn:hover {
+  color: #fff;
+}
+.node-info-box {
+  background: #181818;
+  color: var(--phosphor);
+  border-radius: 10px;
+  box-shadow: 0 2px 12px 0 rgba(0,0,0,0.20);
+  border: 1.5px solid var(--phosphor);
+  padding: 12px 16px 10px 16px;
+  margin-top: 6px;
+  margin-bottom: 2px;
+  font-size: 0.97em;
+  min-width: 220px;
+  z-index: 10;
+  position: relative;
+  direction: rtl;
+}
+.node-info-box div {
+  margin-bottom: 4px;
+  font-size: 0.97em;
+  color: var(--phosphor);
+}
+.node-info-box b {
+  color: var(--phosphor);
+  font-weight: 700;
+}
+.children-rect {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-left: 32px;
+  border-left: 2px dashed var(--phosphor);
+  padding-left: 14px;
+  background: none;
+}
 @media (max-width: 768px) {
   .navbar {
     flex-direction: column;
@@ -465,6 +621,37 @@ footer {
     padding: 0.6rem 1.2rem;
     font-size: 0.9rem;
   }
+
+  .tree-node {
+    margin: 5px;
+  }
+  .node-content {
+    width: 60px;
+    height: 60px;
+    font-size: 0.8rem;
+  }
+  .tree-node-vertical {
+    margin: 6px 0 6px 10px;
+  }
+  .node-content.vertical {
+    width: 28px;
+    height: 28px;
+    font-size: 0.55rem;
+  }
+  .children-vertical {
+    margin-right: 3px;
+    padding-right: 2px;
+  }
+  .node-rect-content {
+    min-width: 80px;
+    min-height: 24px;
+    font-size: 0.75rem;
+    padding: 2px 6px;
+  }
+  .children-rect {
+    margin-left: 10px;
+    padding-left: 4px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -486,7 +673,8 @@ footer {
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
   body {
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    background: linear-gradient(135deg, #181824 0%, #23243a 100%);
+    color: #e5e7eb;
   }
 
   .card {
@@ -495,10 +683,499 @@ footer {
   }
 
   .navbar {
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(20,20,30,0.95) !important;
   }
 
   .navbar a {
     color: #e5e7eb;
   }
+
+  .glass-card,
+  .card {
+    background: rgba(30,32,60,0.7) !important;
+    color: #e5e7eb;
+    border: 1.5px solid rgba(255,255,255,0.08);
+  }
+
+  .btn,
+  .btn-outline-primary,
+  .btn-outline-secondary {
+    background: linear-gradient(45deg, #6366f1, #4f46e5) !important;
+    color: #fff !important;
+    border: none !important;
+  }
+
+  .form-control,
+  input,
+  select {
+    background: rgba(40,40,60,0.9) !important;
+    color: #e5e7eb !important;
+    border-color: #6366f1 !important;
+  }
+
+  .progress {
+    background: rgba(255,255,255,0.08);
+  }
+
+  .progress-bar {
+    background: linear-gradient(45deg, #10b981, #059669);
+  }
+
+  .toast {
+    background: rgba(30,32,60,0.95);
+    color: #e5e7eb;
+    border: 1.5px solid rgba(255,255,255,0.08);
+  }
+}
+
+/* استایل‌های جدید اضافه شده */
+
+/* هدر مدرن */
+.modern-glass-header {
+    background: rgba(255,255,255,0.18);
+    backdrop-filter: blur(24px);
+    border-radius: 2rem;
+    box-shadow: 0 8px 32px 0 rgba(99,102,241,0.10);
+    margin: 2rem auto 2rem auto;
+    max-width: 1100px;
+}
+
+/* آواتار مدرن */
+.modern-avatar {
+    width: 40px; height: 40px; border-radius: 50%; box-shadow: 0 2px 8px #6366f133;
+}
+
+.modern-avatar-lg {
+    width: 64px; height: 64px; border-radius: 50%; box-shadow: 0 2px 12px #6366f133;
+}
+
+/* لینک‌های منوی مدرن */
+.modern-nav-link {
+    color: #374151;
+    font-weight: 600;
+    font-size: 1.1rem;
+    text-decoration: none;
+    padding: 0.5rem 1.2rem;
+    border-radius: 1.5rem;
+    transition: background 0.2s, color 0.2s;
+}
+
+.modern-nav-link.active, .modern-nav-link:hover {
+    background: linear-gradient(45deg, #6366f1, #ec4899);
+    color: #fff;
+}
+
+/* دکمه شیشه‌ای */
+.btn-glass {
+    background: rgba(255,255,255,0.5) !important;
+    border: none !important;
+    box-shadow: 0 2px 8px #6366f133;
+}
+
+/* کارت اطلاعات کاربر مدرن */
+.modern-user-card {
+    max-width: 500px;
+    border-radius: 2rem;
+    padding: 2rem 2.5rem;
+}
+
+/* بلوک اطلاعات مدرن */
+.modern-info-block {
+    min-width: 120px;
+    background: rgba(255,255,255,0.5);
+    border-radius: 1rem;
+    padding: 0.7rem 1.2rem;
+    box-shadow: 0 1px 4px #6366f122;
+    text-align: center;
+}
+
+/* نوار آمار مدرن */
+.stats-banner-modern {
+    background: linear-gradient(90deg, #6366f1 0%, #ec4899 100%);
+    border-radius: 2rem;
+    box-shadow: 0 8px 32px 0 rgba(99,102,241,0.10);
+    padding: 1.2rem 2rem;
+    margin: 2rem auto 2rem auto;
+    max-width: 1100px;
+    color: #fff;
+    animation: fadeInUp 0.8s;
+}
+
+.stat-box-modern {
+    background: rgba(255,255,255,0.18);
+    border-radius: 1.2rem;
+    padding: 1rem 2.2rem;
+    min-width: 170px;
+    text-align: center;
+    box-shadow: 0 2px 12px #6366f133;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    border: 1.5px solid rgba(255,255,255,0.18);
+}
+
+.stat-box-modern:hover {
+    transform: translateY(-6px) scale(1.04);
+    box-shadow: 0 8px 32px 0 rgba(99,102,241,0.18);
+}
+
+.stat-label {
+    font-size: 1rem;
+    opacity: 0.85;
+    margin-bottom: 0.3rem;
+    font-weight: 500;
+}
+
+.stat-value {
+    font-size: 2.1rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    line-height: 1.1;
+    text-shadow: 0 2px 8px #0002;
+}
+
+.stat-box-modern .text-gradient {
+    background: linear-gradient(45deg, #6366f1, #ec4899) !important;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* آمار کلی سیستم - خوانایی کپشن زیر اعداد */
+.card .border.rounded small.text-muted {
+    color: #e0e6ef !important;
+    opacity: 0.95;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+}
+
+/* کپشن‌های زیر اعداد در آمار شبکه (network) و سایر کارت‌ها */
+.card .text-center small.text-muted,
+.card .card-body small.text-muted {
+    color: #e0e6ef !important;
+    opacity: 0.95;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+}
+
+@media (max-width: 768px) {
+    .stats-banner-modern {
+        flex-direction: column;
+        gap: 1.2rem;
+        padding: 1rem 0.5rem;
+    }
+    .stat-box-modern {
+        min-width: 120px;
+        padding: 0.7rem 1rem;
+    }
+    .stat-value {
+        font-size: 1.3rem;
+    }
+}
+
+/* بهبود تناسب و زیبایی کارت‌های آمار شبکه و آمار کلی */
+.card .border.rounded.p-3 {
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.10);
+    border-radius: 1.25rem !important;
+    min-width: 150px;
+    min-height: 110px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 12px 0 rgba(30,144,255,0.07);
+    transition: box-shadow 0.2s;
+}
+.card .border.rounded.p-3:hover {
+    box-shadow: 0 4px 24px 0 rgba(30,144,255,0.13);
+}
+.card .display-6, .card .h3, .card .h4 {
+    margin-bottom: 0.5rem !important;
+}
+.card .border.rounded.p-3 small.text-muted {
+    margin-top: 0.25rem;
+    font-size: 1rem;
+}
+@media (max-width: 600px) {
+    .card .border.rounded.p-3 {
+        min-width: 120px;
+        min-height: 80px;
+        font-size: 0.95rem;
+    }
+}
+
+/* Swap Info Box Contrast Fix */
+.swap-info-box {
+  background: #f3f4f6 !important; /* روشن اما نه سفید خالص */
+  color: #1f2937 !important;
+  border-radius: 1rem;
+  padding: 1.2rem 1.5rem;
+  margin-bottom: 1.5rem;
+}
+body.dark-mode .swap-info-box {
+  background: #23243a !important;
+  color: #e5e7eb !important;
+}
+
+.info-btn {
+  background: none;
+  border: none;
+  color: var(--phosphor);
+  font-size: 1.15em;
+  margin-right: 4px;
+  margin-left: 2px;
+  cursor: pointer;
+  transition: color 0.18s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.info-btn:hover {
+  color: #fff;
+}
+.node-info-box {
+  background: #181818;
+  color: var(--phosphor);
+  border-radius: 10px;
+  box-shadow: 0 2px 12px 0 rgba(0,0,0,0.20);
+  border: 1.5px solid var(--phosphor);
+  padding: 12px 16px 10px 16px;
+  margin-top: 6px;
+  margin-bottom: 2px;
+  font-size: 0.97em;
+  min-width: 220px;
+  z-index: 10;
+  position: relative;
+  direction: rtl;
+}
+.node-info-box div {
+  margin-bottom: 4px;
+  font-size: 0.97em;
+  color: var(--phosphor);
+}
+.node-info-box b {
+  color: var(--phosphor);
+  font-weight: 700;
+}
+@media (max-width: 768px) {
+  .node-rect-content {
+    min-width: 110px;
+    min-height: 26px;
+    font-size: 0.85rem;
+    padding: 4px 8px 4px 4px;
+  }
+  .children-rect {
+    margin-left: 10px;
+    padding-left: 4px;
+  }
+  .expand-btn {
+    width: 22px;
+    height: 22px;
+    font-size: 1em;
+    margin-right: 4px;
+  }
+  .node-info-box {
+    font-size: 0.85em;
+    min-width: 140px;
+    padding: 7px 7px 7px 7px;
+  }
+}
+
+/* فونت انگلیسی برای اعداد و رنگ فسفری */
+.en-num, .en-num input, .en-num span, .en-num div, .en-num b, .en-num strong {
+  color: #fff !important;
+  font-family: 'Vazirmatn', 'Segoe UI', 'Arial', 'monospace', sans-serif !important;
+  direction: ltr !important;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.5px;
+}
+
+/* اعداد داخل input فقط انگلیسی و فسفری */
+input[type="number"], input.en-num, input[type="text"].en-num {
+  color: #fff !important;
+  font-family: 'Segoe UI', 'Arial', 'monospace', sans-serif !important;
+  direction: ltr !important;
+}
+
+/* حذف border و background فسفری */
+#user-info input, #user-info .form-control {
+  background: #181c1f !important;
+  border: 1.5px solid #6366f1 !important;
+}
+
+.card, .glass-card, .modern-info-block, .swap-container {
+  border: 1.5px solid #6366f1 !important;
+  background: #181c1f !important;
+}
+
+.btn, .btn-primary, .btn-success, .btn-warning, .btn-info, .btn-outline-primary, .btn-outline-secondary {
+  background: linear-gradient(45deg, #6366f1, #ec4899) !important;
+  color: #fff !important;
+  border: none !important;
+}
+
+.btn:hover, .btn:focus {
+  background: linear-gradient(90deg, #6366f1, #ec4899) !important;
+  color: #fff !important;
+  border: none !important;
+}
+
+input::placeholder, .form-control::placeholder {
+  color: #fff !important;
+  opacity: 0.7;
+}
+
+/* حذف رنگ و border فسفری از node-info-box و node-rect-content */
+.node-info-box, .node-rect-content, .wallet-short {
+  color: #fff !important;
+  border: 1.5px solid #6366f1 !important;
+  background: #181c1f !important;
+}
+.node-info-box b, .node-info-box div, .node-rect-content b {
+  color: #fff !important;
+}
+.children-rect {
+  border-left: 2px dashed #6366f1 !important;
+}
+
+/* حذف رنگ فسفری از دکمه‌های شبکه */
+.expand-btn, .info-btn {
+  background: linear-gradient(45deg, #6366f1, #ec4899) !important;
+  color: #fff !important;
+  border: none !important;
+}
+.expand-btn:hover, .info-btn:hover {
+  background: linear-gradient(90deg, #6366f1, #ec4899) !important;
+  color: #fff !important;
+}
+
+/* اصلاح گرادینت پس‌زمینه سایت */
+body {
+  background: linear-gradient(135deg, #181c1f 0%, #23243a 100%);
+  color: #fff !important;
+}
+
+/* اصلاح رنگ‌های باقی‌مانده */
+.progress-bar {
+  background: linear-gradient(90deg, #6366f1 0%, #ec4899 100%) !important;
+}
+
+.stats-banner-modern, .stat-box-modern {
+  background: linear-gradient(90deg, #6366f1 0%, #ec4899 100%) !important;
+  color: #fff !important;
+}
+
+.stat-box-modern .text-gradient {
+  background: linear-gradient(45deg, #6366f1, #ec4899) !important;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* کلاس‌های جدید برای نشانگرها و آیکون‌ها */
+.badge-gradient {
+    background: linear-gradient(90deg, #e52e71 0%, #1e90ff 100%);
+    color: #fff !important;
+    border: none;
+    box-shadow: 0 2px 8px 0 rgba(30,144,255,0.08);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+.badge-gradient i {
+    color: #fff !important;
+}
+
+/* استایل ویژه برای کارت وضعیت حساب کاربری (اکسپندشونده) */
+.user-status-card {
+  background: rgba(255,255,255,0.18);
+  backdrop-filter: blur(32px);
+  box-shadow: 0 12px 32px 0 rgba(99,102,241,0.10), 0 2px 4px -2px rgba(236,72,153,0.10);
+  border: 1.5px solid #6366f1;
+  border-radius: 2rem;
+  padding: 1.5rem 1.2rem 0.5rem 1.2rem;
+  margin-bottom: 1.5rem;
+  transition: all 0.3s;
+}
+.user-status-card .card-header {
+  background: linear-gradient(90deg, #6366f1 0%, #ec4899 100%);
+  color: #fff;
+  border-radius: 1.5rem 1.5rem 0 0 !important;
+  font-weight: 600;
+  font-size: 1.1rem;
+  box-shadow: 0 2px 8px 0 rgba(99,102,241,0.08);
+  border: none;
+  padding: 1rem 1.2rem;
+}
+.user-status-card .card-header i {
+  font-size: 1.3em;
+  margin-left: 0.5rem;
+}
+.user-status-card .collapse {
+  background: transparent;
+}
+.user-status-card .list-group {
+  background: transparent;
+  border: none;
+}
+.user-status-card .list-group-item {
+  background: rgba(255,255,255,0.10);
+  border: none;
+  border-radius: 1rem;
+  margin-bottom: 0.5rem;
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(99,102,241,0.04);
+  transition: background 0.2s;
+}
+.user-status-card .list-group-item:last-child {
+  margin-bottom: 0;
+}
+.user-status-card .form-control,
+.user-status-card input {
+  background: rgba(40,40,60,0.9) !important;
+  color: #e5e7eb !important;
+  border: 1.5px solid #6366f1 !important;
+  border-radius: 0.7rem;
+  font-size: 1em;
+  box-shadow: none;
+}
+.user-status-card .form-control:read-only {
+  background: rgba(40,40,60,0.7) !important;
+  color: #e5e7eb !important;
+}
+.user-status-card .w-100 {
+  color: #fff;
+}
+@media (max-width: 768px) {
+  .user-status-card {
+    padding: 1rem 0.5rem 0.5rem 0.5rem;
+    border-radius: 1.2rem;
+  }
+  .user-status-card .card-header {
+    font-size: 1rem;
+    padding: 0.7rem 0.7rem;
+    border-radius: 1.2rem 1.2rem 0 0 !important;
+  }
+  .user-status-card .list-group-item {
+    font-size: 0.97em;
+    padding: 0.7rem 0.6rem;
+  }
+}
+body.dark-mode .user-status-card {
+  background: rgba(24,28,31,0.95) !important;
+  border: 1.5px solid #6366f1 !important;
+}
+body.dark-mode .user-status-card .list-group-item {
+  background: rgba(40,40,60,0.7) !important;
+  color: #e5e7eb !important;
+}
+body.dark-mode .user-status-card .form-control,
+body.dark-mode .user-status-card input {
+  background: #23243a !important;
+  color: #e5e7eb !important;
+  border: 1.5px solid #6366f1 !important;
 }

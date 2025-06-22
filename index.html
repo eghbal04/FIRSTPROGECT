@@ -12,36 +12,51 @@
     <meta name="keywords" content="توکن، کریپتو، MLM، سواپ، بلاک‌چین، پولیگان">
 </head>
 <body>
+  
 
+    </header> 
+   
 
-    
-    
+    <div class="container pt-4">
+        <div class="d-flex justify-content-end align-items-center gap-2 mb-3">
+            <select id="lang-select" class="form-select form-select-sm w-auto ms-2">
+                <option value="fa">فارسی</option>
+                <option value="en">English</option>
+                <option value="de">Deutsch</option>
+                <option value="tr">Türkçe</option>
+                <option value="fr">Français</option>
+            </select>
+            <!-- دکمه اتصال کیف پول حذف شد -->
+        </div>
+        <!-- پیغام‌های اتصال کیف پول حذف شد -->
+    </div>
+
     <div class="container py-4">
         <!-- هدر اصلی -->
         <div class="row mb-5">
             <div class="col-12 text-center fade-in-up">
                 <h1 class="display-3 fw-bold mb-3">
-                    <span class="text-gradient">سیستم توکن LevelUp</span>
+                    <span class="text-gradient">  LevelUp </span>
                 </h1>
-                <p class="lead fs-4 mb-4">پلتفرم پیشرفته تجارت توکن و شبکه‌سازی هوشمند</p>
+                <p class="lead fs-4 mb-4">پلتفرم پیشرفته تجارت و شبکه‌سازی هوشمند</p>
                 <div class="d-flex justify-content-center gap-3 flex-wrap">
-                    <span class="badge bg-primary fs-6 px-3 py-2">
-                        <i class="bi bi-shield-check"></i> امن و قابل اعتماد
+                    <span class="badge badge-gradient fs-6 px-3 py-2">
+                        <i class="bi bi-shield-check"></i> <span class="en-number">امن و قابل اعتماد</span>
                     </span>
-                    <span class="badge bg-success fs-6 px-3 py-2">
-                        <i class="bi bi-lightning"></i> سریع و کارآمد
+                    <span class="badge badge-gradient fs-6 px-3 py-2">
+                        <i class="bi bi-lightning"></i> <span class="en-number">سریع و کارآمد</span>
                     </span>
-                    <span class="badge bg-info fs-6 px-3 py-2">
-                        <i class="bi bi-people"></i> شبکه‌سازی هوشمند
+                    <span class="badge badge-gradient fs-6 px-3 py-2">
+                        <i class="bi bi-people"></i> <span class="en-number">شبکه‌سازی هوشمند</span>
                     </span>
                 </div>
             </div>
         </div>
 
         <!-- وضعیت کیف پول و اطلاعات کلی -->
-        <div  class="row mb-4 align-items-stretch"> <!-- اضافه کردن align-items-stretch برای هم‌ارتفاع شدن ستون‌ها -->
-            <div class="col-lg-4 d-flex"> <!-- یک سوم: موجودی و قیمت -->
-                <div class="glass-card fade-in-up h-100 flex-grow-1 d-flex flex-column"> <!-- اطمینان از h-100 و flex-column -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="glass-card fade-in-up h-100 flex-grow-1 d-flex flex-column">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h3 class="fw-bold mb-0">
                             <i class="bi bi-wallet2 text-primary"></i>
@@ -52,126 +67,110 @@
                         </div>
                     </div>
                     
-                    <div id="wallet-status" class="alert alert-warning d-flex align-items-center">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                        کیف پول متصل نشده است
-                    </div>
-                    
                     <div class="d-grid gap-2 mb-4">
-                        <button id="connect-wallet" class="btn btn-primary btn-lg">
-                            <i class="bi bi-wallet2"></i>
-                            اتصال کیف پول
-                        </button>
+                        
                     </div>
                     
-                    <div id="user-info" style="display: none;">
-    <div class="row g-3 flex-column">
-        <div class="col-12">
-            <label class="form-label fw-semibold">آدرس کیف پول:</label>
-            <div class="input-group">
-                <input type="text" id="wallet-address" class="form-control" readonly>
-                <button class="btn btn-outline-secondary" onclick="copyToClipboard('wallet-address')">
-                    <i class="bi bi-clipboard"></i>
-                </button>
-            </div>
+                    <!-- وضعیت حساب کاربری (Expandable) -->
+<div class="user-status-card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center" style="cursor:pointer;" data-bs-toggle="collapse" data-bs-target="#user-status-list" aria-expanded="true" aria-controls="user-status-list">
+    <span><i class="bi bi-person-badge me-2"></i>وضعیت حساب کاربری</span>
+    <i class="bi bi-chevron-down" id="user-status-chevron"></i>
+  </div>
+  <div id="user-status-list" class="collapse show">
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <span>آدرس کیف پول</span>
+        <input id="wallet-address" class="form-control form-control-sm text-end en-number" readonly>
+      </li>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <span>معرف شما</span>
+        <input id="my-referrer" class="form-control form-control-sm text-end en-number" readonly>
+      </li>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <span>مقدار خرید</span>
+        <input id="purchase-amount" class="form-control form-control-sm text-end en-number" readonly>
+      </li>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <span>سقف درآمد روزانه</span>
+        <input id="daily-cap" class="form-control form-control-sm text-end en-number" readonly>
+      </li>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <span>وضعیت فعالسازی</span>
+        <div id="activation-status" class="w-100"></div>
+      </li>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <span>موجودی LVL</span>
+        <input id="token-balance" class="form-control form-control-sm text-end en-number" readonly>
+      </li>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <span>ارزش دلاری LVL</span>
+        <input id="Tusd-value" class="form-control form-control-sm text-end en-number" readonly>
+      </li>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <span>قیمت LVL (دلار)</span>
+        <input id="token-price-userbox" class="form-control form-control-sm text-end en-number" readonly>
+      </li>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <span>ارزش دلاری MATIC</span>
+        <input id="Musd-value" class="form-control form-control-sm text-end en-number" readonly>
+      </li>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <span>موجودی MATIC</span>
+        <input id="matic-balance" class="form-control form-control-sm text-end en-number" readonly>
+      </li>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <span>ارزش هر پوینت (دلار)</span>
+        <input id="point-value-usd" class="form-control form-control-sm text-end en-number" readonly>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+        <span>تعداد کل پوینت‌های سازمان</span>
+        <input id="org-total-points" class="form-control form-control-sm text-end en-number" readonly>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+        <span>تعداد پوینت دریافتی شما</span>
+        <input id="user-received-points" class="form-control form-control-sm text-end en-number" readonly>
+        </li>
+        <span>لینک رفرال شما</span>
+        <div class="input-group input-group-sm flex-nowrap">
+          <input id="referral-link-list" class="form-control text-end en-number" readonly>
+          <button class="btn btn-glass" type="button" onclick="copyToClipboard('referral-link-list')" title="کپی لینک"><i class="bi bi-clipboard"></i></button>
         </div>
-        <div class="col-12">
-            <label class="form-label fw-semibold">موجودی MATIC:</label>
-            <input type="text" id="matic-balance" class="form-control" readonly>
-        </div>
-        <div class="col-12">
-            <label class="form-label fw-semibold">ارزش دلاری:POL</label>
-            <input type="text" id="Musd-value" class="form-control" readonly>
-        </div>
-        <div class="col-12">
-            <label class="form-label fw-semibold">موجودی LVL:</label>
-            <input type="text" id="token-balance" class="form-control" readonly>
-        </div>
-        <div class="col-12">
-            <label class="form-label fw-semibold">ارزش دلاری LVL:</label>
-            <input type="text" id="Tusd-value" class="form-control" readonly>
-        </div>
-        <div class="col-12">
-            <!-- قیمت لحظه‌ای -->
-            <label class="form-label fw-semibold">قیمت لحظه‌ای LVL:</label>
-            <div class="d-flex align-items-center gap-2 flex-wrap mb-3">
-                <span class="display-6 fw-bold text-primary mb-0" id="token-price">0.0000</span>
-                <small class="fs-6 text-muted">MATIC</small>
-                <span class="text-success ms-2" id="price-change"><i class="bi bi-arrow-up"></i> +0.00%</span>
-                <button id="update-price" class="btn btn-outline-primary btn-sm ms-2">
-                    <i class="bi bi-arrow-repeat"></i>
-                </button>
-            </div>
-        </div>
-        <div class="col-12">
-            <label class="form-label fw-semibold">لینک معرف شما:</label>
-            <div class="input-group">
-                <input type="text" id="referral-link" class="form-control" readonly>
-                <button class="btn btn-outline-primary" onclick="copyReferralLink()">
-                    <i class="bi bi-share"></i> اشتراک‌گذاری
-                </button>
+      </li>
+    </ul>
+  </div>
+</div>
+<script>
+// تغییر آیکون باز/بسته شدن لیست وضعیت حساب کاربری
+const userStatusHeader = document.querySelector('[data-bs-target="#user-status-list"]');
+const userStatusChevron = document.getElementById('user-status-chevron');
+const userStatusCollapse = document.getElementById('user-status-list');
+if(userStatusHeader && userStatusChevron && userStatusCollapse) {
+  userStatusCollapse.addEventListener('show.bs.collapse', () => {
+    userStatusChevron.classList.remove('bi-chevron-right');
+    userStatusChevron.classList.add('bi-chevron-down');
+  });
+  userStatusCollapse.addEventListener('hide.bs.collapse', () => {
+    userStatusChevron.classList.remove('bi-chevron-down');
+    userStatusChevron.classList.add('bi-chevron-right');
+  });
+}
+</script>
+                    <!-- پایان وضعیت حساب کاربری -->
+                </div>
             </div>
         </div>
 
-        <div class="col-12">
-            <label class="form-label fw-semibold">پاداش باینری:</label>
-            <div class="row g-2 align-items-center">
-                <div class="col-auto">
-                    <span class="fw-bold" id="binary-points">0</span>
-                    <span class="text-muted">امتیاز</span>
-                </div>
-                <div class="col-auto">
-                    <button id="claim-binary" class="btn btn-warning btn-sm" disabled>
-                        <i class="bi bi-cash-stack"></i> دریافت پاداش
-                    </button>
-                </div>
-            </div>
-            <div class="progress mt-2" style="height: 8px;">
-                <div id="binary-progress" class="progress-bar" role="progressbar" style="width: 0%"></div>
-            </div>
-            <div class="small text-muted mt-1">سقف امتیاز: <span id="binary-point-cap">0</span></div>
-        </div>
-    </div>
-                        
-                        <div class="mt-4">
-                            <label class="form-label fw-semibold">لینک معرف شما:</label>
-                            <div class="input-group">
-                                <input type="text" id="referral-link" class="form-control" readonly>
-                                <button class="btn btn-outline-primary" onclick="copyReferralLink()">
-                                    <i class="bi bi-share"></i> اشتراک‌گذاری
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="mt-4">
-                            <label class="form-label fw-semibold">پاداش باینری:</label>
-                            <div class="row g-2 align-items-center">
-                                <div class="col-auto">
-                                    <span class="fw-bold" id="binary-points">0</span>
-                                    <span class="text-muted">امتیاز</span>
-                                </div>
-                                <div class="col-auto">
-                                    <button id="claim-binary" class="btn btn-warning btn-sm" disabled>
-                                        <i class="bi bi-cash-stack"></i> دریافت پاداش
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="progress mt-2" style="height: 8px;">
-                                <div id="binary-progress" class="progress-bar" role="progressbar" style="width: 0%"></div>
-                            </div>
-                            <div class="small text-muted mt-1">سقف امتیاز: <span id="binary-point-cap">0</span></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-8 d-flex"> <!-- دو سوم: چارت و پاداش باینری -->
-                <div class="glass-card fade-in-up h-100 flex-grow-1 d-flex flex-column"> <!-- اطمینان از h-100 و flex-column -->
-                    <h4 class="fw-bold mb-3">
+        <!-- چارت قیمت لحظه‌ای -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="glass-card fade-in-up h-100 flex-grow-1 d-flex flex-column align-items-stretch" style="width:100%;">
+                    <h4 class="fw-bold mb-3 text-center">
                         <i class="bi bi-graph-up text-success"></i>
-                        قیمت لحظه‌ای
+                        <span data-i18n="قیمت لحظه‌ای">قیمت لحظه‌ای</span>
                     </h4>
-                    <div class="mb-2">
+                    <div class="mb-2 d-flex justify-content-end">
                         <select id="chart-range" class="form-select form-select-sm w-auto d-inline-block ms-2">
                             <option value="1d">روزانه</option>
                             <option value="7d">هفتگی</option>
@@ -179,7 +178,9 @@
                             <option value="all">همه</option>
                         </select>
                     </div>
-                    <canvas id="priceChart" width="800" height="400"></canvas>
+                    <div style="width:100%;flex:1;display:flex;align-items:center;">
+                        <canvas id="priceChart" width="600" height="350" style="width:100%;max-width:100%;height:auto;"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -192,28 +193,29 @@
                         <li class="nav-item" role="presentation">
                             <button class="nav-link active" id="swap-tab" data-bs-toggle="pill" data-bs-target="#swap-content" type="button" role="tab">
                                 <i class="bi bi-arrow-left-right"></i>
-                                سواپ توکن
+                                <span data-i18n="سواپ توکن">سواپ توکن</span>
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="network-tab" data-bs-toggle="pill" data-bs-target="#network-content" type="button" role="tab">
                                 <i class="bi bi-diagram-3"></i>
-                                شبکه زیرمجموعه
+                                <span data-i18n="شبکه زیرمجموعه">شبکه زیرمجموعه</span>
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="register-tab" data-bs-toggle="pill" data-bs-target="#register-content" type="button" role="tab">
                                 <i class="bi bi-person-plus"></i>
-                                ثبت‌نام و فعال‌سازی
+                                <span data-i18n="ثبت‌نام و فعال‌سازی">ثبت‌نام و فعال‌سازی</span>
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="analytics-tab" data-bs-toggle="pill" data-bs-target="#analytics-content" type="button" role="tab">
                                 <i class="bi bi-bar-chart"></i>
-                                آمار و تحلیل
+                                <span data-i18n="آمار و تحلیل">آمار و تحلیل</span>
                             </button>
                         </li>
                     </ul>
+                    
 
                     <div class="tab-content" id="mainTabsContent">
                         <!-- تب سواپ -->
@@ -291,7 +293,7 @@
                                         </div>
 
                                         <!-- Swap Info -->
-                                        <div class="bg-light rounded p-3 mb-4">
+                                        <div class="swap-info-box">
                                             <div class="d-flex justify-content-between mb-2">
                                                 <span>نرخ تبدیل:</span>
                                                 <span id="exchange-rate">1 MATIC = 0 LVL</span>
@@ -349,13 +351,6 @@
                                                 </div>
                                             </div>
                                             <hr>
-                                            <div class="text-center">
-                                                <div class="h4 fw-bold text-primary">
-                                                    <span id="total-purchased">0</span>
-                                                    <small class="text-muted">MATIC</small>
-                                                </div>
-                                                <small class="text-muted">مجموع خریدهای شما</small>
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -554,17 +549,67 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script src="js/i18n.js"></script>
     <script src="js/config.js"></script>
     <script src="js/app.js"></script>
     <script src="js/swap.js"></script>
-    
-
-
     <script>
-        // بارگذاری navbar و footer
-        
-        fetch('footer.html').then(r => r.text()).then(html => {
-            document.getElementById('footer-placeholder').innerHTML = html;
+        // تبدیل اعداد فارسی به انگلیسی در عناصر با کلاس en-number
+function faToEnNumber(str) {
+    return str.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+}
+function fixEnNumbers() {
+    document.querySelectorAll('.en-number').forEach(el => {
+        el.innerHTML = faToEnNumber(el.innerHTML);
+    });
+}
+document.addEventListener('DOMContentLoaded', fixEnNumbers);
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // بارگذاری navbar و footer
+            fetch('footer.html').then(r => r.text()).then(html => {
+                document.getElementById('footer-placeholder').innerHTML = html;
+            });
+
+            // سوییچ حالت تاریک/روشن فقط برای دکمه داخل هدر مدرن
+            const themeToggle = document.getElementById('theme-toggle');
+            if(themeToggle) {
+                themeToggle.addEventListener('click', function() {
+                    document.body.classList.toggle('dark-mode');
+                    // تغییر آیکون
+                    const icon = themeToggle.querySelector('i');
+                    if(document.body.classList.contains('dark-mode')) {
+                        icon.classList.remove('bi-moon');
+                        icon.classList.add('bi-brightness-high');
+                    } else {
+                        icon.classList.remove('bi-brightness-high');
+                        icon.classList.add('bi-moon');
+                    }
+                });
+                // حالت پیش‌فرض بر اساس سیستم
+                if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.body.classList.add('dark-mode');
+                    const icon = themeToggle.querySelector('i');
+                    icon.classList.remove('bi-moon');
+                    icon.classList.add('bi-brightness-high');
+                }
+            }
+
+            // هماهنگ‌سازی انتخاب زبان با i18n.js
+            const langSelect = document.getElementById('lang-select');
+            if(langSelect) {
+                langSelect.value = document.documentElement.lang || 'fa';
+                langSelect.addEventListener('change', function() {
+                    setLanguage(this.value);
+                    // مقدار value را همزمان با تغییر زبان ست کن
+                    langSelect.value = this.value;
+                });
+            }
+
+            // اتصال خودکار به کیف پول در لود صفحه
+            if (typeof connectWallet === 'function') {
+                connectWallet();
+            }
         });
     </script>
 </body>

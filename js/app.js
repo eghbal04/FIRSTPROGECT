@@ -166,16 +166,20 @@ async function fetchPrices() {
 // تنظیم event listeners
 function setupEventListeners() {
     // اتصال کیف پول
-    document.getElementById('connect-wallet').addEventListener('click', connectWallet);
+    const connectWalletBtn = document.getElementById('connect-wallet');
+    if (connectWalletBtn) connectWalletBtn.addEventListener('click', connectWallet);
     
-    // بروزرسانی قیمت توکن
-    document.getElementById('update-price').addEventListener('click', updateTokenPrice);
+    // بروزرسانی قیمت توکن (دکمه حذف شده است، پس این خط را حذف یا غیرفعال می‌کنیم)
+    // const updatePriceBtn = document.getElementById('update-price');
+    // if (updatePriceBtn) updatePriceBtn.addEventListener('click', updateTokenPrice);
     
     // ثبت نام و فعالسازی
-    document.getElementById('register-activate').addEventListener('click', registerAndActivate);
+    const registerActivateBtn = document.getElementById('register-activate');
+    if (registerActivateBtn) registerActivateBtn.addEventListener('click', registerAndActivate);
     
     // دریافت پاداش باینری
-    document.getElementById('claim-binary').addEventListener('click', claimBinaryReward);
+    const claimBinaryBtn = document.getElementById('claim-binary');
+    if (claimBinaryBtn) claimBinaryBtn.addEventListener('click', claimBinaryReward);
     
     // کپی آدرس کیف پول
     window.copyToClipboard = copyToClipboard;
@@ -253,6 +257,9 @@ async function setupWallet(address) {
         // ارسال event برای اطلاع سایر کامپوننت‌ها
         document.dispatchEvent(new CustomEvent('walletConnected', { detail: { address } }));
         
+        // بروزرسانی وضعیت اتصال کیف پول
+        updateWalletStatus(true);
+        
     } catch (error) {
         console.error('خطا در تنظیم کیف پول:', error);
         showToast('خطا در بارگذاری اطلاعات کیف پول', 'error');
@@ -262,25 +269,47 @@ async function setupWallet(address) {
 // بروزرسانی UI کیف پول
 function updateWalletUI() {
     // نمایش اطلاعات کاربر
-    document.getElementById('wallet-address').value = userAddress;
-    document.getElementById('user-info').style.display = 'block';
-    
-    // بروزرسانی وضعیت
-    const walletStatus = document.getElementById('wallet-status');
-    walletStatus.className = 'alert alert-success d-flex align-items-center';
-    walletStatus.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i> کیف پول متصل شده است';
-    
-    // ایجاد لینک معرف
-    const referralLink = `${window.location.origin}${window.location.pathname}?ref=${userAddress}`;
-    document.getElementById('referral-link').value = referralLink;
-    
+    const walletAddressElem = document.getElementById('wallet-address');
+    const userInfoElem = document.getElementById('user-info');
+    if (walletAddressElem) walletAddressElem.value = userAddress;
+    if (userInfoElem) userInfoElem.style.display = 'block';
+
+    // حذف نمایش مستقیم پیغام اتصال در اینجا
+    // فقط ایجاد لینک معرف
+    const referralLinkElem = document.getElementById('referral-link');
+    if (referralLinkElem)
+        referralLinkElem.value = `${window.location.origin}${window.location.pathname}?ref=${userAddress}`;
+
+    // نمایش لینک رفرال در لیست وضعیت حساب کاربری (در صورت وجود المنت)
+    const referralListElem = document.getElementById('referral-link-list');
+    if (referralListElem)
+        referralListElem.value = `${window.location.origin}${window.location.pathname}?ref=${userAddress}`;
+
+    // مقداردهی قیمت LVL (دلار) در لیست وضعیت حساب کاربری
+    const tokenPriceUserboxElem = document.getElementById('token-price-userbox');
+    if (tokenPriceUserboxElem) {
+        // اگر مقدار lastTokenPrice معتبر نبود، مقدار را مستقیم از قرارداد بگیر
+        if (typeof lastTokenPrice === 'number' && !isNaN(lastTokenPrice) && lastTokenPrice > 0) {
+            tokenPriceUserboxElem.value = lastTokenPrice.toFixed(4);
+        } else {
+            // مقدار را مستقیم از قرارداد بگیر (همزمان)
+            contract.getLatestLvlPrice().then(priceRaw => {
+                const price = Number(priceRaw) / 1e8;
+                tokenPriceUserboxElem.value = price > 0 ? price.toFixed(4) : '---';
+            }).catch(() => {
+                tokenPriceUserboxElem.value = '---';
+            });
+        }
+    }
+
     updateConnectButton();
 }
 
 // بروزرسانی دکمه اتصال
 function updateConnectButton(text = null) {
     const button = document.getElementById('connect-wallet');
-    
+    if (!button) return; // اگر دکمه وجود نداشت، هیچ کاری نکن
+
     if (text) {
         button.textContent = text;
         button.disabled = true;
@@ -299,41 +328,53 @@ function updateConnectButton(text = null) {
 function resetWallet() {
     userAddress = null;
     userData = null;
-    
     document.getElementById('user-info').style.display = 'none';
-    
-    const walletStatus = document.getElementById('wallet-status');
-    walletStatus.className = 'alert alert-warning d-flex align-items-center';
-    walletStatus.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2"></i> کیف پول متصل نشده است';
-    
+    // حذف نمایش مستقیم پیغام قطع اتصال در اینجا
     updateConnectButton();
     disableButtons();
-    
-    // پاک کردن داده‌ها
     clearUserData();
 }
 
 // بارگذاری داده‌های کاربر
 async function loadUserData() {
     if (!userAddress || !contract) return;
-    
     try {
         // دریافت اطلاعات کاربر از قرارداد
         userData = await contract.users(userAddress);
-        
+
         // نمایش وضعیت فعالسازی
         updateActivationStatus();
-        
+
         // نمایش معرف
         document.getElementById('my-referrer').value = 
             userData.referrer === ethers.constants.AddressZero ? 'ندارد' : userData.referrer;
-        
+
         // نمایش اطلاعات باینری
         updateBinaryInfo();
-        
+
+        // مقدار خرید (purchase-amount) بر اساس مجموع amountLvl از رویدادهای purchase
+        if (document.getElementById('purchase-amount')) {
+            let purchased = 0;
+            if (contract && contract.filters && contract.queryFilter && userAddress) {
+                try {
+                    // رویداد purchase را پیدا کن (در ABI ممکن است نامش متفاوت باشد)
+                    // فرض: event Activated(address indexed user, uint256 amountlvl)
+                    const purchaseEvents = await contract.queryFilter(contract.filters.Activated(userAddress));
+                    purchased = purchaseEvents.reduce((sum, ev) => sum + parseFloat(ethers.utils.formatEther(ev.args.amountlvl)), 0);
+                } catch (e) {
+                    purchased = 0;
+                }
+            }
+            document.getElementById('purchase-amount').value = purchased.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' MATIC';
+        }
+        // سقف درآمد روزانه (binaryPointCap)
+        if (document.getElementById('daily-cap')) {
+            const dailyCap = userData.binaryPointCap ? parseInt(userData.binaryPointCap.toString()) : 0;
+            document.getElementById('daily-cap').value = dailyCap.toLocaleString('en-US') + ' پوینت';
+        }
+
         // بارگذاری درخت شبکه
         await loadNetworkTree();
-        
     } catch (error) {
         console.error("خطا در بارگذاری داده‌های کاربر:", error);
         showToast('خطا در بارگذاری اطلاعات کاربر', 'error');
@@ -355,30 +396,31 @@ function updateActivationStatus() {
 
 // بروزرسانی اطلاعات باینری
 function updateBinaryInfo() {
-    const binaryPoints = userData.binaryPoints.toString();
-    const binaryPointCap = userData.binaryPointCap.toString();
+    const binaryPointsElem = document.getElementById('binary-points');
+    const binaryPointCapElem = document.getElementById('binary-point-cap');
+    const binaryProgressElem = document.getElementById('binary-progress');
+    const claimButton = document.getElementById('claim-binary');
     
-    document.getElementById('binary-points').textContent = binaryPoints;
-    document.getElementById('binary-point-cap').textContent = binaryPointCap;
-    
+    const binaryPoints = userData.binaryPoints ? parseInt(userData.binaryPoints.toString()) : 0;
+    const binaryPointCap = userData.binaryPointCap ? parseInt(userData.binaryPointCap.toString()) : 0;
+    if (binaryPointsElem) binaryPointsElem.textContent = binaryPoints.toLocaleString('fa-IR');
+    if (binaryPointCapElem) binaryPointCapElem.textContent = binaryPointCap.toLocaleString('fa-IR');
     // محاسبه درصد پیشرفت
     const progressPercent = binaryPointCap > 0 
-        ? (parseInt(binaryPoints) / parseInt(binaryPointCap)) * 100 
+        ? (binaryPoints / binaryPointCap) * 100 
         : 0;
-    
-    document.getElementById('binary-progress').style.width = `${Math.min(progressPercent, 100)}%`;
-    
+    if (binaryProgressElem) binaryProgressElem.style.width = `${Math.min(progressPercent, 100)}%`;
     // فعال/غیرفعال کردن دکمه دریافت پاداش
-    const claimButton = document.getElementById('claim-binary');
-    const canClaim = userData.activated && parseInt(binaryPoints) > parseInt(userData.binaryPointsClaimed);
-    
-    claimButton.disabled = !canClaim;
-    if (canClaim) {
-        claimButton.className = 'btn btn-warning w-100';
-        claimButton.innerHTML = '<i class="bi bi-cash-stack"></i> دریافت پاداش';
-    } else {
-        claimButton.className = 'btn btn-secondary w-100';
-        claimButton.innerHTML = '<i class="bi bi-cash-stack"></i> پاداشی موجود نیست';
+    const canClaim = userData.activated && binaryPoints > parseInt(userData.binaryPointsClaimed);
+    if (claimButton) {
+        claimButton.disabled = !canClaim;
+        if (canClaim) {
+            claimButton.className = 'btn btn-warning w-100';
+            claimButton.innerHTML = '<i class="bi bi-cash-stack"></i> دریافت پاداش';
+        } else {
+            claimButton.className = 'btn btn-secondary w-100';
+            claimButton.innerHTML = '<i class="bi bi-cash-stack"></i> پاداشی موجود نیست';
+        }
     }
 }
 
@@ -386,28 +428,27 @@ let lastTokenPrice = null;
 
 async function loadTokenPrice() {
     if (!contract) return;
-
+    
     try {
-        // دریافت قیمت واقعی از کانترکت
-        const rawPrice = await contract.getLatestLvlPrice();
-        const newPrice = Number(rawPrice) / 1e8; // چون معمولا قیمت با 8 رقم اعشار داده میشه
-
-        // نمایش قیمت در UI
-        document.getElementById('token-price').textContent = newPrice.toFixed(8);
-
-        // محاسبه تغییر قیمت
+        // فقط قیمت LVL به دلار
+        const tokenPriceUsdRaw = await contract.getTokenPriceInUSD();
+        const tokenPriceUsd = Number(tokenPriceUsdRaw) / 1e8;
+        const tokenPriceUsdElem = document.getElementById('token-price-usd');
+        if (tokenPriceUsdElem)
+            tokenPriceUsdElem.innerHTML = `$${tokenPriceUsd.toFixed(4)} <span class='small text-muted'>(USD)</span>`;
+        // تغییر رنگ و درصد تغییر قیمت (در صورت نیاز)
         if (lastTokenPrice !== null) {
-            const diff = newPrice - lastTokenPrice;
+            // اگر نیاز به درصد تغییر دارید، می‌توانید این بخش را نگه دارید یا حذف کنید
+            // اینجا چون فقط قیمت دلاری نمایش داده می‌شود، درصد تغییر را بر اساس دلار محاسبه می‌کنیم
+            const diff = tokenPriceUsd - lastTokenPrice;
             const percentChange = (diff / lastTokenPrice) * 100;
-
             const changeElement = document.getElementById('price-change');
-            changeElement.textContent = `${diff >= 0 ? '+' : ''}${percentChange.toFixed(2)}%`;
-            changeElement.className = diff >= 0 ? 'text-success' : 'text-danger';
+            if (changeElement) {
+                changeElement.textContent = `${diff >= 0 ? '+' : ''}${percentChange.toFixed(2)}%`;
+                changeElement.className = diff >= 0 ? 'text-success' : 'text-danger';
+            }
         }
-
-        // به‌روزرسانی مقدار قبلی
-        lastTokenPrice = newPrice;
-
+        lastTokenPrice = tokenPriceUsd;
     } catch (error) {
         console.error("❌ خطا در بارگذاری قیمت توکن:", error);
     }
@@ -440,15 +481,18 @@ async function loadBalances() {
         if(document.getElementById('matic-price-userbox'))
             document.getElementById('matic-price-userbox').textContent = maticPriceUsd.toFixed(4);
 
-        // محاسبه ارزش دلاری توکن LVL (فرض می‌گیریم تابعی مشابه برای قیمتش هست)
-        const tokenPrice = await contract.getLatestLvlPrice();
-        const tokenPriceUsd = Number(tokenPrice) / 1e8;
+        // قیمت LVL بر حسب دلار
+        const tokenPriceUsdRaw = await contract.getTokenPriceInUSD();
+        const tokenPriceUsd = Number(tokenPriceUsdRaw) / 1e8;
+        // نمایش قیمت LVL در باکس کاربر (فقط دلار)
+        if(document.getElementById('lvl-price-userbox'))
+            document.getElementById('lvl-price-userbox').innerHTML =
+                `<span>${tokenPriceUsd.toFixed(4)} <span class='text-success'>USD</span></span>`;
+        // ارزش دلاری LVL
         const totalTokenValue = parseFloat(ethers.utils.formatEther(tokenBal));
         const tokenUsdValue = totalTokenValue * tokenPriceUsd;
         if(document.getElementById('Tusd-value'))
             document.getElementById('Tusd-value').value = `$${tokenUsdValue.toFixed(2)}`;
-        if(document.getElementById('lvl-price-userbox'))
-            document.getElementById('lvl-price-userbox').textContent = tokenPriceUsd.toFixed(4);
         
     } catch (error) {
         console.error("خطا در بارگذاری موجودی‌ها:", error);
@@ -465,12 +509,37 @@ async function loadSystemStats() {
         const totalUsers = await contract.totalUsers();
         const binaryPool = await contract.binaryPool();
         
-        document.getElementById('total-supply').textContent =
-            ethers.utils.formatEther(totalSupply).replace(/\.0+$/, '');
-        document.getElementById('total-holders').textContent = totalUsers.String();
-        document.getElementById('binary-pool-amount').textContent =
-            Number(ethers.utils.formatEther(binaryPool)).toLocaleString('fa-IR', {maximumFractionDigits: 4});
-        
+        // مقدار کل توکن در گردش (در صورت وجود تابع)
+        let circulatingSupply = 0;
+        if (typeof contract.circulatingSupply === 'function') {
+            try {
+                circulatingSupply = await contract.circulatingSupply();
+            } catch (e) {
+                circulatingSupply = totalSupply;
+            }
+        } else {
+            circulatingSupply = totalSupply;
+        }
+        // مقدار متیک پشتوانه (در صورت وجود تابع)
+        let maticReserve = 0;
+        if (contract.maticReserve) {
+            maticReserve = await contract.maticReserve();
+        }
+        const totalSupplyElem = document.getElementById('total-supply');
+        if (totalSupplyElem)
+            totalSupplyElem.textContent = Number(ethers.utils.formatEther(totalSupply)).toLocaleString('en-US', {maximumFractionDigits: 4});
+        const circulatingSupplyElem = document.getElementById('circulating-supply');
+        if (circulatingSupplyElem)
+            circulatingSupplyElem.textContent = Number(ethers.utils.formatEther(circulatingSupply)).toLocaleString('en-US', {maximumFractionDigits: 4});
+        const totalHoldersElem = document.getElementById('total-holders');
+        if (totalHoldersElem)
+            totalHoldersElem.textContent = totalUsers.toString();
+        const binaryPoolElem = document.getElementById('binary-pool-amount');
+        if (binaryPoolElem)
+            binaryPoolElem.textContent = Number(ethers.utils.formatEther(binaryPool)).toLocaleString('en-US', {maximumFractionDigits: 4});
+        if(document.getElementById('matic-reserve'))
+            document.getElementById('matic-reserve').textContent =
+                maticReserve ? Number(ethers.utils.formatEther(maticReserve)).toLocaleString('en-US', {maximumFractionDigits: 4}) : '0';
         // حجم معاملات واقعی (جمع خرید و فروش توکن) با BigNumber
         let totalVolume = ethers.BigNumber.from(0);
         if (contract.filters && contract.queryFilter) {
@@ -480,12 +549,31 @@ async function loadSystemStats() {
             let sellSum = sellEvents.reduce((sum, ev) => sum.add(ev.args.maticAmount), ethers.BigNumber.from(0));
             totalVolume = buySum.add(sellSum);
         }
-        document.getElementById('total-volume').textContent =
-            Number(ethers.utils.formatEther(totalVolume)).toLocaleString('fa-IR', {maximumFractionDigits: 4});
-        
+        const totalVolumeElem = document.getElementById('total-volume');
+        if (totalVolumeElem)
+            totalVolumeElem.textContent = Number(ethers.utils.formatEther(totalVolume)).toLocaleString('en-US', {maximumFractionDigits: 4});
+        // همگام‌سازی بنر
+        updateStatsBanner();
     } catch (error) {
         console.error("خطا در بارگذاری آمار سیستم:", error);
     }
+}
+
+// همگام‌سازی آمار بنر تبلیغاتی با آمار اصلی و افزودن کل توکن در گردش و موجودی متیک پشتوانه
+function updateStatsBanner() {
+    const ids = [
+        ['total-supply', 'total-supply-banner'],
+        ['circulating-supply', 'circulating-supply-banner'],
+        ['total-holders', 'total-holders-banner'],
+        ['binary-pool-amount', 'binary-pool-amount-banner'],
+        ['matic-reserve', 'matic-reserve-banner'],
+        ['total-volume', 'total-volume-banner']
+    ];
+    ids.forEach(([mainId, bannerId]) => {
+        const main = document.getElementById(mainId);
+        const banner = document.getElementById(bannerId);
+        if (main && banner) banner.textContent = main.textContent;
+    });
 }
 
 // بروزرسانی قیمت توکن
@@ -597,75 +685,119 @@ async function claimBinaryReward() {
     }
 }
 
-// بارگذاری درخت شبکه
-async function loadNetworkTree() {
-    if (!userAddress || !contract) return;
-    
-    try {
+// بارگذاری بازگشتی و داینامیک درخت شبکه
+async function loadNetworkTree(rootAddress = null, container = null, level = 0, maxLevels = 3) {
+    if (!contract) return;
+    const address = rootAddress || userAddress;
+    if (!address) return;
+    if (!container) {
         const treeContainer = document.getElementById('tree-container');
         treeContainer.innerHTML = '<div class="text-center"><div class="loading-spinner mb-3"></div><p class="text-muted">در حال بارگذاری درخت شبکه...</p></div>';
-        
-        // دریافت اطلاعات کاربر
-        const user = await contract.users(userAddress);
-        
-        // بروزرسانی آمار شبکه
-        const totalUsers = await contract.totalUsers();
-        document.getElementById('total-users').textContent = totalUsers.toString();
-        
-        // محاسبه تعداد کاربران چپ و راست (شبیه‌سازی)
-        const leftUsers = user.leftChild.toString() !== '0' ? Math.floor(Math.random() * 10) + 1 : 0;
-        const rightUsers = user.rightChild.toString() !== '0' ? Math.floor(Math.random() * 10) + 1 : 0;
-        
-        document.getElementById('left-users').textContent = leftUsers;
-        document.getElementById('right-users').textContent = rightUsers;
-        document.getElementById('total-purchased').textContent = 
-            parseFloat(ethers.utils.formatEther(user.totalPurchasedMATIC || 0)).toFixed(4);
-        
-        // اگر کاربر فعال نشده است
-        if (!user.activated) {
-            treeContainer.innerHTML = '<div class="text-center"><p class="text-muted">برای مشاهده درخت شبکه باید حساب خود را فعال کنید</p></div>';
-            return;
-        }
-        
-        // ساخت درخت ساده
-        const treeHtml = createSimpleTree(user);
-        treeContainer.innerHTML = treeHtml;
-        
+        container = treeContainer;
+    }
+    try {
+        const user = await fetchUserNode(address);
+        container.innerHTML = '';
+        const treeHtml = await renderNetworkTree(user, address, level, maxLevels);
+        container.appendChild(treeHtml);
     } catch (error) {
         console.error("خطا در بارگذاری درخت شبکه:", error);
-        document.getElementById('tree-container').innerHTML = 
-            '<div class="text-center"><p class="text-danger">خطا در بارگذاری درخت شبکه</p></div>';
+        container.innerHTML = '<div class="text-center"><p class="text-danger">خطا در بارگذاری درخت شبکه</p></div>';
     }
 }
 
-// ایجاد درخت ساده
-function createSimpleTree(user) {
-    const hasLeft = user.left !== ethers.constants.AddressZero;
-    const hasRight = user.right !== ethers.constants.AddressZero;
-    
-    return `
-        <div class="d-flex flex-column align-items-center">
-            <div class="tree-node">
-                <div class="node-content node-active">
-                    <small>شما</small>
-                </div>
-            </div>
-            <div class="d-flex justify-content-center gap-5 mt-4">
-                <div class="tree-node">
-                    <div class="node-content ${hasLeft ? 'node-active' : 'node-inactive'}">
-                        <small>${hasLeft ? 'فعال' : 'خالی'}</small>
-                    </div>
-                    <small class="text-muted mt-2">سمت چپ</small>
-                </div>
-                <div class="tree-node">
-                    <div class="node-content ${hasRight ? 'node-active' : 'node-inactive'}">
-                        <small>${hasRight ? 'فعال' : 'خالی'}</small>
-                    </div>
-                    <small class="text-muted mt-2">سمت راست</small>
-                </div>
-            </div>
+// دریافت اطلاعات یک کاربر (گره)
+async function fetchUserNode(address) {
+    const user = await contract.users(address);
+    return {
+        address,
+        left: user.left,
+        right: user.right,
+        activated: user.activated,
+        referrer: user.referrer,
+        // اطلاعات دیگر در صورت نیاز
+    };
+}
+
+// بازگشتی: ساخت HTML درخت شبکه به صورت مستطیل زیر هم و بازشونده با دکمه نمایش اطلاعات
+async function renderNetworkTree(user, address, level, maxLevels) {
+    const node = document.createElement('div');
+    node.className = 'tree-node-rect';
+    // محتوای گره: مستطیل با آدرس مختصر، دکمه باز کردن و دکمه اطلاعات
+    node.innerHTML = `
+        <div class="node-rect-content${address === userAddress ? ' node-main' : ''}" data-address="${address}">
+            <span class="wallet-short">${address === userAddress ? 'شما' : (address.slice(0, 6) + '...' + address.slice(-4))}</span>
+            <button class="info-btn" title="نمایش اطلاعات" data-address="${address}"><i class="bi bi-chat-left-text"></i></button>
+            ${level < maxLevels ? `<button class="expand-btn" data-address="${address}">+</button>` : ''}
         </div>
     `;
+    // دکمه اطلاعات (کامنت)
+    const infoBtn = node.querySelector('.info-btn');
+    if (infoBtn) {
+        infoBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            let infoBox = node.querySelector('.node-info-box');
+            if (infoBox) {
+                infoBox.remove();
+                return;
+            }
+            infoBox = document.createElement('div');
+            infoBox.className = 'node-info-box';
+            // اطلاعات نمونه: فروش چپ/راست، دریافتی، فعال بودن و ...
+            // اعداد به انگلیسی نمایش داده شوند و لیبل‌ها خوانا باشند
+            const leftSale = user.leftSale !== undefined && user.leftSale !== null ? Number(user.leftSale).toLocaleString('en-US') : '-';
+            const rightSale = user.rightSale !== undefined && user.rightSale !== null ? Number(user.rightSale).toLocaleString('en-US') : '-';
+            const receivedAmount = user.receivedAmount !== undefined && user.receivedAmount !== null ? Number(user.receivedAmount).toLocaleString('en-US') : '-';
+            infoBox.innerHTML = `
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;"><b style='color:#39FF14;'>آدرس:</b> <span class="en-num" dir="ltr" style='color:#39FF14;text-align:left;'>${address}</span></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;"><b style='color:#39FF14;'>فعال:</b> <span style='color:#39FF14;'>${user.activated ? 'بله' : 'خیر'}</span></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;"><b style='color:#39FF14;'>معرف:</b> <span class="en-num" dir="ltr" style='color:#39FF14;text-align:left;'>${user.referrer && user.referrer !== ethers.constants.AddressZero ? user.referrer : 'ندارد'}</span></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;"><b style='color:#39FF14;'>فروش سمت چپ:</b> <span class="en-num left-sale" style='color:#39FF14;text-align:left;'>${leftSale}</span></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;"><b style='color:#39FF14;'>فروش سمت راست:</b> <span class="en-num right-sale" style='color:#39FF14;text-align:left;'>${rightSale}</span></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;"><b style='color:#39FF14;'>مقدار دریافتی:</b> <span class="en-num received-amount" style='color:#39FF14;text-align:left;'>${receivedAmount}</span></div>
+            `;
+            node.appendChild(infoBox);
+        });
+    }
+    // فقط با کلیک باز کن
+    if (level < maxLevels) {
+        const expandBtn = node.querySelector('.expand-btn');
+        if (expandBtn) {
+            expandBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                expandBtn.disabled = true;
+                expandBtn.textContent = '...';
+                // ساخت زیرمجموعه‌ها (چپ و راست)
+                const childrenWrapper = document.createElement('div');
+                childrenWrapper.className = 'children-rect';
+                // چپ
+                if (user.left && user.left !== ethers.constants.AddressZero) {
+                    const leftUser = await fetchUserNode(user.left);
+                    const leftNode = await renderNetworkTree(leftUser, user.left, level + 1, maxLevels);
+                    childrenWrapper.appendChild(leftNode);
+                } else {
+                    const emptyNode = document.createElement('div');
+                    emptyNode.className = 'tree-node-rect';
+                    emptyNode.innerHTML = `<div class=\"node-rect-content node-inactive\"><span class=\"wallet-short\">خالی</span></div>`;
+                    childrenWrapper.appendChild(emptyNode);
+                }
+                // راست
+                if (user.right && user.right !== ethers.constants.AddressZero) {
+                    const rightUser = await fetchUserNode(user.right);
+                    const rightNode = await renderNetworkTree(rightUser, user.right, level + 1, maxLevels);
+                    childrenWrapper.appendChild(rightNode);
+                } else {
+                    const emptyNode = document.createElement('div');
+                    emptyNode.className = 'tree-node-rect';
+                    emptyNode.innerHTML = `<div class=\"node-rect-content node-inactive\"><span class=\"wallet-short\">خالی</span></div>`;
+                    childrenWrapper.appendChild(emptyNode);
+                }
+                node.appendChild(childrenWrapper);
+                expandBtn.style.display = 'none';
+            });
+        }
+    }
+    return node;
 }
 
 // Event handlers
@@ -809,3 +941,69 @@ document.addEventListener('walletConnected', (event) => {
   setInterval(fetchPrices, 5000);
 });
 
+// نمایش موقت پیغام‌های وضعیت کیف پول (۲ ثانیه)
+function showWalletStatus(type) {
+    const warning = document.getElementById('wallet-status');
+    const success = document.getElementById('wallet-status-connected');
+    if (type === 'connected') {
+        if (warning) warning.style.display = 'none';
+        if (success) {
+            success.style.display = 'flex';
+            setTimeout(() => { success.style.display = 'none'; }, 2000);
+        }
+    } else if (type === 'disconnected') {
+        if (success) success.style.display = 'none';
+        if (warning) {
+            warning.style.display = 'flex';
+            setTimeout(() => { warning.style.display = 'none'; }, 2000);
+        }
+    }
+}
+
+// تابع updateWalletStatus به‌روزرسانی شد تا فقط showWalletStatus را صدا بزند
+function updateWalletStatus(connected) {
+    if (connected) {
+        showWalletStatus('connected');
+    } else {
+        showWalletStatus('disconnected');
+    }
+}
+
+// مقداردهی و نمایش اطلاعات پوینت‌ها در وضعیت حساب کاربری
+async function updatePointStatusUI() {
+    if (!contract || !userAddress) return;
+    try {
+        // ارزش هر پوینت (دلار)
+        const pointValueRaw = await contract.getPointValue(); // اصلاح نام تابع
+        const pointValue = Number(pointValueRaw) / 1e8;
+        const pointValueElem = document.getElementById('point-value-usd');
+        if (pointValueElem) pointValueElem.value = pointValue > 0 ? pointValue.toFixed(4) : '---';
+
+        // تعداد کل پوینت‌های سازمان
+        const orgTotalPointsRaw = await contract.totalPoints();
+        const orgTotalPoints = Number(orgTotalPointsRaw);
+        const orgTotalPointsElem = document.getElementById('org-total-points');
+        if (orgTotalPointsElem) orgTotalPointsElem.value = orgTotalPoints.toLocaleString('en-US');
+
+        // تعداد پوینت دریافتی کاربر
+        if (userData && userData.binaryPoints !== undefined) {
+            const userPoints = Number(userData.binaryPoints);
+            const userPointsElem = document.getElementById('user-received-points');
+            if (userPointsElem) userPointsElem.value = userPoints.toLocaleString('en-US');
+        }
+    } catch (e) {
+        console.error('خطا در بارگذاری اطلاعات پوینت:', e);
+    }
+}
+
+// فراخوانی این تابع بعد از loadUserData و loadSystemStats
+const origLoadUserData = loadUserData;
+loadUserData = async function() {
+    await origLoadUserData.apply(this, arguments);
+    updatePointStatusUI();
+};
+const origLoadSystemStats = loadSystemStats;
+loadSystemStats = async function() {
+    await origLoadSystemStats.apply(this, arguments);
+    updatePointStatusUI();
+};
