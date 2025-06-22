@@ -28,7 +28,7 @@ contract levelup is ERC20, ReentrancyGuard
         address[] public claimable; // کسانی که می‌تونن برداشت کنن
         uint256 public circulatingSupply;
         uint256 public totalDirectDeposits;
-
+        uint256 public regprice=20;
     // User structure
         struct User {
             uint256 index;
@@ -93,6 +93,15 @@ contract levelup is ERC20, ReentrancyGuard
         totalUsers = 1;
         _mint(msg.sender, 1000000 * 1e18);    }
      //@dev ساده‌ترین تابع دریافت قیمت فقط با Chainlink
+    function getRegistrationPrice() external view returns (uint256) {
+        // قیمت توکن بر حسب دلار با 8 رقم اعشار
+        uint256 tokenPriceUsd = getTokenPriceInUSD(); // 8 decimals
+        require(tokenPriceUsd > 0, "Token price is zero");
+        // 20 دلار با 8 اعشار = 20 * 1e8
+        uint256 usdAmount = 20 * 1e8;
+        // مقدار توکن مورد نیاز = (20 دلار * 1e18) / قیمت هر توکن (دلار)
+        return (usdAmount * 1e18) / tokenPriceUsd;
+    }
     function getPrice() public view returns (uint256) 
     {
         (, int256 price, , , ) = oracles[0].latestRoundData();
@@ -252,7 +261,7 @@ contract levelup is ERC20, ReentrancyGuard
         uint256 lvlUSD  = getTokenPriceInUSD();
         require(lvlUSD  > 0 && lvlUSD  < 1e10, "Unrealistic token price");
 
-        uint256 regprice = totalUsers <= 50 ? lvlUSD  * 20 : lvlUSD  * 100;
+        regprice = totalUsers <= 50 ? lvlUSD  * 20 : lvlUSD  * 100;
         regprice = regprice < 500 ? regprice + (totalUsers / 100) : 500;
         require(tokenAmount >= regprice, "Insufficient token amount");
 
@@ -409,6 +418,19 @@ contract levelup is ERC20, ReentrancyGuard
             current = indexToAddress[u.parent];
             depth++;
         }
+    }
+    // --- View functions for frontend swap ---
+    // تخمین تعداد توکن دریافتی برای مقدار مشخص MATIC
+    function estimateBuy(uint256 maticAmount) external view returns (uint256) {
+        uint256 price = _getTokenPrice();
+        require(price > 0, "Token price is zero");
+        return (maticAmount * 1e18) / price;
+    }
+    // تخمین مقدار MATIC دریافتی برای مقدار مشخص توکن
+    function estimateSell(uint256 tokenAmount) external view returns (uint256) {
+        uint256 price = _getTokenPrice();
+        require(price > 0, "Token price is zero");
+        return (tokenAmount * price) / 1e18;
     }
     receive() external payable {
         require(msg.value > 0, "Zero amount sent");

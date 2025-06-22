@@ -1,35 +1,38 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سیستم توکن LevelUp - پلتفرم پیشرفته تجارت و MLM</title>
+    <title data-i18n="page_title">سیستم توکن LevelUp - پلتفرم پیشرفته تجارت و MLM</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="css/style.css">
-    <meta name="description" content="پلتفرم پیشرفته تجارت توکن LevelUp با قابلیت‌های MLM، سواپ و شبکه‌سازی">
-    <meta name="keywords" content="توکن، کریپتو، MLM، سواپ، بلاک‌چین، پولیگان">
+    <meta name="description" data-i18n="meta_description" content="پلتفرم پیشرفته تجارت توکن LevelUp با قابلیت‌های MLM، سواپ و شبکه‌سازی">
+    <meta name="keywords" data-i18n="meta_keywords" content="توکن، کریپتو، MLM، سواپ، بلاک‌چین، پولیگان">
+    <style>
+@keyframes starPulse {
+  0% { transform: scale(1); filter: drop-shadow(0 0 0 #2196f3); }
+  50% { transform: scale(1.18); filter: drop-shadow(0 0 12px #2196f3); }
+  100% { transform: scale(1); filter: drop-shadow(0 0 0 #2196f3); }
+}
+.star-animated {
+  animation: starPulse 1.6s infinite;
+  transition: filter 0.3s;
+}
+</style>
 </head>
 <body>
   
-
-    </header> 
-   
+<div id="register-top-container" style="position:absolute;top:18px;left:32px;z-index:1000;">
+  <button id="register-top-btn" class="btn btn-primary btn-lg d-none">
+    ثبت‌نام <span id="register-price-badge" class="badge bg-light text-dark ms-2"></span>
+  </button>
+  <i id="star-icon" class="bi bi-star-fill text-primary star-animated d-none" style="font-size:2.2em;"></i>
+</div>
 
     <div class="container pt-4">
-        <div class="d-flex justify-content-end align-items-center gap-2 mb-3">
-            <select id="lang-select" class="form-select form-select-sm w-auto ms-2">
-                <option value="fa">فارسی</option>
-                <option value="en">English</option>
-                <option value="de">Deutsch</option>
-                <option value="tr">Türkçe</option>
-                <option value="fr">Français</option>
-            </select>
-            <!-- دکمه اتصال کیف پول حذف شد -->
-        </div>
-        <!-- پیغام‌های اتصال کیف پول حذف شد -->
-    </div>
+        
 
     <div class="container py-4">
         <!-- هدر اصلی -->
@@ -38,16 +41,16 @@
                 <h1 class="display-3 fw-bold mb-3">
                     <span class="text-gradient">  LevelUp </span>
                 </h1>
-                <p class="lead fs-4 mb-4">پلتفرم پیشرفته تجارت و شبکه‌سازی هوشمند</p>
+                <p class="lead fs-4 mb-4" data-i18n="main_banner">پلتفرم پیشرفته تجارت و شبکه‌سازی هوشمند</p>
                 <div class="d-flex justify-content-center gap-3 flex-wrap">
                     <span class="badge badge-gradient fs-6 px-3 py-2">
-                        <i class="bi bi-shield-check"></i> <span class="en-number">امن و قابل اعتماد</span>
+                        <i class="bi bi-shield-check"></i> <span class="en-number" data-i18n="badge_secure">امن و قابل اعتماد</span>
                     </span>
                     <span class="badge badge-gradient fs-6 px-3 py-2">
-                        <i class="bi bi-lightning"></i> <span class="en-number">سریع و کارآمد</span>
+                        <i class="bi bi-lightning"></i> <span class="en-number" data-i18n="badge_fast">سریع و کارآمد</span>
                     </span>
                     <span class="badge badge-gradient fs-6 px-3 py-2">
-                        <i class="bi bi-people"></i> <span class="en-number">شبکه‌سازی هوشمند</span>
+                        <i class="bi bi-people"></i> <span class="en-number" data-i18n="badge_network">شبکه‌سازی هوشمند</span>
                     </span>
                 </div>
             </div>
@@ -60,102 +63,125 @@
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h3 class="fw-bold mb-0">
                             <i class="bi bi-wallet2 text-primary"></i>
-                            وضعیت حساب کاربری
+                            <span data-i18n="account_status">وضعیت حساب کاربری</span>
                         </h3>
                         <div id="network-status" class="badge bg-success">
-                            <i class="bi bi-wifi"></i> متصل به پولیگان
+                            <i class="bi bi-wifi"></i> <span data-i18n="connected_polygon">متصل به پولیگان</span>
                         </div>
                     </div>
                     
                     <div class="d-grid gap-2 mb-4">
                         
                     </div>
-                    
-                    <!-- وضعیت حساب کاربری (Expandable) -->
+  
+                     <!-- اطلاعات کلی حساب (Expandable) -->
 <div class="user-status-card mb-4">
-  <div class="card-header d-flex justify-content-between align-items-center" style="cursor:pointer;" data-bs-toggle="collapse" data-bs-target="#user-status-list" aria-expanded="true" aria-controls="user-status-list">
-    <span><i class="bi bi-person-badge me-2"></i>وضعیت حساب کاربری</span>
-    <i class="bi bi-chevron-down" id="user-status-chevron"></i>
+  <div class="card-header d-flex justify-content-between align-items-center" style="cursor:pointer;" data-bs-toggle="collapse" data-bs-target="#user-status-list-1" aria-expanded="true" aria-controls="user-status-list-1">
+    <span><i class="bi bi-person-badge me-2"></i>اطلاعات کلی حساب</span>
+    <i class="bi bi-chevron-down" id="user-status-chevron-1"></i>
   </div>
-  <div id="user-status-list" class="collapse show">
+  <div id="user-status-list-1" class="collapse show">
     <ul class="list-group list-group-flush">
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <span>آدرس کیف پول</span>
-        <input id="wallet-address" class="form-control form-control-sm text-end en-number" readonly>
-      </li>
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <span>معرف شما</span>
-        <input id="my-referrer" class="form-control form-control-sm text-end en-number" readonly>
-      </li>
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <span>مقدار خرید</span>
-        <input id="purchase-amount" class="form-control form-control-sm text-end en-number" readonly>
-      </li>
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <span>سقف درآمد روزانه</span>
-        <input id="daily-cap" class="form-control form-control-sm text-end en-number" readonly>
-      </li>
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <span>وضعیت فعالسازی</span>
-        <div id="activation-status" class="w-100"></div>
-      </li>
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <span>موجودی LVL</span>
-        <input id="token-balance" class="form-control form-control-sm text-end en-number" readonly>
-      </li>
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <span>ارزش دلاری LVL</span>
-        <input id="Tusd-value" class="form-control form-control-sm text-end en-number" readonly>
-      </li>
       <li class="list-group-item d-flex justify-content-between align-items-center">
         <span>قیمت LVL (دلار)</span>
         <input id="token-price-userbox" class="form-control form-control-sm text-end en-number" readonly>
       </li>
       <li class="list-group-item d-flex justify-content-between align-items-center">
-        <span>ارزش دلاری MATIC</span>
+        <span>ارزش هر پوینت (دلار)</span>
+        <input id="point-value-usd" class="form-control form-control-sm text-end en-number" readonly>
+      </li>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <span>تعداد کل پوینت‌های سازمان</span>
+        <input id="org-total-points" class="form-control form-control-sm text-end en-number" readonly>
+      </li>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <span>تعداد پوینت دریافتی شما</span>
+        <input id="user-received-points" class="form-control form-control-sm text-end en-number" readonly>
+      </li>
+      <!-- رفرال لینک مختصر و خلاصه با دکمه کپی -->
+        <div class="input-group input-group-sm flex-nowrap w-100 mb-2">
+  
+          </button>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>                   
+
+                    
+                    <!-- وضعیت حساب کاربری (Expandable) -->
+<div class="user-status-card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center" style="cursor:pointer;" data-bs-toggle="collapse" data-bs-target="#user-status-list-2" aria-expanded="true" aria-controls="user-status-list-2">
+    <span><i class="bi bi-person-badge me-2"></i>جزئیات حساب و ارجاع</span>
+    <i class="bi bi-chevron-down" id="user-status-chevron-2"></i>
+  </div>
+  <div id="user-status-list-2" class="collapse show">
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <span>WALLET ADDRESS :</span>
+        <input id="wallet-address" class="form-control form-control-sm text-end en-number" readonly>
+      </li>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <span>YOUR REFERRER :</span>
+        <input id="my-referrer" class="form-control form-control-sm text-end en-number" readonly>
+      </li>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <span>VALUE OF PURCHASE</span>
+        <input id="purchase-amount" class="form-control form-control-sm text-end en-number" readonly>
+      </li>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <span>DAILY MAX CAP :</span>
+        <input id="daily-cap" class="form-control form-control-sm text-end en-number" readonly>
+      </li>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <span>MY LVL :</span>
+        <input id="token-balance" class="form-control form-control-sm text-end en-number" readonly>
+      </li>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <span>LVL_USD :</span>
+        <input id="Tusd-value" class="form-control form-control-sm text-end en-number" readonly>
+      </li>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <span>POL_USD : </span>
         <input id="Musd-value" class="form-control form-control-sm text-end en-number" readonly>
       </li>
       <li class="list-group-item d-flex justify-content-between align-items-center">
-        <span>موجودی MATIC</span>
+        <span>MY POL :</span>
         <input id="matic-balance" class="form-control form-control-sm text-end en-number" readonly>
       </li>
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <span>ارزش هر پوینت (دلار)</span>
-        <input id="point-value-usd" class="form-control form-control-sm text-end en-number" readonly>
-        </li>
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-        <span>تعداد کل پوینت‌های سازمان</span>
-        <input id="org-total-points" class="form-control form-control-sm text-end en-number" readonly>
-        </li>
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-        <span>تعداد پوینت دریافتی شما</span>
-        <input id="user-received-points" class="form-control form-control-sm text-end en-number" readonly>
-        </li>
-        <span>لینک رفرال شما</span>
-        <div class="input-group input-group-sm flex-nowrap">
-          <input id="referral-link-list" class="form-control text-end en-number" readonly>
-          <button class="btn btn-glass" type="button" onclick="copyToClipboard('referral-link-list')" title="کپی لینک"><i class="bi bi-clipboard"></i></button>
+      <!-- رفرال لینک مختصر و خلاصه با دکمه کپی -->
+      <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
+        <span class="mb-2"><i class="bi bi-link-45deg"></i> لینک دعوت شما</span>
+        <div class="input-group input-group-sm flex-nowrap w-100 mb-2">
+          <input id="referral-link-list" class="form-control text-end en-number bg-light border-0 rounded-start" readonly style="font-size:0.95em;direction:ltr;" value="https://lvlup.ir/r/abc123">
+          <button class="btn btn-primary rounded-end" type="button" onclick="copyToClipboard('referral-link-list')" title="کپی لینک">
+            <i class="bi bi-clipboard"></i> کپی
+          </button>
         </div>
+        <small class="text-muted w-100" style="font-size:0.85em;">این لینک را با دوستان خود به اشتراک بگذارید و امتیاز بگیرید.</small>
       </li>
     </ul>
   </div>
 </div>
 <script>
-// تغییر آیکون باز/بسته شدن لیست وضعیت حساب کاربری
-const userStatusHeader = document.querySelector('[data-bs-target="#user-status-list"]');
-const userStatusChevron = document.getElementById('user-status-chevron');
-const userStatusCollapse = document.getElementById('user-status-list');
-if(userStatusHeader && userStatusChevron && userStatusCollapse) {
-  userStatusCollapse.addEventListener('show.bs.collapse', () => {
-    userStatusChevron.classList.remove('bi-chevron-right');
-    userStatusChevron.classList.add('bi-chevron-down');
-  });
-  userStatusCollapse.addEventListener('hide.bs.collapse', () => {
-    userStatusChevron.classList.remove('bi-chevron-down');
-    userStatusChevron.classList.add('bi-chevron-right');
-  });
+// تغییر آیکون باز/بسته شدن لیست وضعیت حساب کاربری برای هر لیست به صورت جداگانه
+function setupUserStatusCollapse(collapseId, chevronId) {
+  const userStatusHeader = document.querySelector(`[data-bs-target="#${collapseId}"]`);
+  const userStatusChevron = document.getElementById(chevronId);
+  const userStatusCollapse = document.getElementById(collapseId);
+  if(userStatusHeader && userStatusChevron && userStatusCollapse) {
+    userStatusCollapse.addEventListener('show.bs.collapse', () => {
+      userStatusChevron.classList.remove('bi-chevron-right');
+      userStatusChevron.classList.add('bi-chevron-down');
+    });
+    userStatusCollapse.addEventListener('hide.bs.collapse', () => {
+      userStatusChevron.classList.remove('bi-chevron-down');
+      userStatusChevron.classList.add('bi-chevron-right');
+    });
+  }
 }
+setupUserStatusCollapse('user-status-list-1', 'user-status-chevron-1');
+setupUserStatusCollapse('user-status-list-2', 'user-status-chevron-2');
 </script>
                     <!-- پایان وضعیت حساب کاربری -->
                 </div>
@@ -193,25 +219,19 @@ if(userStatusHeader && userStatusChevron && userStatusCollapse) {
                         <li class="nav-item" role="presentation">
                             <button class="nav-link active" id="swap-tab" data-bs-toggle="pill" data-bs-target="#swap-content" type="button" role="tab">
                                 <i class="bi bi-arrow-left-right"></i>
-                                <span data-i18n="سواپ توکن">سواپ توکن</span>
+                                سواپ توکن
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="network-tab" data-bs-toggle="pill" data-bs-target="#network-content" type="button" role="tab">
                                 <i class="bi bi-diagram-3"></i>
-                                <span data-i18n="شبکه زیرمجموعه">شبکه زیرمجموعه</span>
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="register-tab" data-bs-toggle="pill" data-bs-target="#register-content" type="button" role="tab">
-                                <i class="bi bi-person-plus"></i>
-                                <span data-i18n="ثبت‌نام و فعال‌سازی">ثبت‌نام و فعال‌سازی</span>
+                                شبکه زیرمجموعه
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="analytics-tab" data-bs-toggle="pill" data-bs-target="#analytics-content" type="button" role="tab">
                                 <i class="bi bi-bar-chart"></i>
-                                <span data-i18n="آمار و تحلیل">آمار و تحلیل</span>
+                                آمار و تحلیل
                             </button>
                         </li>
                     </ul>
@@ -225,7 +245,6 @@ if(userStatusHeader && userStatusChevron && userStatusCollapse) {
                                     <i class="bi bi-arrow-left-right text-primary"></i>
                                     سواپ هوشمند توکن
                                 </h3>
-                                
                                 <div class="row justify-content-center">
                                     <div class="col-lg-6">
                                         <!-- From Token -->
@@ -235,32 +254,32 @@ if(userStatusHeader && userStatusChevron && userStatusCollapse) {
                                                 <div class="dropdown">
                                                     <button class="btn btn-outline-primary dropdown-toggle" type="button" id="fromTokenDropdown" data-bs-toggle="dropdown">
                                                         <img src="" width="20" height="20" class="me-2">
-                                                        MATIC
+                                                        <span data-i18n="matic">MATIC</span>
                                                     </button>
                                                     <ul class="dropdown-menu">
                                                         <li><a class="dropdown-item" href="#" data-token="MATIC">
                                                             <img src="" width="20" height="20" class="me-2">
-                                                            MATIC
+                                                            <span data-i18n="matic">MATIC</span>
                                                         </a></li>
                                                         <li><a class="dropdown-item" href="#" data-token="LVL">
                                                             <div class="bg-primary rounded-circle d-inline-block me-2" style="width: 20px; height: 20px;"></div>
-                                                            LVL
+                                                            <span data-i18n="lvl">LVL</span>
                                                         </a></li>
                                                     </ul>
                                                 </div>
                                             </div>
                                             <div class="input-group">
                                                 <input type="number" id="from-amount" class="form-control form-control-lg" placeholder="0.0" min="0" step="0.000001">
-                                                <button class="btn btn-outline-secondary" onclick="setMaxAmount('from')">MAX</button>
+                                                <button class="btn btn-outline-secondary" onclick="setMaxAmount('from')" data-i18n="max_btn">MAX</button>
                                             </div>
                                             <div class="text-muted mt-2">
-                                                موجودی: <span id="from-balance">0.0000</span>
+                                                <span data-i18n="balance">موجودی:</span> <span id="from-balance">0.0000</span>
                                             </div>
                                         </div>
 
                                         <!-- Swap Arrow -->
                                         <div class="swap-arrow">
-                                            <button class="swap-arrow-btn" onclick="swapTokens()">
+                                            <button class="swap-arrow-btn" onclick="swapTokens()" title="تغییر جهت" data-i18n-title="swap_direction">
                                                 <i class="bi bi-arrow-down-up"></i>
                                             </button>
                                         </div>
@@ -268,42 +287,42 @@ if(userStatusHeader && userStatusChevron && userStatusCollapse) {
                                         <!-- To Token -->
                                         <div class="swap-input-group">
                                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                                <label class="form-label fw-semibold mb-0">به:</label>
+                                                <label class="form-label fw-semibold mb-0" data-i18n="to_label">به:</label>
                                                 <div class="dropdown">
                                                     <button class="btn btn-outline-primary dropdown-toggle" type="button" id="toTokenDropdown" data-bs-toggle="dropdown">
                                                         <div class="bg-primary rounded-circle d-inline-block me-2" style="width: 20px; height: 20px;"></div>
-                                                        LVL
+                                                        <span data-i18n="lvl">LVL</span>
                                                     </button>
                                                     <ul class="dropdown-menu">
                                                         <li><a class="dropdown-item" href="#" data-token="MATIC">
                                                             <img src="" width="20" height="20" class="me-2">
-                                                            MATIC
+                                                            <span data-i18n="matic">MATIC</span>
                                                         </a></li>
                                                         <li><a class="dropdown-item" href="#" data-token="LVL">
                                                             <div class="bg-primary rounded-circle d-inline-block me-2" style="width: 20px; height: 20px;"></div>
-                                                            LVL
+                                                            <span data-i18n="lvl">LVL</span>
                                                         </a></li>
                                                     </ul>
                                                 </div>
                                             </div>
                                             <input type="text" id="to-amount" class="form-control form-control-lg" placeholder="0.0" readonly>
                                             <div class="text-muted mt-2">
-                                                موجودی: <span id="to-balance">0.0000</span>
+                                                <span data-i18n="balance">موجودی:</span> <span id="to-balance">0.0000</span>
                                             </div>
                                         </div>
 
                                         <!-- Swap Info -->
                                         <div class="swap-info-box">
                                             <div class="d-flex justify-content-between mb-2">
-                                                <span>نرخ تبدیل:</span>
+                                                <span data-i18n="exchange_rate">نرخ تبدیل:</span>
                                                 <span id="exchange-rate">1 MATIC = 0 LVL</span>
                                             </div>
                                             <div class="d-flex justify-content-between mb-2">
-                                                <span>کارمزد شبکه:</span>
+                                                <span data-i18n="network_fee">کارمزد شبکه:</span>
                                                 <span id="network-fee">~0.001 MATIC</span>
                                             </div>
                                             <div class="d-flex justify-content-between">
-                                                <span>تاثیر قیمت:</span>
+                                                <span data-i18n="price_impact">تاثیر قیمت:</span>
                                                 <span id="price-impact" class="text-success">< 0.01%</span>
                                             </div>
                                         </div>
@@ -311,7 +330,7 @@ if(userStatusHeader && userStatusChevron && userStatusCollapse) {
                                         <!-- Swap Button -->
                                         <button id="swap-button" class="btn btn-primary btn-lg w-100" disabled>
                                             <i class="bi bi-arrow-left-right"></i>
-                                            اتصال کیف پول
+                                            <span data-i18n="connect_wallet_btn">اتصال کیف پول</span>
                                         </button>
                                     </div>
                                 </div>
@@ -368,73 +387,6 @@ if(userStatusHeader && userStatusChevron && userStatusCollapse) {
                                                     <div class="loading-spinner mb-3"></div>
                                                     <p class="text-muted">در حال بارگذاری درخت شبکه...</p>
                                                 </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- تب ثبت‌نام -->
-                        <div class="tab-pane fade" id="register-content" role="tabpanel">
-                            <div class="row justify-content-center">
-                                <div class="col-lg-8">
-                                    <div class="card">
-                                        <div class="card-header bg-primary text-white">
-                                            <h4 class="mb-0">
-                                                <i class="bi bi-person-plus"></i>
-                                                ثبت‌نام و فعال‌سازی حساب
-                                            </h4>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="alert alert-info">
-                                                <i class="bi bi-info-circle"></i>
-                                                برای استفاده از تمامی امکانات سیستم، باید حساب خود را با حداقل 
-                                                <strong id="min-activation">20$</strong> MATIC فعال کنید.
-                                            </div>
-                                            
-                                            <div class="row g-4">
-                                                <div class="col-md-6">
-                                                    <label class="form-label fw-semibold">آدرس معرف (اختیاری):</label>
-                                                    <input type="text" id="referrer-address" class="form-control" placeholder="0x...">
-                                                    <div class="form-text">
-                                                        <i class="bi bi-lightbulb"></i>
-                                                        اگر کسی شما را معرفی کرده، آدرس او را وارد کنید
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label class="form-label fw-semibold">مقدار MATIC برای فعال‌سازی:</label>
-                                                    <div class="input-group">
-                                                        <input type="number" id="activation-amount" class="form-control" min="0.1" step="0.01" value="0.1">
-                                                        <span class="input-group-text">MATIC</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="d-grid gap-2 mt-4">
-                                                <button id="register-activate" class="btn btn-primary btn-lg" disabled>
-                                                    <i class="bi bi-person-check"></i>
-                                                    ثبت‌نام و فعال‌سازی
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="card mt-4">
-                                        <div class="card-header bg-warning">
-                                            <h5 class="mb-0">
-                                                <i class="bi bi-shield-check"></i>
-                                                وضعیت فعال‌سازی
-                                            </h5>
-                                        </div>
-                                        <div class="card-body">
-                                            <div id="activation-status" class="alert alert-warning">
-                                                <i class="bi bi-exclamation-triangle"></i>
-                                                حساب شما فعال نشده است
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label fw-semibold">معرف شما:</label>
-                                                <input type="text" id="my-referrer" class="form-control" readonly>
                                             </div>
                                         </div>
                                     </div>
@@ -595,13 +547,25 @@ document.addEventListener('DOMContentLoaded', fixEnNumbers);
                 }
             }
 
-            // هماهنگ‌سازی انتخاب زبان با i18n.js
+            // هماهنگ‌سازی انتخاب زبان با i18n.js و تغییر جهت و زبان سایت
             const langSelect = document.getElementById('lang-select');
+            function setHtmlLangDir(lang) {
+                if(lang === 'fa') {
+                    document.documentElement.lang = 'fa';
+                    document.documentElement.dir = 'rtl';
+                    document.body.classList.add('fa-font'); // اگر فونت فارسی دارید
+                } else {
+                    document.documentElement.lang = 'en';
+                    document.documentElement.dir = 'ltr';
+                    document.body.classList.remove('fa-font');
+                }
+            }
             if(langSelect) {
-                langSelect.value = document.documentElement.lang || 'fa';
+                langSelect.value = document.documentElement.lang || 'en';
+                setHtmlLangDir(langSelect.value);
                 langSelect.addEventListener('change', function() {
                     setLanguage(this.value);
-                    // مقدار value را همزمان با تغییر زبان ست کن
+                    setHtmlLangDir(this.value);
                     langSelect.value = this.value;
                 });
             }
@@ -612,5 +576,14 @@ document.addEventListener('DOMContentLoaded', fixEnNumbers);
             }
         });
     </script>
+
+    <!-- Google Translate Widget -->
+    <div id="google_translate_element"></div>
+    <script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({pageLanguage: 'fa', includedLanguages: 'en,fa,de,tr,fr', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
+    }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </body>
 </html>

@@ -14,8 +14,11 @@ let chartRange = '1d';
 // --- آغاز اجرا ---
 document.addEventListener('DOMContentLoaded', async () => {
     await initializeApp();
+    await loadRegistrationPrice(); // مقداردهی اولیه ثبت‌نام
     initializeChart();
     setupEventListeners();
+    // فراخوانی نمایش دکمه ثبت‌نام بالای صفحه پس از مقداردهی اولیه
+    await updateRegisterTopButton();
 
     if (window.ethereum) {
         try {
@@ -47,6 +50,33 @@ async function initializeApp() {
     console.error('خطا در راه‌اندازی اپلیکیشن:', error);
     showPersistentAlert('خطا در راه‌اندازی اپلیکیشن: ' + error.message, 'error');
   }
+}
+
+// --- مقداردهی داینامیک ثبت‌نام و فعالسازی ---
+let registrationPrice = 0;
+
+async function loadRegistrationPrice() {
+    if (!window.contract) return;
+    try {
+        registrationPrice = await window.contract.getRegistrationPrice();
+        // مقداردهی input و پیام هشدار
+        const activationInput = document.getElementById('activation-amount');
+        const activationAlert = document.getElementById('activation-alert');
+        if (activationInput) {
+            activationInput.value = registrationPrice;
+            activationInput.min = registrationPrice;
+            activationInput.max = registrationPrice;
+            activationInput.step = 'any';
+            // اگر کاربر مقدار را تغییر داد، به مقدار صحیح برگردد
+            activationInput.addEventListener('input', function() {
+                if (this.value != registrationPrice) this.value = registrationPrice;
+            });
+        }
+        if (activationAlert) activationAlert.textContent = `مقدار ثبت‌نام: ${registrationPrice} توکن LVL (دریافت شده از قرارداد)`;
+        await afterWalletOrRegisterUpdate();
+    } catch (e) {
+        console.error('خطا در دریافت قیمت ثبت‌نام:', e);
+    }
 }
 
 // --- مقداردهی چارت ---
@@ -253,6 +283,8 @@ async function setupWallet(address) {
         
         // فعال کردن دکمه‌ها
         enableButtons();
+        // نمایش دکمه ثبت‌نام بالای صفحه
+        await afterWalletOrRegisterUpdate();
         
         // ارسال event برای اطلاع سایر کامپوننت‌ها
         document.dispatchEvent(new CustomEvent('walletConnected', { detail: { address } }));
@@ -408,7 +440,7 @@ async function loadUserData() {
 // بروزرسانی وضعیت فعالسازی
 function updateActivationStatus() {
     const activationStatus = document.getElementById('activation-status');
-    
+    if (!activationStatus) return;
     if (userData.activated) {
         activationStatus.className = 'alert alert-success d-flex align-items-center';
         activationStatus.innerHTML = '<i class="bi bi-check-circle me-2"></i> حساب شما فعال شده است';
@@ -620,48 +652,33 @@ async function updateTokenPrice() {
 async function registerAndActivate() {
     const referrerAddress = document.getElementById('referrer-address').value.trim();
     const activationAmount = document.getElementById('activation-amount').value;
-    lvlusd=await contract.getTokenPriceInUSD();
-    if (!activationAmount || parseFloat(activationAmount) <= lvlusd*20) {
-        showToast('لطفا مقدار معتبری برای فعالسازی وارد کنید', 'error');
+    // فقط مقدار دقیق مجاز است
+    if (!activationAmount || parseFloat(activationAmount) !== parseFloat(registrationPrice)) {
+        showPersistentAlert(`مقدار ثبت‌نام باید دقیقا ${registrationPrice} توکن LVL باشد.`, 'warning');
         return;
     }
-    
     try {
         showTransactionModal('در حال پردازش ثبت نام و فعالسازی...');
-        
         let tx;
-        const value = ethers.utils.parseEther(activationAmount);
-        
         if (referrerAddress && ethers.utils.isAddress(referrerAddress)) {
-            tx = await contract.registerAndActivate(referrerAddress, { value });
+            tx = await contract.registerAndActivate(referrerAddress, activationAmount);
         } else {
-            tx = await contract.registerAndActivate(ethers.constants.AddressZero, { value });
+            tx = await contract.registerAndActivate(ethers.constants.AddressZero, activationAmount);
         }
-        
         updateTransactionMessage('در انتظار تایید تراکنش...');
         await tx.wait();
-        
-        // بروزرسانی داده‌ها
         await Promise.all([
             loadUserData(),
             loadBalances(),
             loadSystemStats()
         ]);
-        
         hideTransactionModal();
         showToast('ثبت نام و فعالسازی با موفقیت انجام شد!', 'success');
-        
+        await afterWalletOrRegisterUpdate();
     } catch (error) {
         hideTransactionModal();
-        console.error("خطا در ثبت نام:", error);
-        
         let errorMessage = 'خطا در ثبت نام و فعالسازی';
-        if (error.message.includes('insufficient funds')) {
-            errorMessage = 'موجودی کافی نیست';
-        } else if (error.message.includes('user rejected')) {
-            errorMessage = 'تراکنش توسط کاربر لغو شد';
-        }
-        
+        if (error.message && error.message.includes('insufficient funds')) { errorMessage = 'موجودی کافی نیست.'; }
         showToast(errorMessage, 'error');
     }
 }
@@ -840,15 +857,78 @@ function handleDisconnect() {
     showToast('اتصال قطع شد', 'warning');
 }
 
+// --- کنترل نمایش دکمه ثبت‌نام بالای صفحه و ستاره ---
+async function updateRegisterTopButton() {
+    const btn = document.getElementById('register-top-btn');
+    const badge = document.getElementById('register-price-badge');
+    const star = document.getElementById('star-icon');
+    if (!btn || !badge || !star) return;
+    // اگر اطلاعات کیف پول یا قرارداد آماده نیست، دکمه را مخفی نگه دار
+    if (!userAddress || !contract) {
+        btn.classList.add('d-none');
+        badge.classList.add('d-none');
+        star.classList.add('d-none');
+        badge.textContent = '';
+        return;
+    }
+    let isRegistered = false;
+    let userLvlBalance = 0;
+    let requiredTokenAmount = 0;
+    try {
+        const user = await contract.users(userAddress);
+        isRegistered = user.activated;
+        userLvlBalance = await contract.balanceOf(userAddress);
+        userLvlBalance = parseFloat(ethers.utils.formatUnits(userLvlBalance, 18));
+        // مقدار دقیق توکن مورد نیاز برای ثبت‌نام (بر حسب LVL)
+        const regPriceRaw = await contract.getRegistrationPrice();
+        console.log('getRegistrationPrice raw:', regPriceRaw.toString());
+        requiredTokenAmount = parseFloat(ethers.utils.formatUnits(regPriceRaw, 18));
+        console.log('requiredTokenAmount:', requiredTokenAmount);
+        console.log('userLvlBalance:', userLvlBalance);
+    } catch (e) {
+        console.error('خطا در دریافت مقدار ثبت‌نام یا موجودی:', e);
+        badge.textContent = '';
+        btn.classList.add('d-none');
+        badge.classList.add('d-none');
+        star.classList.add('d-none');
+        return;
+    }
+    // نمایش مقدار دقیق توکن مورد نیاز با ۴ رقم اعشار
+    badge.textContent = requiredTokenAmount ? (requiredTokenAmount.toFixed(4) + ' LVL') : '';
+    console.log('badge.textContent:', badge.textContent);
+    if (!isRegistered) {
+        btn.classList.remove('d-none');
+        badge.classList.remove('d-none');
+        star.classList.add('d-none');
+        if (userLvlBalance >= requiredTokenAmount && requiredTokenAmount > 0) {
+            btn.disabled = false;
+        } else {
+            btn.disabled = true;
+        }
+    } else {
+        btn.classList.add('d-none');
+        badge.classList.add('d-none');
+        star.classList.remove('d-none');
+    }
+}
+
+// فراخوانی پس از مقداردهی اولیه و پس از ثبت‌نام
+async function afterWalletOrRegisterUpdate() {
+    await updateRegisterTopButton();
+}
+
 // Utility functions
 function enableButtons() {
-    document.getElementById('register-activate').disabled = false;
+    const regBtn = document.getElementById('register-activate');
+    if (regBtn) regBtn.disabled = false;
     // سایر دکمه‌ها...
 }
 
 function disableButtons() {
-    document.getElementById('register-activate').disabled = true;
-    document.getElementById('claim-binary').disabled = true;
+    const regBtn = document.getElementById('register-activate');
+    if (regBtn) regBtn.disabled = true;
+    const claimBtn = document.getElementById('claim-binary');
+    if (claimBtn) claimBtn.disabled = true;
     // سایر دکمه‌ها...
 }
 

@@ -62,6 +62,33 @@ body {
   text-align: right;
 }
 
+/* اطمینان از چپ‌چین بودن سایت در حالت انگلیسی */
+html[dir="ltr"] body,
+html[dir="ltr"] .container,
+html[dir="ltr"] .row,
+html[dir="ltr"] .card,
+html[dir="ltr"] .glass-card,
+html[dir="ltr"] .user-status-card,
+html[dir="ltr"] .form-control,
+html[dir="ltr"] .list-group-item {
+  direction: ltr !important;
+  text-align: left !important;
+}
+
+html[dir="ltr"] .text-end {
+  text-align: right !important;
+}
+
+html[dir="ltr"] .en-number {
+  direction: ltr !important;
+  text-align: left !important;
+}
+
+/* اگر نیاز به فونت انگلیسی خاص دارید اینجا اضافه کنید */
+html[dir="ltr"] body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
 /* گلس مورفیسم پیشرفته */
 .glass-card {
   background: rgba(255,255,255,0.18);
