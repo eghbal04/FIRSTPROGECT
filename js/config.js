@@ -4,10 +4,10 @@ if (typeof ethers === 'undefined') {
 }
 
 // آدرس قرارداد بروزرسانی شده
-const CONTRACT_ADDRESS = "0xd7B9480F7ceac87a8AC3AF12F5c99Aa19e5f802e";
+const CONTRACT_ADDRESS = "0xc36931478e5d87d2eDFAFEe153E66d18534BE9d8";
 
 // ABI کامل و بروزرسانی شده
-const LEVELUP_ABI =[
+const LEVELUP_ABI = [
 	{
 		"inputs": [],
 		"stateMutability": "nonpayable",
@@ -1182,7 +1182,6 @@ const LEVELUP_ABI =[
 		"type": "receive"
 	}
 ];
-
 // تنظیمات شبکه
 const NETWORK_CONFIG = {
 	chainId: '0x89', // Polygon Mainnet

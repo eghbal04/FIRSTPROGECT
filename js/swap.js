@@ -80,11 +80,11 @@ class SwapManager {
   getTokenInfo(token) {
       const tokens = {
           'MATIC': {
-              icon: '<img src="https://cryptologos.cc/logos/polygon-matic-logo.png" width="20" height="20" class="me-2">',
+              icon: '<img src="/css/matic.png" width="20" height="20" class="me-2">',
               decimals: 18
           },
           'LVL': {
-              icon: '<div class="bg-primary rounded-circle d-inline-block me-2" style="width: 20px; height: 20px;"></div>',
+              icon: '<img src="/css/level up.png" width="20" height="20" class="me-2">',
               decimals: 18
           }
       };
@@ -105,15 +105,15 @@ class SwapManager {
 
           // Update UI
           if (this.fromToken === 'MATIC') {
-              document.getElementById('from-balance').textContent = parseFloat(maticFormatted).toFixed(4);
+              document.getElementById('from-balance').textContent = parseFloat(maticFormatted).toFixed(10);
           } else {
-              document.getElementById('from-balance').textContent = parseFloat(lvlFormatted).toFixed(4);
+              document.getElementById('from-balance').textContent = parseFloat(lvlFormatted).toFixed(10);
           }
 
           if (this.toToken === 'LVL') {
-              document.getElementById('to-balance').textContent = parseFloat(lvlFormatted).toFixed(4);
+              document.getElementById('to-balance').textContent = parseFloat(lvlFormatted).toFixed(10);
           } else {
-              document.getElementById('to-balance').textContent = parseFloat(maticFormatted).toFixed(4);
+              document.getElementById('to-balance').textContent = parseFloat(maticFormatted).toFixed(10);
           }
 
       } catch (error) {
@@ -134,21 +134,21 @@ class SwapManager {
 
           if (this.fromToken === 'MATIC' && this.toToken === 'LVL') {
               // MATIC to LVL
-              const maticWei = ethers.utils.parseEther(this.fromAmount.toString());
+              const maticWei = ethers.utils.parseEther(this.fromAmount.toFixed(18));
               toAmount = await contract.estimateBuy(maticWei);
               const toAmountFormatted = ethers.utils.formatEther(toAmount);
               rate = parseFloat(toAmountFormatted) / this.fromAmount;
               
-              document.getElementById('to-amount').value = parseFloat(toAmountFormatted).toFixed(6);
+              document.getElementById('to-amount').value = parseFloat(toAmountFormatted).toFixed(10);
               
           } else if (this.fromToken === 'LVL' && this.toToken === 'MATIC') {
               // LVL to MATIC
-              const lvlWei = ethers.utils.parseEther(this.fromAmount.toString());
+              const lvlWei = ethers.utils.parseEther(this.fromAmount.toFixed(18));
               toAmount = await contract.estimateSell(lvlWei);
               const toAmountFormatted = ethers.utils.formatEther(toAmount);
               rate = parseFloat(toAmountFormatted) / this.fromAmount;
               
-              document.getElementById('to-amount').value = parseFloat(toAmountFormatted).toFixed(6);
+              document.getElementById('to-amount').value = parseFloat(toAmountFormatted).toFixed(10);
           }
 
           this.toAmount = parseFloat(document.getElementById('to-amount').value);
@@ -164,7 +164,7 @@ class SwapManager {
 
   async updateSwapInfo(rate, toAmount) {
       // Update exchange rate
-      let exchangeText = `1 ${this.fromToken} = ${rate.toFixed(6)} ${this.toToken}`;
+      let exchangeText = `1 ${this.fromToken} = ${rate.toFixed(10)} ${this.toToken}`;
 
       // نمایش قیمت LVL به دلار و متیک در سواپ اینفو باکس
       if (this.fromToken === 'MATIC' && this.toToken === 'LVL') {
@@ -176,7 +176,7 @@ class SwapManager {
               ]);
               const tokenPriceMatic = Number(tokenPriceMaticRaw) / 1e8;
               const tokenPriceUsd = Number(tokenPriceUsdRaw) / 1e8;
-              exchangeText += `<br><span class='text-muted small'>LVL: <span class='fw-bold text-success'>$${tokenPriceUsd.toFixed(4)}</span> / <span class='fw-bold text-primary'>${tokenPriceMatic.toFixed(4)} MATIC</span></span>`;
+              exchangeText += `<br><span class='text-muted small'>LVL: <span class='fw-bold text-success'>$${tokenPriceUsd}</span> / <span class='fw-bold text-primary'>${tokenPriceMatic} MATIC</span></span>`;
           } catch (e) {
               // اگر خطا بود، فقط نرخ تبدیل را نمایش بده
           }
@@ -244,7 +244,7 @@ class SwapManager {
               maxAmount = ethers.utils.formatEther(balance);
           }
 
-          document.getElementById('from-amount').value = parseFloat(maxAmount).toFixed(6);
+          document.getElementById('from-amount').value = parseFloat(maxAmount).toFixed(10);
           this.fromAmount = parseFloat(maxAmount);
           this.calculateToAmount();
 
@@ -280,14 +280,14 @@ class SwapManager {
           
           if (this.fromToken === 'MATIC' && this.toToken === 'LVL') {
               // Buy tokens with MATIC
-              const maticAmount = ethers.utils.parseEther(this.fromAmount.toString());
+              const maticAmount = ethers.utils.parseEther(this.fromAmount.toFixed(18));
               
               this.updateTransactionMessage('در حال خرید توکن...');
               tx = await contract.buyTokens({ value: maticAmount });
               
           } else if (this.fromToken === 'LVL' && this.toToken === 'MATIC') {
               // Sell tokens for MATIC
-              const tokenAmount = ethers.utils.parseEther(this.fromAmount.toString());
+              const tokenAmount = ethers.utils.parseEther(this.fromAmount.toFixed(18));
               
               this.updateTransactionMessage('در حال فروش توکن...');
               tx = await contract.sellTokens(tokenAmount);
@@ -299,7 +299,7 @@ class SwapManager {
           // Success
           this.hideTransactionModal();
           this.showToast(
-              `سواپ با موفقیت انجام شد! ${this.fromAmount} ${this.fromToken} به ${this.toAmount.toFixed(6)} ${this.toToken}`,
+              `سواپ با موفقیت انجام شد! ${this.fromAmount} ${this.fromToken} به ${this.toAmount.toFixed(10)} ${this.toToken}`,
               'success'
           );
 

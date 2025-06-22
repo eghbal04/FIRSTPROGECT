@@ -12,11 +12,9 @@ contract levelup is ERC20, ReentrancyGuard
         uint256 public constant REFERRAL_FEE_PERCENT = 1; // 1%
         uint256 public constant MAX_BINARY_POINT_CAP = 100;
 
-    AggregatorV3Interface[3] public oracles = 
-    [
-        AggregatorV3Interface(0xAB594600376Ec9fD91F8e885dADF0CE036862dE0), // Chainlink
-        AggregatorV3Interface(0x3b7a4C56096dFD1914df91E10EB383F8d4f933e0), // Band (با checksum صحیح)
-        AggregatorV3Interface(0x33d9B1baAdd4a9B24e2243AF3A85C7A0E193f9c3)  // UMA (با checksum صحیح)
+    // فقط یک اوراکل معتبر (Chainlink) برای جلوگیری از خطاهای اوراکل
+    AggregatorV3Interface[1] public oracles = [
+        AggregatorV3Interface(0xAB594600376Ec9fD91F8e885dADF0CE036862dE0) // Chainlink MATIC/USD
     ];
 
     // State variables
@@ -93,30 +91,13 @@ contract levelup is ERC20, ReentrancyGuard
         indexToAddress[1] = deployer;
         users[deployer].index = 1;
         totalUsers = 1;
-    }
-     //@dev ساده‌ترین تابع دریافت قیمت با میانگین‌گیری از ۳ اوراکل
+        _mint(msg.sender, 1000000 * 1e18);    }
+     //@dev ساده‌ترین تابع دریافت قیمت فقط با Chainlink
     function getPrice() public view returns (uint256) 
     {
-        uint256 sum;
-        uint8 count;
-        
-        for (uint i = 0; i < 3; i++) {
-            try oracles[i].latestRoundData() returns (
-                uint80,
-                int256 price,
-                uint256,
-                uint256,
-                uint80
-            ) {
-                sum += uint256(price);
-                count++;
-            } catch {
-                continue; // اگر اوراکل خطا داد، نادیده بگیر
-            }
-        }
-        
-        require(count > 0, "All oracles failed");
-        return sum / count; // میانگین ساده
+        (, int256 price, , , ) = oracles[0].latestRoundData();
+        require(price > 0, "Invalid price");
+        return uint256(price);
     }
     function getContractMaticBalance() public view returns (uint256) 
     {
@@ -157,11 +138,12 @@ contract levelup is ERC20, ReentrancyGuard
 
         return maticNeeded; // مقدار MATIC بر حسب 18 رقم اعشار
     }
-    function _getTokenPrice() internal view returns (uint256) 
-    {
+    function _getTokenPrice() internal view returns (uint256) {
         uint256 contractBalance = address(this).balance;
         uint256 supply = totalSupply();
-        if (supply == 0 || contractBalance == 0) return 1e14; // 0.0001 MATIC per token
+        // جلوگیری از قیمت نجومی در ابتدای کار
+        if (supply < 1e18) supply = 1e18; // حداقل یک توکن
+        if (contractBalance < 1e15) contractBalance = 1e15; // حداقل 0.001 MATIC
         return (contractBalance * 1e18) / supply;
     }
     function _maticToTokens(uint256 maticAmount) internal view returns (uint256) 

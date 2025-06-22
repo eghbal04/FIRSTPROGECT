@@ -290,12 +290,14 @@ function updateWalletUI() {
     if (tokenPriceUserboxElem) {
         // اگر مقدار lastTokenPrice معتبر نبود، مقدار را مستقیم از قرارداد بگیر
         if (typeof lastTokenPrice === 'number' && !isNaN(lastTokenPrice) && lastTokenPrice > 0) {
-            tokenPriceUserboxElem.value = lastTokenPrice.toFixed(4);
+            // فقط نمایش عدد دلاری با تمام ارقام اعشار
+            tokenPriceUserboxElem.value = lastTokenPrice.toString();
         } else {
             // مقدار را مستقیم از قرارداد بگیر (همزمان)
             contract.getLatestLvlPrice().then(priceRaw => {
                 const price = Number(priceRaw) / 1e8;
-                tokenPriceUserboxElem.value = price > 0 ? price.toFixed(4) : '---';
+                // فقط نمایش عدد دلاری با تمام ارقام اعشار
+                tokenPriceUserboxElem.value = price > 0 ? price.toString() : '---';
             }).catch(() => {
                 tokenPriceUserboxElem.value = '---';
             });
@@ -303,6 +305,28 @@ function updateWalletUI() {
     }
 
     updateConnectButton();
+
+    // نمایش اطلاعات کاربر در user-info-list
+    const userInfoList = document.getElementById('user-info-list');
+    if (userInfoList) {
+        userInfoList.innerHTML = `
+            <li>آدرس کیف پول: <span class='en-num'>${userAddress || '-'}</span></li>
+            <li>موجودی LVL: <span class='en-num'>${document.getElementById('token-balance')?.value || '-'}</span></li>
+            <li>موجودی MATIC: <span class='en-num'>${document.getElementById('matic-balance')?.value || '-'}</span></li>
+            <li>قیمت LVL (دلار): <span class='en-num'>${document.getElementById('token-price-userbox')?.value || '-'}</span></li>
+            <li>لینک معرف: <span class='en-num'>${document.getElementById('referral-link')?.value || '-'}</span></li>
+        `;
+    }
+    // نمایش اطلاعات شبکه در network-info-list
+    const networkInfoList = document.getElementById('network-info-list');
+    if (networkInfoList) {
+        networkInfoList.innerHTML = `
+            <li>کل کاربران: <span class='en-num'>${document.getElementById('total-holders')?.textContent || '-'}</span></li>
+            <li>کل توکن در گردش: <span class='en-num'>${document.getElementById('circulating-supply')?.value || '-'}</span></li>
+            <li>حجم معاملات: <span class='en-num'>${document.getElementById('total-volume')?.textContent || '-'}</span></li>
+            <li>استخر باینری: <span class='en-num'>${document.getElementById('binary-pool-amount')?.textContent || '-'}</span></li>
+        `;
+    }
 }
 
 // بروزرسانی دکمه اتصال
@@ -365,7 +389,7 @@ async function loadUserData() {
                     purchased = 0;
                 }
             }
-            document.getElementById('purchase-amount').value = purchased.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' MATIC';
+            document.getElementById('purchase-amount').value = purchased + ' MATIC';
         }
         // سقف درآمد روزانه (binaryPointCap)
         if (document.getElementById('daily-cap')) {
@@ -435,7 +459,7 @@ async function loadTokenPrice() {
         const tokenPriceUsd = Number(tokenPriceUsdRaw) / 1e8;
         const tokenPriceUsdElem = document.getElementById('token-price-usd');
         if (tokenPriceUsdElem)
-            tokenPriceUsdElem.innerHTML = `$${tokenPriceUsd.toFixed(4)} <span class='small text-muted'>(USD)</span>`;
+            tokenPriceUsdElem.innerHTML = `$${tokenPriceUsd} <span class='small text-muted'>(USD)</span>`;
         // تغییر رنگ و درصد تغییر قیمت (در صورت نیاز)
         if (lastTokenPrice !== null) {
             // اگر نیاز به درصد تغییر دارید، می‌توانید این بخش را نگه دارید یا حذف کنید
@@ -444,7 +468,7 @@ async function loadTokenPrice() {
             const percentChange = (diff / lastTokenPrice) * 100;
             const changeElement = document.getElementById('price-change');
             if (changeElement) {
-                changeElement.textContent = `${diff >= 0 ? '+' : ''}${percentChange.toFixed(2)}%`;
+                changeElement.textContent = `${diff >= 0 ? '+' : ''}${percentChange}%`;
                 changeElement.className = diff >= 0 ? 'text-success' : 'text-danger';
             }
         }
@@ -463,13 +487,13 @@ async function loadBalances() {
         const maticBal = await provider.getBalance(userAddress);
         maticBalance = maticBal;
         document.getElementById('matic-balance').value = 
-            parseFloat(ethers.utils.formatEther(maticBal)).toFixed(6);
+            parseFloat(ethers.utils.formatEther(maticBal));
         
         // دریافت موجودی توکن
         const tokenBal = await contract.balanceOf(userAddress);
         tokenBalance = tokenBal;
         document.getElementById('token-balance').value = 
-            parseFloat(ethers.utils.formatEther(tokenBal)).toFixed(6);
+            parseFloat(ethers.utils.formatEther(tokenBal));
         
         // محاسبه ارزش دلاری 
         const maticPrice = await contract.getLatestMaticPrice();
@@ -479,7 +503,7 @@ async function loadBalances() {
         if(document.getElementById('Musd-value'))
             document.getElementById('Musd-value').value = `$${usdValue.toFixed(2)}`;
         if(document.getElementById('matic-price-userbox'))
-            document.getElementById('matic-price-userbox').textContent = maticPriceUsd.toFixed(4);
+            document.getElementById('matic-price-userbox').textContent = maticPriceUsd;
 
         // قیمت LVL بر حسب دلار
         const tokenPriceUsdRaw = await contract.getTokenPriceInUSD();
@@ -487,7 +511,7 @@ async function loadBalances() {
         // نمایش قیمت LVL در باکس کاربر (فقط دلار)
         if(document.getElementById('lvl-price-userbox'))
             document.getElementById('lvl-price-userbox').innerHTML =
-                `<span>${tokenPriceUsd.toFixed(4)} <span class='text-success'>USD</span></span>`;
+                `<span>${tokenPriceUsd} <span class='text-success'>USD</span></span>`;
         // ارزش دلاری LVL
         const totalTokenValue = parseFloat(ethers.utils.formatEther(tokenBal));
         const tokenUsdValue = totalTokenValue * tokenPriceUsd;
@@ -509,37 +533,33 @@ async function loadSystemStats() {
         const totalUsers = await contract.totalUsers();
         const binaryPool = await contract.binaryPool();
         
-        // مقدار کل توکن در گردش (در صورت وجود تابع)
-        let circulatingSupply = 0;
-        if (typeof contract.circulatingSupply === 'function') {
-            try {
-                circulatingSupply = await contract.circulatingSupply();
-            } catch (e) {
-                circulatingSupply = totalSupply;
-            }
-        } else {
-            circulatingSupply = totalSupply;
-        }
-        // مقدار متیک پشتوانه (در صورت وجود تابع)
+        // مقدار کل توکن در گردش (فقط از totalSupply استفاده شود)
+        const circulatingSupply = totalSupply;
+        // مقدار متیک قرارداد
         let maticReserve = 0;
-        if (contract.maticReserve) {
-            maticReserve = await contract.maticReserve();
+        if (typeof contract.getContractMaticBalance === 'function') {
+            try {
+                maticReserve = await contract.getContractMaticBalance();
+            } catch (e) {
+                maticReserve = 0;
+            }
         }
-        const totalSupplyElem = document.getElementById('total-supply');
-        if (totalSupplyElem)
-            totalSupplyElem.textContent = Number(ethers.utils.formatEther(totalSupply)).toLocaleString('en-US', {maximumFractionDigits: 4});
+        // نمایش در UI
         const circulatingSupplyElem = document.getElementById('circulating-supply');
         if (circulatingSupplyElem)
-            circulatingSupplyElem.textContent = Number(ethers.utils.formatEther(circulatingSupply)).toLocaleString('en-US', {maximumFractionDigits: 4});
+            circulatingSupplyElem.value = Number(ethers.utils.formatEther(circulatingSupply));
+        const maticReserveElem = document.getElementById('matic-reserve');
+        if (maticReserveElem)
+            maticReserveElem.value = Number(ethers.utils.formatEther(maticReserve));
+        const totalSupplyElem = document.getElementById('total-supply');
+        if (totalSupplyElem)
+            totalSupplyElem.textContent = Number(ethers.utils.formatEther(totalSupply));
         const totalHoldersElem = document.getElementById('total-holders');
         if (totalHoldersElem)
             totalHoldersElem.textContent = totalUsers.toString();
         const binaryPoolElem = document.getElementById('binary-pool-amount');
         if (binaryPoolElem)
-            binaryPoolElem.textContent = Number(ethers.utils.formatEther(binaryPool)).toLocaleString('en-US', {maximumFractionDigits: 4});
-        if(document.getElementById('matic-reserve'))
-            document.getElementById('matic-reserve').textContent =
-                maticReserve ? Number(ethers.utils.formatEther(maticReserve)).toLocaleString('en-US', {maximumFractionDigits: 4}) : '0';
+            binaryPoolElem.textContent = Number(ethers.utils.formatEther(binaryPool));
         // حجم معاملات واقعی (جمع خرید و فروش توکن) با BigNumber
         let totalVolume = ethers.BigNumber.from(0);
         if (contract.filters && contract.queryFilter) {
@@ -551,7 +571,7 @@ async function loadSystemStats() {
         }
         const totalVolumeElem = document.getElementById('total-volume');
         if (totalVolumeElem)
-            totalVolumeElem.textContent = Number(ethers.utils.formatEther(totalVolume)).toLocaleString('en-US', {maximumFractionDigits: 4});
+            totalVolumeElem.textContent = Number(ethers.utils.formatEther(totalVolume));
         // همگام‌سازی بنر
         updateStatsBanner();
     } catch (error) {
@@ -977,7 +997,7 @@ async function updatePointStatusUI() {
         const pointValueRaw = await contract.getPointValue(); // اصلاح نام تابع
         const pointValue = Number(pointValueRaw) / 1e8;
         const pointValueElem = document.getElementById('point-value-usd');
-        if (pointValueElem) pointValueElem.value = pointValue > 0 ? pointValue.toFixed(4) : '---';
+        if (pointValueElem) pointValueElem.value = pointValue > 0 ? pointValue : '---';
 
         // تعداد کل پوینت‌های سازمان
         const orgTotalPointsRaw = await contract.totalPoints();
