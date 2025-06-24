@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سواپ توکن | LevelUp</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        .swap-container {
+            background: #232946;
+            border-radius: 18px;
+            box-shadow: 0 4px 24px rgba(80, 60, 180, 0.10);
+            max-width: 420px;
+            margin: 3rem auto 2rem auto;
+            padding: 2rem 1.5rem 1.5rem 1.5rem;
+        }
+        .swap-title {
+            color: #a786ff;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .swap-form label {
+            color: #fff;
+            margin-bottom: 0.3rem;
+            display: block;
+        }
+        .swap-form input {
+            width: 100%;
+            padding: 0.7rem;
+            border-radius: 8px;
+            border: none;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            background: #181c2a;
+            color: #fff;
+        }
+        .swap-form select {
+            width: 100%;
+            padding: 0.6rem;
+            border-radius: 8px;
+            border: none;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            background: #181c2a;
+            color: #fff;
+        }
+        .swap-form button {
+            width: 100%;
+            padding: 0.9rem;
+            border-radius: 8px;
+            border: none;
+            background: linear-gradient(90deg, #a786ff 0%, #7c5fe6 100%);
+            color: #fff;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .swap-form button:disabled {
+            background: #444;
+            cursor: not-allowed;
+        }
+        .swap-info {
+            background: #181c2a;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            color: #a786ff;
+            font-size: 1rem;
+            text-align: center;
+        }
+        .swap-status {
+            text-align: center;
+            margin-top: 1rem;
+            color: #fff;
+            min-height: 24px;
+        }
+        .max-btn {
+            width: auto !important;
+            min-width: 60px;
+            padding: 0.7rem 0.9rem;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            border: none;
+            background: #a786ff;
+            color: #fff;
+            height: 44px;
+            cursor: pointer;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: none;
+            font-weight: normal;
+        }
+    </style>
+</head>
+<body>
+    <nav class="main-navbar">
+        <ul>
+            <li><a href="/index.html">صفحه اصلی</a></li>
+            <li><a href="/pages/swap.html">سواپ</a></li>
+            <li><a href="/pages/network.html">شبکه</a></li>
+            <li><a href="/pages/shop.html">فروشگاه</a></li>
+            <li><a href="/pages/profile.html">پروفایل</a></li>
+            <li><a href="/pages/news.html">اخبار و آموزش</a></li>
+            <li><a href="/pages/about.html">درباره ما</a></li>
+        </ul>
+    </nav>
+    <header>
+        <h1>سواپ توکن</h1>
+        <p>تبدیل سریع و آسان بین MATIC و LVL</p>
+    </header>
+    <section class="swap-container">
+        <h2 class="swap-title">فرم سواپ</h2>
+        <form class="swap-form" id="swapForm" autocomplete="off">
+            <label for="swapDirection">نوع تبدیل:</label>
+            <select id="swapDirection">
+                <option value="matic-to-lvl">MATIC → LVL</option>
+                <option value="lvl-to-matic">LVL → MATIC</option>
+            </select>
+            <div class="balances" style="margin-bottom:0.5rem;text-align:center;color:#a786ff;font-size:0.98rem;">
+                <span id="maticBalance">MATIC: -</span> |
+                <span id="lvlBalance">LVL: -</span>
+            </div>
+            <label for="swapAmount">مقدار:</label>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <input type="number" id="swapAmount" min="0" step="any" placeholder="مقدار را وارد کنید..." style="flex:1;">
+                <button type="button" id="maxButton" class="max-btn">ماکسیمم</button>
+            </div>
+            <div class="swap-info" id="swapInfo">نرخ تبدیل: -</div>
+            <button type="submit" id="swapButton">انجام سواپ</button>
+            <div class="swap-status" id="swapStatus"></div>
+        </form>
+    </section>
+    <footer>
+        <p style="text-align:center; color:#888;">&copy; 2025 LevelUp. All rights reserved.</p>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/web3-interactions.js"></script>
+    <script src="../js/swap.js"></script>
+</body>
+</html> 

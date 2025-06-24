@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فروشگاه خدمات | LevelUp</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        .shop-container {
+            background: #232946;
+            border-radius: 18px;
+            box-shadow: 0 4px 24px rgba(80, 60, 180, 0.10);
+            max-width: 900px;
+            margin: 3rem auto 2rem auto;
+            padding: 2rem 1.5rem 1.5rem 1.5rem;
+        }
+        .shop-title {
+            color: #a786ff;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .products {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            justify-content: center;
+        }
+        .product-card {
+            background: #181c2a;
+            border-radius: 14px;
+            box-shadow: 0 2px 12px rgba(80, 60, 180, 0.10);
+            padding: 1.5rem 1.2rem;
+            min-width: 220px;
+            max-width: 260px;
+            flex: 1 1 220px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .product-title {
+            color: #a786ff;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+        .product-desc {
+            color: #ccc;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+        .product-price {
+            color: #fff;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+        .buy-btn {
+            background: linear-gradient(90deg, #a786ff 0%, #7c5fe6 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 0.7rem 1.5rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .buy-btn:disabled {
+            background: #444;
+            cursor: not-allowed;
+        }
+        .shop-status {
+            text-align: center;
+            margin-top: 2rem;
+            color: #fff;
+            min-height: 24px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="circle-menu-horizontal">
+        <a href="/index.html" class="circle-menu-item" aria-label="خانه">
+          <div class="icon">🏠</div>
+          <span class="label">خانه</span>
+        </a>
+        <a href="/pages/swap.html" class="circle-menu-item" aria-label="تبدیل ارز">
+          <div class="icon">🔄</div>
+          <span class="label">تبدیل</span>
+        </a>
+        <a href="/pages/network.html" class="circle-menu-item" aria-label="شبکه">
+          <div class="icon">🌐</div>
+          <span class="label">شبکه</span>
+        </a>
+        <a href="/pages/profile.html" class="circle-menu-item" aria-label="پروفایل من">
+          <div class="icon">👤</div>
+          <span class="label">پروفایل</span>
+        </a>
+        <a href="/pages/news.html" class="circle-menu-item" aria-label="اخبار و آموزش">
+          <div class="icon">📰</div>
+          <span class="label">اخبار</span>
+        </a>
+        <a href="/pages/shop.html" class="circle-menu-item" aria-label="فروشگاه">
+          <div class="icon">🛒</div>
+          <span class="label">فروشگاه</span>
+        </a>
+        <a href="/pages/about.html" class="circle-menu-item" aria-label="درباره ما">
+          <div class="icon">ℹ️</div>
+          <span class="label">درباره</span>
+        </a>
+      </nav>
+      
+      <style>
+        .circle-menu-horizontal {
+          position: fixed;
+          bottom: 10px;
+          left: 50%;
+          transform: translateX(-50%);
+          display: flex;
+          gap: 25px;
+          background: rgba(28, 24, 49, 0.9);
+          padding: 12px 25px;
+          border-radius: 40px;
+          box-shadow: 0 4px 18px rgba(124, 95, 230, 0.75);
+          z-index: 2000;
+          user-select: none;
+        }
+      
+        .circle-menu-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          color: #a786ff;
+          text-decoration: none;
+          font-weight: 600;
+          font-family: 'Vazirmatn', sans-serif;
+          font-size: 0.85rem;
+          transition: color 0.3s, transform 0.3s;
+        }
+      
+        .circle-menu-item .icon {
+          width: 48px;
+          height: 48px;
+          background: #7c5fe6;
+          border-radius: 50%;
+          color: white;
+          font-size: 28px;
+          line-height: 48px;
+          text-align: center;
+          box-shadow: 0 2px 8px rgba(124, 95, 230, 0.6);
+          margin-bottom: 6px;
+          transition: background 0.3s, transform 0.3s;
+        }
+      
+        .circle-menu-item:hover, .circle-menu-item:focus {
+          color: #fff;
+          transform: scale(1.1);
+        }
+      
+        .circle-menu-item:hover .icon, .circle-menu-item:focus .icon {
+          background: #a786ff;
+          box-shadow: 0 4px 16px rgba(167, 134, 255, 0.8);
+          transform: scale(1.2);
+        }
+      
+        @media (max-width: 600px) {
+          .circle-menu-horizontal {
+            gap: 18px;
+            padding: 10px 20px;
+            bottom: 8px;
+          }
+          .circle-menu-item .icon {
+            width: 40px;
+            height: 40px;
+            font-size: 24px;
+            line-height: 40px;
+            margin-bottom: 4px;
+          }
+          .circle-menu-item {
+            font-size: 0.75rem;
+          }
+        }
+      </style>
+      
+      </style>
+      
+    <header>
+        <h1>فروشگاه خدمات</h1>
+        <p>خرید محصولات آموزشی با توکن LVL</p>
+    </header>
+    <section class="shop-container">
+        <h2 class="shop-title">محصولات آموزشی</h2>
+        <div class="products" id="products-list">
+            <!-- محصولات به صورت داینامیک بارگذاری می‌شوند -->
+        </div>
+        <div class="shop-status" id="shopStatus"></div>
+    </section>
+    <footer>
+        <p style="text-align:center; color:#888;">&copy; 2025 LevelUp. All rights reserved.</p>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/web3-interactions.js"></script>
+    <script src="../js/shop.js"></script>
+</body>
+</html> 

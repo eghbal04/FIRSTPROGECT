@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شبکه بازاریابی | LevelUp</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        .network-container {
+            background: #232946;
+            border-radius: 18px;
+            box-shadow: 0 4px 24px rgba(80, 60, 180, 0.10);
+            max-width: 700px;
+            margin: 3rem auto 2rem auto;
+            padding: 2rem 1.5rem 1.5rem 1.5rem;
+        }
+        .network-title {
+            color: #a786ff;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .network-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        .network-stat {
+            background: #181c2a;
+            border-radius: 12px;
+            padding: 1rem 2rem;
+            min-width: 150px;
+            text-align: center;
+        }
+        .network-stat h4 {
+            margin: 0 0 0.5rem 0;
+            color: #a786ff;
+            font-size: 1rem;
+        }
+        .network-stat .value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #fff;
+        }
+        .referral-section {
+            background: #181c2a;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .referral-link {
+            background: #232946;
+            color: #a786ff;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-family: monospace;
+            margin: 0.5rem 0;
+            display: inline-block;
+        }
+        .copy-btn {
+            background: #a786ff;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 0.4rem 1rem;
+            cursor: pointer;
+            margin-right: 0.5rem;
+            font-size: 1rem;
+        }
+        .network-tree {
+            margin-top: 2rem;
+            text-align: center;
+        }
+        .tree-node {
+            display: inline-block;
+            background: #a786ff;
+            color: #fff;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            line-height: 60px;
+            font-weight: bold;
+            margin: 0 10px;
+        }
+        .tree-connector {
+            display: inline-block;
+            width: 40px;
+            height: 2px;
+            background: #a786ff;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <nav class="circle-menu-horizontal">
+        <a href="/index.html" class="circle-menu-item" aria-label="خانه">
+          <div class="icon">🏠</div>
+          <span class="label">خانه</span>
+        </a>
+        <a href="/pages/swap.html" class="circle-menu-item" aria-label="تبدیل ارز">
+          <div class="icon">🔄</div>
+          <span class="label">تبدیل</span>
+        </a>
+        <a href="/pages/network.html" class="circle-menu-item" aria-label="شبکه">
+          <div class="icon">🌐</div>
+          <span class="label">شبکه</span>
+        </a>
+        <a href="/pages/profile.html" class="circle-menu-item" aria-label="پروفایل من">
+          <div class="icon">👤</div>
+          <span class="label">پروفایل</span>
+        </a>
+        <a href="/pages/news.html" class="circle-menu-item" aria-label="اخبار و آموزش">
+          <div class="icon">📰</div>
+          <span class="label">اخبار</span>
+        </a>
+        <a href="/pages/shop.html" class="circle-menu-item" aria-label="فروشگاه">
+          <div class="icon">🛒</div>
+          <span class="label">فروشگاه</span>
+        </a>
+        <a href="/pages/about.html" class="circle-menu-item" aria-label="درباره ما">
+          <div class="icon">ℹ️</div>
+          <span class="label">درباره</span>
+        </a>
+      </nav>
+      
+      <style>
+        .circle-menu-horizontal {
+          position: fixed;
+          bottom: 10px;
+          left: 50%;
+          transform: translateX(-50%);
+          display: flex;
+          gap: 25px;
+          background: rgba(28, 24, 49, 0.9);
+          padding: 12px 25px;
+          border-radius: 40px;
+          box-shadow: 0 4px 18px rgba(124, 95, 230, 0.75);
+          z-index: 2000;
+          user-select: none;
+        }
+      
+        .circle-menu-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          color: #a786ff;
+          text-decoration: none;
+          font-weight: 600;
+          font-family: 'Vazirmatn', sans-serif;
+          font-size: 0.85rem;
+          transition: color 0.3s, transform 0.3s;
+        }
+      
+        .circle-menu-item .icon {
+          width: 48px;
+          height: 48px;
+          background: #7c5fe6;
+          border-radius: 50%;
+          color: white;
+          font-size: 28px;
+          line-height: 48px;
+          text-align: center;
+          box-shadow: 0 2px 8px rgba(124, 95, 230, 0.6);
+          margin-bottom: 6px;
+          transition: background 0.3s, transform 0.3s;
+        }
+      
+        .circle-menu-item:hover, .circle-menu-item:focus {
+          color: #fff;
+          transform: scale(1.1);
+        }
+      
+        .circle-menu-item:hover .icon, .circle-menu-item:focus .icon {
+          background: #a786ff;
+          box-shadow: 0 4px 16px rgba(167, 134, 255, 0.8);
+          transform: scale(1.2);
+        }
+      
+        @media (max-width: 600px) {
+          .circle-menu-horizontal {
+            gap: 18px;
+            padding: 10px 20px;
+            bottom: 8px;
+          }
+          .circle-menu-item .icon {
+            width: 40px;
+            height: 40px;
+            font-size: 24px;
+            line-height: 40px;
+            margin-bottom: 4px;
+          }
+          .circle-menu-item {
+            font-size: 0.75rem;
+          }
+        }
+      </style>
+      
+      </style>
+      
+    <header>
+        <h1>شبکه بازاریابی</h1>
+        <p>ساختار سازمانی و زیرمجموعه‌های شما</p>
+    </header>
+    <section class="network-container">
+        <h2 class="network-title">آمار شبکه شما</h2>
+        <div class="network-stats">
+            <div class="network-stat">
+                <h4>تعداد اعضا</h4>
+                <div class="value" id="network-members">-</div>
+            </div>
+            <div class="network-stat">
+                <h4>پوینت‌های کسب‌شده</h4>
+                <div class="value" id="network-points">-</div>
+            </div>
+            <div class="network-stat">
+                <h4>پاداش‌ها</h4>
+                <div class="value" id="network-rewards">-</div>
+            </div>
+        </div>
+        <div class="referral-section">
+            <h4>لینک دعوت اختصاصی شما</h4>
+            <span class="referral-link" id="referral-link">در حال بارگذاری...</span>
+            <button class="copy-btn" id="copyReferral">کپی</button>
+        </div>
+        <div class="network-tree" id="network-tree">
+            <!-- ساختار درختی زیرمجموعه‌ها اینجا نمایش داده می‌شود -->
+        </div>
+    </section>
+    <div class="network-stats-container">
+        <!-- بخش تعادل -->
+        <div class="balance-section">
+            <div class="balance-meter">
+                <div class="left-bar" id="left-bar"></div>
+                <div class="right-bar" id="right-bar"></div>
+            </div>
+            <div class="balance-info">
+                <span id="balance-diff">تعادل: 0</span>
+            </div>
+        </div>
+
+        <!-- کارت‌های آماری -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h4>سمت چپ</h4>
+                <div class="value" id="left-points">0</div>
+                <div class="subtext">تعداد زیرمجموعه: <span id="left-count">0</span></div>
+            </div>
+            
+            <div class="stat-card">
+                <h4>سمت راست</h4>
+                <div class="value" id="right-points">0</div>
+                <div class="subtext">تعداد زیرمجموعه: <span id="right-count">0</span></div>
+            </div>
+            
+            <div class="stat-card highlight">
+                <h4>تعادل فعال</h4>
+                <div class="value" id="balanced-points">0</div>
+                <div class="subtext">پاداش قابل پرداخت: <span id="claimable-rewards">0 MATIC</span></div>
+            </div>
+            
+            <div class="stat-card">
+                <h4>سقف پوینت</h4>
+                <div class="value" id="points-cap">0</div>
+                <div class="subtext">مانده سقف: <span id="remaining-cap">0</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="network-view">
+        <h2>ساختار شبکه شما</h2>
+        <div id="network-tree">
+            <!-- محتوای درخت اینجا رندر می‌شود -->
+        </div>
+    </div>
+    <footer>
+        <p style="text-align:center; color:#888;">&copy; 2025 LevelUp. All rights reserved.</p>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/web3-interactions.js"></script>
+    <script src="../js/network.js"></script>
+</body>
+</html> 
