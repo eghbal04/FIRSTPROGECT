@@ -97,7 +97,7 @@
     </style>
 </head>
 <body>
-  <nav class="circle-menu-horizontal">
+    <nav class="circle-menu-horizontal">
         <a href="/index.html" class="circle-menu-item" aria-label="خانه">
           <div class="icon">🏠</div>
           <span class="label">خانه</span>
@@ -127,6 +127,79 @@
           <span class="label">درباره</span>
         </a>
       </nav>
+      
+      <style>
+        .circle-menu-horizontal {
+          position: fixed;
+          bottom: 10px;
+          left: 50%;
+          transform: translateX(-50%);
+          display: flex;
+          gap: 25px;
+          background: rgba(28, 24, 49, 0.9);
+          padding: 12px 25px;
+          border-radius: 40px;
+          box-shadow: 0 4px 18px rgba(124, 95, 230, 0.75);
+          z-index: 2000;
+          user-select: none;
+        }
+      
+        .circle-menu-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          color: #a786ff;
+          text-decoration: none;
+          font-weight: 600;
+          font-family: 'Vazirmatn', sans-serif;
+          font-size: 0.85rem;
+          transition: color 0.3s, transform 0.3s;
+        }
+      
+        .circle-menu-item .icon {
+          width: 48px;
+          height: 48px;
+          background: #7c5fe6;
+          border-radius: 50%;
+          color: white;
+          font-size: 28px;
+          line-height: 48px;
+          text-align: center;
+          box-shadow: 0 2px 8px rgba(124, 95, 230, 0.6);
+          margin-bottom: 6px;
+          transition: background 0.3s, transform 0.3s;
+        }
+      
+        .circle-menu-item:hover, .circle-menu-item:focus {
+          color: #fff;
+          transform: scale(1.1);
+        }
+      
+        .circle-menu-item:hover .icon, .circle-menu-item:focus .icon {
+          background: #a786ff;
+          box-shadow: 0 4px 16px rgba(167, 134, 255, 0.8);
+          transform: scale(1.2);
+        }
+      
+        @media (max-width: 600px) {
+          .circle-menu-horizontal {
+            gap: 18px;
+            padding: 10px 20px;
+            bottom: 8px;
+          }
+          .circle-menu-item .icon {
+            width: 40px;
+            height: 40px;
+            font-size: 24px;
+            line-height: 40px;
+            margin-bottom: 4px;
+          }
+          .circle-menu-item {
+            font-size: 0.75rem;
+          }
+        }
+      </style>
+      
     <header>
         <h1>سواپ توکن</h1>
         <p>تبدیل سریع و آسان بین MATIC و LVL</p>
