@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>درباره ما | LevelUp</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      background: #232946;
+      font-family: 'Vazirmatn', sans-serif;
+      color: #fff;
+      margin: 0;
+      padding-bottom: 90px; /* فضای کافی برای منوی پایین */
+      min-height: 100vh;
+    }
+    header {
+      text-align: center;
+      margin: 2rem 1rem 3rem;
+    }
+    header h1 {
+      color: #a786ff;
+      margin-bottom: 0.3rem;
+      font-size: 2.5rem;
+    }
+    header p {
+      color: #cfcaff;
+      font-size: 1.2rem;
+      margin: 0;
+    }
+    .about-container {
+      max-width: 700px;
+      margin: 0 auto 3rem;
+      background: #181c2a;
+      border-radius: 18px;
+      box-shadow: 0 4px 24px rgba(80, 60, 180, 0.10);
+      padding: 2rem 2rem 3rem 2rem;
+      line-height: 1.8;
+      color: #ddd;
+    }
+    .about-title {
+      color: #a786ff;
+      text-align: center;
+      margin-bottom: 2rem;
+      font-size: 2rem;
+      font-weight: 700;
+    }
+    .about-section {
+      margin-bottom: 2.5rem;
+    }
+    .about-section h3 {
+      color: #a786ff;
+      margin-bottom: 0.8rem;
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+    .about-section p {
+      font-size: 1rem;
+      color: #ccc;
+    }
+    .about-section ul {
+      padding: 0;
+      list-style: none;
+      margin-top: 1rem;
+      color: #cfcaff;
+      font-weight: 600;
+    }
+    .about-section ul li {
+      margin-bottom: 0.7rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 1rem;
+    }
+    .about-section ul li::before {
+      content: '🔹';
+      font-size: 1.2rem;
+      line-height: 0;
+    }
+    /* رودمپ */
+    .roadmap-list {
+      list-style: none;
+      padding: 0;
+      margin: 1rem 0 0 0;
+    }
+    .roadmap-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1.3rem;
+    }
+    .roadmap-icon {
+      font-size: 28px;
+      margin-left: 15px;
+      flex-shrink: 0;
+      color: #a786ff;
+    }
+    .roadmap-text {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #ddd;
+      flex-grow: 1;
+    }
+    .roadmap-line {
+      flex-grow: 1;
+      height: 6px;
+      background: linear-gradient(90deg, #a786ff, #7c5fe6);
+      border-radius: 10px;
+      margin: 0 15px;
+      position: relative;
+      box-shadow: 0 0 8px rgba(124, 95, 230, 0.6);
+    }
+    .roadmap-arrow {
+      font-size: 22px;
+      color: #7c5fe6;
+      flex-shrink: 0;
+    }
+    /* نمودار SVG */
+    .roadmap-svg-container {
+      margin-top: 2.5rem;
+      text-align: center;
+    }
+    footer {
+      text-align: center;
+      color: #888;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+    /* منوی دایره‌ای افقی پایین صفحه */
+    .circle-menu-horizontal {
+      position: fixed;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 25px;
+      background: rgba(28, 24, 49, 0.9);
+      padding: 12px 25px;
+      border-radius: 40px;
+      box-shadow: 0 4px 18px rgba(124, 95, 230, 0.75);
+      z-index: 2000;
+      user-select: none;
+    }
+    .circle-menu-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #a786ff;
+      text-decoration: none;
+      font-weight: 600;
+      font-family: 'Vazirmatn', sans-serif;
+      font-size: 0.85rem;
+      transition: color 0.3s, transform 0.3s;
+    }
+    .circle-menu-item .icon {
+      width: 48px;
+      height: 48px;
+      background: #7c5fe6;
+      border-radius: 50%;
+      color: white;
+      font-size: 28px;
+      line-height: 48px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(124, 95, 230, 0.6);
+      margin-bottom: 6px;
+      transition: background 0.3s, transform 0.3s;
+    }
+    .circle-menu-item:hover,
+    .circle-menu-item:focus {
+      color: #fff;
+      transform: scale(1.1);
+    }
+    .circle-menu-item:hover .icon,
+    .circle-menu-item:focus .icon {
+      background: #a786ff;
+      box-shadow: 0 4px 16px rgba(167, 134, 255, 0.8);
+      transform: scale(1.2);
+    }
+    @media (max-width: 600px) {
+      .circle-menu-horizontal {
+        gap: 18px;
+        padding: 10px 20px;
+        bottom: 8px;
+      }
+      .circle-menu-item .icon {
+        width: 40px;
+        height: 40px;
+        font-size: 24px;
+        line-height: 40px;
+        margin-bottom: 4px;
+      }
+      .circle-menu-item {
+        font-size: 0.75rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="circle-menu-horizontal" role="navigation" aria-label="منوی اصلی">
+    <a href="/index.html" class="circle-menu-item" aria-label="خانه">
+      <div class="icon">🏠</div>
+      <span class="label">خانه</span>
+    </a>
+    <a href="/pages/swap.html" class="circle-menu-item" aria-label="تبدیل ارز">
+      <div class="icon">🔄</div>
+      <span class="label">تبدیل</span>
+    </a>
+    <a href="/pages/network.html" class="circle-menu-item" aria-label="شبکه">
+      <div class="icon">🌐</div>
+      <span class="label">شبکه</span>
+    </a>
+    <a href="/pages/profile.html" class="circle-menu-item" aria-label="پروفایل من">
+      <div class="icon">👤</div>
+      <span class="label">پروفایل</span>
+    </a>
+    <a href="/pages/news.html" class="circle-menu-item" aria-label="اخبار و آموزش">
+      <div class="icon">📰</div>
+      <span class="label">اخبار</span>
+    </a>
+    <a href="/pages/shop.html" class="circle-menu-item" aria-label="فروشگاه">
+      <div class="icon">🛒</div>
+      <span class="label">فروشگاه</span>
+    </a>
+    <a href="/pages/about.html" class="circle-menu-item active" aria-label="درباره ما">
+      <div class="icon">ℹ️</div>
+      <span class="label">درباره</span>
+    </a>
+  </nav>
+
+  <header>
+    <h1>درباره ما</h1>
+    <p>آشنایی با LevelUp و تیم توسعه</p>
+  </header>
+
+  <section class="about-container" role="main">
+    <h2 class="about-title">درباره LevelUp</h2>
+
+    <div class="about-section">
+      <h3>ماموریت ما</h3>
+      <p>
+        ما در LevelUp با هدف توانمندسازی افراد برای رشد شخصی و مالی،  
+        بستری نوآورانه بر بستر بلاکچین فراهم کرده‌ایم  
+        تا هر فرد بتواند با یادگیری، سرمایه‌گذاری و شبکه‌سازی،  
+        آینده‌ای بهتر برای خود بسازد.
+      </p>
+    </div>
+
+    <div class="about-section">
+      <h3>شفافیت در قرارداد هوشمند</h3>
+      <p>
+        قرارداد هوشمند ما بر پایه شفافیت مطلق است؛  
+        تمام تراکنش‌ها و فعالیت‌ها به صورت غیرقابل تغییر و شفاف  
+        در بلاکچین ثبت می‌شود تا امنیت سرمایه شما تضمین شود.  
+        با بهره‌گیری از استانداردهای برتر امنیتی و مدل‌های مقاوم در برابر حملات،  
+        سرمایه شما همواره در محیطی امن جریان دارد.
+      </p>
+    </div>
+
+    <div class="about-section">
+      <h3>حفظ سرمایه و فرصت‌های واقعی</h3>
+      <p>
+        ما باور داریم در دنیای پیچیده امروز،  
+        سرمایه‌گذاری فقط اعداد نیست، بلکه حفظ ارزش، شفافیت و فرصت‌های عادلانه است.  
+        مکانیزم‌های قراردادی طراحی شده به گونه‌ایست که ریسک کاهش سرمایه به حداقل برسد،  
+        و کاربران بتوانند با اطمینان خاطر در مسیر رشد گام بردارند.
+      </p>
+    </div>
+
+    <div class="about-section">
+      <h3>تیم متعهد و آینده‌نگر</h3>
+      <p>
+        تیم ما ترکیبی از توسعه‌دهندگان بلاکچین، طراحان رابط کاربری و متخصصان آموزش است  
+        که هم‌پای شما برای ساختن آینده‌ای بهتر و شفاف تلاش می‌کنند.  
+        ما به شما به چشم شریک و عضوی از خانواده LevelUp نگاه می‌کنیم.
+      </p>
+    </div>
+
+    <div class="about-section">
+      <h3>نقشه راه (رودمپ) ما</h3>
+      <p>LevelUp به مثابه یک رقصِ هماهنگِ علم و فناوری،  
+        مسیر خود را با گام‌های استوار در حوزه‌های مختلف تعریف کرده است:</p>
+      <ul class="roadmap-list" aria-label="نقشه راه LevelUp">
+        <li class="roadmap-item">
+          <span class="roadmap-icon" aria-hidden="true">📚</span>
+          <span class="roadmap-text">آموزش مالی، خودشناسی و خودسازی</span>
+          <span class="roadmap-line"></span>
+          <span class="roadmap-arrow" aria-hidden="true">➡️</span>
+        </li>
+        <li class="roadmap-item">
+          <span class="roadmap-icon" aria-hidden="true">💻</span>
+          <span class="roadmap-text">آموزش فناوری و برنامه‌نویسی</span>
+          <span class="roadmap-line"></span>
+          <span class="roadmap-arrow" aria-hidden="true">➡️</span>
+        </li>
+        <li class="roadmap-item">
+          <span class="roadmap-icon" aria-hidden="true">🖼️</span>
+          <span class="roadmap-text">مارکت‌پلیس ان‌اف‌تی</span>
+          <span class="roadmap-line"></span>
+          <span class="roadmap-arrow" aria-hidden="true">➡️</span>
+        </li>
+        <li class="roadmap-item">
+          <span class="roadmap-icon" aria-hidden="true">🎓</span>
+          <span class="roadmap-text">خدمات آموزشی تخصصی و رشد مستمر</span>
+        </li>
+      </ul>
+
+      <p style="margin-top: 1.5rem;">
+        هدف ما خلق دنیایی پویا و متحول است، جایی که:
+      </p>
+      <ul>
+        <li>کاربران با کمترین زمان و هزینه به دانش و درآمد دست یابند</li>
+        <li>فرصت‌های برابر و شفاف در دسترس همه باشد</li>
+        <li>هر گام، سکوی پرتاب به فردایی بهتر باشد</li>
+      </ul>
+
+      <div class="roadmap-svg-container" aria-hidden="true">
+        <svg width="100%" height="60" viewBox="0 0 130 60" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="نمای شماتیک نقشه راه">
+          <rect x="5" y="20" width="25" height="25" fill="#a786ff" rx="6" />
+          <text x="17.5" y="38" fill="white" font-size="11" font-family="Vazirmatn" text-anchor="middle">آموزش</text>
+
+          <path d="M 30 32 L 55 32" stroke="#7c5fe6" stroke-width="4" />
+          <polygon points="55,27 65,32 55,37" fill="#7c5fe6" />
+
+          <rect x="65" y="20" width="25" height="25" fill="#7c5fe6" rx="6" />
+          <text x="77.5" y="38" fill="white" font-size="11" font-family="Vazirmatn" text-anchor="middle">مارکت</text>
+
+          <path d="M 90 32 L 115 32" stroke="#a786ff" stroke-width="4" />
+          <polygon points="115,27 125,32 115,37" fill="#a786ff" />
+
+          <rect x="115" y="20" width="25" height="25" fill="#a786ff" rx="6" />
+          <text x="127.5" y="38" fill="white" font-size="11" font-family="Vazirmatn" text-anchor="middle">خدمات</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="about-section">
+      <h3>ارتباط با ما</h3>
+      <p>
+        برای ارتباط، پیشنهاد یا همکاری می‌توانید از طریق ایمیل  
+        <a href="mailto:info@levelup.com" style="color:#a786ff;">info@levelup.com</a>  
+        با ما در تماس باشید.
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; 2025 LevelUp. All rights reserved.</p>
+  </footer>
+</body>
+</html>
