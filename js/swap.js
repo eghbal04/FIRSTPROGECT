@@ -30,6 +30,65 @@ async function updateRateInfo() {
         swapInfo.textContent = 'نرخ تبدیل: -';
     }
 }
+async function loadBalances() {
+    try {
+        const { signer, contract } = await connectWallet();
+        const address = await signer.getAddress();
+        
+        // دریافت موجودی MATIC
+        const maticBalance = await signer.provider.getBalance(address);
+        document.getElementById('maticBalance').textContent = `MATIC: ${ethers.formatEther(maticBalance)}`;
+        
+        // دریافت موجودی LVL
+        const lvlBalance = await contract.balanceOf(address);
+        document.getElementById('lvlBalance').textContent = `LVL: ${ethers.formatUnits(lvlBalance, 18)}`;
+    } catch (error) {
+        console.error("Error loading balances:", error);
+    }
+}
+
+// فراخوانی هنگام بارگذاری صفحه
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadBalances();
+    // بقیه کدهای موجود...
+});
+// اضافه کردن event listener برای دکمه ماکسیمم
+document.getElementById('maxButton').addEventListener('click', setMaxAmount);
+
+// اصلاح تابع setMaxAmount
+async function setMaxAmount() {
+    try {
+        const swapDirection = document.getElementById('swapDirection');
+        const swapAmount = document.getElementById('swapAmount');
+
+        if (swapDirection.value === 'matic-to-lvl') {
+            const { signer } = await connectWallet();
+            const address = await signer.getAddress();
+            const rawBalance = await signer.provider.getBalance(address);
+
+            const feeBuffer = ethers.parseEther("0.01");
+            const usableBalance = rawBalance > feeBuffer ? rawBalance - feeBuffer : 0n;
+
+            if (usableBalance > 0n) {
+                swapAmount.value = ethers.formatEther(usableBalance);
+                await updateRateInfo(); // تغییر از updateExchangeRate به updateRateInfo
+            }
+
+        } else {
+            const { signer, contract } = await connectWallet();
+            const address = await signer.getAddress();
+            const rawBalance = await contract.balanceOf(address);
+
+            if (rawBalance > 0n) {
+                swapAmount.value = ethers.formatUnits(rawBalance, 18);
+                await updateRateInfo(); // تغییر از updateExchangeRate به updateRateInfo
+            }
+        }
+    } catch (error) {
+        console.error("Error setting max amount:", error);
+        swapStatus.textContent = 'خطا در دریافت موجودی: ' + error.message;
+    }
+}
 
 swapDirection.addEventListener('change', updateRateInfo);
 swapAmount.addEventListener('input', updateRateInfo);
