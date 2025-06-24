@@ -1,589 +1,189 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-i18n="page_title">سیستم توکن LevelUp - پلتفرم پیشرفته تجارت و MLM</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>پلتفرم LevelUp | داشبورد مدرن</title>
     <link rel="stylesheet" href="css/style.css">
-    <meta name="description" data-i18n="meta_description" content="پلتفرم پیشرفته تجارت توکن LevelUp با قابلیت‌های MLM، سواپ و شبکه‌سازی">
-    <meta name="keywords" data-i18n="meta_keywords" content="توکن، کریپتو، MLM، سواپ، بلاک‌چین، پولیگان">
-    <style>
-@keyframes starPulse {
-  0% { transform: scale(1); filter: drop-shadow(0 0 0 #2196f3); }
-  50% { transform: scale(1.18); filter: drop-shadow(0 0 12px #2196f3); }
-  100% { transform: scale(1); filter: drop-shadow(0 0 0 #2196f3); }
-}
-.star-animated {
-  animation: starPulse 1.6s infinite;
-  transition: filter 0.3s;
-}
-</style>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- بارگذاری ethers.js نسخه 6 از CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
+    
+    <!-- بارگذاری Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body>
-  
-<div id="register-top-container" style="position:absolute;top:18px;left:32px;z-index:1000;">
-  <button id="register-top-btn" class="btn btn-primary btn-lg d-none">
-    ثبت‌نام <span id="register-price-badge" class="badge bg-light text-dark ms-2"></span>
-  </button>
-  <i id="star-icon" class="bi bi-star-fill text-primary star-animated d-none" style="font-size:2.2em;"></i>
-</div>
+<body >
+    <nav class="circle-menu-horizontal">
+        <a href="/index.html" class="circle-menu-item" aria-label="خانه">
+          <div class="icon">🏠</div>
+          <span class="label">خانه</span>
+        </a>
+        <a href="/pages/swap.html" class="circle-menu-item" aria-label="تبدیل ارز">
+          <div class="icon">🔄</div>
+          <span class="label">تبدیل</span>
+        </a>
+        <a href="/pages/network.html" class="circle-menu-item" aria-label="شبکه">
+          <div class="icon">🌐</div>
+          <span class="label">شبکه</span>
+        </a>
+        <a href="/pages/profile.html" class="circle-menu-item" aria-label="پروفایل من">
+          <div class="icon">👤</div>
+          <span class="label">پروفایل</span>
+        </a>
+        <a href="/pages/news.html" class="circle-menu-item" aria-label="اخبار و آموزش">
+          <div class="icon">📰</div>
+          <span class="label">اخبار</span>
+        </a>
+        <a href="/pages/shop.html" class="circle-menu-item" aria-label="فروشگاه">
+          <div class="icon">🛒</div>
+          <span class="label">فروشگاه</span>
+        </a>
+        <a href="/pages/about.html" class="circle-menu-item" aria-label="درباره ما">
+          <div class="icon">ℹ️</div>
+          <span class="label">درباره</span>
+        </a>
+      </nav>
+      
+      <style>
+        .circle-menu-horizontal {
+          position: fixed;
+          bottom: 10px;
+          left: 50%;
+          transform: translateX(-50%);
+          display: flex;
+          gap: 25px;
+          background: rgba(28, 24, 49, 0.9);
+          padding: 12px 25px;
+          border-radius: 40px;
+          box-shadow: 0 4px 18px rgba(124, 95, 230, 0.75);
+          z-index: 2000;
+          user-select: none;
+        }
+      
+        .circle-menu-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          color: #a786ff;
+          text-decoration: none;
+          font-weight: 600;
+          font-family: 'Vazirmatn', sans-serif;
+          font-size: 0.85rem;
+          transition: color 0.3s, transform 0.3s;
+        }
+      
+        .circle-menu-item .icon {
+          width: 48px;
+          height: 48px;
+          background: #7c5fe6;
+          border-radius: 50%;
+          color: white;
+          font-size: 28px;
+          line-height: 48px;
+          text-align: center;
+          box-shadow: 0 2px 8px rgba(124, 95, 230, 0.6);
+          margin-bottom: 6px;
+          transition: background 0.3s, transform 0.3s;
+        }
+      
+        .circle-menu-item:hover, .circle-menu-item:focus {
+          color: #fff;
+          transform: scale(1.1);
+        }
+      
+        .circle-menu-item:hover .icon, .circle-menu-item:focus .icon {
+          background: #a786ff;
+          box-shadow: 0 4px 16px rgba(167, 134, 255, 0.8);
+          transform: scale(1.2);
+        }
+      
+        @media (max-width: 600px) {
+          .circle-menu-horizontal {
+            gap: 18px;
+            padding: 10px 20px;
+            bottom: 8px;
+          }
+          .circle-menu-item .icon {
+            width: 40px;
+            height: 40px;
+            font-size: 24px;
+            line-height: 40px;
+            margin-bottom: 4px;
+          }
+          .circle-menu-item {
+            font-size: 0.75rem;
+          }
+        }
+      </style>
+      
+      </style>
+      
+      </style>
+      
 
-    <div class="container pt-4">
-        
+    <header>
+        <h1>پلتفرم LevelUp</h1>
+        <p>آینده آموزش و خودسازی با بلاکچین</p>
+    </header>
 
-    <div class="container py-4">
-        <!-- هدر اصلی -->
-        <div class="row mb-5">
-            <div class="col-12 text-center fade-in-up">
-                <h1 class="display-3 fw-bold mb-3">
-                    <span class="text-gradient">  LevelUp </span>
-                </h1>
-                <p class="lead fs-4 mb-4" data-i18n="main_banner">پلتفرم پیشرفته تجارت و شبکه‌سازی هوشمند</p>
-                <div class="d-flex justify-content-center gap-3 flex-wrap">
-                    <span class="badge badge-gradient fs-6 px-3 py-2">
-                        <i class="bi bi-shield-check"></i> <span class="en-number" data-i18n="badge_secure">امن و قابل اعتماد</span>
-                    </span>
-                    <span class="badge badge-gradient fs-6 px-3 py-2">
-                        <i class="bi bi-lightning"></i> <span class="en-number" data-i18n="badge_fast">سریع و کارآمد</span>
-                    </span>
-                    <span class="badge badge-gradient fs-6 px-3 py-2">
-                        <i class="bi bi-people"></i> <span class="en-number" data-i18n="badge_network">شبکه‌سازی هوشمند</span>
-                    </span>
-                </div>
-            </div>
+    <button id="connectButton">اتصال کیف پول</button>
+
+    <section class="motivation-slider" id="motivation-slider">
+        <span id="motivation-message">در حال بارگذاری پیام انگیزشی...</span>
+        <button class="next-btn" id="next-motivation">&#8592;</button>
+    </section>
+
+    <section class="dashboard-cards">
+        <div class="dashboard-card">
+            <h4>قیمت لحظه‌ای توکن (LVL)</h4>
+            <div class="value" id="token-price">-</div>
         </div>
-
-        <!-- وضعیت کیف پول و اطلاعات کلی -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="glass-card fade-in-up h-100 flex-grow-1 d-flex flex-column">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h3 class="fw-bold mb-0">
-                            <i class="bi bi-wallet2 text-primary"></i>
-                            <span data-i18n="account_status">وضعیت حساب کاربری</span>
-                        </h3>
-                        <div id="network-status" class="badge bg-success">
-                            <i class="bi bi-wifi"></i> <span data-i18n="connected_polygon">متصل به پولیگان</span>
-                        </div>
-                    </div>
-                    
-                    <div class="d-grid gap-2 mb-4">
-                        
-                    </div>
-  
-                     <!-- اطلاعات کلی حساب (Expandable) -->
-<div class="user-status-card mb-4">
-  <div class="card-header d-flex justify-content-between align-items-center" style="cursor:pointer;" data-bs-toggle="collapse" data-bs-target="#user-status-list-1" aria-expanded="true" aria-controls="user-status-list-1">
-    <span><i class="bi bi-person-badge me-2"></i>اطلاعات کلی حساب</span>
-    <i class="bi bi-chevron-down" id="user-status-chevron-1"></i>
-  </div>
-  <div id="user-status-list-1" class="collapse show">
-    <ul class="list-group list-group-flush">
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <span>قیمت LVL (دلار)</span>
-        <input id="token-price-userbox" class="form-control form-control-sm text-end en-number" readonly>
-      </li>
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <span>ارزش هر پوینت (دلار)</span>
-        <input id="point-value-usd" class="form-control form-control-sm text-end en-number" readonly>
-      </li>
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <span>تعداد کل پوینت‌های سازمان</span>
-        <input id="org-total-points" class="form-control form-control-sm text-end en-number" readonly>
-      </li>
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <span>تعداد پوینت دریافتی شما</span>
-        <input id="user-received-points" class="form-control form-control-sm text-end en-number" readonly>
-      </li>
-      <!-- رفرال لینک مختصر و خلاصه با دکمه کپی -->
-        <div class="input-group input-group-sm flex-nowrap w-100 mb-2">
-  
-          </button>
+        <div class="dashboard-card">
+            <h4>توکن در گردش</h4>
+            <div class="value" id="circulating-supply">-</div>
         </div>
-      </li>
-    </ul>
-  </div>
-</div>                   
-
-                    
-                    <!-- وضعیت حساب کاربری (Expandable) -->
-<div class="user-status-card mb-4">
-  <div class="card-header d-flex justify-content-between align-items-center" style="cursor:pointer;" data-bs-toggle="collapse" data-bs-target="#user-status-list-2" aria-expanded="true" aria-controls="user-status-list-2">
-    <span><i class="bi bi-person-badge me-2"></i>جزئیات حساب و ارجاع</span>
-    <i class="bi bi-chevron-down" id="user-status-chevron-2"></i>
-  </div>
-  <div id="user-status-list-2" class="collapse show">
-    <ul class="list-group list-group-flush">
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <span>WALLET ADDRESS :</span>
-        <input id="wallet-address" class="form-control form-control-sm text-end en-number" readonly>
-      </li>
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <span>YOUR REFERRER :</span>
-        <input id="my-referrer" class="form-control form-control-sm text-end en-number" readonly>
-      </li>
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <span>VALUE OF PURCHASE</span>
-        <input id="purchase-amount" class="form-control form-control-sm text-end en-number" readonly>
-      </li>
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <span>DAILY MAX CAP :</span>
-        <input id="daily-cap" class="form-control form-control-sm text-end en-number" readonly>
-      </li>
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <span>MY LVL :</span>
-        <input id="token-balance" class="form-control form-control-sm text-end en-number" readonly>
-      </li>
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <span>LVL_USD :</span>
-        <input id="Tusd-value" class="form-control form-control-sm text-end en-number" readonly>
-      </li>
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <span>POL_USD : </span>
-        <input id="Musd-value" class="form-control form-control-sm text-end en-number" readonly>
-      </li>
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <span>MY POL :</span>
-        <input id="matic-balance" class="form-control form-control-sm text-end en-number" readonly>
-      </li>
-      <!-- رفرال لینک مختصر و خلاصه با دکمه کپی -->
-      <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
-        <span class="mb-2"><i class="bi bi-link-45deg"></i> لینک دعوت شما</span>
-        <div class="input-group input-group-sm flex-nowrap w-100 mb-2">
-          <input id="referral-link-list" class="form-control text-end en-number bg-light border-0 rounded-start" readonly style="font-size:0.95em;direction:ltr;" value="https://lvlup.ir/r/abc123">
-          <button class="btn btn-primary rounded-end" type="button" onclick="copyToClipboard('referral-link-list')" title="کپی لینک">
-            <i class="bi bi-clipboard"></i> کپی
-          </button>
+        <div class="dashboard-card">
+            <h4>کاربران فعال</h4>
+            <div class="value" id="total-points">-</div>
         </div>
-        <small class="text-muted w-100" style="font-size:0.85em;">این لینک را با دوستان خود به اشتراک بگذارید و امتیاز بگیرید.</small>
-      </li>
-    </ul>
-  </div>
-</div>
-<script>
-// تغییر آیکون باز/بسته شدن لیست وضعیت حساب کاربری برای هر لیست به صورت جداگانه
-function setupUserStatusCollapse(collapseId, chevronId) {
-  const userStatusHeader = document.querySelector(`[data-bs-target="#${collapseId}"]`);
-  const userStatusChevron = document.getElementById(chevronId);
-  const userStatusCollapse = document.getElementById(collapseId);
-  if(userStatusHeader && userStatusChevron && userStatusCollapse) {
-    userStatusCollapse.addEventListener('show.bs.collapse', () => {
-      userStatusChevron.classList.remove('bi-chevron-right');
-      userStatusChevron.classList.add('bi-chevron-down');
-    });
-    userStatusCollapse.addEventListener('hide.bs.collapse', () => {
-      userStatusChevron.classList.remove('bi-chevron-down');
-      userStatusChevron.classList.add('bi-chevron-right');
-    });
-  }
-}
-setupUserStatusCollapse('user-status-list-1', 'user-status-chevron-1');
-setupUserStatusCollapse('user-status-list-2', 'user-status-chevron-2');
-</script>
-                    <!-- پایان وضعیت حساب کاربری -->
-                </div>
-            </div>
+        <div class="dashboard-card">
+            <h4>حجم معاملات (MATIC)</h4>
+            <div class="value" id="trading-volume">-</div>
         </div>
-
-        <!-- چارت قیمت لحظه‌ای -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="glass-card fade-in-up h-100 flex-grow-1 d-flex flex-column align-items-stretch" style="width:100%;">
-                    <h4 class="fw-bold mb-3 text-center">
-                        <i class="bi bi-graph-up text-success"></i>
-                        <span data-i18n="قیمت لحظه‌ای">قیمت لحظه‌ای</span>
-                    </h4>
-                    <div class="mb-2 d-flex justify-content-end">
-                        <select id="chart-range" class="form-select form-select-sm w-auto d-inline-block ms-2">
-                            <option value="1d">روزانه</option>
-                            <option value="7d">هفتگی</option>
-                            <option value="30d">ماهانه</option>
-                            <option value="all">همه</option>
-                        </select>
-                    </div>
-                    <div style="width:100%;flex:1;display:flex;align-items:center;">
-                        <canvas id="priceChart" width="600" height="350" style="width:100%;max-width:100%;height:auto;"></canvas>
-                    </div>
-                </div>
-            </div>
+        <div class="dashboard-card">
+            <h4>پوینت‌های پرداخت شده</h4>
+            <div class="value" id="claimed-points">-</div>
         </div>
-
-        <!-- تب‌های اصلی -->
-        <div class="row">
-            <div class="col-12">
-                <div class="glass-card fade-in-up">
-                    <ul class="nav nav-pills nav-fill mb-4" id="mainTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="swap-tab" data-bs-toggle="pill" data-bs-target="#swap-content" type="button" role="tab">
-                                <i class="bi bi-arrow-left-right"></i>
-                                سواپ توکن
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="network-tab" data-bs-toggle="pill" data-bs-target="#network-content" type="button" role="tab">
-                                <i class="bi bi-diagram-3"></i>
-                                شبکه زیرمجموعه
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="analytics-tab" data-bs-toggle="pill" data-bs-target="#analytics-content" type="button" role="tab">
-                                <i class="bi bi-bar-chart"></i>
-                                آمار و تحلیل
-                            </button>
-                        </li>
-                    </ul>
-                    
-
-                    <div class="tab-content" id="mainTabsContent">
-                        <!-- تب سواپ -->
-                        <div class="tab-pane fade show active" id="swap-content" role="tabpanel">
-                            <div class="swap-container">
-                                <h3 class="text-center mb-4 fw-bold">
-                                    <i class="bi bi-arrow-left-right text-primary"></i>
-                                    سواپ هوشمند توکن
-                                </h3>
-                                <div class="row justify-content-center">
-                                    <div class="col-lg-6">
-                                        <!-- From Token -->
-                                        <div class="swap-input-group">
-                                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                                <label class="form-label fw-semibold mb-0">از:</label>
-                                                <div class="dropdown">
-                                                    <button class="btn btn-outline-primary dropdown-toggle" type="button" id="fromTokenDropdown" data-bs-toggle="dropdown">
-                                                        <img src="" width="20" height="20" class="me-2">
-                                                        <span data-i18n="matic">MATIC</span>
-                                                    </button>
-                                                    <ul class="dropdown-menu">
-                                                        <li><a class="dropdown-item" href="#" data-token="MATIC">
-                                                            <img src="" width="20" height="20" class="me-2">
-                                                            <span data-i18n="matic">MATIC</span>
-                                                        </a></li>
-                                                        <li><a class="dropdown-item" href="#" data-token="LVL">
-                                                            <div class="bg-primary rounded-circle d-inline-block me-2" style="width: 20px; height: 20px;"></div>
-                                                            <span data-i18n="lvl">LVL</span>
-                                                        </a></li>
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                            <div class="input-group">
-                                                <input type="number" id="from-amount" class="form-control form-control-lg" placeholder="0.0" min="0" step="0.000001">
-                                                <button class="btn btn-outline-secondary" onclick="setMaxAmount('from')" data-i18n="max_btn">MAX</button>
-                                            </div>
-                                            <div class="text-muted mt-2">
-                                                <span data-i18n="balance">موجودی:</span> <span id="from-balance">0.0000</span>
-                                            </div>
-                                        </div>
-
-                                        <!-- Swap Arrow -->
-                                        <div class="swap-arrow">
-                                            <button class="swap-arrow-btn" onclick="swapTokens()" title="تغییر جهت" data-i18n-title="swap_direction">
-                                                <i class="bi bi-arrow-down-up"></i>
-                                            </button>
-                                        </div>
-
-                                        <!-- To Token -->
-                                        <div class="swap-input-group">
-                                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                                <label class="form-label fw-semibold mb-0" data-i18n="to_label">به:</label>
-                                                <div class="dropdown">
-                                                    <button class="btn btn-outline-primary dropdown-toggle" type="button" id="toTokenDropdown" data-bs-toggle="dropdown">
-                                                        <div class="bg-primary rounded-circle d-inline-block me-2" style="width: 20px; height: 20px;"></div>
-                                                        <span data-i18n="lvl">LVL</span>
-                                                    </button>
-                                                    <ul class="dropdown-menu">
-                                                        <li><a class="dropdown-item" href="#" data-token="MATIC">
-                                                            <img src="" width="20" height="20" class="me-2">
-                                                            <span data-i18n="matic">MATIC</span>
-                                                        </a></li>
-                                                        <li><a class="dropdown-item" href="#" data-token="LVL">
-                                                            <div class="bg-primary rounded-circle d-inline-block me-2" style="width: 20px; height: 20px;"></div>
-                                                            <span data-i18n="lvl">LVL</span>
-                                                        </a></li>
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                            <input type="text" id="to-amount" class="form-control form-control-lg" placeholder="0.0" readonly>
-                                            <div class="text-muted mt-2">
-                                                <span data-i18n="balance">موجودی:</span> <span id="to-balance">0.0000</span>
-                                            </div>
-                                        </div>
-
-                                        <!-- Swap Info -->
-                                        <div class="swap-info-box">
-                                            <div class="d-flex justify-content-between mb-2">
-                                                <span data-i18n="exchange_rate">نرخ تبدیل:</span>
-                                                <span id="exchange-rate">1 MATIC = 0 LVL</span>
-                                            </div>
-                                            <div class="d-flex justify-content-between mb-2">
-                                                <span data-i18n="network_fee">کارمزد شبکه:</span>
-                                                <span id="network-fee">~0.001 MATIC</span>
-                                            </div>
-                                            <div class="d-flex justify-content-between">
-                                                <span data-i18n="price_impact">تاثیر قیمت:</span>
-                                                <span id="price-impact" class="text-success">< 0.01%</span>
-                                            </div>
-                                        </div>
-
-                                        <!-- Swap Button -->
-                                        <button id="swap-button" class="btn btn-primary btn-lg w-100" disabled>
-                                            <i class="bi bi-arrow-left-right"></i>
-                                            <span data-i18n="connect_wallet_btn">اتصال کیف پول</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- تب شبکه -->
-                        <div class="tab-pane fade" id="network-content" role="tabpanel">
-                            <div class="row">
-                                <div class="col-lg-4">
-                                    <div class="card h-100">
-                                        <div class="card-header bg-info text-white">
-                                            <h5 class="mb-0">
-                                                <i class="bi bi-graph-up"></i>
-                                                آمار شبکه شما
-                                            </h5>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row g-3">
-                                                <div class="col-6">
-                                                    <div class="text-center">
-                                                        <div class="display-6 fw-bold text-primary" id="total-users">0</div>
-                                                        <small class="text-muted">کل کاربران</small>
-                                                    </div>
-                                                </div>
-                                                <div class="col-6">
-                                                    <div class="text-center">
-                                                        <div class="display-6 fw-bold text-warning" id="left-users">0</div>
-                                                        <small class="text-muted">سمت چپ</small>
-                                                    </div>
-                                                </div>
-                                                <div class="col-6">
-                                                    <div class="text-center">
-                                                        <div class="display-6 fw-bold text-info" id="right-users">0</div>
-                                                        <small class="text-muted">سمت راست</small>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <hr>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-8">
-                                    <div class="card h-100">
-                                        <div class="card-header bg-info text-white">
-                                            <h5 class="mb-0">
-                                                <i class="bi bi-diagram-3"></i>
-                                                درخت شبکه زیرمجموعه
-                                            </h5>
-                                        </div>
-                                        <div class="card-body">
-                                            <div id="tree-container" class="d-flex justify-content-center align-items-center" style="min-height: 300px;">
-                                                <div class="text-center">
-                                                    <div class="loading-spinner mb-3"></div>
-                                                    <p class="text-muted">در حال بارگذاری درخت شبکه...</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- تب آمار و تحلیل -->
-                        <div class="tab-pane fade" id="analytics-content" role="tabpanel">
-                            <div class="row g-4">
-                                <div class="col-lg-6">
-                                    <div class="card">
-                                        <div class="card-header bg-success text-white">
-                                            <h5 class="mb-0">
-                                                <i class="bi bi-pie-chart"></i>
-                                                آمار کلی سیستم
-                                            </h5>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row g-3 text-center">
-                                                <div class="col-6">
-                                                    <div class="border rounded p-3">
-                                                        <div class="h3 fw-bold text-primary mb-1" id="total-supply">0</div>
-                                                        <small class="text-muted">کل عرضه توکن</small>
-                                                    </div>
-                                                </div>
-                                                <div class="col-6">
-                                                    <div class="border rounded p-3">
-                                                        <div class="h3 fw-bold text-success mb-1" id="total-holders">0</div>
-                                                        <small class="text-muted">تعداد دارندگان</small>
-                                                    </div>
-                                                </div>
-                                                <div class="col-6">
-                                                    <div class="border rounded p-3">
-                                                        <div class="h3 fw-bold text-warning mb-1" id="binary-pool-amount">0</div>
-                                                        <small class="text-muted">استخر باینری</small>
-                                                    </div>
-                                                </div>
-                                                <div class="col-6">
-                                                    <div class="border rounded p-3">
-                                                        <div class="h3 fw-bold text-info mb-1" id="total-volume">0</div>
-                                                        <small class="text-muted">حجم معاملات</small>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="card">
-                                        <div class="card-header bg-info text-white">
-                                            <h5 class="mb-0">
-                                                <i class="bi bi-graph-up"></i>
-                                                عملکرد شما
-                                            </h5>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="mb-4">
-                                                <div class="d-flex justify-content-between mb-2">
-                                                    <span>سود کل:</span>
-                                                    <span class="fw-bold text-success" id="total-profit">+0 MATIC</span>
-                                                </div>
-                                                <div class="d-flex justify-content-between mb-2">
-                                                    <span>پاداش معرفی:</span>
-                                                    <span class="fw-bold text-primary" id="referral-rewards">0 LVL</span>
-                                                </div>
-                                                <div class="d-flex justify-content-between mb-2">
-                                                    <span>پاداش باینری:</span>
-                                                    <span class="fw-bold text-warning" id="binary-rewards">0 LVL</span>
-                                                </div>
-                                            </div>
-                                            <button class="btn btn-outline-primary w-100">
-                                                <i class="bi bi-download"></i>
-                                                دانلود گزارش کامل
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="dashboard-card">
+            <h4>پوینت‌های مانده</h4>
+            <div class="value" id="remaining-points">-</div>
         </div>
-
-
-
-    <!-- Modal تراکنش -->
-    <div class="modal fade" id="transactionModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header border-0">
-                    <h5 class="modal-title">
-                        <i class="bi bi-hourglass-split text-primary"></i>
-                        در حال پردازش تراکنش
-                    </h5>
-                </div>
-                <div class="modal-body text-center py-4">
-                    <div class="loading-spinner mb-3"></div>
-                    <p id="transaction-message" class="mb-0">لطفا منتظر بمانید...</p>
-                    <small class="text-muted">این عملیات ممکن است چند دقیقه طول بکشد</small>
-                </div>
-            </div>
+        <div class="dashboard-card">
+            <h4>ارزش هر پوینت (LVL)</h4>
+            <div class="value" id="point-value">-</div>
         </div>
-    </div>
+        <div class="dashboard-card">
+            <h4>استخر پاداش (LVL)</h4>
+            <div class="value" id="reward-pool">-</div>
+        </div>
+    </section>
 
-    <!-- Toast Container -->
-    <div id="toast-container" class="position-fixed top-0 end-0 p-3" style="z-index: 9999;"></div>
+    <section class="chart-section">
+        <h3 style="text-align:center; color:#a786ff;">نمودار قیمت LVL به MATIC</h3>
+        <canvas id="priceChart" height="120"></canvas>
+    </section>
 
-    <div id="footer-placeholder"></div>
+    <footer>
+        <p style="text-align:center; color:#888;">&copy; 2025 LevelUp. All rights reserved.</p>
+    </footer>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-    <script src="js/i18n.js"></script>
+      
+    <!-- اسکریپت‌های پروژه -->
     <script src="js/config.js"></script>
-    <script src="js/app.js"></script>
-    <script src="js/swap.js"></script>
-    <script>
-        // تبدیل اعداد فارسی به انگلیسی در عناصر با کلاس en-number
-function faToEnNumber(str) {
-    return str.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
-}
-function fixEnNumbers() {
-    document.querySelectorAll('.en-number').forEach(el => {
-        el.innerHTML = faToEnNumber(el.innerHTML);
-    });
-}
-document.addEventListener('DOMContentLoaded', fixEnNumbers);
+    <script src="js/web3-interactions.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/homepage.js"></script>
 
-        document.addEventListener('DOMContentLoaded', function() {
-            // بارگذاری navbar و footer
-            fetch('footer.html').then(r => r.text()).then(html => {
-                document.getElementById('footer-placeholder').innerHTML = html;
-            });
-
-            // سوییچ حالت تاریک/روشن فقط برای دکمه داخل هدر مدرن
-            const themeToggle = document.getElementById('theme-toggle');
-            if(themeToggle) {
-                themeToggle.addEventListener('click', function() {
-                    document.body.classList.toggle('dark-mode');
-                    // تغییر آیکون
-                    const icon = themeToggle.querySelector('i');
-                    if(document.body.classList.contains('dark-mode')) {
-                        icon.classList.remove('bi-moon');
-                        icon.classList.add('bi-brightness-high');
-                    } else {
-                        icon.classList.remove('bi-brightness-high');
-                        icon.classList.add('bi-moon');
-                    }
-                });
-                // حالت پیش‌فرض بر اساس سیستم
-                if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                    document.body.classList.add('dark-mode');
-                    const icon = themeToggle.querySelector('i');
-                    icon.classList.remove('bi-moon');
-                    icon.classList.add('bi-brightness-high');
-                }
-            }
-
-            // هماهنگ‌سازی انتخاب زبان با i18n.js و تغییر جهت و زبان سایت
-            const langSelect = document.getElementById('lang-select');
-            function setHtmlLangDir(lang) {
-                if(lang === 'fa') {
-                    document.documentElement.lang = 'fa';
-                    document.documentElement.dir = 'rtl';
-                    document.body.classList.add('fa-font'); // اگر فونت فارسی دارید
-                } else {
-                    document.documentElement.lang = 'en';
-                    document.documentElement.dir = 'ltr';
-                    document.body.classList.remove('fa-font');
-                }
-            }
-            if(langSelect) {
-                langSelect.value = document.documentElement.lang || 'en';
-                setHtmlLangDir(langSelect.value);
-                langSelect.addEventListener('change', function() {
-                    setLanguage(this.value);
-                    setHtmlLangDir(this.value);
-                    langSelect.value = this.value;
-                });
-            }
-
-            // اتصال خودکار به کیف پول در لود صفحه
-            if (typeof connectWallet === 'function') {
-                connectWallet();
-            }
-        });
-    </script>
-
-    <!-- Google Translate Widget -->
-    <div id="google_translate_element"></div>
-    <script type="text/javascript">
-    function googleTranslateElementInit() {
-      new google.translate.TranslateElement({pageLanguage: 'fa', includedLanguages: 'en,fa,de,tr,fr', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
-    }
-    </script>
-    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </body>
 </html>

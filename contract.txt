@@ -1,0 +1,1713 @@
+0x6B5b7Dc77BB3Fe87908ED0Fe22b030a5604cD3A0
+CONTRACT ADDRESS 24/06/2026
+
+------------------------------------------=================================================================-----------------------------------
+
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.30;
+
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+
+
+contract levelup is ERC20, ReentrancyGuard 
+{
+    // Constants
+        uint256 public constant REFERRAL_FEE_PERCENT = 1; // 1%
+        uint256 public constant MAX_BINARY_POINT_CAP = 100;
+
+    // فقط یک اوراکل معتبر (Chainlink) برای جلوگیری از خطاهای اوراکل
+    AggregatorV3Interface[1] public oracles = [
+        AggregatorV3Interface(0xAB594600376Ec9fD91F8e885dADF0CE036862dE0) // Chainlink MATIC/USD
+    ];
+
+    // State variables
+        address public immutable deployer;
+        uint256 public totalUsers;
+        uint256 public binaryPool;       
+        uint256 public totalClaimableBinaryPoints;
+        uint256 public totalPoints; // مجموع امتیازها
+        uint256 public rewardPool; // استخر سود
+        address[] public claimable; // کسانی که می‌تونن برداشت کنن
+        uint256 public circulatingSupply;
+        uint256 public totalDirectDeposits;
+        uint256 public regprice=20;
+    // User structure
+        struct User {
+            uint256 index;
+            uint256 leftChild;
+            uint256 rightChild;
+            uint256 parent;
+            address referrer;
+            address left;
+            address right;
+            uint256 binaryPoints;
+            uint256 binaryPointCap;
+            uint256 binaryPointsClaimed;
+            bool activated;
+            uint256 totalPurchasedMATIC;
+            uint256 totalPurchasedKind;
+        }
+
+    // Mappings
+        mapping(address => User) public users;
+        mapping(uint256 => address) public indexToAddress;
+        mapping(address => bool) public registered;
+        mapping(address => bool) public eligibleForReward;
+        mapping(uint256 => uint256) public subtreeCount; // شامل خود نود هم هست
+        mapping(uint256 => bool) public isSlotLocked;
+        mapping(address => uint256) private balances;
+        mapping(address => bool) public isClaimable;
+        mapping(address => uint256) public points; // امتیاز هر فرد
+
+    // Events
+        event purchaseKind(address indexed user, uint256 amountlvl);
+        event Activated(address indexed user, uint256 amountlvl);
+        event TokensBought(address indexed buyer, uint256 maticAmount, uint256 tokenAmount);
+        event TokensSold(address indexed seller, uint256 tokenAmount, uint256 maticAmount);
+        event TreeStructureUpdated(
+                                    address indexed user,
+                                    address indexed parent,
+                                    address indexed referrer,
+                                    uint256 position, // 0 for left, 1 for right
+                                    uint256 timestamp);
+        event BinaryPointsUpdated(
+                                    address indexed user,
+                                    uint256 newPoints,
+                                    uint256 newCap,
+                                    uint256 timestamp );
+        event BinaryRewardDistributed(
+                                    address indexed claimer,
+                                    uint256 totalDistributed,
+                                    uint256 claimerReward,
+                                    uint256 timestamp  );
+        event BinaryPoolUpdated(
+                                    uint256 newPoolSize,
+                                    uint256 addedAmount,
+                                    uint256 timestamp );
+        event DirectMATICReceived(address indexed sender, uint256 amount, uint256 newTokenPrice);
+
+    constructor() ERC20("lvl Token", "LVLUP") 
+    {
+        deployer = msg.sender;
+        users[deployer].referrer = deployer;
+        users[deployer].activated = true;
+        registered[deployer] = true;
+        indexToAddress[1] = deployer;
+        users[deployer].index = 1;
+        totalUsers = 1;
+        _mint(msg.sender, 1000000 * 1e18);    }
+     //@dev ساده‌ترین تابع دریافت قیمت فقط با Chainlink
+    function getRegistrationPrice() external view returns (uint256) {
+        uint256 tokenPriceUsd = getTokenPriceInUSD(); // 8 decimals
+        require(tokenPriceUsd > 0, "Token price is zero");
+
+        uint256 usdAmount = regprice * 1e8; // 20 دلار با 8 رقم اعشار
+        uint256 result = (usdAmount * 1e18) / tokenPriceUsd;
+
+        return result - (result % 1e6); // حذف اعشار اضافه (اختیاری)
+    }
+    function getPrice() public view returns (uint256) 
+    {
+        (, int256 price, , , ) = oracles[0].latestRoundData();
+        require(price > 0, "Invalid price");
+        return uint256(price);
+    }
+    function getContractMaticBalance() public view returns (uint256) 
+    {
+        return address(this).balance;
+    }
+    function getContractTokenBalance(address tokenAddress) public view returns (uint256) 
+    {
+        return IERC20(tokenAddress).balanceOf(address(this));
+    }
+    function getPointValue() public view returns (uint256) 
+    {
+        if (totalPoints == 0) return 0;
+        return address(this).balance / totalPoints;
+    }
+    function _mintTokens(address to, uint256 amount) internal 
+    {
+        _mint(to, amount); // توابع _mint اوپن‌زیلین ERC20
+    }
+    function _burnTokens(address from, uint256 amount) internal 
+    {
+        _burn(from, amount);
+    }
+    // گرفتن قیمت لحظه‌ای MATIC (با 8 رقم اعشار)
+    function getLatestMaticPrice() public view returns (uint256) 
+    {
+       return getPrice();
+    }
+    // تبدیل مقدار دلاری (به سنت) به مقدار لازم MATIC با دقت بالا
+    function usdToMatic(uint256 usdAmountInCents) public view returns (uint256) 
+    {
+        uint256 maticPrice = getLatestMaticPrice(); // با 8 اعشار
+
+        // 1 دلار = 100 سنت → برای داشتن 18 رقم اعشار: سنت * 1e16
+        uint256 usdAmount18Decimals = usdAmountInCents * 1e16;
+
+        // چون قیمت MATIC هم با 8 اعشاره، باید این رو در ضرب وارد کنیم:
+        uint256 maticNeeded = (usdAmount18Decimals * 1e8) / maticPrice;
+
+        return maticNeeded; // مقدار MATIC بر حسب 18 رقم اعشار
+    }
+    function _getTokenPrice() internal view returns (uint256) {
+        uint256 contractBalance = address(this).balance;
+        uint256 supply = totalSupply();
+        // جلوگیری از قیمت نجومی در ابتدای کار
+        if (supply < 1e18) supply = 1e18; // حداقل یک توکن
+        if (contractBalance < 1e15) contractBalance = 1e15; // حداقل 0.001 MATIC
+        return (contractBalance * 1e18) / supply;
+    }
+    function _maticToTokens(uint256 maticAmount) internal view returns (uint256) 
+    {
+        uint256 price = _getTokenPrice();
+        require(price > 0, "Token price is zero");
+        return (maticAmount* 1e18 ) / price;
+    }
+    function _tokensToMatic(uint256 tokenAmount) internal view returns (uint256) 
+    {
+        uint256 price = _getTokenPrice();
+        require(price > 0, "Token price is zero");
+        return (tokenAmount * price) / 1e18;
+    }
+    function updateTokenPrice() external view returns (uint256) 
+    {
+        return _getTokenPrice();
+    }
+    function getTokenPriceInUSD() public view returns (uint256) 
+    {
+        uint256 tokenPriceInMatic = _getTokenPrice();  // قیمت توکن بر حسب MATIC (با 18 رقم اعشار)
+        uint256 maticPriceInUSD = getLatestMaticPrice();  // قیمت MATIC بر حسب دلار با 8 رقم اعشار
+        uint256 tokenPriceInUSD = (tokenPriceInMatic * maticPriceInUSD) / 1e18;
+        return tokenPriceInUSD;  // قیمت دلاری توکن با 8 رقم اعشار
+   
+    }
+    function getLatestLvlPrice()external view returns (uint256)
+    {
+            return getTokenPriceInUSD();
+    }
+    function buyTokens() external payable nonReentrant {
+        require(msg.value > 0, "Send MATIC to buy tokens");
+
+        uint256 referralShare = (msg.value * 1) / 100;
+        uint256 userShare = (msg.value * 97) / 100;
+
+        uint256 tokensForReferral = _maticToTokens(referralShare);
+        uint256 tokensForUser = _maticToTokens(userShare);
+        require(tokensForUser > 0, "Rounded amount too low");
+
+        address referrer = users[msg.sender].referrer;
+        address referralRecipient = referrer != address(0) ? referrer : deployer;
+
+        _mint(referralRecipient, tokensForReferral);
+        _mint(msg.sender, tokensForUser);
+
+        users[msg.sender].totalPurchasedMATIC += msg.value;
+
+        emit TokensBought(msg.sender, msg.value, tokensForUser);
+    }
+    function sellTokens(uint256 tokenAmount) external nonReentrant {
+        require(tokenAmount > 0, "Amount zero");
+        require(balanceOf(msg.sender) >= tokenAmount, "Insufficient balance");
+
+        uint256 referralAmount = (tokenAmount * 1) / 100;
+        uint256 amountToUser = (tokenAmount * 97) / 100;
+        uint256 maticAmount = _tokensToMatic(amountToUser);
+        require(maticAmount > 0, "Rounded MATIC too low");
+
+        _burn(msg.sender, tokenAmount);
+
+        address referrer = users[msg.sender].referrer;
+        address referralRecipient = referrer != address(0) ? referrer : deployer;
+
+        _mint(referralRecipient, referralAmount);
+
+        require(address(this).balance >= maticAmount, "Insufficient contract MATIC");
+
+        (bool sent, ) = msg.sender.call{value: maticAmount}("");
+        require(sent, "MATIC transfer failed");
+
+        emit TokensSold(msg.sender, tokenAmount, maticAmount);
+    }
+    function purchase(uint256 amountLvl ,uint256 payout)external nonReentrant
+    {
+        require(registered[msg.sender], "not registered");
+                // تبدیل MATIC به توکن
+        uint256 tokensForBinary = (amountLvl  * payout) / 100;
+        uint256 tokensForDeployer = (amountLvl  * (payout-100)) / 100;
+        require(amountLvl * getLatestMaticPrice()>=10,"insuficient token amount");
+        //افزودن توکن به باینری 
+        _mint(address(this), tokensForBinary);
+        _mint(deployer, tokensForDeployer);
+        _burn(address(msg.sender), amountLvl );
+        users[msg.sender].totalPurchasedKind +=  (amountLvl  * getTokenPriceInUSD()) / 1e8;
+        User storage user = users[msg.sender];
+        if(users[msg.sender].totalPurchasedKind  >= 50)
+        {
+        uint256 pointsToAdd = users[msg.sender].totalPurchasedKind / 50;
+        uint256 newCap = user.binaryPointCap + pointsToAdd;
+        if (newCap >= 100) newCap = 100;
+        if (newCap > user.binaryPointCap) {
+            totalClaimableBinaryPoints += (newCap - user.binaryPointCap);
+            user.binaryPointCap = newCap;
+            require(user.binaryPointCap <= MAX_BINARY_POINT_CAP, "Already maxed");
+            emit BinaryPointsUpdated( msg.sender, user.binaryPoints, user.binaryPointCap, block.timestamp);
+            updateParent(msg.sender);
+        }   
+        }
+        
+        emit purchaseKind(msg.sender,amountLvl );
+    }
+    function registerAndActivate(address referrer, uint256 tokenAmount) external nonReentrant {
+        require(!registered[msg.sender], "Already registered");
+        require(users[referrer].activated, "Referrer not activated");
+        
+        uint256 lvlUSD  = getTokenPriceInUSD();
+        require(lvlUSD  > 0 && lvlUSD  < 1e10, "Unrealistic token price");
+
+        regprice = totalUsers <= 50 ? lvlUSD  * 20 : lvlUSD  * 100;
+        regprice = regprice < 500 ? regprice + (totalUsers / 100) : 500;
+        require(tokenAmount >= regprice, "Insufficient token amount");
+
+        // Token goes into binary pool directly
+        _mint(address(this), tokenAmount);
+        _burn(msg.sender,tokenAmount);
+        totalUsers++;
+        uint256 userIndex = totalUsers;
+
+        uint256 parentIndex = findAvailableParentLimitedDepth(referrer);
+        require(parentIndex != 0, "No available position within 5 levels");
+        require(!isSlotLocked[parentIndex], "Position is temporarily locked");
+        isSlotLocked[parentIndex] = true;
+
+        users[msg.sender] = User({
+            index: userIndex,
+            leftChild: 0,
+            rightChild: 0,
+            parent: parentIndex,
+            referrer: referrer,
+            left: address(0),
+            right: address(0),
+            binaryPoints: 0,
+            binaryPointCap: 1,
+            binaryPointsClaimed: 0,
+            activated: true,
+            totalPurchasedMATIC: 0,
+            totalPurchasedKind:0
+        });
+
+        indexToAddress[userIndex] = msg.sender;
+        registered[msg.sender] = true;
+
+        address parentAddr = indexToAddress[parentIndex];
+        if (users[parentAddr].leftChild == 0) {
+            users[parentAddr].leftChild = userIndex;
+            users[parentAddr].left = msg.sender;
+        } else {
+            users[parentAddr].rightChild = userIndex;
+            users[parentAddr].right = msg.sender;
+        }
+
+        isSlotLocked[parentIndex] = false;
+
+        updateParent(msg.sender);
+
+        emit Activated(msg.sender, tokenAmount);
+        emit TreeStructureUpdated(
+            msg.sender,
+            parentAddr,
+            referrer,
+            users[parentAddr].left == msg.sender ? 0 : 1,
+            block.timestamp
+        );
+    }
+    function findAvailableParentLimitedDepth(address referrer) internal view returns (uint256) 
+    {
+        uint256 referrerIndex = users[referrer].index;
+        if (referrerIndex == 0) return 0;
+
+        // ساختار صف برای BFS
+        uint256[] memory queue = new uint256[](totalUsers);
+        uint256[] memory depths = new uint256[](totalUsers);
+        uint256 front = 0;
+        uint256 rear = 0;
+
+        queue[rear] = referrerIndex;
+        depths[rear] = 0;
+        rear++;
+
+        while (front < rear) {
+            uint256 currentIndex = queue[front];
+            uint256 currentDepth = depths[front];
+            front++;
+
+            if (currentDepth >= 5) continue;
+
+            User storage currentUser = users[indexToAddress[currentIndex]];
+
+            // بررسی جای خالی در چپ یا راست
+            if (currentUser.leftChild == 0 || currentUser.rightChild == 0) {
+                return currentIndex;
+            }
+
+            // محاسبه تعداد کاربران زیرشاخه چپ و راست
+            uint256 leftCount = countSubtreeUsers(currentUser.leftChild);
+            uint256 rightCount = countSubtreeUsers(currentUser.rightChild);
+
+            // فقط شاخه با کاربر کمتر بررسی شود
+            if (leftCount <= rightCount) {
+                queue[rear] = currentUser.leftChild;
+                depths[rear] = currentDepth + 1;
+                rear++;
+            } else {
+                queue[rear] = currentUser.rightChild;
+                depths[rear] = currentDepth + 1;
+                rear++;
+            }
+        }
+
+        // اگر در ۵ سطح جای خالی پیدا نشد
+        return 0;
+    }
+    function claim() external nonReentrant 
+    {
+        uint256 userPoints = points[msg.sender];
+        require(userPoints > 0, "No points");
+        require(totalPoints > 0, "Zero totalPoints");
+
+        uint256 pointValue = address(this).balance / totalPoints;
+        uint256 reward = userPoints * pointValue;
+        require(reward > 0, "Rounded reward too low");
+
+        points[msg.sender] = 0;
+        totalPoints -= userPoints;
+        isClaimable[msg.sender] = false;
+        circulatingSupply -= reward;
+
+        _mint(msg.sender, reward);
+    }
+    function countSubtreeUsers(uint256 index) public view returns (uint256) 
+    {
+        if (index == 0 || indexToAddress[index] == address(0)) return 0;
+        User storage u = users[indexToAddress[index]];
+        return 1 + countSubtreeUsers(u.leftChild) + countSubtreeUsers(u.rightChild);
+    }
+    function getUserTree(address user) external view returns ( address left, address right, bool activated, uint256 binaryPoints, uint256 binaryPointCap) 
+    {
+        User storage u = users[user];
+        return (u.left, u.right, u.activated, u.binaryPoints, u.binaryPointCap);
+    }   
+    function updateParent(address current) internal 
+    {
+        uint256 depth = 0;
+        while (current != address(0) && depth < totalUsers) 
+        {
+            uint256 index = users[current].index;
+            subtreeCount[index] += 1;
+            User storage u = users[current];
+            uint256 leftSubtree = subtreeCount[u.leftChild];
+            uint256 rightSubtree = subtreeCount[u.rightChild];
+            uint256 minSide = leftSubtree < rightSubtree ? leftSubtree : rightSubtree;
+            if (minSide > u.binaryPoints && u.binaryPoints <= u.binaryPointCap) 
+            {
+                u.binaryPoints = minSide;
+                points[current] = u.binaryPoints;
+                if (!eligibleForReward[current]) 
+                {
+                    eligibleForReward[current] = true;
+                    totalClaimableBinaryPoints++;
+                    claimable.push(current);
+                    isClaimable[current] = true;
+                }
+            }
+            current = indexToAddress[u.parent];
+            depth++;
+        }
+    }
+    // --- View functions for frontend swap ---
+    // تخمین تعداد توکن دریافتی برای مقدار مشخص MATIC
+    function estimateBuy(uint256 maticAmount) external view returns (uint256) {
+        uint256 price = _getTokenPrice();
+        require(price > 0, "Token price is zero");
+        return (maticAmount * 1e18) / price;
+    }
+    // تخمین مقدار MATIC دریافتی برای مقدار مشخص توکن
+    function estimateSell(uint256 tokenAmount) external view returns (uint256) {
+        uint256 price = _getTokenPrice();
+        require(price > 0, "Token price is zero");
+        return (tokenAmount * price) / 1e18;
+    }
+    receive() external payable {
+        require(msg.value > 0, "Zero amount sent");
+        
+        // 2. ثبت آماری (بدون تغییر در عرضه توکن)
+        totalDirectDeposits += msg.value;
+        
+        // 3. رویداد برای رهگیری
+        emit DirectMATICReceived(
+            msg.sender,
+            msg.value,
+            _getTokenPrice() // قیمت فعلی
+        );
+
+    }
+}
+
+
+
+------------------------==============================================----------------------------
+
+
+[
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "spender",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "approve",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "amountLvl",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "payout",
+				"type": "uint256"
+			}
+		],
+		"name": "purchase",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "spender",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "allowance",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "needed",
+				"type": "uint256"
+			}
+		],
+		"name": "ERC20InsufficientAllowance",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "balance",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "needed",
+				"type": "uint256"
+			}
+		],
+		"name": "ERC20InsufficientBalance",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "approver",
+				"type": "address"
+			}
+		],
+		"name": "ERC20InvalidApprover",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "receiver",
+				"type": "address"
+			}
+		],
+		"name": "ERC20InvalidReceiver",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			}
+		],
+		"name": "ERC20InvalidSender",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "spender",
+				"type": "address"
+			}
+		],
+		"name": "ERC20InvalidSpender",
+		"type": "error"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amountlvl",
+				"type": "uint256"
+			}
+		],
+		"name": "Activated",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "spender",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "Approval",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "newPoints",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "newCap",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			}
+		],
+		"name": "BinaryPointsUpdated",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "newPoolSize",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "addedAmount",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			}
+		],
+		"name": "BinaryPoolUpdated",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "claimer",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "totalDistributed",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "claimerReward",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			}
+		],
+		"name": "BinaryRewardDistributed",
+		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "buyTokens",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "claim",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "newTokenPrice",
+				"type": "uint256"
+			}
+		],
+		"name": "DirectMATICReceived",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "buyer",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "maticAmount",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "tokenAmount",
+				"type": "uint256"
+			}
+		],
+		"name": "TokensBought",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "seller",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "tokenAmount",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "maticAmount",
+				"type": "uint256"
+			}
+		],
+		"name": "TokensSold",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "Transfer",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "parent",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "referrer",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "position",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			}
+		],
+		"name": "TreeStructureUpdated",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amountlvl",
+				"type": "uint256"
+			}
+		],
+		"name": "purchaseKind",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "referrer",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "tokenAmount",
+				"type": "uint256"
+			}
+		],
+		"name": "registerAndActivate",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "tokenAmount",
+				"type": "uint256"
+			}
+		],
+		"name": "sellTokens",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "transfer",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "transferFrom",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"stateMutability": "payable",
+		"type": "receive"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "spender",
+				"type": "address"
+			}
+		],
+		"name": "allowance",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "account",
+				"type": "address"
+			}
+		],
+		"name": "balanceOf",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "binaryPool",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "circulatingSupply",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "claimable",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "index",
+				"type": "uint256"
+			}
+		],
+		"name": "countSubtreeUsers",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "decimals",
+		"outputs": [
+			{
+				"internalType": "uint8",
+				"name": "",
+				"type": "uint8"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "deployer",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "eligibleForReward",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "maticAmount",
+				"type": "uint256"
+			}
+		],
+		"name": "estimateBuy",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "tokenAmount",
+				"type": "uint256"
+			}
+		],
+		"name": "estimateSell",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getContractMaticBalance",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "tokenAddress",
+				"type": "address"
+			}
+		],
+		"name": "getContractTokenBalance",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getLatestLvlPrice",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getLatestMaticPrice",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getPointValue",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getPrice",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getRegistrationPrice",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getTokenPriceInUSD",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			}
+		],
+		"name": "getUserTree",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "left",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "right",
+				"type": "address"
+			},
+			{
+				"internalType": "bool",
+				"name": "activated",
+				"type": "bool"
+			},
+			{
+				"internalType": "uint256",
+				"name": "binaryPoints",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "binaryPointCap",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "indexToAddress",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "isClaimable",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "isSlotLocked",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "MAX_BINARY_POINT_CAP",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "name",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "oracles",
+		"outputs": [
+			{
+				"internalType": "contract AggregatorV3Interface",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "points",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "REFERRAL_FEE_PERCENT",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "registered",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "regprice",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "rewardPool",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "subtreeCount",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "symbol",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "totalClaimableBinaryPoints",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "totalDirectDeposits",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "totalPoints",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "totalSupply",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "totalUsers",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "updateTokenPrice",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "usdAmountInCents",
+				"type": "uint256"
+			}
+		],
+		"name": "usdToMatic",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "users",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "index",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "leftChild",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "rightChild",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "parent",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "referrer",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "left",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "right",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "binaryPoints",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "binaryPointCap",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "binaryPointsClaimed",
+				"type": "uint256"
+			},
+			{
+				"internalType": "bool",
+				"name": "activated",
+				"type": "bool"
+			},
+			{
+				"internalType": "uint256",
+				"name": "totalPurchasedMATIC",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "totalPurchasedKind",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+]
