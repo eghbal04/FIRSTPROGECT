@@ -66,7 +66,7 @@ async function updateNetworkStats() {
 
         updateElement('network-members', totalUsers.toString());
         updateElement('network-points', ethers.formatUnits(userData.binaryPoints, 18));
-        updateElement('network-rewards', ethers.formatEther(rewardPool) + ' MATIC');
+        updateElement('network-rewards', ethers.formatEther(rewardPool) + ' LVL');
 
         // ایجاد لینک دعوت
         const referralLink = `${window.location.origin}/?ref=${address}`;
