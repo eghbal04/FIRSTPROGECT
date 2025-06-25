@@ -50,9 +50,7 @@
   </style>
   
   <script>
-    function toggleFAB() {
-  document.querySelector('.fab-container').classList.toggle('active');
-}
+
 
   const messages = [
   "💡 موفقیت یعنی رفتن، حتی وقتی هیچ‌کس تشویقت نمی‌کنه — به خودت ایمان داشته باش",
@@ -180,41 +178,16 @@ textElement.textContent = messages[0];
 // تنظیم تایمر برای تغییر هر 5 ثانیه
 setInterval(showNextMessage, 20000);
 </script>
-    <nav class="mac-dock">
-        <a href="/index.html" class="circle-menu-item" aria-label="خانه">
-          <div class="icon">🏠</div>
-          <span class="label">خانه</span>
-        </a>
-        <a href="/pages/swap.html" class="circle-menu-item" aria-label="تبدیل ارز">
-          <div class="icon">🔄</div>
-          <span class="label">تبدیل</span>
-        </a>
-        <a href="/pages/network.html" class="circle-menu-item" aria-label="شبکه">
-          <div class="icon">🌐</div>
-          <span class="label">شبکه</span>
-        </a>
-        <a href="/pages/profile.html" class="circle-menu-item" aria-label="پروفایل من">
-          <div class="icon">👤</div>
-          <span class="label">پروفایل</span>
-        </a>
-        <a href="/pages/news.html" class="circle-menu-item" aria-label="اخبار و آموزش">
-          <div class="icon">📰</div>
-          <span class="label">اخبار</span>
-        </a>
-        <a href="/pages/shop.html" class="circle-menu-item" aria-label="فروشگاه">
-          <div class="icon">🛒</div>
-          <span class="label">فروشگاه</span>
-        </a>
-        <a href="/pages/about.html" class="circle-menu-item" aria-label="درباره ما">
-          <div class="icon">ℹ️</div>
-          <span class="label">درباره</span>
-        </a>
-        <a href="/pages/reports.html" class="circle-menu-item" aria-label="گزارشات">
-          <div class="icon">🔔</div>
-          <span class="label">گزارشات</span>
-          <span class="reports-badge" style="display: none;">0</span>
-        </a>
-      </nav>
+<div id="navbar-container"></div>
+
+<script>
+  fetch('/navbar.html')
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById('navbar-container').innerHTML = html;
+    });
+</script>
+
       
 <header style="padding: 2rem; font-family: 'Vazirmatn', sans-serif;">
   <h1 style="text-align:center; color:#00ffae;">پلتفرم LevelUp</h1>
