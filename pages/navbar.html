@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>ناوبار واکنش‌گرا</title>
+  <style>
+    /* Dock style (desktop) */
+    .circle-menu-horizontal {
+      position: fixed;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 25px;
+      background: rgba(20, 18, 40, 0.98);
+      padding: 14px 32px;
+      border-radius: 40px;
+      box-shadow: 0 6px 24px rgba(124, 95, 230, 0.85);
+      border: 1.5px solid #a786ff;
+      z-index: 2000;
+      user-select: none;
+      backdrop-filter: blur(10px);
+    }
+
+    .circle-menu-horizontal a {
+      text-decoration: none;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 13px;
+      transition: transform 0.2s;
+    }
+
+    .circle-menu-horizontal a:hover {
+      transform: scale(1.2);
+    }
+
+    .icon {
+      font-size: 22px;
+    }
+
+    /* FAB style (mobile) */
+    .fab-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 9999;
+      display: none;
+    }
+
+    .fab-main {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #a786ff, #7e5fff);
+      border: none;
+      color: white;
+      font-size: 28px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .fab-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: absolute;
+      bottom: 70px;
+      right: 0;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(10px);
+      transition: all 0.3s ease;
+    }
+
+    .fab-container.active .fab-menu {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    .fab-menu a {
+      background: rgba(20, 18, 40, 0.95);
+      color: white;
+      border-radius: 24px;
+      padding: 10px 14px;
+      text-decoration: none;
+      font-size: 14px;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      border: 1px solid #a786ff;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 10px rgba(150, 120, 250, 0.3);
+    }
+
+    .fab-menu a:hover {
+      transform: scale(1.08);
+    }
+
+    /* Responsive behavior */
+    @media (max-width: 767px) {
+      .desktop-nav {
+        display: none;
+      }
+
+      .mobile-nav {
+        display: block;
+      }
+    }
+
+    @media (min-width: 768px) {
+      .desktop-nav {
+        display: flex;
+      }
+
+      .mobile-nav {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- دسکتاپ: Dock style -->
+  <nav class="circle-menu-horizontal desktop-nav">
+    <a href="/index.html"><div class="icon">🏠</div><span class="label">خانه</span></a>
+    <a href="/pages/swap.html"><div class="icon">🔄</div><span class="label">تبدیل</span></a>
+    <a href="/pages/network.html"><div class="icon">🌐</div><span class="label">شبکه</span></a>
+    <a href="/pages/profile.html"><div class="icon">👤</div><span class="label">پروفایل</span></a>
+    <a href="/pages/news.html"><div class="icon">📰</div><span class="label">اخبار</span></a>
+    <a href="/pages/shop.html"><div class="icon">🛒</div><span class="label">فروشگاه</span></a>
+    <a href="/pages/about.html"><div class="icon">ℹ️</div><span class="label">درباره</span></a>
+    <a href="/pages/reports.html"><div class="icon">🔔</div><span class="label">گزارشات</span></a>
+  </nav>
+
+  <!-- موبایل: FAB Hamburger -->
+  <div class="fab-container mobile-nav">
+    <button class="fab-main" onclick="toggleFAB()">☰</button>
+    <div class="fab-menu">
+      <a href="/index.html"><div class="icon">🏠</div><span class="label">خانه</span></a>
+      <a href="/pages/swap.html"><div class="icon">🔄</div><span class="label">تبدیل</span></a>
+      <a href="/pages/network.html"><div class="icon">🌐</div><span class="label">شبکه</span></a>
+      <a href="/pages/profile.html"><div class="icon">👤</div><span class="label">پروفایل</span></a>
+      <a href="/pages/news.html"><div class="icon">📰</div><span class="label">اخبار</span></a>
+      <a href="/pages/shop.html"><div class="icon">🛒</div><span class="label">فروشگاه</span></a>
+      <a href="/pages/about.html"><div class="icon">ℹ️</div><span class="label">درباره</span></a>
+      <a href="/pages/reports.html"><div class="icon">🔔</div><span class="label">گزارشات</span></a>
+    </div>
+  </div>
+
+  <script>
+    function toggleFAB() {
+      document.querySelector('.fab-container').classList.toggle('active');
+    }
+  </script>
+</body>
+</html>
