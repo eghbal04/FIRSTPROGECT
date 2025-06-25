@@ -181,6 +181,28 @@
   pointer-events: auto;
   transform: translateY(0);
 }
+/* فقط برای موبایل زیر 768px */
+@media (max-width: 767px) {
+  .desktop-nav {
+    display: none;
+  }
+
+  .mobile-nav {
+    display: block;
+  }
+}
+
+/* برای تبلت و دسکتاپ */
+@media (min-width: 768px) {
+  .desktop-nav {
+    display: flex;
+  }
+
+  .mobile-nav {
+    display: none;
+  }
+}
+
 
 .fab-menu a {
   background: rgba(20, 18, 40, 0.95);
