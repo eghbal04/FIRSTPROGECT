@@ -1,83 +1,93 @@
+// main.js
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("Welcome to the new LevelUp Platform!");
 
     const connectButton = document.getElementById('connectButton');
-    if (!connectButton) return;
-
-    connectButton.addEventListener('click', async () => {
-        await connectWalletAndUpdateUI(connectButton);
-    });
+    const walletConnectButton = document.getElementById('walletConnectButton');
+    
+    if (connectButton) {
+        connectButton.addEventListener('click', async () => {
+            await connectWalletAndUpdateUI('metamask');
+        });
+    }
+    
+    if (walletConnectButton) {
+        walletConnectButton.addEventListener('click', async () => {
+            await connectWalletAndUpdateUI('walletconnect');
+        });
+    }
 
     // تلاش برای اتصال خودکار هنگام بارگذاری صفحه
-    await autoConnectWallet(connectButton);
+    await autoConnectWallet();
 });
 
-// تابعی که اتصال کیف پول رو انجام میده و UI رو آپدیت میکنه
-async function connectWalletAndUpdateUI(connectButton) {
+// تابع اتصال کیف پول با نوع مشخص
+async function connectWalletAndUpdateUI(walletType) {
     try {
-        connectButton.textContent = 'در حال اتصال...';
-        connectButton.disabled = true;
+        const connectButton = document.getElementById('connectButton');
+        const walletConnectButton = document.getElementById('walletConnectButton');
+        
+        if (walletType === 'metamask' && connectButton) {
+            connectButton.textContent = 'در حال اتصال...';
+            connectButton.disabled = true;
+        } else if (walletType === 'walletconnect' && walletConnectButton) {
+            walletConnectButton.textContent = 'در حال اتصال...';
+            walletConnectButton.disabled = true;
+        }
 
-        // اتصال به کیف پول
-        const { address } = await connectWallet();
+        let connected = false;
+        if (walletType === 'metamask') {
+            connected = await window.contractConfig.initializeWeb3();
+        } else if (walletType === 'walletconnect') {
+            connected = await window.contractConfig.connectWithWalletConnect();
+        }
+
+        if (!connected) {
+            throw new Error("اتصال کیف پول ناموفق بود");
+        }
 
         // دریافت پروفایل کاربر
         const profile = await fetchUserProfile();
+        const address = await window.contractConfig.signer.getAddress();
 
         // به‌روزرسانی UI
-        updateConnectionUI(profile, address);
+        updateConnectionUI(profile, address, walletType);
 
     } catch (error) {
         console.error("Connection error:", error);
         alert("اتصال کیف پول ناموفق بود: " + error.message);
     } finally {
-        connectButton.textContent = 'اتصال کیف پول';
-        connectButton.disabled = false;
-    }
-}
-
-// تلاش برای اتصال خودکار به کیف پول
-async function autoConnectWallet(connectButton) {
-    if (typeof window.ethereum === 'undefined') {
-        console.log("کیف پول اتریوم شناسایی نشد");
-        return;
-    }
-
-    try {
-        // درخواست اتصال خودکار (اگر کاربر قبلاً اجازه داده باشد، بدون درخواست دوباره متصل می شود)
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-
-        if (accounts.length > 0) {
-            const address = accounts[0];
-            console.log("Wallet connected automatically:", address);
-
-            // دریافت پروفایل کاربر
-            const profile = await fetchUserProfile();
-
-            // آپدیت UI بر اساس اتصال خودکار
-            updateConnectionUI(profile, address);
-
-            // آپدیت دکمه کانکت برای کاربر
-            if (connectButton) {
-                connectButton.textContent = 'متصل: ' + shortenAddress(address);
-                connectButton.style.background = 'linear-gradient(90deg, #4CAF50 0%, #45a049 100%)';
-                connectButton.disabled = true;
-            }
+        const connectButton = document.getElementById('connectButton');
+        const walletConnectButton = document.getElementById('walletConnectButton');
+        
+        if (connectButton) {
+            connectButton.textContent = 'اتصال با متامسک';
+            connectButton.disabled = false;
         }
-    } catch (error) {
-        console.log("اتصال خودکار موفق نبود یا کاربر رد کرد", error);
+        
+        if (walletConnectButton) {
+            walletConnectButton.textContent = 'اتصال با WalletConnect';
+            walletConnectButton.disabled = false;
+        }
     }
 }
 
-// سایر توابع اصلی
-function updateConnectionUI(profile, address) {
+// به‌روزرسانی تابع updateConnectionUI برای پشتیبانی از انواع کیف پول
+function updateConnectionUI(profile, address, walletType) {
     const connectButton = document.getElementById('connectButton');
-    if (connectButton) {
+    const walletConnectButton = document.getElementById('walletConnectButton');
+    
+    if (walletType === 'metamask' && connectButton) {
         connectButton.textContent = 'متصل: ' + shortenAddress(address);
         connectButton.style.background = 'linear-gradient(90deg, #4CAF50 0%, #45a049 100%)';
         connectButton.disabled = true;
+    } else if (walletType === 'walletconnect' && walletConnectButton) {
+        walletConnectButton.textContent = 'متصل: ' + shortenAddress(address);
+        walletConnectButton.style.background = 'linear-gradient(90deg, #3b99fc 0%, #2a7de1 100%)';
+        walletConnectButton.disabled = true;
     }
 
+    // سایر به‌روزرسانی‌های UI
     const updateElement = (id, value) => {
         const element = document.getElementById(id);
         if (element) element.textContent = value;
@@ -96,9 +106,4 @@ function updateConnectionUI(profile, address) {
     if (typeof updateTokenStats === 'function') {
         updateTokenStats();
     }
-}
-
-function shortenAddress(address) {
-    if (!address) return '---';
-    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
 }
