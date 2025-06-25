@@ -6,6 +6,7 @@
     "start": "servor --reload"
   },
   "dependencies": {
+    "@walletconnect/ethereum-provider": "^2.21.4",
     "servor": "^4.0.2"
   }
-} 
+}
