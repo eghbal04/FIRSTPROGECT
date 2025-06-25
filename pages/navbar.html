@@ -2,9 +2,20 @@
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>ناوبار واکنش‌گرا</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LevelUp | داشبورد مدرن</title>
+
+  <!-- فونت و استایل عمومی -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/dist/font-face.css">
   <style>
-    /* Dock style (desktop) */
+    body {
+      margin: 0;
+      font-family: 'Vazirmatn', sans-serif;
+      background: #0e0c1a;
+      color: #fff;
+    }
+
+    /* ---------------- ناوبار ---------------- */
     .circle-menu-horizontal {
       position: fixed;
       bottom: 10px;
@@ -99,12 +110,10 @@
       transform: scale(1.08);
     }
 
-    /* Responsive behavior */
     @media (max-width: 767px) {
       .desktop-nav {
         display: none;
       }
-
       .mobile-nav {
         display: block;
       }
@@ -114,7 +123,6 @@
       .desktop-nav {
         display: flex;
       }
-
       .mobile-nav {
         display: none;
       }
@@ -122,12 +130,37 @@
   </style>
 </head>
 <body>
+  <!-- ناوبار دسکتاپ -->
+  <nav class="circle-menu-horizontal desktop-nav">
+    <a href="/index.html"><div class="icon">🏠</div><span class="label">خانه</span></a>
+    <a href="/pages/swap.html"><div class="icon">🔄</div><span class="label">تبدیل</span></a>
+    <a href="/pages/network.html"><div class="icon">🌐</div><span class="label">شبکه</span></a>
+    <a href="/pages/profile.html"><div class="icon">👤</div><span class="label">پروفایل</span></a>
+    <a href="/pages/news.html"><div class="icon">📰</div><span class="label">اخبار</span></a>
+    <a href="/pages/shop.html"><div class="icon">🛒</div><span class="label">فروشگاه</span></a>
+    <a href="/pages/about.html"><div class="icon">ℹ️</div><span class="label">درباره</span></a>
+    <a href="/pages/reports.html"><div class="icon">🔔</div><span class="label">گزارشات</span></a>
+  </nav>
 
+  <!-- ناوبار موبایل -->
+  <div class="fab-container mobile-nav">
+    <button class="fab-main" onclick="toggleFAB()">☰</button>
+    <div class="fab-menu">
+      <a href="/index.html"><div class="icon">🏠</div><span class="label">خانه</span></a>
+      <a href="/pages/swap.html"><div class="icon">🔄</div><span class="label">تبدیل</span></a>
+      <a href="/pages/network.html"><div class="icon">🌐</div><span class="label">شبکه</span></a>
+      <a href="/pages/profile.html"><div class="icon">👤</div><span class="label">پروفایل</span></a>
+      <a href="/pages/news.html"><div class="icon">📰</div><span class="label">اخبار</span></a>
+      <a href="/pages/shop.html"><div class="icon">🛒</div><span class="label">فروشگاه</span></a>
+      <a href="/pages/about.html"><div class="icon">ℹ️</div><span class="label">درباره</span></a>
+      <a href="/pages/reports.html"><div class="icon">🔔</div><span class="label">گزارشات</span></a>
+    </div>
+  </div>
 
-
-
-
-
-
+  <script>
+    function toggleFAB() {
+      document.querySelector('.fab-container').classList.toggle('active');
+    }
+  </script>
 </body>
 </html>
