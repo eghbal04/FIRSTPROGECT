@@ -4,7 +4,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const connectButton = document.getElementById('connectButton');
     const walletConnectButton = document.getElementById('walletConnectButton');
-    
+
+  await autoConnectWallet();
+  
     if (connectButton) {
         connectButton.addEventListener('click', async () => {
             await connectWalletAndUpdateUI('metamask');
@@ -20,6 +22,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     // تلاش برای اتصال خودکار هنگام بارگذاری صفحه
     await autoConnectWallet();
 });
+
+function shortenAddress(address) {
+    if (!address) return '---';
+    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+}
 
 // تابع اتصال کیف پول با نوع مشخص
 async function connectWalletAndUpdateUI(walletType) {
@@ -88,10 +95,21 @@ function updateConnectionUI(profile, address, walletType) {
     }
 
     // سایر به‌روزرسانی‌های UI
-    const updateElement = (id, value) => {
-        const element = document.getElementById(id);
-        if (element) element.textContent = value;
-    };
+const updateElement = (id, value) => {
+    const element = document.getElementById(id);
+    if (!element) return;
+    
+    // فرمت‌دهی اعداد بزرگ
+    if (typeof value === 'string' && value.includes('.')) {
+        const num = parseFloat(value);
+        if (!isNaN(num)) {
+            value = num.toLocaleString('fa-IR', {
+                maximumFractionDigits: 6
+            });
+        }
+    }
+    element.textContent = value;
+};
 
     updateElement('user-address', address);
     updateElement('matic-balance', profile.maticBalance + ' MATIC');
@@ -107,10 +125,7 @@ function updateConnectionUI(profile, address, walletType) {
         updateTokenStats();
     }
 }
-function shortenAddress(address) {
-    if (!address) return '---';
-    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
-}
+
 // main.js
 async function autoConnectWallet() {
     if (typeof window.ethereum === 'undefined') {
@@ -125,29 +140,14 @@ async function autoConnectWallet() {
             console.log("Wallet connected automatically:", address);
             const profile = await fetchUserProfile();
             updateConnectionUI(profile, address, 'metamask');
+            return true;
         }
     } catch (error) {
         console.log("اتصال خودکار موفق نبود یا کاربر رد کرد", error);
     }
+    return false;
 }
-async function autoConnectWallet() {
-    if (typeof window.ethereum === 'undefined') {
-        console.log("کیف پول اتریوم شناسایی نشد");
-        return;
-    }
 
-    try {
-        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-        if (accounts.length > 0) {
-            const address = accounts[0];
-            console.log("Wallet connected automatically:", address);
-            const profile = await fetchUserProfile();
-            updateConnectionUI(profile, address, 'metamask');
-        }
-    } catch (error) {
-        console.log("اتصال خودکار موفق نبود یا کاربر رد کرد", error);
-    }
-}
 
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("Welcome to the new LevelUp Platform!");
@@ -155,17 +155,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     const connectButton = document.getElementById('connectButton');
     const walletConnectButton = document.getElementById('walletConnectButton');
     
-    if (connectButton) {
-        connectButton.addEventListener('click', async () => {
-            await connectWalletAndUpdateUI('metamask');
-        });
-    }
+    // ابتدا اتصال خودکار را امتحان کنید
+    const isAutoConnected = await autoConnectWallet();
     
-    if (walletConnectButton) {
-        walletConnectButton.addEventListener('click', async () => {
-            await connectWalletAndUpdateUI('walletconnect');
-        });
+    if (!isAutoConnected) {
+        if (connectButton) {
+            connectButton.addEventListener('click', async () => {
+                await connectWalletAndUpdateUI('metamask');
+            });
+        }
+        
+        if (walletConnectButton) {
+            walletConnectButton.addEventListener('click', async () => {
+                await connectWalletAndUpdateUI('walletconnect');
+            });
+        }
     }
-
-    await autoConnectWallet();
 });
