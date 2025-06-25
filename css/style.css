@@ -416,17 +416,6 @@ footer {
         padding: 15px;
     }
     
-    .circle-menu-horizontal {
-        gap: 10px;
-    }
-    
-    .circle-menu-item {
-        width: 50px;
-    }
-    
-    .circle-menu-item .icon {
-        font-size: 1.5rem;
-    }
     
     header h1 {
         font-size: 1.5rem;
@@ -765,21 +754,7 @@ footer {
   font-size: 0.9rem;
   margin-bottom: 1rem;
 }
-/* منوی دایره‌ای افقی پایین صفحه */
-.circle-menu-horizontal {
-  position: fixed;
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 25px;
-  background: rgba(28, 24, 49, 0.9);
-  padding: 12px 25px;
-  border-radius: 40px;
-  box-shadow: 0 4px 18px rgba(124, 95, 230, 0.75);
-  z-index: 2000;
-  user-select: none;
-}
+
 .circle-menu-item {
   display: flex;
   flex-direction: column;
