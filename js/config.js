@@ -1,7 +1,7 @@
 // config.js
 window.contractConfig = {
     // آدرس قرارداد بروزرسانی شده
-    CONTRACT_ADDRESS: "0xd43C269B8C11964245D7b7Ca04354C5ca2429298",
+    CONTRACT_ADDRESS: "0xB3c33fB7C3C701A520F61a7fe9F2ab8E905205Ce",
     
     // ABI کامل قرارداد LevelUp
 	LEVELUP_ABI :[
@@ -309,37 +309,6 @@ window.contractConfig = {
 			"type": "event"
 		},
 		{
-			"inputs": [
-				{
-					"internalType": "address",
-					"name": "referrer",
-					"type": "address"
-				},
-				{
-					"internalType": "uint256",
-					"name": "tokenAmount",
-					"type": "uint256"
-				}
-			],
-			"name": "registerAndActivate",
-			"outputs": [],
-			"stateMutability": "nonpayable",
-			"type": "function"
-		},
-		{
-			"inputs": [
-				{
-					"internalType": "uint256",
-					"name": "tokenAmount",
-					"type": "uint256"
-				}
-			],
-			"name": "sellTokens",
-			"outputs": [],
-			"stateMutability": "nonpayable",
-			"type": "function"
-		},
-		{
 			"anonymous": false,
 			"inputs": [
 				{
@@ -390,30 +359,6 @@ window.contractConfig = {
 			"type": "event"
 		},
 		{
-			"inputs": [
-				{
-					"internalType": "address",
-					"name": "to",
-					"type": "address"
-				},
-				{
-					"internalType": "uint256",
-					"name": "value",
-					"type": "uint256"
-				}
-			],
-			"name": "transfer",
-			"outputs": [
-				{
-					"internalType": "bool",
-					"name": "",
-					"type": "bool"
-				}
-			],
-			"stateMutability": "nonpayable",
-			"type": "function"
-		},
-		{
 			"anonymous": false,
 			"inputs": [
 				{
@@ -437,35 +382,6 @@ window.contractConfig = {
 			],
 			"name": "Transfer",
 			"type": "event"
-		},
-		{
-			"inputs": [
-				{
-					"internalType": "address",
-					"name": "from",
-					"type": "address"
-				},
-				{
-					"internalType": "address",
-					"name": "to",
-					"type": "address"
-				},
-				{
-					"internalType": "uint256",
-					"name": "value",
-					"type": "uint256"
-				}
-			],
-			"name": "transferFrom",
-			"outputs": [
-				{
-					"internalType": "bool",
-					"name": "",
-					"type": "bool"
-				}
-			],
-			"stateMutability": "nonpayable",
-			"type": "function"
 		},
 		{
 			"anonymous": false,
@@ -503,6 +419,109 @@ window.contractConfig = {
 			],
 			"name": "TreeStructureUpdated",
 			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{
+					"indexed": true,
+					"internalType": "address",
+					"name": "user",
+					"type": "address"
+				},
+				{
+					"indexed": false,
+					"internalType": "uint256",
+					"name": "amountlvl",
+					"type": "uint256"
+				}
+			],
+			"name": "purchaseKind",
+			"type": "event"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "referrer",
+					"type": "address"
+				},
+				{
+					"internalType": "uint256",
+					"name": "tokenAmount",
+					"type": "uint256"
+				}
+			],
+			"name": "registerAndActivate",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "uint256",
+					"name": "tokenAmount",
+					"type": "uint256"
+				}
+			],
+			"name": "sellTokens",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "to",
+					"type": "address"
+				},
+				{
+					"internalType": "uint256",
+					"name": "value",
+					"type": "uint256"
+				}
+			],
+			"name": "transfer",
+			"outputs": [
+				{
+					"internalType": "bool",
+					"name": "",
+					"type": "bool"
+				}
+			],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "from",
+					"type": "address"
+				},
+				{
+					"internalType": "address",
+					"name": "to",
+					"type": "address"
+				},
+				{
+					"internalType": "uint256",
+					"name": "value",
+					"type": "uint256"
+				}
+			],
+			"name": "transferFrom",
+			"outputs": [
+				{
+					"internalType": "bool",
+					"name": "",
+					"type": "bool"
+				}
+			],
+			"stateMutability": "nonpayable",
+			"type": "function"
 		},
 		{
 			"stateMutability": "payable",
@@ -906,19 +925,6 @@ window.contractConfig = {
 		},
 		{
 			"inputs": [],
-			"name": "lastClaimTime",
-			"outputs": [
-				{
-					"internalType": "uint256",
-					"name": "",
-					"type": "uint256"
-				}
-			],
-			"stateMutability": "view",
-			"type": "function"
-		},
-		{
-			"inputs": [],
 			"name": "MAX_BINARY_POINT_CAP",
 			"outputs": [
 				{
@@ -1237,6 +1243,11 @@ window.contractConfig = {
 					"internalType": "uint256",
 					"name": "totalPurchasedMATIC",
 					"type": "uint256"
+				},
+				{
+					"internalType": "uint256",
+					"name": "totalPurchasedKind",
+					"type": "uint256"
 				}
 			],
 			"stateMutability": "view",
@@ -1308,3 +1319,4 @@ window.contractConfig = {
         }
     }
 };
+
