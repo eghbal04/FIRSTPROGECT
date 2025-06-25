@@ -46,6 +46,10 @@
   font-size: 1rem;
   font-family: 'Vazirmatn', sans-serif;
 }
+.circle-menu-horizontal button {
+  display: inline-block;
+  flex: 0 0 auto;
+}
 
 .circle-menu-horizontal {
   position: fixed;
@@ -61,8 +65,16 @@
   z-index: 2000;
   user-select: none;
   border: 1.5px solid #a786ff;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 14px 16px; /* کمتر برای موبایل */
+  gap: 16px;
+  -webkit-overflow-scrolling: touch;
+  
 }
-
+.circle-menu-horizontal::-webkit-scrollbar {
+  display: none; /* مخفی‌کردن اسکرول‌بار */
+}
 .circle-menu-item {
   display: flex;
   flex-direction: column;
