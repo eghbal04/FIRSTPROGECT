@@ -9,6 +9,63 @@
   box-shadow: 0 4px 24px rgba(80, 60, 180, 0.12);
 }
 
+/* CSS */
+.mac-dock {
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 18px;
+  background: rgba(20, 18, 40, 0.95);
+  padding: 12px 20px;
+  border-radius: 36px;
+  box-shadow: 0 6px 20px rgba(150, 120, 250, 0.5);
+  z-index: 2000;
+  border: 1px solid #a786ff;
+  backdrop-filter: blur(12px);
+}
+
+.mac-dock button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  width: 40px;
+  height: 40px;
+}
+
+.mac-dock button img {
+  width: 100%;
+  height: auto;
+  transition: transform 0.3s ease;
+}
+
+.mac-dock button:hover img,
+.mac-dock button:focus img {
+  transform: scale(1.5);
+}
+
+/* موبایل */
+@media (max-width: 500px) {
+  .mac-dock {
+    gap: 12px;
+    padding: 10px 14px;
+  }
+
+  .mac-dock button {
+    width: 32px;
+    height: 32px;
+  }
+
+  .mac-dock button:hover img,
+  .mac-dock button:focus img {
+    transform: scale(1.3);
+  }
+}
+
+
 @keyframes scrollUp {
   0% {
     top: 100%;
