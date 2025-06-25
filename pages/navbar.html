@@ -1,12 +1,21 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>LevelUp | داشبورد مدرن</title>
 
   <!-- فونت و استایل عمومی -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/dist/font-face.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/dist/font-face.css" />
+
+  <!-- فونت آیکون FontAwesome -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  />
+
   <style>
     body {
       margin: 0;
@@ -49,6 +58,7 @@
 
     .icon {
       font-size: 22px;
+      margin-bottom: 4px;
     }
 
     /* FAB style (mobile) */
@@ -70,6 +80,9 @@
       font-size: 28px;
       cursor: pointer;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .fab-menu {
@@ -104,17 +117,22 @@
       border: 1px solid #a786ff;
       backdrop-filter: blur(10px);
       box-shadow: 0 4px 10px rgba(150, 120, 250, 0.3);
+      transition: transform 0.2s ease;
     }
 
     .fab-menu a:hover {
       transform: scale(1.08);
     }
 
+    /* نمایش در موبایل و دسکتاپ */
     @media (max-width: 767px) {
       .desktop-nav {
         display: none;
       }
       .mobile-nav {
+        display: block;
+      }
+      .fab-container {
         display: block;
       }
     }
@@ -129,37 +147,43 @@
     }
   </style>
 </head>
+
 <body>
   <!-- ناوبار دسکتاپ -->
-  <nav class="circle-menu-horizontal desktop-nav">
-    <a href="/index.html"><div class="icon">🏠</div><span class="label">خانه</span></a>
-    <a href="/pages/swap.html"><div class="icon">🔄</div><span class="label">تبدیل</span></a>
-    <a href="/pages/network.html"><div class="icon">🌐</div><span class="label">شبکه</span></a>
-    <a href="/pages/profile.html"><div class="icon">👤</div><span class="label">پروفایل</span></a>
-    <a href="/pages/news.html"><div class="icon">📰</div><span class="label">اخبار</span></a>
-    <a href="/pages/shop.html"><div class="icon">🛒</div><span class="label">فروشگاه</span></a>
-    <a href="/pages/about.html"><div class="icon">ℹ️</div><span class="label">درباره</span></a>
-    <a href="/pages/reports.html"><div class="icon">🔔</div><span class="label">گزارشات</span></a>
+  <nav class="circle-menu-horizontal desktop-nav" aria-label="ناوبار اصلی">
+    <a href="/index.html" title="خانه"><i class="fa-solid fa-house icon" aria-hidden="true"></i><span class="label">خانه</span></a>
+    <a href="/pages/swap.html" title="تبدیل"><i class="fa-solid fa-arrows-rotate icon" aria-hidden="true"></i><span class="label">تبدیل</span></a>
+    <a href="/pages/network.html" title="شبکه"><i class="fa-solid fa-globe icon" aria-hidden="true"></i><span class="label">شبکه</span></a>
+    <a href="/pages/profile.html" title="پروفایل"><i class="fa-solid fa-user icon" aria-hidden="true"></i><span class="label">پروفایل</span></a>
+    <a href="/pages/news.html" title="اخبار"><i class="fa-solid fa-newspaper icon" aria-hidden="true"></i><span class="label">اخبار</span></a>
+    <a href="/pages/shop.html" title="فروشگاه"><i class="fa-solid fa-cart-shopping icon" aria-hidden="true"></i><span class="label">فروشگاه</span></a>
+    <a href="/pages/about.html" title="درباره"><i class="fa-solid fa-info-circle icon" aria-hidden="true"></i><span class="label">درباره</span></a>
+    <a href="/pages/reports.html" title="گزارشات"><i class="fa-solid fa-bell icon" aria-hidden="true"></i><span class="label">گزارشات</span></a>
   </nav>
 
   <!-- ناوبار موبایل -->
-  <div class="fab-container mobile-nav">
-    <button class="fab-main" onclick="toggleFAB()">☰</button>
-    <div class="fab-menu">
-      <a href="/index.html"><div class="icon">🏠</div><span class="label">خانه</span></a>
-      <a href="/pages/swap.html"><div class="icon">🔄</div><span class="label">تبدیل</span></a>
-      <a href="/pages/network.html"><div class="icon">🌐</div><span class="label">شبکه</span></a>
-      <a href="/pages/profile.html"><div class="icon">👤</div><span class="label">پروفایل</span></a>
-      <a href="/pages/news.html"><div class="icon">📰</div><span class="label">اخبار</span></a>
-      <a href="/pages/shop.html"><div class="icon">🛒</div><span class="label">فروشگاه</span></a>
-      <a href="/pages/about.html"><div class="icon">ℹ️</div><span class="label">درباره</span></a>
-      <a href="/pages/reports.html"><div class="icon">🔔</div><span class="label">گزارشات</span></a>
+  <div class="fab-container mobile-nav" role="navigation" aria-label="ناوبار موبایل">
+    <button class="fab-main" aria-expanded="false" aria-controls="fab-menu" aria-label="باز و بسته کردن منوی موبایل" onclick="toggleFAB()">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+    <div class="fab-menu" id="fab-menu">
+      <a href="/index.html" title="خانه"><i class="fa-solid fa-house icon" aria-hidden="true"></i><span class="label">خانه</span></a>
+      <a href="/pages/swap.html" title="تبدیل"><i class="fa-solid fa-arrows-rotate icon" aria-hidden="true"></i><span class="label">تبدیل</span></a>
+      <a href="/pages/network.html" title="شبکه"><i class="fa-solid fa-globe icon" aria-hidden="true"></i><span class="label">شبکه</span></a>
+      <a href="/pages/profile.html" title="پروفایل"><i class="fa-solid fa-user icon" aria-hidden="true"></i><span class="label">پروفایل</span></a>
+      <a href="/pages/news.html" title="اخبار"><i class="fa-solid fa-newspaper icon" aria-hidden="true"></i><span class="label">اخبار</span></a>
+      <a href="/pages/shop.html" title="فروشگاه"><i class="fa-solid fa-cart-shopping icon" aria-hidden="true"></i><span class="label">فروشگاه</span></a>
+      <a href="/pages/about.html" title="درباره"><i class="fa-solid fa-info-circle icon" aria-hidden="true"></i><span class="label">درباره</span></a>
+      <a href="/pages/reports.html" title="گزارشات"><i class="fa-solid fa-bell icon" aria-hidden="true"></i><span class="label">گزارشات</span></a>
     </div>
   </div>
 
   <script>
     function toggleFAB() {
-      document.querySelector('.fab-container').classList.toggle('active');
+      const fabContainer = document.querySelector('.fab-container');
+      const fabButton = fabContainer.querySelector('.fab-main');
+      const isActive = fabContainer.classList.toggle('active');
+      fabButton.setAttribute('aria-expanded', isActive ? 'true' : 'false');
     }
   </script>
 </body>
