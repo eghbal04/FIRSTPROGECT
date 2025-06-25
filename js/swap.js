@@ -47,9 +47,26 @@ async function loadBalances() {
     }
 }
 
-// فراخوانی هنگام بارگذاری صفحه
+// تابع اعتبارسنجی مقدار و فعال/غیرفعال کردن دکمه سواپ
+function validateSwapAmount() {
+    if (!swapAmount || !swapButton) return;
+    const value = parseFloat(swapAmount.value);
+    swapButton.disabled = !(value > 0);
+}
+
+swapAmount.addEventListener('input', () => {
+    updateRateInfo();
+    validateSwapAmount();
+});
+
+swapDirection.addEventListener('change', () => {
+    updateRateInfo();
+    validateSwapAmount();
+});
+
 document.addEventListener('DOMContentLoaded', async () => {
     await loadBalances();
+    validateSwapAmount();
     // بقیه کدهای موجود...
 });
 // اضافه کردن event listener برای دکمه ماکسیمم
@@ -89,9 +106,6 @@ async function setMaxAmount() {
         swapStatus.textContent = 'خطا در دریافت موجودی: ' + error.message;
     }
 }
-
-swapDirection.addEventListener('change', updateRateInfo);
-swapAmount.addEventListener('input', updateRateInfo);
 
 swapForm.addEventListener('submit', async (e) => {
     e.preventDefault();
