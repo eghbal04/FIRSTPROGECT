@@ -270,15 +270,6 @@ body {
     opacity: 0;
 }
 
-/* استایل منوی ناوبری */
-.circle-menu-horizontal {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin: 20px auto;
-    flex-wrap: wrap;
-    max-width: 800px;
-}
 
 .circle-menu-item {
     display: flex;
