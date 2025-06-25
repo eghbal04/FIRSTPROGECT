@@ -123,32 +123,16 @@
 </head>
 <body>
 
-  <!-- دسکتاپ: Dock style -->
-  <nav class="circle-menu-horizontal desktop-nav">
-    <a href="/index.html"><div class="icon">🏠</div><span class="label">خانه</span></a>
-    <a href="/pages/swap.html"><div class="icon">🔄</div><span class="label">تبدیل</span></a>
-    <a href="/pages/network.html"><div class="icon">🌐</div><span class="label">شبکه</span></a>
-    <a href="/pages/profile.html"><div class="icon">👤</div><span class="label">پروفایل</span></a>
-    <a href="/pages/news.html"><div class="icon">📰</div><span class="label">اخبار</span></a>
-    <a href="/pages/shop.html"><div class="icon">🛒</div><span class="label">فروشگاه</span></a>
-    <a href="/pages/about.html"><div class="icon">ℹ️</div><span class="label">درباره</span></a>
-    <a href="/pages/reports.html"><div class="icon">🔔</div><span class="label">گزارشات</span></a>
-  </nav>
+<div id="navbar-container"></div>
 
-  <!-- موبایل: FAB Hamburger -->
-  <div class="fab-container mobile-nav">
-    <button class="fab-main" onclick="toggleFAB()">☰</button>
-    <div class="fab-menu">
-      <a href="/index.html"><div class="icon">🏠</div><span class="label">خانه</span></a>
-      <a href="/pages/swap.html"><div class="icon">🔄</div><span class="label">تبدیل</span></a>
-      <a href="/pages/network.html"><div class="icon">🌐</div><span class="label">شبکه</span></a>
-      <a href="/pages/profile.html"><div class="icon">👤</div><span class="label">پروفایل</span></a>
-      <a href="/pages/news.html"><div class="icon">📰</div><span class="label">اخبار</span></a>
-      <a href="/pages/shop.html"><div class="icon">🛒</div><span class="label">فروشگاه</span></a>
-      <a href="/pages/about.html"><div class="icon">ℹ️</div><span class="label">درباره</span></a>
-      <a href="/pages/reports.html"><div class="icon">🔔</div><span class="label">گزارشات</span></a>
-    </div>
-  </div>
+<script>
+  fetch('/navbar.html')
+    .then(res => res.text())
+    .then(html => {
+      document.getElementById('navbar-container').innerHTML = html;
+    });
+</script>
+
 
   <script>
     function toggleFAB() {
