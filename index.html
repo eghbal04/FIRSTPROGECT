@@ -181,7 +181,7 @@ setInterval(showNextMessage, 20000);
 <div id="navbar-container"></div>
 
 <script>
-  fetch('/navbar.html')
+  fetch('./pages/navbar.html')
     .then(res => res.text())
     .then(html => {
       document.getElementById('navbar-container').innerHTML = html;
