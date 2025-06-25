@@ -16,6 +16,16 @@ body {
   box-shadow: 0 4px 24px rgba(80, 60, 180, 0.12);
 }
 
+@keyframes scrollUp {
+  0% {
+    top: 100%;
+  }
+  100% {
+    top: -100%;
+  }
+}
+
+
 .report-filters {
   display: flex;
   gap: 1rem;
