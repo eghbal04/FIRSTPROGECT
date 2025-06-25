@@ -107,6 +107,10 @@ function updateConnectionUI(profile, address, walletType) {
         updateTokenStats();
     }
 }
+function shortenAddress(address) {
+    if (!address) return '---';
+    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+}
 // main.js
 async function autoConnectWallet() {
     if (typeof window.ethereum === 'undefined') {
