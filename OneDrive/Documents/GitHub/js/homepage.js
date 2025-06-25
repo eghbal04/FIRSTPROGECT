@@ -234,39 +234,48 @@ const motivationalMessages = [
     // راه‌اندازی نمودار
     const ctx = document.getElementById('priceChart')?.getContext('2d');
     if (ctx) {
+        // دریافت قیمت دلاری و نمایش در چارت
+        const prices = await getPrices();
+        let priceUSD = prices.tokenPriceUSD;
+        let priceValue = 0.0012;
+        if (priceUSD && !isNaN(priceUSD) && parseFloat(priceUSD) > 0) {
+            priceValue = parseFloat(priceUSD);
+        }
+        // آرایه داده (۵ نقطه با مقدار فعلی)
+        const chartData = Array(5).fill(priceValue);
         new Chart(ctx, {
-        type: 'line',
-        data: {
+            type: 'line',
+            data: {
                 labels: ['1D', '1W', '1M', '3M', '1Y'],
-            datasets: [{
-                    label: 'قیمت LVL',
-                    data: [0.001, 0.0012, 0.0015, 0.0014, 0.0018],
-                borderColor: '#a786ff',
+                datasets: [{
+                    label: 'قیمت LVL (USD)',
+                    data: chartData,
+                    borderColor: '#a786ff',
                     backgroundColor: 'rgba(167, 134, 255, 0.1)',
-                tension: 0.4,
-                pointRadius: 4,
-                pointBackgroundColor: '#fff',
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#fff',
                     fill: true
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                    legend: { display: false }
+                }]
             },
-            scales: {
-                x: {
-                    ticks: { color: '#aaa', font: { family: 'Vazirmatn' } },
-                    grid: { color: 'rgba(255,255,255,0.05)' }
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
                 },
-                y: {
-                    ticks: { color: '#fff', font: { family: 'Vazirmatn' } },
-                    grid: { color: 'rgba(255,255,255,0.08)' }
+                scales: {
+                    x: {
+                        ticks: { color: '#aaa', font: { family: 'Vazirmatn' } },
+                        grid: { color: 'rgba(255,255,255,0.05)' }
+                    },
+                    y: {
+                        ticks: { color: '#fff', font: { family: 'Vazirmatn' }, callback: function(value) { return '$' + value; } },
+                        grid: { color: 'rgba(255,255,255,0.08)' }
+                    }
                 }
             }
-        }
-    });
-}
+        });
+    }
 
     // به‌روزرسانی خودکار هر 30 ثانیه
     setInterval(updateTokenStats, 30000);
