@@ -329,28 +329,38 @@ setInterval(showNextMessage, 20000);
   const button = document.getElementById("expandTypewriter");
 
   let charIndex = 0;
-  let visibleLines = 2;
-  const lineHeight = 1.6 * 16; // rem to px
-  const baseHeight = lineHeight * visibleLines;
+  let lineLimit = 2;
+  const lineHeight = 1.6 * 16; // 1.6rem in px
 
-  box.style.height = baseHeight + "px";
+  box.style.height = (lineLimit * lineHeight) + "px";
 
   function typeText() {
     if (charIndex < fullText.length) {
       box.textContent += fullText.charAt(charIndex);
       charIndex++;
-      setTimeout(typeText, 30); // سرعت تایپ
+
+      // اسکرول خودکار فقط وقتی expand نشده
+      if (!expanded) {
+        box.scrollTop = box.scrollHeight;
+      }
+
+      setTimeout(typeText, 25);
     }
   }
 
+  let expanded = false;
   button.addEventListener("click", () => {
-    visibleLines = 12; // به‌جای ۵ خط، ۱۲ خط باز می‌کنه
-    box.style.height = (lineHeight * visibleLines) + "px";
-    button.style.display = "none"; // پنهان‌کردن دکمه
+    if (!expanded) {
+      lineLimit = 5;
+      box.style.height = (lineLimit * lineHeight) + "px";
+      expanded = true;
+      button.style.display = "none";
+    }
   });
 
-  typeText(); // شروع تایپ خودکار
+  typeText();
 </script>
+
     <!-- اسکریپت‌های پروژه -->
     <script src="js/config.js"></script>
     <script src="js/web3-interactions.js"></script>
