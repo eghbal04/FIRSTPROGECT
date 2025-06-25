@@ -1319,7 +1319,7 @@ window.contractConfig = {
             this.provider = ethers.getDefaultProvider();
             return false;
         }
-    }
+    },
 
       // WalletConnect Configuration
     WALLETCONNECT_PROJECT_ID: "YOUR_WALLETCONNECT_PROJECT_ID", // از سایت WalletConnect دریافت کنید
