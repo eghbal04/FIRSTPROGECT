@@ -1255,6 +1255,8 @@ window.contractConfig = {
 		}
 	],
 
+  
+
     // تنظیمات شبکه Polygon
     NETWORK_CONFIG: {
         chainId: '0x89',
@@ -1318,5 +1320,54 @@ window.contractConfig = {
             return false;
         }
     }
+
+      // WalletConnect Configuration
+    WALLETCONNECT_PROJECT_ID: "YOUR_WALLETCONNECT_PROJECT_ID", // از سایت WalletConnect دریافت کنید
+    WALLETCONNECT_METADATA: {
+        name: "LevelUp Platform",
+        description: "LevelUp Token Platform",
+        url: "https://yourwebsite.com",
+        icons: ["https://yourwebsite.com/logo.png"]
+    },
+    
+    // تابع اتصال با WalletConnect
+    connectWithWalletConnect: async function() {
+        try {
+            const { EthereumProvider } = await import('@walletconnect/ethereum-provider');
+            
+            this.walletConnectProvider = await EthereumProvider.init({
+                projectId: this.WALLETCONNECT_PROJECT_ID,
+                showQrModal: true,
+                chains: [137], // Polygon chainId
+                optionalMethods: ["eth_sendTransaction", "personal_sign"],
+                metadata: this.WALLETCONNECT_METADATA
+            });
+            
+            await this.walletConnectProvider.enable();
+            
+            // تنظیم provider و signer برای WalletConnect
+            this.provider = new ethers.BrowserProvider(this.walletConnectProvider);
+            this.signer = await this.provider.getSigner();
+            this.contract = new ethers.Contract(
+                this.CONTRACT_ADDRESS, 
+                this.LEVELUP_ABI, 
+                this.signer
+            );
+            
+            return true;
+        } catch (error) {
+            console.error("WalletConnect error:", error);
+            return false;
+        }
+    },
+    
+    // تابع قطع ارتباط WalletConnect
+    disconnectWalletConnect: function() {
+        if (this.walletConnectProvider) {
+            this.walletConnectProvider.disconnect();
+            this.walletConnectProvider = null;
+        }
+    }
+};
 };
 
