@@ -1,6 +1,7 @@
 // web3-interactions.js
 
 // تابع اتصال کیف پول
+// web3-interactions.js
 async function connectWallet() {
     try {
         // بررسی وجود ethers.js
@@ -8,18 +9,22 @@ async function connectWallet() {
             throw new Error("Ethers.js library not loaded");
         }
 
-        // بررسی وجود window.ethereum
-        if (!window.ethereum) {
-            throw new Error("Please install MetaMask or another Web3 wallet");
+        // اگر WalletConnect متصل است، از آن استفاده کن
+        if (window.contractConfig.walletConnectProvider) {
+            return {
+                provider: window.contractConfig.provider,
+                signer: window.contractConfig.signer,
+                contract: window.contractConfig.contract,
+                address: await window.contractConfig.signer.getAddress()
+            };
         }
 
-        // مقداردهی اولیه Web3
+        // در غیر این صورت از متامسک استفاده کن
         const initialized = await window.contractConfig.initializeWeb3();
         if (!initialized) {
             throw new Error("Web3 initialization failed");
         }
 
-        // دریافت آدرس کیف پول
         const address = await window.contractConfig.signer.getAddress();
         
         return {
@@ -34,6 +39,40 @@ async function connectWallet() {
     }
 }
 
+// تابع قطع ارتباط
+async function disconnectWallet() {
+    try {
+        if (window.contractConfig.walletConnectProvider) {
+            window.contractConfig.disconnectWalletConnect();
+        }
+        
+        // ریست کردن وضعیت اتصال
+        window.contractConfig.provider = null;
+        window.contractConfig.signer = null;
+        window.contractConfig.contract = null;
+        
+        // به‌روزرسانی UI
+        const connectButton = document.getElementById('connectButton');
+        const walletConnectButton = document.getElementById('walletConnectButton');
+        
+        if (connectButton) {
+            connectButton.textContent = 'اتصال با متامسک';
+            connectButton.style.background = '';
+            connectButton.disabled = false;
+        }
+        
+        if (walletConnectButton) {
+            walletConnectButton.textContent = 'اتصال با WalletConnect';
+            walletConnectButton.style.background = '';
+            walletConnectButton.disabled = false;
+        }
+        
+        return { success: true };
+    } catch (error) {
+        console.error("Disconnection error:", error);
+        throw error;
+    }
+}
 // تابع دریافت پروفایل کاربر
 async function fetchUserProfile() {
     try {
