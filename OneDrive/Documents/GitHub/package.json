@@ -1,0 +1,12 @@
+{
+  "name": "levelup-platform-new",
+  "version": "1.0.0",
+  "description": "A new, advanced Web3 platform for LevelUp.",
+  "scripts": {
+    "start": "servor --reload"
+  },
+  "dependencies": {
+    "@walletconnect/ethereum-provider": "^2.21.4",
+    "servor": "^4.0.2"
+  }
+}

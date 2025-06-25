@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>پلتفرم LevelUp | داشبورد مدرن</title>
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/dist/font-face.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- بارگذاری ethers.js نسخه 6 از CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
+    <!-- بارگذاری Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      body {
+        font-family: 'Vazirmatn', sans-serif;
+        background: #f8f8f8;
+        color: #222;
+        margin: 0;
+        padding: 0;
+      }
+      .fab-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+        display: block;
+      }
+      .fab-main {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #a786ff, #7e5fff);
+        border: none;
+        color: white;
+        font-size: 28px;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .fab-menu {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        position: absolute;
+        bottom: 70px;
+        right: 0;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(10px);
+        transition: all 0.3s ease;
+        background: rgba(20, 18, 40, 0.95);
+        border-radius: 24px;
+        box-shadow: 0 4px 10px rgba(150, 120, 250, 0.3);
+        padding: 8px 0;
+      }
+      .fab-container.active .fab-menu {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0);
+      }
+      .fab-menu a {
+        color: #333;
+        text-decoration: none;
+        padding: 10px 18px;
+        border-radius: 8px;
+        transition: background 0.2s;
+        font-size: 1rem;
+      }
+      .fab-menu a:hover {
+        background: #f0f0f0;
+      }
+      @media (min-width: 768px) {
+        .fab-container { display: none; }
+      }
+    </style>
+</head>
+<body>
+
+  <!-- ✅ ناوبار -->
+  <div id="navbar-container"></div>
+  <script>
+    fetch('./pages/navbar.html')
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById('navbar-container').innerHTML = html;
+      });
+  </script>
+
+  <!-- ✅ هدر و تایپ‌نویس -->
+  <header style="padding: 2rem; font-family: 'Vazirmatn', sans-serif;">
+    <h1 style="text-align:center; color:#00ffae;">پلتفرم LevelUp</h1>
+    <div style="max-width:800px; margin:auto;">
+      <div id="scrolling-typewriter" style="overflow:hidden; height:2.2em; width:100%; background:rgba(255,255,255,0.03); border-radius:12px; padding:1rem; margin-bottom:0.5rem; display:flex; align-items:center;">
+        <span id="scrolling-text" style="display:inline-block; font-size:1rem; color:#f1f1f1; font-family:'Vazirmatn',sans-serif; white-space:nowrap; position:relative;"></span>
+      </div>
+    </div>
+  </header>
+  <script>
+    // اسکرول عمودی روان از پایین به بالا (بدون تایپ یا فید)
+    (function() {
+      var marqueeText = `در دل دنیای پرهیاهوی امروز، موفقیت سهم کسانی است که با ایمان و تلاش، مسیر خود را می‌سازند. تو هم می‌توانی!`;
+      var scrollingText = document.getElementById('scrolling-text');
+      scrollingText.textContent = marqueeText;
+      scrollingText.style.animation = 'scrollTextVerticalMarquee 10s linear infinite';
+      scrollingText.style.top = '2.2em';
+      scrollingText.style.bottom = 'unset';
+      scrollingText.style.position = 'relative';
+      // اضافه کردن keyframes به صورت داینامیک
+      var styleSheet = document.createElement('style');
+      styleSheet.innerHTML = `@keyframes scrollTextVerticalMarquee { 0% { top: 2.2em; } 100% { top: -2.2em; } }`;
+      document.head.appendChild(styleSheet);
+    })();
+  </script>
+
+  <!-- ✅ بخش‌های داشبورد -->
+  <section class="motivation-slider" id="motivation-slider">
+    <span id="motivation-message">در حال بارگذاری پیام انگیزشی...</span>
+    <button class="next-btn" id="next-motivation">&#8592;</button>
+  </section>
+
+  <section class="dashboard-cards">
+    <div class="dashboard-card"><h4>قیمت لحظه‌ای توکن (LVL)</h4><div class="value" id="token-price">-</div></div>
+    <div class="dashboard-card"><h4>توکن در گردش</h4><div class="value" id="circulating-supply">-</div></div>
+    <div class="dashboard-card"><h4>کاربران فعال</h4><div class="value" id="total-points">-</div></div>
+    <div class="dashboard-card"><h4>حجم معاملات (MATIC)</h4><div class="value" id="trading-volume">-</div></div>
+    <div class="dashboard-card"><h4>پوینت‌های پرداخت شده</h4><div class="value" id="claimed-points">-</div></div>
+    <div class="dashboard-card"><h4>پوینت‌های مانده</h4><div class="value" id="remaining-points">-</div></div>
+    <div class="dashboard-card"><h4>ارزش هر پوینت (LVL)</h4><div class="value" id="point-value">-</div></div>
+    <div class="dashboard-card"><h4>استخر پاداش (LVL)</h4><div class="value" id="reward-pool">-</div></div>
+  </section>
+
+  <!-- ✅ نمودار -->
+  <section class="chart-section">
+    <h3 style="text-align:center; color:#a786ff;">نمودار قیمت LVL به MATIC</h3>
+    <canvas id="priceChart" height="120"></canvas>
+  </section>
+
+  <!-- ✅ فوتر -->
+  <footer>
+    <p style="text-align:center; color:#888;">&copy; 2025 LevelUp. All rights reserved.</p>
+  </footer>
+
+  <!-- ✅ تایپ‌نویس اسکریپت -->
+  <script>
+    // اسکرول عمودی روان از پایین به بالا (بدون تایپ یا فید)
+    const marqueeText = `در دل دنیای پرهیاهوی امروز، موفقیت سهم کسانی است که با ایمان و تلاش، مسیر خود را می‌سازند. تو هم می‌توانی!`;
+    const scrollingText = document.getElementById('scrolling-text');
+    scrollingText.textContent = marqueeText;
+    scrollingText.style.animation = 'scrollTextVerticalMarquee 10s linear infinite';
+    scrollingText.style.top = '2.2em';
+    scrollingText.style.bottom = 'unset';
+    scrollingText.style.position = 'relative';
+    // اضافه کردن keyframes به صورت داینامیک
+    const styleSheet = document.createElement('style');
+    styleSheet.innerHTML = `@keyframes scrollTextVerticalMarquee { 0% { top: 2.2em; } 100% { top: -2.2em; } }`;
+    document.head.appendChild(styleSheet);
+  </script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <!-- ✅ فایل‌های JS پروژه -->
+  <script src="js/config.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/homepage.js"></script>
+  <script src="js/web3-interactions.js"></script>
+
+  <!-- اسکریپت فعال‌سازی منوی موبایل (همبرگری) -->
+  <script>
+    window.toggleFAB = function() {
+      var fabContainer = document.querySelector('.fab-container');
+      if (!fabContainer) return;
+      var fabButton = fabContainer.querySelector('.fab-main');
+      var isActive = fabContainer.classList.toggle('active');
+      if (fabButton) {
+        fabButton.setAttribute('aria-expanded', isActive ? 'true' : 'false');
+      }
+    };
+    // اطمینان از اینکه دکمه کار می‌کند حتی اگر onclick کار نکند
+    document.addEventListener('click', function(e) {
+      var btn = e.target.closest('.fab-main');
+      if (btn) {
+        window.toggleFAB();
+      }
+    });
+  </script>
+
+  <script>
+    // تابع کمکی برای کوتاه‌سازی آدرس
+    function shortenAddress(address) {
+      if (!address) return '---';
+      return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+    }
+    // تابع کمکی برای کوتاه‌سازی لینک رفرال
+    function shortenReferral(link) {
+      if (!link) return '---';
+      return link.length > 32 ? link.substring(0, 20) + '...' + link.slice(-8) : link;
+    }
+    // به‌روزرسانی مقادیر داشبورد با فرمت مختصر
+    function updateDashboardValue(id, value, unit = '', maxDecimals = 4) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (typeof value === 'number' || !isNaN(value)) {
+        value = parseFloat(value).toLocaleString('fa-IR', {maximumFractionDigits: maxDecimals});
+      }
+      el.textContent = `${value} ${unit}`.trim();
+    }
+    // اگر آدرس یا لینک رفرال در داشبورد نمایش داده می‌شود، اینجا کوتاه کن
+    // مثال:
+    // updateDashboardValue('user-address', shortenAddress(address));
+    // updateDashboardValue('referral-link', shortenReferral(referralLink));
+  </script>
+
+</body>
+</html>

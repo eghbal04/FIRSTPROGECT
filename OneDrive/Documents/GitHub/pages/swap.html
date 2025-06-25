@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سواپ توکن | LevelUp</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet">
+
+</head>
+<body>
+
+    <div id="navbar-container"></div>
+    <script>
+        fetch('../pages/navbar.html')
+            .then(res => res.text())
+            .then(html => {
+                document.getElementById('navbar-container').innerHTML = html;
+            });
+    </script>
+
+    <!-- بخش انگیزشی -->
+    <div class="motivational-container">
+        <div class="motivational-text" id="motivational-text">
+            در حال بارگذاری جملات انگیزشی...
+        </div>
+    </div>
+
+  
+    <!-- هدر صفحه -->
+    <header>
+        <h1>سواپ توکن</h1>
+        <p>تبدیل سریع و آسان بین MATIC و LVL</p>
+    </header>
+    
+    <!-- بخش اصلی فرم سواپ -->
+    <section class="swap-container">
+        <h2 class="swap-title">فرم سواپ</h2>
+        <form class="swap-form" id="swapForm" autocomplete="off">
+            <label for="swapDirection">نوع تبدیل:</label>
+            <select id="swapDirection">
+                <option value="matic-to-lvl">MATIC → LVL</option>
+                <option value="lvl-to-matic">LVL → MATIC</option>
+            </select>
+            
+            <div class="balance-display" style="flex-direction: column; gap: 12px; margin-bottom: 1rem; width: 100%;">
+                <div style="display: flex; align-items: center; gap: 10px; background: #181c2a; border-radius: 10px; padding: 10px 16px; box-shadow: 0 2px 8px rgba(80,60,180,0.10); width: 100%;">
+                    <img src="https://cryptologos.cc/logos/polygon-matic-logo.png?v=026" alt="MATIC" style="width: 22px; height: 22px; vertical-align: middle; border-radius: 50%; background: #fff;"> 
+                    <span id="maticBalance" style="font-weight: bold; color: #a786ff;">MATIC: -</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; background: #181c2a; border-radius: 10px; padding: 10px 16px; box-shadow: 0 2px 8px rgba(80,60,180,0.10); width: 100%;">
+                    <img src="https://cryptologos.cc/logos/levelup-lvl-logo.png?v=026" alt="LVL" style="width: 22px; height: 22px; vertical-align: middle; border-radius: 50%; background: #fff;"> 
+                    <span id="lvlBalance" style="font-weight: bold; color: #a786ff;">LVL: -</span>
+                </div>
+            </div>
+            
+            <label for="swapAmount">مقدار:</label>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <input type="number" id="swapAmount" min="0" step="any" placeholder="مقدار را وارد کنید..." style="flex:1;">
+                <button type="button" id="maxButton" class="max-btn">ماکسیمم</button>
+            </div>
+            
+            <div class="swap-info" id="swapInfo">نرخ تبدیل: -</div>
+            
+            <button type="submit" id="swapButton">انجام سواپ</button>
+            
+            <div class="swap-status" id="swapStatus"></div>
+        </form>
+    </section>
+    
+    <!-- فوتر صفحه -->
+    <footer>
+        <p style="text-align:center; color:#888; margin-top: 30px;">&copy; 2025 LevelUp. All rights reserved.</p>
+    </footer>
+
+    <!-- اسکریپت‌ها -->
+    <script>
+        window.toggleFAB = function() {
+            var fabContainer = document.querySelector('.fab-container');
+            if (!fabContainer) return;
+            var fabButton = fabContainer.querySelector('.fab-main');
+            var isActive = fabContainer.classList.toggle('active');
+            if (fabButton) {
+                fabButton.setAttribute('aria-expanded', isActive ? 'true' : 'false');
+            }
+        };
+        document.addEventListener('click', function(e) {
+            var btn = e.target.closest('.fab-main');
+            if (btn) {
+                window.toggleFAB();
+            }
+        });
+    </script>
+
+    <!-- اسکریپت‌های اصلی پروژه برای سواپ -->
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/web3-interactions.js"></script>
+    <script src="../js/swap.js"></script>
+
+</body>
+</html>
