@@ -146,6 +146,309 @@ body {
         0%, 100% { opacity: 1; }
         50% { opacity: 0; }
     }
+
+/* fonts.css - اگر نیاز به فونت جداگانه دارید */
+@font-face {
+    font-family: 'Vazirmatn';
+    src: url('../fonts/Vazirmatn-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Vazirmatn';
+    src: url('../fonts/Vazirmatn-Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+}
+
+/* reset.css - تنظیمات اولیه */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Vazirmatn', sans-serif;
+    direction: rtl;
+    background-color: #f5f5f5;
+    color: #333;
+    line-height: 1.6;
+    padding: 20px;
+}
+
+/* استایل بخش پیام توکن */
+.token-message-box {
+    width: 95%;
+    max-width: 800px;
+    margin: 0 auto 20px;
+    padding: 15px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.token-message-title {
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #5e35b1;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid rgba(94, 53, 177, 0.1);
+}
+
+.message-scroll-container {
+    height: 120px;
+    overflow: hidden;
+    position: relative;
+}
+
+.message-line {
+    height: 40px;
+    line-height: 40px;
+    font-size: 0.95rem;
+    color: #444;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: all 0.8s cubic-bezier(0.22, 0.61, 0.36, 1);
+    position: absolute;
+    width: 100%;
+    opacity: 0;
+    transform: translateY(20px);
+    text-align: center;
+    padding: 0 15px;
+}
+
+.message-line.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.typing-cursor {
+    display: inline-block;
+    width: 8px;
+    height: 1em;
+    background-color: #5e35b1;
+    animation: blink 1.2s infinite;
+    margin-right: 2px;
+    vertical-align: middle;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* استایل بخش انگیزشی */
+.motivational-container {
+    width: 95%;
+    max-width: 800px;
+    padding: 15px 0;
+    margin: 20px auto;
+    background: rgba(0,0,0,0.03);
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.motivational-text {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #333;
+    padding: 10px 20px;
+    opacity: 0.6;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.motivational-text.fade-out {
+    opacity: 0;
+}
+
+/* استایل منوی ناوبری */
+.circle-menu-horizontal {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px auto;
+    flex-wrap: wrap;
+    max-width: 800px;
+}
+
+.circle-menu-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: #333;
+    width: 60px;
+}
+
+.circle-menu-item .icon {
+    font-size: 1.8rem;
+    margin-bottom: 5px;
+}
+
+.circle-menu-item .label {
+    font-size: 0.8rem;
+}
+
+/* استایل هدر صفحه */
+header {
+    text-align: center;
+    margin: 20px 0;
+}
+
+header h1 {
+    color: #5e35b1;
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+}
+
+header p {
+    color: #666;
+    font-size: 1rem;
+}
+
+/* استایل فرم سواپ */
+.swap-container {
+    width: 95%;
+    max-width: 500px;
+    margin: 20px auto;
+    padding: 25px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.swap-title {
+    text-align: center;
+    color: #5e35b1;
+    margin-bottom: 20px;
+    font-size: 1.4rem;
+}
+
+.swap-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.swap-form label {
+    font-weight: 500;
+    color: #555;
+}
+
+.swap-form select,
+.swap-form input {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    background-color: #f9f9f9;
+}
+
+.swap-form select:focus,
+.swap-form input:focus {
+    outline: none;
+    border-color: #5e35b1;
+    box-shadow: 0 0 0 2px rgba(94, 53, 177, 0.2);
+}
+
+.max-btn {
+    padding: 12px 15px;
+    background-color: #f1f1f1;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.max-btn:hover {
+    background-color: #e0e0e0;
+}
+
+#swapButton {
+    padding: 12px;
+    background-color: #5e35b1;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#swapButton:hover {
+    background-color: #4527a0;
+}
+
+#swapButton:disabled {
+    background-color: #b39ddb;
+    cursor: not-allowed;
+}
+
+.swap-info {
+    text-align: center;
+    color: #666;
+    padding: 8px;
+    background-color: #f5f5f5;
+    border-radius: 6px;
+}
+
+.swap-status {
+    text-align: center;
+    padding: 8px;
+    border-radius: 6px;
+    margin-top: 10px;
+}
+
+.balances {
+    margin-bottom: 0.5rem;
+    text-align: center;
+    color: #7e57c2;
+    font-size: 0.98rem;
+}
+
+/* استایل فوتر */
+footer {
+    text-align: center;
+    margin-top: 40px;
+    color: #888;
+    font-size: 0.9rem;
+}
+
+/* رسپانسیو برای دستگاه‌های کوچک */
+@media (max-width: 600px) {
+    .token-message-box,
+    .motivational-container,
+    .swap-container {
+        width: 100%;
+        padding: 15px;
+    }
+    
+    .circle-menu-horizontal {
+        gap: 10px;
+    }
+    
+    .circle-menu-item {
+        width: 50px;
+    }
+    
+    .circle-menu-item .icon {
+        font-size: 1.5rem;
+    }
+    
+    header h1 {
+        font-size: 1.5rem;
+    }
+}
+
 /* استایل نشانگر گزارشات خوانده نشده */
 .reports-badge {
   position: absolute;
