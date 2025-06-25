@@ -209,50 +209,37 @@ setInterval(showNextMessage, 20000);
         <p>تبدیل سریع و آسان بین MATIC و LVL</p>
 
     <!-- بخش توضیحات توکن -->
-    <div class="token-message-box">
-        <div class="message-title">مزایای توکن LVL</div>
-        <div class="message-line">
-            <div class="message-text" id="line1"></div>
-        </div>
-        <div class="message-line">
-            <div class="message-text" id="line2"></div>
-        </div>
-        <div class="message-line">
-            <div class="message-text" id="line3"></div>
-        </div>
+<div class="token-benefits-container">
+    <h2 class="token-benefits-title">مزایای توکن LVL</h2>
+    <div class="scrolling-messages">
+        <div class="message-line" id="line1"></div>
+        <div class="message-line" id="line2"></div>
+        <div class="message-line" id="line3"></div>
     </div>
+</div>
 
-    <script>
-    // پیام‌های سه خطی
+<script>
     const messages = [
         {
             line1: "💎 خرید و فروش توکن LVL باعث رشد مداوم آن می‌شود",
-            line2: "📈 در هر معامله: 2% به پشتوانه اضافه می‌شود + 1% به معرف",
-            line3: "🔄 سیستم هوشمند مینت/بارن | کارمزد ناچیز پالیگان"
+            line2: "📈 در هر معامله: 2% به پشتوانه + 1% به معرف واریز می‌شود",
+            line3: "🔄 سیستم مینت/بارن هوشمند | کارمزد ناچیز پالیگان"
         },
         {
-            line1: "🛍️ با LVL از تمام خدمات سایت استفاده کنید",
+            line1: "🛍️ با LVL از تمام محصولات و خدمات سایت خرید کنید",
             line2: "🏆 امتیازات ویژه دریافت نمایید",
-            line3: "⚡ تراکنش‌های سریع و امن"
-        },
-        {
-            line1: "🔮 آینده‌ای روشن با توکن LevelUp",
-            line2: "📊 ارزش رو به رشد در هر معامله",
-            line3: "🌐 پشتیبانی از تمام تراکنش‌های سایت"
+            line3: "⚡ تراکنش‌های سریع و امن درون‌سایتی"
         }
     ];
     
-    // تنظیمات نمایش
     const typingSpeed = 50;
     const lineDelay = 1000;
     const messageDelay = 5000;
     
-    // عناصر DOM
     const line1 = document.getElementById('line1');
     const line2 = document.getElementById('line2');
     const line3 = document.getElementById('line3');
     
-    // تایپ کردن متن
     async function typeWriter(text, element) {
         return new Promise(resolve => {
             let i = 0;
@@ -273,7 +260,6 @@ setInterval(showNextMessage, 20000);
         });
     }
     
-    // نمایش یک مجموعه پیام
     async function showMessageSet(message) {
         await typeWriter(message.line1, line1);
         await new Promise(resolve => setTimeout(resolve, lineDelay));
@@ -282,7 +268,6 @@ setInterval(showNextMessage, 20000);
         await typeWriter(message.line3, line3);
     }
     
-    // چرخه نمایش پیام‌ها
     async function runMessages() {
         let index = 0;
         while (true) {
@@ -298,9 +283,8 @@ setInterval(showNextMessage, 20000);
         }
     }
     
-    // شروع نمایش پیام‌ها
     document.addEventListener('DOMContentLoaded', runMessages);
-    </script>
+</script>
     </header>
     <section class="swap-container">
         <h2 class="swap-title">فرم سواپ</h2>
