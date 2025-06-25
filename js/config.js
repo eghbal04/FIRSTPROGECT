@@ -1,4 +1,5 @@
 // config.js
+if (!window.contractConfig) {
 window.contractConfig = {
     // آدرس قرارداد بروزرسانی شده
     CONTRACT_ADDRESS: "0xB3c33fB7C3C701A520F61a7fe9F2ab8E905205Ce",
@@ -1370,4 +1371,4 @@ window.contractConfig = {
     }
 };
 };
-
+}
