@@ -329,31 +329,36 @@ setInterval(showNextMessage, 20000);
   const button = document.getElementById("expandTypewriter");
 
   let charIndex = 0;
-  let lineLimit = 2;
-  const lineHeight = 1.6 * 16; // 1.6rem in px
+  let expanded = false;
 
-  box.style.height = (lineLimit * lineHeight) + "px";
+  const lineHeight = 1.6 * 16;
+  const initialHeight = 2 * lineHeight;
+  const expandedHeight = 5 * lineHeight;
+
+  box.style.height = initialHeight + "px";
 
   function typeText() {
     if (charIndex < fullText.length) {
       box.textContent += fullText.charAt(charIndex);
       charIndex++;
 
-      // اسکرول خودکار فقط وقتی expand نشده
-      if (!expanded) {
-        box.scrollTop = box.scrollHeight;
-      }
+      // در هر حالتی اسکرول کن به پایین‌ترین نقطه
+      box.scrollTop = box.scrollHeight;
 
       setTimeout(typeText, 25);
     }
   }
 
-  let expanded = false;
   button.addEventListener("click", () => {
     if (!expanded) {
-      lineLimit = 5;
-      box.style.height = (lineLimit * lineHeight) + "px";
       expanded = true;
+      box.style.height = expandedHeight + "px";
+
+      // اطمینان از اینکه بعد از باز شدن، یه لحظه بعد اسکرول به پایین بره
+      setTimeout(() => {
+        box.scrollTop = box.scrollHeight;
+      }, 300);
+
       button.style.display = "none";
     }
   });
