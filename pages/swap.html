@@ -208,7 +208,6 @@ setInterval(showNextMessage, 20000);
         <h1>سواپ توکن</h1>
         <p>تبدیل سریع و آسان بین MATIC و LVL</p>
 
-    <!-- بخش توضیحات توکن -->
 <div class="token-benefits-container">
     <h2 class="token-benefits-title">مزایای توکن LVL</h2>
     <div class="scrolling-messages">
@@ -217,6 +216,57 @@ setInterval(showNextMessage, 20000);
         <div class="message-line" id="line3"></div>
     </div>
 </div>
+
+<style>
+    .token-benefits-container {
+        width: 100%;
+        margin: 20px auto;
+        padding: 15px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        font-family: 'Vazirmatn', sans-serif;
+    }
+    
+    .token-benefits-title {
+        text-align: center;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #4a2c82;
+        margin-bottom: 15px;
+    }
+    
+    .scrolling-messages {
+        height: 120px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .message-line {
+        height: 40px;
+        line-height: 40px;
+        font-size: 0.95rem;
+        color: #555;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        transition: transform 0.5s ease;
+    }
+    
+    .typing-cursor {
+        display: inline-block;
+        width: 8px;
+        height: 1em;
+        background-color: #6a3093;
+        animation: blink 1s infinite;
+        margin-right: 2px;
+    }
+    
+    @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0; }
+    }
+</style>
 
 <script>
     const messages = [
