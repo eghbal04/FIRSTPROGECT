@@ -207,42 +207,58 @@ setInterval(showNextMessage, 20000);
     <header>
         <h1>سواپ توکن</h1>
         <p>تبدیل سریع و آسان بین MATIC و LVL</p>
-          <!-- بخش جدید توضیحات توکن -->
-    <div class="token-description">
-        <h2 class="token-description-title">مزایای توکن LVL</h2>
-        <div class="typing-scroll-container" id="typingContainer">
-            <div class="typing-text" id="typingText1"></div>
-            <div class="typing-text" id="typingText2"></div>
-            <div class="typing-text" id="typingText3"></div>
+   </style>
+</head>
+<body>
+    <!-- بخش توضیحات توکن -->
+    <div class="token-message-box">
+        <div class="message-title">مزایای توکن LVL</div>
+        <div class="message-line">
+            <div class="message-text" id="line1"></div>
+        </div>
+        <div class="message-line">
+            <div class="message-text" id="line2"></div>
+        </div>
+        <div class="message-line">
+            <div class="message-text" id="line3"></div>
         </div>
     </div>
 
     <script>
-    // پیام‌های توضیحی در سه بخش
-    const tokenMessages = [
-        "💎 خرید و فروش توکن LVL باعث رشد آن می‌شود! در هر معامله:",
-        "📈 2% به پشتوانه توکن اضافه می‌شود | 1% به حساب معرف واریز می‌شود",
-        "🔄 سیستم مینت/بارن هوشمند | کارمزد کم پالیگان | خرید محصولات با LVL"
+    // پیام‌های سه خطی
+    const messages = [
+        {
+            line1: "💎 خرید و فروش توکن LVL باعث رشد مداوم آن می‌شود",
+            line2: "📈 در هر معامله: 2% به پشتوانه اضافه می‌شود + 1% به معرف",
+            line3: "🔄 سیستم هوشمند مینت/بارن | کارمزد ناچیز پالیگان"
+        },
+        {
+            line1: "🛍️ با LVL از تمام خدمات سایت استفاده کنید",
+            line2: "🏆 امتیازات ویژه دریافت نمایید",
+            line3: "⚡ تراکنش‌های سریع و امن"
+        },
+        {
+            line1: "🔮 آینده‌ای روشن با توکن LevelUp",
+            line2: "📊 ارزش رو به رشد در هر معامله",
+            line3: "🌐 پشتیبانی از تمام تراکنش‌های سایت"
+        }
     ];
     
-    // تنظیمات تایپینگ
-    const typingSpeed = 50; // سرعت تایپ (میلی‌ثانیه)
-    const lineDelay = 2000; // تاخیر بین خطوط (میلی‌ثانیه)
-    const cycleDelay = 5000; // تاخیر قبل از شروع مجدد (میلی‌ثانیه)
+    // تنظیمات نمایش
+    const typingSpeed = 50;
+    const lineDelay = 1000;
+    const messageDelay = 5000;
     
     // عناصر DOM
-    const typingElements = [
-        document.getElementById('typingText1'),
-        document.getElementById('typingText2'),
-        document.getElementById('typingText3')
-    ];
+    const line1 = document.getElementById('line1');
+    const line2 = document.getElementById('line2');
+    const line3 = document.getElementById('line3');
     
     // تایپ کردن متن
     async function typeWriter(text, element) {
         return new Promise(resolve => {
             let i = 0;
             element.innerHTML = '';
-            element.classList.add('active');
             
             function type() {
                 if (i < text.length) {
@@ -250,7 +266,7 @@ setInterval(showNextMessage, 20000);
                     i++;
                     setTimeout(type, typingSpeed);
                 } else {
-                    element.innerHTML += '<span class="cursor"></span>';
+                    element.innerHTML += '<span class="typing-cursor"></span>';
                     resolve();
                 }
             }
@@ -259,35 +275,33 @@ setInterval(showNextMessage, 20000);
         });
     }
     
-    // پاک کردن متن با افکت
-    async function clearText(element) {
-        return new Promise(resolve => {
-            element.classList.remove('active');
-            element.classList.add('inactive');
-            setTimeout(() => {
-                element.innerHTML = '';
-                element.classList.remove('inactive');
-                resolve();
-            }, 500);
-        });
+    // نمایش یک مجموعه پیام
+    async function showMessageSet(message) {
+        await typeWriter(message.line1, line1);
+        await new Promise(resolve => setTimeout(resolve, lineDelay));
+        await typeWriter(message.line2, line2);
+        await new Promise(resolve => setTimeout(resolve, lineDelay));
+        await typeWriter(message.line3, line3);
     }
     
     // چرخه نمایش پیام‌ها
-    async function runTypingCycle() {
+    async function runMessages() {
+        let index = 0;
         while (true) {
-            for (let i = 0; i < typingElements.length; i++) {
-                await typeWriter(tokenMessages[i], typingElements[i]);
-                await new Promise(resolve => setTimeout(resolve, lineDelay));
-                await clearText(typingElements[i]);
-            }
-            await new Promise(resolve => setTimeout(resolve, cycleDelay));
+            await showMessageSet(messages[index]);
+            await new Promise(resolve => setTimeout(resolve, messageDelay));
+            
+            // پاک کردن متن قبل از نمایش پیام بعدی
+            line1.innerHTML = '';
+            line2.innerHTML = '';
+            line3.innerHTML = '';
+            
+            index = (index + 1) % messages.length;
         }
     }
     
-    // شروع تایپینگ پس از لود صفحه
-    document.addEventListener('DOMContentLoaded', () => {
-        runTypingCycle();
-    });
+    // شروع نمایش پیام‌ها
+    document.addEventListener('DOMContentLoaded', runMessages);
     </script>
     </header>
     <section class="swap-container">
@@ -295,11 +309,11 @@ setInterval(showNextMessage, 20000);
         <form class="swap-form" id="swapForm" autocomplete="off">
             <label for="swapDirection">نوع تبدیل:</label>
             <select id="swapDirection">
-                <option value="matic-to-lvl">MATIC → LVL</option><hr><br>
-                <option value="lvl-to-matic">LVL → MATIC</option>
+                <option value="matic-to-lvl">POL → LVL</option><hr><br>
+                <option value="lvl-to-matic">LVL → POL</option>
             </select>
             <div class="balances" style="margin-bottom:0.5rem;text-align:center;color:#a786ff;font-size:0.98rem;">
-                <span id="maticBalance">MATIC: -</span> |
+                <span id="maticBalance">POL: -</span> |
                 <span id="lvlBalance">LVL: -</span>
             </div>
             <label for="swapAmount">مقدار:</label>
