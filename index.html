@@ -217,16 +217,19 @@ setInterval(showNextMessage, 20000);
   <div style="max-width:800px; margin:auto;">
     <div id="typewriter-box" style="
         height: 3.2em;
-        overflow: hidden;
+        overflow-y: auto;
         white-space: pre-wrap;
         line-height: 1.6;
         color: #f1f1f1;
         font-size: 1rem;
         position: relative;
-        transition: height 0.8s ease;
+        transition: height 0.5s ease;
         border-radius: 12px;
         background: rgba(255,255,255,0.03);
         padding: 1rem;
+        direction: rtl;
+        scrollbar-width: thin;
+        scrollbar-color: #00ffae transparent;
     "></div>
 
     <div style="text-align:center; margin-top: 0.5rem;">
