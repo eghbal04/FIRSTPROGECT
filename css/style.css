@@ -106,6 +106,102 @@
   transition: transform 0.2s;
 }
 
+/* داک افقی دسکتاپ */
+.circle-menu-horizontal {
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 25px;
+  background: rgba(20, 18, 40, 0.98);
+  padding: 14px 32px;
+  border-radius: 40px;
+  box-shadow: 0 6px 24px rgba(124, 95, 230, 0.85);
+  border: 1.5px solid #a786ff;
+  z-index: 2000;
+  user-select: none;
+  backdrop-filter: blur(10px);
+}
+
+.circle-menu-horizontal a {
+  text-decoration: none;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 13px;
+  transition: transform 0.2s;
+}
+
+.circle-menu-horizontal a:hover {
+  transform: scale(1.2);
+}
+
+.icon {
+  font-size: 22px;
+}
+
+/* همبرگری موبایل */
+.fab-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: none; /* فقط در موبایل */
+}
+
+.fab-main {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #a786ff, #7e5fff);
+  border: none;
+  color: white;
+  font-size: 28px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.fab-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: absolute;
+  bottom: 70px;
+  right: 0;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+}
+
+.fab-container.active .fab-menu {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.fab-menu a {
+  background: rgba(20, 18, 40, 0.95);
+  color: white;
+  border-radius: 24px;
+  padding: 10px 14px;
+  text-decoration: none;
+  font-size: 14px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  border: 1px solid #a786ff;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 10px rgba(150, 120, 250, 0.3);
+}
+
+.fab-menu a:hover {
+  transform: scale(1.08);
+}
+
+
 .circle-menu-item:hover {
   transform: scale(1.08);
 }
