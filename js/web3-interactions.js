@@ -1,356 +1,297 @@
-// web3-interactions.js
+// --- Swap Logic ---
+const swapForm = document.getElementById('swapForm');
+const swapDirection = document.getElementById('swapDirection');
+const swapAmount = document.getElementById('swapAmount');
+const swapInfo = document.getElementById('swapInfo');
+const swapButton = document.getElementById('swapButton');
+const swapStatus = document.getElementById('swapStatus');
 
-// تابع اتصال کیف پول
-async function connectWallet() {
+// Update rate info
+async function updateRateInfo() {
     try {
-        // بررسی وجود ethers.js
-        if (typeof ethers === 'undefined') {
-            throw new Error("Ethers.js library not loaded");
+        const provider = new ethers.providers.Web3Provider(window.ethereum || window);
+        const contract = new ethers.Contract(CONTRACT_ADDRESS, LEVELUP_ABI, provider);
+        let rateText = '-';
+        if (swapDirection.value === 'matic-to-lvl') {
+            if (typeof contract._maticToTokens === 'function') {
+                const amount = ethers.utils.parseEther((swapAmount.value || '0'));
+                const tokens = await contract._maticToTokens(amount);
+                rateText = `هر 1 MATIC ≈ ${(ethers.utils.formatUnits(tokens, 18))} LVL`;
+            }
+        } else {
+            if (typeof contract._tokensToMatic === 'function') {
+                const amount = ethers.utils.parseUnits((swapAmount.value || '0'), 18);
+                const matic = await contract._tokensToMatic(amount);
+                rateText = `هر 1 LVL ≈ ${(ethers.utils.formatEther(matic))} MATIC`;
+            }
         }
-
-        // بررسی وجود window.ethereum
-        if (!window.ethereum) {
-            throw new Error("Please install MetaMask or another Web3 wallet");
-        }
-
-        // مقداردهی اولیه Web3
-        const initialized = await window.contractConfig.initializeWeb3();
-        if (!initialized) {
-            throw new Error("Web3 initialization failed");
-        }
-
-        // دریافت آدرس کیف پول
-        const address = await window.contractConfig.signer.getAddress();
+        swapInfo.textContent = 'نرخ تبدیل: ' + rateText;
+    } catch (e) {
+        swapInfo.textContent = 'نرخ تبدیل: -';
+    }
+}
+async function loadBalances() {
+    try {
+        const { signer, contract } = await connectWallet();
+        const address = await signer.getAddress();
         
-        return {
-            provider: window.contractConfig.provider,
-            signer: window.contractConfig.signer,
-            contract: window.contractConfig.contract,
-            address
-        };
+        // دریافت موجودی MATIC
+        const maticBalance = await signer.provider.getBalance(address);
+        document.getElementById('maticBalance').textContent = `MATIC: ${ethers.formatEther(maticBalance)}`;
+        
+        // دریافت موجودی LVL
+        const lvlBalance = await contract.balanceOf(address);
+        document.getElementById('lvlBalance').textContent = `LVL: ${ethers.formatUnits(lvlBalance, 18)}`;
     } catch (error) {
-        console.error("Wallet connection error:", error);
-        throw error;
+        console.error("Error loading balances:", error);
     }
 }
 
-// تابع دریافت پروفایل کاربر
-async function fetchUserProfile() {
-    try {
-        // اتصال به کیف پول
-        const { provider, contract, address } = await connectWallet();
-
-        // دریافت موجودی‌ها به صورت موازی
-        const [maticBalance, lvlBalance, userData] = await Promise.all([
-            provider.getBalance(address),
-            contract.balanceOf(address),
-            contract.users(address)
-        ]);
-
-        return {
-            address,
-            maticBalance: ethers.formatEther(maticBalance),
-            lvlBalance: ethers.formatUnits(lvlBalance, 18),
-            isRegistered: userData.activated,
-            binaryPoints: ethers.formatUnits(userData.binaryPoints, 18),
-            binaryPointCap: ethers.formatUnits(userData.binaryPointCap, 18),
-            referrer: userData.referrer
-        };
-    } catch (error) {
-        console.error("Error fetching user profile:", error);
-        throw error;
-    }
+// تابع اعتبارسنجی مقدار و فعال/غیرفعال کردن دکمه سواپ
+function validateSwapAmount() {
+    if (!swapAmount || !swapButton) return;
+    const value = parseFloat(swapAmount.value);
+    swapButton.disabled = !(value > 0);
 }
 
-// تابع خرید توکن
-async function buyTokens(maticAmount) {
-    try {
-        const { contract } = await connectWallet();
-        
-        // تبدیل به Wei
-        const amountInWei = ethers.parseEther(maticAmount.toString());
-        
-        // تخمین تعداد توکن دریافتی
-        const estimatedTokens = await contract.estimateBuy(amountInWei);
-        
-        // انجام تراکنش خرید
-        const tx = await contract.buyTokens({ value: amountInWei });
-        await tx.wait();
-        
-        return {
-            success: true,
-            estimatedTokens: ethers.formatUnits(estimatedTokens, 18),
-            transactionHash: tx.hash
-        };
-    } catch (error) {
-        console.error("Error buying tokens:", error);
-        throw error;
-    }
-}
+swapAmount.addEventListener('input', () => {
+    updateRateInfo();
+    validateSwapAmount();
+});
 
-// تابع فروش توکن
-async function sellTokens(tokenAmount) {
-    try {
-        const { contract } = await connectWallet();
-        
-        // تبدیل به Wei
-        const amountInWei = ethers.parseUnits(tokenAmount.toString(), 18);
-        
-        // تخمین MATIC دریافتی
-        const estimatedMatic = await contract.estimateSell(amountInWei);
-        
-        // انجام تراکنش فروش
-        const tx = await contract.sellTokens(amountInWei);
-        await tx.wait();
-        
-        return {
-            success: true,
-            estimatedMatic: ethers.formatEther(estimatedMatic),
-            transactionHash: tx.hash
-        };
-    } catch (error) {
-        console.error("Error selling tokens:", error);
-        throw error;
-    }
-}
+swapDirection.addEventListener('change', () => {
+    updateRateInfo();
+    validateSwapAmount();
+});
 
-// تابع ثبت‌نام و فعال‌سازی
-async function registerAndActivate(referrerAddress, tokenAmount) {
-    try {
-        const { contract } = await connectWallet();
-        
-        // تبدیل به Wei
-        const amountInWei = ethers.parseUnits(tokenAmount.toString(), 18);
-        
-        // انجام تراکنش ثبت‌نام
-        const tx = await contract.registerAndActivate(referrerAddress, amountInWei);
-        await tx.wait();
-        
-        return {
-            success: true,
-            transactionHash: tx.hash
-        };
-    } catch (error) {
-        console.error("Error registering user:", error);
-        throw error;
-    }
-}
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadBalances();
+    validateSwapAmount();
+    // بقیه کدهای موجود...
+});
+// اضافه کردن event listener برای دکمه ماکسیمم
+document.getElementById('maxButton').addEventListener('click', setMaxAmount);
 
-// تابع برداشت پاداش
-async function claimRewards() {
+// اصلاح تابع setMaxAmount
+async function setMaxAmount() {
     try {
-        const { contract } = await connectWallet();
-        
-        // بررسی امکان برداشت
-        const isClaimable = await contract.isClaimable(await window.contractConfig.signer.getAddress());
-        if (!isClaimable) {
-            throw new Error("شما واجد شرایط برداشت نیستید");
-        }
-        
-        // انجام تراکنش برداشت
-        const tx = await contract.claim();
-        await tx.wait();
-        
-        return {
-            success: true,
-            transactionHash: tx.hash
-        };
-    } catch (error) {
-        console.error("Error claiming rewards:", error);
-        throw error;
-    }
-}
+        const swapDirection = document.getElementById('swapDirection');
+        const swapAmount = document.getElementById('swapAmount');
 
-// تابع دریافت اطلاعات درخت کاربر
-async function getUserTree(userAddress) {
-    try {
-        const { contract } = await connectWallet();
-        
-        const [left, right, activated, binaryPoints, binaryPointCap] = 
-            await contract.getUserTree(userAddress);
-        
-        return {
-            left,
-            right,
-            activated,
-            binaryPoints: ethers.formatUnits(binaryPoints, 18),
-            binaryPointCap: ethers.formatUnits(binaryPointCap, 18)
-        };
-    } catch (error) {
-        console.error("Error fetching user tree:", error);
-        throw error;
-    }
-}
+        if (swapDirection.value === 'matic-to-lvl') {
+            const { signer } = await connectWallet();
+            const address = await signer.getAddress();
+            const rawBalance = await signer.provider.getBalance(address);
 
-// تابع دریافت قیمت‌ها
-async function getPrices() {
-    try {
-        const { contract } = await connectWallet();
-        
-        const [tokenPrice, maticPrice, registrationPrice] = await Promise.all([
-            contract.updateTokenPrice(),
-            contract.getLatestMaticPrice(),
-            contract.getRegistrationPrice()
-        ]);
-        
-        return {
-            tokenPrice: ethers.formatEther(tokenPrice),
-            maticPrice: ethers.formatUnits(maticPrice, 8), // 8 decimals for USD price
-            registrationPrice: ethers.formatEther(registrationPrice)
-        };
-    } catch (error) {
-        console.error("Error fetching prices:", error);
-        throw error;
-    }
-}
+            const feeBuffer = ethers.parseEther("0.01");
+            const usableBalance = rawBalance > feeBuffer ? rawBalance - feeBuffer : 0n;
 
-// تابع دریافت آمار کلی قرارداد
-async function getContractStats() {
-    try {
-        const { contract } = await connectWallet();
-        
-        const [totalUsers, totalSupply, circulatingSupply, binaryPool, rewardPool, totalPoints, totalDirectDeposits] = 
-            await Promise.all([
-                contract.totalUsers(),
-                contract.totalSupply(),
-                contract.circulatingSupply(),
-                contract.binaryPool(),
-                contract.rewardPool(),
-                contract.totalPoints(),
-                contract.totalDirectDeposits()
-            ]);
-        
-        return {
-            totalUsers: totalUsers.toString(),
-            totalSupply: ethers.formatUnits(totalSupply, 18),
-            circulatingSupply: ethers.formatUnits(circulatingSupply, 18),
-            binaryPool: ethers.formatEther(binaryPool),
-            rewardPool: ethers.formatEther(rewardPool),
-            totalPoints: ethers.formatUnits(totalPoints, 18),
-            totalDirectDeposits: ethers.formatEther(totalDirectDeposits)
-        };
-    } catch (error) {
-        console.error("Error fetching contract stats:", error);
-        throw error;
-    }
-}
+            if (usableBalance > 0n) {
+                swapAmount.value = ethers.formatEther(usableBalance);
+                await updateRateInfo(); // تغییر از updateExchangeRate به updateRateInfo
+            }
 
-// تابع عمومی برای فراخوانی توابع قرارداد
-async function callContractFunction(functionName, ...args) {
-    try {
-        const { contract } = await connectWallet();
-        return await contract[functionName](...args);
-    } catch (error) {
-        console.error(`Error calling ${functionName}:`, error);
-        throw error;
-    }
-}
+        } else {
+            const { signer, contract } = await connectWallet();
+            const address = await signer.getAddress();
+            const rawBalance = await contract.balanceOf(address);
 
-// تابع بررسی وضعیت اتصال
-async function checkConnection() {
-    try {
-        const { provider, address } = await connectWallet();
-        const network = await provider.getNetwork();
-        
-        return {
-            connected: true,
-            address,
-            network: network.name,
-            chainId: network.chainId
-        };
-    } catch (error) {
-        return {
-            connected: false,
-            error: error.message
-        };
-    }
-}
-
-// تابع محاسبه اطلاعات اضافی
-async function getAdditionalStats() {
-    try {
-        const { contract } = await connectWallet();
-        
-        console.log("Getting additional stats...");
-        
-        let pointValue = "0";
-        let claimedPoints = "0";
-        let remainingPoints = "0";
-        
-        // دریافت ارزش هر پوینت (به توکن LVL)
-        try {
-            const pointValueRaw = await contract.getPointValue();
-            console.log("Point value (raw):", pointValueRaw.toString());
-            pointValue = ethers.formatUnits(pointValueRaw, 18);
-            console.log("Point value (formatted):", pointValue);
-        } catch (error) {
-            console.log("getPointValue failed:", error.message);
-        }
-        
-        // محاسبه پوینت‌های پرداخت شده و مانده
-        try {
-            const totalClaimableBinaryPoints = await contract.totalClaimableBinaryPoints();
-            console.log("Total claimable binary points (raw):", totalClaimableBinaryPoints.toString());
-            
-            const totalPoints = await contract.totalPoints();
-            console.log("Total points (raw):", totalPoints.toString());
-            
-            claimedPoints = ethers.formatUnits(totalClaimableBinaryPoints, 18);
-            remainingPoints = ethers.formatUnits(totalPoints - totalClaimableBinaryPoints, 18);
-            
-            console.log("Claimed points (formatted):", claimedPoints);
-            console.log("Remaining points (formatted):", remainingPoints);
-            
-        } catch (error) {
-            console.log("Error calculating points:", error.message);
-        }
-        
-        return {
-            pointValue,
-            claimedPoints,
-            remainingPoints
-        };
-    } catch (error) {
-        console.error("Error in getAdditionalStats:", error);
-        return {
-            pointValue: "0",
-            claimedPoints: "0",
-            remainingPoints: "0"
-        };
-    }
-}
-
-// تابع محاسبه حجم معاملات
-async function getTradingVolume() {
-    try {
-        const { contract } = await connectWallet();
-        
-        console.log("Getting trading volume...");
-        
-        // ابتدا تلاش برای totalDirectDeposits
-        try {
-            const totalDeposits = await contract.totalDirectDeposits();
-            console.log("Total direct deposits (raw):", totalDeposits.toString());
-            const formatted = ethers.formatEther(totalDeposits);
-            console.log("Total direct deposits (formatted):", formatted);
-            return formatted;
-        } catch (error) {
-            console.log("totalDirectDeposits failed:", error.message);
-            
-            // fallback به موجودی قرارداد
-            try {
-                const contractBalance = await contract.getContractMaticBalance();
-                console.log("Contract balance (raw):", contractBalance.toString());
-                const formatted = ethers.formatEther(contractBalance);
-                console.log("Contract balance (formatted):", formatted);
-                return formatted;
-            } catch (balanceError) {
-                console.log("Contract balance failed:", balanceError.message);
-                return "0";
+            if (rawBalance > 0n) {
+                swapAmount.value = ethers.formatUnits(rawBalance, 18);
+                await updateRateInfo(); // تغییر از updateExchangeRate به updateRateInfo
             }
         }
     } catch (error) {
-        console.error("Error in getTradingVolume:", error);
-        return "0";
+        console.error("Error setting max amount:", error);
+        swapStatus.textContent = 'خطا در دریافت موجودی: ' + error.message;
     }
 }
+
+swapForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    swapStatus.textContent = '';
+    swapButton.disabled = true;
+    try {
+        const { signer, address } = await connectWallet();
+        if (!signer) throw new Error('اتصال کیف پول برقرار نشد.');
+        const contract = new ethers.Contract(CONTRACT_ADDRESS, LEVELUP_ABI, signer);
+        const amount = parseFloat(swapAmount.value);
+        if (!amount || amount <= 0) throw new Error('مقدار معتبر وارد کنید.');
+        let tx;
+        if (swapDirection.value === 'matic-to-lvl') {
+            // خرید LVL با MATIC
+            tx = await contract.buyTokens({ value: ethers.utils.parseEther(amount.toString()) });
+        } else {
+            // فروش LVL به MATIC (نیاز به approve دارد)
+            // فرض: تابع sellTokens(uint256 amount)
+            const tokenAmount = ethers.utils.parseUnits(amount.toString(), 18);
+            // approve
+            const approveTx = await contract.approve(CONTRACT_ADDRESS, tokenAmount);
+            await approveTx.wait();
+            tx = await contract.sellTokens(tokenAmount);
+        }
+        swapStatus.textContent = 'در حال ارسال تراکنش...';
+        await tx.wait();
+        swapStatus.textContent = 'تراکنش با موفقیت انجام شد!';
+        swapAmount.value = '';
+        updateRateInfo();
+    } catch (err) {
+        swapStatus.textContent = 'خطا: ' + (err.message || err);
+    }
+    swapButton.disabled = false;
+});
+
+updateRateInfo();
+
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        // بررسی وجود ethers و contractConfig
+        if (typeof ethers === 'undefined' || !window.contractConfig) {
+            throw new Error("Ethers.js or contract config not loaded");
+        }
+
+        // راه‌اندازی فرم سواپ
+        setupSwapForm();
+
+        // به‌روزرسانی نرخ تبدیل
+        await updateExchangeRate();
+
+    } catch (error) {
+        console.error("Error in swap page:", error);
+        showSwapError("خطا در بارگذاری صفحه سواپ");
+    }
+});
+
+// راه‌اندازی فرم سواپ
+function setupSwapForm() {
+    const swapForm = document.getElementById('swapForm');
+    const swapDirection = document.getElementById('swapDirection');
+    const swapAmount = document.getElementById('swapAmount');
+    const swapButton = document.getElementById('swapButton');
+
+    if (!swapForm || !swapDirection || !swapAmount || !swapButton) return;
+
+    // به‌روزرسانی نرخ تبدیل هنگام تغییر جهت
+    swapDirection.addEventListener('change', updateExchangeRate);
+    
+    // به‌روزرسانی نرخ تبدیل هنگام تغییر مقدار
+    swapAmount.addEventListener('input', updateExchangeRate);
+
+    // مدیریت ارسال فرم
+    swapForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await performSwap();
+    });
+}
+
+// به‌روزرسانی نرخ تبدیل
+async function updateExchangeRate() {
+    try {
+        const swapDirection = document.getElementById('swapDirection');
+        const swapAmount = document.getElementById('swapAmount');
+        const swapInfo = document.getElementById('swapInfo');
+
+        if (!swapDirection || !swapAmount || !swapInfo) return;
+
+        const direction = swapDirection.value;
+        const amount = parseFloat(swapAmount.value) || 0;
+
+        if (amount <= 0) {
+            swapInfo.textContent = 'نرخ تبدیل: -';
+            return;
+        }
+
+        // بررسی اتصال کیف پول
+        const connection = await checkConnection();
+        if (!connection.connected) {
+            swapInfo.textContent = 'لطفا ابتدا کیف پول خود را متصل کنید';
+            return;
+        }
+
+        const { contract } = await connectWallet();
+
+        let estimatedAmount;
+        if (direction === 'matic-to-lvl') {
+            const maticAmount = ethers.parseEther(amount.toString());
+            const tokenAmount = await contract.estimateBuy(maticAmount);
+            estimatedAmount = ethers.formatUnits(tokenAmount, 18);
+            swapInfo.textContent = `نرخ تبدیل: ${amount} MATIC = ${estimatedAmount} LVL`;
+        } else {
+            const tokenAmount = ethers.parseUnits(amount.toString(), 18);
+            const maticAmount = await contract.estimateSell(tokenAmount);
+            estimatedAmount = ethers.formatEther(maticAmount);
+            swapInfo.textContent = `نرخ تبدیل: ${amount} LVL = ${estimatedAmount} MATIC`;
+        }
+
+    } catch (error) {
+        console.error("Error updating exchange rate:", error);
+        const swapInfo = document.getElementById('swapInfo');
+        if (swapInfo) swapInfo.textContent = 'خطا در محاسبه نرخ تبدیل';
+    }
+}
+
+// انجام عملیات سواپ
+async function performSwap() {
+    try {
+        const swapDirection = document.getElementById('swapDirection');
+        const swapAmount = document.getElementById('swapAmount');
+        const swapButton = document.getElementById('swapButton');
+        const swapStatus = document.getElementById('swapStatus');
+
+        if (!swapDirection || !swapAmount || !swapButton || !swapStatus) return;
+
+        const direction = swapDirection.value;
+        const amount = parseFloat(swapAmount.value);
+
+        if (amount <= 0) {
+            showSwapError("لطفا مقدار معتبری وارد کنید");
+            return;
+        }
+
+        // بررسی اتصال کیف پول
+        const connection = await checkConnection();
+        if (!connection.connected) {
+            showSwapError("لطفا ابتدا کیف پول خود را متصل کنید");
+            return;
+        }
+
+        // غیرفعال کردن دکمه
+        swapButton.disabled = true;
+        swapButton.textContent = 'در حال انجام سواپ...';
+        swapStatus.textContent = 'در حال پردازش تراکنش...';
+
+        let result;
+        if (direction === 'matic-to-lvl') {
+            result = await buyTokens(amount);
+        } else {
+            result = await sellTokens(amount);
+        }
+
+        // نمایش نتیجه موفق
+        swapStatus.textContent = `سواپ با موفقیت انجام شد! تراکنش: ${result.transactionHash}`;
+        swapStatus.style.color = '#4CAF50';
+
+        // پاک کردن فرم
+        swapAmount.value = '';
+
+    } catch (error) {
+        console.error("Swap error:", error);
+        showSwapError("خطا در انجام سواپ: " + error.message);
+    } finally {
+        // فعال کردن مجدد دکمه
+        const swapButton = document.getElementById('swapButton');
+        if (swapButton) {
+            swapButton.disabled = false;
+            swapButton.textContent = 'انجام سواپ';
+        }
+    }
+}
+
+// نمایش خطای سواپ
+function showSwapError(message) {
+    const swapStatus = document.getElementById('swapStatus');
+    if (swapStatus) {
+        swapStatus.textContent = message;
+        swapStatus.style.color = '#ff6b6b';
+    }
+} 
