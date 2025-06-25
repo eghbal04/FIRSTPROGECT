@@ -212,42 +212,57 @@ setInterval(showNextMessage, 20000);
       </nav>
       
    
-  <header style="overflow: hidden; height: 400px; position: relative;">
-  <div id="scrolling-text" style="
-      position: absolute;
-      width: 100%;
-      text-align: right;
-      line-height: 2;
+ <header style="padding: 2rem;">
+  <h1 style="text-align:center; color:#00ffae;">پلتفرم LevelUp</h1>
+  
+  <div id="expandable-container" style="
+      max-height: 180px;
+      overflow: hidden;
+      transition: max-height 1s ease;
+      direction: rtl;
       font-family: 'Vazirmatn', sans-serif;
       font-size: 1rem;
-      direction: rtl;
-      padding: 0 2rem;
-      animation: scrollUp 45s linear infinite;
+      line-height: 2;
       color: #f1f1f1;
+      background: rgba(255,255,255,0.03);
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      margin-top: 1rem;
   ">
-    <h2 style="color:#00ffae;">🌐 به دنیای جدید خوش آمدید</h2>
-    <p>جایی که مرزها را داده‌ها تعیین می‌کنند، نه قدرت‌ها.</p>
+    <div id="expandable-content">
+      <h2 style="color:#00ffae;">🌐 به دنیای جدید خوش آمدید</h2>
+      <p>جایی که مرزها را داده‌ها تعیین می‌کنند، نه قدرت‌ها.</p>
 
-    <h3 style="color:#00ffae;">🔗 بلاکچین: زبان مشترک فردا</h3>
-    <p>بلاکچین فقط یک فناوری نیست؛ <strong>یک فلسفه‌ی جدید زندگی است.</strong><br>
-    فلسفه‌ای که اعتماد را از واسطه‌ها به ریاضیات می‌سپارد. شفاف، تغییرناپذیر، و بی‌نیاز از اجازه.<br>
-    ما در LevelUp با الهام از همین فلسفه، سیستمی را طراحی کردیم که <strong>شما را در مرکز قرار می‌دهد</strong>.</p>
+      <h3 style="color:#00ffae;">🔗 بلاکچین: زبان مشترک فردا</h3>
+      <p>بلاکچین فقط یک فناوری نیست؛ <strong>یک فلسفه‌ی جدید زندگی است.</strong><br>
+      فلسفه‌ای که اعتماد را از واسطه‌ها به ریاضیات می‌سپارد... و شما را در مرکز قرار می‌دهد.</p>
 
-    <h3 style="color:#00ffae;">🌱 از یک بذر، جنگل می‌روید</h3>
-    <p>هر کاربر که به LevelUp می‌پیوندد، نه تنها خودش رشد می‌کند، بلکه شاخه‌ای به این درخت زنده اضافه می‌کند.<br>
-    <strong>ساختار باینری ما فقط یک پلن نیست؛ یک شبکه‌ی انسانی‌ست.</strong><br>
-    جایی که رشد تو، رشد من است. جایی که با هم بالا می‌رویم، نه بر دوش هم.</p>
+      <h3 style="color:#00ffae;">🌱 از یک بذر، جنگل می‌روید</h3>
+      <p>هر کاربر که به LevelUp می‌پیوندد، شاخه‌ای به این درخت زنده اضافه می‌کند...</p>
 
-    <h3 style="color:#00ffae;">💡 چرا این مهم است؟</h3>
-    <p>چون آینده متعلق به کسانی‌ست که به جای دنبال کردن موج‌ها، خودشان موج می‌سازند.<br>
-    و ما اینجا آمده‌ایم تا <strong>موج بعدی را خلق کنیم</strong>.</p>
+      <h3 style="color:#00ffae;">💡 چرا این مهم است؟</h3>
+      <p>چون آینده متعلق به کسانی‌ست که موج می‌سازند.</p>
 
-    <h3 style="color:#00ffae;">🚀 این فقط یک پروژه نیست،</h3>
-    <p><strong>این یک نهضت است.</strong><br>
-    به LevelUp خوش آمدید. جایی که بلاکچین فقط کد نیست، <strong>روح حرکت ماست</strong>.<br>
-    ما آینده را نمی‌پذیریم؛ ما <strong>آینده را می‌سازیم.</strong></p>
+      <h3 style="color:#00ffae;">🚀 این فقط یک پروژه نیست،</h3>
+      <p><strong>این یک نهضت است.</strong> ما آینده را نمی‌پذیریم؛ ما آن را می‌سازیم.</p>
+    </div>
+  </div>
+
+  <div style="text-align:center; margin-top:1rem;">
+    <button id="expand-btn" style="
+      background-color: #00ffae;
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: bold;
+      font-family: 'Vazirmatn', sans-serif;
+      transition: background 0.3s;
+    ">👁 مشاهده بیشتر</button>
   </div>
 </header>
+
 
 
 
@@ -301,6 +316,23 @@ setInterval(showNextMessage, 20000);
     <footer>
         <p style="text-align:center; color:#888;">&copy; 2025 LevelUp. All rights reserved.</p>
     </footer>
+<script>
+  const expandable = document.getElementById("expandable-container");
+  const expandBtn = document.getElementById("expand-btn");
+  let expanded = false;
+
+  expandBtn.addEventListener("click", () => {
+    if (!expanded) {
+      expandable.style.maxHeight = expandable.scrollHeight + "px";
+      expandBtn.textContent = "🔽 بستن";
+      expanded = true;
+    } else {
+      expandable.style.maxHeight = "180px";
+      expandBtn.textContent = "👁 مشاهده بیشتر";
+      expanded = false;
+    }
+  });
+</script>
 
     <!-- اسکریپت‌های پروژه -->
     <script src="js/config.js"></script>
