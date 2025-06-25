@@ -107,3 +107,22 @@ function updateConnectionUI(profile, address, walletType) {
         updateTokenStats();
     }
 }
+// main.js
+async function autoConnectWallet() {
+    if (typeof window.ethereum === 'undefined') {
+        console.log("کیف پول اتریوم شناسایی نشد");
+        return;
+    }
+
+    try {
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        if (accounts.length > 0) {
+            const address = accounts[0];
+            console.log("Wallet connected automatically:", address);
+            const profile = await fetchUserProfile();
+            updateConnectionUI(profile, address, 'metamask');
+        }
+    } catch (error) {
+        console.log("اتصال خودکار موفق نبود یا کاربر رد کرد", error);
+    }
+}
