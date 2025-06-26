@@ -58,10 +58,11 @@ function updateProfileUI(profile, userData, isClaimable, registrationPrice, mati
     };
 
     // اطلاعات اصلی
-    updateElement('profile-address', profile.address);
-    updateElement('profile-referrer', userData.referrer || 'بدون معرف');
-    updateElement('profile-matic', profile.maticBalance + ' MATIC');
-    updateElement('profile-lvl', profile.lvlBalance + ' LVL');
+    updateElement('profile-address', shortenAddress(profile.address));
+    updateElement('profile-referrer', userData.referrer ? shortenAddress(userData.referrer) : 'بدون معرف');
+    // نمایش موجودی‌ها به دلار و توکن
+    updateElement('profile-matic', parseFloat(profile.maticBalance).toLocaleString('fa-IR', {maximumFractionDigits: 4}) + ' MATIC');
+    updateElement('profile-lvl', parseFloat(profile.lvlBalance).toLocaleString('fa-IR', {maximumFractionDigits: 4}) + ' LVL');
 
     // تبدیل قیمت‌ها به مقادیر خوانا
     const maticPriceInUSD = parseFloat(ethers.formatUnits(maticPrice, 8)); // تبدیل از 8 رقم اعشار
@@ -84,7 +85,8 @@ function updateProfileUI(profile, userData, isClaimable, registrationPrice, mati
 
     // لینک دعوت
     const referralLink = `${window.location.origin}/?ref=${profile.address}`;
-    updateElement('profile-referral-link', referralLink);
+    const shortReferral = referralLink.length > 32 ? referralLink.substring(0, 20) + '...' + referralLink.slice(-8) : referralLink;
+    updateElement('profile-referral-link', shortReferral);
 
     // نمایش وضعیت
     const statusElement = document.getElementById('profileStatus');
@@ -178,4 +180,9 @@ async function checkConnection() {
             error: error.message
         };
     }
+}
+
+function shortenAddress(address) {
+    if (!address) return '---';
+    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
 }
