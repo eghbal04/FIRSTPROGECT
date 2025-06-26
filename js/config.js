@@ -4,7 +4,7 @@ if (!window.contractConfig)
   window.contractConfig = 
   {
     // آدرس قرارداد بروزرسانی شده
-      CONTRACT_ADDRESS:             "0x4C890a30405432851F225420Dc6F507159edD058",
+      CONTRACT_ADDRESS:             "0xA122aFa70075cd6f2B41b7AE60D17E1f392B5a79",
       
       // ABI کامل قرارداد LevelUp
   	LEVELUP_ABI :[
