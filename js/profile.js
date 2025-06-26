@@ -86,7 +86,11 @@ function updateProfileUI(profile, userData, isClaimable, registrationPrice, mati
     // لینک دعوت
     const referralLink = `${window.location.origin}/?ref=${profile.address}`;
     const shortReferral = referralLink.length > 32 ? referralLink.substring(0, 20) + '...' + referralLink.slice(-8) : referralLink;
-    updateElement('profile-referral-link', shortReferral);
+    if (userData.activated) {
+        updateElement('profile-referral-link', shortReferral);
+    } else {
+        updateElement('profile-referral-link', '---');
+    }
 
     // نمایش وضعیت
     const statusElement = document.getElementById('profileStatus');

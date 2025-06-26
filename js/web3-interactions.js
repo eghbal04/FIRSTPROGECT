@@ -237,7 +237,7 @@ async function getPrices() {
         const formattedTokenPrice = ethers.formatEther(tokenPrice);
         const formattedMaticPrice = ethers.formatUnits(maticPrice, 8);
         const formattedRegistrationPrice = ethers.formatEther(registrationPrice);
-        const formattedTokenPriceUSD = ethers.formatUnits(tokenPriceUSD, 18);
+        const formattedTokenPriceUSD = ethers.formatUnits(tokenPriceUSD, 8);
         
         console.log("Raw token price USD:", tokenPriceUSD.toString());
         console.log("Formatted token price USD:", formattedTokenPriceUSD);

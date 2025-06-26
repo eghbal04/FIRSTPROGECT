@@ -1848,4 +1848,18 @@ header p {
   color: #cfcaff;
   font-size: 1.2rem;
   margin: 0;
+}
+
+@media (max-width: 900px) {
+  .reports-section {
+    display: block !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    min-width: 0 !important;
+    padding: 1rem !important;
+    margin: 1rem 0 !important;
+    box-sizing: border-box;
+    overflow-x: auto !important;
+    background: #232946 !important;
+  }
 } 

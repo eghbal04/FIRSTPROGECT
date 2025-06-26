@@ -93,51 +93,38 @@ const motivationalMessages = [
     async function updateTokenStats() {
         try {
             console.log("Starting updateTokenStats...");
-            
             // بررسی اتصال کیف پول
             const connection = await checkConnection();
             console.log("Connection status:", connection);
-            
             if (!connection.connected) {
-                console.log("کیف پول متصل نیست، استفاده از داده‌های نمونه");
-                updateWithSampleData();
+                showDashboardError("لطفاً ابتدا کیف پول خود را متصل کنید.");
                 return;
             }
-
             // تست اتصال قرارداد
             const contractTest = await testContractConnection();
             if (!contractTest) {
-                console.log("Contract connection failed, using sample data");
-                updateWithSampleData();
+                showDashboardError("خطا در ارتباط با قرارداد هوشمند.");
                 return;
             }
-
             // دریافت توکن در گردش به صورت جداگانه
             const circulatingSupply = await getCirculatingSupply();
             console.log("Circulating supply received:", circulatingSupply);
-            
             // تست دریافت آمار قرارداد
             const stats = await testContractStats();
             if (!stats) {
-                console.log("Failed to get contract stats, using sample data");
-                updateWithSampleData();
+                showDashboardError("خطا در دریافت آمار قرارداد.");
                 return;
             }
-            
             console.log("Total points from contract:", stats.totalPoints);
-            
             // دریافت اطلاعات اضافی
             const additionalStats = await getAdditionalStats();
             console.log("Additional stats:", additionalStats);
-            
             // دریافت حجم معاملات
             const tradingVolume = await getTradingVolume();
             console.log("Trading volume:", tradingVolume);
-            
             // دریافت قیمت‌ها
             const prices = await getPrices();
             console.log("Prices received:", prices);
-
             // به‌روزرسانی UI
             const updateElement = (id, value) => {
                 const element = document.getElementById(id);
@@ -148,17 +135,15 @@ const motivationalMessages = [
                     console.warn(`Element with id '${id}' not found`);
                 }
             };
-
             // نمایش قیمت دلاری توکن LVL
             let priceUSD = prices.tokenPriceUSD;
             if (priceUSD && !isNaN(priceUSD) && parseFloat(priceUSD) > 0) {
                 const formattedPrice = formatDashboardPrice(priceUSD);
                 updateElement('token-price', `$${formattedPrice} USD`);
             } else {
-                updateElement('token-price', '$0.001200 USD');
+                showDashboardError("قیمت توکن قابل دریافت نیست.");
             }
             updateElement('circulating-supply', parseFloat(circulatingSupply).toLocaleString() + ' LVL');
-            
             // نمایش total points یا تعداد کاربران
             const totalPointsValue = parseFloat(stats.totalPoints);
             if (totalPointsValue > 0) {
@@ -166,7 +151,6 @@ const motivationalMessages = [
             } else {
                 updateElement('total-points', `${stats.totalUsers} کاربر`);
             }
-            
             // اطلاعات جدید
             // تبدیل حجم معاملات به دلار
             let tradingVolumeUSD = parseFloat(tradingVolume) * parseFloat(prices.maticPrice);
@@ -180,33 +164,28 @@ const motivationalMessages = [
             // استخر پاداش به دلار
             let rewardPoolUSD = parseFloat(stats.binaryPool) * parseFloat(priceUSD);
             updateElement('reward-pool', `$${formatDashboardPrice(rewardPoolUSD)} USD`);
-
         } catch (error) {
             console.error("Error updating token stats:", error);
-            updateWithSampleData();
+            showDashboardError("خطا در دریافت اطلاعات. لطفاً کیف پول و اتصال اینترنت را بررسی کنید.");
         }
     }
 
-    // تابع نمایش داده‌های نمونه در صورت عدم اتصال
-    function updateWithSampleData() {
-        const updateElement = (id, value) => {
-            const element = document.getElementById(id);
-            if (element) {
-                element.textContent = value;
-                console.log(`Updated ${id} with sample data: ${value}`);
-            } else {
-                console.warn(`Element with id '${id}' not found`);
-            }
-        };
-
-        updateElement('token-price', '0.001200 USD');
-        updateElement('circulating-supply', '1,250,000 LVL');
-        updateElement('total-points', '847 کاربر');
-        updateElement('trading-volume', '$45,250.00 USD');
-        updateElement('claimed-points', '12,450');
-        updateElement('remaining-points', '8,750');
-        updateElement('point-value', '0.000125 USD');
-        updateElement('reward-pool', '2,450.00 USD');
+    // تابع نمایش خطا در داشبورد
+    function showDashboardError(message) {
+        const ids = [
+            'token-price',
+            'circulating-supply',
+            'total-points',
+            'trading-volume',
+            'claimed-points',
+            'remaining-points',
+            'point-value',
+            'reward-pool'
+        ];
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = message;
+        });
     }
 
     // تابع تست ساده برای بررسی اتصال قرارداد
@@ -287,16 +266,16 @@ const motivationalMessages = [
     if (ctx) {
         try {
             const prices = await getPrices();
-            const priceValue = formatPriceForChart(prices.tokenPriceUSD);
-            
-            // ایجاد داده‌های چارت
-            const chartData = generateChartData(priceValue);
-            
-            // ایجاد چارت
+            const priceValue = parseFloat(prices.tokenPriceUSD);
+            if (!priceValue || isNaN(priceValue) || priceValue <= 0) {
+                throw new Error('قیمت واقعی توکن قابل دریافت نیست.');
+            }
+            // فقط یک نقطه واقعی برای چارت نمایش بده یا اگر داده کافی نیست، پیام خطا
+            const chartData = [priceValue];
             const priceChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: ['1D', '1W', '1M', '3M', '1Y'],
+                    labels: ['Now'],
                     datasets: [{
                         label: 'قیمت LVL (USD)',
                         data: chartData,
@@ -326,7 +305,7 @@ const motivationalMessages = [
                             displayColors: false,
                             callbacks: {
                                 label: function(context) {
-                                    return `قیمت: $${formatPriceDisplay(context.parsed.y)} USD`;
+                                    return `قیمت: $${context.parsed.y} USD`;
                                 }
                             }
                         }
@@ -341,27 +320,17 @@ const motivationalMessages = [
                                 color: '#fff', 
                                 font: { family: 'Vazirmatn', size: 11 },
                                 callback: function(value) { 
-                                    return '$' + formatPriceDisplay(value); 
+                                    return '$' + value; 
                                 }
                             },
                             grid: { color: 'rgba(255,255,255,0.08)', drawBorder: false },
-                            beginAtZero: false,
-                            // تنظیم مقیاس برای قیمت‌های کوچک
-                            min: function(context) {
-                                const min = Math.min(...context.chart.data.datasets[0].data);
-                                return min * 0.95; // کمی کمتر از حداقل
-                            },
-                            max: function(context) {
-                                const max = Math.max(...context.chart.data.datasets[0].data);
-                                return max * 1.05; // کمی بیشتر از حداکثر
-                            }
+                            beginAtZero: false
                         }
                     },
                     interaction: { intersect: false, mode: 'index' },
                     elements: { point: { hoverRadius: 8, hoverBorderWidth: 3 } }
                 }
             });
-            
         } catch (error) {
             console.error("Error initializing chart:", error);
             const chartSection = document.querySelector('.chart-section');
