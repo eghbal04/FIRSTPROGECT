@@ -164,17 +164,32 @@
     
     // شروع کار
     textElement.textContent = messages[0];
-    
-    // تنظیم تایمر برای تغییر هر 5 ثانیه
-    setInterval(showNextMessage, 20000);
     </script>
   <div id="navbar-container"></div>
 <script>
-  fetch('/navbar.html')
+  fetch('../pages/navbar.html')
     .then(res => res.text())
     .then(html => {
       document.getElementById('navbar-container').innerHTML = html;
     });
+</script>
+<!-- اسکریپت فعال‌سازی منوی موبایل (همبرگری) -->
+<script>
+  window.toggleFAB = function() {
+    var fabContainer = document.querySelector('.fab-container');
+    if (!fabContainer) return;
+    var fabButton = fabContainer.querySelector('.fab-main');
+    var isActive = fabContainer.classList.toggle('active');
+    if (fabButton) {
+      fabButton.setAttribute('aria-expanded', isActive ? 'true' : 'false');
+    }
+  };
+  document.addEventListener('click', function(e) {
+    var btn = e.target.closest('.fab-main');
+    if (btn) {
+      window.toggleFAB();
+    }
+  });
 </script>
       
     <header>
@@ -185,15 +200,24 @@
         <h2 class="network-title">آمار شبکه شما</h2>
         <div class="network-stats">
             <div class="network-stat">
-                <h4>تعداد اعضا</h4>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 0.5rem;">
+                    <i class="fas fa-users" style="color: #a786ff; font-size: 1.2rem;"></i>
+                    <h4>تعداد اعضا</h4>
+                </div>
                 <div class="value" id="network-members">-</div>
             </div>
             <div class="network-stat">
-                <h4>پوینت‌های کسب‌شده</h4>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 0.5rem;">
+                    <img src="../lvl.jpg" alt="LVL" style="width: 20px; height: 20px; border-radius: 50%;">
+                    <h4>پوینت‌های کسب‌شده</h4>
+                </div>
                 <div class="value" id="network-points">-</div>
             </div>
             <div class="network-stat">
-                <h4>پاداش‌ها</h4>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 0.5rem;">
+                    <img src="../lvl.jpg" alt="LVL" style="width: 20px; height: 20px; border-radius: 50%;">
+                    <h4>پاداش‌ها</h4>
+                </div>
                 <div class="value" id="network-rewards">- LVL</div>
             </div>
         </div>
