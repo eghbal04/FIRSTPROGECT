@@ -120,30 +120,44 @@ const updateElement = (id, value) => {
 
     if (userDashboard) userDashboard.style.display = 'block';
     if (mainContent) mainContent.style.display = 'none';
-
-    if (typeof updateTokenStats === 'function') {
-        updateTokenStats();
-    }
 }
 
 // main.js
 async function autoConnectWallet() {
-    if (typeof window.ethereum === 'undefined') {
-        console.log("کیف پول اتریوم شناسایی نشد");
+    if (typeof window.ethereum === 'undefined' && !window.contractConfig.walletConnectProvider) {
+        console.log("کیف پول اتریوم یا WalletConnect شناسایی نشد");
         return;
     }
 
+    // اتوکانکت متامسک
     try {
+        if (window.ethereum) {
         const accounts = await window.ethereum.request({ method: 'eth_accounts' });
         if (accounts.length > 0) {
             const address = accounts[0];
-            console.log("Wallet connected automatically:", address);
+                console.log("Wallet connected automatically (MetaMask):", address);
             const profile = await fetchUserProfile();
             updateConnectionUI(profile, address, 'metamask');
             return true;
+            }
         }
     } catch (error) {
-        console.log("اتصال خودکار موفق نبود یا کاربر رد کرد", error);
+        console.log("اتصال خودکار متامسک موفق نبود یا کاربر رد کرد", error);
+    }
+
+    // اتوکانکت WalletConnect (اگر قبلاً متصل بوده)
+    try {
+        if (window.contractConfig.walletConnectProvider && window.contractConfig.walletConnectProvider.session) {
+            const connected = await window.contractConfig.connectWithWalletConnect();
+            if (connected) {
+                const address = await window.contractConfig.signer.getAddress();
+                const profile = await fetchUserProfile();
+                updateConnectionUI(profile, address, 'walletconnect');
+                return true;
+            }
+        }
+    } catch (error) {
+        console.log("اتصال خودکار WalletConnect موفق نبود", error);
     }
     return false;
 }
