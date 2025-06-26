@@ -107,6 +107,14 @@ async function loadUserReports() {
         }
         
         const address = await signer.getAddress();
+        // تست مستقیم دریافت ایونت برای دیباگ
+        try {
+            const testEvents = await contractInstance.queryFilter(contractInstance.filters.TokensBought(address), 0, 'latest');
+            console.log('testEvents (TokensBought):', testEvents);
+            window._testEvents = testEvents;
+        } catch (e) {
+            console.error('Error in testEvents queryFilter:', e);
+        }
         
         // دریافت اطلاعات کاربر
         const [userData, balance, allowance, binaryPool, rewardPool] = await Promise.all([
@@ -117,42 +125,38 @@ async function loadUserReports() {
             contractInstance.rewardPool()
         ]);
         
-        // دریافت ایونت‌های کاربر
+        // فقط ایونت‌های خرید، فروش، فعال‌سازی، خرید باینری و واریز مستقیم متیک با پارامتر کامل
         const filters = [
-            contractInstance.filters.Activated(address),
-            contractInstance.filters.Approval(address, null),
-            contractInstance.filters.BinaryPointsUpdated(address),
-            contractInstance.filters.BinaryPoolUpdated(),
-            contractInstance.filters.BinaryRewardDistributed(address),
-            contractInstance.filters.DirectMATICReceived(address),
             contractInstance.filters.TokensBought(address),
             contractInstance.filters.TokensSold(address),
-            contractInstance.filters.Transfer(address, null),
-            contractInstance.filters.Transfer(null, address),
-            contractInstance.filters.TreeStructureUpdated(address),
-            contractInstance.filters.purchaseKind(address)
+            contractInstance.filters.purchaseKind(address),
+            contractInstance.filters.Activated(address),
+            contractInstance.filters.DirectMATICReceived(address)
         ];
-                
-        let allEvents = [];
         
-        for (const filter of filters) {
+        let allEvents = [];
+        // برای دیباگ: متغیر را روی window قرار بده
+        window._allEvents = allEvents;
+        // جمع‌آوری همه ایونت‌ها به صورت موازی
+        const eventsArrays = await Promise.all(filters.map(async (filter) => {
             try {
-                if (filter && filter.event) {
-                    const events = await contractInstance.queryFilter(filter, 0, 'latest');
-                    allEvents = [...allEvents, ...events];
+                if (filter) {
+                    return await contractInstance.queryFilter(filter, 0, 'latest');
                 }
             } catch (filterError) {
                 console.warn(`خطا در دریافت فیلتر ${filter?.event || 'unknown'}:`, filterError);
             }
-        }
-        
-        // مرتب کردن ایونت‌ها بر اساس زمان
+            return [];
+        }));
+        allEvents = eventsArrays.flat();
+        // مرتب‌سازی بر اساس زمان (blockNumber)
         allEvents.sort((a, b) => {
             const timeA = a.args.timestamp || a.blockNumber;
             const timeB = b.args.timestamp || b.blockNumber;
             return timeB - timeA;
         });
-        
+        // برای دیباگ: متغیر را روی window قرار بده
+        window._allEvents = allEvents;
         let reportsHTML = `
             <div class="report-category">
                 <h3>📊 اطلاعات حساب کاربری</h3>
@@ -171,11 +175,9 @@ async function loadUserReports() {
                     <p><strong>حجم استخر پاداش:</strong> ${parseFloat(ethers.formatEther(rewardPool)).toLocaleString('fa-IR', {maximumFractionDigits: 4})} LVL</p>
                 </div>
             </div>
-            
             <div class="report-category">
                 <h3>📈 تاریخچه فعالیت‌ها</h3>
         `;
-        
         if (allEvents.length > 0) {
             allEvents.forEach(event => {
                 const eventTime = event.args.timestamp 
@@ -193,24 +195,164 @@ async function loadUserReports() {
                         hour: '2-digit',
                         minute: '2-digit'
                     });
-                
-                // استفاده از تابع جدید برای تشخیص بهتر ایونت‌ها
-                const eventInfo = detectEventType(event, address);
-                
-                reportsHTML += `
-                    <div class="report-item">
-                        <div class="report-header">
-                            <span class="report-type">${eventInfo.icon} ${eventInfo.title}</span>
-                            <span class="report-time">${eventTime}</span>
+                // تشخیص نوع ایونت و توضیح دقیق
+                let eventInfo;
+                switch (event.event) {
+                    case 'TokensBought':
+                        eventInfo = {
+                            icon: '🟢',
+                            title: 'خرید توکن',
+                            description: renderEventArgs(event.args, {
+                                buyer: 'آدرس خریدار',
+                                maticAmount: 'مقدار پرداختی (MATIC)',
+                                tokenAmount: 'مقدار دریافتی (LVL)'
+                            })
+                        };
+                        break;
+                    case 'TokensSold':
+                        eventInfo = {
+                            icon: '🔴',
+                            title: 'فروش توکن',
+                            description: renderEventArgs(event.args, {
+                                seller: 'آدرس فروشنده',
+                                tokenAmount: 'مقدار فروخته شده (LVL)',
+                                maticAmount: 'مقدار دریافتی (MATIC)'
+                            })
+                        };
+                        break;
+                    case 'Activated':
+                        eventInfo = {
+                            icon: '✅',
+                            title: 'فعال‌سازی حساب',
+                            description: renderEventArgs(event.args, {
+                                user: 'آدرس کاربر',
+                                amountlvl: 'مقدار فعال‌سازی (LVL)'
+                            })
+                        };
+                        break;
+                    case 'purchaseKind':
+                        eventInfo = {
+                            icon: '📈',
+                            title: 'خرید باینری',
+                            description: renderEventArgs(event.args, {
+                                user: 'آدرس کاربر',
+                                amountlvl: 'مقدار خرید (LVL)'
+                            })
+                        };
+                        break;
+                    case 'DirectMATICReceived':
+                        eventInfo = {
+                            icon: '💸',
+                            title: 'واریز مستقیم متیک',
+                            description: renderEventArgs(event.args, {
+                                sender: 'آدرس واریزکننده',
+                                amount: 'مقدار واریز شده (MATIC)',
+                                newTokenPrice: 'قیمت جدید توکن'
+                            })
+                        };
+                        break;
+                    case 'TreeStructureUpdated':
+                        eventInfo = {
+                            icon: '🌳',
+                            title: 'ساختار شبکه',
+                            description: renderEventArgs(event.args, {
+                                user: 'کاربر',
+                                parent: 'والد',
+                                referrer: 'معرف',
+                                position: 'موقعیت',
+                                timestamp: 'زمان'
+                            })
+                        };
+                        break;
+                    default:
+                        // تشخیص نام ایونت با fragment.name اگر event.event نبود
+                        const eventName = event.event || (event.fragment && event.fragment.name) || '';
+                        const keys = Object.keys(event.args || {});
+                        let labels;
+                        if (keys.length && keys.every(k => ['0','1','2'].includes(k))) {
+                            if (eventName === 'DirectMATICReceived') {
+                                labels = {
+                                    0: 'آدرس واریزکننده',
+                                    1: 'واریز متیک به قرارداد',
+                                    2: 'قیمت جدید توکن'
+                                };
+                            } else if (eventName === 'TokensBought') {
+                                labels = {
+                                    0: 'آدرس خریدار',
+                                    1: 'پرداخت متیک',
+                                    2: 'مینت توکن'
+                                };
+                            } else if (eventName === 'TokensSold') {
+                                labels = {
+                                    0: 'آدرس فروشنده',
+                                    1: 'سوزاندن توکن',
+                                    2: 'دریافت متیک از قرارداد'
+                                };
+                            } else {
+                                labels = {
+                                    0: 'آدرس',
+                                    1: 'مقدار اول',
+                                    2: 'مقدار دوم'
+                                };
+                            }
+                            eventInfo = {
+                                icon: '📝',
+                                title: eventName || 'ایونت دیگر',
+                                description: renderEventArgs(event.args, labels)
+                            };
+                        } else {
+                            // برای سایر ایونت‌ها، همه args را با برچسب فارسی نمایش بده
+                            const keyLabels = {
+                                maticAmount: 'مقدار متیک',
+                                tokenAmount: 'مقدار توکن',
+                                amount: 'مقدار',
+                                amountlvl: 'مقدار LVL',
+                                newTokenPrice: 'قیمت جدید توکن',
+                                claimerReward: 'پاداش دریافتی',
+                                newPoints: 'امتیاز جدید',
+                                newCap: 'سقف جدید',
+                                totalDistributed: 'کل توزیع شده',
+                                sender: 'فرستنده',
+                                buyer: 'خریدار',
+                                seller: 'فروشنده',
+                                user: 'کاربر',
+                                referrer: 'معرف',
+                                to: 'گیرنده',
+                                from: 'فرستنده',
+                                parent: 'والد',
+                                timestamp: 'زمان',
+                                value: 'مقدار',
+                                position: 'موقعیت',
+                                side: 'سمت',
+                                index: 'ایندکس',
+                            };
+                            // ساخت داینامیک لیبل‌ها برای همه کلیدها
+                            labels = {};
+                            Object.keys(event.args || {}).forEach(k => {
+                                labels[k] = keyLabels[k] || k;
+                            });
+                            eventInfo = {
+                                icon: '📝',
+                                title: eventName || 'ایونت دیگر',
+                                description: renderEventArgs(event.args, labels)
+                            };
+                        }
+                }
+                if (eventInfo) {
+                    reportsHTML += `
+                        <div class="report-item">
+                            <div class="report-header">
+                                <span class="report-type">${eventInfo.icon} ${eventInfo.title}</span>
+                                <span class="report-time">${eventTime}</span>
+                            </div>
+                            <p>${eventInfo.description}</p>
                         </div>
-                        <p>${eventInfo.description}</p>
-                    </div>
-                `;
+                    `;
+                }
             });
         } else {
             // اگر هیچ ایونتی وجود ندارد، فعالیت‌های نمونه نمایش دهیم
             const sampleActivities = generateSampleActivities(address, userData);
-            
             // پیام توضیحی
             reportsHTML += `
                 <div class="report-item" style="background: rgba(167, 134, 255, 0.1); border: 1px dashed #a786ff;">
@@ -221,7 +363,6 @@ async function loadUserReports() {
                     <p>فعالیت‌های زیر بر اساس اطلاعات فعلی حساب شما نمایش داده می‌شوند. پس از انجام تراکنش‌های جدید، فعالیت‌های واقعی اینجا نمایش داده خواهند شد.</p>
                 </div>
             `;
-            
             sampleActivities.forEach(activity => {
                 reportsHTML += `
                     <div class="report-item">
@@ -234,13 +375,12 @@ async function loadUserReports() {
                 `;
             });
         }
-        
         reportsHTML += '</div>';
+        // بعد از ساخت reportsHTML، برای دیباگ روی window قرار بده
+        window._reportsHTML = reportsHTML;
         reportsList.innerHTML = reportsHTML;
-        
         // پیام موفقیت
         console.log('✅ گزارشات با موفقیت بارگذاری شدند');
-        
     } catch (error) {
         console.error('خطا در بارگذاری گزارشات:', error);
         document.getElementById('reports-list').innerHTML = 
@@ -370,25 +510,67 @@ function formatTokenDescription(args, eventName) {
 
 // تابع فرمت کردن توضیحات ایونت ناشناخته
 function formatUnknownEventDescription(args) {
-    const info = Object.keys(args)
+    if (!args || Object.keys(args).length === 0) return 'فعالیت جدید در سیستم';
+    // کلیدهای مهم و معادل فارسی
+    const keyLabels = {
+        maticAmount: 'مقدار متیک',
+        tokenAmount: 'مقدار توکن',
+        amount: 'مقدار',
+        amountlvl: 'مقدار LVL',
+        newTokenPrice: 'قیمت جدید توکن',
+        claimerReward: 'پاداش دریافتی',
+        newPoints: 'امتیاز جدید',
+        newCap: 'سقف جدید',
+        totalDistributed: 'کل توزیع شده',
+        sender: 'فرستنده',
+        buyer: 'خریدار',
+        seller: 'فروشنده',
+        user: 'کاربر',
+        referrer: 'معرف',
+        to: 'گیرنده',
+        from: 'فرستنده',
+        parent: 'والد',
+        timestamp: 'زمان',
+        value: 'مقدار',
+        position: 'موقعیت',
+        side: 'سمت',
+        index: 'ایندکس',
+    };
+    // برچسب‌های موقعیت
+    const positionLabels = {
+        0: 'چپ',
+        1: 'راست',
+        2: 'مرکز',
+        '0': 'چپ',
+        '1': 'راست',
+        '2': 'مرکز',
+    };
+    return Object.keys(args)
         .filter(key => key !== 'timestamp' && key !== 'blockNumber')
         .map(key => {
+            const label = keyLabels[key] || key;
             const value = args[key];
-            if (typeof value === 'string' && value.startsWith('0x')) {
-                return `${key}: ${shortenAddress(value)}`;
-            } else if (typeof value === 'bigint' || typeof value === 'number') {
+            // آدرس ولت (همیشه 0x... و 42 کاراکتر)
+            if (typeof value === 'string' && value.startsWith('0x') && value.length === 42) {
+                return `${label}: <span dir="ltr">${shortenAddress(value)}</span>`;
+            }
+            // موقعیت (چپ/راست/مرکز) برای position یا side
+            if ((key === 'position' || key === 'side') && (value === 0 || value === 1 || value === 2 || value === '0' || value === '1' || value === '2')) {
+                return `${label}: <b>${positionLabels[value]}</b>`;
+            }
+            // تلاش برای فرمت عددی (Ether)
+            if (typeof value === 'bigint' || (typeof value === 'string' && /^\d+$/.test(value))) {
                 try {
                     const formatted = ethers.formatEther(value);
-                    return `${key}: ${parseFloat(formatted).toLocaleString('fa-IR', {maximumFractionDigits: 4})}`;
+                    return `${label}: <b>${parseFloat(formatted).toLocaleString('fa-IR', {maximumFractionDigits: 4})}</b>`;
                 } catch {
-                    return `${key}: ${value.toString()}`;
+                    return `${label}: <b>${value.toString()}</b>`;
                 }
             }
-            return `${key}: ${value}`;
+            // سایر موارد
+            return `${label}: <b>${value}</b>`;
         })
-        .join(', ');
-    
-    return info || 'فعالیت جدید در سیستم';
+        .join('<br>');
 }
 
 function generateSampleActivities(address, userData) {
@@ -591,4 +773,30 @@ function displaySampleReports() {
     
     reportsHTML += '</div>';
     reportsList.innerHTML = reportsHTML;
+}
+
+// Helper: نمایش آرگومان‌های ایونت با برچسب فارسی و خط جداگانه
+function renderEventArgs(args, labels) {
+    if (!args) return '';
+    return Object.entries(labels).map(([key, label]) => {
+        const value = args[key];
+        if (value === undefined) return '';
+        if (typeof value === 'string' && value.startsWith('0x') && value.length === 42) {
+            return `${label}: <span dir="ltr">${shortenAddress(value)}</span>`;
+        }
+        if (typeof value === 'bigint' || (typeof value === 'string' && /^\d+$/.test(value))) {
+            try {
+                const formatted = ethers.formatEther(value);
+                return `${label}: <b>${parseFloat(formatted).toLocaleString('fa-IR', {maximumFractionDigits: 4})}</b>`;
+            } catch {
+                return `${label}: <b>${value.toString()}</b>`;
+            }
+        }
+        // موقعیت باینری
+        if ((key === 'position' || key === 'side') && (value === 0 || value === 1 || value === 2 || value === '0' || value === '1' || value === '2')) {
+            const posLabels = {0: 'چپ', 1: 'راست', 2: 'مرکز', '0': 'چپ', '1': 'راست', '2': 'مرکز'};
+            return `${label}: <b>${posLabels[value]}</b>`;
+        }
+        return `${label}: <b>${value}</b>`;
+    }).filter(Boolean).join('<br>');
 }
