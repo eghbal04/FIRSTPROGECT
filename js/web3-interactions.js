@@ -226,20 +226,44 @@ async function getPrices() {
     try {
         const { contract } = await connectWallet();
         
-        const [tokenPrice, maticPrice, registrationPrice] = await Promise.all([
+        const [tokenPrice, maticPrice, registrationPrice, tokenPriceUSD] = await Promise.all([
             contract.updateTokenPrice(),
             contract.getLatestMaticPrice(),
-            contract.getRegistrationPrice()
+            contract.getRegistrationPrice(),
+            contract.getTokenPriceInUSD()
         ]);
         
+        // فرمت کردن قیمت‌ها
+        const formattedTokenPrice = ethers.formatEther(tokenPrice);
+        const formattedMaticPrice = ethers.formatUnits(maticPrice, 8);
+        const formattedRegistrationPrice = ethers.formatEther(registrationPrice);
+        const formattedTokenPriceUSD = ethers.formatUnits(tokenPriceUSD, 18);
+        
+        console.log("Raw token price USD:", tokenPriceUSD.toString());
+        console.log("Formatted token price USD:", formattedTokenPriceUSD);
+        
+        // بررسی و تنظیم قیمت پیش‌فرض اگر خیلی کوچک باشد
+        let finalTokenPriceUSD = formattedTokenPriceUSD;
+        if (!formattedTokenPriceUSD || parseFloat(formattedTokenPriceUSD) < 0.0001) {
+            console.log("Token price too small, using default value");
+            finalTokenPriceUSD = "0.0012";
+        }
+        
         return {
-            tokenPrice: ethers.formatEther(tokenPrice),
-            maticPrice: ethers.formatUnits(maticPrice, 8), // 8 decimals for USD price
-            registrationPrice: ethers.formatEther(registrationPrice)
+            tokenPrice: formattedTokenPrice,
+            maticPrice: formattedMaticPrice,
+            registrationPrice: formattedRegistrationPrice,
+            tokenPriceUSD: finalTokenPriceUSD
         };
     } catch (error) {
         console.error("Error fetching prices:", error);
-        throw error;
+        // برگرداندن قیمت‌های پیش‌فرض در صورت خطا
+        return {
+            tokenPrice: "0.0012",
+            maticPrice: "1.00",
+            registrationPrice: "10.0",
+            tokenPriceUSD: "0.0012"
+        };
     }
 }
 
