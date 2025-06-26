@@ -64,13 +64,17 @@ async function updateNetworkStats() {
             if (element) element.textContent = value;
         };
 
-        updateElement('network-members', totalUsers.toString());
-        updateElement('network-points', ethers.formatUnits(userData.binaryPoints, 18));
-        updateElement('network-rewards', ethers.formatEther(rewardPool) + ' LVL');
+        updateElement('network-members', parseInt(totalUsers).toLocaleString('fa-IR'));
+        updateElement('network-points', parseFloat(ethers.formatUnits(userData.binaryPoints, 18)).toLocaleString('fa-IR', {maximumFractionDigits: 4}));
+        // نمایش پاداش به دلار
+        const lvlPrice = await contract.getTokenPriceInUSD();
+        const rewardPoolUSD = parseFloat(ethers.formatEther(rewardPool)) * parseFloat(ethers.formatUnits(lvlPrice, 18));
+        updateElement('network-rewards', `$${rewardPoolUSD.toLocaleString('en-US', {maximumFractionDigits: 2})} USD`);
 
         // ایجاد لینک دعوت
         const referralLink = `${window.location.origin}/?ref=${address}`;
-        updateElement('referral-link', referralLink);
+        const shortReferral = referralLink.length > 32 ? referralLink.substring(0, 20) + '...' + referralLink.slice(-8) : referralLink;
+        updateElement('referral-link', shortReferral);
 
         // به‌روزرسانی آمار باینری
         await updateBinaryStats();
@@ -103,7 +107,12 @@ async function updateBinaryStats() {
         // به‌روزرسانی UI
         const updateUI = (id, value, unit = '') => {
             const el = document.getElementById(id);
-            if (el) el.textContent = `${value} ${unit}`.trim();
+            if (el) {
+                if (typeof value === 'number' || !isNaN(value)) {
+                    value = parseFloat(value).toLocaleString('fa-IR', {maximumFractionDigits: 4});
+                }
+                el.textContent = `${value} ${unit}`.trim();
+            }
         };
         
         updateUI('left-points', leftPoints);
@@ -216,7 +225,7 @@ async function renderNetworkTree() {
 // تابع کمکی برای کوتاه کردن آدرس
 function shortenAddress(address) {
     if (!address || address === ethers.ZeroAddress) return '---';
-    return `${address.substring(0, 6)}...${address.substring(38)}`;
+    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
 }
 
 // تابع نمایش خطا
