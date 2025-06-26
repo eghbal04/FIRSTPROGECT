@@ -22,6 +22,14 @@ const motivationalMessages = [
 ];
     let currentMessage = 0;
 
+    function getRandomMessageIndex(excludeIndex) {
+        let idx;
+        do {
+            idx = Math.floor(Math.random() * motivationalMessages.length);
+        } while (motivationalMessages.length > 1 && idx === excludeIndex);
+        return idx;
+    }
+
     function updateMotivationalMessage() {
         const messageElement = document.getElementById('motivation-message');
         if (messageElement) {
@@ -32,10 +40,13 @@ const motivationalMessages = [
     const nextButton = document.getElementById('next-motivation');
     if (nextButton) {
         nextButton.addEventListener('click', () => {
-            currentMessage = (currentMessage + 1) % motivationalMessages.length;
+            const prev = currentMessage;
+            currentMessage = getRandomMessageIndex(prev);
             updateMotivationalMessage();
         });
     }
+    // نمایش پیام رندوم در بارگذاری اولیه
+    currentMessage = getRandomMessageIndex(-1);
     updateMotivationalMessage();
 
     // تابع تست برای بررسی مشکل
@@ -344,6 +355,101 @@ const motivationalMessages = [
             }
         }
     }
+
+    // --- ثبت‌نام با یک کلیک: دکمه و منطق ---
+    async function updateRegisterButton() {
+        const btn = document.getElementById('register-btn');
+        const status = document.getElementById('register-status');
+        const star = document.getElementById('register-star');
+        if (!btn) return;
+        try {
+            // اتصال و دریافت مقدار مورد نیاز و موجودی کاربر
+            const connection = await checkConnection();
+            if (!connection.connected) {
+                btn.textContent = 'Please connect your wallet';
+                btn.disabled = true;
+                status.textContent = '';
+                if (star) star.style.display = 'none';
+                return;
+            }
+            const { contract, address } = await connectWallet();
+            // مقدار مورد نیاز ثبت‌نام
+            const requiredRaw = await contract.getRegistrationPrice();
+            const required = ethers.formatUnits(requiredRaw, 18);
+            // موجودی کاربر
+            const balanceRaw = await contract.balanceOf(address);
+            const balance = ethers.formatUnits(balanceRaw, 18);
+            // مقدار referrer از URL یا مقدار پیش‌فرض
+            const urlParams = new URLSearchParams(window.location.search);
+            const referrer = urlParams.get('ref') || '0x0000000000000000000000000000000000000000';
+            // آیا کاربر قبلاً ثبت‌نام کرده؟
+            const userData = await contract.users(address);
+            if (userData.activated) {
+                btn.textContent = 'Already registered';
+                btn.disabled = true;
+                status.textContent = '';
+                if (star) star.style.display = 'inline-block';
+                return;
+            }
+            if (star) star.style.display = 'none';
+            // مقدار روی دکمه
+            const requiredFormatted = parseFloat(required).toLocaleString('en-US', {maximumFractionDigits: 6});
+            btn.textContent = `Register (${requiredFormatted} LVL)`;
+            btn.disabled = parseFloat(balance) < parseFloat(required);
+            if (btn.disabled) {
+                status.textContent = `موجودی شما کافی نیست. موجودی: ${parseFloat(balance).toLocaleString('en-US', {maximumFractionDigits: 6})} LVL`;
+                status.style.color = 'red';
+            } else {
+                status.textContent = '';
+            }
+            if (star) star.style.display = 'none';
+        } catch (e) {
+            btn.textContent = 'Error loading registration info';
+            btn.disabled = true;
+            if (status) status.textContent = '';
+            if (star) star.style.display = 'none';
+        }
+    }
+
+    // هندل ثبت‌نام با یک کلیک
+    const registerBtn = document.getElementById('register-btn');
+    if (registerBtn) {
+        registerBtn.addEventListener('click', async () => {
+            const btn = registerBtn;
+            const status = document.getElementById('register-status');
+            const star = document.getElementById('register-star');
+            btn.disabled = true;
+            btn.textContent = 'در حال ثبت‌نام...';
+            if (star) star.style.display = 'none';
+            try {
+                const { contract, address } = await connectWallet();
+                const requiredRaw = await contract.getRegistrationPrice();
+                const required = ethers.formatUnits(requiredRaw, 18);
+                // مقدار referrer از URL یا مقدار پیش‌فرض
+                const urlParams = new URLSearchParams(window.location.search);
+                const referrer = urlParams.get('ref') || '0x0000000000000000000000000000000000000000';
+                // approve اگر لازم است (در این قرارداد burn می‌شود، پس نیاز به approve نیست)
+                // فراخوانی ثبت‌نام
+                const tx = await contract.registerAndActivate(referrer, ethers.parseUnits(required, 18));
+                status.textContent = 'در حال ارسال تراکنش...';
+                await tx.wait();
+                status.textContent = 'ثبت‌نام با موفقیت انجام شد!';
+                status.style.color = 'green';
+                btn.textContent = 'شما قبلاً ثبت‌نام کرده‌اید';
+                btn.disabled = true;
+                if (star) star.style.display = 'inline-block';
+            } catch (e) {
+                status.textContent = 'خطا در ثبت‌نام: ' + (e.reason || e.message);
+                status.style.color = 'red';
+                if (star) star.style.display = 'none';
+                await updateRegisterButton();
+            }
+        });
+    }
+
+    // مقداردهی اولیه و رفرش خودکار دکمه ثبت‌نام
+    await updateRegisterButton();
+    setInterval(updateRegisterButton, 120000); // هر 2 دقیقه رفرش
 });
 
 // تابع بررسی وضعیت اتصال (در صورت عدم وجود در web3-interactions.js)

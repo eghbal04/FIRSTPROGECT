@@ -79,6 +79,22 @@
     </style>
 </head>
 <body>
+  <!-- ✅ کانتینر افقی انگیزشی + ثبت‌نام -->
+  <div class="motivation-register-row">
+    <section class="motivation-slider" id="motivation-slider">
+      <span id="motivation-message">در حال بارگذاری پیام انگیزشی...</span>
+      <button class="next-btn" id="next-motivation">&#8592;</button>
+    </section>
+    <button id="register-btn" class="register-btn">
+      ثبت‌نام
+      <span id="register-star" class="like-badge" style="display:none; position:absolute; left:12px; top:50%; transform:translateY(-50%); width:28px; height:28px; pointer-events:none;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="#3da9fc" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9 22H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h4m0 11V9.5A2.5 2.5 0 0 1 11.5 7H14l-1.34 6.72a1 1 0 0 0 .98 1.28h5.36a2 2 0 0 0 1.98-2.28l-.7-7A2 2 0 0 0 17.34 3H14a5 5 0 0 0-5 5v14z" stroke="#1976d2" stroke-width="1.5" fill="#3da9fc"/>
+        </svg>
+      </span>
+    </button>
+  </div>
+  <div id="register-status" style="margin-top:0.5rem; min-height:24px; color:#ff6b6b; text-align:center;"></div>
 
   <!-- ✅ ناوبار -->
   <div id="navbar-container"></div>
@@ -89,7 +105,6 @@
       .then(html => {
         const navbarContainer = document.getElementById('navbar-container');
         if (navbarContainer) {
-          // استفاده از insertAdjacentHTML به جای innerHTML
           navbarContainer.insertAdjacentHTML('beforeend', html);
         }
       })
@@ -111,7 +126,7 @@
         <span>معرفی پلتفرم LevelUp</span>
       </span>
     </h1>
-    
+
     <!-- پرزنتیشن باکس جدید با متن کامل -->
     <div class="presentation-container" id="presentation-container" style="display: none;">
       <div class="presentation-box" id="presentation-box">
@@ -382,11 +397,6 @@
   </style>
 
   <!-- ✅ بخش‌های داشبورد -->
-  <section class="motivation-slider" id="motivation-slider">
-    <span id="motivation-message">در حال بارگذاری پیام انگیزشی...</span>
-    <button class="next-btn" id="next-motivation">&#8592;</button>
-  </section>
-
   <section class="dashboard-cards">
     <div class="dashboard-card">
       <div class="card-header">
@@ -544,6 +554,16 @@
   </script>
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    .spinning-star {
+      animation: spinStar 1.2s linear infinite;
+    }
+    @keyframes spinStar {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
 
 </body>
 </html>
