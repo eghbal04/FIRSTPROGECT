@@ -55,16 +55,31 @@ function loadProducts() {
     const productsList = document.getElementById('products-list');
     if (!productsList) return;
 
-    productsList.innerHTML = shopProducts.map(product => `
-        <div class="product-card">
-            <h3 class="product-title">${product.title}</h3>
-            <p class="product-desc">${product.description}</p>
-            <div class="product-price">${product.price} LVL</div>
-            <button class="buy-btn" data-product-id="${product.id}" data-price="${product.price}">
-                خرید محصول
-            </button>
-        </div>
-    `).join('');
+    // فرض: قیمت LVL به دلار را از getPrices می‌گیریم
+    getPrices().then(prices => {
+        const lvlPriceUSD = parseFloat(prices.tokenPriceUSD);
+        productsList.innerHTML = shopProducts.map(product => {
+            const usdPrice = (product.price * lvlPriceUSD).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 8});
+            return `
+                <div class="product-card">
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 1rem;">
+                        <img src="../lvl.jpg" alt="LVL" style="width: 24px; height: 24px; border-radius: 50%;">
+                        <h3 class="product-title">${product.title}</h3>
+                    </div>
+                    <p class="product-desc">${product.description}</p>
+                    <div class="product-price">
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+                            <img src="../lvl.jpg" alt="LVL" style="width: 18px; height: 18px; border-radius: 50%;">
+                            <span>${product.price} LVL (~$${usdPrice} USD)</span>
+                        </div>
+                    </div>
+                    <button class="buy-btn" data-product-id="${product.id}" data-price="${product.price}">
+                        خرید محصول
+                    </button>
+                </div>
+            `;
+        }).join('');
+    });
 }
 
 // راه‌اندازی خرید محصولات
@@ -123,10 +138,13 @@ async function purchaseProduct(productId, price, button) {
         // نمایش پیام موفقیت
         showShopSuccess(`محصول با موفقیت خریداری شد! تراکنش: ${tx.hash}`);
         
-        // به‌روزرسانی موجودی
-        setTimeout(() => {
-            location.reload();
-        }, 2000);
+        // به‌روزرسانی موجودی بدون رفرش صفحه
+        // setTimeout(() => {
+        //     location.reload();
+        // }, 2000);
+        
+        // به جای رفرش، فقط پیام موفقیت نمایش داده می‌شود
+        // کاربر می‌تواند خودش صفحه را رفرش کند اگر نیاز داشت
 
     } catch (error) {
         console.error("Purchase error:", error);
