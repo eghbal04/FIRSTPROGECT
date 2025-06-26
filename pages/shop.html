@@ -8,6 +8,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
+  <div id="navbar-container"></div>
+  <script>
+    fetch('../pages/navbar.html')
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById('navbar-container').innerHTML = html;
+      });
+  </script>
   <div class="motivational-container">
     <div class="motivational-text" id="motivational-text">
       در حال بارگذاری جملات انگیزشی...
@@ -164,45 +172,9 @@ function showNextMessage() {
 // شروع کار
 textElement.textContent = messages[0];
 
-// تنظیم تایمر برای تغییر هر 5 ثانیه
-setInterval(showNextMessage, 20000);
+// راه‌اندازی اسلایدر انگیزشی
+// setInterval(showNextMessage, 20000);
 </script>
-    <nav class="circle-menu-horizontal">
-        <a href="/index.html" class="circle-menu-item" aria-label="خانه">
-          <div class="icon">🏠</div>
-          <span class="label">خانه</span>
-        </a>
-        <a href="/pages/swap.html" class="circle-menu-item" aria-label="تبدیل ارز">
-          <div class="icon">🔄</div>
-          <span class="label">تبدیل</span>
-        </a>
-        <a href="/pages/network.html" class="circle-menu-item" aria-label="شبکه">
-          <div class="icon">🌐</div>
-          <span class="label">شبکه</span>
-        </a>
-        <a href="/pages/profile.html" class="circle-menu-item" aria-label="پروفایل من">
-          <div class="icon">👤</div>
-          <span class="label">پروفایل</span>
-        </a>
-        <a href="/pages/news.html" class="circle-menu-item" aria-label="اخبار و آموزش">
-          <div class="icon">📰</div>
-          <span class="label">اخبار</span>
-        </a>
-        <a href="/pages/shop.html" class="circle-menu-item" aria-label="فروشگاه">
-          <div class="icon">🛒</div>
-          <span class="label">فروشگاه</span>
-        </a>
-        <a href="/pages/about.html" class="circle-menu-item" aria-label="درباره ما">
-          <div class="icon">ℹ️</div>
-          <span class="label">درباره</span>
-        </a>
-        <a href="/pages/reports.html" class="circle-menu-item" aria-label="گزارشات">
-          <div class="icon">🔔</div>
-          <span class="label">گزارشات</span>
-          <span class="reports-badge" style="display: none;">0</span>
-        </a>
-      </nav>
- 
     <header>
         <h1>فروشگاه خدمات</h1>
         <p>خرید محصولات آموزشی با توکن LVL</p>
@@ -221,5 +193,23 @@ setInterval(showNextMessage, 20000);
     <script src="../js/config.js"></script>
     <script src="../js/web3-interactions.js"></script>
     <script src="../js/shop.js"></script>
+    <!-- اسکریپت فعال‌سازی منوی موبایل (همبرگری) -->
+    <script>
+      window.toggleFAB = function() {
+        var fabContainer = document.querySelector('.fab-container');
+        if (!fabContainer) return;
+        var fabButton = fabContainer.querySelector('.fab-main');
+        var isActive = fabContainer.classList.toggle('active');
+        if (fabButton) {
+          fabButton.setAttribute('aria-expanded', isActive ? 'true' : 'false');
+        }
+      };
+      document.addEventListener('click', function(e) {
+        var btn = e.target.closest('.fab-main');
+        if (btn) {
+          window.toggleFAB();
+        }
+      });
+    </script>
 </body>
 </html> 
