@@ -92,7 +92,8 @@ contract levelup is ERC20, ReentrancyGuard
         indexToAddress[1] = deployer;
         users[deployer].index = 1;
         totalUsers = 1;
-        _mint(msg.sender, 1000000 * 1e18);    }
+        _mint(deployer, 1000);
+    }
      //@dev ساده‌ترین تابع دریافت قیمت فقط با Chainlink
     function getRegistrationPrice() external view returns (uint256) {
         uint256 tokenPriceUsd = getTokenPriceInUSD(); // 8 decimals
