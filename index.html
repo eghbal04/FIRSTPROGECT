@@ -4,85 +4,382 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>پلتفرم LevelUp | داشبورد مدرن</title>
-    <link rel="stylesheet" href="css/style.css">
     <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/dist/font-face.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
 
     <!-- بارگذاری ethers.js نسخه 6 از CDN -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
     <!-- بارگذاری Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta http-equiv="refresh" content="180">
+    <style>
+      body {
+        font-family: 'Vazirmatn', sans-serif;
+        background: #f8f8f8;
+        color: #222;
+        margin: 0;
+        padding: 0;
+      }
+      .fab-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+        display: block;
+      }
+      .fab-main {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #a786ff, #7e5fff);
+        border: none;
+        color: white;
+        font-size: 28px;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .fab-menu {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        position: absolute;
+        bottom: 70px;
+        right: 0;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(10px);
+        transition: all 0.3s ease;
+        background: rgba(20, 18, 40, 0.95);
+        border-radius: 24px;
+        box-shadow: 0 4px 10px rgba(150, 120, 250, 0.3);
+        padding: 8px 0;
+      }
+      .fab-container.active .fab-menu {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0);
+      }
+      .fab-menu a {
+        color: #333;
+        text-decoration: none;
+        padding: 10px 18px;
+        border-radius: 8px;
+        transition: background 0.2s;
+        font-size: 1rem;
+      }
+      .fab-menu a:hover {
+        background: #f0f0f0;
+      }
+      @media (min-width: 768px) {
+        .fab-container { display: none; }
+      }
+    </style>
 </head>
 <body>
 
   <!-- ✅ ناوبار -->
   <div id="navbar-container"></div>
   <script>
+    // بارگذاری navbar بدون تغییر DOM اصلی
     fetch('./pages/navbar.html')
       .then(res => res.text())
       .then(html => {
-        document.getElementById('navbar-container').innerHTML = html;
+        const navbarContainer = document.getElementById('navbar-container');
+        if (navbarContainer) {
+          // استفاده از insertAdjacentHTML به جای innerHTML
+          navbarContainer.insertAdjacentHTML('beforeend', html);
+        }
+      })
+      .catch(error => {
+        console.log('Navbar loading error:', error);
       });
   </script>
 
-  <!-- ✅ بلوک انگیزشی -->
-  <div class="motivational-container">
-    <div class="motivational-text" id="motivational-text">
-      در حال بارگذاری جملات انگیزشی...
-    </div>
-  </div>
-
-  <style>
-    .motivational-container {
-      width: 100%;
-      padding: 15px 0;
-      margin: 0 auto;
-      background: rgba(0,0,0,0.05);
-      border-radius: 8px;
-      text-align: center;
-    }
-    .motivational-text {
-      font-size: 1.2rem;
-      font-weight: 500;
-      color: #333;
-      font-family: 'Vazirmatn', sans-serif;
-      direction: rtl;
-      padding: 10px 20px;
-      opacity: 0.5;
-      transition: opacity 0.5s ease-in-out;
-    }
-    .motivational-text.fade-out {
-      opacity: 0;
-    }
-  </style>
-  <script>
-    const messages = ["💡 موفقیت یعنی رفتن، حتی وقتی هیچ‌کس تشویقت نمی‌کنه — به خودت ایمان داشته باش", "🔥 هر روز، یک فرصت برای برتریه، نه فقط بقا", "🌱 آرام باش ولی متوقف نشو", /* shortened for brevity */ "🪞 خودت رو تحسین کن، چون تا اینجا رو اومدی"];
-    let currentIndex = 0;
-    const textElement = document.getElementById('motivational-text');
-    function showNextMessage() {
-      textElement.classList.add('fade-out');
-      setTimeout(() => {
-        currentIndex = (currentIndex + 1) % messages.length;
-        textElement.textContent = messages[currentIndex];
-        textElement.classList.remove('fade-out');
-      }, 500);
-    }
-    textElement.textContent = messages[0];
-    setInterval(showNextMessage, 20000);
-  </script>
-
-  <!-- ✅ هدر و تایپ‌نویس -->
+  <!-- ✅ هدر و پرزنتیشن عالی -->
   <header style="padding: 2rem; font-family: 'Vazirmatn', sans-serif;">
-    <h1 style="text-align:center; color:#00ffae;">پلتفرم LevelUp</h1>
-    <div style="max-width:800px; margin:auto;">
-      <div id="typewriter-box" style="height: 3.2em; overflow-y: auto; white-space: pre-wrap; line-height: 1.6; color: #f1f1f1; font-size: 1rem; position: relative; transition: height 0.5s ease; border-radius: 12px; background: rgba(255,255,255,0.03); padding: 1rem; direction: rtl; scrollbar-width: thin; scrollbar-color: #00ffae transparent;"></div>
-      <div style="text-align:center; margin-top: 0.5rem;">
-        <button id="expandTypewriter" style="background: #00ffae; border: none; color: #000; padding: 6px 18px; border-radius: 25px; font-weight: bold; cursor: pointer;">⬇️ بیشتر</button>
+    <h1 style="text-align:center; color:#00ffae; margin-bottom: 0.5rem;">
+      <span id="presentation-toggle" class="platform-title-btn">
+        <span style="display:inline-block; vertical-align:middle; margin-left:10px; margin-right:0;">
+          <svg width="38" height="38" viewBox="0 0 38 38" style="vertical-align:middle;">
+            <polyline points="6,13 19,27 32,13" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="6,21 19,35 32,21" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span>معرفی پلتفرم LevelUp</span>
+      </span>
+    </h1>
+    
+    <!-- پرزنتیشن باکس جدید با متن کامل -->
+    <div class="presentation-container" id="presentation-container" style="display: block;">
+      <div class="presentation-box" id="presentation-box">
+        <div class="presentation-content" id="presentation-content">
+          🎬 <b>داستان لولاپ: از رویا تا واقعیت</b><br><br>
+          🌟 <b>فصل اول: بیداری</b><br>
+          تصور کن صبح از خواب بیدار می‌شوی و می‌بینی که دنیای مالی سنتی دیگر جواب نمی‌دهد.<br>
+          بانک‌ها پول تو را قرض می‌دهند، اما تو هیچ سودی نمی‌بری.<br>
+          بورس‌ها بازی‌ای است که قوانینش را دیگران نوشته‌اند.<br>
+          و تو فقط تماشاچی هستی...<br><br>
+          🔮 <b>فصل دوم: انقلاب بلاکچین</b><br>
+          اما حالا مردم بیدار شده‌اند.<br>
+          آن‌ها فناوری‌ای را کشف کرده‌اند که اعتماد نمی‌سازد، بلکه می‌نویسد.<br>
+          روی زنجیره‌ای که هیچ‌کس نمی‌تواند تغییرش دهد.<br>
+          نامش بلاکچین است.<br><br>
+          💎 <b>فصل سوم: تولد لولاپ</b><br>
+          در قلب این انقلاب، لولاپ متولد شد.<br>
+          توکنی که فقط یک ارز دیجیتال نیست، بلکه نماد آزادی مالی است.<br>
+          هر خرید تو، سرمایه‌گذاری در آینده‌ای بهتر است.<br>
+          هر توکن، قدمی به سوی استقلال مالی.<br><br>
+          🤝 <b>فصل چهارم: جامعه‌ای که می‌سازیم</b><br>
+          در لولاپ، تو فقط خریدار نیستی.<br>
+          تو عضوی از خانواده‌ای هستی که با هم رشد می‌کنند.<br>
+          وقتی دو نفر را معرفی می‌کنی، امتیاز باینری می‌گیری.<br>
+          امتیازی که هر روز ارزش بیشتری پیدا می‌کند.<br><br>
+          💰 <b>فصل پنجم: درآمد واقعی</b><br>
+          هر شب، استخر پاداش بین همه تقسیم می‌شود.<br>
+          شفاف، عادلانه، و روی بلاکچین.<br>
+          تو امروز ۲ امتیاز داری؟ فردا شاید ۱۰ تا داشته باشی.<br>
+          و هر امتیاز، درآمد روزانه برای تو.<br><br>
+          🛡️ <b>فصل ششم: امنیت مطلق</b><br>
+          روی Polygon، سریع و کم‌هزینه.<br>
+          قرارداد باز و قابل بررسی.<br>
+          بدون واسطه، بدون کلاه‌برداری.<br>
+          پول تو، مال تو.<br><br>
+          🎯 <b>فصل هفتم: برای چه کسانی؟</b><br>
+          برای کسانی که از سیستم قدیمی خسته شده‌اند.<br>
+          برای کسانی که دنبال درآمد غیرفعال واقعی هستند.<br>
+          برای کسانی که آینده را زودتر می‌فهمند.<br>
+          برای تو.<br><br>
+          🚀 <b>فصل هشتم: آینده‌ای که می‌سازیم</b><br>
+          لولاپ فقط یک فرصت نیست، یک انتخاب است.<br>
+          انتخابی برای ساختن، برای رشد کردن.<br>
+          انتخابی برای آینده‌ای که در آن:<br>
+          هر کسی مالک واقعی دارایی‌هایش است.<br>
+          هر کسی می‌تواند ثروت بسازد.<br>
+          هر کسی آزاد است.<br><br>
+          🌟 <b>رسالت ما:</b><br>
+          ساختن دنیایی که در آن ثروت در دستان کسانی باشد که ارزش می‌سازند.<br><br>
+          💪 <b>کار ما:</b><br>
+          فراهم کردن ابزارهایی که مردم را از وابستگی به سیستم‌های مالی سنتی رها کند.<br><br>
+          🎯 <b>چرا لولاپ؟</b><br>
+          چون ما معتقدیم که آینده متعلق به کسانی است که امروز تصمیم می‌گیرند.<br><br>
+          ⏰ <b>زمان عمل</b><br>
+          هر ثانیه که صبر کنی، فرصتی را از دست می‌دهی.<br>
+          آینده منتظر کسانی است که امروز شروع می‌کنند.<br><br>
+          🔥 <b>تو آماده‌ای؟</b><br>
+          آماده‌ای که بخشی از این انقلاب باشی؟<br>
+          آماده‌ای که آینده خود را بسازی؟<br><br>
+          🚀 <b>شروع کن...</b><br>
+          لولاپ منتظر تو است.<br>
+          آینده منتظر تو است.<br><br>
+          <b>موفقیت در انتظار شماست! 🌟</b>
+        </div>
       </div>
     </div>
   </header>
 
-  <!-- ✅ اتصال کیف پول -->
-  <button id="connectButton">اتصال کیف پول</button>
+  <style>
+    .platform-title-btn {
+      background: linear-gradient(135deg, #6f41d8, #232946);
+      border: none;
+      border-radius: 15px;
+      padding: 12px 25px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(80, 60, 180, 0.18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      user-select: none;
+      position: relative;
+      overflow: hidden;
+      margin: 0 auto;
+      width: fit-content;
+    }
+    
+    .platform-title-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+    
+    .platform-title-btn:hover::before {
+      left: 100%;
+    }
+    
+    .platform-title-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 20px rgba(167, 134, 255, 0.4);
+    }
+    
+    .platform-title-btn:active {
+      transform: scale(0.98);
+    }
+    
+    .platform-title-btn.expanded {
+      background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3); }
+      50% { box-shadow: 0 6px 20px rgba(255, 107, 107, 0.5); }
+      100% { box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3); }
+    }
+    
+    .presentation-container {
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 0 1rem;
+      transition: all 0.5s ease;
+    }
+    
+    .presentation-box {
+      background: linear-gradient(135deg, rgba(167, 134, 255, 0.1) 0%, rgba(124, 95, 230, 0.1) 100%);
+      border: 2px solid rgba(167, 134, 255, 0.3);
+      border-radius: 20px;
+      padding: 2rem;
+      position: relative;
+      overflow: visible;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(167, 134, 255, 0.2);
+      height: auto; /* ارتفاع خودکار */
+      transition: all 0.5s ease;
+      width: 100%;
+      margin: 0 1rem;
+    }
+    
+    .presentation-box.expanded {
+      height: auto; /* ارتفاع خودکار برای نمایش کامل */
+      overflow: visible; /* بدون اسکرول */
+    }
+    
+    .presentation-content {
+      position: relative;
+      width: 100%;
+      text-align: justify;
+      direction: rtl;
+      overflow: visible;
+      padding: 1rem;
+      line-height: 1.8;
+      font-size: 1.1rem;
+      color: #f1f1f1;
+      font-family: 'Vazirmatn', sans-serif;
+      font-weight: 500;
+      transition: all 0.5s ease;
+    }
+    
+    .presentation-content.expanded {
+      overflow: visible;
+    }
+    
+    .typing-line {
+      position: absolute;
+      right: 1rem;
+      left: 1rem;
+      color: #f1f1f1;
+      font-size: 1.1rem;
+      line-height: 3.0; /* افزایش قابل توجه فاصله بین خطوط */
+      font-family: 'Vazirmatn', sans-serif;
+      font-weight: 500;
+      white-space: normal;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      width: calc(100% - 2rem);
+      overflow: visible;
+      text-align: justify;
+      direction: rtl;
+      word-wrap: break-word;
+      will-change: transform, opacity;
+      margin-bottom: 15px; /* افزایش فاصله بین خطوط */
+      padding: 8px 0; /* پدینگ اضافی برای هر خط */
+    }
+    
+    .typing-line.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .typing-line.completed {
+      opacity: 0.8;
+      transform: translateY(-40px);
+    }
+    
+    .typing-cursor {
+      display: inline-block;
+      width: 6px;
+      height: 1em;
+      background-color: #a786ff;
+      animation: blink 1s infinite;
+      margin-right: 2px;
+      vertical-align: middle;
+    }
+    
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+    
+    /* رسپانسیو */
+    @media (max-width: 768px) {
+      .platform-title-btn {
+        padding: 10px 20px;
+        font-size: 1.2rem;
+      }
+      
+      .presentation-box {
+        padding: 1.5rem;
+        margin: 0 0.5rem;
+        height: auto; /* ارتفاع خودکار برای تبلت */
+      }
+      
+      .presentation-box.expanded {
+        height: auto; /* ارتفاع خودکار برای نمایش کامل */
+        overflow: visible;
+      }
+      
+      .presentation-content {
+        font-size: 1rem;
+        line-height: 1.6;
+        padding: 0.8rem;
+        text-align: justify;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .platform-title-btn {
+        padding: 8px 16px;
+        font-size: 1.1rem;
+      }
+      
+      .presentation-box {
+        padding: 1rem;
+        margin: 0 0.3rem;
+        height: auto; /* ارتفاع خودکار برای موبایل */
+      }
+      
+      .presentation-box.expanded {
+        height: auto; /* ارتفاع خودکار برای نمایش کامل */
+        overflow: visible;
+      }
+      
+      .presentation-content {
+        font-size: 0.9rem;
+        line-height: 1.5;
+        padding: 0.6rem;
+        text-align: justify;
+      }
+    }
+  </style>
 
   <!-- ✅ بخش‌های داشبورد -->
   <section class="motivation-slider" id="motivation-slider">
@@ -91,21 +388,67 @@
   </section>
 
   <section class="dashboard-cards">
-    <div class="dashboard-card"><h4>قیمت لحظه‌ای توکن (LVL)</h4><div class="value" id="token-price">-</div></div>
-    <div class="dashboard-card"><h4>توکن در گردش</h4><div class="value" id="circulating-supply">-</div></div>
-    <div class="dashboard-card"><h4>کاربران فعال</h4><div class="value" id="total-points">-</div></div>
-    <div class="dashboard-card"><h4>حجم معاملات (MATIC)</h4><div class="value" id="trading-volume">-</div></div>
-    <div class="dashboard-card"><h4>پوینت‌های پرداخت شده</h4><div class="value" id="claimed-points">-</div></div>
-    <div class="dashboard-card"><h4>پوینت‌های مانده</h4><div class="value" id="remaining-points">-</div></div>
-    <div class="dashboard-card"><h4>ارزش هر پوینت (LVL)</h4><div class="value" id="point-value">-</div></div>
-    <div class="dashboard-card"><h4>استخر پاداش (LVL)</h4><div class="value" id="reward-pool">-</div></div>
+    <div class="dashboard-card">
+      <div class="card-header">
+        <img src="lvl.jpg" alt="LVL" class="token-icon">
+        <h4>قیمت لحظه‌ای توکن (LVL)</h4>
+      </div>
+      <div class="value" id="token-price">-</div>
+    </div>
+    <div class="dashboard-card">
+      <div class="card-header">
+        <img src="lvl.jpg" alt="LVL" class="token-icon">
+        <h4>توکن در گردش</h4>
+      </div>
+      <div class="value" id="circulating-supply">-</div>
+    </div>
+    <div class="dashboard-card">
+      <div class="card-header">
+        <i class="fas fa-users" style="color: #a786ff; font-size: 1.2rem;"></i>
+        <h4>کاربران فعال</h4>
+      </div>
+      <div class="value" id="total-points">-</div>
+    </div>
+    <div class="dashboard-card">
+      <div class="card-header">
+        <img src="matic.svg" alt="MATIC" class="token-icon">
+        <h4>حجم معاملات (MATIC)</h4>
+      </div>
+      <div class="value" id="trading-volume">-</div>
+    </div>
+    <div class="dashboard-card">
+      <div class="card-header">
+        <i class="fas fa-check-circle" style="color: #4CAF50; font-size: 1.2rem;"></i>
+        <h4>پوینت‌های پرداخت شده</h4>
+      </div>
+      <div class="value" id="claimed-points">-</div>
+    </div>
+    <div class="dashboard-card">
+      <div class="card-header">
+        <i class="fas fa-clock" style="color: #FF9800; font-size: 1.2rem;"></i>
+        <h4>پوینت‌های مانده</h4>
+      </div>
+      <div class="value" id="remaining-points">-</div>
+    </div>
+    <div class="dashboard-card">
+      <div class="card-header">
+        <img src="lvl.jpg" alt="LVL" class="token-icon">
+        <h4>ارزش هر پوینت (LVL)</h4>
+      </div>
+      <div class="value" id="point-value">-</div>
+    </div>
+    <div class="dashboard-card">
+      <div class="card-header">
+        <img src="lvl.jpg" alt="LVL" class="token-icon">
+        <h4>استخر پاداش (LVL)</h4>
+      </div>
+      <div class="value" id="reward-pool">-</div>
+    </div>
   </section>
-<button class="hamburger-btn">
-  <i class="fa fa-bars"></i>
-</button>
+
   <!-- ✅ نمودار -->
   <section class="chart-section">
-    <h3 style="text-align:center; color:#a786ff;">نمودار قیمت LVL به MATIC</h3>
+    <h3 style="text-align:center; color:#a786ff;">نمودار قیمت LVL به دلار (USD)</h3>
     <canvas id="priceChart" height="120"></canvas>
   </section>
 
@@ -114,44 +457,93 @@
     <p style="text-align:center; color:#888;">&copy; 2025 LevelUp. All rights reserved.</p>
   </footer>
 
-  <!-- ✅ تایپ‌نویس اسکریپت -->
+  <!-- ✅ تایپ‌نویس پرزنتیشن عالی -->
   <script>
-    const fullText = `در دل دنیای پرهیاهوی امروز...`; // متن کوتاه شده برای نمایش
-    const box = document.getElementById("typewriter-box");
-    const button = document.getElementById("expandTypewriter");
-    let charIndex = 0;
-    let expanded = false;
-    const lineHeight = 1.6 * 16;
-    const initialHeight = 2 * lineHeight;
-    const expandedHeight = 5 * lineHeight;
-    box.style.height = initialHeight + "px";
-    function typeText() {
-      if (charIndex < fullText.length) {
-        box.textContent += fullText.charAt(charIndex);
-        charIndex++;
-        box.scrollTop = box.scrollHeight;
-        setTimeout(typeText, 25);
-      }
-    }
-    button.addEventListener("click", () => {
-      if (!expanded) {
-        expanded = true;
-        box.style.height = expandedHeight + "px";
-        setTimeout(() => {
-          box.scrollTop = box.scrollHeight;
-        }, 300);
-        button.style.display = "none";
+    document.addEventListener('DOMContentLoaded', () => {
+      const toggleBtn = document.getElementById('presentation-toggle');
+      const presentationContainer = document.getElementById('presentation-container');
+      const presentationBox = document.getElementById('presentation-box');
+      const presentationContent = document.getElementById('presentation-content');
+      
+      if (toggleBtn && presentationContainer) {
+        toggleBtn.addEventListener('click', () => {
+          const isVisible = presentationContainer.style.display !== 'none';
+          
+          if (isVisible) {
+            // اگر نمایش داده می‌شود، آن را مخفی کن
+            presentationContainer.style.display = 'none';
+            toggleBtn.classList.remove('expanded');
+          } else {
+            // اگر مخفی است، آن را نمایش بده
+            presentationContainer.style.display = 'block';
+            toggleBtn.classList.add('expanded');
+            
+            // بعد از نمایش، متن را expand کن
+            setTimeout(() => {
+              if (presentationBox && presentationContent) {
+                presentationBox.classList.add('expanded');
+                presentationContent.classList.add('expanded');
+              }
+            }, 100);
+          }
+        });
       }
     });
-    typeText();
   </script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
   <!-- ✅ فایل‌های JS پروژه -->
   <script src="js/config.js"></script>
   <script src="js/main.js"></script>
   <script src="js/homepage.js"></script>
   <script src="js/web3-interactions.js"></script>
+
+  <!-- اسکریپت فعال‌سازی منوی موبایل (همبرگری) -->
+  <script>
+    window.toggleFAB = function() {
+      var fabContainer = document.querySelector('.fab-container');
+      if (!fabContainer) return;
+      var fabButton = fabContainer.querySelector('.fab-main');
+      var isActive = fabContainer.classList.toggle('active');
+      if (fabButton) {
+        fabButton.setAttribute('aria-expanded', isActive ? 'true' : 'false');
+      }
+    };
+    // اطمینان از اینکه دکمه کار می‌کند حتی اگر onclick کار نکند
+    document.addEventListener('click', function(e) {
+      var btn = e.target.closest('.fab-main');
+      if (btn) {
+        window.toggleFAB();
+      }
+    });
+  </script>
+
+  <script>
+    // تابع کمکی برای کوتاه‌سازی آدرس
+    function shortenAddress(address) {
+      if (!address) return '---';
+      return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+    }
+    // تابع کمکی برای کوتاه‌سازی لینک رفرال
+    function shortenReferral(link) {
+      if (!link) return '---';
+      return link.length > 32 ? link.substring(0, 20) + '...' + link.slice(-8) : link;
+    }
+    // به‌روزرسانی مقادیر داشبورد با فرمت مختصر
+    function updateDashboardValue(id, value, unit = '', maxDecimals = 4) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (typeof value === 'number' || !isNaN(value)) {
+        value = parseFloat(value).toLocaleString('fa-IR', {maximumFractionDigits: maxDecimals});
+      }
+      el.textContent = `${value} ${unit}`.trim();
+    }
+    // اگر آدرس یا لینک رفرال در داشبورد نمایش داده می‌شود، اینجا کوتاه کن
+    // مثال:
+    // updateDashboardValue('user-address', shortenAddress(address));
+    // updateDashboardValue('referral-link', shortenReferral(referralLink));
+  </script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
 </body>
 </html>
