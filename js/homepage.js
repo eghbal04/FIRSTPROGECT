@@ -794,6 +794,30 @@ const motivationalMessages = [
 
     // فراخوانی راه‌اندازی چارت بعد از مقداردهی داشبورد
     setupChart();
+
+    // --- منطق expand/collapse برای بخش‌ها ---
+    document.addEventListener('DOMContentLoaded', function() {
+        const expandButtons = document.querySelectorAll('.expand-toggle-btn');
+        
+        expandButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const container = this.closest('.expandable-container');
+                const isCollapsed = container.classList.contains('collapsed');
+                
+                // بستن همه بخش‌های دیگر
+                if (isCollapsed) {
+                    document.querySelectorAll('.expandable-container').forEach(otherContainer => {
+                        if (otherContainer !== container) {
+                            otherContainer.classList.add('collapsed');
+                        }
+                    });
+                }
+                
+                // تغییر وضعیت بخش فعلی
+                container.classList.toggle('collapsed');
+            });
+        });
+    });
 });
 
 // تابع بررسی وضعیت اتصال (در صورت عدم وجود در web3-interactions.js)
