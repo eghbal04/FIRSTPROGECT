@@ -172,9 +172,8 @@ const motivationalMessages = [
             // ارزش هر پوینت به دلار
             let pointValueUSD = parseFloat(additionalStats.pointValue) * parseFloat(priceUSD);
             updateElement('point-value', `$${Math.floor(pointValueUSD)} USD`);
-            // استخر پاداش به دلار
-            let rewardPoolUSD = parseFloat(stats.binaryPool) * parseFloat(priceUSD);
-            updateElement('reward-pool', `$${formatDashboardPrice(rewardPoolUSD)} USD`);
+            // استخر پاداش به توکن LVL
+            updateElement('reward-pool', `${formatDashboardPrice(stats.binaryPool)} LVL`);
             // فراخوانی updateMarquee برای نمایش اطلاعات به‌روز در مارکی
             if (typeof updateMarquee === 'function') updateMarquee();
         } catch (error) {
