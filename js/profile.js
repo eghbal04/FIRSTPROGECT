@@ -61,8 +61,8 @@ function updateProfileUI(profile, userData, isClaimable, registrationPrice, mati
     updateElement('profile-address', shortenAddress(profile.address));
     updateElement('profile-referrer', userData.referrer ? shortenAddress(userData.referrer) : 'بدون معرف');
     // نمایش موجودی‌ها به دلار و توکن
-    updateElement('profile-matic', parseFloat(profile.maticBalance).toLocaleString('fa-IR', {maximumFractionDigits: 4}) + ' MATIC');
-    updateElement('profile-lvl', parseFloat(profile.lvlBalance).toLocaleString('fa-IR', {maximumFractionDigits: 4}) + ' LVL');
+    updateElement('profile-matic', parseFloat(profile.maticBalance).toLocaleString('en-US', {maximumFractionDigits: 4}) + ' MATIC');
+    updateElement('profile-lvl', parseFloat(profile.lvlBalance).toLocaleString('en-US', {maximumFractionDigits: 4}) + ' LVL');
 
     // تبدیل قیمت‌ها به مقادیر خوانا
     const maticPriceInUSD = parseFloat(ethers.formatUnits(maticPrice, 8)); // تبدیل از 8 رقم اعشار

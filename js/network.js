@@ -64,8 +64,8 @@ async function updateNetworkStats() {
             if (element) element.textContent = value;
         };
 
-        updateElement('network-members', parseInt(totalUsers).toLocaleString('fa-IR'));
-        updateElement('network-points', parseFloat(ethers.formatUnits(userData.binaryPoints, 18)).toLocaleString('fa-IR', {maximumFractionDigits: 4}));
+        updateElement('network-members', parseInt(totalUsers).toLocaleString());
+        updateElement('network-points', parseFloat(ethers.formatUnits(userData.binaryPoints, 18)).toLocaleString('en-US', {maximumFractionDigits: 4}));
         // نمایش پاداش به دلار
         const lvlPrice = await contract.getTokenPriceInUSD();
         const rewardPoolUSD = parseFloat(ethers.formatEther(rewardPool)) * parseFloat(ethers.formatUnits(lvlPrice, 18));
@@ -109,7 +109,7 @@ async function updateBinaryStats() {
             const el = document.getElementById(id);
             if (el) {
                 if (typeof value === 'number' || !isNaN(value)) {
-                    value = parseFloat(value).toLocaleString('fa-IR', {maximumFractionDigits: 4});
+                    value = parseFloat(value).toLocaleString('en-US', {maximumFractionDigits: 4});
                 }
                 el.textContent = `${value} ${unit}`.trim();
             }

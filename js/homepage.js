@@ -570,7 +570,7 @@ const motivationalMessages = [
                 }
                 
                 // ارتقا با مقدار دلخواه کاربر
-                btn.textContent = 'در حال ارتقا...';
+                btn.textContent = 'در حال افزایش سقف...';
                 
                 // محاسبه مقدار دلاری خرید
                 const lvlPriceUSD = await contract.getTokenPriceInUSD();
@@ -581,7 +581,7 @@ const motivationalMessages = [
                 const currentTotalPurchased = parseFloat(ethers.formatUnits(userData.totalPurchasedKind, 18));
                 const newTotal = currentTotalPurchased + purchaseValueUSD;
                 
-                status.textContent = `در حال ارسال تراکنش ارتقا... (${purchaseValueUSD.toFixed(2)} USD)`;
+                status.textContent = `در حال ارسال تراکنش افزایش سقف... (${purchaseValueUSD.toFixed(2)} USD)`;
                 
                 // ابتدا approve برای سوزاندن توکن‌ها
                 const approveTx = await contract.approve(contract.target, ethers.parseUnits(amount.toString(), 18));
@@ -602,12 +602,12 @@ const motivationalMessages = [
                 const oldCap = parseFloat(ethers.formatUnits(userData.binaryPointCap, 18));
                 
                 if (newCap > oldCap) {
-                    status.textContent = `ارتقا با موفقیت انجام شد! +${newCap - oldCap} امتیاز جدید`;
+                    status.textContent = `افزایش سقف با موفقیت انجام شد! +${newCap - oldCap} امتیاز جدید`;
                 } else {
-                    status.textContent = 'ارتقا با موفقیت انجام شد!';
+                    status.textContent = 'افزایش سقف با موفقیت انجام شد!';
                 }
                 status.style.color = 'green';
-                btn.textContent = 'ارتقا';
+                btn.textContent = 'افزایش سقف';
                 btn.disabled = false;
                 upgradeAmount.value = '';
                 if (star) star.style.display = 'inline-block';
@@ -641,17 +641,18 @@ const motivationalMessages = [
         const tradingVolume = document.getElementById('trading-volume')?.textContent || '-';
         const claimedPoints = document.getElementById('claimed-points')?.textContent || '-';
         const pointValue = document.getElementById('point-value')?.textContent || '-';
-        const crypto = await fetchCryptoPrices();
+        const rewardPool = document.getElementById('reward-pool')?.textContent || '-';
+        const remainingPoints = document.getElementById('remaining-points')?.textContent || '-';
+        
         let text = `
           <span style='margin-left:2rem;'>قیمت LVL: <b>${tokenPrice}</b></span>
           <span style='margin-left:2rem;'>ارزش هر پوینت: <b>${pointValue}</b></span>
           <span style='margin-left:2rem;'>کاربران: <b>${totalPoints}</b></span>
           <span style='margin-left:2rem;'>پوینت پرداخت‌شده: <b>${claimedPoints}</b></span>
+          <span style='margin-left:2rem;'>پوینت باقی‌مانده: <b>${remainingPoints}</b></span>
           <span style='margin-left:2rem;'>حجم معاملات: <b>${tradingVolume}</b></span>
+          <span style='margin-left:2rem;'>استخر پاداش: <b>${rewardPool}</b></span>
           <span style='margin-left:2rem;'>توکن‌های در گردش: <b>${circulatingSupply}</b></span>
-          <span style='margin-left:2rem;'>BTC: <b>$${crypto.btc}</b></span>
-          <span style='margin-left:2rem;'>ETH: <b>$${crypto.eth}</b></span>
-          <span style='margin-left:2rem;'>MATIC: <b>$${crypto.matic}</b></span>
         `;
         marqueeContent.innerHTML = text;
         marqueeContentClone.innerHTML = text;
@@ -669,171 +670,71 @@ const motivationalMessages = [
       }
     }
 
-    // --- دریافت قیمت ارزهای دیجیتال (BTC, ETH, MATIC) از CoinGecko با پراکسی corsproxy ---
-    async function fetchCryptoPrices() {
-        try {
-            const url = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,matic-network&vs_currencies=usd";
-            const proxy = "https://corsproxy.io/?" + encodeURIComponent(url);
-            
-            const response = await fetch(proxy);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const data = await response.json();
-            return data;
-        } catch (error) {
-            console.error("Error fetching crypto prices:", error);
-            // برگرداندن قیمت‌های پیش‌فرض در صورت خطا
-            return {
-                bitcoin: { usd: 45000 },
-                ethereum: { usd: 2800 },
-                "matic-network": { usd: 0.8 }
-            };
-        }
-    }
-
     // تعریف متغیر سراسری برای نمونه چارت
     window.priceChartInstance = null;
 
-    // راه‌اندازی نمودار قیمت LVL هم به دلار و هم به متیک
+    // راه‌اندازی نمایش قیمت‌های LVL
     async function setupChart() {
-      const ctx = document.getElementById('priceChart')?.getContext('2d');
-      if (ctx) {
-        try {
-          if (window.priceChartInstance) {
-            window.priceChartInstance.destroy();
-            window.priceChartInstance = null;
-          }
+      const chartSection = document.querySelector('.chart-section');
+      if (!chartSection) return;
 
-          // دریافت قیمت‌های LVL به USD و LVL به MATIC
-          const { contract } = await connectWallet();
-          // گرفتن داده‌های 7 روز گذشته (یا فقط قیمت فعلی اگر نشد)
-          let priceUSD = [];
-          let priceMATIC = [];
-          let chartLabels = [];
-          try {
-            // قیمت LVL به USD (از تابع getTokenPriceInUSD)
-            const urlUSD = "https://api.coingecko.com/api/v3/coins/levelup/market_chart?vs_currency=usd&days=7";
-            const proxyUSD = "https://corsproxy.io/?" + encodeURIComponent(urlUSD);
-            const resUSD = await fetch(proxyUSD);
-            const dataUSD = await resUSD.json();
-            const parsedUSD = dataUSD.prices ? dataUSD : JSON.parse(dataUSD.contents);
-            priceUSD = parsedUSD.prices.map(item => item[1]);
-            chartLabels = parsedUSD.prices.map(item => {
-              const date = new Date(item[0]);
-              return `${date.getMonth()+1}/${date.getDate()}`;
-            });
-          } catch (e) {
-            // اگر نشد، فقط قیمت فعلی را بگیر
-            const price = await contract.getTokenPriceInUSD();
-            priceUSD = [ethers.formatUnits(price, 8)];
-            chartLabels = ['امروز'];
-          }
-          try {
-            // قیمت LVL به MATIC
-            const urlMATIC = "https://api.coingecko.com/api/v3/coins/levelup/market_chart?vs_currency=matic-network&days=7";
-            const proxyMATIC = "https://corsproxy.io/?" + encodeURIComponent(urlMATIC);
-            const resMATIC = await fetch(proxyMATIC);
-            const dataMATIC = await resMATIC.json();
-            const parsedMATIC = dataMATIC.prices ? dataMATIC : JSON.parse(dataMATIC.contents);
-            priceMATIC = parsedMATIC.prices.map(item => item[1]);
-          } catch (e) {
-            // اگر نشد، فقط قیمت فعلی را بگیر
-            const price = await contract.updateTokenPrice();
-            priceMATIC = [ethers.formatUnits(price, 18)];
-          }
-
-          // ساخت چارت با دو دیتاست
-          const priceChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-              labels: chartLabels,
-              datasets: [
-                {
-                  label: 'قیمت LVL (USD)',
-                  data: priceUSD,
-                  borderColor: '#a786ff',
-                  backgroundColor: 'rgba(167, 134, 255, 0.1)',
-                  tension: 0.4,
-                  pointRadius: 2,
-                  pointBackgroundColor: '#fff',
-                  pointBorderColor: '#a786ff',
-                  pointBorderWidth: 1,
-                  fill: false,
-                  borderWidth: 2
-                },
-                {
-                  label: 'قیمت LVL (MATIC)',
-                  data: priceMATIC,
-                  borderColor: '#4caf50',
-                  backgroundColor: 'rgba(76, 175, 80, 0.1)',
-                  tension: 0.4,
-                  pointRadius: 2,
-                  pointBackgroundColor: '#fff',
-                  pointBorderColor: '#4caf50',
-                  pointBorderWidth: 1,
-                  fill: false,
-                  borderWidth: 2
-                }
-              ]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: { display: true },
-                tooltip: {
-                  backgroundColor: 'rgba(20, 18, 40, 0.95)',
-                  titleColor: '#a786ff',
-                  bodyColor: '#fff',
-                  borderColor: '#a786ff',
-                  borderWidth: 1,
-                  cornerRadius: 8,
-                  displayColors: true,
-                  callbacks: {
-                    label: function(context) {
-                      // نمایش علمی با 2 رقم اعشار
-                      return `${context.dataset.label}: ${context.parsed.y.toExponential(2)}`;
-                    }
-                  }
-                }
-              },
-              scales: {
-                x: {
-                  ticks: { color: '#aaa', font: { family: 'Vazirmatn', size: 12 } },
-                  grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false }
-                },
-                y: {
-                  ticks: {
-                    color: '#fff',
-                    font: { family: 'Vazirmatn', size: 11 },
-                    callback: function(value) {
-                      // نمایش علمی با 2 رقم اعشار
-                      return value.toExponential(2);
-                    }
-                  },
-                  grid: { color: 'rgba(255,255,255,0.08)', drawBorder: false },
-                  beginAtZero: false
-                }
-              },
-              interaction: { intersect: false, mode: 'index' },
-              elements: { point: { hoverRadius: 6, hoverBorderWidth: 2 } }
-            }
-          });
-          window.priceChartInstance = priceChart;
-        } catch (error) {
-          console.error("Error initializing chart:", error);
-          const chartSection = document.querySelector('.chart-section');
-          if (chartSection) {
-            chartSection.innerHTML = `
-              <h3 style="text-align:center; color:#a786ff;">نمودار قیمت LVL به دلار (USD) و متیک (MATIC)</h3>
-              <div style="text-align:center; color:#ff6b6b; padding:2rem;">
-                خطا در بارگذاری نمودار: ${error.message}
-              </div>
-            `;
-          }
+      try {
+        // دریافت قیمت‌های فعلی از قرارداد
+        const { contract } = await connectWallet();
+        
+        // دریافت قیمت‌های فعلی
+        const [tokenPriceUSD, tokenPriceMATIC, maticPrice] = await Promise.all([
+          contract.getTokenPriceInUSD(),
+          contract.updateTokenPrice(),
+          contract.getLatestMaticPrice()
+        ]);
+        
+        // فرمت کردن قیمت‌ها
+        const priceUSD = parseFloat(ethers.formatUnits(tokenPriceUSD, 8));
+        const priceMATIC = parseFloat(ethers.formatUnits(tokenPriceMATIC, 18));
+        const maticPriceUSD = parseFloat(ethers.formatUnits(maticPrice, 8));
+        
+        // بررسی مقادیر معتبر
+        if (isNaN(priceUSD) || isNaN(priceMATIC) || isNaN(maticPriceUSD) || 
+            priceUSD <= 0 || priceMATIC <= 0 || maticPriceUSD <= 0) {
+          throw new Error("قیمت‌های دریافتی نامعتبر هستند");
         }
+
+        // نمایش قیمت‌ها به صورت کارت‌های زیبا
+        chartSection.innerHTML = `
+          <h3 style="text-align:center; color:#007AFF; margin-bottom: 2rem; font-size: 1.5rem; font-weight: 600;">قیمت‌های فعلی LVL</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+            <div style="background: rgba(0, 122, 255, 0.1); padding: 2rem; border-radius: 20px; border: 2px solid rgba(0, 122, 255, 0.3); text-align: center; box-shadow: 0 8px 32px rgba(0, 122, 255, 0.1);">
+              <div style="font-size: 1.3rem; font-weight: bold; color: #007AFF; margin-bottom: 1rem;">قیمت LVL/USD</div>
+              <div style="font-size: 2rem; font-weight: bold; color: #1D1D1F; margin-bottom: 0.5rem;">$${priceUSD.toExponential(6)}</div>
+              <div style="font-size: 0.9rem; color: #8E8E93;">قیمت دلاری توکن LVL</div>
+            </div>
+            <div style="background: rgba(52, 199, 89, 0.1); padding: 2rem; border-radius: 20px; border: 2px solid rgba(52, 199, 89, 0.3); text-align: center; box-shadow: 0 8px 32px rgba(52, 199, 89, 0.1);">
+              <div style="font-size: 1.3rem; font-weight: bold; color: #34C759; margin-bottom: 1rem;">قیمت LVL/MATIC</div>
+              <div style="font-size: 2rem; font-weight: bold; color: #1D1D1F; margin-bottom: 0.5rem;">${priceMATIC.toExponential(6)}</div>
+              <div style="font-size: 0.9rem; color: #8E8E93;">قیمت MATIC توکن LVL</div>
+            </div>
+            <div style="background: rgba(255, 149, 0, 0.1); padding: 2rem; border-radius: 20px; border: 2px solid rgba(255, 149, 0, 0.3); text-align: center; box-shadow: 0 8px 32px rgba(255, 149, 0, 0.1);">
+              <div style="font-size: 1.3rem; font-weight: bold; color: #FF9500; margin-bottom: 1rem;">قیمت MATIC/USD</div>
+              <div style="font-size: 2rem; font-weight: bold; color: #1D1D1F; margin-bottom: 0.5rem;">$${maticPriceUSD.toFixed(4)}</div>
+              <div style="font-size: 0.9rem; color: #8E8E93;">قیمت دلاری MATIC</div>
+            </div>
+          </div>
+          <div style="text-align: center; color: #8E8E93; font-size: 0.9rem; padding: 1rem; background: rgba(0, 0, 0, 0.05); border-radius: 12px;">
+            💡 قیمت‌ها به صورت لحظه‌ای از قرارداد هوشمند LevelUp دریافت می‌شوند
+          </div>
+        `;
+        
+      } catch (error) {
+        console.error("Error getting prices:", error);
+        chartSection.innerHTML = `
+          <h3 style="text-align:center; color:#007AFF;">قیمت‌های LVL</h3>
+          <div style="text-align:center; color:#FF3B30; padding:2rem; background: rgba(255, 59, 48, 0.1); border-radius: 12px; border: 1px solid rgba(255, 59, 48, 0.3);">
+            <p>خطا در دریافت قیمت‌ها:</p>
+            <p>${error.message}</p>
+            <p style="font-size: 0.9rem; margin-top: 1rem;">لطفاً کیف پول خود را متصل کنید و دوباره تلاش کنید.</p>
+          </div>
+        `;
       }
     }
 

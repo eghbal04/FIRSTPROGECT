@@ -21,6 +21,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // تلاش برای اتصال خودکار هنگام بارگذاری صفحه
     await autoConnectWallet();
+    
+    // به‌روزرسانی ناوبار بر اساس وضعیت کاربر
+    await updateNavbarBasedOnUserStatus();
 });
 
 function shortenAddress(address) {
@@ -120,6 +123,9 @@ const updateElement = (id, value) => {
 
     if (userDashboard) userDashboard.style.display = 'block';
     if (mainContent) mainContent.style.display = 'none';
+    
+    // به‌روزرسانی ناوبار بر اساس وضعیت کاربر
+    updateNavbarBasedOnUserStatus();
 }
 
 // main.js
@@ -160,4 +166,64 @@ async function autoConnectWallet() {
         console.log("اتصال خودکار WalletConnect موفق نبود", error);
     }
     return false;
+}
+
+// تابع به‌روزرسانی ناوبار بر اساس وضعیت کاربر
+async function updateNavbarBasedOnUserStatus() {
+    try {
+        const connection = await checkConnection();
+        if (!connection.connected) {
+            // اگر کاربر متصل نیست، ناوبار را به حالت پیش‌فرض برگردان
+            resetNavbarToDefault();
+            return;
+        }
+
+        const { contract, address } = await connectWallet();
+        const userData = await contract.users(address);
+        
+        if (userData.activated) {
+            // کاربر فعال - تغییر "ثبت‌نام" به "ارتقا"
+            updateNavbarForActiveUser();
+        } else {
+            // کاربر غیرفعال - ناوبار به حالت پیش‌فرض
+            resetNavbarToDefault();
+        }
+    } catch (error) {
+        console.error("Error updating navbar:", error);
+        resetNavbarToDefault();
+    }
+}
+
+// تابع تغییر ناوبار برای کاربران فعال
+function updateNavbarForActiveUser() {
+    // تغییر در ناوبار دسکتاپ
+    const desktopRegisterLink = document.querySelector('.desktop-nav a[href="#main-register"]');
+    if (desktopRegisterLink) {
+        desktopRegisterLink.innerHTML = '<i class="fa-solid fa-arrow-up icon" aria-hidden="true"></i><span class="label">افزایش سقف</span>';
+        desktopRegisterLink.title = 'افزایش سقف';
+    }
+    
+    // تغییر در ناوبار موبایل
+    const mobileRegisterLink = document.querySelector('.fab-menu a[href="#main-register"]');
+    if (mobileRegisterLink) {
+        mobileRegisterLink.innerHTML = '<i class="fa-solid fa-arrow-up icon" aria-hidden="true"></i><span class="label">افزایش سقف</span>';
+        mobileRegisterLink.title = 'افزایش سقف';
+    }
+}
+
+// تابع بازگرداندن ناوبار به حالت پیش‌فرض
+function resetNavbarToDefault() {
+    // بازگرداندن ناوبار دسکتاپ
+    const desktopRegisterLink = document.querySelector('.desktop-nav a[href="#main-register"]');
+    if (desktopRegisterLink) {
+        desktopRegisterLink.innerHTML = '<i class="fa-solid fa-user-plus icon" aria-hidden="true"></i><span class="label">ثبت‌نام</span>';
+        desktopRegisterLink.title = 'ثبت‌نام';
+    }
+    
+    // بازگرداندن ناوبار موبایل
+    const mobileRegisterLink = document.querySelector('.fab-menu a[href="#main-register"]');
+    if (mobileRegisterLink) {
+        mobileRegisterLink.innerHTML = '<i class="fa-solid fa-user-plus icon" aria-hidden="true"></i><span class="label">ثبت‌نام</span>';
+        mobileRegisterLink.title = 'ثبت‌نام';
+    }
 }

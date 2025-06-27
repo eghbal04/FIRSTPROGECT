@@ -23,25 +23,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             signer: window.contractConfig.signer,
             address: await window.contractConfig.signer.getAddress()
         };
-    }
-    
+}
+
     // تابع فرمت کردن آدرس
     function shortenAddress(address) {
         if (!address) return '-';
         return `${address.slice(0, 6)}...${address.slice(-4)}`;
-    }
-    
+}
+
     // تابع فرمت کردن تاریخ
     function formatDate(timestamp) {
         if (!timestamp) return '-';
         const date = new Date(parseInt(timestamp) * 1000);
         return date.toLocaleString('fa-IR', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
     }
     
     // تابع فرمت کردن اعداد
@@ -90,8 +90,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
             } catch (error) {
                 console.log('Error fetching purchase events:', error.message);
-            }
-            
+}
+
             // دریافت رویدادهای فعال‌سازی
             try {
                 const activationEvents = await contract.queryFilter(
@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 activationEvents.forEach(event => {
                     reports.push({
                         type: 'activation',
-                        title: 'فعال‌سازی حساب',
+            title: 'فعال‌سازی حساب',
                         amount: formatNumber(event.args.amountlvl, 18) + ' LVL',
                         timestamp: event.blockTimestamp,
                         transactionHash: event.transactionHash,
@@ -199,11 +199,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="no-reports">
                     <p>هیچ گزارشی یافت نشد.</p>
                     <p>برای مشاهده گزارشات، ابتدا فعالیتی در پلتفرم انجام دهید.</p>
-                </div>
-            `;
+        </div>
+    `;
             return;
         }
-        
+    
         const reportsHTML = filteredReports.map(report => `
             <div class="report-item">
                 <div class="report-header">
@@ -220,8 +220,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         `).join('');
         
         reportsContainer.innerHTML = reportsHTML;
-    }
-    
+}
+
     // تابع دریافت آیکون برای نوع گزارش
     function getReportIcon(type) {
         const icons = {
@@ -252,8 +252,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <p>لطفاً کیف پول و اتصال اینترنت را بررسی کنید.</p>
                 </div>
             `;
+            }
         }
-    }
     
     // تنظیم event listeners
     if (refreshButton) {
