@@ -786,33 +786,21 @@ function renderEventArgs(args, labels) {
             if (typeof value === 'string' && value.startsWith('0x') && value.length === 42) {
                 return `${label}: <span dir="ltr">${shortenAddress(value)}</span>`;
             }
+            
+            // برای همه مقادیر عددی، فقط مقدار خام را نمایش بده
             if (typeof value === 'bigint' || (typeof value === 'string' && /^\d+$/.test(value))) {
-                try {
-                    // بررسی محدوده قبل از formatEther
-                    const bigIntValue = typeof value === 'bigint' ? value : BigInt(value);
-                    
-                    // اگر مقدار خیلی بزرگ است، آن را به صورت عدد نمایش بده
-                    if (bigIntValue > BigInt('9999999999999999999999999999999999999999')) {
-                        return `${label}: <b>${value.toString()}</b>`;
-                    }
-                    
-                    const formatted = ethers.formatEther(bigIntValue);
-                    return `${label}: <b>${parseFloat(formatted).toLocaleString('fa-IR', {maximumFractionDigits: 4})}</b>`;
-                } catch (formatError) {
-                    console.warn(`Format error for ${key}:`, formatError);
-                    // اگر formatEther خطا داد، مقدار اصلی را نمایش بده
-                    return `${label}: <b>${value.toString()}</b>`;
-                }
+                return `${label}: <b>${value.toString()}</b>`;
             }
+            
             // موقعیت باینری
             if ((key === 'position' || key === 'side') && (value === 0 || value === 1 || value === 2 || value === '0' || value === '1' || value === '2')) {
                 const posLabels = {0: 'چپ', 1: 'راست', 2: 'مرکز', '0': 'چپ', '1': 'راست', '2': 'مرکز'};
                 return `${label}: <b>${posLabels[value]}</b>`;
             }
+            
             return `${label}: <b>${value}</b>`;
         } catch (error) {
-            console.warn(`Error rendering arg ${key}:`, error);
-            return `${label}: <b>خطا در نمایش</b>`;
+            return `${label}: <b>نامعتبر</b>`;
         }
     }).filter(Boolean).join('<br>');
 }
