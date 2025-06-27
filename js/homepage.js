@@ -169,9 +169,8 @@ const motivationalMessages = [
             // پوینت‌های پرداخت شده و مانده بدون تغییر (عدد)
             updateElement('claimed-points', parseFloat(additionalStats.claimedPoints).toLocaleString());
             updateElement('remaining-points', parseFloat(additionalStats.remainingPoints).toLocaleString());
-            // ارزش هر پوینت به دلار
-            let pointValueUSD = parseFloat(additionalStats.pointValue) * parseFloat(priceUSD);
-            updateElement('point-value', `$${Math.floor(pointValueUSD)} USD`);
+            // ارزش هر پوینت به توکن LVL
+            updateElement('point-value', `${formatDashboardPrice(additionalStats.pointValue)} LVL`);
             // استخر پاداش به توکن LVL
             updateElement('reward-pool', `${formatDashboardPrice(stats.binaryPool)} LVL`);
             // فراخوانی updateMarquee برای نمایش اطلاعات به‌روز در مارکی
