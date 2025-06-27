@@ -276,45 +276,54 @@ const motivationalMessages = [
 
     // --- ثبت‌نام با یک کلیک: دکمه و منطق ---
     async function updateRegisterButton() {
-        const btn = document.getElementById('register-btn');
-        const status = document.getElementById('register-status');
+        const registerForm = document.getElementById('registration-form');
+        const upgradeForm = document.getElementById('upgrade-form');
+        const registerBtn = document.getElementById('register-btn');
+        const upgradeBtn = document.getElementById('upgrade-btn');
+        const upgradeAmount = document.getElementById('upgrade-amount');
+        const registerStatus = document.getElementById('register-status');
+        const upgradeStatus = document.getElementById('upgrade-status');
         const star = document.getElementById('register-star');
-        if (!btn) return;
+        
+        if (!registerForm || !upgradeForm) return;
+        
         try {
             // اتصال و دریافت مقدار مورد نیاز و موجودی کاربر
             const connection = await checkConnection();
             if (!connection.connected) {
-                btn.textContent = 'Please connect your wallet';
-                btn.disabled = true;
-                status.textContent = '';
+                registerForm.style.display = 'none';
+                upgradeForm.style.display = 'none';
                 if (star) star.style.display = 'none';
                 return;
             }
+            
             const { contract, address } = await connectWallet();
             
             // بررسی وضعیت کاربر
             const userData = await contract.users(address);
             
             if (userData.activated) {
-                // کاربر قبلاً ثبت‌نام کرده - دکمه ارتقا
+                // کاربر قبلاً ثبت‌نام کرده - نمایش فرم ارتقا
+                registerForm.style.display = 'none';
+                upgradeForm.style.display = 'block';
+                
                 const balanceRaw = await contract.balanceOf(address);
                 const balance = ethers.formatUnits(balanceRaw, 18);
-                const requiredAmount = 100; // مقدار ثابت برای ارتقا
                 
-                btn.textContent = `ارتقا (${requiredAmount} LVL)`;
-                btn.disabled = parseFloat(balance) < requiredAmount;
-                
-                if (btn.disabled) {
-                    status.textContent = `موجودی شما کافی نیست. موجودی: ${parseFloat(balance).toLocaleString('en-US', {maximumFractionDigits: 6})} LVL`;
-                    status.style.color = 'red';
-                } else {
-                    status.textContent = '';
+                // به‌روزرسانی placeholder با موجودی کاربر
+                if (upgradeAmount) {
+                    upgradeAmount.placeholder = `موجودی شما: ${parseFloat(balance).toLocaleString('en-US', {maximumFractionDigits: 6})} LVL`;
+                    upgradeAmount.max = parseFloat(balance);
                 }
+                
                 if (star) star.style.display = 'inline-block';
                 return;
             }
             
-            // کاربر ثبت‌نام نکرده - دکمه ثبت‌نام
+            // کاربر ثبت‌نام نکرده - نمایش فرم ثبت‌نام
+            registerForm.style.display = 'block';
+            upgradeForm.style.display = 'none';
+            
             const requiredRaw = await contract.getRegistrationPrice();
             const required = ethers.formatUnits(requiredRaw, 18);
             const balanceRaw = await contract.balanceOf(address);
@@ -323,24 +332,23 @@ const motivationalMessages = [
             if (star) star.style.display = 'none';
             
             const requiredFormatted = parseFloat(required).toLocaleString('en-US', {maximumFractionDigits: 6});
-            btn.textContent = `ثبت‌نام (${requiredFormatted} LVL)`;
-            btn.disabled = parseFloat(balance) < parseFloat(required);
+            registerBtn.textContent = `ثبت‌نام (${requiredFormatted} LVL)`;
+            registerBtn.disabled = parseFloat(balance) < parseFloat(required);
             
-            if (btn.disabled) {
-                status.textContent = `موجودی شما کافی نیست. موجودی: ${parseFloat(balance).toLocaleString('en-US', {maximumFractionDigits: 6})} LVL`;
-                status.style.color = 'red';
+            if (registerBtn.disabled) {
+                registerStatus.textContent = `موجودی شما کافی نیست. موجودی: ${parseFloat(balance).toLocaleString('en-US', {maximumFractionDigits: 6})} LVL`;
+                registerStatus.style.color = 'red';
             } else {
-                status.textContent = '';
+                registerStatus.textContent = '';
             }
         } catch (e) {
-            btn.textContent = 'Error loading registration info';
-            btn.disabled = true;
-            if (status) status.textContent = '';
+            registerForm.style.display = 'none';
+            upgradeForm.style.display = 'none';
             if (star) star.style.display = 'none';
         }
     }
 
-    // هندل ثبت‌نام و ارتقا با یک کلیک
+    // هندل ثبت‌نام
     const registerBtn = document.getElementById('register-btn');
     if (registerBtn) {
         registerBtn.addEventListener('click', async () => {
@@ -351,75 +359,129 @@ const motivationalMessages = [
             
             try {
                 const { contract, address } = await connectWallet();
-                const userData = await contract.users(address);
                 
-                if (userData.activated) {
-                    // ارتقا برای کاربران فعال
-                    btn.textContent = 'در حال ارتقا...';
-                    
-                    // محاسبه مقدار دلاری خرید
-                    const lvlPriceUSD = await contract.getTokenPriceInUSD();
-                    const lvlPriceUSDFormatted = parseFloat(ethers.formatUnits(lvlPriceUSD, 8));
-                    const amountLvl = 100; // مقدار ثابت 100 LVL
-                    const purchaseValueUSD = amountLvl * lvlPriceUSDFormatted;
-                    
-                    // بررسی اینکه آیا این خرید به 50 دلار می‌رسد
-                    const currentTotalPurchased = parseFloat(ethers.formatUnits(userData.totalPurchasedKind, 18));
-                    const newTotal = currentTotalPurchased + purchaseValueUSD;
-                    
-                    status.textContent = `در حال ارسال تراکنش ارتقا... (${purchaseValueUSD.toFixed(2)} USD)`;
-                    
-                    // ابتدا approve برای سوزاندن توکن‌ها
-                    const approveTx = await contract.approve(contract.target, ethers.parseUnits(amountLvl.toString(), 18));
-                    await approveTx.wait();
-                    
-                    // payout = 100 یعنی همه توکن‌ها به باینری پول می‌روند
-                    const payout = 100;
-                    
-                    const tx = await contract.purchase(
-                        ethers.parseUnits(amountLvl.toString(), 18),
-                        payout
-                    );
-                    await tx.wait();
-                    
-                    // بررسی اینکه آیا امتیاز جدید اضافه شد
-                    const updatedUserData = await contract.users(address);
-                    const newCap = parseFloat(ethers.formatUnits(updatedUserData.binaryPointCap, 18));
-                    const oldCap = parseFloat(ethers.formatUnits(userData.binaryPointCap, 18));
-                    
-                    if (newCap > oldCap) {
-                        status.textContent = `ارتقا با موفقیت انجام شد! +${newCap - oldCap} امتیاز جدید`;
-                    } else {
-                        status.textContent = 'ارتقا با موفقیت انجام شد!';
-                    }
-                    status.style.color = 'green';
-                    btn.textContent = 'ارتقا (100 LVL)';
-                    btn.disabled = false;
-                    if (star) star.style.display = 'inline-block';
-                } else {
-                    // ثبت‌نام برای کاربران جدید
-                    btn.textContent = 'در حال ثبت‌نام...';
-                    const requiredRaw = await contract.getRegistrationPrice();
-                    const required = ethers.formatUnits(requiredRaw, 18);
-                    
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const referrer = urlParams.get('ref') || '0x0000000000000000000000000000000000000000';
-                    
-                    status.textContent = 'در حال ارسال تراکنش...';
-                    const tx = await contract.registerAndActivate(referrer, ethers.parseUnits(required, 18));
-                    await tx.wait();
-                    
-                    status.textContent = 'ثبت‌نام با موفقیت انجام شد!';
-                    status.style.color = 'green';
-                    btn.textContent = 'ارتقا (100 LVL)';
-                    btn.disabled = false;
-                    if (star) star.style.display = 'inline-block';
-                }
+                // ثبت‌نام برای کاربران جدید
+                btn.textContent = 'در حال ثبت‌نام...';
+                const requiredRaw = await contract.getRegistrationPrice();
+                const required = ethers.formatUnits(requiredRaw, 18);
+                
+                const urlParams = new URLSearchParams(window.location.search);
+                const referrer = urlParams.get('ref') || '0x0000000000000000000000000000000000000000';
+                
+                status.textContent = 'در حال ارسال تراکنش...';
+                const tx = await contract.registerAndActivate(referrer, ethers.parseUnits(required, 18));
+                await tx.wait();
+                
+                status.textContent = 'ثبت‌نام با موفقیت انجام شد!';
+                status.style.color = 'green';
+                btn.textContent = 'ثبت‌نام';
+                btn.disabled = false;
+                if (star) star.style.display = 'inline-block';
+                
+                // به‌روزرسانی فرم‌ها
+                await updateRegisterButton();
             } catch (e) {
                 const errorMsg = e.reason || e.message || 'خطا در انجام تراکنش';
                 status.textContent = 'خطا: ' + errorMsg;
                 status.style.color = 'red';
                 if (star) star.style.display = 'none';
+                await updateRegisterButton();
+            }
+        });
+    }
+
+    // هندل ارتقا
+    const upgradeBtn = document.getElementById('upgrade-btn');
+    const upgradeAmount = document.getElementById('upgrade-amount');
+    
+    if (upgradeBtn && upgradeAmount) {
+        // Validation برای input
+        upgradeAmount.addEventListener('input', () => {
+            const amount = parseFloat(upgradeAmount.value);
+            const isValid = amount > 0 && !isNaN(amount);
+            upgradeBtn.disabled = !isValid;
+        });
+        
+        upgradeBtn.addEventListener('click', async () => {
+            const btn = upgradeBtn;
+            const status = document.getElementById('upgrade-status');
+            const star = document.getElementById('register-star');
+            const amount = parseFloat(upgradeAmount.value);
+            
+            if (!amount || amount <= 0) {
+                status.textContent = 'لطفاً مقدار معتبر وارد کنید';
+                status.style.color = 'red';
+                return;
+            }
+            
+            btn.disabled = true;
+            
+            try {
+                const { contract, address } = await connectWallet();
+                const userData = await contract.users(address);
+                
+                // بررسی موجودی
+                const balanceRaw = await contract.balanceOf(address);
+                const balance = parseFloat(ethers.formatUnits(balanceRaw, 18));
+                
+                if (balance < amount) {
+                    status.textContent = `موجودی شما کافی نیست. موجودی: ${balance.toLocaleString('en-US', {maximumFractionDigits: 6})} LVL`;
+                    status.style.color = 'red';
+                    btn.disabled = false;
+                    return;
+                }
+                
+                // ارتقا با مقدار دلخواه کاربر
+                btn.textContent = 'در حال ارتقا...';
+                
+                // محاسبه مقدار دلاری خرید
+                const lvlPriceUSD = await contract.getTokenPriceInUSD();
+                const lvlPriceUSDFormatted = parseFloat(ethers.formatUnits(lvlPriceUSD, 8));
+                const purchaseValueUSD = amount * lvlPriceUSDFormatted;
+                
+                // بررسی اینکه آیا این خرید به 50 دلار می‌رسد
+                const currentTotalPurchased = parseFloat(ethers.formatUnits(userData.totalPurchasedKind, 18));
+                const newTotal = currentTotalPurchased + purchaseValueUSD;
+                
+                status.textContent = `در حال ارسال تراکنش ارتقا... (${purchaseValueUSD.toFixed(2)} USD)`;
+                
+                // ابتدا approve برای سوزاندن توکن‌ها
+                const approveTx = await contract.approve(contract.target, ethers.parseUnits(amount.toString(), 18));
+                await approveTx.wait();
+                
+                // payout = 100 یعنی همه توکن‌ها به باینری پول می‌روند
+                const payout = 100;
+                
+                const tx = await contract.purchase(
+                    ethers.parseUnits(amount.toString(), 18),
+                    payout
+                );
+                await tx.wait();
+                
+                // بررسی اینکه آیا امتیاز جدید اضافه شد
+                const updatedUserData = await contract.users(address);
+                const newCap = parseFloat(ethers.formatUnits(updatedUserData.binaryPointCap, 18));
+                const oldCap = parseFloat(ethers.formatUnits(userData.binaryPointCap, 18));
+                
+                if (newCap > oldCap) {
+                    status.textContent = `ارتقا با موفقیت انجام شد! +${newCap - oldCap} امتیاز جدید`;
+                } else {
+                    status.textContent = 'ارتقا با موفقیت انجام شد!';
+                }
+                status.style.color = 'green';
+                btn.textContent = 'ارتقا';
+                btn.disabled = false;
+                upgradeAmount.value = '';
+                if (star) star.style.display = 'inline-block';
+                
+                // به‌روزرسانی فرم‌ها
+                await updateRegisterButton();
+            } catch (e) {
+                const errorMsg = e.reason || e.message || 'خطا در انجام تراکنش';
+                status.textContent = 'خطا: ' + errorMsg;
+                status.style.color = 'red';
+                if (star) star.style.display = 'none';
+                btn.disabled = false;
                 await updateRegisterButton();
             }
         });

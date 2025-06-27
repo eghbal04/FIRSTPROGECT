@@ -449,13 +449,37 @@
   <div id="main-register" class="page-section expandable-container collapsed">
     <button class="expand-toggle-btn" aria-label="باز/بستن" type="button"></button>
     <div class="expand-header">
-      <h2 class="profile-title">ثبت‌نام سریع</h2>
+      <h2 class="profile-title">ثبت‌نام و ارتقا</h2>
     </div>
     <div class="expand-content">
       <div class="profile-container">
-        <button id="register-btn" class="register-btn">ثبت‌نام</button>
+        <!-- فرم ثبت‌نام برای کاربران جدید -->
+        <div id="registration-form" style="display: none;">
+          <h3 style="color: #a786ff; text-align: center; margin-bottom: 1rem;">ثبت‌نام جدید</h3>
+          <button id="register-btn" class="register-btn">ثبت‌نام</button>
+          <div id="register-status" class="profile-status"></div>
+        </div>
+        
+        <!-- فرم ارتقا برای کاربران فعال -->
+        <div id="upgrade-form" style="display: none;">
+          <h3 style="color: #a786ff; text-align: center; margin-bottom: 1rem;">ارتقا حساب</h3>
+          <div style="margin-bottom: 1rem;">
+            <label for="upgrade-amount" style="display: block; margin-bottom: 0.5rem; color: #fff;">مقدار LVL برای ارتقا:</label>
+            <input 
+              type="number" 
+              id="upgrade-amount" 
+              placeholder="مقدار را وارد کنید" 
+              min="1" 
+              step="1"
+              style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #a786ff55; background: #181c2a; color: #fff; font-size: 1rem;"
+            >
+            <small style="color: #ccc; display: block; margin-top: 0.3rem;">هر 50 دلار خرید = 1 امتیاز جدید</small>
+          </div>
+          <button id="upgrade-btn" class="register-btn" style="width: 100%;">ارتقا</button>
+          <div id="upgrade-status" class="profile-status"></div>
+        </div>
+        
         <span id="register-star" style="display:none;color:#FFC107;font-size:1.5rem;margin-right:1rem;">★</span>
-        <div id="register-status" class="profile-status"></div>
       </div>
     </div>
   </div>
