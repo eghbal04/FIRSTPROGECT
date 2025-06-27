@@ -53,8 +53,10 @@ async function loadBalances() {
 
 function validateSwapAmount() {
     if (!swapAmount || !swapButton) return;
-    const value = parseFloat(swapAmount.value);
-    swapButton.disabled = !(value > 0);
+    const value = swapAmount.value;
+    // مقدار باید عدد مثبت و معتبر باشد (در هر دو حالت)
+    const parsed = parseFloat(value);
+    swapButton.disabled = !(parsed > 0 && value !== '' && !isNaN(parsed));
 }
 
 swapAmount.addEventListener('input', () => {
