@@ -453,9 +453,26 @@
     </div>
     <div class="expand-content">
       <div class="profile-container">
+        <!-- نمایش موجودی کاربر -->
+        <div id="user-balance-display" style="background: #181c2a; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; text-align: center; border: 1px solid #a786ff33;">
+          <h4 style="color: #a786ff; margin-bottom: 0.5rem;">موجودی شما</h4>
+          <div id="user-lvl-balance" style="font-size: 1.2rem; color: #fff; font-weight: bold;">-</div>
+          <div id="user-lvl-usd-value" style="font-size: 0.9rem; color: #ccc; margin-top: 0.3rem;">-</div>
+        </div>
+
         <!-- فرم ثبت‌نام برای کاربران جدید -->
         <div id="registration-form" style="display: none;">
           <h3 style="color: #a786ff; text-align: center; margin-bottom: 1rem;">ثبت‌نام جدید</h3>
+          <div style="background: #181c2a; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; border: 1px solid #a786ff33;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <span style="color: #fff;">مقدار مورد نیاز:</span>
+              <span id="registration-required" style="color: #a786ff; font-weight: bold;">-</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #fff;">وضعیت:</span>
+              <span id="registration-status-text" style="color: #4caf50;">آماده برای ثبت‌نام</span>
+            </div>
+          </div>
           <button id="register-btn" class="register-btn">ثبت‌نام</button>
           <div id="register-status" class="profile-status"></div>
         </div>
@@ -463,19 +480,34 @@
         <!-- فرم ارتقا برای کاربران فعال -->
         <div id="upgrade-form" style="display: none;">
           <h3 style="color: #a786ff; text-align: center; margin-bottom: 1rem;">ارتقا حساب</h3>
-          <div style="margin-bottom: 1rem;">
-            <label for="upgrade-amount" style="display: block; margin-bottom: 0.5rem; color: #fff;">مقدار LVL برای ارتقا:</label>
-            <input 
-              type="number" 
-              id="upgrade-amount" 
-              placeholder="مقدار را وارد کنید" 
-              min="1" 
-              step="1"
-              style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #a786ff55; background: #181c2a; color: #fff; font-size: 1rem;"
-            >
-            <small style="color: #ccc; display: block; margin-top: 0.3rem;">هر 50 دلار خرید = 1 امتیاز جدید</small>
+          <div style="background: #181c2a; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; border: 1px solid #a786ff33;">
+            <div style="margin-bottom: 1rem;">
+              <label for="upgrade-amount" style="display: block; margin-bottom: 0.5rem; color: #fff; font-weight: bold;">مقدار LVL برای ارتقا:</label>
+              <input 
+                type="number" 
+                id="upgrade-amount" 
+                placeholder="مقدار را وارد کنید" 
+                min="1" 
+                step="1"
+                style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #a786ff55; background: #232946; color: #fff; font-size: 1rem;"
+              >
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <span style="color: #fff;">ارزش دلاری:</span>
+              <span id="upgrade-usd-value" style="color: #a786ff; font-weight: bold;">-</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #fff;">امتیاز جدید:</span>
+              <span id="upgrade-points-gain" style="color: #4caf50; font-weight: bold;">-</span>
+            </div>
+            <div style="margin-top: 0.8rem; padding: 0.8rem; background: #232946; border-radius: 8px; border-left: 3px solid #a786ff;">
+              <small style="color: #ccc; display: block; margin-bottom: 0.3rem;">📊 <strong>نحوه محاسبه امتیاز:</strong></small>
+              <small style="color: #ccc; display: block;">• هر 50 دلار خرید = 1 امتیاز جدید</small>
+              <small style="color: #ccc; display: block;">• حداکثر 100 امتیاز قابل کسب</small>
+              <small style="color: #ccc; display: block;">• امتیازها برای درآمد باینری استفاده می‌شوند</small>
+            </div>
           </div>
-          <button id="upgrade-btn" class="register-btn" style="width: 100%;">ارتقا</button>
+          <button id="upgrade-btn" class="register-btn" style="width: 100%;" disabled>ارتقا</button>
           <div id="upgrade-status" class="profile-status"></div>
         </div>
         

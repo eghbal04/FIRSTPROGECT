@@ -285,6 +285,15 @@ const motivationalMessages = [
         const upgradeStatus = document.getElementById('upgrade-status');
         const star = document.getElementById('register-star');
         
+        // عناصر جدید
+        const userBalanceDisplay = document.getElementById('user-balance-display');
+        const userLvlBalance = document.getElementById('user-lvl-balance');
+        const userLvlUsdValue = document.getElementById('user-lvl-usd-value');
+        const registrationRequired = document.getElementById('registration-required');
+        const registrationStatusText = document.getElementById('registration-status-text');
+        const upgradeUsdValue = document.getElementById('upgrade-usd-value');
+        const upgradePointsGain = document.getElementById('upgrade-points-gain');
+        
         if (!registerForm || !upgradeForm) return;
         
         try {
@@ -293,11 +302,33 @@ const motivationalMessages = [
             if (!connection.connected) {
                 registerForm.style.display = 'none';
                 upgradeForm.style.display = 'none';
+                if (userBalanceDisplay) userBalanceDisplay.style.display = 'none';
                 if (star) star.style.display = 'none';
                 return;
             }
             
             const { contract, address } = await connectWallet();
+            
+            // دریافت موجودی کاربر
+            const balanceRaw = await contract.balanceOf(address);
+            const balance = ethers.formatUnits(balanceRaw, 18);
+            const balanceNum = parseFloat(balance);
+            
+            // دریافت قیمت توکن
+            const lvlPriceUSD = await contract.getTokenPriceInUSD();
+            const lvlPriceUSDFormatted = parseFloat(ethers.formatUnits(lvlPriceUSD, 8));
+            const balanceUSD = balanceNum * lvlPriceUSDFormatted;
+            
+            // نمایش موجودی کاربر
+            if (userLvlBalance) {
+                userLvlBalance.textContent = `${balanceNum.toLocaleString('en-US', {maximumFractionDigits: 6})} LVL`;
+            }
+            if (userLvlUsdValue) {
+                userLvlUsdValue.textContent = `≈ $${balanceUSD.toLocaleString('en-US', {maximumFractionDigits: 2})} USD`;
+            }
+            if (userBalanceDisplay) {
+                userBalanceDisplay.style.display = 'block';
+            }
             
             // بررسی وضعیت کاربر
             const userData = await contract.users(address);
@@ -307,13 +338,10 @@ const motivationalMessages = [
                 registerForm.style.display = 'none';
                 upgradeForm.style.display = 'block';
                 
-                const balanceRaw = await contract.balanceOf(address);
-                const balance = ethers.formatUnits(balanceRaw, 18);
-                
                 // به‌روزرسانی placeholder با موجودی کاربر
                 if (upgradeAmount) {
-                    upgradeAmount.placeholder = `موجودی شما: ${parseFloat(balance).toLocaleString('en-US', {maximumFractionDigits: 6})} LVL`;
-                    upgradeAmount.max = parseFloat(balance);
+                    upgradeAmount.placeholder = `حداکثر: ${balanceNum.toLocaleString('en-US', {maximumFractionDigits: 6})} LVL`;
+                    upgradeAmount.max = balanceNum;
                 }
                 
                 if (star) star.style.display = 'inline-block';
@@ -326,17 +354,34 @@ const motivationalMessages = [
             
             const requiredRaw = await contract.getRegistrationPrice();
             const required = ethers.formatUnits(requiredRaw, 18);
-            const balanceRaw = await contract.balanceOf(address);
-            const balance = ethers.formatUnits(balanceRaw, 18);
+            const requiredNum = parseFloat(required);
+            const requiredUSD = requiredNum * lvlPriceUSDFormatted;
             
             if (star) star.style.display = 'none';
             
-            const requiredFormatted = parseFloat(required).toLocaleString('en-US', {maximumFractionDigits: 6});
+            // نمایش مقدار مورد نیاز
+            if (registrationRequired) {
+                registrationRequired.textContent = `${requiredNum.toLocaleString('en-US', {maximumFractionDigits: 6})} LVL (≈ $${requiredUSD.toLocaleString('en-US', {maximumFractionDigits: 2})} USD)`;
+            }
+            
+            // بررسی وضعیت موجودی
+            const hasEnoughBalance = balanceNum >= requiredNum;
+            if (registrationStatusText) {
+                if (hasEnoughBalance) {
+                    registrationStatusText.textContent = '✅ موجودی کافی';
+                    registrationStatusText.style.color = '#4caf50';
+                } else {
+                    registrationStatusText.textContent = '❌ موجودی ناکافی';
+                    registrationStatusText.style.color = '#ff6b6b';
+                }
+            }
+            
+            const requiredFormatted = requiredNum.toLocaleString('en-US', {maximumFractionDigits: 6});
             registerBtn.textContent = `ثبت‌نام (${requiredFormatted} LVL)`;
-            registerBtn.disabled = parseFloat(balance) < parseFloat(required);
+            registerBtn.disabled = !hasEnoughBalance;
             
             if (registerBtn.disabled) {
-                registerStatus.textContent = `موجودی شما کافی نیست. موجودی: ${parseFloat(balance).toLocaleString('en-US', {maximumFractionDigits: 6})} LVL`;
+                registerStatus.textContent = `موجودی شما کافی نیست. موجودی: ${balanceNum.toLocaleString('en-US', {maximumFractionDigits: 6})} LVL`;
                 registerStatus.style.color = 'red';
             } else {
                 registerStatus.textContent = '';
@@ -344,7 +389,29 @@ const motivationalMessages = [
         } catch (e) {
             registerForm.style.display = 'none';
             upgradeForm.style.display = 'none';
+            if (userBalanceDisplay) userBalanceDisplay.style.display = 'none';
             if (star) star.style.display = 'none';
+        }
+    }
+
+    // تابع محاسبه ارزش دلاری و امتیاز برای ارتقا
+    async function calculateUpgradeValues(amount) {
+        try {
+            const { contract } = await connectWallet();
+            const lvlPriceUSD = await contract.getTokenPriceInUSD();
+            const lvlPriceUSDFormatted = parseFloat(ethers.formatUnits(lvlPriceUSD, 8));
+            const usdValue = amount * lvlPriceUSDFormatted;
+            const pointsGain = Math.floor(usdValue / 50); // هر 50 دلار = 1 امتیاز
+            
+            return {
+                usdValue: usdValue.toFixed(2),
+                pointsGain: pointsGain
+            };
+        } catch (error) {
+            return {
+                usdValue: '0.00',
+                pointsGain: 0
+            };
         }
     }
 
@@ -395,11 +462,45 @@ const motivationalMessages = [
     const upgradeAmount = document.getElementById('upgrade-amount');
     
     if (upgradeBtn && upgradeAmount) {
-        // Validation برای input
-        upgradeAmount.addEventListener('input', () => {
+        // Validation و محاسبه real-time برای input
+        upgradeAmount.addEventListener('input', async () => {
             const amount = parseFloat(upgradeAmount.value);
             const isValid = amount > 0 && !isNaN(amount);
+            
+            // به‌روزرسانی دکمه
             upgradeBtn.disabled = !isValid;
+            
+            if (isValid) {
+                // محاسبه ارزش دلاری و امتیاز
+                const values = await calculateUpgradeValues(amount);
+                
+                // به‌روزرسانی نمایش
+                const upgradeUsdValue = document.getElementById('upgrade-usd-value');
+                const upgradePointsGain = document.getElementById('upgrade-points-gain');
+                
+                if (upgradeUsdValue) {
+                    upgradeUsdValue.textContent = `$${values.usdValue} USD`;
+                }
+                if (upgradePointsGain) {
+                    if (values.pointsGain > 0) {
+                        upgradePointsGain.textContent = `+${values.pointsGain} امتیاز`;
+                        upgradePointsGain.style.color = '#4caf50';
+                    } else {
+                        upgradePointsGain.textContent = '0 امتیاز';
+                        upgradePointsGain.style.color = '#ff6b6b';
+                    }
+                }
+            } else {
+                // پاک کردن نمایش
+                const upgradeUsdValue = document.getElementById('upgrade-usd-value');
+                const upgradePointsGain = document.getElementById('upgrade-points-gain');
+                
+                if (upgradeUsdValue) upgradeUsdValue.textContent = '-';
+                if (upgradePointsGain) {
+                    upgradePointsGain.textContent = '-';
+                    upgradePointsGain.style.color = '#ccc';
+                }
+            }
         });
         
         upgradeBtn.addEventListener('click', async () => {
