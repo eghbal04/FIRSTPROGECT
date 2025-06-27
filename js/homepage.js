@@ -669,11 +669,11 @@ const motivationalMessages = [
       }
     }
 
-    // --- دریافت قیمت ارزهای دیجیتال (BTC, ETH, MATIC) از CoinGecko با پراکسی allorigins ---
+    // --- دریافت قیمت ارزهای دیجیتال (BTC, ETH, MATIC) از CoinGecko با پراکسی corsproxy ---
     async function fetchCryptoPrices() {
         try {
             const url = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,matic-network&vs_currencies=usd";
-            const proxy = "https://api.allorigins.win/raw?url=" + encodeURIComponent(url);
+            const proxy = "https://corsproxy.io/?" + encodeURIComponent(url);
             
             const response = await fetch(proxy);
             if (!response.ok) {
@@ -688,7 +688,7 @@ const motivationalMessages = [
             return {
                 bitcoin: { usd: 45000 },
                 ethereum: { usd: 2800 },
-                "matic-network": { usd: 0.17 }
+                "matic-network": { usd: 0.8 }
             };
         }
     }
@@ -715,7 +715,7 @@ const motivationalMessages = [
           try {
             // قیمت LVL به USD (از تابع getTokenPriceInUSD)
             const urlUSD = "https://api.coingecko.com/api/v3/coins/levelup/market_chart?vs_currency=usd&days=7";
-            const proxyUSD = "https://api.allorigins.win/raw?url=" + encodeURIComponent(urlUSD);
+            const proxyUSD = "https://corsproxy.io/?" + encodeURIComponent(urlUSD);
             const resUSD = await fetch(proxyUSD);
             const dataUSD = await resUSD.json();
             const parsedUSD = dataUSD.prices ? dataUSD : JSON.parse(dataUSD.contents);
@@ -733,7 +733,7 @@ const motivationalMessages = [
           try {
             // قیمت LVL به MATIC
             const urlMATIC = "https://api.coingecko.com/api/v3/coins/levelup/market_chart?vs_currency=matic-network&days=7";
-            const proxyMATIC = "https://api.allorigins.win/raw?url=" + encodeURIComponent(urlMATIC);
+            const proxyMATIC = "https://corsproxy.io/?" + encodeURIComponent(urlMATIC);
             const resMATIC = await fetch(proxyMATIC);
             const dataMATIC = await resMATIC.json();
             const parsedMATIC = dataMATIC.prices ? dataMATIC : JSON.parse(dataMATIC.contents);
