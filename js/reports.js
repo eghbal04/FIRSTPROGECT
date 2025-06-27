@@ -778,29 +778,35 @@ function displaySampleReports() {
 // Helper: نمایش آرگومان‌های ایونت با برچسب فارسی و خط جداگانه
 function renderEventArgs(args, labels) {
     if (!args) return '';
-    return Object.entries(labels).map(([key, label]) => {
-        const value = args[key];
-        if (value === undefined) return '';
-        
-        try {
-            if (typeof value === 'string' && value.startsWith('0x') && value.length === 42) {
-                return `${label}: <span dir="ltr">${shortenAddress(value)}</span>`;
-            }
+    
+    try {
+        return Object.entries(labels).map(([key, label]) => {
+            const value = args[key];
+            if (value === undefined) return '';
             
-            // برای همه مقادیر عددی، فقط مقدار خام را نمایش بده
-            if (typeof value === 'bigint' || (typeof value === 'string' && /^\d+$/.test(value))) {
-                return `${label}: <b>${value.toString()}</b>`;
+            try {
+                if (typeof value === 'string' && value.startsWith('0x') && value.length === 42) {
+                    return `${label}: <span dir="ltr">${shortenAddress(value)}</span>`;
+                }
+                
+                // برای همه مقادیر عددی، فقط مقدار خام را نمایش بده
+                if (typeof value === 'bigint' || (typeof value === 'string' && /^\d+$/.test(value))) {
+                    return `${label}: <b>${value.toString()}</b>`;
+                }
+                
+                // موقعیت باینری
+                if ((key === 'position' || key === 'side') && (value === 0 || value === 1 || value === 2 || value === '0' || value === '1' || value === '2')) {
+                    const posLabels = {0: 'چپ', 1: 'راست', 2: 'مرکز', '0': 'چپ', '1': 'راست', '2': 'مرکز'};
+                    return `${label}: <b>${posLabels[value]}</b>`;
+                }
+                
+                return `${label}: <b>${value}</b>`;
+            } catch (error) {
+                return `${label}: <b>نامعتبر</b>`;
             }
-            
-            // موقعیت باینری
-            if ((key === 'position' || key === 'side') && (value === 0 || value === 1 || value === 2 || value === '0' || value === '1' || value === '2')) {
-                const posLabels = {0: 'چپ', 1: 'راست', 2: 'مرکز', '0': 'چپ', '1': 'راست', '2': 'مرکز'};
-                return `${label}: <b>${posLabels[value]}</b>`;
-            }
-            
-            return `${label}: <b>${value}</b>`;
-        } catch (error) {
-            return `${label}: <b>نامعتبر</b>`;
-        }
-    }).filter(Boolean).join('<br>');
+        }).filter(Boolean).join('<br>');
+    } catch (error) {
+        console.warn('Error in renderEventArgs:', error);
+        return 'خطا در نمایش اطلاعات ایونت';
+    }
 }

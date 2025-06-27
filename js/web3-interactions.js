@@ -226,9 +226,6 @@ async function getPrices() {
     try {
         const { contract } = await connectWallet();
         
-        // ابتدا updateTokenPrice را فراخوانی کن تا قیمت به‌روزرسانی شود
-        await contract.updateTokenPrice();
-        
         const [tokenPrice, maticPrice, registrationPrice, tokenPriceUSD] = await Promise.all([
             contract.updateTokenPrice(),
             contract.getLatestMaticPrice(),
