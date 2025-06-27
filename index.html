@@ -250,6 +250,7 @@
     <a href="#main-swap" class="nav-link" title="تبدیل"><i class="fa-solid fa-right-left icon" aria-hidden="true"></i><span class="label">تبدیل</span></a>
     <a href="#main-network" class="nav-link" title="شبکه"><i class="fa-solid fa-network-wired icon" aria-hidden="true"></i><span class="label">شبکه</span></a>
     <a href="#main-profile" class="nav-link" title="پروفایل"><i class="fa-solid fa-user icon" aria-hidden="true"></i><span class="label">پروفایل</span></a>
+    <a href="#main-reports" class="nav-link" title="گزارشات"><i class="fa-solid fa-chart-line icon" aria-hidden="true"></i><span class="label">گزارشات</span></a>
     <a href="#main-news" class="nav-link" title="اخبار"><i class="fa-solid fa-newspaper icon" aria-hidden="true"></i><span class="label">اخبار</span></a>
     <a href="#main-shop" class="nav-link" title="فروشگاه"><i class="fa-solid fa-cart-shopping icon" aria-hidden="true"></i><span class="label">فروشگاه</span></a>
     <a href="#main-about" class="nav-link" title="درباره"><i class="fa-solid fa-info-circle icon" aria-hidden="true"></i><span class="label">درباره</span></a>
@@ -266,6 +267,7 @@
       <a href="#main-swap" class="nav-link" title="تبدیل"><i class="fa-solid fa-right-left icon" aria-hidden="true"></i><span class="label">تبدیل</span></a>
       <a href="#main-network" class="nav-link" title="شبکه"><i class="fa-solid fa-network-wired icon" aria-hidden="true"></i><span class="label">شبکه</span></a>
       <a href="#main-profile" class="nav-link" title="پروفایل"><i class="fa-solid fa-user icon" aria-hidden="true"></i><span class="label">پروفایل</span></a>
+      <a href="#main-reports" class="nav-link" title="گزارشات"><i class="fa-solid fa-chart-line icon" aria-hidden="true"></i><span class="label">گزارشات</span></a>
       <a href="#main-news" class="nav-link" title="اخبار"><i class="fa-solid fa-newspaper icon" aria-hidden="true"></i><span class="label">اخبار</span></a>
       <a href="#main-shop" class="nav-link" title="فروشگاه"><i class="fa-solid fa-cart-shopping icon" aria-hidden="true"></i><span class="label">فروشگاه</span></a>
       <a href="#main-about" class="nav-link" title="درباره"><i class="fa-solid fa-info-circle icon" aria-hidden="true"></i><span class="label">درباره</span></a>
@@ -386,6 +388,30 @@
           <div class="profile-row"><span class="profile-label">لینک دعوت:</span><span class="profile-value" id="profile-referral-link">-</span><button id="copyProfileReferral" class="copy-btn">کپی</button></div>
         </div>
         <div id="profileStatus" class="profile-status"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="main-reports" class="page-section expandable-container collapsed">
+    <button class="expand-toggle-btn" aria-label="باز/بستن" type="button"></button>
+    <div class="expand-header">
+      <h2 class="profile-title">گزارشات و فعالیت‌ها</h2>
+    </div>
+    <div class="expand-content">
+      <div class="profile-container">
+        <div class="report-filters">
+          <select id="report-type-filter">
+            <option value="all">همه گزارشات</option>
+            <option value="purchase">خریدها</option>
+            <option value="activation">فعال‌سازی‌ها</option>
+            <option value="binary">پاداش‌های باینری</option>
+            <option value="trading">معاملات</option>
+          </select>
+          <button id="refresh-reports">به‌روزرسانی</button>
+        </div>
+        <div id="reports-container">
+          <div class="loading-message">در حال بارگذاری گزارشات...</div>
+        </div>
       </div>
     </div>
   </div>
@@ -522,6 +548,7 @@
   <script src="js/swap.js?v=1.9"></script>
   <script src="js/network.js?v=1.9"></script>
   <script src="js/profile.js?v=1.9"></script>
+  <script src="js/reports.js?v=1.9"></script>
   <script src="js/news.js?v=1.9"></script>
   <script src="js/shop.js?v=1.9"></script>
   <script src="js/homepage.js?v=1.9"></script>
