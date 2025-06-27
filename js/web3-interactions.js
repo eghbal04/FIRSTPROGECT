@@ -230,7 +230,7 @@ async function getPrices() {
         await contract.updateTokenPrice();
         
         const [tokenPrice, maticPrice, registrationPrice, tokenPriceUSD] = await Promise.all([
-            contract.getTokenPrice(),
+            contract.updateTokenPrice(),
             contract.getLatestMaticPrice(),
             contract.getRegistrationPrice(),
             contract.getTokenPriceInUSD()

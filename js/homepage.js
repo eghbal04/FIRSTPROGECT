@@ -678,20 +678,26 @@ const motivationalMessages = [
 
     // --- دریافت قیمت ارزهای دیجیتال (BTC, ETH, MATIC) از CoinGecko با پراکسی allorigins ---
     async function fetchCryptoPrices() {
-      try {
-        const url = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,matic-network&vs_currencies=usd";
-        const proxy = "https://api.allorigins.win/get?url=" + encodeURIComponent(url);
-        const res = await fetch(proxy);
-        const data = await res.json();
-        const parsed = JSON.parse(data.contents);
-        return {
-          btc: parsed.bitcoin?.usd || '-',
-          eth: parsed.ethereum?.usd || '-',
-          matic: parsed['matic-network']?.usd || '-'
-        };
-      } catch (e) {
-        return { btc: '-', eth: '-', matic: '-' };
-      }
+        try {
+            const url = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,matic-network&vs_currencies=usd";
+            const proxy = "https://corsproxy.io/?" + encodeURIComponent(url);
+            
+            const response = await fetch(proxy);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error("Error fetching crypto prices:", error);
+            // برگرداندن قیمت‌های پیش‌فرض در صورت خطا
+            return {
+                bitcoin: { usd: 45000 },
+                ethereum: { usd: 3000 },
+                "matic-network": { usd: 0.8 }
+            };
+        }
     }
 
     // تعریف متغیر سراسری برای نمونه چارت
@@ -716,7 +722,7 @@ const motivationalMessages = [
           try {
             // قیمت LVL به USD (از تابع getTokenPriceInUSD)
             const urlUSD = "https://api.coingecko.com/api/v3/coins/levelup/market_chart?vs_currency=usd&days=7";
-            const proxyUSD = "https://api.allorigins.win/get?url=" + encodeURIComponent(urlUSD);
+            const proxyUSD = "https://corsproxy.io/?" + encodeURIComponent(urlUSD);
             const resUSD = await fetch(proxyUSD);
             const dataUSD = await resUSD.json();
             const parsedUSD = JSON.parse(dataUSD.contents);
@@ -734,7 +740,7 @@ const motivationalMessages = [
           try {
             // قیمت LVL به MATIC (از تابع updateTokenPrice)
             const urlMATIC = "https://api.coingecko.com/api/v3/coins/levelup/market_chart?vs_currency=matic-network&days=7";
-            const proxyMATIC = "https://api.allorigins.win/get?url=" + encodeURIComponent(urlMATIC);
+            const proxyMATIC = "https://corsproxy.io/?" + encodeURIComponent(urlMATIC);
             const resMATIC = await fetch(proxyMATIC);
             const dataMATIC = await resMATIC.json();
             const parsedMATIC = JSON.parse(dataMATIC.contents);
