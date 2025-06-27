@@ -356,22 +356,42 @@ const motivationalMessages = [
                 if (userData.activated) {
                     // ارتقا برای کاربران فعال
                     btn.textContent = 'در حال ارتقا...';
-                    const requiredAmount = 100; // مقدار ثابت
-                    const payout = 100; // payout ثابت (100%)
                     
-                    status.textContent = 'در حال ارسال تراکنش ارتقا...';
+                    // محاسبه مقدار دلاری خرید
+                    const lvlPriceUSD = await contract.getTokenPriceInUSD();
+                    const lvlPriceUSDFormatted = parseFloat(ethers.formatUnits(lvlPriceUSD, 8));
+                    const amountLvl = 100; // مقدار ثابت 100 LVL
+                    const purchaseValueUSD = amountLvl * lvlPriceUSDFormatted;
+                    
+                    // بررسی اینکه آیا این خرید به 50 دلار می‌رسد
+                    const currentTotalPurchased = parseFloat(ethers.formatUnits(userData.totalPurchasedKind, 18));
+                    const newTotal = currentTotalPurchased + purchaseValueUSD;
+                    
+                    status.textContent = `در حال ارسال تراکنش ارتقا... (${purchaseValueUSD.toFixed(2)} USD)`;
                     
                     // ابتدا approve برای سوزاندن توکن‌ها
-                    const approveTx = await contract.approve(contract.target, ethers.parseUnits(requiredAmount.toString(), 18));
+                    const approveTx = await contract.approve(contract.target, ethers.parseUnits(amountLvl.toString(), 18));
                     await approveTx.wait();
                     
+                    // payout = 100 یعنی همه توکن‌ها به باینری پول می‌روند
+                    const payout = 100;
+                    
                     const tx = await contract.purchase(
-                        ethers.parseUnits(requiredAmount.toString(), 18),
+                        ethers.parseUnits(amountLvl.toString(), 18),
                         payout
                     );
                     await tx.wait();
                     
-                    status.textContent = 'ارتقا با موفقیت انجام شد!';
+                    // بررسی اینکه آیا امتیاز جدید اضافه شد
+                    const updatedUserData = await contract.users(address);
+                    const newCap = parseFloat(ethers.formatUnits(updatedUserData.binaryPointCap, 18));
+                    const oldCap = parseFloat(ethers.formatUnits(userData.binaryPointCap, 18));
+                    
+                    if (newCap > oldCap) {
+                        status.textContent = `ارتقا با موفقیت انجام شد! +${newCap - oldCap} امتیاز جدید`;
+                    } else {
+                        status.textContent = 'ارتقا با موفقیت انجام شد!';
+                    }
                     status.style.color = 'green';
                     btn.textContent = 'ارتقا (100 LVL)';
                     btn.disabled = false;
