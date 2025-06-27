@@ -788,9 +788,18 @@ function renderEventArgs(args, labels) {
             }
             if (typeof value === 'bigint' || (typeof value === 'string' && /^\d+$/.test(value))) {
                 try {
-                    const formatted = ethers.formatEther(value);
+                    // بررسی محدوده قبل از formatEther
+                    const bigIntValue = typeof value === 'bigint' ? value : BigInt(value);
+                    
+                    // اگر مقدار خیلی بزرگ است، آن را به صورت عدد نمایش بده
+                    if (bigIntValue > BigInt('9999999999999999999999999999999999999999')) {
+                        return `${label}: <b>${value.toString()}</b>`;
+                    }
+                    
+                    const formatted = ethers.formatEther(bigIntValue);
                     return `${label}: <b>${parseFloat(formatted).toLocaleString('fa-IR', {maximumFractionDigits: 4})}</b>`;
                 } catch (formatError) {
+                    console.warn(`Format error for ${key}:`, formatError);
                     // اگر formatEther خطا داد، مقدار اصلی را نمایش بده
                     return `${label}: <b>${value.toString()}</b>`;
                 }
