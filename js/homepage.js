@@ -271,13 +271,6 @@ const motivationalMessages = [
             return 0.0012; // قیمت پیش‌فرض
         }
         const numPrice = parseFloat(price);
-        
-        // اگر قیمت خیلی کوچک است، از مقدار پیش‌فرض استفاده کن
-        if (numPrice < 0.0001) {
-            console.log("Price too small, using default:", numPrice);
-            return 0.0012;
-        }
-        
         return numPrice;
     }
 
@@ -680,7 +673,7 @@ const motivationalMessages = [
     async function fetchCryptoPrices() {
         try {
             const url = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,matic-network&vs_currencies=usd";
-            const proxy = "https://corsproxy.io/?" + encodeURIComponent(url);
+            const proxy = "https://api.allorigins.win/raw?url=" + encodeURIComponent(url);
             
             const response = await fetch(proxy);
             if (!response.ok) {
@@ -694,8 +687,8 @@ const motivationalMessages = [
             // برگرداندن قیمت‌های پیش‌فرض در صورت خطا
             return {
                 bitcoin: { usd: 45000 },
-                ethereum: { usd: 3000 },
-                "matic-network": { usd: 0.8 }
+                ethereum: { usd: 2800 },
+                "matic-network": { usd: 0.85 }
             };
         }
     }
@@ -722,10 +715,10 @@ const motivationalMessages = [
           try {
             // قیمت LVL به USD (از تابع getTokenPriceInUSD)
             const urlUSD = "https://api.coingecko.com/api/v3/coins/levelup/market_chart?vs_currency=usd&days=7";
-            const proxyUSD = "https://corsproxy.io/?" + encodeURIComponent(urlUSD);
+            const proxyUSD = "https://api.allorigins.win/raw?url=" + encodeURIComponent(urlUSD);
             const resUSD = await fetch(proxyUSD);
             const dataUSD = await resUSD.json();
-            const parsedUSD = JSON.parse(dataUSD.contents);
+            const parsedUSD = dataUSD.prices ? dataUSD : JSON.parse(dataUSD.contents);
             priceUSD = parsedUSD.prices.map(item => item[1]);
             chartLabels = parsedUSD.prices.map(item => {
               const date = new Date(item[0]);
@@ -734,21 +727,21 @@ const motivationalMessages = [
           } catch (e) {
             // اگر نشد، فقط قیمت فعلی را بگیر
             const price = await contract.getTokenPriceInUSD();
-            priceUSD = [parseFloat(ethers.formatUnits(price, 8))];
-            chartLabels = ["Now"];
+            priceUSD = [ethers.formatUnits(price, 8)];
+            chartLabels = ['امروز'];
           }
           try {
-            // قیمت LVL به MATIC (از تابع updateTokenPrice)
+            // قیمت LVL به MATIC
             const urlMATIC = "https://api.coingecko.com/api/v3/coins/levelup/market_chart?vs_currency=matic-network&days=7";
-            const proxyMATIC = "https://corsproxy.io/?" + encodeURIComponent(urlMATIC);
+            const proxyMATIC = "https://api.allorigins.win/raw?url=" + encodeURIComponent(urlMATIC);
             const resMATIC = await fetch(proxyMATIC);
             const dataMATIC = await resMATIC.json();
-            const parsedMATIC = JSON.parse(dataMATIC.contents);
+            const parsedMATIC = dataMATIC.prices ? dataMATIC : JSON.parse(dataMATIC.contents);
             priceMATIC = parsedMATIC.prices.map(item => item[1]);
           } catch (e) {
             // اگر نشد، فقط قیمت فعلی را بگیر
             const price = await contract.updateTokenPrice();
-            priceMATIC = [parseFloat(ethers.formatEther(price))];
+            priceMATIC = [ethers.formatUnits(price, 18)];
           }
 
           // ساخت چارت با دو دیتاست

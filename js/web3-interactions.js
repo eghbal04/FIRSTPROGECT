@@ -226,6 +226,16 @@ async function getPrices() {
     try {
         const { contract } = await connectWallet();
         
+        // Debug: بررسی توابع موجود در contract
+        console.log("Available contract functions:", Object.getOwnPropertyNames(contract));
+        console.log("Contract object:", contract);
+        
+        // Debug: بررسی توابع خاص
+        console.log("updateTokenPrice function exists:", typeof contract.updateTokenPrice);
+        console.log("getTokenPriceInUSD function exists:", typeof contract.getTokenPriceInUSD);
+        console.log("getLatestMaticPrice function exists:", typeof contract.getLatestMaticPrice);
+        console.log("getRegistrationPrice function exists:", typeof contract.getRegistrationPrice);
+        
         const [tokenPrice, maticPrice, registrationPrice, tokenPriceUSD] = await Promise.all([
             contract.updateTokenPrice(),
             contract.getLatestMaticPrice(),
@@ -234,7 +244,7 @@ async function getPrices() {
         ]);
         
         // فرمت کردن قیمت‌ها
-        const formattedTokenPrice = ethers.formatEther(tokenPrice);
+        const formattedTokenPrice = ethers.formatUnits(tokenPrice, 18);
         const formattedMaticPrice = ethers.formatUnits(maticPrice, 8);
         const formattedRegistrationPrice = ethers.formatEther(registrationPrice);
         const formattedTokenPriceUSD = ethers.formatUnits(tokenPriceUSD, 8);
@@ -242,12 +252,8 @@ async function getPrices() {
         console.log("Raw token price USD:", tokenPriceUSD.toString());
         console.log("Formatted token price USD:", formattedTokenPriceUSD);
         
-        // بررسی و تنظیم قیمت پیش‌فرض اگر خیلی کوچک باشد
-        let finalTokenPriceUSD = formattedTokenPriceUSD;
-        if (!formattedTokenPriceUSD || parseFloat(formattedTokenPriceUSD) < 0.0001) {
-            console.log("Token price too small, using default value");
-            finalTokenPriceUSD = "0.0012";
-        }
+        // استفاده از قیمت واقعی بدون بررسی حداقل
+        const finalTokenPriceUSD = formattedTokenPriceUSD;
         
         return {
             tokenPrice: formattedTokenPrice,
@@ -359,7 +365,10 @@ async function getAdditionalStats() {
             console.log("Total points (raw):", totalPoints.toString());
             
             claimedPoints = ethers.formatUnits(totalClaimableBinaryPoints, 18);
-            remainingPoints = ethers.formatUnits(totalPoints - totalClaimableBinaryPoints, 18);
+            const remainingRaw = totalPoints - totalClaimableBinaryPoints;
+            // اطمینان از اینکه remaining points منفی نباشد
+            const safeRemainingRaw = remainingRaw > 0 ? remainingRaw : 0n;
+            remainingPoints = ethers.formatUnits(safeRemainingRaw, 18);
             
             console.log("Claimed points (formatted):", claimedPoints);
             console.log("Remaining points (formatted):", remainingPoints);

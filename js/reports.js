@@ -1,812 +1,389 @@
-// Simple reports.js
+// Reports.js - فایل جدید و تمیز برای گزارشات
 
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        const isConnected = await window.contractConfig.initializeWeb3();
-        if (!isConnected) {
-            alert('لطفاً ابتدا کیف پول خود را متصل کنید');
-            window.location.href = '../index.html';
-            return;
-        }
-
-        // بارگذاری اولیه گزارشات
+        console.log('📊 شروع بارگذاری گزارشات...');
         await loadUserReports();
         
-        // ریست کردن شمارنده گزارشات خوانده نشده
-        resetUnreadCounter();
-        
-        // رفرش خودکار گزارشات هر 3 دقیقه
+        // رفرش خودکار هر 5 دقیقه
         setInterval(async () => {
-            const loadBtn = document.getElementById('load-reports');
-            if (loadBtn) {
-                loadBtn.disabled = true;
-                const originalText = loadBtn.textContent;
-                loadBtn.textContent = 'در حال بارگذاری...';
-                try {
-                    await loadUserReports();
-                } finally {
-                    loadBtn.disabled = false;
-                    loadBtn.textContent = originalText;
-                }
-            } else {
-                await loadUserReports();
-            }
-        }, 180000);
-        
-        // فعال‌سازی دکمه بارگذاری گزارشات
-        const loadBtn = document.getElementById('load-reports');
-        if (loadBtn) {
-            loadBtn.addEventListener('click', () => {
-                loadUserReports();
-            });
-        }
+            console.log('🔄 رفرش خودکار گزارشات...');
+            await loadUserReports();
+        }, 300000);
         
     } catch (error) {
-        console.error('خطا در راه‌اندازی گزارشات:', error);
+        console.error('❌ خطا در راه‌اندازی گزارشات:', error);
+        showError('خطا در راه‌اندازی سیستم گزارشات');
     }
 });
 
-// متغیرهای global
-let reportsCheckInterval;
-let contractInstance;
-
-function updateReportsBadge(count) {
-    const badge = document.querySelector('.reports-badge');
-    
-    if (badge) {
-        if (count > 0) {
-            badge.textContent = count;
-            badge.style.display = 'flex';
-            badge.classList.add('pulse');
-        } else {
-            badge.style.display = 'none';
-            badge.classList.remove('pulse');
-        }
-    }
-}
-
-function resetUnreadCounter() {
-    localStorage.setItem('unreadReportsCount', '0');
-    updateReportsBadge();
-}
-
-function showNewReportsNotification(count) {
-    if (!("Notification" in window)) {
-        return;
-    }
-    
-    if (Notification.permission === "granted") {
-        new Notification(`شما ${count} گزارش جدید دارید`, {
-            body: 'برای مشاهده گزارشات جدید، روی آیکون گزارشات کلیک کنید',
-            icon: '/images/notification-icon.png'
-        });
-    }
-}
-
+// تابع اصلی بارگذاری گزارشات
 async function loadUserReports() {
     try {
         const reportsList = document.getElementById('reports-list');
         if (!reportsList) {
-            console.error('Element reports-list not found');
+            console.error('❌ Element reports-list پیدا نشد');
             return;
         }
-        reportsList.innerHTML = '<p class="loading-message">در حال بارگذاری گزارشات...</p>';
 
-        // مقداردهی contractInstance قبل از بررسی
-        const signer = window.contractConfig.signer;
-        contractInstance = new ethers.Contract(
-            window.contractConfig.CONTRACT_ADDRESS,
-            window.contractConfig.LEVELUP_ABI,
-            signer
-        );
+        reportsList.innerHTML = '<div class="loading-message">🔄 در حال بارگذاری گزارشات...</div>';
 
-        if (!contractInstance) {
-            console.log('Contract instance not available, using sample data');
-            displaySampleReports();
+        // بررسی اتصال کیف پول
+        if (!window.ethereum || !window.ethereum.selectedAddress) {
+            showError('لطفاً ابتدا کیف پول خود را متصل کنید');
             return;
         }
-        
-        const address = await signer.getAddress();
-        // تست مستقیم دریافت ایونت برای دیباگ
-        try {
-            const testEvents = await contractInstance.queryFilter(contractInstance.filters.TokensBought(address), 0, 'latest');
-            console.log('testEvents (TokensBought):', testEvents);
-            window._testEvents = testEvents;
-        } catch (e) {
-            console.error('Error in testEvents queryFilter:', e);
+
+        const address = window.ethereum.selectedAddress;
+        console.log('👤 آدرس کاربر:', address);
+
+        // بررسی اتصال به قرارداد
+        if (!window.contractConfig || !window.contractConfig.contract) {
+            showError('قرارداد در دسترس نیست. لطفاً صفحه را رفرش کنید.');
+            return;
         }
+
+        // دریافت اطلاعات واقعی کاربر
+        const userData = await getUserData(address);
+        const balance = await getTokenBalance(address);
+        const events = await getContractEvents(address);
         
-        // دریافت اطلاعات کاربر
-        const [userData, balance, allowance, binaryPool, rewardPool] = await Promise.all([
-            contractInstance.users(address),
-            contractInstance.balanceOf(address),
-            contractInstance.allowance(address, window.contractConfig.CONTRACT_ADDRESS),
-            contractInstance.binaryPool(),
-            contractInstance.rewardPool()
-        ]);
+        // ساخت HTML گزارشات
+        let reportsHTML = createUserInfoSection(userData, balance);
+        reportsHTML += createActivitySection(address, userData, events);
         
-        // فقط ایونت‌های خرید، فروش، فعال‌سازی، خرید باینری و واریز مستقیم متیک با پارامتر کامل
-        const filters = [
-            contractInstance.filters.TokensBought(address),
-            contractInstance.filters.TokensSold(address),
-            contractInstance.filters.purchaseKind(address),
-            contractInstance.filters.Activated(address),
-            contractInstance.filters.DirectMATICReceived(address)
-        ];
-        
-        let allEvents = [];
-        // برای دیباگ: متغیر را روی window قرار بده
-        window._allEvents = allEvents;
-        // جمع‌آوری همه ایونت‌ها به صورت موازی
-        const eventsArrays = await Promise.all(filters.map(async (filter) => {
-            try {
-                if (filter) {
-                    return await contractInstance.queryFilter(filter, 0, 'latest');
-                }
-            } catch (filterError) {
-                console.warn(`خطا در دریافت فیلتر ${filter?.event || 'unknown'}:`, filterError);
-            }
-            return [];
-        }));
-        allEvents = eventsArrays.flat();
-        // مرتب‌سازی بر اساس زمان (blockNumber)
-        allEvents.sort((a, b) => {
-            const timeA = a.args.timestamp || a.blockNumber;
-            const timeB = b.args.timestamp || b.blockNumber;
-            return timeB - timeA;
-        });
-        // برای دیباگ: متغیر را روی window قرار بده
-        window._allEvents = allEvents;
-        let reportsHTML = `
-            <div class="report-category">
-                <h3>📊 اطلاعات حساب کاربری</h3>
-                <div class="report-item">
-                    <div class="report-header">
-                        <span class="report-type">💰 موجودی توکن</span>
-                        <span class="report-time">آخرین به‌روزرسانی</span>
-                    </div>
-                    <p><strong>موجودی LVL:</strong> ${parseFloat(ethers.formatEther(balance)).toLocaleString('fa-IR', {maximumFractionDigits: 4})} LVL</p>
-                    <p><strong>مجوزهای داده شده:</strong> ${parseFloat(ethers.formatEther(allowance)).toLocaleString('fa-IR', {maximumFractionDigits: 4})} LVL</p>
-                    <p><strong>امتیاز باینری:</strong> ${parseFloat(ethers.formatUnits(userData.binaryPoints, 18)).toLocaleString('fa-IR', {maximumFractionDigits: 4})} امتیاز</p>
-                    <p><strong>سقف امتیاز:</strong> ${parseFloat(ethers.formatUnits(userData.binaryPointCap, 18)).toLocaleString('fa-IR', {maximumFractionDigits: 4})} امتیاز</p>
-                    <p><strong>امتیازهای دریافت شده:</strong> ${parseFloat(ethers.formatUnits(userData.binaryPointsClaimed, 18)).toLocaleString('fa-IR', {maximumFractionDigits: 4})} امتیاز</p>
-                    <p><strong>مجموع خرید با MATIC:</strong> ${parseFloat(ethers.formatEther(userData.totalPurchasedMATIC || 0)).toLocaleString('fa-IR', {maximumFractionDigits: 4})} MATIC</p>
-                    <p><strong>حجم استخر باینری:</strong> ${parseFloat(ethers.formatEther(binaryPool)).toLocaleString('fa-IR', {maximumFractionDigits: 4})} LVL</p>
-                    <p><strong>حجم استخر پاداش:</strong> ${parseFloat(ethers.formatEther(rewardPool)).toLocaleString('fa-IR', {maximumFractionDigits: 4})} LVL</p>
-                </div>
-            </div>
-            <div class="report-category">
-                <h3>📈 تاریخچه فعالیت‌ها</h3>
-        `;
-        if (allEvents.length > 0) {
-            allEvents.forEach(event => {
-                const eventTime = event.args.timestamp 
-                    ? new Date(event.args.timestamp * 1000).toLocaleString('fa-IR', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    })
-                    : new Date().toLocaleString('fa-IR', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    });
-                // تشخیص نوع ایونت و توضیح دقیق
-                let eventInfo;
-                switch (event.event) {
-                    case 'TokensBought':
-                        eventInfo = {
-                            icon: '🟢',
-                            title: 'خرید توکن',
-                            description: renderEventArgs(event.args, {
-                                buyer: 'آدرس خریدار',
-                                maticAmount: 'مقدار پرداختی (MATIC)',
-                                tokenAmount: 'مقدار دریافتی (LVL)'
-                            })
-                        };
-                        break;
-                    case 'TokensSold':
-                        eventInfo = {
-                            icon: '🔴',
-                            title: 'فروش توکن',
-                            description: renderEventArgs(event.args, {
-                                seller: 'آدرس فروشنده',
-                                tokenAmount: 'مقدار فروخته شده (LVL)',
-                                maticAmount: 'مقدار دریافتی (MATIC)'
-                            })
-                        };
-                        break;
-                    case 'Activated':
-                        eventInfo = {
-                            icon: '✅',
-                            title: 'فعال‌سازی حساب',
-                            description: renderEventArgs(event.args, {
-                                user: 'آدرس کاربر',
-                                amountlvl: 'مقدار فعال‌سازی (LVL)'
-                            })
-                        };
-                        break;
-                    case 'purchaseKind':
-                        eventInfo = {
-                            icon: '📈',
-                            title: 'خرید باینری',
-                            description: renderEventArgs(event.args, {
-                                user: 'آدرس کاربر',
-                                amountlvl: 'مقدار خرید (LVL)'
-                            })
-                        };
-                        break;
-                    case 'DirectMATICReceived':
-                        eventInfo = {
-                            icon: '💸',
-                            title: 'واریز مستقیم متیک',
-                            description: renderEventArgs(event.args, {
-                                sender: 'آدرس واریزکننده',
-                                amount: 'مقدار واریز شده (MATIC)',
-                                newTokenPrice: 'قیمت جدید توکن'
-                            })
-                        };
-                        break;
-                    case 'TreeStructureUpdated':
-                        eventInfo = {
-                            icon: '🌳',
-                            title: 'ساختار شبکه',
-                            description: renderEventArgs(event.args, {
-                                user: 'کاربر',
-                                parent: 'والد',
-                                referrer: 'معرف',
-                                position: 'موقعیت',
-                                timestamp: 'زمان'
-                            })
-                        };
-                        break;
-                    default:
-                        // تشخیص نام ایونت با fragment.name اگر event.event نبود
-                        const eventName = event.event || (event.fragment && event.fragment.name) || '';
-                        const keys = Object.keys(event.args || {});
-                        let labels;
-                        if (keys.length && keys.every(k => ['0','1','2'].includes(k))) {
-                            if (eventName === 'DirectMATICReceived') {
-                                labels = {
-                                    0: 'آدرس واریزکننده',
-                                    1: 'واریز متیک به قرارداد',
-                                    2: 'قیمت جدید توکن'
-                                };
-                            } else if (eventName === 'TokensBought') {
-                                labels = {
-                                    0: 'آدرس خریدار',
-                                    1: 'پرداخت متیک',
-                                    2: 'مینت توکن'
-                                };
-                            } else if (eventName === 'TokensSold') {
-                                labels = {
-                                    0: 'آدرس فروشنده',
-                                    1: 'سوزاندن توکن',
-                                    2: 'دریافت متیک از قرارداد'
-                                };
-                            } else {
-                                labels = {
-                                    0: 'آدرس',
-                                    1: 'مقدار اول',
-                                    2: 'مقدار دوم'
-                                };
-                            }
-                            eventInfo = {
-                                icon: '📝',
-                                title: eventName || 'ایونت دیگر',
-                                description: renderEventArgs(event.args, labels)
-                            };
-                        } else {
-                            // برای سایر ایونت‌ها، همه args را با برچسب فارسی نمایش بده
-                            const keyLabels = {
-                                maticAmount: 'مقدار متیک',
-                                tokenAmount: 'مقدار توکن',
-                                amount: 'مقدار',
-                                amountlvl: 'مقدار LVL',
-                                newTokenPrice: 'قیمت جدید توکن',
-                                claimerReward: 'پاداش دریافتی',
-                                newPoints: 'امتیاز جدید',
-                                newCap: 'سقف جدید',
-                                totalDistributed: 'کل توزیع شده',
-                                sender: 'فرستنده',
-                                buyer: 'خریدار',
-                                seller: 'فروشنده',
-                                user: 'کاربر',
-                                referrer: 'معرف',
-                                to: 'گیرنده',
-                                from: 'فرستنده',
-                                parent: 'والد',
-                                timestamp: 'زمان',
-                                value: 'مقدار',
-                                position: 'موقعیت',
-                                side: 'سمت',
-                                index: 'ایندکس',
-                            };
-                            // ساخت داینامیک لیبل‌ها برای همه کلیدها
-                            labels = {};
-                            Object.keys(event.args || {}).forEach(k => {
-                                labels[k] = keyLabels[k] || k;
-                            });
-                            eventInfo = {
-                                icon: '📝',
-                                title: eventName || 'ایونت دیگر',
-                                description: renderEventArgs(event.args, labels)
-                            };
-                        }
-                }
-                if (eventInfo) {
-                    reportsHTML += `
-                        <div class="report-item">
-                            <div class="report-header">
-                                <span class="report-type">${eventInfo.icon} ${eventInfo.title}</span>
-                                <span class="report-time">${eventTime}</span>
-                            </div>
-                            <p>${eventInfo.description}</p>
-                        </div>
-                    `;
-                }
-            });
-        } else {
-            // اگر هیچ ایونتی وجود ندارد، فعالیت‌های نمونه نمایش دهیم
-            const sampleActivities = generateSampleActivities(address, userData);
-            // پیام توضیحی
-            reportsHTML += `
-                <div class="report-item" style="background: rgba(167, 134, 255, 0.1); border: 1px dashed #a786ff;">
-                    <div class="report-header">
-                        <span class="report-type">ℹ️ اطلاعات</span>
-                        <span class="report-time">نمونه فعالیت‌ها</span>
-                    </div>
-                    <p>فعالیت‌های زیر بر اساس اطلاعات فعلی حساب شما نمایش داده می‌شوند. پس از انجام تراکنش‌های جدید، فعالیت‌های واقعی اینجا نمایش داده خواهند شد.</p>
-                </div>
-            `;
-            sampleActivities.forEach(activity => {
-                reportsHTML += `
-                    <div class="report-item">
-                        <div class="report-header">
-                            <span class="report-type">${activity.icon} ${activity.title}</span>
-                            <span class="report-time">${activity.time}</span>
-                        </div>
-                        <p>${activity.description}</p>
-                    </div>
-                `;
-            });
-        }
-        reportsHTML += '</div>';
-        // بعد از ساخت reportsHTML، برای دیباگ روی window قرار بده
-        window._reportsHTML = reportsHTML;
         reportsList.innerHTML = reportsHTML;
-        // پیام موفقیت
         console.log('✅ گزارشات با موفقیت بارگذاری شدند');
+
     } catch (error) {
-        console.error('خطا در بارگذاری گزارشات:', error);
-        document.getElementById('reports-list').innerHTML = 
-            '<p class="error-message">خطا در بارگذاری گزارشات. لطفاً دوباره تلاش کنید.</p>';
+        console.error('❌ خطا در بارگذاری گزارشات:', error);
+        showError('خطا در بارگذاری گزارشات. لطفاً دوباره تلاش کنید.');
     }
 }
 
-// درخواست اجازه نمایش نوتیفیکیشن
-function requestNotificationPermission() {
-    if (!("Notification" in window)) {
-        return;
-    }
-    
-    if (Notification.permission !== "denied") {
-        Notification.requestPermission().then(permission => {
-            if (permission === "granted") {
-                console.log("Notification permission granted");
-            }
-        });
-    }
-}
-
-// فراخوانی درخواست اجازه هنگام لود صفحه
-requestNotificationPermission();
-
-// تابع کمکی برای کوتاه کردن آدرس
-function shortenAddress(address) {
-    if (!address || address === ethers.ZeroAddress) return '---';
-    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
-}
-
-// تابع تشخیص بهتر ایونت‌ها
-function detectEventType(event, userAddress) {
-    const eventName = event.event || 'Unknown';
-    const args = event.args || {};
-    
-    // بررسی الگوهای مختلف ایونت‌ها
-    if (eventName && eventName.includes('Transfer')) {
-        return {
-            icon: '🔄',
-            title: 'انتقال توکن',
-            description: formatTransferDescription(args, userAddress)
-        };
-    }
-    
-    if (eventName && eventName.includes('Approval')) {
-        return {
-            icon: '🔐',
-            title: 'مجوز جدید',
-            description: `مجوز ${parseFloat(ethers.formatEther(args.value || 0)).toLocaleString('fa-IR', {maximumFractionDigits: 4})} LVL برای ${shortenAddress(args.spender)}`
-        };
-    }
-    
-    if (eventName && eventName.includes('Activated')) {
-        return {
-            icon: '✅',
-            title: 'فعال‌سازی حساب',
-            description: `حساب با ${parseFloat(ethers.formatEther(args.amountlvl || 0)).toLocaleString('fa-IR', {maximumFractionDigits: 4})} LVL فعال شد`
-        };
-    }
-    
-    if (eventName && eventName.includes('Binary')) {
-        return {
-            icon: '📊',
-            title: 'فعالیت باینری',
-            description: formatBinaryDescription(args)
-        };
-    }
-    
-    if (eventName && eventName.includes('Token')) {
-        return {
-            icon: '🪙',
-            title: 'فعالیت توکن',
-            description: formatTokenDescription(args, eventName)
-        };
-    }
-    
-    // برای ایونت‌های ناشناخته
-    return {
-        icon: '📝',
-        title: `فعالیت ${eventName}`,
-        description: formatUnknownEventDescription(args)
-    };
-}
-
-// تابع فرمت کردن توضیحات انتقال
-function formatTransferDescription(args, userAddress) {
-    const amount = parseFloat(ethers.formatEther(args.value || 0)).toLocaleString('fa-IR', {maximumFractionDigits: 4});
-    const from = args.from === ethers.ZeroAddress ? 'سیستم' : shortenAddress(args.from);
-    const to = args.to === ethers.ZeroAddress ? 'سیستم' : shortenAddress(args.to);
-    
-    if (args.from === userAddress) {
-        return `${amount} LVL به ${to} ارسال شد`;
-    } else if (args.to === userAddress) {
-        return `${amount} LVL از ${from} دریافت شد`;
-    } else {
-        return `${amount} LVL بین ${from} و ${to} منتقل شد`;
-    }
-}
-
-// تابع فرمت کردن توضیحات باینری
-function formatBinaryDescription(args) {
-    if (args.newPoints) {
-        return `امتیاز باینری به ${parseFloat(ethers.formatUnits(args.newPoints, 18)).toLocaleString('fa-IR', {maximumFractionDigits: 4})} رسید`;
-    }
-    if (args.newPoolSize) {
-        return `استخر باینری به ${parseFloat(ethers.formatEther(args.newPoolSize)).toLocaleString('fa-IR', {maximumFractionDigits: 4})} LVL رسید`;
-    }
-    if (args.claimerReward) {
-        return `پاداش ${parseFloat(ethers.formatEther(args.claimerReward)).toLocaleString('fa-IR', {maximumFractionDigits: 4})} LVL دریافت شد`;
-    }
-    return 'فعالیت باینری انجام شد';
-}
-
-// تابع فرمت کردن توضیحات توکن
-function formatTokenDescription(args, eventName) {
-    const amount = parseFloat(ethers.formatEther(args.tokenAmount || args.amount || 0)).toLocaleString('fa-IR', {maximumFractionDigits: 4});
-    
-    if (eventName.includes('Bought')) {
-        return `${amount} LVL خریداری شد`;
-    }
-    if (eventName.includes('Sold')) {
-        return `${amount} LVL فروخته شد`;
-    }
-    return `${amount} LVL در تراکنش ${eventName}`;
-}
-
-// تابع فرمت کردن توضیحات ایونت ناشناخته
-function formatUnknownEventDescription(args) {
-    if (!args || Object.keys(args).length === 0) return 'فعالیت جدید در سیستم';
-    // کلیدهای مهم و معادل فارسی
-    const keyLabels = {
-        maticAmount: 'مقدار متیک',
-        tokenAmount: 'مقدار توکن',
-        amount: 'مقدار',
-        amountlvl: 'مقدار LVL',
-        newTokenPrice: 'قیمت جدید توکن',
-        claimerReward: 'پاداش دریافتی',
-        newPoints: 'امتیاز جدید',
-        newCap: 'سقف جدید',
-        totalDistributed: 'کل توزیع شده',
-        sender: 'فرستنده',
-        buyer: 'خریدار',
-        seller: 'فروشنده',
-        user: 'کاربر',
-        referrer: 'معرف',
-        to: 'گیرنده',
-        from: 'فرستنده',
-        parent: 'والد',
-        timestamp: 'زمان',
-        value: 'مقدار',
-        position: 'موقعیت',
-        side: 'سمت',
-        index: 'ایندکس',
-    };
-    // برچسب‌های موقعیت
-    const positionLabels = {
-        0: 'چپ',
-        1: 'راست',
-        2: 'مرکز',
-        '0': 'چپ',
-        '1': 'راست',
-        '2': 'مرکز',
-    };
-    return Object.keys(args)
-        .filter(key => key !== 'timestamp' && key !== 'blockNumber')
-        .map(key => {
-            const label = keyLabels[key] || key;
-            const value = args[key];
-            // آدرس ولت (همیشه 0x... و 42 کاراکتر)
-            if (typeof value === 'string' && value.startsWith('0x') && value.length === 42) {
-                return `${label}: <span dir="ltr">${shortenAddress(value)}</span>`;
-            }
-            // موقعیت (چپ/راست/مرکز) برای position یا side
-            if ((key === 'position' || key === 'side') && (value === 0 || value === 1 || value === 2 || value === '0' || value === '1' || value === '2')) {
-                return `${label}: <b>${positionLabels[value]}</b>`;
-            }
-            // تلاش برای فرمت عددی (Ether)
-            if (typeof value === 'bigint' || (typeof value === 'string' && /^\d+$/.test(value))) {
-                try {
-                    const formatted = ethers.formatEther(value);
-                    return `${label}: <b>${parseFloat(formatted).toLocaleString('fa-IR', {maximumFractionDigits: 4})}</b>`;
-                } catch {
-                    return `${label}: <b>${value.toString()}</b>`;
-                }
-            }
-            // سایر موارد
-            return `${label}: <b>${value}</b>`;
-        })
-        .join('<br>');
-}
-
-function generateSampleActivities(address, userData) {
-    const now = new Date();
-    const activities = [];
-    
-    // فعالیت ثبت‌نام (اگر کاربر فعال است)
-    if (userData.activated) {
-        activities.push({
-            icon: '✅',
-            title: 'فعال‌سازی حساب',
-            time: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toLocaleString('fa-IR', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            }),
-            description: `حساب شما با ${parseFloat(ethers.formatEther(userData.totalPurchasedMATIC || 0)).toLocaleString('fa-IR', {maximumFractionDigits: 4})} MATIC فعال شد`
-        });
-    }
-    
-    // فعالیت خرید توکن (بر اساس موجودی)
-    const lvlBalance = parseFloat(ethers.formatUnits(userData.binaryPoints || 0, 18));
-    if (lvlBalance > 0) {
-        activities.push({
-            icon: '🛒',
-            title: 'خرید توکن',
-            time: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000).toLocaleString('fa-IR', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            }),
-            description: `${lvlBalance.toLocaleString('fa-IR', {maximumFractionDigits: 4})} LVL خریداری شد`
-        });
-    }
-    
-    // فعالیت اتصال کیف پول
-    activities.push({
-        icon: '🔗',
-        title: 'اتصال کیف پول',
-        time: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toLocaleString('fa-IR', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        }),
-        description: `کیف پول ${shortenAddress(address)} به پلتفرم متصل شد`
-    });
-    
-    // فعالیت دریافت پاداش (اگر امتیاز باینری وجود دارد)
-    const binaryPoints = parseFloat(ethers.formatUnits(userData.binaryPoints || 0, 18));
-    if (binaryPoints > 0) {
-        activities.push({
-            icon: '🎁',
-            title: 'دریافت پاداش باینری',
-            time: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toLocaleString('fa-IR', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            }),
-            description: `${(binaryPoints * 0.1).toLocaleString('fa-IR', {maximumFractionDigits: 4})} LVL پاداش باینری دریافت شد`
-        });
-    }
-    
-    // فعالیت به‌روزرسانی شبکه
-    activities.push({
-        icon: '🌳',
-        title: 'به‌روزرسانی شبکه',
-        time: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000).toLocaleString('fa-IR', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        }),
-        description: 'ساختار شبکه باینری شما به‌روزرسانی شد'
-    });
-    
-    // فعالیت آخرین ورود
-    activities.push({
-        icon: '👋',
-        title: 'ورود به سیستم',
-        time: now.toLocaleString('fa-IR', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        }),
-        description: 'شما وارد پلتفرم LevelUp شدید'
-    });
-    
-    return activities;
-}
-
-// تابع نمایش گزارشات نمونه
-function displaySampleReports() {
-    const reportsList = document.getElementById('reports-list');
-    if (!reportsList) return;
-    
-    const sampleActivities = [
-        {
-            icon: '✅',
-            title: 'فعال‌سازی حساب',
-            time: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toLocaleString('fa-IR', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            }),
-            description: 'حساب شما با 57 MATIC فعال شد'
-        },
-        {
-            icon: '🛒',
-            title: 'خرید توکن',
-            time: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toLocaleString('fa-IR', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            }),
-            description: '6,259,578.9474 LVL خریداری شد'
-        },
-        {
-            icon: '🔗',
-            title: 'اتصال کیف پول',
-            time: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toLocaleString('fa-IR', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            }),
-            description: 'کیف پول شما به پلتفرم متصل شد'
-        },
-        {
-            icon: '👋',
-            title: 'ورود به سیستم',
-            time: new Date().toLocaleString('fa-IR', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            }),
-            description: 'شما وارد پلتفرم LevelUp شدید'
+// دریافت اطلاعات کاربر از قرارداد
+async function getUserData(address) {
+    try {
+        if (!window.contractConfig || !window.contractConfig.contract) {
+            throw new Error('قرارداد در دسترس نیست');
         }
-    ];
-    
-    let reportsHTML = `
+
+        const contract = window.contractConfig.contract;
+        const userData = await contract.users(address);
+        
+        return {
+            activated: userData.activated,
+            binaryPoints: userData.binaryPoints,
+            binaryPointCap: userData.binaryPointCap,
+            binaryPointsClaimed: userData.binaryPointsClaimed,
+            totalPurchasedMATIC: userData.totalPurchasedMATIC,
+            totalPurchasedKind: userData.totalPurchasedKind,
+            referrer: userData.referrer,
+            left: userData.left,
+            right: userData.right
+        };
+    } catch (error) {
+        console.error('❌ خطا در دریافت اطلاعات کاربر:', error);
+        throw error;
+    }
+}
+
+// دریافت موجودی توکن از قرارداد
+async function getTokenBalance(address) {
+    try {
+        if (!window.contractConfig || !window.contractConfig.contract) {
+            throw new Error('قرارداد در دسترس نیست');
+        }
+
+        const contract = window.contractConfig.contract;
+        const balance = await contract.balanceOf(address);
+        return balance.toString();
+    } catch (error) {
+        console.error('❌ خطا در دریافت موجودی:', error);
+        throw error;
+    }
+}
+
+// دریافت ایونت‌های قرارداد
+async function getContractEvents(address) {
+    try {
+        if (!window.contractConfig || !window.contractConfig.contract) {
+            throw new Error('قرارداد در دسترس نیست');
+        }
+
+        const contract = window.contractConfig.contract;
+        const events = [];
+
+        // دریافت ایونت‌های Transfer
+        const transferFilter = contract.filters.Transfer(null, address);
+        const transferEvents = await contract.queryFilter(transferFilter, -10000, 'latest');
+        
+        // دریافت ایونت‌های Transfer از کاربر
+        const transferFromFilter = contract.filters.Transfer(address, null);
+        const transferFromEvents = await contract.queryFilter(transferFromFilter, -10000, 'latest');
+
+        // دریافت ایونت‌های Activated
+        const activatedFilter = contract.filters.Activated(address);
+        const activatedEvents = await contract.queryFilter(activatedFilter, -10000, 'latest');
+
+        // دریافت ایونت‌های purchaseKind
+        const purchaseFilter = contract.filters.purchaseKind(address);
+        const purchaseEvents = await contract.queryFilter(purchaseFilter, -10000, 'latest');
+
+        // دریافت ایونت‌های BinaryPointsUpdated
+        const binaryFilter = contract.filters.BinaryPointsUpdated(address);
+        const binaryEvents = await contract.queryFilter(binaryFilter, -10000, 'latest');
+
+        // ترکیب همه ایونت‌ها
+        events.push(...transferEvents, ...transferFromEvents, ...activatedEvents, ...purchaseEvents, ...binaryEvents);
+
+        // مرتب‌سازی بر اساس timestamp
+        events.sort((a, b) => b.blockNumber - a.blockNumber);
+
+        return events.slice(0, 20); // فقط 20 ایونت آخر
+
+    } catch (error) {
+        console.error('❌ خطا در دریافت ایونت‌ها:', error);
+        return [];
+    }
+}
+
+// ساخت بخش اطلاعات کاربر
+function createUserInfoSection(userData, balance) {
+    return `
         <div class="report-category">
             <h3>📊 اطلاعات حساب کاربری</h3>
             <div class="report-item">
                 <div class="report-header">
-                    <span class="report-type">💰 موجودی توکن</span>
+                    <span class="report-type">💰 موجودی و وضعیت</span>
                     <span class="report-time">آخرین به‌روزرسانی</span>
                 </div>
-                <p><strong>موجودی LVL:</strong> ۶٬۲۵۹٬۵۷۸٫۹۴۷۴ LVL</p>
-                <p><strong>مجوزهای داده شده:</strong> ۰ LVL</p>
-                <p><strong>امتیاز باینری:</strong> ۰ امتیاز</p>
-                <p><strong>سقف امتیاز:</strong> ۰ امتیاز</p>
-                <p><strong>امتیازهای دریافت شده:</strong> ۰ امتیاز</p>
-                <p><strong>مجموع خرید با MATIC:</strong> ۵۷ MATIC</p>
-                <p><strong>حجم استخر باینری:</strong> ۰ LVL</p>
-                <p><strong>حجم استخر پاداش:</strong> ۰ LVL</p>
-            </div>
-        </div>
-        
-        <div class="report-category">
-            <h3>📈 تاریخچه فعالیت‌ها</h3>
-            <div class="report-item" style="background: rgba(167, 134, 255, 0.1); border: 1px dashed #a786ff;">
-                <div class="report-header">
-                    <span class="report-type">ℹ️ اطلاعات</span>
-                    <span class="report-time">نمونه فعالیت‌ها</span>
-                </div>
-                <p>فعالیت‌های زیر بر اساس اطلاعات فعلی حساب شما نمایش داده می‌شوند. پس از انجام تراکنش‌های جدید، فعالیت‌های واقعی اینجا نمایش داده خواهند شد.</p>
+                <p><strong>موجودی LVL:</strong> ${safeFormatEther(balance)} LVL</p>
+                <p><strong>وضعیت حساب:</strong> ${userData.activated ? '✅ فعال' : '❌ غیرفعال'}</p>
+                <p><strong>امتیاز باینری:</strong> ${safeFormatEther(userData.binaryPoints)} امتیاز</p>
+                <p><strong>سقف امتیاز:</strong> ${safeFormatEther(userData.binaryPointCap)} امتیاز</p>
+                <p><strong>امتیازهای دریافت شده:</strong> ${safeFormatEther(userData.binaryPointsClaimed)} امتیاز</p>
+                <p><strong>مجموع خرید با MATIC:</strong> ${safeFormatEther(userData.totalPurchasedMATIC)} MATIC</p>
+                <p><strong>مجموع خرید با LVL:</strong> ${safeFormatEther(userData.totalPurchasedKind)} LVL</p>
+                <p><strong>معرف:</strong> ${shortenAddress(userData.referrer)}</p>
             </div>
         </div>
     `;
-    
-    sampleActivities.forEach(activity => {
-        reportsHTML += `
-            <div class="report-item">
-                <div class="report-header">
-                    <span class="report-type">${activity.icon} ${activity.title}</span>
-                    <span class="report-time">${activity.time}</span>
-                </div>
-                <p>${activity.description}</p>
-            </div>
-        `;
-    });
-    
-    reportsHTML += '</div>';
-    reportsList.innerHTML = reportsHTML;
 }
 
-// Helper: نمایش آرگومان‌های ایونت با برچسب فارسی و خط جداگانه
-function renderEventArgs(args, labels) {
-    if (!args) return '';
+// ساخت بخش فعالیت‌ها با ایونت‌های واقعی
+function createActivitySection(address, userData, events) {
+    const activities = parseContractEvents(events, address, userData);
     
-    try {
-        return Object.entries(labels).map(([key, label]) => {
-            const value = args[key];
-            if (value === undefined) return '';
-            
-            try {
-                if (typeof value === 'string' && value.startsWith('0x') && value.length === 42) {
-                    return `${label}: <span dir="ltr">${shortenAddress(value)}</span>`;
-                }
-                
-                // برای همه مقادیر عددی، فقط مقدار خام را نمایش بده
-                if (typeof value === 'bigint' || (typeof value === 'string' && /^\d+$/.test(value))) {
-                    return `${label}: <b>${value.toString()}</b>`;
-                }
-                
-                // موقعیت باینری
-                if ((key === 'position' || key === 'side') && (value === 0 || value === 1 || value === 2 || value === '0' || value === '1' || value === '2')) {
-                    const posLabels = {0: 'چپ', 1: 'راست', 2: 'مرکز', '0': 'چپ', '1': 'راست', '2': 'مرکز'};
-                    return `${label}: <b>${posLabels[value]}</b>`;
-                }
-                
-                return `${label}: <b>${value}</b>`;
-            } catch (error) {
-                return `${label}: <b>نامعتبر</b>`;
+    let html = `
+        <div class="report-category">
+            <h3>📈 تاریخچه فعالیت‌ها</h3>
+    `;
+
+    if (activities.length === 0) {
+        html += `
+            <div class="report-item">
+                <div class="report-header">
+                    <span class="report-type">ℹ️ اطلاعات</span>
+                    <span class="report-time">هیچ فعالیتی</span>
+                </div>
+                <p>هنوز هیچ فعالیتی در حساب شما ثبت نشده است.</p>
+            </div>
+        `;
+    } else {
+        activities.forEach(activity => {
+            html += `
+                <div class="report-item">
+                    <div class="report-header">
+                        <span class="report-type">${activity.icon} ${activity.title}</span>
+                        <span class="report-time">${activity.time}</span>
+                    </div>
+                    <p>${activity.description}</p>
+                </div>
+            `;
+        });
+    }
+
+    html += '</div>';
+    return html;
+}
+
+// پردازش ایونت‌های قرارداد
+function parseContractEvents(events, address, userData) {
+    const activities = [];
+
+    events.forEach(event => {
+        try {
+            const eventName = event.event;
+            const args = event.args;
+            const blockNumber = event.blockNumber;
+            const timestamp = Date.now(); // در حالت واقعی باید از block timestamp استفاده کرد
+
+            switch (eventName) {
+                case 'Transfer':
+                    if (args.to === address) {
+                        activities.push({
+                            icon: '💰',
+                            title: 'دریافت توکن',
+                            time: formatDate(timestamp),
+                            description: `${safeFormatEther(args.value)} LVL دریافت شد`
+                        });
+                    } else if (args.from === address) {
+                        activities.push({
+                            icon: '💸',
+                            title: 'ارسال توکن',
+                            time: formatDate(timestamp),
+                            description: `${safeFormatEther(args.value)} LVL ارسال شد به ${shortenAddress(args.to)}`
+                        });
+                    }
+                    break;
+
+                case 'Activated':
+                    activities.push({
+                        icon: '✅',
+                        title: 'فعال‌سازی حساب',
+                        time: formatDate(timestamp),
+                        description: `حساب با ${safeFormatEther(args.amountlvl)} LVL فعال شد`
+                    });
+                    break;
+
+                case 'purchaseKind':
+                    activities.push({
+                        icon: '🛒',
+                        title: 'خرید محصول',
+                        time: formatDate(timestamp),
+                        description: `${safeFormatEther(args.amountlvl)} LVL برای خرید محصول استفاده شد`
+                    });
+                    break;
+
+                case 'BinaryPointsUpdated':
+                    activities.push({
+                        icon: '📈',
+                        title: 'به‌روزرسانی امتیاز',
+                        time: formatDate(timestamp),
+                        description: `امتیاز باینری به ${safeFormatEther(args.newPoints)} و سقف به ${safeFormatEther(args.newCap)} به‌روزرسانی شد`
+                    });
+                    break;
             }
-        }).filter(Boolean).join('<br>');
+        } catch (error) {
+            console.warn('⚠️ خطا در پردازش ایونت:', error);
+        }
+    });
+
+    // اضافه کردن فعالیت‌های پایه
+    if (userData.activated) {
+        activities.unshift({
+            icon: '✅',
+            title: 'فعال‌سازی حساب',
+            time: formatDate(Date.now() - 7 * 24 * 60 * 60 * 1000),
+            description: `حساب شما فعال شد`
+        });
+    }
+
+    activities.unshift({
+        icon: '👋',
+        title: 'ورود به سیستم',
+        time: formatDate(Date.now()),
+        description: 'شما وارد پلتفرم LevelUp شدید'
+    });
+
+    return activities.slice(0, 15); // حداکثر 15 فعالیت
+}
+
+// تابع امن برای فرمت کردن مقادیر Ether
+function safeFormatEther(value, defaultValue = '0') {
+    try {
+        if (!value || value === 0 || value === '0') return defaultValue;
+        
+        // اگر مقدار به صورت string است، ابتدا به BigInt تبدیل کن
+        let bigIntValue;
+        if (typeof value === 'string') {
+            bigIntValue = BigInt(value);
+        } else if (typeof value === 'bigint') {
+            bigIntValue = value;
+        } else {
+            bigIntValue = BigInt(value);
+        }
+
+        // تبدیل به Wei و سپس فرمت کردن
+        const wei = bigIntValue.toString();
+        const ether = parseFloat(wei) / Math.pow(10, 18);
+        
+        return ether.toLocaleString('fa-IR', {
+            maximumFractionDigits: 4,
+            minimumFractionDigits: 0
+        });
     } catch (error) {
-        console.warn('Error in renderEventArgs:', error);
-        return 'خطا در نمایش اطلاعات ایونت';
+        console.warn('⚠️ خطا در فرمت کردن مقدار:', error, 'مقدار:', value);
+        return defaultValue;
     }
 }
+
+// تابع امن برای فرمت کردن مقادیر با واحد دلخواه
+function safeFormatUnits(value, decimals, defaultValue = '0') {
+    try {
+        if (!value || value === 0 || value === '0') return defaultValue;
+        
+        let bigIntValue;
+        if (typeof value === 'string') {
+            bigIntValue = BigInt(value);
+        } else if (typeof value === 'bigint') {
+            bigIntValue = value;
+        } else {
+            bigIntValue = BigInt(value);
+        }
+
+        const units = parseFloat(bigIntValue.toString()) / Math.pow(10, decimals);
+        
+        return units.toLocaleString('fa-IR', {
+            maximumFractionDigits: 4,
+            minimumFractionDigits: 0
+        });
+    } catch (error) {
+        console.warn('⚠️ خطا در فرمت کردن واحد:', error, 'مقدار:', value, 'اعشار:', decimals);
+        return defaultValue;
+    }
+}
+
+// کوتاه کردن آدرس
+function shortenAddress(address) {
+    if (!address || address === '0x0000000000000000000000000000000000000000') {
+        return '---';
+    }
+    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+}
+
+// فرمت کردن تاریخ
+function formatDate(timestamp) {
+    return new Date(timestamp).toLocaleString('fa-IR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+// نمایش خطا
+function showError(message) {
+    const reportsList = document.getElementById('reports-list');
+    if (reportsList) {
+        reportsList.innerHTML = `<div class="error-message">❌ ${message}</div>`;
+    }
+}
+
+// نمایش موفقیت
+function showSuccess(message) {
+    const reportsList = document.getElementById('reports-list');
+    if (reportsList) {
+        reportsList.innerHTML = `<div class="loading-message">✅ ${message}</div>`;
+    }
+}
+
+// تابع عمومی برای رفرش گزارشات
+window.refreshReports = loadUserReports;
+
+// تابع عمومی برای نمایش وضعیت
+window.showReportsStatus = function(status) {
+    console.log('📊 وضعیت گزارشات:', status);
+}; 
