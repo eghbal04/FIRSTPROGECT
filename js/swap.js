@@ -40,10 +40,12 @@ async function loadBalances() {
         const { signer, contract, address } = await connectWallet();
         // دریافت موجودی MATIC
         const maticBalance = await signer.provider.getBalance(address);
-        document.getElementById('maticBalance').textContent = `MATIC: ${ethers.formatEther(maticBalance)}`;
+        const maticFormatted = parseInt(ethers.formatEther(maticBalance)).toLocaleString('en-US');
+        document.getElementById('maticBalance').textContent = `MATIC: ${maticFormatted}`;
         // دریافت موجودی LVL
         const lvlBalance = await contract.balanceOf(address);
-        document.getElementById('lvlBalance').textContent = `LVL: ${ethers.formatUnits(lvlBalance, 18)}`;
+        const lvlFormatted = parseInt(ethers.formatUnits(lvlBalance, 18)).toLocaleString('en-US');
+        document.getElementById('lvlBalance').textContent = `LVL: ${lvlFormatted}`;
     } catch (error) {
         console.error("Error loading balances:", error);
     }
@@ -80,14 +82,18 @@ async function setMaxAmount() {
             const feeBuffer = ethers.parseEther("0.01");
             const usableBalance = rawBalance > feeBuffer ? rawBalance - feeBuffer : 0n;
             if (usableBalance > 0n) {
-                swapAmount.value = ethers.formatEther(usableBalance);
+                // فقط عدد صحیح بدون اعشار
+                const maxInt = Math.floor(parseFloat(ethers.formatEther(usableBalance)));
+                swapAmount.value = maxInt;
                 await updateRateInfo();
             }
         } else {
             const { contract, address } = await connectWallet();
             const rawBalance = await contract.balanceOf(address);
             if (rawBalance > 0n) {
-                swapAmount.value = ethers.formatUnits(rawBalance, 18);
+                // فقط عدد صحیح بدون اعشار
+                const maxInt = Math.floor(parseFloat(ethers.formatUnits(rawBalance, 18)));
+                swapAmount.value = maxInt;
                 await updateRateInfo();
             }
         }
@@ -100,6 +106,7 @@ async function setMaxAmount() {
 swapForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     swapStatus.textContent = '';
+    swapStatus.style.color = '';
     swapButton.disabled = true;
     try {
         const connection = await checkConnection();
@@ -113,14 +120,21 @@ swapForm.addEventListener('submit', async (e) => {
             result = await sellTokens(amount);
         }
         swapStatus.textContent = 'در حال ارسال تراکنش...';
+        swapStatus.style.color = '';
         if (result && result.transactionHash) {
-        swapStatus.textContent = 'تراکنش با موفقیت انجام شد!';
+            swapStatus.textContent = 'تراکنش با موفقیت انجام شد!';
+            swapStatus.style.color = '#4CAF50';
+            setTimeout(() => {
+                swapStatus.textContent = '';
+                swapStatus.style.color = '';
+            }, 4000);
         }
         swapAmount.value = '';
         await updateRateInfo();
         await loadBalances();
     } catch (err) {
         swapStatus.textContent = 'خطا: ' + (err.message || err);
+        swapStatus.style.color = '#ff6b6b';
     }
     swapButton.disabled = false;
 });

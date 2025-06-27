@@ -171,10 +171,12 @@ const motivationalMessages = [
             updateElement('remaining-points', parseFloat(additionalStats.remainingPoints).toLocaleString());
             // ارزش هر پوینت به دلار
             let pointValueUSD = parseFloat(additionalStats.pointValue) * parseFloat(priceUSD);
-            updateElement('point-value', `$${formatDashboardPrice(pointValueUSD)} USD`);
+            updateElement('point-value', `$${Math.floor(pointValueUSD)} USD`);
             // استخر پاداش به دلار
             let rewardPoolUSD = parseFloat(stats.binaryPool) * parseFloat(priceUSD);
             updateElement('reward-pool', `$${formatDashboardPrice(rewardPoolUSD)} USD`);
+            // فراخوانی updateMarquee برای نمایش اطلاعات به‌روز در مارکی
+            if (typeof updateMarquee === 'function') updateMarquee();
         } catch (error) {
             console.error("Error updating token stats:", error);
             showDashboardError("خطا در دریافت اطلاعات. لطفاً کیف پول و اتصال اینترنت را بررسی کنید.");
@@ -272,90 +274,6 @@ const motivationalMessages = [
       updateTokenStats();
     }, 180000); // هر 180 ثانیه
 
-    // راه‌اندازی نمودار
-    const ctx = document.getElementById('priceChart')?.getContext('2d');
-    if (ctx) {
-        try {
-            const prices = await getPrices();
-            const priceValue = parseFloat(prices.tokenPriceUSD);
-            if (!priceValue || isNaN(priceValue) || priceValue <= 0) {
-                throw new Error('قیمت واقعی توکن قابل دریافت نیست.');
-            }
-            // فقط یک نقطه واقعی برای چارت نمایش بده یا اگر داده کافی نیست، پیام خطا
-            const chartData = [priceValue];
-            const priceChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['Now'],
-                    datasets: [{
-                        label: 'قیمت LVL (USD)',
-                        data: chartData,
-                        borderColor: '#a786ff',
-                        backgroundColor: 'rgba(167, 134, 255, 0.1)',
-                        tension: 0.4,
-                        pointRadius: 6,
-                        pointBackgroundColor: '#fff',
-                        pointBorderColor: '#a786ff',
-                        pointBorderWidth: 2,
-                        fill: true,
-                        borderWidth: 3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: 'rgba(20, 18, 40, 0.95)',
-                            titleColor: '#a786ff',
-                            bodyColor: '#fff',
-                            borderColor: '#a786ff',
-                            borderWidth: 1,
-                            cornerRadius: 8,
-                            displayColors: false,
-                            callbacks: {
-                                label: function(context) {
-                                    return `قیمت: $${context.parsed.y} USD`;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            ticks: { color: '#aaa', font: { family: 'Vazirmatn', size: 12 } },
-                            grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false }
-                        },
-                        y: {
-                            ticks: { 
-                                color: '#fff', 
-                                font: { family: 'Vazirmatn', size: 11 },
-                                callback: function(value) { 
-                                    return '$' + value; 
-                                }
-                            },
-                            grid: { color: 'rgba(255,255,255,0.08)', drawBorder: false },
-                            beginAtZero: false
-                        }
-                    },
-                    interaction: { intersect: false, mode: 'index' },
-                    elements: { point: { hoverRadius: 8, hoverBorderWidth: 3 } }
-                }
-            });
-        } catch (error) {
-            console.error("Error initializing chart:", error);
-            const chartSection = document.querySelector('.chart-section');
-            if (chartSection) {
-                chartSection.innerHTML = `
-                    <h3 style="text-align:center; color:#a786ff;">نمودار قیمت LVL به دلار (USD)</h3>
-                    <div style="text-align:center; color:#ff6b6b; padding:2rem;">
-                        خطا در بارگذاری نمودار: ${error.message}
-                    </div>
-                `;
-            }
-        }
-    }
-
     // --- ثبت‌نام با یک کلیک: دکمه و منطق ---
     async function updateRegisterButton() {
         const btn = document.getElementById('register-btn');
@@ -450,6 +368,211 @@ const motivationalMessages = [
     // مقداردهی اولیه و رفرش خودکار دکمه ثبت‌نام
     await updateRegisterButton();
     setInterval(updateRegisterButton, 120000); // هر 2 دقیقه رفرش
+
+    // --- Marquee updater (for modern CSS marquee) ---
+    async function updateMarquee() {
+      const marqueeContent = document.getElementById('marquee-content');
+      const marqueeContentClone = document.getElementById('marquee-content-clone');
+      if (!marqueeContent || !marqueeContentClone) return;
+      try {
+        const tokenPrice = document.getElementById('token-price')?.textContent || '-';
+        const circulatingSupply = document.getElementById('circulating-supply')?.textContent || '-';
+        const totalPoints = document.getElementById('total-points')?.textContent || '-';
+        const tradingVolume = document.getElementById('trading-volume')?.textContent || '-';
+        const claimedPoints = document.getElementById('claimed-points')?.textContent || '-';
+        const pointValue = document.getElementById('point-value')?.textContent || '-';
+        const crypto = await fetchCryptoPrices();
+        let text = `
+          <span style='margin-left:2rem;'>قیمت LVL: <b>${tokenPrice}</b></span>
+          <span style='margin-left:2rem;'>ارزش هر پوینت: <b>${pointValue}</b></span>
+          <span style='margin-left:2rem;'>کاربران: <b>${totalPoints}</b></span>
+          <span style='margin-left:2rem;'>پوینت پرداخت‌شده: <b>${claimedPoints}</b></span>
+          <span style='margin-left:2rem;'>حجم معاملات: <b>${tradingVolume}</b></span>
+          <span style='margin-left:2rem;'>توکن‌های در گردش: <b>${circulatingSupply}</b></span>
+          <span style='margin-left:2rem;'>BTC: <b>$${crypto.btc}</b></span>
+          <span style='margin-left:2rem;'>ETH: <b>$${crypto.eth}</b></span>
+          <span style='margin-left:2rem;'>MATIC: <b>$${crypto.matic}</b></span>
+        `;
+        marqueeContent.innerHTML = text;
+        marqueeContentClone.innerHTML = text;
+        // ریست انیمیشن marquee-track برای حرکت پیوسته
+        const track = document.querySelector('.marquee-track');
+        if (track) {
+          track.style.animation = 'none';
+          void track.offsetWidth;
+          track.style.animation = null;
+        }
+      } catch (e) {
+        marqueeContent.innerHTML = '<span style="color:#ff6b6b">خطا در دریافت اطلاعات مارکِی</span>';
+        marqueeContentClone.innerHTML = '';
+        console.error('Marquee error:', e);
+      }
+    }
+
+    // --- دریافت قیمت ارزهای دیجیتال (BTC, ETH, MATIC) از CoinGecko با پراکسی allorigins ---
+    async function fetchCryptoPrices() {
+      try {
+        const url = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,matic-network&vs_currencies=usd";
+        const proxy = "https://api.allorigins.win/get?url=" + encodeURIComponent(url);
+        const res = await fetch(proxy);
+        const data = await res.json();
+        const parsed = JSON.parse(data.contents);
+        return {
+          btc: parsed.bitcoin?.usd || '-',
+          eth: parsed.ethereum?.usd || '-',
+          matic: parsed['matic-network']?.usd || '-'
+        };
+      } catch (e) {
+        return { btc: '-', eth: '-', matic: '-' };
+      }
+    }
+
+    // تعریف متغیر سراسری برای نمونه چارت
+    window.priceChartInstance = null;
+
+    // راه‌اندازی نمودار قیمت LVL هم به دلار و هم به متیک
+    async function setupChart() {
+      const ctx = document.getElementById('priceChart')?.getContext('2d');
+      if (ctx) {
+        try {
+          if (window.priceChartInstance) {
+            window.priceChartInstance.destroy();
+            window.priceChartInstance = null;
+          }
+
+          // دریافت قیمت‌های LVL به USD و LVL به MATIC
+          const { contract } = await connectWallet();
+          // گرفتن داده‌های 7 روز گذشته (یا فقط قیمت فعلی اگر نشد)
+          let priceUSD = [];
+          let priceMATIC = [];
+          let chartLabels = [];
+          try {
+            // قیمت LVL به USD (از تابع getTokenPriceInUSD)
+            const urlUSD = "https://api.coingecko.com/api/v3/coins/levelup/market_chart?vs_currency=usd&days=7";
+            const proxyUSD = "https://api.allorigins.win/get?url=" + encodeURIComponent(urlUSD);
+            const resUSD = await fetch(proxyUSD);
+            const dataUSD = await resUSD.json();
+            const parsedUSD = JSON.parse(dataUSD.contents);
+            priceUSD = parsedUSD.prices.map(item => item[1]);
+            chartLabels = parsedUSD.prices.map(item => {
+              const date = new Date(item[0]);
+              return `${date.getMonth()+1}/${date.getDate()}`;
+            });
+          } catch (e) {
+            // اگر نشد، فقط قیمت فعلی را بگیر
+            const price = await contract.getTokenPriceInUSD();
+            priceUSD = [parseFloat(ethers.formatUnits(price, 8))];
+            chartLabels = ["Now"];
+          }
+          try {
+            // قیمت LVL به MATIC (از تابع updateTokenPrice)
+            const urlMATIC = "https://api.coingecko.com/api/v3/coins/levelup/market_chart?vs_currency=matic-network&days=7";
+            const proxyMATIC = "https://api.allorigins.win/get?url=" + encodeURIComponent(urlMATIC);
+            const resMATIC = await fetch(proxyMATIC);
+            const dataMATIC = await resMATIC.json();
+            const parsedMATIC = JSON.parse(dataMATIC.contents);
+            priceMATIC = parsedMATIC.prices.map(item => item[1]);
+          } catch (e) {
+            // اگر نشد، فقط قیمت فعلی را بگیر
+            const price = await contract.updateTokenPrice();
+            priceMATIC = [parseFloat(ethers.formatEther(price))];
+          }
+
+          // ساخت چارت با دو دیتاست
+          const priceChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: chartLabels,
+              datasets: [
+                {
+                  label: 'قیمت LVL (USD)',
+                  data: priceUSD,
+                  borderColor: '#a786ff',
+                  backgroundColor: 'rgba(167, 134, 255, 0.1)',
+                  tension: 0.4,
+                  pointRadius: 2,
+                  pointBackgroundColor: '#fff',
+                  pointBorderColor: '#a786ff',
+                  pointBorderWidth: 1,
+                  fill: false,
+                  borderWidth: 2
+                },
+                {
+                  label: 'قیمت LVL (MATIC)',
+                  data: priceMATIC,
+                  borderColor: '#4caf50',
+                  backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                  tension: 0.4,
+                  pointRadius: 2,
+                  pointBackgroundColor: '#fff',
+                  pointBorderColor: '#4caf50',
+                  pointBorderWidth: 1,
+                  fill: false,
+                  borderWidth: 2
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: true },
+                tooltip: {
+                  backgroundColor: 'rgba(20, 18, 40, 0.95)',
+                  titleColor: '#a786ff',
+                  bodyColor: '#fff',
+                  borderColor: '#a786ff',
+                  borderWidth: 1,
+                  cornerRadius: 8,
+                  displayColors: true,
+                  callbacks: {
+                    label: function(context) {
+                      // نمایش علمی با 2 رقم اعشار
+                      return `${context.dataset.label}: ${context.parsed.y.toExponential(2)}`;
+                    }
+                  }
+                }
+              },
+              scales: {
+                x: {
+                  ticks: { color: '#aaa', font: { family: 'Vazirmatn', size: 12 } },
+                  grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false }
+                },
+                y: {
+                  ticks: {
+                    color: '#fff',
+                    font: { family: 'Vazirmatn', size: 11 },
+                    callback: function(value) {
+                      // نمایش علمی با 2 رقم اعشار
+                      return value.toExponential(2);
+                    }
+                  },
+                  grid: { color: 'rgba(255,255,255,0.08)', drawBorder: false },
+                  beginAtZero: false
+                }
+              },
+              interaction: { intersect: false, mode: 'index' },
+              elements: { point: { hoverRadius: 6, hoverBorderWidth: 2 } }
+            }
+          });
+          window.priceChartInstance = priceChart;
+        } catch (error) {
+          console.error("Error initializing chart:", error);
+          const chartSection = document.querySelector('.chart-section');
+          if (chartSection) {
+            chartSection.innerHTML = `
+              <h3 style="text-align:center; color:#a786ff;">نمودار قیمت LVL به دلار (USD) و متیک (MATIC)</h3>
+              <div style="text-align:center; color:#ff6b6b; padding:2rem;">
+                خطا در بارگذاری نمودار: ${error.message}
+              </div>
+            `;
+          }
+        }
+      }
+    }
+
+    // فراخوانی راه‌اندازی چارت بعد از مقداردهی داشبورد
+    setupChart();
 });
 
 // تابع بررسی وضعیت اتصال (در صورت عدم وجود در web3-interactions.js)

@@ -197,6 +197,29 @@
   .mobile-nav {
     display: block;
   }
+
+  .fab-menu {
+    background: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+  .fab-menu a {
+    background: rgba(40,40,60,0.18) !important;
+    color: #fff !important;
+    border-radius: 18px !important;
+    border: 1.5px solid #a786ff55 !important;
+    backdrop-filter: blur(12px) !important;
+    box-shadow: 0 2px 12px rgba(80,60,180,0.10) !important;
+    padding: 12px 20px !important;
+    margin: 0 8px;
+    font-size: 1.08rem;
+    transition: background 0.18s, border-color 0.18s, color 0.18s;
+  }
+  .fab-menu a:hover {
+    background: rgba(80,60,180,0.18) !important;
+    border-color: #a786ff !important;
+    color: #fff !important;
+  }
 }
 
 /* برای تبلت و دسکتاپ */
@@ -564,6 +587,7 @@ header p {
 
 /* استایل فرم سواپ */
 .swap-container {
+    position: relative;
     width: 95%;
     max-width: 500px;
     margin: 20px auto;
@@ -1920,4 +1944,104 @@ header p {
   flex: 1 1 0;
   min-width: 0;
   margin: 0 !important;
+}
+
+.page-section {
+  max-width: 900px;
+  margin: 2rem auto;
+  min-height: 400px;
+  padding: 2rem 1.5rem;
+  background: linear-gradient(135deg, #232946 80%, #a786ff22 100%);
+  border-radius: 22px;
+  box-shadow: 0 4px 24px rgba(80, 60, 180, 0.10);
+  margin-bottom: 2.5rem;
+  position: relative;
+}
+
+body {
+  background: linear-gradient(120deg, #181c2a 60%, #a786ff11 100%);
+  font-family: 'Vazirmatn', sans-serif;
+  color: #fff;
+  margin: 0;
+  padding-bottom: 90px;
+  min-height: 100vh;
+}
+
+/* برای تمایز هر بخش می‌توان رنگ بک‌گراند را با nth-child تغییر داد */
+.page-section:nth-child(odd) {
+  background: linear-gradient(135deg, #232946 80%, #7c5fe622 100%);
+}
+.page-section:nth-child(even) {
+  background: linear-gradient(135deg, #232946 80%, #a786ff22 100%);
+}
+
+/* اکسپندیبل برای همه بخش‌ها */
+.expandable-container {
+  position: relative;
+}
+.expand-toggle-btn {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 20;
+  background: none;
+  border: none;
+  color: #a786ff;
+  font-size: 2rem;
+  cursor: pointer;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s, transform 0.2s;
+}
+.expand-toggle-btn:hover {
+  color: #fff;
+}
+.expandable-container.collapsed .expand-content {
+  display: none !important;
+}
+.expandable-container.collapsed .expand-toggle-btn {
+  transform: rotate(180deg);
+}
+/* همیشه هدر دیده شود */
+.expand-header {
+  position: relative;
+  z-index: 10;
+}
+@media (max-width: 700px) {
+  .expand-toggle-btn {
+    top: 10px;
+    left: 10px;
+    font-size: 1.6rem;
+    width: 32px;
+    height: 32px;
+  }
+}
+
+/* حالت جمع‌شده برای اکسپندیبل */
+.expandable-container.collapsed {
+  max-height: 48px;
+  min-height: 0;
+  padding: 0.5rem 1.5rem 0.5rem 3.5rem;
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1), padding 0.25s;
+}
+.expandable-container {
+  transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1), padding 0.25s;
+}
+.expandable-container.collapsed .expand-header {
+  min-height: 32px;
+  padding: 0;
+}
+.expandable-container.collapsed .expand-content {
+  display: none !important;
+}
+.expandable-container .expand-content {
+  transition: opacity 0.25s;
+  opacity: 1;
+}
+.expandable-container.collapsed .expand-content {
+  opacity: 0;
 } 

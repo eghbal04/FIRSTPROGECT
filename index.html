@@ -11,21 +11,20 @@
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
     <!-- بارگذاری Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <meta http-equiv="refresh" content="180">
+    <!-- <meta http-equiv="refresh" content="180"> -->
     <style>
       body {
-        font-family: 'Vazirmatn', sans-serif;
-        background: #f8f8f8;
-        color: #222;
+        background: linear-gradient(135deg, #232946 0%, #3b3b5c 100%);
+        color: #f4f4f4;
+        font-family: 'Vazirmatn', 'IRANSans', 'Tahoma', sans-serif;
+        min-height: 100vh;
         margin: 0;
-        padding: 0;
       }
       .fab-container {
         position: fixed;
         bottom: 20px;
         right: 20px;
         z-index: 9999;
-        display: block;
       }
       .fab-main {
         width: 56px;
@@ -73,497 +72,449 @@
       .fab-menu a:hover {
         background: #f0f0f0;
       }
+      @media (max-width: 767px) {
+        .desktop-nav { display: none; }
+        .mobile-nav, .fab-container { display: block; }
+      }
       @media (min-width: 768px) {
-        .fab-container { display: none; }
+        .desktop-nav { display: flex; }
+        .mobile-nav, .fab-container { display: none; }
+      }
+      .custom-marquee {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 3000;
+        background: linear-gradient(90deg,#232946 60%,#a786ff 100%);
+        color: #fff;
+        font-family: 'Vazirmatn',sans-serif;
+        font-size: 1rem;
+        padding: 0.5rem 0;
+        box-shadow: 0 2px 12px rgba(80,60,180,0.10);
+        overflow: hidden;
+        white-space: nowrap;
+        text-align: right;
+        box-sizing: border-box;
+        direction: ltr;
+      }
+      .marquee-track {
+        display: flex;
+        width: max-content;
+        animation: marquee-loop 50s linear infinite;
+      }
+      .marquee-content {
+        display: inline-block;
+        padding: 0 3rem;
+        white-space: nowrap;
+      }
+      @keyframes marquee-loop {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(0); }
+      }
+      .page-section, .dashboard-card, .product-card, .news-item, .tutorial-item, .report-item {
+        background: rgba(255,255,255,0.07);
+        border-radius: 18px;
+        box-shadow: 0 4px 24px rgba(80,60,180,0.10);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        color: #f4f4f4;
+      }
+      .dashboard-card h4, .product-title, .news-item a, .tutorial-title, .report-type {
+        color: #a786ff;
+        margin-bottom: 0.5rem;
+      }
+      .dashboard-card {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        min-width: 160px;
+        min-height: 80px;
+        font-size: 1.1rem;
+        background: rgba(35,41,70,0.85);
+        border: 1px solid #a786ff33;
+      }
+      .dashboard-cards {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.2rem;
+        margin-bottom: 2rem;
+      }
+      a, .accent {
+        color: #a786ff;
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+      a:hover, .accent:hover {
+        color: #fff;
+        text-decoration: underline;
+      }
+      button, .buy-btn {
+        background: linear-gradient(90deg, #a786ff 0%, #6c63ff 100%);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        padding: 0.7rem 1.5rem;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(80,60,180,0.10);
+        transition: background 0.2s, color 0.2s;
+      }
+      button:hover, .buy-btn:hover {
+        background: linear-gradient(90deg, #6c63ff 0%, #a786ff 100%);
+        color: #fff;
+      }
+      input, select, textarea {
+        background: #232946;
+        color: #f4f4f4;
+        border: 1px solid #a786ff55;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        margin-bottom: 1rem;
+      }
+      #floating-marquee, .custom-marquee {
+        background: linear-gradient(90deg,#232946 60%,#a786ff 100%);
+        color: #fff;
+        font-weight: bold;
+        font-size: 1.1rem;
+        box-shadow: 0 2px 12px rgba(80,60,180,0.10);
+      }
+      .navbar, .fab-menu, .sticky-navbar {
+        background: rgba(35,41,70,0.98);
+        color: #fff;
+        border-radius: 0 0 18px 18px;
+        box-shadow: 0 4px 24px rgba(80,60,180,0.10);
+      }
+      ::-webkit-scrollbar {
+        width: 8px;
+        background: #232946;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #a786ff55;
+        border-radius: 8px;
+      }
+      @media (max-width: 700px) {
+        .dashboard-cards {
+          flex-direction: column;
+          gap: 0.7rem;
+        }
+        .dashboard-card {
+          min-width: unset;
+          min-height: 60px;
+          font-size: 1rem;
+        }
+      }
+      .marquee-container {
+        overflow: hidden;
+        position: sticky;
+        top: 0;
+        background: #222;
+        z-index: 1000;
+      }
+      .marquee {
+        display: flex;
+        width: 200%;
+        animation: marquee 20s linear infinite;
+      }
+      .marquee-content {
+        flex: 0 0 50%;
+        white-space: nowrap;
+        color: #fff;
+        font-weight: bold;
+        font-size: 1rem;
+        padding: 0.5em 2em;
+      }
+      @keyframes marquee {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+      }
+      .swap-container {
+        position: relative;
       }
     </style>
 </head>
 <body>
-  <!-- ✅ کانتینر افقی انگیزشی + ثبت‌نام -->
-  <div class="motivation-register-row">
-    <section class="motivation-slider" id="motivation-slider">
-      <span id="motivation-message">در حال بارگذاری پیام انگیزشی...</span>
-      <button class="next-btn" id="next-motivation">&#8592;</button>
-    </section>
-    <button id="register-btn" class="register-btn">
-      ثبت‌نام
-      <span id="register-star" class="like-badge" style="display:none; position:absolute; left:12px; top:50%; transform:translateY(-50%); width:28px; height:28px; pointer-events:none;">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="#3da9fc" xmlns="http://www.w3.org/2000/svg">
-          <path d="M9 22H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h4m0 11V9.5A2.5 2.5 0 0 1 11.5 7H14l-1.34 6.72a1 1 0 0 0 .98 1.28h5.36a2 2 0 0 0 1.98-2.28l-.7-7A2 2 0 0 0 17.34 3H14a5 5 0 0 0-5 5v14z" stroke="#1976d2" stroke-width="1.5" fill="#3da9fc"/>
-        </svg>
-      </span>
-    </button>
+  <div id="floating-marquee" class="custom-marquee">
+    <div class="marquee-track">
+      <div class="marquee-content" id="marquee-content"></div>
+      <div class="marquee-content" id="marquee-content-clone"></div>
+    </div>
   </div>
-  <div id="register-status" style="margin-top:0.5rem; min-height:24px; color:#ff6b6b; text-align:center;"></div>
-
-  <!-- ✅ ناوبار -->
-  <div id="navbar-container"></div>
+  <!-- ناوبار دسکتاپ فقط در دسکتاپ -->
+  <nav class="circle-menu-horizontal desktop-nav" aria-label="ناوبار اصلی">
+    <a href="#main-dashboard" class="nav-link" title="خانه"><i class="fa-solid fa-house icon" aria-hidden="true"></i><span class="label">خانه</span></a>
+    <a href="#main-swap" class="nav-link" title="تبدیل"><i class="fa-solid fa-right-left icon" aria-hidden="true"></i><span class="label">تبدیل</span></a>
+    <a href="#main-network" class="nav-link" title="شبکه"><i class="fa-solid fa-network-wired icon" aria-hidden="true"></i><span class="label">شبکه</span></a>
+    <a href="#main-profile" class="nav-link" title="پروفایل"><i class="fa-solid fa-user icon" aria-hidden="true"></i><span class="label">پروفایل</span></a>
+    <a href="#main-news" class="nav-link" title="اخبار"><i class="fa-solid fa-newspaper icon" aria-hidden="true"></i><span class="label">اخبار</span></a>
+    <a href="#main-shop" class="nav-link" title="فروشگاه"><i class="fa-solid fa-cart-shopping icon" aria-hidden="true"></i><span class="label">فروشگاه</span></a>
+    <a href="#main-about" class="nav-link" title="درباره"><i class="fa-solid fa-info-circle icon" aria-hidden="true"></i><span class="label">درباره</span></a>
+    <a href="#main-reports" class="nav-link" title="گزارشات"><i class="fa-solid fa-bell icon" aria-hidden="true"></i><span class="label">گزارشات</span></a>
+    <a href="#main-register" class="nav-link" title="ثبت‌نام"><i class="fa-solid fa-user-plus icon" aria-hidden="true"></i><span class="label">ثبت‌نام</span></a>
+  </nav>
+  <!-- ناوبار موبایل فقط در موبایل -->
+  <div class="fab-container mobile-nav" role="navigation" aria-label="ناوبار موبایل">
+    <button class="fab-main" aria-expanded="false" aria-controls="fab-menu" aria-label="باز و بسته کردن منوی موبایل">
+      <i class="fa-solid fa-bars"></i>
+      <span style="font-size:1.1rem;margin-right:8px;">منو</span>
+    </button>
+    <div class="fab-menu" id="fab-menu">
+      <a href="#main-dashboard" class="nav-link" title="خانه"><i class="fa-solid fa-house icon" aria-hidden="true"></i><span class="label">خانه</span></a>
+      <a href="#main-swap" class="nav-link" title="تبدیل"><i class="fa-solid fa-right-left icon" aria-hidden="true"></i><span class="label">تبدیل</span></a>
+      <a href="#main-network" class="nav-link" title="شبکه"><i class="fa-solid fa-network-wired icon" aria-hidden="true"></i><span class="label">شبکه</span></a>
+      <a href="#main-profile" class="nav-link" title="پروفایل"><i class="fa-solid fa-user icon" aria-hidden="true"></i><span class="label">پروفایل</span></a>
+      <a href="#main-news" class="nav-link" title="اخبار"><i class="fa-solid fa-newspaper icon" aria-hidden="true"></i><span class="label">اخبار</span></a>
+      <a href="#main-shop" class="nav-link" title="فروشگاه"><i class="fa-solid fa-cart-shopping icon" aria-hidden="true"></i><span class="label">فروشگاه</span></a>
+      <a href="#main-about" class="nav-link" title="درباره"><i class="fa-solid fa-info-circle icon" aria-hidden="true"></i><span class="label">درباره</span></a>
+      <a href="#main-reports" class="nav-link" title="گزارشات"><i class="fa-solid fa-bell icon" aria-hidden="true"></i><span class="label">گزارشات</span></a>
+      <a href="#main-register" class="nav-link" title="ثبت‌نام"><i class="fa-solid fa-user-plus icon" aria-hidden="true"></i><span class="label">ثبت‌نام</span></a>
+    </div>
+  </div>
   <script>
-    // بارگذاری navbar بدون تغییر DOM اصلی
-    fetch('./pages/navbar.html')
-      .then(res => res.text())
-      .then(html => {
-        const navbarContainer = document.getElementById('navbar-container');
-        if (navbarContainer) {
-          navbarContainer.insertAdjacentHTML('beforeend', html);
-        }
-      })
-      .catch(error => {
-        console.log('Navbar loading error:', error);
+    // FAB منوی موبایل
+    document.addEventListener('DOMContentLoaded', function() {
+      const fabContainer = document.querySelector('.fab-container');
+      const fabButton = fabContainer.querySelector('.fab-main');
+      fabButton.addEventListener('click', function() {
+        fabContainer.classList.toggle('active');
+        fabButton.setAttribute('aria-expanded', fabContainer.classList.contains('active') ? 'true' : 'false');
       });
+      // بستن منو بعد از کلیک روی هر آیتم
+      document.querySelectorAll('.fab-menu .nav-link').forEach(link => {
+        link.addEventListener('click', () => {
+          fabContainer.classList.remove('active');
+          fabButton.setAttribute('aria-expanded', 'false');
+        });
+      });
+    });
   </script>
+  <div id="main-dashboard" class="page-section expandable-container">
+    <button class="expand-toggle-btn" aria-label="باز/بستن" type="button"></button>
+    <div class="expand-header">
+      <header>
+        <h1>داشبورد LevelUp</h1>
+        <p>خوش آمدید! اینجا اطلاعات کلی پلتفرم و وضعیت توکن را مشاهده می‌کنید.</p>
+      </header>
+    </div>
+    <div class="expand-content">
+      <div class="dashboard-cards">
+        <div class="dashboard-card"><h4>قیمت LVL</h4><div id="token-price">-</div></div>
+        <div class="dashboard-card"><h4>توکن‌های در گردش</h4><div id="circulating-supply">-</div></div>
+        <div class="dashboard-card"><h4>کاربران</h4><div id="total-points">-</div></div>
+        <div class="dashboard-card"><h4>پوینت پرداخت‌شده</h4><div id="claimed-points">-</div></div>
+        <div class="dashboard-card"><h4>حجم معاملات</h4><div id="trading-volume">-</div></div>
+        <div class="dashboard-card"><h4>ارزش هر پوینت</h4><div id="point-value">-</div></div>
+        <div class="dashboard-card"><h4>استخر پاداش</h4><div id="reward-pool">-</div></div>
+        <div class="dashboard-card"><h4>پوینت‌های باقی‌مانده</h4><div id="remaining-points">-</div></div>
+      </div>
+      <section class="chart-section">
+        <h3>نمودار قیمت LVL به دلار (USD)</h3>
+        <canvas id="priceChart" height="180"></canvas>
+      </section>
+      <div id="chart-values" style="text-align:center; margin-top:1rem; color:#a786ff; font-size:1.1rem;"></div>
+    </div>
+  </div>
 
-  <!-- ✅ هدر و پرزنتیشن عالی -->
-  <header style="padding: 2rem; font-family: 'Vazirmatn', sans-serif;">
-    <h1 style="text-align:center; color:#00ffae; margin-bottom: 0.5rem;">
-      <span id="presentation-toggle" class="platform-title-btn">
-        <span style="display:inline-block; vertical-align:middle; margin-left:10px; margin-right:0;">
-          <svg width="38" height="38" viewBox="0 0 38 38" style="vertical-align:middle;">
-            <polyline points="6,13 19,27 32,13" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <polyline points="6,21 19,35 32,21" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </span>
-        <span>معرفی پلتفرم LevelUp</span>
-      </span>
-    </h1>
+  <div id="main-swap" class="page-section expandable-container collapsed">
+    <button class="expand-toggle-btn" aria-label="باز/بستن" type="button"></button>
+    <div class="expand-header">
+      <h2 class="swap-title">تبدیل LVL و MATIC</h2>
+    </div>
+    <div class="expand-content">
+      <div class="swap-container">
+        <form id="swapForm" class="swap-form">
+          <label for="swapDirection">نوع تبدیل:</label>
+          <select id="swapDirection">
+            <option value="matic-to-lvl">MATIC → LVL</option>
+            <option value="lvl-to-matic">LVL → MATIC</option>
+          </select>
+          <label for="swapAmount">مقدار:</label>
+          <div class="amount-row">
+            <input type="number" id="swapAmount" placeholder="مقدار را وارد کنید" min="0" step="any" />
+            <button type="button" id="maxButton" class="max-btn">حداکثر</button>
+          </div>
+          <div class="swap-info" id="swapInfo">نرخ تبدیل: -</div>
+          <button type="submit" id="swapButton">تبدیل</button>
+          <div class="balances">
+            <span id="maticBalance">MATIC: -</span> | <span id="lvlBalance">LVL: -</span>
+          </div>
+          <div class="swap-status" id="swapStatus"></div>
+        </form>
+      </div>
+    </div>
+  </div>
 
-    <!-- پرزنتیشن باکس جدید با متن کامل -->
-    <div class="presentation-container" id="presentation-container" style="display: none;">
-      <div class="presentation-box" id="presentation-box">
-        <div class="presentation-content" id="presentation-content">
-          🎬 <b>داستان لولاپ: از رویا تا واقعیت</b><br><br>
-          🌟 <b>فصل اول: بیداری</b><br>
-          تصور کن صبح از خواب بیدار می‌شوی و می‌بینی که دنیای مالی سنتی دیگر جواب نمی‌دهد.<br>
-          بانک‌ها پول تو را قرض می‌دهند، اما تو هیچ سودی نمی‌بری.<br>
-          بورس‌ها بازی‌ای است که قوانینش را دیگران نوشته‌اند.<br>
-          و تو فقط تماشاچی هستی...<br><br>
-          🔮 <b>فصل دوم: انقلاب بلاکچین</b><br>
-          اما حالا مردم بیدار شده‌اند.<br>
-          آن‌ها فناوری‌ای را کشف کرده‌اند که اعتماد نمی‌سازد، بلکه می‌نویسد.<br>
-          روی زنجیره‌ای که هیچ‌کس نمی‌تواند تغییرش دهد.<br>
-          نامش بلاکچین است.<br><br>
-          💎 <b>فصل سوم: تولد لولاپ</b><br>
-          در قلب این انقلاب، لولاپ متولد شد.<br>
-          توکنی که فقط یک ارز دیجیتال نیست، بلکه نماد آزادی مالی است.<br>
-          هر خرید تو، سرمایه‌گذاری در آینده‌ای بهتر است.<br>
-          هر توکن، قدمی به سوی استقلال مالی.<br><br>
-          🤝 <b>فصل چهارم: جامعه‌ای که می‌سازیم</b><br>
-          در لولاپ، تو فقط خریدار نیستی.<br>
-          تو عضوی از خانواده‌ای هستی که با هم رشد می‌کنند.<br>
-          وقتی دو نفر را معرفی می‌کنی، امتیاز باینری می‌گیری.<br>
-          امتیازی که هر روز ارزش بیشتری پیدا می‌کند.<br><br>
-          💰 <b>فصل پنجم: درآمد واقعی</b><br>
-          هر شب، استخر پاداش بین همه تقسیم می‌شود.<br>
-          شفاف، عادلانه، و روی بلاکچین.<br>
-          تو امروز ۲ امتیاز داری؟ فردا شاید ۱۰ تا داشته باشی.<br>
-          و هر امتیاز، درآمد روزانه برای تو.<br><br>
-          🛡️ <b>فصل ششم: امنیت مطلق</b><br>
-          روی Polygon، سریع و کم‌هزینه.<br>
-          قرارداد باز و قابل بررسی.<br>
-          بدون واسطه، بدون کلاه‌برداری.<br>
-          پول تو، مال تو.<br><br>
-          🎯 <b>فصل هفتم: برای چه کسانی؟</b><br>
-          برای کسانی که از سیستم قدیمی خسته شده‌اند.<br>
-          برای کسانی که دنبال درآمد غیرفعال واقعی هستند.<br>
-          برای کسانی که آینده را زودتر می‌فهمند.<br>
-          برای تو.<br><br>
-          🚀 <b>فصل هشتم: آینده‌ای که می‌سازیم</b><br>
-          لولاپ فقط یک فرصت نیست، یک انتخاب است.<br>
-          انتخابی برای ساختن، برای رشد کردن.<br>
-          انتخابی برای آینده‌ای که در آن:<br>
-          هر کسی مالک واقعی دارایی‌هایش است.<br>
-          هر کسی می‌تواند ثروت بسازد.<br>
-          هر کسی آزاد است.<br><br>
-          🌟 <b>رسالت ما:</b><br>
-          ساختن دنیایی که در آن ثروت در دستان کسانی باشد که ارزش می‌سازند.<br><br>
-          💪 <b>کار ما:</b><br>
-          فراهم کردن ابزارهایی که مردم را از وابستگی به سیستم‌های مالی سنتی رها کند.<br><br>
-          🎯 <b>چرا لولاپ؟</b><br>
-          چون ما معتقدیم که آینده متعلق به کسانی است که امروز تصمیم می‌گیرند.<br><br>
-          ⏰ <b>زمان عمل</b><br>
-          هر ثانیه که صبر کنی، فرصتی را از دست می‌دهی.<br>
-          آینده منتظر کسانی است که امروز شروع می‌کنند.<br><br>
-          🔥 <b>تو آماده‌ای؟</b><br>
-          آماده‌ای که بخشی از این انقلاب باشی؟<br>
-          آماده‌ای که آینده خود را بسازی؟<br><br>
-          🚀 <b>شروع کن...</b><br>
-          لولاپ منتظر تو است.<br>
-          آینده منتظر تو است.<br><br>
-          <b>موفقیت در انتظار شماست! 🌟</b>
+  <div id="main-network" class="page-section expandable-container collapsed">
+    <button class="expand-toggle-btn" aria-label="باز/بستن" type="button"></button>
+    <div class="expand-header">
+      <h2 class="network-title">شبکه شما</h2>
+    </div>
+    <div class="expand-content">
+      <div class="network-container">
+        <div class="network-stats">
+          <div class="network-stat"><h4>تعداد اعضا</h4><div id="network-members">-</div></div>
+          <div class="network-stat"><h4>امتیاز باینری</h4><div id="network-points">-</div></div>
+          <div class="network-stat"><h4>پاداش قابل پرداخت</h4><div id="network-rewards">-</div></div>
         </div>
+        <div class="referral-section">
+          <span>لینک دعوت شما:</span>
+          <span id="referral-link" class="referral-link">-</span>
+          <button id="copyReferral" class="copy-btn">کپی</button>
+        </div>
+        <div class="network-tree" id="network-tree"></div>
+        <div id="network-status" class="profile-status"></div>
       </div>
     </div>
-  </header>
+  </div>
 
-  <style>
-    .platform-title-btn {
-      background: linear-gradient(135deg, #6f41d8, #232946);
-      border: none;
-      border-radius: 15px;
-      padding: 12px 25px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 2px 8px rgba(80, 60, 180, 0.18);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      user-select: none;
-      position: relative;
-      overflow: hidden;
-      margin: 0 auto;
-      width: fit-content;
-    }
-    
-    .platform-title-btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-      transition: left 0.5s;
-    }
-    
-    .platform-title-btn:hover::before {
-      left: 100%;
-    }
-    
-    .platform-title-btn:hover {
-      transform: scale(1.05);
-      box-shadow: 0 6px 20px rgba(167, 134, 255, 0.4);
-    }
-    
-    .platform-title-btn:active {
-      transform: scale(0.98);
-    }
-    
-    .platform-title-btn.expanded {
-      background: linear-gradient(135deg, #ff6b6b, #ee5a52);
-      animation: pulse 2s infinite;
-    }
-    
-    @keyframes pulse {
-      0% { box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3); }
-      50% { box-shadow: 0 6px 20px rgba(255, 107, 107, 0.5); }
-      100% { box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3); }
-    }
-    
-    .presentation-container {
-      max-width: 100%;
-      margin: 0 auto;
-      padding: 0 1rem;
-      transition: all 0.5s ease;
-    }
-    
-    .presentation-box {
-      background: linear-gradient(135deg, rgba(167, 134, 255, 0.1) 0%, rgba(124, 95, 230, 0.1) 100%);
-      border: 2px solid rgba(167, 134, 255, 0.3);
-      border-radius: 20px;
-      padding: 2rem;
-      position: relative;
-      overflow: visible;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 8px 32px rgba(167, 134, 255, 0.2);
-      height: auto; /* ارتفاع خودکار */
-      transition: all 0.5s ease;
-      width: 100%;
-      margin: 0 1rem;
-    }
-    
-    .presentation-box.expanded {
-      height: auto; /* ارتفاع خودکار برای نمایش کامل */
-      overflow: visible; /* بدون اسکرول */
-    }
-    
-    .presentation-content {
-      position: relative;
-      width: 100%;
-      text-align: justify;
-      direction: rtl;
-      overflow: visible;
-      padding: 1rem;
-      line-height: 1.8;
-      font-size: 1.1rem;
-      color: #f1f1f1;
-      font-family: 'Vazirmatn', sans-serif;
-      font-weight: 500;
-      transition: all 0.5s ease;
-    }
-    
-    .presentation-content.expanded {
-      overflow: visible;
-    }
-    
-    .typing-line {
-      position: absolute;
-      right: 1rem;
-      left: 1rem;
-      color: #f1f1f1;
-      font-size: 1.1rem;
-      line-height: 3.0; /* افزایش قابل توجه فاصله بین خطوط */
-      font-family: 'Vazirmatn', sans-serif;
-      font-weight: 500;
-      white-space: normal;
-      opacity: 0;
-      transform: translateY(20px);
-      transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-      width: calc(100% - 2rem);
-      overflow: visible;
-      text-align: justify;
-      direction: rtl;
-      word-wrap: break-word;
-      will-change: transform, opacity;
-      margin-bottom: 15px; /* افزایش فاصله بین خطوط */
-      padding: 8px 0; /* پدینگ اضافی برای هر خط */
-    }
-    
-    .typing-line.active {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    
-    .typing-line.completed {
-      opacity: 0.8;
-      transform: translateY(-40px);
-    }
-    
-    .typing-cursor {
-      display: inline-block;
-      width: 6px;
-      height: 1em;
-      background-color: #a786ff;
-      animation: blink 1s infinite;
-      margin-right: 2px;
-      vertical-align: middle;
-    }
-    
-    @keyframes blink {
-      0%, 50% { opacity: 1; }
-      51%, 100% { opacity: 0; }
-    }
-    
-    /* رسپانسیو */
-    @media (max-width: 768px) {
-      .platform-title-btn {
-        padding: 10px 20px;
-        font-size: 1.2rem;
-      }
-      
-      .presentation-box {
-        padding: 1.5rem;
-        margin: 0 0.5rem;
-        height: auto; /* ارتفاع خودکار برای تبلت */
-      }
-      
-      .presentation-box.expanded {
-        height: auto; /* ارتفاع خودکار برای نمایش کامل */
-        overflow: visible;
-      }
-      
-      .presentation-content {
-        font-size: 1rem;
-        line-height: 1.6;
-        padding: 0.8rem;
-        text-align: justify;
-      }
-    }
-    
-    @media (max-width: 480px) {
-      .platform-title-btn {
-        padding: 8px 16px;
-        font-size: 1.1rem;
-      }
-      
-      .presentation-box {
-        padding: 1rem;
-        margin: 0 0.3rem;
-        height: auto; /* ارتفاع خودکار برای موبایل */
-      }
-      
-      .presentation-box.expanded {
-        height: auto; /* ارتفاع خودکار برای نمایش کامل */
-        overflow: visible;
-      }
-      
-      .presentation-content {
-        font-size: 0.9rem;
-        line-height: 1.5;
-        padding: 0.6rem;
-        text-align: justify;
-      }
-    }
-  </style>
+  <div id="main-profile" class="page-section expandable-container collapsed">
+    <button class="expand-toggle-btn" aria-label="باز/بستن" type="button"></button>
+    <div class="expand-header">
+      <h2 class="profile-title">پروفایل کاربر</h2>
+    </div>
+    <div class="expand-content">
+      <div class="profile-container">
+        <div class="profile-info">
+          <div class="profile-row"><span class="profile-label">آدرس:</span><span class="profile-value" id="profile-address">-</span></div>
+          <div class="profile-row"><span class="profile-label">معرف:</span><span class="profile-value" id="profile-referrer">-</span></div>
+          <div class="profile-row"><span class="profile-label">موجودی MATIC:</span><span class="profile-value" id="profile-matic">-</span><span class="profile-value" id="profile-matic-usd"></span></div>
+          <div class="profile-row"><span class="profile-label">موجودی LVL:</span><span class="profile-value" id="profile-lvl">-</span><span class="profile-value" id="profile-lvl-usd"></span></div>
+          <div class="profile-row"><span class="profile-label">سقف درآمد باینری:</span><span class="profile-value" id="profile-income-cap">-</span></div>
+          <div class="profile-row"><span class="profile-label">دریافت‌شده:</span><span class="profile-value" id="profile-received">-</span></div>
+          <div class="profile-row"><span class="profile-label">لینک دعوت:</span><span class="profile-value" id="profile-referral-link">-</span><button id="copyProfileReferral" class="copy-btn">کپی</button></div>
+        </div>
+        <div id="profileStatus" class="profile-status"></div>
+      </div>
+    </div>
+  </div>
 
-  <!-- ✅ بخش‌های داشبورد -->
-  <section class="dashboard-cards">
-    <div class="dashboard-card">
-      <div class="card-header">
-        <img src="lvl.jpg" alt="LVL" class="token-icon">
-        <h4>قیمت لحظه‌ای توکن (LVL)</h4>
-      </div>
-      <div class="value" id="token-price">-</div>
+  <div id="main-news" class="page-section expandable-container collapsed">
+    <button class="expand-toggle-btn" aria-label="باز/بستن" type="button"></button>
+    <div class="expand-header">
+      <h2 class="news-title">اخبار و آموزش‌ها</h2>
     </div>
-    <div class="dashboard-card">
-      <div class="card-header">
-        <img src="lvl.jpg" alt="LVL" class="token-icon">
-        <h4>توکن در گردش</h4>
+    <div class="expand-content">
+      <div class="news-container">
+        <ul class="news-list" id="news-list"></ul>
+        <h3 style="color:#a786ff;">آموزش‌های سایت</h3>
+        <ul class="tutorial-list" id="tutorial-list"></ul>
       </div>
-      <div class="value" id="circulating-supply">-</div>
     </div>
-    <div class="dashboard-card">
-      <div class="card-header">
-        <i class="fas fa-users" style="color: #a786ff; font-size: 1.2rem;"></i>
-        <h4>کاربران فعال</h4>
-      </div>
-      <div class="value" id="total-points">-</div>
-    </div>
-    <div class="dashboard-card">
-      <div class="card-header">
-        <img src="matic.svg" alt="MATIC" class="token-icon">
-        <h4>حجم معاملات (MATIC)</h4>
-      </div>
-      <div class="value" id="trading-volume">-</div>
-    </div>
-    <div class="dashboard-card">
-      <div class="card-header">
-        <i class="fas fa-check-circle" style="color: #4CAF50; font-size: 1.2rem;"></i>
-        <h4>پوینت‌های پرداخت شده</h4>
-      </div>
-      <div class="value" id="claimed-points">-</div>
-    </div>
-    <div class="dashboard-card">
-      <div class="card-header">
-        <i class="fas fa-clock" style="color: #FF9800; font-size: 1.2rem;"></i>
-        <h4>پوینت‌های مانده</h4>
-      </div>
-      <div class="value" id="remaining-points">-</div>
-    </div>
-    <div class="dashboard-card">
-      <div class="card-header">
-        <img src="lvl.jpg" alt="LVL" class="token-icon">
-        <h4>ارزش هر پوینت (LVL)</h4>
-      </div>
-      <div class="value" id="point-value">-</div>
-    </div>
-    <div class="dashboard-card">
-      <div class="card-header">
-        <img src="lvl.jpg" alt="LVL" class="token-icon">
-        <h4>استخر پاداش (LVL)</h4>
-      </div>
-      <div class="value" id="reward-pool">-</div>
-    </div>
-  </section>
+  </div>
 
-  <!-- ✅ نمودار -->
-  <section class="chart-section">
-    <h3 style="text-align:center; color:#a786ff;">نمودار قیمت LVL به دلار (USD)</h3>
-    <canvas id="priceChart" height="120"></canvas>
-  </section>
+  <div id="main-shop" class="page-section expandable-container collapsed">
+    <button class="expand-toggle-btn" aria-label="باز/بستن" type="button"></button>
+    <div class="expand-header">
+      <h2 class="shop-title">فروشگاه محصولات</h2>
+    </div>
+    <div class="expand-content">
+      <div class="shop-container">
+        <div class="products" id="products-list"></div>
+        <div class="shop-status" id="shopStatus"></div>
+      </div>
+    </div>
+  </div>
 
-  <!-- ✅ فوتر -->
-  <footer>
-    <p style="text-align:center; color:#888;">&copy; 2025 LevelUp. All rights reserved.</p>
+  <div id="main-about" class="page-section expandable-container collapsed">
+    <button class="expand-toggle-btn" aria-label="باز/بستن" type="button"></button>
+    <div class="expand-header">
+      <h2 class="profile-title">درباره LevelUp</h2>
+    </div>
+    <div class="expand-content">
+      <div class="profile-container">
+        <p>LevelUp یک پلتفرم نوآورانه برای آموزش، سرمایه‌گذاری و کسب درآمد از طریق توکن LVL و شبکه باینری است. هدف ما ایجاد بستری شفاف، سریع و کاربرپسند برای همه علاقه‌مندان به دنیای بلاکچین است.</p>
+        <ul>
+          <li>خرید و فروش توکن LVL</li>
+          <li>سیستم پاداش باینری</li>
+          <li>فروشگاه محصولات آموزشی</li>
+          <li>اخبار و آموزش‌های به‌روز</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div id="main-reports" class="page-section expandable-container collapsed">
+    <button class="expand-toggle-btn" aria-label="باز/بستن" type="button"></button>
+    <div class="expand-header">
+      <h2 style="color:#a786ff;text-align:center;">گزارشات و فعالیت‌ها</h2>
+    </div>
+    <div class="expand-content">
+      <div class="reports-section">
+        <div id="reports-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="main-register" class="page-section expandable-container collapsed">
+    <button class="expand-toggle-btn" aria-label="باز/بستن" type="button"></button>
+    <div class="expand-header">
+      <h2 class="profile-title">ثبت‌نام سریع</h2>
+    </div>
+    <div class="expand-content">
+      <div class="profile-container">
+        <button id="register-btn" class="register-btn">ثبت‌نام</button>
+        <span id="register-star" style="display:none;color:#FFC107;font-size:1.5rem;margin-right:1rem;">★</span>
+        <div id="register-status" class="profile-status"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="marquee-container">
+    <div class="marquee">
+      <div class="marquee-content" id="marquee-content-1"></div>
+      <div class="marquee-content" id="marquee-content-2"></div>
+    </div>
+  </div>
+
+  <footer style="direction:ltr;text-align:left;padding:1rem 2rem 1rem 0;font-size:0.95rem;color:#aaa;position:fixed;left:0;bottom:0;width:100vw;background:rgba(35,41,70,0.97);z-index:100;text-align:left;">
+    © 2024 LevelUp Platform. All rights reserved.
   </footer>
 
-  <!-- ✅ تایپ‌نویس پرزنتیشن عالی -->
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const toggleBtn = document.getElementById('presentation-toggle');
-      const presentationContainer = document.getElementById('presentation-container');
-      const presentationBox = document.getElementById('presentation-box');
-      const presentationContent = document.getElementById('presentation-content');
-      
-      if (toggleBtn && presentationContainer) {
-        toggleBtn.addEventListener('click', () => {
-          const isVisible = presentationContainer.style.display !== 'none';
-          
-          if (isVisible) {
-            // اگر نمایش داده می‌شود، آن را مخفی کن
-            presentationContainer.style.display = 'none';
-            toggleBtn.classList.remove('expanded');
-          } else {
-            // اگر مخفی است، آن را نمایش بده
-            presentationContainer.style.display = 'block';
-            toggleBtn.classList.add('expanded');
-            
-            // بعد از نمایش، متن را expand کن
-            setTimeout(() => {
-              if (presentationBox && presentationContent) {
-                presentationBox.classList.add('expanded');
-                presentationContent.classList.add('expanded');
-              }
-            }, 100);
-          }
-        });
-      }
-    });
-  </script>
-
-  <!-- ✅ فایل‌های JS پروژه -->
   <script src="js/config.js"></script>
-  <script src="js/main.js"></script>
-  <script src="js/homepage.js"></script>
   <script src="js/web3-interactions.js"></script>
-
-  <!-- اسکریپت فعال‌سازی منوی موبایل (همبرگری) -->
+  <script src="js/main.js"></script>
+  <script src="js/swap.js"></script>
+  <script src="js/network.js"></script>
+  <script src="js/profile.js"></script>
+  <script src="js/news.js"></script>
+  <script src="js/shop.js"></script>
+  <script src="js/reports.js"></script>
+  <script src="js/homepage.js"></script>
   <script>
-    window.toggleFAB = function() {
-      var fabContainer = document.querySelector('.fab-container');
-      if (!fabContainer) return;
-      var fabButton = fabContainer.querySelector('.fab-main');
-      var isActive = fabContainer.classList.toggle('active');
-      if (fabButton) {
-        fabButton.setAttribute('aria-expanded', isActive ? 'true' : 'false');
-      }
-    };
-    // اطمینان از اینکه دکمه کار می‌کند حتی اگر onclick کار نکند
-    document.addEventListener('click', function(e) {
-      var btn = e.target.closest('.fab-main');
-      if (btn) {
-        window.toggleFAB();
-      }
+    // اکسپند/کالپس همه بخش‌ها
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.expandable-container').forEach(function(container) {
+        const btn = container.querySelector('.expand-toggle-btn');
+        if (btn) {
+          btn.textContent = container.classList.contains('collapsed') ? '+' : '−';
+          btn.addEventListener('click', function() {
+            container.classList.toggle('collapsed');
+            btn.textContent = container.classList.contains('collapsed') ? '+' : '−';
+          });
+        }
+      });
+
+      // باز شدن خودکار بخش با کلیک روی ناوبار
+      document.querySelectorAll('.nav-link').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+          const hash = link.getAttribute('href');
+          if (!hash || !hash.startsWith('#')) return;
+          const targetId = hash.replace('#', '');
+          document.querySelectorAll('.expandable-container').forEach(function(section) {
+            if (section.id === targetId) {
+              section.classList.remove('collapsed');
+              const btn = section.querySelector('.expand-toggle-btn');
+              if (btn) btn.textContent = '−';
+            } else {
+              section.classList.add('collapsed');
+              const btn = section.querySelector('.expand-toggle-btn');
+              if (btn) btn.textContent = '+';
+            }
+          });
+        });
+      });
     });
   </script>
-
-  <script>
-    // تابع کمکی برای کوتاه‌سازی آدرس
-    function shortenAddress(address) {
-      if (!address) return '---';
-      return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
-    }
-    // تابع کمکی برای کوتاه‌سازی لینک رفرال
-    function shortenReferral(link) {
-      if (!link) return '---';
-      return link.length > 32 ? link.substring(0, 20) + '...' + link.slice(-8) : link;
-    }
-    // به‌روزرسانی مقادیر داشبورد با فرمت مختصر
-    function updateDashboardValue(id, value, unit = '', maxDecimals = 4) {
-      const el = document.getElementById(id);
-      if (!el) return;
-      if (typeof value === 'number' || !isNaN(value)) {
-        value = parseFloat(value).toLocaleString('fa-IR', {maximumFractionDigits: maxDecimals});
-      }
-      el.textContent = `${value} ${unit}`.trim();
-    }
-    // اگر آدرس یا لینک رفرال در داشبورد نمایش داده می‌شود، اینجا کوتاه کن
-    // مثال:
-    // updateDashboardValue('user-address', shortenAddress(address));
-    // updateDashboardValue('referral-link', shortenReferral(referralLink));
-  </script>
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-
-  <style>
-    .spinning-star {
-      animation: spinStar 1.2s linear infinite;
-    }
-    @keyframes spinStar {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-  </style>
-
 </body>
 </html>
