@@ -13,12 +13,36 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.querySelectorAll('.expandable-container').forEach(otherContainer => {
                     if (otherContainer !== container) {
                         otherContainer.classList.add('collapsed');
+                        const otherBtn = otherContainer.querySelector('.expand-toggle-btn');
+                        if (otherBtn) otherBtn.textContent = '+';
                     }
                 });
             }
             
             // تغییر وضعیت بخش فعلی
             container.classList.toggle('collapsed');
+            this.textContent = container.classList.contains('collapsed') ? '+' : '−';
+        });
+    });
+
+    // باز شدن خودکار بخش با کلیک روی ناوبار
+    document.querySelectorAll('.nav-link').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            const hash = link.getAttribute('href');
+            if (!hash || !hash.startsWith('#')) return;
+            const targetId = hash.replace('#', '');
+            
+            document.querySelectorAll('.expandable-container').forEach(function(section) {
+                if (section.id === targetId) {
+                    section.classList.remove('collapsed');
+                    const btn = section.querySelector('.expand-toggle-btn');
+                    if (btn) btn.textContent = '−';
+                } else {
+                    section.classList.add('collapsed');
+                    const btn = section.querySelector('.expand-toggle-btn');
+                    if (btn) btn.textContent = '+';
+                }
+            });
         });
     });
 

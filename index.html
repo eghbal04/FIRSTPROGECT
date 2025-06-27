@@ -537,40 +537,5 @@
   <script src="js/shop.js"></script>
   <script src="js/reports.js"></script>
   <script src="js/homepage.js"></script>
-  <script>
-    // اکسپند/کالپس همه بخش‌ها
-    document.addEventListener('DOMContentLoaded', function() {
-      document.querySelectorAll('.expandable-container').forEach(function(container) {
-        const btn = container.querySelector('.expand-toggle-btn');
-        if (btn) {
-          btn.textContent = container.classList.contains('collapsed') ? '+' : '−';
-          btn.addEventListener('click', function() {
-            container.classList.toggle('collapsed');
-            btn.textContent = container.classList.contains('collapsed') ? '+' : '−';
-          });
-        }
-      });
-
-      // باز شدن خودکار بخش با کلیک روی ناوبار
-      document.querySelectorAll('.nav-link').forEach(function(link) {
-        link.addEventListener('click', function(e) {
-          const hash = link.getAttribute('href');
-          if (!hash || !hash.startsWith('#')) return;
-          const targetId = hash.replace('#', '');
-          document.querySelectorAll('.expandable-container').forEach(function(section) {
-            if (section.id === targetId) {
-              section.classList.remove('collapsed');
-              const btn = section.querySelector('.expand-toggle-btn');
-              if (btn) btn.textContent = '−';
-            } else {
-              section.classList.add('collapsed');
-              const btn = section.querySelector('.expand-toggle-btn');
-              if (btn) btn.textContent = '+';
-            }
-          });
-        });
-      });
-    });
-  </script>
 </body>
 </html>
