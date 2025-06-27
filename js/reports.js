@@ -781,22 +781,29 @@ function renderEventArgs(args, labels) {
     return Object.entries(labels).map(([key, label]) => {
         const value = args[key];
         if (value === undefined) return '';
-        if (typeof value === 'string' && value.startsWith('0x') && value.length === 42) {
-            return `${label}: <span dir="ltr">${shortenAddress(value)}</span>`;
-        }
-        if (typeof value === 'bigint' || (typeof value === 'string' && /^\d+$/.test(value))) {
-            try {
-                const formatted = ethers.formatEther(value);
-                return `${label}: <b>${parseFloat(formatted).toLocaleString('fa-IR', {maximumFractionDigits: 4})}</b>`;
-            } catch {
-                return `${label}: <b>${value.toString()}</b>`;
+        
+        try {
+            if (typeof value === 'string' && value.startsWith('0x') && value.length === 42) {
+                return `${label}: <span dir="ltr">${shortenAddress(value)}</span>`;
             }
+            if (typeof value === 'bigint' || (typeof value === 'string' && /^\d+$/.test(value))) {
+                try {
+                    const formatted = ethers.formatEther(value);
+                    return `${label}: <b>${parseFloat(formatted).toLocaleString('fa-IR', {maximumFractionDigits: 4})}</b>`;
+                } catch (formatError) {
+                    // اگر formatEther خطا داد، مقدار اصلی را نمایش بده
+                    return `${label}: <b>${value.toString()}</b>`;
+                }
+            }
+            // موقعیت باینری
+            if ((key === 'position' || key === 'side') && (value === 0 || value === 1 || value === 2 || value === '0' || value === '1' || value === '2')) {
+                const posLabels = {0: 'چپ', 1: 'راست', 2: 'مرکز', '0': 'چپ', '1': 'راست', '2': 'مرکز'};
+                return `${label}: <b>${posLabels[value]}</b>`;
+            }
+            return `${label}: <b>${value}</b>`;
+        } catch (error) {
+            console.warn(`Error rendering arg ${key}:`, error);
+            return `${label}: <b>خطا در نمایش</b>`;
         }
-        // موقعیت باینری
-        if ((key === 'position' || key === 'side') && (value === 0 || value === 1 || value === 2 || value === '0' || value === '1' || value === '2')) {
-            const posLabels = {0: 'چپ', 1: 'راست', 2: 'مرکز', '0': 'چپ', '1': 'راست', '2': 'مرکز'};
-            return `${label}: <b>${posLabels[value]}</b>`;
-        }
-        return `${label}: <b>${value}</b>`;
     }).filter(Boolean).join('<br>');
 }

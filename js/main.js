@@ -161,28 +161,3 @@ async function autoConnectWallet() {
     }
     return false;
 }
-
-
-document.addEventListener('DOMContentLoaded', async () => {
-    console.log("Welcome to the new LevelUp Platform!");
-
-    const connectButton = document.getElementById('connectButton');
-    const walletConnectButton = document.getElementById('walletConnectButton');
-    
-    // ابتدا اتصال خودکار را امتحان کنید
-    const isAutoConnected = await autoConnectWallet();
-    
-    if (!isAutoConnected) {
-        if (connectButton) {
-            connectButton.addEventListener('click', async () => {
-                await connectWalletAndUpdateUI('metamask');
-            });
-        }
-        
-        if (walletConnectButton) {
-            walletConnectButton.addEventListener('click', async () => {
-                await connectWalletAndUpdateUI('walletconnect');
-            });
-        }
-    }
-});

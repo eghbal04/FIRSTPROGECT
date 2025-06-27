@@ -214,7 +214,7 @@ const motivationalMessages = [
             updateElement('trading-volume', `$${tradingVolumeUSD.toLocaleString('en-US', {maximumFractionDigits: 2})} USD`);
             // پوینت‌های پرداخت شده و مانده بدون تغییر (عدد)
             updateElement('claimed-points', parseFloat(additionalStats.claimedPoints).toLocaleString());
-            updateElement('remaining-points', parseFloat(additionalStats.remainingPoints).toLocaleString());
+            updateElement('remaining-points', Math.max(0, parseFloat(additionalStats.remainingPoints)).toLocaleString());
             // ارزش هر پوینت به توکن LVL
             updateElement('point-value', `${formatDashboardPrice(additionalStats.pointValue)} LVL`);
             // استخر پاداش به توکن LVL
