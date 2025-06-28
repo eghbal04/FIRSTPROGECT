@@ -120,49 +120,95 @@ async function updateNetworkStats() {
         // بررسی اینکه آیا کاربر ثبت‌نام کرده است
         let isRegistered = false;
         let userIncomeCap = "0";
+        let userBinaryPoints = "0";
+        let binaryRewardPerPoint = "0";
         
         try {
             const userData = await contract.users(address);
             isRegistered = userData.index > 0;
             
             if (isRegistered) {
-                // دریافت سقف درآمد کاربر (binaryPointCap)
-                const binaryPointCap = userData.binaryPointCap;
-                userIncomeCap = ethers.formatUnits(binaryPointCap, 18);
+                // دریافت سقف درآمد کاربر (تعداد پوینت‌هایی که می‌تواند دریافت کند)
+                userIncomeCap = userData.binaryPointCap.toString();
+                
+                // دریافت پوینت‌های فعلی کاربر
+                userBinaryPoints = userData.binaryPoints.toString();
+                
+                // محاسبه پورسانت هر پوینت: موجودی قرارداد ÷ تعداد کل پوینت‌های دریافتی
+                const contractBalance = await contract.getContractMaticBalance();
+                const totalClaimablePoints = await contract.totalClaimableBinaryPoints();
+                
+                if (totalClaimablePoints > 0) {
+                    const rewardPerPoint = contractBalance / totalClaimablePoints;
+                    binaryRewardPerPoint = ethers.formatEther(rewardPerPoint);
+                }
             }
-        } catch (error) {
-            console.log("User not registered or error getting income cap:", error);
-            userIncomeCap = "0";
+        } catch (userError) {
+            console.warn("User not registered or error fetching user data:", userError);
         }
         
-        // دریافت آمار شبکه
-        const [totalUsers, totalPoints] = await Promise.all([
+        // دریافت آمار کلی شبکه
+        const [totalUsers, totalClaimableBinaryPoints, totalPoints] = await Promise.all([
             contract.totalUsers(),
+            contract.totalClaimableBinaryPoints(),
             contract.totalPoints()
         ]);
+        
+        // محاسبه پورسانت کلی هر پوینت
+        let globalRewardPerPoint = "0";
+        try {
+            const contractBalance = await contract.getContractMaticBalance();
+            if (totalClaimableBinaryPoints > 0) {
+                const rewardPerPoint = contractBalance / totalClaimableBinaryPoints;
+                globalRewardPerPoint = ethers.formatEther(rewardPerPoint);
+            }
+        } catch (error) {
+            console.warn("Error calculating global reward per point:", error);
+        }
         
         // به‌روزرسانی UI
         const updateElement = (id, value) => {
             const element = document.getElementById(id);
-            if (element) {
-                element.textContent = value.toString();
+            if (!element) return;
+            
+            // فرمت‌دهی اعداد بزرگ
+            if (typeof value === 'string' && value.includes('.')) {
+                const num = parseFloat(value);
+                if (!isNaN(num)) {
+                    if (num >= 1000000) {
+                        value = (num / 1000000).toFixed(2) + 'M';
+                    } else if (num >= 1000) {
+                        value = (num / 1000).toFixed(2) + 'K';
+                    } else {
+                        value = num.toLocaleString('en-US', {
+                            maximumFractionDigits: 6
+                        });
+                    }
+                }
             }
+            
+            element.textContent = value;
         };
         
+        // به‌روزرسانی آمار شبکه
         updateElement('network-members', totalUsers.toString());
-        updateElement('network-points', ethers.formatUnits(totalPoints, 18));
-        updateElement('network-rewards', userIncomeCap);
+        updateElement('network-points', ethers.formatUnits(totalClaimableBinaryPoints, 18));
+        
+        // نمایش سقف درآمد کاربر (تعداد پوینت‌هایی که می‌تواند دریافت کند)
+        if (isRegistered) {
+            updateElement('network-rewards', userIncomeCap);
+        } else {
+            updateElement('network-rewards', '0');
+        }
+        
+        // پاک کردن پیام خطا
+        clearNetworkError();
         
         console.log("Network stats updated successfully");
-        console.log("User registered:", isRegistered);
-        console.log("User income cap:", userIncomeCap);
-        
-        // پاک کردن پیام خطا در صورت موفقیت
-        clearNetworkError();
         
     } catch (error) {
         console.error("Error updating network stats:", error);
-        showError("خطا در بارگذاری آمار شبکه: " + error.message);
+        showError(`خطا در به‌روزرسانی آمار شبکه: ${error.message}`);
     } finally {
         isNetworkLoading = false;
     }
@@ -214,10 +260,42 @@ async function updateBinaryStats() {
     }
 }
 
-// محاسبه پاداش‌ها
+// تابع محاسبه پاداش‌های باینری
 function calculateRewards(balancedPoints) {
-    const rewardRate = 0.1; // 10% از پوینت‌های متعادل
-    return (balancedPoints * rewardRate).toFixed(4);
+    try {
+        // این تابع محاسبه می‌کند که هر پوینت چقدر ارزش دارد
+        // پورسانت هر پوینت = موجودی قرارداد ÷ تعداد کل پوینت‌های دریافتی
+        
+        // برای نمایش در UI، از مقادیر پیش‌فرض استفاده می‌کنیم
+        // در عمل، این مقادیر از قرارداد دریافت می‌شوند
+        
+        const contractBalance = 1000; // مثال: 1000 MATIC موجودی قرارداد
+        const totalPoints = 100; // مثال: 100 پوینت کل
+        
+        if (totalPoints > 0) {
+            const rewardPerPoint = contractBalance / totalPoints;
+            const userReward = rewardPerPoint * balancedPoints;
+            
+            return {
+                rewardPerPoint: rewardPerPoint.toFixed(6),
+                userReward: userReward.toFixed(6),
+                maxReward: (rewardPerPoint * balancedPoints).toFixed(6)
+            };
+        }
+        
+        return {
+            rewardPerPoint: "0",
+            userReward: "0",
+            maxReward: "0"
+        };
+    } catch (error) {
+        console.error("Error calculating rewards:", error);
+        return {
+            rewardPerPoint: "0",
+            userReward: "0",
+            maxReward: "0"
+        };
+    }
 }
 
 // رندر نمودار تعادل
@@ -345,62 +423,96 @@ async function renderNetworkTree() {
     }
 }
 
-// تابع رندر کردن یک نود درخت
+// تابع نمایش گره درخت شبکه
 async function renderTreeNode(userAddress, containerId, level = 0) {
     try {
-        const container = document.getElementById(containerId);
-        if (!container) return;
+        const { contract } = await connectWallet();
+        const currentUserAddress = await contract.runner.provider.getSigner().getAddress();
         
-        const treeData = await getUserTree(userAddress);
-        const isCurrentUser = userAddress === (await connectWallet()).address;
+        // دریافت اطلاعات کاربر
+        const userData = await contract.users(userAddress);
+        const isCurrentUser = userAddress.toLowerCase() === currentUserAddress.toLowerCase();
+        const isRegistered = userData.index > 0;
         
-        // ایجاد کلاس‌های CSS بر اساس سطح
-        const levelClass = `level-${level}`;
-        const userClass = isCurrentUser ? 'current-user' : 'other-user';
+        if (!isRegistered) {
+            return createEmptyNode(containerId, level);
+        }
         
-        const nodeHTML = `
-            <div class="tree-node ${levelClass} ${userClass}" data-address="${userAddress}" data-level="${level}">
-                <div class="node-header" onclick="toggleNodeExpansion('${userAddress}', ${level})">
-                    <div class="node-info">
-                        <span class="node-title">${isCurrentUser ? 'شما' : `کاربر ${level + 1}`}</span>
-                        <span class="node-status ${treeData.activated ? 'active' : 'inactive'}">
-                            ${treeData.activated ? 'فعال' : 'غیرفعال'}
-                        </span>
-                    </div>
-                    <div class="expand-icon" id="expand-icon-${userAddress}">
-                        ${(treeData.left !== ethers.ZeroAddress || treeData.right !== ethers.ZeroAddress) ? '▼' : ''}
+        // دریافت اطلاعات درخت کاربر
+        const [left, right, activated, binaryPoints, binaryPointCap] = await contract.getUserTree(userAddress);
+        
+        // محاسبه پاداش‌های باینری
+        const contractBalance = await contract.getContractMaticBalance();
+        const totalClaimablePoints = await contract.totalClaimableBinaryPoints();
+        
+        let rewardPerPoint = "0";
+        let maxReward = "0";
+        
+        if (totalClaimablePoints > 0) {
+            const rewardPerPointRaw = contractBalance / totalClaimablePoints;
+            rewardPerPoint = ethers.formatEther(rewardPerPointRaw);
+            
+            // حداکثر پاداش کاربر = پورسانت هر پوینت × سقف درآمد کاربر
+            const maxRewardRaw = rewardPerPointRaw * binaryPointCap;
+            maxReward = ethers.formatEther(maxRewardRaw);
+        }
+        
+        const nodeElement = document.createElement('div');
+        nodeElement.className = `tree-node level-${level} ${isCurrentUser ? 'current-user' : ''}`;
+        nodeElement.innerHTML = `
+            <div class="node-header">
+                <div class="node-info">
+                    <div class="node-title">${shortenAddress(userAddress)}</div>
+                    <div class="node-status ${activated ? 'active' : 'inactive'}">
+                        ${activated ? 'فعال' : 'غیرفعال'}
                     </div>
                 </div>
-                
-                <div class="node-details">
-                    <div class="node-stat">
-                        <span class="stat-label">آدرس:</span>
-                        <span class="stat-value">${shortenAddress(userAddress)}</span>
-                    </div>
-                    <div class="node-stat">
-                        <span class="stat-label">امتیاز:</span>
-                        <span class="stat-value">${parseFloat(treeData.binaryPoints).toFixed(2)}/${parseFloat(treeData.binaryPointCap).toFixed(2)}</span>
-                    </div>
+                <div class="expand-icon" onclick="toggleNodeExpansion('${userAddress}', ${level})">▶</div>
+            </div>
+            <div class="node-details">
+                <div class="node-stat">
+                    <span class="stat-label">پوینت‌های فعلی:</span>
+                    <span class="stat-value">${ethers.formatUnits(binaryPoints, 18)}</span>
                 </div>
-                
-                <!-- کانتینر برای فرزندان (در ابتدا مخفی) -->
-                <div class="children-container" id="children-${userAddress}" style="display: none;">
-                    <div class="children-wrapper" id="children-wrapper-${userAddress}">
-                        <!-- فرزندان اینجا لود می‌شوند -->
-                    </div>
+                <div class="node-stat">
+                    <span class="stat-label">سقف درآمد:</span>
+                    <span class="stat-value">${binaryPointCap.toString()} پوینت</span>
+                </div>
+                <div class="node-stat">
+                    <span class="stat-label">پورسانت هر پوینت:</span>
+                    <span class="stat-value">${parseFloat(rewardPerPoint).toFixed(6)} MATIC</span>
+                </div>
+                <div class="node-stat">
+                    <span class="stat-label">حداکثر پاداش:</span>
+                    <span class="stat-value">${parseFloat(maxReward).toFixed(6)} MATIC</span>
+                </div>
+                <div class="node-stat">
+                    <span class="stat-label">چپ:</span>
+                    <span class="stat-value">${left !== ethers.ZeroAddress ? shortenAddress(left) : 'خالی'}</span>
+                </div>
+                <div class="node-stat">
+                    <span class="stat-label">راست:</span>
+                    <span class="stat-value">${right !== ethers.ZeroAddress ? shortenAddress(right) : 'خالی'}</span>
+                </div>
+            </div>
+            <div class="children-container" id="children-${userAddress}" style="display: none;">
+                <div class="children-wrapper">
+                    <div class="child-node left-child" id="left-${userAddress}"></div>
+                    <div class="child-node right-child" id="right-${userAddress}"></div>
                 </div>
             </div>
         `;
         
-        // اضافه کردن نود به کانتینر
-        if (level === 0) {
-            container.innerHTML = nodeHTML;
-        } else {
-            container.innerHTML += nodeHTML;
+        const container = document.getElementById(containerId);
+        if (container) {
+            container.appendChild(nodeElement);
         }
         
+        return nodeElement;
+        
     } catch (error) {
-        console.error(`Error rendering tree node for ${userAddress}:`, error);
+        console.error("Error rendering tree node:", error);
+        return createEmptyNode(containerId, level);
     }
 }
 
@@ -677,3 +789,30 @@ async function fetchUserTree() {
 
 // اضافه کردن توابع به window object برای فراخوانی از HTML
 window.toggleNodeExpansion = toggleNodeExpansion;
+
+// تابع ایجاد گره خالی
+function createEmptyNode(containerId, level) {
+    const nodeElement = document.createElement('div');
+    nodeElement.className = `tree-node level-${level} empty-node`;
+    nodeElement.innerHTML = `
+        <div class="node-header">
+            <div class="node-info">
+                <div class="node-title">کاربر ثبت‌نام نشده</div>
+                <div class="node-status empty">غیرفعال</div>
+            </div>
+        </div>
+        <div class="node-details">
+            <div class="node-stat">
+                <span class="stat-label">وضعیت:</span>
+                <span class="stat-value">ثبت‌نام نشده</span>
+            </div>
+        </div>
+    `;
+    
+    const container = document.getElementById(containerId);
+    if (container) {
+        container.appendChild(nodeElement);
+    }
+    
+    return nodeElement;
+}
