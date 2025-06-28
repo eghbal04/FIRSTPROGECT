@@ -73,7 +73,7 @@ async function loadUserProfile() {
         console.log("Profile data fetched successfully:", profile);
         
         // به‌روزرسانی UI
-        updateProfileUI(profile, userData, isClaimable, registrationPrice, maticPrice, lvlPrice);
+        await updateProfileUI(profile, userData, isClaimable, registrationPrice, maticPrice, lvlPrice, contract);
         
     } catch (error) {
         console.error("Error loading user profile:", error);
@@ -84,7 +84,7 @@ async function loadUserProfile() {
 }
 
 // به‌روزرسانی UI پروفایل
-function updateProfileUI(profile, userData, isClaimable, registrationPrice, maticPrice, lvlPrice) {
+async function updateProfileUI(profile, userData, isClaimable, registrationPrice, maticPrice, lvlPrice, contract) {
     const updateElement = (id, value) => {
         const element = document.getElementById(id);
         if (element) element.textContent = value;
@@ -113,7 +113,20 @@ function updateProfileUI(profile, userData, isClaimable, registrationPrice, mati
     const binaryPointCap = ethers.formatUnits(userData.binaryPointCap, 18);
     const binaryPointsClaimed = ethers.formatUnits(userData.binaryPointsClaimed, 18);
     
-    updateElement('profile-income-cap', binaryPointCap);
+    // محاسبه سقف درآمد باینری (ارزش دلاری)
+    let incomeCapUSD = "0";
+    try {
+        const pointValue = await contract.getPointValue();
+        const pointValueFormatted = ethers.formatUnits(pointValue, 18);
+        const maxReward = parseFloat(binaryPointCap) * parseFloat(pointValueFormatted);
+        const maxRewardUSD = (maxReward * parseFloat(ethers.formatUnits(lvlPrice, 8))).toFixed(2);
+        incomeCapUSD = `$${maxRewardUSD} USD`;
+    } catch (error) {
+        console.warn("Could not calculate income cap USD:", error);
+        incomeCapUSD = `${binaryPointCap} پوینت`;
+    }
+    
+    updateElement('profile-income-cap', incomeCapUSD);
     updateElement('profile-received', binaryPointsClaimed);
 
     // لینک دعوت
