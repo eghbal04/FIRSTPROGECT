@@ -73,7 +73,7 @@ async function loadUserProfile() {
         console.log("Profile data fetched successfully:", profile);
         
         // به‌روزرسانی UI
-        await updateProfileUI(profile, userData, isClaimable, registrationPrice, maticPrice, lvlPrice, contract);
+        updateProfileUI(profile, userData, isClaimable, registrationPrice, maticPrice, lvlPrice);
         
     } catch (error) {
         console.error("Error loading user profile:", error);
@@ -84,7 +84,7 @@ async function loadUserProfile() {
 }
 
 // به‌روزرسانی UI پروفایل
-async function updateProfileUI(profile, userData, isClaimable, registrationPrice, maticPrice, lvlPrice, contract) {
+function updateProfileUI(profile, userData, isClaimable, registrationPrice, maticPrice, lvlPrice) {
     const updateElement = (id, value) => {
         const element = document.getElementById(id);
         if (element) element.textContent = value;
@@ -113,20 +113,10 @@ async function updateProfileUI(profile, userData, isClaimable, registrationPrice
     const binaryPointCap = ethers.formatUnits(userData.binaryPointCap, 18);
     const binaryPointsClaimed = ethers.formatUnits(userData.binaryPointsClaimed, 18);
     
-    // محاسبه سقف درآمد باینری (ارزش دلاری)
-    let incomeCapUSD = "0";
-    try {
-        const pointValue = await contract.getPointValue();
-        const pointValueFormatted = ethers.formatUnits(pointValue, 18);
-        const maxReward = parseFloat(binaryPointCap) * parseFloat(pointValueFormatted);
-        const maxRewardUSD = (maxReward * parseFloat(ethers.formatUnits(lvlPrice, 8))).toFixed(2);
-        incomeCapUSD = `$${maxRewardUSD} USD`;
-    } catch (error) {
-        console.warn("Could not calculate income cap USD:", error);
-        incomeCapUSD = `${binaryPointCap} پوینت`;
-    }
+    // نمایش سقف درآمد باینری (تعداد پوینت‌های قابل دریافت در هر 12 ساعت)
+    const incomeCapDisplay = `${binaryPointCap} پوینت (هر 12 ساعت)`;
     
-    updateElement('profile-income-cap', incomeCapUSD);
+    updateElement('profile-income-cap', incomeCapDisplay);
     updateElement('profile-received', binaryPointsClaimed);
 
     // لینک دعوت

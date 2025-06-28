@@ -28,6 +28,7 @@ contract levelup is ERC20, ReentrancyGuard
         uint256 public circulatingSupply;
         uint256 public totalDirectDeposits;
         uint256 public regprice=20;
+
     // User structure
         struct User {
             uint256 index;
@@ -43,6 +44,7 @@ contract levelup is ERC20, ReentrancyGuard
             bool activated;
             uint256 totalPurchasedMATIC;
             uint256 totalPurchasedKind;
+            uint256 lastClaimTime;
         }
 
     // Mappings
@@ -297,7 +299,8 @@ contract levelup is ERC20, ReentrancyGuard
             binaryPointsClaimed: 0,
             activated: true,
             totalPurchasedMATIC: 0,
-            totalPurchasedKind:0
+            totalPurchasedKind:0 ,
+            lastClaimTime : block.timestamp
         });
 
         indexToAddress[userIndex] = msg.sender;
@@ -375,21 +378,24 @@ contract levelup is ERC20, ReentrancyGuard
     }
     function claim() external nonReentrant 
     {
+        User storage user = users[msg.sender];
+        require(block.timestamp >= user.lastClaimTime + 12 hours, "You can only claim once every 12 hours");
         uint256 userPoints = points[msg.sender];
         require(userPoints > 0, "No points");
         require(totalPoints > 0, "Zero totalPoints");
-
         uint256 pointValue = address(this).balance / totalPoints;
         uint256 reward = userPoints * pointValue;
         require(reward > 0, "Rounded reward too low");
-
         points[msg.sender] = 0;
         totalPoints -= userPoints;
         isClaimable[msg.sender] = false;
         circulatingSupply -= reward;
+        user.lastClaimTime = block.timestamp; // ثبت زمان برداشت
 
         _mint(msg.sender, reward);
     }
+
+
     function countSubtreeUsers(uint256 index) public view returns (uint256) 
     {
         if (index == 0 || indexToAddress[index] == address(0)) return 0;
