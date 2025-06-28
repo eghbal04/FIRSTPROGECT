@@ -3,12 +3,15 @@
 // ...
 
 // homepage.js - بارگذاری داده‌های داشبورد و آمار پلتفرم
+let isDashboardLoading = false;
+
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         // بررسی اتصال کیف پول
         const connection = await checkConnection();
         if (!connection.connected) {
             // اگر کیف پول متصل نیست، منتظر اتصال بمان
+            console.log("Wallet not connected, waiting for connection...");
             return;
         }
 
@@ -16,7 +19,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         await loadDashboardData();
 
         // به‌روزرسانی خودکار هر 30 ثانیه
-        setInterval(loadDashboardData, 30000);
+        setInterval(async () => {
+            if (!isDashboardLoading) {
+                await loadDashboardData();
+            }
+        }, 30000);
 
     } catch (error) {
         console.error("Error in homepage:", error);
@@ -25,10 +32,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // تابع بارگذاری داده‌های داشبورد
 async function loadDashboardData() {
+    if (isDashboardLoading) {
+        console.log("Dashboard data is already loading, skipping...");
+        return;
+    }
+    
+    isDashboardLoading = true;
+    
     try {
         // بررسی اتصال کیف پول
         const connection = await checkConnection();
         if (!connection.connected) {
+            console.log("Wallet not connected, skipping dashboard update");
             return;
         }
 
@@ -52,6 +67,8 @@ async function loadDashboardData() {
 
     } catch (error) {
         console.error("Error loading dashboard data:", error);
+    } finally {
+        isDashboardLoading = false;
     }
 }
 
@@ -253,7 +270,32 @@ async function connectWallet() {
     if (!window.contractConfig) {
         throw new Error("Contract config not initialized");
     }
+    
+    // بررسی اینکه آیا قبلاً متصل هستیم
+    if (window.contractConfig.signer && window.contractConfig.contract) {
+        try {
+            const address = await window.contractConfig.signer.getAddress();
+            if (address) {
+                return {
+                    provider: window.contractConfig.provider,
+                    contract: window.contractConfig.contract,
+                    signer: window.contractConfig.signer,
+                    address: address
+                };
+            }
+        } catch (error) {
+            // اگر signer معتبر نیست، دوباره اتصال برقرار کنیم
+            console.log("Existing connection invalid, reconnecting...");
+        }
+    }
+    
     await window.contractConfig.initializeWeb3();
+    
+    // بررسی اینکه آیا اتصال موفق بود
+    if (!window.contractConfig.signer) {
+        throw new Error("Failed to connect to wallet");
+    }
+    
     return {
         provider: window.contractConfig.provider,
         contract: window.contractConfig.contract,

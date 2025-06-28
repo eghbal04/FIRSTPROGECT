@@ -1302,6 +1302,14 @@ if (!window.contractConfig)
       // راه‌اندازی اولیه
       initializeWeb3: async function() {
           try {
+              // بررسی اینکه آیا قبلاً در حال اتصال هستیم
+              if (this.isConnecting) {
+                  console.log("Already connecting to wallet, please wait...");
+                  return false;
+              }
+              
+              this.isConnecting = true;
+              
               if (!window.ethereum) {
                   throw new Error('کیف پول یافت نشد');
               }
@@ -1309,6 +1317,10 @@ if (!window.contractConfig)
               await this.switchToPolygon();
               
               this.provider = new ethers.BrowserProvider(window.ethereum);
+              
+              // اضافه کردن تأخیر برای جلوگیری از درخواست‌های همزمان
+              await new Promise(resolve => setTimeout(resolve, 100));
+              
               this.signer = await this.provider.getSigner();
               this.contract = new ethers.Contract(
                   this.CONTRACT_ADDRESS, 
@@ -1316,9 +1328,19 @@ if (!window.contractConfig)
                   this.signer
               );
               
+              this.isConnecting = false;
               return true;
           } catch (error) {
+              this.isConnecting = false;
               console.error("خطا در راه‌اندازی Web3:", error);
+              
+              // اگر خطای "Already processing" است، صبر کنیم و دوباره تلاش کنیم
+              if (error.message && error.message.includes('Already processing')) {
+                  console.log("MetaMask is busy, retrying in 2 seconds...");
+                  await new Promise(resolve => setTimeout(resolve, 2000));
+                  return await this.initializeWeb3();
+              }
+              
               this.provider = ethers.getDefaultProvider();
               return false;
           }
