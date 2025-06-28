@@ -204,9 +204,15 @@ async function updateNetworkStats() {
         if (isRegistered) {
             // تبدیل به عدد صحیح برای نمایش
             const capNumber = Math.round(parseFloat(userIncomeCap));
-            updateElement('network-rewards', capNumber.toString());
+            const element = document.getElementById('network-rewards');
+            if (element) {
+                element.textContent = capNumber.toString();
+            }
         } else {
-            updateElement('network-rewards', '0');
+            const element = document.getElementById('network-rewards');
+            if (element) {
+                element.textContent = '0';
+            }
         }
         
         // پاک کردن پیام خطا
