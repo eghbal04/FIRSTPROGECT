@@ -140,47 +140,57 @@ function formatDate(timestamp) {
             return "تاریخ نامعتبر";
         }
         
-        // محاسبه زمان گذشته
         const now = new Date();
         const diffInSeconds = Math.floor((now - date) / 1000);
         
-        console.log("Time difference in seconds:", diffInSeconds);
-        
-        // نمایش زمان نسبی برای تراکنش‌های اخیر
+        // اگر کمتر از 1 دقیقه
         if (diffInSeconds < 60) {
             return `${diffInSeconds} ثانیه پیش`;
-        } else if (diffInSeconds < 3600) {
-            const minutes = Math.floor(diffInSeconds / 60);
-            return `${minutes} دقیقه پیش`;
-        } else if (diffInSeconds < 86400) {
-            const hours = Math.floor(diffInSeconds / 3600);
-            return `${hours} ساعت پیش`;
-        } else if (diffInSeconds < 2592000) {
-            const days = Math.floor(diffInSeconds / 86400);
-            return `${days} روز پیش`;
-        } else {
-            // برای تراکنش‌های قدیمی، تاریخ کامل نمایش بده
-            const year = date.getFullYear();
-            const month = date.getMonth() + 1;
-            const day = date.getDate();
-            const hour = date.getHours().toString().padStart(2, '0');
-            const minute = date.getMinutes().toString().padStart(2, '0');
-            
-            // تبدیل ماه‌های انگلیسی به فارسی
-            const persianMonths = {
-                1: 'فروردین', 2: 'اردیبهشت', 3: 'خرداد',
-                4: 'تیر', 5: 'مرداد', 6: 'شهریور',
-                7: 'مهر', 8: 'آبان', 9: 'آذر',
-                10: 'دی', 11: 'بهمن', 12: 'اسفند'
-            };
-            
-            const formattedDate = `${day} ${persianMonths[month]} ${year} - ${hour}:${minute}`;
-            console.log("Formatted date:", formattedDate);
-            return formattedDate;
         }
         
+        // اگر کمتر از 1 ساعت
+        if (diffInSeconds < 3600) {
+            const minutes = Math.floor(diffInSeconds / 60);
+            return `${minutes} دقیقه پیش`;
+        }
+        
+        // اگر کمتر از 1 روز
+        if (diffInSeconds < 86400) {
+            const hours = Math.floor(diffInSeconds / 3600);
+            return `${hours} ساعت پیش`;
+        }
+        
+        // اگر کمتر از 7 روز
+        if (diffInSeconds < 604800) {
+            const days = Math.floor(diffInSeconds / 86400);
+            return `${days} روز پیش`;
+        }
+        
+        // برای تاریخ‌های قدیمی، نمایش تاریخ کامل
+        const persianMonths = [
+            'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
+            'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'
+        ];
+        
+        const persianDays = [
+            'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه', 'شنبه'
+        ];
+        
+        // تبدیل به تاریخ شمسی (تقریبی)
+        const year = date.getFullYear();
+        const month = date.getMonth();
+        const day = date.getDate();
+        const hours = date.getHours();
+        const minutes = date.getMinutes();
+        
+        // تبدیل تقریبی به شمسی (سال شمسی = سال میلادی - 621)
+        const persianYear = year - 621;
+        const persianMonth = persianMonths[month];
+        
+        return `${day} ${persianMonth} ${persianYear} - ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+        
     } catch (error) {
-        console.error("Error formatting date:", error);
+        console.error("Error formatting date:", error, "timestamp:", timestamp);
         return "خطا در نمایش تاریخ";
     }
 }
@@ -301,10 +311,8 @@ async function fetchReports() {
         
         // ساخت گزارشات با timestamp صحیح
         purchaseEvents.forEach(event => {
-            const ts = (event.args && event.args.timestamp)
-                ? Number(event.args.timestamp)
-                : (blockTimestamps[event.blockNumber] || Math.floor(Date.now() / 1000));
-            console.log('purchaseEvent timestamp:', ts, 'event:', event);
+            const ts = blockTimestamps[event.blockNumber] || Math.floor(Date.now() / 1000);
+            console.log('purchaseEvent timestamp:', ts, 'blockNumber:', event.blockNumber, 'event:', event);
             reports.push({
                 type: 'purchase',
                 title: 'خرید توکن',
@@ -316,10 +324,8 @@ async function fetchReports() {
         });
         
         activationEvents.forEach(event => {
-            const ts = (event.args && event.args.timestamp)
-                ? Number(event.args.timestamp)
-                : (blockTimestamps[event.blockNumber] || Math.floor(Date.now() / 1000));
-            console.log('activationEvent timestamp:', ts, 'event:', event);
+            const ts = blockTimestamps[event.blockNumber] || Math.floor(Date.now() / 1000);
+            console.log('activationEvent timestamp:', ts, 'blockNumber:', event.blockNumber, 'event:', event);
             reports.push({
                 type: 'activation',
                 title: 'فعال‌سازی حساب',
@@ -331,10 +337,8 @@ async function fetchReports() {
         });
         
         buyEvents.forEach(event => {
-            const ts = (event.args && event.args.timestamp)
-                ? Number(event.args.timestamp)
-                : (blockTimestamps[event.blockNumber] || Math.floor(Date.now() / 1000));
-            console.log('buyEvent timestamp:', ts, 'event:', event);
+            const ts = blockTimestamps[event.blockNumber] || Math.floor(Date.now() / 1000);
+            console.log('buyEvent timestamp:', ts, 'blockNumber:', event.blockNumber, 'event:', event);
             reports.push({
                 type: 'trading',
                 title: 'خرید توکن با MATIC',
@@ -346,10 +350,8 @@ async function fetchReports() {
         });
         
         sellEvents.forEach(event => {
-            const ts = (event.args && event.args.timestamp)
-                ? Number(event.args.timestamp)
-                : (blockTimestamps[event.blockNumber] || Math.floor(Date.now() / 1000));
-            console.log('sellEvent timestamp:', ts, 'event:', event);
+            const ts = blockTimestamps[event.blockNumber] || Math.floor(Date.now() / 1000);
+            console.log('sellEvent timestamp:', ts, 'blockNumber:', event.blockNumber, 'event:', event);
             reports.push({
                 type: 'trading',
                 title: 'فروش توکن',
@@ -361,10 +363,8 @@ async function fetchReports() {
         });
         
         binaryEvents.forEach(event => {
-            const ts = (event.args && event.args.timestamp)
-                ? Number(event.args.timestamp)
-                : (blockTimestamps[event.blockNumber] || Math.floor(Date.now() / 1000));
-            console.log('binaryEvent timestamp:', ts, 'event:', event);
+            const ts = blockTimestamps[event.blockNumber] || Math.floor(Date.now() / 1000);
+            console.log('binaryEvent timestamp:', ts, 'blockNumber:', event.blockNumber, 'event:', event);
             reports.push({
                 type: 'binary',
                 title: 'به‌روزرسانی امتیاز باینری',
