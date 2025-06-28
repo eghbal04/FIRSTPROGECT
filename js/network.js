@@ -135,10 +135,10 @@ async function updateNetworkStats() {
             
             if (isRegistered) {
                 // دریافت سقف درآمد کاربر (تعداد پوینت‌هایی که می‌تواند دریافت کند)
-                userIncomeCap = userData.binaryPointCap.toString();
+                userIncomeCap = ethers.formatUnits(userData.binaryPointCap, 18);
                 
                 // دریافت پوینت‌های فعلی کاربر
-                userBinaryPoints = userData.binaryPoints.toString();
+                userBinaryPoints = ethers.formatUnits(userData.binaryPoints, 18);
                 
                 // محاسبه پورسانت هر پوینت: موجودی قرارداد ÷ تعداد کل پوینت‌های دریافتی
                 const contractBalance = await contract.getContractMaticBalance();
