@@ -1,28 +1,32 @@
 // register.js - مدیریت بخش ثبت‌نام و ارتقا
 let isRegisterLoading = false;
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', function() {
+    // Register section loaded, waiting for wallet connection...
+    waitForWalletConnection();
+});
+
+async function waitForWalletConnection() {
     try {
-        console.log("Register section loaded, waiting for wallet connection...");
         // Register data will be loaded when tab is selected
     } catch (error) {
         console.error("Error in register section:", error);
     }
-});
+}
 
 // تابع بارگذاری اطلاعات ثبت‌نام
 async function loadRegisterData() {
     if (isRegisterLoading) {
-        console.log("Register already loading, skipping...");
+        // Register already loading, skipping...
         return;
     }
     
     isRegisterLoading = true;
     
     try {
-        console.log("Connecting to wallet for register data...");
+        // Connecting to wallet for register data...
         const { contract, address } = await connectWallet();
-        console.log("Wallet connected, loading register data...");
+        // Wallet connected, loading register data...
         
         // دریافت اطلاعات کاربر
         const userData = await contract.users(address);
@@ -56,10 +60,10 @@ async function loadRegisterData() {
             showRegistrationForm(registrationPriceFormatted, lvlBalanceFormatted, tokenPriceUSDFormatted);
         }
         
-        console.log("Register data loaded successfully");
+        // Register data loaded successfully
         
     } catch (error) {
-        console.error("Error loading register data:", error);
+        console.error('Error loading register data:', error);
         showRegisterError("خطا در بارگذاری اطلاعات ثبت‌نام");
     } finally {
         isRegisterLoading = false;
@@ -68,75 +72,38 @@ async function loadRegisterData() {
 
 // تابع اتصال به کیف پول
 async function connectWallet() {
-    if (!window.contractConfig) {
-        throw new Error("Contract config not initialized");
-    }
-    
-    // بررسی اینکه آیا قبلاً متصل هستیم
-    if (window.contractConfig.signer && window.contractConfig.contract) {
-        try {
-            const address = await window.contractConfig.signer.getAddress();
-            if (address) {
-                return {
-                    provider: window.contractConfig.provider,
-                    contract: window.contractConfig.contract,
-                    signer: window.contractConfig.signer,
-                    address: address
-                };
-            }
-        } catch (error) {
-            console.log("Existing connection invalid, reconnecting...");
-        }
-    }
-    
-    // اگر در حال اتصال هستیم، منتظر بمان
-    if (window.contractConfig.isConnecting) {
-        console.log("Wallet connection in progress, waiting...");
-        let waitCount = 0;
-        const maxWaitTime = 50; // حداکثر 5 ثانیه
+    try {
+        console.log('Register: Attempting to connect wallet...');
         
-        while (window.contractConfig.isConnecting && waitCount < maxWaitTime) {
-            await new Promise(resolve => setTimeout(resolve, 100));
-            waitCount++;
-            
-            // اگر اتصال موفق شد، از حلقه خارج شو
-            if (window.contractConfig.signer && window.contractConfig.contract) {
+        // بررسی اتصال موجود
+        if (window.contractConfig && window.contractConfig.contract) {
+            console.log('Register: Wallet already connected');
+            return window.contractConfig;
+        }
+        
+        // بررسی اتصال MetaMask موجود
+        if (typeof window.ethereum !== 'undefined') {
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            if (accounts && accounts.length > 0) {
+                console.log('Register: MetaMask already connected, initializing Web3...');
                 try {
-                    const address = await window.contractConfig.signer.getAddress();
-                    if (address) {
-                        console.log("Connection completed while waiting");
-                        return {
-                            provider: window.contractConfig.provider,
-                            contract: window.contractConfig.contract,
-                            signer: window.contractConfig.signer,
-                            address: address
-                        };
-                    }
+                    await initializeWeb3();
+                    return window.contractConfig;
                 } catch (error) {
-                    // ادامه انتظار
+                    console.log('Register: Failed to initialize Web3:', error);
+                    throw new Error('خطا در راه‌اندازی Web3');
                 }
             }
         }
         
-        // اگر زمان انتظار تمام شد، isConnecting را ریست کن
-        if (window.contractConfig.isConnecting) {
-            console.log("Connection timeout, resetting isConnecting flag");
-            window.contractConfig.isConnecting = false;
-        }
+        console.log('Register: No existing connection, user needs to connect manually');
+        throw new Error('لطفاً ابتدا کیف پول خود را متصل کنید');
+        
+    } catch (error) {
+        console.error('Register: Error connecting wallet:', error);
+        showRegisterError(error.message);
+        throw error;
     }
-    
-    // تلاش برای اتصال
-    const success = await window.contractConfig.initializeWeb3();
-    if (!success) {
-        throw new Error("Failed to connect to wallet");
-    }
-    
-    return {
-        provider: window.contractConfig.provider,
-        contract: window.contractConfig.contract,
-        signer: window.contractConfig.signer,
-        address: await window.contractConfig.signer.getAddress()
-    };
 }
 
 // تابع به‌روزرسانی نمایش موجودی

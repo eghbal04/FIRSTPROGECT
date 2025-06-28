@@ -68,81 +68,38 @@ async function checkConnection() {
 
 // تابع اتصال به کیف پول
 async function connectWallet() {
-    if (!window.contractConfig) {
-        throw new Error("Contract config not initialized");
-    }
-    
-    // بررسی اینکه آیا قبلاً متصل هستیم
-    if (window.contractConfig.signer && window.contractConfig.contract) {
-        try {
-            const address = await window.contractConfig.signer.getAddress();
-            if (address) {
-                return {
-                    provider: window.contractConfig.provider,
-                    contract: window.contractConfig.contract,
-                    signer: window.contractConfig.signer,
-                    address: address
-                };
-            }
-        } catch (error) {
-            // اگر signer معتبر نیست، دوباره اتصال برقرار کنیم
-            console.log("Existing connection invalid, reconnecting...");
-        }
-    }
-    
-    // اگر در حال اتصال هستیم، منتظر بمان
-    if (window.contractConfig.isConnecting) {
-        console.log("Wallet connection in progress, waiting...");
-        let waitCount = 0;
-        const maxWaitTime = 50; // حداکثر 5 ثانیه
+    try {
+        console.log('Swap: Attempting to connect wallet...');
         
-        while (window.contractConfig.isConnecting && waitCount < maxWaitTime) {
-            await new Promise(resolve => setTimeout(resolve, 100));
-            waitCount++;
-            
-            // اگر اتصال موفق شد، از حلقه خارج شو
-            if (window.contractConfig.signer && window.contractConfig.contract) {
+        // بررسی اتصال موجود
+        if (window.contractConfig && window.contractConfig.contract) {
+            console.log('Swap: Wallet already connected');
+            return window.contractConfig;
+        }
+        
+        // بررسی اتصال MetaMask موجود
+        if (typeof window.ethereum !== 'undefined') {
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            if (accounts && accounts.length > 0) {
+                console.log('Swap: MetaMask already connected, initializing Web3...');
                 try {
-                    const address = await window.contractConfig.signer.getAddress();
-                    if (address) {
-                        console.log("Connection completed while waiting");
-                        return {
-                            provider: window.contractConfig.provider,
-                            contract: window.contractConfig.contract,
-                            signer: window.contractConfig.signer,
-                            address: address
-                        };
-                    }
+                    await initializeWeb3();
+                    return window.contractConfig;
                 } catch (error) {
-                    // ادامه انتظار
+                    console.log('Swap: Failed to initialize Web3:', error);
+                    throw new Error('خطا در راه‌اندازی Web3');
                 }
             }
         }
         
-        // اگر زمان انتظار تمام شد، isConnecting را ریست کن
-        if (window.contractConfig.isConnecting) {
-            console.log("Connection timeout, resetting isConnecting flag");
-            window.contractConfig.isConnecting = false;
-        }
+        console.log('Swap: No existing connection, user needs to connect manually');
+        throw new Error('لطفاً ابتدا کیف پول خود را متصل کنید');
+        
+    } catch (error) {
+        console.error('Swap: Error connecting wallet:', error);
+        showSwapError('خطا در اتصال به کیف پول');
+        throw error;
     }
-    
-    // تلاش برای اتصال
-    const success = await window.contractConfig.initializeWeb3();
-    if (!success) {
-        throw new Error("Failed to connect to wallet");
-    }
-    
-    // بررسی اینکه آیا اتصال موفق بود
-    if (!window.contractConfig.signer) {
-        throw new Error("Failed to connect to wallet");
-    }
-    
-    return {
-        provider: window.contractConfig.provider,
-        contract: window.contractConfig.contract,
-        signer: window.contractConfig.signer,
-        address: await window.contractConfig.signer.getAddress()
-    };
 }
 
 // Update rate info (refactored)
@@ -176,17 +133,63 @@ async function updateRateInfo() {
 
 async function loadBalances() {
     try {
-        const { signer, contract, address } = await connectWallet();
+        console.log('Loading balances...');
+        
+        // بررسی وضعیت اتصال فعلی
+        if (!window.contractConfig || !window.contractConfig.contract) {
+            console.log('No contract connection, attempting to connect...');
+            
+            // بررسی اتصال MetaMask موجود
+            if (typeof window.ethereum !== 'undefined') {
+                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                if (accounts && accounts.length > 0) {
+                    console.log('MetaMask already connected, initializing Web3...');
+                    try {
+                        await initializeWeb3();
+                    } catch (error) {
+                        console.log('Failed to initialize Web3:', error);
+                        showSwapError('خطا در اتصال به کیف پول');
+                        return;
+                    }
+                } else {
+                    console.log('MetaMask not connected, showing connection prompt');
+                    showSwapError('لطفاً ابتدا کیف پول خود را متصل کنید');
+                    return;
+                }
+            } else {
+                console.log('MetaMask not available');
+                showSwapError('MetaMask یافت نشد');
+                return;
+            }
+        }
+        
+        const { contract, signer } = window.contractConfig;
+        const address = await signer.getAddress();
+        
+        console.log('Loading balances for address:', address);
+        
         // دریافت موجودی MATIC
-        const maticBalance = await signer.provider.getBalance(address);
-        const maticFormatted = parseInt(ethers.formatEther(maticBalance)).toLocaleString('en-US');
-        document.getElementById('maticBalance').textContent = `MATIC: ${maticFormatted}`;
+        const maticBalance = await window.ethereum.request({
+            method: 'eth_getBalance',
+            params: [address, 'latest']
+        });
+        
         // دریافت موجودی LVL
         const lvlBalance = await contract.balanceOf(address);
-        const lvlFormatted = parseInt(ethers.formatUnits(lvlBalance, 18)).toLocaleString('en-US');
-        document.getElementById('lvlBalance').textContent = `LVL: ${lvlFormatted}`;
+        
+        // تبدیل به فرمت قابل خواندن
+        const maticFormatted = ethers.formatEther(maticBalance);
+        const lvlFormatted = ethers.formatEther(lvlBalance);
+        
+        // به‌روزرسانی UI
+        document.getElementById('maticBalance').textContent = `MATIC: ${parseFloat(maticFormatted).toFixed(4)}`;
+        document.getElementById('lvlBalance').textContent = `LVL: ${parseFloat(lvlFormatted).toFixed(2)}`;
+        
+        console.log('Balances loaded successfully');
+        
     } catch (error) {
-        console.error("Error loading balances:", error);
+        console.error('Error loading balances:', error);
+        showSwapError('خطا در بارگذاری موجودی‌ها');
     }
 }
 

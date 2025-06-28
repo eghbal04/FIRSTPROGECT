@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const walletConnectButton = document.getElementById('walletConnectButton');
 
     // تلاش برای اتصال خودکار هنگام بارگذاری صفحه (فقط یک بار)
-    await autoConnectWallet();
+  await autoConnectWallet();
   
     if (connectButton) {
         connectButton.addEventListener('click', async () => {
@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             await connectWalletAndUpdateUI('walletconnect');
         });
     }
-
+    
     // به‌روزرسانی ناوبار بر اساس وضعیت کاربر
     await updateNavbarBasedOnUserStatus();
 });
@@ -108,8 +108,8 @@ const updateElement = (id, value) => {
                 value = (num / 1000).toFixed(2) + 'K';
             } else {
                 value = num.toLocaleString('en-US', {
-                    maximumFractionDigits: 6
-                });
+                maximumFractionDigits: 6
+            });
             }
         }
     }
@@ -190,40 +190,37 @@ async function fetchUserProfile() {
 
 // تابع اتصال به کیف پول
 async function connectWallet() {
-    if (!window.contractConfig) {
-        throw new Error("Contract config not initialized");
-    }
-    
-    // بررسی اینکه آیا قبلاً متصل هستیم
-    if (window.contractConfig.signer && window.contractConfig.contract) {
-        try {
-            const address = await window.contractConfig.signer.getAddress();
-            if (address) {
-                return {
-                    provider: window.contractConfig.provider,
-                    contract: window.contractConfig.contract,
-                    signer: window.contractConfig.signer,
-                    address: address
-                };
-            }
-        } catch (error) {
-            // اگر signer معتبر نیست، دوباره اتصال برقرار کنیم
-            console.log("Existing connection invalid, reconnecting...");
+    try {
+        console.log('Main: Attempting to connect wallet...');
+        
+        // بررسی اتصال موجود
+        if (window.contractConfig && window.contractConfig.contract) {
+            console.log('Main: Wallet already connected');
+            return window.contractConfig;
         }
+        
+        // بررسی اتصال MetaMask موجود
+        if (typeof window.ethereum !== 'undefined') {
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            if (accounts && accounts.length > 0) {
+                console.log('Main: MetaMask already connected, initializing Web3...');
+                try {
+                    await initializeWeb3();
+                    return window.contractConfig;
+                } catch (error) {
+                    console.log('Main: Failed to initialize Web3:', error);
+                    throw new Error('خطا در راه‌اندازی Web3');
+                }
+            }
+        }
+        
+        console.log('Main: No existing connection, user needs to connect manually');
+        throw new Error('لطفاً ابتدا کیف پول خود را متصل کنید');
+        
+    } catch (error) {
+        console.error('Main: Error connecting wallet:', error);
+        throw error;
     }
-    
-    // استفاده از تابع بهبود یافته initializeWeb3
-    const success = await window.contractConfig.initializeWeb3();
-    if (!success) {
-        throw new Error("Failed to connect to wallet");
-    }
-    
-    return {
-        provider: window.contractConfig.provider,
-        contract: window.contractConfig.contract,
-        signer: window.contractConfig.signer,
-        address: await window.contractConfig.signer.getAddress()
-    };
 }
 
 // main.js
@@ -239,41 +236,41 @@ async function autoConnectWallet() {
     isAutoConnecting = true;
     
     try {
-        if (typeof window.ethereum === 'undefined' && !window.contractConfig.walletConnectProvider) {
+    if (typeof window.ethereum === 'undefined' && !window.contractConfig.walletConnectProvider) {
             return false;
-        }
+    }
 
-        // اتوکانکت متامسک
-        try {
-            if (window.ethereum) {
-                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-                if (accounts.length > 0) {
-                    const address = accounts[0];
-                    const profile = await fetchUserProfile();
-                    updateConnectionUI(profile, address, 'metamask');
-                    return true;
-                }
+    // اتوکانکت متامسک
+    try {
+        if (window.ethereum) {
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        if (accounts.length > 0) {
+            const address = accounts[0];
+            const profile = await fetchUserProfile();
+            updateConnectionUI(profile, address, 'metamask');
+            return true;
             }
-        } catch (error) {
+        }
+    } catch (error) {
             console.log("MetaMask auto-connect failed:", error.message);
-        }
+    }
 
-        // اتوکانکت WalletConnect (اگر قبلاً متصل بوده)
-        try {
-            if (window.contractConfig.walletConnectProvider && window.contractConfig.walletConnectProvider.session) {
-                const connected = await window.contractConfig.connectWithWalletConnect();
-                if (connected) {
-                    const address = await window.contractConfig.signer.getAddress();
-                    const profile = await fetchUserProfile();
-                    updateConnectionUI(profile, address, 'walletconnect');
-                    return true;
-                }
+    // اتوکانکت WalletConnect (اگر قبلاً متصل بوده)
+    try {
+        if (window.contractConfig.walletConnectProvider && window.contractConfig.walletConnectProvider.session) {
+            const connected = await window.contractConfig.connectWithWalletConnect();
+            if (connected) {
+                const address = await window.contractConfig.signer.getAddress();
+                const profile = await fetchUserProfile();
+                updateConnectionUI(profile, address, 'walletconnect');
+                return true;
             }
-        } catch (error) {
-            console.log("WalletConnect auto-connect failed:", error.message);
         }
+    } catch (error) {
+            console.log("WalletConnect auto-connect failed:", error.message);
+    }
         
-        return false;
+    return false;
     } finally {
         isAutoConnecting = false;
     }

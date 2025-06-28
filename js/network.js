@@ -38,194 +38,91 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // تابع اتصال به کیف پول با انتظار
 async function connectWallet() {
-    if (!window.contractConfig) {
-        throw new Error("Contract config not initialized");
-    }
-    
-    // بررسی اینکه آیا قبلاً متصل هستیم
-    if (window.contractConfig.signer && window.contractConfig.contract) {
-        try {
-            const address = await window.contractConfig.signer.getAddress();
-            if (address) {
-                return {
-                    provider: window.contractConfig.provider,
-                    contract: window.contractConfig.contract,
-                    signer: window.contractConfig.signer,
-                    address: address
-                };
-            }
-        } catch (error) {
-            console.log("Existing connection invalid, reconnecting...");
-        }
-    }
-    
-    // اگر در حال اتصال هستیم، منتظر بمان
-    if (window.contractConfig.isConnecting) {
-        console.log("Wallet connection in progress, waiting...");
-        let waitCount = 0;
-        const maxWaitTime = 50; // حداکثر 5 ثانیه
+    try {
+        console.log('Network: Attempting to connect wallet...');
         
-        while (window.contractConfig.isConnecting && waitCount < maxWaitTime) {
-            await new Promise(resolve => setTimeout(resolve, 100));
-            waitCount++;
-            
-            // اگر اتصال موفق شد، از حلقه خارج شو
-            if (window.contractConfig.signer && window.contractConfig.contract) {
+        // بررسی اتصال موجود
+        if (window.contractConfig && window.contractConfig.contract) {
+            console.log('Network: Wallet already connected');
+            return window.contractConfig;
+        }
+        
+        // بررسی اتصال MetaMask موجود
+        if (typeof window.ethereum !== 'undefined') {
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            if (accounts && accounts.length > 0) {
+                console.log('Network: MetaMask already connected, initializing Web3...');
                 try {
-                    const address = await window.contractConfig.signer.getAddress();
-                    if (address) {
-                        console.log("Connection completed while waiting");
-                        return {
-                            provider: window.contractConfig.provider,
-                            contract: window.contractConfig.contract,
-                            signer: window.contractConfig.signer,
-                            address: address
-                        };
-                    }
+                    await initializeWeb3();
+                    return window.contractConfig;
                 } catch (error) {
-                    // ادامه انتظار
+                    console.log('Network: Failed to initialize Web3:', error);
+                    throw new Error('خطا در راه‌اندازی Web3');
                 }
             }
         }
         
-        // اگر زمان انتظار تمام شد، isConnecting را ریست کن
-        if (window.contractConfig.isConnecting) {
-            console.log("Connection timeout, resetting isConnecting flag");
-            window.contractConfig.isConnecting = false;
-        }
+        console.log('Network: No existing connection, user needs to connect manually');
+        throw new Error('لطفاً ابتدا کیف پول خود را متصل کنید');
+        
+    } catch (error) {
+        console.error('Network: Error connecting wallet:', error);
+        showNetworkStatus('خطا در اتصال به کیف پول', 'error');
+        throw error;
     }
-    
-    // تلاش برای اتصال
-    const success = await window.contractConfig.initializeWeb3();
-    if (!success) {
-        throw new Error("Failed to connect to wallet");
-    }
-    
-    return {
-        provider: window.contractConfig.provider,
-        contract: window.contractConfig.contract,
-        signer: window.contractConfig.signer,
-        address: await window.contractConfig.signer.getAddress()
-    };
 }
 
 // تابع به‌روزرسانی آمار شبکه
 async function updateNetworkStats() {
     if (isNetworkLoading) {
-        console.log("Network stats already loading, skipping...");
         return;
     }
     
     isNetworkLoading = true;
     
     try {
-        console.log("Connecting to wallet for network stats...");
         const { contract, address } = await connectWallet();
-        console.log("Wallet connected, fetching network stats...");
         
         // بررسی اینکه آیا کاربر ثبت‌نام کرده است
-        let isRegistered = false;
-        let userIncomeCap = "0";
-        let userBinaryPoints = "0";
-        let binaryRewardPerPoint = "0";
+        const isRegistered = await contract.registered(address);
         
-        try {
-            const userData = await contract.users(address);
-            isRegistered = userData.index > 0;
-            
-            if (isRegistered) {
-                // دریافت سقف درآمد کاربر (تعداد پوینت‌هایی که می‌تواند دریافت کند)
-                userIncomeCap = ethers.formatUnits(userData.binaryPointCap, 18);
-                
-                // دریافت پوینت‌های فعلی کاربر
-                userBinaryPoints = ethers.formatUnits(userData.binaryPoints, 18);
-                
-                // محاسبه پورسانت هر پوینت: موجودی قرارداد ÷ تعداد کل پوینت‌های دریافتی
-                const contractBalance = await contract.getContractMaticBalance();
-                const totalClaimablePoints = await contract.totalClaimableBinaryPoints();
-                
-                if (totalClaimablePoints > 0) {
-                    const rewardPerPoint = contractBalance / totalClaimablePoints;
-                    binaryRewardPerPoint = ethers.formatEther(rewardPerPoint);
-                }
-            }
-        } catch (userError) {
-            console.warn("User not registered or error fetching user data:", userError);
+        if (!isRegistered) {
+            document.getElementById('network-members').textContent = 'کاربر ثبت‌نام نکرده';
+            document.getElementById('network-points').textContent = 'کاربر ثبت‌نام نکرده';
+            document.getElementById('network-rewards').textContent = 'کاربر ثبت‌نام نکرده';
+            document.getElementById('referral-link').textContent = 'کاربر ثبت‌نام نکرده';
+            document.getElementById('copyReferral').disabled = true;
+            document.getElementById('claimable-points').textContent = 'کاربر ثبت‌نام نکرده';
+            document.getElementById('point-value-display').textContent = 'کاربر ثبت‌نام نکرده';
+            document.getElementById('total-claimable-reward').textContent = 'کاربر ثبت‌نام نکرده';
+            document.getElementById('claimRewardsBtn').disabled = true;
+            document.getElementById('network-tree').innerHTML = '<p class="network-tree-empty">کاربر ثبت‌نام نکرده</p>';
+            return;
         }
         
-        // دریافت آمار کلی شبکه
-        const [totalUsers, totalClaimableBinaryPoints, totalPoints] = await Promise.all([
-            contract.totalUsers(),
-            contract.totalClaimableBinaryPoints(),
-            contract.totalPoints()
-        ]);
-        
-        // محاسبه پورسانت کلی هر پوینت
-        let globalRewardPerPoint = "0";
-        try {
-            const contractBalance = await contract.getContractMaticBalance();
-            if (totalClaimableBinaryPoints > 0) {
-                const rewardPerPoint = contractBalance / totalClaimableBinaryPoints;
-                globalRewardPerPoint = ethers.formatEther(rewardPerPoint);
-            }
-        } catch (error) {
-            console.warn("Error calculating global reward per point:", error);
-        }
-        
-        // به‌روزرسانی UI
-        const updateElement = (id, value) => {
-            const element = document.getElementById(id);
-            if (!element) return;
-            
-            // فرمت‌دهی اعداد بزرگ
-            if (typeof value === 'string' && value.includes('.')) {
-                const num = parseFloat(value);
-                if (!isNaN(num)) {
-                    if (num >= 1000000) {
-                        value = (num / 1000000).toFixed(2) + 'M';
-                    } else if (num >= 1000) {
-                        value = (num / 1000).toFixed(2) + 'K';
-                    } else {
-                        value = num.toLocaleString('en-US', {
-                            maximumFractionDigits: 6
-                        });
-                    }
-                }
-            }
-            
-            element.textContent = value;
-        };
+        // دریافت اطلاعات شبکه
+        const userTree = await contract.getUserTree(address);
+        const totalUsers = await contract.totalUsers();
+        const totalPoints = await contract.totalPoints();
+        const totalClaimableBinaryPoints = await contract.totalClaimableBinaryPoints();
         
         // به‌روزرسانی آمار شبکه
-        updateElement('network-members', totalUsers.toString());
-        updateElement('network-points', ethers.formatUnits(totalClaimableBinaryPoints, 18));
-        
-        // نمایش سقف درآمد کاربر (تعداد پوینت‌هایی که می‌تواند دریافت کند)
-        if (isRegistered) {
-            // تبدیل به عدد صحیح برای نمایش
-            const capNumber = Math.round(parseFloat(userIncomeCap));
-            const element = document.getElementById('network-rewards');
-            if (element) {
-                element.textContent = capNumber.toString();
-            }
-        } else {
-            const element = document.getElementById('network-rewards');
-            if (element) {
-                element.textContent = '0';
-            }
-        }
-        
-        // پاک کردن پیام خطا
-        clearNetworkError();
-        
+        document.getElementById('network-members').textContent = totalUsers.toString();
+        document.getElementById('network-points').textContent = userTree.binaryPoints.toString();
+        document.getElementById('network-rewards').textContent = userTree.binaryPointCap.toString();
+
+        // به‌روزرسانی لینک دعوت
+        const referralLink = `${window.location.origin}${window.location.pathname}?ref=${address}`;
+        document.getElementById('referral-link').textContent = referralLink;
+        document.getElementById('copyReferral').disabled = false;
+
         // به‌روزرسانی اطلاعات claim
         await updateClaimInfo();
-        
-        console.log("Network stats updated successfully");
-        
+
     } catch (error) {
-        console.error("Error updating network stats:", error);
-        showError(`خطا در به‌روزرسانی آمار شبکه: ${error.message}`);
+        console.error('Error updating network stats:', error);
+        document.getElementById('network-status').textContent = 'خطا در بارگذاری آمار شبکه';
+        document.getElementById('network-status').className = 'network-status error';
     } finally {
         isNetworkLoading = false;
     }
@@ -370,7 +267,7 @@ async function renderNetworkTree() {
                 treeContainer.innerHTML = `
                     <h3>ساختار شبکه شما</h3>
                     <div class="network-tree-content">
-                        <div style="text-align: center; padding: 2rem; color: #00ccff;">
+                        <div class="network-tree-info">
                             <p>شما هنوز در شبکه ثبت‌نام نکرده‌اید.</p>
                             <p>برای مشاهده ساختار شبکه، ابتدا ثبت‌نام کنید.</p>
                         </div>
@@ -385,9 +282,9 @@ async function renderNetworkTree() {
             treeContainer.innerHTML = `
                 <h3>ساختار شبکه شما</h3>
                 <div class="network-tree-content">
-                    <div style="text-align: center; padding: 2rem; color: #00ccff;">
-                        <p>شما هنوز در شبکه ثبت‌نام نکرده‌اید.</p>
-                        <p>برای مشاهده ساختار شبکه، ابتدا ثبت‌نام کنید.</p>
+                    <div class="network-tree-error">
+                        <p>خطا در بارگذاری درخت شبکه:</p>
+                        <p>${error.message}</p>
                     </div>
                 </div>
             `;
@@ -429,7 +326,7 @@ async function renderNetworkTree() {
             treeContainer.innerHTML = `
                 <h3>ساختار شبکه شما</h3>
                 <div class="network-tree-content">
-                    <div style="text-align: center; padding: 2rem; color: #ff6b6b;">
+                    <div class="network-tree-error">
                         <p>خطا در بارگذاری درخت شبکه:</p>
                         <p>${error.message}</p>
                     </div>

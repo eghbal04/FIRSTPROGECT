@@ -16,6 +16,8 @@
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
     <!-- بارگذاری Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- بارگذاری QRCode.js برای WalletConnect -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <!-- <meta http-equiv="refresh" content="180"> -->
     <style>
       body {
@@ -1892,6 +1894,36 @@
       }
       
       /* Remove iOS 26 Dark Mode Support since we're using pure black theme */
+      .connection-status {
+        margin-top: 1rem;
+        padding: 1rem;
+        border-radius: 12px;
+        font-family: 'Nazanin', 'B Nazanin', 'BNazanin', Tahoma, Arial, sans-serif;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-align: center;
+        transition: all 0.3s ease;
+      }
+      
+      .connection-status.success {
+        background: rgba(0, 255, 136, 0.1);
+        border: 1px solid rgba(0, 255, 136, 0.3);
+        color: #00ff88;
+      }
+      
+      .connection-status.error {
+        background: rgba(255, 0, 0, 0.1);
+        border: 1px solid rgba(255, 0, 0, 0.3);
+        color: #ff4444;
+      }
+      
+      .connection-status.info {
+        background: rgba(0, 204, 255, 0.1);
+        border: 1px solid rgba(0, 204, 255, 0.3);
+        color: #00ccff;
+      }
+      
+      /* Remove iOS 26 Dark Mode Support since we're using pure black theme */
   </style>
 
   <!-- Tree Structure Styles -->
@@ -2144,46 +2176,8 @@
     }
   </style>
 
-  <!-- بارگذاری WalletConnect UMD برای پشتیبانی از QR Code در مرورگر -->
-  <script src="https://unpkg.com/@walletconnect/ethereum-provider@2.11.4/dist/umd/index.min.js" 
-          onerror="console.error('Failed to load WalletConnect UMD from unpkg')"
-          onload="console.log('WalletConnect UMD loaded successfully from unpkg')"></script>
-  <!-- Fallback WalletConnect scripts -->
-  <script>
-    if (typeof window.WalletConnectEthereumProvider === 'undefined') {
-      console.log('Loading WalletConnect fallback from jsdelivr...');
-      const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/npm/@walletconnect/ethereum-provider@2.11.4/dist/umd/index.min.js';
-      script.onload = () => console.log('WalletConnect fallback loaded from jsdelivr');
-      script.onerror = () => {
-        console.error('WalletConnect fallback failed from jsdelivr, trying alternative...');
-        const altScript = document.createElement('script');
-        altScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/walletconnect/2.11.4/umd/index.min.js';
-        altScript.onload = () => console.log('WalletConnect loaded from cdnjs');
-        altScript.onerror = () => {
-          console.error('All WalletConnect CDN sources failed, trying local fallback...');
-          // تلاش برای بارگذاری از یک منبع جایگزین
-          const finalScript = document.createElement('script');
-          finalScript.src = 'https://unpkg.com/@walletconnect/ethereum-provider@2.10.0/dist/umd/index.min.js';
-          finalScript.onload = () => console.log('WalletConnect loaded from alternative version');
-          finalScript.onerror = () => {
-            console.error('All WalletConnect sources failed. QR code feature will not be available.');
-            // نمایش پیام به کاربر
-            setTimeout(() => {
-              const qrBtn = document.getElementById('qr-connect-btn');
-              if (qrBtn) {
-                qrBtn.style.opacity = '0.5';
-                qrBtn.title = 'WalletConnect در دسترس نیست. از اتصال هوشمند استفاده کنید.';
-              }
-            }, 1000);
-          };
-          document.head.appendChild(finalScript);
-        };
-        document.head.appendChild(altScript);
-      };
-      document.head.appendChild(script);
-    }
-  </script>
+  <!-- بارگذاری WalletConnect UMD به صورت لوکال -->
+  <script src="js/walletconnect-v1.8.0.js"></script>
 </head>
 <body>
 
@@ -2192,39 +2186,6 @@
       <header>
         <h1>داشبورد LevelUp</h1>
         <p>خوش آمدید! اینجا اطلاعات کلی پلتفرم و وضعیت توکن را مشاهده می‌کنید.</p>
-        <!-- دکمه اتصال با QR Code -->
-        <div style="text-align: center; margin-top: 1rem;">
-          <button id="qr-connect-btn" onclick="connectWithQRCode()" style="
-            background: linear-gradient(135deg, #00ff88, #00ccff);
-            color: #000000;
-            border: none;
-            border-radius: 12px;
-            padding: 0.8rem 1.5rem;
-            font-family: 'Nazanin', 'B Nazanin', 'BNazanin', Tahoma, Arial, sans-serif;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin: 0 0.5rem;
-          ">
-            📱 اتصال با بارکد
-          </button>
-          <button id="smart-connect-btn" onclick="smartConnect()" style="
-            background: linear-gradient(135deg, #00ccff, #00ff88);
-            color: #000000;
-            border: none;
-            border-radius: 12px;
-            padding: 0.8rem 1.5rem;
-            font-family: 'Nazanin', 'B Nazanin', 'BNazanin', Tahoma, Arial, sans-serif;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin: 0 0.5rem;
-          ">
-            🔗 اتصال هوشمند
-          </button>
-        </div>
       </header>
     </div>
     <div class="expand-content">
@@ -2591,7 +2552,70 @@
     </div>
   </footer>
 
+  <!-- دکمه‌های اتصال کیف پول -->
+  <div style="text-align: center; margin: 2rem 0 1rem 0; padding: 1rem;">
+    <button id="qr-connect-btn" onclick="connectWithQRCode()" style="
+      background: linear-gradient(135deg, #00ff88, #00ccff);
+      color: #000000;
+      border: none;
+      border-radius: 12px;
+      padding: 0.8rem 1.5rem;
+      font-family: 'Nazanin', 'B Nazanin', 'BNazanin', Tahoma, Arial, sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin: 0 0.5rem;
+    ">
+      📱 اتصال با بارکد
+    </button>
+    <button id="smart-connect-btn" onclick="smartConnect()" style="
+      background: linear-gradient(135deg, #00ccff, #00ff88);
+      color: #000000;
+      border: none;
+      border-radius: 12px;
+      padding: 0.8rem 1.5rem;
+      font-family: 'Nazanin', 'B Nazanin', 'BNazanin', Tahoma, Arial, sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin: 0 0.5rem;
+    ">
+      🔗 اتصال هوشمند
+    </button>
+    <button id="disconnect-btn" onclick="disconnectWallet()" style="
+      display: none;
+      background: linear-gradient(135deg, #ff4444, #cc0000);
+      color: #ffffff;
+      border: none;
+      border-radius: 12px;
+      padding: 0.8rem 1.5rem;
+      font-family: 'Nazanin', 'B Nazanin', 'BNazanin', Tahoma, Arial, sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin: 0 0.5rem;
+    ">
+      🔌 قطع اتصال
+    </button>
+  </div>
+  
+  <!-- نمایش وضعیت اتصال -->
+  <div id="connection-status" style="
+    display: none;
+    margin: 0 1rem 1rem 1rem;
+    padding: 1rem;
+    border-radius: 12px;
+    font-family: 'Nazanin', 'B Nazanin', 'BNazanin', Tahoma, Arial, sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-align: center;
+  "></div>
+
   <script src="js/config.js?v=5.7"></script>
+  <script src="js/walletconnect-handler.js?v=5.7"></script>
   <script src="js/web3-interactions.js?v=5.7"></script>
   <script src="js/main.js?v=5.7"></script>
   <script src="js/swap.js?v=5.7"></script>

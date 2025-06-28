@@ -1,16 +1,21 @@
 // reports.js - بخش گزارشات و فعالیت‌ها
 let isReportsLoading = false;
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', function() {
+    // Reports section loaded, waiting for wallet connection...
+    waitForWalletConnection();
+});
+
+async function waitForWalletConnection() {
     try {
-        console.log("Reports section loaded, waiting for wallet connection...");
+        // Reports section loaded, waiting for wallet connection...
         // بررسی اتصال کیف پول
         const connection = await checkConnection();
         if (!connection.connected) {
             showReportsError("لطفا ابتدا کیف پول خود را متصل کنید");
-            return;
-        }
-
+        return;
+    }
+    
         // بارگذاری گزارشات
         await loadReports();
 
@@ -24,79 +29,42 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error("Error in reports section:", error);
         showReportsError("خطا در بارگذاری گزارشات");
     }
-});
+}
 
 // تابع اتصال به کیف پول با انتظار
 async function connectWallet() {
-    if (!window.contractConfig) {
-        throw new Error("Contract config not initialized");
-    }
-    
-    // بررسی اینکه آیا قبلاً متصل هستیم
-    if (window.contractConfig.signer && window.contractConfig.contract) {
-        try {
-            const address = await window.contractConfig.signer.getAddress();
-            if (address) {
-                return {
-                    provider: window.contractConfig.provider,
-                    contract: window.contractConfig.contract,
-                    signer: window.contractConfig.signer,
-                    address: address
-                };
-            }
-        } catch (error) {
-            console.log("Existing connection invalid, reconnecting...");
-        }
-    }
-    
-    // اگر در حال اتصال هستیم، منتظر بمان
-    if (window.contractConfig.isConnecting) {
-        console.log("Wallet connection in progress, waiting...");
-        let waitCount = 0;
-        const maxWaitTime = 50; // حداکثر 5 ثانیه
+    try {
+        console.log('Reports: Attempting to connect wallet...');
         
-        while (window.contractConfig.isConnecting && waitCount < maxWaitTime) {
-            await new Promise(resolve => setTimeout(resolve, 100));
-            waitCount++;
-            
-            // اگر اتصال موفق شد، از حلقه خارج شو
-            if (window.contractConfig.signer && window.contractConfig.contract) {
+        // بررسی اتصال موجود
+        if (window.contractConfig && window.contractConfig.contract) {
+            console.log('Reports: Wallet already connected');
+            return window.contractConfig;
+        }
+        
+        // بررسی اتصال MetaMask موجود
+        if (typeof window.ethereum !== 'undefined') {
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            if (accounts && accounts.length > 0) {
+                console.log('Reports: MetaMask already connected, initializing Web3...');
                 try {
-                    const address = await window.contractConfig.signer.getAddress();
-                    if (address) {
-                        console.log("Connection completed while waiting");
-                        return {
-                            provider: window.contractConfig.provider,
-                            contract: window.contractConfig.contract,
-                            signer: window.contractConfig.signer,
-                            address: address
-                        };
-                    }
+                    await initializeWeb3();
+                    return window.contractConfig;
                 } catch (error) {
-                    // ادامه انتظار
+                    console.log('Reports: Failed to initialize Web3:', error);
+                    throw new Error('خطا در راه‌اندازی Web3');
                 }
             }
         }
         
-        // اگر زمان انتظار تمام شد، isConnecting را ریست کن
-        if (window.contractConfig.isConnecting) {
-            console.log("Connection timeout, resetting isConnecting flag");
-            window.contractConfig.isConnecting = false;
-        }
+        console.log('Reports: No existing connection, user needs to connect manually');
+        throw new Error('لطفاً ابتدا کیف پول خود را متصل کنید');
+        
+    } catch (error) {
+        console.error('Reports: Error connecting wallet:', error);
+        showReportsError('خطا در اتصال به کیف پول');
+        throw error;
     }
-    
-    // تلاش برای اتصال
-    const success = await window.contractConfig.initializeWeb3();
-    if (!success) {
-        throw new Error("Failed to connect to wallet");
-    }
-    
-    return {
-        provider: window.contractConfig.provider,
-        contract: window.contractConfig.contract,
-        signer: window.contractConfig.signer,
-        address: await window.contractConfig.signer.getAddress()
-    };
 }
 
 // تابع فرمت کردن آدرس
@@ -112,7 +80,7 @@ function shortenTransactionHash(hash) {
 }
 
 // تابع فرمت تاریخ بهبود یافته
-function formatDate(timestamp) {
+    function formatDate(timestamp) {
     try {
         // بررسی اعتبار timestamp
         if (!timestamp || isNaN(timestamp)) {
@@ -193,43 +161,43 @@ function formatDate(timestamp) {
         console.error("Error formatting date:", error, "timestamp:", timestamp);
         return "خطا در نمایش تاریخ";
     }
-}
-
-// تابع فرمت کردن اعداد
-function formatNumber(value, decimals = 18) {
-    try {
-        if (!value || value.toString() === '0') return '0';
-        const formatted = ethers.formatUnits(value, decimals);
-        const num = parseFloat(formatted);
-        if (num < 0.000001) {
-            return num.toExponential(2);
-        }
-        return num.toLocaleString('en-US', { maximumFractionDigits: 6 });
-    } catch (error) {
-        console.error('Error formatting number:', error);
-        return '0';
     }
-}
-
-// تابع دریافت گزارشات از قرارداد
-async function fetchReports() {
-    try {
-        const { contract, address } = await connectWallet();
-        
-        const reports = [];
-        const currentBlock = await contract.runner.provider.getBlockNumber();
+    
+    // تابع فرمت کردن اعداد
+    function formatNumber(value, decimals = 18) {
+        try {
+            if (!value || value.toString() === '0') return '0';
+            const formatted = ethers.formatUnits(value, decimals);
+            const num = parseFloat(formatted);
+            if (num < 0.000001) {
+                return num.toExponential(2);
+            }
+            return num.toLocaleString('en-US', { maximumFractionDigits: 6 });
+        } catch (error) {
+            console.error('Error formatting number:', error);
+            return '0';
+        }
+    }
+    
+    // تابع دریافت گزارشات از قرارداد
+    async function fetchReports() {
+        try {
+            const { contract, address } = await connectWallet();
+            
+            const reports = [];
+            const currentBlock = await contract.runner.provider.getBlockNumber();
         const fromBlock = Math.max(0, currentBlock - 50000); // افزایش به 50000 بلاک
         
         console.log(`Searching for events from block ${fromBlock} to ${currentBlock}`);
-        
-        // دریافت رویدادهای خرید
+            
+            // دریافت رویدادهای خرید
         let purchaseEvents = [];
-        try {
+            try {
             purchaseEvents = await contract.queryFilter(
-                contract.filters.purchaseKind(address),
-                fromBlock,
-                currentBlock
-            );
+                    contract.filters.purchaseKind(address),
+                    fromBlock,
+                    currentBlock
+                );
             console.log(`Found ${purchaseEvents.length} purchase events`);
         } catch (error) {
             console.error('Error fetching purchase events:', error);
@@ -310,146 +278,146 @@ async function fetchReports() {
         );
         
         // ساخت گزارشات با timestamp صحیح
-        purchaseEvents.forEach(event => {
+                purchaseEvents.forEach(event => {
             const ts = blockTimestamps[event.blockNumber] || Math.floor(Date.now() / 1000);
             console.log('purchaseEvent timestamp:', ts, 'blockNumber:', event.blockNumber, 'event:', event);
-            reports.push({
-                type: 'purchase',
-                title: 'خرید توکن',
-                amount: formatNumber(event.args.amountlvl, 18) + ' LVL',
+                    reports.push({
+                        type: 'purchase',
+                        title: 'خرید توکن',
+                        amount: formatNumber(event.args.amountlvl, 18) + ' LVL',
                 timestamp: ts,
-                transactionHash: event.transactionHash,
-                blockNumber: event.blockNumber
-            });
-        });
-        
-        activationEvents.forEach(event => {
+                        transactionHash: event.transactionHash,
+                        blockNumber: event.blockNumber
+                    });
+                });
+                
+                activationEvents.forEach(event => {
             const ts = blockTimestamps[event.blockNumber] || Math.floor(Date.now() / 1000);
             console.log('activationEvent timestamp:', ts, 'blockNumber:', event.blockNumber, 'event:', event);
-            reports.push({
-                type: 'activation',
-                title: 'فعال‌سازی حساب',
-                amount: formatNumber(event.args.amountlvl, 18) + ' LVL',
+                    reports.push({
+                        type: 'activation',
+            title: 'فعال‌سازی حساب',
+                        amount: formatNumber(event.args.amountlvl, 18) + ' LVL',
                 timestamp: ts,
-                transactionHash: event.transactionHash,
-                blockNumber: event.blockNumber
-            });
-        });
-        
-        buyEvents.forEach(event => {
+                        transactionHash: event.transactionHash,
+                        blockNumber: event.blockNumber
+                    });
+                });
+                
+                buyEvents.forEach(event => {
             const ts = blockTimestamps[event.blockNumber] || Math.floor(Date.now() / 1000);
             console.log('buyEvent timestamp:', ts, 'blockNumber:', event.blockNumber, 'event:', event);
-            reports.push({
-                type: 'trading',
-                title: 'خرید توکن با MATIC',
-                amount: `${formatNumber(event.args.maticAmount, 18)} MATIC → ${formatNumber(event.args.tokenAmount, 18)} LVL`,
+                    reports.push({
+                        type: 'trading',
+                        title: 'خرید توکن با MATIC',
+                        amount: `${formatNumber(event.args.maticAmount, 18)} MATIC → ${formatNumber(event.args.tokenAmount, 18)} LVL`,
                 timestamp: ts,
-                transactionHash: event.transactionHash,
-                blockNumber: event.blockNumber
-            });
-        });
-        
-        sellEvents.forEach(event => {
+                        transactionHash: event.transactionHash,
+                        blockNumber: event.blockNumber
+                    });
+                });
+                
+                sellEvents.forEach(event => {
             const ts = blockTimestamps[event.blockNumber] || Math.floor(Date.now() / 1000);
             console.log('sellEvent timestamp:', ts, 'blockNumber:', event.blockNumber, 'event:', event);
-            reports.push({
-                type: 'trading',
-                title: 'فروش توکن',
-                amount: `${formatNumber(event.args.tokenAmount, 18)} LVL → ${formatNumber(event.args.maticAmount, 18)} MATIC`,
+                    reports.push({
+                        type: 'trading',
+                        title: 'فروش توکن',
+                        amount: `${formatNumber(event.args.tokenAmount, 18)} LVL → ${formatNumber(event.args.maticAmount, 18)} MATIC`,
                 timestamp: ts,
-                transactionHash: event.transactionHash,
-                blockNumber: event.blockNumber
-            });
-        });
-        
-        binaryEvents.forEach(event => {
+                        transactionHash: event.transactionHash,
+                        blockNumber: event.blockNumber
+                    });
+                });
+                
+                binaryEvents.forEach(event => {
             const ts = blockTimestamps[event.blockNumber] || Math.floor(Date.now() / 1000);
             console.log('binaryEvent timestamp:', ts, 'blockNumber:', event.blockNumber, 'event:', event);
-            reports.push({
-                type: 'binary',
-                title: 'به‌روزرسانی امتیاز باینری',
-                amount: `${formatNumber(event.args.newPoints, 18)} امتیاز (سقف: ${formatNumber(event.args.newCap, 18)})`,
+                    reports.push({
+                        type: 'binary',
+                        title: 'به‌روزرسانی امتیاز باینری',
+                        amount: `${formatNumber(event.args.newPoints, 18)} امتیاز (سقف: ${formatNumber(event.args.newCap, 18)})`,
                 timestamp: ts,
-                transactionHash: event.transactionHash,
-                blockNumber: event.blockNumber
-            });
-        });
+                        transactionHash: event.transactionHash,
+                        blockNumber: event.blockNumber
+                    });
+                });
         
         console.log(`Total reports found: ${reports.length}`);
-        
-        // مرتب‌سازی بر اساس تاریخ (جدیدترین اول)
-        reports.sort((a, b) => b.timestamp - a.timestamp);
-        
-        return reports;
-        
-    } catch (error) {
-        console.error('Error fetching reports:', error);
-        throw error;
+            
+            // مرتب‌سازی بر اساس تاریخ (جدیدترین اول)
+            reports.sort((a, b) => b.timestamp - a.timestamp);
+            
+            return reports;
+            
+        } catch (error) {
+            console.error('Error fetching reports:', error);
+            throw error;
+        }
     }
-}
-
-// تابع نمایش گزارشات
-function displayReports(reports, filterType = 'all') {
+    
+    // تابع نمایش گزارشات
+    function displayReports(reports, filterType = 'all') {
     const reportsContainer = document.getElementById('reports-container');
-    if (!reportsContainer) return;
+        if (!reportsContainer) return;
+        
+        const filteredReports = filterType === 'all' 
+            ? reports 
+            : reports.filter(report => report.type === filterType);
+        
+        if (filteredReports.length === 0) {
+            reportsContainer.innerHTML = `
+            <div class="no-reports">
+                    <p>هیچ گزارشی یافت نشد.</p>
+                    <p>برای مشاهده گزارشات، ابتدا فعالیتی در پلتفرم انجام دهید.</p>
+        </div>
+    `;
+            return;
+        }
     
-    const filteredReports = filterType === 'all' 
-        ? reports 
-        : reports.filter(report => report.type === filterType);
-    
-    if (filteredReports.length === 0) {
-        reportsContainer.innerHTML = `
-            <div class="no-reports" style="text-align: center; padding: 2rem; color: #ccc;">
-                <p>هیچ گزارشی یافت نشد.</p>
-                <p>برای مشاهده گزارشات، ابتدا فعالیتی در پلتفرم انجام دهید.</p>
-            </div>
-        `;
-        return;
-    }
-
-    const reportsHTML = filteredReports.map(report => `
-        <div class="report-item" style="background: rgba(0, 0, 0, 0.8); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem; backdrop-filter: blur(20px);">
-            <div class="report-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <div class="report-type" style="color: #00ff88; font-weight: 600; font-size: 1.1rem;">
+        const reportsHTML = filteredReports.map(report => `
+        <div class="report-item">
+            <div class="report-header">
+                <div class="report-type">
                     ${getReportIcon(report.type)} ${report.title}
                 </div>
-                <div class="report-time" style="color: #00ccff; font-size: 0.9rem;">${formatDate(report.timestamp)}</div>
+                <div class="report-time">${formatDate(report.timestamp)}</div>
             </div>
-            <div class="report-details" style="display: grid; gap: 0.8rem;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: #ccc;">مقدار:</span>
-                    <span style="color: #fff; font-weight: 600;">${report.amount}</span>
+            <div class="report-details">
+                <div class="report-details-row">
+                    <span class="report-details-label">مقدار:</span>
+                    <span class="report-details-value">${report.amount}</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: #ccc;">تراکنش:</span>
-                    <a href="https://polygonscan.com/tx/${report.transactionHash}" target="_blank" style="color: #00ff88; text-decoration: none; font-family: monospace;">
+                <div class="report-details-row">
+                    <span class="report-details-label">تراکنش:</span>
+                    <a href="https://polygonscan.com/tx/${report.transactionHash}" target="_blank" class="report-details-value" style="color: #00ff88; text-decoration: none; font-family: monospace;">
                         ${shortenTransactionHash(report.transactionHash)}
                     </a>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: #ccc;">بلاک:</span>
-                    <span style="color: #fff;">${report.blockNumber.toLocaleString()}</span>
+                    </div>
+                <div class="report-details-row">
+                    <span class="report-details-label">بلاک:</span>
+                    <span class="report-details-value">${report.blockNumber.toLocaleString()}</span>
                 </div>
             </div>
-        </div>
-    `).join('');
-    
-    reportsContainer.innerHTML = reportsHTML;
+            </div>
+        `).join('');
+        
+        reportsContainer.innerHTML = reportsHTML;
 }
 
-// تابع دریافت آیکون برای نوع گزارش
-function getReportIcon(type) {
-    const icons = {
+    // تابع دریافت آیکون برای نوع گزارش
+    function getReportIcon(type) {
+        const icons = {
         'purchase': '🛒',
         'activation': '✅',
         'trading': '💱',
         'binary': '📊'
-    };
+        };
     return icons[type] || '📄';
-}
-
-// تابع بارگذاری گزارشات
-async function loadReports() {
+    }
+    
+    // تابع بارگذاری گزارشات
+    async function loadReports() {
     if (isReportsLoading) {
         console.log("Reports already loading, skipping...");
         return;
@@ -463,7 +431,7 @@ async function loadReports() {
         console.log("Wallet connected, fetching reports data...");
         
         // دریافت گزارشات
-        const reports = await fetchReports();
+            const reports = await fetchReports();
         
         // نمایش گزارشات
         displayReports(reports);
@@ -472,8 +440,8 @@ async function loadReports() {
         setupFilters();
         
         console.log("Reports loaded successfully");
-        
-    } catch (error) {
+            
+        } catch (error) {
         console.error("Error loading reports:", error);
         showReportsError("خطا در بارگذاری گزارشات");
     } finally {
@@ -505,14 +473,14 @@ async function checkConnection() {
 function showReportsError(message) {
     const reportsContainer = document.getElementById('reports-container');
     if (reportsContainer) {
-        reportsContainer.innerHTML = `
-            <div class="error-message" style="text-align: center; padding: 2rem; color: #ff4444; background: rgba(255, 0, 0, 0.1); border: 1px solid rgba(255, 0, 0, 0.3); border-radius: 12px;">
+            reportsContainer.innerHTML = `
+            <div class="error-message">
                 <p>${message}</p>
-            </div>
-        `;
-    }
-}
-
+                </div>
+            `;
+            }
+        }
+    
 // تابع راه‌اندازی فیلترها
 function setupFilters() {
     const refreshButton = document.getElementById('refresh-reports');

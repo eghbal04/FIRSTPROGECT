@@ -4,37 +4,34 @@
 // web3-interactions.js
 async function connectWallet() {
     try {
-        // بررسی وجود ethers.js
-        if (typeof ethers === 'undefined') {
-            throw new Error("Ethers.js library not loaded");
-        }
-
-        // اگر WalletConnect متصل است، از آن استفاده کن
-        if (window.contractConfig.walletConnectProvider) {
-            return {
-                provider: window.contractConfig.provider,
-                signer: window.contractConfig.signer,
-                contract: window.contractConfig.contract,
-                address: await window.contractConfig.signer.getAddress()
-            };
-        }
-
-        // در غیر این صورت از متامسک استفاده کن
-        const initialized = await window.contractConfig.initializeWeb3();
-        if (!initialized) {
-            throw new Error("Web3 initialization failed");
-        }
-
-        const address = await window.contractConfig.signer.getAddress();
+        console.log('Web3: Attempting to connect wallet...');
         
-        return {
-            provider: window.contractConfig.provider,
-            signer: window.contractConfig.signer,
-            contract: window.contractConfig.contract,
-            address
-        };
+        // بررسی اتصال موجود
+        if (window.contractConfig && window.contractConfig.contract) {
+            console.log('Web3: Wallet already connected');
+            return window.contractConfig;
+        }
+        
+        // بررسی اتصال MetaMask موجود
+        if (typeof window.ethereum !== 'undefined') {
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            if (accounts && accounts.length > 0) {
+                console.log('Web3: MetaMask already connected, initializing Web3...');
+                try {
+                    await initializeWeb3();
+                    return window.contractConfig;
+                } catch (error) {
+                    console.log('Web3: Failed to initialize Web3:', error);
+                    throw new Error('خطا در راه‌اندازی Web3');
+                }
+            }
+        }
+        
+        console.log('Web3: No existing connection, user needs to connect manually');
+        throw new Error('لطفاً ابتدا کیف پول خود را متصل کنید');
+        
     } catch (error) {
-        console.error("Wallet connection error:", error);
+        console.error('Web3: Error connecting wallet:', error);
         throw error;
     }
 }

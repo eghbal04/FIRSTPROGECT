@@ -92,4 +92,255 @@ body {
   background: transparent;
 }
 
+/* Connection Status Styles */
+.connection-status {
+  margin: 1rem;
+  padding: 1rem;
+  border-radius: 12px;
+  font-family: 'Nazanin', 'B Nazanin', 'BNazanin', Tahoma, Arial, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+  transition: all 0.3s ease;
+  display: none;
+}
+
+.connection-status.success {
+  background: rgba(0, 255, 136, 0.1);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  color: #00ff88;
+}
+
+.connection-status.error {
+  background: rgba(255, 0, 0, 0.1);
+  border: 1px solid rgba(255, 0, 0, 0.3);
+  color: #ff4444;
+}
+
+.connection-status.warning {
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  color: #ffc107;
+}
+
+.connection-status.info {
+  background: rgba(0, 204, 255, 0.1);
+  border: 1px solid rgba(0, 204, 255, 0.3);
+  color: #00ccff;
+}
+
+/* Shop Section */
+.shop-balance {
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  text-align: center;
+  color: #ffffff;
+}
+.shop-balance-title {
+  color: #00ff88;
+  margin-bottom: 0.5rem;
+}
+.shop-balance-usd {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+.shop-balance-lvl {
+  font-size: 0.9rem;
+  color: #00ccff;
+  margin-top: 0.3rem;
+}
+.product-card {
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: all 0.3s ease;
+}
+.product-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: #000000;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+.product-title {
+  color: #00ff88;
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+}
+.product-desc {
+  color: #cccccc;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+.product-price {
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+.product-price-usd {
+  color: #00ccff;
+  font-size: 0.8rem;
+}
+.product-insufficient {
+  color: #ff6b6b;
+  font-size: 0.8rem;
+}
+.buy-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+.buy-btn.enabled {
+  background: linear-gradient(135deg, #00ff88, #00ccff);
+  color: #000000;
+  cursor: pointer;
+  opacity: 1;
+}
+.buy-btn.disabled {
+  background: rgba(255, 255, 255, 0.1);
+  color: #666666;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Reports Section */
+.report-item {
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  backdrop-filter: blur(20px);
+}
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.report-type {
+  color: #00ff88;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+.report-time {
+  color: #00ccff;
+  font-size: 0.9rem;
+}
+.report-details {
+  display: grid;
+  gap: 0.8rem;
+}
+.report-details-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.report-details-label {
+  color: #ccc;
+}
+.report-details-value {
+  color: #fff;
+  font-weight: 600;
+}
+.error-message {
+  text-align: center;
+  padding: 2rem;
+  color: #ff4444;
+  background: rgba(255, 0, 0, 0.1);
+  border: 1px solid rgba(255, 0, 0, 0.3);
+  border-radius: 12px;
+}
+.no-reports {
+  text-align: center;
+  padding: 2rem;
+  color: #ccc;
+}
+
+/* Network Section */
+.network-tree-empty {
+  text-align: center;
+  color: #ccc;
+  padding: 2rem;
+}
+.network-tree-info {
+  text-align: center;
+  color: #00ccff;
+  padding: 2rem;
+}
+.network-tree-error {
+  text-align: center;
+  color: #ff6b6b;
+  padding: 2rem;
+}
+
+/* Register Section */
+.register-form {
+  background: #181c2a;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  border: 1px solid #a786ff33;
+}
+.register-form-title {
+  color: #a786ff;
+  margin-bottom: 0.5rem;
+}
+.register-form-balance {
+  font-size: 1.2rem;
+  color: #fff;
+  font-weight: bold;
+}
+.register-form-balance-usd {
+  font-size: 0.9rem;
+  color: #ccc;
+  margin-top: 0.3rem;
+}
+.register-form-required {
+  color: #a786ff;
+  font-weight: bold;
+}
+.register-form-status {
+  color: #4caf50;
+}
+.register-form-status-insufficient {
+  color: #ff4444;
+}
+
+/* Footer */
+.footer {
+  direction: ltr;
+  text-align: left;
+  padding: 0.5rem 1rem 0.5rem 0;
+  font-size: 0.95rem;
+  color: #aaa;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100vw;
+  background: rgba(35,41,70,0.97);
+  z-index: 100;
+}
+.footer-highlight {
+  color: #00ff88;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
 /* Rest of the existing styles... */
