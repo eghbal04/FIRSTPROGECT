@@ -119,29 +119,20 @@ async function updateNetworkStats() {
         
         // بررسی اینکه آیا کاربر ثبت‌نام کرده است
         let isRegistered = false;
-        let userClaimableRewards = "0";
+        let userIncomeCap = "0";
         
         try {
             const userData = await contract.users(address);
             isRegistered = userData.index > 0;
             
             if (isRegistered) {
-                // محاسبه پاداش قابل پرداخت کاربر
-                const userPoints = await contract.points(address);
-                const totalPoints = await contract.totalPoints();
-                const contractBalance = await contract.getContractMaticBalance();
-                
-                if (userPoints > 0 && totalPoints > 0) {
-                    const pointValue = contractBalance / totalPoints;
-                    const userReward = userPoints * pointValue;
-                    userClaimableRewards = ethers.formatUnits(userReward, 18);
-                } else {
-                    userClaimableRewards = "0";
-                }
+                // دریافت سقف درآمد کاربر (binaryPointCap)
+                const binaryPointCap = userData.binaryPointCap;
+                userIncomeCap = ethers.formatUnits(binaryPointCap, 18);
             }
         } catch (error) {
-            console.log("User not registered or error calculating rewards:", error);
-            userClaimableRewards = "0";
+            console.log("User not registered or error getting income cap:", error);
+            userIncomeCap = "0";
         }
         
         // دریافت آمار شبکه
@@ -160,11 +151,11 @@ async function updateNetworkStats() {
         
         updateElement('network-members', totalUsers.toString());
         updateElement('network-points', ethers.formatUnits(totalPoints, 18));
-        updateElement('network-rewards', userClaimableRewards);
+        updateElement('network-rewards', userIncomeCap);
         
         console.log("Network stats updated successfully");
         console.log("User registered:", isRegistered);
-        console.log("User claimable rewards:", userClaimableRewards);
+        console.log("User income cap:", userIncomeCap);
         
         // پاک کردن پیام خطا در صورت موفقیت
         clearNetworkError();
