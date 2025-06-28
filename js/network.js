@@ -114,13 +114,39 @@ async function updateNetworkStats() {
     
     try {
         console.log("Connecting to wallet for network stats...");
-        const { contract } = await connectWallet();
+        const { contract, address } = await connectWallet();
         console.log("Wallet connected, fetching network stats...");
         
+        // بررسی اینکه آیا کاربر ثبت‌نام کرده است
+        let isRegistered = false;
+        let userClaimableRewards = "0";
+        
+        try {
+            const userData = await contract.users(address);
+            isRegistered = userData.index > 0;
+            
+            if (isRegistered) {
+                // محاسبه پاداش قابل پرداخت کاربر
+                const userPoints = await contract.points(address);
+                const totalPoints = await contract.totalPoints();
+                const contractBalance = await contract.getContractMaticBalance();
+                
+                if (userPoints > 0 && totalPoints > 0) {
+                    const pointValue = contractBalance / totalPoints;
+                    const userReward = userPoints * pointValue;
+                    userClaimableRewards = ethers.formatUnits(userReward, 18);
+                } else {
+                    userClaimableRewards = "0";
+                }
+            }
+        } catch (error) {
+            console.log("User not registered or error calculating rewards:", error);
+            userClaimableRewards = "0";
+        }
+        
         // دریافت آمار شبکه
-        const [totalUsers, totalClaimableBinaryPoints, totalPoints] = await Promise.all([
+        const [totalUsers, totalPoints] = await Promise.all([
             contract.totalUsers(),
-            contract.totalClaimableBinaryPoints(),
             contract.totalPoints()
         ]);
         
@@ -134,9 +160,11 @@ async function updateNetworkStats() {
         
         updateElement('network-members', totalUsers.toString());
         updateElement('network-points', ethers.formatUnits(totalPoints, 18));
-        updateElement('network-rewards', ethers.formatUnits(totalClaimableBinaryPoints, 18));
+        updateElement('network-rewards', userClaimableRewards);
         
         console.log("Network stats updated successfully");
+        console.log("User registered:", isRegistered);
+        console.log("User claimable rewards:", userClaimableRewards);
         
         // پاک کردن پیام خطا در صورت موفقیت
         clearNetworkError();
