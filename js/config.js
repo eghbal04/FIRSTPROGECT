@@ -1269,7 +1269,12 @@ if (!window.contractConfig)
               symbol: 'MATIC',
               decimals: 18
           },
-          rpcUrls: ['https://polygon-rpc.com/'],
+          rpcUrls: [
+              'https://polygon-rpc.com/',
+              'https://rpc-mainnet.maticvigil.com/',
+              'https://polygon-rpc.com/',
+              'https://rpc-mainnet.matic.network/'
+          ],
           blockExplorerUrls: ['https://polygonscan.com/']
       },
   
@@ -1281,20 +1286,48 @@ if (!window.contractConfig)
       // تابع اتصال به شبکه مناسب
       switchToPolygon: async function() {
           try {
+              console.log('Attempting to switch to Polygon network...');
+              
+              // بررسی شبکه فعلی
+              const provider = new ethers.BrowserProvider(window.ethereum);
+              const network = await provider.getNetwork();
+              console.log('Current network:', network.name, 'Chain ID:', network.chainId);
+              
+              // اگر در حال حاضر در Polygon هستیم، نیازی به تغییر نیست
+              if (network.chainId === 137n) {
+                  console.log('Already connected to Polygon network');
+                  return true;
+              }
+              
+              // تلاش برای تغییر شبکه
               await window.ethereum.request({
                   method: 'wallet_switchEthereumChain',
                   params: [{ chainId: this.NETWORK_CONFIG.chainId }],
               });
+              
+              console.log('Successfully switched to Polygon network');
+              return true;
+              
           } catch (switchError) {
+              console.warn('Switch network error:', switchError);
+              
+              // اگر شبکه وجود ندارد، آن را اضافه کن
               if (switchError.code === 4902) {
                   try {
+                      console.log('Adding Polygon network to wallet...');
                       await window.ethereum.request({
                           method: 'wallet_addEthereumChain',
                           params: [this.NETWORK_CONFIG],
                       });
+                      console.log('Successfully added Polygon network');
+                      return true;
                   } catch (addError) {
-                      console.error('خطا در افزودن شبکه:', addError);
+                      console.error('خطا در افزودن شبکه Polygon:', addError);
+                      throw new Error('Failed to add Polygon network to wallet');
                   }
+              } else {
+                  console.warn('Network switch failed, continuing with current network');
+                  return false;
               }
           }
       },
@@ -1339,22 +1372,85 @@ if (!window.contractConfig)
                   throw new Error('کیف پول یافت نشد');
               }
 
-              await this.switchToPolygon();
+              // تلاش برای اتصال به شبکه Polygon
+              try {
+                  await this.switchToPolygon();
+                  console.log('Successfully switched to Polygon network');
+              } catch (networkError) {
+                  console.warn('Failed to switch to Polygon network:', networkError);
+                  // ادامه کار با شبکه فعلی
+              }
               
-              this.provider = new ethers.BrowserProvider(window.ethereum);
+              // ایجاد provider با fallback RPC URLs
+              let provider;
+              try {
+                  provider = new ethers.BrowserProvider(window.ethereum);
+                  console.log('Browser provider created successfully');
+              } catch (providerError) {
+                  console.error('Failed to create browser provider:', providerError);
+                  throw new Error('Failed to create provider');
+              }
               
               // اضافه کردن تأخیر برای جلوگیری از درخواست‌های همزمان
               await new Promise(resolve => setTimeout(resolve, 200));
               
-              this.signer = await this.provider.getSigner();
-              this.contract = new ethers.Contract(this.CONTRACT_ADDRESS, this.LEVELUP_ABI, this.signer);
+              // دریافت signer
+              let signer;
+              try {
+                  signer = await provider.getSigner();
+                  console.log('Signer obtained successfully');
+              } catch (signerError) {
+                  console.error('Failed to get signer:', signerError);
+                  throw new Error('Failed to get signer');
+              }
+              
+              // ایجاد قرارداد
+              let contract;
+              try {
+                  contract = new ethers.Contract(this.CONTRACT_ADDRESS, this.LEVELUP_ABI, signer);
+                  console.log('Contract created successfully');
+              } catch (contractError) {
+                  console.error('Failed to create contract:', contractError);
+                  throw new Error('Failed to create contract');
+              }
               
               // بررسی اینکه آیا اتصال موفق بود
-              const address = await this.signer.getAddress();
-              if (!address) {
-                  this.isConnecting = false;
+              let address;
+              try {
+                  address = await signer.getAddress();
+                  if (!address) {
+                      throw new Error('No wallet address');
+                  }
+                  console.log('Wallet address obtained:', address);
+              } catch (addressError) {
+                  console.error('Failed to get wallet address:', addressError);
                   throw new Error('Failed to get wallet address');
               }
+              
+              // بررسی شبکه
+              try {
+                  const network = await provider.getNetwork();
+                  console.log('Connected to network:', network.name, 'Chain ID:', network.chainId);
+                  
+                  // بررسی اینکه آیا در شبکه Polygon هستیم
+                  if (network.chainId !== 137n) {
+                      console.warn('Not connected to Polygon network. Current chain ID:', network.chainId);
+                      // تلاش برای تغییر شبکه
+                      try {
+                          await this.switchToPolygon();
+                          console.log('Successfully switched to Polygon after connection');
+                      } catch (switchError) {
+                          console.warn('Failed to switch to Polygon after connection:', switchError);
+                      }
+                  }
+              } catch (networkError) {
+                  console.warn('Failed to get network info:', networkError);
+              }
+              
+              // ذخیره اتصال
+              this.provider = provider;
+              this.signer = signer;
+              this.contract = contract;
               
               console.log('Web3 initialized successfully');
               this.isConnecting = false;
