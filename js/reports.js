@@ -120,14 +120,18 @@ function formatDate(timestamp) {
             return "تاریخ نامعتبر";
         }
         
+        console.log("Formatting timestamp:", timestamp, "Type:", typeof timestamp);
+        
         // تبدیل timestamp به تاریخ
         let date;
         if (timestamp < 1000000000000) {
             // اگر timestamp در ثانیه است، به میلی‌ثانیه تبدیل کن
             date = new Date(timestamp * 1000);
+            console.log("Timestamp in seconds, converted to:", date.toISOString());
         } else {
             // اگر timestamp در میلی‌ثانیه است
             date = new Date(timestamp);
+            console.log("Timestamp in milliseconds, converted to:", date.toISOString());
         }
         
         // بررسی اعتبار تاریخ
@@ -139,6 +143,8 @@ function formatDate(timestamp) {
         // محاسبه زمان گذشته
         const now = new Date();
         const diffInSeconds = Math.floor((now - date) / 1000);
+        
+        console.log("Time difference in seconds:", diffInSeconds);
         
         // نمایش زمان نسبی برای تراکنش‌های اخیر
         if (diffInSeconds < 60) {
@@ -168,7 +174,9 @@ function formatDate(timestamp) {
                 10: 'دی', 11: 'بهمن', 12: 'اسفند'
             };
             
-            return `${day} ${persianMonths[month]} ${year} - ${hour}:${minute}`;
+            const formattedDate = `${day} ${persianMonths[month]} ${year} - ${hour}:${minute}`;
+            console.log("Formatted date:", formattedDate);
+            return formattedDate;
         }
         
     } catch (error) {
@@ -293,55 +301,75 @@ async function fetchReports() {
         
         // ساخت گزارشات با timestamp صحیح
         purchaseEvents.forEach(event => {
+            const ts = (event.args && event.args.timestamp)
+                ? Number(event.args.timestamp)
+                : (blockTimestamps[event.blockNumber] || Math.floor(Date.now() / 1000));
+            console.log('purchaseEvent timestamp:', ts, 'event:', event);
             reports.push({
                 type: 'purchase',
                 title: 'خرید توکن',
                 amount: formatNumber(event.args.amountlvl, 18) + ' LVL',
-                timestamp: blockTimestamps[event.blockNumber] || Math.floor(Date.now() / 1000),
+                timestamp: ts,
                 transactionHash: event.transactionHash,
                 blockNumber: event.blockNumber
             });
         });
         
         activationEvents.forEach(event => {
+            const ts = (event.args && event.args.timestamp)
+                ? Number(event.args.timestamp)
+                : (blockTimestamps[event.blockNumber] || Math.floor(Date.now() / 1000));
+            console.log('activationEvent timestamp:', ts, 'event:', event);
             reports.push({
                 type: 'activation',
                 title: 'فعال‌سازی حساب',
                 amount: formatNumber(event.args.amountlvl, 18) + ' LVL',
-                timestamp: blockTimestamps[event.blockNumber] || Math.floor(Date.now() / 1000),
+                timestamp: ts,
                 transactionHash: event.transactionHash,
                 blockNumber: event.blockNumber
             });
         });
         
         buyEvents.forEach(event => {
+            const ts = (event.args && event.args.timestamp)
+                ? Number(event.args.timestamp)
+                : (blockTimestamps[event.blockNumber] || Math.floor(Date.now() / 1000));
+            console.log('buyEvent timestamp:', ts, 'event:', event);
             reports.push({
                 type: 'trading',
                 title: 'خرید توکن با MATIC',
                 amount: `${formatNumber(event.args.maticAmount, 18)} MATIC → ${formatNumber(event.args.tokenAmount, 18)} LVL`,
-                timestamp: blockTimestamps[event.blockNumber] || Math.floor(Date.now() / 1000),
+                timestamp: ts,
                 transactionHash: event.transactionHash,
                 blockNumber: event.blockNumber
             });
         });
         
         sellEvents.forEach(event => {
+            const ts = (event.args && event.args.timestamp)
+                ? Number(event.args.timestamp)
+                : (blockTimestamps[event.blockNumber] || Math.floor(Date.now() / 1000));
+            console.log('sellEvent timestamp:', ts, 'event:', event);
             reports.push({
                 type: 'trading',
                 title: 'فروش توکن',
                 amount: `${formatNumber(event.args.tokenAmount, 18)} LVL → ${formatNumber(event.args.maticAmount, 18)} MATIC`,
-                timestamp: blockTimestamps[event.blockNumber] || Math.floor(Date.now() / 1000),
+                timestamp: ts,
                 transactionHash: event.transactionHash,
                 blockNumber: event.blockNumber
             });
         });
         
         binaryEvents.forEach(event => {
+            const ts = (event.args && event.args.timestamp)
+                ? Number(event.args.timestamp)
+                : (blockTimestamps[event.blockNumber] || Math.floor(Date.now() / 1000));
+            console.log('binaryEvent timestamp:', ts, 'event:', event);
             reports.push({
                 type: 'binary',
                 title: 'به‌روزرسانی امتیاز باینری',
                 amount: `${formatNumber(event.args.newPoints, 18)} امتیاز (سقف: ${formatNumber(event.args.newCap, 18)})`,
-                timestamp: blockTimestamps[event.blockNumber] || Math.floor(Date.now() / 1000),
+                timestamp: ts,
                 transactionHash: event.transactionHash,
                 blockNumber: event.blockNumber
             });
