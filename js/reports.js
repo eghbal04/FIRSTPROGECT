@@ -79,112 +79,139 @@ async function fetchReports() {
         
         const reports = [];
         const currentBlock = await contract.runner.provider.getBlockNumber();
-        const fromBlock = Math.max(0, currentBlock - 10000); // 10000 بلاک اخیر
+        const fromBlock = Math.max(0, currentBlock - 50000); // افزایش به 50000 بلاک
+        
+        console.log(`Searching for events from block ${fromBlock} to ${currentBlock}`);
         
         // دریافت رویدادهای خرید
+        let purchaseEvents = [];
         try {
-            const purchaseEvents = await contract.queryFilter(
+            purchaseEvents = await contract.queryFilter(
                 contract.filters.purchaseKind(address),
                 fromBlock,
                 currentBlock
             );
-            
-            purchaseEvents.forEach(event => {
-                reports.push({
-                    type: 'purchase',
-                    title: 'خرید توکن',
-                    amount: formatNumber(event.args.amountlvl, 18) + ' LVL',
-                    timestamp: event.blockTimestamp,
-                    transactionHash: event.transactionHash,
-                    blockNumber: event.blockNumber
-                });
-            });
+            console.log(`Found ${purchaseEvents.length} purchase events`);
         } catch (error) {
-            // Error fetching purchase events
+            console.error('Error fetching purchase events:', error);
         }
 
         // دریافت رویدادهای فعال‌سازی
+        let activationEvents = [];
         try {
-            const activationEvents = await contract.queryFilter(
+            activationEvents = await contract.queryFilter(
                 contract.filters.Activated(address),
                 fromBlock,
                 currentBlock
             );
-            
-            activationEvents.forEach(event => {
-                reports.push({
-                    type: 'activation',
-                    title: 'فعال‌سازی حساب',
-                    amount: formatNumber(event.args.amountlvl, 18) + ' LVL',
-                    timestamp: event.blockTimestamp,
-                    transactionHash: event.transactionHash,
-                    blockNumber: event.blockNumber
-                });
-            });
+            console.log(`Found ${activationEvents.length} activation events`);
         } catch (error) {
-            // Error fetching activation events
+            console.error('Error fetching activation events:', error);
         }
         
         // دریافت رویدادهای معاملات
+        let buyEvents = [], sellEvents = [];
         try {
-            const buyEvents = await contract.queryFilter(
+            buyEvents = await contract.queryFilter(
                 contract.filters.TokensBought(address),
                 fromBlock,
                 currentBlock
             );
-            
-            buyEvents.forEach(event => {
-                reports.push({
-                    type: 'trading',
-                    title: 'خرید توکن با MATIC',
-                    amount: `${formatNumber(event.args.maticAmount, 18)} MATIC → ${formatNumber(event.args.tokenAmount, 18)} LVL`,
-                    timestamp: event.blockTimestamp,
-                    transactionHash: event.transactionHash,
-                    blockNumber: event.blockNumber
-                });
-            });
-            
-            const sellEvents = await contract.queryFilter(
+            console.log(`Found ${buyEvents.length} buy events`);
+            sellEvents = await contract.queryFilter(
                 contract.filters.TokensSold(address),
                 fromBlock,
                 currentBlock
             );
-            
-            sellEvents.forEach(event => {
-                reports.push({
-                    type: 'trading',
-                    title: 'فروش توکن',
-                    amount: `${formatNumber(event.args.tokenAmount, 18)} LVL → ${formatNumber(event.args.maticAmount, 18)} MATIC`,
-                    timestamp: event.blockTimestamp,
-                    transactionHash: event.transactionHash,
-                    blockNumber: event.blockNumber
-                });
-            });
+            console.log(`Found ${sellEvents.length} sell events`);
         } catch (error) {
-            // Error fetching trading events
+            console.error('Error fetching trading events:', error);
         }
         
         // دریافت رویدادهای پاداش باینری
+        let binaryEvents = [];
         try {
-            const binaryEvents = await contract.queryFilter(
+            binaryEvents = await contract.queryFilter(
                 contract.filters.BinaryPointsUpdated(address),
                 fromBlock,
                 currentBlock
             );
-            
-            binaryEvents.forEach(event => {
-                reports.push({
-                    type: 'binary',
-                    title: 'به‌روزرسانی امتیاز باینری',
-                    amount: `${formatNumber(event.args.newPoints, 18)} امتیاز (سقف: ${formatNumber(event.args.newCap, 18)})`,
-                    timestamp: event.blockTimestamp,
-                    transactionHash: event.transactionHash,
-                    blockNumber: event.blockNumber
-                });
-            });
+            console.log(`Found ${binaryEvents.length} binary events`);
         } catch (error) {
-            // Error fetching binary events
+            console.error('Error fetching binary events:', error);
         }
+        
+        // جمع‌آوری همه رویدادها برای گرفتن timestamp بلاک
+        const allEvents = [
+            ...purchaseEvents.map(e => ({...e, _type: 'purchase'})),
+            ...activationEvents.map(e => ({...e, _type: 'activation'})),
+            ...buyEvents.map(e => ({...e, _type: 'buy'})),
+            ...sellEvents.map(e => ({...e, _type: 'sell'})),
+            ...binaryEvents.map(e => ({...e, _type: 'binary'})),
+        ];
+        // گرفتن timestamp بلاک‌ها فقط یک بار برای هر بلاک
+        const blockTimestamps = {};
+        await Promise.all(
+            allEvents.map(async (event) => {
+                if (!blockTimestamps[event.blockNumber]) {
+                    const block = await contract.runner.provider.getBlock(event.blockNumber);
+                    blockTimestamps[event.blockNumber] = block.timestamp;
+                }
+            })
+        );
+        // ساخت گزارشات با timestamp صحیح
+        purchaseEvents.forEach(event => {
+            reports.push({
+                type: 'purchase',
+                title: 'خرید توکن',
+                amount: formatNumber(event.args.amountlvl, 18) + ' LVL',
+                timestamp: blockTimestamps[event.blockNumber],
+                transactionHash: event.transactionHash,
+                blockNumber: event.blockNumber
+            });
+        });
+        activationEvents.forEach(event => {
+            reports.push({
+                type: 'activation',
+                title: 'فعال‌سازی حساب',
+                amount: formatNumber(event.args.amountlvl, 18) + ' LVL',
+                timestamp: blockTimestamps[event.blockNumber],
+                transactionHash: event.transactionHash,
+                blockNumber: event.blockNumber
+            });
+        });
+        buyEvents.forEach(event => {
+            reports.push({
+                type: 'trading',
+                title: 'خرید توکن با MATIC',
+                amount: `${formatNumber(event.args.maticAmount, 18)} MATIC → ${formatNumber(event.args.tokenAmount, 18)} LVL`,
+                timestamp: blockTimestamps[event.blockNumber],
+                transactionHash: event.transactionHash,
+                blockNumber: event.blockNumber
+            });
+        });
+        sellEvents.forEach(event => {
+            reports.push({
+                type: 'trading',
+                title: 'فروش توکن',
+                amount: `${formatNumber(event.args.tokenAmount, 18)} LVL → ${formatNumber(event.args.maticAmount, 18)} MATIC`,
+                timestamp: blockTimestamps[event.blockNumber],
+                transactionHash: event.transactionHash,
+                blockNumber: event.blockNumber
+            });
+        });
+        binaryEvents.forEach(event => {
+            reports.push({
+                type: 'binary',
+                title: 'به‌روزرسانی امتیاز باینری',
+                amount: `${formatNumber(event.args.newPoints, 18)} امتیاز (سقف: ${formatNumber(event.args.newCap, 18)})`,
+                timestamp: blockTimestamps[event.blockNumber],
+                transactionHash: event.transactionHash,
+                blockNumber: event.blockNumber
+            });
+        });
+        
+        console.log(`Total reports found: ${reports.length}`);
         
         // مرتب‌سازی بر اساس تاریخ (جدیدترین اول)
         reports.sort((a, b) => b.timestamp - a.timestamp);

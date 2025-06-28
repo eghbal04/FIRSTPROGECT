@@ -173,13 +173,58 @@ function updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceC
         `;
     }
     
-    // به‌روزرسانی آمار کلی
-    updateElement('circulating-supply', stats.circulatingSupply);
+    // به‌روزرسانی توکن‌های در گردش (تبدیل به دلار)
+    const circulatingSupplyElement = document.getElementById('circulating-supply');
+    if (circulatingSupplyElement) {
+        const circulatingSupplyNum = parseFloat(stats.circulatingSupply);
+        const circulatingSupplyUSD = (circulatingSupplyNum * parseFloat(prices.tokenPriceUSD)).toFixed(2);
+        circulatingSupplyElement.innerHTML = `
+            <div style="font-size: 1.2rem; font-weight: bold;">${circulatingSupplyNum.toLocaleString('en-US', {maximumFractionDigits: 2})} LVL</div>
+            <div style="font-size: 0.8rem; color: #00ccff; margin-top: 0.2rem;">~$${circulatingSupplyUSD} USD</div>
+        `;
+    }
+    
+    // به‌روزرسانی تعداد کاربران
     updateElement('total-points', stats.totalUsers);
+    
+    // به‌روزرسانی پوینت‌های پرداخت شده
     updateElement('claimed-points', additionalStats.claimedPoints);
-    updateElement('trading-volume', tradingVolume.totalDeposits, '$', ' USD');
-    updateElement('point-value', additionalStats.pointValue, '$', ' USD');
-    updateElement('reward-pool', stats.rewardPool, '$', ' USD');
+    
+    // به‌روزرسانی حجم معاملات (تبدیل به دلار)
+    const tradingVolumeElement = document.getElementById('trading-volume');
+    if (tradingVolumeElement) {
+        const tradingVolumeNum = parseFloat(tradingVolume.totalVolume);
+        const maticPriceUSD = parseFloat(prices.maticPrice);
+        const tradingVolumeUSD = (tradingVolumeNum * maticPriceUSD).toFixed(2);
+        tradingVolumeElement.innerHTML = `
+            <div style="font-size: 1.2rem; font-weight: bold;">${tradingVolumeNum.toLocaleString('en-US', {maximumFractionDigits: 2})} MATIC</div>
+            <div style="font-size: 0.8rem; color: #00ccff; margin-top: 0.2rem;">~$${tradingVolumeUSD} USD</div>
+        `;
+    }
+    
+    // به‌روزرسانی ارزش پوینت (تبدیل به دلار)
+    const pointValueElement = document.getElementById('point-value');
+    if (pointValueElement) {
+        const pointValueNum = parseFloat(additionalStats.pointValue);
+        const pointValueUSD = (pointValueNum * parseFloat(prices.tokenPriceUSD)).toFixed(6);
+        pointValueElement.innerHTML = `
+            <div style="font-size: 1.2rem; font-weight: bold;">${pointValueNum.toLocaleString('en-US', {maximumFractionDigits: 6})} LVL</div>
+            <div style="font-size: 0.8rem; color: #00ccff; margin-top: 0.2rem;">~$${pointValueUSD} USD</div>
+        `;
+    }
+    
+    // به‌روزرسانی استخر پاداش (تبدیل به دلار)
+    const rewardPoolElement = document.getElementById('reward-pool');
+    if (rewardPoolElement) {
+        const rewardPoolNum = parseFloat(stats.rewardPool);
+        const rewardPoolUSD = (rewardPoolNum * parseFloat(prices.tokenPriceUSD)).toFixed(2);
+        rewardPoolElement.innerHTML = `
+            <div style="font-size: 1.2rem; font-weight: bold;">${rewardPoolNum.toLocaleString('en-US', {maximumFractionDigits: 2})} LVL</div>
+            <div style="font-size: 0.8rem; color: #00ccff; margin-top: 0.2rem;">~$${rewardPoolUSD} USD</div>
+        `;
+    }
+    
+    // به‌روزرسانی پوینت‌های باقی‌مانده
     updateElement('remaining-points', additionalStats.remainingPoints);
 }
 
@@ -257,21 +302,26 @@ async function getContractStats() {
     try {
         const { contract } = await connectWallet();
         
-        const [totalUsers, totalSupply, circulatingSupply, binaryPool, rewardPool, totalPoints, totalDirectDeposits] = 
+        const [totalUsers, totalSupply, binaryPool, rewardPool, totalPoints, totalDirectDeposits, contractBalance] = 
             await Promise.all([
                 contract.totalUsers(),
                 contract.totalSupply(),
-                contract.circulatingSupply(),
                 contract.binaryPool(),
                 contract.rewardPool(),
                 contract.totalPoints(),
-                contract.totalDirectDeposits()
+                contract.totalDirectDeposits(),
+                contract.getContractMaticBalance()
             ]);
+        
+        // محاسبه circulating supply (کل عرضه منهای موجودی قرارداد)
+        const totalSupplyNum = parseFloat(ethers.formatUnits(totalSupply, 18));
+        const contractBalanceNum = parseFloat(ethers.formatEther(contractBalance));
+        const circulatingSupplyNum = Math.max(0, totalSupplyNum - contractBalanceNum);
         
         return {
             totalUsers: totalUsers.toString(),
             totalSupply: ethers.formatUnits(totalSupply, 18),
-            circulatingSupply: ethers.formatUnits(circulatingSupply, 18),
+            circulatingSupply: circulatingSupplyNum.toString(),
             binaryPool: ethers.formatEther(binaryPool),
             rewardPool: ethers.formatEther(rewardPool),
             totalPoints: ethers.formatUnits(totalPoints, 18),
@@ -344,34 +394,40 @@ async function getTradingVolume() {
         
         let totalDeposits = "0";
         let contractBalance = "0";
+        let totalVolume = "0";
         
         // دریافت کل سپرده‌های مستقیم
         try {
             const depositsRaw = await contract.totalDirectDeposits();
-            const formatted = ethers.formatEther(depositsRaw);
-            totalDeposits = formatted;
+            totalDeposits = ethers.formatEther(depositsRaw);
         } catch (error) {
-            // totalDirectDeposits failed
+            console.error("Error getting totalDirectDeposits:", error);
         }
         
         // دریافت موجودی قرارداد
         try {
             const balanceRaw = await contract.getContractMaticBalance();
-            const formatted = ethers.formatEther(balanceRaw);
-            contractBalance = formatted;
+            contractBalance = ethers.formatEther(balanceRaw);
         } catch (balanceError) {
-            // Contract balance failed
+            console.error("Error getting contract balance:", balanceError);
         }
+        
+        // محاسبه کل حجم معاملات (سپرده‌ها + موجودی فعلی)
+        const depositsNum = parseFloat(totalDeposits);
+        const balanceNum = parseFloat(contractBalance);
+        totalVolume = (depositsNum + balanceNum).toString();
         
         return {
             totalDeposits,
-            contractBalance
+            contractBalance,
+            totalVolume
         };
     } catch (error) {
         console.error("Error in getTradingVolume:", error);
         return {
             totalDeposits: "0",
-            contractBalance: "0"
+            contractBalance: "0",
+            totalVolume: "0"
         };
     }
 }
