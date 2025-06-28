@@ -443,8 +443,8 @@ async function renderNetworkTree() {
 // تابع نمایش گره درخت شبکه
 async function renderTreeNode(userAddress, containerId, level = 0) {
     try {
-        const { contract } = await connectWallet();
-        const currentUserAddress = await contract.runner.provider.getSigner().getAddress();
+        const { contract, signer } = await connectWallet();
+        const currentUserAddress = await signer.getAddress();
         
         // دریافت اطلاعات کاربر
         const userData = await contract.users(userAddress);
@@ -567,11 +567,11 @@ async function toggleNodeExpansion(userAddress, level) {
 // تابع لود کردن فرزندان یک نود
 async function loadChildren(parentAddress, container, level) {
     try {
-        const treeData = await getUserTree(parentAddress);
+        const treeData = await fetchUserTree();
         
         // بررسی فرزند چپ
-        if (treeData.left !== ethers.ZeroAddress) {
-            await renderChildNode(treeData.left, container, 'left', level);
+        if (treeData.leftChild !== ethers.ZeroAddress) {
+            await renderChildNode(treeData.leftChild, container, 'left', level);
         } else {
             // نمایش جای خالی برای فرزند چپ
             container.innerHTML += `
@@ -593,8 +593,8 @@ async function loadChildren(parentAddress, container, level) {
         }
         
         // بررسی فرزند راست
-        if (treeData.right !== ethers.ZeroAddress) {
-            await renderChildNode(treeData.right, container, 'right', level);
+        if (treeData.rightChild !== ethers.ZeroAddress) {
+            await renderChildNode(treeData.rightChild, container, 'right', level);
         } else {
             // نمایش جای خالی برای فرزند راست
             container.innerHTML += `
@@ -623,7 +623,7 @@ async function loadChildren(parentAddress, container, level) {
 // تابع رندر کردن نود فرزند
 async function renderChildNode(childAddress, container, position, level) {
     try {
-        const treeData = await getUserTree(childAddress);
+        const treeData = await fetchUserTree();
         const isCurrentUser = childAddress === (await connectWallet()).address;
         
         const nodeHTML = `
@@ -637,7 +637,7 @@ async function renderChildNode(childAddress, container, position, level) {
                         </span>
                     </div>
                     <div class="expand-icon" id="expand-icon-${childAddress}">
-                        ${(treeData.left !== ethers.ZeroAddress || treeData.right !== ethers.ZeroAddress) ? '▼' : ''}
+                        ${(treeData.leftChild !== ethers.ZeroAddress || treeData.rightChild !== ethers.ZeroAddress) ? '▼' : ''}
                     </div>
                 </div>
                 

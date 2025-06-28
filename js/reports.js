@@ -105,7 +105,13 @@ function shortenAddress(address) {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
-// تابع فرمت تاریخ
+// تابع فرمت کردن هش تراکنش
+function shortenTransactionHash(hash) {
+    if (!hash) return '-';
+    return `${hash.slice(0, 8)}...${hash.slice(-6)}`;
+}
+
+// تابع فرمت تاریخ بهبود یافته
 function formatDate(timestamp) {
     try {
         // بررسی اعتبار timestamp
@@ -130,16 +136,33 @@ function formatDate(timestamp) {
             return "تاریخ نامعتبر";
         }
         
-        console.log("Formatting date:", date, "from timestamp:", timestamp);
+        // محاسبه زمان گذشته
+        const now = new Date();
+        const diffInSeconds = Math.floor((now - date) / 1000);
         
-        // استفاده از فرمت انگلیسی به جای فارسی
-        return date.toLocaleString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+        // نمایش زمان نسبی برای تراکنش‌های اخیر
+        if (diffInSeconds < 60) {
+            return `${diffInSeconds} ثانیه پیش`;
+        } else if (diffInSeconds < 3600) {
+            const minutes = Math.floor(diffInSeconds / 60);
+            return `${minutes} دقیقه پیش`;
+        } else if (diffInSeconds < 86400) {
+            const hours = Math.floor(diffInSeconds / 3600);
+            return `${hours} ساعت پیش`;
+        } else if (diffInSeconds < 2592000) {
+            const days = Math.floor(diffInSeconds / 86400);
+            return `${days} روز پیش`;
+        } else {
+            // برای تراکنش‌های قدیمی، تاریخ کامل نمایش بده
+            return date.toLocaleDateString('fa-IR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+        
     } catch (error) {
         console.error("Error formatting date:", error);
         return "خطا در نمایش تاریخ";
@@ -239,64 +262,78 @@ async function fetchReports() {
             ...sellEvents.map(e => ({...e, _type: 'sell'})),
             ...binaryEvents.map(e => ({...e, _type: 'binary'})),
         ];
+        
         // گرفتن timestamp بلاک‌ها فقط یک بار برای هر بلاک
         const blockTimestamps = {};
         await Promise.all(
             allEvents.map(async (event) => {
                 if (!blockTimestamps[event.blockNumber]) {
-                    const block = await contract.runner.provider.getBlock(event.blockNumber);
-                    blockTimestamps[event.blockNumber] = block.timestamp;
-                    console.log(`Block ${event.blockNumber} timestamp: ${block.timestamp} (${new Date(block.timestamp * 1000).toISOString()})`);
+                    try {
+                        const block = await contract.runner.provider.getBlock(event.blockNumber);
+                        if (block && block.timestamp) {
+                            blockTimestamps[event.blockNumber] = block.timestamp;
+                            console.log(`Block ${event.blockNumber} timestamp: ${block.timestamp} (${new Date(block.timestamp * 1000).toISOString()})`);
+                        }
+                    } catch (blockError) {
+                        console.warn(`Failed to get block ${event.blockNumber}:`, blockError);
+                        // استفاده از timestamp فعلی به عنوان fallback
+                        blockTimestamps[event.blockNumber] = Math.floor(Date.now() / 1000);
+                    }
                 }
             })
         );
+        
         // ساخت گزارشات با timestamp صحیح
         purchaseEvents.forEach(event => {
             reports.push({
                 type: 'purchase',
                 title: 'خرید توکن',
                 amount: formatNumber(event.args.amountlvl, 18) + ' LVL',
-                timestamp: blockTimestamps[event.blockNumber],
+                timestamp: blockTimestamps[event.blockNumber] || Math.floor(Date.now() / 1000),
                 transactionHash: event.transactionHash,
                 blockNumber: event.blockNumber
             });
         });
+        
         activationEvents.forEach(event => {
             reports.push({
                 type: 'activation',
                 title: 'فعال‌سازی حساب',
                 amount: formatNumber(event.args.amountlvl, 18) + ' LVL',
-                timestamp: blockTimestamps[event.blockNumber],
+                timestamp: blockTimestamps[event.blockNumber] || Math.floor(Date.now() / 1000),
                 transactionHash: event.transactionHash,
                 blockNumber: event.blockNumber
             });
         });
+        
         buyEvents.forEach(event => {
             reports.push({
                 type: 'trading',
                 title: 'خرید توکن با MATIC',
                 amount: `${formatNumber(event.args.maticAmount, 18)} MATIC → ${formatNumber(event.args.tokenAmount, 18)} LVL`,
-                timestamp: blockTimestamps[event.blockNumber],
+                timestamp: blockTimestamps[event.blockNumber] || Math.floor(Date.now() / 1000),
                 transactionHash: event.transactionHash,
                 blockNumber: event.blockNumber
             });
         });
+        
         sellEvents.forEach(event => {
             reports.push({
                 type: 'trading',
                 title: 'فروش توکن',
                 amount: `${formatNumber(event.args.tokenAmount, 18)} LVL → ${formatNumber(event.args.maticAmount, 18)} MATIC`,
-                timestamp: blockTimestamps[event.blockNumber],
+                timestamp: blockTimestamps[event.blockNumber] || Math.floor(Date.now() / 1000),
                 transactionHash: event.transactionHash,
                 blockNumber: event.blockNumber
             });
         });
+        
         binaryEvents.forEach(event => {
             reports.push({
                 type: 'binary',
                 title: 'به‌روزرسانی امتیاز باینری',
                 amount: `${formatNumber(event.args.newPoints, 18)} امتیاز (سقف: ${formatNumber(event.args.newCap, 18)})`,
-                timestamp: blockTimestamps[event.blockNumber],
+                timestamp: blockTimestamps[event.blockNumber] || Math.floor(Date.now() / 1000),
                 transactionHash: event.transactionHash,
                 blockNumber: event.blockNumber
             });
@@ -326,7 +363,7 @@ function displayReports(reports, filterType = 'all') {
     
     if (filteredReports.length === 0) {
         reportsContainer.innerHTML = `
-            <div class="no-reports">
+            <div class="no-reports" style="text-align: center; padding: 2rem; color: #ccc;">
                 <p>هیچ گزارشی یافت نشد.</p>
                 <p>برای مشاهده گزارشات، ابتدا فعالیتی در پلتفرم انجام دهید.</p>
             </div>
@@ -335,17 +372,29 @@ function displayReports(reports, filterType = 'all') {
     }
 
     const reportsHTML = filteredReports.map(report => `
-        <div class="report-item">
-            <div class="report-header">
-                <div class="report-type">
-                    <i class="fa-solid fa-${getReportIcon(report.type)}"></i>
-                    ${report.title}
+        <div class="report-item" style="background: rgba(0, 0, 0, 0.8); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem; backdrop-filter: blur(20px);">
+            <div class="report-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <div class="report-type" style="color: #00ff88; font-weight: 600; font-size: 1.1rem;">
+                    ${getReportIcon(report.type)} ${report.title}
                 </div>
-                <div class="report-time">${formatDate(report.timestamp)}</div>
+                <div class="report-time" style="color: #00ccff; font-size: 0.9rem;">${formatDate(report.timestamp)}</div>
             </div>
-            <p><strong>مقدار:</strong> ${report.amount}</p>
-            <p><strong>تراکنش:</strong> <a href="https://polygonscan.com/tx/${report.transactionHash}" target="_blank">${shortenAddress(report.transactionHash)}</a></p>
-            <p><strong>بلاک:</strong> ${report.blockNumber}</p>
+            <div class="report-details" style="display: grid; gap: 0.8rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #ccc;">مقدار:</span>
+                    <span style="color: #fff; font-weight: 600;">${report.amount}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #ccc;">تراکنش:</span>
+                    <a href="https://polygonscan.com/tx/${report.transactionHash}" target="_blank" style="color: #00ff88; text-decoration: none; font-family: monospace;">
+                        ${shortenTransactionHash(report.transactionHash)}
+                    </a>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #ccc;">بلاک:</span>
+                    <span style="color: #fff;">${report.blockNumber.toLocaleString()}</span>
+                </div>
+            </div>
         </div>
     `).join('');
     
@@ -355,12 +404,12 @@ function displayReports(reports, filterType = 'all') {
 // تابع دریافت آیکون برای نوع گزارش
 function getReportIcon(type) {
     const icons = {
-        'purchase': 'shopping-cart',
-        'activation': 'user-check',
-        'trading': 'exchange-alt',
-        'binary': 'chart-line'
+        'purchase': '🛒',
+        'activation': '✅',
+        'trading': '💱',
+        'binary': '📊'
     };
-    return icons[type] || 'file-alt';
+    return icons[type] || '📄';
 }
 
 // تابع بارگذاری گزارشات
@@ -421,7 +470,7 @@ function showReportsError(message) {
     const reportsContainer = document.getElementById('reports-container');
     if (reportsContainer) {
         reportsContainer.innerHTML = `
-            <div class="error-message">
+            <div class="error-message" style="text-align: center; padding: 2rem; color: #ff4444; background: rgba(255, 0, 0, 0.1); border: 1px solid rgba(255, 0, 0, 0.3); border-radius: 12px;">
                 <p>${message}</p>
             </div>
         `;
