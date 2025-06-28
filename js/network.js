@@ -133,6 +133,11 @@ async function updateNetworkStats() {
             const userData = await contract.users(address);
             isRegistered = userData.index > 0;
             
+            // Debug: نمایش اطلاعات کاربر در شبکه
+            console.log('Debug Network - Full userData:', userData);
+            console.log('Debug Network - userData.binaryPointCap (raw):', userData.binaryPointCap);
+            console.log('Debug Network - userData.binaryPointCap (toString):', userData.binaryPointCap.toString());
+            
             if (isRegistered) {
                 // دریافت سقف درآمد کاربر (تعداد پوینت‌هایی که می‌تواند دریافت کند)
                 userIncomeCap = ethers.formatUnits(userData.binaryPointCap, 18);

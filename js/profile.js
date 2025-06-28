@@ -38,6 +38,11 @@ async function loadUserProfile() {
         // دریافت اطلاعات کاربر
         const userData = await contract.users(address);
         
+        // Debug: نمایش اطلاعات کاربر
+        console.log('Debug - Full userData:', userData);
+        console.log('Debug - userData.binaryPointCap (raw):', userData.binaryPointCap);
+        console.log('Debug - userData.binaryPointCap (toString):', userData.binaryPointCap.toString());
+        
         // دریافت موجودی‌ها
         const [maticBalance, lvlBalance] = await Promise.all([
             provider.getBalance(address),
