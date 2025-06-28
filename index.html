@@ -2400,14 +2400,66 @@
   <script src="js/shop.js?v=5.7"></script>
   <script src="js/homepage.js?v=5.7"></script>
   <script>
-    // Tab switching logic for 8 tabs
-    function showTab(tab) {
+    // Tab switching logic for 8 tabs with wallet connection
+    async function showTab(tab) {
       const tabs = ['swap','network','profile','reports','news','shop','about','register'];
       tabs.forEach(function(name) {
         document.getElementById('main-' + name).style.display = (name === tab) ? '' : 'none';
         document.getElementById('tab-' + name + '-btn').classList.toggle('active', name === tab);
       });
+      
+      // Load data for the selected tab
+      try {
+        console.log(`Loading data for tab: ${tab}`);
+        
+        switch(tab) {
+          case 'swap':
+            // Swap data is loaded automatically
+            break;
+          case 'network':
+            if (typeof updateNetworkStats === 'function') {
+              await updateNetworkStats();
+            }
+            if (typeof renderNetworkTree === 'function') {
+              await renderNetworkTree();
+            }
+            break;
+          case 'profile':
+            if (typeof loadUserProfile === 'function') {
+              await loadUserProfile();
+            }
+            break;
+          case 'reports':
+            if (typeof loadReports === 'function') {
+              await loadReports();
+            }
+            break;
+          case 'news':
+            if (typeof loadNews === 'function') {
+              loadNews();
+            }
+            if (typeof loadTutorials === 'function') {
+              loadTutorials();
+            }
+            break;
+          case 'shop':
+            if (typeof loadProducts === 'function') {
+              loadProducts();
+            }
+            break;
+          case 'about':
+            // About section doesn't need wallet connection
+            break;
+          case 'register':
+            // Register section will be handled by its own logic
+            break;
+        }
+      } catch (error) {
+        console.error(`Error loading data for tab ${tab}:`, error);
+      }
     }
+    
+    // Add click handlers with proper error handling
     document.getElementById('tab-swap-btn').onclick = function() { showTab('swap'); };
     document.getElementById('tab-network-btn').onclick = function() { showTab('network'); };
     document.getElementById('tab-profile-btn').onclick = function() { showTab('profile'); };

@@ -1,6 +1,9 @@
 // --- Profile Page Logic ---
+let isProfileLoading = false;
+
 document.addEventListener('DOMContentLoaded', async () => {
     try {
+        console.log("Profile section loaded, waiting for wallet connection...");
         // بررسی وجود ethers و contractConfig
         if (typeof ethers === 'undefined' || !window.contractConfig) {
             throw new Error("Ethers.js or contract config not loaded");
@@ -13,40 +16,70 @@ document.addEventListener('DOMContentLoaded', async () => {
         setupReferralCopy();
 
     } catch (error) {
-        console.error("Error in profile page:", error);
+        console.error("Error in profile section:", error);
         showProfileError("خطا در بارگذاری پروفایل");
     }
 });
 
-// بارگذاری اطلاعات پروفایل کاربر
+// تابع بارگذاری پروفایل کاربر
 async function loadUserProfile() {
+    if (isProfileLoading) {
+        console.log("Profile already loading, skipping...");
+        return;
+    }
+    
+    isProfileLoading = true;
+    
     try {
-        // بررسی اتصال کیف پول
-        const connection = await checkConnection();
-        if (!connection.connected) {
-            showProfileError("لطفا ابتدا کیف پول خود را متصل کنید");
-            return;
-        }
-
-        // دریافت اطلاعات کاربر
-        const profile = await fetchUserProfile();
+        console.log("Connecting to wallet for profile data...");
         const { contract, address } = await connectWallet();
-
-        // دریافت اطلاعات تکمیلی از قرارداد
-        const [userData, isClaimable, registrationPrice, maticPrice, lvlPrice] = await Promise.all([
-            contract.users(address),
-            contract.isClaimable(address),
-            contract.getRegistrationPrice(),
-            contract.getLatestMaticPrice(), // قیمت MATIC به دلار (با 8 رقم اعشار)
-            contract.getLatestLvlPrice()    // قیمت LVL به دلار (با 8 رقم اعشار)
+        console.log("Wallet connected, fetching profile data...");
+        
+        // دریافت اطلاعات کاربر
+        const userData = await contract.users(address);
+        
+        // دریافت موجودی‌ها
+        const [maticBalance, lvlBalance] = await Promise.all([
+            contract.provider.getBalance(address),
+            contract.balanceOf(address)
         ]);
-
+        
+        // دریافت قیمت‌ها
+        const [maticPrice, lvlPrice] = await Promise.all([
+            contract.getLatestMaticPrice(),
+            contract.getTokenPriceInUSD()
+        ]);
+        
+        // بررسی وضعیت claimable
+        const isClaimable = await contract.isClaimable(address);
+        
+        // دریافت قیمت ثبت‌نام
+        const registrationPrice = await contract.getRegistrationPrice();
+        
+        // فرمت کردن مقادیر
+        const profile = {
+            address,
+            maticBalance: ethers.formatEther(maticBalance),
+            lvlBalance: ethers.formatUnits(lvlBalance, 18),
+            maticPrice: ethers.formatUnits(maticPrice, 8),
+            lvlPrice: ethers.formatUnits(lvlPrice, 8),
+            isRegistered: userData.activated,
+            binaryPoints: ethers.formatUnits(userData.binaryPoints, 18),
+            binaryPointCap: ethers.formatUnits(userData.binaryPointCap, 18),
+            referrer: userData.referrer,
+            isClaimable
+        };
+        
+        console.log("Profile data fetched successfully:", profile);
+        
         // به‌روزرسانی UI
         updateProfileUI(profile, userData, isClaimable, registrationPrice, maticPrice, lvlPrice);
-
+        
     } catch (error) {
-        console.error("Error loading profile:", error);
-        showProfileError("خطا در بارگذاری اطلاعات پروفایل");
+        console.error("Error loading user profile:", error);
+        showProfileError("خطا در بارگذاری پروفایل: " + error.message);
+    } finally {
+        isProfileLoading = false;
     }
 }
 

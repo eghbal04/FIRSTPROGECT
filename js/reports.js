@@ -1,6 +1,9 @@
 // reports.js - بخش گزارشات و فعالیت‌ها
+let isReportsLoading = false;
+
 document.addEventListener('DOMContentLoaded', async () => {
     try {
+        console.log("Reports section loaded, waiting for wallet connection...");
         // بررسی اتصال کیف پول
         const connection = await checkConnection();
         if (!connection.connected) {
@@ -18,17 +21,76 @@ document.addEventListener('DOMContentLoaded', async () => {
         setInterval(loadReports, 300000);
 
     } catch (error) {
-        console.error("Error in reports page:", error);
+        console.error("Error in reports section:", error);
         showReportsError("خطا در بارگذاری گزارشات");
     }
 });
 
-// تابع اتصال به کیف پول
+// تابع اتصال به کیف پول با انتظار
 async function connectWallet() {
     if (!window.contractConfig) {
         throw new Error("Contract config not initialized");
     }
-    await window.contractConfig.initializeWeb3();
+    
+    // بررسی اینکه آیا قبلاً متصل هستیم
+    if (window.contractConfig.signer && window.contractConfig.contract) {
+        try {
+            const address = await window.contractConfig.signer.getAddress();
+            if (address) {
+                return {
+                    provider: window.contractConfig.provider,
+                    contract: window.contractConfig.contract,
+                    signer: window.contractConfig.signer,
+                    address: address
+                };
+            }
+        } catch (error) {
+            console.log("Existing connection invalid, reconnecting...");
+        }
+    }
+    
+    // اگر در حال اتصال هستیم، منتظر بمان
+    if (window.contractConfig.isConnecting) {
+        console.log("Wallet connection in progress, waiting...");
+        let waitCount = 0;
+        const maxWaitTime = 50; // حداکثر 5 ثانیه
+        
+        while (window.contractConfig.isConnecting && waitCount < maxWaitTime) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            waitCount++;
+            
+            // اگر اتصال موفق شد، از حلقه خارج شو
+            if (window.contractConfig.signer && window.contractConfig.contract) {
+                try {
+                    const address = await window.contractConfig.signer.getAddress();
+                    if (address) {
+                        console.log("Connection completed while waiting");
+                        return {
+                            provider: window.contractConfig.provider,
+                            contract: window.contractConfig.contract,
+                            signer: window.contractConfig.signer,
+                            address: address
+                        };
+                    }
+                } catch (error) {
+                    // ادامه انتظار
+                }
+            }
+        }
+        
+        // اگر زمان انتظار تمام شد، isConnecting را ریست کن
+        if (window.contractConfig.isConnecting) {
+            console.log("Connection timeout, resetting isConnecting flag");
+            window.contractConfig.isConnecting = false;
+        }
+    }
+    
+    // تلاش برای اتصال
+    const success = await window.contractConfig.initializeWeb3();
+    if (!success) {
+        throw new Error("Failed to connect to wallet");
+    }
+    
     return {
         provider: window.contractConfig.provider,
         contract: window.contractConfig.contract,
@@ -274,31 +336,34 @@ function getReportIcon(type) {
 
 // تابع بارگذاری گزارشات
 async function loadReports() {
+    if (isReportsLoading) {
+        console.log("Reports already loading, skipping...");
+        return;
+    }
+    
+    isReportsLoading = true;
+    
     try {
-        const reportsContainer = document.getElementById('reports-container');
-        const reportTypeFilter = document.getElementById('report-type-filter');
+        console.log("Connecting to wallet for reports data...");
+        const { contract, address } = await connectWallet();
+        console.log("Wallet connected, fetching reports data...");
         
-        if (!reportsContainer) return;
-        
-        reportsContainer.innerHTML = '<div class="loading-message">در حال بارگذاری گزارشات...</div>';
-        
+        // دریافت گزارشات
         const reports = await fetchReports();
-        const filterType = reportTypeFilter ? reportTypeFilter.value : 'all';
         
-        displayReports(reports, filterType);
+        // نمایش گزارشات
+        displayReports(reports);
+        
+        // تنظیم فیلترها
+        setupFilters();
+        
+        console.log("Reports loaded successfully");
         
     } catch (error) {
-        console.error('Error loading reports:', error);
-        const reportsContainer = document.getElementById('reports-container');
-        if (reportsContainer) {
-            reportsContainer.innerHTML = `
-                <div class="error-message">
-                    <p>خطا در بارگذاری گزارشات:</p>
-                    <p>${error.message}</p>
-                    <p>لطفاً کیف پول و اتصال اینترنت را بررسی کنید.</p>
-                </div>
-            `;
-        }
+        console.error("Error loading reports:", error);
+        showReportsError("خطا در بارگذاری گزارشات: " + error.message);
+    } finally {
+        isReportsLoading = false;
     }
 }
 

@@ -1,19 +1,22 @@
 // shop.js
+let isShopLoading = false;
+
 document.addEventListener('DOMContentLoaded', async () => {
     try {
+        console.log("Shop section loaded, waiting for wallet connection...");
         // بررسی وجود ethers و contractConfig
         if (typeof ethers === 'undefined' || !window.contractConfig) {
             throw new Error("Ethers.js or contract config not loaded");
         }
 
         // بارگذاری محصولات
-        loadProducts();
+        await loadProducts();
 
         // راه‌اندازی خرید محصولات
         setupProductPurchases();
 
     } catch (error) {
-        console.error("Error in shop page:", error);
+        console.error("Error in shop section:", error);
         showShopError("خطا در بارگذاری فروشگاه");
     }
 });
@@ -50,36 +53,78 @@ const shopProducts = [
     }
 ];
 
-// بارگذاری محصولات
-function loadProducts() {
-    const productsList = document.getElementById('products-list');
-    if (!productsList) return;
-
-    // فرض: قیمت LVL به دلار را از getPrices می‌گیریم
-    getPrices().then(prices => {
-        const lvlPriceUSD = parseFloat(prices.tokenPriceUSD);
-        productsList.innerHTML = shopProducts.map(product => {
-            const usdPrice = (product.price * lvlPriceUSD).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 8});
-            return `
-                <div class="product-card">
-                    <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 1rem;">
-                        <img src="../lvl.jpg" alt="LVL" style="width: 24px; height: 24px; border-radius: 50%;">
-                        <h3 class="product-title">${product.title}</h3>
-                    </div>
-                    <p class="product-desc">${product.description}</p>
-                    <div class="product-price">
-                        <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
-                            <img src="../lvl.jpg" alt="LVL" style="width: 18px; height: 18px; border-radius: 50%;">
-                            <span>${product.price} LVL (~$${usdPrice} USD)</span>
-                        </div>
-                    </div>
-                    <button class="buy-btn" data-product-id="${product.id}" data-price="${product.price}">
-                        خرید محصول
-                    </button>
-                </div>
-            `;
-        }).join('');
-    });
+// تابع بارگذاری محصولات
+async function loadProducts() {
+    if (isShopLoading) {
+        console.log("Shop already loading, skipping...");
+        return;
+    }
+    
+    isShopLoading = true;
+    
+    try {
+        console.log("Connecting to wallet for shop data...");
+        const { contract } = await connectWallet();
+        console.log("Wallet connected, loading shop products...");
+        
+        // بارگذاری محصولات
+        const productsList = document.getElementById('products-list');
+        if (!productsList) return;
+        
+        productsList.innerHTML = '<div class="loading-message">در حال بارگذاری محصولات...</div>';
+        
+        // محصولات فروشگاه
+        const products = [
+            {
+                id: 1,
+                name: 'دوره آموزشی بلاکچین',
+                description: 'آموزش جامع مفاهیم بلاکچین و ارزهای دیجیتال',
+                price: '50',
+                currency: 'LVL',
+                image: '📚'
+            },
+            {
+                id: 2,
+                name: 'دوره ترید ارز دیجیتال',
+                description: 'آموزش تکنیک‌های معاملاتی و تحلیل بازار',
+                price: '75',
+                currency: 'LVL',
+                image: '📈'
+            },
+            {
+                id: 3,
+                name: 'دوره توسعه قرارداد هوشمند',
+                description: 'آموزش Solidity و توسعه DApp',
+                price: '100',
+                currency: 'LVL',
+                image: '💻'
+            }
+        ];
+        
+        // نمایش محصولات
+        productsList.innerHTML = products.map(product => `
+            <div class="product-card">
+                <div class="product-image">${product.image}</div>
+                <h3>${product.name}</h3>
+                <p>${product.description}</p>
+                <div class="product-price">${product.price} ${product.currency}</div>
+                <button class="buy-btn" data-product-id="${product.id}" data-price="${product.price}">
+                    خرید
+                </button>
+            </div>
+        `).join('');
+        
+        // تنظیم دکمه‌های خرید
+        setupProductPurchases();
+        
+        console.log("Shop products loaded successfully");
+        
+    } catch (error) {
+        console.error("Error loading shop products:", error);
+        showShopError("خطا در بارگذاری محصولات: " + error.message);
+    } finally {
+        isShopLoading = false;
+    }
 }
 
 // راه‌اندازی خرید محصولات

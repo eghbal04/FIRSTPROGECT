@@ -1,4 +1,6 @@
 // network.js
+let isNetworkLoading = false;
+
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         // بررسی وجود ethers و contractConfig
@@ -28,13 +30,71 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// تابع اتصال به کیف پول
+// تابع اتصال به کیف پول با انتظار
 async function connectWallet() {
     if (!window.contractConfig) {
         throw new Error("Contract config not initialized");
     }
-
-    await window.contractConfig.initializeWeb3();
+    
+    // بررسی اینکه آیا قبلاً متصل هستیم
+    if (window.contractConfig.signer && window.contractConfig.contract) {
+        try {
+            const address = await window.contractConfig.signer.getAddress();
+            if (address) {
+                return {
+                    provider: window.contractConfig.provider,
+                    contract: window.contractConfig.contract,
+                    signer: window.contractConfig.signer,
+                    address: address
+                };
+            }
+        } catch (error) {
+            console.log("Existing connection invalid, reconnecting...");
+        }
+    }
+    
+    // اگر در حال اتصال هستیم، منتظر بمان
+    if (window.contractConfig.isConnecting) {
+        console.log("Wallet connection in progress, waiting...");
+        let waitCount = 0;
+        const maxWaitTime = 50; // حداکثر 5 ثانیه
+        
+        while (window.contractConfig.isConnecting && waitCount < maxWaitTime) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            waitCount++;
+            
+            // اگر اتصال موفق شد، از حلقه خارج شو
+            if (window.contractConfig.signer && window.contractConfig.contract) {
+                try {
+                    const address = await window.contractConfig.signer.getAddress();
+                    if (address) {
+                        console.log("Connection completed while waiting");
+                        return {
+                            provider: window.contractConfig.provider,
+                            contract: window.contractConfig.contract,
+                            signer: window.contractConfig.signer,
+                            address: address
+                        };
+                    }
+                } catch (error) {
+                    // ادامه انتظار
+                }
+            }
+        }
+        
+        // اگر زمان انتظار تمام شد، isConnecting را ریست کن
+        if (window.contractConfig.isConnecting) {
+            console.log("Connection timeout, resetting isConnecting flag");
+            window.contractConfig.isConnecting = false;
+        }
+    }
+    
+    // تلاش برای اتصال
+    const success = await window.contractConfig.initializeWeb3();
+    if (!success) {
+        throw new Error("Failed to connect to wallet");
+    }
+    
     return {
         provider: window.contractConfig.provider,
         contract: window.contractConfig.contract,
@@ -45,43 +105,44 @@ async function connectWallet() {
 
 // تابع به‌روزرسانی آمار شبکه
 async function updateNetworkStats() {
+    if (isNetworkLoading) {
+        console.log("Network stats already loading, skipping...");
+        return;
+    }
+    
+    isNetworkLoading = true;
+    
     try {
-        const { contract, address } = await connectWallet();
+        console.log("Connecting to wallet for network stats...");
+        const { contract } = await connectWallet();
+        console.log("Wallet connected, fetching network stats...");
         
-        // دریافت آمار کلی
-        const [totalUsers, binaryPool, rewardPool] = await Promise.all([
+        // دریافت آمار شبکه
+        const [totalUsers, totalClaimableBinaryPoints, totalPoints] = await Promise.all([
             contract.totalUsers(),
-            contract.binaryPool(),
-            contract.rewardPool()
+            contract.totalClaimableBinaryPoints(),
+            contract.totalPoints()
         ]);
-
-        // دریافت اطلاعات کاربر
-        const userData = await contract.users(address);
         
         // به‌روزرسانی UI
         const updateElement = (id, value) => {
             const element = document.getElementById(id);
-            if (element) element.textContent = value;
+            if (element) {
+                element.textContent = value.toString();
+            }
         };
-
-        updateElement('network-members', parseInt(totalUsers).toLocaleString());
-        updateElement('network-points', parseFloat(ethers.formatUnits(userData.binaryPoints, 18)).toLocaleString('en-US', {maximumFractionDigits: 4}));
-        // نمایش پاداش به دلار
-        const lvlPrice = await contract.getTokenPriceInUSD();
-        const rewardPoolUSD = parseFloat(ethers.formatEther(rewardPool)) * parseFloat(ethers.formatUnits(lvlPrice, 18));
-        updateElement('network-rewards', `$${rewardPoolUSD.toLocaleString('en-US', {maximumFractionDigits: 2})} USD`);
-
-        // ایجاد لینک دعوت
-        const referralLink = `${window.location.origin}/?ref=${address}`;
-        const shortReferral = referralLink.length > 32 ? referralLink.substring(0, 20) + '...' + referralLink.slice(-8) : referralLink;
-        updateElement('referral-link', shortReferral);
-
-        // به‌روزرسانی آمار باینری
-        await updateBinaryStats();
-
+        
+        updateElement('network-members', totalUsers.toString());
+        updateElement('network-points', ethers.formatUnits(totalPoints, 18));
+        updateElement('network-rewards', ethers.formatUnits(totalClaimableBinaryPoints, 18));
+        
+        console.log("Network stats updated successfully");
+        
     } catch (error) {
-        console.error("Network stats error:", error);
-        showError("خطا در دریافت اطلاعات شبکه");
+        console.error("Error updating network stats:", error);
+        showError("خطا در بارگذاری آمار شبکه: " + error.message);
+    } finally {
+        isNetworkLoading = false;
     }
 }
 
