@@ -192,15 +192,56 @@ async function loadBalances() {
 
 function validateSwapAmount() {
     if (!swapAmount || !swapButton) return;
-    const value = swapAmount.value;
-    // مقدار باید عدد مثبت و معتبر باشد (در هر دو حالت)
+    
+    const value = swapAmount.value.trim(); // حذف فاصله‌های اضافی
+    
+    // بررسی اینکه آیا مقدار خالی است
+    if (value === '' || value === null || value === undefined) {
+        swapButton.disabled = true;
+        return;
+    }
+    
+    // تبدیل به عدد و بررسی اعتبار
     const parsed = parseFloat(value);
-    swapButton.disabled = !(parsed > 0 && value !== '' && !isNaN(parsed));
+    
+    // بررسی اینکه آیا عدد معتبر است
+    if (isNaN(parsed) || parsed <= 0) {
+        swapButton.disabled = true;
+        return;
+    }
+    
+    // بررسی حداقل مقدار (برای جلوگیری از تراکنش‌های خیلی کوچک)
+    if (swapDirection.value === 'matic-to-lvl') {
+        // حداقل 0.01 MATIC
+        if (parsed < 0.01) {
+            swapButton.disabled = true;
+            return;
+        }
+    } else {
+        // حداقل 1 LVL
+        if (parsed < 1) {
+            swapButton.disabled = true;
+            return;
+        }
+    }
+    
+    // اگر همه شرایط برقرار بود، دکمه را فعال کن
+    swapButton.disabled = false;
 }
 
 swapAmount.addEventListener('input', () => {
     updateRateInfo();
     validateSwapAmount();
+});
+
+swapAmount.addEventListener('keyup', () => {
+    validateSwapAmount();
+});
+
+swapAmount.addEventListener('paste', () => {
+    setTimeout(() => {
+        validateSwapAmount();
+    }, 100);
 });
 
 swapDirection.addEventListener('change', () => {
@@ -209,6 +250,11 @@ swapDirection.addEventListener('change', () => {
 });
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // غیرفعال کردن دکمه در ابتدا
+    if (swapButton) {
+        swapButton.disabled = true;
+    }
+    
     await loadBalances();
     validateSwapAmount();
 });
@@ -227,6 +273,7 @@ async function setMaxAmount() {
                 const maxInt = Math.floor(parseFloat(ethers.formatEther(usableBalance)));
                 swapAmount.value = maxInt;
                 await updateRateInfo();
+                validateSwapAmount();
             }
         } else {
             const { contract, address } = await connectWallet();
@@ -236,6 +283,7 @@ async function setMaxAmount() {
                 const maxInt = Math.floor(parseFloat(ethers.formatUnits(rawBalance, 18)));
                 swapAmount.value = maxInt;
                 await updateRateInfo();
+                validateSwapAmount();
             }
         }
     } catch (error) {
