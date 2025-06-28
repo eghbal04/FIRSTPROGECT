@@ -1524,6 +1524,46 @@ if (!window.contractConfig)
             this.walletConnectProvider.disconnect();
             this.walletConnectProvider = null;
         }
+    },
+
+    // تابع تشخیص کیف پول‌های موجود
+    detectAvailableWallets: function() {
+        const wallets = {
+            metamask: false,
+            walletconnect: true // همیشه در دسترس است
+        };
+        
+        // بررسی MetaMask
+        if (window.ethereum) {
+            wallets.metamask = true;
+        }
+        
+        return wallets;
+    },
+    
+    // تابع اتصال با انتخاب کیف پول
+    connectWithWallet: async function(walletType = 'auto') {
+        try {
+            const availableWallets = this.detectAvailableWallets();
+            
+            if (walletType === 'auto') {
+                // اولویت با MetaMask
+                if (availableWallets.metamask) {
+                    return await this.initializeWeb3();
+                } else if (availableWallets.walletconnect) {
+                    return await this.connectWithWalletConnect();
+                }
+            } else if (walletType === 'metamask' && availableWallets.metamask) {
+                return await this.initializeWeb3();
+            } else if (walletType === 'walletconnect' && availableWallets.walletconnect) {
+                return await this.connectWithWalletConnect();
+            }
+            
+            throw new Error('کیف پول مورد نظر در دسترس نیست');
+        } catch (error) {
+            console.error('خطا در اتصال کیف پول:', error);
+            throw error;
+        }
     }
 };
 }
