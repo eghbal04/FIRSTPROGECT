@@ -69,6 +69,7 @@ async function loadDashboardData() {
         console.error("Error loading dashboard data:", error);
         // اگر خطای اتصال بود، بعد از 5 ثانیه دوباره تلاش کن
         if (error.message.includes('Failed to connect') || error.message.includes('Wallet not connected')) {
+            console.log("Connection error, will retry in 5 seconds...");
             setTimeout(() => {
                 isDashboardLoading = false;
                 loadDashboardData();
@@ -272,6 +273,14 @@ async function checkConnection() {
             };
         }
         
+        // بررسی اینکه آیا در حال اتصال هستیم
+        if (window.contractConfig.isConnecting) {
+            return {
+                connected: false,
+                error: "Connection in progress"
+            };
+        }
+        
         const address = await window.contractConfig.signer.getAddress();
         if (!address) {
             return {
@@ -281,6 +290,13 @@ async function checkConnection() {
         }
         
         const provider = window.contractConfig.provider;
+        if (!provider) {
+            return {
+                connected: false,
+                error: "No provider available"
+            };
+        }
+        
         const network = await provider.getNetwork();
         
         return {
@@ -326,9 +342,35 @@ async function connectWallet() {
     if (window.contractConfig.isConnecting) {
         console.log("Wallet connection in progress, waiting...");
         let waitCount = 0;
-        while (window.contractConfig.isConnecting && waitCount < 30) { // حداکثر 3 ثانیه
+        const maxWaitTime = 50; // حداکثر 5 ثانیه
+        
+        while (window.contractConfig.isConnecting && waitCount < maxWaitTime) {
             await new Promise(resolve => setTimeout(resolve, 100));
             waitCount++;
+            
+            // اگر اتصال موفق شد، از حلقه خارج شو
+            if (window.contractConfig.signer && window.contractConfig.contract) {
+                try {
+                    const address = await window.contractConfig.signer.getAddress();
+                    if (address) {
+                        console.log("Connection completed while waiting");
+                        return {
+                            provider: window.contractConfig.provider,
+                            contract: window.contractConfig.contract,
+                            signer: window.contractConfig.signer,
+                            address: address
+                        };
+                    }
+                } catch (error) {
+                    // ادامه انتظار
+                }
+            }
+        }
+        
+        // اگر زمان انتظار تمام شد، isConnecting را ریست کن
+        if (window.contractConfig.isConnecting) {
+            console.log("Connection timeout, resetting isConnecting flag");
+            window.contractConfig.isConnecting = false;
         }
     }
     

@@ -1317,13 +1317,28 @@ if (!window.contractConfig)
                   }
               }
               
+              // اگر قبلاً متصل هستیم، بررسی کنیم که آیا هنوز معتبر است
+              if (this.signer && this.contract) {
+                  try {
+                      const address = await this.signer.getAddress();
+                      if (address) {
+                          console.log('Already connected to wallet:', address);
+                          return true;
+                      }
+                  } catch (error) {
+                      console.log('Previous connection invalid, reconnecting...');
+                      this.signer = null;
+                      this.contract = null;
+                  }
+              }
+              
               this.isConnecting = true;
               
               if (!window.ethereum) {
                   this.isConnecting = false;
                   throw new Error('کیف پول یافت نشد');
               }
-  
+
               await this.switchToPolygon();
               
               this.provider = new ethers.BrowserProvider(window.ethereum);
