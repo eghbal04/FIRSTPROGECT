@@ -257,7 +257,7 @@ function updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceC
     // به‌روزرسانی حجم معاملات (تبدیل به دلار)
     const tradingVolumeElement = document.getElementById('trading-volume');
     if (tradingVolumeElement) {
-        const tradingVolumeNum = parseFloat(tradingVolume.totalVolume);
+        const tradingVolumeNum = parseFloat(tradingVolume.contractBalance);
         const maticPriceUSD = parseFloat(prices.maticPrice);
         const tradingVolumeUSD = (tradingVolumeNum * maticPriceUSD).toFixed(2);
         tradingVolumeElement.innerHTML = `
@@ -663,40 +663,25 @@ async function getTradingVolume() {
     try {
         const { contract } = await connectWallet();
         
-        let totalDeposits = "0";
         let contractBalance = "0";
         let totalVolume = "0";
         
-        // دریافت کل سپرده‌های مستقیم
-        try {
-            const depositsRaw = await contract.totalDirectDeposits();
-            totalDeposits = ethers.formatEther(depositsRaw);
-        } catch (error) {
-            console.error("Error getting totalDirectDeposits:", error);
-        }
-        
-        // دریافت موجودی قرارداد
+        // دریافت موجودی قرارداد (این همان حجم معاملات است)
         try {
             const balanceRaw = await contract.getContractMaticBalance();
             contractBalance = ethers.formatEther(balanceRaw);
+            totalVolume = contractBalance; // حجم معاملات = موجودی فعلی قرارداد
         } catch (balanceError) {
             console.error("Error getting contract balance:", balanceError);
         }
         
-        // محاسبه کل حجم معاملات (سپرده‌ها + موجودی فعلی)
-        const depositsNum = parseFloat(totalDeposits);
-        const balanceNum = parseFloat(contractBalance);
-        totalVolume = (depositsNum + balanceNum).toString();
-        
         return {
-            totalDeposits,
             contractBalance,
             totalVolume
         };
     } catch (error) {
         console.error("Error in getTradingVolume:", error);
         return {
-            totalDeposits: "0",
             contractBalance: "0",
             totalVolume: "0"
         };
