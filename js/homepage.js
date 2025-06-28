@@ -438,11 +438,14 @@ async function connectWithQRCode() {
         
         // بررسی بارگذاری WalletConnect
         if (typeof window.WalletConnectEthereumProvider === 'undefined') {
-            console.error('WalletConnect UMD not loaded, waiting...');
+            console.error('WalletConnect UMD not loaded, attempting to load...');
+            
+            // تلاش برای بارگذاری WalletConnect
+            await loadWalletConnect();
             
             // انتظار برای بارگذاری WalletConnect
             let attempts = 0;
-            const maxAttempts = 10;
+            const maxAttempts = 15;
             
             while (typeof window.WalletConnectEthereumProvider === 'undefined' && attempts < maxAttempts) {
                 await new Promise(resolve => setTimeout(resolve, 1000));
@@ -451,11 +454,16 @@ async function connectWithQRCode() {
             }
             
             if (typeof window.WalletConnectEthereumProvider === 'undefined') {
-                throw new Error('WalletConnect failed to load after multiple attempts. Please refresh the page and try again.');
+                throw new Error('WalletConnect failed to load. Please refresh the page and try again, or use the "اتصال هوشمند" button instead.');
             }
         }
         
         console.log('WalletConnect UMD loaded, initializing...');
+        
+        // بررسی وجود contractConfig
+        if (!window.contractConfig) {
+            throw new Error('Contract configuration not initialized. Please refresh the page.');
+        }
         
         // راه‌اندازی WalletConnect
         await window.contractConfig.initializeWalletConnect();
@@ -472,24 +480,51 @@ async function connectWithQRCode() {
         
         // نمایش پیام خطا به کاربر
         const errorMessage = error.message || 'خطا در اتصال با QR Code';
-        alert(`خطا در اتصال با بارکد:\n${errorMessage}\n\nلطفاً صفحه را رفرش کنید و دوباره تلاش کنید.`);
         
-        // تلاش برای بارگذاری مجدد WalletConnect
-        if (error.message.includes('WalletConnect UMD not loaded')) {
-            console.log('Attempting to reload WalletConnect...');
+        // اگر WalletConnect بارگذاری نشده، پیشنهاد استفاده از اتصال هوشمند
+        if (error.message.includes('WalletConnect failed to load') || error.message.includes('WalletConnect UMD not loaded')) {
+            alert(`خطا در بارگذاری WalletConnect:\n${errorMessage}\n\n💡 پیشنهاد: از دکمه "اتصال هوشمند" استفاده کنید که با MetaMask کار می‌کند.`);
+        } else {
+            alert(`خطا در اتصال با بارکد:\n${errorMessage}\n\nلطفاً صفحه را رفرش کنید و دوباره تلاش کنید.`);
+        }
+    }
+}
+
+// تابع بارگذاری WalletConnect
+async function loadWalletConnect() {
+    return new Promise((resolve, reject) => {
+        const sources = [
+            'https://cdn.jsdelivr.net/npm/@walletconnect/ethereum-provider@2.11.4/dist/umd/index.min.js',
+            'https://unpkg.com/@walletconnect/ethereum-provider@2.11.4/dist/umd/index.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/walletconnect/2.11.4/umd/index.min.js'
+        ];
+        
+        let currentSource = 0;
+        
+        function tryNextSource() {
+            if (currentSource >= sources.length) {
+                reject(new Error('All WalletConnect sources failed to load'));
+                return;
+            }
+            
+            console.log(`Trying WalletConnect source ${currentSource + 1}: ${sources[currentSource]}`);
+            
             const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/@walletconnect/ethereum-provider@2.11.4/dist/umd/index.min.js';
+            script.src = sources[currentSource];
             script.onload = () => {
-                console.log('WalletConnect reloaded successfully');
-                alert('WalletConnect بارگذاری شد. لطفاً دوباره تلاش کنید.');
+                console.log(`WalletConnect loaded successfully from source ${currentSource + 1}`);
+                resolve();
             };
             script.onerror = () => {
-                console.error('Failed to reload WalletConnect');
-                alert('خطا در بارگذاری WalletConnect. لطفاً اتصال اینترنت خود را بررسی کنید.');
+                console.error(`WalletConnect failed to load from source ${currentSource + 1}`);
+                currentSource++;
+                tryNextSource();
             };
             document.head.appendChild(script);
         }
-    }
+        
+        tryNextSource();
+    });
 }
 
 // تابع اتصال هوشمند (انتخاب بهترین روش)
