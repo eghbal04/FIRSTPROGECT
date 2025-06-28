@@ -179,46 +179,269 @@ function setupReferralCopy() {
 async function renderNetworkTree() {
     try {
         const { address } = await connectWallet();
-        const treeData = await getUserTree(address);
         const treeContainer = document.getElementById('network-tree');
         
         if (!treeContainer) return;
         
         treeContainer.innerHTML = `
-            <div class="tree-node user-node">
-                <span>شما</span>
-                <div class="user-stats">
-                    <div>امتیاز: ${treeData.binaryPoints}/${treeData.binaryPointCap}</div>
-                    <div>وضعیت: ${treeData.activated ? "فعال" : "غیرفعال"}</div>
+            <h3>ساختار شبکه شما</h3>
+            <div class="network-tree-content">
+                <div class="tree-structure" id="tree-structure">
+                    <!-- درخت اصلی اینجا رندر می‌شود -->
                 </div>
-            </div>
-            
-            <div class="tree-connectors">
-                ${treeData.left !== ethers.ZeroAddress ? `
-                <div class="connector-line left-line"></div>
-                ` : ''}
                 
-                ${treeData.right !== ethers.ZeroAddress ? `
-                <div class="connector-line right-line"></div>
-                ` : ''}
-            </div>
-            
-            <div class="tree-children">
-                ${treeData.left !== ethers.ZeroAddress ? `
-                <div class="tree-node left-node">
-                    <span>${shortenAddress(treeData.left)}</span>
+                <!-- آمار کلی شبکه -->
+                <div class="network-summary">
+                    <h4>آمار کلی شبکه</h4>
+                    <div class="summary-stats" id="summary-stats">
+                        <!-- آمار اینجا به‌روزرسانی می‌شود -->
+                    </div>
                 </div>
-                ` : '<div class="tree-node empty">(خالی)</div>'}
-                
-                ${treeData.right !== ethers.ZeroAddress ? `
-                <div class="tree-node right-node">
-                    <span>${shortenAddress(treeData.right)}</span>
-                </div>
-                ` : '<div class="tree-node empty">(خالی)</div>'}
             </div>
         `;
+        
+        // رندر کردن درخت اصلی
+        await renderTreeNode(address, 'tree-structure', 0);
+        
+        // به‌روزرسانی آمار کلی
+        await updateNetworkSummary();
+        
     } catch (error) {
         console.error("Error rendering network tree:", error);
+        const treeContainer = document.getElementById('network-tree');
+        if (treeContainer) {
+            treeContainer.innerHTML = `
+                <div class="error-message">
+                    <p>خطا در بارگذاری درخت شبکه:</p>
+                    <p>${error.message}</p>
+                </div>
+            `;
+        }
+    }
+}
+
+// تابع رندر کردن یک نود درخت
+async function renderTreeNode(userAddress, containerId, level = 0) {
+    try {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        
+        const treeData = await getUserTree(userAddress);
+        const isCurrentUser = userAddress === (await connectWallet()).address;
+        
+        // ایجاد کلاس‌های CSS بر اساس سطح
+        const levelClass = `level-${level}`;
+        const userClass = isCurrentUser ? 'current-user' : 'other-user';
+        
+        const nodeHTML = `
+            <div class="tree-node ${levelClass} ${userClass}" data-address="${userAddress}" data-level="${level}">
+                <div class="node-header" onclick="toggleNodeExpansion('${userAddress}', ${level})">
+                    <div class="node-info">
+                        <span class="node-title">${isCurrentUser ? 'شما' : `کاربر ${level + 1}`}</span>
+                        <span class="node-status ${treeData.activated ? 'active' : 'inactive'}">
+                            ${treeData.activated ? 'فعال' : 'غیرفعال'}
+                        </span>
+                    </div>
+                    <div class="expand-icon" id="expand-icon-${userAddress}">
+                        ${(treeData.left !== ethers.ZeroAddress || treeData.right !== ethers.ZeroAddress) ? '▼' : ''}
+                    </div>
+                </div>
+                
+                <div class="node-details">
+                    <div class="node-stat">
+                        <span class="stat-label">آدرس:</span>
+                        <span class="stat-value">${shortenAddress(userAddress)}</span>
+                    </div>
+                    <div class="node-stat">
+                        <span class="stat-label">امتیاز:</span>
+                        <span class="stat-value">${parseFloat(treeData.binaryPoints).toFixed(2)}/${parseFloat(treeData.binaryPointCap).toFixed(2)}</span>
+                    </div>
+                </div>
+                
+                <!-- کانتینر برای فرزندان (در ابتدا مخفی) -->
+                <div class="children-container" id="children-${userAddress}" style="display: none;">
+                    <div class="children-wrapper" id="children-wrapper-${userAddress}">
+                        <!-- فرزندان اینجا لود می‌شوند -->
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // اضافه کردن نود به کانتینر
+        if (level === 0) {
+            container.innerHTML = nodeHTML;
+        } else {
+            container.innerHTML += nodeHTML;
+        }
+        
+    } catch (error) {
+        console.error(`Error rendering tree node for ${userAddress}:`, error);
+    }
+}
+
+// تابع گسترش/انقباض نود
+async function toggleNodeExpansion(userAddress, level) {
+    try {
+        const childrenContainer = document.getElementById(`children-${userAddress}`);
+        const childrenWrapper = document.getElementById(`children-wrapper-${userAddress}`);
+        const expandIcon = document.getElementById(`expand-icon-${userAddress}`);
+        
+        if (!childrenContainer || !childrenWrapper) return;
+        
+        const isExpanded = childrenContainer.style.display !== 'none';
+        
+        if (isExpanded) {
+            // انقباض نود
+            childrenContainer.style.display = 'none';
+            if (expandIcon) expandIcon.textContent = '▼';
+        } else {
+            // گسترش نود
+            childrenContainer.style.display = 'block';
+            if (expandIcon) expandIcon.textContent = '▲';
+            
+            // اگر فرزندان قبلاً لود نشده‌اند، آن‌ها را لود کن
+            if (childrenWrapper.children.length === 0) {
+                await loadChildren(userAddress, childrenWrapper, level + 1);
+            }
+        }
+        
+    } catch (error) {
+        console.error(`Error toggling node expansion for ${userAddress}:`, error);
+    }
+}
+
+// تابع لود کردن فرزندان یک نود
+async function loadChildren(parentAddress, container, level) {
+    try {
+        const treeData = await getUserTree(parentAddress);
+        
+        // بررسی فرزند چپ
+        if (treeData.left !== ethers.ZeroAddress) {
+            await renderChildNode(treeData.left, container, 'left', level);
+        } else {
+            // نمایش جای خالی برای فرزند چپ
+            container.innerHTML += `
+                <div class="tree-node empty-node level-${level}">
+                    <div class="node-header">
+                        <div class="node-info">
+                            <span class="node-title">فرزند چپ</span>
+                            <span class="node-status empty">خالی</span>
+                        </div>
+                    </div>
+                    <div class="node-details">
+                        <div class="node-stat">
+                            <span class="stat-label">وضعیت:</span>
+                            <span class="stat-value">در انتظار عضو جدید</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // بررسی فرزند راست
+        if (treeData.right !== ethers.ZeroAddress) {
+            await renderChildNode(treeData.right, container, 'right', level);
+        } else {
+            // نمایش جای خالی برای فرزند راست
+            container.innerHTML += `
+                <div class="tree-node empty-node level-${level}">
+                    <div class="node-header">
+                        <div class="node-info">
+                            <span class="node-title">فرزند راست</span>
+                            <span class="node-status empty">خالی</span>
+                        </div>
+                    </div>
+                    <div class="node-details">
+                        <div class="node-stat">
+                            <span class="stat-label">وضعیت:</span>
+                            <span class="stat-value">در انتظار عضو جدید</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+    } catch (error) {
+        console.error(`Error loading children for ${parentAddress}:`, error);
+    }
+}
+
+// تابع رندر کردن نود فرزند
+async function renderChildNode(childAddress, container, position, level) {
+    try {
+        const treeData = await getUserTree(childAddress);
+        const isCurrentUser = childAddress === (await connectWallet()).address;
+        
+        const nodeHTML = `
+            <div class="tree-node child-node ${position}-child level-${level} ${isCurrentUser ? 'current-user' : ''}" 
+                 data-address="${childAddress}" data-level="${level}">
+                <div class="node-header" onclick="toggleNodeExpansion('${childAddress}', ${level})">
+                    <div class="node-info">
+                        <span class="node-title">فرزند ${position === 'left' ? 'چپ' : 'راست'}</span>
+                        <span class="node-status ${treeData.activated ? 'active' : 'inactive'}">
+                            ${treeData.activated ? 'فعال' : 'غیرفعال'}
+                        </span>
+                    </div>
+                    <div class="expand-icon" id="expand-icon-${childAddress}">
+                        ${(treeData.left !== ethers.ZeroAddress || treeData.right !== ethers.ZeroAddress) ? '▼' : ''}
+                    </div>
+                </div>
+                
+                <div class="node-details">
+                    <div class="node-stat">
+                        <span class="stat-label">آدرس:</span>
+                        <span class="stat-value">${shortenAddress(childAddress)}</span>
+                    </div>
+                    <div class="node-stat">
+                        <span class="stat-label">امتیاز:</span>
+                        <span class="stat-value">${parseFloat(treeData.binaryPoints).toFixed(2)}/${parseFloat(treeData.binaryPointCap).toFixed(2)}</span>
+                    </div>
+                </div>
+                
+                <!-- کانتینر برای فرزندان -->
+                <div class="children-container" id="children-${childAddress}" style="display: none;">
+                    <div class="children-wrapper" id="children-wrapper-${childAddress}">
+                        <!-- فرزندان اینجا لود می‌شوند -->
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        container.innerHTML += nodeHTML;
+        
+    } catch (error) {
+        console.error(`Error rendering child node for ${childAddress}:`, error);
+    }
+}
+
+// تابع به‌روزرسانی آمار کلی شبکه
+async function updateNetworkSummary() {
+    try {
+        const { address } = await connectWallet();
+        const summaryContainer = document.getElementById('summary-stats');
+        
+        if (!summaryContainer) return;
+        
+        // در اینجا می‌توانید آمار کلی شبکه را محاسبه کنید
+        // برای مثال: تعداد کل اعضا، اعضای فعال، امتیاز کل و غیره
+        
+        summaryContainer.innerHTML = `
+            <div class="summary-stat">
+                <span class="summary-label">سطح فعلی:</span>
+                <span class="summary-value">0</span>
+            </div>
+            <div class="summary-stat">
+                <span class="summary-label">اعضای قابل مشاهده:</span>
+                <span class="summary-value">1</span>
+            </div>
+            <div class="summary-stat">
+                <span class="summary-label">امتیاز کل:</span>
+                <span class="summary-value">0</span>
+            </div>
+        `;
+        
+    } catch (error) {
+        console.error("Error updating network summary:", error);
     }
 }
 
@@ -317,3 +540,6 @@ async function fetchUserTree() {
         };
     }
 }
+
+// اضافه کردن توابع به window object برای فراخوانی از HTML
+window.toggleNodeExpansion = toggleNodeExpansion;
