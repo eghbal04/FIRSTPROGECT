@@ -105,30 +105,35 @@ function shortenAddress(address) {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
-// تابع فرمت کردن تاریخ
+// تابع فرمت تاریخ
 function formatDate(timestamp) {
-    if (!timestamp) return '-';
-    
-    // بررسی اینکه آیا timestamp معتبر است
-    if (isNaN(timestamp) || timestamp <= 0) {
-        return '-';
-    }
-    
-    // اگر timestamp خیلی بزرگ است (احتمالاً در میلی‌ثانیه)، آن را به ثانیه تبدیل کن
-    let timestampInSeconds = timestamp;
-    if (timestamp > 1000000000000) { // اگر بزرگتر از سال 2001 است، احتمالاً در میلی‌ثانیه است
-        timestampInSeconds = Math.floor(timestamp / 1000);
-    }
-    
     try {
-        const date = new Date(timestampInSeconds * 1000);
-        
-        // بررسی اینکه آیا تاریخ معتبر است
-        if (isNaN(date.getTime())) {
-            return '-';
+        // بررسی اعتبار timestamp
+        if (!timestamp || isNaN(timestamp)) {
+            console.warn("Invalid timestamp:", timestamp);
+            return "تاریخ نامعتبر";
         }
         
-        return date.toLocaleString('fa-IR', {
+        // تبدیل timestamp به تاریخ
+        let date;
+        if (timestamp < 1000000000000) {
+            // اگر timestamp در ثانیه است، به میلی‌ثانیه تبدیل کن
+            date = new Date(timestamp * 1000);
+        } else {
+            // اگر timestamp در میلی‌ثانیه است
+            date = new Date(timestamp);
+        }
+        
+        // بررسی اعتبار تاریخ
+        if (isNaN(date.getTime())) {
+            console.warn("Invalid date from timestamp:", timestamp);
+            return "تاریخ نامعتبر";
+        }
+        
+        console.log("Formatting date:", date, "from timestamp:", timestamp);
+        
+        // استفاده از فرمت انگلیسی به جای فارسی
+        return date.toLocaleString('en-US', {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
@@ -136,8 +141,8 @@ function formatDate(timestamp) {
             minute: '2-digit'
         });
     } catch (error) {
-        console.error('Error formatting date:', error, 'timestamp:', timestamp);
-        return '-';
+        console.error("Error formatting date:", error);
+        return "خطا در نمایش تاریخ";
     }
 }
 

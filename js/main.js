@@ -102,11 +102,18 @@ const updateElement = (id, value) => {
     if (typeof value === 'string' && value.includes('.')) {
         const num = parseFloat(value);
         if (!isNaN(num)) {
-            value = num.toLocaleString('fa-IR', {
-                maximumFractionDigits: 6
-            });
+            if (num >= 1000000) {
+                value = (num / 1000000).toFixed(2) + 'M';
+            } else if (num >= 1000) {
+                value = (num / 1000).toFixed(2) + 'K';
+            } else {
+                value = num.toLocaleString('en-US', {
+                    maximumFractionDigits: 6
+                });
+            }
         }
     }
+    
     element.textContent = value;
 };
 

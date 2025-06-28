@@ -99,7 +99,7 @@ function loadTutorials() {
 // تابع فرمت تاریخ
 function formatDate(dateString) {
     const date = new Date(dateString);
-    return date.toLocaleDateString('fa-IR', {
+    return date.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric'
