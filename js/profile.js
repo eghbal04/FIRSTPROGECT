@@ -38,11 +38,6 @@ async function loadUserProfile() {
         // دریافت اطلاعات کاربر
         const userData = await contract.users(address);
         
-        // Debug: نمایش اطلاعات کاربر
-        console.log('Debug - Full userData:', userData);
-        console.log('Debug - userData.binaryPointCap (raw):', userData.binaryPointCap);
-        console.log('Debug - userData.binaryPointCap (toString):', userData.binaryPointCap.toString());
-        
         // دریافت موجودی‌ها
         const [maticBalance, lvlBalance] = await Promise.all([
             provider.getBalance(address),
@@ -115,13 +110,11 @@ function updateProfileUI(profile, userData, isClaimable, registrationPrice, mati
 
     // اطلاعات باینری
     const binaryPoints = ethers.formatUnits(userData.binaryPoints, 18);
-    const binaryPointCap = ethers.formatUnits(userData.binaryPointCap, 18);
+    const binaryPointCap = userData.binaryPointCap.toString(); // استفاده از مقدار خام
     const binaryPointsClaimed = ethers.formatUnits(userData.binaryPointsClaimed, 18);
     
     // نمایش سقف درآمد باینری (تعداد پوینت‌های قابل دریافت در هر 12 ساعت)
-    // تبدیل به عدد صحیح و اطمینان از نمایش صحیح
-    const capNumber = Math.round(parseFloat(binaryPointCap));
-    const incomeCapDisplay = `${capNumber} پوینت (هر 12 ساعت)`;
+    const incomeCapDisplay = `${binaryPointCap} پوینت (هر 12 ساعت)`;
     
     updateElement('profile-income-cap', incomeCapDisplay);
     updateElement('profile-received', Math.round(parseFloat(binaryPointsClaimed)));
