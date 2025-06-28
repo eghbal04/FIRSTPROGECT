@@ -226,16 +226,6 @@ async function getPrices() {
     try {
         const { contract } = await connectWallet();
         
-        // Debug: بررسی توابع موجود در contract
-        console.log("Available contract functions:", Object.getOwnPropertyNames(contract));
-        console.log("Contract object:", contract);
-        
-        // Debug: بررسی توابع خاص
-        console.log("updateTokenPrice function exists:", typeof contract.updateTokenPrice);
-        console.log("getTokenPriceInUSD function exists:", typeof contract.getTokenPriceInUSD);
-        console.log("getLatestMaticPrice function exists:", typeof contract.getLatestMaticPrice);
-        console.log("getRegistrationPrice function exists:", typeof contract.getRegistrationPrice);
-        
         const [tokenPrice, maticPrice, registrationPrice, tokenPriceUSD] = await Promise.all([
             contract.updateTokenPrice(),
             contract.getLatestMaticPrice(),
@@ -248,9 +238,6 @@ async function getPrices() {
         const formattedMaticPrice = ethers.formatUnits(maticPrice, 8);
         const formattedRegistrationPrice = ethers.formatEther(registrationPrice);
         const formattedTokenPriceUSD = ethers.formatUnits(tokenPriceUSD, 8);
-        
-        console.log("Raw token price USD:", tokenPriceUSD.toString());
-        console.log("Formatted token price USD:", formattedTokenPriceUSD);
         
         // استفاده از قیمت واقعی بدون بررسی حداقل
         const finalTokenPriceUSD = formattedTokenPriceUSD;
@@ -340,8 +327,6 @@ async function getAdditionalStats() {
     try {
         const { contract } = await connectWallet();
         
-        console.log("Getting additional stats...");
-        
         let pointValue = "0";
         let claimedPoints = "0";
         let remainingPoints = "0";
@@ -349,20 +334,16 @@ async function getAdditionalStats() {
         // دریافت ارزش هر پوینت (به توکن LVL)
         try {
             const pointValueRaw = await contract.getPointValue();
-            console.log("Point value (raw):", pointValueRaw.toString());
             pointValue = ethers.formatUnits(pointValueRaw, 18);
-            console.log("Point value (formatted):", pointValue);
         } catch (error) {
-            console.log("getPointValue failed:", error.message);
+            // getPointValue failed
         }
         
         // محاسبه پوینت‌های پرداخت شده و مانده
         try {
             const totalClaimableBinaryPoints = await contract.totalClaimableBinaryPoints();
-            console.log("Total claimable binary points (raw):", totalClaimableBinaryPoints.toString());
             
             const totalPoints = await contract.totalPoints();
-            console.log("Total points (raw):", totalPoints.toString());
             
             claimedPoints = ethers.formatUnits(totalClaimableBinaryPoints, 18);
             const remainingRaw = totalPoints - totalClaimableBinaryPoints;
@@ -370,11 +351,8 @@ async function getAdditionalStats() {
             const safeRemainingRaw = remainingRaw > 0 ? remainingRaw : 0n;
             remainingPoints = ethers.formatUnits(safeRemainingRaw, 18);
             
-            console.log("Claimed points (formatted):", claimedPoints);
-            console.log("Remaining points (formatted):", remainingPoints);
-            
         } catch (error) {
-            console.log("Error calculating points:", error.message);
+            // Error calculating points
         }
         
         return {
@@ -397,32 +375,36 @@ async function getTradingVolume() {
     try {
         const { contract } = await connectWallet();
         
-        console.log("Getting trading volume...");
+        let totalDeposits = "0";
+        let contractBalance = "0";
         
-        // ابتدا تلاش برای totalDirectDeposits
+        // دریافت کل سپرده‌های مستقیم
         try {
-            const totalDeposits = await contract.totalDirectDeposits();
-            console.log("Total direct deposits (raw):", totalDeposits.toString());
-            const formatted = ethers.formatEther(totalDeposits);
-            console.log("Total direct deposits (formatted):", formatted);
-            return formatted;
+            const depositsRaw = await contract.totalDirectDeposits();
+            const formatted = ethers.formatEther(depositsRaw);
+            totalDeposits = formatted;
         } catch (error) {
-            console.log("totalDirectDeposits failed:", error.message);
-            
-            // fallback به موجودی قرارداد
-            try {
-                const contractBalance = await contract.getContractMaticBalance();
-                console.log("Contract balance (raw):", contractBalance.toString());
-                const formatted = ethers.formatEther(contractBalance);
-                console.log("Contract balance (formatted):", formatted);
-                return formatted;
-            } catch (balanceError) {
-                console.log("Contract balance failed:", balanceError.message);
-                return "0";
-            }
+            // totalDirectDeposits failed
         }
+        
+        // دریافت موجودی قرارداد
+        try {
+            const balanceRaw = await contract.getContractMaticBalance();
+            const formatted = ethers.formatEther(balanceRaw);
+            contractBalance = formatted;
+        } catch (balanceError) {
+            // Contract balance failed
+        }
+        
+        return {
+            totalDeposits,
+            contractBalance
+        };
     } catch (error) {
         console.error("Error in getTradingVolume:", error);
-        return "0";
+        return {
+            totalDeposits: "0",
+            contractBalance: "0"
+        };
     }
 }

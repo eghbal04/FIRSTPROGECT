@@ -31,108 +31,34 @@ body {
   background: linear-gradient(135deg, #7F7FD5 0%, #86A8E7 50%, #91EAE4 100%);
   color: #1D1D1F;
     line-height: 1.6;
-    padding: 20px;
+    padding: 5px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Expandable Container Styles */
-.expandable-container {
-  background: var(--ios-card);
-  border-radius: var(--ios-radius);
-  border: 1px solid var(--ios-border);
-  box-shadow: var(--ios-shadow);
-  backdrop-filter: var(--ios-blur);
-  margin-bottom: 1.5rem;
-    overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    position: relative;
-}
-
-.expandable-container.collapsed .expand-content {
-  max-height: 0;
-  opacity: 0;
-  padding: 0;
-    overflow: hidden;
-}
-
-.expandable-container:not(.collapsed) .expand-content {
-  max-height: 2000px;
-    opacity: 1;
-  padding: 1.5rem;
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.expand-header {
-  padding: 1.5rem;
-    cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: rgba(255, 255, 255, 0.5);
-  border-bottom: 1px solid var(--ios-border);
-  transition: background-color 0.2s ease;
-}
-
-.expand-header:hover {
-  background: rgba(255, 255, 255, 0.7);
-}
-
-.expand-toggle-btn {
-  background: var(--ios-primary);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  font-size: 18px;
-  font-weight: bold;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
-}
-
-.expand-toggle-btn:hover {
-  background: #0056CC;
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.4);
-}
-
-.expand-toggle-btn:active {
-  transform: scale(0.95);
-}
-
-.expand-content {
-  background: rgba(255, 255, 255, 0.3);
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
 /* Page Section Styles */
 .page-section {
-  margin-bottom: 2rem;
+  margin-bottom: 0.5rem;
 }
 
 .page-section h2 {
   color: var(--ios-text);
   font-size: 1.5rem;
   font-weight: 600;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .page-section h3 {
   color: var(--ios-text);
   font-size: 1.25rem;
   font-weight: 600;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
 .page-section p {
   color: var(--ios-text-secondary);
   line-height: 1.6;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
 }
 
 /* iOS 26 Animations */

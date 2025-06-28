@@ -1,7 +1,5 @@
 // main.js
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log("Welcome to the new LevelUp Platform!");
-
     const connectButton = document.getElementById('connectButton');
     const walletConnectButton = document.getElementById('walletConnectButton');
 
@@ -128,10 +126,80 @@ const updateElement = (id, value) => {
     updateNavbarBasedOnUserStatus();
 }
 
+// تابع fetchUserProfile که در main.js فراخوانی می‌شود
+async function fetchUserProfile() {
+    try {
+        const { contract, address } = await connectWallet();
+        
+        // دریافت موجودی‌ها
+        const [maticBalance, lvlBalance] = await Promise.all([
+            contract.provider.getBalance(address),
+            contract.balanceOf(address)
+        ]);
+        
+        // دریافت اطلاعات کاربر
+        const userData = await contract.users(address);
+        
+        // دریافت قیمت‌ها
+        const [maticPrice, lvlPrice] = await Promise.all([
+            contract.getLatestMaticPrice(),
+            contract.getTokenPriceInUSD()
+        ]);
+        
+        // فرمت کردن مقادیر
+        const formattedMaticBalance = ethers.formatEther(maticBalance);
+        const formattedLvlBalance = ethers.formatUnits(lvlBalance, 18);
+        const formattedMaticPrice = ethers.formatUnits(maticPrice, 8);
+        const formattedLvlPrice = ethers.formatUnits(lvlPrice, 8);
+        
+        // محاسبه ارزش دلاری
+        const maticValueUSD = parseFloat(formattedMaticBalance) * parseFloat(formattedMaticPrice);
+        const lvlValueUSD = parseFloat(formattedLvlBalance) * parseFloat(formattedLvlPrice);
+        
+        return {
+            address,
+            maticBalance: formattedMaticBalance,
+            lvlBalance: formattedLvlBalance,
+            maticValueUSD: maticValueUSD.toFixed(2),
+            lvlValueUSD: lvlValueUSD.toFixed(2),
+            isRegistered: userData.activated,
+            binaryPoints: ethers.formatUnits(userData.binaryPoints, 18),
+            binaryPointCap: ethers.formatUnits(userData.binaryPointCap, 18),
+            referrer: userData.referrer
+        };
+    } catch (error) {
+        console.error("Error fetching user profile:", error);
+        return {
+            address: '---',
+            maticBalance: '0',
+            lvlBalance: '0',
+            maticValueUSD: '0',
+            lvlValueUSD: '0',
+            isRegistered: false,
+            binaryPoints: '0',
+            binaryPointCap: '0',
+            referrer: '---'
+        };
+    }
+}
+
+// تابع اتصال به کیف پول
+async function connectWallet() {
+    if (!window.contractConfig) {
+        throw new Error("Contract config not initialized");
+    }
+    await window.contractConfig.initializeWeb3();
+    return {
+        provider: window.contractConfig.provider,
+        contract: window.contractConfig.contract,
+        signer: window.contractConfig.signer,
+        address: await window.contractConfig.signer.getAddress()
+    };
+}
+
 // main.js
 async function autoConnectWallet() {
     if (typeof window.ethereum === 'undefined' && !window.contractConfig.walletConnectProvider) {
-        console.log("کیف پول اتریوم یا WalletConnect شناسایی نشد");
         return;
     }
 
@@ -141,14 +209,13 @@ async function autoConnectWallet() {
         const accounts = await window.ethereum.request({ method: 'eth_accounts' });
         if (accounts.length > 0) {
             const address = accounts[0];
-                console.log("Wallet connected automatically (MetaMask):", address);
             const profile = await fetchUserProfile();
             updateConnectionUI(profile, address, 'metamask');
             return true;
             }
         }
     } catch (error) {
-        console.log("اتصال خودکار متامسک موفق نبود یا کاربر رد کرد", error);
+        // اتصال خودکار متامسک موفق نبود یا کاربر رد کرد
     }
 
     // اتوکانکت WalletConnect (اگر قبلاً متصل بوده)
@@ -163,7 +230,7 @@ async function autoConnectWallet() {
             }
         }
     } catch (error) {
-        console.log("اتصال خودکار WalletConnect موفق نبود", error);
+        // اتصال خودکار WalletConnect موفق نبود
     }
     return false;
 }
@@ -225,5 +292,25 @@ function resetNavbarToDefault() {
     if (mobileRegisterLink) {
         mobileRegisterLink.innerHTML = '<i class="fa-solid fa-user-plus icon" aria-hidden="true"></i><span class="label">ثبت‌نام</span>';
         mobileRegisterLink.title = 'ثبت‌نام';
+    }
+}
+
+// تابع بررسی اتصال کیف پول
+async function checkConnection() {
+    try {
+        const { provider, address } = await connectWallet();
+        const network = await provider.getNetwork();
+        
+        return {
+            connected: true,
+            address,
+            network: network.name,
+            chainId: network.chainId
+        };
+    } catch (error) {
+        return {
+            connected: false,
+            error: error.message
+        };
     }
 }
