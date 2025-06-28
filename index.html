@@ -2399,6 +2399,7 @@
   <script src="js/news.js?v=5.7"></script>
   <script src="js/shop.js?v=5.7"></script>
   <script src="js/homepage.js?v=5.7"></script>
+  <script src="js/register.js?v=5.7"></script>
   <script>
     // Tab switching logic for 8 tabs with wallet connection
     async function showTab(tab) {
@@ -2451,7 +2452,9 @@
             // About section doesn't need wallet connection
             break;
           case 'register':
-            // Register section will be handled by its own logic
+            if (typeof loadRegisterData === 'function') {
+              await loadRegisterData();
+            }
             break;
         }
       } catch (error) {

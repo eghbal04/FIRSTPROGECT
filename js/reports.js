@@ -361,7 +361,7 @@ async function loadReports() {
         
     } catch (error) {
         console.error("Error loading reports:", error);
-        showReportsError("خطا در بارگذاری گزارشات: " + error.message);
+        showReportsError("خطا در بارگذاری گزارشات");
     } finally {
         isReportsLoading = false;
     }
