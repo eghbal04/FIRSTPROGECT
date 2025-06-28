@@ -202,7 +202,9 @@ async function updateNetworkStats() {
         
         // نمایش سقف درآمد کاربر (تعداد پوینت‌هایی که می‌تواند دریافت کند)
         if (isRegistered) {
-            updateElement('network-rewards', userIncomeCap);
+            // تبدیل به عدد صحیح برای نمایش
+            const capNumber = Math.round(parseFloat(userIncomeCap));
+            updateElement('network-rewards', capNumber.toString());
         } else {
             updateElement('network-rewards', '0');
         }
