@@ -1287,6 +1287,8 @@ if (!window.contractConfig)
         provider: null,
         signer: null,
         contract: null,
+        walletConnectProvider: null,
+        isConnecting: false,
   
       // تابع اتصال به شبکه مناسب
       switchToPolygon: async function() {
@@ -1479,30 +1481,199 @@ if (!window.contractConfig)
       },
   
         // WalletConnect Configuration
-      WALLETCONNECT_PROJECT_ID: "YOUR_WALLETCONNECT_PROJECT_ID", // از سایت WalletConnect دریافت کنید
+      WALLETCONNECT_PROJECT_ID: "c4f79cc821944d9680842e34466bfbd9", // Project ID از WalletConnect
       WALLETCONNECT_METADATA: {
           name: "LevelUp Platform",
-          description: "LevelUp Token Platform",
-          url: "https://yourwebsite.com",
-          icons: ["https://yourwebsite.com/logo.png"]
+          description: "LevelUp Token Platform - پلتفرم توکن LevelUp",
+          url: window.location.origin,
+          icons: ["https://raw.githubusercontent.com/your-repo/levelup-platform/main/lvl.jpg"]
       },
       
-      // تابع اتصال با WalletConnect
-      connectWithWalletConnect: async function() {
+      // تابع نمایش QR Code
+      showQRCode: async function() {
+          try {
+              // ایجاد modal برای نمایش QR Code
+              const modal = document.createElement('div');
+              modal.id = 'qr-modal';
+              modal.style.cssText = `
+                  position: fixed;
+                  top: 0;
+                  left: 0;
+                  width: 100%;
+                  height: 100%;
+                  background: rgba(0, 0, 0, 0.9);
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  z-index: 10000;
+                  backdrop-filter: blur(10px);
+              `;
+
+              const modalContent = document.createElement('div');
+              modalContent.style.cssText = `
+                  background: rgba(0, 0, 0, 0.95);
+                  border: 2px solid #00ff88;
+                  border-radius: 20px;
+                  padding: 2rem;
+                  text-align: center;
+                  max-width: 400px;
+                  width: 90%;
+                  backdrop-filter: blur(20px);
+                  box-shadow: 0 8px 32px rgba(0, 255, 136, 0.3);
+              `;
+
+              // عنوان
+              const title = document.createElement('h3');
+              title.textContent = 'اتصال با کیف پول';
+              title.style.cssText = `
+                  color: #00ff88;
+                  margin-bottom: 1rem;
+                  font-family: 'Nazanin', 'B Nazanin', 'BNazanin', Tahoma, Arial, sans-serif;
+                  font-size: 1.2rem;
+              `;
+
+              // توضیحات
+              const description = document.createElement('p');
+              description.textContent = 'بارکد زیر را با کیف پول موبایل خود اسکن کنید';
+              description.style.cssText = `
+                  color: #ffffff;
+                  margin-bottom: 1.5rem;
+                  font-family: 'Nazanin', 'B Nazanin', 'BNazanin', Tahoma, Arial, sans-serif;
+                  font-size: 0.9rem;
+              `;
+
+              // محل QR Code
+              const qrContainer = document.createElement('div');
+              qrContainer.id = 'qr-code-container';
+              qrContainer.style.cssText = `
+                  margin: 1rem 0;
+                  display: flex;
+                  justify-content: center;
+              `;
+
+              // دکمه بستن
+              const closeBtn = document.createElement('button');
+              closeBtn.textContent = 'بستن';
+              closeBtn.style.cssText = `
+                  background: linear-gradient(135deg, #00ff88, #00ccff);
+                  color: #000000;
+                  border: none;
+                  border-radius: 12px;
+                  padding: 0.8rem 1.5rem;
+                  font-family: 'Nazanin', 'B Nazanin', 'BNazanin', Tahoma, Arial, sans-serif;
+                  font-size: 0.9rem;
+                  font-weight: 600;
+                  cursor: pointer;
+                  margin-top: 1rem;
+                  transition: all 0.3s ease;
+              `;
+
+              closeBtn.onclick = () => {
+                  document.body.removeChild(modal);
+                  if (this.walletConnectProvider) {
+                      this.disconnectWalletConnect();
+                  }
+              };
+
+              // اضافه کردن عناصر به modal
+              modalContent.appendChild(title);
+              modalContent.appendChild(description);
+              modalContent.appendChild(qrContainer);
+              modalContent.appendChild(closeBtn);
+              modal.appendChild(modalContent);
+              document.body.appendChild(modal);
+
+              // راه‌اندازی WalletConnect
+              await this.initializeWalletConnect();
+
+          } catch (error) {
+              console.error('خطا در نمایش QR Code:', error);
+              alert('خطا در نمایش بارکد: ' + error.message);
+          }
+      },
+
+      // تابع راه‌اندازی WalletConnect
+      initializeWalletConnect: async function() {
           try {
               const { EthereumProvider } = await import('@walletconnect/ethereum-provider');
               
               this.walletConnectProvider = await EthereumProvider.init({
                   projectId: this.WALLETCONNECT_PROJECT_ID,
-                  showQrModal: true,
+                  showQrModal: false, // خودمان QR Code را نمایش می‌دهیم
                   chains: [137], // Polygon chainId
                   optionalMethods: ["eth_sendTransaction", "personal_sign"],
                   metadata: this.WALLETCONNECT_METADATA
               });
-              
+
+              // گوش دادن به رویدادهای WalletConnect
+              this.walletConnectProvider.on('display_uri', (uri) => {
+                  this.generateQRCode(uri);
+              });
+
+              this.walletConnectProvider.on('connect', (connectInfo) => {
+                  console.log('WalletConnect connected:', connectInfo);
+                  this.onWalletConnectSuccess();
+              });
+
+              this.walletConnectProvider.on('disconnect', () => {
+                  console.log('WalletConnect disconnected');
+                  this.onWalletConnectDisconnect();
+              });
+
+              this.walletConnectProvider.on('session_event', (event) => {
+                  console.log('WalletConnect session event:', event);
+              });
+
+              this.walletConnectProvider.on('session_update', (event) => {
+                  console.log('WalletConnect session update:', event);
+              });
+
+              // فعال‌سازی WalletConnect
               await this.walletConnectProvider.enable();
-              
-              // تنظیم provider و signer برای WalletConnect
+
+          } catch (error) {
+              console.error('خطا در راه‌اندازی WalletConnect:', error);
+              throw error;
+          }
+      },
+
+      // تابع تولید QR Code
+      generateQRCode: function(uri) {
+          try {
+              // استفاده از QRCode.js برای تولید QR Code
+              const script = document.createElement('script');
+              script.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
+              script.onload = () => {
+                  const qrContainer = document.getElementById('qr-code-container');
+                  if (qrContainer) {
+                      qrContainer.innerHTML = '';
+                      
+                      QRCode.toCanvas(qrContainer, uri, {
+                          width: 200,
+                          height: 200,
+                          margin: 2,
+                          color: {
+                              dark: '#00ff88',
+                              light: '#000000'
+                          }
+                      }, (error) => {
+                          if (error) {
+                              console.error('خطا در تولید QR Code:', error);
+                              qrContainer.innerHTML = '<p style="color: #ff4444;">خطا در تولید بارکد</p>';
+                          }
+                      });
+                  }
+              };
+              document.head.appendChild(script);
+          } catch (error) {
+              console.error('خطا در تولید QR Code:', error);
+          }
+      },
+
+      // تابع موفقیت اتصال WalletConnect
+      onWalletConnectSuccess: async function() {
+          try {
+              // تنظیم provider و signer
               this.provider = new ethers.BrowserProvider(this.walletConnectProvider);
               this.signer = await this.provider.getSigner();
               this.contract = new ethers.Contract(
@@ -1510,60 +1681,138 @@ if (!window.contractConfig)
                   this.LEVELUP_ABI, 
                   this.signer
               );
-              
-              return true;
+
+              // بستن modal
+              const modal = document.getElementById('qr-modal');
+              if (modal) {
+                  document.body.removeChild(modal);
+              }
+
+              // نمایش پیام موفقیت
+              this.showConnectionStatus('اتصال موفق! کیف پول شما متصل شد.', 'success');
+
+              // به‌روزرسانی UI
+              if (typeof updateConnectionStatus === 'function') {
+                  updateConnectionStatus(true);
+              }
+
+              // بارگذاری داده‌ها
+              if (typeof loadDashboardData === 'function') {
+                  await loadDashboardData();
+              }
+
           } catch (error) {
-              console.error("WalletConnect error:", error);
-              return false;
+              console.error('خطا در تنظیم اتصال WalletConnect:', error);
+              this.showConnectionStatus('خطا در اتصال: ' + error.message, 'error');
           }
       },
-      
+
+      // تابع قطع اتصال WalletConnect
+      onWalletConnectDisconnect: function() {
+          this.provider = null;
+          this.signer = null;
+          this.contract = null;
+          this.walletConnectProvider = null;
+
+          // به‌روزرسانی UI
+          if (typeof updateConnectionStatus === 'function') {
+              updateConnectionStatus(false);
+          }
+
+          this.showConnectionStatus('اتصال قطع شد', 'error');
+      },
+
+      // تابع نمایش وضعیت اتصال
+      showConnectionStatus: function(message, type = 'info') {
+          const statusDiv = document.createElement('div');
+          statusDiv.style.cssText = `
+              position: fixed;
+              top: 20px;
+              right: 20px;
+              padding: 1rem 1.5rem;
+              border-radius: 12px;
+              color: #ffffff;
+              font-family: 'Nazanin', 'B Nazanin', 'BNazanin', Tahoma, Arial, sans-serif;
+              font-size: 0.9rem;
+              z-index: 10001;
+              max-width: 300px;
+              word-wrap: break-word;
+          `;
+
+          switch (type) {
+              case 'success':
+                  statusDiv.style.background = 'rgba(0, 255, 136, 0.9)';
+                  statusDiv.style.border = '1px solid #00ff88';
+                  break;
+              case 'error':
+                  statusDiv.style.background = 'rgba(255, 0, 0, 0.9)';
+                  statusDiv.style.border = '1px solid #ff4444';
+                  break;
+              default:
+                  statusDiv.style.background = 'rgba(0, 204, 255, 0.9)';
+                  statusDiv.style.border = '1px solid #00ccff';
+          }
+
+          statusDiv.textContent = message;
+          document.body.appendChild(statusDiv);
+
+          // حذف پیام بعد از 5 ثانیه
+          setTimeout(() => {
+              if (document.body.contains(statusDiv)) {
+                  document.body.removeChild(statusDiv);
+              }
+          }, 5000);
+      },
+
       // تابع قطع ارتباط WalletConnect
       disconnectWalletConnect: function() {
-        if (this.walletConnectProvider) {
-            this.walletConnectProvider.disconnect();
-            this.walletConnectProvider = null;
-        }
-    },
+          if (this.walletConnectProvider) {
+              this.walletConnectProvider.disconnect();
+              this.walletConnectProvider = null;
+          }
+          this.provider = null;
+          this.signer = null;
+          this.contract = null;
+      },
 
-    // تابع تشخیص کیف پول‌های موجود
-    detectAvailableWallets: function() {
-        const wallets = {
-            metamask: false,
-            walletconnect: true // همیشه در دسترس است
-        };
-        
-        // بررسی MetaMask
-        if (window.ethereum) {
-            wallets.metamask = true;
-        }
-        
-        return wallets;
-    },
-    
-    // تابع اتصال با انتخاب کیف پول
-    connectWithWallet: async function(walletType = 'auto') {
-        try {
-            const availableWallets = this.detectAvailableWallets();
-            
-            if (walletType === 'auto') {
-                // اولویت با MetaMask
-                if (availableWallets.metamask) {
-                    return await this.initializeWeb3();
-                } else if (availableWallets.walletconnect) {
-                    return await this.connectWithWalletConnect();
-                }
-            } else if (walletType === 'metamask' && availableWallets.metamask) {
-                return await this.initializeWeb3();
-            } else if (walletType === 'walletconnect' && availableWallets.walletconnect) {
-                return await this.connectWithWalletConnect();
-            }
-            
-            throw new Error('کیف پول مورد نظر در دسترس نیست');
-        } catch (error) {
-            console.error('خطا در اتصال کیف پول:', error);
-            throw error;
-        }
-    }
+      // تابع تشخیص کیف پول‌های موجود
+      detectAvailableWallets: function() {
+          const wallets = {
+              metamask: false,
+              walletconnect: true // همیشه در دسترس است
+          };
+          
+          // بررسی MetaMask
+          if (window.ethereum) {
+              wallets.metamask = true;
+          }
+          
+          return wallets;
+      },
+      
+      // تابع اتصال با انتخاب کیف پول
+      connectWithWallet: async function(walletType = 'auto') {
+          try {
+              const availableWallets = this.detectAvailableWallets();
+              
+              if (walletType === 'auto') {
+                  // اولویت با MetaMask
+                  if (availableWallets.metamask) {
+                      return await this.initializeWeb3();
+                  } else if (availableWallets.walletconnect) {
+                      return await this.showQRCode();
+                  }
+              } else if (walletType === 'metamask' && availableWallets.metamask) {
+                  return await this.initializeWeb3();
+              } else if (walletType === 'walletconnect' && availableWallets.walletconnect) {
+                  return await this.showQRCode();
+              }
+              
+              throw new Error('کیف پول مورد نظر در دسترس نیست');
+          } catch (error) {
+              console.error('خطا در اتصال کیف پول:', error);
+              throw error;
+          }
+      }
 };
 }

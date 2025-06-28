@@ -431,11 +431,91 @@ async function connectWallet() {
     };
 }
 
+// تابع اتصال با QR Code
+async function connectWithQRCode() {
+    if (!window.contractConfig) {
+        throw new Error("Contract config not initialized");
+    }
+    
+    try {
+        console.log("Initiating QR code connection...");
+        await window.contractConfig.showQRCode();
+        
+        // منتظر اتصال بمان
+        return new Promise((resolve, reject) => {
+            const checkConnection = () => {
+                if (window.contractConfig.signer && window.contractConfig.contract) {
+                    window.contractConfig.signer.getAddress().then(address => {
+                        if (address) {
+                            console.log("QR code connection successful:", address);
+                            resolve({
+                                provider: window.contractConfig.provider,
+                                contract: window.contractConfig.contract,
+                                signer: window.contractConfig.signer,
+                                address: address
+                            });
+                        } else {
+                            reject(new Error("No wallet address"));
+                        }
+                    }).catch(error => {
+                        reject(error);
+                    });
+                } else {
+                    // بررسی مجدد بعد از 1 ثانیه
+                    setTimeout(checkConnection, 1000);
+                }
+            };
+            
+            // شروع بررسی اتصال
+            checkConnection();
+            
+            // تایم‌اوت بعد از 2 دقیقه
+            setTimeout(() => {
+                reject(new Error("Connection timeout"));
+            }, 120000);
+        });
+        
+    } catch (error) {
+        console.error("Error in QR code connection:", error);
+        throw error;
+    }
+}
+
+// تابع اتصال هوشمند (انتخاب بهترین روش)
+async function smartConnect() {
+    if (!window.contractConfig) {
+        throw new Error("Contract config not initialized");
+    }
+    
+    try {
+        // بررسی کیف پول‌های موجود
+        const availableWallets = window.contractConfig.detectAvailableWallets();
+        
+        // اگر MetaMask موجود است، از آن استفاده کن
+        if (availableWallets.metamask) {
+            console.log("MetaMask detected, using MetaMask connection...");
+            return await connectWallet();
+        } 
+        // در غیر این صورت از QR Code استفاده کن
+        else if (availableWallets.walletconnect) {
+            console.log("No MetaMask detected, using QR code connection...");
+            return await connectWithQRCode();
+        } 
+        else {
+            throw new Error("هیچ کیف پولی یافت نشد");
+        }
+        
+    } catch (error) {
+        console.error("Smart connect error:", error);
+        throw error;
+    }
+}
+
 // تابع دریافت قیمت‌ها
 async function getPrices() {
     try {
         console.log("Connecting to wallet for price data...");
-        const { contract } = await connectWallet();
+        const { contract } = await smartConnect();
         console.log("Wallet connected, fetching prices from contract...");
         
         // تلاش برای دریافت قیمت‌ها با مدیریت خطا
@@ -506,7 +586,7 @@ async function getPrices() {
 async function getContractStats() {
     try {
         console.log("Connecting to wallet for contract stats...");
-        const { contract } = await connectWallet();
+        const { contract } = await smartConnect();
         console.log("Wallet connected, fetching contract stats...");
         
         // تلاش برای دریافت آمار با مدیریت خطا
@@ -557,7 +637,7 @@ async function getContractStats() {
         try {
             console.log("Fetching total points...");
             const totalPointsRaw = await contract.totalPoints();
-            totalPoints = ethers.formatUnits(totalPointsRaw, 18);
+            totalPoints = totalPointsRaw.toString();
             console.log("Total points fetched:", totalPoints);
         } catch (error) {
             console.warn("Failed to fetch total points, using default:", error.message);
@@ -573,25 +653,22 @@ async function getContractStats() {
         }
         
         try {
-            console.log("Fetching contract balance...");
-            const contractBalanceRaw = await contract.getContractMaticBalance();
-            const contractBalanceNum = parseFloat(ethers.formatEther(contractBalanceRaw));
-            const totalSupplyNum = parseFloat(totalSupply);
-            circulatingSupply = Math.max(0, totalSupplyNum - contractBalanceNum).toString();
-            console.log("Circulating supply calculated:", circulatingSupply);
+            console.log("Fetching circulating supply...");
+            const circulatingSupplyRaw = await contract.circulatingSupply();
+            circulatingSupply = ethers.formatEther(circulatingSupplyRaw);
+            console.log("Circulating supply fetched:", circulatingSupply);
         } catch (error) {
-            console.warn("Failed to calculate circulating supply, using default:", error.message);
-            circulatingSupply = totalSupply;
+            console.warn("Failed to fetch circulating supply, using default:", error.message);
         }
         
         const result = {
             totalUsers,
             totalSupply,
-            circulatingSupply,
             binaryPool,
             rewardPool,
             totalPoints,
-            totalDirectDeposits
+            totalDirectDeposits,
+            circulatingSupply
         };
         
         console.log("All contract stats fetched successfully:", result);
@@ -603,11 +680,11 @@ async function getContractStats() {
         return {
             totalUsers: "0",
             totalSupply: "0",
-            circulatingSupply: "0",
             binaryPool: "0",
             rewardPool: "0",
             totalPoints: "0",
-            totalDirectDeposits: "0"
+            totalDirectDeposits: "0",
+            circulatingSupply: "0"
         };
     }
 }
@@ -615,7 +692,7 @@ async function getContractStats() {
 // تابع محاسبه اطلاعات اضافی
 async function getAdditionalStats() {
     try {
-        const { contract } = await connectWallet();
+        const { contract } = await smartConnect();
         
         let pointValue = "0";
         let claimedPoints = "0";
@@ -661,7 +738,7 @@ async function getAdditionalStats() {
 // تابع محاسبه حجم معاملات
 async function getTradingVolume() {
     try {
-        const { contract } = await connectWallet();
+        const { contract } = await smartConnect();
         
         let contractBalance = "0";
         let totalVolume = "0";
