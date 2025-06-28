@@ -6,6 +6,145 @@ const swapInfo = document.getElementById('swapInfo');
 const swapButton = document.getElementById('swapButton');
 const swapStatus = document.getElementById('swapStatus');
 
+// تابع بررسی اتصال کیف پول
+async function checkConnection() {
+    try {
+        // بررسی اینکه آیا contractConfig موجود است
+        if (!window.contractConfig) {
+            return {
+                connected: false,
+                error: "Contract config not initialized"
+            };
+        }
+        
+        // بررسی اینکه آیا signer موجود است
+        if (!window.contractConfig.signer) {
+            return {
+                connected: false,
+                error: "No signer available"
+            };
+        }
+        
+        // بررسی اینکه آیا در حال اتصال هستیم
+        if (window.contractConfig.isConnecting) {
+            return {
+                connected: false,
+                error: "Connection in progress"
+            };
+        }
+        
+        const address = await window.contractConfig.signer.getAddress();
+        if (!address) {
+            return {
+                connected: false,
+                error: "No wallet address"
+            };
+        }
+        
+        const provider = window.contractConfig.provider;
+        if (!provider) {
+            return {
+                connected: false,
+                error: "No provider available"
+            };
+        }
+        
+        const network = await provider.getNetwork();
+        
+        return {
+            connected: true,
+            address,
+            network: network.name,
+            chainId: network.chainId
+        };
+    } catch (error) {
+        console.error("Error checking connection:", error);
+        return {
+            connected: false,
+            error: error.message
+        };
+    }
+}
+
+// تابع اتصال به کیف پول
+async function connectWallet() {
+    if (!window.contractConfig) {
+        throw new Error("Contract config not initialized");
+    }
+    
+    // بررسی اینکه آیا قبلاً متصل هستیم
+    if (window.contractConfig.signer && window.contractConfig.contract) {
+        try {
+            const address = await window.contractConfig.signer.getAddress();
+            if (address) {
+                return {
+                    provider: window.contractConfig.provider,
+                    contract: window.contractConfig.contract,
+                    signer: window.contractConfig.signer,
+                    address: address
+                };
+            }
+        } catch (error) {
+            // اگر signer معتبر نیست، دوباره اتصال برقرار کنیم
+            console.log("Existing connection invalid, reconnecting...");
+        }
+    }
+    
+    // اگر در حال اتصال هستیم، منتظر بمان
+    if (window.contractConfig.isConnecting) {
+        console.log("Wallet connection in progress, waiting...");
+        let waitCount = 0;
+        const maxWaitTime = 50; // حداکثر 5 ثانیه
+        
+        while (window.contractConfig.isConnecting && waitCount < maxWaitTime) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            waitCount++;
+            
+            // اگر اتصال موفق شد، از حلقه خارج شو
+            if (window.contractConfig.signer && window.contractConfig.contract) {
+                try {
+                    const address = await window.contractConfig.signer.getAddress();
+                    if (address) {
+                        console.log("Connection completed while waiting");
+                        return {
+                            provider: window.contractConfig.provider,
+                            contract: window.contractConfig.contract,
+                            signer: window.contractConfig.signer,
+                            address: address
+                        };
+                    }
+                } catch (error) {
+                    // ادامه انتظار
+                }
+            }
+        }
+        
+        // اگر زمان انتظار تمام شد، isConnecting را ریست کن
+        if (window.contractConfig.isConnecting) {
+            console.log("Connection timeout, resetting isConnecting flag");
+            window.contractConfig.isConnecting = false;
+        }
+    }
+    
+    // تلاش برای اتصال
+    const success = await window.contractConfig.initializeWeb3();
+    if (!success) {
+        throw new Error("Failed to connect to wallet");
+    }
+    
+    // بررسی اینکه آیا اتصال موفق بود
+    if (!window.contractConfig.signer) {
+        throw new Error("Failed to connect to wallet");
+    }
+    
+    return {
+        provider: window.contractConfig.provider,
+        contract: window.contractConfig.contract,
+        signer: window.contractConfig.signer,
+        address: await window.contractConfig.signer.getAddress()
+    };
+}
+
 // Update rate info (refactored)
 async function updateRateInfo() {
     try {
@@ -140,9 +279,6 @@ swapForm.addEventListener('submit', async (e) => {
     }
     swapButton.disabled = false;
 });
-
-// حذف نسخه‌های تکراری و local از connectWallet و ...
-// استفاده فقط از توابع مشترک web3-interactions.js
 
 // showSwapError را نگه دارید
 function showSwapError(message) {
