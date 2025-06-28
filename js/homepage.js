@@ -445,7 +445,7 @@ async function connectWithQRCode() {
             
             // انتظار برای بارگذاری WalletConnect
             let attempts = 0;
-            const maxAttempts = 15;
+            const maxAttempts = 20;
             
             while (typeof window.WalletConnectEthereumProvider === 'undefined' && attempts < maxAttempts) {
                 await new Promise(resolve => setTimeout(resolve, 1000));
@@ -454,39 +454,96 @@ async function connectWithQRCode() {
             }
             
             if (typeof window.WalletConnectEthereumProvider === 'undefined') {
-                throw new Error('WalletConnect failed to load. Please refresh the page and try again, or use the "اتصال هوشمند" button instead.');
+                throw new Error('WalletConnect بارگذاری نشد. لطفاً از اتصال هوشمند استفاده کنید.');
             }
         }
         
-        console.log('WalletConnect UMD loaded, initializing...');
-        
         // بررسی وجود contractConfig
         if (!window.contractConfig) {
-            throw new Error('Contract configuration not initialized. Please refresh the page.');
+            throw new Error('تنظیمات قرارداد در دسترس نیست');
         }
+        
+        console.log('WalletConnect loaded, initializing...');
         
         // راه‌اندازی WalletConnect
         await window.contractConfig.initializeWalletConnect();
         
-        // نمایش QR Code
-        if (window.contractConfig.walletConnectProvider && window.contractConfig.walletConnectProvider.uri) {
-            window.contractConfig.generateQRCode(window.contractConfig.walletConnectProvider.uri);
+        // تولید QR Code
+        if (window.contractConfig.walletConnectProvider) {
+            const uri = window.contractConfig.walletConnectProvider.uri;
+            if (uri) {
+                console.log('Generating QR code for URI:', uri);
+                window.contractConfig.generateQRCode(uri);
+            } else {
+                throw new Error('URI WalletConnect تولید نشد');
+            }
         } else {
-            throw new Error('QR Code URI not generated. Please try again.');
+            throw new Error('WalletConnect provider راه‌اندازی نشد');
         }
         
     } catch (error) {
         console.error('خطا در اتصال با QR Code:', error);
         
         // نمایش پیام خطا به کاربر
-        const errorMessage = error.message || 'خطا در اتصال با QR Code';
+        const errorMessage = error.message || 'خطا در اتصال با بارکد';
         
-        // اگر WalletConnect بارگذاری نشده، پیشنهاد استفاده از اتصال هوشمند
-        if (error.message.includes('WalletConnect failed to load') || error.message.includes('WalletConnect UMD not loaded')) {
-            alert(`خطا در بارگذاری WalletConnect:\n${errorMessage}\n\n💡 پیشنهاد: از دکمه "اتصال هوشمند" استفاده کنید که با MetaMask کار می‌کند.`);
-        } else {
-            alert(`خطا در اتصال با بارکد:\n${errorMessage}\n\nلطفاً صفحه را رفرش کنید و دوباره تلاش کنید.`);
-        }
+        // ایجاد modal خطا
+        const errorModal = document.createElement('div');
+        errorModal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            backdrop-filter: blur(10px);
+        `;
+        
+        errorModal.innerHTML = `
+            <div style="
+                background: rgba(0, 0, 0, 0.95);
+                border: 2px solid #ff4444;
+                border-radius: 16px;
+                padding: 2rem;
+                max-width: 400px;
+                text-align: center;
+                color: #ffffff;
+                font-family: 'Nazanin', 'B Nazanin', 'BNazanin', Tahoma, Arial, sans-serif;
+            ">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+                <h3 style="color: #ff4444; margin-bottom: 1rem;">خطا در اتصال</h3>
+                <p style="margin-bottom: 1.5rem; line-height: 1.5;">${errorMessage}</p>
+                <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(0, 255, 136, 0.1); border-radius: 8px;">
+                    <p style="color: #00ff88; font-weight: 600;">پیشنهاد:</p>
+                    <p style="font-size: 0.9rem;">از دکمه "🔗 اتصال هوشمند" استفاده کنید</p>
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" style="
+                    background: linear-gradient(135deg, #00ff88, #00ccff);
+                    color: #000000;
+                    border: none;
+                    border-radius: 12px;
+                    padding: 0.8rem 1.5rem;
+                    font-family: 'Nazanin', 'B Nazanin', 'BNazanin', Tahoma, Arial, sans-serif;
+                    font-size: 0.9rem;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                ">بستن</button>
+            </div>
+        `;
+        
+        document.body.appendChild(errorModal);
+        
+        // بستن خودکار modal بعد از 10 ثانیه
+        setTimeout(() => {
+            if (errorModal.parentElement) {
+                errorModal.remove();
+            }
+        }, 10000);
     }
 }
 

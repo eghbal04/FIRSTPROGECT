@@ -2145,22 +2145,40 @@
   </style>
 
   <!-- بارگذاری WalletConnect UMD برای پشتیبانی از QR Code در مرورگر -->
-  <script src="https://cdn.jsdelivr.net/npm/@walletconnect/ethereum-provider@2.11.4/dist/umd/index.min.js" 
-          onerror="console.error('Failed to load WalletConnect UMD from jsdelivr')"
-          onload="console.log('WalletConnect UMD loaded successfully from jsdelivr')"></script>
+  <script src="https://unpkg.com/@walletconnect/ethereum-provider@2.11.4/dist/umd/index.min.js" 
+          onerror="console.error('Failed to load WalletConnect UMD from unpkg')"
+          onload="console.log('WalletConnect UMD loaded successfully from unpkg')"></script>
   <!-- Fallback WalletConnect scripts -->
   <script>
     if (typeof window.WalletConnectEthereumProvider === 'undefined') {
-      console.log('Loading WalletConnect fallback from unpkg...');
+      console.log('Loading WalletConnect fallback from jsdelivr...');
       const script = document.createElement('script');
-      script.src = 'https://unpkg.com/@walletconnect/ethereum-provider@2.11.4/dist/umd/index.min.js';
-      script.onload = () => console.log('WalletConnect fallback loaded from unpkg');
+      script.src = 'https://cdn.jsdelivr.net/npm/@walletconnect/ethereum-provider@2.11.4/dist/umd/index.min.js';
+      script.onload = () => console.log('WalletConnect fallback loaded from jsdelivr');
       script.onerror = () => {
-        console.error('WalletConnect fallback failed from unpkg, trying alternative...');
+        console.error('WalletConnect fallback failed from jsdelivr, trying alternative...');
         const altScript = document.createElement('script');
         altScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/walletconnect/2.11.4/umd/index.min.js';
         altScript.onload = () => console.log('WalletConnect loaded from cdnjs');
-        altScript.onerror = () => console.error('All WalletConnect CDN sources failed');
+        altScript.onerror = () => {
+          console.error('All WalletConnect CDN sources failed, trying local fallback...');
+          // تلاش برای بارگذاری از یک منبع جایگزین
+          const finalScript = document.createElement('script');
+          finalScript.src = 'https://unpkg.com/@walletconnect/ethereum-provider@2.10.0/dist/umd/index.min.js';
+          finalScript.onload = () => console.log('WalletConnect loaded from alternative version');
+          finalScript.onerror = () => {
+            console.error('All WalletConnect sources failed. QR code feature will not be available.');
+            // نمایش پیام به کاربر
+            setTimeout(() => {
+              const qrBtn = document.getElementById('qr-connect-btn');
+              if (qrBtn) {
+                qrBtn.style.opacity = '0.5';
+                qrBtn.title = 'WalletConnect در دسترس نیست. از اتصال هوشمند استفاده کنید.';
+              }
+            }, 1000);
+          };
+          document.head.appendChild(finalScript);
+        };
         document.head.appendChild(altScript);
       };
       document.head.appendChild(script);
