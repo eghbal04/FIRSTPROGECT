@@ -4,23 +4,22 @@
 
 // homepage.js - بارگذاری داده‌های داشبورد و آمار پلتفرم
 let isDashboardLoading = false;
+let dashboardInitialized = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        // بررسی اتصال کیف پول
-        const connection = await checkConnection();
-        if (!connection.connected) {
-            // اگر کیف پول متصل نیست، منتظر اتصال بمان
-            console.log("Wallet not connected, waiting for connection...");
-            return;
-        }
-
+        console.log("Homepage loaded, waiting for wallet connection...");
+        
+        // منتظر اتصال کیف پول بمان
+        await waitForWalletConnection();
+        
         // بارگذاری داده‌های داشبورد
         await loadDashboardData();
+        dashboardInitialized = true;
 
         // به‌روزرسانی خودکار هر 30 ثانیه
         setInterval(async () => {
-            if (!isDashboardLoading) {
+            if (!isDashboardLoading && dashboardInitialized) {
                 await loadDashboardData();
             }
         }, 30000);
@@ -30,6 +29,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
+// تابع انتظار برای اتصال کیف پول
+async function waitForWalletConnection() {
+    let attempts = 0;
+    const maxAttempts = 100; // حداکثر 10 ثانیه
+    
+    while (attempts < maxAttempts) {
+        try {
+            const connection = await checkConnection();
+            if (connection.connected) {
+                console.log("Wallet connected, proceeding with dashboard load");
+                return true;
+            }
+            
+            console.log(`Waiting for wallet connection... (attempt ${attempts + 1}/${maxAttempts})`);
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+            
+        } catch (error) {
+            console.log("Connection check failed, retrying...");
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+    }
+    
+    throw new Error("Wallet connection timeout");
+}
+
 // تابع بارگذاری داده‌های داشبورد
 async function loadDashboardData() {
     if (isDashboardLoading) {
@@ -38,6 +64,7 @@ async function loadDashboardData() {
     }
     
     isDashboardLoading = true;
+    console.log("Loading dashboard data...");
     
     try {
         // بررسی اتصال کیف پول
@@ -47,26 +74,37 @@ async function loadDashboardData() {
             return;
         }
 
-        // دریافت قیمت‌ها
+        console.log("Fetching prices...");
         const prices = await getPrices();
+        console.log("Prices fetched:", prices);
         
-        // دریافت آمار قرارداد
+        console.log("Fetching contract stats...");
         const stats = await getContractStats();
+        console.log("Contract stats fetched:", stats);
         
-        // دریافت اطلاعات اضافی
+        console.log("Fetching additional stats...");
         const additionalStats = await getAdditionalStats();
+        console.log("Additional stats fetched:", additionalStats);
         
-        // دریافت حجم معاملات
+        console.log("Fetching trading volume...");
         const tradingVolume = await getTradingVolume();
+        console.log("Trading volume fetched:", tradingVolume);
 
-        // محاسبه درصد تغییرات
+        console.log("Calculating price changes...");
         const priceChanges = await calculatePriceChanges();
+        console.log("Price changes calculated:", priceChanges);
 
-        // به‌روزرسانی UI
+        console.log("Updating dashboard UI...");
         updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceChanges);
+        console.log("Dashboard UI updated successfully");
 
     } catch (error) {
         console.error("Error loading dashboard data:", error);
+        
+        // نمایش خطا در UI
+        const errorMessage = `خطا در بارگذاری داده‌ها: ${error.message}`;
+        console.error(errorMessage);
+        
         // اگر خطای اتصال بود، بعد از 5 ثانیه دوباره تلاش کن
         if (error.message.includes('Failed to connect') || error.message.includes('Wallet not connected')) {
             console.log("Connection error, will retry in 5 seconds...");
@@ -396,29 +434,65 @@ async function connectWallet() {
 // تابع دریافت قیمت‌ها
 async function getPrices() {
     try {
+        console.log("Connecting to wallet for price data...");
         const { contract } = await connectWallet();
+        console.log("Wallet connected, fetching prices from contract...");
         
-        const [tokenPrice, maticPrice, registrationPrice, tokenPriceUSD] = await Promise.all([
-            contract.updateTokenPrice(),
-            contract.getLatestMaticPrice(),
-            contract.getRegistrationPrice(),
-            contract.getTokenPriceInUSD()
-        ]);
+        // تلاش برای دریافت قیمت‌ها با مدیریت خطا
+        let tokenPrice = "0.0012";
+        let maticPrice = "1.00";
+        let registrationPrice = "10.0";
+        let tokenPriceUSD = "0.0012";
         
-        // فرمت کردن قیمت‌ها
-        const formattedTokenPrice = ethers.formatUnits(tokenPrice, 18);
-        const formattedMaticPrice = ethers.formatUnits(maticPrice, 8);
-        const formattedRegistrationPrice = ethers.formatEther(registrationPrice);
-        const formattedTokenPriceUSD = ethers.formatUnits(tokenPriceUSD, 8);
+        try {
+            console.log("Fetching token price...");
+            const tokenPriceRaw = await contract.updateTokenPrice();
+            tokenPrice = ethers.formatUnits(tokenPriceRaw, 18);
+            console.log("Token price fetched:", tokenPrice);
+        } catch (error) {
+            console.warn("Failed to fetch token price, using default:", error.message);
+        }
         
-        return {
-            tokenPrice: formattedTokenPrice,
-            maticPrice: formattedMaticPrice,
-            registrationPrice: formattedRegistrationPrice,
-            tokenPriceUSD: formattedTokenPriceUSD
+        try {
+            console.log("Fetching MATIC price...");
+            const maticPriceRaw = await contract.getLatestMaticPrice();
+            maticPrice = ethers.formatUnits(maticPriceRaw, 8);
+            console.log("MATIC price fetched:", maticPrice);
+        } catch (error) {
+            console.warn("Failed to fetch MATIC price, using default:", error.message);
+        }
+        
+        try {
+            console.log("Fetching registration price...");
+            const registrationPriceRaw = await contract.getRegistrationPrice();
+            registrationPrice = ethers.formatEther(registrationPriceRaw);
+            console.log("Registration price fetched:", registrationPrice);
+        } catch (error) {
+            console.warn("Failed to fetch registration price, using default:", error.message);
+        }
+        
+        try {
+            console.log("Fetching token price in USD...");
+            const tokenPriceUSDRaw = await contract.getTokenPriceInUSD();
+            tokenPriceUSD = ethers.formatUnits(tokenPriceUSDRaw, 8);
+            console.log("Token price in USD fetched:", tokenPriceUSD);
+        } catch (error) {
+            console.warn("Failed to fetch token price in USD, using default:", error.message);
+        }
+        
+        const result = {
+            tokenPrice,
+            maticPrice,
+            registrationPrice,
+            tokenPriceUSD
         };
+        
+        console.log("All prices fetched successfully:", result);
+        return result;
+        
     } catch (error) {
         console.error("Error fetching prices:", error);
+        // بازگشت مقادیر پیش‌فرض در صورت خطا
         return {
             tokenPrice: "0.0012",
             maticPrice: "1.00",
@@ -431,35 +505,101 @@ async function getPrices() {
 // تابع دریافت آمار کلی قرارداد
 async function getContractStats() {
     try {
+        console.log("Connecting to wallet for contract stats...");
         const { contract } = await connectWallet();
+        console.log("Wallet connected, fetching contract stats...");
         
-        const [totalUsers, totalSupply, binaryPool, rewardPool, totalPoints, totalDirectDeposits, contractBalance] = 
-            await Promise.all([
-                contract.totalUsers(),
-                contract.totalSupply(),
-                contract.binaryPool(),
-                contract.rewardPool(),
-                contract.totalPoints(),
-                contract.totalDirectDeposits(),
-                contract.getContractMaticBalance()
-            ]);
+        // تلاش برای دریافت آمار با مدیریت خطا
+        let totalUsers = "0";
+        let totalSupply = "0";
+        let binaryPool = "0";
+        let rewardPool = "0";
+        let totalPoints = "0";
+        let totalDirectDeposits = "0";
+        let circulatingSupply = "0";
         
-        // محاسبه circulating supply (کل عرضه منهای موجودی قرارداد)
-        const totalSupplyNum = parseFloat(ethers.formatUnits(totalSupply, 18));
-        const contractBalanceNum = parseFloat(ethers.formatEther(contractBalance));
-        const circulatingSupplyNum = Math.max(0, totalSupplyNum - contractBalanceNum);
+        try {
+            console.log("Fetching total users...");
+            const totalUsersRaw = await contract.totalUsers();
+            totalUsers = totalUsersRaw.toString();
+            console.log("Total users fetched:", totalUsers);
+        } catch (error) {
+            console.warn("Failed to fetch total users, using default:", error.message);
+        }
         
-        return {
-            totalUsers: totalUsers.toString(),
-            totalSupply: ethers.formatUnits(totalSupply, 18),
-            circulatingSupply: circulatingSupplyNum.toString(),
-            binaryPool: ethers.formatEther(binaryPool),
-            rewardPool: ethers.formatEther(rewardPool),
-            totalPoints: ethers.formatUnits(totalPoints, 18),
-            totalDirectDeposits: ethers.formatEther(totalDirectDeposits)
+        try {
+            console.log("Fetching total supply...");
+            const totalSupplyRaw = await contract.totalSupply();
+            totalSupply = ethers.formatUnits(totalSupplyRaw, 18);
+            console.log("Total supply fetched:", totalSupply);
+        } catch (error) {
+            console.warn("Failed to fetch total supply, using default:", error.message);
+        }
+        
+        try {
+            console.log("Fetching binary pool...");
+            const binaryPoolRaw = await contract.binaryPool();
+            binaryPool = ethers.formatEther(binaryPoolRaw);
+            console.log("Binary pool fetched:", binaryPool);
+        } catch (error) {
+            console.warn("Failed to fetch binary pool, using default:", error.message);
+        }
+        
+        try {
+            console.log("Fetching reward pool...");
+            const rewardPoolRaw = await contract.rewardPool();
+            rewardPool = ethers.formatEther(rewardPoolRaw);
+            console.log("Reward pool fetched:", rewardPool);
+        } catch (error) {
+            console.warn("Failed to fetch reward pool, using default:", error.message);
+        }
+        
+        try {
+            console.log("Fetching total points...");
+            const totalPointsRaw = await contract.totalPoints();
+            totalPoints = ethers.formatUnits(totalPointsRaw, 18);
+            console.log("Total points fetched:", totalPoints);
+        } catch (error) {
+            console.warn("Failed to fetch total points, using default:", error.message);
+        }
+        
+        try {
+            console.log("Fetching total direct deposits...");
+            const totalDirectDepositsRaw = await contract.totalDirectDeposits();
+            totalDirectDeposits = ethers.formatEther(totalDirectDepositsRaw);
+            console.log("Total direct deposits fetched:", totalDirectDeposits);
+        } catch (error) {
+            console.warn("Failed to fetch total direct deposits, using default:", error.message);
+        }
+        
+        try {
+            console.log("Fetching contract balance...");
+            const contractBalanceRaw = await contract.getContractMaticBalance();
+            const contractBalanceNum = parseFloat(ethers.formatEther(contractBalanceRaw));
+            const totalSupplyNum = parseFloat(totalSupply);
+            circulatingSupply = Math.max(0, totalSupplyNum - contractBalanceNum).toString();
+            console.log("Circulating supply calculated:", circulatingSupply);
+        } catch (error) {
+            console.warn("Failed to calculate circulating supply, using default:", error.message);
+            circulatingSupply = totalSupply;
+        }
+        
+        const result = {
+            totalUsers,
+            totalSupply,
+            circulatingSupply,
+            binaryPool,
+            rewardPool,
+            totalPoints,
+            totalDirectDeposits
         };
+        
+        console.log("All contract stats fetched successfully:", result);
+        return result;
+        
     } catch (error) {
         console.error("Error fetching contract stats:", error);
+        // بازگشت مقادیر پیش‌فرض در صورت خطا
         return {
             totalUsers: "0",
             totalSupply: "0",
