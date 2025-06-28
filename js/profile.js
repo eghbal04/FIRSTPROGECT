@@ -32,7 +32,7 @@ async function loadUserProfile() {
     
     try {
         console.log("Connecting to wallet for profile data...");
-        const { contract, address } = await connectWallet();
+        const { contract, address, provider } = await connectWallet();
         console.log("Wallet connected, fetching profile data...");
         
         // دریافت اطلاعات کاربر
@@ -40,7 +40,7 @@ async function loadUserProfile() {
         
         // دریافت موجودی‌ها
         const [maticBalance, lvlBalance] = await Promise.all([
-            contract.provider.getBalance(address),
+            provider.getBalance(address),
             contract.balanceOf(address)
         ]);
         
