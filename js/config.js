@@ -1595,8 +1595,11 @@ if (!window.contractConfig)
       // تابع راه‌اندازی WalletConnect
       initializeWalletConnect: async function() {
           try {
-              const { EthereumProvider } = await import('@walletconnect/ethereum-provider');
-              
+              const EthereumProvider = window.WalletConnectEthereumProvider;
+              if (!EthereumProvider) {
+                  throw new Error('WalletConnect UMD not loaded');
+              }
+
               this.walletConnectProvider = await EthereumProvider.init({
                   projectId: this.WALLETCONNECT_PROJECT_ID,
                   showQrModal: false, // خودمان QR Code را نمایش می‌دهیم
@@ -1640,34 +1643,210 @@ if (!window.contractConfig)
       // تابع تولید QR Code
       generateQRCode: function(uri) {
           try {
-              // استفاده از QRCode.js برای تولید QR Code
-              const script = document.createElement('script');
-              script.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
-              script.onload = () => {
-                  const qrContainer = document.getElementById('qr-code-container');
-                  if (qrContainer) {
-                      qrContainer.innerHTML = '';
-                      
-                      QRCode.toCanvas(qrContainer, uri, {
-                          width: 200,
-                          height: 200,
-                          margin: 2,
-                          color: {
-                              dark: '#00ff88',
-                              light: '#000000'
-                          }
-                      }, (error) => {
-                          if (error) {
-                              console.error('خطا در تولید QR Code:', error);
-                              qrContainer.innerHTML = '<p style="color: #ff4444;">خطا در تولید بارکد</p>';
-                          }
-                      });
-                  }
-              };
-              document.head.appendChild(script);
+              console.log('Generating QR code for URI:', uri);
+              
+              // بررسی وجود QRCode.js
+              if (typeof QRCode === 'undefined') {
+                  console.log('Loading QRCode.js...');
+                  const script = document.createElement('script');
+                  script.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
+                  script.onload = () => {
+                      console.log('QRCode.js loaded, generating QR code...');
+                      this.createQRCodeElement(uri);
+                  };
+                  script.onerror = () => {
+                      console.error('Failed to load QRCode.js');
+                      this.showQRCodeFallback(uri);
+                  };
+                  document.head.appendChild(script);
+              } else {
+                  this.createQRCodeElement(uri);
+              }
+              
           } catch (error) {
-              console.error('خطا در تولید QR Code:', error);
+              console.error('Error generating QR code:', error);
+              this.showQRCodeFallback(uri);
           }
+      },
+      
+      // تابع ایجاد عنصر QR Code
+      createQRCodeElement: function(uri) {
+          try {
+              // حذف QR Code قبلی
+              const existingQR = document.getElementById('qr-code-modal');
+              if (existingQR) {
+                  existingQR.remove();
+              }
+              
+              // ایجاد modal برای QR Code
+              const modal = document.createElement('div');
+              modal.id = 'qr-code-modal';
+              modal.style.cssText = `
+                  position: fixed;
+                  top: 0;
+                  left: 0;
+                  width: 100%;
+                  height: 100%;
+                  background: rgba(0, 0, 0, 0.9);
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  z-index: 10000;
+                  backdrop-filter: blur(10px);
+              `;
+              
+              const modalContent = document.createElement('div');
+              modalContent.style.cssText = `
+                  background: rgba(0, 0, 0, 0.95);
+                  border: 2px solid #00ff88;
+                  border-radius: 20px;
+                  padding: 2rem;
+                  text-align: center;
+                  max-width: 400px;
+                  width: 90%;
+                  box-shadow: 0 20px 60px rgba(0, 255, 136, 0.3);
+              `;
+              
+              const title = document.createElement('h3');
+              title.textContent = '📱 اتصال با کیف پول موبایل';
+              title.style.cssText = `
+                  color: #00ff88;
+                  margin-bottom: 1rem;
+                  font-family: 'Nazanin', 'B Nazanin', 'BNazanin', Tahoma, Arial, sans-serif;
+                  font-size: 1.2rem;
+              `;
+              
+              const instructions = document.createElement('p');
+              instructions.textContent = 'بارکد زیر را با کیف پول موبایل خود اسکن کنید:';
+              instructions.style.cssText = `
+                  color: #ffffff;
+                  margin-bottom: 1.5rem;
+                  font-family: 'Nazanin', 'B Nazanin', 'BNazanin', Tahoma, Arial, sans-serif;
+                  font-size: 0.9rem;
+              `;
+              
+              const qrContainer = document.createElement('div');
+              qrContainer.id = 'qr-code-container';
+              qrContainer.style.cssText = `
+                  background: #ffffff;
+                  padding: 1rem;
+                  border-radius: 12px;
+                  margin: 1rem 0;
+                  display: inline-block;
+              `;
+              
+              const closeBtn = document.createElement('button');
+              closeBtn.textContent = '✕ بستن';
+              closeBtn.style.cssText = `
+                  background: linear-gradient(135deg, #ff4444, #cc0000);
+                  color: #ffffff;
+                  border: none;
+                  border-radius: 12px;
+                  padding: 0.8rem 1.5rem;
+                  font-family: 'Nazanin', 'B Nazanin', 'BNazanin', Tahoma, Arial, sans-serif;
+                  font-size: 0.9rem;
+                  cursor: pointer;
+                  margin-top: 1rem;
+              `;
+              
+              closeBtn.onclick = () => modal.remove();
+              closeBtn.onmouseover = () => {
+                  closeBtn.style.transform = 'translateY(-2px)';
+                  closeBtn.style.boxShadow = '0 6px 20px rgba(255, 68, 68, 0.4)';
+              };
+              closeBtn.onmouseout = () => {
+                  closeBtn.style.transform = 'translateY(0)';
+                  closeBtn.style.boxShadow = 'none';
+              };
+              
+              // اضافه کردن عناصر به modal
+              modalContent.appendChild(title);
+              modalContent.appendChild(instructions);
+              modalContent.appendChild(qrContainer);
+              modalContent.appendChild(closeBtn);
+              modal.appendChild(modalContent);
+              document.body.appendChild(modal);
+              
+              // تولید QR Code
+              QRCode.toCanvas(qrContainer, uri, {
+                  width: 200,
+                  height: 200,
+                  margin: 2,
+                  color: {
+                      dark: '#000000',
+                      light: '#FFFFFF'
+                  }
+              }, function(error) {
+                  if (error) {
+                      console.error('QR Code generation error:', error);
+                      this.showQRCodeFallback(uri);
+                  } else {
+                      console.log('QR Code generated successfully');
+                  }
+              }.bind(this));
+              
+          } catch (error) {
+              console.error('Error creating QR code element:', error);
+              this.showQRCodeFallback(uri);
+          }
+      },
+      
+      // تابع نمایش fallback برای QR Code
+      showQRCodeFallback: function(uri) {
+          console.log('Showing QR code fallback with URI:', uri);
+          
+          const modal = document.createElement('div');
+          modal.style.cssText = `
+              position: fixed;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              background: rgba(0, 0, 0, 0.9);
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              z-index: 10000;
+          `;
+          
+          const content = document.createElement('div');
+          content.style.cssText = `
+              background: rgba(0, 0, 0, 0.95);
+              border: 2px solid #00ff88;
+              border-radius: 20px;
+              padding: 2rem;
+              text-align: center;
+              max-width: 500px;
+              width: 90%;
+          `;
+          
+          content.innerHTML = `
+              <h3 style="color: #00ff88; margin-bottom: 1rem; font-family: 'Nazanin', 'B Nazanin', 'BNazanin', Tahoma, Arial, sans-serif;">
+                  📱 اتصال با کیف پول موبایل
+              </h3>
+              <p style="color: #ffffff; margin-bottom: 1rem; font-family: 'Nazanin', 'B Nazanin', 'BNazanin', Tahoma, Arial, sans-serif;">
+                  لینک اتصال زیر را در کیف پول موبایل خود باز کنید:
+              </p>
+              <div style="background: rgba(0, 0, 0, 0.6); border: 1px solid #00ff88; border-radius: 12px; padding: 1rem; margin: 1rem 0; word-break: break-all; font-family: monospace; color: #00ff88; font-size: 0.8rem;">
+                  ${uri}
+              </div>
+              <button onclick="this.parentElement.parentElement.remove()" style="
+                  background: linear-gradient(135deg, #ff4444, #cc0000);
+                  color: #ffffff;
+                  border: none;
+                  border-radius: 12px;
+                  padding: 0.8rem 1.5rem;
+                  font-family: 'Nazanin', 'B Nazanin', 'BNazanin', Tahoma, Arial, sans-serif;
+                  font-size: 0.9rem;
+                  cursor: pointer;
+                  margin-top: 1rem;
+              ">
+                  ✕ بستن
+              </button>
+          `;
+          
+          modal.appendChild(content);
+          document.body.appendChild(modal);
       },
 
       // تابع موفقیت اتصال WalletConnect

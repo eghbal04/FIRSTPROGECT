@@ -2143,6 +2143,22 @@
       font-weight: 600;
     }
   </style>
+
+  <!-- بارگذاری WalletConnect UMD برای پشتیبانی از QR Code در مرورگر -->
+  <script src="https://unpkg.com/@walletconnect/ethereum-provider@2.11.4/dist/umd/index.min.js" 
+          onerror="console.error('Failed to load WalletConnect UMD')"
+          onload="console.log('WalletConnect UMD loaded successfully')"></script>
+  <!-- Fallback WalletConnect script -->
+  <script>
+    if (typeof window.WalletConnectEthereumProvider === 'undefined') {
+      console.log('Loading WalletConnect fallback...');
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/@walletconnect/ethereum-provider@2.11.4/dist/umd/index.min.js';
+      script.onload = () => console.log('WalletConnect fallback loaded');
+      script.onerror = () => console.error('WalletConnect fallback failed');
+      document.head.appendChild(script);
+    }
+  </script>
 </head>
 <body>
 
