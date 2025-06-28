@@ -11,6 +11,48 @@ if (!window.contractConfig)
       // ABI کامل قرارداد LevelUp
   	LEVELUP_ABI :[
 		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "spender",
+					"type": "address"
+				},
+				{
+					"internalType": "uint256",
+					"name": "value",
+					"type": "uint256"
+				}
+			],
+			"name": "approve",
+			"outputs": [
+				{
+					"internalType": "bool",
+					"name": "",
+					"type": "bool"
+				}
+			],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "uint256",
+					"name": "amountLvl",
+					"type": "uint256"
+				},
+				{
+					"internalType": "uint256",
+					"name": "payout",
+					"type": "uint256"
+				}
+			],
+			"name": "purchase",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
 			"inputs": [],
 			"stateMutability": "nonpayable",
 			"type": "constructor"
@@ -233,6 +275,20 @@ if (!window.contractConfig)
 			"type": "event"
 		},
 		{
+			"inputs": [],
+			"name": "buyTokens",
+			"outputs": [],
+			"stateMutability": "payable",
+			"type": "function"
+		},
+		{
+			"inputs": [],
+			"name": "claim",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
 			"anonymous": false,
 			"inputs": [
 				{
@@ -389,30 +445,92 @@ if (!window.contractConfig)
 			"type": "event"
 		},
 		{
-			"inputs": [],
-			"name": "MAX_BINARY_POINT_CAP",
-			"outputs": [
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "referrer",
+					"type": "address"
+				},
 				{
 					"internalType": "uint256",
-					"name": "",
+					"name": "tokenAmount",
 					"type": "uint256"
 				}
 			],
-			"stateMutability": "view",
+			"name": "registerAndActivate",
+			"outputs": [],
+			"stateMutability": "nonpayable",
 			"type": "function"
 		},
 		{
-			"inputs": [],
-			"name": "REFERRAL_FEE_PERCENT",
-			"outputs": [
+			"inputs": [
 				{
 					"internalType": "uint256",
-					"name": "",
+					"name": "tokenAmount",
 					"type": "uint256"
 				}
 			],
-			"stateMutability": "view",
+			"name": "sellTokens",
+			"outputs": [],
+			"stateMutability": "nonpayable",
 			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "to",
+					"type": "address"
+				},
+				{
+					"internalType": "uint256",
+					"name": "value",
+					"type": "uint256"
+				}
+			],
+			"name": "transfer",
+			"outputs": [
+				{
+					"internalType": "bool",
+					"name": "",
+					"type": "bool"
+				}
+			],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "from",
+					"type": "address"
+				},
+				{
+					"internalType": "address",
+					"name": "to",
+					"type": "address"
+				},
+				{
+					"internalType": "uint256",
+					"name": "value",
+					"type": "uint256"
+				}
+			],
+			"name": "transferFrom",
+			"outputs": [
+				{
+					"internalType": "bool",
+					"name": "",
+					"type": "bool"
+				}
+			],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"stateMutability": "payable",
+			"type": "receive"
 		},
 		{
 			"inputs": [
@@ -436,30 +554,6 @@ if (!window.contractConfig)
 				}
 			],
 			"stateMutability": "view",
-			"type": "function"
-		},
-		{
-			"inputs": [
-				{
-					"internalType": "address",
-					"name": "spender",
-					"type": "address"
-				},
-				{
-					"internalType": "uint256",
-					"name": "value",
-					"type": "uint256"
-				}
-			],
-			"name": "approve",
-			"outputs": [
-				{
-					"internalType": "bool",
-					"name": "",
-					"type": "bool"
-				}
-			],
-			"stateMutability": "nonpayable",
 			"type": "function"
 		},
 		{
@@ -496,13 +590,6 @@ if (!window.contractConfig)
 		},
 		{
 			"inputs": [],
-			"name": "buyTokens",
-			"outputs": [],
-			"stateMutability": "payable",
-			"type": "function"
-		},
-		{
-			"inputs": [],
 			"name": "circulatingSupply",
 			"outputs": [
 				{
@@ -512,13 +599,6 @@ if (!window.contractConfig)
 				}
 			],
 			"stateMutability": "view",
-			"type": "function"
-		},
-		{
-			"inputs": [],
-			"name": "claim",
-			"outputs": [],
-			"stateMutability": "nonpayable",
 			"type": "function"
 		},
 		{
@@ -850,6 +930,19 @@ if (!window.contractConfig)
 		},
 		{
 			"inputs": [],
+			"name": "MAX_BINARY_POINT_CAP",
+			"outputs": [
+				{
+					"internalType": "uint256",
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [],
 			"name": "name",
 			"outputs": [
 				{
@@ -900,39 +993,16 @@ if (!window.contractConfig)
 			"type": "function"
 		},
 		{
-			"inputs": [
+			"inputs": [],
+			"name": "REFERRAL_FEE_PERCENT",
+			"outputs": [
 				{
 					"internalType": "uint256",
-					"name": "amountLvl",
-					"type": "uint256"
-				},
-				{
-					"internalType": "uint256",
-					"name": "payout",
+					"name": "",
 					"type": "uint256"
 				}
 			],
-			"name": "purchase",
-			"outputs": [],
-			"stateMutability": "nonpayable",
-			"type": "function"
-		},
-		{
-			"inputs": [
-				{
-					"internalType": "address",
-					"name": "referrer",
-					"type": "address"
-				},
-				{
-					"internalType": "uint256",
-					"name": "tokenAmount",
-					"type": "uint256"
-				}
-			],
-			"name": "registerAndActivate",
-			"outputs": [],
-			"stateMutability": "nonpayable",
+			"stateMutability": "view",
 			"type": "function"
 		},
 		{
@@ -978,19 +1048,6 @@ if (!window.contractConfig)
 				}
 			],
 			"stateMutability": "view",
-			"type": "function"
-		},
-		{
-			"inputs": [
-				{
-					"internalType": "uint256",
-					"name": "tokenAmount",
-					"type": "uint256"
-				}
-			],
-			"name": "sellTokens",
-			"outputs": [],
-			"stateMutability": "nonpayable",
 			"type": "function"
 		},
 		{
@@ -1088,59 +1145,6 @@ if (!window.contractConfig)
 				}
 			],
 			"stateMutability": "view",
-			"type": "function"
-		},
-		{
-			"inputs": [
-				{
-					"internalType": "address",
-					"name": "to",
-					"type": "address"
-				},
-				{
-					"internalType": "uint256",
-					"name": "value",
-					"type": "uint256"
-				}
-			],
-			"name": "transfer",
-			"outputs": [
-				{
-					"internalType": "bool",
-					"name": "",
-					"type": "bool"
-				}
-			],
-			"stateMutability": "nonpayable",
-			"type": "function"
-		},
-		{
-			"inputs": [
-				{
-					"internalType": "address",
-					"name": "from",
-					"type": "address"
-				},
-				{
-					"internalType": "address",
-					"name": "to",
-					"type": "address"
-				},
-				{
-					"internalType": "uint256",
-					"name": "value",
-					"type": "uint256"
-				}
-			],
-			"name": "transferFrom",
-			"outputs": [
-				{
-					"internalType": "bool",
-					"name": "",
-					"type": "bool"
-				}
-			],
-			"stateMutability": "nonpayable",
 			"type": "function"
 		},
 		{
@@ -1258,10 +1262,6 @@ if (!window.contractConfig)
 			],
 			"stateMutability": "view",
 			"type": "function"
-		},
-		{
-			"stateMutability": "payable",
-			"type": "receive"
 		}
 	],
   
