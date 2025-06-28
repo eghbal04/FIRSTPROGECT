@@ -67,6 +67,14 @@ async function loadDashboardData() {
 
     } catch (error) {
         console.error("Error loading dashboard data:", error);
+        // اگر خطای اتصال بود، بعد از 5 ثانیه دوباره تلاش کن
+        if (error.message.includes('Failed to connect') || error.message.includes('Wallet not connected')) {
+            setTimeout(() => {
+                isDashboardLoading = false;
+                loadDashboardData();
+            }, 5000);
+            return;
+        }
     } finally {
         isDashboardLoading = false;
     }
@@ -248,7 +256,31 @@ function updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceC
 // تابع بررسی اتصال کیف پول
 async function checkConnection() {
     try {
-        const { provider, address } = await connectWallet();
+        // بررسی اینکه آیا contractConfig موجود است
+        if (!window.contractConfig) {
+            return {
+                connected: false,
+                error: "Contract config not initialized"
+            };
+        }
+        
+        // بررسی اینکه آیا signer موجود است
+        if (!window.contractConfig.signer) {
+            return {
+                connected: false,
+                error: "No signer available"
+            };
+        }
+        
+        const address = await window.contractConfig.signer.getAddress();
+        if (!address) {
+            return {
+                connected: false,
+                error: "No wallet address"
+            };
+        }
+        
+        const provider = window.contractConfig.provider;
         const network = await provider.getNetwork();
         
         return {
@@ -258,6 +290,7 @@ async function checkConnection() {
             chainId: network.chainId
         };
     } catch (error) {
+        console.error("Error checking connection:", error);
         return {
             connected: false,
             error: error.message
@@ -289,7 +322,21 @@ async function connectWallet() {
         }
     }
     
-    await window.contractConfig.initializeWeb3();
+    // اگر در حال اتصال هستیم، منتظر بمان
+    if (window.contractConfig.isConnecting) {
+        console.log("Wallet connection in progress, waiting...");
+        let waitCount = 0;
+        while (window.contractConfig.isConnecting && waitCount < 30) { // حداکثر 3 ثانیه
+            await new Promise(resolve => setTimeout(resolve, 100));
+            waitCount++;
+        }
+    }
+    
+    // تلاش برای اتصال
+    const success = await window.contractConfig.initializeWeb3();
+    if (!success) {
+        throw new Error("Failed to connect to wallet");
+    }
     
     // بررسی اینکه آیا اتصال موفق بود
     if (!window.contractConfig.signer) {

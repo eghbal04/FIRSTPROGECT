@@ -1305,12 +1305,22 @@ if (!window.contractConfig)
               // بررسی اینکه آیا قبلاً در حال اتصال هستیم
               if (this.isConnecting) {
                   console.log("Already connecting to wallet, please wait...");
-                  return false;
+                  // منتظر اتمام اتصال قبلی بمان
+                  let waitCount = 0;
+                  while (this.isConnecting && waitCount < 50) { // حداکثر 5 ثانیه
+                      await new Promise(resolve => setTimeout(resolve, 100));
+                      waitCount++;
+                  }
+                  if (this.isConnecting) {
+                      console.log("Connection timeout, resetting...");
+                      this.isConnecting = false;
+                  }
               }
               
               this.isConnecting = true;
               
               if (!window.ethereum) {
+                  this.isConnecting = false;
                   throw new Error('کیف پول یافت نشد');
               }
   
@@ -1319,30 +1329,36 @@ if (!window.contractConfig)
               this.provider = new ethers.BrowserProvider(window.ethereum);
               
               // اضافه کردن تأخیر برای جلوگیری از درخواست‌های همزمان
-              await new Promise(resolve => setTimeout(resolve, 100));
+              await new Promise(resolve => setTimeout(resolve, 200));
               
               this.signer = await this.provider.getSigner();
-              this.contract = new ethers.Contract(
-                  this.CONTRACT_ADDRESS, 
-                  this.LEVELUP_ABI, 
-                  this.signer
-              );
+              this.contract = new ethers.Contract(this.CONTRACT_ADDRESS, this.LEVELUP_ABI, this.signer);
               
-              this.isConnecting = false;
-              return true;
-          } catch (error) {
-              this.isConnecting = false;
-              console.error("خطا در راه‌اندازی Web3:", error);
-              
-              // اگر خطای "Already processing" است، صبر کنیم و دوباره تلاش کنیم
-              if (error.message && error.message.includes('Already processing')) {
-                  console.log("MetaMask is busy, retrying in 2 seconds...");
-                  await new Promise(resolve => setTimeout(resolve, 2000));
-                  return await this.initializeWeb3();
+              // بررسی اینکه آیا اتصال موفق بود
+              const address = await this.signer.getAddress();
+              if (!address) {
+                  this.isConnecting = false;
+                  throw new Error('Failed to get wallet address');
               }
               
-              this.provider = ethers.getDefaultProvider();
-              return false;
+              console.log('Web3 initialized successfully');
+              this.isConnecting = false;
+              return true;
+              
+          } catch (error) {
+              console.error('خطا در راه‌اندازی Web3:', error);
+              this.isConnecting = false;
+              
+              // اگر خطای "Already processing" بود، بعد از 2 ثانیه دوباره تلاش کن
+              if (error.message.includes('Already processing') || error.code === -32002) {
+                  console.log('MetaMask busy, retrying in 2 seconds...');
+                  setTimeout(() => {
+                      this.initializeWeb3();
+                  }, 2000);
+                  return false;
+              }
+              
+              throw error;
           }
       },
   
