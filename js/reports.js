@@ -108,14 +108,37 @@ function shortenAddress(address) {
 // تابع فرمت کردن تاریخ
 function formatDate(timestamp) {
     if (!timestamp) return '-';
-    const date = new Date(parseInt(timestamp) * 1000);
-    return date.toLocaleString('fa-IR', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
+    
+    // بررسی اینکه آیا timestamp معتبر است
+    if (isNaN(timestamp) || timestamp <= 0) {
+        return '-';
+    }
+    
+    // اگر timestamp خیلی بزرگ است (احتمالاً در میلی‌ثانیه)، آن را به ثانیه تبدیل کن
+    let timestampInSeconds = timestamp;
+    if (timestamp > 1000000000000) { // اگر بزرگتر از سال 2001 است، احتمالاً در میلی‌ثانیه است
+        timestampInSeconds = Math.floor(timestamp / 1000);
+    }
+    
+    try {
+        const date = new Date(timestampInSeconds * 1000);
+        
+        // بررسی اینکه آیا تاریخ معتبر است
+        if (isNaN(date.getTime())) {
+            return '-';
+        }
+        
+        return date.toLocaleString('fa-IR', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    } catch (error) {
+        console.error('Error formatting date:', error, 'timestamp:', timestamp);
+        return '-';
+    }
 }
 
 // تابع فرمت کردن اعداد
@@ -218,6 +241,7 @@ async function fetchReports() {
                 if (!blockTimestamps[event.blockNumber]) {
                     const block = await contract.runner.provider.getBlock(event.blockNumber);
                     blockTimestamps[event.blockNumber] = block.timestamp;
+                    console.log(`Block ${event.blockNumber} timestamp: ${block.timestamp} (${new Date(block.timestamp * 1000).toISOString()})`);
                 }
             })
         );
