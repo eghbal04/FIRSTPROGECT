@@ -913,6 +913,89 @@
         box-shadow: 0 6px 20px rgba(0, 255, 136, 0.4);
       }
       
+      /* Claim Section Styling */
+      .claim-section {
+        background: rgba(0, 0, 0, 0.9);
+        border: 1px solid rgba(0, 255, 136, 0.3);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        text-align: center;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+      }
+      
+      .claim-section span:first-child {
+        display: block;
+        font-family: 'Nazanin', 'B Nazanin', 'BNazanin', Tahoma, Arial, sans-serif;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #00ff88;
+        margin-bottom: 1rem;
+      }
+      
+      .claim-info {
+        background: rgba(0, 0, 0, 0.6);
+        border: 1px solid rgba(0, 255, 136, 0.3);
+        border-radius: 12px;
+        padding: 1rem;
+        margin: 1rem 0;
+        text-align: right;
+      }
+      
+      .claim-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid rgba(0, 255, 136, 0.1);
+        font-family: 'Nazanin', 'B Nazanin', 'BNazanin', Tahoma, Arial, sans-serif;
+        font-size: 0.9rem;
+      }
+      
+      .claim-row:last-child {
+        border-bottom: none;
+      }
+      
+      .claim-row span:first-child {
+        color: #cccccc;
+        font-weight: 500;
+      }
+      
+      .claim-row span:last-child {
+        color: #00ff88;
+        font-weight: 600;
+      }
+      
+      .claim-btn {
+        padding: 1rem 2rem;
+        background: linear-gradient(135deg, #00ff88, #00ccff);
+        color: #000000;
+        border: none;
+        border-radius: 12px;
+        font-family: 'Nazanin', 'B Nazanin', 'BNazanin', Tahoma, Arial, sans-serif;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+        width: 100%;
+      }
+      
+      .claim-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 255, 136, 0.4);
+      }
+      
+      .claim-btn:disabled {
+        background: rgba(255, 255, 255, 0.1);
+        color: #666666;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+      
       .network-tree {
         background: rgba(0, 0, 0, 0.9);
         border: 1px solid rgba(0, 255, 136, 0.3);
@@ -1009,6 +1092,30 @@
       width: 100%;
       padding: 1rem;
           font-size: 1rem;
+        }
+        
+        .claim-section {
+          padding: 1.2rem;
+        }
+        
+        .claim-section span:first-child {
+          font-size: 1rem;
+        }
+        
+        .claim-info {
+          padding: 0.8rem;
+        }
+        
+        .claim-row {
+          font-size: 0.85rem;
+          flex-direction: column;
+          gap: 0.3rem;
+          text-align: center;
+        }
+        
+        .claim-btn {
+          padding: 1rem;
+          font-size: 0.9rem;
         }
         
         .network-tree {
@@ -2170,6 +2277,27 @@
           <span id="referral-link" class="referral-link">-</span>
           <button id="copyReferral" class="copy-btn">کپی</button>
         </div>
+        
+        <!-- Claim Binary Rewards Section -->
+        <div class="claim-section">
+          <span>پاداش‌های باینری شما:</span>
+          <div class="claim-info">
+            <div class="claim-row">
+              <span>امتیازهای قابل دریافت:</span>
+              <span id="claimable-points">-</span>
+            </div>
+            <div class="claim-row">
+              <span>ارزش هر امتیاز:</span>
+              <span id="point-value-display">-</span>
+            </div>
+            <div class="claim-row">
+              <span>کل پاداش قابل دریافت:</span>
+              <span id="total-claimable-reward">-</span>
+            </div>
+          </div>
+          <button id="claimRewardsBtn" class="claim-btn" disabled>دریافت پاداش باینری</button>
+        </div>
+        
         <div class="network-tree" id="network-tree"></div>
         <div id="network-status" class="profile-status"></div>
       </div>

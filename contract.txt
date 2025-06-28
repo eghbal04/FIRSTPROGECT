@@ -92,7 +92,8 @@ contract levelup is ERC20, ReentrancyGuard
         indexToAddress[1] = deployer;
         users[deployer].index = 1;
         totalUsers = 1;
-        _mint(deployer, 1000);
+        users[deployer].binaryPointCap = 5;
+        _mint(deployer, 1000 * 1e18);
     }
      //@dev ساده‌ترین تابع دریافت قیمت فقط با Chainlink
     function getRegistrationPrice() external view returns (uint256) {
@@ -189,7 +190,7 @@ contract levelup is ERC20, ReentrancyGuard
         require(msg.value > 0, "Send MATIC to buy tokens");
 
         uint256 referralShare = (msg.value * 1) / 100;
-        uint256 userShare = (msg.value * 97) / 100;
+        uint256 userShare = (msg.value * 98) / 100;
 
         uint256 tokensForReferral = _maticToTokens(referralShare);
         uint256 tokensForUser = _maticToTokens(userShare);
@@ -210,7 +211,7 @@ contract levelup is ERC20, ReentrancyGuard
         require(balanceOf(msg.sender) >= tokenAmount, "Insufficient balance");
 
         uint256 referralAmount = (tokenAmount * 1) / 100;
-        uint256 amountToUser = (tokenAmount * 97) / 100;
+        uint256 amountToUser = (tokenAmount * 98) / 100;
         uint256 maticAmount = _tokensToMatic(amountToUser);
         require(maticAmount > 0, "Rounded MATIC too low");
 
@@ -234,7 +235,7 @@ contract levelup is ERC20, ReentrancyGuard
                 // تبدیل MATIC به توکن
         uint256 tokensForBinary = (amountLvl  * payout) / 100;
         uint256 tokensForDeployer = (amountLvl  * (payout-100)) / 100;
-        require(amountLvl * getLatestMaticPrice()>=10,"insuficient token amount");
+        require(amountLvl * getTokenPriceInUSD()>=10,"insuficient token amount");
         //افزودن توکن به باینری 
         _mint(address(this), tokensForBinary);
         _mint(deployer, tokensForDeployer);
@@ -245,15 +246,19 @@ contract levelup is ERC20, ReentrancyGuard
         {
         uint256 pointsToAdd = users[msg.sender].totalPurchasedKind / 50;
         uint256 newCap = user.binaryPointCap + pointsToAdd;
-        if (newCap >= 100) newCap = 100;
+        if (newCap >= 100)
+        {
+            newCap = 100;
+        }
         if (newCap > user.binaryPointCap) {
             totalClaimableBinaryPoints += (newCap - user.binaryPointCap);
             user.binaryPointCap = newCap;
             require(user.binaryPointCap <= MAX_BINARY_POINT_CAP, "Already maxed");
             emit BinaryPointsUpdated( msg.sender, user.binaryPoints, user.binaryPointCap, block.timestamp);
             updateParent(msg.sender);
+            user.totalPurchasedKind -=pointsToAdd * 50 ;
         }   
-        }
+        }else user.totalPurchasedKind += amountLvl;
         
         emit purchaseKind(msg.sender,amountLvl );
     }

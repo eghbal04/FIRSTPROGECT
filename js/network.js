@@ -21,8 +21,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         // راه‌اندازی دکمه کپی لینک دعوت
         setupReferralCopy();
 
+        // راه‌اندازی دکمه دریافت پاداش باینری
+        setupClaimButton();
+
         // نمایش ساختار درختی
         await renderNetworkTree();
+
+        // به‌روزرسانی اطلاعات claim
+        await updateClaimInfo();
 
     } catch (error) {
         console.error("Error in network stats:", error);
@@ -203,6 +209,9 @@ async function updateNetworkStats() {
         
         // پاک کردن پیام خطا
         clearNetworkError();
+        
+        // به‌روزرسانی اطلاعات claim
+        await updateClaimInfo();
         
         console.log("Network stats updated successfully");
         
@@ -792,27 +801,195 @@ window.toggleNodeExpansion = toggleNodeExpansion;
 
 // تابع ایجاد گره خالی
 function createEmptyNode(containerId, level) {
-    const nodeElement = document.createElement('div');
-    nodeElement.className = `tree-node level-${level} empty-node`;
-    nodeElement.innerHTML = `
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    const emptyNode = document.createElement('div');
+    emptyNode.className = `tree-node empty-node level-${level}`;
+    emptyNode.innerHTML = `
         <div class="node-header">
             <div class="node-info">
-                <div class="node-title">کاربر ثبت‌نام نشده</div>
-                <div class="node-status empty">غیرفعال</div>
+                <div class="node-title">جای خالی</div>
+                <div class="node-status empty">خالی</div>
             </div>
         </div>
         <div class="node-details">
             <div class="node-stat">
-                <span class="stat-label">وضعیت:</span>
-                <span class="stat-value">ثبت‌نام نشده</span>
+                <span class="stat-label">امتیاز:</span>
+                <span class="stat-value">0</span>
+            </div>
+            <div class="node-stat">
+                <span class="stat-label">سقف:</span>
+                <span class="stat-value">0</span>
             </div>
         </div>
     `;
     
-    const container = document.getElementById(containerId);
-    if (container) {
-        container.appendChild(nodeElement);
-    }
+    container.appendChild(emptyNode);
+}
+
+// Claim Binary Rewards Functions
+async function setupClaimButton() {
+    const claimBtn = document.getElementById('claimRewardsBtn');
+    if (!claimBtn) return;
     
-    return nodeElement;
+    claimBtn.addEventListener('click', async () => {
+        try {
+            await claimBinaryRewards();
+        } catch (error) {
+            console.error('Error claiming rewards:', error);
+            showError('خطا در دریافت پاداش: ' + error.message);
+        }
+    });
+    
+    // به‌روزرسانی اطلاعات claim
+    await updateClaimInfo();
+}
+
+async function updateClaimInfo() {
+    try {
+        const { contract, address } = await connectWallet();
+        
+        // بررسی اینکه آیا کاربر ثبت‌نام کرده است
+        const userData = await contract.users(address);
+        if (userData.index === 0) {
+            // کاربر ثبت‌نام نکرده
+            updateClaimUI({
+                claimablePoints: "0",
+                pointValue: "0",
+                totalReward: "0",
+                canClaim: false
+            });
+            return;
+        }
+        
+        // دریافت اطلاعات claim
+        const [points, pointValue, isClaimable] = await Promise.all([
+            contract.points(address),
+            contract.getPointValue(),
+            contract.isClaimable(address)
+        ]);
+        
+        const claimablePoints = ethers.formatUnits(points, 18);
+        const pointValueFormatted = ethers.formatUnits(pointValue, 18);
+        const totalReward = parseFloat(claimablePoints) * parseFloat(pointValueFormatted);
+        
+        updateClaimUI({
+            claimablePoints,
+            pointValue: pointValueFormatted,
+            totalReward: totalReward.toFixed(6),
+            canClaim: isClaimable && parseFloat(claimablePoints) > 0
+        });
+        
+    } catch (error) {
+        console.error('Error updating claim info:', error);
+        updateClaimUI({
+            claimablePoints: "0",
+            pointValue: "0",
+            totalReward: "0",
+            canClaim: false
+        });
+    }
+}
+
+function updateClaimUI(data) {
+    const updateElement = (id, value) => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.textContent = value;
+        }
+    };
+    
+    updateElement('claimable-points', data.claimablePoints);
+    updateElement('point-value-display', data.pointValue + ' LVL');
+    updateElement('total-claimable-reward', data.totalReward + ' LVL');
+    
+    const claimBtn = document.getElementById('claimRewardsBtn');
+    if (claimBtn) {
+        claimBtn.disabled = !data.canClaim;
+        if (data.canClaim) {
+            claimBtn.textContent = 'دریافت پاداش باینری';
+            claimBtn.style.background = 'linear-gradient(135deg, #00ff88, #00ccff)';
+            claimBtn.style.color = '#000000';
+        } else {
+            claimBtn.textContent = 'پاداش قابل دریافت نیست';
+            claimBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+            claimBtn.style.color = '#666666';
+        }
+    }
+}
+
+async function claimBinaryRewards() {
+    try {
+        const { contract, address } = await connectWallet();
+        
+        // بررسی اینکه آیا کاربر می‌تواند claim کند
+        const [points, isClaimable] = await Promise.all([
+            contract.points(address),
+            contract.isClaimable(address)
+        ]);
+        
+        if (points === 0n) {
+            throw new Error('هیچ پاداشی برای دریافت وجود ندارد');
+        }
+        
+        if (!isClaimable) {
+            throw new Error('شما در حال حاضر نمی‌توانید پاداش دریافت کنید');
+        }
+        
+        // نمایش وضعیت loading
+        const claimBtn = document.getElementById('claimRewardsBtn');
+        if (claimBtn) {
+            claimBtn.disabled = true;
+            claimBtn.textContent = 'در حال دریافت...';
+        }
+        
+        showNetworkStatus('در حال دریافت پاداش...', 'loading');
+        
+        // فراخوانی تابع claim
+        const tx = await contract.claim();
+        
+        showNetworkStatus('تراکنش ارسال شد. منتظر تایید...', 'loading');
+        
+        // انتظار برای تایید تراکنش
+        const receipt = await tx.wait();
+        
+        if (receipt.status === 1) {
+            showNetworkStatus('پاداش با موفقیت دریافت شد!', 'success');
+            
+            // به‌روزرسانی اطلاعات claim
+            await updateClaimInfo();
+            
+            // به‌روزرسانی آمار شبکه
+            await updateNetworkStats();
+            
+        } else {
+            throw new Error('تراکنش ناموفق بود');
+        }
+        
+    } catch (error) {
+        console.error('Error claiming rewards:', error);
+        showNetworkStatus('خطا در دریافت پاداش: ' + error.message, 'error');
+        
+        // بازگرداندن دکمه به حالت عادی
+        const claimBtn = document.getElementById('claimRewardsBtn');
+        if (claimBtn) {
+            claimBtn.disabled = false;
+            claimBtn.textContent = 'دریافت پاداش باینری';
+        }
+    }
+}
+
+function showNetworkStatus(message, type = 'success') {
+    const statusElement = document.getElementById('network-status');
+    if (statusElement) {
+        statusElement.textContent = message;
+        statusElement.className = `network-status ${type}`;
+        
+        // پاک کردن پیام بعد از 5 ثانیه
+        setTimeout(() => {
+            statusElement.textContent = '';
+            statusElement.className = 'network-status';
+        }, 5000);
+    }
 }
