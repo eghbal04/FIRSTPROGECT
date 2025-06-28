@@ -114,10 +114,10 @@ function updateProfileUI(profile, userData, isClaimable, registrationPrice, mati
     const binaryPointsClaimed = ethers.formatUnits(userData.binaryPointsClaimed, 18);
     
     // نمایش سقف درآمد باینری (تعداد پوینت‌های قابل دریافت در هر 12 ساعت)
-    const incomeCapDisplay = `${binaryPointCap} پوینت (هر 12 ساعت)`;
+    const incomeCapDisplay = `${Math.round(parseFloat(binaryPointCap))} پوینت (هر 12 ساعت)`;
     
     updateElement('profile-income-cap', incomeCapDisplay);
-    updateElement('profile-received', binaryPointsClaimed);
+    updateElement('profile-received', Math.round(parseFloat(binaryPointsClaimed)));
 
     // لینک دعوت
     const referralLink = `${window.location.origin}/?ref=${profile.address}`;
