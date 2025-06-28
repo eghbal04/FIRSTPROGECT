@@ -217,6 +217,16 @@ async function getUserTree(userAddress) {
         };
     } catch (error) {
         console.error("Error fetching user tree:", error);
+        // اگر کاربر ثبت‌نام نکرده، ساختار پیش‌فرض برگردان
+        if (error.message.includes('User not found') || error.message.includes('not registered')) {
+            return {
+                left: ethers.ZeroAddress,
+                right: ethers.ZeroAddress,
+                activated: false,
+                binaryPoints: "0",
+                binaryPointCap: "0"
+            };
+        }
         throw error;
     }
 }

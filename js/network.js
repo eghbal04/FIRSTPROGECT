@@ -138,6 +138,9 @@ async function updateNetworkStats() {
         
         console.log("Network stats updated successfully");
         
+        // پاک کردن پیام خطا در صورت موفقیت
+        clearNetworkError();
+        
     } catch (error) {
         console.error("Error updating network stats:", error);
         showError("خطا در بارگذاری آمار شبکه: " + error.message);
@@ -239,10 +242,45 @@ function setupReferralCopy() {
 // تابع نمایش درخت شبکه
 async function renderNetworkTree() {
     try {
-        const { address } = await connectWallet();
+        const { contract, address } = await connectWallet();
         const treeContainer = document.getElementById('network-tree');
         
         if (!treeContainer) return;
+        
+        // بررسی اینکه آیا کاربر ثبت‌نام کرده است
+        try {
+            const userData = await contract.users(address);
+            const isRegistered = userData.index > 0;
+            
+            if (!isRegistered) {
+                treeContainer.innerHTML = `
+                    <h3>ساختار شبکه شما</h3>
+                    <div class="network-tree-content">
+                        <div style="text-align: center; padding: 2rem; color: #00ccff;">
+                            <p>شما هنوز در شبکه ثبت‌نام نکرده‌اید.</p>
+                            <p>برای مشاهده ساختار شبکه، ابتدا ثبت‌نام کنید.</p>
+                        </div>
+                    </div>
+                `;
+                // پاک کردن پیام خطا
+                clearNetworkError();
+                return;
+            }
+        } catch (error) {
+            console.log("User not registered or error checking registration:", error);
+            treeContainer.innerHTML = `
+                <h3>ساختار شبکه شما</h3>
+                <div class="network-tree-content">
+                    <div style="text-align: center; padding: 2rem; color: #00ccff;">
+                        <p>شما هنوز در شبکه ثبت‌نام نکرده‌اید.</p>
+                        <p>برای مشاهده ساختار شبکه، ابتدا ثبت‌نام کنید.</p>
+                    </div>
+                </div>
+            `;
+            // پاک کردن پیام خطا
+            clearNetworkError();
+            return;
+        }
         
         treeContainer.innerHTML = `
             <h3>ساختار شبکه شما</h3>
@@ -267,17 +305,24 @@ async function renderNetworkTree() {
         // به‌روزرسانی آمار کلی
         await updateNetworkSummary();
         
+        // پاک کردن پیام خطا در صورت موفقیت
+        clearNetworkError();
+        
     } catch (error) {
         console.error("Error rendering network tree:", error);
         const treeContainer = document.getElementById('network-tree');
         if (treeContainer) {
             treeContainer.innerHTML = `
-                <div class="error-message">
-                    <p>خطا در بارگذاری درخت شبکه:</p>
-                    <p>${error.message}</p>
+                <h3>ساختار شبکه شما</h3>
+                <div class="network-tree-content">
+                    <div style="text-align: center; padding: 2rem; color: #ff6b6b;">
+                        <p>خطا در بارگذاری درخت شبکه:</p>
+                        <p>${error.message}</p>
+                    </div>
                 </div>
             `;
         }
+        showError("خطا در بارگذاری درخت شبکه: " + error.message);
     }
 }
 
@@ -518,6 +563,15 @@ function showError(message) {
     if (statusElement) {
         statusElement.textContent = message;
         statusElement.style.color = '#ff6b6b';
+    }
+}
+
+// تابع پاک کردن پیام خطا
+function clearNetworkError() {
+    const statusElement = document.getElementById('network-status');
+    if (statusElement) {
+        statusElement.textContent = '';
+        statusElement.style.color = '';
     }
 }
 
