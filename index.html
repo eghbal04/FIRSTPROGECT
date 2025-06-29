@@ -2198,6 +2198,8 @@
           <div class="dashboard-card-icon"></div>
           <div class="dashboard-card-content">
             <h4>قیمت LVL (USD)</h4>
+            <!-- Chart.js canvas for price chart -->
+            <canvas id="price-chart" style="width:100%;max-width:350px;height:120px;margin-bottom:0.5rem;"></canvas>
             <div id="token-price">-</div>
       </div>
     </div>
@@ -2736,6 +2738,121 @@
 
         console.log('Expandable functionality disabled');
     });
+  </script>
+
+  <script>
+  // Chart.js chart for LVL price (USD & MATIC)
+  let priceChart = null;
+  let priceChartData = {
+    labels: [],
+    usd: [],
+    matic: [],
+    maticusd: []
+  };
+
+  function updatePriceChart(tokenPriceUSD, tokenPriceMATIC, maticPriceUSD) {
+    const now = new Date();
+    const timeLabel = now.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    
+    // Add new data point
+    priceChartData.labels.push(timeLabel);
+    priceChartData.usd.push(tokenPriceUSD);
+    priceChartData.matic.push(tokenPriceMATIC);
+    priceChartData.maticusd.push(maticPriceUSD);
+    
+    // Keep only last 20 points - remove oldest if exceeding limit
+    const maxPoints = 20;
+    if (priceChartData.labels.length > maxPoints) {
+      priceChartData.labels.shift();
+      priceChartData.usd.shift();
+      priceChartData.matic.shift();
+      priceChartData.maticusd.shift();
+    }
+    
+    // Update chart if it exists
+    if (priceChart) {
+      priceChart.data.labels = priceChartData.labels;
+      priceChart.data.datasets[0].data = priceChartData.usd;
+      priceChart.data.datasets[1].data = priceChartData.matic;
+      priceChart.data.datasets[2].data = priceChartData.maticusd;
+      priceChart.update('none'); // Use 'none' for better performance
+      
+      console.log(`Chart updated with ${priceChartData.labels.length} data points`);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('price-chart').getContext('2d');
+    priceChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [
+          {
+            label: 'LVL/USD',
+            data: [],
+            borderColor: '#00ff88',
+            backgroundColor: 'rgba(0,255,136,0.1)',
+            tension: 0.3,
+            fill: false,
+            pointRadius: 2,
+            borderWidth: 2
+          },
+          {
+            label: 'LVL/MATIC',
+            data: [],
+            borderColor: '#00ccff',
+            backgroundColor: 'rgba(0,204,255,0.1)',
+            tension: 0.3,
+            fill: false,
+            pointRadius: 2,
+            borderWidth: 2
+          },
+          {
+            label: 'MATIC/USD',
+            data: [],
+            borderColor: '#ffb300',
+            backgroundColor: 'rgba(255,179,0,0.1)',
+            tension: 0.3,
+            fill: false,
+            pointRadius: 2,
+            borderWidth: 2
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            labels: {
+              color: '#fff',
+              font: { family: 'Nazanin, Tahoma, Arial, sans-serif', size: 12 }
+            }
+          },
+          tooltip: {
+            enabled: true,
+            callbacks: {
+              label: function(context) {
+                return `${context.dataset.label}: ${parseFloat(context.parsed.y).toFixed(4)}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: { color: '#aaa', font: { family: 'Nazanin, Tahoma, Arial, sans-serif', size: 10 } },
+            grid: { color: 'rgba(0,255,136,0.05)' }
+          },
+          y: {
+            ticks: { color: '#aaa', font: { family: 'Nazanin, Tahoma, Arial, sans-serif', size: 10 } },
+            grid: { color: 'rgba(0,255,136,0.05)' }
+          }
+        }
+      }
+    });
+  });
   </script>
 </body>
 </html>

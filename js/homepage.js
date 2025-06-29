@@ -156,10 +156,30 @@ async function waitForWalletConnection() {
 // تابع بارگذاری داده‌های داشبورد
 async function loadDashboardData() {
     try {
-        // بررسی اینکه آیا در حال بارگذاری هستیم
         if (dashboardLoading) {
-            console.log('Dashboard already loading, skipping...');
+            console.log('Dashboard loading already in progress, skipping...');
             return;
+        }
+        
+        dashboardLoading = true;
+        console.log('Loading dashboard data...');
+        
+        // Reset chart data on first load or when dashboard is not initialized
+        if (!dashboardInitialized) {
+            console.log('Resetting chart data for new dashboard session...');
+            if (typeof priceChartData !== 'undefined') {
+                priceChartData.labels = [];
+                priceChartData.usd = [];
+                priceChartData.matic = [];
+                priceChartData.maticusd = [];
+            }
+            if (typeof priceChart !== 'undefined' && priceChart) {
+                priceChart.data.labels = [];
+                priceChart.data.datasets[0].data = [];
+                priceChart.data.datasets[1].data = [];
+                priceChart.data.datasets[2].data = [];
+                priceChart.update('none');
+            }
         }
         
         // بررسی فاصله زمانی از آخرین به‌روزرسانی
@@ -169,8 +189,7 @@ async function loadDashboardData() {
             return;
         }
         
-        console.log('Loading dashboard data...');
-        dashboardLoading = true;
+        console.log('Fetching dashboard data...');
         
         // بررسی اتصال کیف پول
         if (!checkWalletConnectionStatus()) {
@@ -185,8 +204,6 @@ async function loadDashboardData() {
             dashboardLoading = false;
             return;
         }
-        
-        console.log('Fetching dashboard data...');
         
         // دریافت قیمت‌ها
         const prices = await getPrices();
@@ -338,6 +355,15 @@ function updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceC
     if (prices) {
         updateElement('token-price', parseFloat(prices.tokenPriceUSD), '$');
         updateElement('token-price-matic', parseFloat(prices.tokenPrice), '', ' MATIC');
+        // Update the price chart
+        if (typeof updatePriceChart === 'function') {
+            // Calculate MATIC/USD if not present
+            let maticPriceUSD = prices.maticPriceUSD;
+            if (!maticPriceUSD && prices.tokenPriceUSD && prices.tokenPrice) {
+                maticPriceUSD = parseFloat(prices.tokenPriceUSD) / parseFloat(prices.tokenPrice);
+            }
+            updatePriceChart(parseFloat(prices.tokenPriceUSD), parseFloat(prices.tokenPrice), parseFloat(maticPriceUSD));
+        }
     }
 
     // به‌روزرسانی آمار قرارداد
@@ -547,46 +573,44 @@ async function resetDashboard() {
     try {
         console.log('Resetting dashboard...');
         
-        // توقف به‌روزرسانی خودکار
-        stopDashboardAutoUpdate();
-        
-        // ریست کردن متغیرهای وضعیت
+        // Reset dashboard state
         dashboardLoading = false;
         dashboardInitialized = false;
         lastDashboardUpdate = 0;
         
-        // پاک کردن داده‌های localStorage
-        localStorage.removeItem('walletConnected');
-        localStorage.removeItem('walletAddress');
-        localStorage.removeItem('walletType');
-        localStorage.removeItem('previousPrices');
+        // Stop auto-update interval
+        stopDashboardAutoUpdate();
         
-        // پاک کردن contractConfig
-        if (window.contractConfig) {
-            window.contractConfig.provider = null;
-            window.contractConfig.signer = null;
-            window.contractConfig.contract = null;
-            window.contractConfig.address = null;
-            window.contractConfig.walletConnectProvider = null;
-        }
-        
-        // به‌روزرسانی UI
-        updateConnectionStatus('disconnected', 'کیف پول قطع شد');
-        updateWalletButtonVisibility();
-        
-        // پاک کردن داده‌های داشبورد
-        const dashboardElements = [
-            'token-price', 'token-price-matic', 'circulating-supply',
-            'total-points', 'claimed-points', 'remaining-points',
-            'point-value', 'reward-pool', 'trading-volume'
+        // Reset UI elements
+        const elements = [
+            'token-price', 'token-price-matic', 'circulating-supply', 
+            'total-points', 'claimed-points', 'remaining-points', 
+            'trading-volume', 'point-value', 'reward-pool'
         ];
         
-        dashboardElements.forEach(id => {
+        elements.forEach(id => {
             const element = document.getElementById(id);
             if (element) {
                 element.textContent = '-';
             }
         });
+        
+        // Reset chart data completely
+        if (typeof priceChartData !== 'undefined') {
+            priceChartData.labels = [];
+            priceChartData.usd = [];
+            priceChartData.matic = [];
+            priceChartData.maticusd = [];
+        }
+        
+        // Reset chart if it exists
+        if (typeof priceChart !== 'undefined' && priceChart) {
+            priceChart.data.labels = [];
+            priceChart.data.datasets[0].data = [];
+            priceChart.data.datasets[1].data = [];
+            priceChart.data.datasets[2].data = [];
+            priceChart.update('none');
+        }
         
         console.log('Dashboard reset completed');
         
