@@ -329,9 +329,6 @@ async function renderTreeNode(userAddress, containerId, level = 0) {
             return createEmptyNode(containerId, level);
         }
         
-        // دریافت اطلاعات درخت کاربر
-        const [left, right, activated, binaryPoints, binaryPointCap] = await contract.getUserTree(userAddress);
-        
         const container = document.getElementById(containerId);
         if (!container) return;
         
@@ -351,11 +348,11 @@ async function renderTreeNode(userAddress, containerId, level = 0) {
             <div class="node-details">
                 <div class="node-stat">
                     <span class="stat-label">امتیاز باینری:</span>
-                    <span class="stat-value">${ethers.formatUnits(binaryPoints, 18)}</span>
+                    <span class="stat-value">${ethers.formatUnits(userData.binaryPoints, 18)}</span>
                 </div>
                 <div class="node-stat">
                     <span class="stat-label">سقف امتیاز:</span>
-                    <span class="stat-value">${parseInt(ethers.formatUnits(binaryPointCap, 18))}</span>
+                    <span class="stat-value">${parseInt(ethers.formatUnits(userData.binaryPointCap, 18))}</span>
                 </div>
             </div>
         `;
@@ -363,8 +360,8 @@ async function renderTreeNode(userAddress, containerId, level = 0) {
         const childrenContainer = `
             <div class="children-container" id="children-${userAddress}">
                 <div class="children-wrapper">
-                    ${left !== ethers.ZeroAddress ? `<div class="tree-node child-node left-child level-${level + 1}" data-address="${left}"></div>` : ''}
-                    ${right !== ethers.ZeroAddress ? `<div class="tree-node child-node right-child level-${level + 1}" data-address="${right}"></div>` : ''}
+                    ${userData.leftChild !== ethers.ZeroAddress ? `<div class="tree-node child-node left-child level-${level + 1}" data-address="${userData.leftChild}"></div>` : ''}
+                    ${userData.rightChild !== ethers.ZeroAddress ? `<div class="tree-node child-node right-child level-${level + 1}" data-address="${userData.rightChild}"></div>` : ''}
                 </div>
             </div>
         `;
@@ -380,11 +377,11 @@ async function renderTreeNode(userAddress, containerId, level = 0) {
         container.innerHTML = nodeHTML;
         
         // رندر کردن فرزندان
-        if (left !== ethers.ZeroAddress) {
-            await renderChildNode(left, container.querySelector('.left-child'), 'left', level + 1);
+        if (userData.leftChild !== ethers.ZeroAddress) {
+            await renderChildNode(userData.leftChild, container.querySelector('.left-child'), 'left', level + 1);
         }
-        if (right !== ethers.ZeroAddress) {
-            await renderChildNode(right, container.querySelector('.right-child'), 'right', level + 1);
+        if (userData.rightChild !== ethers.ZeroAddress) {
+            await renderChildNode(userData.rightChild, container.querySelector('.right-child'), 'right', level + 1);
         }
         
     } catch (error) {
@@ -417,13 +414,14 @@ async function loadChildren(parentAddress, container, level) {
     try {
         const { contract } = await connectWallet();
         
-        const [left, right] = await contract.getUserTree(parentAddress);
+        // دریافت اطلاعات کاربر مستقیماً از ساختار users
+        const userData = await contract.users(parentAddress);
         
-        if (left !== ethers.ZeroAddress) {
-            await renderChildNode(left, container, 'left', level);
+        if (userData.leftChild !== ethers.ZeroAddress) {
+            await renderChildNode(userData.leftChild, container, 'left', level);
         }
-        if (right !== ethers.ZeroAddress) {
-            await renderChildNode(right, container, 'right', level);
+        if (userData.rightChild !== ethers.ZeroAddress) {
+            await renderChildNode(userData.rightChild, container, 'right', level);
         }
         
     } catch (error) {
@@ -436,7 +434,8 @@ async function renderChildNode(childAddress, container, position, level) {
     try {
         const { contract, address } = await connectWallet();
         
-        const treeData = await contract.getUserTree(childAddress);
+        // دریافت اطلاعات کاربر مستقیماً از ساختار users
+        const userData = await contract.users(childAddress);
         const isCurrentUser = childAddress.toLowerCase() === address.toLowerCase();
         
         const childHTML = `
@@ -444,8 +443,8 @@ async function renderChildNode(childAddress, container, position, level) {
                 <div class="node-header">
                     <div class="node-info">
                         <span class="node-title">${shortenAddress(childAddress)}</span>
-                        <span class="node-status ${treeData.activated ? 'active' : 'inactive'}">
-                            ${treeData.activated ? 'فعال' : 'غیرفعال'}
+                        <span class="node-status ${userData.activated ? 'active' : 'inactive'}">
+                            ${userData.activated ? 'فعال' : 'غیرفعال'}
                         </span>
                     </div>
                     <span class="expand-icon" onclick="toggleNodeExpansion('${childAddress}', ${level + 1})">▼</span>
@@ -453,11 +452,11 @@ async function renderChildNode(childAddress, container, position, level) {
                 <div class="node-details">
                     <div class="node-stat">
                         <span class="stat-label">امتیاز:</span>
-                        <span class="stat-value">${ethers.formatUnits(treeData.binaryPoints, 18)}</span>
+                        <span class="stat-value">${ethers.formatUnits(userData.binaryPoints, 18)}</span>
                     </div>
                     <div class="node-stat">
                         <span class="stat-label">سقف:</span>
-                        <span class="stat-value">${parseInt(ethers.formatUnits(treeData.binaryPointCap, 18))}</span>
+                        <span class="stat-value">${parseInt(ethers.formatUnits(userData.binaryPointCap, 18))}</span>
                     </div>
                 </div>
                 <div class="children-container" id="children-${childAddress}"></div>
