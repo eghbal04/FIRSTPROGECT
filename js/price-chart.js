@@ -606,66 +606,72 @@ async function fetchPolUsdPrice() {
     try {
         // تلاش با API های مختلف
         const apis = [
-            'https://api.coingecko.com/api/v3/simple/price?ids=polygon&vs_currencies=usd',
-            'https://api.binance.com/api/v3/ticker/price?symbol=MATICUSDT',
-            'https://api.coinbase.com/v2/prices/MATIC-USD/spot'
+            {
+                name: 'Coingecko',
+                url: 'https://api.coingecko.com/api/v3/simple/price?ids=polygon&vs_currencies=usd',
+                proxy: true
+            },
+            {
+                name: 'Binance',
+                url: 'https://api.binance.com/api/v3/ticker/price?symbol=MATICUSDT',
+                proxy: false
+            },
+            {
+                name: 'Coinbase',
+                url: 'https://api.coinbase.com/v2/prices/MATIC-USD/spot',
+                proxy: false
+            }
         ];
         
-        for (const apiUrl of apis) {
+        for (const api of apis) {
             try {
-                console.log('Price Chart: Trying API:', apiUrl);
+                console.log('Price Chart: Trying API:', api.name);
                 
                 let response;
-                if (apiUrl.includes('coingecko')) {
+                if (api.proxy) {
                     // استفاده از proxy برای Coingecko
-                    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`;
+                    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(api.url)}`;
                     response = await fetch(proxyUrl, {
                         method: 'GET',
                         headers: {
-                            'Accept': 'application/json',
                             'Content-Type': 'application/json'
-                        },
-                        timeout: 5000
+                        }
                     });
                 } else {
-                    // استفاده مستقیم از API های دیگر
-                    response = await fetch(apiUrl, {
+                    response = await fetch(api.url, {
                         method: 'GET',
                         headers: {
-                            'Accept': 'application/json',
                             'Content-Type': 'application/json'
-                        },
-                        timeout: 5000
+                        }
                     });
                 }
                 
                 if (!response.ok) {
-                    console.warn('Price Chart: API response not ok:', response.status);
-                    continue;
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
                 const data = await response.json();
-                console.log('Price Chart: API response:', data);
+                console.log('Price Chart: Response from', api.name, ':', data);
+                
+                let price = null;
                 
                 // پردازش پاسخ بر اساس نوع API
-                let polPrice = null;
-                
-                if (apiUrl.includes('coingecko') && data.polygon && data.polygon.usd) {
-                    polPrice = data.polygon.usd;
-                } else if (apiUrl.includes('binance') && data.price) {
-                    polPrice = parseFloat(data.price);
-                } else if (apiUrl.includes('coinbase') && data.data && data.data.amount) {
-                    polPrice = parseFloat(data.data.amount);
+                if (api.name === 'Coingecko' && data.polygon && data.polygon.usd) {
+                    price = data.polygon.usd;
+                } else if (api.name === 'Binance' && data.price) {
+                    price = parseFloat(data.price);
+                } else if (api.name === 'Coinbase' && data.data && data.data.amount) {
+                    price = parseFloat(data.data.amount);
                 }
                 
-                if (polPrice && polPrice > 0) {
-                    console.log('Price Chart: POL/USD price from API:', polPrice);
-                    return polPrice;
+                if (price && price > 0) {
+                    console.log('Price Chart: POL/USD price from', api.name, ':', price);
+                    return price;
                 }
                 
-            } catch (apiError) {
-                console.warn('Price Chart: API failed:', apiUrl, apiError.message);
-                continue;
+            } catch (error) {
+                console.warn('Price Chart: Error with', api.name, ':', error.message);
+                continue; // ادامه با API بعدی
             }
         }
         
@@ -673,25 +679,21 @@ async function fetchPolUsdPrice() {
         console.log('Price Chart: All APIs failed, trying contract price...');
         try {
             const { contract } = await window.connectWallet();
-            const contractPolPrice = await contract.getLatestMaticPrice();
-            const polPriceFromContract = parseFloat(ethers.formatUnits(contractPolPrice, 8));
-            
-            if (polPriceFromContract > 0) {
-                console.log('Price Chart: POL/USD price from contract:', polPriceFromContract);
-                return polPriceFromContract;
-            }
+            const contractPrice = await contract.getLatestMaticPrice();
+            const price = parseFloat(ethers.formatUnits(contractPrice, 8));
+            console.log('Price Chart: POL/USD price from contract:', price);
+            return price;
         } catch (contractError) {
             console.warn('Price Chart: Contract price failed:', contractError.message);
         }
         
-        // استفاده از قیمت پیش‌فرض
+        // در نهایت از قیمت پیش‌فرض استفاده کن
         console.log('Price Chart: Using fallback POL price: 1.00 USD');
         return 1.00;
         
     } catch (error) {
         console.error('Price Chart: Error fetching POL/USD price:', error);
-        console.log('Price Chart: Using fallback POL price: 1.00 USD');
-        return 1.00;
+        return 1.00; // قیمت پیش‌فرض
     }
 }
 
