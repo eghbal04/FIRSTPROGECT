@@ -137,7 +137,7 @@ async function loadBinaryStats(contract, address) {
         updateElement('left-points', ethers.formatUnits(userData.binaryPoints, 18));
         updateElement('right-points', ethers.formatUnits(userData.binaryPoints, 18));
         updateElement('total-binary-points', ethers.formatUnits(userData.binaryPoints, 18));
-        updateElement('points-cap', parseInt(ethers.formatUnits(userData.binaryPointCap, 18)));
+        updateElement('points-cap', userData.binaryPointCap.toString());
         
         // محاسبه امتیاز متعادل
         const balancedPoints = Math.min(
@@ -249,7 +249,7 @@ function createNodeHTML(userData, userAddress, isCurrentUser, level) {
             </div>
             <div class="node-stat">
                 <span class="stat-label">سقف امتیاز:</span>
-                <span class="stat-value">${parseInt(ethers.formatUnits(userData.binaryPointCap, 18))}</span>
+                <span class="stat-value">${userData.binaryPointCap.toString()}</span>
             </div>
         </div>
     `;
@@ -292,7 +292,7 @@ function createChildNodeHTML(userData, childAddress, position, level, isCurrentU
                 </div>
                 <div class="node-stat">
                     <span class="stat-label">سقف:</span>
-                    <span class="stat-value">${parseInt(ethers.formatUnits(userData.binaryPointCap, 18))}</span>
+                    <span class="stat-value">${userData.binaryPointCap.toString()}</span>
                 </div>
             </div>
             <div class="children-container" id="children-${childAddress}"></div>

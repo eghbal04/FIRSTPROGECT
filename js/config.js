@@ -1604,7 +1604,7 @@ window.getUserProfile = async function() {
             referrer: user.referrer || null,
             activated: user.activated || false,
             binaryPoints: user.binaryPoints ? user.binaryPoints.toString() : '0',
-            binaryPointCap: user.binaryPointCap ? parseInt(ethers.formatUnits(user.binaryPointCap, 18)) : 0,
+            binaryPointCap: user.binaryPointCap ? user.binaryPointCap.toString() : '0',
             totalPurchasedMATIC: ethers.formatEther(user.totalPurchasedMATIC || 0n),
             totalPurchasedKind: user.totalPurchasedKind ? user.totalPurchasedKind.toString() : '0',
             maticBalance: ethers.formatEther(maticBalance || 0n),
