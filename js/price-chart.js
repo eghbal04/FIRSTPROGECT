@@ -604,7 +604,8 @@ function stopPriceChart() {
 
 async function fetchPolUsdPrice() {
     try {
-        const url = 'https://api.coingecko.com/api/v3/simple/price?ids=polygon&vs_currencies=usd';
+        // استفاده از proxy برای حل مشکل CORS
+        const url = 'https://api.allorigins.win/raw?url=https://api.coingecko.com/api/v3/simple/price?ids=polygon&vs_currencies=usd';
         const response = await fetch(url);
         
         if (!response.ok) {
