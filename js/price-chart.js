@@ -604,31 +604,94 @@ function stopPriceChart() {
 
 async function fetchPolUsdPrice() {
     try {
-        // استفاده از proxy برای حل مشکل CORS
-        const url = 'https://api.allorigins.win/raw?url=https://api.coingecko.com/api/v3/simple/price?ids=polygon&vs_currencies=usd';
-        const response = await fetch(url);
+        // تلاش با API های مختلف
+        const apis = [
+            'https://api.coingecko.com/api/v3/simple/price?ids=polygon&vs_currencies=usd',
+            'https://api.binance.com/api/v3/ticker/price?symbol=MATICUSDT',
+            'https://api.coinbase.com/v2/prices/MATIC-USD/spot'
+        ];
         
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        for (const apiUrl of apis) {
+            try {
+                console.log('Price Chart: Trying API:', apiUrl);
+                
+                let response;
+                if (apiUrl.includes('coingecko')) {
+                    // استفاده از proxy برای Coingecko
+                    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`;
+                    response = await fetch(proxyUrl, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        timeout: 5000
+                    });
+                } else {
+                    // استفاده مستقیم از API های دیگر
+                    response = await fetch(apiUrl, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        timeout: 5000
+                    });
+                }
+                
+                if (!response.ok) {
+                    console.warn('Price Chart: API response not ok:', response.status);
+                    continue;
+                }
+                
+                const data = await response.json();
+                console.log('Price Chart: API response:', data);
+                
+                // پردازش پاسخ بر اساس نوع API
+                let polPrice = null;
+                
+                if (apiUrl.includes('coingecko') && data.polygon && data.polygon.usd) {
+                    polPrice = data.polygon.usd;
+                } else if (apiUrl.includes('binance') && data.price) {
+                    polPrice = parseFloat(data.price);
+                } else if (apiUrl.includes('coinbase') && data.data && data.data.amount) {
+                    polPrice = parseFloat(data.data.amount);
+                }
+                
+                if (polPrice && polPrice > 0) {
+                    console.log('Price Chart: POL/USD price from API:', polPrice);
+                    return polPrice;
+                }
+                
+            } catch (apiError) {
+                console.warn('Price Chart: API failed:', apiUrl, apiError.message);
+                continue;
+            }
         }
         
-        const data = await response.json();
-        
-        // بررسی ساختار پاسخ
-        if (!data || !data.polygon || typeof data.polygon.usd !== 'number') {
-            console.warn('Price Chart: Invalid response structure from Coingecko:', data);
-            return 1.00; // قیمت پیش‌فرض POL
+        // اگر هیچ API کار نکرد، از قرارداد استفاده کن
+        console.log('Price Chart: All APIs failed, trying contract price...');
+        try {
+            const { contract } = await window.connectWallet();
+            const contractPolPrice = await contract.getLatestMaticPrice();
+            const polPriceFromContract = parseFloat(ethers.formatUnits(contractPolPrice, 8));
+            
+            if (polPriceFromContract > 0) {
+                console.log('Price Chart: POL/USD price from contract:', polPriceFromContract);
+                return polPriceFromContract;
+            }
+        } catch (contractError) {
+            console.warn('Price Chart: Contract price failed:', contractError.message);
         }
         
-        console.log('Price Chart: POL/USD price from Coingecko:', data.polygon.usd);
-        return data.polygon.usd;
+        // استفاده از قیمت پیش‌فرض
+        console.log('Price Chart: Using fallback POL price: 1.00 USD');
+        return 1.00;
         
     } catch (error) {
-        console.error('Price Chart: Error fetching POL/USD from Coingecko:', error);
-        
-        // استفاده از قیمت پیش‌فرض در صورت خطا
+        console.error('Price Chart: Error fetching POL/USD price:', error);
         console.log('Price Chart: Using fallback POL price: 1.00 USD');
-        return 1.00; // قیمت پیش‌فرض POL
+        return 1.00;
     }
 }
 
