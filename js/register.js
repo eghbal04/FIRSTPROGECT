@@ -1,6 +1,7 @@
 // register.js - مدیریت بخش ثبت‌نام و ارتقا
 let isRegisterLoading = false;
 let registerDataLoaded = false;
+let registerTabSelected = false;
 
 document.addEventListener('DOMContentLoaded', function() {
     // Register section loaded, waiting for wallet connection...
@@ -14,13 +15,24 @@ async function loadRegisterData() {
         return;
     }
     
+    // فقط اگر تب register انتخاب شده باشد
+    if (!registerTabSelected) {
+        console.log('Register: Tab not selected, skipping...');
+        return;
+    }
+    
     isRegisterLoading = true;
     
     try {
         console.log('Register: Loading register data...');
         
-        // Connecting to wallet for register data...
-        const { contract, address } = await connectWallet();
+        // بررسی اتصال کیف پول
+        if (!window.contractConfig || !window.contractConfig.contract) {
+            console.log('Register: No wallet connection, skipping...');
+            return;
+        }
+        
+        const { contract, address } = window.contractConfig;
         console.log('Register: Wallet connected, loading register data...');
         
         // دریافت اطلاعات کاربر
@@ -66,101 +78,18 @@ async function loadRegisterData() {
     }
 }
 
-// تابع اتصال به کیف پول
-async function connectWallet() {
-    try {
-        console.log('Register: Attempting to connect wallet...');
-        
-        // بررسی اتصال موجود
-        if (window.contractConfig && window.contractConfig.contract) {
-            console.log('Register: Wallet already connected');
-            return window.contractConfig;
-        }
-        
-        // بررسی اتصال MetaMask موجود
-        if (typeof window.ethereum !== 'undefined') {
-            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-            if (accounts && accounts.length > 0) {
-                console.log('Register: MetaMask already connected, initializing Web3...');
-                try {
-                    await initializeWeb3();
-                    return window.contractConfig;
-                } catch (error) {
-                    console.log('Register: Failed to initialize Web3:', error);
-                    throw new Error('خطا در راه‌اندازی Web3');
-                }
-            }
-        }
-        
-        console.log('Register: No existing connection, user needs to connect manually');
-        throw new Error('لطفاً ابتدا کیف پول خود را متصل کنید');
-        
-    } catch (error) {
-        console.error('Register: Error connecting wallet:', error);
-        showRegisterError(error.message);
-        throw error;
+// تابع تنظیم وضعیت تب register
+function setRegisterTabSelected(selected) {
+    registerTabSelected = selected;
+    if (selected && !registerDataLoaded) {
+        // ریست کردن وضعیت بارگذاری برای بارگذاری مجدد
+        registerDataLoaded = false;
+        isRegisterLoading = false;
     }
 }
 
-// تابع به‌روزرسانی نمایش موجودی
-function updateBalanceDisplay(lvlBalance, lvlBalanceUSD) {
-    const balanceElement = document.getElementById('user-lvl-balance');
-    const usdElement = document.getElementById('user-lvl-usd-value');
-    
-    if (balanceElement) {
-        balanceElement.textContent = `${parseFloat(lvlBalance).toLocaleString('en-US', {maximumFractionDigits: 2})} LVL`;
-    }
-    
-    if (usdElement) {
-        usdElement.textContent = `~$${lvlBalanceUSD} USD`;
-    }
-}
-
-// تابع نمایش فرم ثبت‌نام
-function showRegistrationForm(registrationPrice, userBalance, tokenPriceUSD) {
-    const registrationForm = document.getElementById('registration-form');
-    const upgradeForm = document.getElementById('upgrade-form');
-    
-    if (registrationForm) registrationForm.style.display = 'block';
-    if (upgradeForm) upgradeForm.style.display = 'none';
-    
-    // به‌روزرسانی اطلاعات ثبت‌نام
-    const requiredElement = document.getElementById('registration-required');
-    const statusElement = document.getElementById('registration-status-text');
-    
-    if (requiredElement) {
-        const requiredUSD = (parseFloat(registrationPrice) * parseFloat(tokenPriceUSD)).toFixed(2);
-        requiredElement.textContent = `${parseFloat(registrationPrice).toFixed(2)} LVL (~$${requiredUSD} USD)`;
-    }
-    
-    if (statusElement) {
-        const userBalanceNum = parseFloat(userBalance);
-        const requiredNum = parseFloat(registrationPrice);
-        
-        if (userBalanceNum >= requiredNum) {
-            statusElement.textContent = "آماده برای ثبت‌نام";
-            statusElement.style.color = "#4caf50";
-        } else {
-            statusElement.textContent = "موجودی ناکافی";
-            statusElement.style.color = "#ff4444";
-        }
-    }
-    
-    // راه‌اندازی دکمه ثبت‌نام
-    setupRegistrationButton();
-}
-
-// تابع نمایش فرم ارتقا
-function showUpgradeForm() {
-    const registrationForm = document.getElementById('registration-form');
-    const upgradeForm = document.getElementById('upgrade-form');
-    
-    if (registrationForm) registrationForm.style.display = 'none';
-    if (upgradeForm) upgradeForm.style.display = 'block';
-    
-    // راه‌اندازی فرم ارتقا
-    setupUpgradeForm();
-}
+// Export function for global use
+window.setRegisterTabSelected = setRegisterTabSelected;
 
 // تابع بارگذاری اطلاعات ارتقا
 async function loadUpgradeData(contract, address, tokenPriceUSD) {
@@ -317,4 +246,100 @@ function showRegisterError(message) {
         statusElement.textContent = message;
         statusElement.className = 'profile-status error';
     }
+}
+
+// تابع اتصال به کیف پول
+async function connectWallet() {
+    try {
+        console.log('Register: Attempting to connect wallet...');
+        
+        // بررسی اتصال موجود
+        if (window.contractConfig && window.contractConfig.contract) {
+            console.log('Register: Wallet already connected');
+            return window.contractConfig;
+        }
+        
+        // بررسی اتصال MetaMask موجود
+        if (typeof window.ethereum !== 'undefined') {
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            if (accounts && accounts.length > 0) {
+                console.log('Register: MetaMask already connected, initializing Web3...');
+                try {
+                    await initializeWeb3();
+                    return window.contractConfig;
+                } catch (error) {
+                    console.log('Register: Failed to initialize Web3:', error);
+                    throw new Error('خطا در راه‌اندازی Web3');
+                }
+            }
+        }
+        
+        console.log('Register: No existing connection, user needs to connect manually');
+        throw new Error('لطفاً ابتدا کیف پول خود را متصل کنید');
+        
+    } catch (error) {
+        console.error('Register: Error connecting wallet:', error);
+        showRegisterError(error.message);
+        throw error;
+    }
+}
+
+// تابع به‌روزرسانی نمایش موجودی
+function updateBalanceDisplay(lvlBalance, lvlBalanceUSD) {
+    const balanceElement = document.getElementById('user-lvl-balance');
+    const usdElement = document.getElementById('user-lvl-usd-value');
+    
+    if (balanceElement) {
+        balanceElement.textContent = `${parseFloat(lvlBalance).toLocaleString('en-US', {maximumFractionDigits: 2})} LVL`;
+    }
+    
+    if (usdElement) {
+        usdElement.textContent = `~$${lvlBalanceUSD} USD`;
+    }
+}
+
+// تابع نمایش فرم ثبت‌نام
+function showRegistrationForm(registrationPrice, userBalance, tokenPriceUSD) {
+    const registrationForm = document.getElementById('registration-form');
+    const upgradeForm = document.getElementById('upgrade-form');
+    
+    if (registrationForm) registrationForm.style.display = 'block';
+    if (upgradeForm) upgradeForm.style.display = 'none';
+    
+    // به‌روزرسانی اطلاعات ثبت‌نام
+    const requiredElement = document.getElementById('registration-required');
+    const statusElement = document.getElementById('registration-status-text');
+    
+    if (requiredElement) {
+        const requiredUSD = (parseFloat(registrationPrice) * parseFloat(tokenPriceUSD)).toFixed(2);
+        requiredElement.textContent = `${parseFloat(registrationPrice).toFixed(2)} LVL (~$${requiredUSD} USD)`;
+    }
+    
+    if (statusElement) {
+        const userBalanceNum = parseFloat(userBalance);
+        const requiredNum = parseFloat(registrationPrice);
+        
+        if (userBalanceNum >= requiredNum) {
+            statusElement.textContent = "آماده برای ثبت‌نام";
+            statusElement.style.color = "#4caf50";
+        } else {
+            statusElement.textContent = "موجودی ناکافی";
+            statusElement.style.color = "#ff4444";
+        }
+    }
+    
+    // راه‌اندازی دکمه ثبت‌نام
+    setupRegistrationButton();
+}
+
+// تابع نمایش فرم ارتقا
+function showUpgradeForm() {
+    const registrationForm = document.getElementById('registration-form');
+    const upgradeForm = document.getElementById('upgrade-form');
+    
+    if (registrationForm) registrationForm.style.display = 'none';
+    if (upgradeForm) upgradeForm.style.display = 'block';
+    
+    // راه‌اندازی فرم ارتقا
+    setupUpgradeForm();
 } 

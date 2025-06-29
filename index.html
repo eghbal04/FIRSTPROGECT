@@ -2684,6 +2684,10 @@
             // About section doesn't need wallet connection
             break;
           case 'register':
+            // Set register tab as selected and load data
+            if (typeof window.setRegisterTabSelected === 'function') {
+              window.setRegisterTabSelected(true);
+            }
             if (typeof loadRegisterData === 'function') {
               await loadRegisterData();
             }
