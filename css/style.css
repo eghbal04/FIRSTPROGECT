@@ -353,6 +353,49 @@ body {
   backdrop-filter: blur(20px);
 }
 
+/* Time Period Filters */
+.price-chart-time-filters-container {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+}
+
+.price-chart-time-filters {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.time-period-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(0, 255, 136, 0.2);
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  color: #cccccc;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 80px;
+  text-align: center;
+}
+
+.time-period-btn:hover {
+  background: rgba(0, 255, 136, 0.1);
+  border-color: rgba(0, 255, 136, 0.4);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.time-period-btn.active {
+  background: linear-gradient(135deg, #00ff88, #00ccff);
+  border-color: rgba(0, 255, 136, 0.6);
+  color: #000000;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0, 255, 136, 0.3);
+}
+
 /* Chart Canvas Container */
 .price-chart-canvas-container {
   width: 100%;
@@ -466,7 +509,8 @@ body {
   font-size: 0.9rem;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .price-chart-refresh-btn {
@@ -548,6 +592,16 @@ body {
   .price-chart-info {
     flex-direction: column;
     gap: 0.3rem;
+  }
+  
+  .price-chart-time-filters {
+    justify-content: center;
+  }
+  
+  .time-period-btn {
+    min-width: 70px;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
   }
 }
 

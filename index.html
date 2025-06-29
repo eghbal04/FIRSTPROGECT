@@ -2272,6 +2272,13 @@
     </div>
     <div class="expand-content">
       <div class="price-chart-container">
+        <!-- Time Period Filters -->
+        <div class="price-chart-time-filters-container">
+          <div class="price-chart-time-filters" id="price-chart-time-filters">
+            <!-- Time period buttons will be added here by JavaScript -->
+          </div>
+        </div>
+        
         <!-- Line Chart Canvas -->
         <div class="price-chart-canvas-container">
           <canvas id="price-chart-canvas"></canvas>
@@ -2308,19 +2315,18 @@
         <!-- Chart Controls -->
         <div class="price-chart-controls">
           <div class="price-chart-info">
-            <span>آخرین به‌روزرسانی: <span id="chart-last-update">-</span></span>
-            <span>•</span>
-            <span>به‌روزرسانی خودکار هر 30 ثانیه</span>
+            <span>🕐 آخرین به‌روزرسانی: <span id="chart-last-update">-</span></span>
+            <span>📊 بازه فعلی: <span id="chart-current-period">24 ساعت</span></span>
           </div>
-          <button class="price-chart-refresh-btn" onclick="refreshPriceChart()">
+          <button class="price-chart-refresh-btn" onclick="window.priceChart.refresh()">
             🔄 به‌روزرسانی
           </button>
         </div>
         
         <!-- Messages -->
         <div class="price-chart-messages">
-          <div id="price-chart-error" class="price-chart-error"></div>
-          <div id="price-chart-success" class="price-chart-success"></div>
+          <div class="price-chart-error" id="price-chart-error"></div>
+          <div class="price-chart-success" id="price-chart-success"></div>
         </div>
       </div>
     </div>

@@ -7,6 +7,13 @@ let priceHistory = {
 };
 
 let chartInstance = null;
+let currentTimePeriod = '24h'; // Default to 24 hours
+let timePeriods = {
+    '24h': { label: '24 ساعت', hours: 24, interval: 30000 }, // 30 seconds
+    '7d': { label: '7 روز', hours: 168, interval: 300000 }, // 5 minutes
+    '1m': { label: '1 ماه', hours: 720, interval: 900000 }, // 15 minutes
+    '1y': { label: '1 سال', hours: 8760, interval: 3600000 } // 1 hour
+};
 
 // Initialize price chart
 async function initializePriceChart() {
@@ -19,11 +26,14 @@ async function initializePriceChart() {
         // Initialize the chart
         initializeChart();
         
+        // Setup time period buttons
+        setupTimePeriodButtons();
+        
         // Load initial prices
         await updatePriceChart();
         
-        // Start auto-update every 30 seconds
-        priceChartInterval = setInterval(updatePriceChart, 30000);
+        // Start auto-update with current period interval
+        startAutoUpdate();
         
         console.log('Price Chart: Initialized successfully');
         
@@ -31,6 +41,78 @@ async function initializePriceChart() {
         console.error('Price Chart: Error initializing:', error);
         showPriceChartError('خطا در راه‌اندازی چارت قیمت');
     }
+}
+
+// Setup time period filter buttons
+function setupTimePeriodButtons() {
+    const container = document.getElementById('price-chart-time-filters');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    Object.entries(timePeriods).forEach(([period, config]) => {
+        const button = document.createElement('button');
+        button.className = `time-period-btn ${period === currentTimePeriod ? 'active' : ''}`;
+        button.textContent = config.label;
+        button.onclick = () => changeTimePeriod(period);
+        container.appendChild(button);
+    });
+}
+
+// Change time period
+async function changeTimePeriod(period) {
+    try {
+        console.log('Price Chart: Changing time period to:', period);
+        
+        // Update current period
+        currentTimePeriod = period;
+        
+        // Update button states
+        updateTimePeriodButtons();
+        
+        // Restart auto-update with new interval
+        startAutoUpdate();
+        
+        // Update chart with new data
+        await updatePriceChart();
+        
+        console.log('Price Chart: Time period changed successfully');
+        
+    } catch (error) {
+        console.error('Price Chart: Error changing time period:', error);
+        showPriceChartError('خطا در تغییر بازه زمانی');
+    }
+}
+
+// Update time period button states
+function updateTimePeriodButtons() {
+    const buttons = document.querySelectorAll('.time-period-btn');
+    buttons.forEach(button => {
+        button.classList.remove('active');
+        if (button.textContent === timePeriods[currentTimePeriod].label) {
+            button.classList.add('active');
+        }
+    });
+    
+    // Update current period display
+    const currentPeriodElement = document.getElementById('chart-current-period');
+    if (currentPeriodElement) {
+        currentPeriodElement.textContent = timePeriods[currentTimePeriod].label;
+    }
+}
+
+// Start auto-update with current period interval
+function startAutoUpdate() {
+    // Stop existing interval
+    if (priceChartInterval) {
+        clearInterval(priceChartInterval);
+    }
+    
+    // Start new interval with current period settings
+    const interval = timePeriods[currentTimePeriod].interval;
+    priceChartInterval = setInterval(updatePriceChart, interval);
+    
+    console.log('Price Chart: Auto-update started with interval:', interval);
 }
 
 // Load Chart.js dynamically
@@ -136,6 +218,16 @@ function initializeChart() {
                     cornerRadius: 8,
                     displayColors: true,
                     callbacks: {
+                        title: function(context) {
+                            const date = new Date(context[0].parsed.x);
+                            return date.toLocaleString('fa-IR', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            });
+                        },
                         label: function(context) {
                             let label = context.dataset.label || '';
                             if (label) {
@@ -169,10 +261,30 @@ function initializeChart() {
                         maxTicksLimit: 8,
                         callback: function(value, index, values) {
                             const date = new Date(this.getLabelForValue(value));
-                            return date.toLocaleTimeString('fa-IR', {
-                                hour: '2-digit',
-                                minute: '2-digit'
-                            });
+                            const period = currentTimePeriod;
+                            
+                            if (period === '24h') {
+                                return date.toLocaleTimeString('fa-IR', {
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                });
+                            } else if (period === '7d') {
+                                return date.toLocaleDateString('fa-IR', {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    hour: '2-digit'
+                                });
+                            } else if (period === '1m') {
+                                return date.toLocaleDateString('fa-IR', {
+                                    month: 'short',
+                                    day: 'numeric'
+                                });
+                            } else {
+                                return date.toLocaleDateString('fa-IR', {
+                                    year: 'numeric',
+                                    month: 'short'
+                                });
+                            }
                         }
                     },
                     grid: {
@@ -223,7 +335,7 @@ async function updatePriceChart() {
         // Get prices from contract
         const prices = await window.getPrices();
         
-        // Add to history (keep last 48 data points - 24 hours with 30s intervals)
+        // Add to history (keep data based on current time period)
         const timestamp = Date.now();
         
         priceHistory.lvlUsd.push({
@@ -241,12 +353,13 @@ async function updatePriceChart() {
             value: parseFloat(prices.polPrice)
         });
         
-        // Keep only last 48 data points
-        if (priceHistory.lvlUsd.length > 48) {
-            priceHistory.lvlUsd.shift();
-            priceHistory.lvlPol.shift();
-            priceHistory.polUsd.shift();
-        }
+        // Keep only data within current time period
+        const periodHours = timePeriods[currentTimePeriod].hours;
+        const cutoffTime = timestamp - (periodHours * 60 * 60 * 1000);
+        
+        priceHistory.lvlUsd = priceHistory.lvlUsd.filter(item => item.time >= cutoffTime);
+        priceHistory.lvlPol = priceHistory.lvlPol.filter(item => item.time >= cutoffTime);
+        priceHistory.polUsd = priceHistory.polUsd.filter(item => item.time >= cutoffTime);
         
         // Update chart data
         updateChartData();
@@ -269,13 +382,34 @@ async function updatePriceChart() {
 function updateChartData() {
     if (!chartInstance) return;
     
-    // Prepare labels (time)
-    const labels = priceHistory.lvlUsd.map(item => 
-        new Date(item.time).toLocaleTimeString('fa-IR', {
-            hour: '2-digit',
-            minute: '2-digit'
-        })
-    );
+    // Prepare labels (time) based on current period
+    const labels = priceHistory.lvlUsd.map(item => {
+        const date = new Date(item.time);
+        const period = currentTimePeriod;
+        
+        if (period === '24h') {
+            return date.toLocaleTimeString('fa-IR', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } else if (period === '7d') {
+            return date.toLocaleDateString('fa-IR', {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit'
+            });
+        } else if (period === '1m') {
+            return date.toLocaleDateString('fa-IR', {
+                month: 'short',
+                day: 'numeric'
+            });
+        } else {
+            return date.toLocaleDateString('fa-IR', {
+                year: 'numeric',
+                month: 'short'
+            });
+        }
+    });
     
     // Prepare datasets
     const lvlUsdData = priceHistory.lvlUsd.map(item => item.value);
@@ -451,7 +585,8 @@ window.priceChart = {
     initialize: initializePriceChart,
     stop: stopPriceChart,
     refresh: refreshPriceChart,
-    update: updatePriceChart
+    update: updatePriceChart,
+    changeTimePeriod: changeTimePeriod
 };
 
 console.log('Price Chart module loaded successfully'); 
