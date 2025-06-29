@@ -453,11 +453,11 @@ async function renderChildNode(childAddress, container, position, level) {
                 <div class="node-details">
                     <div class="node-stat">
                         <span class="stat-label">امتیاز:</span>
-                        <span class="stat-value">${treeData.binaryPoints}</span>
+                        <span class="stat-value">${ethers.formatUnits(treeData.binaryPoints, 18)}</span>
                     </div>
                     <div class="node-stat">
                         <span class="stat-label">سقف:</span>
-                        <span class="stat-value">${parseInt(treeData.binaryPointCap)}</span>
+                        <span class="stat-value">${parseInt(ethers.formatUnits(treeData.binaryPointCap, 18))}</span>
                     </div>
                 </div>
                 <div class="children-container" id="children-${childAddress}"></div>
