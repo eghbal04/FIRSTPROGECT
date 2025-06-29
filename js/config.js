@@ -1507,37 +1507,78 @@ window.getUserProfile = async function() {
             throw new Error('No wallet address available');
         }
         
-        // دریافت اطلاعات کاربر
-        const user = await contract.users(address);
+        console.log('Profile: Fetching user data for address:', address);
         
-        // دریافت موجودی‌ها - استفاده از provider یا signer.provider
+        // دریافت اطلاعات کاربر با مدیریت خطا
+        let user;
+        try {
+            user = await contract.users(address);
+            console.log('Profile: User data received:', user);
+        } catch (error) {
+            console.error('Profile: Error fetching user data:', error);
+            // اگر کاربر ثبت‌نام نشده باشد، اطلاعات پیش‌فرض برگردان
+            return {
+                address: address,
+                referrer: null,
+                activated: false,
+                binaryPoints: "0",
+                binaryPointCap: "0",
+                totalPurchasedMATIC: "0",
+                totalPurchasedKind: "0",
+                maticBalance: "0",
+                lvlBalance: "0",
+                maticValueUSD: "0",
+                lvlValueUSD: "0",
+                registered: false,
+                index: "0"
+            };
+        }
+        
+        // دریافت موجودی‌ها با مدیریت خطا
         const balanceProvider = provider || signer.provider;
         if (!balanceProvider) {
             throw new Error('No provider available for balance check');
         }
         
-        const [maticBalance, lvlBalance] = await Promise.all([
-            balanceProvider.getBalance(address),
-            contract.balanceOf(address)
-        ]);
+        let maticBalance = 0n;
+        let lvlBalance = 0n;
+        
+        try {
+            [maticBalance, lvlBalance] = await Promise.all([
+                balanceProvider.getBalance(address),
+                contract.balanceOf(address)
+            ]);
+            console.log('Profile: Balances received - MATIC:', maticBalance.toString(), 'LVL:', lvlBalance.toString());
+        } catch (error) {
+            console.error('Profile: Error fetching balances:', error);
+        }
         
         // دریافت قیمت‌ها برای محاسبه ارزش دلاری
-        const [lvlPriceUSD, maticPrice] = await Promise.all([
-            contract.getTokenPriceInUSD(),
-            contract.getLatestMaticPrice()
-        ]);
+        let lvlPriceUSD = 0n;
+        let maticPrice = 0n;
+        
+        try {
+            [lvlPriceUSD, maticPrice] = await Promise.all([
+                contract.getTokenPriceInUSD(),
+                contract.getLatestMaticPrice()
+            ]);
+            console.log('Profile: Prices received - LVL USD:', lvlPriceUSD.toString(), 'MATIC USD:', maticPrice.toString());
+        } catch (error) {
+            console.error('Profile: Error fetching prices:', error);
+        }
         
         // محاسبه ارزش دلاری (همه مقادیر BigInt هستند)
         let lvlValueUSD = 0n;
         let maticValueUSD = 0n;
         try {
-            if (lvlBalance && lvlPriceUSD) {
+            if (lvlBalance && lvlPriceUSD && lvlBalance > 0n && lvlPriceUSD > 0n) {
                 lvlValueUSD = (lvlBalance * lvlPriceUSD) / (10n ** 18n);
             }
-            if (maticBalance && maticPrice) {
+            if (maticBalance && maticPrice && maticBalance > 0n && maticPrice > 0n) {
                 maticValueUSD = (maticBalance * maticPrice) / (10n ** 18n);
             }
         } catch (e) {
+            console.error('Profile: Error calculating USD values:', e);
             lvlValueUSD = 0n;
             maticValueUSD = 0n;
         }
@@ -1545,17 +1586,23 @@ window.getUserProfile = async function() {
         // فرمت‌دهی خروجی و جلوگیری از undefined
         const safeFormat = (val, decimals = 8) => {
             try {
-                if (typeof val === 'bigint') return ethers.formatUnits(val, decimals);
+                if (typeof val === 'bigint') {
+                    if (val === 0n) return '0';
+                    return ethers.formatUnits(val, decimals);
+                }
                 if (typeof val === 'number') return val.toFixed(4);
                 if (typeof val === 'string') return val;
                 return '0';
-            } catch (e) { return '0'; }
+            } catch (e) { 
+                console.error('Profile: Error formatting value:', e);
+                return '0'; 
+            }
         };
 
-        return {
+        const profile = {
             address: address,
-            referrer: user.referrer,
-            activated: user.activated,
+            referrer: user.referrer || null,
+            activated: user.activated || false,
             binaryPoints: user.binaryPoints ? user.binaryPoints.toString() : '0',
             binaryPointCap: user.binaryPointCap ? user.binaryPointCap.toString() : '0',
             totalPurchasedMATIC: ethers.formatEther(user.totalPurchasedMATIC || 0n),
@@ -1564,9 +1611,13 @@ window.getUserProfile = async function() {
             lvlBalance: ethers.formatUnits(lvlBalance || 0n, 18),
             maticValueUSD: safeFormat(maticValueUSD, 8),
             lvlValueUSD: safeFormat(lvlValueUSD, 8),
-            registered: user.activated,
+            registered: user.activated || false,
             index: user.index ? user.index.toString() : '0'
         };
+
+        console.log('Profile: Final profile data:', profile);
+        return profile;
+        
     } catch (error) {
         console.error('Central: Error fetching user profile:', error);
         return {

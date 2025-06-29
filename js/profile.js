@@ -32,7 +32,14 @@ async function loadUserProfile() {
         await waitForWalletConnection();
         
         // دریافت پروفایل کاربر - استفاده از تابع صحیح
+        console.log('Profile: Calling getUserProfile...');
         const profile = await window.getUserProfile();
+        console.log('Profile: getUserProfile returned:', profile);
+        
+        // بررسی اعتبار داده‌های پروفایل
+        if (!profile || !profile.address) {
+            throw new Error('Invalid profile data received');
+        }
         
         // به‌روزرسانی UI
         updateProfileUI(profile);
@@ -50,6 +57,8 @@ async function loadUserProfile() {
 
 // تابع به‌روزرسانی UI پروفایل
 function updateProfileUI(profile) {
+    console.log('Profile: Updating UI with profile data:', profile);
+    
     const safe = (val, suffix = '') => {
         if (val === undefined || val === null || val === 'undefined' || val === '' || isNaN(val)) return '-';
         if (typeof val === 'string' && val.trim() === '') return '-';
@@ -58,22 +67,31 @@ function updateProfileUI(profile) {
 
     const updateElement = (id, value) => {
         const el = document.getElementById(id);
-        if (el) el.textContent = safe(value);
+        if (el) {
+            el.textContent = safe(value);
+            console.log(`Profile: Updated ${id} with value:`, safe(value));
+        } else {
+            console.warn(`Profile: Element with id '${id}' not found`);
+        }
     };
 
-    console.log('Profile data received:', profile);
-
+    // به‌روزرسانی فیلدهای پروفایل
     updateElement('profile-address', shortenAddress(profile.address));
-    updateElement('profile-referrer', shortenAddress(profile.referrer));
+    updateElement('profile-referrer', profile.referrer ? shortenAddress(profile.referrer) : 'بدون معرف');
     updateElement('profile-matic', profile.maticBalance);
-    updateElement('profile-matic-usd', profile.maticValueUSD ? `(${profile.maticValueUSD}$)` : '-');
+    updateElement('profile-matic-usd', profile.maticValueUSD ? `(${profile.maticValueUSD}$)` : '');
     updateElement('profile-lvl', profile.lvlBalance);
-    updateElement('profile-lvl-usd', profile.lvlValueUSD ? `(${profile.lvlValueUSD}$)` : '-');
+    updateElement('profile-lvl-usd', profile.lvlValueUSD ? `(${profile.lvlValueUSD}$)` : '');
     updateElement('profile-income-cap', profile.binaryPointCap);
     updateElement('profile-received', profile.binaryPoints);
-    updateElement('profile-referral-link', window.location.origin + '/?ref=' + shortenAddress(profile.address));
     
-    // نمایش وضعیت ثبت‌نام - اصلاح شده
+    // ایجاد لینک دعوت
+    const referralLink = profile.address ? 
+        window.location.origin + '/?ref=' + profile.address : 
+        'لینک دعوت در دسترس نیست';
+    updateElement('profile-referral-link', referralLink);
+    
+    // نمایش وضعیت ثبت‌نام
     const statusElement = document.getElementById('profileStatus');
     if (statusElement) {
         if (profile.registered) {
@@ -83,6 +101,9 @@ function updateProfileUI(profile) {
             statusElement.textContent = 'کاربر ثبت‌نام نشده';
             statusElement.className = 'profile-status error';
         }
+        console.log('Profile: Updated status to:', profile.registered ? 'registered' : 'not registered');
+    } else {
+        console.warn('Profile: Status element not found');
     }
 }
 
@@ -98,15 +119,21 @@ function setupReferralCopy() {
                 await navigator.clipboard.writeText(referralLink);
                 copyBtn.textContent = 'کپی شد!';
                 setTimeout(() => copyBtn.textContent = 'کپی', 1500);
+                console.log('Profile: Referral link copied to clipboard');
             } catch (error) {
                 console.error("Profile: Error copying referral link:", error);
+                showProfileError('خطا در کپی کردن لینک دعوت');
             }
         });
+        console.log('Profile: Referral copy button setup complete');
+    } else {
+        console.warn('Profile: Copy button not found');
     }
 }
 
 // تابع نمایش خطای پروفایل
 function showProfileError(message) {
+    console.error('Profile: Showing error:', message);
     const statusElement = document.getElementById('profileStatus');
     if (statusElement) {
         statusElement.textContent = message;
@@ -116,6 +143,8 @@ function showProfileError(message) {
             statusElement.textContent = '';
             statusElement.className = 'profile-status';
         }, 5000);
+    } else {
+        console.error('Profile: Status element not found for error display');
     }
 }
 
