@@ -164,66 +164,62 @@ async function loadDashboardData() {
         dashboardLoading = true;
         console.log('Loading dashboard data...');
         
-        // ریست چارت در اولین بارگذاری
+        // Reset chart on first load or when dashboard is not initialized
         if (!dashboardInitialized) {
             console.log('First dashboard load, resetting chart...');
-            resetPriceChartCompletely();
+            if (typeof window.resetPriceChart === 'function') {
+                window.resetPriceChart();
+            }
         }
         
-        // بررسی فاصله زمانی از آخرین به‌روزرسانی
-        const now = Date.now();
-        if (now - lastDashboardUpdate < DASHBOARD_UPDATE_INTERVAL) {
-            console.log('Dashboard updated recently, skipping...');
-            return;
-        }
-        
-        console.log('Fetching dashboard data...');
-        
-        // بررسی اتصال کیف پول
-        if (!checkWalletConnectionStatus()) {
-            console.log('No wallet connection, skipping dashboard load');
-            dashboardLoading = false;
-            return;
-        }
-        
-        // بررسی اینکه آیا contractConfig آماده است
+        // Check if wallet is connected
         if (!window.contractConfig || !window.contractConfig.contract) {
-            console.log('Contract not ready, waiting for initialization...');
+            console.log('Wallet not connected, skipping dashboard load');
             dashboardLoading = false;
             return;
         }
         
-        // دریافت قیمت‌ها
-        const prices = await getPrices();
-        console.log('Prices fetched:', prices);
+        const contract = window.contractConfig.contract;
         
-        // دریافت آمار قرارداد
-        const stats = await getContractStats();
-        console.log('Contract stats fetched:', stats);
+        // Load all dashboard data in parallel
+        const [
+            tokenPriceUSD,
+            tokenPrice,
+            circulatingSupply,
+            totalPoints,
+            claimedPoints,
+            remainingPoints,
+            tradingVolume,
+            pointValue,
+            rewardPool
+        ] = await Promise.all([
+            contract.getTokenPriceInUSD().catch(() => 0),
+            contract.getPrice().catch(() => 0),
+            contract.circulatingSupply().catch(() => 0),
+            contract.totalPoints().catch(() => 0),
+            contract.points(window.contractConfig.address).catch(() => 0),
+            contract.totalPoints().then(total => 
+                contract.points(window.contractConfig.address).then(claimed => total - claimed)
+            ).catch(() => 0),
+            contract.getContractMaticBalance().catch(() => 0),
+            contract.getPointValue().catch(() => 0),
+            contract.binaryPool().catch(() => 0)
+        ]);
         
-        // دریافت آمار اضافی
-        const additionalStats = await getAdditionalStats();
-        console.log('Additional stats fetched:', additionalStats);
-        
-        // دریافت حجم معاملات
-        const tradingVolume = await getTradingVolume();
-        console.log('Trading volume fetched:', tradingVolume);
-        
-        // محاسبه تغییرات قیمت
+        // Calculate price changes
         const priceChanges = await calculatePriceChanges();
-        console.log('Price changes calculated:', priceChanges);
         
-        // به‌روزرسانی UI
-        updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceChanges);
+        // Update UI with all data
+        updateDashboardUI(
+            { tokenPriceUSD, tokenPrice },
+            { circulatingSupply, totalPoints, claimedPoints, remainingPoints },
+            { tradingVolume, pointValue, rewardPool },
+            tradingVolume,
+            priceChanges
+        );
         
-        // به‌روزرسانی timestamp
-        lastDashboardUpdate = now;
-        
-        // اگر این اولین بار است که داشبورد بارگذاری می‌شود، شروع به‌روزرسانی خودکار
-        if (!dashboardInitialized) {
-            dashboardInitialized = true;
-            startDashboardAutoUpdate();
-        }
+        dashboardInitialized = true;
+        lastDashboardUpdate = Date.now();
         
         console.log('Dashboard data loaded successfully');
         
@@ -325,12 +321,15 @@ function updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceC
                 if (isInteger) {
                     // برای اعداد صحیح (مثل تعداد کاربران)
                     displayValue = `${prefix}${Math.round(value)}${suffix}`;
-                } else if (value >= 1000000) {
-                    displayValue = `${prefix}${(value / 1000000).toFixed(2)}M${suffix}`;
-                } else if (value >= 1000) {
-                    displayValue = `${prefix}${(value / 1000).toFixed(2)}K${suffix}`;
                 } else {
-                    displayValue = `${prefix}${value.toFixed(4)}${suffix}`;
+                    // برای اعداد اعشاری
+                    if (value >= 1000000) {
+                        displayValue = `${prefix}${(value / 1000000).toFixed(2)}M${suffix}`;
+                    } else if (value >= 1000) {
+                        displayValue = `${prefix}${(value / 1000).toFixed(2)}K${suffix}`;
+                    } else {
+                        displayValue = `${prefix}${value.toFixed(4)}${suffix}`;
+                    }
                 }
                 element.textContent = displayValue;
             } else {
@@ -338,47 +337,44 @@ function updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceC
             }
         }
     };
-
+    
     // به‌روزرسانی قیمت‌ها
     if (prices) {
         updateElement('token-price', parseFloat(prices.tokenPriceUSD), '$');
         updateElement('token-price-matic', parseFloat(prices.tokenPrice), '', ' MATIC');
-        // Update the price chart
-        if (typeof updatePriceChart === 'function') {
+        
+        // Update the price chart using the new simplified method
+        if (typeof window.updatePriceChart === 'function') {
             // Calculate MATIC/USD if not present
             let maticPriceUSD = prices.maticPriceUSD;
             if (!maticPriceUSD && prices.tokenPriceUSD && prices.tokenPrice) {
                 maticPriceUSD = parseFloat(prices.tokenPriceUSD) / parseFloat(prices.tokenPrice);
             }
-            updatePriceChart(parseFloat(prices.tokenPriceUSD), parseFloat(prices.tokenPrice), parseFloat(maticPriceUSD));
+            
+            // Only update chart if we have valid data
+            if (prices.tokenPriceUSD && prices.tokenPrice && maticPriceUSD) {
+                window.updatePriceChart(
+                    parseFloat(prices.tokenPriceUSD), 
+                    parseFloat(prices.tokenPrice), 
+                    parseFloat(maticPriceUSD)
+                );
+            }
         }
     }
-
-    // به‌روزرسانی آمار قرارداد
+    
+    // به‌روزرسانی آمار
     if (stats) {
-        // توکن‌های در گردش - باید کل عرضه باشد (چون همه توکن‌ها در گردش هستند)
-        const totalSupply = parseFloat(stats.totalSupply);
-        updateElement('circulating-supply', totalSupply);
-        
-        // تعداد کاربران - بدون اعشار
-        updateElement('total-points', parseInt(stats.totalUsers), '', '', true);
-        
-        // پوینت‌های پرداخت شده - این مقدار از قرارداد دریافت می‌شود
-        updateElement('claimed-points', parseFloat(stats.totalPoints));
-        
-        // پوینت‌های باقی‌مانده - باید صفر باشد (چون همه توکن‌ها در گردش هستند)
-        updateElement('remaining-points', 0);
-        
-        // ارزش پوینت
-        updateElement('point-value', parseFloat(additionalStats?.pointValue || 0), '$');
-        
-        // استخر پاداش - با واحد توکن LVL
-        updateElement('reward-pool', parseFloat(stats.rewardPool), '', ' LVL');
+        updateElement('circulating-supply', parseFloat(stats.circulatingSupply), '', '', true);
+        updateElement('total-points', parseFloat(stats.totalPoints), '', '', true);
+        updateElement('claimed-points', parseFloat(stats.claimedPoints), '', '', true);
+        updateElement('remaining-points', parseFloat(stats.remainingPoints), '', '', true);
     }
-
-    // به‌روزرسانی موجودی قرارداد
-    if (tradingVolume) {
-        updateElement('trading-volume', parseFloat(tradingVolume.contractBalance || 0), '', ' MATIC');
+    
+    // به‌روزرسانی آمار اضافی
+    if (additionalStats) {
+        updateElement('trading-volume', parseFloat(additionalStats.tradingVolume), '', ' MATIC');
+        updateElement('point-value', parseFloat(additionalStats.pointValue), '$');
+        updateElement('reward-pool', parseFloat(additionalStats.rewardPool), '', ' LVL');
     }
 }
 
@@ -583,8 +579,10 @@ async function resetDashboard() {
             }
         });
         
-        // ریست کامل چارت قیمت
-        resetPriceChartCompletely();
+        // Reset price chart using the new simplified method
+        if (typeof window.resetPriceChart === 'function') {
+            window.resetPriceChart();
+        }
         
         console.log('Dashboard reset completed');
         
