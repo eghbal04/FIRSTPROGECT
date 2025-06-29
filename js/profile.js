@@ -58,41 +58,60 @@ async function loadUserProfile() {
 // تابع به‌روزرسانی UI پروفایل
 function updateProfileUI(profile) {
     console.log('Profile: Updating UI with profile data:', profile);
-    
-    const safe = (val, suffix = '') => {
-        if (val === undefined || val === null || val === 'undefined') return '-';
-        if (typeof val === 'string' && val.trim() === '') return '-';
-        if (typeof val === 'number' && isNaN(val)) return '-';
-        return val + suffix;
+
+    // فرمت‌دهی اعداد
+    const formatNumber = (val, decimals = 4) => {
+        if (!val || isNaN(Number(val))) return '۰';
+        return Number(val).toLocaleString('en-US', { maximumFractionDigits: decimals });
     };
 
-    const updateElement = (id, value) => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.textContent = safe(value);
-            console.log(`Profile: Updated ${id} with value:`, safe(value));
+    // کوتاه کردن آدرس
+    const shorten = (address) => {
+        if (!address) return '---';
+        return address.substring(0, 6) + '...' + address.substring(address.length - 4);
+    };
+
+    // آدرس کاربر
+    const addressEl = document.getElementById('profile-address');
+    if (addressEl) addressEl.textContent = profile.address ? shorten(profile.address) : '---';
+
+    // معرف
+    let referrerText = 'بدون معرف';
+    if (profile.referrer) {
+        if (profile.referrer.toLowerCase() === profile.address.toLowerCase()) {
+            referrerText = 'خود شما';
         } else {
-            console.warn(`Profile: Element with id '${id}' not found`);
+            referrerText = shorten(profile.referrer);
         }
-    };
+    }
+    const referrerEl = document.getElementById('profile-referrer');
+    if (referrerEl) referrerEl.textContent = referrerText;
 
-    // به‌روزرسانی فیلدهای پروفایل
-    updateElement('profile-address', shortenAddress(profile.address));
-    updateElement('profile-referrer', profile.referrer ? shortenAddress(profile.referrer) : 'بدون معرف');
-    updateElement('profile-matic', profile.maticBalance);
-    updateElement('profile-matic-usd', profile.maticValueUSD ? `(${profile.maticValueUSD}$)` : '');
-    updateElement('profile-lvl', profile.lvlBalance);
-    updateElement('profile-lvl-usd', profile.lvlValueUSD ? `(${profile.lvlValueUSD}$)` : '');
-    updateElement('profile-income-cap', profile.binaryPointCap);
-    updateElement('profile-received', profile.binaryPoints);
-    
-    // ایجاد لینک دعوت
-    const referralLink = profile.address ? 
-        window.location.origin + '/?ref=' + profile.address : 
-        'لینک دعوت در دسترس نیست';
-    updateElement('profile-referral-link', referralLink);
-    
-    // نمایش وضعیت ثبت‌نام
+    // موجودی‌ها
+    const maticEl = document.getElementById('profile-matic');
+    if (maticEl) maticEl.textContent = formatNumber(profile.maticBalance, 6);
+    const maticUsdEl = document.getElementById('profile-matic-usd');
+    if (maticUsdEl) maticUsdEl.textContent = profile.maticValueUSD && profile.maticValueUSD !== '0'
+        ? `(${formatNumber(profile.maticValueUSD, 2)}$)` : '';
+    const lvlEl = document.getElementById('profile-lvl');
+    if (lvlEl) lvlEl.textContent = formatNumber(profile.lvlBalance, 6);
+    const lvlUsdEl = document.getElementById('profile-lvl-usd');
+    if (lvlUsdEl) lvlUsdEl.textContent = profile.lvlValueUSD && profile.lvlValueUSD !== '0'
+        ? `(${formatNumber(profile.lvlValueUSD, 2)}$)` : '';
+
+    // سقف درآمد باینری و دریافتی
+    const capEl = document.getElementById('profile-income-cap');
+    if (capEl) capEl.textContent = profile.binaryPointCap || '۰';
+    const receivedEl = document.getElementById('profile-received');
+    if (receivedEl) receivedEl.textContent = profile.binaryPoints || '۰';
+
+    // لینک دعوت
+    const linkEl = document.getElementById('profile-referral-link');
+    if (linkEl) linkEl.textContent = profile.address
+        ? window.location.origin + '/?ref=' + profile.address
+        : 'لینک دعوت در دسترس نیست';
+
+    // وضعیت ثبت‌نام
     const statusElement = document.getElementById('profileStatus');
     if (statusElement) {
         if (profile.registered) {
@@ -102,9 +121,6 @@ function updateProfileUI(profile) {
             statusElement.textContent = 'کاربر ثبت‌نام نشده';
             statusElement.className = 'profile-status error';
         }
-        console.log('Profile: Updated status to:', profile.registered ? 'registered' : 'not registered');
-    } else {
-        console.warn('Profile: Status element not found');
     }
 }
 
