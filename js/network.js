@@ -205,7 +205,7 @@ async function updateBinaryStats() {
         const leftPoints = formatValue(userData.leftPoints || 0);
         const rightPoints = formatValue(userData.rightPoints || 0);
         const totalPoints = formatValue(userData.binaryPoints);
-        const pointsCap = Math.floor(formatValue(userData.binaryPointCap));
+        const pointsCap = parseInt(formatValue(userData.binaryPointCap));
         
         // محاسبه تعادل و پاداش قابل پرداخت
         const balancedPoints = Math.min(leftPoints, rightPoints);
@@ -457,7 +457,7 @@ async function renderChildNode(childAddress, container, position, level) {
                     </div>
                     <div class="node-stat">
                         <span class="stat-label">سقف:</span>
-                        <span class="stat-value">${treeData.binaryPointCap}</span>
+                        <span class="stat-value">${parseInt(treeData.binaryPointCap)}</span>
                     </div>
                 </div>
                 <div class="children-container" id="children-${childAddress}"></div>
