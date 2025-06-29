@@ -60,8 +60,9 @@ function updateProfileUI(profile) {
     console.log('Profile: Updating UI with profile data:', profile);
     
     const safe = (val, suffix = '') => {
-        if (val === undefined || val === null || val === 'undefined' || val === '' || isNaN(val)) return '-';
+        if (val === undefined || val === null || val === 'undefined') return '-';
         if (typeof val === 'string' && val.trim() === '') return '-';
+        if (typeof val === 'number' && isNaN(val)) return '-';
         return val + suffix;
     };
 
