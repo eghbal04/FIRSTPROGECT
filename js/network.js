@@ -543,7 +543,7 @@ async function getBinaryPoints() {
             leftPoints: ethers.formatUnits(userData.leftPoints, 18),
             rightPoints: ethers.formatUnits(userData.rightPoints, 18),
             totalPoints: ethers.formatUnits(userData.binaryPoints, 18),
-            pointsCap: ethers.formatUnits(userData.binaryPointCap, 18)
+            pointsCap: parseInt(ethers.formatUnits(userData.binaryPointCap, 18))
         };
     } catch (error) {
         console.error("Error fetching binary points:", error);
@@ -551,7 +551,7 @@ async function getBinaryPoints() {
             leftPoints: "0",
             rightPoints: "0",
             totalPoints: "0",
-            pointsCap: "0"
+            pointsCap: 0
         };
     }
 }
@@ -598,7 +598,7 @@ async function fetchUserTree() {
             rightChild,
             activated,
             binaryPoints: ethers.formatUnits(binaryPoints, 18),
-            binaryPointCap: ethers.formatUnits(binaryPointCap, 18),
+            binaryPointCap: parseInt(ethers.formatUnits(binaryPointCap, 18)),
             leftPoints: ethers.formatUnits(leftPoints, 18),
             rightPoints: ethers.formatUnits(rightPoints, 18)
         };
@@ -609,7 +609,7 @@ async function fetchUserTree() {
             rightChild: ethers.ZeroAddress,
             activated: false,
             binaryPoints: "0",
-            binaryPointCap: "0",
+            binaryPointCap: 0,
             leftPoints: "0",
             rightPoints: "0"
         };

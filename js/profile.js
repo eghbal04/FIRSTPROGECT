@@ -101,7 +101,7 @@ function updateProfileUI(profile) {
 
     // سقف درآمد باینری و دریافتی
     const capEl = document.getElementById('profile-income-cap');
-    if (capEl) capEl.textContent = profile.binaryPointCap || '۰';
+    if (capEl) capEl.textContent = profile.binaryPointCap ? parseInt(profile.binaryPointCap) : '۰';
     const receivedEl = document.getElementById('profile-received');
     if (receivedEl) receivedEl.textContent = profile.binaryPoints || '۰';
 

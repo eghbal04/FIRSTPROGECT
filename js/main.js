@@ -166,7 +166,7 @@ async function fetchUserProfile() {
             lvlValueUSD: lvlValueUSD.toFixed(2),
             isRegistered: userData.activated,
             binaryPoints: ethers.formatUnits(userData.binaryPoints, 18),
-            binaryPointCap: ethers.formatUnits(userData.binaryPointCap, 18),
+            binaryPointCap: parseInt(ethers.formatUnits(userData.binaryPointCap, 18)),
             referrer: userData.referrer
         };
     } catch (error) {
@@ -179,7 +179,7 @@ async function fetchUserProfile() {
             lvlValueUSD: '0',
             isRegistered: false,
             binaryPoints: '0',
-            binaryPointCap: '0',
+            binaryPointCap: 0,
             referrer: '---'
         };
     }

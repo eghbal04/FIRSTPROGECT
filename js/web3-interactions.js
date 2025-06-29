@@ -91,7 +91,7 @@ async function getUserTree(userAddress) {
             right,
             activated,
             binaryPoints: ethers.formatUnits(binaryPoints, 18),
-            binaryPointCap: ethers.formatUnits(binaryPointCap, 18)
+            binaryPointCap: parseInt(ethers.formatUnits(binaryPointCap, 18))
         };
     } catch (error) {
         console.error('Web3: Error getting user tree:', error);
