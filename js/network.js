@@ -1,8 +1,11 @@
 // network.js
 let isNetworkLoading = false;
 
-document.addEventListener('DOMContentLoaded', async () => {
+// تابع راه‌اندازی تب شبکه (برای استفاده در tab switching)
+window.initializeNetworkTab = async function() {
     try {
+        console.log('Network: Initializing network tab...');
+        
         // بررسی وجود ethers و contractConfig
         if (typeof ethers === 'undefined' || !window.contractConfig) {
             throw new Error("Ethers.js or contract config not loaded");
@@ -30,10 +33,33 @@ document.addEventListener('DOMContentLoaded', async () => {
         // به‌روزرسانی اطلاعات claim
         await updateClaimInfo();
 
+        console.log('Network: Network tab initialized successfully');
+
     } catch (error) {
-        console.error("Error in network stats:", error);
+        console.error("Error initializing network tab:", error);
         showError("خطا در بارگذاری اطلاعات شبکه");
     }
+};
+
+// تابع بررسی اتصال (برای استفاده در initializeNetworkTab)
+async function checkConnection() {
+    try {
+        const walletConfig = await window.connectWallet();
+        return {
+            connected: !!(walletConfig && walletConfig.contract && walletConfig.address),
+            config: walletConfig
+        };
+    } catch (error) {
+        return {
+            connected: false,
+            error: error.message
+        };
+    }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    // Network tab will be initialized when user clicks on it
+    console.log('Network module loaded successfully');
 });
 
 // تابع اتصال به کیف پول با انتظار
@@ -42,9 +68,13 @@ async function connectWallet() {
         console.log('Network: Attempting to connect wallet...');
         
         // بررسی اتصال موجود
-        if (window.contractConfig && window.contractConfig.contract) {
+        if (window.contractConfig && window.contractConfig.contract && window.contractConfig.address && window.contractConfig.signer) {
             console.log('Network: Wallet already connected');
-            return window.contractConfig;
+            return {
+                contract: window.contractConfig.contract,
+                address: window.contractConfig.address,
+                signer: window.contractConfig.signer
+            };
         }
         
         // بررسی اتصال MetaMask موجود
@@ -53,11 +83,24 @@ async function connectWallet() {
             if (accounts && accounts.length > 0) {
                 console.log('Network: MetaMask already connected, initializing Web3...');
                 try {
-                    await initializeWeb3();
-                    return window.contractConfig;
+                    // بررسی اینکه آیا window.contractConfig.initializeWeb3 وجود دارد
+                    if (window.contractConfig && typeof window.contractConfig.initializeWeb3 === 'function') {
+                        const config = await window.contractConfig.initializeWeb3();
+                        if (config && config.contract && config.address && config.signer) {
+                            return {
+                                contract: config.contract,
+                                address: config.address,
+                                signer: config.signer
+                            };
+                        } else {
+                            throw new Error('خطا در راه‌اندازی Web3 - اطلاعات ناقص');
+                        }
+                    } else {
+                        throw new Error('تابع initializeWeb3 در دسترس نیست');
+                    }
                 } catch (error) {
                     console.log('Network: Failed to initialize Web3:', error);
-                    throw new Error('خطا در راه‌اندازی Web3');
+                    throw new Error('خطا در راه‌اندازی Web3: ' + error.message);
                 }
             }
         }
@@ -67,7 +110,7 @@ async function connectWallet() {
         
     } catch (error) {
         console.error('Network: Error connecting wallet:', error);
-        showNetworkStatus('خطا در اتصال به کیف پول', 'error');
+        showNetworkStatus('خطا در اتصال به کیف پول: ' + error.message, 'error');
         throw error;
     }
 }
@@ -84,9 +127,26 @@ async function updateNetworkStats() {
         const { contract, address } = await connectWallet();
         
         // بررسی اینکه آیا کاربر ثبت‌نام کرده است
-        const isRegistered = await contract.registered(address);
-        
-        if (!isRegistered) {
+        try {
+            const isRegistered = await contract.registered(address);
+            
+            if (!isRegistered) {
+                document.getElementById('network-members').textContent = 'کاربر ثبت‌نام نکرده';
+                document.getElementById('network-points').textContent = 'کاربر ثبت‌نام نکرده';
+                document.getElementById('network-rewards').textContent = 'کاربر ثبت‌نام نکرده';
+                document.getElementById('referral-link').textContent = 'کاربر ثبت‌نام نکرده';
+                document.getElementById('copyReferral').disabled = true;
+                document.getElementById('claimable-points').textContent = 'کاربر ثبت‌نام نکرده';
+                document.getElementById('point-value-display').textContent = 'کاربر ثبت‌نام نکرده';
+                document.getElementById('total-claimable-reward').textContent = 'کاربر ثبت‌نام نکرده';
+                document.getElementById('claimRewardsBtn').disabled = true;
+                document.getElementById('network-tree').innerHTML = '<p class="network-tree-empty">کاربر ثبت‌نام نکرده</p>';
+                isNetworkLoading = false;
+                return;
+            }
+        } catch (error) {
+            console.error('Error checking registration status:', error);
+            // اگر خطا در بررسی ثبت‌نام رخ داد، فرض می‌کنیم کاربر ثبت‌نام نکرده
             document.getElementById('network-members').textContent = 'کاربر ثبت‌نام نکرده';
             document.getElementById('network-points').textContent = 'کاربر ثبت‌نام نکرده';
             document.getElementById('network-rewards').textContent = 'کاربر ثبت‌نام نکرده';
@@ -97,31 +157,35 @@ async function updateNetworkStats() {
             document.getElementById('total-claimable-reward').textContent = 'کاربر ثبت‌نام نکرده';
             document.getElementById('claimRewardsBtn').disabled = true;
             document.getElementById('network-tree').innerHTML = '<p class="network-tree-empty">کاربر ثبت‌نام نکرده</p>';
+            isNetworkLoading = false;
             return;
         }
         
-        // دریافت اطلاعات شبکه
-        const userTree = await contract.getUserTree(address);
-        const totalUsers = await contract.totalUsers();
-        const totalPoints = await contract.totalPoints();
-        const totalClaimableBinaryPoints = await contract.totalClaimableBinaryPoints();
+        // دریافت آمار شبکه
+        const [totalUsers, totalPoints, totalClaimableBinaryPoints] = await Promise.all([
+            contract.totalUsers(),
+            contract.totalPoints(),
+            contract.totalClaimableBinaryPoints()
+        ]);
         
         // به‌روزرسانی آمار شبکه
-        document.getElementById('network-members').textContent = totalUsers.toString();
-        document.getElementById('network-points').textContent = userTree.binaryPoints.toString();
-        document.getElementById('network-rewards').textContent = userTree.binaryPointCap.toString();
+        document.getElementById('network-members').textContent = safeFormat(totalUsers.toString());
+        document.getElementById('network-points').textContent = safeFormat(ethers.formatUnits(totalPoints, 18));
+        document.getElementById('network-rewards').textContent = safeFormat(ethers.formatUnits(totalClaimableBinaryPoints, 18));
 
         // به‌روزرسانی لینک دعوت
-        const referralLink = `${window.location.origin}${window.location.pathname}?ref=${address}`;
-        document.getElementById('referral-link').textContent = referralLink;
+        const referralLink = `${window.location.origin}/?ref=${address}`;
+        document.getElementById('referral-link').textContent = window.location.origin + '/?ref=' + shortenAddress(address);
         document.getElementById('copyReferral').disabled = false;
 
         // به‌روزرسانی اطلاعات claim
         await updateClaimInfo();
 
+        showNetworkStatus('آمار شبکه به‌روزرسانی شد', 'success');
+        
     } catch (error) {
         console.error('Error updating network stats:', error);
-        document.getElementById('network-status').textContent = 'خطا در بارگذاری آمار شبکه';
+        document.getElementById('network-status').textContent = 'خطا در به‌روزرسانی آمار شبکه';
         document.getElementById('network-status').className = 'network-status error';
     } finally {
         isNetworkLoading = false;
@@ -144,94 +208,64 @@ async function updateBinaryStats() {
         const pointsCap = formatValue(userData.binaryPointCap);
         
         // محاسبه تعادل و پاداش قابل پرداخت
-        const balancedPoints = Math.min(parseFloat(leftPoints), parseFloat(rightPoints));
-        const remainingCap = Math.max(0, parseFloat(pointsCap) - parseFloat(formatValue(userData.binaryPointsClaimed)));
+        const balancedPoints = Math.min(leftPoints, rightPoints);
+        const rewards = calculateRewards(balancedPoints);
         
         // به‌روزرسانی UI
         const updateUI = (id, value, unit = '') => {
-            const el = document.getElementById(id);
-            if (el) {
-                if (typeof value === 'number' || !isNaN(value)) {
-                    value = parseFloat(value).toLocaleString('en-US', {maximumFractionDigits: 4});
-                }
-                el.textContent = `${value} ${unit}`.trim();
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = value + unit;
             }
         };
         
         updateUI('left-points', leftPoints);
         updateUI('right-points', rightPoints);
-        updateUI('total-points', totalPoints);
+        updateUI('total-binary-points', totalPoints);
         updateUI('points-cap', pointsCap);
         updateUI('balanced-points', balancedPoints);
-        updateUI('remaining-cap', remainingCap);
-        updateUI('claimable-rewards', calculateRewards(balancedPoints));
+        updateUI('binary-rewards', rewards);
         
-        // نمایش گرافیکی تعادل
+        // رندر کردن چارت تعادل
         renderBalanceChart(leftPoints, rightPoints);
         
     } catch (error) {
-        console.error("Binary stats error:", error);
+        console.error('Error updating binary stats:', error);
+        showNetworkStatus('خطا در به‌روزرسانی آمار باینری', 'error');
     }
 }
 
-// تابع محاسبه پاداش‌های باینری
+// تابع محاسبه پاداش‌ها
 function calculateRewards(balancedPoints) {
-    try {
-        // این تابع محاسبه می‌کند که هر پوینت چقدر ارزش دارد
-        // پورسانت هر پوینت = موجودی قرارداد ÷ تعداد کل پوینت‌های دریافتی
-        
-        // برای نمایش در UI، از مقادیر پیش‌فرض استفاده می‌کنیم
-        // در عمل، این مقادیر از قرارداد دریافت می‌شوند
-        
-        const contractBalance = 1000; // مثال: 1000 MATIC موجودی قرارداد
-        const totalPoints = 100; // مثال: 100 پوینت کل
-        
-        if (totalPoints > 0) {
-            const rewardPerPoint = contractBalance / totalPoints;
-            const userReward = rewardPerPoint * balancedPoints;
-            
-            return {
-                rewardPerPoint: rewardPerPoint.toFixed(6),
-                userReward: userReward.toFixed(6),
-                maxReward: (rewardPerPoint * balancedPoints).toFixed(6)
-            };
-        }
-        
-        return {
-            rewardPerPoint: "0",
-            userReward: "0",
-            maxReward: "0"
-        };
-    } catch (error) {
-        console.error("Error calculating rewards:", error);
-        return {
-            rewardPerPoint: "0",
-            userReward: "0",
-            maxReward: "0"
-        };
-    }
+    // این تابع می‌تواند بر اساس منطق کسب‌وکار شما تغییر کند
+    const rewardRate = 0.1; // 10% پاداش
+    return (balancedPoints * rewardRate).toFixed(2);
 }
 
-// رندر نمودار تعادل
+// تابع رندر چارت تعادل
 function renderBalanceChart(left, right) {
-    const leftBar = document.getElementById('left-bar');
-    const rightBar = document.getElementById('right-bar');
-    const balanceDiff = document.getElementById('balance-diff');
+    const chartContainer = document.getElementById('balance-chart');
+    if (!chartContainer) return;
     
-    if (!leftBar || !rightBar) return;
+    const total = parseFloat(left) + parseFloat(right);
+    const leftPercentage = total > 0 ? (parseFloat(left) / total) * 100 : 50;
+    const rightPercentage = 100 - leftPercentage;
     
-    const max = Math.max(left, right) || 1;
-    const leftPercent = (left / max) * 100;
-    const rightPercent = (right / max) * 100;
-    
-    leftBar.style.height = `${leftPercent}%`;
-    rightBar.style.height = `${rightPercent}%`;
-    
-    const diff = Math.abs(left - right);
-    if (balanceDiff) balanceDiff.textContent = `تعادل: ${diff.toFixed(2)}`;
+    chartContainer.innerHTML = `
+        <div class="balance-chart">
+            <div class="chart-bar">
+                <div class="left-bar" style="width: ${leftPercentage}%"></div>
+                <div class="right-bar" style="width: ${rightPercentage}%"></div>
+            </div>
+            <div class="chart-labels">
+                <span>چپ: ${left}</span>
+                <span>راست: ${right}</span>
+            </div>
+        </div>
+    `;
 }
 
-// راه‌اندازی دکمه کپی لینک دعوت
+// تابع راه‌اندازی کپی لینک دعوت
 function setupReferralCopy() {
     const copyBtn = document.getElementById('copyReferral');
     if (copyBtn) {
@@ -250,102 +284,45 @@ function setupReferralCopy() {
     }
 }
 
-// تابع نمایش درخت شبکه
+// تابع رندر درخت شبکه
 async function renderNetworkTree() {
     try {
         const { contract, address } = await connectWallet();
-        const treeContainer = document.getElementById('network-tree');
         
+        const treeContainer = document.getElementById('network-tree');
         if (!treeContainer) return;
         
         // بررسی اینکه آیا کاربر ثبت‌نام کرده است
-        try {
-            const userData = await contract.users(address);
-            const isRegistered = userData.index > 0;
-            
-            if (!isRegistered) {
-                treeContainer.innerHTML = `
-                    <h3>ساختار شبکه شما</h3>
-                    <div class="network-tree-content">
-                        <div class="network-tree-info">
-                            <p>شما هنوز در شبکه ثبت‌نام نکرده‌اید.</p>
-                            <p>برای مشاهده ساختار شبکه، ابتدا ثبت‌نام کنید.</p>
-                        </div>
-                    </div>
-                `;
-                // پاک کردن پیام خطا
-                clearNetworkError();
-                return;
-            }
-        } catch (error) {
-            console.log("User not registered or error checking registration:", error);
+        const isRegistered = await contract.registered(address);
+        if (!isRegistered) {
             treeContainer.innerHTML = `
-                <h3>ساختار شبکه شما</h3>
-                <div class="network-tree-content">
-                    <div class="network-tree-error">
-                        <p>خطا در بارگذاری درخت شبکه:</p>
-                        <p>${error.message}</p>
-                    </div>
+                <div class="network-tree-empty">
+                    <h3>شما هنوز ثبت‌نام نکرده‌اید</h3>
+                    <p>برای مشاهده درخت شبکه، ابتدا ثبت‌نام کنید.</p>
                 </div>
             `;
-            // پاک کردن پیام خطا
-            clearNetworkError();
             return;
         }
         
-        treeContainer.innerHTML = `
-            <h3>ساختار شبکه شما</h3>
-            <div class="network-tree-content">
-                <div class="tree-structure" id="tree-structure">
-                    <!-- درخت اصلی اینجا رندر می‌شود -->
-                </div>
-                
-                <!-- آمار کلی شبکه -->
-                <div class="network-summary">
-                    <h4>آمار کلی شبکه</h4>
-                    <div class="summary-stats" id="summary-stats">
-                        <!-- آمار اینجا به‌روزرسانی می‌شود -->
-                    </div>
-                </div>
-            </div>
-        `;
+        // رندر کردن گره اصلی (کاربر فعلی)
+        await renderTreeNode(address, 'network-tree', 0);
         
-        // رندر کردن درخت اصلی
-        await renderTreeNode(address, 'tree-structure', 0);
-        
-        // به‌روزرسانی آمار کلی
-        await updateNetworkSummary();
-        
-        // پاک کردن پیام خطا در صورت موفقیت
-        clearNetworkError();
+        showNetworkStatus('درخت شبکه رندر شد', 'success');
         
     } catch (error) {
-        console.error("Error rendering network tree:", error);
-        const treeContainer = document.getElementById('network-tree');
-        if (treeContainer) {
-            treeContainer.innerHTML = `
-                <h3>ساختار شبکه شما</h3>
-                <div class="network-tree-content">
-                    <div class="network-tree-error">
-                        <p>خطا در بارگذاری درخت شبکه:</p>
-                        <p>${error.message}</p>
-                    </div>
-                </div>
-            `;
-        }
-        showError("خطا در بارگذاری درخت شبکه: " + error.message);
+        console.error('Error rendering network tree:', error);
+        showNetworkStatus('خطا در رندر درخت شبکه', 'error');
     }
 }
 
 // تابع نمایش گره درخت شبکه
 async function renderTreeNode(userAddress, containerId, level = 0) {
     try {
-        const { contract, signer } = await connectWallet();
-        const currentUserAddress = await signer.getAddress();
+        const { contract, address } = await connectWallet();
         
         // دریافت اطلاعات کاربر
         const userData = await contract.users(userAddress);
-        const isCurrentUser = userAddress.toLowerCase() === currentUserAddress.toLowerCase();
+        const isCurrentUser = userAddress.toLowerCase() === address.toLowerCase();
         const isRegistered = userData.index > 0;
         
         if (!isRegistered) {
@@ -355,217 +332,146 @@ async function renderTreeNode(userAddress, containerId, level = 0) {
         // دریافت اطلاعات درخت کاربر
         const [left, right, activated, binaryPoints, binaryPointCap] = await contract.getUserTree(userAddress);
         
-        // محاسبه پاداش‌های باینری
-        const contractBalance = await contract.getContractMaticBalance();
-        const totalClaimablePoints = await contract.totalClaimableBinaryPoints();
+        const container = document.getElementById(containerId);
+        if (!container) return;
         
-        let rewardPerPoint = "0";
-        let maxReward = "0";
-        
-        if (totalClaimablePoints > 0) {
-            const rewardPerPointRaw = contractBalance / totalClaimablePoints;
-            rewardPerPoint = ethers.formatEther(rewardPerPointRaw);
-            
-            // حداکثر پاداش کاربر = پورسانت هر پوینت × سقف درآمد کاربر
-            const maxRewardRaw = rewardPerPointRaw * binaryPointCap;
-            maxReward = ethers.formatEther(maxRewardRaw);
-        }
-        
-        const nodeElement = document.createElement('div');
-        nodeElement.className = `tree-node level-${level} ${isCurrentUser ? 'current-user' : ''}`;
-        nodeElement.innerHTML = `
+        const nodeHeader = `
             <div class="node-header">
                 <div class="node-info">
-                    <div class="node-title">${shortenAddress(userAddress)}</div>
-                    <div class="node-status ${activated ? 'active' : 'inactive'}">
-                        ${activated ? 'فعال' : 'غیرفعال'}
+                    <div class="node-title">${isCurrentUser ? 'شما' : shortenAddress(userAddress)}</div>
+                    <div class="node-status ${userData.activated ? 'active' : 'inactive'}">
+                        ${userData.activated ? 'فعال' : 'غیرفعال'}
                     </div>
                 </div>
-                <div class="expand-icon" onclick="toggleNodeExpansion('${userAddress}', ${level})">▶</div>
+                <div class="expand-icon" onclick="toggleNodeExpansion('${userAddress}', ${level})">▼</div>
             </div>
+        `;
+        
+        const nodeDetails = `
             <div class="node-details">
                 <div class="node-stat">
-                    <span class="stat-label">پوینت‌های فعلی:</span>
+                    <span class="stat-label">امتیاز باینری:</span>
                     <span class="stat-value">${ethers.formatUnits(binaryPoints, 18)}</span>
                 </div>
                 <div class="node-stat">
-                    <span class="stat-label">سقف درآمد:</span>
-                    <span class="stat-value">${binaryPointCap.toString()} پوینت</span>
-                </div>
-                <div class="node-stat">
-                    <span class="stat-label">پورسانت هر پوینت:</span>
-                    <span class="stat-value">${parseFloat(rewardPerPoint).toFixed(6)} MATIC</span>
-                </div>
-                <div class="node-stat">
-                    <span class="stat-label">حداکثر پاداش:</span>
-                    <span class="stat-value">${parseFloat(maxReward).toFixed(6)} MATIC</span>
-                </div>
-                <div class="node-stat">
-                    <span class="stat-label">چپ:</span>
-                    <span class="stat-value">${left !== ethers.ZeroAddress ? shortenAddress(left) : 'خالی'}</span>
-                </div>
-                <div class="node-stat">
-                    <span class="stat-label">راست:</span>
-                    <span class="stat-value">${right !== ethers.ZeroAddress ? shortenAddress(right) : 'خالی'}</span>
-                </div>
-            </div>
-            <div class="children-container" id="children-${userAddress}" style="display: none;">
-                <div class="children-wrapper">
-                    <div class="child-node left-child" id="left-${userAddress}"></div>
-                    <div class="child-node right-child" id="right-${userAddress}"></div>
+                    <span class="stat-label">سقف امتیاز:</span>
+                    <span class="stat-value">${ethers.formatUnits(binaryPointCap, 18)}</span>
                 </div>
             </div>
         `;
         
-        const container = document.getElementById(containerId);
-        if (container) {
-            container.appendChild(nodeElement);
+        const childrenContainer = `
+            <div class="children-container" id="children-${userAddress}">
+                <div class="children-wrapper">
+                    ${left !== ethers.ZeroAddress ? `<div class="tree-node child-node left-child level-${level + 1}" data-address="${left}"></div>` : ''}
+                    ${right !== ethers.ZeroAddress ? `<div class="tree-node child-node right-child level-${level + 1}" data-address="${right}"></div>` : ''}
+                </div>
+            </div>
+        `;
+        
+        const nodeHTML = `
+            <div class="tree-node ${isCurrentUser ? 'current-user' : ''} level-${level}">
+                ${nodeHeader}
+                ${nodeDetails}
+                ${childrenContainer}
+            </div>
+        `;
+        
+        container.innerHTML = nodeHTML;
+        
+        // رندر کردن فرزندان
+        if (left !== ethers.ZeroAddress) {
+            await renderChildNode(left, container.querySelector('.left-child'), 'left', level + 1);
+        }
+        if (right !== ethers.ZeroAddress) {
+            await renderChildNode(right, container.querySelector('.right-child'), 'right', level + 1);
         }
         
-        return nodeElement;
-        
     } catch (error) {
-        console.error("Error rendering tree node:", error);
-        return createEmptyNode(containerId, level);
+        console.error('Error rendering tree node:', error);
+        showNetworkStatus('خطا در رندر گره درخت', 'error');
     }
 }
 
-// تابع گسترش/انقباض نود
+// تابع تغییر وضعیت گسترش گره
 async function toggleNodeExpansion(userAddress, level) {
     try {
         const childrenContainer = document.getElementById(`children-${userAddress}`);
-        const childrenWrapper = document.getElementById(`children-wrapper-${userAddress}`);
-        const expandIcon = document.getElementById(`expand-icon-${userAddress}`);
-        
-        if (!childrenContainer || !childrenWrapper) return;
+        if (!childrenContainer) return;
         
         const isExpanded = childrenContainer.style.display !== 'none';
+        childrenContainer.style.display = isExpanded ? 'none' : 'block';
         
-        if (isExpanded) {
-            // انقباض نود
-            childrenContainer.style.display = 'none';
-            if (expandIcon) expandIcon.textContent = '▼';
-        } else {
-            // گسترش نود
-            childrenContainer.style.display = 'block';
-            if (expandIcon) expandIcon.textContent = '▲';
-            
-            // اگر فرزندان قبلاً لود نشده‌اند، آن‌ها را لود کن
-            if (childrenWrapper.children.length === 0) {
-                await loadChildren(userAddress, childrenWrapper, level + 1);
-            }
+        const expandIcon = childrenContainer.parentElement.querySelector('.expand-icon');
+        if (expandIcon) {
+            expandIcon.textContent = isExpanded ? '▼' : '▲';
         }
         
     } catch (error) {
-        console.error(`Error toggling node expansion for ${userAddress}:`, error);
+        console.error('Error toggling node expansion:', error);
     }
 }
 
-// تابع لود کردن فرزندان یک نود
+// تابع بارگذاری فرزندان
 async function loadChildren(parentAddress, container, level) {
     try {
-        const treeData = await fetchUserTree();
+        const { contract } = await connectWallet();
         
-        // بررسی فرزند چپ
-        if (treeData.leftChild !== ethers.ZeroAddress) {
-            await renderChildNode(treeData.leftChild, container, 'left', level);
-        } else {
-            // نمایش جای خالی برای فرزند چپ
-            container.innerHTML += `
-                <div class="tree-node empty-node level-${level}">
-                    <div class="node-header">
-                        <div class="node-info">
-                            <span class="node-title">فرزند چپ</span>
-                            <span class="node-status empty">خالی</span>
-                        </div>
-                    </div>
-                    <div class="node-details">
-                        <div class="node-stat">
-                            <span class="stat-label">وضعیت:</span>
-                            <span class="stat-value">در انتظار عضو جدید</span>
-                        </div>
-                    </div>
-                </div>
-            `;
+        const [left, right] = await contract.getUserTree(parentAddress);
+        
+        if (left !== ethers.ZeroAddress) {
+            await renderChildNode(left, container, 'left', level);
         }
-        
-        // بررسی فرزند راست
-        if (treeData.rightChild !== ethers.ZeroAddress) {
-            await renderChildNode(treeData.rightChild, container, 'right', level);
-        } else {
-            // نمایش جای خالی برای فرزند راست
-            container.innerHTML += `
-                <div class="tree-node empty-node level-${level}">
-                    <div class="node-header">
-                        <div class="node-info">
-                            <span class="node-title">فرزند راست</span>
-                            <span class="node-status empty">خالی</span>
-                        </div>
-                    </div>
-                    <div class="node-details">
-                        <div class="node-stat">
-                            <span class="stat-label">وضعیت:</span>
-                            <span class="stat-value">در انتظار عضو جدید</span>
-                        </div>
-                    </div>
-                </div>
-            `;
+        if (right !== ethers.ZeroAddress) {
+            await renderChildNode(right, container, 'right', level);
         }
         
     } catch (error) {
-        console.error(`Error loading children for ${parentAddress}:`, error);
+        console.error('Error loading children:', error);
     }
 }
 
-// تابع رندر کردن نود فرزند
+// تابع رندر گره فرزند
 async function renderChildNode(childAddress, container, position, level) {
     try {
-        const treeData = await fetchUserTree();
-        const isCurrentUser = childAddress === (await connectWallet()).address;
+        const { contract, address } = await connectWallet();
         
-        const nodeHTML = `
-            <div class="tree-node child-node ${position}-child level-${level} ${isCurrentUser ? 'current-user' : ''}" 
-                 data-address="${childAddress}" data-level="${level}">
-                <div class="node-header" onclick="toggleNodeExpansion('${childAddress}', ${level})">
+        const treeData = await contract.getUserTree(childAddress);
+        const isCurrentUser = childAddress.toLowerCase() === address.toLowerCase();
+        
+        const childHTML = `
+            <div class="tree-node child-node ${position}-child level-${level + 1}" data-address="${childAddress}" data-level="${level + 1}">
+                <div class="node-header">
                     <div class="node-info">
-                        <span class="node-title">فرزند ${position === 'left' ? 'چپ' : 'راست'}</span>
+                        <span class="node-title">${shortenAddress(childAddress)}</span>
                         <span class="node-status ${treeData.activated ? 'active' : 'inactive'}">
                             ${treeData.activated ? 'فعال' : 'غیرفعال'}
                         </span>
                     </div>
-                    <div class="expand-icon" id="expand-icon-${childAddress}">
-                        ${(treeData.leftChild !== ethers.ZeroAddress || treeData.rightChild !== ethers.ZeroAddress) ? '▼' : ''}
-                    </div>
+                    <span class="expand-icon" onclick="toggleNodeExpansion('${childAddress}', ${level + 1})">▼</span>
                 </div>
-                
                 <div class="node-details">
                     <div class="node-stat">
-                        <span class="stat-label">آدرس:</span>
-                        <span class="stat-value">${shortenAddress(childAddress)}</span>
+                        <span class="stat-label">امتیاز:</span>
+                        <span class="stat-value">${treeData.binaryPoints}</span>
                     </div>
                     <div class="node-stat">
-                        <span class="stat-label">امتیاز:</span>
-                        <span class="stat-value">${parseFloat(treeData.binaryPoints).toFixed(2)}/${parseFloat(treeData.binaryPointCap).toFixed(2)}</span>
+                        <span class="stat-label">سقف:</span>
+                        <span class="stat-value">${treeData.binaryPointCap}</span>
                     </div>
                 </div>
-                
-                <!-- کانتینر برای فرزندان -->
-                <div class="children-container" id="children-${childAddress}" style="display: none;">
-                    <div class="children-wrapper" id="children-wrapper-${childAddress}">
-                        <!-- فرزندان اینجا لود می‌شوند -->
-                    </div>
-                </div>
+                <div class="children-container" id="children-${childAddress}"></div>
             </div>
         `;
         
-        container.innerHTML += nodeHTML;
+        container.innerHTML = childHTML;
         
     } catch (error) {
-        console.error(`Error rendering child node for ${childAddress}:`, error);
+        console.error('Error rendering child node:', error);
     }
 }
 
-// تابع به‌روزرسانی آمار کلی شبکه
+// تابع به‌روزرسانی خلاصه شبکه
 async function updateNetworkSummary() {
     try {
         const { address } = await connectWallet();
@@ -582,8 +488,8 @@ async function updateNetworkSummary() {
                 <span class="summary-value">0</span>
             </div>
             <div class="summary-stat">
-                <span class="summary-label">اعضای قابل مشاهده:</span>
-                <span class="summary-value">1</span>
+                <span class="summary-label">اعضای کل:</span>
+                <span class="summary-value">0</span>
             </div>
             <div class="summary-stat">
                 <span class="summary-label">امتیاز کل:</span>
@@ -592,14 +498,14 @@ async function updateNetworkSummary() {
         `;
         
     } catch (error) {
-        console.error("Error updating network summary:", error);
+        console.error('Error updating network summary:', error);
     }
 }
 
-// تابع کمکی برای کوتاه کردن آدرس
+// تابع کوتاه کردن آدرس
 function shortenAddress(address) {
-    if (!address || address === ethers.ZeroAddress) return '---';
-    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+    if (!address) return '---';
+    return address.substring(0, 6) + '...' + address.substring(address.length - 4);
 }
 
 // تابع نمایش خطا
@@ -607,16 +513,21 @@ function showError(message) {
     const statusElement = document.getElementById('network-status');
     if (statusElement) {
         statusElement.textContent = message;
-        statusElement.style.color = '#ff6b6b';
+        statusElement.className = 'network-status error';
+        
+        setTimeout(() => {
+            statusElement.textContent = '';
+            statusElement.className = 'network-status';
+        }, 5000);
     }
 }
 
-// تابع پاک کردن پیام خطا
+// تابع پاک کردن خطا
 function clearNetworkError() {
     const statusElement = document.getElementById('network-status');
     if (statusElement) {
         statusElement.textContent = '';
-        statusElement.style.color = '';
+        statusElement.className = 'network-status';
     }
 }
 
@@ -645,21 +556,25 @@ async function getBinaryPoints() {
     }
 }
 
-// دریافت تعداد زیرمجموعه‌ها
+// تابع دریافت تعداد تیم
 async function getTeamCounts(contract, address) {
     try {
-        const [leftCount, rightCount] = await Promise.all([
-            contract.getTeamCount(address, 0), // 0 برای سمت چپ
-            contract.getTeamCount(address, 1)  // 1 برای سمت راست
-        ]);
+        const userData = await contract.users(address);
+        const leftCount = userData.leftChild > 0 ? await contract.countSubtreeUsers(userData.leftChild) : 0;
+        const rightCount = userData.rightChild > 0 ? await contract.countSubtreeUsers(userData.rightChild) : 0;
         
         return {
-            left: leftCount.toString(),
-            right: rightCount.toString()
+            leftTeam: leftCount.toString(),
+            rightTeam: rightCount.toString(),
+            totalTeam: (leftCount + rightCount).toString()
         };
     } catch (error) {
-        console.error("Team count error:", error);
-        return { left: "0", right: "0" };
+        console.error("Error fetching team counts:", error);
+        return {
+            leftTeam: "0",
+            rightTeam: "0",
+            totalTeam: "0"
+        };
     }
 }
 
@@ -682,16 +597,16 @@ async function fetchUserTree() {
             leftChild,
             rightChild,
             activated,
-            binaryPoints: binaryPoints.toString(),
-            binaryPointCap: binaryPointCap.toString(),
+            binaryPoints: ethers.formatUnits(binaryPoints, 18),
+            binaryPointCap: ethers.formatUnits(binaryPointCap, 18),
             leftPoints: ethers.formatUnits(leftPoints, 18),
             rightPoints: ethers.formatUnits(rightPoints, 18)
         };
     } catch (error) {
         console.error("Error fetching user tree:", error);
         return {
-            leftChild: null,
-            rightChild: null,
+            leftChild: ethers.ZeroAddress,
+            rightChild: ethers.ZeroAddress,
             activated: false,
             binaryPoints: "0",
             binaryPointCap: "0",
@@ -701,36 +616,21 @@ async function fetchUserTree() {
     }
 }
 
-// اضافه کردن توابع به window object برای فراخوانی از HTML
-window.toggleNodeExpansion = toggleNodeExpansion;
-
 // تابع ایجاد گره خالی
 function createEmptyNode(containerId, level) {
     const container = document.getElementById(containerId);
     if (!container) return;
     
-    const emptyNode = document.createElement('div');
-    emptyNode.className = `tree-node empty-node level-${level}`;
-    emptyNode.innerHTML = `
-        <div class="node-header">
-            <div class="node-info">
-                <div class="node-title">جای خالی</div>
-                <div class="node-status empty">خالی</div>
-            </div>
-        </div>
-        <div class="node-details">
-            <div class="node-stat">
-                <span class="stat-label">امتیاز:</span>
-                <span class="stat-value">0</span>
-            </div>
-            <div class="node-stat">
-                <span class="stat-label">سقف:</span>
-                <span class="stat-value">0</span>
+    container.innerHTML = `
+        <div class="tree-node empty-node level-${level}">
+            <div class="node-header">
+                <div class="node-info">
+                    <span class="node-title">جای خالی</span>
+                    <span class="node-status empty">خالی</span>
+                </div>
             </div>
         </div>
     `;
-    
-    container.appendChild(emptyNode);
 }
 
 // Claim Binary Rewards Functions
@@ -751,6 +651,7 @@ async function setupClaimButton() {
     await updateClaimInfo();
 }
 
+// تابع به‌روزرسانی اطلاعات claim
 async function updateClaimInfo() {
     try {
         const { contract, address } = await connectWallet();
@@ -776,13 +677,13 @@ async function updateClaimInfo() {
         ]);
         
         const claimablePoints = ethers.formatUnits(points, 18);
-        const pointValueFormatted = ethers.formatUnits(pointValue, 18);
-        const totalReward = parseFloat(claimablePoints) * parseFloat(pointValueFormatted);
+        const pointValueFormatted = ethers.formatEther(pointValue);
+        const totalReward = (parseFloat(claimablePoints) * parseFloat(pointValueFormatted)).toFixed(4);
         
         updateClaimUI({
             claimablePoints,
             pointValue: pointValueFormatted,
-            totalReward: totalReward.toFixed(6),
+            totalReward,
             canClaim: isClaimable && parseFloat(claimablePoints) > 0
         });
         
@@ -797,33 +698,27 @@ async function updateClaimInfo() {
     }
 }
 
+// تابع به‌روزرسانی UI claim
 function updateClaimUI(data) {
     const updateElement = (id, value) => {
         const element = document.getElementById(id);
         if (element) {
-            element.textContent = value;
+            element.textContent = safeFormat(value);
         }
     };
     
     updateElement('claimable-points', data.claimablePoints);
-    updateElement('point-value-display', data.pointValue + ' LVL');
-    updateElement('total-claimable-reward', data.totalReward + ' LVL');
+    updateElement('point-value-display', data.pointValue);
+    updateElement('total-claimable-reward', data.totalReward);
     
     const claimBtn = document.getElementById('claimRewardsBtn');
     if (claimBtn) {
         claimBtn.disabled = !data.canClaim;
-        if (data.canClaim) {
-            claimBtn.textContent = 'دریافت پاداش باینری';
-            claimBtn.style.background = 'linear-gradient(135deg, #00ff88, #00ccff)';
-            claimBtn.style.color = '#000000';
-        } else {
-            claimBtn.textContent = 'پاداش قابل دریافت نیست';
-            claimBtn.style.background = 'rgba(255, 255, 255, 0.1)';
-            claimBtn.style.color = '#666666';
-        }
+        claimBtn.textContent = data.canClaim ? 'دریافت پاداش باینری' : 'پاداشی برای دریافت وجود ندارد';
     }
 }
 
+// تابع دریافت پاداش باینری
 async function claimBinaryRewards() {
     try {
         const { contract, address } = await connectWallet();
@@ -846,37 +741,24 @@ async function claimBinaryRewards() {
         const claimBtn = document.getElementById('claimRewardsBtn');
         if (claimBtn) {
             claimBtn.disabled = true;
-            claimBtn.textContent = 'در حال دریافت...';
+            claimBtn.textContent = 'در حال پردازش...';
         }
-        
-        showNetworkStatus('در حال دریافت پاداش...', 'loading');
         
         // فراخوانی تابع claim
         const tx = await contract.claim();
+        await tx.wait();
         
-        showNetworkStatus('تراکنش ارسال شد. منتظر تایید...', 'loading');
+        showNetworkStatus('پاداش باینری با موفقیت دریافت شد!', 'success');
         
-        // انتظار برای تایید تراکنش
-        const receipt = await tx.wait();
-        
-        if (receipt.status === 1) {
-            showNetworkStatus('پاداش با موفقیت دریافت شد!', 'success');
-            
-            // به‌روزرسانی اطلاعات claim
-            await updateClaimInfo();
-            
-            // به‌روزرسانی آمار شبکه
-            await updateNetworkStats();
-            
-        } else {
-            throw new Error('تراکنش ناموفق بود');
-        }
+        // به‌روزرسانی اطلاعات
+        await updateClaimInfo();
+        await updateNetworkStats();
         
     } catch (error) {
-        console.error('Error claiming rewards:', error);
+        console.error('Error claiming binary rewards:', error);
         showNetworkStatus('خطا در دریافت پاداش: ' + error.message, 'error');
         
-        // بازگرداندن دکمه به حالت عادی
+        // بازگرداندن دکمه
         const claimBtn = document.getElementById('claimRewardsBtn');
         if (claimBtn) {
             claimBtn.disabled = false;
@@ -885,6 +767,7 @@ async function claimBinaryRewards() {
     }
 }
 
+// تابع نمایش وضعیت شبکه
 function showNetworkStatus(message, type = 'success') {
     const statusElement = document.getElementById('network-status');
     if (statusElement) {
@@ -898,3 +781,12 @@ function showNetworkStatus(message, type = 'success') {
         }, 5000);
     }
 }
+
+// تابع کمکی برای فرمت امن
+function safeFormat(val, suffix = '') {
+    if (val === undefined || val === null || val === 'undefined' || val === '' || isNaN(val)) return '-';
+    if (typeof val === 'string' && val.trim() === '') return '-';
+    return val + suffix;
+}
+
+console.log('Network module loaded successfully');

@@ -1286,8 +1286,8 @@ async function performWeb3Initialization() {
                             chainId: '0x89',
                             chainName: 'Polygon',
                             nativeCurrency: {
-                                name: 'MATIC',
-                                symbol: 'MATIC',
+                                name: 'POL',
+                                symbol: 'POL',
                                 decimals: 18
                             },
                             rpcUrls: ['https://polygon-rpc.com/'],
@@ -1457,4 +1457,312 @@ window.contractConfig = {
     contract: null,
     address: null,
     initializeWeb3: initializeWeb3
-}; 
+};
+
+// ===== توابع مرکزی برای استفاده در همه فایل‌ها =====
+
+// تابع مرکزی اتصال کیف پول
+window.connectWallet = async function() {
+    try {
+        console.log('Central: Attempting to connect wallet...');
+        
+        // بررسی اتصال موجود
+        if (window.contractConfig && window.contractConfig.contract && window.contractConfig.address && window.contractConfig.signer) {
+            console.log('Central: Wallet already connected');
+            return {
+                contract: window.contractConfig.contract,
+                address: window.contractConfig.address,
+                signer: window.contractConfig.signer,
+                provider: window.contractConfig.provider
+            };
+        }
+        
+        // راه‌اندازی Web3
+        await window.contractConfig.initializeWeb3();
+        
+        if (window.contractConfig && window.contractConfig.contract) {
+            console.log('Central: Wallet connected successfully');
+            return {
+                contract: window.contractConfig.contract,
+                address: window.contractConfig.address,
+                signer: window.contractConfig.signer,
+                provider: window.contractConfig.provider
+            };
+        }
+        
+        throw new Error('خطا در اتصال به کیف پول');
+        
+    } catch (error) {
+        console.error('Central: Error connecting wallet:', error);
+        throw error;
+    }
+};
+
+// تابع مرکزی دریافت پروفایل کاربر
+window.getUserProfile = async function() {
+    try {
+        const { contract, address, provider, signer } = await window.connectWallet();
+        
+        if (!address) {
+            throw new Error('No wallet address available');
+        }
+        
+        // دریافت اطلاعات کاربر
+        const user = await contract.users(address);
+        
+        // دریافت موجودی‌ها - استفاده از provider یا signer.provider
+        const balanceProvider = provider || signer.provider;
+        if (!balanceProvider) {
+            throw new Error('No provider available for balance check');
+        }
+        
+        const [maticBalance, lvlBalance] = await Promise.all([
+            balanceProvider.getBalance(address),
+            contract.balanceOf(address)
+        ]);
+        
+        // دریافت قیمت‌ها برای محاسبه ارزش دلاری
+        const [lvlPriceUSD, maticPrice] = await Promise.all([
+            contract.getTokenPriceInUSD(),
+            contract.getLatestMaticPrice()
+        ]);
+        
+        // محاسبه ارزش دلاری (همه مقادیر BigInt هستند)
+        let lvlValueUSD = 0n;
+        let maticValueUSD = 0n;
+        try {
+            if (lvlBalance && lvlPriceUSD) {
+                lvlValueUSD = (lvlBalance * lvlPriceUSD) / (10n ** 18n);
+            }
+            if (maticBalance && maticPrice) {
+                maticValueUSD = (maticBalance * maticPrice) / (10n ** 18n);
+            }
+        } catch (e) {
+            lvlValueUSD = 0n;
+            maticValueUSD = 0n;
+        }
+
+        // فرمت‌دهی خروجی و جلوگیری از undefined
+        const safeFormat = (val, decimals = 8) => {
+            try {
+                if (typeof val === 'bigint') return ethers.formatUnits(val, decimals);
+                if (typeof val === 'number') return val.toFixed(4);
+                if (typeof val === 'string') return val;
+                return '0';
+            } catch (e) { return '0'; }
+        };
+
+        return {
+            address: address,
+            referrer: user.referrer,
+            activated: user.activated,
+            binaryPoints: user.binaryPoints ? user.binaryPoints.toString() : '0',
+            binaryPointCap: user.binaryPointCap ? user.binaryPointCap.toString() : '0',
+            totalPurchasedMATIC: ethers.formatEther(user.totalPurchasedMATIC || 0n),
+            totalPurchasedKind: user.totalPurchasedKind ? user.totalPurchasedKind.toString() : '0',
+            maticBalance: ethers.formatEther(maticBalance || 0n),
+            lvlBalance: ethers.formatUnits(lvlBalance || 0n, 18),
+            maticValueUSD: safeFormat(maticValueUSD, 8),
+            lvlValueUSD: safeFormat(lvlValueUSD, 8),
+            registered: user.activated,
+            index: user.index ? user.index.toString() : '0'
+        };
+    } catch (error) {
+        console.error('Central: Error fetching user profile:', error);
+        return {
+            address: null,
+            referrer: null,
+            activated: false,
+            binaryPoints: "0",
+            binaryPointCap: "0",
+            totalPurchasedMATIC: "0",
+            totalPurchasedKind: "0",
+            maticBalance: "0",
+            lvlBalance: "0",
+            maticValueUSD: "0",
+            lvlValueUSD: "0",
+            registered: false,
+            index: "0"
+        };
+    }
+};
+
+// تابع مرکزی دریافت قیمت‌ها
+window.getPrices = async function() {
+    try {
+        const { contract } = await window.connectWallet();
+        
+        // دریافت قیمت‌ها به صورت موازی
+        const [lvlPriceUSD, lvlPriceMatic, maticPrice] = await Promise.all([
+            contract.getTokenPriceInUSD().catch(() => ethers.parseUnits("0.0012", 8)),
+            contract.updateTokenPrice().catch(() => ethers.parseUnits("0.0012", 18)),
+            contract.getLatestMaticPrice().catch(() => ethers.parseUnits("1.00", 8))
+        ]);
+        
+        return {
+            lvlPriceUSD: ethers.formatUnits(lvlPriceUSD, 8),
+            lvlPriceMatic: ethers.formatUnits(lvlPriceMatic, 18),
+            maticPrice: ethers.formatUnits(maticPrice, 8)
+        };
+    } catch (error) {
+        console.error('Central: Error fetching prices:', error);
+        return {
+            lvlPriceUSD: "0.0012",
+            lvlPriceMatic: "0.0012",
+            maticPrice: "1.00"
+        };
+    }
+};
+
+// تابع مرکزی دریافت آمار قرارداد
+window.getContractStats = async function() {
+    try {
+        const { contract } = await window.connectWallet();
+        
+        // دریافت آمار به صورت موازی
+        const [
+            totalUsers, totalSupply, binaryPool, 
+            rewardPool, totalPoints, totalClaimableBinaryPoints, pointValue
+        ] = await Promise.all([
+            contract.totalUsers().catch(() => 0n),
+            contract.totalSupply().catch(() => 0n),
+            contract.binaryPool().catch(() => 0n),
+            contract.rewardPool().catch(() => 0n),
+            contract.totalPoints().catch(() => 0n),
+            contract.totalClaimableBinaryPoints().catch(() => 0n),
+            contract.getPointValue().catch(() => 0n)
+        ]);
+        
+        // محاسبه circulatingSupply به صورت تقریبی
+        // circulatingSupply = totalSupply - tokens in contract
+        let circulatingSupply = totalSupply;
+        try {
+            const contractBalance = await contract.balanceOf(contract.target);
+            circulatingSupply = totalSupply - contractBalance;
+        } catch (e) {
+            console.warn('Could not calculate circulating supply, using total supply:', e);
+            circulatingSupply = totalSupply;
+        }
+        
+        return {
+            totalUsers: totalUsers.toString(),
+            totalSupply: ethers.formatUnits(totalSupply, 18),
+            circulatingSupply: ethers.formatUnits(circulatingSupply, 18),
+            binaryPool: ethers.formatEther(binaryPool),
+            rewardPool: ethers.formatEther(rewardPool),
+            totalPoints: ethers.formatUnits(totalPoints, 18),
+            totalClaimableBinaryPoints: ethers.formatUnits(totalClaimableBinaryPoints, 18),
+            pointValue: ethers.formatUnits(pointValue, 18)
+        };
+    } catch (error) {
+        console.error('Central: Error fetching contract stats:', error);
+        return {
+            totalUsers: "0",
+            totalSupply: "0",
+            circulatingSupply: "0",
+            binaryPool: "0",
+            rewardPool: "0",
+            totalPoints: "0",
+            totalClaimableBinaryPoints: "0",
+            pointValue: "0"
+        };
+    }
+};
+
+// تابع مرکزی بررسی اتصال
+window.checkConnection = async function() {
+    try {
+        const { provider, address } = await window.connectWallet();
+        const network = await provider.getNetwork();
+        
+        return {
+            connected: true,
+            address,
+            network: network.name,
+            chainId: network.chainId
+        };
+    } catch (error) {
+        return {
+            connected: false,
+            error: error.message
+        };
+    }
+};
+
+// تابع debug برای تست circulatingSupply
+window.debugCirculatingSupply = async function() {
+    try {
+        const { contract } = await window.connectWallet();
+        
+        console.log('Debug: Testing circulating supply...');
+        
+        // تست مستقیم circulatingSupply
+        try {
+            const directCirculatingSupply = await contract.circulatingSupply();
+            console.log('Debug: Direct circulatingSupply:', directCirculatingSupply.toString());
+        } catch (e) {
+            console.log('Debug: Direct circulatingSupply failed:', e.message);
+        }
+        
+        // تست totalSupply
+        try {
+            const totalSupply = await contract.totalSupply();
+            console.log('Debug: Total supply:', totalSupply.toString());
+        } catch (e) {
+            console.log('Debug: Total supply failed:', e.message);
+        }
+        
+        // تست contract balance
+        try {
+            const contractBalance = await contract.balanceOf(contract.target);
+            console.log('Debug: Contract balance:', contractBalance.toString());
+        } catch (e) {
+            console.log('Debug: Contract balance failed:', e.message);
+        }
+        
+        // تست deployer balance
+        try {
+            const deployer = await contract.deployer();
+            const deployerBalance = await contract.balanceOf(deployer);
+            console.log('Debug: Deployer balance:', deployerBalance.toString());
+        } catch (e) {
+            console.log('Debug: Deployer balance failed:', e.message);
+        }
+        
+    } catch (error) {
+        console.error('Debug: Error testing circulating supply:', error);
+    }
+};
+
+// تابع debug برای تست موجودی MATIC قرارداد
+window.debugContractMaticBalance = async function() {
+    try {
+        const { contract, provider } = await window.connectWallet();
+        
+        console.log('Debug: Testing contract MATIC balance...');
+        console.log('Debug: Contract address:', contract.target);
+        
+        // تست موجودی MATIC قرارداد
+        try {
+            const maticBalance = await provider.getBalance(contract.target);
+            console.log('Debug: Contract MATIC balance (wei):', maticBalance.toString());
+            console.log('Debug: Contract MATIC balance (POLIC):', ethers.formatEther(maticBalance));
+        } catch (e) {
+            console.log('Debug: Contract MATIC balance failed:', e.message);
+        }
+        
+        // تست تابع getContractMaticBalance از قرارداد
+        try {
+            const contractMaticBalance = await contract.getContractMaticBalance();
+            console.log('Debug: Contract getContractMaticBalance (wei):', contractMaticBalance.toString());
+            console.log('Debug: Contract getContractMaticBalance (POLIC):', ethers.formatEther(contractMaticBalance));
+        } catch (e) {
+            console.log('Debug: getContractMaticBalance failed:', e.message);
+        }
+        
+    } catch (error) {
+        console.error('Debug: Error testing contract MATIC balance:', error);
+    }
+};
+
+console.log('Central Web3 functions loaded successfully');

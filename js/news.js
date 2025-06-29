@@ -52,7 +52,7 @@ const tutorials = [
     },
     {
         title: "خرید و فروش توکن",
-        description: "آموزش کامل نحوه سواپ توکن LVL با MATIC"
+        description: "آموزش کامل نحوه سواپ توکن LVL با POL"
     },
     {
         title: "سیستم باینری",

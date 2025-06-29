@@ -6,46 +6,26 @@
 let dashboardLoading = false;
 let dashboardInitialized = false;
 let lastDashboardUpdate = 0;
+let lastConnectionAttempt = 0;
 let dashboardUpdateInterval = null;
-const DASHBOARD_UPDATE_INTERVAL = 30000; // 30 seconds minimum between updates
+const CONNECTION_COOLDOWN = 3000; // 3 seconds cooldown between connection attempts
+const DASHBOARD_UPDATE_INTERVAL = 30000; // 30 seconds between dashboard updates
+
+// متغیرهای سراسری
+let isDashboardLoading = false;
 
 // تابع به‌روزرسانی وضعیت اتصال
 function updateConnectionStatus(type, message) {
-    try {
-        const statusElement = document.getElementById('connection-status');
-        if (!statusElement) {
-            console.log('Connection status element not found');
-            return;
-        }
-        
-        // پاک کردن کلاس‌های قبلی
-        statusElement.className = 'connection-status';
-        
-        // اضافه کردن کلاس مناسب
-        switch (type) {
-            case 'success':
-                statusElement.classList.add('success');
-                break;
-            case 'error':
-                statusElement.classList.add('error');
-                break;
-            case 'warning':
-                statusElement.classList.add('warning');
-                break;
-            case 'info':
-            default:
-                statusElement.classList.add('info');
-                break;
-        }
-        
-        // تنظیم متن
+    const statusElement = document.getElementById('connection-status');
+    if (statusElement) {
         statusElement.textContent = message;
+        statusElement.className = `connection-status ${type}`;
         statusElement.style.display = 'block';
         
-        console.log(`Connection status updated: ${type} - ${message}`);
-        
-    } catch (error) {
-        console.error('Error updating connection status:', error);
+        // پاک کردن پیام بعد از 5 ثانیه
+        setTimeout(() => {
+            statusElement.style.display = 'none';
+        }, 5000);
     }
 }
 
@@ -85,16 +65,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // تابع شروع به‌روزرسانی خودکار داشبورد
 function startDashboardAutoUpdate() {
-    // پاک کردن interval قبلی اگر وجود دارد
     if (dashboardUpdateInterval) {
         clearInterval(dashboardUpdateInterval);
     }
     
-    // شروع interval جدید
     dashboardUpdateInterval = setInterval(async () => {
-        if (!dashboardLoading && dashboardInitialized && checkWalletConnectionStatus()) {
-            console.log('Auto-updating dashboard...');
+        try {
             await loadDashboardData();
+        } catch (error) {
+            console.error('Dashboard auto-update error:', error);
         }
     }, 30000); // هر 30 ثانیه
 }
@@ -109,466 +88,232 @@ function stopDashboardAutoUpdate() {
 
 // تابع انتظار برای اتصال کیف پول
 async function waitForWalletConnection() {
-    return new Promise((resolve) => {
-        console.log('Wallet connection in progress, waiting...');
-        
-        // بررسی اولیه اتصال
-        if (checkWalletConnectionStatus()) {
-            console.log('Connection already established');
-            resolve(true);
-            return;
-        }
-        
-        let timeoutId;
-        let checkInterval;
-        
-        // تنظیم timeout
-        timeoutId = setTimeout(() => {
-            console.log('Wallet connection timeout, will retry when wallet connects...');
-            clearInterval(checkInterval);
-            resolve(false);
-        }, 5000); // 5 ثانیه timeout
-        
-        // بررسی مداوم اتصال
-        checkInterval = setInterval(() => {
-            if (checkWalletConnectionStatus()) {
-                console.log('Connection completed while waiting');
-                clearTimeout(timeoutId);
-                clearInterval(checkInterval);
-                resolve(true);
+    let attempts = 0;
+    const maxAttempts = 30; // 30 ثانیه
+    
+    while (attempts < maxAttempts) {
+        try {
+            const result = await window.checkConnection();
+            if (result.connected) {
+                console.log('Dashboard: Wallet connected, loading data...');
+                return result;
             }
-        }, 500); // بررسی هر 500 میلی‌ثانیه
-        
-        // بررسی اتصال MetaMask
-        if (typeof window.ethereum !== 'undefined') {
-            window.ethereum.once('accountsChanged', (accounts) => {
-                if (accounts && accounts.length > 0) {
-                    console.log('MetaMask connected during wait');
-                    clearTimeout(timeoutId);
-                    clearInterval(checkInterval);
-                    resolve(true);
-                }
-            });
+        } catch (error) {
+            console.log('Dashboard: Waiting for wallet connection...', attempts + 1);
         }
-    });
+        
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        attempts++;
+    }
+    
+    throw new Error('Dashboard: Timeout waiting for wallet connection');
 }
 
 // تابع بارگذاری داده‌های داشبورد
 async function loadDashboardData() {
+    if (isDashboardLoading) {
+        return;
+    }
+    
+    isDashboardLoading = true;
+    
     try {
-        if (dashboardLoading) {
-            console.log('Dashboard loading already in progress, skipping...');
-            return;
-        }
+        console.log('Dashboard: Loading dashboard data...');
         
-        dashboardLoading = true;
-        console.log('Loading dashboard data...');
+        // انتظار برای اتصال کیف پول
+        await waitForWalletConnection();
         
-        // Reset chart on first load or when dashboard is not initialized
-        if (!dashboardInitialized) {
-            console.log('First dashboard load, resetting chart...');
-            if (typeof window.resetPriceChart === 'function') {
-                window.resetPriceChart();
-            }
-        }
-        
-        // Check if wallet is connected
-        if (!window.contractConfig || !window.contractConfig.contract) {
-            console.log('Wallet not connected, skipping dashboard load');
-            dashboardLoading = false;
-            return;
-        }
-        
-        const contract = window.contractConfig.contract;
-        
-        // Load all dashboard data in parallel
-        const [
-            tokenPriceUSD,
-            tokenPrice,
-            circulatingSupply,
-            totalPoints,
-            claimedPoints,
-            remainingPoints,
-            tradingVolume,
-            pointValue,
-            rewardPool
-        ] = await Promise.all([
-            contract.getTokenPriceInUSD().catch(() => 0),
-            contract.getPrice().catch(() => 0),
-            contract.circulatingSupply().catch(() => 0),
-            contract.totalPoints().catch(() => 0),
-            contract.points(window.contractConfig.address).catch(() => 0),
-            contract.totalPoints().then(total => 
-                contract.points(window.contractConfig.address).then(claimed => total - claimed)
-            ).catch(() => 0),
-            contract.getContractMaticBalance().catch(() => 0),
-            contract.getPointValue().catch(() => 0),
-            contract.binaryPool().catch(() => 0)
+        // دریافت داده‌ها به صورت موازی
+        const [prices, stats, additionalStats, tradingVolume] = await Promise.all([
+            window.getPrices(),
+            window.getContractStats(),
+            getAdditionalStats(),
+            getTradingVolume()
         ]);
         
-        // Calculate price changes
+        // Debug logging برای بررسی مقادیر
+        console.log('Dashboard: Contract stats received:', stats);
+        console.log('Dashboard: Circulating supply:', stats.circulatingSupply);
+        console.log('Dashboard: Total supply:', stats.totalSupply);
+        
+        // محاسبه تغییرات قیمت
         const priceChanges = await calculatePriceChanges();
         
-        // Update UI with all data
-        updateDashboardUI(
-            { tokenPriceUSD, tokenPrice },
-            { circulatingSupply, totalPoints, claimedPoints, remainingPoints },
-            { tradingVolume, pointValue, rewardPool },
-            tradingVolume,
-            priceChanges
-        );
+        // به‌روزرسانی UI
+        updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceChanges);
         
-        dashboardInitialized = true;
-        lastDashboardUpdate = Date.now();
-        
-        console.log('Dashboard data loaded successfully');
+        console.log('Dashboard: Data loaded successfully');
         
     } catch (error) {
-        console.error('Error loading dashboard data:', error);
-        
-        // نمایش خطا به کاربر
-        const errorMessage = error.message || 'خطا در بارگذاری داده‌های داشبورد';
-        updateConnectionStatus('error', errorMessage);
-        
-        // تلاش مجدد بعد از 5 ثانیه فقط اگر اتصال وجود دارد
-        setTimeout(() => {
-            if (checkWalletConnectionStatus() && !dashboardLoading) {
-                console.log('Retrying dashboard data load...');
-                loadDashboardData();
-            }
-        }, 5000);
+        console.error('Dashboard: Error loading data:', error);
+        updateConnectionStatus('error', 'خطا در بارگذاری داده‌های داشبورد');
     } finally {
-        dashboardLoading = false;
+        isDashboardLoading = false;
     }
 }
 
-// تابع محاسبه درصد تغییرات قیمت
+// تابع محاسبه تغییرات قیمت
 async function calculatePriceChanges() {
     try {
-        // در اینجا می‌توانید قیمت‌های قبلی را از localStorage یا API دریافت کنید
-        const previousPrices = JSON.parse(localStorage.getItem('previousPrices') || '{}');
-        const currentTime = Date.now();
-        
-        // اگر قیمت‌های قبلی وجود ندارند یا قدیمی هستند، از قیمت فعلی استفاده کنید
-        if (!previousPrices.timestamp || (currentTime - previousPrices.timestamp) > 3600000) { // 1 ساعت
-            const currentPrices = await getPrices();
-            const newPreviousPrices = {
-                tokenPriceUSD: currentPrices.tokenPriceUSD,
-                tokenPriceMATIC: currentPrices.tokenPrice,
-                timestamp: currentTime
-            };
-            localStorage.setItem('previousPrices', JSON.stringify(newPreviousPrices));
-            
-            return {
-                usdChange: 0,
-                maticChange: 0,
-                usdChangePercent: 0,
-                maticChangePercent: 0
-            };
-        }
-        
-        const currentPrices = await getPrices();
-        
-        // محاسبه تغییرات USD
-        const usdChange = parseFloat(currentPrices.tokenPriceUSD) - parseFloat(previousPrices.tokenPriceUSD);
-        const usdChangePercent = previousPrices.tokenPriceUSD > 0 ? 
-            (usdChange / parseFloat(previousPrices.tokenPriceUSD)) * 100 : 0;
-        
-        // محاسبه تغییرات MATIC
-        const maticChange = parseFloat(currentPrices.tokenPrice) - parseFloat(previousPrices.tokenPriceMATIC);
-        const maticChangePercent = previousPrices.tokenPriceMATIC > 0 ? 
-            (maticChange / parseFloat(previousPrices.tokenPriceMATIC)) * 100 : 0;
-        
-        // ذخیره قیمت‌های فعلی برای محاسبه بعدی
-        const newPreviousPrices = {
-            tokenPriceUSD: currentPrices.tokenPriceUSD,
-            tokenPriceMATIC: currentPrices.tokenPrice,
-            timestamp: currentTime
-        };
-        localStorage.setItem('previousPrices', JSON.stringify(newPreviousPrices));
+        // در اینجا می‌توانید تغییرات قیمت را محاسبه کنید
+        // برای مثال، مقایسه با قیمت قبلی یا میانگین قیمت‌ها
         
         return {
-            usdChange,
-            maticChange,
-            usdChangePercent,
-            maticChangePercent
+            lvlPriceChange: '0%',
+            maticPriceChange: '0%',
+            volumeChange: '0%'
         };
-        
-            } catch (error) {
-        console.error("Error calculating price changes:", error);
+    } catch (error) {
+        console.error('Dashboard: Error calculating price changes:', error);
         return {
-            usdChange: 0,
-            maticChange: 0,
-            usdChangePercent: 0,
-            maticChangePercent: 0
+            lvlPriceChange: '0%',
+            maticPriceChange: '0%',
+            volumeChange: '0%'
         };
     }
 }
 
 // تابع به‌روزرسانی UI داشبورد
 function updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceChanges) {
-    const updateElement = (id, value, prefix = '', suffix = '', isInteger = false) => {
+    const safeFormat = (val, prefix = '', suffix = '', isInteger = false, maxDecimals = 4) => {
+        if (val === undefined || val === null || val === 'undefined' || val === '' || isNaN(val)) return '-';
+        if (typeof val === 'string' && val.trim() === '') return '-';
+        if (typeof val === 'number') {
+            if (isInteger) {
+                return prefix + Math.round(val).toLocaleString() + suffix;
+            } else {
+                return prefix + val.toFixed(maxDecimals).replace(/\.?0+$/, '') + suffix;
+            }
+        }
+        return prefix + val + suffix;
+    };
+    const updateElement = (id, value, prefix = '', suffix = '', isInteger = false, maxDecimals = 4) => {
         const element = document.getElementById(id);
         if (element) {
-            // اگر مقدار undefined یا null است، نمایش "-"
-            if (value === undefined || value === null || isNaN(value)) {
-                element.textContent = '-';
-                return;
-            }
-            
-            if (typeof value === 'number') {
-                let displayValue;
-                if (isInteger) {
-                    // برای اعداد صحیح (مثل تعداد کاربران)
-                    displayValue = `${prefix}${Math.round(value)}${suffix}`;
-                } else {
-                    // برای اعداد اعشاری
-                    if (value >= 1000000) {
-                        displayValue = `${prefix}${(value / 1000000).toFixed(2)}M${suffix}`;
-                    } else if (value >= 1000) {
-                        displayValue = `${prefix}${(value / 1000).toFixed(2)}K${suffix}`;
-                    } else {
-                        displayValue = `${prefix}${value.toFixed(4)}${suffix}`;
-                    }
-                }
-                element.textContent = displayValue;
-            } else {
-                element.textContent = `${prefix}${value}${suffix}`;
-            }
+            element.textContent = safeFormat(value, prefix, suffix, isInteger, maxDecimals);
         }
     };
     
     // به‌روزرسانی قیمت‌ها
-    if (prices) {
-        updateElement('token-price', parseFloat(prices.tokenPriceUSD), '$');
-        updateElement('token-price-matic', parseFloat(prices.tokenPrice), '', ' MATIC');
-        
-        // Update the price chart using the new simplified method
-        if (typeof window.updatePriceChart === 'function') {
-            // Calculate MATIC/USD if not present
-            let maticPriceUSD = prices.maticPriceUSD;
-            if (!maticPriceUSD && prices.tokenPriceUSD && prices.tokenPrice) {
-                maticPriceUSD = parseFloat(prices.tokenPriceUSD) / parseFloat(prices.tokenPrice);
-            }
-            
-            // Only update chart if we have valid data
-            if (prices.tokenPriceUSD && prices.tokenPrice && maticPriceUSD) {
-                window.updatePriceChart(
-                    parseFloat(prices.tokenPriceUSD), 
-                    parseFloat(prices.tokenPrice), 
-                    parseFloat(maticPriceUSD)
-                );
+    updateElement('token-price', prices.lvlPriceUSD, '$', '', false, 6);
+    // نمایش قیمت توکن به POL با نماد علمی
+    const updateElementExponential = (id, value, suffix = '') => {
+        const element = document.getElementById(id);
+        if (element) {
+            if (value === undefined || value === null || value === 'undefined' || value === '' || isNaN(value)) {
+                element.textContent = '-';
+            } else {
+                const num = parseFloat(value);
+                if (isNaN(num)) {
+                    element.textContent = value + suffix;
+                } else {
+                    // اگر مقدار خیلی بزرگ بود، با E نمایش بده
+                    if (num >= 1e6) {
+                        element.textContent = num.toExponential(3) + suffix;
+                    } else {
+                        element.textContent = num.toLocaleString('en-US', { maximumFractionDigits: 6 }) + suffix;
+                    }
+                }
             }
         }
-    }
+    };
+    updateElementExponential('token-price-matic', prices.lvlPriceMatic, ' POL');
     
-    // به‌روزرسانی آمار
-    if (stats) {
-        updateElement('circulating-supply', parseFloat(stats.circulatingSupply), '', '', true);
-        updateElement('total-points', parseFloat(stats.totalPoints), '', '', true);
-        updateElement('claimed-points', parseFloat(stats.claimedPoints), '', '', true);
-        updateElement('remaining-points', parseFloat(stats.remainingPoints), '', '', true);
+    // به‌روزرسانی آمار قرارداد
+    // نمایش circulating-supply با نماد علمی (E notation)
+    updateElementExponential('circulating-supply', stats.circulatingSupply, ' LVL');
+    updateElement('total-users', stats.totalUsers, '', '', true);
+    // نمایش پوینت‌ها به صورت عدد صحیح (بدون اعشار)
+    updateElement('total-points', Math.round(parseFloat(stats.totalPoints)), '', '', true);
+    updateElement('claimed-points', Math.round(parseFloat(stats.totalClaimableBinaryPoints)), '', '', true);
+    updateElement('remaining-points', Math.round(parseFloat(stats.totalPoints) - parseFloat(stats.totalClaimableBinaryPoints)), '', '', true);
+    updateElement('trading-volume', tradingVolume, '', ' POL', false, 4);
+    let pointValueLVL = '-';
+    let rewardPoolLVL = '-';
+    if (parseFloat(prices.lvlPriceMatic) > 0) {
+        pointValueLVL = parseFloat(stats.pointValue) / parseFloat(prices.lvlPriceMatic);
+        rewardPoolLVL = parseFloat(stats.rewardPool) / parseFloat(prices.lvlPriceMatic);
     }
-    
-    // به‌روزرسانی آمار اضافی
-    if (additionalStats) {
-        updateElement('trading-volume', parseFloat(additionalStats.tradingVolume), '', ' MATIC');
-        updateElement('point-value', parseFloat(additionalStats.pointValue), '$');
-        updateElement('reward-pool', parseFloat(additionalStats.rewardPool), '', ' LVL');
-    }
+    updateElement('point-value', pointValueLVL, '', ' LVL', false, 6);
+    updateElement('reward-pool', rewardPoolLVL, '', ' LVL', false, 4);
 }
 
 // تابع بررسی وضعیت اتصال کیف پول
 function checkWalletConnectionStatus() {
     try {
-        // بررسی contractConfig
-        if (!window.contractConfig) {
-            return false;
-        }
-        
-        // بررسی وجود provider، signer، contract و address
-        if (!window.contractConfig.provider || 
-            !window.contractConfig.signer || 
-            !window.contractConfig.contract || 
-            !window.contractConfig.address) {
-            return false;
-        }
-        
-        // بررسی اتصال MetaMask
-        if (typeof window.ethereum !== 'undefined') {
-            try {
-                // بررسی اینکه آیا MetaMask متصل است
-                if (window.ethereum.isConnected && window.ethereum.isConnected()) {
-                    return true;
-                }
-                
-                // بررسی آدرس‌های موجود
-                if (window.ethereum.selectedAddress) {
-                    return true;
-                }
-            } catch (error) {
-                console.log('MetaMask connection check error:', error);
-            }
-        }
-        
-        // بررسی اتصال WalletConnect
-        if (window.contractConfig.walletConnectProvider) {
-            try {
-                if (window.contractConfig.walletConnectProvider.connected) {
-                    return true;
-                }
-            } catch (error) {
-                console.log('WalletConnect connection check error:', error);
-            }
-        }
-        
-        // بررسی localStorage به عنوان fallback
-        const wasConnected = localStorage.getItem('walletConnected') === 'true';
-        const hasAddress = localStorage.getItem('walletAddress');
-        
-        if (wasConnected && hasAddress && window.contractConfig.address === hasAddress) {
+        if (window.contractConfig && window.contractConfig.address) {
+            updateConnectionStatus('success', `متصل به: ${shortenAddress(window.contractConfig.address)}`);
             return true;
+        } else {
+            updateConnectionStatus('info', 'کیف پول متصل نیست');
+            return false;
         }
-        
-        return false;
     } catch (error) {
-        console.error('Error checking wallet connection status:', error);
+        console.error('Dashboard: Error checking wallet status:', error);
+        updateConnectionStatus('error', 'خطا در بررسی وضعیت کیف پول');
         return false;
     }
 }
 
-// تابع به‌روزرسانی نمایش دکمه‌های کیف پول
+// تابع به‌روزرسانی دکمه‌های کیف پول
 function updateWalletButtonVisibility() {
-    try {
-        const isConnected = checkWalletConnectionStatus();
-        
-        const qrConnectBtn = document.getElementById('qr-connect-btn');
-        const smartConnectBtn = document.getElementById('smart-connect-btn');
-        const disconnectBtn = document.getElementById('disconnect-btn');
-        const statusElement = document.getElementById('connection-status');
-        
-        if (isConnected) {
+    const qrConnectBtn = document.getElementById('qr-connect-btn');
+    const smartConnectBtn = document.getElementById('smart-connect-btn');
+    const disconnectBtn = document.getElementById('disconnect-btn');
+    
+    if (qrConnectBtn && smartConnectBtn && disconnectBtn) {
+        if (window.contractConfig && window.contractConfig.address) {
             // کیف پول متصل است
-            if (qrConnectBtn) qrConnectBtn.style.display = 'none';
-            if (smartConnectBtn) smartConnectBtn.style.display = 'none';
-            if (disconnectBtn) disconnectBtn.style.display = 'inline-block';
-            
-            // نمایش وضعیت اتصال
-            if (statusElement) {
-                statusElement.style.display = 'block';
-                statusElement.className = 'connection-status success';
-                statusElement.textContent = 'کیف پول متصل است';
-            }
+            qrConnectBtn.style.display = 'none';
+            smartConnectBtn.style.display = 'none';
+            disconnectBtn.style.display = 'inline-block';
         } else {
             // کیف پول متصل نیست
-            if (qrConnectBtn) qrConnectBtn.style.display = 'inline-block';
-            if (smartConnectBtn) smartConnectBtn.style.display = 'inline-block';
-            if (disconnectBtn) disconnectBtn.style.display = 'none';
-            
-            // نمایش وضعیت اتصال
-            if (statusElement) {
-                statusElement.style.display = 'block';
-                statusElement.className = 'connection-status info';
-                statusElement.textContent = 'لطفاً کیف پول خود را متصل کنید';
-            }
+            qrConnectBtn.style.display = 'inline-block';
+            smartConnectBtn.style.display = 'inline-block';
+            disconnectBtn.style.display = 'none';
         }
-        
-    } catch (error) {
-        console.error('Error updating wallet button visibility:', error);
     }
 }
 
 // تابع قطع اتصال کیف پول
 async function disconnectWallet() {
     try {
-        console.log('Disconnecting wallet...');
+        console.log('Dashboard: Disconnecting wallet...');
         
-        // قطع اتصال WalletConnect اگر فعال است
-        if (typeof disconnectWalletConnect === 'function') {
-            try {
-                await disconnectWalletConnect();
-                console.log('WalletConnect disconnected');
-            } catch (error) {
-                console.log('WalletConnect disconnect error:', error);
-            }
-        }
-        
-        // قطع اتصال MetaMask (فقط پاک کردن داده‌های محلی)
-        if (typeof window.ethereum !== 'undefined') {
-            try {
-                // پاک کردن event listeners
-                window.ethereum.removeAllListeners();
-                console.log('MetaMask listeners removed');
-            } catch (error) {
-                console.log('Error removing MetaMask listeners:', error);
-            }
-        }
-        
-        // پاک کردن تنظیمات
+        // پاک کردن تنظیمات قرارداد
         if (window.contractConfig) {
             window.contractConfig.provider = null;
             window.contractConfig.signer = null;
             window.contractConfig.contract = null;
             window.contractConfig.address = null;
-            window.contractConfig.walletType = null;
         }
         
-        // پاک کردن متغیرهای سراسری
-        if (window.WalletConnectHandler) {
-            window.WalletConnectHandler.walletConnectProvider = null;
-            window.WalletConnectHandler.isWalletConnectInitialized = false;
-        }
+        // توقف به‌روزرسانی خودکار
+        stopDashboardAutoUpdate();
         
-        // پاک کردن localStorage
-        try {
-            localStorage.removeItem('walletConnected');
-            localStorage.removeItem('walletAddress');
-            localStorage.removeItem('walletType');
-            console.log('LocalStorage cleared');
-        } catch (error) {
-            console.log('Error clearing localStorage:', error);
-        }
-        
-        // به‌روزرسانی UI
-        updateConnectionStatus('info', 'اتصال کیف پول قطع شد');
-        
-        // نمایش دکمه‌های اتصال و مخفی کردن دکمه قطع اتصال
-        const qrConnectBtn = document.getElementById('qr-connect-btn');
-        const smartConnectBtn = document.getElementById('smart-connect-btn');
-        const disconnectBtn = document.getElementById('disconnect-btn');
-        
-        if (qrConnectBtn) qrConnectBtn.style.display = 'inline-block';
-        if (smartConnectBtn) smartConnectBtn.style.display = 'inline-block';
-        if (disconnectBtn) disconnectBtn.style.display = 'none';
-        
-        // ریست کردن داشبورد
+        // بازنشانی داشبورد
         await resetDashboard();
         
-        console.log('Wallet disconnected successfully');
+        // به‌روزرسانی UI
+        updateWalletButtonVisibility();
+        updateConnectionStatus('info', 'کیف پول قطع شد');
+        
+        console.log('Dashboard: Wallet disconnected successfully');
         
     } catch (error) {
-        console.error('Error disconnecting wallet:', error);
-        updateConnectionStatus('error', 'خطا در قطع اتصال: ' + error.message);
+        console.error('Dashboard: Error disconnecting wallet:', error);
+        updateConnectionStatus('error', 'خطا در قطع اتصال کیف پول');
     }
 }
 
-// تابع ریست کردن داشبورد
+// تابع بازنشانی داشبورد
 async function resetDashboard() {
     try {
-        console.log('Resetting dashboard...');
-        
-        // Reset dashboard state
-        dashboardLoading = false;
-        dashboardInitialized = false;
-        lastDashboardUpdate = 0;
-        
-        // Stop auto-update interval
-        stopDashboardAutoUpdate();
-        
-        // Reset UI elements
+        // پاک کردن همه مقادیر
         const elements = [
-            'token-price', 'token-price-matic', 'circulating-supply', 
-            'total-points', 'claimed-points', 'remaining-points', 
+            'token-price', 'token-price-matic', 'circulating-supply',
+            'total-users', 'total-points', 'claimed-points', 'remaining-points',
             'trading-volume', 'point-value', 'reward-pool'
         ];
         
@@ -579,177 +324,65 @@ async function resetDashboard() {
             }
         });
         
-        // Reset price chart using the new simplified method
-        if (typeof window.resetPriceChart === 'function') {
-            window.resetPriceChart();
-        }
-        
-        console.log('Dashboard reset completed');
+        console.log('Dashboard: Reset successfully');
         
     } catch (error) {
-        console.error('Error resetting dashboard:', error);
+        console.error('Dashboard: Error resetting dashboard:', error);
     }
 }
 
-// تابع ریست کامل چارت قیمت
-function resetPriceChartCompletely() {
+// تابع دریافت آمار اضافی
+async function getAdditionalStats() {
     try {
-        console.log('Completely resetting price chart...');
+        const { contract } = await window.connectWallet();
         
-        // ریست کردن داده‌های چارت
-        if (typeof priceChartData !== 'undefined') {
-            priceChartData.labels = [];
-            priceChartData.usd = [];
-            priceChartData.matic = [];
-            priceChartData.maticusd = [];
-        }
+        const [totalDirectDeposits, binaryPool] = await Promise.all([
+            contract.totalDirectDeposits(),
+            contract.binaryPool()
+        ]);
         
-        // ریست کردن چارت اگر وجود دارد
-        if (typeof priceChart !== 'undefined' && priceChart) {
-            priceChart.data.labels = [];
-            priceChart.data.datasets[0].data = [];
-            priceChart.data.datasets[1].data = [];
-            priceChart.data.datasets[2].data = [];
-            priceChart.update('none');
-        }
-        
-        // فراخوانی تابع ریست از HTML اگر موجود است
-        if (typeof window.resetPriceChart === 'function') {
-            window.resetPriceChart();
-        }
-        
-        console.log('Price chart completely reset');
-        
+        return {
+            totalDirectDeposits: ethers.formatEther(totalDirectDeposits),
+            binaryPool: ethers.formatEther(binaryPool)
+        };
     } catch (error) {
-        console.error('Error resetting price chart:', error);
+        console.error('Dashboard: Error fetching additional stats:', error);
+        return {
+            totalDirectDeposits: '0',
+            binaryPool: '0'
+        };
     }
 }
 
-// تابع بررسی و حل تعارض permissions MetaMask
-async function handleMetaMaskPermissionConflict() {
+// تابع دریافت حجم معاملات
+async function getTradingVolume() {
     try {
-        if (typeof window.ethereum !== 'undefined') {
-            // بررسی وضعیت فعلی permissions
-            const permissions = await window.ethereum.request({
-                method: 'wallet_getPermissions'
-            });
-            
-            console.log('Current MetaMask permissions:', permissions);
-            
-            // اگر permissions موجود است، نیازی به درخواست مجدد نیست
-            if (permissions && permissions.length > 0) {
-                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-                if (accounts && accounts.length > 0) {
-                    console.log('MetaMask already has permissions and accounts');
-                    return true;
-                }
-            }
-            
-            // اگر permissions موجود نیست، درخواست کن
-            try {
-                const accounts = await window.ethereum.request({
-                    method: 'eth_requestAccounts'
-                });
-                console.log('MetaMask permissions granted:', accounts);
-                return true;
-            } catch (error) {
-                if (error.code === -32002) {
-                    console.log('MetaMask permission request already pending, waiting...');
-                    updateConnectionStatus('info', 'درخواست اتصال MetaMask در حال پردازش است. لطفاً صبر کنید...');
-                    
-                    // انتظار برای حل شدن تعارض
-                    await new Promise(resolve => setTimeout(resolve, 3000));
-                    
-                    // بررسی مجدد
-                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-                    if (accounts && accounts.length > 0) {
-                        console.log('MetaMask connection resolved after waiting');
-                        return true;
-                    }
-                }
-                throw error;
-            }
-        }
-        return false;
+        const { contract, provider } = await window.connectWallet();
+        
+        console.log('Dashboard: Getting contract balance...');
+        console.log('Dashboard: Contract address:', contract.target);
+        
+        // دریافت موجودی POL قرارداد
+        const contractMaticBalance = await provider.getBalance(contract.target);
+        
+        console.log('Dashboard: Raw contract balance (wei):', contractMaticBalance.toString());
+        
+        // تبدیل به فرمت قابل خواندن
+        const formattedBalance = ethers.formatEther(contractMaticBalance);
+        
+        console.log('Dashboard: Contract POL balance (formatted):', formattedBalance);
+        
+        return formattedBalance;
     } catch (error) {
-        console.error('Error handling MetaMask permission conflict:', error);
-        return false;
+        console.error('Dashboard: Error fetching contract balance:', error);
+        return '0';
     }
 }
 
-// تابع پاک کردن درخواست‌های معلق MetaMask
-async function clearPendingMetaMaskRequests() {
-    try {
-        if (typeof window.ethereum !== 'undefined') {
-            // تلاش برای دریافت آدرس‌ها بدون درخواست مجوز
-            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-            if (accounts && accounts.length > 0) {
-                console.log('MetaMask already has accounts, no pending requests to clear');
-                return true;
-            }
-            
-            // اگر هیچ حسابی متصل نیست، درخواست‌های معلق را نادیده بگیر
-            console.log('No MetaMask accounts connected, skipping pending requests');
-            return false;
-        }
-        return false;
-    } catch (error) {
-        console.log('Error checking MetaMask accounts:', error);
-        return false;
-    }
-}
-
-// تابع بررسی اتصال موجود MetaMask
-async function checkExistingMetaMaskConnection() {
-    try {
-        console.log('MetaMask detected, checking existing connection...');
-        
-        if (typeof window.ethereum === 'undefined') {
-            console.log('MetaMask not available');
-            return false;
-        }
-        
-        // بررسی اتصال فعلی بدون درخواست مجوز
-        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-        if (accounts && accounts.length > 0) {
-            console.log('MetaMask already connected with accounts:', accounts);
-            return true;
-        } else {
-            console.log('MetaMask detected but no accounts connected');
-            return false;
-        }
-    } catch (error) {
-        console.log('Error checking MetaMask connection:', error);
-        return false;
-    }
-}
-
-// تابع بارگذاری صفحه اصلی
-async function loadHomepage() {
-    try {
-        console.log('Loading homepage...');
-        
-        // پاک کردن درخواست‌های معلق
-        await clearPendingMetaMaskRequests();
-        
-        // بررسی اتصال فعلی
-        const isConnected = await checkExistingMetaMaskConnection();
-        
-        if (isConnected) {
-            console.log('Wallet already connected, loading dashboard...');
-            if (!dashboardLoading) {
-                await loadDashboardData();
-            }
-        } else {
-            console.log('No wallet connection, starting connection monitoring...');
-            startConnectionMonitoring();
-        }
-        
-        console.log('Homepage loaded successfully');
-    } catch (error) {
-        console.error('Error loading homepage:', error);
-        updateConnectionStatus('error', 'خطا در بارگذاری صفحه اصلی');
-    }
+// تابع کوتاه کردن آدرس
+function shortenAddress(address) {
+    if (!address) return '---';
+    return address.substring(0, 6) + '...' + address.substring(address.length - 4);
 }
 
 // تابع شروع نظارت بر اتصال
@@ -760,15 +393,30 @@ function startConnectionMonitoring() {
     if (typeof window.ethereum !== 'undefined') {
         window.ethereum.on('accountsChanged', async (accounts) => {
             console.log('MetaMask accounts changed:', accounts);
+            
+            // Check cooldown to prevent frequent updates
+            const now = Date.now();
+            if (now - lastConnectionAttempt < CONNECTION_COOLDOWN) {
+                console.log('Account change too frequent, skipping...');
+                return;
+            }
+            lastConnectionAttempt = now;
+            
             if (accounts && accounts.length > 0) {
-                console.log('New account connected, loading dashboard...');
+                console.log('New account connected, initializing Web3...');
                 try {
-                    // فقط اگر داشبورد در حال بارگذاری نیست
+                    // ریست کردن وضعیت اتصال
+                    window.resetConnectionState();
+                    
+                    // راه‌اندازی مجدد Web3
+                    await window.initializeWeb3();
+                    
+                    // بارگذاری داشبورد اگر آماده است
                     if (!dashboardLoading) {
                         await loadDashboardData();
                     }
                 } catch (error) {
-                    console.error('Error loading dashboard after account change:', error);
+                    console.error('Error handling account change:', error);
                 }
             } else {
                 console.log('All accounts disconnected, resetting dashboard...');
@@ -778,15 +426,30 @@ function startConnectionMonitoring() {
         
         window.ethereum.on('chainChanged', async (chainId) => {
             console.log('MetaMask chain changed:', chainId);
+            
+            // Check cooldown to prevent frequent updates
+            const now = Date.now();
+            if (now - lastConnectionAttempt < CONNECTION_COOLDOWN) {
+                console.log('Chain change too frequent, skipping...');
+                return;
+            }
+            lastConnectionAttempt = now;
+            
             if (chainId === '0x89') {
-                console.log('Connected to Polygon, loading dashboard...');
+                console.log('Connected to Polygon, initializing Web3...');
                 try {
-                    // فقط اگر داشبورد در حال بارگذاری نیست
+                    // ریست کردن وضعیت اتصال
+                    window.resetConnectionState();
+                    
+                    // راه‌اندازی مجدد Web3
+                    await window.initializeWeb3();
+                    
+                    // بارگذاری داشبورد اگر آماده است
                     if (!dashboardLoading) {
                         await loadDashboardData();
                     }
                 } catch (error) {
-                    console.error('Error loading dashboard after chain change:', error);
+                    console.error('Error handling chain change:', error);
                 }
             } else {
                 console.log('Not on Polygon network, showing error...');
@@ -796,13 +459,28 @@ function startConnectionMonitoring() {
         
         window.ethereum.on('connect', async (connectInfo) => {
             console.log('MetaMask connected:', connectInfo);
+            
+            // Check cooldown to prevent frequent updates
+            const now = Date.now();
+            if (now - lastConnectionAttempt < CONNECTION_COOLDOWN) {
+                console.log('Connect event too frequent, skipping...');
+                return;
+            }
+            lastConnectionAttempt = now;
+            
             try {
-                // فقط اگر داشبورد در حال بارگذاری نیست
+                // ریست کردن وضعیت اتصال
+                window.resetConnectionState();
+                
+                // راه‌اندازی مجدد Web3
+                await window.initializeWeb3();
+                
+                // بارگذاری داشبورد اگر آماده است
                 if (!dashboardLoading) {
                     await loadDashboardData();
                 }
             } catch (error) {
-                console.error('Error loading dashboard after connection:', error);
+                console.error('Error handling connection:', error);
             }
         });
         
@@ -816,6 +494,15 @@ function startConnectionMonitoring() {
     if (window.walletConnectProvider) {
         window.walletConnectProvider.on('accountsChanged', async (accounts) => {
             console.log('WalletConnect accounts changed:', accounts);
+            
+            // Check cooldown to prevent frequent updates
+            const now = Date.now();
+            if (now - lastConnectionAttempt < CONNECTION_COOLDOWN) {
+                console.log('WalletConnect change too frequent, skipping...');
+                return;
+            }
+            lastConnectionAttempt = now;
+            
             if (accounts && accounts.length > 0) {
                 try {
                     await handleWalletConnectSuccess(window.walletConnectProvider);
@@ -943,14 +630,31 @@ async function connectWithQRCode() {
 // تابع اتصال هوشمند
 async function connectWallet() {
     try {
+        // Check cooldown period - but allow if no connection exists
+        const now = Date.now();
+        if (now - lastConnectionAttempt < CONNECTION_COOLDOWN && window.contractConfig && window.contractConfig.contract) {
+            console.log('Connection attempt too frequent, but returning existing connection...');
+            return window.contractConfig;
+        }
+        
+        lastConnectionAttempt = now;
         console.log('Attempting smart connect...');
+        
+        // بررسی اتصال موجود
+        if (window.contractConfig && window.contractConfig.contract && window.contractConfig.address) {
+            console.log('Wallet already connected, returning existing config');
+            return window.contractConfig;
+        }
         
         // استفاده از تابع smartConnect از walletconnect-handler
         if (typeof smartConnect === 'function') {
             const result = await smartConnect();
             if (result) {
                 console.log(`Connected with ${result}`);
-                return result;
+                // اگر smartConnect موفق بود، contractConfig باید تنظیم شده باشد
+                if (window.contractConfig && window.contractConfig.contract) {
+                    return window.contractConfig;
+                }
             }
         }
         
@@ -962,8 +666,13 @@ async function connectWallet() {
                 });
                 
                 if (accounts && accounts.length > 0) {
-                    console.log('MetaMask connected');
-                    return 'metamask';
+                    console.log('MetaMask connected, initializing Web3...');
+                    await window.initializeWeb3();
+                    
+                    // بررسی اینکه آیا contractConfig تنظیم شده است
+                    if (window.contractConfig && window.contractConfig.contract) {
+                        return window.contractConfig;
+                    }
                 }
             } catch (error) {
                 console.error('MetaMask connection failed:', error);
@@ -979,56 +688,53 @@ async function connectWallet() {
     }
 }
 
+// تابع بارگذاری صفحه اصلی
+async function loadHomepage() {
+    try {
+        console.log('Loading homepage...');
+        
+        // انتظار برای اتصال کیف پول
+        await waitForWalletConnection();
+        
+        // بارگذاری داده‌های داشبورد
+        await loadDashboardData();
+        
+        // شروع به‌روزرسانی خودکار
+        startDashboardAutoUpdate();
+        
+        console.log('Homepage loaded successfully');
+    } catch (error) {
+        console.error('Error loading homepage:', error);
+    }
+}
+
 // تابع اتصال خودکار کیف پول
 async function autoConnectWallet() {
     try {
         console.log('Attempting auto-connect...');
         
-        // بررسی اتصال MetaMask موجود
-        const isMetaMaskConnected = await checkExistingMetaMaskConnection();
-        if (isMetaMaskConnected) {
-            console.log('MetaMask already connected, initializing...');
-            try {
-                await initializeWeb3();
-                if (!dashboardLoading) {
-                    await loadDashboardData();
-                }
-                return;
-            } catch (error) {
-                console.log('Failed to initialize with existing MetaMask connection:', error);
+        // بررسی اتصال موجود
+        if (window.contractConfig && window.contractConfig.address) {
+            console.log('Wallet already connected');
+            return true;
+        }
+        
+        // بررسی MetaMask
+        if (typeof window.ethereum !== 'undefined') {
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            if (accounts && accounts.length > 0) {
+                console.log('MetaMask already connected, initializing...');
+                await window.initializeWeb3();
+                return true;
             }
         }
         
-        // بررسی اتصال WalletConnect موجود
-        if (typeof window.WalletConnectHandler !== 'undefined' && 
-            window.WalletConnectHandler.walletConnectProvider && 
-            window.WalletConnectHandler.walletConnectProvider.connected) {
-            console.log('WalletConnect already connected, initializing...');
-            try {
-                await initializeWeb3();
-                if (!dashboardLoading) {
-                    await loadDashboardData();
-                }
-                return;
-            } catch (error) {
-                console.log('Failed to initialize with existing WalletConnect connection:', error);
-            }
-        }
-        
-        // تلاش برای اتصال جدید
-        const connectionResult = await connectWallet();
-        if (connectionResult) {
-            console.log(`Auto-connected with ${connectionResult}`);
-            await initializeWeb3();
-            if (!dashboardLoading) {
-                await loadDashboardData();
-            }
-        } else {
-            console.log('Auto-connect failed, will retry when wallet connects');
-        }
+        console.log('No existing connection found');
+        return false;
         
     } catch (error) {
         console.error('Auto-connect failed:', error);
+        return false;
     }
 }
 
@@ -1046,3 +752,5 @@ document.addEventListener('DOMContentLoaded', function() {
         loadHomepage();
     }, 500);
 });
+
+console.log('Dashboard module loaded successfully');

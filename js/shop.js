@@ -319,7 +319,7 @@ async function fetchUserProfile() {
 
         return {
             address,
-            maticBalance: ethers.formatEther(maticBalance),
+            maticBalance: ethers.formatEther(maticBalance), // POL
             lvlBalance: ethers.formatEther(lvlBalance)
         };
     } catch (error) {

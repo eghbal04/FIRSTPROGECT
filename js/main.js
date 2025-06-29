@@ -3,9 +3,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const connectButton = document.getElementById('connectButton');
     const walletConnectButton = document.getElementById('walletConnectButton');
 
-    // تلاش برای اتصال خودکار هنگام بارگذاری صفحه (فقط یک بار)
-  await autoConnectWallet();
-  
     if (connectButton) {
         connectButton.addEventListener('click', async () => {
             await connectWalletAndUpdateUI('metamask');
@@ -117,8 +114,8 @@ const updateElement = (id, value) => {
     element.textContent = value;
 };
 
-    updateElement('user-address', address);
-    updateElement('matic-balance', profile.maticBalance + ' MATIC');
+    updateElement('user-address', shortenAddress(address));
+    updateElement('matic-balance', profile.maticBalance + ' POL');
     updateElement('lvl-balance', profile.lvlBalance + ' LVL');
 
     const userDashboard = document.getElementById('user-dashboard');
@@ -151,7 +148,7 @@ async function fetchUserProfile() {
             contract.getTokenPriceInUSD()
         ]);
         
-        // فرمت کردن مقادیر
+        // محاسبه مقادیر
         const formattedMaticBalance = ethers.formatEther(maticBalance);
         const formattedLvlBalance = ethers.formatUnits(lvlBalance, 18);
         const formattedMaticPrice = ethers.formatUnits(maticPrice, 8);
@@ -220,59 +217,6 @@ async function connectWallet() {
     } catch (error) {
         console.error('Main: Error connecting wallet:', error);
         throw error;
-    }
-}
-
-// main.js
-let isAutoConnecting = false;
-
-async function autoConnectWallet() {
-    // جلوگیری از فراخوانی همزمان
-    if (isAutoConnecting) {
-        console.log("Auto-connection already in progress, skipping...");
-        return false;
-    }
-    
-    isAutoConnecting = true;
-    
-    try {
-    if (typeof window.ethereum === 'undefined' && !window.contractConfig.walletConnectProvider) {
-            return false;
-    }
-
-    // اتوکانکت متامسک
-    try {
-        if (window.ethereum) {
-        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-        if (accounts.length > 0) {
-            const address = accounts[0];
-            const profile = await fetchUserProfile();
-            updateConnectionUI(profile, address, 'metamask');
-            return true;
-            }
-        }
-    } catch (error) {
-            console.log("MetaMask auto-connect failed:", error.message);
-    }
-
-    // اتوکانکت WalletConnect (اگر قبلاً متصل بوده)
-    try {
-        if (window.contractConfig.walletConnectProvider && window.contractConfig.walletConnectProvider.session) {
-            const connected = await window.contractConfig.connectWithWalletConnect();
-            if (connected) {
-                const address = await window.contractConfig.signer.getAddress();
-                const profile = await fetchUserProfile();
-                updateConnectionUI(profile, address, 'walletconnect');
-                return true;
-            }
-        }
-    } catch (error) {
-            console.log("WalletConnect auto-connect failed:", error.message);
-    }
-        
-    return false;
-    } finally {
-        isAutoConnecting = false;
     }
 }
 
@@ -355,3 +299,5 @@ async function checkConnection() {
         };
     }
 }
+
+console.log('Main module loaded successfully');

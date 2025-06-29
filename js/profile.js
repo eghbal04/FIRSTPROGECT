@@ -1,243 +1,138 @@
-// --- Profile Page Logic ---
-let isProfileLoading = false;
+// Profile Module - فقط توابع مخصوص پروفایل
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Profile section loaded, waiting for wallet connection...
-    waitForWalletConnection();
-});
-
+// تابع انتظار برای اتصال کیف پول
 async function waitForWalletConnection() {
-    try {
-        // Profile section loaded, waiting for wallet connection...
-        await loadUserProfile();
-    } catch (error) {
-        console.error('Error in profile section:', error);
-        showProfileError("خطا در بارگذاری پروفایل");
+    let attempts = 0;
+    const maxAttempts = 30; // 30 ثانیه
+    
+    while (attempts < maxAttempts) {
+        try {
+            const result = await window.checkConnection();
+            if (result.connected) {
+                console.log('Profile: Wallet connected, loading profile...');
+                return result;
+            }
+        } catch (error) {
+            console.log('Profile: Waiting for wallet connection...', attempts + 1);
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        attempts++;
     }
+    
+    throw new Error('Profile: Timeout waiting for wallet connection');
 }
 
 // تابع بارگذاری پروفایل کاربر
 async function loadUserProfile() {
-    if (isProfileLoading) {
-        // Profile already loading, skipping...
-        return;
-    }
-    
-    isProfileLoading = true;
-    
     try {
-        // Connecting to wallet for profile data...
-        const { contract, signer, provider, address } = await connectWallet();
+        console.log('Profile: Loading user profile...');
         
-        // بررسی اینکه آیا همه موارد مورد نیاز موجود هستند
-        if (!contract || !signer || !provider || !address) {
-            throw new Error("Wallet connection incomplete");
-        }
+        // انتظار برای اتصال کیف پول
+        await waitForWalletConnection();
         
-        // Wallet connected, fetching profile data...
+        // دریافت پروفایل کاربر - استفاده از تابع صحیح
+        const profile = await window.getUserProfile();
         
-        // دریافت اطلاعات کاربر
-        const userData = await contract.users(address);
-        const maticBalance = await provider.getBalance(address);
-        const lvlBalance = await contract.balanceOf(address);
-        const maticPrice = await contract.getLatestMaticPrice();
-        const lvlPrice = await contract.getLatestLvlPrice();
-        
-        // محاسبه ارزش دلاری
-        const maticValueUSD = (parseFloat(ethers.formatEther(maticBalance)) * parseFloat(ethers.formatUnits(maticPrice, 8))).toFixed(2);
-        const lvlValueUSD = (parseFloat(ethers.formatEther(lvlBalance)) * parseFloat(ethers.formatUnits(lvlPrice, 8))).toFixed(2);
-        
-        // بررسی اینکه آیا کاربر ثبت‌نام کرده است
-        const isRegistered = userData.index > 0;
-        
-        const profile = {
-            address: address,
-            maticBalance: ethers.formatEther(maticBalance),
-            lvlBalance: ethers.formatEther(lvlBalance),
-            maticPrice: ethers.formatUnits(maticPrice, 8),
-            lvlPrice: ethers.formatUnits(lvlPrice, 8),
-            maticValueUSD: maticValueUSD,
-            lvlValueUSD: lvlValueUSD,
-            isRegistered: isRegistered,
-            referrer: isRegistered ? userData.referrer : 'کاربر ثبت‌نام نکرده',
-            incomeCap: isRegistered ? userData.binaryPointCap.toString() : '0',
-            received: isRegistered ? ethers.formatEther(userData.binaryPointsClaimed) : '0',
-            referralLink: `${window.location.origin}${window.location.pathname}?ref=${address}`
-        };
-        
-        // Profile data fetched successfully: ${profile}
+        // به‌روزرسانی UI
         updateProfileUI(profile);
         
+        // راه‌اندازی دکمه کپی
+        setupReferralCopy();
+        
+        console.log('Profile: User profile loaded successfully');
+        
     } catch (error) {
-        console.error('Error loading profile data:', error);
-        showProfileError("خطا در بارگذاری اطلاعات پروفایل: " + error.message);
-    } finally {
-        isProfileLoading = false;
+        console.error('Profile: Error loading user profile:', error);
+        showProfileError('خطا در بارگذاری پروفایل: ' + error.message);
     }
 }
 
-// به‌روزرسانی UI پروفایل
+// تابع به‌روزرسانی UI پروفایل
 function updateProfileUI(profile) {
-    const updateElement = (id, value) => {
-        const element = document.getElementById(id);
-        if (element) element.textContent = value;
+    const safe = (val, suffix = '') => {
+        if (val === undefined || val === null || val === 'undefined' || val === '' || isNaN(val)) return '-';
+        if (typeof val === 'string' && val.trim() === '') return '-';
+        return val + suffix;
     };
 
-    // اطلاعات اصلی
+    const updateElement = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = safe(value);
+    };
+
+    console.log('Profile data received:', profile);
+
     updateElement('profile-address', shortenAddress(profile.address));
-    updateElement('profile-referrer', profile.referrer === 'کاربر ثبت‌نام نکرده' ? profile.referrer : shortenAddress(profile.referrer));
-    // نمایش موجودی‌ها به دلار و توکن
-    updateElement('profile-matic', parseFloat(profile.maticBalance).toLocaleString('en-US', {maximumFractionDigits: 4}) + ' MATIC');
-    updateElement('profile-lvl', parseFloat(profile.lvlBalance).toLocaleString('en-US', {maximumFractionDigits: 4}) + ' LVL');
-
-    // تبدیل قیمت‌ها به مقادیر خوانا - profile.maticPrice و profile.lvlPrice قبلاً فرمت شده‌اند
-    const maticPriceInUSD = parseFloat(profile.maticPrice); // قبلاً با formatUnits تبدیل شده
-    const lvlPriceInUSD = parseFloat(profile.lvlPrice);     // قبلاً با formatUnits تبدیل شده
-
-    // محاسبه ارزش دلاری (واقعی)
-    const maticUSD = (parseFloat(profile.maticBalance) * maticPriceInUSD).toFixed(2);
-    const lvlUSD = (parseFloat(profile.lvlBalance) * lvlPriceInUSD).toFixed(2);
+    updateElement('profile-referrer', shortenAddress(profile.referrer));
+    updateElement('profile-matic', profile.maticBalance);
+    updateElement('profile-matic-usd', profile.maticValueUSD ? `(${profile.maticValueUSD}$)` : '-');
+    updateElement('profile-lvl', profile.lvlBalance);
+    updateElement('profile-lvl-usd', profile.lvlValueUSD ? `(${profile.lvlValueUSD}$)` : '-');
+    updateElement('profile-income-cap', profile.binaryPointCap);
+    updateElement('profile-received', profile.binaryPoints);
+    updateElement('profile-referral-link', window.location.origin + '/?ref=' + shortenAddress(profile.address));
     
-    updateElement('profile-matic-usd', `(~$${maticUSD})`);
-    updateElement('profile-lvl-usd', `(~$${lvlUSD})`);
-
-    // اطلاعات باینری - profile.received قبلاً به string تبدیل شده
-    const binaryPoints = profile.received; // قبلاً فرمت شده
-    const binaryPointCap = profile.incomeCap;
-    const binaryPointsClaimed = profile.received; // قبلاً فرمت شده
-    
-    // نمایش سقف درآمد باینری (تعداد پوینت‌های قابل دریافت در هر 12 ساعت)
-    const incomeCapDisplay = `${binaryPointCap} پوینت (هر 12 ساعت)`;
-    
-    updateElement('profile-income-cap', incomeCapDisplay);
-    updateElement('profile-received', Math.round(parseFloat(binaryPointsClaimed)));
-
-    // لینک دعوت
-    const referralLink = profile.referralLink;
-    const shortReferral = referralLink.length > 32 ? referralLink.substring(0, 20) + '...' + referralLink.slice(-8) : referralLink;
-    updateElement('profile-referral-link', shortReferral);
-
-    // نمایش وضعیت
+    // نمایش وضعیت ثبت‌نام - اصلاح شده
     const statusElement = document.getElementById('profileStatus');
     if (statusElement) {
-        statusElement.textContent = 'اطلاعات پروفایل بارگذاری شد';
-        statusElement.style.color = '#4CAF50';
+        if (profile.registered) {
+            statusElement.textContent = 'کاربر ثبت‌نام شده';
+            statusElement.className = 'profile-status success';
+        } else {
+            statusElement.textContent = 'کاربر ثبت‌نام نشده';
+            statusElement.className = 'profile-status error';
+        }
     }
 }
 
-// راه‌اندازی دکمه کپی لینک دعوت
+// تابع راه‌اندازی دکمه کپی لینک دعوت
 function setupReferralCopy() {
     const copyBtn = document.getElementById('copyProfileReferral');
     if (copyBtn) {
         copyBtn.addEventListener('click', async () => {
             try {
-                const { address } = await connectWallet();
+                const { address } = await window.connectWallet();
                 const referralLink = `${window.location.origin}/?ref=${address}`;
                 
                 await navigator.clipboard.writeText(referralLink);
                 copyBtn.textContent = 'کپی شد!';
                 setTimeout(() => copyBtn.textContent = 'کپی', 1500);
             } catch (error) {
-                console.error("Error copying referral link:", error);
-                showProfileError("خطا در کپی کردن لینک دعوت");
+                console.error("Profile: Error copying referral link:", error);
             }
         });
     }
 }
 
-// تابع نمایش خطا
+// تابع نمایش خطای پروفایل
 function showProfileError(message) {
     const statusElement = document.getElementById('profileStatus');
     if (statusElement) {
         statusElement.textContent = message;
-        statusElement.style.color = '#ff6b6b';
+        statusElement.className = 'profile-status error';
+        
+        setTimeout(() => {
+            statusElement.textContent = '';
+            statusElement.className = 'profile-status';
+        }, 5000);
     }
 }
 
-// تابع اتصال به کیف پول
-async function connectWallet() {
-    try {
-        console.log('Profile: Attempting to connect wallet...');
-        
-        // بررسی اتصال موجود
-        if (window.contractConfig && window.contractConfig.contract) {
-            console.log('Profile: Wallet already connected');
-            return window.contractConfig;
-        }
-        
-        // بررسی اتصال MetaMask موجود
-        if (typeof window.ethereum !== 'undefined') {
-            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-            if (accounts && accounts.length > 0) {
-                console.log('Profile: MetaMask already connected, initializing Web3...');
-                try {
-                    await initializeWeb3();
-                    return window.contractConfig;
-                } catch (error) {
-                    console.log('Profile: Failed to initialize Web3:', error);
-                    throw new Error('خطا در راه‌اندازی Web3');
-                }
-            }
-        }
-        
-        console.log('Profile: No existing connection, user needs to connect manually');
-        throw new Error('لطفاً ابتدا کیف پول خود را متصل کنید');
-        
-    } catch (error) {
-        console.error('Profile: Error connecting wallet:', error);
-        showProfileError('خطا در اتصال به کیف پول');
-        throw error;
-    }
-}
-
-// تابع دریافت پروفایل کاربر
-async function fetchUserProfile() {
-    try {
-        const { provider, contract, address } = await connectWallet();
-        
-        // بررسی اینکه آیا همه موارد مورد نیاز موجود هستند
-        if (!provider || !contract || !address) {
-            throw new Error("Wallet connection incomplete");
-        }
-
-        // دریافت موجودی‌ها به صورت موازی
-        const [maticBalance, lvlBalance] = await Promise.all([
-            provider.getBalance(address),
-            contract.balanceOf(address)
-        ]);
-
-        return {
-            address,
-            maticBalance: ethers.formatEther(maticBalance),
-            lvlBalance: ethers.formatUnits(lvlBalance, 18)
-        };
-    } catch (error) {
-        console.error("Error fetching user profile:", error);
-        throw error;
-    }
-}
-
-// تابع بررسی وضعیت اتصال
+// تابع بررسی اتصال (برای استفاده داخلی)
 async function checkConnection() {
     try {
-        const { provider, address } = await connectWallet();
-        const network = await provider.getNetwork();
-        
-        return {
-            connected: true,
-            address,
-            network: network.name,
-            chainId: network.chainId
-        };
+        return await window.checkConnection();
     } catch (error) {
-        return {
-            connected: false,
-            error: error.message
-        };
+        console.error('Profile: Connection check failed:', error);
+        return { connected: false, error: error.message };
     }
 }
 
+// تابع کوتاه کردن آدرس
 function shortenAddress(address) {
     if (!address) return '---';
-    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+    return address.substring(0, 6) + '...' + address.substring(address.length - 4);
 }
+
+console.log('Profile module loaded successfully');

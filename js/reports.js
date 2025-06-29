@@ -309,8 +309,8 @@ function shortenTransactionHash(hash) {
             console.log('buyEvent timestamp:', ts, 'blockNumber:', event.blockNumber, 'event:', event);
                     reports.push({
                         type: 'trading',
-                        title: 'خرید توکن با MATIC',
-                        amount: `${formatNumber(event.args.maticAmount, 18)} MATIC → ${formatNumber(event.args.tokenAmount, 18)} LVL`,
+                        title: 'خرید توکن با POL',
+                        amount: `${formatNumber(event.args.maticAmount, 18)} POL → ${formatNumber(event.args.tokenAmount, 18)} LVL`,
                 timestamp: ts,
                         transactionHash: event.transactionHash,
                         blockNumber: event.blockNumber
@@ -323,7 +323,7 @@ function shortenTransactionHash(hash) {
                     reports.push({
                         type: 'trading',
                         title: 'فروش توکن',
-                        amount: `${formatNumber(event.args.tokenAmount, 18)} LVL → ${formatNumber(event.args.maticAmount, 18)} MATIC`,
+                        amount: `${formatNumber(event.args.tokenAmount, 18)} LVL → ${formatNumber(event.args.maticAmount, 18)} POL`,
                 timestamp: ts,
                         transactionHash: event.transactionHash,
                         blockNumber: event.blockNumber
@@ -375,35 +375,35 @@ function shortenTransactionHash(hash) {
             return;
         }
     
-        const reportsHTML = filteredReports.map(report => `
-        <div class="report-item">
-            <div class="report-header">
-                <div class="report-type">
-                    ${getReportIcon(report.type)} ${report.title}
-                </div>
-                <div class="report-time">${formatDate(report.timestamp)}</div>
-            </div>
-            <div class="report-details">
-                <div class="report-details-row">
-                    <span class="report-details-label">مقدار:</span>
-                    <span class="report-details-value">${report.amount}</span>
-                </div>
-                <div class="report-details-row">
-                    <span class="report-details-label">تراکنش:</span>
-                    <a href="https://polygonscan.com/tx/${report.transactionHash}" target="_blank" class="report-details-value" style="color: #00ff88; text-decoration: none; font-family: monospace;">
-                        ${shortenTransactionHash(report.transactionHash)}
-                    </a>
+        const reportsHTML = filteredReports.map(report => {
+            const { type, title, amount, timestamp, transactionHash, blockNumber } = report;
+            const reportHTML = `
+                <div class="report-item">
+                    <div class="report-header">
+                        <div class="report-type">${getReportIcon(type)} ${title}</div>
+                        <div class="report-time">${formatDate(timestamp)}</div>
                     </div>
-                <div class="report-details-row">
-                    <span class="report-details-label">بلاک:</span>
-                    <span class="report-details-value">${report.blockNumber.toLocaleString()}</span>
+                    <div class="report-details">
+                        <div class="report-details-row">
+                            <span class="report-details-label">آدرس:</span>
+                            <span class="report-details-value">${shortenAddress(report.address || '')}</span>
+                        </div>
+                        <div class="report-details-row">
+                            <span class="report-details-label">مقدار:</span>
+                            <span class="report-details-value">${amount}</span>
+                        </div>
+                        <div class="report-details-row">
+                            <span class="report-details-label">تراکنش:</span>
+                            <span class="report-details-value">${shortenTransactionHash(transactionHash)}</span>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            </div>
-        `).join('');
+            `;
+            return reportHTML;
+        }).join('');
         
         reportsContainer.innerHTML = reportsHTML;
-}
+    }
 
     // تابع دریافت آیکون برای نوع گزارش
     function getReportIcon(type) {

@@ -169,7 +169,12 @@ function setupUpgradeForm() {
 // تابع انجام ثبت‌نام
 async function performRegistration() {
     try {
-        const { contract, address } = await connectWallet();
+        // استفاده از اتصال موجود به جای فراخوانی connectWallet
+        if (!window.contractConfig || !window.contractConfig.contract) {
+            throw new Error('No wallet connection');
+        }
+        
+        const { contract, address } = window.contractConfig;
         
         // دریافت آدرس معرف (در اینجا از deployer استفاده می‌کنیم)
         const deployer = await contract.deployer();
@@ -200,18 +205,25 @@ async function performRegistration() {
 // تابع انجام ارتقا
 async function performUpgrade() {
     try {
-        const { contract } = await connectWallet();
+        // استفاده از اتصال موجود به جای فراخوانی connectWallet
+        if (!window.contractConfig || !window.contractConfig.contract) {
+            throw new Error('No wallet connection');
+        }
+        
+        const { contract, address } = window.contractConfig;
+        
         const upgradeAmountInput = document.getElementById('upgrade-amount');
         const amount = parseFloat(upgradeAmountInput.value);
         
         if (!amount || amount <= 0) {
-            throw new Error("مقدار نامعتبر");
+            throw new Error('Invalid upgrade amount');
         }
         
+        // تبدیل مقدار به wei
         const amountInWei = ethers.parseUnits(amount.toString(), 18);
         
         // انجام تراکنش ارتقا
-        const tx = await contract.purchase(amountInWei, 100); // 100% payout
+        const tx = await contract.purchase(amountInWei, 0);
         await tx.wait();
         
         showRegisterSuccess("ارتقا با موفقیت انجام شد!");
@@ -248,53 +260,17 @@ function showRegisterError(message) {
     }
 }
 
-// تابع اتصال به کیف پول
-async function connectWallet() {
-    try {
-        console.log('Register: Attempting to connect wallet...');
-        
-        // بررسی اتصال موجود
-        if (window.contractConfig && window.contractConfig.contract) {
-            console.log('Register: Wallet already connected');
-            return window.contractConfig;
-        }
-        
-        // بررسی اتصال MetaMask موجود
-        if (typeof window.ethereum !== 'undefined') {
-            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-            if (accounts && accounts.length > 0) {
-                console.log('Register: MetaMask already connected, initializing Web3...');
-                try {
-                    await initializeWeb3();
-                    return window.contractConfig;
-                } catch (error) {
-                    console.log('Register: Failed to initialize Web3:', error);
-                    throw new Error('خطا در راه‌اندازی Web3');
-                }
-            }
-        }
-        
-        console.log('Register: No existing connection, user needs to connect manually');
-        throw new Error('لطفاً ابتدا کیف پول خود را متصل کنید');
-        
-    } catch (error) {
-        console.error('Register: Error connecting wallet:', error);
-        showRegisterError(error.message);
-        throw error;
-    }
-}
-
 // تابع به‌روزرسانی نمایش موجودی
 function updateBalanceDisplay(lvlBalance, lvlBalanceUSD) {
-    const balanceElement = document.getElementById('user-lvl-balance');
-    const usdElement = document.getElementById('user-lvl-usd-value');
+    const lvlBalanceElement = document.getElementById('user-lvl-balance');
+    const lvlUsdElement = document.getElementById('user-lvl-usd-value');
     
-    if (balanceElement) {
-        balanceElement.textContent = `${parseFloat(lvlBalance).toLocaleString('en-US', {maximumFractionDigits: 2})} LVL`;
+    if (lvlBalanceElement) {
+        lvlBalanceElement.textContent = `${parseFloat(lvlBalance).toFixed(2)} LVL`;
     }
     
-    if (usdElement) {
-        usdElement.textContent = `~$${lvlBalanceUSD} USD`;
+    if (lvlUsdElement) {
+        lvlUsdElement.textContent = `$${lvlBalanceUSD} USD`;
     }
 }
 
@@ -303,16 +279,21 @@ function showRegistrationForm(registrationPrice, userBalance, tokenPriceUSD) {
     const registrationForm = document.getElementById('registration-form');
     const upgradeForm = document.getElementById('upgrade-form');
     
-    if (registrationForm) registrationForm.style.display = 'block';
-    if (upgradeForm) upgradeForm.style.display = 'none';
+    if (registrationForm) {
+        registrationForm.style.display = 'block';
+    }
     
-    // به‌روزرسانی اطلاعات ثبت‌نام
+    if (upgradeForm) {
+        upgradeForm.style.display = 'none';
+    }
+    
+    // به‌روزرسانی اطلاعات فرم
     const requiredElement = document.getElementById('registration-required');
     const statusElement = document.getElementById('registration-status-text');
+    const registerBtn = document.getElementById('register-btn');
     
     if (requiredElement) {
-        const requiredUSD = (parseFloat(registrationPrice) * parseFloat(tokenPriceUSD)).toFixed(2);
-        requiredElement.textContent = `${parseFloat(registrationPrice).toFixed(2)} LVL (~$${requiredUSD} USD)`;
+        requiredElement.textContent = `${registrationPrice} LVL`;
     }
     
     if (statusElement) {
@@ -320,11 +301,13 @@ function showRegistrationForm(registrationPrice, userBalance, tokenPriceUSD) {
         const requiredNum = parseFloat(registrationPrice);
         
         if (userBalanceNum >= requiredNum) {
-            statusElement.textContent = "آماده برای ثبت‌نام";
-            statusElement.style.color = "#4caf50";
+            statusElement.textContent = 'آماده برای ثبت‌نام';
+            statusElement.style.color = '#4caf50';
+            if (registerBtn) registerBtn.disabled = false;
         } else {
-            statusElement.textContent = "موجودی ناکافی";
-            statusElement.style.color = "#ff4444";
+            statusElement.textContent = 'موجودی ناکافی';
+            statusElement.style.color = '#f44336';
+            if (registerBtn) registerBtn.disabled = true;
         }
     }
     
@@ -337,8 +320,13 @@ function showUpgradeForm() {
     const registrationForm = document.getElementById('registration-form');
     const upgradeForm = document.getElementById('upgrade-form');
     
-    if (registrationForm) registrationForm.style.display = 'none';
-    if (upgradeForm) upgradeForm.style.display = 'block';
+    if (registrationForm) {
+        registrationForm.style.display = 'none';
+    }
+    
+    if (upgradeForm) {
+        upgradeForm.style.display = 'block';
+    }
     
     // راه‌اندازی فرم ارتقا
     setupUpgradeForm();
