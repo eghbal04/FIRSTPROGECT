@@ -2264,6 +2264,58 @@
     </div>
   </div>
 
+  <!-- Price Chart Section -->
+  <div id="price-chart-section" class="page-section expandable-container">
+    <div class="expand-header">
+      <h2>📈 چارت قیمت‌ها</h2>
+      <p>نمایش لحظه‌ای قیمت‌های توکن LVL، POL و نرخ تبدیل</p>
+    </div>
+    <div class="expand-content">
+      <div class="price-chart-container">
+        <div class="price-chart-grid">
+          <div class="price-chart-card">
+            <div class="price-chart-icon">🪙</div>
+            <div class="price-chart-content">
+              <h3>قیمت LVL (USD)</h3>
+              <div class="price-value" id="chart-lvl-usd">-</div>
+              <div class="price-change" id="chart-lvl-usd-change">-</div>
+            </div>
+          </div>
+          <div class="price-chart-card">
+            <div class="price-chart-icon">🔄</div>
+            <div class="price-chart-content">
+              <h3>قیمت LVL (MATIC)</h3>
+              <div class="price-value" id="chart-lvl-matic">-</div>
+              <div class="price-change" id="chart-lvl-matic-change">-</div>
+            </div>
+          </div>
+          <div class="price-chart-card">
+            <div class="price-chart-icon">💎</div>
+            <div class="price-chart-content">
+              <h3>قیمت MATIC (USD)</h3>
+              <div class="price-value" id="chart-matic-usd">-</div>
+              <div class="price-change" id="chart-matic-usd-change">-</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="price-chart-controls">
+          <div class="price-chart-info">
+            آخرین به‌روزرسانی: <span id="chart-last-update">-</span>
+          </div>
+          <button class="price-chart-refresh-btn" onclick="window.priceChart.refresh()">
+            🔄 به‌روزرسانی
+          </button>
+        </div>
+        
+        <div class="price-chart-messages">
+          <div id="price-chart-error" class="price-chart-error"></div>
+          <div id="price-chart-success" class="price-chart-success"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="tab-container" style="max-width:700px;margin:0.5rem auto 0.5rem auto;">
     <div class="tab-headers" style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
       <button class="tab-btn active" id="tab-swap-btn" type="button">تبدیل</button>
@@ -2633,6 +2685,7 @@
   <script src="js/shop.js?v=5.7"></script>
   <script src="js/homepage.js?v=5.7"></script>
   <script src="js/register.js?v=5.7"></script>
+  <script src="js/price-chart.js?v=5.7"></script>
   <script>
     // Tab switching logic for 8 tabs with wallet connection
     async function showTab(tab) {
@@ -2747,6 +2800,11 @@
         });
 
         console.log('Expandable functionality disabled');
+        
+        // Initialize price chart
+        if (typeof window.priceChart !== 'undefined' && typeof window.priceChart.initialize === 'function') {
+            window.priceChart.initialize();
+        }
     });
   </script>
 </body>
