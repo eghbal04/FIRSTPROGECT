@@ -105,11 +105,24 @@ function updateProfileUI(profile) {
     const receivedEl = document.getElementById('profile-received');
     if (receivedEl) receivedEl.textContent = profile.binaryPoints || '۰';
 
-    // لینک دعوت
+    // لینک دعوت (نمایش کوتاه، کپی کامل)
     const linkEl = document.getElementById('profile-referral-link');
     if (linkEl) linkEl.textContent = profile.address
-        ? window.location.origin + '/?ref=' + profile.address
+        ? shorten(profile.address)
         : 'لینک دعوت در دسترس نیست';
+
+    // دکمه کپی لینک دعوت را طوری تنظیم کن که لینک کامل را کپی کند
+    const copyBtn = document.getElementById('copyProfileReferral');
+    if (copyBtn) {
+        copyBtn.onclick = async () => {
+            if (profile.address) {
+                const fullLink = window.location.origin + '/?ref=' + profile.address;
+                await navigator.clipboard.writeText(fullLink);
+                copyBtn.textContent = 'کپی شد!';
+                setTimeout(() => copyBtn.textContent = 'کپی', 1500);
+            }
+        };
+    }
 
     // وضعیت ثبت‌نام
     const statusElement = document.getElementById('profileStatus');
