@@ -205,7 +205,7 @@ async function updateBinaryStats() {
         const leftPoints = formatValue(userData.leftPoints || 0);
         const rightPoints = formatValue(userData.rightPoints || 0);
         const totalPoints = formatValue(userData.binaryPoints);
-        const pointsCap = formatValue(userData.binaryPointCap);
+        const pointsCap = Math.floor(formatValue(userData.binaryPointCap));
         
         // محاسبه تعادل و پاداش قابل پرداخت
         const balancedPoints = Math.min(leftPoints, rightPoints);
@@ -355,7 +355,7 @@ async function renderTreeNode(userAddress, containerId, level = 0) {
                 </div>
                 <div class="node-stat">
                     <span class="stat-label">سقف امتیاز:</span>
-                    <span class="stat-value">${ethers.formatUnits(binaryPointCap, 18)}</span>
+                    <span class="stat-value">${parseInt(ethers.formatUnits(binaryPointCap, 18))}</span>
                 </div>
             </div>
         `;
