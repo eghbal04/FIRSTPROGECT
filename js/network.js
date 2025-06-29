@@ -134,6 +134,12 @@ async function loadBinaryStats(contract, address) {
     try {
         const userData = await contract.users(address);
         
+        // Debug: نمایش داده‌های دریافتی
+        console.log('Network Debug - User data from contract:', userData);
+        console.log('Network Debug - binaryPointCap raw value:', userData.binaryPointCap);
+        console.log('Network Debug - binaryPointCap type:', typeof userData.binaryPointCap);
+        console.log('Network Debug - binaryPointCap toString():', userData.binaryPointCap.toString());
+        
         updateElement('left-points', ethers.formatUnits(userData.binaryPoints, 18));
         updateElement('right-points', ethers.formatUnits(userData.binaryPoints, 18));
         updateElement('total-binary-points', ethers.formatUnits(userData.binaryPoints, 18));
@@ -510,9 +516,40 @@ function showNetworkSuccess(message) {
     }
 }
 
+// تابع debug برای بررسی binaryPointCap
+window.debugBinaryPointCap = async function() {
+    try {
+        const { contract, address } = await window.connectWallet();
+        console.log('Debug: Checking binaryPointCap for address:', address);
+        
+        // دریافت مستقیم از قرارداد
+        const userData = await contract.users(address);
+        console.log('Debug: Full user data:', userData);
+        console.log('Debug: binaryPointCap raw:', userData.binaryPointCap);
+        console.log('Debug: binaryPointCap type:', typeof userData.binaryPointCap);
+        console.log('Debug: binaryPointCap toString():', userData.binaryPointCap.toString());
+        console.log('Debug: binaryPointCap as number:', Number(userData.binaryPointCap));
+        
+        // بررسی deployer
+        const deployer = await contract.deployer();
+        console.log('Debug: Deployer address:', deployer);
+        console.log('Debug: Is current user deployer?', address.toLowerCase() === deployer.toLowerCase());
+        
+        if (address.toLowerCase() === deployer.toLowerCase()) {
+            const deployerData = await contract.users(deployer);
+            console.log('Debug: Deployer binaryPointCap:', deployerData.binaryPointCap.toString());
+        }
+        
+        return userData.binaryPointCap.toString();
+    } catch (error) {
+        console.error('Debug: Error checking binaryPointCap:', error);
+        return 'Error';
+    }
+};
+
 // راه‌اندازی اولیه
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Network module loaded successfully');
+    // اضافه کردن تابع debug به window
+    window.debugBinaryPointCap = debugBinaryPointCap;
 });
-
-console.log('Network module loaded successfully');
