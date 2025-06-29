@@ -1,5 +1,5 @@
 // تنظیمات قرارداد LevelUp
-const CONTRACT_ADDRESS = '0x4aE0A254a3c78442568b74B6CC7e61d13BdC6Df8';
+const CONTRACT_ADDRESS = '0xBA971C218A9cf354Bb266A949fE0af646e99B9ef';
 const LEVELUP_ABI = [
 	{
 		"inputs": [],
