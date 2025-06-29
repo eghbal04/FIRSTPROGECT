@@ -234,7 +234,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 
             } catch (error) {
                 console.error('Swap: Error processing transaction:', error);
-                showSwapError('خطا در پردازش تراکنش: ' + error.message);
+                let userMessage = 'خطا در پردازش تراکنش: ' + (error.message || error);
+                if (
+                    error.code === 4001 ||
+                    (typeof error.message === 'string' && (
+                        error.message.toLowerCase().includes('user denied') ||
+                        error.message.toLowerCase().includes('user rejected') ||
+                        error.message.toLowerCase().includes('rejected by user')
+                    ))
+                ) {
+                    userMessage = 'تراکنش توسط کاربر لغو شد.';
+                }
+                showSwapError(userMessage);
             } finally {
                 swapButton.disabled = false;
                 swapButton.textContent = 'تبدیل';
