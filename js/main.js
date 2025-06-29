@@ -301,3 +301,20 @@ async function checkConnection() {
 }
 
 console.log('Main module loaded successfully');
+
+// Initialize price chart when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize price chart after a short delay to ensure all modules are loaded
+    setTimeout(async () => {
+        try {
+            if (window.priceChart && window.priceChart.initialize) {
+                await window.priceChart.initialize();
+                console.log('Main: Price chart initialized successfully');
+            } else {
+                console.log('Main: Price chart module not available');
+            }
+        } catch (error) {
+            console.error('Main: Error initializing price chart:', error);
+        }
+    }, 1000);
+});

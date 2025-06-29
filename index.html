@@ -2272,6 +2272,12 @@
     </div>
     <div class="expand-content">
       <div class="price-chart-container">
+        <!-- Line Chart Canvas -->
+        <div class="price-chart-canvas-container">
+          <canvas id="price-chart-canvas"></canvas>
+        </div>
+        
+        <!-- Price Cards Grid -->
         <div class="price-chart-grid">
           <div class="price-chart-card">
             <div class="price-chart-icon">🪙</div>
@@ -2299,15 +2305,19 @@
           </div>
         </div>
         
+        <!-- Chart Controls -->
         <div class="price-chart-controls">
           <div class="price-chart-info">
-            آخرین به‌روزرسانی: <span id="chart-last-update">-</span>
+            <span>آخرین به‌روزرسانی: <span id="chart-last-update">-</span></span>
+            <span>•</span>
+            <span>به‌روزرسانی خودکار هر 30 ثانیه</span>
           </div>
           <button class="price-chart-refresh-btn" onclick="refreshPriceChart()">
             🔄 به‌روزرسانی
           </button>
         </div>
         
+        <!-- Messages -->
         <div class="price-chart-messages">
           <div id="price-chart-error" class="price-chart-error"></div>
           <div id="price-chart-success" class="price-chart-success"></div>

@@ -1,4 +1,4 @@
-// Price Chart Module
+// Price Chart Module with Chart.js Line Charts
 let priceChartInterval = null;
 let priceHistory = {
     lvlUsd: [],
@@ -6,10 +6,18 @@ let priceHistory = {
     polUsd: []
 };
 
+let chartInstance = null;
+
 // Initialize price chart
 async function initializePriceChart() {
     try {
         console.log('Price Chart: Initializing...');
+        
+        // Load Chart.js if not already loaded
+        await loadChartJS();
+        
+        // Initialize the chart
+        initializeChart();
         
         // Load initial prices
         await updatePriceChart();
@@ -25,6 +33,188 @@ async function initializePriceChart() {
     }
 }
 
+// Load Chart.js dynamically
+async function loadChartJS() {
+    if (window.Chart) {
+        return;
+    }
+    
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js';
+        script.onload = () => {
+            console.log('Chart.js loaded successfully');
+            resolve();
+        };
+        script.onerror = () => {
+            console.error('Failed to load Chart.js');
+            reject(new Error('Failed to load Chart.js'));
+        };
+        document.head.appendChild(script);
+    });
+}
+
+// Initialize the line chart
+function initializeChart() {
+    const ctx = document.getElementById('price-chart-canvas');
+    if (!ctx) {
+        console.error('Price Chart: Canvas element not found');
+        return;
+    }
+    
+    // Destroy existing chart if any
+    if (chartInstance) {
+        chartInstance.destroy();
+    }
+    
+    chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [
+                {
+                    label: 'قیمت LVL (USD)',
+                    data: [],
+                    borderColor: '#00ff88',
+                    backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0.4,
+                    pointRadius: 3,
+                    pointHoverRadius: 6
+                },
+                {
+                    label: 'قیمت LVL (POL)',
+                    data: [],
+                    borderColor: '#00ccff',
+                    backgroundColor: 'rgba(0, 204, 255, 0.1)',
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0.4,
+                    pointRadius: 3,
+                    pointHoverRadius: 6
+                },
+                {
+                    label: 'قیمت POL (USD)',
+                    data: [],
+                    borderColor: '#ff6b6b',
+                    backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0.4,
+                    pointRadius: 3,
+                    pointHoverRadius: 6
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        color: '#ffffff',
+                        font: {
+                            size: 12,
+                            family: 'Tahoma, Arial, sans-serif'
+                        },
+                        usePointStyle: true,
+                        pointStyle: 'circle'
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: '#ffffff',
+                    bodyColor: '#ffffff',
+                    borderColor: '#00ff88',
+                    borderWidth: 1,
+                    cornerRadius: 8,
+                    displayColors: true,
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += new Intl.NumberFormat('en-US', {
+                                    minimumFractionDigits: 6,
+                                    maximumFractionDigits: 6
+                                }).format(context.parsed.y);
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    display: true,
+                    title: {
+                        display: true,
+                        text: 'زمان',
+                        color: '#ffffff',
+                        font: {
+                            size: 12,
+                            family: 'Tahoma, Arial, sans-serif'
+                        }
+                    },
+                    ticks: {
+                        color: '#cccccc',
+                        maxTicksLimit: 8,
+                        callback: function(value, index, values) {
+                            const date = new Date(this.getLabelForValue(value));
+                            return date.toLocaleTimeString('fa-IR', {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            });
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                },
+                y: {
+                    display: true,
+                    title: {
+                        display: true,
+                        text: 'قیمت',
+                        color: '#ffffff',
+                        font: {
+                            size: 12,
+                            family: 'Tahoma, Arial, sans-serif'
+                        }
+                    },
+                    ticks: {
+                        color: '#cccccc',
+                        callback: function(value, index, values) {
+                            return new Intl.NumberFormat('en-US', {
+                                minimumFractionDigits: 6,
+                                maximumFractionDigits: 6
+                            }).format(value);
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                }
+            },
+            elements: {
+                point: {
+                    hoverBackgroundColor: '#ffffff'
+                }
+            }
+        }
+    });
+    
+    console.log('Price Chart: Chart initialized');
+}
+
 // Update price chart data
 async function updatePriceChart() {
     try {
@@ -33,7 +223,7 @@ async function updatePriceChart() {
         // Get prices from contract
         const prices = await window.getPrices();
         
-        // Add to history (keep last 24 data points - 12 hours with 30s intervals)
+        // Add to history (keep last 48 data points - 24 hours with 30s intervals)
         const timestamp = Date.now();
         
         priceHistory.lvlUsd.push({
@@ -51,15 +241,18 @@ async function updatePriceChart() {
             value: parseFloat(prices.polPrice)
         });
         
-        // Keep only last 24 data points
-        if (priceHistory.lvlUsd.length > 24) {
+        // Keep only last 48 data points
+        if (priceHistory.lvlUsd.length > 48) {
             priceHistory.lvlUsd.shift();
             priceHistory.lvlPol.shift();
             priceHistory.polUsd.shift();
         }
         
-        // Update UI
-        updatePriceChartUI(prices);
+        // Update chart data
+        updateChartData();
+        
+        // Update price cards
+        updatePriceCards(prices);
         
         // Calculate and display price changes
         updatePriceChanges();
@@ -72,8 +265,34 @@ async function updatePriceChart() {
     }
 }
 
-// Update price chart UI
-function updatePriceChartUI(prices) {
+// Update chart data
+function updateChartData() {
+    if (!chartInstance) return;
+    
+    // Prepare labels (time)
+    const labels = priceHistory.lvlUsd.map(item => 
+        new Date(item.time).toLocaleTimeString('fa-IR', {
+            hour: '2-digit',
+            minute: '2-digit'
+        })
+    );
+    
+    // Prepare datasets
+    const lvlUsdData = priceHistory.lvlUsd.map(item => item.value);
+    const lvlPolData = priceHistory.lvlPol.map(item => item.value);
+    const polUsdData = priceHistory.polUsd.map(item => item.value);
+    
+    // Update chart
+    chartInstance.data.labels = labels;
+    chartInstance.data.datasets[0].data = lvlUsdData;
+    chartInstance.data.datasets[1].data = lvlPolData;
+    chartInstance.data.datasets[2].data = polUsdData;
+    
+    chartInstance.update('none'); // Update without animation for better performance
+}
+
+// Update price cards
+function updatePriceCards(prices) {
     try {
         // Format prices
         const lvlUsdFormatted = formatPrice(prices.lvlPriceUSD, 6);
@@ -91,7 +310,7 @@ function updatePriceChartUI(prices) {
         updateElement('chart-last-update', timeString);
         
     } catch (error) {
-        console.error('Price Chart: Error updating UI:', error);
+        console.error('Price Chart: Error updating price cards:', error);
     }
 }
 
@@ -206,6 +425,12 @@ function stopPriceChart() {
         clearInterval(priceChartInterval);
         priceChartInterval = null;
         console.log('Price Chart: Stopped auto-updates');
+    }
+    
+    if (chartInstance) {
+        chartInstance.destroy();
+        chartInstance = null;
+        console.log('Price Chart: Chart destroyed');
     }
 }
 
