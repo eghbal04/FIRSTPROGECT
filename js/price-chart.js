@@ -6,15 +6,15 @@ let priceHistory = {
     lvlPol: [],
     polUsd: []
 };
-let cachedContractStats = { pol: 0, lvl: 0 };
 let chartInstance = null;
-let currentTimePeriod = '24h'; // Default to 24 hours
+let currentTimePeriod = '1D';
 let timePeriods = {
-    '24h': { label: '24 ساعت', hours: 24, interval: 5000 }, // 5 seconds
-    '7d': { label: '7 روز', hours: 168, interval: 60000 }, // 1 minute
-    '1m': { label: '1 ماه', hours: 720, interval: 300000 }, // 5 minutes
-    '1y': { label: '1 سال', hours: 8760, interval: 900000 } // 15 minutes
+    '1D': { label: '24 ساعت', hours: 24, interval: 5000 },
+    '7D': { label: '7 روز', hours: 168, interval: 30000 },
+    '1M': { label: '1 ماه', hours: 720, interval: 300000 },
+    '1Y': { label: '1 سال', hours: 8760, interval: 900000 }
 };
+let updateIntervals = [];
 
 // Initialize price chart
 async function initializePriceChart() {
@@ -64,25 +64,36 @@ function setupTimePeriodButtons() {
 // Change time period
 async function changeTimePeriod(period) {
     try {
-        console.log('Price Chart: Changing time period to:', period);
+        if (!timePeriods[period]) {
+            console.warn('Price Chart: Invalid time period:', period);
+            return;
+        }
         
-        // Update current period
         currentTimePeriod = period;
-        
-        // Update button states
         updateTimePeriodButtons();
         
-        // Restart auto-update with new interval
-        startChartIntervals();
+        // به‌روزرسانی نمودار با داده‌های فیلتر شده
+        if (chartInstance && priceHistory.lvlUsd.length > 0) {
+            const timestamp = Date.now();
+            const periodHours = timePeriods[period].hours;
+            const periodCutoff = timestamp - (periodHours * 60 * 60 * 1000);
+            
+            const filteredLvlUsd = priceHistory.lvlUsd.filter(item => item.time >= periodCutoff);
+            const filteredLvlPol = priceHistory.lvlPol.filter(item => item.time >= periodCutoff);
+            const filteredPolUsd = priceHistory.polUsd.filter(item => item.time >= periodCutoff);
+            
+            chartInstance.data.labels = filteredLvlUsd.map(item => new Date(item.time).toLocaleTimeString('fa-IR'));
+            chartInstance.data.datasets[0].data = filteredLvlUsd.map(item => item.value);
+            chartInstance.data.datasets[1].data = filteredLvlPol.map(item => item.value);
+            chartInstance.data.datasets[2].data = filteredPolUsd.map(item => item.value);
+            
+            chartInstance.update();
+        }
         
-        // Update chart with new data
-        await updatePriceChart();
-        
-        console.log('Price Chart: Time period changed successfully');
+        console.log('Price Chart: Time period changed to:', period);
         
     } catch (error) {
         console.error('Price Chart: Error changing time period:', error);
-        showPriceChartError('خطا در تغییر بازه زمانی');
     }
 }
 
@@ -105,11 +116,23 @@ function updateTimePeriodButtons() {
 
 // Start auto-update with current period interval
 function startChartIntervals() {
-    if (contractStatsInterval) clearInterval(contractStatsInterval);
-    fetchContractStats();
-    contractStatsInterval = setInterval(fetchContractStats, 5 * 60 * 1000); // 5 minutes
-    if (priceChartInterval) clearInterval(priceChartInterval);
-    priceChartInterval = setInterval(updatePriceChart, timePeriods[currentTimePeriod].interval);
+    // پاک کردن interval های قبلی
+    updateIntervals.forEach(interval => clearInterval(interval));
+    updateIntervals = [];
+    
+    // شروع interval های جدید
+    const priceUpdateInterval = setInterval(updatePriceChart, 5000); // هر 5 ثانیه
+    const contractUpdateInterval = setInterval(async () => {
+        try {
+            await updatePriceChart();
+        } catch (error) {
+            console.error('Price Chart: Error in contract update interval:', error);
+        }
+    }, 300000); // هر 5 دقیقه
+    
+    updateIntervals.push(priceUpdateInterval, contractUpdateInterval);
+    
+    console.log('Price Chart: Intervals started');
 }
 
 // Load Chart.js dynamically
@@ -329,105 +352,118 @@ async function updatePriceChart() {
     try {
         console.log('Price Chart: Updating prices...');
         
-        const polUsd = await fetchPolUsdPrice();
-        const { pol, lvl } = cachedContractStats;
-        const lvlPol = (lvl > 0) ? pol / lvl : 0;
-        const lvlUsd = lvlPol * polUsd;
+        // دریافت قیمت POL از Coingecko
+        const polUsdPrice = await fetchPolUsdPrice();
+        
+        // دریافت آمار قرارداد
+        const contractStats = await fetchContractStats();
+        
+        if (!contractStats) {
+            console.warn('Price Chart: No contract stats available');
+            return;
+        }
+        
+        // محاسبه قیمت‌ها
+        const polBalance = parseFloat(contractStats.polBalance || '0');
+        const circulatingSupply = parseFloat(contractStats.circulatingSupply || '1');
+        
+        // محاسبه LVL/POL (قیمت توکن بر حسب POL)
+        const lvlPolPrice = circulatingSupply > 0 ? polBalance / circulatingSupply : 0.001;
+        
+        // محاسبه LVL/USD (قیمت توکن بر حسب دلار)
+        const lvlUsdPrice = lvlPolPrice * polUsdPrice;
+        
+        const prices = {
+            lvlPol: lvlPolPrice,
+            lvlUsd: lvlUsdPrice,
+            polUsd: polUsdPrice
+        };
+        
+        console.log('Price Chart: Calculated prices:', {
+            'LVL/POL': lvlPolPrice,
+            'LVL/USD': lvlUsdPrice,
+            'POL/USD': polUsdPrice
+        });
+        
+        // به‌روزرسانی کارت‌های قیمت
+        updatePriceCards(prices);
+        
+        // به‌روزرسانی نمودار
+        updateChartData(prices);
+        
+        console.log('Price Chart: Updated successfully');
+        
+    } catch (error) {
+        console.error('Price Chart: Error updating price chart:', error);
+        
+        // استفاده از قیمت‌های پیش‌فرض در صورت خطا
+        const fallbackPrices = {
+            lvlPol: 0.001,
+            lvlUsd: 0.001,
+            polUsd: 1.00
+        };
+        
+        updatePriceCards(fallbackPrices);
+        updateChartData(fallbackPrices);
+        
+        console.log('Price Chart: Using fallback prices due to error');
+    }
+}
+
+// Update chart data
+function updateChartData(prices) {
+    if (!chartInstance) return;
+    
+    try {
         const timestamp = Date.now();
-        priceHistory.lvlUsd.push({ time: timestamp, value: lvlUsd });
-        priceHistory.lvlPol.push({ time: timestamp, value: lvlPol });
-        priceHistory.polUsd.push({ time: timestamp, value: polUsd });
-        // Keep up to 1 year of data
+        
+        // اضافه کردن داده‌های جدید به تاریخچه
+        priceHistory.lvlUsd.push({ time: timestamp, value: prices.lvlUsd });
+        priceHistory.lvlPol.push({ time: timestamp, value: prices.lvlPol });
+        priceHistory.polUsd.push({ time: timestamp, value: prices.polUsd });
+        
+        // نگهداری حداکثر 1 سال داده
         const cutoff = timestamp - (365 * 24 * 60 * 60 * 1000);
         priceHistory.lvlUsd = priceHistory.lvlUsd.filter(item => item.time >= cutoff);
         priceHistory.lvlPol = priceHistory.lvlPol.filter(item => item.time >= cutoff);
         priceHistory.polUsd = priceHistory.polUsd.filter(item => item.time >= cutoff);
         
-        // Update chart data
-        updateChartData();
+        // فیلتر کردن داده‌ها بر اساس دوره زمانی انتخاب شده
+        const periodHours = timePeriods[currentTimePeriod]?.hours || 24;
+        const periodCutoff = timestamp - (periodHours * 60 * 60 * 1000);
         
-        // Update price cards
-        updatePriceCards({
-            lvlPriceUSD: lvlUsd,
-            lvlPricePol: lvlPol,
-            polPrice: polUsd
-        });
+        const filteredLvlUsd = priceHistory.lvlUsd.filter(item => item.time >= periodCutoff);
+        const filteredLvlPol = priceHistory.lvlPol.filter(item => item.time >= periodCutoff);
+        const filteredPolUsd = priceHistory.polUsd.filter(item => item.time >= periodCutoff);
         
-        // Calculate and display price changes
-        updatePriceChanges();
+        // به‌روزرسانی داده‌های نمودار
+        chartInstance.data.labels = filteredLvlUsd.map(item => new Date(item.time).toLocaleTimeString('fa-IR'));
+        chartInstance.data.datasets[0].data = filteredLvlUsd.map(item => item.value);
+        chartInstance.data.datasets[1].data = filteredLvlPol.map(item => item.value);
+        chartInstance.data.datasets[2].data = filteredPolUsd.map(item => item.value);
         
-        console.log('Price Chart: Updated successfully');
+        chartInstance.update('none');
         
     } catch (error) {
-        console.error('Price Chart: Error updating prices:', error);
-        showPriceChartError('خطا در به‌روزرسانی قیمت‌ها');
+        console.error('Price Chart: Error updating chart data:', error);
     }
-}
-
-// Update chart data
-function updateChartData() {
-    if (!chartInstance) return;
-    
-    // Prepare labels (time) based on current period
-    const labels = priceHistory.lvlUsd.map(item => {
-        const date = new Date(item.time);
-        const period = currentTimePeriod;
-        
-        if (period === '24h') {
-            return date.toLocaleTimeString('fa-IR', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        } else if (period === '7d') {
-            return date.toLocaleDateString('fa-IR', {
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit'
-            });
-        } else if (period === '1m') {
-            return date.toLocaleDateString('fa-IR', {
-                month: 'short',
-                day: 'numeric'
-            });
-        } else {
-            return date.toLocaleDateString('fa-IR', {
-                year: 'numeric',
-                month: 'short'
-            });
-        }
-    });
-    
-    // Prepare datasets
-    const lvlUsdData = priceHistory.lvlUsd.map(item => item.value);
-    const lvlPolData = priceHistory.lvlPol.map(item => item.value);
-    const polUsdData = priceHistory.polUsd.map(item => item.value);
-    
-    // Update chart
-    chartInstance.data.labels = labels;
-    chartInstance.data.datasets[0].data = lvlUsdData;
-    chartInstance.data.datasets[1].data = lvlPolData;
-    chartInstance.data.datasets[2].data = polUsdData;
-    
-    chartInstance.update('none'); // Update without animation for better performance
 }
 
 // Update price cards
 function updatePriceCards(prices) {
     try {
         // Format prices
-        const lvlUsdFormatted = formatPrice(prices.lvlPriceUSD, 6);
-        const lvlPolFormatted = formatPrice(prices.lvlPricePol, 6);
-        const polUsdFormatted = formatPrice(prices.polPrice, 4);
+        const lvlUsdFormatted = formatPrice(prices.lvlUsd, 6);
+        const lvlPolFormatted = formatPrice(prices.lvlPol, 6);
+        const polUsdFormatted = formatPrice(prices.polUsd, 4);
         
         // Update price values
-        updateElement('chart-lvl-usd', lvlUsdFormatted, '$');
-        updateElement('chart-lvl-pol', lvlPolFormatted, '', ' POL');
-        updateElement('chart-pol-usd', polUsdFormatted, '$');
+        updateElement('lvl-usd-price', lvlUsdFormatted, '$');
+        updateElement('lvl-pol-price', lvlPolFormatted, '', ' POL');
+        updateElement('pol-usd-price', polUsdFormatted, '$');
         
-        // Update last update time
-        const now = new Date();
-        const timeString = now.toLocaleTimeString('fa-IR');
-        updateElement('price-chart-last-update', timeString);
+        // Calculate and display price changes
+        updatePriceChanges();
         
     } catch (error) {
         console.error('Price Chart: Error updating price cards:', error);
@@ -541,16 +577,28 @@ function showPriceChartSuccess(message) {
 
 // Stop price chart updates
 function stopPriceChart() {
-    if (priceChartInterval) {
-        clearInterval(priceChartInterval);
-        priceChartInterval = null;
-        console.log('Price Chart: Stopped auto-updates');
-    }
-    
-    if (chartInstance) {
-        chartInstance.destroy();
-        chartInstance = null;
-        console.log('Price Chart: Chart destroyed');
+    try {
+        // پاک کردن همه interval ها
+        updateIntervals.forEach(interval => clearInterval(interval));
+        updateIntervals = [];
+        
+        // پاک کردن نمودار
+        if (chartInstance) {
+            chartInstance.destroy();
+            chartInstance = null;
+        }
+        
+        // پاک کردن تاریخچه
+        priceHistory = {
+            lvlUsd: [],
+            lvlPol: [],
+            polUsd: []
+        };
+        
+        console.log('Price Chart: Stopped successfully');
+        
+    } catch (error) {
+        console.error('Price Chart: Error stopping price chart:', error);
     }
 }
 
@@ -558,26 +606,82 @@ async function fetchPolUsdPrice() {
     try {
         const url = 'https://api.coingecko.com/api/v3/simple/price?ids=polygon&vs_currencies=usd';
         const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
+        
+        // بررسی ساختار پاسخ
+        if (!data || !data.polygon || typeof data.polygon.usd !== 'number') {
+            console.warn('Price Chart: Invalid response structure from Coingecko:', data);
+            return 1.00; // قیمت پیش‌فرض POL
+        }
+        
+        console.log('Price Chart: POL/USD price from Coingecko:', data.polygon.usd);
         return data.polygon.usd;
-    } catch (e) {
-        console.error('Error fetching POL/USD from Coingecko:', e);
-        return 0;
+        
+    } catch (error) {
+        console.error('Price Chart: Error fetching POL/USD from Coingecko:', error);
+        
+        // استفاده از قیمت پیش‌فرض در صورت خطا
+        console.log('Price Chart: Using fallback POL price: 1.00 USD');
+        return 1.00; // قیمت پیش‌فرض POL
     }
 }
 
 async function fetchContractStats() {
     try {
         const { contract, provider } = await window.connectWallet();
-        const polBalance = await provider.getBalance(contract.target);
-        const circulatingSupply = await contract.circulatingSupply();
-        cachedContractStats = {
-            pol: parseFloat(ethers.formatEther(polBalance)),
-            lvl: parseFloat(ethers.formatUnits(circulatingSupply, 18))
+        
+        // دریافت آمار قرارداد
+        const [
+            totalUsers, totalSupply, binaryPool, 
+            rewardPool, totalPoints, totalClaimableBinaryPoints, pointValue
+        ] = await Promise.all([
+            contract.totalUsers().catch(() => 0n),
+            contract.totalSupply().catch(() => 0n),
+            contract.binaryPool().catch(() => 0n),
+            contract.rewardPool().catch(() => 0n),
+            contract.totalPoints().catch(() => 0n),
+            contract.totalClaimableBinaryPoints().catch(() => 0n),
+            contract.getPointValue().catch(() => 0n)
+        ]);
+        
+        // محاسبه circulatingSupply
+        let circulatingSupply = totalSupply;
+        try {
+            const contractBalance = await contract.balanceOf(contract.target);
+            circulatingSupply = totalSupply - contractBalance;
+        } catch (e) {
+            console.warn('Price Chart: Could not calculate circulating supply, using total supply');
+            circulatingSupply = totalSupply;
+        }
+        
+        // دریافت موجودی POL قرارداد
+        let polBalance = 0n;
+        try {
+            polBalance = await provider.getBalance(contract.target);
+        } catch (e) {
+            console.warn('Price Chart: Could not get contract POL balance:', e);
+        }
+        
+        return {
+            totalUsers: totalUsers.toString(),
+            totalSupply: ethers.formatUnits(totalSupply, 18),
+            circulatingSupply: ethers.formatUnits(circulatingSupply, 18),
+            binaryPool: ethers.formatEther(binaryPool),
+            rewardPool: ethers.formatEther(rewardPool),
+            totalPoints: ethers.formatUnits(totalPoints, 18),
+            totalClaimableBinaryPoints: ethers.formatUnits(totalClaimableBinaryPoints, 18),
+            pointValue: ethers.formatUnits(pointValue, 18),
+            polBalance: ethers.formatEther(polBalance)
         };
-    } catch (e) {
-        console.error('Error fetching contract stats:', e);
-        cachedContractStats = { pol: 0, lvl: 0 };
+        
+    } catch (error) {
+        console.error('Price Chart: Error fetching contract stats:', error);
+        return null;
     }
 }
 
