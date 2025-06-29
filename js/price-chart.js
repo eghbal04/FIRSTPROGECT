@@ -175,7 +175,7 @@ function initializeChart() {
             labels: [],
             datasets: [
                 {
-                    label: 'قیمت LVL (USD)',
+                    label: ' LVL (USD)',
                     data: [],
                     borderColor: '#00ff88',
                     backgroundColor: 'rgba(0, 255, 136, 0.1)',
@@ -186,7 +186,7 @@ function initializeChart() {
                     pointHoverRadius: 6
                 },
                 {
-                    label: 'قیمت LVL (POL)',
+                    label: ' LVL (POL)',
                     data: [],
                     borderColor: '#00ccff',
                     backgroundColor: 'rgba(0, 204, 255, 0.1)',
@@ -197,7 +197,7 @@ function initializeChart() {
                     pointHoverRadius: 6
                 },
                 {
-                    label: 'قیمت POL (USD)',
+                    label: ' POL (USD)',
                     data: [],
                     borderColor: '#ff6b6b',
                     backgroundColor: 'rgba(255, 107, 107, 0.1)',
