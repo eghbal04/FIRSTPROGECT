@@ -18,7 +18,6 @@
     <script src="js/walletconnect-provider.js"></script>
     <!-- بارگذاری WalletConnect Handler -->
     <script src="js/walletconnect-handler.js?v=5.7"></script>
-    <meta http-equiv="refresh" content="120">
     <style>
       body {
         background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
@@ -2190,20 +2189,8 @@
     </div>
     <div class="expand-content">
       <div class="dashboard-cards">
-        <div class="dashboard-card">
-          <div class="dashboard-card-icon"></div>
-          <div class="dashboard-card-content">
-            <h4>قیمت LVL (USD)</h4>
-            <div id="token-price">-</div>
-          </div>
-        </div>
-        <div class="dashboard-card">
-          <div class="dashboard-card-icon"></div>
-          <div class="dashboard-card-content">
-            <h4>قیمت LVL (POL)</h4>
-            <div id="token-price-matic">-</div>
-          </div>
-        </div>
+        <!-- حذف کارت قیمت LVL (USD) -->
+        <!-- حذف کارت قیمت LVL (POL) -->
         <div class="dashboard-card">
           <div class="dashboard-card-icon"></div>
           <div class="dashboard-card-content">
@@ -2315,12 +2302,8 @@
         <!-- Chart Controls -->
         <div class="price-chart-controls">
           <div class="price-chart-info">
-            <span>🕐 آخرین به‌روزرسانی: <span id="chart-last-update">-</span></span>
-            <span>📊 بازه فعلی: <span id="chart-current-period">24 ساعت</span></span>
+            <span>آخرین بروزرسانی: <span id="price-chart-last-update">-</span></span>
           </div>
-          <button class="price-chart-refresh-btn" onclick="window.priceChart.refresh()">
-            🔄 به‌روزرسانی
-          </button>
         </div>
         
         <!-- Messages -->

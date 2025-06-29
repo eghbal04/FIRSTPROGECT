@@ -227,7 +227,9 @@ function updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceC
     updateElement('total-points', Math.round(parseFloat(stats.totalPoints)), '', '', true);
     updateElement('claimed-points', Math.round(parseFloat(stats.totalClaimableBinaryPoints)), '', '', true);
     updateElement('remaining-points', Math.round(parseFloat(stats.totalPoints) - parseFloat(stats.totalClaimableBinaryPoints)), '', '', true);
-    updateElement('trading-volume', tradingVolume, '', ' POL', false, 4);
+    // موجودی قرارداد با نهایتاً ۶ رقم اعشار
+    const tradingVolumeNum = Number(tradingVolume);
+    updateElement('trading-volume', isNaN(tradingVolumeNum) ? 0 : tradingVolumeNum, '', ' POL', false, 6);
     let pointValueLVL = '-';
     let rewardPoolLVL = '-';
     if (parseFloat(prices.lvlPriceMatic) > 0) {

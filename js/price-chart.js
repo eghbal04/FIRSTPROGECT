@@ -1,18 +1,19 @@
 // Price Chart Module with Chart.js Line Charts
 let priceChartInterval = null;
+let contractStatsInterval = null;
 let priceHistory = {
     lvlUsd: [],
     lvlPol: [],
     polUsd: []
 };
-
+let cachedContractStats = { pol: 0, lvl: 0 };
 let chartInstance = null;
 let currentTimePeriod = '24h'; // Default to 24 hours
 let timePeriods = {
-    '24h': { label: '24 ساعت', hours: 24, interval: 30000 }, // 30 seconds
-    '7d': { label: '7 روز', hours: 168, interval: 300000 }, // 5 minutes
-    '1m': { label: '1 ماه', hours: 720, interval: 900000 }, // 15 minutes
-    '1y': { label: '1 سال', hours: 8760, interval: 3600000 } // 1 hour
+    '24h': { label: '24 ساعت', hours: 24, interval: 5000 }, // 5 seconds
+    '7d': { label: '7 روز', hours: 168, interval: 60000 }, // 1 minute
+    '1m': { label: '1 ماه', hours: 720, interval: 300000 }, // 5 minutes
+    '1y': { label: '1 سال', hours: 8760, interval: 900000 } // 15 minutes
 };
 
 // Initialize price chart
@@ -30,10 +31,11 @@ async function initializePriceChart() {
         setupTimePeriodButtons();
         
         // Load initial prices
+        await fetchContractStats();
         await updatePriceChart();
         
         // Start auto-update with current period interval
-        startAutoUpdate();
+        startChartIntervals();
         
         console.log('Price Chart: Initialized successfully');
         
@@ -71,7 +73,7 @@ async function changeTimePeriod(period) {
         updateTimePeriodButtons();
         
         // Restart auto-update with new interval
-        startAutoUpdate();
+        startChartIntervals();
         
         // Update chart with new data
         await updatePriceChart();
@@ -102,17 +104,12 @@ function updateTimePeriodButtons() {
 }
 
 // Start auto-update with current period interval
-function startAutoUpdate() {
-    // Stop existing interval
-    if (priceChartInterval) {
-        clearInterval(priceChartInterval);
-    }
-    
-    // Start new interval with current period settings
-    const interval = timePeriods[currentTimePeriod].interval;
-    priceChartInterval = setInterval(updatePriceChart, interval);
-    
-    console.log('Price Chart: Auto-update started with interval:', interval);
+function startChartIntervals() {
+    if (contractStatsInterval) clearInterval(contractStatsInterval);
+    fetchContractStats();
+    contractStatsInterval = setInterval(fetchContractStats, 5 * 60 * 1000); // 5 minutes
+    if (priceChartInterval) clearInterval(priceChartInterval);
+    priceChartInterval = setInterval(updatePriceChart, timePeriods[currentTimePeriod].interval);
 }
 
 // Load Chart.js dynamically
@@ -332,40 +329,29 @@ async function updatePriceChart() {
     try {
         console.log('Price Chart: Updating prices...');
         
-        // Get prices from contract
-        const prices = await window.getPrices();
-        
-        // Add to history (keep data based on current time period)
+        const polUsd = await fetchPolUsdPrice();
+        const { pol, lvl } = cachedContractStats;
+        const lvlPol = (lvl > 0) ? pol / lvl : 0;
+        const lvlUsd = lvlPol * polUsd;
         const timestamp = Date.now();
-        
-        priceHistory.lvlUsd.push({
-            time: timestamp,
-            value: parseFloat(prices.lvlPriceUSD)
-        });
-        
-        priceHistory.lvlPol.push({
-            time: timestamp,
-            value: parseFloat(prices.lvlPricePol)
-        });
-        
-        priceHistory.polUsd.push({
-            time: timestamp,
-            value: parseFloat(prices.polPrice)
-        });
-        
-        // Keep only data within current time period
-        const periodHours = timePeriods[currentTimePeriod].hours;
-        const cutoffTime = timestamp - (periodHours * 60 * 60 * 1000);
-        
-        priceHistory.lvlUsd = priceHistory.lvlUsd.filter(item => item.time >= cutoffTime);
-        priceHistory.lvlPol = priceHistory.lvlPol.filter(item => item.time >= cutoffTime);
-        priceHistory.polUsd = priceHistory.polUsd.filter(item => item.time >= cutoffTime);
+        priceHistory.lvlUsd.push({ time: timestamp, value: lvlUsd });
+        priceHistory.lvlPol.push({ time: timestamp, value: lvlPol });
+        priceHistory.polUsd.push({ time: timestamp, value: polUsd });
+        // Keep up to 1 year of data
+        const cutoff = timestamp - (365 * 24 * 60 * 60 * 1000);
+        priceHistory.lvlUsd = priceHistory.lvlUsd.filter(item => item.time >= cutoff);
+        priceHistory.lvlPol = priceHistory.lvlPol.filter(item => item.time >= cutoff);
+        priceHistory.polUsd = priceHistory.polUsd.filter(item => item.time >= cutoff);
         
         // Update chart data
         updateChartData();
         
         // Update price cards
-        updatePriceCards(prices);
+        updatePriceCards({
+            lvlPriceUSD: lvlUsd,
+            lvlPricePol: lvlPol,
+            polPrice: polUsd
+        });
         
         // Calculate and display price changes
         updatePriceChanges();
@@ -441,7 +427,7 @@ function updatePriceCards(prices) {
         // Update last update time
         const now = new Date();
         const timeString = now.toLocaleTimeString('fa-IR');
-        updateElement('chart-last-update', timeString);
+        updateElement('price-chart-last-update', timeString);
         
     } catch (error) {
         console.error('Price Chart: Error updating price cards:', error);
@@ -568,15 +554,30 @@ function stopPriceChart() {
     }
 }
 
-// Manual refresh function
-async function refreshPriceChart() {
+async function fetchPolUsdPrice() {
     try {
-        console.log('Price Chart: Manual refresh requested');
-        await updatePriceChart();
-        showPriceChartSuccess('قیمت‌ها به‌روزرسانی شدند');
-    } catch (error) {
-        console.error('Price Chart: Error in manual refresh:', error);
-        showPriceChartError('خطا در به‌روزرسانی دستی');
+        const url = 'https://api.coingecko.com/api/v3/simple/price?ids=polygon&vs_currencies=usd';
+        const response = await fetch(url);
+        const data = await response.json();
+        return data.polygon.usd;
+    } catch (e) {
+        console.error('Error fetching POL/USD from Coingecko:', e);
+        return 0;
+    }
+}
+
+async function fetchContractStats() {
+    try {
+        const { contract, provider } = await window.connectWallet();
+        const polBalance = await provider.getBalance(contract.target);
+        const circulatingSupply = await contract.circulatingSupply();
+        cachedContractStats = {
+            pol: parseFloat(ethers.formatEther(polBalance)),
+            lvl: parseFloat(ethers.formatUnits(circulatingSupply, 18))
+        };
+    } catch (e) {
+        console.error('Error fetching contract stats:', e);
+        cachedContractStats = { pol: 0, lvl: 0 };
     }
 }
 
@@ -584,7 +585,6 @@ async function refreshPriceChart() {
 window.priceChart = {
     initialize: initializePriceChart,
     stop: stopPriceChart,
-    refresh: refreshPriceChart,
     update: updatePriceChart,
     changeTimePeriod: changeTimePeriod
 };

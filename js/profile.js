@@ -89,10 +89,12 @@ function updateProfileUI(profile) {
 
     // موجودی‌ها
     const maticEl = document.getElementById('profile-matic');
-    if (maticEl) maticEl.textContent = formatNumber(profile.maticBalance, 6);
+    if (maticEl) maticEl.textContent = formatNumber(profile.maticBalance || profile.polBalance, 6);
     const maticUsdEl = document.getElementById('profile-matic-usd');
-    if (maticUsdEl) maticUsdEl.textContent = profile.maticValueUSD && profile.maticValueUSD !== '0'
-        ? `(${formatNumber(profile.maticValueUSD, 2)}$)` : '';
+    if (maticUsdEl) {
+        const usd = profile.polValueUSD || profile.maticValueUSD;
+        maticUsdEl.textContent = usd && usd !== '0' ? `(${formatNumber(usd, 2)}$)` : '';
+    }
     const lvlEl = document.getElementById('profile-lvl');
     if (lvlEl) lvlEl.textContent = formatNumber(profile.lvlBalance, 6);
     const lvlUsdEl = document.getElementById('profile-lvl-usd');
