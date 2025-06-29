@@ -234,7 +234,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 
             } catch (error) {
                 console.error('Swap: Error processing transaction:', error);
-                let userMessage = 'خطا در پردازش تراکنش: ' + (error.message || error);
+                let userMessage = 'خطا در انجام تبدیل. لطفاً دوباره تلاش کنید.';
+
                 if (
                     error.code === 4001 ||
                     (typeof error.message === 'string' && (
@@ -244,7 +245,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     ))
                 ) {
                     userMessage = 'تراکنش توسط کاربر لغو شد.';
+                } else if (typeof error.message === 'string') {
+                    if (error.message.toLowerCase().includes('insufficient funds')) {
+                        userMessage = 'موجودی شما کافی نیست.';
+                    } else if (error.message.toLowerCase().includes('execution reverted')) {
+                        userMessage = 'تراکنش توسط قرارداد رد شد. مقدار یا شرایط را بررسی کنید.';
+                    } else if (error.message.toLowerCase().includes('replacement transaction underpriced')) {
+                        userMessage = 'کارمزد تراکنش کافی نیست. لطفاً کارمزد را افزایش دهید.';
+                    }
                 }
+
                 showSwapError(userMessage);
             } finally {
                 swapButton.disabled = false;
