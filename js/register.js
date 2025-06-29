@@ -1,32 +1,27 @@
 // register.js - مدیریت بخش ثبت‌نام و ارتقا
 let isRegisterLoading = false;
+let registerDataLoaded = false;
 
 document.addEventListener('DOMContentLoaded', function() {
     // Register section loaded, waiting for wallet connection...
-    waitForWalletConnection();
+    console.log('Register section loaded');
 });
-
-async function waitForWalletConnection() {
-    try {
-        // Register data will be loaded when tab is selected
-    } catch (error) {
-        console.error("Error in register section:", error);
-    }
-}
 
 // تابع بارگذاری اطلاعات ثبت‌نام
 async function loadRegisterData() {
-    if (isRegisterLoading) {
-        // Register already loading, skipping...
+    if (isRegisterLoading || registerDataLoaded) {
+        console.log('Register: Already loading or loaded, skipping...');
         return;
     }
     
     isRegisterLoading = true;
     
     try {
+        console.log('Register: Loading register data...');
+        
         // Connecting to wallet for register data...
         const { contract, address } = await connectWallet();
-        // Wallet connected, loading register data...
+        console.log('Register: Wallet connected, loading register data...');
         
         // دریافت اطلاعات کاربر
         const userData = await contract.users(address);
@@ -60,7 +55,8 @@ async function loadRegisterData() {
             showRegistrationForm(registrationPriceFormatted, lvlBalanceFormatted, tokenPriceUSDFormatted);
         }
         
-        // Register data loaded successfully
+        registerDataLoaded = true;
+        console.log('Register: Data loaded successfully');
         
     } catch (error) {
         console.error('Error loading register data:', error);
@@ -258,6 +254,9 @@ async function performRegistration() {
         
         showRegisterSuccess("ثبت‌نام با موفقیت انجام شد!");
         
+        // ریست کردن وضعیت بارگذاری برای بارگذاری مجدد
+        registerDataLoaded = false;
+        
         // بارگذاری مجدد اطلاعات
         setTimeout(() => {
             loadRegisterData();
@@ -287,6 +286,9 @@ async function performUpgrade() {
         await tx.wait();
         
         showRegisterSuccess("ارتقا با موفقیت انجام شد!");
+        
+        // ریست کردن وضعیت بارگذاری برای بارگذاری مجدد
+        registerDataLoaded = false;
         
         // بارگذاری مجدد اطلاعات
         setTimeout(() => {
