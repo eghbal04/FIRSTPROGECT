@@ -186,15 +186,15 @@ async function renderTreeNode(contract, userAddress, container, level) {
         const nodeHTML = createNodeHTML(userData, userAddress, isCurrentUser, level);
         container.innerHTML = nodeHTML;
         
-        // رندر فرزندان
-        if (userData.leftChild !== ethers.ZeroAddress) {
+        // رندر فرزندان - بررسی معتبر بودن آدرس‌ها
+        if (userData.leftChild && userData.leftChild !== ethers.ZeroAddress && userData.leftChild !== '0x0000000000000000000000000000000000000000') {
             const leftContainer = container.querySelector('.left-child');
             if (leftContainer) {
                 await renderChildNode(contract, userData.leftChild, leftContainer, 'left', level + 1);
             }
         }
         
-        if (userData.rightChild !== ethers.ZeroAddress) {
+        if (userData.rightChild && userData.rightChild !== ethers.ZeroAddress && userData.rightChild !== '0x0000000000000000000000000000000000000000') {
             const rightContainer = container.querySelector('.right-child');
             if (rightContainer) {
                 await renderChildNode(contract, userData.rightChild, rightContainer, 'right', level + 1);
@@ -209,6 +209,12 @@ async function renderTreeNode(contract, userAddress, container, level) {
 // تابع رندر گره فرزند
 async function renderChildNode(contract, childAddress, container, position, level) {
     try {
+        // بررسی معتبر بودن آدرس
+        if (!childAddress || childAddress === ethers.ZeroAddress || childAddress === '0x0000000000000000000000000000000000000000') {
+            console.log('Invalid child address:', childAddress);
+            return;
+        }
+        
         const userData = await contract.users(childAddress);
         const currentAddress = await window.contractConfig.signer.getAddress();
         const isCurrentUser = childAddress.toLowerCase() === currentAddress.toLowerCase();
@@ -251,8 +257,8 @@ function createNodeHTML(userData, userAddress, isCurrentUser, level) {
     const childrenContainer = `
         <div class="children-container" id="children-${userAddress}">
             <div class="children-wrapper">
-                ${userData.leftChild !== ethers.ZeroAddress ? `<div class="tree-node child-node left-child level-${level + 1}" data-address="${userData.leftChild}"></div>` : ''}
-                ${userData.rightChild !== ethers.ZeroAddress ? `<div class="tree-node child-node right-child level-${level + 1}" data-address="${userData.rightChild}"></div>` : ''}
+                ${userData.leftChild && userData.leftChild !== ethers.ZeroAddress && userData.leftChild !== '0x0000000000000000000000000000000000000000' ? `<div class="tree-node child-node left-child level-${level + 1}" data-address="${userData.leftChild}"></div>` : ''}
+                ${userData.rightChild && userData.rightChild !== ethers.ZeroAddress && userData.rightChild !== '0x0000000000000000000000000000000000000000' ? `<div class="tree-node child-node right-child level-${level + 1}" data-address="${userData.rightChild}"></div>` : ''}
             </div>
         </div>
     `;
