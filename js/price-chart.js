@@ -457,13 +457,33 @@ function updatePriceCards(prices) {
         const lvlPolFormatted = formatPrice(prices.lvlPol, 6);
         const polUsdFormatted = formatPrice(prices.polUsd, 4);
         
-        // Update price values
+        // Update chart price cards (کارت‌های نمودار)
         updateElement('lvl-usd-price', lvlUsdFormatted, '$');
         updateElement('lvl-pol-price', lvlPolFormatted, '', ' POL');
         updateElement('pol-usd-price', polUsdFormatted, '$');
         
+        // Update bottom price cards (کارت‌های پایین صفحه)
+        updateElement('chart-lvl-usd', lvlUsdFormatted, '$');
+        updateElement('chart-lvl-pol', lvlPolFormatted, '', ' POL');
+        updateElement('chart-pol-usd', polUsdFormatted, '$');
+        
         // Calculate and display price changes
         updatePriceChanges();
+        
+        // Update last update time
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('fa-IR', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+        updateElement('price-chart-last-update', timeString);
+        
+        console.log('Price Chart: Updated all price cards:', {
+            lvlUsd: lvlUsdFormatted,
+            lvlPol: lvlPolFormatted,
+            polUsd: polUsdFormatted
+        });
         
     } catch (error) {
         console.error('Price Chart: Error updating price cards:', error);
