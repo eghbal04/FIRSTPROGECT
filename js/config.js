@@ -1525,9 +1525,9 @@ window.getUserProfile = async function() {
                 binaryPointCap: 0,
                 totalPurchasedMATIC: "0",
                 totalPurchasedKind: "0",
-                maticBalance: "0",
+                polBalance: "0",
                 lvlBalance: "0",
-                maticValueUSD: "0",
+                polValueUSD: "0",
                 lvlValueUSD: "0",
                 registered: false,
                 index: "0"
@@ -1540,47 +1540,47 @@ window.getUserProfile = async function() {
             throw new Error('No provider available for balance check');
         }
         
-        let maticBalance = 0n;
+        let polBalance = 0n;
         let lvlBalance = 0n;
         
         try {
-            [maticBalance, lvlBalance] = await Promise.all([
+            [polBalance, lvlBalance] = await Promise.all([
                 balanceProvider.getBalance(address),
                 contract.balanceOf(address)
             ]);
-            console.log('Profile: Balances received - MATIC:', maticBalance.toString(), 'LVL:', lvlBalance.toString());
+            console.log('Profile: Balances received - POL:', polBalance.toString(), 'LVL:', lvlBalance.toString());
         } catch (error) {
             console.error('Profile: Error fetching balances:', error);
         }
         
         // دریافت قیمت‌ها برای محاسبه ارزش دلاری
         let lvlPriceUSD = 0n;
-        let maticPrice = 0n;
+        let polPrice = 0n;
         
         try {
-            [lvlPriceUSD, maticPrice] = await Promise.all([
+            [lvlPriceUSD, polPrice] = await Promise.all([
                 contract.getTokenPriceInUSD(),
                 contract.getLatestMaticPrice()
             ]);
-            console.log('Profile: Prices received - LVL USD:', lvlPriceUSD.toString(), 'MATIC USD:', maticPrice.toString());
+            console.log('Profile: Prices received - LVL USD:', lvlPriceUSD.toString(), 'POL USD:', polPrice.toString());
         } catch (error) {
             console.error('Profile: Error fetching prices:', error);
         }
         
         // محاسبه ارزش دلاری (همه مقادیر BigInt هستند)
         let lvlValueUSD = 0n;
-        let maticValueUSD = 0n;
+        let polValueUSD = 0n;
         try {
             if (lvlBalance && lvlPriceUSD && lvlBalance > 0n && lvlPriceUSD > 0n) {
                 lvlValueUSD = (lvlBalance * lvlPriceUSD) / (10n ** 18n);
             }
-            if (maticBalance && maticPrice && maticBalance > 0n && maticPrice > 0n) {
-                maticValueUSD = (maticBalance * maticPrice) / (10n ** 18n);
+            if (polBalance && polPrice && polBalance > 0n && polPrice > 0n) {
+                polValueUSD = (polBalance * polPrice) / (10n ** 18n);
             }
         } catch (e) {
             console.error('Profile: Error calculating USD values:', e);
             lvlValueUSD = 0n;
-            maticValueUSD = 0n;
+            polValueUSD = 0n;
         }
 
         // فرمت‌دهی خروجی و جلوگیری از undefined
@@ -1607,9 +1607,9 @@ window.getUserProfile = async function() {
             binaryPointCap: user.binaryPointCap ? user.binaryPointCap.toString() : '0',
             totalPurchasedMATIC: ethers.formatEther(user.totalPurchasedMATIC || 0n),
             totalPurchasedKind: user.totalPurchasedKind ? user.totalPurchasedKind.toString() : '0',
-            maticBalance: ethers.formatEther(maticBalance || 0n),
+            polBalance: ethers.formatEther(polBalance || 0n),
             lvlBalance: ethers.formatUnits(lvlBalance || 0n, 18),
-            maticValueUSD: safeFormat(maticValueUSD, 8),
+            polValueUSD: safeFormat(polValueUSD, 8),
             lvlValueUSD: safeFormat(lvlValueUSD, 8),
             registered: user.activated || false,
             index: user.index ? user.index.toString() : '0'
@@ -1628,9 +1628,9 @@ window.getUserProfile = async function() {
             binaryPointCap: 0,
             totalPurchasedMATIC: "0",
             totalPurchasedKind: "0",
-            maticBalance: "0",
+            polBalance: "0",
             lvlBalance: "0",
-            maticValueUSD: "0",
+            polValueUSD: "0",
             lvlValueUSD: "0",
             registered: false,
             index: "0"
@@ -1644,7 +1644,7 @@ window.getPrices = async function() {
         const { contract } = await window.connectWallet();
         
         // دریافت قیمت‌ها به صورت موازی
-        const [lvlPriceUSD, lvlPriceMatic, maticPrice] = await Promise.all([
+        const [lvlPriceUSD, lvlPricePol, polPrice] = await Promise.all([
             contract.getTokenPriceInUSD().catch(() => ethers.parseUnits("0.0012", 8)),
             contract.updateTokenPrice().catch(() => ethers.parseUnits("0.0012", 18)),
             contract.getLatestMaticPrice().catch(() => ethers.parseUnits("1.00", 8))
@@ -1652,15 +1652,15 @@ window.getPrices = async function() {
         
         return {
             lvlPriceUSD: ethers.formatUnits(lvlPriceUSD, 8),
-            lvlPriceMatic: ethers.formatUnits(lvlPriceMatic, 18),
-            maticPrice: ethers.formatUnits(maticPrice, 8)
+            lvlPricePol: ethers.formatUnits(lvlPricePol, 18),
+            polPrice: ethers.formatUnits(polPrice, 8)
         };
     } catch (error) {
         console.error('Central: Error fetching prices:', error);
         return {
             lvlPriceUSD: "0.0012",
-            lvlPriceMatic: "0.0012",
-            maticPrice: "1.00"
+            lvlPricePol: "0.0012",
+            polPrice: "1.00"
         };
     }
 };
@@ -1785,34 +1785,34 @@ window.debugCirculatingSupply = async function() {
     }
 };
 
-// تابع debug برای تست موجودی MATIC قرارداد
-window.debugContractMaticBalance = async function() {
+// تابع debug برای تست موجودی POL قرارداد
+window.debugContractPolBalance = async function() {
     try {
         const { contract, provider } = await window.connectWallet();
         
-        console.log('Debug: Testing contract MATIC balance...');
+        console.log('Debug: Testing contract POL balance...');
         console.log('Debug: Contract address:', contract.target);
         
-        // تست موجودی MATIC قرارداد
+        // تست موجودی POL قرارداد
         try {
-            const maticBalance = await provider.getBalance(contract.target);
-            console.log('Debug: Contract MATIC balance (wei):', maticBalance.toString());
-            console.log('Debug: Contract MATIC balance (POLIC):', ethers.formatEther(maticBalance));
+            const polBalance = await provider.getBalance(contract.target);
+            console.log('Debug: Contract POL balance (wei):', polBalance.toString());
+            console.log('Debug: Contract POL balance (POL):', ethers.formatEther(polBalance));
         } catch (e) {
-            console.log('Debug: Contract MATIC balance failed:', e.message);
+            console.log('Debug: Contract POL balance failed:', e.message);
         }
         
         // تست تابع getContractMaticBalance از قرارداد
         try {
-            const contractMaticBalance = await contract.getContractMaticBalance();
-            console.log('Debug: Contract getContractMaticBalance (wei):', contractMaticBalance.toString());
-            console.log('Debug: Contract getContractMaticBalance (POLIC):', ethers.formatEther(contractMaticBalance));
+            const contractPolBalance = await contract.getContractMaticBalance();
+            console.log('Debug: Contract getContractMaticBalance (wei):', contractPolBalance.toString());
+            console.log('Debug: Contract getContractMaticBalance (POL):', ethers.formatEther(contractPolBalance));
         } catch (e) {
             console.log('Debug: getContractMaticBalance failed:', e.message);
         }
         
     } catch (error) {
-        console.error('Debug: Error testing contract MATIC balance:', error);
+        console.error('Debug: Error testing contract POL balance:', error);
     }
 };
 

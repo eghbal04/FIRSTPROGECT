@@ -2,8 +2,8 @@
 let priceChartInterval = null;
 let priceHistory = {
     lvlUsd: [],
-    lvlMatic: [],
-    maticUsd: []
+    lvlPol: [],
+    polUsd: []
 };
 
 // Initialize price chart
@@ -41,21 +41,21 @@ async function updatePriceChart() {
             value: parseFloat(prices.lvlPriceUSD)
         });
         
-        priceHistory.lvlMatic.push({
+        priceHistory.lvlPol.push({
             time: timestamp,
-            value: parseFloat(prices.lvlPriceMatic)
+            value: parseFloat(prices.lvlPricePol)
         });
         
-        priceHistory.maticUsd.push({
+        priceHistory.polUsd.push({
             time: timestamp,
-            value: parseFloat(prices.maticPrice)
+            value: parseFloat(prices.polPrice)
         });
         
         // Keep only last 24 data points
         if (priceHistory.lvlUsd.length > 24) {
             priceHistory.lvlUsd.shift();
-            priceHistory.lvlMatic.shift();
-            priceHistory.maticUsd.shift();
+            priceHistory.lvlPol.shift();
+            priceHistory.polUsd.shift();
         }
         
         // Update UI
@@ -77,13 +77,13 @@ function updatePriceChartUI(prices) {
     try {
         // Format prices
         const lvlUsdFormatted = formatPrice(prices.lvlPriceUSD, 6);
-        const lvlMaticFormatted = formatPrice(prices.lvlPriceMatic, 6);
-        const maticUsdFormatted = formatPrice(prices.maticPrice, 4);
+        const lvlPolFormatted = formatPrice(prices.lvlPricePol, 6);
+        const polUsdFormatted = formatPrice(prices.polPrice, 4);
         
         // Update price values
         updateElement('chart-lvl-usd', lvlUsdFormatted, '$');
-        updateElement('chart-lvl-matic', lvlMaticFormatted, '', ' MATIC');
-        updateElement('chart-matic-usd', maticUsdFormatted, '$');
+        updateElement('chart-lvl-pol', lvlPolFormatted, '', ' POL');
+        updateElement('chart-pol-usd', polUsdFormatted, '$');
         
         // Update last update time
         const now = new Date();
@@ -102,13 +102,13 @@ function updatePriceChanges() {
         const lvlUsdChange = calculatePriceChange(priceHistory.lvlUsd);
         updatePriceChangeElement('chart-lvl-usd-change', lvlUsdChange);
         
-        // Calculate changes for LVL/MATIC
-        const lvlMaticChange = calculatePriceChange(priceHistory.lvlMatic);
-        updatePriceChangeElement('chart-lvl-matic-change', lvlMaticChange);
+        // Calculate changes for LVL/POL
+        const lvlPolChange = calculatePriceChange(priceHistory.lvlPol);
+        updatePriceChangeElement('chart-lvl-pol-change', lvlPolChange);
         
-        // Calculate changes for MATIC/USD
-        const maticUsdChange = calculatePriceChange(priceHistory.maticUsd);
-        updatePriceChangeElement('chart-matic-usd-change', maticUsdChange);
+        // Calculate changes for POL/USD
+        const polUsdChange = calculatePriceChange(priceHistory.polUsd);
+        updatePriceChangeElement('chart-pol-usd-change', polUsdChange);
         
     } catch (error) {
         console.error('Price Chart: Error calculating price changes:', error);
