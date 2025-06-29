@@ -164,22 +164,10 @@ async function loadDashboardData() {
         dashboardLoading = true;
         console.log('Loading dashboard data...');
         
-        // Reset chart data on first load or when dashboard is not initialized
+        // ریست چارت در اولین بارگذاری
         if (!dashboardInitialized) {
-            console.log('Resetting chart data for new dashboard session...');
-            if (typeof priceChartData !== 'undefined') {
-                priceChartData.labels = [];
-                priceChartData.usd = [];
-                priceChartData.matic = [];
-                priceChartData.maticusd = [];
-            }
-            if (typeof priceChart !== 'undefined' && priceChart) {
-                priceChart.data.labels = [];
-                priceChart.data.datasets[0].data = [];
-                priceChart.data.datasets[1].data = [];
-                priceChart.data.datasets[2].data = [];
-                priceChart.update('none');
-            }
+            console.log('First dashboard load, resetting chart...');
+            resetPriceChartCompletely();
         }
         
         // بررسی فاصله زمانی از آخرین به‌روزرسانی
@@ -595,7 +583,22 @@ async function resetDashboard() {
             }
         });
         
-        // Reset chart data completely
+        // ریست کامل چارت قیمت
+        resetPriceChartCompletely();
+        
+        console.log('Dashboard reset completed');
+        
+    } catch (error) {
+        console.error('Error resetting dashboard:', error);
+    }
+}
+
+// تابع ریست کامل چارت قیمت
+function resetPriceChartCompletely() {
+    try {
+        console.log('Completely resetting price chart...');
+        
+        // ریست کردن داده‌های چارت
         if (typeof priceChartData !== 'undefined') {
             priceChartData.labels = [];
             priceChartData.usd = [];
@@ -603,7 +606,7 @@ async function resetDashboard() {
             priceChartData.maticusd = [];
         }
         
-        // Reset chart if it exists
+        // ریست کردن چارت اگر وجود دارد
         if (typeof priceChart !== 'undefined' && priceChart) {
             priceChart.data.labels = [];
             priceChart.data.datasets[0].data = [];
@@ -612,10 +615,15 @@ async function resetDashboard() {
             priceChart.update('none');
         }
         
-        console.log('Dashboard reset completed');
+        // فراخوانی تابع ریست از HTML اگر موجود است
+        if (typeof window.resetPriceChart === 'function') {
+            window.resetPriceChart();
+        }
+        
+        console.log('Price chart completely reset');
         
     } catch (error) {
-        console.error('Error resetting dashboard:', error);
+        console.error('Error resetting price chart:', error);
     }
 }
 
