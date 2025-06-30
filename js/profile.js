@@ -137,6 +137,12 @@ function updateProfileUI(profile) {
             statusElement.className = 'profile-status error';
         }
     }
+
+    // نمایش مقدار پس‌انداز برای خرید پوینت
+    const purchasedKindEl = document.getElementById('profile-purchased-kind');
+    if (purchasedKindEl) {
+        purchasedKindEl.textContent = profile.totalPurchasedKind || '۰';
+    }
 }
 
 // تابع راه‌اندازی دکمه کپی لینک دعوت
@@ -195,5 +201,3 @@ function shortenAddress(address) {
     if (!address) return '---';
     return address.substring(0, 6) + '...' + address.substring(address.length - 4);
 }
-
-console.log('Profile module loaded successfully');

@@ -132,32 +132,26 @@ const updateElement = (id, value) => {
 async function fetchUserProfile() {
     try {
         const { contract, address } = await connectWallet();
-        
         // دریافت موجودی‌ها
         const [maticBalance, lvlBalance] = await Promise.all([
             contract.provider.getBalance(address),
             contract.balanceOf(address)
         ]);
-        
         // دریافت اطلاعات کاربر
         const userData = await contract.users(address);
-        
-        // دریافت قیمت‌ها
-        const [maticPrice, lvlPrice] = await Promise.all([
-            contract.getLatestMaticPrice(),
-            contract.getTokenPriceInUSD()
+        // دریافت قیمت LVL/MATIC و MATIC/USD
+        const [tokenPriceMatic, maticPriceUSD] = await Promise.all([
+            contract.getTokenPrice(),
+            window.fetchPolUsdPrice()
         ]);
-        
-        // محاسبه مقادیر
         const formattedMaticBalance = ethers.formatEther(maticBalance);
         const formattedLvlBalance = ethers.formatUnits(lvlBalance, 18);
-        const formattedMaticPrice = ethers.formatUnits(maticPrice, 8);
-        const formattedLvlPrice = ethers.formatUnits(lvlPrice, 8);
-        
+        const tokenPriceMaticFormatted = ethers.formatUnits(tokenPriceMatic, 18);
+        // قیمت LVL/USD = (LVL/MATIC) * (MATIC/USD)
+        const tokenPriceUSD = parseFloat(tokenPriceMaticFormatted) * parseFloat(maticPriceUSD);
         // محاسبه ارزش دلاری
-        const maticValueUSD = parseFloat(formattedMaticBalance) * parseFloat(formattedMaticPrice);
-        const lvlValueUSD = parseFloat(formattedLvlBalance) * parseFloat(formattedLvlPrice);
-        
+        const maticValueUSD = parseFloat(formattedMaticBalance) * parseFloat(maticPriceUSD);
+        const lvlValueUSD = parseFloat(formattedLvlBalance) * tokenPriceUSD;
         return {
             address,
             maticBalance: formattedMaticBalance,
@@ -299,8 +293,6 @@ async function checkConnection() {
         };
     }
 }
-
-console.log('Main module loaded successfully');
 
 // Initialize price chart when page loads
 document.addEventListener('DOMContentLoaded', function() {

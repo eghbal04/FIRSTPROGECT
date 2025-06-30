@@ -14,8 +14,8 @@
 
     <!-- بارگذاری ethers.js نسخه 6 از CDN -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
-    <!-- بارگذاری WalletConnect Provider -->
-    <script src="js/walletconnect-provider.js"></script>
+    <!-- بارگذاری WalletConnect Provider از CDN رسمی -->
+    <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
     <!-- بارگذاری WalletConnect Handler -->
     <script src="js/walletconnect-handler.js?v=5.7"></script>
     <style>
@@ -2177,6 +2177,7 @@
 
   <!-- بارگذاری WalletConnect UMD به صورت لوکال -->
   <script src="js/walletconnect-v1.8.0.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
 </head>
 <body>
 
@@ -2351,6 +2352,9 @@
           </div>
           <div class="swap-status" id="swapStatus"></div>
         </form>
+        
+        <!-- Container برای نمایش قیمت‌های مختلف -->
+        <div id="swap-price-info"></div>
       </div>
     </div>
   </div>
@@ -2362,14 +2366,15 @@
       <div class="network-container">
         <div class="network-stats">
           <div class="network-stat"><h4>تعداد اعضا</h4><div id="network-members">-</div></div>
-          <div class="network-stat"><h4>امتیاز باینری</h4><div id="network-points">-</div></div>
-          <div class="network-stat"><h4>سقف درآمد</h4><div id="network-rewards">-</div></div>
+          <div class="network-stat"><h4>سقف درآمد روزانه (تعداد پوینت)</h4><div id="points-cap">-</div></div>
+          <div class="network-stat"><h4>امتیاز باینری شما</h4><div id="user-binary-points">-</div></div>
         </div>
-        <div class="referral-section">
+        <!-- حذف لینک دعوت شبکه -->
+        <!-- <div class="referral-section">
           <span>لینک دعوت شما:</span>
           <span id="referral-link" class="referral-link">-</span>
           <button id="copyReferral" class="copy-btn">کپی</button>
-        </div>
+        </div> -->
         
         <!-- Claim Binary Rewards Section -->
         <div class="claim-section">
@@ -2411,6 +2416,7 @@
           <div class="profile-row"><span class="profile-label">سقف درآمد باینری:</span><span class="profile-value" id="profile-income-cap">-</span></div>
           <div class="profile-row"><span class="profile-label">دریافت‌شده:</span><span class="profile-value" id="profile-received">-</span></div>
           <div class="profile-row"><span class="profile-label">لینک دعوت:</span><span class="profile-value" id="profile-referral-link">-</span><button id="copyProfileReferral" class="copy-btn">کپی</button></div>
+          <div class="profile-row"><span class="profile-label">پس‌انداز برای خرید پوینت:</span><span class="profile-value" id="profile-purchased-kind">-</span></div>
         </div>
         <div id="profileStatus" class="profile-status"></div>
       </div>
@@ -2548,6 +2554,13 @@
         <!-- فرم ثبت‌نام برای کاربران جدید -->
         <div id="registration-form" style="display: none;">
           <h3 style="color: #a786ff; text-align: center; margin-bottom: 1rem;">ثبت‌نام جدید</h3>
+          
+          <!-- Container برای نمایش اطلاعات کامل ثبت‌نام -->
+          <div id="registration-info"></div>
+          
+          <!-- Container برای نمایش مقایسه قیمت‌ها -->
+          <div id="price-comparison"></div>
+          
           <div style="background: #181c2a; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; border: 1px solid #a786ff33;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
               <span style="color: #fff;">مقدار مورد نیاز:</span>
@@ -2798,13 +2811,13 @@
             }
         });
 
-        console.log('Expandable functionality disabled');
-        
         // Initialize price chart
         if (typeof window.priceChart !== 'undefined' && typeof window.priceChart.initialize === 'function') {
             window.priceChart.initialize();
         }
     });
   </script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
 </body>
 </html>

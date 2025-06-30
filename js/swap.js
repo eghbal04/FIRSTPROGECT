@@ -6,6 +6,15 @@ const swapInfo = document.getElementById('swapInfo');
 const swapButton = document.getElementById('swapButton');
 const swapStatus = document.getElementById('swapStatus');
 
+let userMaticBalance = 0;
+let userLvlBalance = 0;
+
+// دکمه سواپ در ابتدا غیرفعال باشد
+if (swapButton) {
+    swapButton.disabled = true;
+    swapButton.textContent = 'مقدار را وارد کنید';
+}
+
 // تابع بررسی اتصال کیف پول
 async function checkConnection() {
     try {
@@ -62,34 +71,40 @@ async function updateRateInfo() {
 async function loadBalances() {
     try {
         const walletConfig = await window.connectWallet();
-        
         if (!walletConfig || !walletConfig.contract || !walletConfig.address || !walletConfig.provider) {
             console.log('Swap: No wallet connection available');
             document.getElementById('maticBalance').textContent = 'POL: اتصال نشده';
             document.getElementById('lvlBalance').textContent = 'LVL: اتصال نشده';
+            userMaticBalance = 0;
+            userLvlBalance = 0;
+            validateSwapAmount(); // وضعیت دکمه را به‌روز کن
             return;
         }
-        
         const { contract, address, provider } = walletConfig;
-        
         // دریافت موجودی‌ها
         const [maticBalance, lvlBalance] = await Promise.all([
             provider.getBalance(address),
             contract.balanceOf(address)
         ]);
-        
         // فرمت کردن موجودی‌ها
         const formattedMatic = ethers.formatEther(maticBalance);
         const formattedLvl = ethers.formatUnits(lvlBalance, 18);
-        
+        // ذخیره موجودی‌ها برای اعتبارسنجی
+        userMaticBalance = parseFloat(formattedMatic);
+        userLvlBalance = parseFloat(formattedLvl);
         // به‌روزرسانی UI
-        document.getElementById('maticBalance').textContent = `POL: ${parseFloat(formattedMatic).toFixed(4)}`;
-        document.getElementById('lvlBalance').textContent = `LVL: ${parseFloat(formattedLvl).toFixed(2)}`;
-        
+        document.getElementById('maticBalance').textContent = `POL: ${userMaticBalance.toFixed(4)}`;
+        document.getElementById('lvlBalance').textContent = `LVL: ${userLvlBalance.toFixed(2)}`;
+        // نمایش قیمت‌ها
+        await displaySwapPrices();
+        validateSwapAmount(); // وضعیت دکمه را به‌روز کن
     } catch (error) {
         console.error('Swap: Error loading balances:', error);
         document.getElementById('maticBalance').textContent = 'POL: خطا';
         document.getElementById('lvlBalance').textContent = 'LVL: خطا';
+        userMaticBalance = 0;
+        userLvlBalance = 0;
+        validateSwapAmount(); // وضعیت دکمه را به‌روز کن
     }
 }
 
@@ -98,13 +113,25 @@ function validateSwapAmount() {
     const amount = document.getElementById('swapAmount').value;
     const direction = document.getElementById('swapDirection').value;
     const submitBtn = document.getElementById('swapButton');
-    
     if (!amount || parseFloat(amount) <= 0) {
         submitBtn.disabled = true;
         submitBtn.textContent = 'مقدار را وارد کنید';
         return false;
     }
-    
+    // بررسی موجودی کافی
+    if (direction === 'matic-to-lvl') {
+        if (parseFloat(amount) > userMaticBalance) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'موجودی POL کافی نیست';
+            return false;
+        }
+    } else {
+        if (parseFloat(amount) > userLvlBalance) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'موجودی LVL کافی نیست';
+            return false;
+        }
+    }
     submitBtn.disabled = false;
     submitBtn.textContent = direction === 'matic-to-lvl' ? 'تبدیل POL به LVL' : 'تبدیل LVL به POL';
     return true;
@@ -173,6 +200,63 @@ function showSwapSuccess(message) {
             statusElement.textContent = '';
             statusElement.className = 'swap-status';
         }, 5000);
+    }
+}
+
+// تابع نمایش قیمت‌های مختلف
+async function displaySwapPrices() {
+    try {
+        const walletConfig = await window.connectWallet();
+        if (!walletConfig || !walletConfig.contract) {
+            return;
+        }
+        const { contract } = walletConfig;
+        // دریافت قیمت LVL/MATIC از قرارداد و قیمت MATIC/USD از API
+        const [tokenPriceMatic, maticPriceUSD, registrationPrice] = await Promise.all([
+            contract.getTokenPrice().catch(() => ethers.parseUnits("0.0012", 18)),
+            window.fetchPolUsdPrice(),
+            contract.regprice().catch(() => ethers.parseUnits("1000", 18))
+        ]);
+        const tokenPriceMaticFormatted = ethers.formatUnits(tokenPriceMatic, 18);
+        // قیمت LVL/USD = (LVL/MATIC) * (MATIC/USD)
+        const tokenPriceUSD = parseFloat(tokenPriceMaticFormatted) * parseFloat(maticPriceUSD);
+        const tokenPriceUSDFormatted = tokenPriceUSD.toFixed(6);
+        const maticPriceUSDFormatted = parseFloat(maticPriceUSD).toFixed(6);
+        const registrationPriceFormatted = ethers.formatUnits(registrationPrice, 18);
+        // محاسبه مقدار توکن برای 1 سنت و ...
+        const oneCentInUSD = 0.01;
+        const oneCentInMatic = (oneCentInUSD * 1e18) / parseFloat(maticPriceUSDFormatted);
+        const oneCentInTokens = (oneCentInMatic * 1e18) / parseFloat(tokenPriceMaticFormatted);
+        const oneCentInTokensFormatted = oneCentInTokens.toFixed(6);
+        const tenCentsInUSD = 0.1;
+        const tenCentsInMatic = (tenCentsInUSD * 1e18) / parseFloat(maticPriceUSDFormatted);
+        const tenCentsInTokens = (tenCentsInMatic * 1e18) / parseFloat(tokenPriceMaticFormatted);
+        const tenCentsInTokensFormatted = tenCentsInTokens.toFixed(6);
+        const twelveCentsInUSD = 0.12;
+        const twelveCentsInMatic = (twelveCentsInUSD * 1e18) / parseFloat(maticPriceUSDFormatted);
+        const twelveCentsInTokens = (twelveCentsInMatic * 1e18) / parseFloat(tokenPriceMaticFormatted);
+        const twelveCentsInTokensFormatted = twelveCentsInTokens.toFixed(6);
+        // نمایش فقط مقدار توکن ثبت‌نام
+        const priceInfoContainer = document.getElementById('swap-price-info');
+        if (priceInfoContainer) {
+            const priceHTML = `
+                <div style="background: rgba(0, 0, 0, 0.6); border-radius: 8px; padding: 1rem; margin: 1rem 0; border-left: 3px solid #00ccff;">
+                    <h4 style="color: #00ccff; margin-bottom: 0.8rem;">💱 اطلاعات قیمت سواپ</h4>
+                    <div style="display: grid; gap: 0.5rem; font-size: 0.9rem;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: #ccc;">مقدار توکن مورد نیاز برای ثبت‌نام:</span>
+                            <span style="color: #a786ff; font-weight: bold;">${registrationPriceFormatted} LVL</span>
+                        </div>
+                    </div>
+                    <div style="font-size: 0.8rem; color: #ccc; margin-top: 0.5rem;">
+                        <strong>نکته:</strong> مقدار بالا، مقدار توکن مورد نیاز برای ثبت‌نام در قرارداد است.
+                    </div>
+                </div>
+            `;
+            priceInfoContainer.innerHTML = priceHTML;
+        }
+    } catch (error) {
+        console.error('Error displaying swap prices:', error);
     }
 }
 
@@ -248,9 +332,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else if (typeof error.message === 'string') {
                     if (error.message.toLowerCase().includes('insufficient funds')) {
                         userMessage = 'موجودی شما کافی نیست.';
+                    } else if (error.message.toLowerCase().includes('insufficient contract matic')) {
+                        userMessage = 'موجودی MATIC قرارداد کافی نیست. لطفاً ابتدا MATIC به قرارداد ارسال کنید یا منتظر بمانید.';
                     } else if (error.message.toLowerCase().includes('execution reverted')) {
-                        userMessage = 'تراکنش توسط قرارداد رد شد. مقدار یا شرایط را بررسی کنید.';
+                        // بررسی خطاهای خاص قرارداد
+                        if (error.message.toLowerCase().includes('insufficient contract matic')) {
+                            userMessage = 'موجودی MATIC قرارداد کافی نیست. لطفاً ابتدا MATIC به قرارداد ارسال کنید.';
+                        } else if (error.message.toLowerCase().includes('insufficient balance')) {
+                            userMessage = 'موجودی توکن شما کافی نیست.';
+                        } else if (error.message.toLowerCase().includes('amount too small')) {
+                            userMessage = 'مقدار وارد شده خیلی کم است.';
+                        } else if (error.message.toLowerCase().includes('amount too large')) {
+                            userMessage = 'مقدار وارد شده خیلی زیاد است.';
+                        } else {
+                            userMessage = 'تراکنش توسط قرارداد رد شد. مقدار یا شرایط را بررسی کنید.';
+                        }
                     } else if (error.message.toLowerCase().includes('replacement transaction underpriced')) {
+                        userMessage = 'کارمزد تراکنش کافی نیست. لطفاً کارمزد را افزایش دهید.';
+                    } else if (error.message.toLowerCase().includes('nonce too low')) {
+                        userMessage = 'شماره تراکنش قدیمی است. لطفاً دوباره تلاش کنید.';
+                    } else if (error.message.toLowerCase().includes('gas required exceeds allowance')) {
                         userMessage = 'کارمزد تراکنش کافی نیست. لطفاً کارمزد را افزایش دهید.';
                     }
                 }
@@ -283,6 +384,4 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // بارگذاری اولیه
     loadBalances();
-});
-
-console.log('Swap module loaded successfully'); 
+}); 

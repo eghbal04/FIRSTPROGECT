@@ -114,5 +114,3 @@ async function callContractFunction(functionName, ...args) {
         throw error;
     }
 }
-
-console.log('Web3 Interactions module loaded successfully');

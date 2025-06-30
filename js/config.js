@@ -1,5 +1,5 @@
 // تنظیمات قرارداد LevelUp
-const CONTRACT_ADDRESS = '0xBA971C218A9cf354Bb266A949fE0af646e99B9ef';
+const CONTRACT_ADDRESS = '0x4aE0A254a3c78442568b74B6CC7e61d13BdC6Df8';
 const LEVELUP_ABI = [
 	{
 		"inputs": [],
@@ -104,7 +104,7 @@ const LEVELUP_ABI = [
 			{
 				"indexed": false,
 				"internalType": "uint256",
-				"name": "amountlvl",
+				"name": "amountLvl",
 				"type": "uint256"
 			}
 		],
@@ -249,6 +249,87 @@ const LEVELUP_ABI = [
 		"type": "event"
 	},
 	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "amountLvl",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "payout",
+				"type": "uint256"
+			}
+		],
+		"name": "purchase",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amountLvl",
+				"type": "uint256"
+			}
+		],
+		"name": "PurchaseKind",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "referrer",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "tokenAmount",
+				"type": "uint256"
+			}
+		],
+		"name": "registerAndActivate",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "newPrice",
+				"type": "uint256"
+			}
+		],
+		"name": "RegistrationPriceUpdated",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "tokenAmount",
+				"type": "uint256"
+			}
+		],
+		"name": "sellTokens",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
 		"anonymous": false,
 		"inputs": [
 			{
@@ -299,6 +380,30 @@ const LEVELUP_ABI = [
 		"type": "event"
 	},
 	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "transfer",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
 		"anonymous": false,
 		"inputs": [
 			{
@@ -322,6 +427,35 @@ const LEVELUP_ABI = [
 		],
 		"name": "Transfer",
 		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "transferFrom",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
 	},
 	{
 		"anonymous": false,
@@ -361,49 +495,8 @@ const LEVELUP_ABI = [
 		"type": "event"
 	},
 	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "user",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amountlvl",
-				"type": "uint256"
-			}
-		],
-		"name": "purchaseKind",
-		"type": "event"
-	},
-	{
-		"inputs": [],
-		"name": "MAX_BINARY_POINT_CAP",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "REFERRAL_FEE_PERCENT",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
+		"stateMutability": "payable",
+		"type": "receive"
 	},
 	{
 		"inputs": [
@@ -427,30 +520,6 @@ const LEVELUP_ABI = [
 			}
 		],
 		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "spender",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "value",
-				"type": "uint256"
-			}
-		],
-		"name": "approve",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -487,13 +556,6 @@ const LEVELUP_ABI = [
 	},
 	{
 		"inputs": [],
-		"name": "buyTokens",
-		"outputs": [],
-		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
 		"name": "circulatingSupply",
 		"outputs": [
 			{
@@ -503,13 +565,6 @@ const LEVELUP_ABI = [
 			}
 		],
 		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "claim",
-		"outputs": [],
-		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -647,51 +702,6 @@ const LEVELUP_ABI = [
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "tokenAddress",
-				"type": "address"
-			}
-		],
-		"name": "getContractTokenBalance",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "getLatestLvlPrice",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "getLatestMaticPrice",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
 		"inputs": [],
 		"name": "getPointValue",
 		"outputs": [
@@ -706,33 +716,7 @@ const LEVELUP_ABI = [
 	},
 	{
 		"inputs": [],
-		"name": "getPrice",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "getRegistrationPrice",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "getTokenPriceInUSD",
+		"name": "getTokenPrice",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -802,6 +786,19 @@ const LEVELUP_ABI = [
 		"type": "function"
 	},
 	{
+		"inputs": [],
+		"name": "INITIAL_REGISTRATION_PRICE",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
 		"inputs": [
 			{
 				"internalType": "address",
@@ -841,31 +838,25 @@ const LEVELUP_ABI = [
 	},
 	{
 		"inputs": [],
-		"name": "name",
+		"name": "MAX_BINARY_POINT_CAP",
 		"outputs": [
-			{
-				"internalType": "string",
-				"name": "",
-				"type": "string"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
 			{
 				"internalType": "uint256",
 				"name": "",
 				"type": "uint256"
 			}
 		],
-		"name": "oracles",
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "name",
 		"outputs": [
 			{
-				"internalType": "contract AggregatorV3Interface",
+				"internalType": "string",
 				"name": "",
-				"type": "address"
+				"type": "string"
 			}
 		],
 		"stateMutability": "view",
@@ -891,39 +882,16 @@ const LEVELUP_ABI = [
 		"type": "function"
 	},
 	{
-		"inputs": [
+		"inputs": [],
+		"name": "REFERRAL_FEE_PERCENT",
+		"outputs": [
 			{
 				"internalType": "uint256",
-				"name": "amountLvl",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "payout",
+				"name": "",
 				"type": "uint256"
 			}
 		],
-		"name": "purchase",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "referrer",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "tokenAmount",
-				"type": "uint256"
-			}
-		],
-		"name": "registerAndActivate",
-		"outputs": [],
-		"stateMutability": "nonpayable",
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{
@@ -969,19 +937,6 @@ const LEVELUP_ABI = [
 			}
 		],
 		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "tokenAmount",
-				"type": "uint256"
-			}
-		],
-		"name": "sellTokens",
-		"outputs": [],
-		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -1085,91 +1040,6 @@ const LEVELUP_ABI = [
 		"inputs": [
 			{
 				"internalType": "address",
-				"name": "to",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "value",
-				"type": "uint256"
-			}
-		],
-		"name": "transfer",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "from",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "to",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "value",
-				"type": "uint256"
-			}
-		],
-		"name": "transferFrom",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "updateTokenPrice",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "usdAmountInCents",
-				"type": "uint256"
-			}
-		],
-		"name": "usdToMatic",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
 				"name": "",
 				"type": "address"
 			}
@@ -1249,10 +1119,6 @@ const LEVELUP_ABI = [
 		],
 		"stateMutability": "view",
 		"type": "function"
-	},
-	{
-		"stateMutability": "payable",
-		"type": "receive"
 	}
 ];
 
@@ -1263,8 +1129,6 @@ let permissionRequestInProgress = false;
 
 async function performWeb3Initialization() {
     try {
-        console.log('Starting Web3 initialization...');
-        
         if (typeof window.ethereum === 'undefined') {
             throw new Error('MetaMask not detected');
         }
@@ -1277,7 +1141,6 @@ async function performWeb3Initialization() {
                     method: 'wallet_switchEthereumChain',
                     params: [{ chainId: '0x89' }]
                 });
-                console.log('Successfully switched to Polygon network');
             } catch (switchError) {
                 if (switchError.code === 4902) {
                     await window.ethereum.request({
@@ -1301,22 +1164,16 @@ async function performWeb3Initialization() {
         }
         
         const provider = new ethers.BrowserProvider(window.ethereum);
-        console.log('Browser provider created successfully');
         
         let signer;
         
         // بررسی وضعیت اتصال فعلی
         const accounts = await window.ethereum.request({ method: 'eth_accounts' });
         if (accounts && accounts.length > 0) {
-            console.log('Accounts already connected:', accounts);
             signer = await provider.getSigner();
-            console.log('Signer obtained from existing connection');
         } else {
-            console.log('No accounts connected, requesting permission...');
-            
             // جلوگیری از درخواست‌های همزمان
             if (permissionRequestInProgress) {
-                console.log('Permission request already in progress, waiting...');
                 await new Promise(resolve => {
                     const checkInterval = setInterval(async () => {
                         if (!permissionRequestInProgress) {
@@ -1335,7 +1192,6 @@ async function performWeb3Initialization() {
                 const retryAccounts = await window.ethereum.request({ method: 'eth_accounts' });
                 if (retryAccounts && retryAccounts.length > 0) {
                     signer = await provider.getSigner();
-                    console.log('Signer obtained after waiting');
                 } else {
                     throw new Error('User did not approve connection');
                 }
@@ -1344,13 +1200,8 @@ async function performWeb3Initialization() {
                 try {
                     await window.ethereum.request({ method: 'eth_requestAccounts' });
                     signer = await provider.getSigner();
-                    console.log('Signer obtained after permission request');
                 } catch (permissionError) {
-                    console.log('Permission request failed:', permissionError);
-                    
                     if (permissionError.code === -32002) {
-                        console.log('Permission request pending, waiting for user action...');
-                        
                         await new Promise(resolve => {
                             const checkInterval = setInterval(async () => {
                                 try {
@@ -1374,7 +1225,6 @@ async function performWeb3Initialization() {
                         const retryAccounts = await window.ethereum.request({ method: 'eth_accounts' });
                         if (retryAccounts && retryAccounts.length > 0) {
                             signer = await provider.getSigner();
-                            console.log('Signer obtained after user approval');
                         } else {
                             throw new Error('User did not approve connection');
                         }
@@ -1388,13 +1238,10 @@ async function performWeb3Initialization() {
         }
         
         const contract = new ethers.Contract(CONTRACT_ADDRESS, LEVELUP_ABI, signer);
-        console.log('Contract created successfully');
         
         const address = await signer.getAddress();
-        console.log('Wallet address obtained:', address);
         
         const network = await provider.getNetwork();
-        console.log('Connected to network:', network.name, 'Chain ID:', network.chainId);
         
         window.contractConfig = {
             ...window.contractConfig,
@@ -1405,7 +1252,6 @@ async function performWeb3Initialization() {
             initializeWeb3: initializeWeb3
         };
         
-        console.log('Web3 initialized successfully');
         return window.contractConfig;
         
     } catch (error) {
@@ -1424,7 +1270,6 @@ async function performWeb3Initialization() {
 
 async function initializeWeb3() {
     if (isInitializing) {
-        console.log('Web3 initialization already in progress, waiting...');
         return initializationPromise;
     }
     
@@ -1432,7 +1277,6 @@ async function initializeWeb3() {
         window.contractConfig.provider && 
         window.contractConfig.signer && 
         window.contractConfig.contract) {
-        console.log('Web3 already initialized');
         return window.contractConfig;
     }
     
@@ -1555,33 +1399,35 @@ window.getUserProfile = async function() {
         }
         
         // دریافت قیمت‌ها برای محاسبه ارزش دلاری
-        let lvlPriceUSD = 0n;
-        let polPrice = 0n;
+        let lvlPriceMatic = 0n;
+        let polPriceUSD = 0;
         
         try {
-            [lvlPriceUSD, polPrice] = await Promise.all([
-                contract.getTokenPriceInUSD(),
-                contract.getLatestMaticPrice()
+            [lvlPriceMatic, polPriceUSD] = await Promise.all([
+                contract.getTokenPrice(),
+                window.fetchPolUsdPrice()
             ]);
-            console.log('Profile: Prices received - LVL USD:', lvlPriceUSD.toString(), 'POL USD:', polPrice.toString());
+            console.log('Profile: Prices received - LVL/MATIC:', lvlPriceMatic.toString(), 'POL/USD:', polPriceUSD);
         } catch (error) {
             console.error('Profile: Error fetching prices:', error);
         }
         
-        // محاسبه ارزش دلاری (همه مقادیر BigInt هستند)
-        let lvlValueUSD = 0n;
-        let polValueUSD = 0n;
+        // محاسبه ارزش دلاری
+        let lvlValueUSD = 0;
+        let polValueUSD = 0;
         try {
-            if (lvlBalance && lvlPriceUSD && lvlBalance > 0n && lvlPriceUSD > 0n) {
-                lvlValueUSD = (lvlBalance * lvlPriceUSD) / (10n ** 18n);
+            if (lvlBalance && lvlPriceMatic && lvlBalance > 0n && lvlPriceMatic > 0n) {
+                const lvlPriceMaticFormatted = ethers.formatUnits(lvlPriceMatic, 18);
+                const lvlPriceUSD = parseFloat(lvlPriceMaticFormatted) * parseFloat(polPriceUSD);
+                lvlValueUSD = parseFloat(ethers.formatUnits(lvlBalance, 18)) * lvlPriceUSD;
             }
-            if (polBalance && polPrice && polBalance > 0n && polPrice > 0n) {
-                polValueUSD = (polBalance * polPrice) / (10n ** 18n);
+            if (polBalance && polPriceUSD && polBalance > 0n && polPriceUSD > 0) {
+                polValueUSD = parseFloat(ethers.formatEther(polBalance)) * parseFloat(polPriceUSD);
             }
         } catch (e) {
             console.error('Profile: Error calculating USD values:', e);
-            lvlValueUSD = 0n;
-            polValueUSD = 0n;
+            lvlValueUSD = 0;
+            polValueUSD = 0;
         }
 
         // فرمت‌دهی خروجی و جلوگیری از undefined
@@ -1646,17 +1492,20 @@ window.getPrices = async function() {
     try {
         const { contract } = await window.connectWallet();
         
-        // دریافت قیمت‌ها به صورت موازی
-        const [lvlPriceUSD, lvlPricePol, polPrice] = await Promise.all([
-            contract.getTokenPriceInUSD().catch(() => ethers.parseUnits("0.0012", 8)),
-            contract.updateTokenPrice().catch(() => ethers.parseUnits("0.0012", 18)),
-            contract.getLatestMaticPrice().catch(() => ethers.parseUnits("1.00", 8))
+        // دریافت قیمت LVL/MATIC از قرارداد و قیمت MATIC/USD از API
+        const [lvlPriceMatic, polPrice] = await Promise.all([
+            contract.getTokenPrice().catch(() => ethers.parseUnits("0.0012", 18)),
+            window.fetchPolUsdPrice()
         ]);
         
+        const lvlPriceMaticFormatted = ethers.formatUnits(lvlPriceMatic, 18);
+        // قیمت LVL/USD = (LVL/MATIC) * (MATIC/USD)
+        const lvlPriceUSD = parseFloat(lvlPriceMaticFormatted) * parseFloat(polPrice);
+        
         return {
-            lvlPriceUSD: ethers.formatUnits(lvlPriceUSD, 8),
-            lvlPricePol: ethers.formatUnits(lvlPricePol, 18),
-            polPrice: ethers.formatUnits(polPrice, 8)
+            lvlPriceUSD: lvlPriceUSD.toFixed(6),
+            lvlPricePol: lvlPriceMaticFormatted,
+            polPrice: polPrice.toFixed(6)
         };
     } catch (error) {
         console.error('Central: Error fetching prices:', error);
@@ -1819,4 +1668,57 @@ window.debugContractPolBalance = async function() {
     }
 };
 
-console.log('Central Web3 functions loaded successfully');
+// تابع بارگذاری آمار شبکه
+async function loadNetworkStats(contract) {
+    try {
+        const [totalUsers, totalPoints, totalClaimableBinaryPoints] = await Promise.all([
+            contract.totalUsers(),
+            contract.totalPoints(),
+            contract.totalClaimableBinaryPoints()
+        ]);
+        updateElement('network-members', totalUsers.toString());
+        updateElement('network-rewards', parseInt(totalClaimableBinaryPoints.toString()));
+        updateElement('network-points', parseInt(totalPoints.toString())); // فقط اینجا مقداردهی شود
+    } catch (error) {
+        console.error('Error loading network stats:', error);
+    }
+}
+
+// تابع دریافت قیمت MATIC (POL) به دلار از API
+window.fetchPolUsdPrice = async function() {
+    const url = 'https://api.coingecko.com/api/v3/simple/price?ids=matic-network&vs_currencies=usd';
+    const proxies = [
+        url => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+        url => 'https://thingproxy.freeboard.io/fetch/' + url,
+        url => 'https://corsproxy.io/?' + encodeURIComponent(url)
+    ];
+    // 1. تلاش با پراکسی‌ها
+    for (const proxy of proxies) {
+        try {
+            const response = await fetch(proxy(url));
+            if (response.ok) {
+                const data = await response.json();
+                if (data && data['matic-network'] && data['matic-network'].usd) {
+                    return data['matic-network'].usd;
+                }
+            }
+        } catch (e) {
+            console.warn('fetchPolUsdPrice: proxy failed', proxy(url), e);
+        }
+    }
+    // 2. تلاش مستقیم (بدون پراکسی)
+    try {
+        const response = await fetch(url);
+        if (response.ok) {
+            const data = await response.json();
+            if (data && data['matic-network'] && data['matic-network'].usd) {
+                return data['matic-network'].usd;
+            }
+        }
+    } catch (e) {
+        console.warn('fetchPolUsdPrice: direct fetch failed', url, e);
+    }
+    // 3. مقدار پیش‌فرض (fallback)
+    console.warn('fetchPolUsdPrice: All proxies and direct fetch failed, using fallback value.');
+    return 0.7;
+};

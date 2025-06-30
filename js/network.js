@@ -121,8 +121,6 @@ async function loadNetworkStats(contract) {
         ]);
         
         updateElement('network-members', totalUsers.toString());
-        updateElement('network-points', ethers.formatUnits(totalPoints, 18));
-        updateElement('network-rewards', ethers.formatUnits(totalClaimableBinaryPoints, 18));
         
     } catch (error) {
         console.error('Error loading network stats:', error);
@@ -140,10 +138,16 @@ async function loadBinaryStats(contract, address) {
         console.log('Network Debug - binaryPointCap type:', typeof userData.binaryPointCap);
         console.log('Network Debug - binaryPointCap toString():', userData.binaryPointCap.toString());
         
-        updateElement('left-points', ethers.formatUnits(userData.binaryPoints, 18));
-        updateElement('right-points', ethers.formatUnits(userData.binaryPoints, 18));
-        updateElement('total-binary-points', ethers.formatUnits(userData.binaryPoints, 18));
-        updateElement('points-cap', userData.binaryPointCap.toString());
+        updateElement('left-points', parseInt(userData.binaryPoints.toString()));
+        updateElement('right-points', parseInt(userData.binaryPoints.toString()));
+        updateElement('total-binary-points', parseInt(userData.binaryPoints.toString()));
+        // مقدار امتیازهای قابل دریافت را صحیح نمایش بده
+        if (document.getElementById('claimable-points')) {
+            updateElement('claimable-points', parseInt(userData.claimablePoints ? userData.claimablePoints.toString() : '0'));
+        }
+        // نمایش سقف درآمد روزانه به صورت عدد صحیح
+        const capInt = parseInt(userData.binaryPointCap ? userData.binaryPointCap.toString() : '0');
+        updateElement('points-cap', capInt);
         
         // محاسبه امتیاز متعادل
         const balancedPoints = Math.min(
@@ -156,6 +160,8 @@ async function loadBinaryStats(contract, address) {
         const rewardRate = 0.1; // 10%
         const rewards = (balancedPoints * rewardRate).toFixed(2);
         updateElement('binary-rewards', rewards);
+        
+        updateElement('user-binary-points', parseInt(userData.binaryPoints.toString()));
         
     } catch (error) {
         console.error('Error loading binary stats:', error);
@@ -192,21 +198,43 @@ async function renderTreeNode(contract, userAddress, container, level) {
         const nodeHTML = createNodeHTML(userData, userAddress, isCurrentUser, level);
         container.innerHTML = nodeHTML;
         
-        // رندر فرزندان - بررسی معتبر بودن آدرس‌ها
+        // رندر فرزندان - بررسی معتبر بودن آدرس‌ها یا اندیس‌ها
+        // چپ
         if (userData.leftChild && userData.leftChild !== ethers.ZeroAddress && userData.leftChild !== '0x0000000000000000000000000000000000000000') {
             const leftContainer = container.querySelector('.left-child');
             if (leftContainer) {
-                await renderChildNode(contract, userData.leftChild, leftContainer, 'left', level + 1);
+                let leftChildAddress = userData.leftChild;
+                // اگر leftChild عددی بود (اندیس)، به آدرس تبدیل کن
+                if (typeof leftChildAddress === 'bigint' || typeof leftChildAddress === 'number') {
+                    if (leftChildAddress > 0) {
+                        leftChildAddress = await contract.indexToAddress(leftChildAddress);
+                    } else {
+                        leftChildAddress = null;
+                    }
+                }
+                if (leftChildAddress && leftChildAddress !== ethers.ZeroAddress && leftChildAddress !== '0x0000000000000000000000000000000000000000') {
+                    await renderChildNode(contract, leftChildAddress, leftContainer, 'left', level + 1);
             }
         }
-        
+        }
+        // راست
         if (userData.rightChild && userData.rightChild !== ethers.ZeroAddress && userData.rightChild !== '0x0000000000000000000000000000000000000000') {
             const rightContainer = container.querySelector('.right-child');
             if (rightContainer) {
-                await renderChildNode(contract, userData.rightChild, rightContainer, 'right', level + 1);
+                let rightChildAddress = userData.rightChild;
+                // اگر rightChild عددی بود (اندیس)، به آدرس تبدیل کن
+                if (typeof rightChildAddress === 'bigint' || typeof rightChildAddress === 'number') {
+                    if (rightChildAddress > 0) {
+                        rightChildAddress = await contract.indexToAddress(rightChildAddress);
+                    } else {
+                        rightChildAddress = null;
+                    }
+                }
+                if (rightChildAddress && rightChildAddress !== ethers.ZeroAddress && rightChildAddress !== '0x0000000000000000000000000000000000000000') {
+                    await renderChildNode(contract, rightChildAddress, rightContainer, 'right', level + 1);
             }
         }
-        
+        }
     } catch (error) {
         console.error('Error rendering tree node:', error);
     }
@@ -235,10 +263,16 @@ async function renderChildNode(contract, childAddress, container, position, leve
 
 // تابع ایجاد HTML گره
 function createNodeHTML(userData, userAddress, isCurrentUser, level) {
+    const referralLink = `${window.location.origin}/?ref=${userAddress}`;
+    const shortRef = shortenAddress(userAddress);
     const nodeHeader = `
         <div class="node-header">
             <div class="node-info">
                 <div class="node-title">${isCurrentUser ? 'شما' : shortenAddress(userAddress)}</div>
+                <div class="node-referral" style="font-size:0.8em; color:#a786ff; direction:ltr; display:flex; align-items:center; gap:4px;">
+                    <span>${shortRef}</span>
+                    <button class="copy-ref-btn" title="کپی لینک دعوت" onclick="navigator.clipboard.writeText('${referralLink}').then(()=>{this.textContent='کپی شد!';setTimeout(()=>this.textContent='📋',1200);})">📋</button>
+                </div>
                 <div class="node-status ${userData.activated ? 'active' : 'inactive'}">
                     ${userData.activated ? 'فعال' : 'غیرفعال'}
                 </div>
@@ -251,7 +285,7 @@ function createNodeHTML(userData, userAddress, isCurrentUser, level) {
         <div class="node-details">
             <div class="node-stat">
                 <span class="stat-label">امتیاز باینری:</span>
-                <span class="stat-value">${ethers.formatUnits(userData.binaryPoints, 18)}</span>
+                <span class="stat-value">${parseInt(userData.binaryPoints.toString())}</span>
             </div>
             <div class="node-stat">
                 <span class="stat-label">سقف امتیاز:</span>
@@ -280,11 +314,17 @@ function createNodeHTML(userData, userAddress, isCurrentUser, level) {
 
 // تابع ایجاد HTML گره فرزند
 function createChildNodeHTML(userData, childAddress, position, level, isCurrentUser) {
+    const referralLink = `${window.location.origin}/?ref=${childAddress}`;
+    const shortRef = shortenAddress(childAddress);
     return `
         <div class="tree-node child-node ${position}-child level-${level}" data-address="${childAddress}" data-level="${level}">
             <div class="node-header">
                 <div class="node-info">
-                    <span class="node-title">${shortenAddress(childAddress)}</span>
+                    <span class="node-title">${shortRef}</span>
+                    <div class="node-referral" style="font-size:0.8em; color:#a786ff; direction:ltr; display:flex; align-items:center; gap:4px;">
+                        <span>${shortRef}</span>
+                        <button class="copy-ref-btn" title="کپی لینک دعوت" onclick="navigator.clipboard.writeText('${referralLink}').then(()=>{this.textContent='کپی شد!';setTimeout(()=>this.textContent='📋',1200);})">📋</button>
+                    </div>
                     <span class="node-status ${userData.activated ? 'active' : 'inactive'}">
                         ${userData.activated ? 'فعال' : 'غیرفعال'}
                     </span>
@@ -294,7 +334,7 @@ function createChildNodeHTML(userData, childAddress, position, level, isCurrentU
             <div class="node-details">
                 <div class="node-stat">
                     <span class="stat-label">امتیاز:</span>
-                    <span class="stat-value">${ethers.formatUnits(userData.binaryPoints, 18)}</span>
+                    <span class="stat-value">${parseInt(userData.binaryPoints.toString())}</span>
                 </div>
                 <div class="node-stat">
                     <span class="stat-label">سقف:</span>
@@ -549,7 +589,6 @@ window.debugBinaryPointCap = async function() {
 
 // راه‌اندازی اولیه
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('Network module loaded successfully');
     // اضافه کردن تابع debug به window
     window.debugBinaryPointCap = debugBinaryPointCap;
 });

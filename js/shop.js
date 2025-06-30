@@ -16,7 +16,7 @@ async function waitForWalletConnection() {
     }
 }
 
-// محصولات فروشگاه
+// محصولات فروشگاه با درصد سود ثابت (خدماتی: درصد بالاتر، فیزیکی: درصد پایین‌تر)
 const products = [
     {
         id: 1,
@@ -25,7 +25,8 @@ const products = [
         price: 50,
         currency: "USD",
         icon: "🔗",
-        color: "#00ff88"
+        color: "#00ff88",
+        percent: 70 // خدماتی - سود بالا
     },
     {
         id: 2,
@@ -34,7 +35,8 @@ const products = [
         price: 75,
         currency: "USD",
         icon: "💰",
-        color: "#00ccff"
+        color: "#00ccff",
+        percent: 65 // خدماتی - سود بالا
     },
     {
         id: 3,
@@ -43,16 +45,28 @@ const products = [
         price: 60,
         currency: "USD",
         icon: "🎨",
-        color: "#ff6b6b"
+        color: "#ff6b6b",
+        percent: 60 // خدماتی - سود بالا
     },
     {
         id: 4,
-        name: "دوره آموزشی Smart Contracts",
-        description: "آموزش نوشتن قراردادهای هوشمند با Solidity",
-        price: 100,
+        name: "پکیج سخت‌افزاری کیف پول",
+        description: "کیف پول سخت‌افزاری فیزیکی برای نگهداری امن رمزارزها",
+        price: 120,
         currency: "USD",
-        icon: "⚡",
-        color: "#4ecdc4"
+        icon: "💾",
+        color: "#4ecdc4",
+        percent: 35 // فیزیکی - سود پایین
+    },
+    {
+        id: 5,
+        name: "کتاب چاپی بلاکچین",
+        description: "کتاب فیزیکی آموزش بلاکچین و رمزارزها",
+        price: 40,
+        currency: "USD",
+        icon: "📚",
+        color: "#ffb347",
+        percent: 25 // فیزیکی - سود پایین
     }
 ];
 
@@ -72,10 +86,10 @@ async function loadProducts() {
         
         // دریافت موجودی LVL کاربر
         const lvlBalance = await contract.balanceOf(address);
-        const lvlPrice = await contract.getLatestLvlPrice();
+        const lvlPrice = await contract.getTokenPrice();
         
         // محاسبه ارزش دلاری موجودی LVL
-        const lvlValueUSD = (parseFloat(ethers.formatEther(lvlBalance)) * parseFloat(ethers.formatUnits(lvlPrice, 8))).toFixed(2);
+        const lvlValueUSD = (parseFloat(ethers.formatEther(lvlBalance)) * parseFloat(ethers.formatUnits(lvlPrice, 18))).toFixed(2);
         
         // تبدیل موجودی LVL به عدد
         const userLVLBalance = parseFloat(ethers.formatEther(lvlBalance));
@@ -115,7 +129,7 @@ function displayProducts(products, userBalanceUSD, userLVLBalance) {
     productsList.appendChild(balanceDisplay);
 
     // نمایش محصولات
-    products.forEach(product => {
+    products.forEach((product) => {
         const productCard = document.createElement('div');
         productCard.className = 'product-card';
         
@@ -125,6 +139,8 @@ function displayProducts(products, userBalanceUSD, userLVLBalance) {
         // بررسی اینکه آیا کاربر موجودی کافی دارد
         const hasSufficientBalance = userLVLBalance >= priceInLVL;
         
+        // نمایش درصد سود ثابت (غیرقابل انتخاب)
+        const percentDisplay = `<span style='font-size:0.95em; color:#a786ff;'>حاشیه سود: ${product.percent}%</span>`;
         productCard.innerHTML = `
             <div class="product-icon" style="background: ${product.color};">${product.icon}</div>
             <div style="flex: 1;">
@@ -136,6 +152,8 @@ function displayProducts(products, userBalanceUSD, userLVLBalance) {
                         <br>
                         <span class="product-price-usd">(~$${product.price})</span>
                         ${!hasSufficientBalance ? `<br><span class="product-insufficient">موجودی ناکافی</span>` : ''}
+                        <br>
+                        ${percentDisplay}
                     </div>
                     <button class="buy-btn ${hasSufficientBalance ? 'enabled' : 'disabled'}" 
                             data-product-id="${product.id}" 
@@ -162,14 +180,16 @@ function setupProductPurchases() {
         if (e.target.classList.contains('buy-btn')) {
             const productId = parseInt(e.target.dataset.productId);
             const price = parseFloat(e.target.dataset.price);
-            
-            await purchaseProduct(productId, price, e.target);
+            // درصد ثابت هر محصول
+            const product = products.find(p => p.id === productId);
+            const percent = product ? product.percent : 30;
+            await purchaseProduct(productId, price, percent, e.target);
         }
     });
 }
 
 // خرید محصول
-async function purchaseProduct(productId, price, button) {
+async function purchaseProduct(productId, price, percent, button) {
     try {
         // بررسی اتصال کیف پول
         const connection = await checkConnection();
@@ -188,7 +208,7 @@ async function purchaseProduct(productId, price, button) {
         }
 
         // تأیید خرید
-        const confirmed = confirm(`آیا از خرید این محصول به قیمت ${price} LVL اطمینان دارید؟`);
+        const confirmed = confirm(`آیا از خرید این محصول به قیمت ${price} LVL با ${percent}% ورود به باینری اطمینان دارید؟`);
         if (!confirmed) return;
 
         // غیرفعال کردن دکمه
@@ -197,12 +217,18 @@ async function purchaseProduct(productId, price, button) {
 
         // انجام تراکنش خرید - استفاده از آدرس deployer به عنوان فروشگاه
         const { contract } = await connectWallet();
-        const amountInWei = ethers.parseUnits(price.toString(), 18);
-        
+        // اصلاح: تبدیل price و payout به رشته با 6 رقم اعشار قبل از parseUnits
+        const priceFixed = Number(price).toFixed(6);
+        const amountInWei = ethers.parseUnits(priceFixed, 18);
+        const payout = Math.floor(price * percent / 100);
+        const payoutFixed = Number(payout).toFixed(6);
+        const payoutInWei = ethers.parseUnits(payoutFixed, 18);
+        // لاگ برای دیباگ
+        console.log('price:', price, 'priceFixed:', priceFixed, 'amountInWei:', amountInWei.toString());
+        console.log('payout:', payout, 'payoutFixed:', payoutFixed, 'payoutInWei:', payoutInWei.toString());
         // استفاده از آدرس deployer قرارداد به عنوان آدرس فروشگاه
         const deployerAddress = await contract.deployer();
-        
-        const tx = await contract.transfer(deployerAddress, amountInWei);
+        const tx = await contract.purchase(amountInWei, payoutInWei);
         await tx.wait();
 
         // نمایش پیام موفقیت

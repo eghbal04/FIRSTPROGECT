@@ -19,11 +19,6 @@ let updateIntervals = [];
 // Initialize price chart
 async function initializePriceChart() {
     try {
-        console.log('Price Chart: Initializing...');
-        
-        // Load Chart.js if not already loaded
-        await loadChartJS();
-        
         // Initialize the chart
         initializeChart();
         
@@ -36,8 +31,6 @@ async function initializePriceChart() {
         
         // Start auto-update with current period interval
         startChartIntervals();
-        
-        console.log('Price Chart: Initialized successfully');
         
     } catch (error) {
         console.error('Price Chart: Error initializing:', error);
@@ -82,7 +75,20 @@ async function changeTimePeriod(period) {
             const filteredLvlPol = priceHistory.lvlPol.filter(item => item.time >= periodCutoff);
             const filteredPolUsd = priceHistory.polUsd.filter(item => item.time >= periodCutoff);
             
-            chartInstance.data.labels = filteredLvlUsd.map(item => new Date(item.time).toLocaleTimeString('fa-IR'));
+            // نمایش مختصر تاریخ/ساعت
+            let labels;
+            if (period === '1D') {
+                labels = filteredLvlUsd.map(item => {
+                    const d = new Date(item.time);
+                    return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
+                });
+            } else {
+                labels = filteredLvlUsd.map(item => {
+                    const d = new Date(item.time);
+                    return (d.getMonth()+1).toString().padStart(2, '0') + '/' + d.getDate().toString().padStart(2, '0');
+                });
+            }
+            chartInstance.data.labels = labels;
             chartInstance.data.datasets[0].data = filteredLvlUsd.map(item => item.value);
             chartInstance.data.datasets[1].data = filteredLvlPol.map(item => item.value);
             chartInstance.data.datasets[2].data = filteredPolUsd.map(item => item.value);
@@ -145,11 +151,9 @@ async function loadChartJS() {
         const script = document.createElement('script');
         script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js';
         script.onload = () => {
-            console.log('Chart.js loaded successfully');
             resolve();
         };
         script.onerror = () => {
-            console.error('Failed to load Chart.js');
             reject(new Error('Failed to load Chart.js'));
         };
         document.head.appendChild(script);
@@ -343,55 +347,30 @@ function initializeChart() {
             }
         }
     });
-    
-    console.log('Price Chart: Chart initialized');
 }
 
 // Update price chart data
 async function updatePriceChart() {
     try {
-        console.log('Price Chart: Updating prices...');
+        // دریافت قیمت‌ها از تابع مرکزی
+        const prices = await window.getPrices();
         
-        // دریافت قیمت POL از Coingecko
-        const polUsdPrice = await fetchPolUsdPrice();
-        
-        // دریافت آمار قرارداد
-        const contractStats = await fetchContractStats();
-        
-        if (!contractStats) {
-            console.warn('Price Chart: No contract stats available');
+        if (!prices) {
             return;
         }
         
-        // محاسبه قیمت‌ها
-        const polBalance = parseFloat(contractStats.polBalance || '0');
-        const circulatingSupply = parseFloat(contractStats.circulatingSupply || '1');
-        
-        // محاسبه LVL/POL (قیمت توکن بر حسب POL)
-        const lvlPolPrice = circulatingSupply > 0 ? polBalance / circulatingSupply : 0.001;
-        
-        // محاسبه LVL/USD (قیمت توکن بر حسب دلار)
-        const lvlUsdPrice = lvlPolPrice * polUsdPrice;
-        
-        const prices = {
-            lvlPol: lvlPolPrice,
-            lvlUsd: lvlUsdPrice,
-            polUsd: polUsdPrice
+        // تبدیل قیمت‌ها به اعداد
+        const priceData = {
+            lvlPol: parseFloat(prices.lvlPricePol),
+            lvlUsd: parseFloat(prices.lvlPriceUSD),
+            polUsd: parseFloat(prices.polPrice)
         };
         
-        console.log('Price Chart: Calculated prices:', {
-            'LVL/POL': lvlPolPrice,
-            'LVL/USD': lvlUsdPrice,
-            'POL/USD': polUsdPrice
-        });
-        
         // به‌روزرسانی کارت‌های قیمت
-        updatePriceCards(prices);
+        updatePriceCards(priceData);
         
         // به‌روزرسانی نمودار
-        updateChartData(prices);
-        
-        console.log('Price Chart: Updated successfully');
+        updateChartData(priceData);
         
     } catch (error) {
         console.error('Price Chart: Error updating price chart:', error);
@@ -405,8 +384,6 @@ async function updatePriceChart() {
         
         updatePriceCards(fallbackPrices);
         updateChartData(fallbackPrices);
-        
-        console.log('Price Chart: Using fallback prices due to error');
     }
 }
 
@@ -478,12 +455,6 @@ function updatePriceCards(prices) {
             second: '2-digit'
         });
         updateElement('price-chart-last-update', timeString);
-        
-        console.log('Price Chart: Updated all price cards:', {
-            lvlUsd: lvlUsdFormatted,
-            lvlPol: lvlPolFormatted,
-            polUsd: polUsdFormatted
-        });
         
     } catch (error) {
         console.error('Price Chart: Error updating price cards:', error);
@@ -615,105 +586,8 @@ function stopPriceChart() {
             polUsd: []
         };
         
-        console.log('Price Chart: Stopped successfully');
-        
     } catch (error) {
         console.error('Price Chart: Error stopping price chart:', error);
-    }
-}
-
-async function fetchPolUsdPrice() {
-    try {
-        // تلاش با API های مختلف
-        const apis = [
-            {
-                name: 'Coingecko',
-                url: 'https://api.coingecko.com/api/v3/simple/price?ids=polygon&vs_currencies=usd',
-                proxy: true
-            },
-            {
-                name: 'Binance',
-                url: 'https://api.binance.com/api/v3/ticker/price?symbol=MATICUSDT',
-                proxy: false
-            },
-            {
-                name: 'Coinbase',
-                url: 'https://api.coinbase.com/v2/prices/MATIC-USD/spot',
-                proxy: false
-            }
-        ];
-        
-        for (const api of apis) {
-            try {
-                console.log('Price Chart: Trying API:', api.name);
-                
-                let response;
-                if (api.proxy) {
-                    // استفاده از proxy برای Coingecko
-                    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(api.url)}`;
-                    response = await fetch(proxyUrl, {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                } else {
-                    response = await fetch(api.url, {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                }
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                console.log('Price Chart: Response from', api.name, ':', data);
-                
-                let price = null;
-                
-                // پردازش پاسخ بر اساس نوع API
-                if (api.name === 'Coingecko' && data.polygon && data.polygon.usd) {
-                    price = data.polygon.usd;
-                } else if (api.name === 'Binance' && data.price) {
-                    price = parseFloat(data.price);
-                } else if (api.name === 'Coinbase' && data.data && data.data.amount) {
-                    price = parseFloat(data.data.amount);
-                }
-                
-                if (price && price > 0) {
-                    console.log('Price Chart: POL/USD price from', api.name, ':', price);
-                    return price;
-                }
-                
-            } catch (error) {
-                console.warn('Price Chart: Error with', api.name, ':', error.message);
-                continue; // ادامه با API بعدی
-            }
-        }
-        
-        // اگر هیچ API کار نکرد، از قرارداد استفاده کن
-        console.log('Price Chart: All APIs failed, trying contract price...');
-        try {
-            const { contract } = await window.connectWallet();
-            const contractPrice = await contract.getLatestMaticPrice();
-            const price = parseFloat(ethers.formatUnits(contractPrice, 8));
-            console.log('Price Chart: POL/USD price from contract:', price);
-            return price;
-        } catch (contractError) {
-            console.warn('Price Chart: Contract price failed:', contractError.message);
-        }
-        
-        // در نهایت از قیمت پیش‌فرض استفاده کن
-        console.log('Price Chart: Using fallback POL price: 1.00 USD');
-        return 1.00;
-        
-    } catch (error) {
-        console.error('Price Chart: Error fetching POL/USD price:', error);
-        return 1.00; // قیمت پیش‌فرض
     }
 }
 
@@ -741,7 +615,6 @@ async function fetchContractStats() {
             const contractBalance = await contract.balanceOf(contract.target);
             circulatingSupply = totalSupply - contractBalance;
         } catch (e) {
-            console.warn('Price Chart: Could not calculate circulating supply, using total supply');
             circulatingSupply = totalSupply;
         }
         
@@ -750,7 +623,7 @@ async function fetchContractStats() {
         try {
             polBalance = await provider.getBalance(contract.target);
         } catch (e) {
-            console.warn('Price Chart: Could not get contract POL balance:', e);
+            // خطا را نادیده بگیر
         }
         
         return {
@@ -779,4 +652,7 @@ window.priceChart = {
     changeTimePeriod: changeTimePeriod
 };
 
-console.log('Price Chart module loaded successfully'); 
+async function fetchPolUsdPriceForChart() {
+    // استفاده از تابع کمکی سراسری
+    return await window.fetchPolUsdPrice();
+} 

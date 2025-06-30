@@ -31,8 +31,6 @@ function updateConnectionStatus(type, message) {
 
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        console.log("Homepage loaded, waiting for wallet connection...");
-        
         // به‌روزرسانی نمایش دکمه‌های کیف پول
         if (window.WalletConnectHandler) {
             window.WalletConnectHandler.updateWalletButtonVisibility();
@@ -95,11 +93,10 @@ async function waitForWalletConnection() {
         try {
             const result = await window.checkConnection();
             if (result.connected) {
-                console.log('Dashboard: Wallet connected, loading data...');
                 return result;
             }
         } catch (error) {
-            console.log('Dashboard: Waiting for wallet connection...', attempts + 1);
+            // خطا را نادیده بگیر
         }
         
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -118,8 +115,6 @@ async function loadDashboardData() {
     isDashboardLoading = true;
     
     try {
-        console.log('Dashboard: Loading dashboard data...');
-        
         // انتظار برای اتصال کیف پول
         await waitForWalletConnection();
         
@@ -131,18 +126,11 @@ async function loadDashboardData() {
             getTradingVolume()
         ]);
         
-        // Debug logging برای بررسی مقادیر
-        console.log('Dashboard: Contract stats received:', stats);
-        console.log('Dashboard: Circulating supply:', stats.circulatingSupply);
-        console.log('Dashboard: Total supply:', stats.totalSupply);
-        
         // محاسبه تغییرات قیمت
         const priceChanges = await calculatePriceChanges();
         
         // به‌روزرسانی UI
         updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceChanges);
-        
-        console.log('Dashboard: Data loaded successfully');
         
     } catch (error) {
         console.error('Dashboard: Error loading data:', error);
@@ -224,9 +212,9 @@ function updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceC
     updateElementExponential('circulating-supply', stats.circulatingSupply, ' LVL');
     updateElement('total-users', stats.totalUsers, '', '', true);
     // نمایش پوینت‌ها به صورت عدد صحیح (بدون اعشار)
-    updateElement('total-points', Math.round(parseFloat(stats.totalPoints)), '', '', true);
-    updateElement('claimed-points', Math.round(parseFloat(stats.totalClaimableBinaryPoints)), '', '', true);
-    updateElement('remaining-points', Math.round(parseFloat(stats.totalPoints) - parseFloat(stats.totalClaimableBinaryPoints)), '', '', true);
+    updateElement('total-points', parseInt(stats.totalPoints.replace(/\..*$/, '')), '', '', true);
+    updateElement('claimed-points', parseInt(stats.totalClaimableBinaryPoints.replace(/\..*$/, '')), '', '', true);
+    updateElement('remaining-points', parseInt(stats.totalPoints.replace(/\..*$/, '')) - parseInt(stats.totalClaimableBinaryPoints.replace(/\..*$/, '')), '', '', true);
     // موجودی قرارداد با نهایتاً ۶ رقم اعشار
     const tradingVolumeNum = Number(tradingVolume);
     updateElement('trading-volume', isNaN(tradingVolumeNum) ? 0 : tradingVolumeNum, '', ' POL', false, 6);
@@ -281,8 +269,6 @@ function updateWalletButtonVisibility() {
 // تابع قطع اتصال کیف پول
 async function disconnectWallet() {
     try {
-        console.log('Dashboard: Disconnecting wallet...');
-        
         // پاک کردن تنظیمات قرارداد
         if (window.contractConfig) {
             window.contractConfig.provider = null;
@@ -300,8 +286,6 @@ async function disconnectWallet() {
         // به‌روزرسانی UI
         updateWalletButtonVisibility();
         updateConnectionStatus('info', 'کیف پول قطع شد');
-        
-        console.log('Dashboard: Wallet disconnected successfully');
         
     } catch (error) {
         console.error('Dashboard: Error disconnecting wallet:', error);
@@ -359,20 +343,9 @@ async function getAdditionalStats() {
 // تابع دریافت حجم معاملات
 async function getTradingVolume() {
     try {
-        const { contract, provider } = await window.connectWallet();
-        
-        console.log('Dashboard: Getting contract balance...');
-        console.log('Dashboard: Contract address:', contract.target);
-        
-        // دریافت موجودی POL قرارداد
-        const contractMaticBalance = await provider.getBalance(contract.target);
-        
-        console.log('Dashboard: Raw contract balance (wei):', contractMaticBalance.toString());
-        
-        // تبدیل به فرمت قابل خواندن
+        const { contract } = await window.connectWallet();
+        const contractMaticBalance = await contract.getContractMaticBalance();
         const formattedBalance = ethers.formatEther(contractMaticBalance);
-        
-        console.log('Dashboard: Contract POL balance (formatted):', formattedBalance);
         
         return formattedBalance;
     } catch (error) {
@@ -389,23 +362,17 @@ function shortenAddress(address) {
 
 // تابع شروع نظارت بر اتصال
 function startConnectionMonitoring() {
-    console.log('Starting connection monitoring...');
-    
     // بررسی تغییرات اتصال MetaMask
     if (typeof window.ethereum !== 'undefined') {
         window.ethereum.on('accountsChanged', async (accounts) => {
-            console.log('MetaMask accounts changed:', accounts);
-            
             // Check cooldown to prevent frequent updates
             const now = Date.now();
             if (now - lastConnectionAttempt < CONNECTION_COOLDOWN) {
-                console.log('Account change too frequent, skipping...');
                 return;
             }
             lastConnectionAttempt = now;
             
             if (accounts && accounts.length > 0) {
-                console.log('New account connected, initializing Web3...');
                 try {
                     // ریست کردن وضعیت اتصال
                     window.resetConnectionState();
@@ -421,24 +388,19 @@ function startConnectionMonitoring() {
                     console.error('Error handling account change:', error);
                 }
             } else {
-                console.log('All accounts disconnected, resetting dashboard...');
                 resetDashboard();
             }
         });
         
         window.ethereum.on('chainChanged', async (chainId) => {
-            console.log('MetaMask chain changed:', chainId);
-            
             // Check cooldown to prevent frequent updates
             const now = Date.now();
             if (now - lastConnectionAttempt < CONNECTION_COOLDOWN) {
-                console.log('Chain change too frequent, skipping...');
                 return;
             }
             lastConnectionAttempt = now;
             
             if (chainId === '0x89') {
-                console.log('Connected to Polygon, initializing Web3...');
                 try {
                     // ریست کردن وضعیت اتصال
                     window.resetConnectionState();
@@ -454,18 +416,14 @@ function startConnectionMonitoring() {
                     console.error('Error handling chain change:', error);
                 }
             } else {
-                console.log('Not on Polygon network, showing error...');
                 updateConnectionStatus('error', 'لطفاً به شبکه Polygon متصل شوید');
             }
         });
         
         window.ethereum.on('connect', async (connectInfo) => {
-            console.log('MetaMask connected:', connectInfo);
-            
             // Check cooldown to prevent frequent updates
             const now = Date.now();
             if (now - lastConnectionAttempt < CONNECTION_COOLDOWN) {
-                console.log('Connect event too frequent, skipping...');
                 return;
             }
             lastConnectionAttempt = now;
@@ -487,7 +445,6 @@ function startConnectionMonitoring() {
         });
         
         window.ethereum.on('disconnect', (error) => {
-            console.log('MetaMask disconnected:', error);
             resetDashboard();
         });
     }
@@ -495,12 +452,9 @@ function startConnectionMonitoring() {
     // بررسی اتصال WalletConnect
     if (window.walletConnectProvider) {
         window.walletConnectProvider.on('accountsChanged', async (accounts) => {
-            console.log('WalletConnect accounts changed:', accounts);
-            
             // Check cooldown to prevent frequent updates
             const now = Date.now();
             if (now - lastConnectionAttempt < CONNECTION_COOLDOWN) {
-                console.log('WalletConnect change too frequent, skipping...');
                 return;
             }
             lastConnectionAttempt = now;
@@ -515,7 +469,6 @@ function startConnectionMonitoring() {
         });
         
         window.walletConnectProvider.on('disconnect', (code, reason) => {
-            console.log('WalletConnect disconnected:', code, reason);
             resetDashboard();
         });
     }
@@ -524,8 +477,6 @@ function startConnectionMonitoring() {
 // تابع مدیریت موفقیت اتصال WalletConnect
 async function handleWalletConnectSuccess(walletConnectProvider) {
     try {
-        console.log('Handling WalletConnect success...');
-        
         // ایجاد provider و signer
         const provider = new ethers.BrowserProvider(walletConnectProvider);
         const signer = await provider.getSigner();
@@ -549,7 +500,6 @@ async function handleWalletConnectSuccess(walletConnectProvider) {
         localStorage.setItem('walletAddress', address);
         localStorage.setItem('walletType', 'walletconnect');
         
-        console.log('WalletConnect connection successful');
         updateConnectionStatus('success', 'اتصال با کیف پول موفقیت‌آمیز بود');
         updateWalletButtonVisibility();
         
@@ -576,8 +526,6 @@ async function handleWalletConnectSuccess(walletConnectProvider) {
 // تابع اتصال با QR Code
 async function connectWithQRCode() {
     try {
-        console.log('Attempting WalletConnect QR connection...');
-        
         // بررسی وجود WalletConnectHandler
         if (!window.WalletConnectHandler) {
             console.error('WalletConnectHandler not found');
@@ -596,8 +544,6 @@ async function connectWithQRCode() {
         const provider = await window.WalletConnectHandler.connectWithWalletConnect();
         
         if (provider && provider.connected) {
-            console.log('WalletConnect QR connection successful');
-            
             // مدیریت موفقیت اتصال
             await handleWalletConnectSuccess(provider);
             
@@ -635,16 +581,13 @@ async function connectWallet() {
         // Check cooldown period - but allow if no connection exists
         const now = Date.now();
         if (now - lastConnectionAttempt < CONNECTION_COOLDOWN && window.contractConfig && window.contractConfig.contract) {
-            console.log('Connection attempt too frequent, but returning existing connection...');
             return window.contractConfig;
         }
         
         lastConnectionAttempt = now;
-        console.log('Attempting smart connect...');
         
         // بررسی اتصال موجود
         if (window.contractConfig && window.contractConfig.contract && window.contractConfig.address) {
-            console.log('Wallet already connected, returning existing config');
             return window.contractConfig;
         }
         
@@ -652,7 +595,6 @@ async function connectWallet() {
         if (typeof smartConnect === 'function') {
             const result = await smartConnect();
             if (result) {
-                console.log(`Connected with ${result}`);
                 // اگر smartConnect موفق بود، contractConfig باید تنظیم شده باشد
                 if (window.contractConfig && window.contractConfig.contract) {
                     return window.contractConfig;
@@ -668,7 +610,6 @@ async function connectWallet() {
                 });
                 
                 if (accounts && accounts.length > 0) {
-                    console.log('MetaMask connected, initializing Web3...');
                     await window.initializeWeb3();
                     
                     // بررسی اینکه آیا contractConfig تنظیم شده است
@@ -681,7 +622,6 @@ async function connectWallet() {
             }
         }
         
-        console.log('No wallet connected');
         return null;
         
     } catch (error) {
@@ -693,8 +633,6 @@ async function connectWallet() {
 // تابع بارگذاری صفحه اصلی
 async function loadHomepage() {
     try {
-        console.log('Loading homepage...');
-        
         // انتظار برای اتصال کیف پول
         await waitForWalletConnection();
         
@@ -704,7 +642,6 @@ async function loadHomepage() {
         // شروع به‌روزرسانی خودکار
         startDashboardAutoUpdate();
         
-        console.log('Homepage loaded successfully');
     } catch (error) {
         console.error('Error loading homepage:', error);
     }
@@ -713,11 +650,8 @@ async function loadHomepage() {
 // تابع اتصال خودکار کیف پول
 async function autoConnectWallet() {
     try {
-        console.log('Attempting auto-connect...');
-        
         // بررسی اتصال موجود
         if (window.contractConfig && window.contractConfig.address) {
-            console.log('Wallet already connected');
             return true;
         }
         
@@ -725,13 +659,11 @@ async function autoConnectWallet() {
         if (typeof window.ethereum !== 'undefined') {
             const accounts = await window.ethereum.request({ method: 'eth_accounts' });
             if (accounts && accounts.length > 0) {
-                console.log('MetaMask already connected, initializing...');
                 await window.initializeWeb3();
                 return true;
             }
         }
         
-        console.log('No existing connection found');
         return false;
         
     } catch (error) {
@@ -754,5 +686,3 @@ document.addEventListener('DOMContentLoaded', function() {
         loadHomepage();
     }, 500);
 });
-
-console.log('Dashboard module loaded successfully');
