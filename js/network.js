@@ -114,14 +114,12 @@ function showUnregisteredUser() {
 // تابع بارگذاری آمار شبکه
 async function loadNetworkStats(contract) {
     try {
-        const [totalUsers, totalPoints, totalClaimableBinaryPoints] = await Promise.all([
-            contract.totalUsers(),
+        const [totalPoints, totalClaimableBinaryPoints] = await Promise.all([
             contract.totalPoints(),
             contract.totalClaimableBinaryPoints()
         ]);
-        
-        updateElement('network-members', totalUsers.toString());
-        
+        updateElement('network-points', parseInt(totalPoints.toString()));
+        updateElement('network-rewards', parseInt(totalClaimableBinaryPoints.toString()));
     } catch (error) {
         console.error('Error loading network stats:', error);
     }

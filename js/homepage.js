@@ -210,8 +210,6 @@ function updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceC
     // به‌روزرسانی آمار قرارداد
     // نمایش circulating-supply با نماد علمی (E notation)
     updateElementExponential('circulating-supply', stats.circulatingSupply, ' LVL');
-    updateElement('total-users', stats.totalUsers, '', '', true);
-    // نمایش پوینت‌ها به صورت عدد صحیح (بدون اعشار)
     updateElement('total-points', parseInt(stats.totalPoints.replace(/\..*$/, '')), '', '', true);
     updateElement('claimed-points', parseInt(stats.totalClaimableBinaryPoints.replace(/\..*$/, '')), '', '', true);
     updateElement('remaining-points', parseInt(stats.totalPoints.replace(/\..*$/, '')) - parseInt(stats.totalClaimableBinaryPoints.replace(/\..*$/, '')), '', '', true);
@@ -299,7 +297,7 @@ async function resetDashboard() {
         // پاک کردن همه مقادیر
         const elements = [
             'token-price', 'token-price-matic', 'circulating-supply',
-            'total-users', 'total-points', 'claimed-points', 'remaining-points',
+            'total-points', 'claimed-points', 'remaining-points',
             'trading-volume', 'point-value', 'reward-pool'
         ];
         

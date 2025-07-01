@@ -217,18 +217,15 @@ async function purchaseProduct(productId, price, percent, button) {
 
         // انجام تراکنش خرید - استفاده از آدرس deployer به عنوان فروشگاه
         const { contract } = await connectWallet();
-        // اصلاح: تبدیل price و payout به رشته با 6 رقم اعشار قبل از parseUnits
         const priceFixed = Number(price).toFixed(6);
         const amountInWei = ethers.parseUnits(priceFixed, 18);
-        const payout = Math.floor(price * percent / 100);
-        const payoutFixed = Number(payout).toFixed(6);
-        const payoutInWei = ethers.parseUnits(payoutFixed, 18);
+        const payoutPercent = percent; // عدد صحیح درصد
         // لاگ برای دیباگ
         console.log('price:', price, 'priceFixed:', priceFixed, 'amountInWei:', amountInWei.toString());
-        console.log('payout:', payout, 'payoutFixed:', payoutFixed, 'payoutInWei:', payoutInWei.toString());
+        console.log('payoutPercent:', payoutPercent);
         // استفاده از آدرس deployer قرارداد به عنوان آدرس فروشگاه
         const deployerAddress = await contract.deployer();
-        const tx = await contract.purchase(amountInWei, payoutInWei);
+        const tx = await contract.purchase(amountInWei, payoutPercent);
         await tx.wait();
 
         // نمایش پیام موفقیت

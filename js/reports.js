@@ -209,7 +209,7 @@ function shortenTransactionHash(hash) {
             try {
                 purchaseEvents = await contract.queryFilter(contract.filters.PurchaseKind(), fromBlock, currentBlock);
             } catch (e) {}
-            purchaseEvents.forEach(event => {
+                purchaseEvents.forEach(event => {
                 if (event.args.user.toLowerCase() === address.toLowerCase()) {
                     reports.push({
                         type: 'purchase',

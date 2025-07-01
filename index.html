@@ -2190,6 +2190,13 @@
     </div>
     <div class="expand-content">
       <div class="dashboard-cards">
+        <div class="dashboard-card">
+          <div class="dashboard-card-icon">👛</div>
+          <div class="dashboard-card-content">
+            <h4>تعداد ولت‌های متصل</h4>
+            <div id="dashboard-wallets-count">-</div>
+          </div>
+        </div>
         <!-- حذف کارت قیمت LVL (USD) -->
         <!-- حذف کارت قیمت LVL (POL) -->
         <div class="dashboard-card">
@@ -2199,13 +2206,7 @@
             <div id="circulating-supply">-</div>
       </div>
     </div>
-    <div class="dashboard-card">
-          <div class="dashboard-card-icon"></div>
-          <div class="dashboard-card-content">
-            <h4>کاربران</h4>
-            <div id="total-users">-</div>
-      </div>
-    </div>
+    <!-- کارت total-users (کاربران) حذف شد -->
     <div class="dashboard-card">
           <div class="dashboard-card-icon"></div>
           <div class="dashboard-card-content">
@@ -2318,14 +2319,14 @@
 
   <div class="tab-container" style="max-width:700px;margin:0.5rem auto 0.5rem auto;">
     <div class="tab-headers" style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
-      <button class="tab-btn active" id="tab-swap-btn" type="button">تبدیل</button>
-      <button class="tab-btn" id="tab-network-btn" type="button">شبکه</button>
-      <button class="tab-btn" id="tab-profile-btn" type="button">پروفایل</button>
-      <button class="tab-btn" id="tab-reports-btn" type="button">گزارشات</button>
-      <button class="tab-btn" id="tab-news-btn" type="button">اخبار</button>
-      <button class="tab-btn" id="tab-shop-btn" type="button">فروشگاه</button>
-      <button class="tab-btn" id="tab-about-btn" type="button">درباره</button>
-      <button class="tab-btn" id="tab-register-btn" type="button">ثبت‌نام</button>
+      <button class="tab-btn list-btn active" id="tab-swap-btn" type="button">تبدیل</button>
+      <button class="tab-btn list-btn" id="tab-network-btn" type="button">شبکه</button>
+      <button class="tab-btn list-btn" id="tab-profile-btn" type="button">پروفایل</button>
+      <button class="tab-btn list-btn" id="tab-reports-btn" type="button">گزارشات</button>
+      <button class="tab-btn list-btn" id="tab-news-btn" type="button">اخبار</button>
+      <button class="tab-btn list-btn" id="tab-shop-btn" type="button">فروشگاه</button>
+      <button class="tab-btn list-btn" id="tab-about-btn" type="button">درباره</button>
+      <button class="tab-btn list-btn" id="tab-register-btn" type="button">ثبت‌نام</button>
     </div>
   </div>
   <div id="main-swap" class="page-section expandable-container">
@@ -2342,7 +2343,7 @@
           </select>
           <label for="swapAmount">مقدار:</label>
           <div class="amount-row">
-            <input type="number" id="swapAmount" placeholder="مقدار را وارد کنید" min="0" step="any" />
+            <input type="number" id="swapAmount" placeholder="مقدار را وارد کنید" step="any" />
             <button type="button" id="maxButton" class="max-btn">حداکثر</button>
           </div>
           <div class="swap-info" id="swapInfo">نرخ تبدیل: -</div>
@@ -2365,7 +2366,6 @@
     <div class="expand-content">
       <div class="network-container">
         <div class="network-stats">
-          <div class="network-stat"><h4>تعداد اعضا</h4><div id="network-members">-</div></div>
           <div class="network-stat"><h4>سقف درآمد روزانه (تعداد پوینت)</h4><div id="points-cap">-</div></div>
           <div class="network-stat"><h4>امتیاز باینری شما</h4><div id="user-binary-points">-</div></div>
         </div>
@@ -2494,6 +2494,11 @@
           
           <div class="about-stats">
             <div class="about-stat">
+              <div class="icon">👛</div>
+              <div class="number" id="about-wallets-count">-</div>
+              <div class="label">تعداد ولت‌های متصل</div>
+            </div>
+            <div class="about-stat">
               <div class="icon">🚀</div>
               <div class="number">1000+</div>
               <div class="label">کاربر فعال</div>
@@ -2552,27 +2557,18 @@
         </div>
 
         <!-- فرم ثبت‌نام برای کاربران جدید -->
-        <div id="registration-form" style="display: none;">
-          <h3 style="color: #a786ff; text-align: center; margin-bottom: 1rem;">ثبت‌نام جدید</h3>
-          
-          <!-- Container برای نمایش اطلاعات کامل ثبت‌نام -->
-          <div id="registration-info"></div>
-          
-          <!-- Container برای نمایش مقایسه قیمت‌ها -->
-          <div id="price-comparison"></div>
-          
-          <div style="background: #181c2a; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; border: 1px solid #a786ff33;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-              <span style="color: #fff;">مقدار مورد نیاز:</span>
-              <span id="registration-required" style="color: #a786ff; font-weight: bold;">-</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="color: #fff;">وضعیت:</span>
-              <span id="registration-status-text" style="color: #4caf50;">آماده برای ثبت‌نام</span>
+        <div id="registration-section">
+          <div id="registration-form" style="display: none;">
+            <h3 style="color: #a786ff; text-align: center; margin-bottom: 1rem;">ثبت‌نام جدید</h3>
+            <div style="display: flex; flex-direction: column; gap: 1rem; align-items: center;">
+              <label style="color: #fff; width: 100%; text-align: right;">آدرس معرف:</label>
+              <input type="text" id="referrer-address" readonly style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #a786ff55; background: #232946; color: #fff; font-size: 1rem; direction: ltr;" />
+              <label style="color: #fff; width: 100%; text-align: right;">مقدار توکن مورد نیاز:</label>
+              <input type="text" id="required-token-amount" readonly style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #a786ff55; background: #232946; color: #fff; font-size: 1rem; direction: ltr;" />
+              <button id="register-btn" class="register-btn" style="width: 100%;">ثبت‌ نام</button>
+              <div id="register-status" class="profile-status"></div>
             </div>
           </div>
-          <button id="register-btn" class="register-btn">ثبت‌ نام</button>
-          <div id="register-status" class="profile-status"></div>
         </div>
         
         <!-- فرم ارتقا برای کاربران فعال -->
@@ -2585,7 +2581,6 @@
                 type="number" 
                 id="upgrade-amount" 
                 placeholder="مقدار را وارد کنید" 
-                min="1" 
                 step="1"
                 style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #a786ff55; background: #232946; color: #fff; font-size: 1rem;"
               >
@@ -2819,5 +2814,67 @@
   </script>
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+  <script>
+    (async () => {
+      const { contract, address } = await window.connectWallet();
+      const user = await contract.users(address);
+      console.log('totalPurchasedKind:', user.totalPurchasedKind?.toString?.() ?? user.totalPurchasedKind);
+    })();
+  </script>
+  <script>
+    (async () => {
+      const { contract, address } = await window.connectWallet();
+      const events = await contract.queryFilter(contract.filters.PurchaseKind());
+      console.log(events);
+    })();
+  </script>
+  <script>
+    async function updateAboutWalletsCount() {
+      try {
+        if (!window.contractConfig || !window.contractConfig.contract) {
+          await window.connectWallet();
+        }
+        const contract = window.contractConfig.contract;
+        if (contract && contract.wallets) {
+          const walletsCount = await contract.wallets();
+          document.getElementById('about-wallets-count').innerText = walletsCount.toString();
+        } else {
+          document.getElementById('about-wallets-count').innerText = '-';
+        }
+      } catch (e) {
+        document.getElementById('about-wallets-count').innerText = '-';
+      }
+    }
+    // Hook into tab switching
+    const aboutBtn = document.getElementById('tab-about-btn');
+    if (aboutBtn) {
+      aboutBtn.addEventListener('click', updateAboutWalletsCount);
+    }
+  </script>
+  <script>
+    async function updateDashboardWalletsCount() {
+      try {
+        if (!window.contractConfig || !window.contractConfig.contract) {
+          await window.connectWallet();
+        }
+        const contract = window.contractConfig.contract;
+        if (contract && contract.wallets) {
+          const walletsCount = await contract.wallets();
+          document.getElementById('dashboard-wallets-count').innerText = walletsCount.toString();
+        } else {
+          document.getElementById('dashboard-wallets-count').innerText = '-';
+        }
+      } catch (e) {
+        document.getElementById('dashboard-wallets-count').innerText = '-';
+      }
+    }
+    // Update wallets count when dashboard (swap tab) is shown
+    const swapBtn = document.getElementById('tab-swap-btn');
+    if (swapBtn) {
+      swapBtn.addEventListener('click', updateDashboardWalletsCount);
+    }
+    // Also update on initial load
+    document.addEventListener('DOMContentLoaded', updateDashboardWalletsCount);
+  </script>
 </body>
 </html>

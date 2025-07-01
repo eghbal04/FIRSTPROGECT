@@ -597,13 +597,11 @@ async function fetchContractStats() {
         
         // دریافت آمار قرارداد
         const [
-            totalUsers, totalSupply, binaryPool, 
-            rewardPool, totalPoints, totalClaimableBinaryPoints, pointValue
+            totalSupply, binaryPool, 
+            totalPoints, totalClaimableBinaryPoints, pointValue
         ] = await Promise.all([
-            contract.totalUsers().catch(() => 0n),
             contract.totalSupply().catch(() => 0n),
             contract.binaryPool().catch(() => 0n),
-            contract.rewardPool().catch(() => 0n),
             contract.totalPoints().catch(() => 0n),
             contract.totalClaimableBinaryPoints().catch(() => 0n),
             contract.getPointValue().catch(() => 0n)
@@ -627,14 +625,12 @@ async function fetchContractStats() {
         }
         
         return {
-            totalUsers: totalUsers.toString(),
-            totalSupply: ethers.formatUnits(totalSupply, 18),
+            totalSupply: totalSupply.toString(),
+            binaryPool: binaryPool.toString(),
+            totalPoints: totalPoints.toString(),
+            totalClaimableBinaryPoints: totalClaimableBinaryPoints.toString(),
+            pointValue: pointValue.toString(),
             circulatingSupply: ethers.formatUnits(circulatingSupply, 18),
-            binaryPool: ethers.formatEther(binaryPool),
-            rewardPool: ethers.formatEther(rewardPool),
-            totalPoints: ethers.formatUnits(totalPoints, 18),
-            totalClaimableBinaryPoints: ethers.formatUnits(totalClaimableBinaryPoints, 18),
-            pointValue: ethers.formatUnits(pointValue, 18),
             polBalance: ethers.formatEther(polBalance)
         };
         

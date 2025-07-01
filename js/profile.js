@@ -98,8 +98,24 @@ function updateProfileUI(profile) {
     const lvlEl = document.getElementById('profile-lvl');
     if (lvlEl) lvlEl.textContent = formatNumber(profile.lvlBalance, 6);
     const lvlUsdEl = document.getElementById('profile-lvl-usd');
-    if (lvlUsdEl) lvlUsdEl.textContent = profile.lvlValueUSD && profile.lvlValueUSD !== '0'
-        ? `(${formatNumber(profile.lvlValueUSD, 2)}$)` : '';
+    if (lvlUsdEl) {
+        if (profile.lvlValueUSD && profile.lvlValueUSD !== '0') {
+            const lvlValue = Number(profile.lvlValueUSD);
+            if (lvlValue > 1_000_000) {
+                lvlUsdEl.textContent = `(${lvlValue.toExponential(3)}$)`;
+                lvlUsdEl.title = 'ارزش دلاری غیرواقعی به دلیل نقدینگی یا عرضه کم توکن. این مقدار واقعی نیست.';
+                lvlUsdEl.style.color = '#ff6b6b';
+            } else {
+                lvlUsdEl.textContent = `(${formatNumber(profile.lvlValueUSD, 2)}$)`;
+                lvlUsdEl.title = '';
+                lvlUsdEl.style.color = '';
+            }
+        } else {
+            lvlUsdEl.textContent = '';
+            lvlUsdEl.title = '';
+            lvlUsdEl.style.color = '';
+        }
+    }
 
     // سقف درآمد باینری و دریافتی
     const capEl = document.getElementById('profile-income-cap');
@@ -141,7 +157,11 @@ function updateProfileUI(profile) {
     // نمایش مقدار پس‌انداز برای خرید پوینت
     const purchasedKindEl = document.getElementById('profile-purchased-kind');
     if (purchasedKindEl) {
-        purchasedKindEl.textContent = profile.totalPurchasedKind || '۰';
+        let rawValue = Number(profile.totalPurchasedKind) / 1e18;
+        // همیشه مقدار را نمایش بده حتی اگر صفر باشد
+        let lvlDisplay = rawValue.toLocaleString('en-US', { maximumFractionDigits: 5, minimumFractionDigits: 0 });
+        lvlDisplay += ' LVL';
+        purchasedKindEl.textContent = lvlDisplay;
     }
 }
 

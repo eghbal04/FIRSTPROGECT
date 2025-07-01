@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // تابع بارگذاری اطلاعات ثبت‌نام
-async function loadRegisterData() {
+async function loadRegisterData(contract, address, tokenPriceUSDFormatted) {
     if (isRegisterLoading || registerDataLoaded) {
         console.log('Register: Already loading or loaded, skipping...');
         return;
@@ -74,10 +74,19 @@ async function loadRegisterData() {
         updateBalanceDisplay(lvlBalanceFormatted, lvlBalanceUSD);
         // بررسی وضعیت ثبت‌نام
         if (userData.activated) {
-            showUpgradeForm(userData.totalPurchasedKind);
+            // فقط فرم ارتقا را نمایش بده
+            const profileContainer = document.querySelector('#main-register .profile-container');
+            if (profileContainer) profileContainer.style.display = 'none';
+            const upgradeForm = document.getElementById('upgrade-form');
+            if (upgradeForm) upgradeForm.style.display = 'block';
             await loadUpgradeData(contract, address, tokenPriceUSDFormatted);
         } else {
-            showRegistrationForm(regpriceFormatted, lvlBalanceFormatted, tokenPriceUSDFormatted, regpriceUSD, tokenPriceMaticFormatted, oneCentTokensFormatted, tenCentsInTokensFormatted, twelveCentsInTokensFormatted, userData.totalPurchasedKind);
+            // فقط فرم ثبت‌نام ساده را نمایش بده
+            const profileContainer = document.querySelector('#main-register .profile-container');
+            if (profileContainer) profileContainer.style.display = '';
+            const upgradeForm = document.getElementById('upgrade-form');
+            if (upgradeForm) upgradeForm.style.display = 'none';
+            await showRegistrationForm();
         }
         registerDataLoaded = true;
         console.log('Register: Data loaded successfully');
@@ -142,7 +151,7 @@ function updateUpgradeCalculations(lvlBalance, tokenPriceUSD, currentCap) {
             
             if (upgradeBtn) {
                 const userBalanceNum = parseFloat(lvlBalance);
-                upgradeBtn.disabled = amount <= 0 || amount > userBalanceNum;
+                upgradeBtn.disabled = amount > userBalanceNum;
             }
         });
     }
@@ -224,7 +233,7 @@ async function performRegistration() {
         
         // بارگذاری مجدد اطلاعات
         setTimeout(() => {
-            loadRegisterData();
+            loadRegisterData(contract, address, tokenPriceUSDFormatted);
         }, 2000);
         
     } catch (error) {
@@ -275,7 +284,7 @@ async function performUpgrade() {
         
         // بارگذاری مجدد اطلاعات
         setTimeout(() => {
-            loadRegisterData();
+            loadRegisterData(contract, address, tokenPriceUSDFormatted);
         }, 2000);
         
     } catch (error) {
@@ -351,153 +360,73 @@ function displayRegistrationInfo(registrationPrice, regprice, tokenPriceUSD, tok
 }
 
 // تابع نمایش فرم ثبت‌نام
-function showRegistrationForm(registrationPrice, userBalance, tokenPriceUSD, regprice, tokenPriceMatic, oneCentTokens, tenCentsTokens, twelveCentsTokens, totalPurchasedKind) {
+async function showRegistrationForm() {
     const registrationForm = document.getElementById('registration-form');
-    const upgradeForm = document.getElementById('upgrade-form');
-    
-    if (registrationForm) {
-        registrationForm.style.display = 'block';
+    if (!registrationForm) return;
+    registrationForm.style.display = 'block';
+
+    // مقداردهی آدرس معرف: اولویت با لینک رفرال
+    let referrer = getReferrerFromURL();
+    if (!referrer) {
+        // اگر در URL نبود، از userData یا deployer استفاده کن
+        const { contract } = window.contractConfig;
+        const userData = await contract.users(window.contractConfig.address);
+        referrer = userData.referrer || (await contract.deployer());
     }
-    
-    if (upgradeForm) {
-        upgradeForm.style.display = 'none';
+    const referrerInput = document.getElementById('referrer-address');
+    if (referrerInput) referrerInput.value = referrer || '';
+
+    // مقدار توکن مورد نیاز را از قرارداد بگیر
+    let requiredTokenAmount = '';
+    let userLvlBalance = '';
+    try {
+        const { contract, address } = window.contractConfig;
+        const regprice = await contract.regprice();
+        requiredTokenAmount = ethers.formatUnits(regprice, 18);
+        const lvlBalance = await contract.balanceOf(address);
+        userLvlBalance = ethers.formatUnits(lvlBalance, 18);
+    } catch (e) {
+        requiredTokenAmount = '-';
+        userLvlBalance = '0';
     }
-    
-    // نمایش اطلاعات کامل ثبت‌نام
-    displayRegistrationInfo(registrationPrice, regprice, tokenPriceUSD, tokenPriceMatic, oneCentTokens, tenCentsTokens, twelveCentsTokens);
-    
-    // نمایش مقایسه قیمت‌ها
-    displayPriceComparison(tokenPriceUSD, tokenPriceMatic, registrationPrice, oneCentTokens, tenCentsTokens, twelveCentsTokens);
-    
-    // نمایش پس‌انداز خرید پوینت
-    const purchasedKindBox = document.getElementById('registration-purchased-kind');
-    if (purchasedKindBox) {
-        purchasedKindBox.innerHTML = `<div style="background: rgba(167,134,255,0.12); border-radius: 8px; padding: 0.7rem 1rem; margin: 0.7rem 0; border-right: 3px solid #a786ff; display: flex; justify-content: space-between; align-items: center;">
-            <span style='color:#a786ff;'>پس‌انداز خرید پوینت:</span>
-            <span style='color:#fff; font-weight:bold;'>${totalPurchasedKind || '۰'}</span>
-        </div>`;
-    }
-    
-    // به‌روزرسانی اطلاعات فرم
-    const requiredElement = document.getElementById('registration-required');
-    const statusElement = document.getElementById('registration-status-text');
+    const requiredTokenInput = document.getElementById('required-token-amount');
+    if (requiredTokenInput) requiredTokenInput.value = requiredTokenAmount;
+
+    // دکمه ثبت‌نام
     const registerBtn = document.getElementById('register-btn');
-    
-    if (requiredElement) {
-        // نمایش هم مقدار توکن و هم مقدار دلاری
-        requiredElement.textContent = `${registrationPrice} LVL ($${regprice} USD)`;
-    }
-    
-    if (statusElement) {
-        const userBalanceNum = parseFloat(userBalance);
-        const requiredNum = parseFloat(registrationPrice);
-        
-        if (userBalanceNum >= requiredNum) {
-            statusElement.textContent = 'آماده برای ثبت‌نام';
-            statusElement.style.color = '#4caf50';
-            if (registerBtn) registerBtn.disabled = false;
+    const registerStatus = document.getElementById('register-status');
+    if (registerBtn) {
+        // فعال/غیرفعال کردن دکمه بر اساس موجودی
+        if (parseFloat(userLvlBalance) < parseFloat(requiredTokenAmount)) {
+            registerBtn.disabled = true;
+            registerBtn.textContent = 'موجودی LVL کافی نیست';
+            if (registerStatus) registerStatus.textContent = 'برای ثبت‌نام باید حداقل '+requiredTokenAmount+' LVL داشته باشید.';
         } else {
-            statusElement.textContent = 'موجودی ناکافی';
-            statusElement.style.color = '#f44336';
-            if (registerBtn) registerBtn.disabled = true;
+            registerBtn.disabled = false;
+            registerBtn.textContent = 'ثبت‌ نام';
+            if (registerStatus) registerStatus.textContent = '';
         }
-    }
-    
-    // راه‌اندازی دکمه ثبت‌نام
-    setupRegistrationButton();
-}
-
-// تابع نمایش فرم ارتقا
-function showUpgradeForm(totalPurchasedKind) {
-    const registrationForm = document.getElementById('registration-form');
-    const upgradeForm = document.getElementById('upgrade-form');
-    
-    if (registrationForm) {
-        registrationForm.style.display = 'none';
-    }
-    
-    if (upgradeForm) {
-        upgradeForm.style.display = 'block';
-    }
-    
-    // راه‌اندازی فرم ارتقا
-    setupUpgradeForm();
-    
-    // نمایش پس‌انداز خرید پوینت
-    const purchasedKindBox = document.getElementById('upgrade-purchased-kind');
-    if (purchasedKindBox) {
-        purchasedKindBox.innerHTML = `<div style="background: rgba(167,134,255,0.12); border-radius: 8px; padding: 0.7rem 1rem; margin: 0.7rem 0; border-right: 3px solid #a786ff; display: flex; justify-content: space-between; align-items: center;">
-            <span style='color:#a786ff;'>پس‌انداز خرید پوینت:</span>
-            <span style='color:#fff; font-weight:bold;'>${totalPurchasedKind || '۰'}</span>
-        </div>`;
+        registerBtn.onclick = async function() {
+            if (registerBtn.disabled) return;
+            registerBtn.disabled = true;
+            registerBtn.textContent = 'در حال ثبت‌نام...';
+            try {
+                await registerUser(referrer, requiredTokenAmount);
+                registerStatus.textContent = 'ثبت‌نام با موفقیت انجام شد!';
+            } catch (e) {
+                registerStatus.textContent = 'خطا در ثبت‌نام: ' + (e.message || e);
+            }
+            registerBtn.disabled = false;
+            registerBtn.textContent = 'ثبت‌ نام';
+        };
     }
 }
 
-// تابع نمایش مقایسه قیمت‌ها
-function displayPriceComparison(tokenPriceUSD, tokenPriceMatic, registrationPrice, oneCentTokens, tenCentsTokens, twelveCentsTokens) {
-    const comparisonContainer = document.getElementById('price-comparison');
-    if (comparisonContainer) {
-        // محاسبه تفاوت درصدی
-        const usdPrice = parseFloat(tokenPriceUSD);
-        const maticPrice = parseFloat(tokenPriceMatic);
-        const difference = Math.abs(usdPrice - maticPrice);
-        const percentageDiff = ((difference / Math.max(usdPrice, maticPrice)) * 100).toFixed(2);
-        
-        // محاسبه تفاوت بین قیمت ثبت‌نام و قیمت محاسبه شده
-        const registrationPriceNum = parseFloat(registrationPrice);
-        const tenCentsTokensNum = parseFloat(tenCentsTokens);
-        const twelveCentsTokensNum = parseFloat(twelveCentsTokens);
-        const priceDifference = Math.abs(registrationPriceNum - tenCentsTokensNum);
-        const pricePercentageDiff = ((priceDifference / Math.max(registrationPriceNum, tenCentsTokensNum)) * 100).toFixed(2);
-        
-        // محاسبه تفاوت بین قیمت ثبت‌نام و 12 سنت
-        const priceDifference12 = Math.abs(registrationPriceNum - twelveCentsTokensNum);
-        const pricePercentageDiff12 = ((priceDifference12 / Math.max(registrationPriceNum, twelveCentsTokensNum)) * 100).toFixed(2);
-        
-        const comparisonHTML = `
-            <div style="background: rgba(255, 149, 0, 0.1); border-radius: 8px; padding: 1rem; margin: 1rem 0; border-left: 3px solid #ff9500;">
-                <h4 style="color: #ff9500; margin-bottom: 0.8rem;">⚠️ مقایسه قیمت‌ها</h4>
-                <div style="display: grid; gap: 0.5rem; font-size: 0.9rem;">
-                    <div style="display: flex; justify-content: space-between;">
-                        <span style="color: #ccc;">قیمت دلاری (Chainlink):</span>
-                        <span style="color: #00ccff; font-weight: bold;">$${tokenPriceUSD} USD</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span style="color: #ccc;">قیمت MATIC (قرارداد):</span>
-                        <span style="color: #ff9500; font-weight: bold;">${tokenPriceMatic} MATIC</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span style="color: #ccc;">تفاوت قیمت‌ها:</span>
-                        <span style="color: ${difference > 0.001 ? '#ff4444' : '#00ff88'}; font-weight: bold;">${percentageDiff}%</span>
-                    </div>
-                    <hr style="border: none; border-top: 1px solid rgba(255, 149, 0, 0.3); margin: 0.5rem 0;">
-                    <div style="display: flex; justify-content: space-between;">
-                        <span style="color: #ccc;">قیمت ثبت‌نام (قرارداد):</span>
-                        <span style="color: #a786ff; font-weight: bold;">${registrationPrice} LVL</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span style="color: #ccc;">قیمت 0.1 دلار (محاسبه شده):</span>
-                        <span style="color: #00ff88; font-weight: bold;">${tenCentsTokens} LVL</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span style="color: #ccc;">قیمت 12 سنت (محاسبه شده):</span>
-                        <span style="color: #ff6b6b; font-weight: bold;">${twelveCentsTokens} LVL</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span style="color: #ccc;">تفاوت قیمت ثبت‌نام با 0.1 دلار:</span>
-                        <span style="color: ${priceDifference > 1 ? '#ff4444' : '#00ff88'}; font-weight: bold;">${pricePercentageDiff}%</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span style="color: #ccc;">تفاوت قیمت ثبت‌نام با 12 سنت:</span>
-                        <span style="color: ${priceDifference12 > 1 ? '#ff4444' : '#00ff88'}; font-weight: bold;">${pricePercentageDiff12}%</span>
-                    </div>
-                </div>
-                <div style="font-size: 0.8rem; color: #ccc; margin-top: 0.5rem;">
-                    <strong>توضیح:</strong> قیمت دلاری از Chainlink و قیمت MATIC از نسبت موجودی قرارداد محاسبه می‌شود. 
-                    قیمت ثبت‌نام ممکن است با قیمت محاسبه شده متفاوت باشد.
-                </div>
-            </div>
-        `;
-        comparisonContainer.innerHTML = comparisonHTML;
-    }
-} 
+// تابع ثبت‌نام ساده
+async function registerUser(referrer, requiredTokenAmount) {
+    const { contract, address } = await window.connectWallet();
+    if (!contract || !address) throw new Error('کیف پول متصل نیست');
+    // تبدیل مقدار به wei (عدد صحیح)
+    const amountInWei = ethers.parseUnits(requiredTokenAmount, 18);
+    await contract.registerAndActivate(referrer, amountInWei);
+}

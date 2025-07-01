@@ -111,29 +111,14 @@ async function loadBalances() {
 // تابع اعتبارسنجی مقدار تبدیل
 function validateSwapAmount() {
     const amount = document.getElementById('swapAmount').value;
-    const direction = document.getElementById('swapDirection').value;
     const submitBtn = document.getElementById('swapButton');
     if (!amount || parseFloat(amount) <= 0) {
         submitBtn.disabled = true;
         submitBtn.textContent = 'مقدار را وارد کنید';
         return false;
     }
-    // بررسی موجودی کافی
-    if (direction === 'matic-to-lvl') {
-        if (parseFloat(amount) > userMaticBalance) {
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'موجودی POL کافی نیست';
-            return false;
-        }
-    } else {
-        if (parseFloat(amount) > userLvlBalance) {
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'موجودی LVL کافی نیست';
-            return false;
-        }
-    }
     submitBtn.disabled = false;
-    submitBtn.textContent = direction === 'matic-to-lvl' ? 'تبدیل POL به LVL' : 'تبدیل LVL به POL';
+    submitBtn.textContent = 'تبدیل';
     return true;
 }
 
@@ -300,7 +285,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const { contract } = walletConfig;
                 let tx;
                 if (direction === 'matic-to-lvl') {
-                    // تبدیل POL به LVL
                     const maticWei = ethers.parseEther(amount);
                     tx = await contract.buyTokens({ value: maticWei });
                 } else {

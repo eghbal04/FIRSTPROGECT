@@ -1,6 +1,62 @@
 // تنظیمات قرارداد LevelUp
-const CONTRACT_ADDRESS = '0x4aE0A254a3c78442568b74B6CC7e61d13BdC6Df8';
-const LEVELUP_ABI = [
+const CONTRACT_ADDRESS = '0x05C7c026f56D28d85B2e2593B8aB2305e95552DD';
+const LEVELUP_ABI =[
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "spender",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "approve",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "buyTokens",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "claim",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "amountLvl",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "payout",
+				"type": "uint256"
+			}
+		],
+		"name": "purchase",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
 	{
 		"inputs": [],
 		"stateMutability": "nonpayable",
@@ -247,24 +303,6 @@ const LEVELUP_ABI = [
 		],
 		"name": "DirectMATICReceived",
 		"type": "event"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "amountLvl",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "payout",
-				"type": "uint256"
-			}
-		],
-		"name": "purchase",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
 	},
 	{
 		"anonymous": false,
@@ -587,25 +625,6 @@ const LEVELUP_ABI = [
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "index",
-				"type": "uint256"
-			}
-		],
-		"name": "countSubtreeUsers",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
 		"inputs": [],
 		"name": "decimals",
 		"outputs": [
@@ -702,6 +721,63 @@ const LEVELUP_ABI = [
 		"type": "function"
 	},
 	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "index",
+				"type": "uint256"
+			}
+		],
+		"name": "getLeftAddress",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "index",
+				"type": "uint256"
+			}
+		],
+		"name": "getLeftChild",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "pure",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "index",
+				"type": "uint256"
+			}
+		],
+		"name": "getParent",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "pure",
+		"type": "function"
+	},
+	{
 		"inputs": [],
 		"name": "getPointValue",
 		"outputs": [
@@ -712,6 +788,63 @@ const LEVELUP_ABI = [
 			}
 		],
 		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "index",
+				"type": "uint256"
+			}
+		],
+		"name": "getReferrer",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "index",
+				"type": "uint256"
+			}
+		],
+		"name": "getRightAddress",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "index",
+				"type": "uint256"
+			}
+		],
+		"name": "getRightChild",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "pure",
 		"type": "function"
 	},
 	{
@@ -837,6 +970,25 @@ const LEVELUP_ABI = [
 		"type": "function"
 	},
 	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "leftPoints",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
 		"inputs": [],
 		"name": "MAX_BINARY_POINT_CAP",
 		"outputs": [
@@ -927,19 +1079,6 @@ const LEVELUP_ABI = [
 		"type": "function"
 	},
 	{
-		"inputs": [],
-		"name": "rewardPool",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
 		"inputs": [
 			{
 				"internalType": "uint256",
@@ -947,7 +1086,7 @@ const LEVELUP_ABI = [
 				"type": "uint256"
 			}
 		],
-		"name": "subtreeCount",
+		"name": "rightPoints",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -1024,19 +1163,6 @@ const LEVELUP_ABI = [
 		"type": "function"
 	},
 	{
-		"inputs": [],
-		"name": "totalUsers",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
 		"inputs": [
 			{
 				"internalType": "address",
@@ -1050,36 +1176,6 @@ const LEVELUP_ABI = [
 				"internalType": "uint256",
 				"name": "index",
 				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "leftChild",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "rightChild",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "parent",
-				"type": "uint256"
-			},
-			{
-				"internalType": "address",
-				"name": "referrer",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "left",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "right",
-				"type": "address"
 			},
 			{
 				"internalType": "uint256",
@@ -1114,6 +1210,19 @@ const LEVELUP_ABI = [
 			{
 				"internalType": "uint256",
 				"name": "lastClaimTime",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "wallets",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
 				"type": "uint256"
 			}
 		],
@@ -1285,6 +1394,7 @@ async function initializeWeb3() {
     
     try {
         const result = await initializationPromise;
+        window.initializeWeb3 = initializeWeb3;
         return result;
     } finally {
         isInitializing = false;
@@ -1358,6 +1468,7 @@ window.getUserProfile = async function() {
         try {
             user = await contract.users(address);
             console.log('Profile: User data received:', user);
+            console.log('Profile: user.totalPurchasedKind (raw):', user.totalPurchasedKind);
         } catch (error) {
             console.error('Profile: Error fetching user data:', error);
             // اگر کاربر ثبت‌نام نشده باشد، اطلاعات پیش‌فرض برگردان
@@ -1414,20 +1525,15 @@ window.getUserProfile = async function() {
         
         // محاسبه ارزش دلاری
         let lvlValueUSD = 0;
+        if (lvlBalance && lvlPriceMatic && lvlBalance > 0n && lvlPriceMatic > 0n) {
+            const lvlPriceMaticFormatted = ethers.formatUnits(lvlPriceMatic, 18);
+            const lvlPriceUSD = parseFloat(lvlPriceMaticFormatted) * parseFloat(polPriceUSD);
+            lvlValueUSD = parseFloat(ethers.formatUnits(lvlBalance, 18)) * lvlPriceUSD;
+        }
+        // محاسبه ارزش دلاری کل POL
         let polValueUSD = 0;
-        try {
-            if (lvlBalance && lvlPriceMatic && lvlBalance > 0n && lvlPriceMatic > 0n) {
-                const lvlPriceMaticFormatted = ethers.formatUnits(lvlPriceMatic, 18);
-                const lvlPriceUSD = parseFloat(lvlPriceMaticFormatted) * parseFloat(polPriceUSD);
-                lvlValueUSD = parseFloat(ethers.formatUnits(lvlBalance, 18)) * lvlPriceUSD;
-            }
-            if (polBalance && polPriceUSD && polBalance > 0n && polPriceUSD > 0) {
-                polValueUSD = parseFloat(ethers.formatEther(polBalance)) * parseFloat(polPriceUSD);
-            }
-        } catch (e) {
-            console.error('Profile: Error calculating USD values:', e);
-            lvlValueUSD = 0;
-            polValueUSD = 0;
+        if (polBalance && polPriceUSD && polBalance > 0n && polPriceUSD > 0) {
+            polValueUSD = parseFloat(ethers.formatEther(polBalance)) * parseFloat(polPriceUSD);
         }
 
         // فرمت‌دهی خروجی و جلوگیری از undefined
@@ -1521,23 +1627,18 @@ window.getPrices = async function() {
 window.getContractStats = async function() {
     try {
         const { contract } = await window.connectWallet();
-        
         // دریافت آمار به صورت موازی
         const [
-            totalUsers, totalSupply, binaryPool, 
-            rewardPool, totalPoints, totalClaimableBinaryPoints, pointValue
+            totalSupply, binaryPool, 
+            totalPoints, totalClaimableBinaryPoints, pointValue
         ] = await Promise.all([
-            contract.totalUsers().catch(() => 0n),
             contract.totalSupply().catch(() => 0n),
             contract.binaryPool().catch(() => 0n),
-            contract.rewardPool().catch(() => 0n),
             contract.totalPoints().catch(() => 0n),
             contract.totalClaimableBinaryPoints().catch(() => 0n),
             contract.getPointValue().catch(() => 0n)
         ]);
-        
         // محاسبه circulatingSupply به صورت تقریبی
-        // circulatingSupply = totalSupply - tokens in contract
         let circulatingSupply = totalSupply;
         try {
             const contractBalance = await contract.balanceOf(contract.target);
@@ -1546,13 +1647,10 @@ window.getContractStats = async function() {
             console.warn('Could not calculate circulating supply, using total supply:', e);
             circulatingSupply = totalSupply;
         }
-        
         return {
-            totalUsers: totalUsers.toString(),
             totalSupply: ethers.formatUnits(totalSupply, 18),
             circulatingSupply: ethers.formatUnits(circulatingSupply, 18),
             binaryPool: ethers.formatEther(binaryPool),
-            rewardPool: ethers.formatEther(rewardPool),
             totalPoints: ethers.formatUnits(totalPoints, 18),
             totalClaimableBinaryPoints: ethers.formatUnits(totalClaimableBinaryPoints, 18),
             pointValue: ethers.formatUnits(pointValue, 18)
@@ -1560,11 +1658,9 @@ window.getContractStats = async function() {
     } catch (error) {
         console.error('Central: Error fetching contract stats:', error);
         return {
-            totalUsers: "0",
             totalSupply: "0",
             circulatingSupply: "0",
             binaryPool: "0",
-            rewardPool: "0",
             totalPoints: "0",
             totalClaimableBinaryPoints: "0",
             pointValue: "0"
@@ -1671,14 +1767,12 @@ window.debugContractPolBalance = async function() {
 // تابع بارگذاری آمار شبکه
 async function loadNetworkStats(contract) {
     try {
-        const [totalUsers, totalPoints, totalClaimableBinaryPoints] = await Promise.all([
-            contract.totalUsers(),
+        const [totalPoints, totalClaimableBinaryPoints] = await Promise.all([
             contract.totalPoints(),
             contract.totalClaimableBinaryPoints()
         ]);
-        updateElement('network-members', totalUsers.toString());
+        updateElement('network-points', parseInt(totalPoints.toString()));
         updateElement('network-rewards', parseInt(totalClaimableBinaryPoints.toString()));
-        updateElement('network-points', parseInt(totalPoints.toString())); // فقط اینجا مقداردهی شود
     } catch (error) {
         console.error('Error loading network stats:', error);
     }
@@ -1687,12 +1781,31 @@ async function loadNetworkStats(contract) {
 // تابع دریافت قیمت MATIC (POL) به دلار از API
 window.fetchPolUsdPrice = async function() {
     const url = 'https://api.coingecko.com/api/v3/simple/price?ids=matic-network&vs_currencies=usd';
+    // 1. تلاش مستقیم (بدون پراکسی)
+    try {
+        const response = await fetch(url);
+        if (response.ok) {
+            const data = await response.json();
+            if (data && data['matic-network'] && data['matic-network'].usd) {
+                return data['matic-network'].usd;
+            }
+        }
+    } catch (e) {
+        // nothing
+    }
+    // 2. تلاش با پراکسی‌ها
     const proxies = [
         url => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
         url => 'https://thingproxy.freeboard.io/fetch/' + url,
-        url => 'https://corsproxy.io/?' + encodeURIComponent(url)
+        url => 'https://corsproxy.io/?' + encodeURIComponent(url),
+        url => 'https://yacdn.org/proxy/' + url,
+        url => 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(url),
+        url => 'https://proxy.cors.sh/' + url,
+        url => 'https://api.proxycurl.com/?url=' + encodeURIComponent(url),
+        url => 'https://bird.ioliu.cn/v1/?url=' + encodeURIComponent(url),
+        url => 'https://jsonp.afeld.me/?url=' + encodeURIComponent(url),
+        url => 'https://gall.dcinside.com/proxy/http/' + url
     ];
-    // 1. تلاش با پراکسی‌ها
     for (const proxy of proxies) {
         try {
             const response = await fetch(proxy(url));
@@ -1703,22 +1816,9 @@ window.fetchPolUsdPrice = async function() {
                 }
             }
         } catch (e) {
-            console.warn('fetchPolUsdPrice: proxy failed', proxy(url), e);
+            // nothing
         }
-    }
-    // 2. تلاش مستقیم (بدون پراکسی)
-    try {
-        const response = await fetch(url);
-        if (response.ok) {
-            const data = await response.json();
-            if (data && data['matic-network'] && data['matic-network'].usd) {
-                return data['matic-network'].usd;
-            }
-        }
-    } catch (e) {
-        console.warn('fetchPolUsdPrice: direct fetch failed', url, e);
     }
     // 3. مقدار پیش‌فرض (fallback)
-    console.warn('fetchPolUsdPrice: All proxies and direct fetch failed, using fallback value.');
-    return 0.7;
+    return 0.5;
 };
