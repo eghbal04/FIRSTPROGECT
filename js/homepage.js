@@ -43,7 +43,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const walletConnected = await waitForWalletConnection();
         
         if (walletConnected) {
-            console.log("Wallet connected, loading dashboard data...");
             // بارگذاری داده‌های داشبورد
             await loadDashboardData();
             dashboardInitialized = true;
@@ -51,13 +50,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             // به‌روزرسانی خودکار هر 30 ثانیه
             startDashboardAutoUpdate();
         } else {
-            console.log("Wallet connection timeout, will retry when wallet connects...");
             // شروع نظارت بر اتصال
             startConnectionMonitoring();
         }
 
     } catch (error) {
-        console.error("Error in homepage:", error);
+        // console.error("Error in homepage:", error);
     }
 });
 
@@ -71,7 +69,7 @@ function startDashboardAutoUpdate() {
         try {
             await loadDashboardData();
         } catch (error) {
-            console.error('Dashboard auto-update error:', error);
+            // console.error('Dashboard auto-update error:', error);
         }
     }, 30000); // هر 30 ثانیه
 }
@@ -133,7 +131,7 @@ async function loadDashboardData() {
         updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceChanges);
         
     } catch (error) {
-        console.error('Dashboard: Error loading data:', error);
+        // console.error('Dashboard: Error loading data:', error);
         updateConnectionStatus('error', 'خطا در بارگذاری داده‌های داشبورد');
     } finally {
         isDashboardLoading = false;
@@ -152,7 +150,7 @@ async function calculatePriceChanges() {
             volumeChange: '0%'
         };
     } catch (error) {
-        console.error('Dashboard: Error calculating price changes:', error);
+        // console.error('Dashboard: Error calculating price changes:', error);
         return {
             lvlPriceChange: '0%',
             maticPriceChange: '0%',
@@ -210,18 +208,23 @@ function updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceC
     // به‌روزرسانی آمار قرارداد
     // نمایش circulating-supply با نماد علمی (E notation)
     updateElementExponential('circulating-supply', stats.circulatingSupply, ' LVL');
+    // کل پوینت‌ها = totalPoints (که از totalClaimableBinaryPoints میاد)
     updateElement('total-points', parseInt(stats.totalPoints.replace(/\..*$/, '')), '', '', true);
-    updateElement('claimed-points', parseInt(stats.totalClaimableBinaryPoints.replace(/\..*$/, '')), '', '', true);
-    updateElement('remaining-points', parseInt(stats.totalPoints.replace(/\..*$/, '')) - parseInt(stats.totalClaimableBinaryPoints.replace(/\..*$/, '')), '', '', true);
+    
+    // پوینت‌های ادعا شده = 0 (چون هنوز ادعا نشدن)
+    updateElement('claimed-points', 0, '', '', true);
+    
+    // پوینت‌های باقیمانده = کل پوینت‌ها
+    updateElement('remaining-points', parseInt(stats.totalPoints.replace(/\..*$/, '')), '', '', true);
+    
     // موجودی قرارداد با نهایتاً ۶ رقم اعشار
     const tradingVolumeNum = Number(tradingVolume);
     updateElement('trading-volume', isNaN(tradingVolumeNum) ? 0 : tradingVolumeNum, '', ' POL', false, 6);
-    let pointValueLVL = '-';
-    let rewardPoolLVL = '-';
-    if (parseFloat(prices.lvlPriceMatic) > 0) {
-        pointValueLVL = parseFloat(stats.pointValue) / parseFloat(prices.lvlPriceMatic);
-        rewardPoolLVL = parseFloat(stats.rewardPool) / parseFloat(prices.lvlPriceMatic);
-    }
+    
+    // ارزش پوینت = pointValue (به صورت LVL)
+    let pointValueLVL = parseFloat(stats.pointValue);
+    let rewardPoolLVL = parseFloat(stats.rewardPool);
+    
     updateElement('point-value', pointValueLVL, '', ' LVL', false, 6);
     updateElement('reward-pool', rewardPoolLVL, '', ' LVL', false, 4);
 }
@@ -237,7 +240,7 @@ function checkWalletConnectionStatus() {
             return false;
         }
     } catch (error) {
-        console.error('Dashboard: Error checking wallet status:', error);
+        // console.error('Dashboard: Error checking wallet status:', error);
         updateConnectionStatus('error', 'خطا در بررسی وضعیت کیف پول');
         return false;
     }
@@ -286,7 +289,7 @@ async function disconnectWallet() {
         updateConnectionStatus('info', 'کیف پول قطع شد');
         
     } catch (error) {
-        console.error('Dashboard: Error disconnecting wallet:', error);
+        // console.error('Dashboard: Error disconnecting wallet:', error);
         updateConnectionStatus('error', 'خطا در قطع اتصال کیف پول');
     }
 }
@@ -308,10 +311,10 @@ async function resetDashboard() {
             }
         });
         
-        console.log('Dashboard: Reset successfully');
+        // console.log('Dashboard: Reset successfully');
         
     } catch (error) {
-        console.error('Dashboard: Error resetting dashboard:', error);
+        // console.error('Dashboard: Error resetting dashboard:', error);
     }
 }
 
@@ -320,17 +323,26 @@ async function getAdditionalStats() {
     try {
         const { contract } = await window.connectWallet();
         
-        const [totalDirectDeposits, binaryPool] = await Promise.all([
-            contract.totalDirectDeposits(),
-            contract.binaryPool()
+        // استفاده از متغیرهای موجود در قرارداد جدید
+        const [wallets] = await Promise.all([
+            contract.wallets().catch(() => 0n)
         ]);
         
+        // دریافت totalClaimableBinaryPoints به صورت جداگانه (متغیر state)
+        let totalClaimableBinaryPoints = 0n;
+        try {
+            totalClaimableBinaryPoints = await contract.totalClaimableBinaryPoints;
+        } catch (e) {
+            console.warn('Could not fetch totalClaimableBinaryPoints:', e);
+            totalClaimableBinaryPoints = 0n;
+        }
+        
         return {
-            totalDirectDeposits: ethers.formatEther(totalDirectDeposits),
-            binaryPool: ethers.formatEther(binaryPool)
+            totalDirectDeposits: ethers.formatUnits(totalClaimableBinaryPoints, 18),
+            binaryPool: ethers.formatUnits(totalClaimableBinaryPoints, 18) // استفاده از totalClaimableBinaryPoints
         };
     } catch (error) {
-        console.error('Dashboard: Error fetching additional stats:', error);
+        // console.error('Dashboard: Error fetching additional stats:', error);
         return {
             totalDirectDeposits: '0',
             binaryPool: '0'
@@ -347,7 +359,7 @@ async function getTradingVolume() {
         
         return formattedBalance;
     } catch (error) {
-        console.error('Dashboard: Error fetching contract balance:', error);
+        // console.error('Dashboard: Error fetching contract balance:', error);
         return '0';
     }
 }
@@ -357,6 +369,115 @@ function shortenAddress(address) {
     if (!address) return '---';
     return address.substring(0, 6) + '...' + address.substring(address.length - 4);
 }
+
+// تابع debug برای تست circulating supply
+window.debugCirculatingSupply = async function() {
+    try {
+        const stats = await window.getContractStats();
+        console.log('Debug: Full stats object:', stats);
+        console.log('Debug: circulatingSupply value:', stats.circulatingSupply);
+        console.log('Debug: circulatingSupply type:', typeof stats.circulatingSupply);
+        
+        const element = document.getElementById('circulating-supply');
+        if (element) {
+            console.log('Debug: Element found:', element);
+            console.log('Debug: Current element text:', element.textContent);
+        } else {
+            console.log('Debug: Element not found!');
+        }
+    } catch (error) {
+        console.error('Debug: Error testing circulating supply:', error);
+    }
+};
+
+// تابع debug برای کل پوینت‌ها
+window.debugTotalPoints = async function() {
+    try {
+        const { contract } = await window.connectWallet();
+        
+        console.log('=== Debug Total Points ===');
+        
+        // تست مستقیم totalClaimableBinaryPoints (متغیر state)
+        let totalClaimableBinaryPoints = 0n;
+        try {
+            totalClaimableBinaryPoints = await contract.totalClaimableBinaryPoints;
+            console.log('Raw totalClaimableBinaryPoints (wei):', totalClaimableBinaryPoints.toString());
+            console.log('totalClaimableBinaryPoints (points):', ethers.formatUnits(totalClaimableBinaryPoints, 18));
+        } catch (e) {
+            console.log('totalClaimableBinaryPoints failed:', e.message);
+        }
+        
+        // تست getPointValue
+        const pointValue = await contract.getPointValue();
+        console.log('Raw pointValue (wei):', pointValue.toString());
+        console.log('pointValue (LVL):', ethers.formatUnits(pointValue, 18));
+        
+        // تست wallets
+        const wallets = await contract.wallets();
+        console.log('Wallets count:', wallets.toString());
+        
+        // تست stats از تابع getContractStats
+        const stats = await window.getContractStats();
+        console.log('Stats from getContractStats:', stats);
+        
+        // تست element
+        const element = document.getElementById('total-points');
+        console.log('Element text:', element ? element.textContent : 'Element not found');
+        
+    } catch (error) {
+        console.error('Debug Error:', error);
+    }
+};
+
+// تابع تست ساده برای circulating supply
+window.testCirculatingSupply = async function() {
+    try {
+        const { contract } = await window.connectWallet();
+        
+        console.log('=== Testing Circulating Supply ===');
+        
+        // تست totalSupply
+        const totalSupply = await contract.totalSupply();
+        console.log('Total Supply (wei):', totalSupply.toString());
+        console.log('Total Supply (LVL):', ethers.formatUnits(totalSupply, 18));
+        
+        // تست contract balance
+        const contractBalance = await contract.balanceOf(contract.target);
+        console.log('Contract Balance (wei):', contractBalance.toString());
+        console.log('Contract Balance (LVL):', ethers.formatUnits(contractBalance, 18));
+        
+        // محاسبه circulating supply
+        const circulatingSupply = totalSupply - contractBalance;
+        console.log('Circulating Supply (wei):', circulatingSupply.toString());
+        console.log('Circulating Supply (LVL):', ethers.formatUnits(circulatingSupply, 18));
+        
+        // تست توابع موجود در قرارداد
+        console.log('=== Available Contract Functions ===');
+        console.log('Contract interface:', contract.interface.fragments.map(f => f.name));
+        
+        // تست توابع مختلف
+        const functionsToTest = [
+            'totalPoints', 'totalClaimableBinaryPoints', 'getPointValue',
+            'binaryPool', 'getPoints', 'circulatingSupply', 'rewardPool'
+        ];
+        
+        for (const funcName of functionsToTest) {
+            try {
+                if (contract[funcName]) {
+                    const result = await contract[funcName]();
+                    console.log(`${funcName}:`, result.toString());
+                } else {
+                    console.log(`${funcName}: NOT AVAILABLE`);
+                }
+            } catch (e) {
+                console.log(`${funcName}: ERROR -`, e.message);
+            }
+        }
+        
+    } catch (error) {
+        console.error('Test Error:', error);
+    }
+};
 
 // تابع شروع نظارت بر اتصال
 function startConnectionMonitoring() {
@@ -383,7 +504,7 @@ function startConnectionMonitoring() {
                         await loadDashboardData();
                     }
                 } catch (error) {
-                    console.error('Error handling account change:', error);
+                    // console.error('Error handling account change:', error);
                 }
             } else {
                 resetDashboard();
@@ -411,7 +532,7 @@ function startConnectionMonitoring() {
                         await loadDashboardData();
                     }
                 } catch (error) {
-                    console.error('Error handling chain change:', error);
+                    // console.error('Error handling chain change:', error);
                 }
             } else {
                 updateConnectionStatus('error', 'لطفاً به شبکه Polygon متصل شوید');
@@ -438,7 +559,7 @@ function startConnectionMonitoring() {
                     await loadDashboardData();
                 }
             } catch (error) {
-                console.error('Error handling connection:', error);
+                // console.error('Error handling connection:', error);
             }
         });
         
@@ -461,7 +582,7 @@ function startConnectionMonitoring() {
                 try {
                     await handleWalletConnectSuccess(window.walletConnectProvider);
                 } catch (error) {
-                    console.error('Error handling WalletConnect success:', error);
+                    // console.error('Error handling WalletConnect success:', error);
                 }
             }
         });
@@ -515,7 +636,7 @@ async function handleWalletConnectSuccess(walletConnectProvider) {
             provider: provider
         };
     } catch (error) {
-        console.error('Error handling WalletConnect success:', error);
+        // console.error('Error handling WalletConnect success:', error);
         updateConnectionStatus('error', 'خطا در تنظیم اتصال: ' + error.message);
         throw error;
     }
@@ -526,7 +647,7 @@ async function connectWithQRCode() {
     try {
         // بررسی وجود WalletConnectHandler
         if (!window.WalletConnectHandler) {
-            console.error('WalletConnectHandler not found');
+            // console.error('WalletConnectHandler not found');
             throw new Error('WalletConnect Handler not loaded');
         }
         
@@ -555,7 +676,7 @@ async function connectWithQRCode() {
         }
         
     } catch (error) {
-        console.error('WalletConnect QR connection error:', error);
+        // console.error('WalletConnect QR connection error:', error);
         
         // نمایش debug information در صورت خطا
         if (window.WalletConnectHandler && window.WalletConnectHandler.debugWalletConnect) {
@@ -616,14 +737,14 @@ async function connectWallet() {
                     }
                 }
             } catch (error) {
-                console.error('MetaMask connection failed:', error);
+                // console.error('MetaMask connection failed:', error);
             }
         }
         
         return null;
         
     } catch (error) {
-        console.error('Wallet connection failed:', error);
+        // console.error('Wallet connection failed:', error);
         return null;
     }
 }
@@ -641,7 +762,7 @@ async function loadHomepage() {
         startDashboardAutoUpdate();
         
     } catch (error) {
-        console.error('Error loading homepage:', error);
+        // console.error('Error loading homepage:', error);
     }
 }
 
@@ -665,10 +786,12 @@ async function autoConnectWallet() {
         return false;
         
     } catch (error) {
-        console.error('Auto-connect failed:', error);
+        // console.error('Auto-connect failed:', error);
         return false;
     }
 }
+
+
 
 // اضافه کردن event listener برای بارگذاری صفحه
 document.addEventListener('DOMContentLoaded', function() {

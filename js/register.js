@@ -10,29 +10,29 @@ document.addEventListener('DOMContentLoaded', function() {
 // تابع بارگذاری اطلاعات ثبت‌نام
 async function loadRegisterData(contract, address, tokenPriceUSDFormatted) {
     if (isRegisterLoading || registerDataLoaded) {
-        console.log('Register: Already loading or loaded, skipping...');
+        // console.log('Register: Already loading or loaded, skipping...');
         return;
     }
     
     // فقط اگر تب register انتخاب شده باشد
     if (!registerTabSelected) {
-        console.log('Register: Tab not selected, skipping...');
+        // console.log('Register: Tab not selected, skipping...');
         return;
     }
     
     isRegisterLoading = true;
     
     try {
-        console.log('Register: Loading register data...');
+        // console.log('Register: Loading register data...');
         
         // بررسی اتصال کیف پول
         if (!window.contractConfig || !window.contractConfig.contract) {
-            console.log('Register: No wallet connection, skipping...');
+            // console.log('Register: No wallet connection, skipping...');
             return;
         }
         
         const { contract, address } = window.contractConfig;
-        console.log('Register: Wallet connected, loading register data...');
+        // console.log('Register: Wallet connected, loading register data...');
         
         // دریافت اطلاعات کاربر
         const userData = await contract.users(address);
@@ -79,20 +79,32 @@ async function loadRegisterData(contract, address, tokenPriceUSDFormatted) {
             if (profileContainer) profileContainer.style.display = 'none';
             const upgradeForm = document.getElementById('upgrade-form');
             if (upgradeForm) upgradeForm.style.display = 'block';
+            // غیرفعال کردن input معرف
+            const refInput = document.getElementById('referrer-address');
+            if (refInput) refInput.readOnly = true;
             await loadUpgradeData(contract, address, tokenPriceUSDFormatted);
+            // نمایش دکمه ثبت جدید
+            const newRegisterBtn = document.getElementById('new-register-btn');
+            if (newRegisterBtn) newRegisterBtn.style.display = '';
         } else {
             // فقط فرم ثبت‌نام ساده را نمایش بده
             const profileContainer = document.querySelector('#main-register .profile-container');
             if (profileContainer) profileContainer.style.display = '';
             const upgradeForm = document.getElementById('upgrade-form');
             if (upgradeForm) upgradeForm.style.display = 'none';
+            // فعال کردن input معرف
+            const refInput = document.getElementById('referrer-address');
+            if (refInput) refInput.readOnly = false;
+            // مخفی کردن دکمه ثبت جدید
+            const newRegisterBtn = document.getElementById('new-register-btn');
+            if (newRegisterBtn) newRegisterBtn.style.display = 'none';
             await showRegistrationForm();
         }
         registerDataLoaded = true;
-        console.log('Register: Data loaded successfully');
+        // console.log('Register: Data loaded successfully');
         
     } catch (error) {
-        console.error('Error loading register data:', error);
+        // console.error('Error loading register data:', error);
         showRegisterError("خطا در بارگذاری اطلاعات ثبت‌نام");
     } finally {
         isRegisterLoading = false;
@@ -123,7 +135,7 @@ async function loadUpgradeData(contract, address, tokenPriceUSD) {
         updateUpgradeCalculations(lvlBalanceFormatted, tokenPriceUSD, userData.binaryPointCap);
         
     } catch (error) {
-        console.error("Error loading upgrade data:", error);
+        // console.error("Error loading upgrade data:", error);
     }
 }
 
@@ -165,7 +177,7 @@ function setupRegistrationButton() {
             try {
                 await performRegistration();
             } catch (error) {
-                console.error("Registration error:", error);
+                // console.error("Registration error:", error);
                 showRegisterError("خطا در ثبت‌نام");
             }
         };
@@ -180,7 +192,7 @@ function setupUpgradeForm() {
             try {
                 await performUpgrade();
             } catch (error) {
-                console.error("Upgrade error:", error);
+                // console.error("Upgrade error:", error);
                 showRegisterError("خطا در ارتقا");
             }
         };
@@ -190,24 +202,20 @@ function setupUpgradeForm() {
 // تابع انجام ثبت‌نام
 async function performRegistration() {
     try {
-        // استفاده از اتصال موجود به جای فراخوانی connectWallet
         if (!window.contractConfig || !window.contractConfig.contract) {
             throw new Error('No wallet connection');
         }
-        
         const { contract, address } = window.contractConfig;
-        
-        // دریافت معرف واقعی کاربر (از URL یا localStorage)
-        let referrerAddress = getReferrerFromURL() || getReferrerFromStorage();
-        
-        // اگر معرفی وجود نداشت، از deployer استفاده کن
+        // مقدار معرف را از input کاربر بگیر
+        let referrerInput = document.getElementById('referrer-address');
+        let referrerAddress = referrerInput && referrerInput.value ? referrerInput.value.trim() : '';
+        // اگر مقدار وارد نشده بود، از URL یا localStorage بگیر
+        if (!referrerAddress) {
+            referrerAddress = getReferrerFromURL() || getReferrerFromStorage();
+        }
         if (!referrerAddress) {
             referrerAddress = await contract.deployer();
-            console.log('Register: No referrer found, using deployer:', referrerAddress);
-        } else {
-            console.log('Register: Using referrer from URL/storage:', referrerAddress);
         }
-        
         // بررسی معتبر بودن معرف
         try {
             const referrerData = await contract.users(referrerAddress);
@@ -215,29 +223,17 @@ async function performRegistration() {
                 throw new Error('Referrer is not activated');
             }
         } catch (error) {
-            console.log('Register: Invalid referrer, using deployer instead');
             referrerAddress = await contract.deployer();
         }
-        
-        // دریافت قیمت ثبت‌نام
         const regprice = await contract.regprice();
-        
-        // انجام تراکنش ثبت‌نام
-        const tx = await contract.registerAndActivate(referrerAddress, regprice);
+        const tx = await contract.registerAndActivate(referrerAddress, address, regprice);
         await tx.wait();
-        
         showRegisterSuccess("ثبت‌نام با موفقیت انجام شد!");
-        
-        // ریست کردن وضعیت بارگذاری برای بارگذاری مجدد
         registerDataLoaded = false;
-        
-        // بارگذاری مجدد اطلاعات
         setTimeout(() => {
             loadRegisterData(contract, address, tokenPriceUSDFormatted);
         }, 2000);
-        
     } catch (error) {
-        console.error("Registration failed:", error);
         throw error;
     }
 }
@@ -288,7 +284,7 @@ async function performUpgrade() {
         }, 2000);
         
     } catch (error) {
-        console.error("Upgrade failed:", error);
+        // console.error("Upgrade failed:", error);
         throw error;
     }
 }
@@ -428,5 +424,59 @@ async function registerUser(referrer, requiredTokenAmount) {
     if (!contract || !address) throw new Error('کیف پول متصل نیست');
     // تبدیل مقدار به wei (عدد صحیح)
     const amountInWei = ethers.parseUnits(requiredTokenAmount, 18);
-    await contract.registerAndActivate(referrer, amountInWei);
+    await contract.registerAndActivate(referrer, address, amountInWei);
 }
+
+// مدیریت نمایش فرم ثبت جدید و ثبت نفر جدید
+window.addEventListener('DOMContentLoaded', function() {
+    const newRegisterBtn = document.getElementById('new-register-btn');
+    const newRegisterModal = document.getElementById('new-registration-modal');
+    const closeNewRegister = document.getElementById('close-new-register');
+    const submitNewRegister = document.getElementById('submit-new-register');
+    if (newRegisterBtn && newRegisterModal && closeNewRegister && submitNewRegister) {
+        newRegisterBtn.onclick = function() {
+            newRegisterModal.style.display = 'flex';
+        };
+        closeNewRegister.onclick = function() {
+            newRegisterModal.style.display = 'none';
+            document.getElementById('new-user-address').value = '';
+            document.getElementById('new-referrer-address').value = '';
+            document.getElementById('new-register-status').textContent = '';
+        };
+        submitNewRegister.onclick = async function() {
+            const userAddr = document.getElementById('new-user-address').value.trim();
+            const refAddr = document.getElementById('new-referrer-address').value.trim();
+            const statusDiv = document.getElementById('new-register-status');
+            if (!userAddr || !refAddr) {
+                statusDiv.textContent = 'آدرس نفر جدید و معرف را وارد کنید';
+                statusDiv.className = 'profile-status error';
+                return;
+            }
+            submitNewRegister.disabled = true;
+            const oldText = submitNewRegister.textContent;
+            submitNewRegister.textContent = 'در حال ثبت...';
+            try {
+                if (!window.contractConfig || !window.contractConfig.contract) throw new Error('اتصال کیف پول برقرار نیست');
+                const { contract } = window.contractConfig;
+                // بررسی معتبر بودن معرف
+                const refData = await contract.users(refAddr);
+                if (!refData.activated) throw new Error('معرف فعال نیست');
+                // بررسی ثبت‌نام نبودن نفر جدید
+                const userData = await contract.users(userAddr);
+                if (userData.activated) throw new Error('این آدرس قبلاً ثبت‌نام کرده است');
+                // دریافت قیمت ثبت‌نام
+                const regprice = await contract.regprice();
+                // ثبت‌نام نفر جدید (با ولت فعلی)
+                const tx = await contract.registerAndActivate(refAddr, userAddr, regprice);
+                await tx.wait();
+                statusDiv.textContent = 'ثبت‌نام نفر جدید با موفقیت انجام شد!';
+                statusDiv.className = 'profile-status success';
+            } catch (e) {
+                statusDiv.textContent = e.message || 'خطا در ثبت‌نام نفر جدید';
+                statusDiv.className = 'profile-status error';
+            }
+            submitNewRegister.disabled = false;
+            submitNewRegister.textContent = oldText;
+        };
+    }
+});

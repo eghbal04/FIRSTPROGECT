@@ -2189,7 +2189,7 @@
       </header>
     </div>
     <div class="expand-content">
-      <div class="dashboard-cards">
+      <div class="dashboard-cards" style="display:flex;justify-content:center;flex-wrap:wrap;gap:1rem;max-width:1200px;margin:0 auto;">
         <div class="dashboard-card">
           <div class="dashboard-card-icon">👛</div>
           <div class="dashboard-card-content">
@@ -2197,6 +2197,7 @@
             <div id="dashboard-wallets-count">-</div>
           </div>
         </div>
+
         <!-- حذف کارت قیمت LVL (USD) -->
         <!-- حذف کارت قیمت LVL (POL) -->
         <div class="dashboard-card">
@@ -2207,7 +2208,7 @@
       </div>
     </div>
     <!-- کارت total-users (کاربران) حذف شد -->
-    <div class="dashboard-card">
+            <div class="dashboard-card">
           <div class="dashboard-card-icon"></div>
           <div class="dashboard-card-content">
             <h4>کل پوینت‌ها</h4>
@@ -2217,15 +2218,8 @@
     <div class="dashboard-card">
           <div class="dashboard-card-icon"></div>
           <div class="dashboard-card-content">
-            <h4>پوینت پرداخت‌شده</h4>
-            <div id="claimed-points">-</div>
-      </div>
-    </div>
-    <div class="dashboard-card">
-          <div class="dashboard-card-icon"></div>
-          <div class="dashboard-card-content">
-            <h4>پوینت‌های باقی‌مانده</h4>
-            <div id="remaining-points">-</div>
+            <h4>ارزش پوینت</h4>
+            <div id="point-value">-</div>
       </div>
     </div>
     <div class="dashboard-card">
@@ -2233,13 +2227,6 @@
           <div class="dashboard-card-content">
             <h4>موجودی قرارداد</h4>
             <div id="trading-volume">-</div>
-      </div>
-    </div>
-    <div class="dashboard-card">
-          <div class="dashboard-card-icon"></div>
-          <div class="dashboard-card-content">
-            <h4>ارزش پوینت</h4>
-            <div id="point-value">-</div>
       </div>
     </div>
     <div class="dashboard-card">
@@ -2274,30 +2261,24 @@
         </div>
         
         <!-- Price Cards Grid -->
-        <div class="price-chart-grid">
-          <div class="price-chart-card">
-            <div class="price-chart-icon">🪙</div>
-            <div class="price-chart-content">
-              <h3> LVL (USD)</h3>
-              <div class="price-value" id="chart-lvl-usd">-</div>
-              <div class="price-change" id="chart-lvl-usd-change">-</div>
-            </div>
+        <div class="price-chart-squares-row">
+          <div class="price-square-card">
+            <div class="icon">🪙</div>
+            <div class="value" id="chart-lvl-usd">-</div>
+            <div class="label">LVL (USD)</div>
+            <div class="change" id="chart-lvl-usd-change"></div>
           </div>
-          <div class="price-chart-card">
-            <div class="price-chart-icon">🔄</div>
-            <div class="price-chart-content">
-              <h3> LVL (POL)</h3>
-              <div class="price-value" id="chart-lvl-pol">-</div>
-              <div class="price-change" id="chart-lvl-pol-change">-</div>
-            </div>
+          <div class="price-square-card">
+            <div class="icon">🔄</div>
+            <div class="value" id="chart-lvl-pol">-</div>
+            <div class="label">LVL (POL)</div>
+            <div class="change" id="chart-lvl-pol-change"></div>
           </div>
-          <div class="price-chart-card">
-            <div class="price-chart-icon">💎</div>
-            <div class="price-chart-content">
-              <h3> POL (USD)</h3>
-              <div class="price-value" id="chart-pol-usd">-</div>
-              <div class="price-change" id="chart-pol-usd-change">-</div>
-            </div>
+          <div class="price-square-card">
+            <div class="icon">💎</div>
+            <div class="value" id="chart-pol-usd">-</div>
+            <div class="label">POL (USD)</div>
+            <div class="change" id="chart-pol-usd-change"></div>
           </div>
         </div>
         
@@ -2365,39 +2346,18 @@
     </div>
     <div class="expand-content">
       <div class="network-container">
-        <div class="network-stats">
-          <div class="network-stat"><h4>سقف درآمد روزانه (تعداد پوینت)</h4><div id="points-cap">-</div></div>
-          <div class="network-stat"><h4>امتیاز باینری شما</h4><div id="user-binary-points">-</div></div>
+        <!-- کارت اطلاعات کاربر شبکه -->
+        <div id="network-user-card" style="background:#101c2c;border-radius:16px;padding:1.5rem 1rem;margin-bottom:2rem;box-shadow:0 2px 12px #0002;max-width:420px;margin-left:auto;margin-right:auto;">
+          <div style="display:flex;justify-content:space-between;"><span style="color:#00ff88;">آدرس:</span><span id="user-address" style="direction:ltr;color:#fff;font-weight:bold;">-</span></div>
+          <div style="display:flex;justify-content:space-between;margin-top:0.7rem;"><span style="color:#00ff88;">معرف:</span><span id="user-referrer" style="color:#fff;">-</span></div>
+          <div style="display:flex;justify-content:space-between;margin-top:0.7rem;"><span style="color:#00ccff;">موجودی POL:</span><span id="user-pol-balance" style="color:#fff;">-</span></div>
+          <div style="display:flex;justify-content:space-between;margin-top:0.7rem;"><span style="color:#00ccff;">موجودی LVL:</span><span id="user-lvl-balance" style="color:#fff;">-</span></div>
+          <div style="display:flex;justify-content:space-between;margin-top:0.7rem;"><span style="color:#00ff88;">سقف درآمد باینری:</span><span id="user-binary-cap" style="color:#fff;">-</span></div>
+          <div style="display:flex;justify-content:space-between;margin-top:0.7rem;"><span style="color:#00ff88;">دریافت‌شده:</span><span id="user-claimed" style="color:#fff;">-</span></div>
+          <div style="display:flex;justify-content:space-between;margin-top:0.7rem;align-items:center;"><span style="color:#00ff88;">لینک دعوت:</span><span id="user-ref-link" style="direction:ltr;color:#fff;background:#181c2a;padding:0.3rem 0.7rem;border-radius:8px;">-</span><button id="copy-ref-link" style="margin-right:0.5rem;background:linear-gradient(90deg,#00ff88,#00ccff);color:#000;border:none;border-radius:8px;padding:0.3rem 1.2rem;cursor:pointer;">کپی</button></div>
         </div>
-        <!-- حذف لینک دعوت شبکه -->
-        <!-- <div class="referral-section">
-          <span>لینک دعوت شما:</span>
-          <span id="referral-link" class="referral-link">-</span>
-          <button id="copyReferral" class="copy-btn">کپی</button>
-        </div> -->
-        
-        <!-- Claim Binary Rewards Section -->
-        <div class="claim-section">
-          <span>پاداش‌های باینری شما:</span>
-          <div class="claim-info">
-            <div class="claim-row">
-              <span>امتیازهای قابل دریافت:</span>
-              <span id="claimable-points">-</span>
-            </div>
-            <div class="claim-row">
-              <span>ارزش هر امتیاز:</span>
-              <span id="point-value-display">-</span>
-            </div>
-            <div class="claim-row">
-              <span>کل پاداش قابل دریافت:</span>
-              <span id="total-claimable-reward">-</span>
-            </div>
-          </div>
-          <button id="claimRewardsBtn" class="claim-btn" disabled>دریافت پاداش باینری</button>
-        </div>
-        
-        <div class="network-tree" id="network-tree"></div>
-        <div id="network-status" class="profile-status"></div>
+        <!-- نمایش درخت شبکه -->
+        <div id="network-tree"></div>
       </div>
     </div>
   </div>
@@ -2415,9 +2375,18 @@
           <div class="profile-row"><span class="profile-label">موجودی LVL:</span><span class="profile-value" id="profile-lvl">-</span><span class="profile-value" id="profile-lvl-usd"></span></div>
           <div class="profile-row"><span class="profile-label">سقف درآمد باینری:</span><span class="profile-value" id="profile-income-cap">-</span></div>
           <div class="profile-row"><span class="profile-label">دریافت‌شده:</span><span class="profile-value" id="profile-received">-</span></div>
+          <div class="profile-row"><span class="profile-label">باقیمانده خرید:</span><span class="profile-value" id="profile-purchased-kind">-</span></div>
           <div class="profile-row"><span class="profile-label">لینک دعوت:</span><span class="profile-value" id="profile-referral-link">-</span><button id="copyProfileReferral" class="copy-btn">کپی</button></div>
-          <div class="profile-row"><span class="profile-label">پس‌انداز برای خرید پوینت:</span><span class="profile-value" id="profile-purchased-kind">-</span></div>
         </div>
+        
+        <!-- دکمه برداشت پاداش‌ها -->
+        <div style="margin-top: 1.5rem; text-align: center;">
+          <button id="profile-claim-btn" class="register-btn" style="width: 100%; max-width: 300px; margin: 0 auto;">
+            💰 برداشت پاداش‌های باینری
+          </button>
+          <div id="profile-claim-status" class="profile-status" style="margin-top: 0.5rem;"></div>
+        </div>
+        
         <div id="profileStatus" class="profile-status"></div>
       </div>
     </div>
@@ -2562,7 +2531,7 @@
             <h3 style="color: #a786ff; text-align: center; margin-bottom: 1rem;">ثبت‌نام جدید</h3>
             <div style="display: flex; flex-direction: column; gap: 1rem; align-items: center;">
               <label style="color: #fff; width: 100%; text-align: right;">آدرس معرف:</label>
-              <input type="text" id="referrer-address" readonly style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #a786ff55; background: #232946; color: #fff; font-size: 1rem; direction: ltr;" />
+              <input type="text" id="referrer-address" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #a786ff55; background: #232946; color: #fff; font-size: 1rem; direction: ltr;" />
               <label style="color: #fff; width: 100%; text-align: right;">مقدار توکن مورد نیاز:</label>
               <input type="text" id="required-token-amount" readonly style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #a786ff55; background: #232946; color: #fff; font-size: 1rem; direction: ltr;" />
               <button id="register-btn" class="register-btn" style="width: 100%;">ثبت‌ نام</button>
@@ -2606,6 +2575,22 @@
         
         <span id="register-star" style="display:none;color:#FFC107;font-size:1.5rem;margin-right:1rem;">★</span>
       </div>
+    </div>
+  </div>
+
+  <!-- دکمه ثبت جدید برای حساب فعال -->
+  <button id="new-register-btn" class="register-btn" style="width: 100%; display: none;">ثبت جدید</button>
+  <!-- فرم ثبت‌نام نفر جدید (مخفی) -->
+  <div id="new-registration-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#232946; border-radius:16px; padding:2rem; max-width:400px; margin:auto;">
+      <h3 style="color:#a786ff; text-align:center; margin-bottom:1rem;">ثبت‌نام نفر جدید</h3>
+      <label style="color:#fff; width:100%; text-align:right;">آدرس نفر جدید:</label>
+      <input type="text" id="new-user-address" style="width:100%; padding:0.8rem; border-radius:8px; border:1px solid #a786ff55; background:#181c2a; color:#fff; font-size:1rem; direction:ltr; margin-bottom:1rem;" />
+      <label style="color:#fff; width:100%; text-align:right;">آدرس معرف:</label>
+      <input type="text" id="new-referrer-address" style="width:100%; padding:0.8rem; border-radius:8px; border:1px solid #a786ff55; background:#181c2a; color:#fff; font-size:1rem; direction:ltr; margin-bottom:1rem;" />
+      <button id="submit-new-register" class="register-btn" style="width:100%; margin-bottom:1rem;">ثبت نفر جدید</button>
+      <button id="close-new-register" style="width:100%; background:#444; color:#fff; border-radius:8px; padding:0.7rem;">انصراف</button>
+      <div id="new-register-status" class="profile-status"></div>
     </div>
   </div>
 
@@ -2875,6 +2860,16 @@
     }
     // Also update on initial load
     document.addEventListener('DOMContentLoaded', updateDashboardWalletsCount);
+  </script>
+  <script>
+    function toggleDashboardChart(chartId, btn) {
+      const chartDiv = document.getElementById(chartId);
+      if (!chartDiv) return;
+      const isOpen = chartDiv.style.display === 'block';
+      chartDiv.style.display = isOpen ? 'none' : 'block';
+      btn.textContent = isOpen ? '▼' : '▲';
+      // Placeholder: Here you can load/render the chart if needed
+    }
   </script>
 </body>
 </html>

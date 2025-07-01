@@ -674,4 +674,89 @@ body {
   transform: translateY(-1px);
 }
 
+/* Price Chart Squares Row */
+.price-chart-squares-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.2rem;
+  margin: 1.5rem 0;
+  width: 100%;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.price-square-card {
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  box-shadow: 0 2px 12px #0002;
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 110px;
+  padding: 1rem 0.5rem;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.price-square-card:hover {
+  border-color: #00ff88;
+  box-shadow: 0 8px 32px #00ff8855;
+  transform: translateY(-4px) scale(1.03);
+}
+.price-square-card .icon {
+  font-size: 2rem;
+  margin-bottom: 0.2rem;
+}
+.price-square-card .value {
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: #fff;
+  margin-bottom: 0.1rem;
+}
+.price-square-card .label {
+  font-size: 0.95rem;
+  color: #a786ff;
+  margin-bottom: 0.1rem;
+}
+.price-square-card .change {
+  font-size: 0.85rem;
+  color: #00ff88;
+  margin-top: 0.2rem;
+}
+@media (max-width: 700px) {
+  .price-chart-squares-row {
+    gap: 0.5rem;
+    max-width: 100%;
+  }
+  .price-square-card {
+    min-height: 80px;
+    font-size: 0.95em;
+    padding: 0.7rem 0.2rem;
+  }
+  .price-square-card .icon {
+    font-size: 1.4rem;
+  }
+  .price-square-card .value {
+    font-size: 1rem;
+  }
+  .price-square-card .label {
+    font-size: 0.8rem;
+  }
+  
+  /* Dashboard cards mobile layout - 3 rows */
+  .dashboard-cards {
+    display: grid !important;
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(3, auto);
+    gap: 1rem !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+  }
+  
+  .dashboard-card {
+    width: 100%;
+    margin: 0;
+  }
+}
+
 /* Rest of the existing styles... */

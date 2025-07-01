@@ -9,11 +9,9 @@ async function waitForWalletConnection() {
         try {
             const result = await window.checkConnection();
             if (result.connected) {
-                console.log('Profile: Wallet connected, loading profile...');
                 return result;
             }
         } catch (error) {
-            console.log('Profile: Waiting for wallet connection...', attempts + 1);
         }
         
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -26,56 +24,38 @@ async function waitForWalletConnection() {
 // تابع بارگذاری پروفایل کاربر
 async function loadUserProfile() {
     try {
-        console.log('Profile: Loading user profile...');
-        
-        // انتظار برای اتصال کیف پول
         await waitForWalletConnection();
         
-        // دریافت پروفایل کاربر - استفاده از تابع صحیح
-        console.log('Profile: Calling getUserProfile...');
         const profile = await window.getUserProfile();
-        console.log('Profile: getUserProfile returned:', profile);
         
-        // بررسی اعتبار داده‌های پروفایل
         if (!profile || !profile.address) {
             throw new Error('Invalid profile data received');
         }
         
-        // به‌روزرسانی UI
         updateProfileUI(profile);
         
-        // راه‌اندازی دکمه کپی
         setupReferralCopy();
         
-        console.log('Profile: User profile loaded successfully');
-        
     } catch (error) {
-        console.error('Profile: Error loading user profile:', error);
         showProfileError('خطا در بارگذاری پروفایل: ' + error.message);
     }
 }
 
 // تابع به‌روزرسانی UI پروفایل
 function updateProfileUI(profile) {
-    console.log('Profile: Updating UI with profile data:', profile);
-
-    // فرمت‌دهی اعداد
     const formatNumber = (val, decimals = 4) => {
         if (!val || isNaN(Number(val))) return '۰';
         return Number(val).toLocaleString('en-US', { maximumFractionDigits: decimals });
     };
 
-    // کوتاه کردن آدرس
     const shorten = (address) => {
         if (!address) return '---';
         return address.substring(0, 6) + '...' + address.substring(address.length - 4);
     };
 
-    // آدرس کاربر
     const addressEl = document.getElementById('profile-address');
     if (addressEl) addressEl.textContent = profile.address ? shorten(profile.address) : '---';
 
-    // معرف
     let referrerText = 'بدون معرف';
     if (profile.referrer) {
         if (profile.referrer.toLowerCase() === profile.address.toLowerCase()) {
@@ -87,7 +67,6 @@ function updateProfileUI(profile) {
     const referrerEl = document.getElementById('profile-referrer');
     if (referrerEl) referrerEl.textContent = referrerText;
 
-    // موجودی‌ها
     const maticEl = document.getElementById('profile-matic');
     if (maticEl) maticEl.textContent = formatNumber(profile.maticBalance || profile.polBalance, 6);
     const maticUsdEl = document.getElementById('profile-matic-usd');
@@ -117,19 +96,16 @@ function updateProfileUI(profile) {
         }
     }
 
-    // سقف درآمد باینری و دریافتی
     const capEl = document.getElementById('profile-income-cap');
     if (capEl) capEl.textContent = profile.binaryPointCap || '۰';
     const receivedEl = document.getElementById('profile-received');
     if (receivedEl) receivedEl.textContent = profile.binaryPoints || '۰';
 
-    // لینک دعوت (نمایش کوتاه، کپی کامل)
     const linkEl = document.getElementById('profile-referral-link');
     if (linkEl) linkEl.textContent = profile.address
         ? shorten(profile.address)
         : 'لینک دعوت در دسترس نیست';
 
-    // دکمه کپی لینک دعوت را طوری تنظیم کن که لینک کامل را کپی کند
     const copyBtn = document.getElementById('copyProfileReferral');
     if (copyBtn) {
         copyBtn.onclick = async () => {
@@ -142,7 +118,6 @@ function updateProfileUI(profile) {
         };
     }
 
-    // وضعیت ثبت‌نام
     const statusElement = document.getElementById('profileStatus');
     if (statusElement) {
         if (profile.registered) {
@@ -154,14 +129,31 @@ function updateProfileUI(profile) {
         }
     }
 
-    // نمایش مقدار پس‌انداز برای خرید پوینت
     const purchasedKindEl = document.getElementById('profile-purchased-kind');
     if (purchasedKindEl) {
         let rawValue = Number(profile.totalPurchasedKind) / 1e18;
-        // همیشه مقدار را نمایش بده حتی اگر صفر باشد
         let lvlDisplay = rawValue.toLocaleString('en-US', { maximumFractionDigits: 5, minimumFractionDigits: 0 });
         lvlDisplay += ' LVL';
         purchasedKindEl.textContent = lvlDisplay;
+    }
+
+    // مدیریت وضعیت دکمه کلایم بر اساس پوینت‌های باینری
+    const claimBtn = document.getElementById('profile-claim-btn');
+    if (claimBtn) {
+        const binaryPoints = Number(profile.binaryPoints || 0);
+        const hasPoints = binaryPoints > 0;
+        
+        claimBtn.disabled = !hasPoints;
+        
+        if (hasPoints) {
+            claimBtn.textContent = `💰 برداشت پاداش‌های باینری (${formatNumber(profile.binaryPoints)} پوینت)`;
+            claimBtn.style.opacity = '1';
+            claimBtn.style.cursor = 'pointer';
+        } else {
+            claimBtn.textContent = '💰 برداشت پاداش‌های باینری (بدون پوینت)';
+            claimBtn.style.opacity = '0.5';
+            claimBtn.style.cursor = 'not-allowed';
+        }
     }
 }
 
@@ -177,21 +169,15 @@ function setupReferralCopy() {
                 await navigator.clipboard.writeText(referralLink);
                 copyBtn.textContent = 'کپی شد!';
                 setTimeout(() => copyBtn.textContent = 'کپی', 1500);
-                console.log('Profile: Referral link copied to clipboard');
             } catch (error) {
-                console.error("Profile: Error copying referral link:", error);
                 showProfileError('خطا در کپی کردن لینک دعوت');
             }
         });
-        console.log('Profile: Referral copy button setup complete');
-    } else {
-        console.warn('Profile: Copy button not found');
     }
 }
 
 // تابع نمایش خطای پروفایل
 function showProfileError(message) {
-    console.error('Profile: Showing error:', message);
     const statusElement = document.getElementById('profileStatus');
     if (statusElement) {
         statusElement.textContent = message;
@@ -201,8 +187,6 @@ function showProfileError(message) {
             statusElement.textContent = '';
             statusElement.className = 'profile-status';
         }, 5000);
-    } else {
-        console.error('Profile: Status element not found for error display');
     }
 }
 
@@ -211,7 +195,6 @@ async function checkConnection() {
     try {
         return await window.checkConnection();
     } catch (error) {
-        console.error('Profile: Connection check failed:', error);
         return { connected: false, error: error.message };
     }
 }
@@ -221,3 +204,24 @@ function shortenAddress(address) {
     if (!address) return '---';
     return address.substring(0, 6) + '...' + address.substring(address.length - 4);
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const claimBtn = document.getElementById('profile-claim-btn');
+    const claimStatus = document.getElementById('profile-claim-status');
+    if (claimBtn && claimStatus) {
+        claimBtn.onclick = async function() {
+            claimBtn.disabled = true;
+            claimStatus.textContent = 'در حال برداشت...';
+            claimStatus.className = 'profile-status loading';
+            try {
+                const result = await window.claimRewards();
+                claimStatus.textContent = 'برداشت با موفقیت انجام شد!\nکد تراکنش: ' + result.transactionHash;
+                claimStatus.className = 'profile-status success';
+            } catch (e) {
+                claimStatus.textContent = 'خطا در برداشت: ' + (e && e.message ? e.message : e);
+                claimStatus.className = 'profile-status error';
+            }
+            claimBtn.disabled = false;
+        };
+    }
+});

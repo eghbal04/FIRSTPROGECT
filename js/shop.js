@@ -88,14 +88,19 @@ async function loadProducts() {
         const lvlBalance = await contract.balanceOf(address);
         const lvlPrice = await contract.getTokenPrice();
         
+        // دریافت باقیمانده خرید کاربر
+        const user = await contract.users(address);
+        const totalPurchasedKind = user.totalPurchasedKind || 0n;
+        const purchasedKindFormatted = parseFloat(ethers.formatUnits(totalPurchasedKind, 18));
+        
         // محاسبه ارزش دلاری موجودی LVL
         const lvlValueUSD = (parseFloat(ethers.formatEther(lvlBalance)) * parseFloat(ethers.formatUnits(lvlPrice, 18))).toFixed(2);
         
         // تبدیل موجودی LVL به عدد
         const userLVLBalance = parseFloat(ethers.formatEther(lvlBalance));
         
-        // نمایش محصولات با موجودی واقعی LVL
-        displayProducts(products, lvlValueUSD, userLVLBalance);
+        // نمایش محصولات با موجودی واقعی LVL و باقیمانده خرید
+        displayProducts(products, lvlValueUSD, userLVLBalance, purchasedKindFormatted);
         
         // Shop products loaded successfully
         
@@ -108,7 +113,7 @@ async function loadProducts() {
 }
 
 // تابع نمایش محصولات
-function displayProducts(products, userBalanceUSD, userLVLBalance) {
+function displayProducts(products, userBalanceUSD, userLVLBalance, purchasedKind) {
     const productsList = document.getElementById('products-list');
     if (!productsList) {
         console.error('Products list container not found');
@@ -125,6 +130,9 @@ function displayProducts(products, userBalanceUSD, userLVLBalance) {
         <h4 class="shop-balance-title">موجودی شما</h4>
         <div class="shop-balance-usd">$${userBalanceUSD}</div>
         <div class="shop-balance-lvl">(~${userLVLBalance.toFixed(2)} LVL)</div>
+        <div class="shop-balance-purchased" style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #a786ff33; color: #a786ff; font-size: 0.9rem;">
+            باقیمانده خرید: ${purchasedKind.toFixed(5)} LVL
+        </div>
     `;
     productsList.appendChild(balanceDisplay);
 
@@ -220,9 +228,6 @@ async function purchaseProduct(productId, price, percent, button) {
         const priceFixed = Number(price).toFixed(6);
         const amountInWei = ethers.parseUnits(priceFixed, 18);
         const payoutPercent = percent; // عدد صحیح درصد
-        // لاگ برای دیباگ
-        console.log('price:', price, 'priceFixed:', priceFixed, 'amountInWei:', amountInWei.toString());
-        console.log('payoutPercent:', payoutPercent);
         // استفاده از آدرس deployer قرارداد به عنوان آدرس فروشگاه
         const deployerAddress = await contract.deployer();
         const tx = await contract.purchase(amountInWei, payoutPercent);
@@ -242,7 +247,16 @@ async function purchaseProduct(productId, price, percent, button) {
 
     } catch (error) {
         console.error("Purchase error:", error);
-        showShopError("خطا در خرید محصول: " + error.message);
+        // اگر کاربر تراکنش را رد کرد، پیام کوتاه نمایش بده
+        if (
+            error.code === 4001 ||
+            (error.message && error.message.includes('user denied')) ||
+            (error.info && error.info.error && error.info.error.code === 4001)
+        ) {
+            showShopError("لغو توسط کاربر");
+        } else {
+            showShopError("خطا در خرید محصول: " + error.message);
+        }
     } finally {
         // فعال کردن مجدد دکمه
         button.disabled = false;

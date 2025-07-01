@@ -1,5 +1,5 @@
 // تنظیمات قرارداد LevelUp
-const CONTRACT_ADDRESS = '0x05C7c026f56D28d85B2e2593B8aB2305e95552DD';
+const CONTRACT_ADDRESS = '0xd3bA8Af7Ab0e650Efbc8f299373f98B94638bA17';
 const LEVELUP_ABI =[
 	{
 		"inputs": [
@@ -22,38 +22,6 @@ const LEVELUP_ABI =[
 				"type": "bool"
 			}
 		],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "buyTokens",
-		"outputs": [],
-		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "claim",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "amountLvl",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "payout",
-				"type": "uint256"
-			}
-		],
-		"name": "purchase",
-		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
 	},
@@ -280,6 +248,20 @@ const LEVELUP_ABI =[
 		"type": "event"
 	},
 	{
+		"inputs": [],
+		"name": "buyTokens",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "claim",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
 		"anonymous": false,
 		"inputs": [
 			{
@@ -305,6 +287,24 @@ const LEVELUP_ABI =[
 		"type": "event"
 	},
 	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "amountLvl",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "payout",
+				"type": "uint256"
+			}
+		],
+		"name": "purchase",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
 		"anonymous": false,
 		"inputs": [
 			{
@@ -328,6 +328,11 @@ const LEVELUP_ABI =[
 			{
 				"internalType": "address",
 				"name": "referrer",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "newUser",
 				"type": "address"
 			},
 			{
@@ -581,51 +586,6 @@ const LEVELUP_ABI =[
 	},
 	{
 		"inputs": [],
-		"name": "binaryPool",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "circulatingSupply",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "claimable",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
 		"name": "decimals",
 		"outputs": [
 			{
@@ -645,25 +605,6 @@ const LEVELUP_ABI =[
 				"internalType": "address",
 				"name": "",
 				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"name": "eligibleForReward",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
 			}
 		],
 		"stateMutability": "view",
@@ -932,63 +873,6 @@ const LEVELUP_ABI =[
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"name": "isClaimable",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "isSlotLocked",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "leftPoints",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
 		"inputs": [],
 		"name": "MAX_BINARY_POINT_CAP",
 		"outputs": [
@@ -1015,25 +899,6 @@ const LEVELUP_ABI =[
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"name": "points",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
 		"inputs": [],
 		"name": "REFERRAL_FEE_PERCENT",
 		"outputs": [
@@ -1047,46 +912,8 @@ const LEVELUP_ABI =[
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"name": "registered",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
 		"inputs": [],
 		"name": "regprice",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "rightPoints",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -1113,32 +940,6 @@ const LEVELUP_ABI =[
 	{
 		"inputs": [],
 		"name": "totalClaimableBinaryPoints",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "totalDirectDeposits",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "totalPoints",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -1199,17 +1000,22 @@ const LEVELUP_ABI =[
 			},
 			{
 				"internalType": "uint256",
-				"name": "totalPurchasedMATIC",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
 				"name": "totalPurchasedKind",
 				"type": "uint256"
 			},
 			{
 				"internalType": "uint256",
 				"name": "lastClaimTime",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "leftPoints",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "rightPoints",
 				"type": "uint256"
 			}
 		],
@@ -1254,7 +1060,8 @@ async function performWeb3Initialization() {
                 if (switchError.code === 4902) {
                     await window.ethereum.request({
                         method: 'wallet_addEthereumChain',
-                        params: [{
+               
+				        params: [{
                             chainId: '0x89',
                             chainName: 'Polygon',
                             nativeCurrency: {
@@ -1418,11 +1225,8 @@ window.contractConfig = {
 // تابع مرکزی اتصال کیف پول
 window.connectWallet = async function() {
     try {
-        console.log('Central: Attempting to connect wallet...');
-        
         // بررسی اتصال موجود
         if (window.contractConfig && window.contractConfig.contract && window.contractConfig.address && window.contractConfig.signer) {
-            console.log('Central: Wallet already connected');
             return {
                 contract: window.contractConfig.contract,
                 address: window.contractConfig.address,
@@ -1430,12 +1234,9 @@ window.connectWallet = async function() {
                 provider: window.contractConfig.provider
             };
         }
-        
         // راه‌اندازی Web3
         await window.contractConfig.initializeWeb3();
-        
         if (window.contractConfig && window.contractConfig.contract) {
-            console.log('Central: Wallet connected successfully');
             return {
                 contract: window.contractConfig.contract,
                 address: window.contractConfig.address,
@@ -1443,9 +1244,7 @@ window.connectWallet = async function() {
                 provider: window.contractConfig.provider
             };
         }
-        
         throw new Error('خطا در اتصال به کیف پول');
-        
     } catch (error) {
         console.error('Central: Error connecting wallet:', error);
         throw error;
@@ -1456,19 +1255,13 @@ window.connectWallet = async function() {
 window.getUserProfile = async function() {
     try {
         const { contract, address, provider, signer } = await window.connectWallet();
-        
         if (!address) {
             throw new Error('No wallet address available');
         }
-        
-        console.log('Profile: Fetching user data for address:', address);
-        
         // دریافت اطلاعات کاربر با مدیریت خطا
         let user;
         try {
             user = await contract.users(address);
-            console.log('Profile: User data received:', user);
-            console.log('Profile: user.totalPurchasedKind (raw):', user.totalPurchasedKind);
         } catch (error) {
             console.error('Profile: Error fetching user data:', error);
             // اگر کاربر ثبت‌نام نشده باشد، اطلاعات پیش‌فرض برگردان
@@ -1489,40 +1282,32 @@ window.getUserProfile = async function() {
                 index: "0"
             };
         }
-        
         // دریافت موجودی‌ها با مدیریت خطا
         const balanceProvider = provider || signer.provider;
         if (!balanceProvider) {
             throw new Error('No provider available for balance check');
         }
-        
         let polBalance = 0n;
         let lvlBalance = 0n;
-        
         try {
             [polBalance, lvlBalance] = await Promise.all([
                 balanceProvider.getBalance(address),
                 contract.balanceOf(address)
             ]);
-            console.log('Profile: Balances received - POL:', polBalance.toString(), 'LVL:', lvlBalance.toString());
         } catch (error) {
             console.error('Profile: Error fetching balances:', error);
         }
-        
         // دریافت قیمت‌ها برای محاسبه ارزش دلاری
         let lvlPriceMatic = 0n;
         let polPriceUSD = 0;
-        
         try {
             [lvlPriceMatic, polPriceUSD] = await Promise.all([
-                contract.getTokenPrice(),
+                contract.getTokenPrice().catch(() => ethers.parseUnits("0.0012", 18)),
                 window.fetchPolUsdPrice()
             ]);
-            console.log('Profile: Prices received - LVL/MATIC:', lvlPriceMatic.toString(), 'POL/USD:', polPriceUSD);
         } catch (error) {
             console.error('Profile: Error fetching prices:', error);
         }
-        
         // محاسبه ارزش دلاری
         let lvlValueUSD = 0;
         if (lvlBalance && lvlPriceMatic && lvlBalance > 0n && lvlPriceMatic > 0n) {
@@ -1535,7 +1320,6 @@ window.getUserProfile = async function() {
         if (polBalance && polPriceUSD && polBalance > 0n && polPriceUSD > 0) {
             polValueUSD = parseFloat(ethers.formatEther(polBalance)) * parseFloat(polPriceUSD);
         }
-
         // فرمت‌دهی خروجی و جلوگیری از undefined
         const safeFormat = (val, decimals = 8) => {
             try {
@@ -1551,10 +1335,25 @@ window.getUserProfile = async function() {
                 return '0'; 
             }
         };
-
+        // === محاسبه referrer بر اساس index ===
+        let referrer = null;
+        try {
+            const userIndex = user.index ? BigInt(user.index) : 0n;
+            const referrerIndex = userIndex / 2n;
+            // فقط اگر ایندکس معرف بزرگتر از صفر بود، referrer را بگیر
+            if (referrerIndex > 0n) {
+                referrer = await contract.getReferrer(referrerIndex);
+            } else {
+                referrer = address; // اگر ایندکس صفر بود، خودش معرف خودش است
+            }
+        } catch (e) {
+            console.error('Profile: Error fetching referrer:', e);
+            referrer = null;
+        }
+        // === پایان محاسبه referrer ===
         const profile = {
             address: address,
-            referrer: user.referrer || null,
+            referrer: referrer,
             activated: user.activated || false,
             binaryPoints: user.binaryPoints ? user.binaryPoints.toString() : '0',
             binaryPointCap: user.binaryPointCap ? user.binaryPointCap.toString() : '0',
@@ -1568,10 +1367,7 @@ window.getUserProfile = async function() {
             registered: user.activated || false,
             index: user.index ? user.index.toString() : '0'
         };
-
-        console.log('Profile: Final profile data:', profile);
         return profile;
-        
     } catch (error) {
         console.error('Central: Error fetching user profile:', error);
         return {
@@ -1627,34 +1423,103 @@ window.getPrices = async function() {
 window.getContractStats = async function() {
     try {
         const { contract } = await window.connectWallet();
-        // دریافت آمار به صورت موازی
+        
+        // دریافت آمار به صورت موازی با مدیریت خطا
         const [
-            totalSupply, binaryPool, 
-            totalPoints, totalClaimableBinaryPoints, pointValue
+            totalSupply,
+            pointValue
         ] = await Promise.all([
             contract.totalSupply().catch(() => 0n),
-            contract.binaryPool().catch(() => 0n),
-            contract.totalPoints().catch(() => 0n),
-            contract.totalClaimableBinaryPoints().catch(() => 0n),
             contract.getPointValue().catch(() => 0n)
         ]);
+        
+        // دریافت wallets به صورت جداگانه (متغیر state)
+        let wallets = 0n;
+        try {
+            if (typeof contract.wallets === 'function') {
+                wallets = await contract.wallets();
+            } else {
+                wallets = await contract.wallets;
+            }
+        } catch (e) {
+            console.warn('Could not fetch wallets:', e);
+            wallets = 0n;
+        }
+        
+        // دریافت totalClaimableBinaryPoints به صورت جداگانه (متغیر state)
+        let totalClaimableBinaryPoints = 0n;
+        try {
+            if (typeof contract.totalClaimableBinaryPoints === 'function') {
+                totalClaimableBinaryPoints = await contract.totalClaimableBinaryPoints();
+            } else {
+                totalClaimableBinaryPoints = await contract.totalClaimableBinaryPoints;
+            }
+        } catch (e) {
+            console.warn('Could not fetch totalClaimableBinaryPoints:', e);
+            totalClaimableBinaryPoints = 0n;
+        }
+        
+
+        
+        // استفاده از totalClaimableBinaryPoints به جای totalPoints
+        const totalPoints = totalClaimableBinaryPoints;
+        
         // محاسبه circulatingSupply به صورت تقریبی
         let circulatingSupply = totalSupply;
+        let contractBalance = 0n;
         try {
-            const contractBalance = await contract.balanceOf(contract.target);
-            circulatingSupply = totalSupply - contractBalance;
+            // دریافت provider از contractConfig
+            const { provider } = await window.connectWallet();
+            if (provider) {
+                // استفاده از تابع getContractMaticBalance از قرارداد
+                try {
+                    contractBalance = await contract.getContractMaticBalance();
+                } catch (e) {
+                    // fallback به provider.getBalance
+                    contractBalance = await provider.getBalance(contract.target);
+                }
+                
+                // محاسبه circulatingSupply = totalSupply - موجودی توکن قرارداد
+                // نه موجودی POL قرارداد
+                try {
+                    const contractTokenBalance = await contract.balanceOf(contract.target);
+                    circulatingSupply = totalSupply - contractTokenBalance;
+                } catch (e) {
+                    console.warn('Could not get contract token balance, using total supply:', e);
+                    circulatingSupply = totalSupply;
+                }
+            } else {
+                console.warn('Provider not available, using total supply as circulating supply');
+                circulatingSupply = totalSupply;
+            }
         } catch (e) {
             console.warn('Could not calculate circulating supply, using total supply:', e);
             circulatingSupply = totalSupply;
         }
-        return {
+        
+        // محاسبه binaryPool از totalPoints (تقریبی)
+        const binaryPool = totalPoints;
+        
+        const result = {
             totalSupply: ethers.formatUnits(totalSupply, 18),
             circulatingSupply: ethers.formatUnits(circulatingSupply, 18),
-            binaryPool: ethers.formatEther(binaryPool),
-            totalPoints: ethers.formatUnits(totalPoints, 18),
-            totalClaimableBinaryPoints: ethers.formatUnits(totalClaimableBinaryPoints, 18),
-            pointValue: ethers.formatUnits(pointValue, 18)
+            binaryPool: ethers.formatUnits(binaryPool, 18),
+            totalPoints: totalClaimableBinaryPoints ? ethers.formatUnits(totalClaimableBinaryPoints, 18) : '0',
+            totalClaimableBinaryPoints: totalClaimableBinaryPoints ? ethers.formatUnits(totalClaimableBinaryPoints, 18) : '0',
+            pointValue: ethers.formatUnits(pointValue, 18),
+            rewardPool: ethers.formatEther(contractBalance) // استخر پاداش = موجودی POL قرارداد (نه توکن)
         };
+        
+        console.log('Debug: Raw values from contract:');
+        console.log('- totalSupply:', totalSupply.toString());
+        console.log('- totalClaimableBinaryPoints:', totalClaimableBinaryPoints.toString());
+        console.log('- pointValue:', pointValue.toString());
+        console.log('- contractBalance:', contractBalance.toString());
+        console.log('- circulatingSupply:', circulatingSupply.toString());
+        
+        console.log('Debug: Formatted result:', result);
+        
+        return result;
     } catch (error) {
         console.error('Central: Error fetching contract stats:', error);
         return {
@@ -1663,7 +1528,8 @@ window.getContractStats = async function() {
             binaryPool: "0",
             totalPoints: "0",
             totalClaimableBinaryPoints: "0",
-            pointValue: "0"
+            pointValue: "0",
+            rewardPool: "0"
         };
     }
 };
@@ -1767,16 +1633,34 @@ window.debugContractPolBalance = async function() {
 // تابع بارگذاری آمار شبکه
 async function loadNetworkStats(contract) {
     try {
-        const [totalPoints, totalClaimableBinaryPoints] = await Promise.all([
-            contract.totalPoints(),
-            contract.totalClaimableBinaryPoints()
+        const [totalClaimableBinaryPoints] = await Promise.all([
+            contract.totalClaimableBinaryPoints
         ]);
-        updateElement('network-points', parseInt(totalPoints.toString()));
+        updateElement('network-points', parseInt(totalClaimableBinaryPoints.toString()));
         updateElement('network-rewards', parseInt(totalClaimableBinaryPoints.toString()));
     } catch (error) {
         console.error('Error loading network stats:', error);
     }
 }
+
+// تابع برداشت پاداش‌های باینری
+window.claimRewards = async function() {
+    try {
+        const { contract } = await window.connectWallet();
+        
+        const tx = await contract.claim();
+        const receipt = await tx.wait();
+        
+        return {
+            success: true,
+            transactionHash: receipt.hash,
+            blockNumber: receipt.blockNumber
+        };
+    } catch (error) {
+        console.error('Central: Error claiming rewards:', error);
+        throw error;
+    }
+};
 
 // تابع دریافت قیمت MATIC (POL) به دلار از API
 window.fetchPolUsdPrice = async function() {
@@ -1822,3 +1706,19 @@ window.fetchPolUsdPrice = async function() {
     // 3. مقدار پیش‌فرض (fallback)
     return 0.5;
 };
+
+(async () => {
+  try {
+    const { contract, address } = await window.connectWallet();
+    const user = await contract.users(address);
+    console.log('user:', user);
+    // const points = await contract.getPoints(address); // این تابع وجود نداره
+    // console.log('Points:', points);
+    const { contract: contractConfig, address: configAddress } = window.contractConfig;
+    contractConfig.users(configAddress).then(u => console.log('User index:', u.index));
+    contract.indexToAddress(user.index * 2).then(a => console.log('Left child:', a));
+    contract.indexToAddress(user.index * 2 + 1).then(a => console.log('Right child:', a));
+  } catch (error) {
+    console.log('Debug section error:', error.message);
+  }
+})();

@@ -597,15 +597,25 @@ async function fetchContractStats() {
         
         // دریافت آمار قرارداد
         const [
-            totalSupply, binaryPool, 
-            totalPoints, totalClaimableBinaryPoints, pointValue
+            totalSupply, 
+            pointValue
         ] = await Promise.all([
             contract.totalSupply().catch(() => 0n),
-            contract.binaryPool().catch(() => 0n),
-            contract.totalPoints().catch(() => 0n),
-            contract.totalClaimableBinaryPoints().catch(() => 0n),
             contract.getPointValue().catch(() => 0n)
         ]);
+        
+        // دریافت totalClaimableBinaryPoints به صورت جداگانه (متغیر state)
+        let totalClaimableBinaryPoints = 0n;
+        try {
+            totalClaimableBinaryPoints = await contract.totalClaimableBinaryPoints;
+        } catch (e) {
+            console.warn('Could not fetch totalClaimableBinaryPoints:', e);
+            totalClaimableBinaryPoints = 0n;
+        }
+        
+        // استفاده از totalClaimableBinaryPoints به جای توابع ناموجود
+        const binaryPool = totalClaimableBinaryPoints;
+        const totalPoints = totalClaimableBinaryPoints;
         
         // محاسبه circulatingSupply
         let circulatingSupply = totalSupply;
