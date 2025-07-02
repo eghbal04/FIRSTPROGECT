@@ -25,7 +25,6 @@ async function checkConnection() {
         }
         return true;
     } catch (error) {
-        console.error('Swap: Connection check failed:', error);
         showSwapError('خطا در بررسی اتصال کیف پول');
         return false;
     }
@@ -62,7 +61,6 @@ async function updateRateInfo() {
         }
         
     } catch (error) {
-        console.error('Swap: Error updating rate info:', error);
         document.getElementById('swapInfo').textContent = 'خطا در محاسبه نرخ تبدیل';
     }
 }
@@ -72,7 +70,6 @@ async function loadBalances() {
     try {
         const walletConfig = await window.connectWallet();
         if (!walletConfig || !walletConfig.contract || !walletConfig.address || !walletConfig.provider) {
-            console.log('Swap: No wallet connection available');
             document.getElementById('maticBalance').textContent = 'POL: اتصال نشده';
             document.getElementById('lvlBalance').textContent = 'LVL: اتصال نشده';
             userMaticBalance = 0;
@@ -99,7 +96,6 @@ async function loadBalances() {
         await displaySwapPrices();
         validateSwapAmount(); // وضعیت دکمه را به‌روز کن
     } catch (error) {
-        console.error('Swap: Error loading balances:', error);
         document.getElementById('maticBalance').textContent = 'POL: خطا';
         document.getElementById('lvlBalance').textContent = 'LVL: خطا';
         userMaticBalance = 0;
@@ -155,7 +151,6 @@ async function setMaxAmount() {
         await updateRateInfo();
         
     } catch (error) {
-        console.error('Swap: Error setting max amount:', error);
         showSwapError('خطا در تنظیم حداکثر مقدار');
     }
 }
@@ -301,7 +296,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 await loadBalances();
                 
             } catch (error) {
-                console.error('Swap: Error processing transaction:', error);
                 let userMessage = 'خطا در انجام تبدیل. لطفاً دوباره تلاش کنید.';
 
                 if (

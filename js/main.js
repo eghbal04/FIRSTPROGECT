@@ -57,7 +57,6 @@ async function connectWalletAndUpdateUI(walletType) {
         updateConnectionUI(profile, address, walletType);
 
     } catch (error) {
-        console.error("Connection error:", error);
         alert("اتصال کیف پول ناموفق بود: " + error.message);
     } finally {
         const connectButton = document.getElementById('connectButton');
@@ -164,7 +163,6 @@ async function fetchUserProfile() {
             referrer: userData.referrer
         };
     } catch (error) {
-        console.error("Error fetching user profile:", error);
         return {
             address: '---',
             maticBalance: '0',
@@ -182,11 +180,8 @@ async function fetchUserProfile() {
 // تابع اتصال به کیف پول
 async function connectWallet() {
     try {
-        console.log('Main: Attempting to connect wallet...');
-        
         // بررسی اتصال موجود
         if (window.contractConfig && window.contractConfig.contract) {
-            console.log('Main: Wallet already connected');
             return window.contractConfig;
         }
         
@@ -194,22 +189,18 @@ async function connectWallet() {
         if (typeof window.ethereum !== 'undefined') {
             const accounts = await window.ethereum.request({ method: 'eth_accounts' });
             if (accounts && accounts.length > 0) {
-                console.log('Main: MetaMask already connected, initializing Web3...');
                 try {
                     await initializeWeb3();
                     return window.contractConfig;
                 } catch (error) {
-                    console.log('Main: Failed to initialize Web3:', error);
                     throw new Error('خطا در راه‌اندازی Web3');
                 }
             }
         }
         
-        console.log('Main: No existing connection, user needs to connect manually');
         throw new Error('لطفاً ابتدا کیف پول خود را متصل کنید');
         
     } catch (error) {
-        console.error('Main: Error connecting wallet:', error);
         throw error;
     }
 }
@@ -235,7 +226,6 @@ async function updateNavbarBasedOnUserStatus() {
             resetNavbarToDefault();
         }
     } catch (error) {
-        console.error("Error updating navbar:", error);
         resetNavbarToDefault();
     }
 }
@@ -301,12 +291,8 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             if (window.priceChart && window.priceChart.initialize) {
                 await window.priceChart.initialize();
-                console.log('Main: Price chart initialized successfully');
-            } else {
-                console.log('Main: Price chart module not available');
             }
         } catch (error) {
-            console.error('Main: Error initializing price chart:', error);
         }
     }, 1000);
 });

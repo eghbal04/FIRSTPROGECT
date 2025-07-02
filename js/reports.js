@@ -26,7 +26,6 @@ async function waitForWalletConnection() {
         setInterval(loadReports, 300000);
 
     } catch (error) {
-        console.error("Error in reports section:", error);
         showReportsError("خطا در بارگذاری گزارشات");
     }
 }
@@ -34,11 +33,8 @@ async function waitForWalletConnection() {
 // تابع اتصال به کیف پول با انتظار
 async function connectWallet() {
     try {
-        console.log('Reports: Attempting to connect wallet...');
-        
         // بررسی اتصال موجود
         if (window.contractConfig && window.contractConfig.contract) {
-            console.log('Reports: Wallet already connected');
             return window.contractConfig;
         }
         
@@ -46,22 +42,18 @@ async function connectWallet() {
         if (typeof window.ethereum !== 'undefined') {
             const accounts = await window.ethereum.request({ method: 'eth_accounts' });
             if (accounts && accounts.length > 0) {
-                console.log('Reports: MetaMask already connected, initializing Web3...');
                 try {
                     await initializeWeb3();
                     return window.contractConfig;
                 } catch (error) {
-                    console.log('Reports: Failed to initialize Web3:', error);
                     throw new Error('خطا در راه‌اندازی Web3');
                 }
             }
         }
         
-        console.log('Reports: No existing connection, user needs to connect manually');
         throw new Error('لطفاً ابتدا کیف پول خود را متصل کنید');
         
     } catch (error) {
-        console.error('Reports: Error connecting wallet:', error);
         showReportsError('خطا در اتصال به کیف پول');
         throw error;
     }
@@ -84,27 +76,21 @@ function shortenTransactionHash(hash) {
     try {
         // بررسی اعتبار timestamp
         if (!timestamp || isNaN(timestamp)) {
-            console.warn("Invalid timestamp:", timestamp);
             return "تاریخ نامعتبر";
         }
-        
-        console.log("Formatting timestamp:", timestamp, "Type:", typeof timestamp);
         
         // تبدیل timestamp به تاریخ
         let date;
         if (timestamp < 1000000000000) {
             // اگر timestamp در ثانیه است، به میلی‌ثانیه تبدیل کن
             date = new Date(timestamp * 1000);
-            console.log("Timestamp in seconds, converted to:", date.toISOString());
         } else {
             // اگر timestamp در میلی‌ثانیه است
             date = new Date(timestamp);
-            console.log("Timestamp in milliseconds, converted to:", date.toISOString());
         }
         
         // بررسی اعتبار تاریخ
         if (isNaN(date.getTime())) {
-            console.warn("Invalid date from timestamp:", timestamp);
             return "تاریخ نامعتبر";
         }
         
@@ -158,7 +144,6 @@ function shortenTransactionHash(hash) {
         return `${day} ${persianMonth} ${persianYear} - ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
         
     } catch (error) {
-        console.error("Error formatting date:", error, "timestamp:", timestamp);
         return "خطا در نمایش تاریخ";
     }
     }
@@ -174,7 +159,6 @@ function shortenTransactionHash(hash) {
             }
             return num.toLocaleString('en-US', { maximumFractionDigits: 6 });
         } catch (error) {
-            console.error('Error formatting number:', error);
             return '0';
         }
     }
@@ -200,7 +184,8 @@ function shortenTransactionHash(hash) {
                         timestamp: event.blockNumber,
                         transactionHash: event.transactionHash,
                         blockNumber: event.blockNumber,
-                        address: event.args.user
+                        address: event.args.user,
+                        logIndex: event.logIndex
                     });
                 }
             });
@@ -209,7 +194,7 @@ function shortenTransactionHash(hash) {
             try {
                 purchaseEvents = await contract.queryFilter(contract.filters.PurchaseKind(), fromBlock, currentBlock);
             } catch (e) {}
-                purchaseEvents.forEach(event => {
+            purchaseEvents.forEach(event => {
                 if (event.args.user.toLowerCase() === address.toLowerCase()) {
                     reports.push({
                         type: 'purchase',
@@ -217,16 +202,18 @@ function shortenTransactionHash(hash) {
                         amount: formatNumber(event.args.amountLvl || event.args.amountlvl, 18) + ' LVL',
                         timestamp: event.blockNumber,
                         transactionHash: event.transactionHash,
-                        blockNumber: event.blockNumber
+                        blockNumber: event.blockNumber,
+                        address: event.args.user,
+                        logIndex: event.logIndex
                     });
                 }
-                });
+            });
             // TokensBought
             let buyEvents = [];
             try {
                 buyEvents = await contract.queryFilter(contract.filters.TokensBought(), fromBlock, currentBlock);
             } catch (e) {}
-                buyEvents.forEach(event => {
+            buyEvents.forEach(event => {
                 if (event.args.buyer.toLowerCase() === address.toLowerCase()) {
                     reports.push({
                         type: 'trading',
@@ -234,16 +221,18 @@ function shortenTransactionHash(hash) {
                         amount: `${formatNumber(event.args.maticAmount, 18)} POL → ${formatNumber(event.args.tokenAmount, 18)} LVL`,
                         timestamp: event.blockNumber,
                         transactionHash: event.transactionHash,
-                        blockNumber: event.blockNumber
+                        blockNumber: event.blockNumber,
+                        address: event.args.buyer,
+                        logIndex: event.logIndex
                     });
                 }
-                });
+            });
             // TokensSold
             let sellEvents = [];
             try {
                 sellEvents = await contract.queryFilter(contract.filters.TokensSold(), fromBlock, currentBlock);
             } catch (e) {}
-                sellEvents.forEach(event => {
+            sellEvents.forEach(event => {
                 if (event.args.seller.toLowerCase() === address.toLowerCase()) {
                     reports.push({
                         type: 'trading',
@@ -251,16 +240,18 @@ function shortenTransactionHash(hash) {
                         amount: `${formatNumber(event.args.tokenAmount, 18)} LVL → ${formatNumber(event.args.maticAmount, 18)} POL`,
                         timestamp: event.blockNumber,
                         transactionHash: event.transactionHash,
-                        blockNumber: event.blockNumber
+                        blockNumber: event.blockNumber,
+                        address: event.args.seller,
+                        logIndex: event.logIndex
                     });
                 }
-                });
+            });
             // BinaryPointsUpdated
             let binaryEvents = [];
             try {
                 binaryEvents = await contract.queryFilter(contract.filters.BinaryPointsUpdated(), fromBlock, currentBlock);
             } catch (e) {}
-                binaryEvents.forEach(event => {
+            binaryEvents.forEach(event => {
                 if (event.args.user.toLowerCase() === address.toLowerCase()) {
                     reports.push({
                         type: 'binary',
@@ -268,7 +259,9 @@ function shortenTransactionHash(hash) {
                         amount: `${formatNumber(event.args.newPoints, 18)} امتیاز (سقف: ${formatNumber(event.args.newCap, 18)})`,
                         timestamp: event.blockNumber,
                         transactionHash: event.transactionHash,
-                        blockNumber: event.blockNumber
+                        blockNumber: event.blockNumber,
+                        address: event.args.user,
+                        logIndex: event.logIndex
                     });
                 }
             });
@@ -285,7 +278,9 @@ function shortenTransactionHash(hash) {
                         amount: `${formatNumber(event.args.claimerReward, 18)} LVL`,
                         timestamp: event.blockNumber,
                         transactionHash: event.transactionHash,
-                        blockNumber: event.blockNumber
+                        blockNumber: event.blockNumber,
+                        address: event.args.claimer,
+                        logIndex: event.logIndex
                     });
                 }
             });
@@ -302,7 +297,9 @@ function shortenTransactionHash(hash) {
                         amount: `موقعیت: ${event.args.position} - زمان: ${event.args.timestamp}`,
                         timestamp: event.blockNumber,
                         transactionHash: event.transactionHash,
-                        blockNumber: event.blockNumber
+                        blockNumber: event.blockNumber,
+                        address: event.args.user,
+                        logIndex: event.logIndex
                     });
                 }
             });
@@ -320,7 +317,8 @@ function shortenTransactionHash(hash) {
                         timestamp: event.blockNumber,
                         transactionHash: event.transactionHash,
                         blockNumber: event.blockNumber,
-                        address: event.args.from === address ? event.args.to : event.args.from
+                        address: event.args.from === address ? event.args.to : event.args.from,
+                        logIndex: event.logIndex
                     });
                 }
             });
@@ -338,7 +336,8 @@ function shortenTransactionHash(hash) {
                         timestamp: event.blockNumber,
                         transactionHash: event.transactionHash,
                         blockNumber: event.blockNumber,
-                        address: event.args.owner === address ? event.args.spender : event.args.owner
+                        address: event.args.owner === address ? event.args.spender : event.args.owner,
+                        logIndex: event.logIndex
                     });
                 }
             });
@@ -356,7 +355,8 @@ function shortenTransactionHash(hash) {
                         timestamp: event.blockNumber,
                         transactionHash: event.transactionHash,
                         blockNumber: event.blockNumber,
-                        address: event.args.sender
+                        address: event.args.sender,
+                        logIndex: event.logIndex
                     });
                 }
                 });
@@ -364,7 +364,6 @@ function shortenTransactionHash(hash) {
             reports.sort((a, b) => b.blockNumber - a.blockNumber);
             return reports;
         } catch (error) {
-            console.error('Error fetching reports:', error);
             throw error;
         }
     }
@@ -389,7 +388,8 @@ function shortenTransactionHash(hash) {
         }
     
         const reportsHTML = filteredReports.map(report => {
-            const { type, title, amount, timestamp, transactionHash, blockNumber } = report;
+            const { type, title, amount, timestamp, blockNumber, address } = report;
+            // حذف دکمه کپی
             const reportHTML = `
                 <div class="report-item">
                     <div class="report-header">
@@ -399,15 +399,13 @@ function shortenTransactionHash(hash) {
                     <div class="report-details">
                         <div class="report-details-row">
                             <span class="report-details-label">آدرس:</span>
-                            <span class="report-details-value">${shortenAddress(report.address || '')}</span>
+                            <span class="report-details-value">
+                                <a href="https://polygonscan.com/address/${address}" target="_blank" style="color:#a786ff;text-decoration:underline;">${shortenAddress(address || '')}</a>
+                            </span>
                         </div>
                         <div class="report-details-row">
                             <span class="report-details-label">مقدار:</span>
                             <span class="report-details-value">${amount}</span>
-                        </div>
-                        <div class="report-details-row">
-                            <span class="report-details-label">تراکنش:</span>
-                            <span class="report-details-value">${shortenTransactionHash(transactionHash)}</span>
                         </div>
                     </div>
                 </div>
@@ -432,17 +430,23 @@ function shortenTransactionHash(hash) {
     
     // تابع بارگذاری گزارشات
     async function loadReports() {
+    const refreshButton = document.getElementById('refresh-reports');
     if (isReportsLoading) {
-        console.log("Reports already loading, skipping...");
+        if (refreshButton) {
+            refreshButton.disabled = true;
+            refreshButton.textContent = 'در حال بارگذاری...';
+        }
         return;
     }
     
     isReportsLoading = true;
+    if (refreshButton) {
+        refreshButton.disabled = true;
+        refreshButton.textContent = 'در حال بارگذاری...';
+    }
     
     try {
-        console.log("Connecting to wallet for reports data...");
         const { contract, address } = await connectWallet();
-        console.log("Wallet connected, fetching reports data...");
         
         // دریافت گزارشات
             const reports = await fetchReports();
@@ -452,14 +456,15 @@ function shortenTransactionHash(hash) {
         
         // تنظیم فیلترها
         setupFilters();
-        
-        console.log("Reports loaded successfully");
             
         } catch (error) {
-        console.error("Error loading reports:", error);
         showReportsError("خطا در بارگذاری گزارشات");
     } finally {
         isReportsLoading = false;
+        if (refreshButton) {
+            refreshButton.disabled = false;
+            refreshButton.textContent = 'به‌روزرسانی';
+        }
     }
 }
 

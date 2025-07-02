@@ -2223,17 +2223,17 @@
       </div>
     </div>
     <div class="dashboard-card">
-          <div class="dashboard-card-icon"></div>
-          <div class="dashboard-card-content">
-            <h4>موجودی قرارداد</h4>
-            <div id="trading-volume">-</div>
+      <div class="dashboard-card-icon"></div>
+      <div class="dashboard-card-content">
+        <h4>موجودی توکن قرارداد</h4>
+        <div id="contract-token-balance">-</div>
       </div>
     </div>
     <div class="dashboard-card">
-          <div class="dashboard-card-icon"></div>
-          <div class="dashboard-card-content">
-            <h4>استخر پاداش</h4>
-            <div id="reward-pool">-</div>
+      <div class="dashboard-card-icon"></div>
+      <div class="dashboard-card-content">
+        <h4>موجودی POL قرارداد</h4>
+        <div id="reward-pool">-</div>
       </div>
     </div>
       </div>
@@ -2359,6 +2359,8 @@
         <!-- نمایش درخت شبکه -->
         <div id="network-tree"></div>
       </div>
+      <!-- دکمه ثبت جدید برای حساب فعال در شبکه -->
+      <button id="new-register-btn" class="register-btn" style="width: 100%; display: none; margin: 2rem 0;">ثبت جدید</button>
     </div>
   </div>
 
@@ -2579,7 +2581,7 @@
   </div>
 
   <!-- دکمه ثبت جدید برای حساب فعال -->
-  <button id="new-register-btn" class="register-btn" style="width: 100%; display: none;">ثبت جدید</button>
+  <button id="new-register-btn" class="register-btn" style="width: 100%; display: none; margin-bottom: 80px;">ثبت جدید</button>
   <!-- فرم ثبت‌نام نفر جدید (مخفی) -->
   <div id="new-registration-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
     <div style="background:#232946; border-radius:16px; padding:2rem; max-width:400px; margin:auto;">
@@ -2603,56 +2605,6 @@
     </div>
   </footer>
 
-  <!-- دکمه‌های اتصال کیف پول -->
-  <div style="text-align: center; margin: 2rem 0 1rem 0; padding: 1rem;">
-    <button id="qr-connect-btn" onclick="connectWithQRCode()" style="
-      background: linear-gradient(135deg, #00ff88, #00ccff);
-      color: #000000;
-      border: none;
-      border-radius: 12px;
-      padding: 0.8rem 1.5rem;
-      font-family: 'Nazanin', 'B Nazanin', 'BNazanin', Tahoma, Arial, sans-serif;
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      margin: 0 0.5rem;
-    ">
-      📱 اتصال با بارکد
-    </button>
-    <button id="smart-connect-btn" onclick="smartConnect()" style="
-      background: linear-gradient(135deg, #00ccff, #00ff88);
-      color: #000000;
-      border: none;
-      border-radius: 12px;
-      padding: 0.8rem 1.5rem;
-      font-family: 'Nazanin', 'B Nazanin', 'BNazanin', Tahoma, Arial, sans-serif;
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      margin: 0 0.5rem;
-    ">
-      🔗 اتصال هوشمند
-    </button>
-    <button id="disconnect-btn" onclick="disconnectWallet()" style="
-      display: none;
-      background: linear-gradient(135deg, #ff4444, #cc0000);
-      color: #ffffff;
-      border: none;
-      border-radius: 12px;
-      padding: 0.8rem 1.5rem;
-      font-family: 'Nazanin', 'B Nazanin', 'BNazanin', Tahoma, Arial, sans-serif;
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      margin: 0 0.5rem;
-    ">
-      🔌 قطع اتصال
-    </button>
-  </div>
-  
   <!-- نمایش وضعیت اتصال -->
   <div id="connection-status" style="
     display: none;
@@ -2689,8 +2641,6 @@
       
       // Load data for the selected tab
       try {
-        console.log(`Loading data for tab: ${tab}`);
-        
         switch(tab) {
           case 'swap':
             // Swap data is loaded automatically
@@ -2699,7 +2649,6 @@
             if (typeof window.initializeNetworkTab === 'function') {
               await window.initializeNetworkTab();
             } else {
-              console.warn('initializeNetworkTab function not found');
               if (typeof updateNetworkStats === 'function') {
                 await updateNetworkStats();
               }

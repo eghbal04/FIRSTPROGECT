@@ -285,11 +285,8 @@ function showShopSuccess(message) {
 // تابع اتصال به کیف پول
 async function connectWallet() {
     try {
-        console.log('Shop: Attempting to connect wallet...');
-        
         // بررسی اتصال موجود
         if (window.contractConfig && window.contractConfig.contract) {
-            console.log('Shop: Wallet already connected');
             return window.contractConfig;
         }
         
@@ -297,22 +294,18 @@ async function connectWallet() {
         if (typeof window.ethereum !== 'undefined') {
             const accounts = await window.ethereum.request({ method: 'eth_accounts' });
             if (accounts && accounts.length > 0) {
-                console.log('Shop: MetaMask already connected, initializing Web3...');
                 try {
                     await initializeWeb3();
                     return window.contractConfig;
                 } catch (error) {
-                    console.log('Shop: Failed to initialize Web3:', error);
                     throw new Error('خطا در راه‌اندازی Web3');
                 }
             }
         }
         
-        console.log('Shop: No existing connection, user needs to connect manually');
         throw new Error('لطفاً ابتدا کیف پول خود را متصل کنید');
         
     } catch (error) {
-        console.error('Shop: Error connecting wallet:', error);
         showShopError('خطا در اتصال به کیف پول');
         throw error;
     }

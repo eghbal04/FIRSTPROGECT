@@ -205,17 +205,26 @@ function updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceC
     };
     updateElementExponential('token-price-matic', prices.lvlPriceMatic, ' POL');
     
-    // به‌روزرسانی آمار قرارداد
-    // نمایش circulating-supply با نماد علمی (E notation)
-    updateElementExponential('circulating-supply', stats.circulatingSupply, ' LVL');
-    // کل پوینت‌ها = totalPoints (که از totalClaimableBinaryPoints میاد)
-    updateElement('total-points', parseInt(stats.totalPoints.replace(/\..*$/, '')), '', '', true);
+    // مقداردهی توکن‌های در گردش و کل پوینت‌ها مستقیماً از توابع قرارداد
+    try {
+        const { contract } = await window.connectWallet();
+        // contractTotalSupply
+        let supply = await contract.contractTotalSupply();
+        updateElement('circulating-supply', parseInt(ethers.formatUnits(supply, 18)), '', ' LVL', true);
+        // totalClaimablePoints
+        let points = await contract.totalClaimablePoints();
+        updateElement('total-points', parseInt(ethers.formatUnits(points, 0)), '', '', true);
+    } catch (e) {
+        // اگر خطا بود، از stats قبلی استفاده کن
+        updateElement('circulating-supply', parseFloat(stats.circulatingSupply), '', ' LVL', false, 4);
+        updateElement('total-points', parseInt(stats.totalClaimableBinaryPoints.replace(/\..*$/, '')), '', '', true);
+    }
     
     // پوینت‌های ادعا شده = 0 (چون هنوز ادعا نشدن)
     updateElement('claimed-points', 0, '', '', true);
     
     // پوینت‌های باقیمانده = کل پوینت‌ها
-    updateElement('remaining-points', parseInt(stats.totalPoints.replace(/\..*$/, '')), '', '', true);
+    updateElement('remaining-points', parseInt(stats.totalClaimableBinaryPoints.replace(/\..*$/, '')), '', '', true);
     
     // موجودی قرارداد با نهایتاً ۶ رقم اعشار
     const tradingVolumeNum = Number(tradingVolume);
@@ -223,10 +232,12 @@ function updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceC
     
     // ارزش پوینت = pointValue (به صورت LVL)
     let pointValueLVL = parseFloat(stats.pointValue);
-    let rewardPoolLVL = parseFloat(stats.rewardPool);
+    let contractTokenBalanceLVL = parseFloat(stats.contractTokenBalance);
     
     updateElement('point-value', pointValueLVL, '', ' LVL', false, 6);
-    updateElement('reward-pool', rewardPoolLVL, '', ' LVL', false, 4);
+    updateElement('contract-token-balance', contractTokenBalanceLVL, '', ' LVL', false, 4);
+    let rewardPoolPOL = parseFloat(stats.rewardPool);
+    updateElement('reward-pool', rewardPoolPOL, '', ' POL', false, 4);
 }
 
 // تابع بررسی وضعیت اتصال کیف پول
@@ -301,7 +312,7 @@ async function resetDashboard() {
         const elements = [
             'token-price', 'token-price-matic', 'circulating-supply',
             'total-points', 'claimed-points', 'remaining-points',
-            'trading-volume', 'point-value', 'reward-pool'
+            'trading-volume', 'point-value', 'contract-token-balance', 'reward-pool'
         ];
         
         elements.forEach(id => {
@@ -791,19 +802,39 @@ async function autoConnectWallet() {
     }
 }
 
-
-
 // اضافه کردن event listener برای بارگذاری صفحه
 document.addEventListener('DOMContentLoaded', function() {
+    // تلاش برای اتصال خودکار ولت
+    autoConnectWallet();
     // تاخیر کوتاه برای اطمینان از بارگذاری کامل
     setTimeout(() => {
         // به‌روزرسانی نمایش دکمه‌های کیف پول در زمان بارگذاری
         updateWalletButtonVisibility();
-        
         // شروع نظارت بر وضعیت اتصال
         startConnectionMonitoring();
-        
         // فراخوانی loadHomepage
         loadHomepage();
     }, 500);
 });
+
+// تابع تست totalClaimablePoints
+window.testTotalClaimablePoints = async function() {
+    try {
+        const { contract } = await window.connectWallet();
+        const points = await contract.totalClaimablePoints();
+        console.log('totalClaimablePoints:', ethers.formatUnits(points, 18));
+    } catch (e) {
+        console.error('Error calling totalClaimablePoints:', e);
+    }
+};
+
+// تابع تست contractTotalSupply
+window.testContractTotalSupply = async function() {
+    try {
+        const { contract } = await window.connectWallet();
+        const supply = await contract.contractTotalSupply();
+        console.log('contractTotalSupply:', ethers.formatUnits(supply, 18));
+    } catch (e) {
+        console.error('Error calling contractTotalSupply:', e);
+    }
+};

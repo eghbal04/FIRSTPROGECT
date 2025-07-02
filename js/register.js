@@ -480,3 +480,48 @@ window.addEventListener('DOMContentLoaded', function() {
         };
     }
 });
+
+// ثبت‌نام نفر جدید با رفرر دلخواه (برای استفاده در شبکه)
+window.registerNewUserWithReferrer = async function(referrer, newUserAddress, statusElement) {
+    if (!window.contractConfig || !window.contractConfig.contract) {
+        if (statusElement) {
+            statusElement.textContent = 'اتصال کیف پول برقرار نیست';
+            statusElement.className = 'profile-status error';
+        }
+        return;
+    }
+    const { contract } = window.contractConfig;
+    if (!referrer || !newUserAddress) {
+        if (statusElement) {
+            statusElement.textContent = 'آدرس رفرر و آدرس نفر جدید الزامی است';
+            statusElement.className = 'profile-status error';
+        }
+        return;
+    }
+    if (statusElement) {
+        statusElement.textContent = 'در حال ثبت‌نام...';
+        statusElement.className = 'profile-status info';
+    }
+    try {
+        // بررسی فعال بودن رفرر
+        const refData = await contract.users(referrer);
+        if (!refData.activated) throw new Error('معرف فعال نیست');
+        // بررسی ثبت‌نام نبودن نفر جدید
+        const userData = await contract.users(newUserAddress);
+        if (userData.activated) throw new Error('این آدرس قبلاً ثبت‌نام کرده است');
+        // دریافت قیمت ثبت‌نام
+        const regprice = await contract.regprice();
+        // ثبت‌نام نفر جدید (با ولت فعلی)
+        const tx = await contract.registerAndActivate(referrer, newUserAddress, regprice);
+        await tx.wait();
+        if (statusElement) {
+            statusElement.textContent = 'ثبت‌نام نفر جدید با موفقیت انجام شد!';
+            statusElement.className = 'profile-status success';
+        }
+    } catch (e) {
+        if (statusElement) {
+            statusElement.textContent = e.message || 'خطا در ثبت‌نام نفر جدید';
+            statusElement.className = 'profile-status error';
+        }
+    }
+};

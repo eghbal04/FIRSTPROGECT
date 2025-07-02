@@ -102,10 +102,67 @@ async function renderTreeNode(contract, index, container, level = 0) {
         userData = null;
     }
     if (!address || address === '0x0000000000000000000000000000000000000000') {
-        // گره خالی: فقط یک فاصله عمودی کوچک
-        const emptyDiv = document.createElement('div');
-        emptyDiv.style.height = '1.7rem';
-        container.appendChild(emptyDiv);
+        // گره خالی: نمایش فرم ثبت جدید با رفرر والد
+        let referrerAddress = null;
+        try {
+            referrerAddress = await contract.getReferrer(index);
+        } catch (e) {
+            referrerAddress = null;
+        }
+        const formDiv = document.createElement('div');
+        formDiv.style.display = 'flex';
+        formDiv.style.flexDirection = 'column';
+        formDiv.style.alignItems = 'center';
+        formDiv.style.gap = '0.5rem';
+        formDiv.style.margin = '0.5rem 0';
+        // نمایش رفرر
+        const refLabel = document.createElement('div');
+        refLabel.textContent = 'رفرر: ' + (referrerAddress ? referrerAddress : '-');
+        refLabel.style.color = '#a786ff';
+        refLabel.style.fontSize = '0.92em';
+        refLabel.style.direction = 'ltr';
+        refLabel.style.marginBottom = '0.2rem';
+        // input
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = 'آدرس ولت کاربر جدید';
+        input.style.width = '100%';
+        input.style.padding = '0.5rem';
+        input.style.borderRadius = '8px';
+        input.style.border = '1px solid #a786ff55';
+        input.style.background = '#232946';
+        input.style.color = '#fff';
+        input.style.fontSize = '0.95em';
+        input.style.direction = 'ltr';
+        // نمایش وضعیت
+        const statusDiv = document.createElement('div');
+        statusDiv.className = 'profile-status';
+        statusDiv.style.fontSize = '0.92em';
+        statusDiv.style.marginTop = '0.2rem';
+        // button
+        const btn = document.createElement('button');
+        btn.className = 'register-btn';
+        btn.style.width = '100%';
+        btn.textContent = 'ثبت جدید';
+        btn.onclick = function() {
+            const newAddress = input.value.trim();
+            if (newAddress && referrerAddress) {
+                if (typeof registerNewUserWithReferrer === 'function') {
+                    window.registerNewUserWithReferrer(referrerAddress, newAddress, statusDiv);
+                } else {
+                    statusDiv.textContent = 'امکان ثبت‌نام وجود ندارد.';
+                    statusDiv.className = 'profile-status error';
+                }
+            } else {
+                statusDiv.textContent = 'آدرس رفرر یافت نشد یا آدرس وارد نشد.';
+                statusDiv.className = 'profile-status error';
+            }
+        };
+        formDiv.appendChild(refLabel);
+        formDiv.appendChild(input);
+        formDiv.appendChild(btn);
+        formDiv.appendChild(statusDiv);
+        container.appendChild(formDiv);
         return;
     }
     // ساختار گره با تم مدرن

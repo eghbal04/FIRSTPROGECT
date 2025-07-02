@@ -33,7 +33,6 @@ async function initializePriceChart() {
         startChartIntervals();
         
     } catch (error) {
-        console.error('Price Chart: Error initializing:', error);
         showPriceChartError('خطا در راه‌اندازی چارت قیمت');
     }
 }
@@ -58,7 +57,6 @@ function setupTimePeriodButtons() {
 async function changeTimePeriod(period) {
     try {
         if (!timePeriods[period]) {
-            console.warn('Price Chart: Invalid time period:', period);
             return;
         }
         
@@ -96,10 +94,7 @@ async function changeTimePeriod(period) {
             chartInstance.update();
         }
         
-        console.log('Price Chart: Time period changed to:', period);
-        
     } catch (error) {
-        console.error('Price Chart: Error changing time period:', error);
     }
 }
 
@@ -132,13 +127,10 @@ function startChartIntervals() {
         try {
             await updatePriceChart();
         } catch (error) {
-            console.error('Price Chart: Error in contract update interval:', error);
         }
     }, 300000); // هر 5 دقیقه
     
     updateIntervals.push(priceUpdateInterval, contractUpdateInterval);
-    
-    console.log('Price Chart: Intervals started');
 }
 
 // Load Chart.js dynamically
@@ -164,7 +156,6 @@ async function loadChartJS() {
 function initializeChart() {
     const ctx = document.getElementById('price-chart-canvas');
     if (!ctx) {
-        console.error('Price Chart: Canvas element not found');
         return;
     }
     
@@ -349,41 +340,50 @@ function initializeChart() {
     });
 }
 
+// Helper to show/hide price chart UI
+function setPriceChartVisibility(visible) {
+    const ids = [
+        'chart-lvl-usd', 'chart-lvl-pol', 'chart-pol-usd',
+        'chart-lvl-usd-change', 'chart-lvl-pol-change', 'chart-pol-usd-change',
+        'price-chart-last-update', 'price-chart-canvas'
+    ];
+    ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.visibility = visible ? 'visible' : 'hidden';
+    });
+}
+
+// Hide by default on load
+setPriceChartVisibility(false);
+
 // Update price chart data
 async function updatePriceChart() {
     try {
         // دریافت قیمت‌ها از تابع مرکزی
         const prices = await window.getPrices();
-        
-        if (!prices) {
+        // اعتبارسنجی قیمت‌ها (همه باید بزرگتر از صفر باشند)
+        const valid = prices &&
+            parseFloat(prices.lvlPriceUSD) > 0 &&
+            parseFloat(prices.lvlPricePol) > 0 &&
+            parseFloat(prices.polPrice) > 0;
+        if (!valid) {
+            setPriceChartVisibility(false);
             return;
         }
-        
+        setPriceChartVisibility(true);
         // تبدیل قیمت‌ها به اعداد
         const priceData = {
             lvlPol: parseFloat(prices.lvlPricePol),
             lvlUsd: parseFloat(prices.lvlPriceUSD),
             polUsd: parseFloat(prices.polPrice)
         };
-        
         // به‌روزرسانی کارت‌های قیمت
         updatePriceCards(priceData);
-        
         // به‌روزرسانی نمودار
         updateChartData(priceData);
-        
     } catch (error) {
-        console.error('Price Chart: Error updating price chart:', error);
-        
-        // استفاده از قیمت‌های پیش‌فرض در صورت خطا
-        const fallbackPrices = {
-            lvlPol: 0.001,
-            lvlUsd: 0.001,
-            polUsd: 1.00
-        };
-        
-        updatePriceCards(fallbackPrices);
-        updateChartData(fallbackPrices);
+        setPriceChartVisibility(false);
+        // هیچ قیمت پیش‌فرضی نمایش داده نشود
     }
 }
 
@@ -422,7 +422,6 @@ function updateChartData(prices) {
         chartInstance.update('none');
         
     } catch (error) {
-        console.error('Price Chart: Error updating chart data:', error);
     }
 }
 
@@ -457,7 +456,6 @@ function updatePriceCards(prices) {
         updateElement('price-chart-last-update', timeString);
         
     } catch (error) {
-        console.error('Price Chart: Error updating price cards:', error);
     }
 }
 
@@ -477,7 +475,6 @@ function updatePriceChanges() {
         updatePriceChangeElement('chart-pol-usd-change', polUsdChange);
         
     } catch (error) {
-        console.error('Price Chart: Error calculating price changes:', error);
     }
 }
 
@@ -525,7 +522,6 @@ function formatPrice(price, decimals = 4) {
         
         return num.toFixed(decimals);
     } catch (error) {
-        console.error('Price Chart: Error formatting price:', error);
         return '0';
     }
 }
@@ -587,7 +583,6 @@ function stopPriceChart() {
         };
         
     } catch (error) {
-        console.error('Price Chart: Error stopping price chart:', error);
     }
 }
 
@@ -609,7 +604,6 @@ async function fetchContractStats() {
         try {
             totalClaimableBinaryPoints = await contract.totalClaimableBinaryPoints;
         } catch (e) {
-            console.warn('Could not fetch totalClaimableBinaryPoints:', e);
             totalClaimableBinaryPoints = 0n;
         }
         
@@ -645,7 +639,6 @@ async function fetchContractStats() {
         };
         
     } catch (error) {
-        console.error('Price Chart: Error fetching contract stats:', error);
         return null;
     }
 }

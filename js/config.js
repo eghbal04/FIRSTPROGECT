@@ -1,5 +1,5 @@
 // تنظیمات قرارداد LevelUp
-const CONTRACT_ADDRESS = '0xd3bA8Af7Ab0e650Efbc8f299373f98B94638bA17';
+const CONTRACT_ADDRESS = '0x9c11687964F4f0a78af6624dE04a3C50698150eD';
 const LEVELUP_ABI =[
 	{
 		"inputs": [
@@ -586,6 +586,19 @@ const LEVELUP_ABI =[
 	},
 	{
 		"inputs": [],
+		"name": "contractTotalSupply",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
 		"name": "decimals",
 		"outputs": [
 			{
@@ -940,6 +953,19 @@ const LEVELUP_ABI =[
 	{
 		"inputs": [],
 		"name": "totalClaimableBinaryPoints",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "totalClaimablePoints",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -1481,13 +1507,13 @@ window.getContractStats = async function() {
                 
                 // محاسبه circulatingSupply = totalSupply - موجودی توکن قرارداد
                 // نه موجودی POL قرارداد
+                let contractTokenBalance = 0n;
                 try {
-                    const contractTokenBalance = await contract.balanceOf(contract.target);
-                    circulatingSupply = totalSupply - contractTokenBalance;
+                    contractTokenBalance = await contract.balanceOf(contract.target);
                 } catch (e) {
-                    console.warn('Could not get contract token balance, using total supply:', e);
-                    circulatingSupply = totalSupply;
+                    contractTokenBalance = 0n;
                 }
+                circulatingSupply = totalSupply - contractTokenBalance;
             } else {
                 console.warn('Provider not available, using total supply as circulating supply');
                 circulatingSupply = totalSupply;
@@ -1507,17 +1533,9 @@ window.getContractStats = async function() {
             totalPoints: totalClaimableBinaryPoints ? ethers.formatUnits(totalClaimableBinaryPoints, 18) : '0',
             totalClaimableBinaryPoints: totalClaimableBinaryPoints ? ethers.formatUnits(totalClaimableBinaryPoints, 18) : '0',
             pointValue: ethers.formatUnits(pointValue, 18),
-            rewardPool: ethers.formatEther(contractBalance) // استخر پاداش = موجودی POL قرارداد (نه توکن)
+            rewardPool: ethers.formatEther(contractBalance), // استخر پاداش = موجودی POL قرارداد (نه توکن)
+            contractTokenBalance: ethers.formatUnits(contractTokenBalance, 18) // موجودی توکن قرارداد
         };
-        
-        console.log('Debug: Raw values from contract:');
-        console.log('- totalSupply:', totalSupply.toString());
-        console.log('- totalClaimableBinaryPoints:', totalClaimableBinaryPoints.toString());
-        console.log('- pointValue:', pointValue.toString());
-        console.log('- contractBalance:', contractBalance.toString());
-        console.log('- circulatingSupply:', circulatingSupply.toString());
-        
-        console.log('Debug: Formatted result:', result);
         
         return result;
     } catch (error) {
@@ -1529,7 +1547,8 @@ window.getContractStats = async function() {
             totalPoints: "0",
             totalClaimableBinaryPoints: "0",
             pointValue: "0",
-            rewardPool: "0"
+            rewardPool: "0",
+            contractTokenBalance: "0"
         };
     }
 };
@@ -1559,39 +1578,29 @@ window.debugCirculatingSupply = async function() {
     try {
         const { contract } = await window.connectWallet();
         
-        console.log('Debug: Testing circulating supply...');
-        
         // تست مستقیم circulatingSupply
         try {
             const directCirculatingSupply = await contract.circulatingSupply();
-            console.log('Debug: Direct circulatingSupply:', directCirculatingSupply.toString());
         } catch (e) {
-            console.log('Debug: Direct circulatingSupply failed:', e.message);
         }
         
         // تست totalSupply
         try {
             const totalSupply = await contract.totalSupply();
-            console.log('Debug: Total supply:', totalSupply.toString());
         } catch (e) {
-            console.log('Debug: Total supply failed:', e.message);
         }
         
         // تست contract balance
         try {
             const contractBalance = await contract.balanceOf(contract.target);
-            console.log('Debug: Contract balance:', contractBalance.toString());
         } catch (e) {
-            console.log('Debug: Contract balance failed:', e.message);
         }
         
         // تست deployer balance
         try {
             const deployer = await contract.deployer();
             const deployerBalance = await contract.balanceOf(deployer);
-            console.log('Debug: Deployer balance:', deployerBalance.toString());
         } catch (e) {
-            console.log('Debug: Deployer balance failed:', e.message);
         }
         
     } catch (error) {
@@ -1604,25 +1613,16 @@ window.debugContractPolBalance = async function() {
     try {
         const { contract, provider } = await window.connectWallet();
         
-        console.log('Debug: Testing contract POL balance...');
-        console.log('Debug: Contract address:', contract.target);
-        
         // تست موجودی POL قرارداد
         try {
             const polBalance = await provider.getBalance(contract.target);
-            console.log('Debug: Contract POL balance (wei):', polBalance.toString());
-            console.log('Debug: Contract POL balance (POL):', ethers.formatEther(polBalance));
         } catch (e) {
-            console.log('Debug: Contract POL balance failed:', e.message);
         }
         
         // تست تابع getContractMaticBalance از قرارداد
         try {
             const contractPolBalance = await contract.getContractMaticBalance();
-            console.log('Debug: Contract getContractMaticBalance (wei):', contractPolBalance.toString());
-            console.log('Debug: Contract getContractMaticBalance (POL):', ethers.formatEther(contractPolBalance));
         } catch (e) {
-            console.log('Debug: getContractMaticBalance failed:', e.message);
         }
         
     } catch (error) {
@@ -1711,9 +1711,6 @@ window.fetchPolUsdPrice = async function() {
   try {
     const { contract, address } = await window.connectWallet();
     const user = await contract.users(address);
-    console.log('user:', user);
-    // const points = await contract.getPoints(address); // این تابع وجود نداره
-    // console.log('Points:', points);
     const { contract: contractConfig, address: configAddress } = window.contractConfig;
     contractConfig.users(configAddress).then(u => console.log('User index:', u.index));
     contract.indexToAddress(user.index * 2).then(a => console.log('Left child:', a));
