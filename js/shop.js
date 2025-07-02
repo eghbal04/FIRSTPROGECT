@@ -131,7 +131,7 @@ function displayProducts(products, userBalanceUSD, userLVLBalance, purchasedKind
         <div class="shop-balance-usd">$${userBalanceUSD}</div>
         <div class="shop-balance-lvl">(~${userLVLBalance.toFixed(2)} LVL)</div>
         <div class="shop-balance-purchased" style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #a786ff33; color: #a786ff; font-size: 0.9rem;">
-            باقیمانده خرید: ${purchasedKind.toFixed(5)} LVL
+            باقیمانده خریدهای قبلی: ${purchasedKind.toFixed(5)} LVL
         </div>
     `;
     productsList.appendChild(balanceDisplay);

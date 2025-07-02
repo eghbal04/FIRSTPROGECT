@@ -99,7 +99,7 @@ function updateProfileUI(profile) {
     const capEl = document.getElementById('profile-income-cap');
     if (capEl) capEl.textContent = profile.binaryPointCap || '۰';
     const receivedEl = document.getElementById('profile-received');
-    if (receivedEl) receivedEl.textContent = profile.binaryPoints || '۰';
+    if (receivedEl) receivedEl.textContent = profile.binaryPointsClaimed || '۰';
 
     const linkEl = document.getElementById('profile-referral-link');
     if (linkEl) linkEl.textContent = profile.address
@@ -217,6 +217,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const result = await window.claimRewards();
                 claimStatus.textContent = 'برداشت با موفقیت انجام شد!\nکد تراکنش: ' + result.transactionHash;
                 claimStatus.className = 'profile-status success';
+                setTimeout(() => location.reload(), 1200);
             } catch (e) {
                 claimStatus.textContent = 'خطا در برداشت: ' + (e && e.message ? e.message : e);
                 claimStatus.className = 'profile-status error';

@@ -812,8 +812,15 @@ body {
 .dashboard-cards-list {
   display: flex;
   flex-direction: row;
-  flex-wrap: nowrap;
-  gap: 0.5rem;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.2rem;
   justify-content: center;
   align-items: center;
+  overflow-x: unset;
+}
+.list-btn {
+  min-width: unset;
+  max-width: unset;
+  flex: unset;
+  white-space: nowrap;
 }

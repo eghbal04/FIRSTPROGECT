@@ -1,5 +1,5 @@
 // تنظیمات قرارداد LevelUp
-const CONTRACT_ADDRESS = '0x9c11687964F4f0a78af6624dE04a3C50698150eD';
+const CONTRACT_ADDRESS = '0x4A8cAd556fC5f2FF00985503C5a6da374e6F827d';
 const LEVELUP_ABI =[
 	{
 		"inputs": [
@@ -1383,6 +1383,7 @@ window.getUserProfile = async function() {
             activated: user.activated || false,
             binaryPoints: user.binaryPoints ? user.binaryPoints.toString() : '0',
             binaryPointCap: user.binaryPointCap ? user.binaryPointCap.toString() : '0',
+            binaryPointsClaimed: user.binaryPointsClaimed ? user.binaryPointsClaimed.toString() : '0',
             totalPurchasedMATIC: ethers.formatEther(user.totalPurchasedMATIC || 0n),
             totalPurchasedKind: user.totalPurchasedKind ? user.totalPurchasedKind.toString() : '0',
             polBalance: ethers.formatEther(polBalance || 0n),
@@ -1493,6 +1494,7 @@ window.getContractStats = async function() {
         // محاسبه circulatingSupply به صورت تقریبی
         let circulatingSupply = totalSupply;
         let contractBalance = 0n;
+        let contractTokenBalance = 0n;
         try {
             // دریافت provider از contractConfig
             const { provider } = await window.connectWallet();
@@ -1504,10 +1506,8 @@ window.getContractStats = async function() {
                     // fallback به provider.getBalance
                     contractBalance = await provider.getBalance(contract.target);
                 }
-                
                 // محاسبه circulatingSupply = totalSupply - موجودی توکن قرارداد
                 // نه موجودی POL قرارداد
-                let contractTokenBalance = 0n;
                 try {
                     contractTokenBalance = await contract.balanceOf(contract.target);
                 } catch (e) {

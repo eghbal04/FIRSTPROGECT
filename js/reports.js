@@ -194,7 +194,7 @@ function shortenTransactionHash(hash) {
             try {
                 purchaseEvents = await contract.queryFilter(contract.filters.PurchaseKind(), fromBlock, currentBlock);
             } catch (e) {}
-            purchaseEvents.forEach(event => {
+                purchaseEvents.forEach(event => {
                 if (event.args.user.toLowerCase() === address.toLowerCase()) {
                     reports.push({
                         type: 'purchase',
@@ -207,13 +207,13 @@ function shortenTransactionHash(hash) {
                         logIndex: event.logIndex
                     });
                 }
-            });
+                });
             // TokensBought
             let buyEvents = [];
             try {
                 buyEvents = await contract.queryFilter(contract.filters.TokensBought(), fromBlock, currentBlock);
             } catch (e) {}
-            buyEvents.forEach(event => {
+                buyEvents.forEach(event => {
                 if (event.args.buyer.toLowerCase() === address.toLowerCase()) {
                     reports.push({
                         type: 'trading',
@@ -226,13 +226,13 @@ function shortenTransactionHash(hash) {
                         logIndex: event.logIndex
                     });
                 }
-            });
+                });
             // TokensSold
             let sellEvents = [];
             try {
                 sellEvents = await contract.queryFilter(contract.filters.TokensSold(), fromBlock, currentBlock);
             } catch (e) {}
-            sellEvents.forEach(event => {
+                sellEvents.forEach(event => {
                 if (event.args.seller.toLowerCase() === address.toLowerCase()) {
                     reports.push({
                         type: 'trading',
@@ -245,13 +245,13 @@ function shortenTransactionHash(hash) {
                         logIndex: event.logIndex
                     });
                 }
-            });
+                });
             // BinaryPointsUpdated
             let binaryEvents = [];
             try {
                 binaryEvents = await contract.queryFilter(contract.filters.BinaryPointsUpdated(), fromBlock, currentBlock);
             } catch (e) {}
-            binaryEvents.forEach(event => {
+                binaryEvents.forEach(event => {
                 if (event.args.user.toLowerCase() === address.toLowerCase()) {
                     reports.push({
                         type: 'binary',

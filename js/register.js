@@ -409,6 +409,7 @@ async function showRegistrationForm() {
             try {
                 await registerUser(referrer, requiredTokenAmount);
                 registerStatus.textContent = 'ثبت‌نام با موفقیت انجام شد!';
+                setTimeout(() => location.reload(), 1200);
             } catch (e) {
                 registerStatus.textContent = 'خطا در ثبت‌نام: ' + (e.message || e);
             }
@@ -471,6 +472,7 @@ window.addEventListener('DOMContentLoaded', function() {
                 await tx.wait();
                 statusDiv.textContent = 'ثبت‌نام نفر جدید با موفقیت انجام شد!';
                 statusDiv.className = 'profile-status success';
+                setTimeout(() => location.reload(), 1200);
             } catch (e) {
                 statusDiv.textContent = e.message || 'خطا در ثبت‌نام نفر جدید';
                 statusDiv.className = 'profile-status error';
@@ -517,6 +519,7 @@ window.registerNewUserWithReferrer = async function(referrer, newUserAddress, st
         if (statusElement) {
             statusElement.textContent = 'ثبت‌نام نفر جدید با موفقیت انجام شد!';
             statusElement.className = 'profile-status success';
+            setTimeout(() => location.reload(), 1200);
         }
     } catch (e) {
         if (statusElement) {
