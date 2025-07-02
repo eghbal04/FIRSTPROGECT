@@ -380,7 +380,7 @@ body {
   flex: 1 1 0;
   text-align: center;
   color: #fff;
-  font-size: 1.05rem;
+  font-size: 0.85rem;
   font-weight: 600;
   box-shadow: 0 4px 16px rgba(0,0,0,0.10);
   transition: box-shadow 0.2s, background 0.2s, color 0.2s;
@@ -657,7 +657,7 @@ body {
   flex: 1 1 0;
   text-align: center;
   color: #fff;
-  font-size: 1.05rem;
+  font-size: 0.85rem;
   font-weight: 600;
   box-shadow: 0 4px 16px rgba(0,0,0,0.10);
   transition: box-shadow 0.2s, background 0.2s, color 0.2s;
@@ -760,3 +760,60 @@ body {
 }
 
 /* Rest of the existing styles... */
+
+#main-network {
+  margin-bottom: 2.5rem;
+}
+
+/* Shimmer effect for dashboard title */
+.shimmer-title {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(90deg, #222 0%, #00ff88 40%, #00ccff 60%, #222 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer-move 2.2s linear infinite;
+  text-align: center;
+  display: block;
+  margin: 0 auto 1.2rem auto;
+  filter: drop-shadow(0 0 16px #00ff88cc) drop-shadow(0 0 32px #00ccff88);
+}
+@keyframes shimmer-move {
+  0% {
+    background-position: 200% 0;
+    filter: drop-shadow(0 0 16px #00ff88cc) drop-shadow(0 0 32px #00ccff88);
+  }
+  50% {
+    filter: drop-shadow(0 0 32px #00ff88) drop-shadow(0 0 48px #00ccff);
+  }
+  100% {
+    background-position: -200% 0;
+    filter: drop-shadow(0 0 16px #00ff88cc) drop-shadow(0 0 32px #00ccff88);
+  }
+}
+
+.dashboard-card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  text-align: center;
+  font-size: 0.9rem;
+}
+.dashboard-card h4 {
+  text-align: center !important;
+  font-size: 0.8rem !important;
+}
+
+.dashboard-cards-list {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+}

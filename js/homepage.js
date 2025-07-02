@@ -128,7 +128,7 @@ async function loadDashboardData() {
         const priceChanges = await calculatePriceChanges();
         
         // به‌روزرسانی UI
-        updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceChanges);
+        await updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceChanges);
         
     } catch (error) {
         // console.error('Dashboard: Error loading data:', error);
@@ -160,7 +160,7 @@ async function calculatePriceChanges() {
 }
 
 // تابع به‌روزرسانی UI داشبورد
-function updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceChanges) {
+async function updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceChanges) {
     const safeFormat = (val, prefix = '', suffix = '', isInteger = false, maxDecimals = 4) => {
         if (val === undefined || val === null || val === 'undefined' || val === '' || isNaN(val)) return '-';
         if (typeof val === 'string' && val.trim() === '') return '-';
@@ -213,11 +213,11 @@ function updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceC
         updateElement('circulating-supply', parseInt(ethers.formatUnits(supply, 18)), '', ' LVL', true);
         // totalClaimablePoints
         let points = await contract.totalClaimablePoints();
-        updateElement('total-points', parseInt(ethers.formatUnits(points, 0)), '', '', true);
+        updateElement('total-points', parseInt(ethers.formatUnits(points, 0)), '', ' POINT', true);
     } catch (e) {
         // اگر خطا بود، از stats قبلی استفاده کن
         updateElement('circulating-supply', parseFloat(stats.circulatingSupply), '', ' LVL', false, 4);
-        updateElement('total-points', parseInt(stats.totalClaimableBinaryPoints.replace(/\..*$/, '')), '', '', true);
+        updateElement('total-points', parseInt(stats.totalClaimableBinaryPoints.replace(/\..*$/, '')), '', ' POINT', true);
     }
     
     // پوینت‌های ادعا شده = 0 (چون هنوز ادعا نشدن)

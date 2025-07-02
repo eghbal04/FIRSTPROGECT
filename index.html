@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 
     <!-- بارگذاری ethers.js نسخه 6 از CDN -->
@@ -2180,11 +2181,14 @@
   <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
 </head>
 <body>
+  <a href="https://levelupwithus.netlify.app/" target="_blank" style="position:fixed;top:18px;left:24px;z-index:2000;display:flex;align-items:center;text-decoration:none;">
+    <img src="lvl.jpg" alt="LVL Logo" style="height:48px;width:auto;border-radius:16px;box-shadow:0 2px 12px #00ff8840;transition:transform 0.2s;">
+  </a>
 
   <div id="main-dashboard" class="page-section expandable-container">
     <div class="expand-header">
       <header>
-        <h1>داشبورد LevelUp</h1>
+        <h1 class="shimmer-title" style="font-family: 'Montserrat', sans-serif; font-size:2.5rem; letter-spacing:0.12em; color:#222; text-transform:uppercase; font-weight:700; text-shadow:0 2px 12px #00ff8840, 0 1px 0 #fff;">LEVELUP DASHBOARD</h1>
         <p>خوش آمدید! اینجا اطلاعات کلی پلتفرم و وضعیت توکن را مشاهده می‌کنید.</p>
       </header>
     </div>
@@ -2193,8 +2197,8 @@
         <div class="dashboard-card">
           <div class="dashboard-card-icon">👛</div>
           <div class="dashboard-card-content">
-            <h4>تعداد ولت‌های متصل</h4>
-            <div id="dashboard-wallets-count">-</div>
+            <div id="dashboard-wallets-count">-WALLET</div>
+            <h4 style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;text-transform:uppercase;font-size:1.1rem;">ALL WALLETS</h4>
           </div>
         </div>
 
@@ -2203,37 +2207,37 @@
         <div class="dashboard-card">
           <div class="dashboard-card-icon"></div>
           <div class="dashboard-card-content">
-            <h4>توکن‌های در گردش</h4>
-            <div id="circulating-supply">-</div>
+            <div id="circulating-supply">-LVL</div>
+            <h4 style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;text-transform:uppercase;font-size:1.1rem;">TOTAL SUPPLY</h4>
       </div>
     </div>
     <!-- کارت total-users (کاربران) حذف شد -->
             <div class="dashboard-card">
           <div class="dashboard-card-icon"></div>
           <div class="dashboard-card-content">
-            <h4>کل پوینت‌ها</h4>
-            <div id="total-points">-</div>
+            <div id="total-points">-POINT</div>
+            <h4 style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;text-transform:uppercase;font-size:1.1rem;">TOTAL POINTS</h4>
       </div>
     </div>
     <div class="dashboard-card">
           <div class="dashboard-card-icon"></div>
           <div class="dashboard-card-content">
-            <h4>ارزش پوینت</h4>
-            <div id="point-value">-</div>
+            <div id="point-value">-MATIC</div>
+            <h4 style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;text-transform:uppercase;font-size:1.1rem;">POINT VALUE</h4>
       </div>
     </div>
     <div class="dashboard-card">
       <div class="dashboard-card-icon"></div>
       <div class="dashboard-card-content">
-        <h4>موجودی توکن قرارداد</h4>
-        <div id="contract-token-balance">-</div>
+        <div id="contract-token-balance">-LVL</div>
+        <h4 style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;text-transform:uppercase;font-size:1.1rem;">LVL BALANCE</h4>
       </div>
     </div>
     <div class="dashboard-card">
       <div class="dashboard-card-icon"></div>
       <div class="dashboard-card-content">
-        <h4>موجودی POL قرارداد</h4>
-        <div id="reward-pool">-</div>
+        <div id="reward-pool">-POL</div>
+        <h4 style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;text-transform:uppercase;font-size:1.1rem;">POL BALANCE</h4>
       </div>
     </div>
       </div>
@@ -2300,14 +2304,16 @@
 
   <div class="tab-container" style="max-width:700px;margin:0.5rem auto 0.5rem auto;">
     <div class="tab-headers" style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
-      <button class="tab-btn list-btn active" id="tab-swap-btn" type="button">تبدیل</button>
-      <button class="tab-btn list-btn" id="tab-network-btn" type="button">شبکه</button>
-      <button class="tab-btn list-btn" id="tab-profile-btn" type="button">پروفایل</button>
-      <button class="tab-btn list-btn" id="tab-reports-btn" type="button">گزارشات</button>
-      <button class="tab-btn list-btn" id="tab-news-btn" type="button">اخبار</button>
-      <button class="tab-btn list-btn" id="tab-shop-btn" type="button">فروشگاه</button>
-      <button class="tab-btn list-btn" id="tab-about-btn" type="button">درباره</button>
-      <button class="tab-btn list-btn" id="tab-register-btn" type="button">ثبت‌نام</button>
+      <div class="dashboard-cards-list">
+        <button class="tab-btn list-btn active" id="tab-swap-btn" type="button" style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;">SWAP</button>
+        <button class="tab-btn list-btn" id="tab-network-btn" type="button" style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;">NETWORK</button>
+        <button class="tab-btn list-btn" id="tab-profile-btn" type="button" style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;">PROFILE</button>
+        <button class="tab-btn list-btn" id="tab-reports-btn" type="button" style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;">REPORTS</button>
+        <button class="tab-btn list-btn" id="tab-news-btn" type="button" style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;">NEWS</button>
+        <button class="tab-btn list-btn" id="tab-shop-btn" type="button" style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;">SHOP</button>
+        <button class="tab-btn list-btn" id="tab-about-btn" type="button" style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;">ABOUT</button>
+        <button class="tab-btn list-btn" id="tab-register-btn" type="button" style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;">REGISTER</button>
+      </div>
     </div>
   </div>
   <div id="main-swap" class="page-section expandable-container">
@@ -2377,7 +2383,7 @@
           <div class="profile-row"><span class="profile-label">موجودی LVL:</span><span class="profile-value" id="profile-lvl">-</span><span class="profile-value" id="profile-lvl-usd"></span></div>
           <div class="profile-row"><span class="profile-label">سقف درآمد باینری:</span><span class="profile-value" id="profile-income-cap">-</span></div>
           <div class="profile-row"><span class="profile-label">دریافت‌شده:</span><span class="profile-value" id="profile-received">-</span></div>
-          <div class="profile-row"><span class="profile-label">باقیمانده خرید:</span><span class="profile-value" id="profile-purchased-kind">-</span></div>
+          <div class="profile-row"><span class="profile-label">باقیمانده خریدهای قبلی:</span><span class="profile-value" id="profile-purchased-kind">-</span></div>
           <div class="profile-row"><span class="profile-label">لینک دعوت:</span><span class="profile-value" id="profile-referral-link">-</span><button id="copyProfileReferral" class="copy-btn">کپی</button></div>
         </div>
         
