@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لاتاری | LevelUp</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+      body { background: linear-gradient(135deg, #181c2a 0%, #000 100%) !important; color: #fff; font-family: 'Vazirmatn', 'Nazanin', Tahoma, Arial, sans-serif; min-height: 100vh; margin: 0; }
+      .lottery-dashboard { max-width: 700px; margin: 3rem auto 2rem auto; padding: 0 1rem; }
+      .lottery-stats-bar { display: flex; justify-content: space-between; gap: 1.2rem; margin-bottom: 2.2rem; }
+      .stat-card { flex:1; background: rgba(30,40,60,0.7); border-radius: 18px; box-shadow: 0 2px 12px #00ff8840; padding: 1.1rem 0.7rem; text-align: center; backdrop-filter: blur(6px); transition: box-shadow 0.2s; }
+      .stat-card:hover { box-shadow: 0 4px 24px #00ccff80; }
+      .stat-label { color: #00ccff; font-size: 1rem; margin-bottom: 0.3rem; }
+      .stat-value { color: #00ff88; font-size: 1.5rem; font-weight: bold; letter-spacing: 0.04em; }
+      .lottery-tabs { display: flex; justify-content: center; margin-bottom: 2.2rem; }
+      .lottery-tabs button { background: #101c2c; color: #00ff88; border: none; padding: 0.7rem 2.5rem; border-radius: 12px 12px 0 0; margin: 0 0.5rem; font-size: 1.1rem; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 8px #00ff8840; }
+      .lottery-tabs button.active { background: linear-gradient(90deg,#00ff88,#00ccff); color: #181c2a; font-weight: bold; box-shadow: 0 4px 16px #00ff8840; }
+      .lottery-list, .groupdraw-list { margin-bottom: 2.2rem; }
+      .lottery-card, .group-card { display: flex; align-items: center; background: rgba(24,28,42,0.95); border-radius: 18px; box-shadow: 0 2px 12px #00ff8840; padding: 1.2rem 1.2rem; margin-bottom: 1.2rem; position: relative; transition: box-shadow 0.2s, transform 0.2s; backdrop-filter: blur(4px); }
+      .lottery-card:hover, .group-card:hover { box-shadow: 0 4px 24px #00ccff80; transform: translateY(-2px) scale(1.02); }
+      .card-icon { width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg,#00ff88,#00ccff); display: flex; align-items: center; justify-content: center; font-size: 2rem; color: #181c2a; margin-left: 1.2rem; box-shadow: 0 2px 8px #00ff8840; }
+      .card-info { flex:1; text-align: right; }
+      .card-title { color: #00ff88; font-size: 1.1rem; font-weight: bold; margin-bottom: 0.2rem; }
+      .card-meta { color: #00ccff; font-size: 0.98rem; margin-bottom: 0.2rem; }
+      .card-status { color: #ff6b6b; font-size: 0.95rem; margin-bottom: 0.2rem; }
+      .card-actions { text-align: left; }
+      .neon-btn { background: linear-gradient(90deg,#00ff88,#00ccff); color: #181c2a; border: none; border-radius: 12px; padding: 0.6rem 2.2rem; font-size: 1.05rem; font-weight: bold; cursor: pointer; transition: 0.2s; margin-top: 0.7rem; box-shadow: 0 2px 8px #00ff8840; }
+      .neon-btn:hover { background: linear-gradient(90deg,#00ccff,#00ff88); color: #000; }
+      .fab { position: fixed; bottom: 2.5rem; right: 2.5rem; width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg,#00ff88,#00ccff); color: #181c2a; font-size: 2.5rem; border: none; box-shadow: 0 4px 24px #00ff8840; cursor: pointer; z-index: 1001; transition: background 0.2s, box-shadow 0.2s; }
+      .fab:hover { background: linear-gradient(135deg,#00ccff,#00ff88); box-shadow: 0 8px 32px #00ccff80; }
+      .modal-bg { position: fixed; top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:1000; }
+      .modal-form { position: fixed; top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(24,28,42,0.98);border-radius:20px;box-shadow:0 8px 32px #00ff8840;padding:2.2rem 1.5rem;z-index:1001;min-width:320px;max-width:95vw; }
+      .modal-header { display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem; }
+      #modal-title { color:#00ff88;font-size:1.2rem;font-weight:bold; }
+      #modal-close { background:none;border:none;color:#fff;font-size:1.7rem;cursor:pointer; }
+      .form-row { display: flex; gap: 0.7rem; margin-bottom: 1.1rem; }
+      .form-row input { flex: 1; padding: 0.7rem 0.9rem; border-radius: 10px; border: none; background: #232946; color: #fff; font-size: 1rem; }
+      .form-row input:focus { outline: 2px solid #00ff88; }
+      .lottery-status { min-height: 1.5em; color: #00ff88; font-size: 1rem; text-align: center; margin-bottom: 1.2rem; }
+      .back-link { display: inline-block; margin-top: 2rem; color: #00ff88; text-decoration: none; font-weight: bold; }
+      .back-link:hover { color: #00ccff; }
+      @media (max-width: 900px) { .lottery-dashboard { max-width: 99vw; } .lottery-stats-bar { flex-direction: column; gap: 0.7rem; } }
+      @media (max-width: 600px) { .lottery-dashboard { padding: 0.2rem; } .form-row { flex-direction: column; gap: 0.3rem; } .fab { right: 1rem; bottom: 1rem; width: 52px; height: 52px; font-size: 2rem; } .modal-form { min-width: 90vw; } }
+    </style>
+    <script src="js/lottery.js" defer></script>
+</head>
+<body>
+  <div class="lottery-dashboard">
+    <div class="lottery-stats-bar">
+      <div class="stat-card">
+        <div class="stat-label">لاتاری فعال</div>
+        <div class="stat-value" id="stat-active-lotteries">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">کل جایزه</div>
+        <div class="stat-value" id="stat-total-reward">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">شرکت‌کننده‌ها</div>
+        <div class="stat-value" id="stat-participants">0</div>
+      </div>
+    </div>
+    <div class="lottery-tabs">
+      <button id="tab-lottery" class="active">لاتاری معمولی</button>
+      <button id="tab-groupdraw">قرعه‌کشی گروهی</button>
+    </div>
+    <div id="lottery-section">
+      <div class="lottery-list" id="lottery-list">
+        <!-- لیست لاتاری‌های فعال اینجا نمایش داده می‌شود -->
+      </div>
+    </div>
+    <div id="groupdraw-section" style="display:none;">
+      <div class="groupdraw-list" id="groupdraw-list">
+        <!-- لیست گروه‌ها -->
+      </div>
+    </div>
+    <div class="lottery-status" id="lottery-status"></div>
+    <a href="index.html" class="back-link">بازگشت به صفحه اصلی</a>
+    <button class="fab" id="fab-create" title="ایجاد جدید">+</button>
+    <div class="modal-bg" id="modal-bg" style="display:none;"></div>
+    <div class="modal-form" id="modal-form" style="display:none;">
+      <div class="modal-header"><span id="modal-title">ایجاد لاتاری جدید</span><button id="modal-close">×</button></div>
+      <form id="modal-create-form">
+        <div class="form-row">
+          <input type="number" id="modal-member-count" placeholder="تعداد اعضا" min="2" required>
+          <input type="number" id="modal-amount" placeholder="مبلغ هر نفر (POL)" min="1" required>
+          <input type="number" id="modal-winners" placeholder="تعداد برنده" min="1" required>
+        </div>
+        <button type="submit" class="neon-btn">ایجاد</button>
+      </form>
+    </div>
+  </div>
+  <script>
+    // تب‌ها و مودال
+    document.addEventListener('DOMContentLoaded', function() {
+      const tabLottery = document.getElementById('tab-lottery');
+      const tabGroup = document.getElementById('tab-groupdraw');
+      const lotterySection = document.getElementById('lottery-section');
+      const groupSection = document.getElementById('groupdraw-section');
+      const fab = document.getElementById('fab-create');
+      const modalBg = document.getElementById('modal-bg');
+      const modalForm = document.getElementById('modal-form');
+      const modalClose = document.getElementById('modal-close');
+      const modalTitle = document.getElementById('modal-title');
+      const modalCreateForm = document.getElementById('modal-create-form');
+      let currentTab = 'lottery';
+      tabLottery.onclick = function() {
+        tabLottery.classList.add('active');
+        tabGroup.classList.remove('active');
+        lotterySection.style.display = '';
+        groupSection.style.display = 'none';
+        modalTitle.textContent = 'ایجاد لاتاری جدید';
+        currentTab = 'lottery';
+      };
+      tabGroup.onclick = function() {
+        tabGroup.classList.add('active');
+        tabLottery.classList.remove('active');
+        groupSection.style.display = '';
+        lotterySection.style.display = 'none';
+        modalTitle.textContent = 'ایجاد قرعه‌کشی گروهی';
+        currentTab = 'group';
+      };
+      fab.onclick = function() {
+        modalBg.style.display = 'block';
+        modalForm.style.display = 'block';
+      };
+      modalClose.onclick = function() {
+        modalBg.style.display = 'none';
+        modalForm.style.display = 'none';
+      };
+      modalBg.onclick = function() {
+        modalBg.style.display = 'none';
+        modalForm.style.display = 'none';
+      };
+      modalCreateForm.onsubmit = function(e) {
+        e.preventDefault();
+        // اینجا می‌توانید منطق ساخت لاتاری/گروه را اضافه کنید
+        modalBg.style.display = 'none';
+        modalForm.style.display = 'none';
+      };
+    });
+  </script>
+</body>
+</html> 

@@ -180,6 +180,8 @@ async function renderTreeNode(contract, index, container, level = 0) {
     nodeDiv.style.boxShadow = '0 2px 12px #00ff8822, 0 1.5px 0 #00ff8844 inset';
     nodeDiv.style.transition = 'background 0.2s, box-shadow 0.2s';
     nodeDiv.style.position = 'relative';
+    nodeDiv.style.minWidth = '240px';
+    nodeDiv.style.padding = '1rem 2.2rem';
     nodeDiv.onmouseenter = () => {
         nodeDiv.style.background = 'linear-gradient(90deg, #232946 60%, #181c2a 100%)';
         nodeDiv.style.boxShadow = '0 4px 24px #00ff8844, 0 2px 0 #00ff88cc inset';

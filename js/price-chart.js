@@ -367,7 +367,16 @@ async function updatePriceChart() {
             parseFloat(prices.lvlPricePol) > 0 &&
             parseFloat(prices.polPrice) > 0;
         if (!valid) {
-            setPriceChartVisibility(false);
+            // به جای مخفی کردن، آخرین قیمت معتبر را نمایش بده
+            if (priceHistory.lvlUsd.length > 0 && priceHistory.lvlPol.length > 0 && priceHistory.polUsd.length > 0) {
+                const last = {
+                    lvlUsd: priceHistory.lvlUsd[priceHistory.lvlUsd.length-1].value,
+                    lvlPol: priceHistory.lvlPol[priceHistory.lvlPol.length-1].value,
+                    polUsd: priceHistory.polUsd[priceHistory.polUsd.length-1].value
+                };
+                updatePriceCards(last);
+                updateChartData(last);
+            }
             return;
         }
         setPriceChartVisibility(true);
@@ -382,8 +391,16 @@ async function updatePriceChart() {
         // به‌روزرسانی نمودار
         updateChartData(priceData);
     } catch (error) {
-        setPriceChartVisibility(false);
-        // هیچ قیمت پیش‌فرضی نمایش داده نشود
+        // در صورت خطا، آخرین قیمت معتبر را نمایش بده
+        if (priceHistory.lvlUsd.length > 0 && priceHistory.lvlPol.length > 0 && priceHistory.polUsd.length > 0) {
+            const last = {
+                lvlUsd: priceHistory.lvlUsd[priceHistory.lvlUsd.length-1].value,
+                lvlPol: priceHistory.lvlPol[priceHistory.lvlPol.length-1].value,
+                polUsd: priceHistory.polUsd[priceHistory.polUsd.length-1].value
+            };
+            updatePriceCards(last);
+            updateChartData(last);
+        }
     }
 }
 
@@ -429,9 +446,9 @@ function updateChartData(prices) {
 function updatePriceCards(prices) {
     try {
         // Format prices
-        const lvlUsdFormatted = formatPrice(prices.lvlUsd, 6);
-        const lvlPolFormatted = formatPrice(prices.lvlPol, 6);
-        const polUsdFormatted = formatPrice(prices.polUsd, 4);
+        const lvlUsdFormatted = formatPrice(prices.lvlUsd, 8);
+        const lvlPolFormatted = formatPrice(prices.lvlPol, 8);
+        const polUsdFormatted = formatPrice(prices.polUsd, 8);
         
         // Update chart price cards (کارت‌های نمودار)
         updateElement('lvl-usd-price', lvlUsdFormatted, '$');
@@ -440,7 +457,7 @@ function updatePriceCards(prices) {
         
         // Update bottom price cards (کارت‌های پایین صفحه)
         updateElement('chart-lvl-usd', lvlUsdFormatted, '$');
-        updateElement('chart-lvl-pol', lvlPolFormatted, '', ' POL');
+        updateElement('chart-lvl-pol', lvlPolFormatted);
         updateElement('chart-pol-usd', polUsdFormatted, '$');
         
         // Calculate and display price changes

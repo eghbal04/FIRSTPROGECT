@@ -226,7 +226,7 @@ async function performRegistration() {
             referrerAddress = await contract.deployer();
         }
         const regprice = await contract.regprice();
-        const tx = await contract.registerAndActivate(referrerAddress, address, regprice);
+        const tx = await contract.registerAndActivate(referrerAddress, address);
         await tx.wait();
         showRegisterSuccess("ثبت‌نام با موفقیت انجام شد!");
         registerDataLoaded = false;
@@ -425,7 +425,7 @@ async function registerUser(referrer, requiredTokenAmount) {
     if (!contract || !address) throw new Error('کیف پول متصل نیست');
     // تبدیل مقدار به wei (عدد صحیح)
     const amountInWei = ethers.parseUnits(requiredTokenAmount, 18);
-    await contract.registerAndActivate(referrer, address, amountInWei);
+    await contract.registerAndActivate(referrer, address);
 }
 
 // مدیریت نمایش فرم ثبت جدید و ثبت نفر جدید
@@ -465,10 +465,8 @@ window.addEventListener('DOMContentLoaded', function() {
                 // بررسی ثبت‌نام نبودن نفر جدید
                 const userData = await contract.users(userAddr);
                 if (userData.activated) throw new Error('این آدرس قبلاً ثبت‌نام کرده است');
-                // دریافت قیمت ثبت‌نام
-                const regprice = await contract.regprice();
                 // ثبت‌نام نفر جدید (با ولت فعلی)
-                const tx = await contract.registerAndActivate(refAddr, userAddr, regprice);
+                const tx = await contract.registerAndActivate(refAddr, userAddr);
                 await tx.wait();
                 statusDiv.textContent = 'ثبت‌نام نفر جدید با موفقیت انجام شد!';
                 statusDiv.className = 'profile-status success';
@@ -511,10 +509,8 @@ window.registerNewUserWithReferrer = async function(referrer, newUserAddress, st
         // بررسی ثبت‌نام نبودن نفر جدید
         const userData = await contract.users(newUserAddress);
         if (userData.activated) throw new Error('این آدرس قبلاً ثبت‌نام کرده است');
-        // دریافت قیمت ثبت‌نام
-        const regprice = await contract.regprice();
         // ثبت‌نام نفر جدید (با ولت فعلی)
-        const tx = await contract.registerAndActivate(referrer, newUserAddress, regprice);
+        const tx = await contract.registerAndActivate(referrer, newUserAddress);
         await tx.wait();
         if (statusElement) {
             statusElement.textContent = 'ثبت‌نام نفر جدید با موفقیت انجام شد!';

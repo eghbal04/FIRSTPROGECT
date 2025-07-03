@@ -137,6 +137,9 @@ function updateProfileUI(profile) {
         purchasedKindEl.textContent = lvlDisplay;
     }
 
+    const refclimedEl = document.getElementById('profile-refclimed');
+    if (refclimedEl) refclimedEl.textContent = profile.refclimed ? Number(profile.refclimed) / 1e18 + ' LVL' : '۰';
+
     // مدیریت وضعیت دکمه کلایم بر اساس پوینت‌های باینری
     const claimBtn = document.getElementById('profile-claim-btn');
     if (claimBtn) {
@@ -155,6 +158,19 @@ function updateProfileUI(profile) {
             claimBtn.style.cursor = 'not-allowed';
         }
     }
+
+    const leftPointsEl = document.getElementById('profile-leftPoints');
+    if (leftPointsEl) leftPointsEl.textContent = profile.leftPoints || '۰';
+    const rightPointsEl = document.getElementById('profile-rightPoints');
+    if (rightPointsEl) rightPointsEl.textContent = profile.rightPoints || '۰';
+    const lastClaimTimeEl = document.getElementById('profile-lastClaimTime');
+    if (lastClaimTimeEl) lastClaimTimeEl.textContent = formatTimestamp(profile.lastClaimTime);
+    const lastMonthlyClaimEl = document.getElementById('profile-lastMonthlyClaim');
+    if (lastMonthlyClaimEl) lastMonthlyClaimEl.textContent = formatTimestamp(profile.lastMonthlyClaim);
+    const totalMonthlyRewardedEl = document.getElementById('profile-totalMonthlyRewarded');
+    if (totalMonthlyRewardedEl) totalMonthlyRewardedEl.textContent = profile.totalMonthlyRewarded || '۰';
+    const depositedAmountEl = document.getElementById('profile-depositedAmount');
+    if (depositedAmountEl) depositedAmountEl.textContent = profile.depositedAmount || '۰';
 }
 
 // تابع راه‌اندازی دکمه کپی لینک دعوت
@@ -226,3 +242,9 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 });
+
+function formatTimestamp(ts) {
+    if (!ts || ts === '0') return '---';
+    const date = new Date(Number(ts) * 1000);
+    return date.toLocaleDateString('fa-IR') + ' ' + date.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+}

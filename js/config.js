@@ -1,5 +1,475 @@
 // تنظیمات قرارداد LevelUp
-const CONTRACT_ADDRESS = '0x4A8cAd556fC5f2FF00985503C5a6da374e6F827d';
+const CONTRACT_ADDRESS = '0x28b13D8e983dc621b834a0960c9db642d54fBccb';
+const CONTRACT_LOTARY = '0x0fC5025C764cE34df352757e82f7B5c4Df39A836';
+const LOTARI_ABI =[
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "groupId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			}
+		],
+		"name": "approveMemberForGroupDraw",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_memberCount",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_amountPerUser",
+				"type": "uint256"
+			}
+		],
+		"name": "createGroupDraw",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_memberCount",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_amountPerUser",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_winnersCount",
+				"type": "uint256"
+			}
+		],
+		"name": "createLottery",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "tokenAddress",
+				"type": "address"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "creator",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "memberCount",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amountPerUser",
+				"type": "uint256"
+			}
+		],
+		"name": "GroupDrawCreated",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			}
+		],
+		"name": "GroupDrawJoinRequested",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			}
+		],
+		"name": "GroupDrawJoined",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "round",
+				"type": "uint256"
+			}
+		],
+		"name": "GroupDrawPaid",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "winner",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "round",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "reward",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "deployerShare",
+				"type": "uint256"
+			}
+		],
+		"name": "GroupDrawWinner",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "lotteryId",
+				"type": "uint256"
+			}
+		],
+		"name": "joinLottery",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "creator",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "memberCount",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amountPerUser",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "winnersCount",
+				"type": "uint256"
+			}
+		],
+		"name": "LotteryCreated",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			}
+		],
+		"name": "LotteryJoined",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "address[]",
+				"name": "winners",
+				"type": "address[]"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "rewardPerWinner",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "deployerShare",
+				"type": "uint256"
+			}
+		],
+		"name": "LotteryWinners",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "groupId",
+				"type": "uint256"
+			}
+		],
+		"name": "payGroupDrawInstallment",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "groupId",
+				"type": "uint256"
+			}
+		],
+		"name": "requestJoinGroupDraw",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "deployer",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "groupDraws",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "creator",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "memberCount",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "amountPerUser",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "round",
+				"type": "uint256"
+			},
+			{
+				"internalType": "bool",
+				"name": "isActive",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "lotteries",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "creator",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "memberCount",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "amountPerUser",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "winnersCount",
+				"type": "uint256"
+			},
+			{
+				"internalType": "bool",
+				"name": "isActive",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "nextGroupDrawId",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "nextLotteryId",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "token",
+		"outputs": [
+			{
+				"internalType": "contract IERC20",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+];
 const LEVELUP_ABI =[
 	{
 		"inputs": [
@@ -262,6 +732,13 @@ const LEVELUP_ABI =[
 		"type": "function"
 	},
 	{
+		"inputs": [],
+		"name": "claimMonthlyReward",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
 		"anonymous": false,
 		"inputs": [
 			{
@@ -334,11 +811,6 @@ const LEVELUP_ABI =[
 				"internalType": "address",
 				"name": "newUser",
 				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "tokenAmount",
-				"type": "uint256"
 			}
 		],
 		"name": "registerAndActivate",
@@ -574,6 +1046,19 @@ const LEVELUP_ABI =[
 			}
 		],
 		"name": "balanceOf",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "cashback",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -848,6 +1333,26 @@ const LEVELUP_ABI =[
 				"internalType": "uint256",
 				"name": "binaryPointCap",
 				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "depositedAmount",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "lastMonthlyClaim",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "totalMonthlyRewarded",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "refclimed",
+				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",
@@ -1042,6 +1547,26 @@ const LEVELUP_ABI =[
 			{
 				"internalType": "uint256",
 				"name": "rightPoints",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "lastMonthlyClaim",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "totalMonthlyRewarded",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "refclimed",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "depositedAmount",
 				"type": "uint256"
 			}
 		],
@@ -1392,7 +1917,14 @@ window.getUserProfile = async function() {
             polValueUSD: safeFormat(polValueUSD, 8),
             lvlValueUSD: safeFormat(lvlValueUSD, 8),
             registered: user.activated || false,
-            index: user.index ? user.index.toString() : '0'
+            index: user.index ? user.index.toString() : '0',
+            refclimed: user.refclimed ? user.refclimed.toString() : '0',
+            leftPoints: user.leftPoints ? user.leftPoints.toString() : '0',
+            rightPoints: user.rightPoints ? user.rightPoints.toString() : '0',
+            lastClaimTime: user.lastClaimTime ? user.lastClaimTime.toString() : '0',
+            lastMonthlyClaim: user.lastMonthlyClaim ? user.lastMonthlyClaim.toString() : '0',
+            totalMonthlyRewarded: user.totalMonthlyRewarded ? user.totalMonthlyRewarded.toString() : '0',
+            depositedAmount: user.depositedAmount ? user.depositedAmount.toString() : '0'
         };
         return profile;
     } catch (error) {
@@ -1420,17 +1952,15 @@ window.getUserProfile = async function() {
 window.getPrices = async function() {
     try {
         const { contract } = await window.connectWallet();
-        
         // دریافت قیمت LVL/MATIC از قرارداد و قیمت MATIC/USD از API
         const [lvlPriceMatic, polPrice] = await Promise.all([
             contract.getTokenPrice().catch(() => ethers.parseUnits("0.0012", 18)),
             window.fetchPolUsdPrice()
         ]);
-        
+        if (polPrice === null || polPrice === undefined) throw new Error('No valid POL/USD price');
         const lvlPriceMaticFormatted = ethers.formatUnits(lvlPriceMatic, 18);
         // قیمت LVL/USD = (LVL/MATIC) * (MATIC/USD)
         const lvlPriceUSD = parseFloat(lvlPriceMaticFormatted) * parseFloat(polPrice);
-        
         return {
             lvlPriceUSD: lvlPriceUSD.toFixed(6),
             lvlPricePol: lvlPriceMaticFormatted,
@@ -1439,9 +1969,9 @@ window.getPrices = async function() {
     } catch (error) {
         console.error('Central: Error fetching prices:', error);
         return {
-            lvlPriceUSD: "0.0012",
-            lvlPricePol: "0.0012",
-            polPrice: "1.00"
+            lvlPriceUSD: null,
+            lvlPricePol: null,
+            polPrice: null
         };
     }
 };
@@ -1704,7 +2234,7 @@ window.fetchPolUsdPrice = async function() {
         }
     }
     // 3. مقدار پیش‌فرض (fallback)
-    return 0.5;
+    return null;
 };
 
 (async () => {
@@ -1719,3 +2249,12 @@ window.fetchPolUsdPrice = async function() {
     console.log('Debug section error:', error.message);
   }
 })();
+
+// --- Lottery Config ---
+window.LOTTERY_CONFIG = {
+  tokenAddress: CONTRACT_ADDRESS,
+  lotteryAddress: CONTRACT_LOTARY,
+  tokenAbi: LEVELUP_ABI,
+  ticketPrice: 1,
+  maxTicketsPerUser: 5
+};
