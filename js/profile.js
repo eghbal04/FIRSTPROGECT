@@ -241,6 +241,31 @@ document.addEventListener('DOMContentLoaded', function() {
             claimBtn.disabled = false;
         };
     }
+
+    // دکمه برداشت پاداش ماهانه
+    const claimMonthlyBtn = document.getElementById('profile-claim-monthly-btn');
+    const claimMonthlyStatus = document.getElementById('profile-claim-monthly-status');
+    if (claimMonthlyBtn && claimMonthlyStatus) {
+        claimMonthlyBtn.onclick = async function() {
+            claimMonthlyBtn.disabled = true;
+            claimMonthlyStatus.textContent = 'در حال برداشت پاداش ماهانه...';
+            claimMonthlyStatus.className = 'profile-status loading';
+            try {
+                const result = await window.claimMonthlyReward();
+                claimMonthlyStatus.textContent = 'برداشت ماهانه با موفقیت انجام شد!\nکد تراکنش: ' + result.transactionHash;
+                claimMonthlyStatus.className = 'profile-status success';
+                setTimeout(() => location.reload(), 1200);
+            } catch (e) {
+                let msg = e && e.message ? e.message : e;
+                if (msg && msg.includes('No cashback available')) {
+                    msg = 'شما در حال حاضر پاداش ماهانه‌ای برای برداشت ندارید.\n\nتوضیح: پاداش ماهانه فقط زمانی قابل برداشت است که مقدار کافی از فعالیت یا خرید ماهانه داشته باشید و هنوز آن را دریافت نکرده باشید.';
+                }
+                claimMonthlyStatus.textContent = 'خطا در برداشت ماهانه: ' + msg;
+                claimMonthlyStatus.className = 'profile-status error';
+            }
+            claimMonthlyBtn.disabled = false;
+        };
+    }
 });
 
 function formatTimestamp(ts) {

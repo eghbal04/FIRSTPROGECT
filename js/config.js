@@ -1,5 +1,5 @@
 // تنظیمات قرارداد LevelUp
-const CONTRACT_ADDRESS = '0x62b366eDA59aB51D357114aa04Ae1A09c2EcBED3';
+const CONTRACT_ADDRESS = '0x6EEEde05dB82F6c8f72f7dF18263004b98b3B1D7';
 const CONTRACT_LOTARY = '0x0fC5025C764cE34df352757e82f7B5c4Df39A836';
 const LOTARI_ABI =[
 	{
@@ -2188,6 +2188,23 @@ window.claimRewards = async function() {
         };
     } catch (error) {
         console.error('Central: Error claiming rewards:', error);
+        throw error;
+    }
+};
+
+// تابع برداشت پاداش ماهانه
+window.claimMonthlyReward = async function() {
+    try {
+        const { contract } = await window.connectWallet();
+        const tx = await contract.claimMonthlyReward();
+        const receipt = await tx.wait();
+        return {
+            success: true,
+            transactionHash: receipt.hash,
+            blockNumber: receipt.blockNumber
+        };
+    } catch (error) {
+        console.error('Central: Error claiming monthly reward:', error);
         throw error;
     }
 };
