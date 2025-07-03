@@ -1,5 +1,5 @@
 // تنظیمات قرارداد LevelUp
-const CONTRACT_ADDRESS = '0x6EEEde05dB82F6c8f72f7dF18263004b98b3B1D7';
+const CONTRACT_ADDRESS = '0x15394ed6d0cd0f980F903fB71437f914640a4220';
 const CONTRACT_LOTARY = '0x0fC5025C764cE34df352757e82f7B5c4Df39A836';
 const LOTARI_ABI =[
 	{
@@ -497,6 +497,13 @@ const LEVELUP_ABI =[
 	},
 	{
 		"inputs": [],
+		"name": "claim",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
 		"stateMutability": "nonpayable",
 		"type": "constructor"
 	},
@@ -722,13 +729,6 @@ const LEVELUP_ABI =[
 		"name": "buyTokens",
 		"outputs": [],
 		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "claim",
-		"outputs": [],
-		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -1059,6 +1059,19 @@ const LEVELUP_ABI =[
 	{
 		"inputs": [],
 		"name": "cashback",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "cashBack",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -2211,75 +2224,15 @@ window.claimMonthlyReward = async function() {
 
 // تابع دریافت قیمت MATIC (POL) به دلار از API
 window.fetchPolUsdPrice = async function() {
-    const url = 'http://localhost:3001/coingecko';
-    // 1. تلاش مستقیم (بدون پراکسی)
     try {
-        const response = await fetch(url);
+        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=matic-network&vs_currencies=usd');
         if (response.ok) {
             const data = await response.json();
             if (data && data['matic-network'] && data['matic-network'].usd) {
                 return data['matic-network'].usd;
             }
         }
-    } catch (e) {
-        // nothing
-    }
-    // 2. تلاش با پراکسی‌ها (لیست کامل و به‌روز شده)
-    const proxies = [
-        url => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
-        url => 'https://thingproxy.freeboard.io/fetch/' + url,
-        url => 'https://corsproxy.io/?' + encodeURIComponent(url),
-        url => 'https://yacdn.org/proxy/' + url,
-        url => 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(url),
-        url => 'https://proxy.cors.sh/' + url,
-        url => 'https://api.proxycurl.com/?url=' + encodeURIComponent(url),
-        url => 'https://bird.ioliu.cn/v1/?url=' + encodeURIComponent(url),
-        url => 'https://jsonp.afeld.me/?url=' + encodeURIComponent(url),
-        url => 'https://gall.dcinside.com/proxy/http/' + url,
-        url => 'https://api.sofascore.com/api/v1/proxy?url=' + encodeURIComponent(url),
-        url => 'https://cors-anywhere.herokuapp.com/' + url,
-        url => 'https://thingproxy-7605.kxcdn.com/fetch/' + url,
-        url => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url),
-        url => 'https://proxy.scrapeops.io/v1/?api_key=demo&url=' + encodeURIComponent(url),
-        url => 'https://proxy.royalapps.ir/?url=' + encodeURIComponent(url),
-        url => 'https://proxy.ir/api/?url=' + encodeURIComponent(url),
-        url => 'https://proxy.iranapi.ir/?url=' + encodeURIComponent(url),
-        url => 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(url),
-        url => 'https://api.allorigins.win/get?url=' + encodeURIComponent(url),
-        url => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url),
-        url => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
-        url => 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(url),
-        url => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url),
-        url => 'https://api.allorigins.win/get?url=' + encodeURIComponent(url),
-        url => 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(url),
-        url => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url),
-        url => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
-        url => 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(url),
-        url => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url),
-        url => 'https://api.allorigins.win/get?url=' + encodeURIComponent(url),
-        url => 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(url),
-        url => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url),
-        url => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
-        url => 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(url),
-        url => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url),
-        url => 'https://api.allorigins.win/get?url=' + encodeURIComponent(url),
-        url => 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(url),
-        url => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url)
-    ];
-    for (const proxy of proxies) {
-        try {
-            const response = await fetch(proxy(url));
-            if (response.ok) {
-                const data = await response.json();
-                if (data && data['matic-network'] && data['matic-network'].usd) {
-                    return data['matic-network'].usd;
-                }
-            }
-        } catch (e) {
-            // nothing
-        }
-    }
-    // 3. مقدار پیش‌فرض (fallback)
+    } catch (e) {}
     return null;
 };
 

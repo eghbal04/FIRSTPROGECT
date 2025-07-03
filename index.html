@@ -156,6 +156,7 @@
         <button class="tab-btn list-btn" id="tab-reports-btn" type="button" style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;">REPORTS</button>
         <button class="tab-btn list-btn" id="tab-news-btn" type="button" style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;">NEWS</button>
         <button class="tab-btn list-btn" id="tab-shop-btn" type="button" style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;">SHOP</button>
+        <a class="tab-btn list-btn" id="tab-learning-btn" href="learning.html" style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;">LEARNING</a>
         <a class="tab-btn list-btn" id="tab-lottery-btn" href="lottery.html" style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;">LOTTERY</a>
         <button class="tab-btn list-btn" id="tab-about-btn" type="button" style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;">ABOUT</button>
         <button class="tab-btn list-btn" id="tab-register-btn" type="button" style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;">REGISTER</button>
@@ -299,11 +300,117 @@
     </div>
     <div class="expand-content">
       <div class="shop-container">
-        <div class="products" id="products-list"></div>
+        <div class="products" id="products-list">
+          <!-- مدیریت ساب ادمین شاپ -->
+          <div class="shop-sub-admin-management" style="margin:1.5rem 0;">
+            <h5 style="color:#00ccff;">👥 مدیریت ساب ادمین‌های شاپ</h5>
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+              <button class="control-btn" id="add-shop-sub-admin-btn">➕ افزودن ساب ادمین</button>
+              <button class="control-btn" id="view-shop-sub-admins-btn">�� مشاهده ساب ادمین‌ها</button>
+            </div>
+            <div class="shop-sub-admins-list" id="shop-sub-admins-list" style="display:none;margin-top:1rem;">
+              <h6 style="color:#ff6b6b;">ساب ادمین‌های فعال</h6>
+              <div class="shop-sub-admin-item" id="shop-sub-admin-template" style="display:none;">
+                <div class="shop-sub-admin-info">
+                  <span class="shop-sub-admin-name">نام ساب ادمین</span>
+                  <span class="shop-sub-admin-address">آدرس کیف پول</span>
+                  <span class="shop-sub-admin-role">نقش</span>
+                </div>
+                <div class="shop-sub-admin-actions">
+                  <button class="shop-sub-admin-btn edit-btn">✏️ ویرایش</button>
+                  <button class="shop-sub-admin-btn remove-btn">🗑️ حذف</button>
+                </div>
+              </div>
+              <div id="shop-sub-admins-container"></div>
+            </div>
+          </div>
+
+          <!-- مودال افزودن/ویرایش ساب ادمین شاپ -->
+          <div class="sub-admin-modal" id="shop-sub-admin-modal">
+            <div class="sub-admin-modal-content">
+              <h3 id="shop-modal-title">افزودن ساب ادمین شاپ</h3>
+              <form class="sub-admin-form" id="shop-sub-admin-form">
+                <div class="form-group">
+                  <label for="shop-sub-admin-name">نام ساب ادمین:</label>
+                  <input type="text" id="shop-sub-admin-name" placeholder="نام کامل ساب ادمین" required>
+                </div>
+                <div class="form-group">
+                  <label for="shop-sub-admin-address">آدرس کیف پول:</label>
+                  <input type="text" id="shop-sub-admin-address" placeholder="0x..." required>
+                </div>
+                <div class="form-group">
+                  <label for="shop-sub-admin-role">نقش:</label>
+                  <select id="shop-sub-admin-role" required>
+                    <option value="">انتخاب نقش</option>
+                    <option value="product_manager">مدیر محصولات</option>
+                    <option value="order_support">پشتیبانی سفارشات</option>
+                    <option value="warehouse">انباردار</option>
+                    <option value="custom">سفارشی</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="shop-sub-admin-description">توضیحات:</label>
+                  <textarea id="shop-sub-admin-description" placeholder="توضیحات اضافی..." rows="3"></textarea>
+                </div>
+                <div class="permissions-group">
+                  <h5>🔐 دسترسی‌های ساب ادمین شاپ</h5>
+                  <div class="permission-item">
+                    <input type="checkbox" id="perm-add-product" name="shop-permissions">
+                    <label for="perm-add-product">افزودن محصول</label>
+                  </div>
+                  <div class="permission-item">
+                    <input type="checkbox" id="perm-edit-product" name="shop-permissions">
+                    <label for="perm-edit-product">ویرایش محصول</label>
+                  </div>
+                  <div class="permission-item">
+                    <input type="checkbox" id="perm-delete-product" name="shop-permissions">
+                    <label for="perm-delete-product">حذف محصول</label>
+                  </div>
+                  <div class="permission-item">
+                    <input type="checkbox" id="perm-view-orders" name="shop-permissions">
+                    <label for="perm-view-orders">مشاهده سفارشات</label>
+                  </div>
+                  <div class="permission-item">
+                    <input type="checkbox" id="perm-deposit-matic" name="shop-permissions">
+                    <label for="perm-deposit-matic">واریز متیک</label>
+                  </div>
+                  <div class="permission-item">
+                    <input type="checkbox" id="perm-manage-shop-subadmins" name="shop-permissions">
+                    <label for="perm-manage-shop-subadmins">مدیریت ساب ادمین شاپ</label>
+                  </div>
+                </div>
+                <div class="modal-buttons">
+                  <button type="submit" class="modal-btn primary" id="save-shop-sub-admin-btn">💾 ذخیره</button>
+                  <button type="button" class="modal-btn secondary" id="cancel-shop-sub-admin-btn">❌ انصراف</button>
+                </div>
+              </form>
+            </div>
+          </div>
+          <!-- مودال تأیید حذف ساب ادمین شاپ -->
+          <div class="sub-admin-modal" id="shop-delete-confirm-modal">
+            <div class="sub-admin-modal-content">
+              <h3>⚠️ تأیید حذف</h3>
+              <p style="color: #ccc; text-align: center; margin-bottom: 1.5rem;">
+                آیا مطمئن هستید که می‌خواهید این ساب ادمین را حذف کنید؟
+              </p>
+              <div style="background: #181c2a; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                <p style="color: #fff; margin: 0;"><strong>نام:</strong> <span id="shop-delete-admin-name"></span></p>
+                <p style="color: #888; margin: 0.5rem 0 0 0;"><strong>آدرس:</strong> <span id="shop-delete-admin-address"></span></p>
+              </div>
+              <div class="modal-buttons">
+                <button class="modal-btn danger" id="confirm-shop-delete-btn">🗑️ حذف</button>
+                <button class="modal-btn secondary" id="cancel-shop-delete-btn">❌ انصراف</button>
+              </div>
+            </div>
+          </div>
+          <!-- محصولات شاپ در اینجا قرار می‌گیرند -->
+        </div>
         <div class="shop-status" id="shopStatus"></div>
       </div>
     </div>
   </div>
+
+
 
   <div id="main-about" class="page-section expandable-container" style="display:none;">
     <div class="expand-header">
@@ -459,8 +566,6 @@
     </div>
   </div>
 
- 
-
   <footer style="direction:ltr;text-align:left;padding:0.5rem 1rem 0.5rem 0;font-size:0.95rem;color:#aaa;position:fixed;left:0;bottom:0;width:100vw;background:rgba(35,41,70,0.97);z-index:100;text-align:left;">
     <div style="display:flex;justify-content:space-between;align-items:center;">
       <div>©  LevelUp Platform. All rights reserved.</div>
@@ -490,6 +595,7 @@
   <script src="js/reports.js?v=5.7"></script>
   <script src="js/news.js?v=5.7"></script>
   <script src="js/shop.js?v=5.7"></script>
+  <script src="js/learning.js?v=5.7"></script>
   <script src="js/homepage.js?v=5.7"></script>
   <script src="js/register.js?v=5.7"></script>
   <script src="js/price-chart.js?v=5.7"></script>
@@ -512,6 +618,7 @@
     document.getElementById('tab-reports-btn').onclick = function() { setActiveTab('reports'); showTab('reports'); };
     document.getElementById('tab-news-btn').onclick = function() { setActiveTab('news'); showTab('news'); };
     document.getElementById('tab-shop-btn').onclick = function() { setActiveTab('shop'); showTab('shop'); };
+    document.getElementById('tab-learning-btn').onclick = function() { setActiveTab('learning'); showTab('learning'); };
     document.getElementById('tab-about-btn').onclick = function() { setActiveTab('about'); showTab('about'); };
     document.getElementById('tab-register-btn').onclick = function() { setActiveTab('register'); showTab('register'); };
   </script>
@@ -627,12 +734,114 @@
       // Placeholder: Here you can load/render the chart if needed
     }
   </script>
+  <!-- مودال افزودن/ویرایش ساب ادمین -->
+  <div class="sub-admin-modal" id="sub-admin-modal">
+    <div class="sub-admin-modal-content">
+      <h3 id="modal-title">افزودن ساب ادمین جدید</h3>
+      <form class="sub-admin-form" id="sub-admin-form">
+        <div class="form-group">
+          <label for="sub-admin-name">نام ساب ادمین:</label>
+          <input type="text" id="sub-admin-name" placeholder="نام کامل ساب ادمین" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="sub-admin-address">آدرس کیف پول:</label>
+          <input type="text" id="sub-admin-address" placeholder="0x..." required>
+        </div>
+        
+        <div class="form-group">
+          <label for="sub-admin-role">نقش:</label>
+          <select id="sub-admin-role" required>
+            <option value="">انتخاب نقش</option>
+            <option value="moderator">مدیر محتوا</option>
+            <option value="support">پشتیبانی</option>
+            <option value="analyst">تحلیلگر</option>
+            <option value="teacher">مدرس</option>
+            <option value="custom">سفارشی</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="sub-admin-description">توضیحات:</label>
+          <textarea id="sub-admin-description" placeholder="توضیحات اضافی..." rows="3"></textarea>
+        </div>
+        
+        <div class="permissions-group">
+          <h5>🔐 دسترسی‌های ساب ادمین</h5>
+          
+          <div class="permission-item">
+            <input type="checkbox" id="perm-stream-control" name="permissions">
+            <label for="perm-stream-control">کنترل لایو استریم</label>
+          </div>
+          
+          <div class="permission-item">
+            <input type="checkbox" id="perm-chat-moderate" name="permissions">
+            <label for="perm-chat-moderate">مدیریت چت</label>
+          </div>
+          
+          <div class="permission-item">
+            <input type="checkbox" id="perm-ban-users" name="permissions">
+            <label for="perm-ban-users">مسدود کردن کاربران</label>
+          </div>
+          
+          <div class="permission-item">
+            <input type="checkbox" id="perm-view-reports" name="permissions">
+            <label for="perm-view-reports">مشاهده گزارش‌ها</label>
+          </div>
+          
+          <div class="permission-item">
+            <input type="checkbox" id="perm-manage-content" name="permissions">
+            <label for="perm-manage-content">مدیریت محتوا</label>
+          </div>
+          
+          <div class="permission-item">
+            <input type="checkbox" id="perm-view-analytics" name="permissions">
+            <label for="perm-view-analytics">مشاهده آمار</label>
+          </div>
+          
+          <div class="permission-item">
+            <input type="checkbox" id="perm-edit-products" name="permissions">
+            <label for="perm-edit-products">ویرایش محصولات</label>
+          </div>
+          
+          <div class="permission-item">
+            <input type="checkbox" id="perm-view-orders" name="permissions">
+            <label for="perm-view-orders">مشاهده سفارشات</label>
+          </div>
+        </div>
+        
+        <div class="modal-buttons">
+          <button type="submit" class="modal-btn primary" id="save-sub-admin-btn">💾 ذخیره</button>
+          <button type="button" class="modal-btn secondary" id="cancel-sub-admin-btn">❌ انصراف</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- مودال تأیید حذف -->
+  <div class="sub-admin-modal" id="delete-confirm-modal">
+    <div class="sub-admin-modal-content">
+      <h3>⚠️ تأیید حذف</h3>
+      <p style="color: #ccc; text-align: center; margin-bottom: 1.5rem;">
+        آیا مطمئن هستید که می‌خواهید این ساب ادمین را حذف کنید؟
+      </p>
+      <div style="background: #181c2a; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+        <p style="color: #fff; margin: 0;"><strong>نام:</strong> <span id="delete-admin-name"></span></p>
+        <p style="color: #888; margin: 0.5rem 0 0 0;"><strong>آدرس:</strong> <span id="delete-admin-address"></span></p>
+      </div>
+      <div class="modal-buttons">
+        <button class="modal-btn danger" id="confirm-delete-btn">🗑️ حذف</button>
+        <button class="modal-btn secondary" id="cancel-delete-btn">❌ انصراف</button>
+      </div>
+    </div>
+  </div>
+
   <div id="custom-footer-div" style="text-align:center; padding:2rem; color:#00ff88; font-size:1.2rem;">
   <br>  <br>  <br>  <br>  <br>  <br>  <br>
   </div>
   <script>
     window.showTab = async function(tab) {
-      const tabs = ['swap','network','profile','reports','news','shop','about','register'];
+      const tabs = ['swap','network','profile','reports','news','shop','learning','about','register'];
       tabs.forEach(function(name) {
         document.getElementById('main-' + name).style.display = (name === tab) ? '' : 'none';
         document.getElementById('tab-' + name + '-btn').classList.toggle('active', name === tab);
@@ -661,6 +870,9 @@
           case 'shop':
             if (typeof loadProducts === 'function') loadProducts();
             break;
+          case 'learning':
+            if (typeof initializeLearningTab === 'function') initializeLearningTab();
+            break;
           case 'about': break;
           case 'register':
             if (typeof window.setRegisterTabSelected === 'function') window.setRegisterTabSelected(true);
@@ -672,5 +884,6 @@
       }
     }
   </script>
+
 </body>
 </html>

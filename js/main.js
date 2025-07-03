@@ -20,21 +20,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // کشبک داشبورد
     const cashbackValueEl = document.getElementById('dashboard-cashback-value');
+    const cashbackDescEl = document.getElementById('dashboard-cashback-desc');
     if (cashbackValueEl) {
         try {
-            // دریافت مقدار کشبک از قرارداد (با فرض اینکه در پروفایل هست)
-            const profile = await window.getUserProfile();
-            // اگر مقدار کشبک در پروفایل نیست، باید از contract.cashback() بگیریم:
-            let cashback = '0';
-            if (profile && profile.totalMonthlyRewarded) {
-                cashback = profile.totalMonthlyRewarded;
-            } else if (window.contractConfig && window.contractConfig.contract) {
-                cashback = await window.contractConfig.contract.cashback();
-                cashback = cashback.toString();
-            }
+            let cashback = await window.contractConfig.contract.cashBack();
+            cashback = cashback.toString();
             cashbackValueEl.textContent = Number(cashback) / 1e18 + ' LVL';
+            if (cashbackDescEl) {
+                cashbackDescEl.textContent = `۵٪ از هر ثبت‌نام به این صندوق اضافه می‌شود. مجموع فعلی: ${Number(cashback) / 1e18} LVL`;
+            }
         } catch (e) {
             cashbackValueEl.textContent = '-';
+            if (cashbackDescEl) {
+                cashbackDescEl.textContent = '۵٪ از هر ثبت‌نام به این صندوق اضافه می‌شود.';
+            }
         }
     }
 });
