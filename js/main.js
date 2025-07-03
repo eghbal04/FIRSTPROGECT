@@ -17,6 +17,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // به‌روزرسانی ناوبار بر اساس وضعیت کاربر
     await updateNavbarBasedOnUserStatus();
+
+    // کشبک داشبورد
+    const cashbackValueEl = document.getElementById('dashboard-cashback-value');
+    if (cashbackValueEl) {
+        try {
+            // دریافت مقدار کشبک از قرارداد (با فرض اینکه در پروفایل هست)
+            const profile = await window.getUserProfile();
+            // اگر مقدار کشبک در پروفایل نیست، باید از contract.cashback() بگیریم:
+            let cashback = '0';
+            if (profile && profile.totalMonthlyRewarded) {
+                cashback = profile.totalMonthlyRewarded;
+            } else if (window.contractConfig && window.contractConfig.contract) {
+                cashback = await window.contractConfig.contract.cashback();
+                cashback = cashback.toString();
+            }
+            cashbackValueEl.textContent = Number(cashback) / 1e18 + ' LVL';
+        } catch (e) {
+            cashbackValueEl.textContent = '-';
+        }
+    }
 });
 
 function shortenAddress(address) {

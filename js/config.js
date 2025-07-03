@@ -1957,14 +1957,14 @@ window.getPrices = async function() {
             contract.getTokenPrice().catch(() => ethers.parseUnits("0.0012", 18)),
             window.fetchPolUsdPrice()
         ]);
-        if (polPrice === null || polPrice === undefined) throw new Error('No valid POL/USD price');
+        if (polPrice === null || polPrice === undefined || isNaN(Number(polPrice))) throw new Error('No valid POL/USD price');
         const lvlPriceMaticFormatted = ethers.formatUnits(lvlPriceMatic, 18);
         // قیمت LVL/USD = (LVL/MATIC) * (MATIC/USD)
         const lvlPriceUSD = parseFloat(lvlPriceMaticFormatted) * parseFloat(polPrice);
         return {
             lvlPriceUSD: lvlPriceUSD.toFixed(6),
             lvlPricePol: lvlPriceMaticFormatted,
-            polPrice: polPrice.toFixed(6)
+            polPrice: Number(polPrice).toFixed(6)
         };
     } catch (error) {
         console.error('Central: Error fetching prices:', error);
@@ -2211,7 +2211,7 @@ window.claimMonthlyReward = async function() {
 
 // تابع دریافت قیمت MATIC (POL) به دلار از API
 window.fetchPolUsdPrice = async function() {
-    const url = 'https://api.coingecko.com/api/v3/simple/price?ids=matic-network&vs_currencies=usd';
+    const url = 'http://localhost:3001/coingecko';
     // 1. تلاش مستقیم (بدون پراکسی)
     try {
         const response = await fetch(url);
@@ -2224,7 +2224,7 @@ window.fetchPolUsdPrice = async function() {
     } catch (e) {
         // nothing
     }
-    // 2. تلاش با پراکسی‌ها
+    // 2. تلاش با پراکسی‌ها (لیست کامل و به‌روز شده)
     const proxies = [
         url => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
         url => 'https://thingproxy.freeboard.io/fetch/' + url,
@@ -2235,7 +2235,36 @@ window.fetchPolUsdPrice = async function() {
         url => 'https://api.proxycurl.com/?url=' + encodeURIComponent(url),
         url => 'https://bird.ioliu.cn/v1/?url=' + encodeURIComponent(url),
         url => 'https://jsonp.afeld.me/?url=' + encodeURIComponent(url),
-        url => 'https://gall.dcinside.com/proxy/http/' + url
+        url => 'https://gall.dcinside.com/proxy/http/' + url,
+        url => 'https://api.sofascore.com/api/v1/proxy?url=' + encodeURIComponent(url),
+        url => 'https://cors-anywhere.herokuapp.com/' + url,
+        url => 'https://thingproxy-7605.kxcdn.com/fetch/' + url,
+        url => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url),
+        url => 'https://proxy.scrapeops.io/v1/?api_key=demo&url=' + encodeURIComponent(url),
+        url => 'https://proxy.royalapps.ir/?url=' + encodeURIComponent(url),
+        url => 'https://proxy.ir/api/?url=' + encodeURIComponent(url),
+        url => 'https://proxy.iranapi.ir/?url=' + encodeURIComponent(url),
+        url => 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(url),
+        url => 'https://api.allorigins.win/get?url=' + encodeURIComponent(url),
+        url => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url),
+        url => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+        url => 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(url),
+        url => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url),
+        url => 'https://api.allorigins.win/get?url=' + encodeURIComponent(url),
+        url => 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(url),
+        url => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url),
+        url => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+        url => 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(url),
+        url => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url),
+        url => 'https://api.allorigins.win/get?url=' + encodeURIComponent(url),
+        url => 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(url),
+        url => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url),
+        url => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+        url => 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(url),
+        url => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url),
+        url => 'https://api.allorigins.win/get?url=' + encodeURIComponent(url),
+        url => 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(url),
+        url => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url)
     ];
     for (const proxy of proxies) {
         try {
@@ -2259,9 +2288,11 @@ window.fetchPolUsdPrice = async function() {
     const { contract, address } = await window.connectWallet();
     const user = await contract.users(address);
     const { contract: contractConfig, address: configAddress } = window.contractConfig;
-    contractConfig.users(configAddress).then(u => console.log('User index:', u.index));
-    contract.indexToAddress(user.index * 2).then(a => console.log('Left child:', a));
-    contract.indexToAddress(user.index * 2 + 1).then(a => console.log('Right child:', a));
+    contractConfig.users(configAddress).then(u => console.log('User index:', u.index ? u.index.toString() : '0'));
+    // تبدیل user.index به BigInt برای عملیات ریاضی و سپس به رشته برای نمایش
+    const userIndex = user.index ? BigInt(user.index) : 0n;
+    contract.indexToAddress((userIndex * 2n)).then(a => console.log('Left child:', a));
+    contract.indexToAddress((userIndex * 2n) + 1n).then(a => console.log('Right child:', a));
   } catch (error) {
     console.log('Debug section error:', error.message);
   }

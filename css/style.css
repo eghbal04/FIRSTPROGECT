@@ -2978,3 +2978,37 @@ body {
   flex: unset;
   white-space: nowrap;
 }
+
+/* ... existing code ... */
+.dashboard-cards {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: flex-start;
+}
+.dashboard-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 180px;
+  min-height: 90px;
+  background: none;
+  border: 1px solid #00ff8840;
+  border-radius: 24px;
+  box-shadow: 0 2px 12px #00ff8840;
+  padding: 1rem 1.2rem;
+  margin-bottom: 1rem;
+}
+.dashboard-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+}
+/* ... existing code ... */
