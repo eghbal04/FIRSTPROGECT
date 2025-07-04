@@ -201,7 +201,17 @@ let subAdmins = [];
 let currentEditingAdmin = null;
 
 // راه‌اندازی لایو استریم
-function setupLiveStream() {
+async function setupLiveStream() {
+    // بررسی اکتیو بودن کاربر
+    const profile = await window.getUserProfile();
+    if (!profile.activated) {
+        // مخفی کردن یا قفل کردن بخش لایو استریم
+        const liveSection = document.getElementById('live-stream-section');
+        if (liveSection) {
+            liveSection.innerHTML = '<div style="color:#ff6b6b;text-align:center;padding:2rem;font-size:1.2rem;">دسترسی به لایو استریم فقط برای کاربران فعال مجاز است.</div>';
+        }
+        return; // ادامه راه‌اندازی لایو انجام نشود
+    }
     checkAdminStatus();
     setupChatInput();
     setupAdminControls();

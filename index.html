@@ -677,5 +677,21 @@
     });
   </script>
 
+  <script>
+  (async function() {
+    if (window.getUserProfile) {
+      const profile = await window.getUserProfile();
+      if (!profile.activated) {
+        // قفل کردن فقط بخش ریپورت
+        const reportsSection = document.getElementById('main-reports');
+        if (reportsSection) {
+          reportsSection.innerHTML = '<div style="color:#ff6b6b;text-align:center;padding:3rem;font-size:1.5rem;">دسترسی به این بخش فقط برای کاربران فعال مجاز است.<br>🔒</div>';
+          reportsSection.style.background = '#181c2a';
+        }
+      }
+    }
+  })();
+  </script>
+
 </body>
 </html>

@@ -46,6 +46,17 @@
     <script src="js/lottery.js" defer></script>
 </head>
 <body>
+  <script>
+  (async function() {
+    if (window.getUserProfile) {
+      const profile = await window.getUserProfile();
+      if (!profile.activated) {
+        document.body.innerHTML = '<div style="color:#ff6b6b;text-align:center;padding:3rem;font-size:1.5rem;">دسترسی به این بخش فقط برای کاربران فعال مجاز است.<br>🔒</div>';
+        document.body.style.background = '#181c2a';
+      }
+    }
+  })();
+  </script>
   <div class="lottery-dashboard">
     <div class="lottery-stats-bar">
       <div class="stat-card">

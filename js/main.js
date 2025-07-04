@@ -315,3 +315,29 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 1000);
 });
+
+// Lock navigation for deactivated users
+async function lockTabsForDeactivatedUsers() {
+    if (!window.getUserProfile) return;
+    const profile = await window.getUserProfile();
+    if (!profile.activated) {
+        const lockTabs = [
+            { id: 'tab-shop-btn', label: 'SHOP' },
+            { id: 'tab-lottery-btn', label: 'LOTTERY' },
+            { id: 'tab-reports-btn', label: 'REPORTS' },
+            { id: 'tab-learning-btn', label: 'LEARNING' }
+        ];
+        lockTabs.forEach(tab => {
+            const el = document.getElementById(tab.id);
+            if (el) {
+                el.innerHTML = '🔒 ' + tab.label;
+                el.classList.add('locked-tab');
+                el.style.pointerEvents = 'none';
+                el.style.opacity = '0.5';
+                el.title = 'این بخش فقط برای کاربران فعال باز است';
+            }
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', lockTabsForDeactivatedUsers);

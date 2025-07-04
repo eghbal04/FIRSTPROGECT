@@ -2489,3 +2489,10 @@ window.runFullTest = async function() {
     
     return { connection, priceTest, statsTest };
 };
+
+function setupViewerMode() {
+    // شبیه‌سازی اتصال به استریم
+    setTimeout(() => {
+        addChatMessage('system', 'به لایو استریم آموزشی خوش آمدید!');
+    }, 1000);
+}
