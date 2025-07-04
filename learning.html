@@ -44,7 +44,6 @@
         <div class="tab-headers" style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;">
             <button class="tab-btn list-btn active" id="tab-courses-btn" type="button">📚 دوره‌های آموزشی</button>
             <button class="tab-btn list-btn" id="tab-live-btn" type="button">🎥 لایو استریم</button>
-            <button class="tab-btn list-btn" id="tab-archive-btn" type="button">📁 آرشیو بازارهای مالی</button>
         </div>
     </div>
 
@@ -358,7 +357,7 @@
         </div>
 
         <!-- لایو استریم -->
-        <div id="live-stream-section" class="learning-content-section" style="display: none;">
+        <div id="live-stream-section" class="learning-content-section" style="display: block;">
             <div class="live-stream-header">
                 <h4>🎥 لایو استریم آموزشی</h4>
                 <div class="live-status">
@@ -461,25 +460,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- آرشیو بازارهای مالی -->
-        <div id="archive-section" class="learning-content-section" style="display: none;">
-            <div class="archive-header">
-                <h3>🎥 آرشیو ویدیوهای بازارهای مالی</h3>
-                <div class="archive-guide">
-                    <p>در این بخش می‌توانید ویدیوهای جلسات برگزارشده بازارهای مالی (بورس، فارکس، کریپتو و...) را مشاهده کنید. فقط جلسات برگزارشده و دارای ویدیو در آرشیو نمایش داده می‌شوند.</p>
-                    <ul>
-                        <li>برای مشاهده هر جلسه روی دکمه پخش کلیک کنید.</li>
-                        <li>برای تمام‌صفحه کردن ویدیو، روی دکمه <b>تمام‌صفحه</b> کلیک کنید.</li>
-                        <li>در صورت نیاز به دانلود، از آدرس گوگل درایو یا فضای ذخیره‌سازی استفاده کنید.</li>
-                    </ul>
-                </div>
-                <button id="archive-back-btn" style="display:none;">بازگشت به لیست</button>
-            </div>
-            <div id="archive-list"></div>
-            <div id="archive-fullscreen" style="display:none;"></div>
-            <div id="archive-admin-panel" style="display:none;"></div>
         </div>
     </div>
 
@@ -673,17 +653,14 @@
             console.log('Available sections:');
             console.log('- courses-section:', document.getElementById('courses-section'));
             console.log('- live-stream-section:', document.getElementById('live-stream-section'));
-            console.log('- archive-section:', document.getElementById('archive-section'));
             
             // Show courses section by default
             showSection('courses-section');
             
-            // Test admin controls visibility
-            const adminControls = document.getElementById('admin-controls');
-            if (adminControls) {
-                // برای تست، کنترل‌های ادمین را نمایش بده
-                adminControls.style.display = 'block';
-                console.log('Admin controls made visible for testing');
+            // Show live stream section by default (remove display:none)
+            const liveStreamSection = document.getElementById('live-stream-section');
+            if (liveStreamSection) {
+                liveStreamSection.style.display = 'block';
             }
         });
     </script>

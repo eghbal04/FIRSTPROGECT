@@ -310,9 +310,22 @@ function showShopSuccess(message) {
 // تابع اتصال به کیف پول
 async function connectWallet() {
     try {
+        // استفاده از تابع مرکزی connectWallet
+        if (window.connectWallet) {
+            const result = await window.connectWallet();
+            if (result && result.contract && result.address) {
+                return result;
+            }
+        }
+        
         // بررسی اتصال موجود
-        if (window.contractConfig && window.contractConfig.contract) {
-            return window.contractConfig;
+        if (window.contractConfig && window.contractConfig.contract && window.contractConfig.address) {
+            return {
+                contract: window.contractConfig.contract,
+                address: window.contractConfig.address,
+                signer: window.contractConfig.signer,
+                provider: window.contractConfig.provider
+            };
         }
         
         // بررسی اتصال MetaMask موجود
@@ -320,10 +333,19 @@ async function connectWallet() {
             const accounts = await window.ethereum.request({ method: 'eth_accounts' });
             if (accounts && accounts.length > 0) {
                 try {
-                    await initializeWeb3();
-                    return window.contractConfig;
+                    if (window.initializeWeb3) {
+                        await window.initializeWeb3();
+                        if (window.contractConfig && window.contractConfig.contract) {
+                            return {
+                                contract: window.contractConfig.contract,
+                                address: window.contractConfig.address,
+                                signer: window.contractConfig.signer,
+                                provider: window.contractConfig.provider
+                            };
+                        }
+                    }
                 } catch (error) {
-                    throw new Error('خطا در راه‌اندازی Web3');
+                    console.error('Error initializing Web3:', error);
                 }
             }
         }
@@ -331,7 +353,7 @@ async function connectWallet() {
         throw new Error('لطفاً ابتدا کیف پول خود را متصل کنید');
         
     } catch (error) {
-        showShopError('خطا در اتصال به کیف پول');
+        console.error('Shop: Error connecting wallet:', error);
         throw error;
     }
 }
@@ -339,7 +361,12 @@ async function connectWallet() {
 // تابع بررسی وضعیت اتصال
 async function checkConnection() {
     try {
-        const { contract, address } = await connectWallet();
+        const result = await connectWallet();
+        if (!result || !result.contract || !result.address) {
+            throw new Error('Wallet connection failed');
+        }
+        
+        const { contract, address } = result;
         const deployerAddress = await contract.deployer();
         
         if (address.toLowerCase() === deployerAddress.toLowerCase()) {
@@ -352,9 +379,11 @@ async function checkConnection() {
         }
         
         await fetchUserProfile();
+        return { connected: true, address, contract };
     } catch (e) {
         console.error('Error checking connection:', e);
         showShopError('خطا در اتصال به کیف پول: ' + (e.message || e));
+        return { connected: false, error: e.message };
     }
 }
 

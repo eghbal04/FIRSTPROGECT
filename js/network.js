@@ -109,6 +109,15 @@ async function renderTreeNode(contract, index, container, level = 0) {
         } catch (e) {
             referrerAddress = null;
         }
+        // اگر معرف خالی یا صفر بود، مقدار را برابر با آدرس دیپلویِر قرار بده
+        if (!referrerAddress || referrerAddress === '0x0000000000000000000000000000000000000000') {
+            try {
+                referrerAddress = await contract.deployer();
+            } catch (e) {
+                // اگر باز هم نشد، خالی بگذار
+                referrerAddress = null;
+            }
+        }
         const formDiv = document.createElement('div');
         formDiv.style.display = 'flex';
         formDiv.style.flexDirection = 'column';
@@ -150,7 +159,7 @@ async function renderTreeNode(contract, index, container, level = 0) {
                 if (typeof registerNewUserWithReferrer === 'function') {
                     window.registerNewUserWithReferrer(referrerAddress, newAddress, statusDiv);
                 } else {
-                    statusDiv.textContent = 'امکان ثبت‌نام وجود ندارد.';
+                    statusDiv.textContent = 'برای ثبت‌نام باید کیف پول متصل و مقدار کافی توکن LVL داشته باشید.';
                     statusDiv.className = 'profile-status error';
                 }
             } else {

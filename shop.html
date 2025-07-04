@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>فروشگاه LevelUp | محصولات آموزشی و دیجیتال</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- بارگذاری ethers.js نسخه 6 از CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
+    <!-- بارگذاری WalletConnect Provider از CDN رسمی -->
+    <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+    <!-- بارگذاری WalletConnect Handler -->
+    <script src="js/walletconnect-handler.js?v=5.7"></script>
+    <!-- بارگذاری WalletConnect UMD به صورت لوکال -->
+    <script src="js/walletconnect-v1.8.0.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+</head>
+<body>
+    <!-- Header با لوگو و دکمه بازگشت -->
+    <header style="background: #232946; padding: 1rem; border-bottom: 2px solid #a786ff; position: sticky; top: 0; z-index: 1000;">
+        <div style="display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <a href="index.html" style="text-decoration: none; color: #a786ff; font-size: 1.2rem; font-weight: bold;">
+                    ← بازگشت به داشبورد
+                </a>
+            </div>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <img src="lvl.jpg" alt="LVL Logo" style="height: 40px; width: auto; border-radius: 12px;">
+                <h1 style="color: #a786ff; margin: 0; font-size: 1.5rem;">فروشگاه LevelUp</h1>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <div class="shop-main-container" style="max-width: 1200px; margin: 0 auto; padding: 1rem;">
+        
+        <!-- مدیریت ساب ادمین شاپ -->
+        <div class="shop-sub-admin-management" style="margin:1.5rem 0;">
+            <h5 style="color:#00ccff;">👥 مدیریت ساب ادمین‌های شاپ</h5>
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                <button class="control-btn" id="add-shop-sub-admin-btn">➕ افزودن ساب ادمین</button>
+                <button class="control-btn" id="view-shop-sub-admins-btn">👥 مشاهده ساب ادمین‌ها</button>
+            </div>
+            <div class="shop-sub-admins-list" id="shop-sub-admins-list" style="display:none;margin-top:1rem;">
+                <h6 style="color:#ff6b6b;">ساب ادمین‌های فعال</h6>
+                <div class="shop-sub-admin-item" id="shop-sub-admin-template" style="display:none;">
+                    <div class="shop-sub-admin-info">
+                        <span class="shop-sub-admin-name">نام ساب ادمین</span>
+                        <span class="shop-sub-admin-address">آدرس کیف پول</span>
+                        <span class="shop-sub-admin-role">نقش</span>
+                    </div>
+                    <div class="shop-sub-admin-actions">
+                        <button class="shop-sub-admin-btn edit-btn">✏️ ویرایش</button>
+                        <button class="shop-sub-admin-btn remove-btn">🗑️ حذف</button>
+                    </div>
+                </div>
+                <div id="shop-sub-admins-container"></div>
+            </div>
+        </div>
+
+        <!-- محصولات شاپ -->
+        <div class="products" id="products-list">
+            <!-- محصولات در اینجا قرار می‌گیرند -->
+        </div>
+        
+        <div class="shop-status" id="shopStatus"></div>
+    </div>
+
+    <!-- مودال افزودن/ویرایش ساب ادمین شاپ -->
+    <div class="sub-admin-modal" id="shop-sub-admin-modal">
+        <div class="sub-admin-modal-content">
+            <h3 id="shop-modal-title">افزودن ساب ادمین شاپ</h3>
+            <form class="sub-admin-form" id="shop-sub-admin-form">
+                <div class="form-group">
+                    <label for="shop-sub-admin-name">نام ساب ادمین:</label>
+                    <input type="text" id="shop-sub-admin-name" placeholder="نام کامل ساب ادمین" required>
+                </div>
+                <div class="form-group">
+                    <label for="shop-sub-admin-address">آدرس کیف پول:</label>
+                    <input type="text" id="shop-sub-admin-address" placeholder="0x..." required>
+                </div>
+                <div class="form-group">
+                    <label for="shop-sub-admin-role">نقش:</label>
+                    <select id="shop-sub-admin-role" required>
+                        <option value="">انتخاب نقش</option>
+                        <option value="product_manager">مدیر محصولات</option>
+                        <option value="order_support">پشتیبانی سفارشات</option>
+                        <option value="warehouse">انباردار</option>
+                        <option value="custom">سفارشی</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="shop-sub-admin-description">توضیحات:</label>
+                    <textarea id="shop-sub-admin-description" placeholder="توضیحات اضافی..." rows="3"></textarea>
+                </div>
+                <div class="permissions-group">
+                    <h5>🔐 دسترسی‌های ساب ادمین شاپ</h5>
+                    <div class="permission-item">
+                        <input type="checkbox" id="perm-add-product" name="shop-permissions">
+                        <label for="perm-add-product">افزودن محصول</label>
+                    </div>
+                    <div class="permission-item">
+                        <input type="checkbox" id="perm-edit-product" name="shop-permissions">
+                        <label for="perm-edit-product">ویرایش محصول</label>
+                    </div>
+                    <div class="permission-item">
+                        <input type="checkbox" id="perm-delete-product" name="shop-permissions">
+                        <label for="perm-delete-product">حذف محصول</label>
+                    </div>
+                    <div class="permission-item">
+                        <input type="checkbox" id="perm-view-orders" name="shop-permissions">
+                        <label for="perm-view-orders">مشاهده سفارشات</label>
+                    </div>
+                    <div class="permission-item">
+                        <input type="checkbox" id="perm-deposit-matic" name="shop-permissions">
+                        <label for="perm-deposit-matic">واریز متیک</label>
+                    </div>
+                    <div class="permission-item">
+                        <input type="checkbox" id="perm-manage-shop-subadmins" name="shop-permissions">
+                        <label for="perm-manage-shop-subadmins">مدیریت ساب ادمین شاپ</label>
+                    </div>
+                </div>
+                <div class="modal-buttons">
+                    <button type="submit" class="modal-btn primary" id="save-shop-sub-admin-btn">💾 ذخیره</button>
+                    <button type="button" class="modal-btn secondary" id="cancel-shop-sub-admin-btn">❌ انصراف</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- مودال تأیید حذف ساب ادمین شاپ -->
+    <div class="sub-admin-modal" id="shop-delete-confirm-modal">
+        <div class="sub-admin-modal-content">
+            <h3>⚠️ تأیید حذف</h3>
+            <p style="color: #ccc; text-align: center; margin-bottom: 1.5rem;">
+                آیا مطمئن هستید که می‌خواهید این ساب ادمین را حذف کنید؟
+            </p>
+            <div style="background: #181c2a; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                <p style="color: #fff; margin: 0;"><strong>نام:</strong> <span id="shop-delete-admin-name"></span></p>
+                <p style="color: #888; margin: 0.5rem 0 0 0;"><strong>آدرس:</strong> <span id="shop-delete-admin-address"></span></p>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn danger" id="confirm-shop-delete-btn">🗑️ حذف</button>
+                <button class="modal-btn secondary" id="cancel-shop-delete-btn">❌ انصراف</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer style="background: #232946; padding: 1rem; text-align: center; margin-top: 2rem; border-top: 2px solid #a786ff;">
+        <div style="color: #a786ff; font-size: 0.9rem;">
+            © 2024 LevelUp Platform. All rights reserved. | فروشگاه
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/web3-interactions.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/shop.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Shop page loaded successfully');
+            
+            // Initialize shop functionality
+            if (typeof loadProducts === 'function') {
+                loadProducts();
+            }
+            
+            // Test shop elements
+            console.log('Shop elements check:');
+            console.log('- products-list:', document.getElementById('products-list'));
+            console.log('- shop-sub-admin-management:', document.querySelector('.shop-sub-admin-management'));
+        });
+    </script>
+</body>
+</html> 

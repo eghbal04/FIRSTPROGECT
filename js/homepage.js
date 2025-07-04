@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // منتظر اتصال کیف پول بمان
         const walletConnected = await waitForWalletConnection();
         
-        if (walletConnected) {
+        if (walletConnected.connected) {
             // بارگذاری داده‌های داشبورد
             await loadDashboardData();
             dashboardInitialized = true;
@@ -85,7 +85,7 @@ function stopDashboardAutoUpdate() {
 // تابع انتظار برای اتصال کیف پول
 async function waitForWalletConnection() {
     let attempts = 0;
-    const maxAttempts = 30; // 30 ثانیه
+    const maxAttempts = 15; // کاهش به 15 ثانیه
     
     while (attempts < maxAttempts) {
         try {
@@ -101,7 +101,9 @@ async function waitForWalletConnection() {
         attempts++;
     }
     
-    throw new Error('Dashboard: Timeout waiting for wallet connection');
+    // به جای throw کردن خطا، false برگردان
+    console.warn('Dashboard: Timeout waiting for wallet connection - continuing without wallet');
+    return { connected: false, error: 'Timeout waiting for wallet connection' };
 }
 
 // تابع بارگذاری داده‌های داشبورد
@@ -113,25 +115,59 @@ async function loadDashboardData() {
     isDashboardLoading = true;
     
     try {
-        // انتظار برای اتصال کیف پول
-        await waitForWalletConnection();
+        // بررسی اتصال کیف پول
+        const walletConnected = await waitForWalletConnection();
         
-        // دریافت داده‌ها به صورت موازی
-        const [prices, stats, additionalStats, tradingVolume] = await Promise.all([
-            window.getPrices(),
-            window.getContractStats(),
-            getAdditionalStats(),
-            getTradingVolume()
-        ]);
-        
-        // محاسبه تغییرات قیمت
-        const priceChanges = await calculatePriceChanges();
-        
-        // به‌روزرسانی UI
-        await updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceChanges);
+        if (walletConnected.connected) {
+            // دریافت داده‌ها به صورت موازی
+            const [prices, stats, additionalStats, tradingVolume] = await Promise.all([
+                window.getPrices().catch(() => ({ lvlPriceUSD: 0, lvlPriceMatic: 0 })),
+                window.getContractStats().catch(() => ({
+                    totalSupply: "0",
+                    circulatingSupply: "0",
+                    binaryPool: "0",
+                    totalPoints: "0",
+                    totalClaimableBinaryPoints: "0",
+                    pointValue: "0",
+                    rewardPool: "0",
+                    contractTokenBalance: "0"
+                })),
+                getAdditionalStats().catch(() => ({ wallets: 0, helpFund: 0 })),
+                getTradingVolume().catch(() => 0)
+            ]);
+            
+            // محاسبه تغییرات قیمت
+            const priceChanges = await calculatePriceChanges();
+            
+            // به‌روزرسانی UI
+            await updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceChanges);
+        } else {
+            // اگر کیف پول متصل نیست، فقط قیمت‌ها را بارگذاری کن
+            try {
+                const prices = await window.getPrices().catch(() => ({ lvlPriceUSD: 0, lvlPriceMatic: 0 }));
+                const defaultStats = {
+                    totalSupply: "0",
+                    circulatingSupply: "0",
+                    binaryPool: "0",
+                    totalPoints: "0",
+                    totalClaimableBinaryPoints: "0",
+                    pointValue: "0",
+                    rewardPool: "0",
+                    contractTokenBalance: "0"
+                };
+                const defaultAdditionalStats = { wallets: 0, helpFund: 0 };
+                const defaultTradingVolume = 0;
+                const priceChanges = { lvlPriceChange: '0%', maticPriceChange: '0%', volumeChange: '0%' };
+                
+                await updateDashboardUI(prices, defaultStats, defaultAdditionalStats, defaultTradingVolume, priceChanges);
+                updateConnectionStatus('info', 'برای مشاهده داده‌های کامل، کیف پول خود را متصل کنید');
+            } catch (error) {
+                console.warn('Dashboard: Error loading prices without wallet:', error);
+            }
+        }
         
     } catch (error) {
-        // console.error('Dashboard: Error loading data:', error);
+        console.warn('Dashboard: Error loading data:', error);
         updateConnectionStatus('error', 'خطا در بارگذاری داده‌های داشبورد');
     } finally {
         isDashboardLoading = false;
@@ -207,16 +243,20 @@ async function updateDashboardUI(prices, stats, additionalStats, tradingVolume, 
     
     // مقداردهی توکن‌های در گردش و کل پوینت‌ها مستقیماً از توابع قرارداد
     try {
-        const { contract } = await window.connectWallet();
-        // contractTotalSupply
-        let supply = await contract.contractTotalSupply();
-        updateElement('circulating-supply', parseInt(ethers.formatUnits(supply, 18)), '', ' LVL', true);
-        // totalClaimablePoints
-        let points = await contract.totalClaimablePoints();
-        updateElement('total-points', parseInt(ethers.formatUnits(points, 0)), '', ' POINT', true);
+        if (window.contractConfig && window.contractConfig.contract) {
+            const { contract } = await window.connectWallet();
+            // contractTotalSupply
+            let supply = await contract.contractTotalSupply();
+            updateElement('circulating-supply', parseInt(ethers.formatUnits(supply, 18)), '', ' LVL', true);
+            // totalClaimablePoints
+            let points = await contract.totalClaimablePoints();
+            updateElement('total-points', parseInt(ethers.formatUnits(points, 0)), '', ' POINT', true);
+        } else {
+            // اگر قرارداد در دسترس نیست، از stats استفاده کن
+            updateElement('total-points', parseInt(stats.totalClaimableBinaryPoints.replace(/\..*$/, '')), '', ' POINT', true);
+        }
     } catch (e) {
         // اگر خطا بود، از stats قبلی استفاده کن
-        updateElement('circulating-supply', parseFloat(stats.circulatingSupply), '', ' LVL', false, 4);
         updateElement('total-points', parseInt(stats.totalClaimableBinaryPoints.replace(/\..*$/, '')), '', ' POINT', true);
     }
     
@@ -380,115 +420,6 @@ function shortenAddress(address) {
     if (!address) return '---';
     return address.substring(0, 6) + '...' + address.substring(address.length - 4);
 }
-
-// تابع debug برای تست circulating supply
-window.debugCirculatingSupply = async function() {
-    try {
-        const stats = await window.getContractStats();
-        console.log('Debug: Full stats object:', stats);
-        console.log('Debug: circulatingSupply value:', stats.circulatingSupply);
-        console.log('Debug: circulatingSupply type:', typeof stats.circulatingSupply);
-        
-        const element = document.getElementById('circulating-supply');
-        if (element) {
-            console.log('Debug: Element found:', element);
-            console.log('Debug: Current element text:', element.textContent);
-        } else {
-            console.log('Debug: Element not found!');
-        }
-    } catch (error) {
-        console.error('Debug: Error testing circulating supply:', error);
-    }
-};
-
-// تابع debug برای کل پوینت‌ها
-window.debugTotalPoints = async function() {
-    try {
-        const { contract } = await window.connectWallet();
-        
-        console.log('=== Debug Total Points ===');
-        
-        // تست مستقیم totalClaimableBinaryPoints (متغیر state)
-        let totalClaimableBinaryPoints = 0n;
-        try {
-            totalClaimableBinaryPoints = await contract.totalClaimableBinaryPoints;
-            console.log('Raw totalClaimableBinaryPoints (wei):', totalClaimableBinaryPoints.toString());
-            console.log('totalClaimableBinaryPoints (points):', ethers.formatUnits(totalClaimableBinaryPoints, 18));
-        } catch (e) {
-            console.log('totalClaimableBinaryPoints failed:', e.message);
-        }
-        
-        // تست getPointValue
-        const pointValue = await contract.getPointValue();
-        console.log('Raw pointValue (wei):', pointValue.toString());
-        console.log('pointValue (LVL):', ethers.formatUnits(pointValue, 18));
-        
-        // تست wallets
-        const wallets = await contract.wallets();
-        console.log('Wallets count:', wallets.toString());
-        
-        // تست stats از تابع getContractStats
-        const stats = await window.getContractStats();
-        console.log('Stats from getContractStats:', stats);
-        
-        // تست element
-        const element = document.getElementById('total-points');
-        console.log('Element text:', element ? element.textContent : 'Element not found');
-        
-    } catch (error) {
-        console.error('Debug Error:', error);
-    }
-};
-
-// تابع تست ساده برای circulating supply
-window.testCirculatingSupply = async function() {
-    try {
-        const { contract } = await window.connectWallet();
-        
-        console.log('=== Testing Circulating Supply ===');
-        
-        // تست totalSupply
-        const totalSupply = await contract.totalSupply();
-        console.log('Total Supply (wei):', totalSupply.toString());
-        console.log('Total Supply (LVL):', ethers.formatUnits(totalSupply, 18));
-        
-        // تست contract balance
-        const contractBalance = await contract.balanceOf(contract.target);
-        console.log('Contract Balance (wei):', contractBalance.toString());
-        console.log('Contract Balance (LVL):', ethers.formatUnits(contractBalance, 18));
-        
-        // محاسبه circulating supply
-        const circulatingSupply = totalSupply - contractBalance;
-        console.log('Circulating Supply (wei):', circulatingSupply.toString());
-        console.log('Circulating Supply (LVL):', ethers.formatUnits(circulatingSupply, 18));
-        
-        // تست توابع موجود در قرارداد
-        console.log('=== Available Contract Functions ===');
-        console.log('Contract interface:', contract.interface.fragments.map(f => f.name));
-        
-        // تست توابع مختلف
-        const functionsToTest = [
-            'totalPoints', 'totalClaimableBinaryPoints', 'getPointValue',
-            'binaryPool', 'getPoints', 'circulatingSupply', 'rewardPool'
-        ];
-        
-        for (const funcName of functionsToTest) {
-            try {
-                if (contract[funcName]) {
-                    const result = await contract[funcName]();
-                    console.log(`${funcName}:`, result.toString());
-                } else {
-                    console.log(`${funcName}: NOT AVAILABLE`);
-                }
-            } catch (e) {
-                console.log(`${funcName}: ERROR -`, e.message);
-            }
-        }
-        
-    } catch (error) {
-        console.error('Test Error:', error);
-    }
-};
 
 // تابع شروع نظارت بر اتصال
 function startConnectionMonitoring() {

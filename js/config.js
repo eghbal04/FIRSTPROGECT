@@ -1,5 +1,5 @@
 // تنظیمات قرارداد LevelUp
-const CONTRACT_ADDRESS = '0x15394ed6d0cd0f980F903fB71437f914640a4220';
+const CONTRACT_ADDRESS = '0xe85b60496048d2723B829c9fB44C420cbbC4884a';
 const CONTRACT_LOTARY = '0x0fC5025C764cE34df352757e82f7B5c4Df39A836';
 const LOTARI_ABI =[
 	{
@@ -1643,7 +1643,15 @@ async function performWeb3Initialization() {
             }
         }
         
-        const provider = new ethers.BrowserProvider(window.ethereum);
+        const provider = new ethers.BrowserProvider(window.ethereum, {
+            name: 'Polygon',
+            chainId: 137
+        });
+        
+        // تنظیم timeout و retry برای provider - فقط اگر connection موجود باشد
+        if (provider.connection) {
+            provider.connection.timeout = 30000; // 30 ثانیه timeout
+        }
         
         let signer;
         
@@ -1994,42 +2002,63 @@ window.getContractStats = async function() {
     try {
         const { contract } = await window.connectWallet();
         
-        // دریافت آمار به صورت موازی با مدیریت خطا
-        const [
-            totalSupply,
-            pointValue
-        ] = await Promise.all([
-            contract.totalSupply().catch(() => 0n),
-            contract.getPointValue().catch(() => 0n)
-        ]);
-        
-        // دریافت wallets به صورت جداگانه (متغیر state)
-        let wallets = 0n;
-        try {
-            if (typeof contract.wallets === 'function') {
-                wallets = await contract.wallets();
-            } else {
-                wallets = await contract.wallets;
+        // استفاده از retry mechanism برای عملیات‌های قرارداد
+        const getStatsWithRetry = async () => {
+            // دریافت آمار به صورت موازی با مدیریت خطا
+            const [
+                totalSupply,
+                pointValue
+            ] = await Promise.all([
+                contract.totalSupply().catch(() => 0n),
+                contract.getPointValue().catch(() => 0n)
+            ]);
+            
+            // دریافت wallets به صورت جداگانه (متغیر state)
+            let wallets = 0n;
+            try {
+                if (typeof contract.wallets === 'function') {
+                    wallets = await contract.wallets();
+                } else {
+                    wallets = await contract.wallets;
+                }
+            } catch (e) {
+                console.warn('Could not fetch wallets:', e);
+                wallets = 0n;
             }
-        } catch (e) {
-            console.warn('Could not fetch wallets:', e);
-            wallets = 0n;
+            
+            // دریافت totalClaimableBinaryPoints به صورت جداگانه (متغیر state)
+            let totalClaimableBinaryPoints = 0n;
+            try {
+                if (typeof contract.totalClaimableBinaryPoints === 'function') {
+                    totalClaimableBinaryPoints = await contract.totalClaimableBinaryPoints();
+                } else {
+                    totalClaimableBinaryPoints = await contract.totalClaimableBinaryPoints;
+                }
+            } catch (e) {
+                console.warn('Could not fetch totalClaimableBinaryPoints:', e);
+                totalClaimableBinaryPoints = 0n;
+            }
+            
+            return { totalSupply, pointValue, wallets, totalClaimableBinaryPoints };
+        };
+        
+        // استفاده از retry mechanism
+        const stats = await window.retryRpcOperation(getStatsWithRetry, 2);
+        if (!stats) {
+            // اگر retry موفق نبود، مقادیر پیش‌فرض برگردان
+            return {
+                totalSupply: "0",
+                circulatingSupply: "0",
+                binaryPool: "0",
+                totalPoints: "0",
+                totalClaimableBinaryPoints: "0",
+                pointValue: "0",
+                rewardPool: "0",
+                contractTokenBalance: "0"
+            };
         }
         
-        // دریافت totalClaimableBinaryPoints به صورت جداگانه (متغیر state)
-        let totalClaimableBinaryPoints = 0n;
-        try {
-            if (typeof contract.totalClaimableBinaryPoints === 'function') {
-                totalClaimableBinaryPoints = await contract.totalClaimableBinaryPoints();
-            } else {
-                totalClaimableBinaryPoints = await contract.totalClaimableBinaryPoints;
-            }
-        } catch (e) {
-            console.warn('Could not fetch totalClaimableBinaryPoints:', e);
-            totalClaimableBinaryPoints = 0n;
-        }
-        
-
+        const { totalSupply, pointValue, wallets, totalClaimableBinaryPoints } = stats;
         
         // استفاده از totalClaimableBinaryPoints به جای totalPoints
         const totalPoints = totalClaimableBinaryPoints;
@@ -2224,16 +2253,64 @@ window.claimMonthlyReward = async function() {
 
 // تابع دریافت قیمت MATIC (POL) به دلار از API
 window.fetchPolUsdPrice = async function() {
+    // کش کردن قیمت برای جلوگیری از درخواست‌های مکرر
+    if (window.cachedPolPrice && window.cachedPolPrice.timestamp && 
+        (Date.now() - window.cachedPolPrice.timestamp) < 60000) { // 1 دقیقه کش
+        return window.cachedPolPrice.price;
+    }
+
     try {
-        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=matic-network&vs_currencies=usd');
+        // تلاش با API کوین‌گکو
+        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=matic-network&vs_currencies=usd', {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'User-Agent': 'LevelUp-DApp/1.0'
+            },
+            timeout: 5000
+        });
+        
         if (response.ok) {
             const data = await response.json();
             if (data && data['matic-network'] && data['matic-network'].usd) {
-                return data['matic-network'].usd;
+                const price = data['matic-network'].usd;
+                // ذخیره در کش
+                window.cachedPolPrice = {
+                    price: price,
+                    timestamp: Date.now()
+                };
+                return price;
             }
         }
-    } catch (e) {}
-    return null;
+    } catch (e) {
+        console.warn('CoinGecko API failed, trying alternative sources:', e);
+    }
+
+    // Fallback به API های جایگزین
+    try {
+        const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=MATICUSDT');
+        if (response.ok) {
+            const data = await response.json();
+            if (data && data.price) {
+                const price = parseFloat(data.price);
+                window.cachedPolPrice = {
+                    price: price,
+                    timestamp: Date.now()
+                };
+                return price;
+            }
+        }
+    } catch (e) {
+        console.warn('Binance API failed:', e);
+    }
+
+    // Fallback نهایی - قیمت ثابت
+    const fallbackPrice = 0.85; // قیمت تقریبی MATIC
+    window.cachedPolPrice = {
+        price: fallbackPrice,
+        timestamp: Date.now()
+    };
+    return fallbackPrice;
 };
 
 (async () => {
@@ -2258,4 +2335,157 @@ window.LOTTERY_CONFIG = {
   tokenAbi: LEVELUP_ABI,
   ticketPrice: 1,
   maxTicketsPerUser: 5
+};
+
+// تابع مدیریت خطاهای RPC
+window.handleRpcError = function(error, operation = 'unknown') {
+    console.warn(`RPC Error in ${operation}:`, error);
+    
+    // اگر خطای eth_getLogs بود، آن را نادیده بگیر
+    if (error.message && error.message.includes('eth_getLogs')) {
+        console.warn('Ignoring eth_getLogs error - this is common on some RPC endpoints');
+        return null;
+    }
+    
+    // اگر خطای timeout بود
+    if (error.code === 'TIMEOUT' || error.message.includes('timeout')) {
+        console.warn('RPC timeout - retrying...');
+        return 'retry';
+    }
+    
+    // اگر خطای rate limit بود
+    if (error.code === -32005 || error.message.includes('rate limit')) {
+        console.warn('RPC rate limit - waiting before retry...');
+        return 'wait';
+    }
+    
+    // سایر خطاها
+    return 'error';
+};
+
+// تابع retry برای عملیات RPC
+window.retryRpcOperation = async function(operation, maxRetries = 3) {
+    for (let i = 0; i < maxRetries; i++) {
+        try {
+            return await operation();
+        } catch (error) {
+            const errorType = window.handleRpcError(error, 'retry operation');
+            
+            if (errorType === null) {
+                // خطا نادیده گرفته شد
+                return null;
+            } else if (errorType === 'retry' && i < maxRetries - 1) {
+                // انتظار کوتاه قبل از retry
+                await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+                continue;
+            } else if (errorType === 'wait' && i < maxRetries - 1) {
+                // انتظار طولانی‌تر برای rate limit
+                await new Promise(resolve => setTimeout(resolve, 5000 * (i + 1)));
+                continue;
+            } else {
+                // خطای نهایی
+                throw error;
+            }
+        }
+    }
+};
+
+// تابع تست اتصال و قرارداد
+window.testConnection = async function() {
+    try {
+        console.log('=== Testing Connection ===');
+        
+        // تست اتصال کیف پول
+        const connection = await window.checkConnection();
+        console.log('Connection status:', connection);
+        
+        if (connection.connected) {
+            // تست قرارداد
+            const { contract } = await window.connectWallet();
+            console.log('Contract address:', contract.target);
+            
+            // تست توابع ساده
+            try {
+                const totalSupply = await contract.totalSupply();
+                console.log('Total supply:', ethers.formatUnits(totalSupply, 18));
+            } catch (e) {
+                console.error('Error calling totalSupply:', e);
+            }
+            
+            try {
+                const pointValue = await contract.getPointValue();
+                console.log('Point value:', ethers.formatUnits(pointValue, 18));
+            } catch (e) {
+                console.error('Error calling getPointValue:', e);
+            }
+            
+            try {
+                const wallets = await contract.wallets();
+                console.log('Wallets:', wallets.toString());
+            } catch (e) {
+                console.error('Error calling wallets:', e);
+            }
+            
+            try {
+                const totalPoints = await contract.totalClaimableBinaryPoints;
+                console.log('Total points:', ethers.formatUnits(totalPoints, 18));
+            } catch (e) {
+                console.error('Error calling totalClaimableBinaryPoints:', e);
+            }
+        }
+        
+        return connection;
+    } catch (error) {
+        console.error('Test connection error:', error);
+        return { connected: false, error: error.message };
+    }
+};
+
+// تابع تست API قیمت‌ها
+window.testPriceAPI = async function() {
+    try {
+        console.log('=== Testing Price API ===');
+        
+        const polPrice = await window.fetchPolUsdPrice();
+        console.log('POL/USD price:', polPrice);
+        
+        const prices = await window.getPrices();
+        console.log('All prices:', prices);
+        
+        return { polPrice, prices };
+    } catch (error) {
+        console.error('Test price API error:', error);
+        return { error: error.message };
+    }
+};
+
+// تابع تست آمار قرارداد
+window.testContractStats = async function() {
+    try {
+        console.log('=== Testing Contract Stats ===');
+        
+        const stats = await window.getContractStats();
+        console.log('Contract stats:', stats);
+        
+        return stats;
+    } catch (error) {
+        console.error('Test contract stats error:', error);
+        return { error: error.message };
+    }
+};
+
+// تابع تست کامل
+window.runFullTest = async function() {
+    console.log('=== Running Full Test ===');
+    
+    const connection = await window.testConnection();
+    const priceTest = await window.testPriceAPI();
+    const statsTest = await window.testContractStats();
+    
+    console.log('=== Test Results ===');
+    console.log('Connection:', connection);
+    console.log('Price API:', priceTest);
+    console.log('Contract Stats:', statsTest);
+    
+    return { connection, priceTest, statsTest };
 };
