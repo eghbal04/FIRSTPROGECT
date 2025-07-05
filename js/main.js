@@ -323,6 +323,45 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 1000);
 });
 
+// Cache برای پروفایل کاربر
+let userProfileCache = null;
+let userProfileCacheTime = 0;
+const CACHE_DURATION = 30000; // 30 ثانیه
+
+async function loadUserProfileOnce() {
+    const now = Date.now();
+    
+    // اگر cache معتبر است، از آن استفاده کن
+    if (userProfileCache && (now - userProfileCacheTime) < CACHE_DURATION) {
+        return userProfileCache;
+    }
+    
+    try {
+        // دریافت پروفایل جدید
+        if (window.getUserProfile) {
+            userProfileCache = await window.getUserProfile();
+            userProfileCacheTime = now;
+            return userProfileCache;
+        } else {
+            console.warn('getUserProfile function not available');
+            return null;
+        }
+    } catch (error) {
+        console.error('Error loading user profile:', error);
+        return null;
+    }
+}
+
+// تابع پاک کردن cache پروفایل
+function clearUserProfileCache() {
+    userProfileCache = null;
+    userProfileCacheTime = 0;
+    console.log('User profile cache cleared');
+}
+
+// Export برای استفاده در سایر فایل‌ها
+window.clearUserProfileCache = clearUserProfileCache;
+
 // Lock navigation for deactivated users
 async function lockTabsForDeactivatedUsers() {
     if (!window.getUserProfile) return;
@@ -377,13 +416,6 @@ if (document.getElementById('session-timer')) {
         }
     }
 })();
-
-window.cachedUserProfile = null;
-async function loadUserProfileOnce() {
-    if (window.cachedUserProfile) return window.cachedUserProfile;
-    window.cachedUserProfile = await loadUserProfileOnce();
-    return window.cachedUserProfile;
-}
 
 // نمایش قیمت توکن برای همه کاربران (حتی بدون اتصال کیف پول)
 async function showTokenPricesForAll() {

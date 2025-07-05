@@ -17,29 +17,33 @@ class LotteryManager {
         throw new Error('قرارداد هوشمند متصل نشده است');
       }
 
+      // استفاده از قرارداد اصلی برای موجودی CPA
       this.contract = window.contractConfig.contract;
       this.currentAccount = window.contractConfig.address;
+      this.cpaToken = this.contract; // قرارداد اصلی شامل تابع balanceOf است
       
-      // آدرس توکن CPA - باید در config.js تعریف شود
-      const cpaTokenAddress = window.CPA_TOKEN_ADDRESS || '0x...'; // آدرس واقعی توکن CPA
-      const lvlTokenAbi = [
-        'function balanceOf(address owner) view returns (uint256)',
-        'function approve(address spender, uint256 amount) returns (bool)',
-        'function allowance(address owner, address spender) view returns (uint256)',
-        'function transfer(address to, uint256 amount) returns (bool)',
-        'function transferFrom(address from, address to, uint256 amount) returns (bool)'
-      ];
-
-      this.cpaToken = new ethers.Contract(cpaTokenAddress, lvlTokenAbi, window.contractConfig.signer);
+      // راه‌اندازی قرارداد لاتاری
+      if (typeof CONTRACT_LOTARY !== 'undefined' && typeof LOTARI_ABI !== 'undefined') {
+        this.lotteryContract = new ethers.Contract(CONTRACT_LOTARY, LOTARI_ABI, window.contractConfig.signer);
+        console.log('قرارداد لاتاری راه‌اندازی شد:', CONTRACT_LOTARY);
+      } else {
+        console.warn('قرارداد لاتاری در config.js تعریف نشده است');
+        this.lotteryContract = null;
+      }
       
       this.isInitialized = true;
       console.log('LotteryManager initialized successfully');
       
       // بررسی وضعیت اتصال و نمایش موجودی
-      await this.checkConnectionStatus();
+      const isConnected = await this.checkConnectionStatus();
       
-      // بارگذاری داده‌های اولیه
-      await this.loadLotteryData();
+      if (isConnected) {
+        // بارگذاری داده‌های اولیه
+        await this.loadLotteryData();
+      } else {
+        console.log('کیف پول متصل نیست - منتظر اتصال...');
+        this.showError('لطفاً ابتدا کیف پول خود را متصل کنید');
+      }
       
     } catch (error) {
       console.error('Error initializing LotteryManager:', error);
@@ -72,17 +76,37 @@ class LotteryManager {
   // بارگذاری آمار کلی
   async loadStatistics() {
     try {
-      // فراخوانی توابع قرارداد برای دریافت آمار
-      const activeLotteries = await this.contract.getActiveLotteriesCount();
-      const totalReward = await this.contract.getTotalRewardPool();
-      const totalParticipants = await this.contract.getTotalParticipants();
-      const totalWinners = await this.contract.getTotalWinners();
+      if (!this.lotteryContract) {
+        console.warn('قرارداد لاتاری موجود نیست');
+        // نمایش مقادیر صفر
+        document.getElementById('stat-active-lotteries').textContent = '0';
+        document.getElementById('stat-total-reward').textContent = '0';
+        document.getElementById('stat-participants').textContent = '0';
+        document.getElementById('stat-winners').textContent = '0';
+        return;
+      }
 
-      // به‌روزرسانی UI
-      document.getElementById('stat-active-lotteries').textContent = activeLotteries.toString();
-      document.getElementById('stat-total-reward').textContent = ethers.formatEther(totalReward);
-      document.getElementById('stat-participants').textContent = totalParticipants.toString();
-      document.getElementById('stat-winners').textContent = totalWinners.toString();
+      // فراخوانی توابع قرارداد لاتاری برای دریافت آمار
+      // توجه: این توابع باید در قرارداد لاتاری تعریف شده باشند
+      try {
+        const activeLotteries = await this.lotteryContract.getActiveLotteriesCount();
+        const totalReward = await this.lotteryContract.getTotalRewardPool();
+        const totalParticipants = await this.lotteryContract.getTotalParticipants();
+        const totalWinners = await this.lotteryContract.getTotalWinners();
+
+        // به‌روزرسانی UI
+        document.getElementById('stat-active-lotteries').textContent = activeLotteries.toString();
+        document.getElementById('stat-total-reward').textContent = ethers.formatEther(totalReward);
+        document.getElementById('stat-participants').textContent = totalParticipants.toString();
+        document.getElementById('stat-winners').textContent = totalWinners.toString();
+      } catch (contractError) {
+        console.warn('توابع آمار در قرارداد لاتاری موجود نیستند:', contractError);
+        // نمایش مقادیر صفر
+        document.getElementById('stat-active-lotteries').textContent = '0';
+        document.getElementById('stat-total-reward').textContent = '0';
+        document.getElementById('stat-participants').textContent = '0';
+        document.getElementById('stat-winners').textContent = '0';
+      }
 
     } catch (error) {
       console.error('Error loading statistics:', error);
@@ -99,23 +123,30 @@ class LotteryManager {
     try {
       const lotteryList = document.getElementById('lottery-list');
       if (!lotteryList) return;
-
-      // دریافت لیست لاتاری‌های فعال از قرارداد
-      const activeLotteries = await this.contract.getActiveLotteries();
-      
+      if (!this.lotteryContract) {
+        console.warn('قرارداد لاتاری موجود نیست');
+        this.showEmptyState('lottery');
+        return;
+      }
+      // گرفتن تعداد کل لاتاری‌ها
+      const count = await this.lotteryContract.nextLotteryId();
+      let activeLotteries = [];
+      for (let i = 0; i < count; i++) {
+        const lottery = await this.lotteryContract.lotteries(i);
+        // فقط لاتاری‌های فعال را نمایش بده
+        if (lottery.isActive) {
+          activeLotteries.push(lottery);
+        }
+      }
       lotteryList.innerHTML = '';
-      
       if (activeLotteries.length === 0) {
         this.showEmptyState('lottery');
         return;
       }
-
       for (let i = 0; i < activeLotteries.length; i++) {
-        const lottery = activeLotteries[i];
-        const lotteryCard = await this.createLotteryCard(lottery, i);
+        const lotteryCard = await this.createLotteryCard(activeLotteries[i], i);
         lotteryList.appendChild(lotteryCard);
       }
-
     } catch (error) {
       console.error('Error loading active lotteries:', error);
       this.showError('خطا در بارگذاری لاتاری‌های فعال: ' + error.message);
@@ -127,23 +158,30 @@ class LotteryManager {
     try {
       const groupList = document.getElementById('groupdraw-list');
       if (!groupList) return;
-
-      // دریافت لیست گروه‌ها از قرارداد
-      const groupDraws = await this.contract.getGroupDraws();
-      
-      groupList.innerHTML = '';
-      
-      if (groupDraws.length === 0) {
+      if (!this.lotteryContract) {
+        console.warn('قرارداد لاتاری موجود نیست');
         this.showEmptyState('group');
         return;
       }
-
-      for (let i = 0; i < groupDraws.length; i++) {
-        const group = groupDraws[i];
-        const groupCard = await this.createGroupCard(group, i);
+      // گرفتن تعداد کل گروه‌ها
+      const count = await this.lotteryContract.nextGroupDrawId();
+      let activeGroups = [];
+      for (let i = 0; i < count; i++) {
+        const group = await this.lotteryContract.groupDraws(i);
+        // فقط گروه‌های فعال را نمایش بده
+        if (group.isActive) {
+          activeGroups.push(group);
+        }
+      }
+      groupList.innerHTML = '';
+      if (activeGroups.length === 0) {
+        this.showEmptyState('group');
+        return;
+      }
+      for (let i = 0; i < activeGroups.length; i++) {
+        const groupCard = await this.createGroupCard(activeGroups[i], i);
         groupList.appendChild(groupCard);
       }
-
     } catch (error) {
       console.error('Error loading group draws:', error);
       this.showError('خطا در بارگذاری قرعه‌کشی‌های گروهی: ' + error.message);
@@ -408,14 +446,19 @@ class LotteryManager {
   }
 
   // ایجاد لاتاری جدید
-  async createLottery(name, maxParticipants, ticketPrice, winnersCount) {
+  async createLottery(maxParticipants, ticketPrice, winnersCount) {
     try {
       if (!this.currentAccount) {
         throw new Error('لطفاً ابتدا کیف پول خود را متصل کنید');
       }
 
+      // تبدیل همه پارامترها به BigInt
+      const _maxParticipants = BigInt(maxParticipants);
+      const _ticketPrice = BigInt(ticketPrice);
+      const _winnersCount = BigInt(winnersCount);
+      
       // محاسبه کل جایزه
-      const totalReward = ticketPrice * maxParticipants;
+      const totalReward = _ticketPrice * _maxParticipants;
       
       // بررسی موجودی توکن CPA
       const balance = await this.cpaToken.balanceOf(this.currentAccount);
@@ -432,7 +475,7 @@ class LotteryManager {
       }
 
       // ایجاد لاتاری
-      const tx = await this.contract.createLottery(name, maxParticipants, ticketPrice, winnersCount);
+      const tx = await this.contract.createLottery(_maxParticipants, _ticketPrice, _winnersCount);
       await tx.wait();
 
       this.showSuccess('لاتاری با موفقیت ایجاد شد!');
@@ -447,14 +490,16 @@ class LotteryManager {
   }
 
   // ایجاد قرعه‌کشی گروهی
-  async createGroupDraw(name, maxMembers, contributionAmount, winnersCount) {
+  async createGroupDraw(memberCount, amountPerUser) {
     try {
       if (!this.currentAccount) {
         throw new Error('لطفاً ابتدا کیف پول خود را متصل کنید');
       }
 
-      // ایجاد قرعه‌کشی گروهی
-      const tx = await this.contract.createGroupDraw(name, maxMembers, contributionAmount, winnersCount);
+      // تبدیل همه پارامترها به BigInt
+      const _memberCount = BigInt(memberCount);
+      const _amountPerUser = BigInt(amountPerUser);
+      const tx = await this.contract.createGroupDraw(_memberCount, _amountPerUser);
       await tx.wait();
 
       this.showSuccess('قرعه‌کشی گروهی با موفقیت ایجاد شد!');
@@ -698,8 +743,17 @@ class LotteryManager {
     try {
       if (!this.currentAccount) {
         console.log('کیف پول متصل نیست');
-        return;
+        return null;
       }
+
+      if (!this.cpaToken) {
+        console.log('قرارداد متصل نیست');
+        return null;
+      }
+
+      console.log('دریافت موجودی CPA...');
+      console.log('آدرس کیف پول:', this.currentAccount);
+      console.log('قرارداد:', this.cpaToken.address);
 
       const balance = await this.cpaToken.balanceOf(this.currentAccount);
       const balanceFormatted = ethers.formatEther(balance);
@@ -709,7 +763,11 @@ class LotteryManager {
       // نمایش در UI
       const balanceElement = document.getElementById('user-balance');
       if (balanceElement) {
-        balanceElement.textContent = `${balanceFormatted} CPA`;
+        // فقط عدد صحیح نمایش داده شود
+        balanceElement.textContent = `${Math.floor(Number(balanceFormatted))} CPA`;
+        console.log('موجودی در UI به‌روزرسانی شد');
+      } else {
+        console.log('عنصر user-balance یافت نشد');
       }
       
       return balance;
@@ -727,15 +785,18 @@ class LotteryManager {
         return false;
       }
 
+      console.log('بررسی اتصال کیف پول...');
+      console.log('آدرس کیف پول:', this.currentAccount);
+
       // بررسی موجودی
       const balance = await this.showTokenBalance();
       
-      // بررسی مجوز قرارداد
-      const allowance = await this.cpaToken.allowance(this.currentAccount, this.contract.address);
-      const allowanceFormatted = ethers.formatEther(allowance);
+      if (balance === null) {
+        console.log('خطا در دریافت موجودی');
+        return false;
+      }
       
-      console.log(`مجوز قرارداد: ${allowanceFormatted} CPA`);
-      
+      console.log('اتصال کیف پول موفق');
       return true;
     } catch (error) {
       console.error('خطا در بررسی وضعیت اتصال:', error);
@@ -748,25 +809,70 @@ class LotteryManager {
 const lotteryManager = new LotteryManager();
 
 // راه‌اندازی پس از بارگذاری صفحه
-document.addEventListener('DOMContentLoaded', function() {
-  // راه‌اندازی پس از اتصال کیف پول
-  if (window.contractConfig && window.contractConfig.contract) {
-    lotteryManager.initialize();
-  } else {
-    // منتظر اتصال کیف پول
-    const checkConnection = setInterval(() => {
-      if (window.contractConfig && window.contractConfig.contract) {
-        clearInterval(checkConnection);
-        lotteryManager.initialize();
+document.addEventListener('DOMContentLoaded', async function() {
+  if (!window.contractConfig || !window.contractConfig.contract || !window.contractConfig.address) {
+    if (window.connectWallet) {
+      try {
+        const cfg = await window.connectWallet();
+        window.contractConfig = cfg;
+        console.log('کیف پول متصل شد:', cfg.address);
+        // اگر LotteryManager قبلاً ساخته شده، initialize را صدا بزن
+        if (window.lotteryManager) window.lotteryManager.initialize();
+      } catch (e) {
+        alert('اتصال کیف پول الزامی است.');
       }
-    }, 2000); // افزایش فاصله زمانی
-    
-    // توقف interval بعد از 30 ثانیه
-    setTimeout(() => {
-      clearInterval(checkConnection);
-    }, 30000);
+    } else {
+      alert('اسکریپت اتصال کیف پول لود نشده است.');
+    }
   }
 });
+
+// تابع برای بررسی مجدد اتصال
+window.checkLotteryConnection = async function() {
+  console.log('بررسی اتصال لاتاری...');
+  
+  if (lotteryManager.isInitialized) {
+    console.log('LotteryManager قبلاً راه‌اندازی شده');
+    const isConnected = await lotteryManager.checkConnectionStatus();
+    if (isConnected) {
+      console.log('اتصال موفق - بارگذاری داده‌ها');
+      await lotteryManager.loadLotteryData();
+    } else {
+      console.log('اتصال ناموفق');
+    }
+  } else {
+    console.log('راه‌اندازی مجدد LotteryManager');
+    lotteryManager.initialize();
+  }
+};
+
+// تابع ساده برای نمایش موجودی
+window.showLotteryBalance = async function() {
+  console.log('نمایش موجودی لاتاری...');
+  if (lotteryManager.isInitialized) {
+    await lotteryManager.showTokenBalance();
+  } else {
+    console.log('LotteryManager راه‌اندازی نشده');
+  }
+};
+
+// تابع تست قرارداد لاتاری
+window.testLotteryContract = async function() {
+  console.log('تست قرارداد لاتاری...');
+  if (lotteryManager.isInitialized && lotteryManager.lotteryContract) {
+    try {
+      console.log('آدرس قرارداد لاتاری:', lotteryManager.lotteryContract.address);
+      console.log('قرارداد لاتاری آماده است');
+      return true;
+    } catch (error) {
+      console.error('خطا در تست قرارداد لاتاری:', error);
+      return false;
+    }
+  } else {
+    console.log('قرارداد لاتاری راه‌اندازی نشده');
+    return false;
+  }
+};
 
 // Export برای استفاده در HTML
 window.lotteryManager = lotteryManager; 

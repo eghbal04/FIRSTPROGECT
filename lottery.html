@@ -65,6 +65,12 @@
         display: flex;
         align-items: center;
         gap: 0.5rem;
+        transition: all 0.3s ease;
+      }
+
+      .lottery-header a:hover {
+        color: #00ff88;
+        transform: translateX(-3px);
       }
 
       .lottery-header .logo-section {
@@ -891,7 +897,7 @@
   <!-- Header کوچک و شفاف -->
   <header class="header">
     <div class="lottery-header-content">
-      <a href="index.html">
+      <a href="index.html" class="lottery-header">
         <span style="font-size: 2.1rem; font-weight: bold; color: #00ff88;">←</span>
         <span style="display: none;">بازگشت</span>
       </a>
@@ -917,9 +923,32 @@
             <div class="balance-label">موجودی شما:</div>
             <div class="balance-value" id="user-balance">0 CPA</div>
           </div>
-          <button class="balance-refresh-btn" onclick="lotteryManager.showTokenBalance()" title="به‌روزرسانی موجودی">
+          <button class="balance-refresh-btn" onclick="showLotteryBalance()" title="به‌روزرسانی موجودی">
             🔄
           </button>
+        </div>
+        <div class="connection-status" id="connection-status" style="margin-top: 1rem; text-align: center;">
+          <button onclick="checkLotteryConnection()" style="
+            background: linear-gradient(135deg, #a786ff, #ff6b9d);
+            border: none;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-right: 0.5rem;
+          ">🔗 بررسی اتصال کیف پول</button>
+          <button onclick="testLotteryContract()" style="
+            background: linear-gradient(135deg, #00ff88, #4ecdc4);
+            border: none;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9rem;
+          ">🧪 تست قرارداد لاتاری</button>
         </div>
       </div>
     </div>
@@ -1023,6 +1052,8 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
+  <script src="js/config.js"></script>
   <script src="js/lottery.js" defer></script>
   <script>
     // Tab Switching
@@ -1126,19 +1157,28 @@
         submitLoading.style.display = 'inline-block';
         
         try {
-          const name = document.getElementById('lottery-name').value;
-          const participants = parseInt(document.getElementById('lottery-participants').value);
-          const amount = ethers.parseEther(document.getElementById('lottery-amount').value);
-          const winners = parseInt(document.getElementById('lottery-winners').value);
-          
-          if (currentTab === 'lottery') {
-            await lotteryManager.createLottery(name, participants, amount, winners);
-          } else {
-            await lotteryManager.createGroupDraw(name, participants, amount, winners);
+          // اعتبارسنجی ورودی‌ها
+          const participantsValue = document.getElementById('lottery-participants').value;
+          const amountValue = document.getElementById('lottery-amount').value;
+          const winnersValue = document.getElementById('lottery-winners').value;
+
+          if (!participantsValue || isNaN(participantsValue) || !amountValue || isNaN(amountValue) || !winnersValue || isNaN(winnersValue)) {
+            alert('لطفاً همه فیلدها را به صورت عددی و صحیح وارد کنید.');
+            submitText.style.display = 'inline';
+            submitLoading.style.display = 'none';
+            return;
           }
-          
+
+          const participants = BigInt(participantsValue);
+          const amount = ethers.parseEther(amountValue); // این خودش BigInt است
+          const winners = BigInt(winnersValue);
+
+          if (currentTab === 'lottery') {
+            await lotteryManager.createLottery(participants, amount, winners);
+          } else {
+            await lotteryManager.createGroupDraw(participants, amount);
+          }
           closeModal();
-          
         } catch (error) {
           console.error('Error creating lottery:', error);
           alert('خطا در ایجاد لاتاری: ' + error.message);
