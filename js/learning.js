@@ -276,6 +276,82 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+    
+    // Add missing event listeners
+    const jitsiCancelBtn = document.getElementById('jitsi-cancel-btn');
+    if (jitsiCancelBtn) {
+        jitsiCancelBtn.addEventListener('click', hideJitsiModal);
+    }
+    
+    const stopStreamBtn = document.getElementById('stop-stream-btn');
+    if (stopStreamBtn) {
+        stopStreamBtn.addEventListener('click', stopJitsiSession);
+    }
+
+    // Ensure all modals are hidden on page load
+    hideAllModals();
+    
+    // Setup click outside to close modals
+    setupModalClickOutside();
+    
+    // Load session history
+    loadSessionHistory();
+    
+    // Quick sessions button
+    const quickSessionsBtn = document.getElementById('quick-sessions-btn');
+    if (quickSessionsBtn) {
+        quickSessionsBtn.addEventListener('click', showQuickSessionsModal);
+    }
+    
+    // Session history button
+    const sessionHistoryBtn = document.getElementById('session-history-btn');
+    if (sessionHistoryBtn) {
+        sessionHistoryBtn.addEventListener('click', showSessionHistoryModal);
+    }
+    
+    // Quick session buttons
+    document.querySelectorAll('.quick-session-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const roomName = this.getAttribute('data-room');
+            const sessionType = this.getAttribute('data-type');
+            hideQuickSessionsModal();
+            startJitsiSession(roomName, sessionType);
+        });
+    });
+    
+    // Close quick sessions modal
+    const closeQuickSessions = document.getElementById('close-quick-sessions');
+    if (closeQuickSessions) {
+        closeQuickSessions.addEventListener('click', hideQuickSessionsModal);
+    }
+    
+    // Close session history modal
+    const closeSessionHistory = document.getElementById('close-session-history');
+    if (closeSessionHistory) {
+        closeSessionHistory.addEventListener('click', hideSessionHistoryModal);
+    }
+    
+    // Enhanced Jitsi modal logic
+    const jitsiStartBtn = document.getElementById('jitsi-start-btn');
+    if (jitsiStartBtn) {
+        jitsiStartBtn.addEventListener('click', function() {
+            const room = document.getElementById('jitsi-room-input').value.trim();
+            const sessionType = document.getElementById('session-type').value;
+            const autoRecord = document.getElementById('auto-record').checked;
+            const waitingRoom = document.getElementById('waiting-room').checked;
+            
+            if (!room) {
+                showLearningMessage('لطفاً نام جلسه را وارد کنید', 'warning');
+                return;
+            }
+            
+            hideJitsiModal();
+            startJitsiSession(room, sessionType, {
+                autoRecord: autoRecord,
+                waitingRoom: waitingRoom
+            });
+        });
+    }
 });
 
 // Live Stream Variables
@@ -1593,68 +1669,38 @@ function stopJitsiSession() {
     showLearningMessage('جلسه ویدیویی پایان یافت.', 'info');
 }
 
-// Initialize professional features
-document.addEventListener('DOMContentLoaded', function() {
-    // ... existing code ...
+// Hide all modals on page load
+function hideAllModals() {
+    const modals = [
+        'jitsi-modal',
+        'quick-sessions-modal', 
+        'session-history-modal'
+    ];
     
-    // Load session history
-    loadSessionHistory();
-    
-    // Quick sessions button
-    const quickSessionsBtn = document.getElementById('quick-sessions-btn');
-    if (quickSessionsBtn) {
-        quickSessionsBtn.addEventListener('click', showQuickSessionsModal);
-    }
-    
-    // Session history button
-    const sessionHistoryBtn = document.getElementById('session-history-btn');
-    if (sessionHistoryBtn) {
-        sessionHistoryBtn.addEventListener('click', showSessionHistoryModal);
-    }
-    
-    // Quick session buttons
-    document.querySelectorAll('.quick-session-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const roomName = this.getAttribute('data-room');
-            const sessionType = this.getAttribute('data-type');
-            hideQuickSessionsModal();
-            startJitsiSession(roomName, sessionType);
-        });
+    modals.forEach(modalId => {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.style.display = 'none';
+        }
     });
+}
+
+// Close modal when clicking outside
+function setupModalClickOutside() {
+    const modals = [
+        { id: 'jitsi-modal', hideFunc: hideJitsiModal },
+        { id: 'quick-sessions-modal', hideFunc: hideQuickSessionsModal },
+        { id: 'session-history-modal', hideFunc: hideSessionHistoryModal }
+    ];
     
-    // Close quick sessions modal
-    const closeQuickSessions = document.getElementById('close-quick-sessions');
-    if (closeQuickSessions) {
-        closeQuickSessions.addEventListener('click', hideQuickSessionsModal);
-    }
-    
-    // Close session history modal
-    const closeSessionHistory = document.getElementById('close-session-history');
-    if (closeSessionHistory) {
-        closeSessionHistory.addEventListener('click', hideSessionHistoryModal);
-    }
-    
-    // Enhanced Jitsi modal logic
-    const jitsiStartBtn = document.getElementById('jitsi-start-btn');
-    if (jitsiStartBtn) {
-        jitsiStartBtn.addEventListener('click', function() {
-            const room = document.getElementById('jitsi-room-input').value.trim();
-            const sessionType = document.getElementById('session-type').value;
-            const autoRecord = document.getElementById('auto-record').checked;
-            const waitingRoom = document.getElementById('waiting-room').checked;
-            
-            if (!room) {
-                showLearningMessage('لطفاً نام جلسه را وارد کنید', 'warning');
-                return;
-            }
-            
-            hideJitsiModal();
-            startJitsiSession(room, sessionType, {
-                autoRecord: autoRecord,
-                waitingRoom: waitingRoom
+    modals.forEach(({ id, hideFunc }) => {
+        const modal = document.getElementById(id);
+        if (modal) {
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    hideFunc();
+                }
             });
-        });
-    }
-    
-    // ... existing code ...
-}); 
+        }
+    });
+} 
