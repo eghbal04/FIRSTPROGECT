@@ -1,780 +1,108 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="fa">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <title>مرکز یادگیری LevelUp | آموزش بلاکچین و ارزهای دیجیتال</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
-
-    <!-- بارگذاری ethers.js نسخه 6 از CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
-    <!-- بارگذاری WalletConnect Provider از CDN رسمی -->
-    <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
-    <!-- بارگذاری WalletConnect Handler -->
-    <script src="js/walletconnect-handler.js?v=5.7"></script>
-    <!-- بارگذاری WalletConnect UMD به صورت لوکال -->
-    <script src="js/walletconnect-v1.8.0.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+    <title>کلاس آنلاین | CONTINUOUS PROFIT ACADEMY</title>
+    <style>
+        body { background: #181c2a; color: #fff; font-family: Vazirmatn, Tahoma, sans-serif; text-align: center; }
+        #back-btn { position: absolute; right: 2rem; top: 2rem; padding: 0.7rem 2rem; font-size: 1.1rem; border-radius: 8px; background: linear-gradient(90deg,#a786ff,#00ccff); color: #181c2a; border: none; cursor: pointer; font-weight: bold; box-shadow: 0 2px 12px #0003; transition: background 0.2s; z-index: 100; }
+        #back-btn:hover { background: linear-gradient(90deg,#00ccff,#a786ff); }
+        #main-box { max-width: 900px; margin: 2rem auto; background: #232946; border-radius: 18px; box-shadow: 0 4px 32px #0008; padding: 2rem 1rem; }
+        #jitsi-container { width: 100%; height: 600px; margin: 2rem auto 0 auto; border-radius: 16px; overflow: hidden; display: none; }
+        #start-btn { margin: 2rem auto 1rem auto; padding: 1rem 2.5rem; font-size: 1.3rem; border-radius: 8px; background: linear-gradient(90deg,#00ff88,#00ccff); color: #181c2a; border: none; cursor: pointer; font-weight: bold; transition: background 0.2s; }
+        #start-btn:disabled { background: #888; color: #fff; cursor: not-allowed; opacity:0.6; }
+        #start-btn:hover:enabled { background: linear-gradient(90deg,#00ccff,#00ff88); }
+        #share-btn { margin: 0.5rem; padding: 0.5rem 1.5rem; font-size: 1rem; border-radius: 6px; background: #a786ff; color: #181c2a; border: none; cursor: pointer; }
+        #status { font-size: 1.1rem; margin: 1rem 0; color: #00ff88; }
+        #copied-msg { color: #00ff88; font-size: 0.95rem; display: none; }
+    </style>
 </head>
 <body>
-    <!-- Header کوچک و ساده -->
-    <header style="background: rgba(35, 41, 70, 0.85); backdrop-filter: blur(10px); padding: 0.5rem; border-bottom: 1px solid rgba(167, 134, 255, 0.6); position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000; box-shadow: 0 -2px 10px rgba(0,0,0,0.2);">
-        <div style="display: flex; justify-content: space-between; align-items: center; max-width: 400px; margin: 0 auto; padding: 0 1rem;">
-            <a href="index.html" style="text-decoration: none; color: #a786ff; font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; gap: 0.5rem;">
-                <span style="font-size: 1.2rem;">←</span>
-                <span style="display: none;">بازگشت</span>
-            </a>
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <img src="lvl.jpg" alt="CPA" style="height: 24px; width: auto; border-radius: 8px;">
-                <span style="color: #a786ff; font-size: 0.9rem; font-weight: bold;">یادگیری</span>
-            </div>
-            <div style="width: 40px;"></div> <!-- برای تعادل -->
-        </div>
-    </header>
-
-    <!-- Navigation Tabs -->
-    <div class="tab-container" style="max-width: 800px; margin: 1rem auto; background: #232946; border-radius: 12px; padding: 0.5rem;">
-        <div class="tab-headers" style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;">
-            <button class="tab-btn list-btn active" id="tab-courses-btn" type="button">📚 دوره‌های آموزشی</button>
-            <button class="tab-btn list-btn" id="tab-live-btn" type="button">🎥 لایو استریم</button>
-        </div>
+    <button id="back-btn" onclick="window.location.href='index.html'">← بازگشت به داشبورد</button>
+    <div id="main-box">
+        <h1>کلاس آنلاین آکادمی سود مستمر</h1>
+        <div id="status">منتظر شروع جلسه آنلاین...</div>
+        <button id="start-btn">ورود به کلاس آنلاین</button>
+        <button id="share-btn">📋 کپی لینک دعوت</button>
+        <div id="copied-msg">لینک کپی شد!</div>
+        <div id="jitsi-container"></div>
     </div>
-
-    <!-- Main Content Container -->
-    <div class="learning-main-container" style="max-width: 1200px; margin: 0 auto; padding: 1rem; padding-bottom: 4rem;">
-        
-        <!-- دوره‌های آموزشی -->
-        <div id="courses-section" class="learning-content-section">
-            <div class="learning-container">
-                <!-- دسته‌بندی‌های آموزشی -->
-                <div class="learning-categories">
-                    <div class="learning-category active" data-category="blockchain">
-                        <div class="category-icon">🔗</div>
-                        <div class="category-title">بلاکچین</div>
-                    </div>
-                    <div class="learning-category" data-category="defi">
-                        <div class="category-icon">💰</div>
-                        <div class="category-title">DeFi</div>
-                    </div>
-                    <div class="learning-category" data-category="nft">
-                        <div class="category-icon">🎨</div>
-                        <div class="category-title">NFT</div>
-                    </div>
-                    <div class="learning-category" data-category="trading">
-                        <div class="category-icon">📈</div>
-                        <div class="category-title">معاملات</div>
-                    </div>
-                    <div class="learning-category" data-category="levelup">
-                        <div class="category-icon">🚀</div>
-                        <div class="category-title">LevelUp</div>
-                    </div>
-                </div>
-
-                <!-- محتوای آموزشی -->
-                <div class="learning-content">
-                    <!-- بخش بلاکچین -->
-                    <div class="learning-section active" id="blockchain-section">
-                        <h3>آموزش بلاکچین</h3>
-                        <div class="learning-cards">
-                            <div class="learning-card">
-                                <div class="card-header">
-                                    <span class="card-icon">🔗</span>
-                                    <span class="card-title">مفاهیم پایه بلاکچین</span>
-                                </div>
-                                <div class="card-content">
-                                    <p>آشنایی با مفاهیم اولیه بلاکچین، نحوه کارکرد و مزایای آن</p>
-                                    <div class="card-meta">
-                                        <span class="duration">⏱️ 15 دقیقه</span>
-                                        <span class="level">🟢 مبتدی</span>
-                                    </div>
-                                </div>
-                                <button class="start-learning-btn">شروع یادگیری</button>
-                            </div>
-
-                            <div class="learning-card">
-                                <div class="card-header">
-                                    <span class="card-icon">🔐</span>
-                                    <span class="card-title">امنیت در بلاکچین</span>
-                                </div>
-                                <div class="card-content">
-                                    <p>نحوه حفظ امنیت کیف پول و محافظت از دارایی‌های دیجیتال</p>
-                                    <div class="card-meta">
-                                        <span class="duration">⏱️ 20 دقیقه</span>
-                                        <span class="level">🟡 متوسط</span>
-                                    </div>
-                                </div>
-                                <button class="start-learning-btn">شروع یادگیری</button>
-                            </div>
-
-                            <div class="learning-card">
-                                <div class="card-header">
-                                    <span class="card-icon">⚡</span>
-                                    <span class="card-title">ماینینگ و استیکینگ</span>
-                                </div>
-                                <div class="card-content">
-                                    <p>آموزش مفاهیم ماینینگ، استیکینگ و کسب درآمد از بلاکچین</p>
-                                    <div class="card-meta">
-                                        <span class="duration">⏱️ 25 دقیقه</span>
-                                        <span class="level">🔴 پیشرفته</span>
-                                    </div>
-                                </div>
-                                <button class="start-learning-btn">شروع یادگیری</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- بخش DeFi -->
-                    <div class="learning-section" id="defi-section">
-                        <h3>امور مالی غیرمتمرکز (DeFi)</h3>
-                        <div class="learning-cards">
-                            <div class="learning-card">
-                                <div class="card-header">
-                                    <span class="card-icon">🏦</span>
-                                    <span class="card-title">مقدمه‌ای بر DeFi</span>
-                                </div>
-                                <div class="card-content">
-                                    <p>آشنایی با مفاهیم DeFi و تفاوت آن با سیستم‌های مالی سنتی</p>
-                                    <div class="card-meta">
-                                        <span class="duration">⏱️ 18 دقیقه</span>
-                                        <span class="level">🟢 مبتدی</span>
-                                    </div>
-                                </div>
-                                <button class="start-learning-btn">شروع یادگیری</button>
-                            </div>
-
-                            <div class="learning-card">
-                                <div class="card-header">
-                                    <span class="card-icon">🔄</span>
-                                    <span class="card-title">سوآپ و لیکوئیدیتی</span>
-                                </div>
-                                <div class="card-content">
-                                    <p>آموزش نحوه انجام معاملات سوآپ و درک مفهوم لیکوئیدیتی</p>
-                                    <div class="card-meta">
-                                        <span class="duration">⏱️ 22 دقیقه</span>
-                                        <span class="level">🟡 متوسط</span>
-                                    </div>
-                                </div>
-                                <button class="start-learning-btn">شروع یادگیری</button>
-                            </div>
-
-                            <div class="learning-card">
-                                <div class="card-header">
-                                    <span class="card-icon">📊</span>
-                                    <span class="card-title">ییلد فارمینگ</span>
-                                </div>
-                                <div class="card-content">
-                                    <p>استراتژی‌های کسب درآمد از طریق ییلد فارمینگ</p>
-                                    <div class="card-meta">
-                                        <span class="duration">⏱️ 30 دقیقه</span>
-                                        <span class="level">🔴 پیشرفته</span>
-                                    </div>
-                                </div>
-                                <button class="start-learning-btn">شروع یادگیری</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- بخش NFT -->
-                    <div class="learning-section" id="nft-section">
-                        <h3>توکن‌های غیرقابل تعویض (NFT)</h3>
-                        <div class="learning-cards">
-                            <div class="learning-card">
-                                <div class="card-header">
-                                    <span class="card-icon">🎨</span>
-                                    <span class="card-title">NFT چیست؟</span>
-                                </div>
-                                <div class="card-content">
-                                    <p>آشنایی با مفهوم NFT و کاربردهای مختلف آن</p>
-                                    <div class="card-meta">
-                                        <span class="duration">⏱️ 12 دقیقه</span>
-                                        <span class="level">🟢 مبتدی</span>
-                                    </div>
-                                </div>
-                                <button class="start-learning-btn">شروع یادگیری</button>
-                            </div>
-
-                            <div class="learning-card">
-                                <div class="card-header">
-                                    <span class="card-icon">🛒</span>
-                                    <span class="card-title">خرید و فروش NFT</span>
-                                </div>
-                                <div class="card-content">
-                                    <p>نحوه خرید، فروش و معامله NFT در بازارهای مختلف</p>
-                                    <div class="card-meta">
-                                        <span class="duration">⏱️ 20 دقیقه</span>
-                                        <span class="level">🟡 متوسط</span>
-                                    </div>
-                                </div>
-                                <button class="start-learning-btn">شروع یادگیری</button>
-                            </div>
-
-                            <div class="learning-card">
-                                <div class="card-header">
-                                    <span class="card-icon">🎭</span>
-                                    <span class="card-title">ساخت NFT</span>
-                                </div>
-                                <div class="card-content">
-                                    <p>آموزش نحوه ساخت و انتشار NFT خودتان</p>
-                                    <div class="card-meta">
-                                        <span class="duration">⏱️ 35 دقیقه</span>
-                                        <span class="level">🔴 پیشرفته</span>
-                                    </div>
-                                </div>
-                                <button class="start-learning-btn">شروع یادگیری</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- بخش معاملات -->
-                    <div class="learning-section" id="trading-section">
-                        <h3>آموزش معاملات</h3>
-                        <div class="learning-cards">
-                            <div class="learning-card">
-                                <div class="card-header">
-                                    <span class="card-icon">📈</span>
-                                    <span class="card-title">تحلیل تکنیکال</span>
-                                </div>
-                                <div class="card-content">
-                                    <p>آموزش اصول تحلیل تکنیکال و خواندن نمودارها</p>
-                                    <div class="card-meta">
-                                        <span class="duration">⏱️ 25 دقیقه</span>
-                                        <span class="level">🟡 متوسط</span>
-                                    </div>
-                                </div>
-                                <button class="start-learning-btn">شروع یادگیری</button>
-                            </div>
-
-                            <div class="learning-card">
-                                <div class="card-header">
-                                    <span class="card-icon">📊</span>
-                                    <span class="card-title">مدیریت ریسک</span>
-                                </div>
-                                <div class="card-content">
-                                    <p>استراتژی‌های مدیریت ریسک در معاملات ارزهای دیجیتال</p>
-                                    <div class="card-meta">
-                                        <span class="duration">⏱️ 18 دقیقه</span>
-                                        <span class="level">🟡 متوسط</span>
-                                    </div>
-                                </div>
-                                <button class="start-learning-btn">شروع یادگیری</button>
-                            </div>
-
-                            <div class="learning-card">
-                                <div class="card-header">
-                                    <span class="card-icon">🎯</span>
-                                    <span class="card-title">استراتژی‌های معاملاتی</span>
-                                </div>
-                                <div class="card-content">
-                                    <p>استراتژی‌های مختلف معاملاتی برای کسب سود</p>
-                                    <div class="card-meta">
-                                        <span class="duration">⏱️ 30 دقیقه</span>
-                                        <span class="level">🔴 پیشرفته</span>
-                                    </div>
-                                </div>
-                                <button class="start-learning-btn">شروع یادگیری</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- بخش LevelUp -->
-                    <div class="learning-section" id="levelup-section">
-                        <h3>آموزش پلتفرم LevelUp</h3>
-                        <div class="learning-cards">
-                            <div class="learning-card">
-                                <div class="card-header">
-                                    <span class="card-icon">🚀</span>
-                                    <span class="card-title">شروع کار با LevelUp</span>
-                                </div>
-                                <div class="card-content">
-                                    <p>راهنمای کامل شروع کار با پلتفرم LevelUp</p>
-                                    <div class="card-meta">
-                                        <span class="duration">⏱️ 15 دقیقه</span>
-                                        <span class="level">🟢 مبتدی</span>
-                                    </div>
-                                </div>
-                                <button class="start-learning-btn">شروع یادگیری</button>
-                            </div>
-
-                            <div class="learning-card">
-                                <div class="card-header">
-                                    <span class="card-icon">💰</span>
-                                    <span class="card-title">سیستم پاداش باینری</span>
-                                </div>
-                                <div class="card-content">
-                                    <p>آموزش کامل سیستم پاداش باینری و نحوه کسب درآمد</p>
-                                    <div class="card-meta">
-                                        <span class="duration">⏱️ 20 دقیقه</span>
-                                        <span class="level">🟡 متوسط</span>
-                                    </div>
-                                </div>
-                                <button class="start-learning-btn">شروع یادگیری</button>
-                            </div>
-
-                            <div class="learning-card">
-                                <div class="card-header">
-                                    <span class="card-icon">🛒</span>
-                                    <span class="card-title">فروشگاه و محصولات</span>
-                                </div>
-                                <div class="card-content">
-                                    <p>نحوه استفاده از فروشگاه و خرید محصولات آموزشی</p>
-                                    <div class="card-meta">
-                                        <span class="duration">⏱️ 12 دقیقه</span>
-                                        <span class="level">🟢 مبتدی</span>
-                                    </div>
-                                </div>
-                                <button class="start-learning-btn">شروع یادگیری</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- پیشرفت یادگیری -->
-                <div class="learning-progress">
-                    <h4>پیشرفت یادگیری شما</h4>
-                    <div class="progress-stats">
-                        <div class="progress-item">
-                            <span class="progress-label">دوره‌های تکمیل شده:</span>
-                            <span class="progress-value" id="completed-courses">0</span>
-                        </div>
-                        <div class="progress-item">
-                            <span class="progress-label">ساعات یادگیری:</span>
-                            <span class="progress-value" id="learning-hours">0</span>
-                        </div>
-                        <div class="progress-item">
-                            <span class="progress-label">امتیاز کسب شده:</span>
-                            <span class="progress-value" id="learning-points">0</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- لایو استریم -->
-        <div id="live-stream-section" class="learning-content-section" style="display: block;">
-            <div class="live-stream-header">
-                <h4>🎥 لایو استریم آموزشی</h4>
-                <div class="live-status">
-                    <span class="live-indicator">🔴 LIVE</span>
-                    <span class="viewer-count">👥 <span id="viewer-count">0</span> بیننده</span>
-                </div>
-                <div class="stream-controls">
-                    <button id="test-stream-btn" style="background: #00ccff; color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; margin-left: 1rem;">
-                        🧪 تست لایو استریم
-                    </button>
-                    <button id="quick-sessions-btn" style="background: #a786ff; color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; margin-left: 0.5rem;">
-                        ⚡ جلسات سریع
-                    </button>
-                    <button id="session-history-btn" style="background: #00ff88; color: #000; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; margin-left: 0.5rem;">
-                        📚 تاریخچه جلسات
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Session Info Panel -->
-            <div id="session-info-panel" class="session-info-panel" style="display:none;">
-                <div class="info-grid">
-                    <div class="info-item">
-                        <span class="info-label">🎥 جلسه فعال:</span>
-                        <span id="active-session-name" class="info-value"></span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">⏱️ مدت زمان:</span>
-                        <span id="session-duration" class="info-value">00:00:00</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">👥 شرکت‌کنندگان:</span>
-                        <span id="participants-count" class="info-value">0</span>
-                    </div>
-                    <div id="recording-status" class="recording-status" style="display:none;">
-                        🔴 در حال ضبط
-                    </div>
-                </div>
-            </div>
-            
-            <div class="live-stream-container">
-                <!-- ویدیو استریم -->
-                <div class="video-stream" id="video-stream-container">
-                    <!-- Jitsi Meet Placeholder -->
-                    <div id="jitsi-container" style="display:none; width:100%; min-height:400px; border-radius:12px; overflow:hidden; background:#000;"></div>
-                    <!-- Old video fallback (hidden when Jitsi active) -->
-                    <video id="admin-video" autoplay muted style="width: 100%; border-radius: 12px; background: #000; display:none;">
-                        <source src="" type="video/webm">
-                        مرورگر شما از ویدیو پشتیبانی نمی‌کند.
-                    </video>
-                    <div class="stream-overlay">
-                        <div class="stream-info">
-                            <span class="stream-title">آموزش بلاکچین - جلسه 1</span>
-                            <span class="stream-time" id="stream-time">00:00:00</span>
-                        </div>
-                    </div>
-                </div>
-                <!-- Jitsi Start Modal -->
-                <div id="jitsi-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(35,41,70,0.85); z-index:2000; align-items:center; justify-content:center;">
-                  <div style="background:#232946; border-radius:16px; padding:2rem; max-width:400px; margin:auto; box-shadow:0 8px 32px rgba(0,0,0,0.3); text-align:center;">
-                    <h3 style="color:#a786ff; margin-bottom:1rem;">شروع جلسه ویدیویی</h3>
-                    <div style="margin-bottom:1rem;">
-                        <label style="color:#fff; display:block; margin-bottom:0.5rem;">نام جلسه:</label>
-                        <input id="jitsi-room-input" type="text" placeholder="مثلاً: cpa-class1" style="width:100%; padding:0.7rem; border-radius:8px; border:1px solid #a786ff; text-align:center; font-size:1rem; background:#181c2a; color:#fff;">
-                    </div>
-                    <div style="margin-bottom:1rem;">
-                        <label style="color:#fff; display:block; margin-bottom:0.5rem;">نوع جلسه:</label>
-                        <select id="session-type" style="width:100%; padding:0.7rem; border-radius:8px; border:1px solid #a786ff; text-align:center; font-size:1rem; background:#181c2a; color:#fff;">
-                            <option value="class">کلاس آموزشی</option>
-                            <option value="meeting">جلسه کاری</option>
-                            <option value="consultation">مشاوره</option>
-                            <option value="presentation">ارائه</option>
-                        </select>
-                    </div>
-                    <div style="margin-bottom:1rem;">
-                        <label style="color:#fff; display:block; margin-bottom:0.5rem;">تنظیمات:</label>
-                        <div style="display:flex; gap:0.5rem; justify-content:center;">
-                            <label style="color:#fff; display:flex; align-items:center; gap:0.3rem;">
-                                <input type="checkbox" id="auto-record" style="margin:0;">
-                                ضبط خودکار
-                            </label>
-                            <label style="color:#fff; display:flex; align-items:center; gap:0.3rem;">
-                                <input type="checkbox" id="waiting-room" style="margin:0;">
-                                اتاق انتظار
-                            </label>
-                        </div>
-                    </div>
-                    <div style="display:flex; gap:1rem;">
-                      <button id="jitsi-start-btn" style="flex:1; background:#00ccff; color:#fff; border:none; border-radius:8px; padding:0.7rem; font-weight:bold; cursor:pointer;">شروع جلسه</button>
-                      <button id="jitsi-cancel-btn" style="flex:1; background:#444; color:#fff; border:none; border-radius:8px; padding:0.7rem; font-weight:bold; cursor:pointer;">انصراف</button>
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- Quick Sessions Modal -->
-                <div id="quick-sessions-modal" class="quick-sessions-modal" style="display:none;">
-                  <div class="quick-sessions-content">
-                    <h3 class="professional-modal-title">جلسات سریع</h3>
-                    <div class="quick-sessions-grid">
-                        <button class="quick-session-btn basic-class" data-room="cpa-basic-class" data-type="class">
-                            📚 کلاس پایه CPA
-                        </button>
-                        <button class="quick-session-btn advanced-class" data-room="cpa-advanced-class" data-type="class">
-                            🚀 کلاس پیشرفته CPA
-                        </button>
-                        <button class="quick-session-btn consultation" data-room="cpa-consultation" data-type="consultation">
-                            💼 مشاوره شخصی
-                        </button>
-                        <button class="quick-session-btn meeting" data-room="cpa-meeting" data-type="meeting">
-                            🤝 جلسه تیمی
-                        </button>
-                    </div>
-                    <button id="close-quick-sessions" class="professional-modal-btn secondary">بستن</button>
-                  </div>
-                </div>
-                
-                <!-- Session History Modal -->
-                <div id="session-history-modal" class="session-history-modal" style="display:none;">
-                  <div class="session-history-content">
-                    <h3 class="professional-modal-title">تاریخچه جلسات</h3>
-                    <div id="session-history-list" class="session-history-list">
-                        <!-- Sessions will be loaded here -->
-                    </div>
-                    <button id="close-session-history" class="professional-modal-btn secondary">بستن</button>
-                  </div>
-                </div>
-                
-                <!-- چت زنده -->
-                <div class="live-chat">
-                    <div class="chat-header">
-                        <h5>💬 چت زنده</h5>
-                        <button class="chat-toggle" id="chat-toggle">📱</button>
-                    </div>
-                    
-                    <div class="chat-messages" id="chat-messages">
-                        <div class="chat-message system">
-                            <span class="message-time">12:00</span>
-                            <span class="message-text">لایو استریم شروع شد! سوالات خود را بپرسید.</span>
-                        </div>
-                    </div>
-                    
-                    <div class="chat-input-container">
-                        <input type="text" id="chat-input" placeholder="پیام خود را بنویسید..." maxlength="200">
-                        <button id="send-message-btn">📤</button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- کنترل‌های ادمین -->
-            <div class="admin-controls" id="admin-controls" style="display: none;">
-                <h5>🎛️ کنترل‌های ادمین</h5>
-                <div class="control-buttons">
-                    <button class="control-btn" id="start-stream-btn">▶️ شروع استریم</button>
-                    <button class="control-btn" id="stop-stream-btn">⏹️ توقف استریم</button>
-                    <button class="control-btn" id="start-jitsi-btn" style="background:#00ccff; color:#fff;">🎥 شروع جلسه ویدیویی</button>
-                    <button class="control-btn" id="mute-audio-btn">🔇 قطع صدا</button>
-                    <button class="control-btn" id="share-screen-btn">🖥️ اشتراک صفحه</button>
-                    <button class="control-btn" id="ban-user-btn">🚫 مسدود کردن کاربر</button>
-                    <button class="control-btn" id="clear-chat-btn">🗑️ پاک کردن چت</button>
-                </div>
-                
-                <div class="stream-settings">
-                    <h6>تنظیمات استریم</h6>
-                    <div class="setting-item">
-                        <label>کیفیت ویدیو:</label>
-                        <select id="video-quality">
-                            <option value="720p">720p</option>
-                            <option value="1080p" selected>1080p</option>
-                            <option value="4k">4K</option>
-                        </select>
-                    </div>
-                    <div class="setting-item">
-                        <label>محدودیت بیننده:</label>
-                        <input type="number" id="max-viewers" value="100" min="10" max="1000">
-                    </div>
-                </div>
-                
-                <!-- مدیریت ساب ادمین -->
-                <div class="sub-admin-management">
-                    <h6>👥 مدیریت ساب ادمین</h6>
-                    <div class="sub-admin-controls">
-                        <button class="control-btn" id="add-sub-admin-btn">➕ افزودن ساب ادمین</button>
-                        <button class="control-btn" id="view-sub-admins-btn">👥 مشاهده ساب ادمین‌ها</button>
-                        <button class="control-btn" id="sub-admin-permissions-btn">🔐 تنظیم دسترسی‌ها</button>
-                    </div>
-                    
-                    <!-- لیست ساب ادمین‌ها -->
-                    <div class="sub-admins-list" id="sub-admins-list" style="display: none;">
-                        <h6>ساب ادمین‌های فعال</h6>
-                        <div class="sub-admin-item" id="sub-admin-template" style="display: none;">
-                            <div class="sub-admin-info">
-                                <span class="sub-admin-name">نام ساب ادمین</span>
-                                <span class="sub-admin-address">آدرس کیف پول</span>
-                                <span class="sub-admin-role">نقش</span>
-                            </div>
-                            <div class="sub-admin-actions">
-                                <button class="sub-admin-btn edit-btn">✏️ ویرایش</button>
-                                <button class="sub-admin-btn remove-btn">🗑️ حذف</button>
-                            </div>
-                        </div>
-                        <div id="sub-admins-container"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- مودال افزودن/ویرایش ساب ادمین -->
-    <div class="sub-admin-modal" id="sub-admin-modal">
-        <div class="sub-admin-modal-content">
-            <h3 id="modal-title">افزودن ساب ادمین جدید</h3>
-            <form class="sub-admin-form" id="sub-admin-form">
-                <div class="form-group">
-                    <label for="sub-admin-name">نام ساب ادمین:</label>
-                    <input type="text" id="sub-admin-name" placeholder="نام کامل ساب ادمین" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="sub-admin-address">آدرس کیف پول:</label>
-                    <input type="text" id="sub-admin-address" placeholder="0x..." required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="sub-admin-role">نقش:</label>
-                    <select id="sub-admin-role" required>
-                        <option value="">انتخاب نقش</option>
-                        <option value="moderator">مدیر محتوا</option>
-                        <option value="support">پشتیبانی</option>
-                        <option value="analyst">تحلیلگر</option>
-                        <option value="teacher">مدرس</option>
-                        <option value="custom">سفارشی</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="sub-admin-description">توضیحات:</label>
-                    <textarea id="sub-admin-description" placeholder="توضیحات اضافی..." rows="3"></textarea>
-                </div>
-                
-                <div class="permissions-group">
-                    <h5>🔐 دسترسی‌های ساب ادمین</h5>
-                    
-                    <div class="permission-item">
-                        <input type="checkbox" id="perm-stream-control" name="permissions">
-                        <label for="perm-stream-control">کنترل لایو استریم</label>
-                    </div>
-                    
-                    <div class="permission-item">
-                        <input type="checkbox" id="perm-chat-moderate" name="permissions">
-                        <label for="perm-chat-moderate">مدیریت چت</label>
-                    </div>
-                    
-                    <div class="permission-item">
-                        <input type="checkbox" id="perm-ban-users" name="permissions">
-                        <label for="perm-ban-users">مسدود کردن کاربران</label>
-                    </div>
-                    
-                    <div class="permission-item">
-                        <input type="checkbox" id="perm-view-reports" name="permissions">
-                        <label for="perm-view-reports">مشاهده گزارش‌ها</label>
-                    </div>
-                    
-                    <div class="permission-item">
-                        <input type="checkbox" id="perm-manage-content" name="permissions">
-                        <label for="perm-manage-content">مدیریت محتوا</label>
-                    </div>
-                    
-                    <div class="permission-item">
-                        <input type="checkbox" id="perm-view-analytics" name="permissions">
-                        <label for="perm-view-analytics">مشاهده آمار</label>
-                    </div>
-                    
-                    <div class="permission-item">
-                        <input type="checkbox" id="perm-edit-products" name="permissions">
-                        <label for="perm-edit-products">ویرایش محصولات</label>
-                    </div>
-                    
-                    <div class="permission-item">
-                        <input type="checkbox" id="perm-view-orders" name="permissions">
-                        <label for="perm-view-orders">مشاهده سفارشات</label>
-                    </div>
-                </div>
-                
-                <div class="modal-buttons">
-                    <button type="submit" class="modal-btn primary" id="save-sub-admin-btn">💾 ذخیره</button>
-                    <button type="button" class="modal-btn secondary" id="cancel-sub-admin-btn">❌ انصراف</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- مودال تأیید حذف -->
-    <div class="sub-admin-modal" id="delete-confirm-modal">
-        <div class="sub-admin-modal-content">
-            <h3>⚠️ تأیید حذف</h3>
-            <p style="color: #ccc; text-align: center; margin-bottom: 1.5rem;">
-                آیا مطمئن هستید که می‌خواهید این ساب ادمین را حذف کنید؟
-            </p>
-            <div style="background: #181c2a; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
-                <p style="color: #fff; margin: 0;"><strong>نام:</strong> <span id="delete-admin-name"></span></p>
-                <p style="color: #888; margin: 0.5rem 0 0 0;"><strong>آدرس:</strong> <span id="delete-admin-address"></span></p>
-            </div>
-            <div class="modal-buttons">
-                <button class="modal-btn danger" id="confirm-delete-btn">🗑️ حذف</button>
-                <button class="modal-btn secondary" id="cancel-delete-btn">❌ انصراف</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <footer style="background: #232946; padding: 1rem; text-align: center; margin-top: 2rem; border-top: 2px solid #a786ff;">
-        <div style="color: #a786ff; font-size: 0.9rem;">
-            © 2024 LevelUp Platform. All rights reserved. | مرکز یادگیری
-        </div>
-    </footer>
-
-    <!-- Scripts -->
-    <script src="js/config.js"></script>
-    <script src="js/web3-interactions.js"></script>
-    <script src="js/main.js"></script>
-    <script src="js/learning.js"></script>
+    <script src="https://meet.jit.si/external_api.js"></script>
     <script>
-        // Tab switching logic
-        document.addEventListener('DOMContentLoaded', function() {
-            const tabBtns = document.querySelectorAll('.tab-btn');
-            const sections = document.querySelectorAll('.learning-content-section');
+        // زمان شروع جلسه (همسان با index.html)
+        const sessionStart = new Date("2025-07-01T16:30:00+03:30");
+        const roomName = "CPA_Academy_Class_2024";
+        const sessionUrl = window.location.origin + window.location.pathname + "#join";
+        const statusDiv = document.getElementById('status');
+        const startBtn = document.getElementById('start-btn');
+        const shareBtn = document.getElementById('share-btn');
+        const copiedMsg = document.getElementById('copied-msg');
+        let jitsiApi = null;
 
-            function showSection(sectionId) {
-                sections.forEach(section => {
-                    section.style.display = 'none';
-                });
-                
-                const targetSection = document.getElementById(sectionId);
-                if (targetSection) {
-                    targetSection.style.display = 'block';
-                } else {
-                    console.log(`Section with ID "${sectionId}" not found`);
-                }
-                
-                tabBtns.forEach(btn => {
-                    btn.classList.remove('active');
-                });
+        function updateJoinButton() {
+            const now = new Date();
+            if (now < sessionStart) {
+                startBtn.textContent = "ورود به کلاس آنلاین";
+                startBtn.disabled = true;
+                startBtn.title = "جلسه هنوز شروع نشده است";
+                statusDiv.textContent = "منتظر شروع جلسه آنلاین...";
+            } else {
+                startBtn.textContent = "ورود به کلاس آنلاین";
+                startBtn.disabled = false;
+                startBtn.title = "";
+                statusDiv.textContent = "برای ورود به جلسه روی دکمه کلیک کنید";
             }
+        }
+        setInterval(updateJoinButton, 1000);
+        updateJoinButton();
 
-            tabBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    let targetSection = this.id.replace('tab-', '').replace('-btn', '-section');
-                    
-                    // اصلاح نام بخش لایو استریم
-                    if (targetSection === 'live-section') {
-                        targetSection = 'live-stream-section';
-                    }
-                    
-                    console.log(`Switching to section: ${targetSection}`);
-                    showSection(targetSection);
-                    this.classList.add('active');
-                });
+        // اگر کاربر با #join وارد شده باشد، جلسه را مستقیم باز کن
+        if (window.location.hash === "#join") {
+            startSession();
+        }
+
+        startBtn.onclick = function() {
+            if (new Date() >= sessionStart) {
+                startSession();
+            }
+        };
+
+        function startSession() {
+            startBtn.textContent = 'جلسه در حال برگزاری است';
+            startBtn.disabled = true;
+            shareBtn.style.display = 'none';
+            statusDiv.textContent = "جلسه آنلاین در حال برگزاری است";
+            document.getElementById('jitsi-container').style.display = 'block';
+            jitsiApi = new JitsiMeetExternalAPI("meet.jit.si", {
+                roomName: roomName,
+                width: "100%",
+                height: 600,
+                parentNode: document.getElementById('jitsi-container'),
+                lang: "fa",
+                configOverwrite: { startWithAudioMuted: false, startWithVideoMuted: false },
+                interfaceConfigOverwrite: { DEFAULT_REMOTE_DISPLAY_NAME: "مهمان", SHOW_JITSI_WATERMARK: false }
             });
+            // شمارنده افراد حاضر (اختیاری)
+            jitsiApi.addEventListener('participantJoined', updateCount);
+            jitsiApi.addEventListener('participantLeft', updateCount);
+            updateCount();
+        }
 
-            // Initialize learning tab functionality
-            if (typeof initializeLearningTab === 'function') {
-                initializeLearningTab();
-            }
-            
-            // Test live stream functionality
-            console.log('Learning page loaded successfully');
-            console.log('Live stream section:', document.getElementById('live-stream-section'));
-            console.log('Admin controls:', document.getElementById('admin-controls'));
-            
-            // Add test button functionality
-            const testStreamBtn = document.getElementById('test-stream-btn');
-            if (testStreamBtn) {
-                testStreamBtn.addEventListener('click', function() {
-                    console.log('Test stream button clicked');
-                    
-                    // Try to start stream
-                    if (typeof startStream === 'function') {
-                        startStream();
-                    } else {
-                        console.log('startStream function not found');
-                        alert('تابع startStream پیدا نشد!');
-                    }
+        function updateCount() {
+            if (!jitsiApi) return;
+            setTimeout(() => {
+                jitsiApi.getParticipantsInfo().then(list => {
+                    statusDiv.textContent = `جلسه آنلاین در حال برگزاری است | تعداد حاضرین: ${list.length}`;
                 });
-            }
-            
-            // Test if all required elements exist
-            console.log('Required elements check:');
-            console.log('- admin-video:', document.getElementById('admin-video'));
-            console.log('- chat-messages:', document.getElementById('chat-messages'));
-            console.log('- chat-input:', document.getElementById('chat-input'));
-            console.log('- viewer-count:', document.getElementById('viewer-count'));
-            console.log('- stream-time:', document.getElementById('stream-time'));
-            
-            // Test section switching
-            console.log('Available sections:');
-            console.log('- courses-section:', document.getElementById('courses-section'));
-            console.log('- live-stream-section:', document.getElementById('live-stream-section'));
-            
-            // Show courses section by default
-            showSection('courses-section');
-            
-            // Show live stream section by default (remove display:none)
-            const liveStreamSection = document.getElementById('live-stream-section');
-            if (liveStreamSection) {
-                liveStreamSection.style.display = 'block';
-            }
-        });
+            }, 1000);
+        }
 
-        (async function() {
-            if (window.getUserProfile) {
-                const profile = await window.getUserProfile();
-                if (!profile.activated) {
-                    document.body.innerHTML = '<div style="color:#ff6b6b;text-align:center;padding:3rem;font-size:1.5rem;">دسترسی به این بخش فقط برای کاربران فعال مجاز است.<br>🔒</div>';
-                    document.body.style.background = '#181c2a';
-                }
-            }
-        })();
+        shareBtn.onclick = function() {
+            navigator.clipboard.writeText(sessionUrl).then(() => {
+                copiedMsg.style.display = 'inline';
+                setTimeout(() => copiedMsg.style.display = 'none', 2000);
+            });
+        };
     </script>
 </body>
 </html> 

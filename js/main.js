@@ -69,7 +69,7 @@ async function connectWalletAndUpdateUI(walletType) {
         }
 
         // دریافت پروفایل کاربر
-        const profile = await fetchUserProfile();
+        const profile = await loadUserProfileOnce();
         const address = await window.contractConfig.signer.getAddress();
 
         // به‌روزرسانی UI
@@ -326,7 +326,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Lock navigation for deactivated users
 async function lockTabsForDeactivatedUsers() {
     if (!window.getUserProfile) return;
-    const profile = await window.getUserProfile();
+    const profile = await loadUserProfileOnce();
     if (!profile.activated) {
         const lockTabs = [
             { id: 'tab-shop-btn', label: 'SHOP' },
@@ -348,3 +348,103 @@ async function lockTabsForDeactivatedUsers() {
 }
 
 document.addEventListener('DOMContentLoaded', lockTabsForDeactivatedUsers);
+
+// تایمر شمارش معکوس جلسه آنلاین بعدی (فقط برای کاربران فعال)
+const nextSessionDate = new Date("2025-07-01T16:30:00+03:30"); // تاریخ و ساعت جلسه بعدی را اینجا تنظیم کنید
+function updateSessionTimer() {
+    const now = new Date();
+    const diff = nextSessionDate - now;
+    if (diff <= 0) {
+        document.getElementById('session-timer').textContent = "جلسه آنلاین در حال برگزاری است!";
+        return;
+    }
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const minutes = Math.floor((diff / (1000 * 60)) % 60);
+    const seconds = Math.floor((diff / 1000) % 60);
+    document.getElementById('session-timer').textContent =
+        `${days} روز و ${hours} ساعت و ${minutes} دقیقه و ${seconds} ثانیه`;
+}
+if (document.getElementById('session-timer')) {
+    setInterval(updateSessionTimer, 1000);
+    updateSessionTimer();
+}
+(async function() {
+    if (window.getUserProfile) {
+        const profile = await loadUserProfileOnce();
+        if (profile && profile.activated) {
+            document.getElementById('session-timer-box').style.display = 'block';
+        }
+    }
+})();
+
+window.cachedUserProfile = null;
+async function loadUserProfileOnce() {
+    if (window.cachedUserProfile) return window.cachedUserProfile;
+    window.cachedUserProfile = await loadUserProfileOnce();
+    return window.cachedUserProfile;
+}
+
+// نمایش قیمت توکن برای همه کاربران (حتی بدون اتصال کیف پول)
+async function showTokenPricesForAll() {
+    try {
+        // اگر contractConfig و contract آماده است
+        if (window.contractConfig && window.contractConfig.contract) {
+            const contract = window.contractConfig.contract;
+            // قیمت CPA/MATIC و قیمت MATIC/USD
+            const [tokenPriceMatic, maticPriceUSD] = await Promise.all([
+                contract.getTokenPrice(),
+                window.fetchPolUsdPrice()
+            ]);
+            const tokenPriceMaticFormatted = ethers.formatUnits(tokenPriceMatic, 18);
+            const tokenPriceUSD = parseFloat(tokenPriceMaticFormatted) * parseFloat(maticPriceUSD);
+            // نمایش در عناصر
+            const cpaUsd = document.getElementById('chart-lvl-usd');
+            const polUsd = document.getElementById('chart-pol-usd');
+            if (cpaUsd) cpaUsd.textContent = tokenPriceUSD.toFixed(4);
+            if (polUsd) polUsd.textContent = parseFloat(maticPriceUSD).toFixed(4);
+        }
+    } catch (e) {
+        // اگر خطا بود، مقدار پیش‌فرض نمایش بده
+        const cpaUsd = document.getElementById('chart-lvl-usd');
+        const polUsd = document.getElementById('chart-pol-usd');
+        if (cpaUsd) cpaUsd.textContent = '-';
+        if (polUsd) polUsd.textContent = '-';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(showTokenPricesForAll, 1200);
+});
+
+// نمایش موجودی و ارزش دلاری فقط با اتصال کیف پول
+async function showUserBalanceBox() {
+    const box = document.getElementById('user-balance-box');
+    const hint = document.getElementById('user-balance-hint');
+    if (!box || !hint) return;
+    try {
+        const { contract, address } = await connectWallet();
+        if (!contract || !address) throw new Error('No wallet');
+        // دریافت موجودی و قیمت
+        const [lvlBalance, tokenPriceMatic, maticPriceUSD] = await Promise.all([
+            contract.balanceOf(address),
+            contract.getTokenPrice(),
+            window.fetchPolUsdPrice()
+        ]);
+        const lvl = ethers.formatUnits(lvlBalance, 18);
+        const tokenPriceMaticFormatted = ethers.formatUnits(tokenPriceMatic, 18);
+        const tokenPriceUSD = parseFloat(tokenPriceMaticFormatted) * parseFloat(maticPriceUSD);
+        const usdValue = (parseFloat(lvl) * tokenPriceUSD).toFixed(2);
+        document.getElementById('user-lvl-balance').textContent = lvl;
+        document.getElementById('user-lvl-usd-value').textContent = usdValue + ' $';
+        box.style.display = 'block';
+        hint.style.display = 'none';
+    } catch (e) {
+        box.style.display = 'none';
+        hint.style.display = 'block';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(showUserBalanceBox, 1500);
+});

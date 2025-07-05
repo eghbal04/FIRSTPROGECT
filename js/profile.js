@@ -1,5 +1,12 @@
 // Profile Module - فقط توابع مخصوص پروفایل
 
+window.cachedUserProfile = window.cachedUserProfile || null;
+async function loadUserProfileOnce() {
+    if (window.cachedUserProfile) return window.cachedUserProfile;
+    window.cachedUserProfile = await window.getUserProfile();
+    return window.cachedUserProfile;
+}
+
 // تابع انتظار برای اتصال کیف پول
 async function waitForWalletConnection() {
     let attempts = 0;
@@ -26,7 +33,7 @@ async function loadUserProfile() {
     try {
         await waitForWalletConnection();
         
-        const profile = await window.getUserProfile();
+        const profile = await loadUserProfileOnce();
         
         if (!profile || !profile.address) {
             throw new Error('Invalid profile data received');

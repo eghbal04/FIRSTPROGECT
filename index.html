@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>پلتفرم LevelUp | داشبورد </title>
+    <title>CONTINUOUS PROFIT ACADEMY</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
@@ -32,7 +32,7 @@
   <div id="main-dashboard" class="page-section expandable-container">
     <div class="expand-header">
       <header>
-        <h1 class="shimmer-title" style="font-family: 'Montserrat', sans-serif; font-size:2.5rem; letter-spacing:0.12em; color:#222; text-transform:uppercase; font-weight:700; text-shadow:0 2px 12px #00ff8840, 0 1px 0 #fff;">LEVELUP DASHBOARD</h1>
+        <h1 class="shimmer-title" style="font-family: 'Montserrat', sans-serif; font-size:2.5rem; letter-spacing:0.12em; color:#222; text-transform:uppercase; font-weight:700; text-shadow:0 2px 12px #00ff8840, 0 1px 0 #fff;">CONTINUOUS PROFIT ACADEMY</h1>
       
       </header>
     </div>
@@ -147,6 +147,15 @@
     </div>
   </div>
 
+  <!-- تایمر تبلیغاتی جلسه آنلاین بعدی -->
+  <div id="session-timer-box" style="display:none;max-width:600px;margin:2rem auto 1rem auto;text-align:center;">
+    <h2 style="margin-bottom:0.5rem;">⏰ شمارش معکوس جلسه آنلاین بعدی</h2>
+    <div id="session-timer" style="font-size:2rem;font-weight:bold;background:linear-gradient(90deg,#00ff88,#00ccff);color:#181c2a;padding:1rem 2rem;border-radius:12px;display:inline-block;"></div>
+    <div style="margin-top:1rem;">
+        <a href="learning.html" id="join-session-btn" style="display:inline-block;padding:0.7rem 2rem;background:#a786ff;color:#181c2a;border-radius:8px;font-weight:bold;text-decoration:none;font-size:1.1rem;">ورود به کلاس آنلاین</a>
+    </div>
+  </div>
+
   <div class="tab-container" style="max-width:700px;margin:0.5rem auto 0.5rem auto;">
     <div class="tab-headers" style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
       <div class="dashboard-cards-list">
@@ -245,17 +254,18 @@
           </div>
           
           <!-- اطلاعات موجودی -->
-          <div style="background: #101c2c; border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 12px #0002;">
+          <div id="user-balance-box" style="background: #101c2c; border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 12px #0002; display:none;">
             <h4 style="color: #fff; margin-bottom: 1rem; text-align: center;">💰 موجودی شما</h4>
             <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                      <span style="color: #ccc;">موجودی CPA:</span>
-        <span id="user-lvl-balance" style="color: #00ff88; font-weight: bold;">-</span>
+              <span style="color: #ccc;">موجودی CPA:</span>
+              <span id="user-lvl-balance" style="color: #00ff88; font-weight: bold;">-</span>
             </div>
             <div style="display: flex; justify-content: space-between;">
               <span style="color: #ccc;">ارزش دلاری:</span>
               <span id="user-lvl-usd-value" style="color: #00ccff; font-weight: bold;">-</span>
             </div>
           </div>
+          <div id="user-balance-hint" style="background: #232946; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; color: #a786ff; text-align: center; display:none;">برای مشاهده موجودی، کیف پول خود را متصل کنید.</div>
         </div>
         
         <!-- نمایش درخت شبکه -->
@@ -427,16 +437,15 @@
   "></div>
 
   <!-- سایر اسکریپت‌ها -->
-  <script src="js/config.js?v=5.8"></script>
-  <script src="js/web3-interactions.js?v=5.8"></script>
-  <script src="js/main.js?v=5.8"></script>
+  <script src="js/config.js"></script>
+  <script src="js/web3-interactions.js"></script>
+  <script src="js/main.js"></script>
   <script src="js/swap.js?v=5.7"></script>
   <script src="js/network.js?v=5.7"></script>
   <script src="js/profile.js?v=5.7"></script>
   <script src="js/reports.js?v=5.7"></script>
   <script src="js/news.js?v=5.7"></script>
   <script src="js/shop.js?v=5.7"></script>
-  <script src="js/learning.js?v=5.7"></script>
   <script src="js/homepage.js?v=5.8"></script>
   <script src="js/price-chart.js?v=5.7"></script>
   <script src="js/register.js?v=5.7"></script>
