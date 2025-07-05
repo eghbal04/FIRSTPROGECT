@@ -3,8 +3,12 @@
 // تابع خرید توکن
 async function buyTokens(maticAmount) {
     try {
-        const { contract } = await window.connectWallet();
+        const connection = await window.connectWallet();
+        if (!connection || !connection.contract) {
+            throw new Error('No wallet connection available');
+        }
         
+        const { contract } = connection;
         const maticWei = ethers.parseEther(maticAmount.toString());
         const tx = await contract.buyTokens({ value: maticWei });
         const receipt = await tx.wait();
@@ -23,8 +27,12 @@ async function buyTokens(maticAmount) {
 // تابع فروش توکن
 async function sellTokens(tokenAmount) {
     try {
-        const { contract } = await window.connectWallet();
+        const connection = await window.connectWallet();
+        if (!connection || !connection.contract) {
+            throw new Error('No wallet connection available');
+        }
         
+        const { contract } = connection;
         const tokenWei = ethers.parseUnits(tokenAmount.toString(), 18);
         const tx = await contract.sellTokens(tokenWei);
         const receipt = await tx.wait();
@@ -43,8 +51,12 @@ async function sellTokens(tokenAmount) {
 // تابع ثبت‌نام و فعال‌سازی
 async function registerAndActivate(referrerAddress, tokenAmount) {
     try {
-        const { contract } = await window.connectWallet();
+        const connection = await window.connectWallet();
+        if (!connection || !connection.contract) {
+            throw new Error('No wallet connection available');
+        }
         
+        const { contract } = connection;
         const tokenWei = ethers.parseUnits(tokenAmount.toString(), 18);
         const tx = await contract.registerAndActivate(referrerAddress, tokenWei);
         const receipt = await tx.wait();
@@ -63,8 +75,12 @@ async function registerAndActivate(referrerAddress, tokenAmount) {
 // تابع دریافت پاداش‌ها
 async function claimRewards() {
     try {
-        const { contract } = await window.connectWallet();
+        const connection = await window.connectWallet();
+        if (!connection || !connection.contract) {
+            throw new Error('No wallet connection available');
+        }
         
+        const { contract } = connection;
         const tx = await contract.claim();
         const receipt = await tx.wait();
         
@@ -82,8 +98,12 @@ async function claimRewards() {
 // تابع دریافت درخت کاربر
 async function getUserTree(userAddress) {
     try {
-        const { contract } = await window.connectWallet();
+        const connection = await window.connectWallet();
+        if (!connection || !connection.contract) {
+            throw new Error('No wallet connection available');
+        }
         
+        const { contract } = connection;
         const [left, right, activated, binaryPoints, binaryPointCap] = await contract.getUserTree(userAddress);
         
         return {
@@ -102,13 +122,25 @@ async function getUserTree(userAddress) {
 // تابع فراخوانی تابع قرارداد
 async function callContractFunction(functionName, ...args) {
     try {
-        const { contract } = await window.connectWallet();
+        const connection = await window.connectWallet();
+        if (!connection || !connection.contract) {
+            throw new Error('No wallet connection available');
+        }
+        
+        const { contract } = connection;
         
         if (typeof contract[functionName] !== 'function') {
             throw new Error(`Function ${functionName} not found in contract`);
         }
         
-        return await contract[functionName](...args);
+        // استفاده از retry برای عملیات‌های حساس
+        if (window.retryRpcOperation) {
+            return await window.retryRpcOperation(async () => {
+                return await contract[functionName](...args);
+            });
+        } else {
+            return await contract[functionName](...args);
+        }
     } catch (error) {
         console.error(`Web3: Error calling contract function ${functionName}:`, error);
         throw error;

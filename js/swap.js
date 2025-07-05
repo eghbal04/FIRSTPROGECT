@@ -7,7 +7,7 @@ const swapButton = document.getElementById('swapButton');
 const swapStatus = document.getElementById('swapStatus');
 
 let userMaticBalance = 0;
-let userLvlBalance = 0;
+let userCpaBalance = 0;
 
 // دکمه سواپ در ابتدا غیرفعال باشد
 if (swapButton) {
@@ -53,11 +53,11 @@ async function updateRateInfo() {
         if (direction === 'matic-to-lvl') {
             const estimated = await contract.estimateBuy(ethers.parseEther(amount));
             const estimatedFormatted = ethers.formatUnits(estimated, 18);
-            document.getElementById('swapInfo').textContent = `نرخ تبدیل: ${amount} POL = ${estimatedFormatted} LVL`;
+            document.getElementById('swapInfo').textContent = `نرخ تبدیل: ${amount} POL = ${estimatedFormatted} CPA`;
         } else {
             const estimated = await contract.estimateSell(ethers.parseUnits(amount, 18));
             const estimatedFormatted = ethers.formatEther(estimated);
-            document.getElementById('swapInfo').textContent = `نرخ تبدیل: ${amount} LVL = ${estimatedFormatted} POL`;
+            document.getElementById('swapInfo').textContent = `نرخ تبدیل: ${amount} CPA = ${estimatedFormatted} POL`;
         }
         
     } catch (error) {
@@ -71,35 +71,35 @@ async function loadBalances() {
         const walletConfig = await window.connectWallet();
         if (!walletConfig || !walletConfig.contract || !walletConfig.address || !walletConfig.provider) {
             document.getElementById('maticBalance').textContent = 'POL: اتصال نشده';
-            document.getElementById('lvlBalance').textContent = 'LVL: اتصال نشده';
+            document.getElementById('lvlBalance').textContent = 'CPA: اتصال نشده';
             userMaticBalance = 0;
-            userLvlBalance = 0;
+            userCpaBalance = 0;
             validateSwapAmount(); // وضعیت دکمه را به‌روز کن
             return;
         }
         const { contract, address, provider } = walletConfig;
         // دریافت موجودی‌ها
-        const [maticBalance, lvlBalance] = await Promise.all([
+        const [maticBalance, cpaBalance] = await Promise.all([
             provider.getBalance(address),
             contract.balanceOf(address)
         ]);
         // فرمت کردن موجودی‌ها
         const formattedMatic = ethers.formatEther(maticBalance);
-        const formattedLvl = ethers.formatUnits(lvlBalance, 18);
+        const formattedCpa = ethers.formatUnits(cpaBalance, 18);
         // ذخیره موجودی‌ها برای اعتبارسنجی
         userMaticBalance = parseFloat(formattedMatic);
-        userLvlBalance = parseFloat(formattedLvl);
+        userCpaBalance = parseFloat(formattedCpa);
         // به‌روزرسانی UI
         document.getElementById('maticBalance').textContent = `POL: ${userMaticBalance.toFixed(4)}`;
-        document.getElementById('lvlBalance').textContent = `LVL: ${userLvlBalance.toFixed(2)}`;
+        document.getElementById('lvlBalance').textContent = `CPA: ${userCpaBalance.toFixed(2)}`;
         // نمایش قیمت‌ها
         await displaySwapPrices();
         validateSwapAmount(); // وضعیت دکمه را به‌روز کن
     } catch (error) {
         document.getElementById('maticBalance').textContent = 'POL: خطا';
-        document.getElementById('lvlBalance').textContent = 'LVL: خطا';
+        document.getElementById('lvlBalance').textContent = 'CPA: خطا';
         userMaticBalance = 0;
-        userLvlBalance = 0;
+        userCpaBalance = 0;
         validateSwapAmount(); // وضعیت دکمه را به‌روز کن
     }
 }
@@ -134,13 +134,13 @@ async function setMaxAmount() {
         let maxAmount;
         
         if (direction === 'matic-to-lvl') {
-            // برای تبدیل POL به LVL، حداکثر موجودی POL
+            // برای تبدیل POL به CPA، حداکثر موجودی POL
             const maticBalance = await provider.getBalance(address);
             maxAmount = ethers.formatEther(maticBalance);
         } else {
-            // برای تبدیل LVL به POL، حداکثر موجودی LVL
-            const lvlBalance = await contract.balanceOf(address);
-            maxAmount = ethers.formatUnits(lvlBalance, 18);
+                    // برای تبدیل CPA به POL، حداکثر موجودی CPA
+        const cpaBalance = await contract.balanceOf(address);
+        maxAmount = ethers.formatUnits(cpaBalance, 18);
         }
         
         // کسر کمی برای کارمزد تراکنش
@@ -191,14 +191,14 @@ async function displaySwapPrices() {
             return;
         }
         const { contract } = walletConfig;
-        // دریافت قیمت LVL/MATIC از قرارداد و قیمت MATIC/USD از API
+        // دریافت قیمت CPA/MATIC از قرارداد و قیمت MATIC/USD از API
         const [tokenPriceMatic, maticPriceUSD, registrationPrice] = await Promise.all([
             contract.getTokenPrice().catch(() => ethers.parseUnits("0.0012", 18)),
             window.fetchPolUsdPrice(),
             contract.regprice().catch(() => ethers.parseUnits("1000", 18))
         ]);
         const tokenPriceMaticFormatted = ethers.formatUnits(tokenPriceMatic, 18);
-        // قیمت LVL/USD = (LVL/MATIC) * (MATIC/USD)
+        // قیمت CPA/USD = (CPA/MATIC) * (MATIC/USD)
         const tokenPriceUSD = parseFloat(tokenPriceMaticFormatted) * parseFloat(maticPriceUSD);
         const tokenPriceUSDFormatted = tokenPriceUSD.toFixed(6);
         const maticPriceUSDFormatted = parseFloat(maticPriceUSD).toFixed(6);
@@ -225,7 +225,7 @@ async function displaySwapPrices() {
                     <div style="display: grid; gap: 0.5rem; font-size: 0.9rem;">
                         <div style="display: flex; justify-content: space-between;">
                             <span style="color: #ccc;">مقدار توکن مورد نیاز برای ثبت‌نام:</span>
-                            <span style="color: #a786ff; font-weight: bold;">${registrationPriceFormatted} LVL</span>
+                            <span style="color: #a786ff; font-weight: bold;">${registrationPriceFormatted} CPA</span>
                         </div>
                     </div>
                     <div style="font-size: 0.8rem; color: #ccc; margin-top: 0.5rem;">
@@ -283,9 +283,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     const maticWei = ethers.parseEther(amount);
                     tx = await contract.buyTokens({ value: maticWei });
                 } else {
-                    // تبدیل LVL به POL
-                    const lvlWei = ethers.parseUnits(amount, 18);
-                    tx = await contract.sellTokens(lvlWei);
+                            // تبدیل CPA به POL
+        const cpaWei = ethers.parseUnits(amount, 18);
+        tx = await contract.sellTokens(cpaWei);
                 }
                 
                 await tx.wait();

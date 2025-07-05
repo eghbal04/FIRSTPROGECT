@@ -25,9 +25,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             let cashback = await window.contractConfig.contract.cashBack();
             cashback = cashback.toString();
-            cashbackValueEl.textContent = Number(cashback) / 1e18 + ' LVL';
+            cashbackValueEl.textContent = Number(cashback) / 1e18 + ' CPA';
             if (cashbackDescEl) {
-                cashbackDescEl.textContent = `۵٪ از هر ثبت‌نام به این صندوق اضافه می‌شود. مجموع فعلی: ${Number(cashback) / 1e18} LVL`;
+                cashbackDescEl.textContent = `۵٪ از هر ثبت‌نام به این صندوق اضافه می‌شود. مجموع فعلی: ${Number(cashback) / 1e18} CPA`;
             }
         } catch (e) {
             cashbackValueEl.textContent = '-';
@@ -134,7 +134,7 @@ const updateElement = (id, value) => {
 
     updateElement('user-address', shortenAddress(address));
     updateElement('matic-balance', profile.maticBalance + ' POL');
-    updateElement('lvl-balance', profile.lvlBalance + ' LVL');
+    updateElement('lvl-balance', profile.lvlBalance + ' CPA');
 
     const userDashboard = document.getElementById('user-dashboard');
     const mainContent = document.getElementById('main-content');
@@ -165,7 +165,7 @@ async function fetchUserProfile() {
         const formattedMaticBalance = ethers.formatEther(maticBalance);
         const formattedLvlBalance = ethers.formatUnits(lvlBalance, 18);
         const tokenPriceMaticFormatted = ethers.formatUnits(tokenPriceMatic, 18);
-        // قیمت LVL/USD = (LVL/MATIC) * (MATIC/USD)
+        // قیمت CPA/USD = (CPA/MATIC) * (MATIC/USD)
         const tokenPriceUSD = parseFloat(tokenPriceMaticFormatted) * parseFloat(maticPriceUSD);
         // محاسبه ارزش دلاری
         const maticValueUSD = parseFloat(formattedMaticBalance) * parseFloat(maticPriceUSD);
@@ -200,7 +200,7 @@ async function fetchUserProfile() {
 async function connectWallet() {
     try {
         // بررسی اتصال موجود
-        if (window.contractConfig && window.contractConfig.contract) {
+        if (window.contractConfig && window.contractConfig.contract && window.contractConfig.address) {
             return window.contractConfig;
         }
         
@@ -235,16 +235,23 @@ async function updateNavbarBasedOnUserStatus() {
         }
 
         const { contract, address } = await connectWallet();
-        const userData = await contract.users(address);
         
-        if (userData.activated) {
-            // کاربر فعال - تغییر "ثبت‌نام" به "ارتقا"
-            updateNavbarForActiveUser();
-        } else {
-            // کاربر غیرفعال - ناوبار به حالت پیش‌فرض
+        try {
+            const userData = await contract.users(address);
+            
+            if (userData.activated) {
+                // کاربر فعال - تغییر "ثبت‌نام" به "ارتقا"
+                updateNavbarForActiveUser();
+            } else {
+                // کاربر غیرفعال - ناوبار به حالت پیش‌فرض
+                resetNavbarToDefault();
+            }
+        } catch (userDataError) {
+            console.warn('Could not fetch user data:', userDataError);
             resetNavbarToDefault();
         }
     } catch (error) {
+        console.warn('Error updating navbar:', error);
         resetNavbarToDefault();
     }
 }

@@ -1,5 +1,5 @@
 // learning.js
-let currentCategory = 'blockchain';
+let learningCurrentCategory = 'blockchain';
 
 // تابع راه‌اندازی تب یادگیری
 function initializeLearningTab() {
@@ -45,7 +45,7 @@ function switchCategory(categoryName) {
         selectedSection.classList.add('active');
     }
     
-    currentCategory = categoryName;
+    learningCurrentCategory = categoryName;
 }
 
 // راه‌اندازی کارت‌های یادگیری
@@ -183,6 +183,98 @@ document.addEventListener('DOMContentLoaded', function() {
     } else if (document.querySelector('.learning-main-container')) {
         // اگر در صفحه learning.html هستیم
         initializeLearningTab();
+    }
+
+    // Jitsi modal logic
+    const startJitsiBtn = document.getElementById('start-jitsi-btn');
+    if (startJitsiBtn) {
+        startJitsiBtn.addEventListener('click', function() {
+            showJitsiModal();
+        });
+    }
+    const jitsiStartBtn = document.getElementById('jitsi-start-btn');
+    if (jitsiStartBtn) {
+        jitsiStartBtn.addEventListener('click', function() {
+            const room = document.getElementById('jitsi-room-input').value.trim();
+            if (!room) {
+                showLearningMessage('لطفاً نام جلسه را وارد کنید', 'warning');
+                return;
+            }
+            hideJitsiModal();
+            startJitsiSession(room);
+        });
+    }
+    const jitsiCancelBtn = document.getElementById('jitsi-cancel-btn');
+    if (jitsiCancelBtn) {
+        jitsiCancelBtn.addEventListener('click', function() {
+            hideJitsiModal();
+        });
+    }
+    // Stop Jitsi on stop-stream
+    const stopStreamBtn = document.getElementById('stop-stream-btn');
+    if (stopStreamBtn) {
+        stopStreamBtn.addEventListener('click', function() {
+            stopJitsiSession();
+        });
+    }
+
+    // Load session history
+    loadSessionHistory();
+    
+    // Quick sessions button
+    const quickSessionsBtn = document.getElementById('quick-sessions-btn');
+    if (quickSessionsBtn) {
+        quickSessionsBtn.addEventListener('click', showQuickSessionsModal);
+    }
+    
+    // Session history button
+    const sessionHistoryBtn = document.getElementById('session-history-btn');
+    if (sessionHistoryBtn) {
+        sessionHistoryBtn.addEventListener('click', showSessionHistoryModal);
+    }
+    
+    // Quick session buttons
+    document.querySelectorAll('.quick-session-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const roomName = this.getAttribute('data-room');
+            const sessionType = this.getAttribute('data-type');
+            hideQuickSessionsModal();
+            startJitsiSession(roomName, sessionType);
+        });
+    });
+    
+    // Close quick sessions modal
+    const closeQuickSessions = document.getElementById('close-quick-sessions');
+    if (closeQuickSessions) {
+        closeQuickSessions.addEventListener('click', hideQuickSessionsModal);
+    }
+    
+    // Close session history modal
+    const closeSessionHistory = document.getElementById('close-session-history');
+    if (closeSessionHistory) {
+        closeSessionHistory.addEventListener('click', hideSessionHistoryModal);
+    }
+    
+    // Enhanced Jitsi modal logic
+    const jitsiStartBtn = document.getElementById('jitsi-start-btn');
+    if (jitsiStartBtn) {
+        jitsiStartBtn.addEventListener('click', function() {
+            const room = document.getElementById('jitsi-room-input').value.trim();
+            const sessionType = document.getElementById('session-type').value;
+            const autoRecord = document.getElementById('auto-record').checked;
+            const waitingRoom = document.getElementById('waiting-room').checked;
+            
+            if (!room) {
+                showLearningMessage('لطفاً نام جلسه را وارد کنید', 'warning');
+                return;
+            }
+            
+            hideJitsiModal();
+            startJitsiSession(room, sessionType, {
+                autoRecord: autoRecord,
+                waitingRoom: waitingRoom
+            });
+        });
     }
 });
 
@@ -1168,4 +1260,401 @@ function showArchiveTab() {
   showArchiveAdminPanel();
 }
 // راه‌اندازی اولیه تب آرشیو
-setupArchiveTab(); 
+setupArchiveTab();
+
+// Jitsi Meet Integration
+let jitsiApi = null;
+let jitsiActive = false;
+
+function loadJitsiScript(callback) {
+    if (window.JitsiMeetExternalAPI) {
+        callback();
+        return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://meet.jit.si/external_api.js';
+    script.onload = callback;
+    document.body.appendChild(script);
+}
+
+function showJitsiModal() {
+    document.getElementById('jitsi-modal').style.display = 'flex';
+    document.getElementById('jitsi-room-input').value = '';
+}
+
+function hideJitsiModal() {
+    document.getElementById('jitsi-modal').style.display = 'none';
+}
+
+function startJitsiSession(roomName) {
+    if (jitsiActive) return;
+    loadJitsiScript(() => {
+        const domain = 'meet.jit.si';
+        const options = {
+            roomName: roomName,
+            width: '100%',
+            height: 500,
+            parentNode: document.getElementById('jitsi-container'),
+            lang: 'fa',
+            configOverwrite: {
+                startWithAudioMuted: false,
+                startWithVideoMuted: false,
+                prejoinPageEnabled: false,
+                defaultLanguage: 'fa',
+            },
+            interfaceConfigOverwrite: {
+                SHOW_JITSI_WATERMARK: false,
+                SHOW_WATERMARK_FOR_GUESTS: false,
+                SHOW_BRAND_WATERMARK: false,
+                SHOW_POWERED_BY: false,
+                DEFAULT_REMOTE_DISPLAY_NAME: 'مهمان',
+                TOOLBAR_BUTTONS: [
+                    'microphone', 'camera', 'desktop', 'fullscreen', 'fodeviceselection', 'hangup',
+                    'profile', 'chat', 'recording', 'settings', 'raisehand', 'videoquality', 'filmstrip', 'tileview', 'download', 'help', 'mute-everyone', 'security'
+                ]
+            }
+        };
+        document.getElementById('jitsi-container').style.display = 'block';
+        document.getElementById('admin-video').style.display = 'none';
+        jitsiApi = new window.JitsiMeetExternalAPI(domain, options);
+        jitsiActive = true;
+        // End session on hangup
+        jitsiApi.addListener('readyToClose', stopJitsiSession);
+    });
+}
+
+function stopJitsiSession() {
+    if (jitsiApi) {
+        jitsiApi.dispose();
+        jitsiApi = null;
+    }
+    jitsiActive = false;
+    document.getElementById('jitsi-container').style.display = 'none';
+    document.getElementById('admin-video').style.display = '';
+}
+
+// Professional Session Management
+let sessionHistory = [];
+let currentSession = null;
+let sessionTimer = null;
+let participantCount = 0;
+let isRecording = false;
+
+// Load session history from localStorage
+function loadSessionHistory() {
+    try {
+        const saved = localStorage.getItem('cpa_session_history');
+        sessionHistory = saved ? JSON.parse(saved) : [];
+    } catch (e) {
+        sessionHistory = [];
+    }
+}
+
+// Save session history to localStorage
+function saveSessionHistory() {
+    try {
+        localStorage.setItem('cpa_session_history', JSON.stringify(sessionHistory));
+    } catch (e) {
+        console.error('Failed to save session history:', e);
+    }
+}
+
+// Add session to history
+function addSessionToHistory(session) {
+    sessionHistory.unshift(session);
+    if (sessionHistory.length > 50) {
+        sessionHistory = sessionHistory.slice(0, 50);
+    }
+    saveSessionHistory();
+}
+
+// Update session info panel
+function updateSessionInfoPanel() {
+    const panel = document.getElementById('session-info-panel');
+    if (!panel || !currentSession) {
+        if (panel) panel.style.display = 'none';
+        return;
+    }
+    
+    panel.style.display = 'block';
+    document.getElementById('active-session-name').textContent = currentSession.name;
+    document.getElementById('participants-count').textContent = participantCount;
+    
+    if (isRecording) {
+        document.getElementById('recording-status').style.display = 'block';
+    } else {
+        document.getElementById('recording-status').style.display = 'none';
+    }
+}
+
+// Start session timer
+function startSessionTimer() {
+    if (sessionTimer) clearInterval(sessionTimer);
+    
+    const startTime = Date.now();
+    sessionTimer = setInterval(() => {
+        const duration = Date.now() - startTime;
+        const hours = Math.floor(duration / 3600000);
+        const minutes = Math.floor((duration % 3600000) / 60000);
+        const seconds = Math.floor((duration % 60000) / 1000);
+        
+        document.getElementById('session-duration').textContent = 
+            `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }, 1000);
+}
+
+// Stop session timer
+function stopSessionTimer() {
+    if (sessionTimer) {
+        clearInterval(sessionTimer);
+        sessionTimer = null;
+    }
+}
+
+// Show quick sessions modal
+function showQuickSessionsModal() {
+    document.getElementById('quick-sessions-modal').style.display = 'flex';
+}
+
+// Hide quick sessions modal
+function hideQuickSessionsModal() {
+    document.getElementById('quick-sessions-modal').style.display = 'none';
+}
+
+// Show session history modal
+function showSessionHistoryModal() {
+    const modal = document.getElementById('session-history-modal');
+    const list = document.getElementById('session-history-list');
+    
+    list.innerHTML = '';
+    
+    if (sessionHistory.length === 0) {
+        list.innerHTML = '<p style="color:#888; text-align:center; padding:2rem;">هیچ جلسه‌ای در تاریخچه وجود ندارد.</p>';
+    } else {
+        sessionHistory.forEach(session => {
+            const sessionCard = document.createElement('div');
+            sessionCard.className = 'session-card';
+            sessionCard.innerHTML = `
+                <div class="session-card-header">
+                    <h4 class="session-card-title">${session.name}</h4>
+                    <span class="session-card-date">${session.date}</span>
+                </div>
+                <div class="session-card-details">
+                    <div class="session-card-detail">نوع: ${getSessionTypeName(session.type)}</div>
+                    <div class="session-card-detail">مدت: ${session.duration}</div>
+                    <div class="session-card-detail">شرکت‌کنندگان: ${session.participants}</div>
+                    ${session.recorded ? '<div class="session-card-detail" style="color:#ff6b6b;">🔴 ضبط شده</div>' : ''}
+                </div>
+                <div class="session-card-actions">
+                    <button onclick="joinSessionFromHistory('${session.roomName}')" class="session-card-btn">پیوستن مجدد</button>
+                    <button onclick="deleteSessionFromHistory('${session.roomName}')" class="session-card-btn danger">حذف</button>
+                </div>
+            `;
+            list.appendChild(sessionCard);
+        });
+    }
+    
+    modal.style.display = 'flex';
+}
+
+// Delete session from history
+function deleteSessionFromHistory(roomName) {
+    if (confirm('آیا مطمئن هستید که می‌خواهید این جلسه را از تاریخچه حذف کنید؟')) {
+        sessionHistory = sessionHistory.filter(session => session.roomName !== roomName);
+        saveSessionHistory();
+        showSessionHistoryModal(); // Refresh the modal
+        showLearningMessage('جلسه از تاریخچه حذف شد.', 'success');
+    }
+}
+
+// Hide session history modal
+function hideSessionHistoryModal() {
+    document.getElementById('session-history-modal').style.display = 'none';
+}
+
+// Get session type name
+function getSessionTypeName(type) {
+    const types = {
+        'class': 'کلاس آموزشی',
+        'meeting': 'جلسه کاری',
+        'consultation': 'مشاوره',
+        'presentation': 'ارائه'
+    };
+    return types[type] || type;
+}
+
+// Join session from history
+function joinSessionFromHistory(roomName) {
+    hideSessionHistoryModal();
+    startJitsiSession(roomName);
+}
+
+// Enhanced Jitsi session start
+function startJitsiSession(roomName, sessionType = 'class', settings = {}) {
+    if (jitsiActive) return;
+    
+    loadJitsiScript(() => {
+        const domain = 'meet.jit.si';
+        const options = {
+            roomName: roomName,
+            width: '100%',
+            height: 500,
+            parentNode: document.getElementById('jitsi-container'),
+            lang: 'fa',
+            configOverwrite: {
+                startWithAudioMuted: false,
+                startWithVideoMuted: false,
+                prejoinPageEnabled: settings.waitingRoom || false,
+                defaultLanguage: 'fa',
+                fileRecordingsEnabled: settings.autoRecord || false,
+                liveStreamingEnabled: true,
+                recordingServiceEnabled: settings.autoRecord || false,
+            },
+            interfaceConfigOverwrite: {
+                SHOW_JITSI_WATERMARK: false,
+                SHOW_WATERMARK_FOR_GUESTS: false,
+                SHOW_BRAND_WATERMARK: false,
+                SHOW_POWERED_BY: false,
+                DEFAULT_REMOTE_DISPLAY_NAME: 'مهمان',
+                TOOLBAR_BUTTONS: [
+                    'microphone', 'camera', 'desktop', 'fullscreen', 'fodeviceselection', 'hangup',
+                    'profile', 'chat', 'recording', 'settings', 'raisehand', 'videoquality', 'filmstrip', 'tileview', 'download', 'help', 'mute-everyone', 'security'
+                ]
+            }
+        };
+        
+        document.getElementById('jitsi-container').style.display = 'block';
+        document.getElementById('admin-video').style.display = 'none';
+        jitsiApi = new window.JitsiMeetExternalAPI(domain, options);
+        jitsiActive = true;
+        
+        // Set current session
+        currentSession = {
+            name: roomName,
+            type: sessionType,
+            roomName: roomName,
+            startTime: new Date().toISOString(),
+            date: new Date().toLocaleDateString('fa-IR'),
+            participants: 0,
+            recorded: settings.autoRecord || false
+        };
+        
+        // Start timer and update UI
+        startSessionTimer();
+        updateSessionInfoPanel();
+        
+        // Event listeners
+        jitsiApi.addListener('readyToClose', stopJitsiSession);
+        jitsiApi.addListener('participantJoined', () => {
+            participantCount++;
+            updateSessionInfoPanel();
+        });
+        jitsiApi.addListener('participantLeft', () => {
+            participantCount = Math.max(0, participantCount - 1);
+            updateSessionInfoPanel();
+        });
+        jitsiApi.addListener('recordingStatusChanged', (data) => {
+            isRecording = data.on;
+            updateSessionInfoPanel();
+        });
+        
+        showLearningMessage(`جلسه "${roomName}" با موفقیت شروع شد!`, 'success');
+    });
+}
+
+// Enhanced stop session
+function stopJitsiSession() {
+    if (jitsiApi) {
+        jitsiApi.dispose();
+        jitsiApi = null;
+    }
+    
+    jitsiActive = false;
+    stopSessionTimer();
+    
+    // Save session to history
+    if (currentSession) {
+        const duration = document.getElementById('session-duration').textContent;
+        currentSession.duration = duration;
+        currentSession.participants = participantCount;
+        currentSession.endTime = new Date().toISOString();
+        addSessionToHistory(currentSession);
+        currentSession = null;
+    }
+    
+    // Reset counters
+    participantCount = 0;
+    isRecording = false;
+    
+    document.getElementById('jitsi-container').style.display = 'none';
+    document.getElementById('admin-video').style.display = '';
+    updateSessionInfoPanel();
+    
+    showLearningMessage('جلسه ویدیویی پایان یافت.', 'info');
+}
+
+// Initialize professional features
+document.addEventListener('DOMContentLoaded', function() {
+    // ... existing code ...
+    
+    // Load session history
+    loadSessionHistory();
+    
+    // Quick sessions button
+    const quickSessionsBtn = document.getElementById('quick-sessions-btn');
+    if (quickSessionsBtn) {
+        quickSessionsBtn.addEventListener('click', showQuickSessionsModal);
+    }
+    
+    // Session history button
+    const sessionHistoryBtn = document.getElementById('session-history-btn');
+    if (sessionHistoryBtn) {
+        sessionHistoryBtn.addEventListener('click', showSessionHistoryModal);
+    }
+    
+    // Quick session buttons
+    document.querySelectorAll('.quick-session-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const roomName = this.getAttribute('data-room');
+            const sessionType = this.getAttribute('data-type');
+            hideQuickSessionsModal();
+            startJitsiSession(roomName, sessionType);
+        });
+    });
+    
+    // Close quick sessions modal
+    const closeQuickSessions = document.getElementById('close-quick-sessions');
+    if (closeQuickSessions) {
+        closeQuickSessions.addEventListener('click', hideQuickSessionsModal);
+    }
+    
+    // Close session history modal
+    const closeSessionHistory = document.getElementById('close-session-history');
+    if (closeSessionHistory) {
+        closeSessionHistory.addEventListener('click', hideSessionHistoryModal);
+    }
+    
+    // Enhanced Jitsi modal logic
+    const jitsiStartBtn = document.getElementById('jitsi-start-btn');
+    if (jitsiStartBtn) {
+        jitsiStartBtn.addEventListener('click', function() {
+            const room = document.getElementById('jitsi-room-input').value.trim();
+            const sessionType = document.getElementById('session-type').value;
+            const autoRecord = document.getElementById('auto-record').checked;
+            const waitingRoom = document.getElementById('waiting-room').checked;
+            
+            if (!room) {
+                showLearningMessage('لطفاً نام جلسه را وارد کنید', 'warning');
+                return;
+            }
+            
+            hideJitsiModal();
+            startJitsiSession(room, sessionType, {
+                autoRecord: autoRecord,
+                waitingRoom: waitingRoom
+            });
+        });
+    }
+    
+    // ... existing code ...
+}); 

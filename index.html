@@ -26,7 +26,7 @@
 </head>
 <body>
   <a href="https://levelupwithus.netlify.app/" target="_blank" style="position:fixed;top:18px;left:24px;z-index:2000;display:flex;align-items:center;text-decoration:none;">
-    <img src="lvl.jpg" alt="LVL Logo" style="height:48px;width:auto;border-radius:16px;box-shadow:0 2px 12px #00ff8840;transition:transform 0.2s;">
+            <img src="lvl.jpg" alt="CPA Logo" style="height:48px;width:auto;border-radius:16px;box-shadow:0 2px 12px #00ff8840;transition:transform 0.2s;">
   </a>
 
   <div id="main-dashboard" class="page-section expandable-container">
@@ -51,7 +51,7 @@
         <div class="dashboard-card">
           <div class="dashboard-card-icon"></div>
           <div class="dashboard-card-content">
-            <div id="circulating-supply">-LVL</div>
+            <div id="circulating-supply">-CPA</div>
             <h4 style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;text-transform:uppercase;font-size:1.1rem;">TOTAL SUPPLY</h4>
       </div>
     </div>
@@ -66,15 +66,15 @@
     <div class="dashboard-card">
           <div class="dashboard-card-icon"></div>
           <div class="dashboard-card-content">
-            <div id="point-value">-LVL</div>
+            <div id="point-value">-CPA</div>
             <h4 style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;text-transform:uppercase;font-size:1.1rem;">POINT VALUE</h4>
       </div>
     </div>
     <div class="dashboard-card">
       <div class="dashboard-card-icon"></div>
       <div class="dashboard-card-content">
-        <div id="contract-token-balance">-LVL</div>
-        <h4 style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;text-transform:uppercase;font-size:1.1rem;">LVL BALANCE</h4>
+            <div id="contract-token-balance">-CPA</div>
+    <h4 style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;text-transform:uppercase;font-size:1.1rem;">CPA BALANCE</h4>
       </div>
     </div>
     <div class="dashboard-card">
@@ -99,7 +99,7 @@
   <div id="price-chart-section" class="page-section expandable-container" style="width:100vw;max-width:none;margin:0;left:0;right:0;padding:0.5rem 0;">
     <div class="expand-header" style="padding:0 1.5rem;">
       <h2 style="margin:0 0 0.5rem 0;">📈 چارت قیمت‌ها</h2>
-      <p style="margin:0 0 0.5rem 0;">نمایش لحظه‌ای قیمت‌های توکن LVL، POL و نرخ تبدیل</p>
+              <p style="margin:0 0 0.5rem 0;">نمایش لحظه‌ای قیمت‌های توکن CPA، POL و نرخ تبدیل</p>
     </div>
     <div class="expand-content" style="padding:0;">
       <div class="price-chart-container" style="padding:0;width:100%;">
@@ -118,12 +118,12 @@
         <!-- Price Cards Grid -->
         <div class="price-chart-squares-row" style="margin:0 auto;gap:1.2rem;display:flex;flex-direction:row;justify-content:center;align-items:center;background:none;border:none;box-shadow:none;width:90%;max-width:480px;">
           <div style="display:flex;flex-direction:column;align-items:center;font-size:1.1rem;flex:1;min-width:120px;text-align:center;padding:0.7rem 1.2rem;background:#181c2a;border-radius:16px;box-shadow:0 2px 8px #0002;">
-            <span style="font-weight:bold;color:#00ff88;" id="chart-lvl-usd">-</span>
-            <span style="color:#00ccff;font-size:0.95rem;">LVL (USD)</span>
+                    <span style="font-weight:bold;color:#00ff88;" id="chart-lvl-usd">-</span>
+        <span style="color:#00ccff;font-size:0.95rem;">CPA (USD)</span>
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;font-size:1.1rem;flex:1;min-width:120px;text-align:center;padding:0.7rem 1.2rem;background:#181c2a;border-radius:16px;box-shadow:0 2px 8px #0002;">
-            <span style="font-weight:bold;color:#00ccff;" id="chart-lvl-pol">-</span>
-            <span style="color:#00ccff;font-size:0.95rem;">LVL / POL</span>
+                    <span style="font-weight:bold;color:#00ccff;" id="chart-lvl-pol">-</span>
+        <span style="color:#00ccff;font-size:0.95rem;">CPA / POL</span>
           </div>
           <div style="display:flex;flex-direction:column;align-items:center;font-size:1.1rem;flex:1;min-width:120px;text-align:center;padding:0.7rem 1.2rem;background:#181c2a;border-radius:16px;box-shadow:0 2px 8px #0002;">
             <span style="font-weight:bold;color:#ff6b6b;" id="chart-pol-usd">-</span>
@@ -171,8 +171,8 @@
         <form id="swapForm" class="swap-form">
           <label for="swapDirection">نوع تبدیل:</label>
           <select id="swapDirection">
-            <option value="matic-to-lvl">POL → LVL</option>
-            <option value="lvl-to-matic">LVL → POL</option>
+                    <option value="matic-to-lvl">POL → CPA</option>
+        <option value="lvl-to-matic">CPA → POL</option>
           </select>
           <label for="swapAmount">مقدار:</label>
           <div class="amount-row">
@@ -182,7 +182,7 @@
           <div class="swap-info" id="swapInfo">نرخ تبدیل: -</div>
           <button type="submit" id="swapButton">تبدیل</button>
           <div class="balances">
-            <span id="maticBalance">MATIC: -</span> | <span id="lvlBalance">LVL: -</span>
+            <span id="maticBalance">MATIC: -</span> | <span id="lvlBalance">CPA: -</span>
           </div>
           <div class="swap-status" id="swapStatus"></div>
         </form>
@@ -203,11 +203,61 @@
           <div style="display:flex;justify-content:space-between;"><span style="color:#00ff88;">آدرس:</span><span id="user-address" style="direction:ltr;color:#fff;font-weight:bold;">-</span></div>
           <div style="display:flex;justify-content:space-between;margin-top:0.7rem;"><span style="color:#00ff88;">معرف:</span><span id="user-referrer" style="color:#fff;">-</span></div>
           <div style="display:flex;justify-content:space-between;margin-top:0.7rem;"><span style="color:#00ccff;">موجودی POL:</span><span id="user-pol-balance" style="color:#fff;">-</span></div>
-          <div style="display:flex;justify-content:space-between;margin-top:0.7rem;"><span style="color:#00ccff;">موجودی LVL:</span><span id="user-lvl-balance" style="color:#fff;">-</span></div>
+          <div style="display:flex;justify-content:space-between;margin-top:0.7rem;"><span style="color:#00ccff;">موجودی CPA:</span><span id="user-lvl-balance" style="color:#fff;">-</span></div>
           <div style="display:flex;justify-content:space-between;margin-top:0.7rem;"><span style="color:#00ff88;">سقف درآمد باینری:</span><span id="user-binary-cap" style="color:#fff;">-</span></div>
           <div style="display:flex;justify-content:space-between;margin-top:0.7rem;"><span style="color:#00ff88;">دریافت‌شده:</span><span id="user-claimed" style="color:#fff;">-</span></div>
           <div style="display:flex;justify-content:space-between;margin-top:0.7rem;align-items:center;"><span style="color:#00ff88;">لینک دعوت:</span><span id="user-ref-link" style="direction:ltr;color:#fff;background:#181c2a;padding:0.3rem 0.7rem;border-radius:8px;">-</span><button id="copy-ref-link" style="margin-right:0.5rem;background:linear-gradient(90deg,#00ff88,#00ccff);color:#000;border:none;border-radius:8px;padding:0.3rem 1.2rem;cursor:pointer;">کپی</button></div>
         </div>
+        
+        <!-- بخش ثبت‌نام و ارتقا -->
+        <div id="main-register" style="max-width: 600px; margin: 0 auto; padding: 1rem;">
+          <!-- فرم ثبت‌نام برای کاربران جدید -->
+          <div id="registration-form" style="display: none; background: #101c2c; border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 12px #0002;">
+            <h3 style="color: #00ff88; margin-bottom: 1rem; text-align: center;">📝 ثبت‌نام جدید</h3>
+            <div style="margin-bottom: 1rem;">
+              <label for="referrer-address" style="color: #fff; display: block; margin-bottom: 0.5rem;">آدرس معرف (اختیاری):</label>
+              <input type="text" id="referrer-address" placeholder="0x..." style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #333; background: #181c2a; color: #fff; font-family: monospace;">
+            </div>
+            <div id="registration-info"></div>
+            <button id="register-btn" class="register-btn" style="width: 100%; margin-top: 1rem;">ثبت‌نام</button>
+            <div id="register-status" class="profile-status" style="margin-top: 0.5rem;"></div>
+          </div>
+          
+          <!-- فرم ارتقا برای کاربران فعال -->
+          <div id="upgrade-form" style="display: none; background: #101c2c; border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 12px #0002;">
+            <h3 style="color: #00ccff; margin-bottom: 1rem; text-align: center;">🚀 ارتقا حساب</h3>
+            <div style="margin-bottom: 1rem;">
+              <label for="upgrade-amount" style="color: #fff; display: block; margin-bottom: 0.5rem;">مقدار CPA برای ارتقا:</label>
+              <input type="number" id="upgrade-amount" placeholder="0.0" step="0.1" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #333; background: #181c2a; color: #fff;">
+            </div>
+            <div style="background: rgba(0, 0, 0, 0.3); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span style="color: #ccc;">ارزش دلاری:</span>
+                <span id="upgrade-usd-value" style="color: #00ccff; font-weight: bold;">$0.00 USD</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: #ccc;">امتیاز کسب شده:</span>
+                <span id="upgrade-points-gain" style="color: #00ff88; font-weight: bold;">0 امتیاز</span>
+              </div>
+            </div>
+            <button id="upgrade-btn" class="register-btn" style="width: 100%; margin-top: 1rem; background: #00ccff; color: #000;">ارتقا</button>
+            <div id="upgrade-status" class="profile-status" style="margin-top: 0.5rem;"></div>
+          </div>
+          
+          <!-- اطلاعات موجودی -->
+          <div style="background: #101c2c; border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 12px #0002;">
+            <h4 style="color: #fff; margin-bottom: 1rem; text-align: center;">💰 موجودی شما</h4>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                      <span style="color: #ccc;">موجودی CPA:</span>
+        <span id="user-lvl-balance" style="color: #00ff88; font-weight: bold;">-</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: #ccc;">ارزش دلاری:</span>
+              <span id="user-lvl-usd-value" style="color: #00ccff; font-weight: bold;">-</span>
+            </div>
+          </div>
+        </div>
+        
         <!-- نمایش درخت شبکه -->
         <div id="network-tree"></div>
       </div>
@@ -226,7 +276,7 @@
           <div class="profile-row"><span class="profile-label">آدرس:</span><span class="profile-value" id="profile-address">-</span></div>
           <div class="profile-row"><span class="profile-label">معرف:</span><span class="profile-value" id="profile-referrer">-</span></div>
           <div class="profile-row"><span class="profile-label">موجودی POL:</span><span class="profile-value" id="profile-matic">-</span><span class="profile-value" id="profile-matic-usd"></span></div>
-          <div class="profile-row"><span class="profile-label">موجودی LVL:</span><span class="profile-value" id="profile-lvl">-</span><span class="profile-value" id="profile-lvl-usd"></span></div>
+          <div class="profile-row"><span class="profile-label">موجودی CPA:</span><span class="profile-value" id="profile-lvl">-</span><span class="profile-value" id="profile-lvl-usd"></span></div>
           <div class="profile-row"><span class="profile-label">سقف درآمد باینری:</span><span class="profile-value" id="profile-income-cap">-</span></div>
           <div class="profile-row"><span class="profile-label">دریافت‌شده:</span><span class="profile-value" id="profile-received">-</span></div>
           <div class="profile-row"><span class="profile-label">باقیمانده خریدهای قبلی:</span><span class="profile-value" id="profile-purchased-kind">-</span></div>
@@ -291,12 +341,12 @@
     <div class="expand-content">
       <div class="about-container">
         <div class="about-content">
-          <p>LevelUp یک پلتفرم نوآورانه برای آموزش، سرمایه‌گذاری و کسب درآمد از طریق توکن LVL و شبکه باینری است. هدف ما ایجاد بستری شفاف، سریع و کاربرپسند برای همه علاقه‌مندان به دنیای بلاکچین است.</p>
+          <p>CONTINUOUS PROFIT ACADEMY یک پلتفرم نوآورانه برای آموزش، سرمایه‌گذاری و کسب درآمد از طریق توکن CPA و شبکه باینری است. هدف ما ایجاد بستری شفاف، سریع و کاربرپسند برای همه علاقه‌مندان به دنیای بلاکچین است.</p>
           
           <div class="about-features">
             <h3>ویژگی‌های کلیدی پلتفرم</h3>
             <ul>
-              <li>خرید و فروش توکن LVL</li>
+              <li>خرید و فروش توکن CPA</li>
               <li>سیستم پاداش باینری</li>
               <li>فروشگاه محصولات آموزشی</li>
               <li>اخبار و آموزش‌های به‌روز</li>
@@ -356,10 +406,11 @@
     </div>
   </div>
 
-  <footer style="direction:ltr;text-align:left;padding:0.5rem 1rem 0.5rem 0;font-size:0.95rem;color:#aaa;position:fixed;left:0;bottom:0;width:100vw;background:rgba(35,41,70,0.97);z-index:100;text-align:left;">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <div>©  LevelUp Platform. All rights reserved.</div>
-      <div style="color:#aaa;font-size:0.95rem;">Honesty and Service with a Touch of Blockchain</div>
+  <footer style="direction:ltr;text-align:left;padding:0.2rem 1rem;font-size:0.7rem;color:rgba(170,170,170,0.7);position:fixed;left:0;bottom:0;width:100vw;background:rgba(35,41,70,0.75);backdrop-filter:blur(8px);z-index:100;text-align:center;border-top:1px solid rgba(167,134,255,0.3);box-shadow:0 -2px 10px rgba(0,0,0,0.15);">
+    <div style="display:flex;justify-content:center;align-items:center;gap:0.5rem;max-width:300px;margin:0 auto;">
+      <span style="font-size:0.65rem;">© LevelUp</span>
+      <span style="color:rgba(167,134,255,0.6);font-size:0.6rem;">•</span>
+      <span style="font-size:0.6rem;">Blockchain</span>
     </div>
   </footer>
 
@@ -376,9 +427,9 @@
   "></div>
 
   <!-- سایر اسکریپت‌ها -->
-  <script src="js/config.js?v=5.7"></script>
-  <script src="js/web3-interactions.js?v=5.7"></script>
-  <script src="js/main.js?v=5.7"></script>
+  <script src="js/config.js?v=5.8"></script>
+  <script src="js/web3-interactions.js?v=5.8"></script>
+  <script src="js/main.js?v=5.8"></script>
   <script src="js/swap.js?v=5.7"></script>
   <script src="js/network.js?v=5.7"></script>
   <script src="js/profile.js?v=5.7"></script>
@@ -386,8 +437,9 @@
   <script src="js/news.js?v=5.7"></script>
   <script src="js/shop.js?v=5.7"></script>
   <script src="js/learning.js?v=5.7"></script>
-  <script src="js/homepage.js?v=5.7"></script>
+  <script src="js/homepage.js?v=5.8"></script>
   <script src="js/price-chart.js?v=5.7"></script>
+  <script src="js/register.js?v=5.7"></script>
   <script>
     // ذخیره تب فعال در localStorage
     function setActiveTab(tab) {
@@ -399,10 +451,41 @@
       if (savedTab) {
         showTab(savedTab);
       }
+      
+      // بارگذاری خودکار درخت شبکه بعد از اتصال کیف پول
+      setTimeout(async () => {
+        try {
+          if (window.contractConfig && window.contractConfig.address) {
+            // اگر تب network فعال است، درخت را بارگذاری کن
+            const networkSection = document.getElementById('main-network');
+            if (networkSection && networkSection.style.display !== 'none') {
+              if (typeof window.initializeNetworkTab === 'function') {
+                await window.initializeNetworkTab();
+              }
+            }
+          }
+        } catch (error) {
+          console.log('Network tree auto-load error:', error);
+        }
+      }, 4000); // 4 ثانیه صبر کن تا همه چیز لود شود
     });
     // افزودن ذخیره‌سازی به کلیک هر تب
     document.getElementById('tab-swap-btn').onclick = function() { setActiveTab('swap'); showTab('swap'); };
-    document.getElementById('tab-network-btn').onclick = function() { setActiveTab('network'); showTab('network'); };
+    document.getElementById('tab-network-btn').onclick = async function() { 
+        setActiveTab('network'); 
+        showTab('network'); 
+        
+        // بارگذاری خودکار درخت شبکه
+        setTimeout(async () => {
+            try {
+                if (typeof window.initializeNetworkTab === 'function') {
+                    await window.initializeNetworkTab();
+                }
+            } catch (error) {
+                console.log('Network tab click load error:', error);
+            }
+        }, 500);
+    };
     document.getElementById('tab-profile-btn').onclick = function() { setActiveTab('profile'); showTab('profile'); };
     document.getElementById('tab-reports-btn').onclick = function() { setActiveTab('reports'); showTab('reports'); };
     // NEWS and SHOP are now separate pages - no event listeners needed

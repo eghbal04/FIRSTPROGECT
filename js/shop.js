@@ -90,23 +90,23 @@ async function loadProducts() {
         const deployerAddress = await contract.deployer();
         // Wallet connected, loading shop products...
         
-        // دریافت موجودی LVL کاربر
-        const lvlBalance = await contract.balanceOf(address);
-        const lvlPrice = await contract.getTokenPrice();
+        // دریافت موجودی CPA کاربر
+        const cpaBalance = await contract.balanceOf(address);
+        const cpaPrice = await contract.getTokenPrice();
         
         // دریافت باقیمانده خرید کاربر
         const user = await contract.users(address);
         const totalPurchasedKind = user.totalPurchasedKind || 0n;
         const purchasedKindFormatted = parseFloat(ethers.formatUnits(totalPurchasedKind, 18));
         
-        // محاسبه ارزش دلاری موجودی LVL
-        const lvlValueUSD = (parseFloat(ethers.formatEther(lvlBalance)) * parseFloat(ethers.formatUnits(lvlPrice, 18))).toFixed(2);
+        // محاسبه ارزش دلاری موجودی CPA
+        const cpaValueUSD = (parseFloat(ethers.formatEther(cpaBalance)) * parseFloat(ethers.formatUnits(cpaPrice, 18))).toFixed(2);
         
-        // تبدیل موجودی LVL به عدد
-        const userLVLBalance = parseFloat(ethers.formatEther(lvlBalance));
+        // تبدیل موجودی CPA به عدد
+        const userCPABalance = parseFloat(ethers.formatEther(cpaBalance));
         
-        // نمایش محصولات با موجودی واقعی LVL و باقیمانده خرید
-        displayProducts(products, lvlValueUSD, userLVLBalance, purchasedKindFormatted);
+        // نمایش محصولات با موجودی واقعی CPA و باقیمانده خرید
+        displayProducts(products, cpaValueUSD, userCPABalance, purchasedKindFormatted);
         
         // اگر کاربر deployer است، گزینه‌های مدیریتی را نمایش بده
         if (address.toLowerCase() === deployerAddress.toLowerCase()) {
@@ -123,7 +123,7 @@ async function loadProducts() {
 }
 
 // تابع نمایش محصولات
-function displayProducts(products, userBalanceUSD, userLVLBalance, purchasedKind) {
+    function displayProducts(products, userBalanceUSD, userCPABalance, purchasedKind) {
     const productsList = document.getElementById('products-list');
     if (!productsList) {
         console.error('Products list container not found');
@@ -139,9 +139,9 @@ function displayProducts(products, userBalanceUSD, userLVLBalance, purchasedKind
     balanceDisplay.innerHTML = `
         <h4 class="shop-balance-title">موجودی شما</h4>
         <div class="shop-balance-usd">$${userBalanceUSD}</div>
-        <div class="shop-balance-lvl">(~${userLVLBalance.toFixed(2)} LVL)</div>
+        <div class="shop-balance-lvl">(~${userCPABalance.toFixed(2)} CPA)</div>
         <div class="shop-balance-purchased" style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #a786ff33; color: #a786ff; font-size: 0.9rem;">
-            باقیمانده خریدهای قبلی: ${purchasedKind.toFixed(5)} LVL
+            باقیمانده خریدهای قبلی: ${purchasedKind.toFixed(5)} CPA
         </div>
     `;
     productsList.appendChild(balanceDisplay);
@@ -151,11 +151,11 @@ function displayProducts(products, userBalanceUSD, userLVLBalance, purchasedKind
         const productCard = document.createElement('div');
         productCard.className = 'product-card';
         
-        // محاسبه قیمت در LVL (تقریبی - 1 USD = 1 LVL برای سادگی)
-        const priceInLVL = product.price; // فعلاً همان قیمت USD را استفاده می‌کنیم
+        // محاسبه قیمت در CPA (تقریبی - 1 USD = 1 CPA برای سادگی)
+        const priceInCPA = product.price; // فعلاً همان قیمت USD را استفاده می‌کنیم
         
         // بررسی اینکه آیا کاربر موجودی کافی دارد
-        const hasSufficientBalance = userLVLBalance >= priceInLVL;
+        const hasSufficientBalance = userCPABalance >= priceInCPA;
         
         // نمایش درصد سود ثابت (غیرقابل انتخاب)
         const percentDisplay = `<span style='font-size:0.95em; color:#a786ff;'>حاشیه سود: ${product.percent}%</span>`;
@@ -166,7 +166,7 @@ function displayProducts(products, userBalanceUSD, userLVLBalance, purchasedKind
                 <p class="product-desc">${product.description}</p>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <span class="product-price">${priceInLVL} LVL</span>
+                        <span class="product-price">${priceInCPA} CPA</span>
                         <br>
                         <span class="product-price-usd">(~$${product.price})</span>
                         ${!hasSufficientBalance ? `<br><span class="product-insufficient">موجودی ناکافی</span>` : ''}
@@ -175,7 +175,7 @@ function displayProducts(products, userBalanceUSD, userLVLBalance, purchasedKind
                     </div>
                     <button class="buy-btn ${hasSufficientBalance ? 'enabled' : 'disabled'}" 
                             data-product-id="${product.id}" 
-                            data-price="${priceInLVL}"
+                            data-price="${priceInCPA}"
                             ${!hasSufficientBalance ? 'disabled' : ''}>
                         ${hasSufficientBalance ? 'خرید محصول' : 'موجودی ناکافی'}
                     </button>
@@ -218,15 +218,15 @@ async function purchaseProduct(productId, price, percent, button) {
 
         // بررسی موجودی کاربر
         const profile = await fetchUserProfile();
-        const userBalance = parseFloat(profile.lvlBalance);
+        const userBalance = parseFloat(profile.cpaBalance);
         
         if (userBalance < price) {
-            showShopError("موجودی شما کافی نیست. موجودی: " + userBalance + " LVL");
+            showShopError("موجودی شما کافی نیست. موجودی: " + userBalance + " CPA");
             return;
         }
 
         // تأیید خرید
-        const confirmed = confirm(`آیا از خرید این محصول به قیمت ${price} LVL با ${percent}% ورود به باینری اطمینان دارید؟`);
+        const confirmed = confirm(`آیا از خرید این محصول به قیمت ${price} CPA با ${percent}% ورود به باینری اطمینان دارید؟`);
         if (!confirmed) return;
 
         // غیرفعال کردن دکمه
@@ -310,14 +310,6 @@ function showShopSuccess(message) {
 // تابع اتصال به کیف پول
 async function connectWallet() {
     try {
-        // استفاده از تابع مرکزی connectWallet
-        if (window.connectWallet) {
-            const result = await window.connectWallet();
-            if (result && result.contract && result.address) {
-                return result;
-            }
-        }
-        
         // بررسی اتصال موجود
         if (window.contractConfig && window.contractConfig.contract && window.contractConfig.address) {
             return {
@@ -367,22 +359,34 @@ async function checkConnection() {
         }
         
         const { contract, address } = result;
-        const deployerAddress = await contract.deployer();
         
-        if (address.toLowerCase() === deployerAddress.toLowerCase()) {
-            // کاربر ادمین اصلی است
-            showAdminOptions();
-        } else if (isShopSubAdmin(address)) {
-            // کاربر ساب ادمین شاپ است
-            showAdminOptions();
-            setupLimitedShopAdminControls(address);
+        try {
+            const deployerAddress = await contract.deployer();
+            
+            if (address.toLowerCase() === deployerAddress.toLowerCase()) {
+                // کاربر ادمین اصلی است
+                showAdminOptions();
+            } else if (isShopSubAdmin(address)) {
+                // کاربر ساب ادمین شاپ است
+                showAdminOptions();
+                setupLimitedShopAdminControls(address);
+            }
+        } catch (deployerError) {
+            console.warn('Could not fetch deployer address:', deployerError);
+            // Continue without admin options if deployer check fails
         }
         
-        await fetchUserProfile();
+        try {
+            await fetchUserProfile();
+        } catch (profileError) {
+            console.warn('Could not fetch user profile:', profileError);
+            // Continue without profile if it fails
+        }
+        
         return { connected: true, address, contract };
     } catch (e) {
         console.error('Error checking connection:', e);
-        showShopError('خطا در اتصال به کیف پول: ' + (e.message || e));
+        // Don't show error message for connection failures, just return the error
         return { connected: false, error: e.message };
     }
 }
@@ -398,7 +402,7 @@ async function fetchUserProfile() {
         }
 
         // دریافت موجودی‌ها به صورت موازی
-        const [maticBalance, lvlBalance] = await Promise.all([
+        const [maticBalance, cpaBalance] = await Promise.all([
             provider.getBalance(address),
             contract.balanceOf(address)
         ]);
@@ -406,7 +410,7 @@ async function fetchUserProfile() {
         return {
             address,
             maticBalance: ethers.formatEther(maticBalance), // POL
-            lvlBalance: ethers.formatEther(lvlBalance)
+            cpaBalance: ethers.formatEther(cpaBalance)
         };
     } catch (error) {
         console.error("Error fetching user profile:", error);
@@ -414,10 +418,25 @@ async function fetchUserProfile() {
     }
 }
 
-function showAdminOptions() {
+async function showAdminOptions() {
     // جلوگیری از تکرار پنل ادمین شاپ
     if (document.querySelector('.shop-admin-panel')) return;
-
+    const currentAddress = window.contractConfig?.address;
+    const contract = window.contractConfig?.contract;
+    if (!currentAddress || !contract) return;
+    const deployerAddress = await contract.deployer();
+    if (currentAddress.toLowerCase() !== deployerAddress.toLowerCase()) {
+        // حذف کامل پنل و دکمه‌های ساب‌ادمین از DOM برای غیرادمین
+        const subAdminPanel = document.getElementById('shop-sub-admins-container');
+        if (subAdminPanel) subAdminPanel.remove();
+        const addBtn = document.getElementById('add-shop-sub-admin-btn');
+        const viewBtn = document.getElementById('view-shop-sub-admins-btn');
+        if (addBtn) addBtn.remove();
+        if (viewBtn) viewBtn.remove();
+        const modal = document.getElementById('shop-sub-admin-modal');
+        if (modal) modal.remove();
+        return;
+    }
     const productsList = document.getElementById('products-list');
     if (!productsList) return;
     const adminDiv = document.createElement('div');
@@ -433,14 +452,12 @@ function showAdminOptions() {
         <div id="view-orders-container" style="display:none;margin-top:1rem;"></div>
     `;
     productsList.prepend(adminDiv);
-
     document.getElementById('add-product-btn').onclick = showAddProductForm;
     document.getElementById('edit-products-btn').onclick = showEditProductsForm;
     document.getElementById('view-orders-btn').onclick = showOrdersList;
     document.getElementById('deposit-matic-btn').onclick = depositMaticToContract;
-    
-    // راه‌اندازی کنترل‌های ساب ادمین شاپ
-    setupShopSubAdminControls();
+    // فقط اگر کاربر ادمین (deployer) است، کنترل‌های ساب ادمین را فعال کن
+    await setupShopSubAdminControls();
 }
 
 function showAddProductForm() {
@@ -452,7 +469,7 @@ function showAddProductForm() {
             <h5 style="color:#00ccff;">افزودن محصول جدید</h5>
             <input type="text" id="new-product-name" placeholder="نام محصول" required style="margin:0.5rem;width:90%;"><br>
             <input type="text" id="new-product-desc" placeholder="توضیحات محصول" required style="margin:0.5rem;width:90%;"><br>
-            <input type="number" id="new-product-price" placeholder="قیمت (LVL)" required min="1" style="margin:0.5rem;width:90%;"><br>
+            <input type="number" id="new-product-price" placeholder="قیمت (CPA)" required min="1" style="margin:0.5rem;width:90%;"><br>
             <input type="text" id="new-product-icon" placeholder="ایموجی یا آیکون" maxlength="2" style="margin:0.5rem;width:90%;"><br>
             <input type="color" id="new-product-color" value="#00ccff" style="margin:0.5rem;"><br>
             <input type="number" id="new-product-percent" placeholder="درصد سود (مثلاً 30)" required min="1" max="100" style="margin:0.5rem;width:90%;"><br>
@@ -668,7 +685,7 @@ function showOrdersList() {
                     </div>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;font-size:0.9rem;">
                         <div><strong>محصول:</strong> ${order.productName}</div>
-                        <div><strong>قیمت:</strong> ${order.price} LVL</div>
+                        <div><strong>قیمت:</strong> ${order.price} CPA</div>
                         <div><strong>درصد سود:</strong> ${order.percent}%</div>
                         <div><strong>مشتری:</strong> ${shortAddress}</div>
                         <div><strong>تاریخ:</strong> ${order.timestamp}</div>
@@ -714,7 +731,7 @@ function viewOrderDetails(orderId) {
 سفارش #${order.id}
 
 محصول: ${order.productName}
-قیمت: ${order.price} LVL
+        قیمت: ${order.price} CPA
 درصد سود: ${order.percent}%
 آدرس مشتری: ${order.customerAddress}
 هش تراکنش: ${order.transactionHash}
@@ -732,7 +749,7 @@ function copyOrderInfo(orderId) {
         return;
     }
     
-    const orderInfo = `سفارش #${order.id} - ${order.productName} - ${order.price} LVL - ${order.customerAddress} - ${order.transactionHash}`;
+            const orderInfo = `سفارش #${order.id} - ${order.productName} - ${order.price} CPA - ${order.customerAddress} - ${order.transactionHash}`;
     copyToClipboard(orderInfo);
     showShopSuccess('اطلاعات سفارش کپی شد!');
 }
@@ -759,7 +776,7 @@ function exportOrdersToCSV() {
     }
     
     const csvContent = [
-        ['ID', 'Product Name', 'Price (LVL)', 'Percent', 'Customer Address', 'Transaction Hash', 'Timestamp', 'Status'],
+        ['ID', 'Product Name', 'Price (CPA)', 'Percent', 'Customer Address', 'Transaction Hash', 'Timestamp', 'Status'],
         ...orders.map(order => [
             order.id,
             order.productName,
@@ -801,7 +818,24 @@ function clearAllOrders() {
 }
 
 // --- ساب ادمین شاپ ---
-function setupShopSubAdminControls() {
+async function setupShopSubAdminControls() {
+    const currentAddress = window.contractConfig?.address;
+    const contract = window.contractConfig?.contract;
+    if (!currentAddress || !contract) return;
+    const deployerAddress = await contract.deployer();
+    if (currentAddress.toLowerCase() !== deployerAddress.toLowerCase()) {
+        // حذف کامل پنل و دکمه‌های ساب‌ادمین از DOM برای غیرادمین
+        const subAdminPanel = document.getElementById('shop-sub-admins-container');
+        if (subAdminPanel) subAdminPanel.remove();
+        const addBtn = document.getElementById('add-shop-sub-admin-btn');
+        const viewBtn = document.getElementById('view-shop-sub-admins-btn');
+        if (addBtn) addBtn.remove();
+        if (viewBtn) viewBtn.remove();
+        const modal = document.getElementById('shop-sub-admin-modal');
+        if (modal) modal.remove();
+        return;
+    }
+    // فقط برای ادمین:
     const addBtn = document.getElementById('add-shop-sub-admin-btn');
     const viewBtn = document.getElementById('view-shop-sub-admins-btn');
     if (addBtn) addBtn.onclick = showAddShopSubAdminModal;

@@ -37,9 +37,9 @@ async function loadRegisterData(contract, address, tokenPriceUSDFormatted) {
         // دریافت اطلاعات کاربر
         const userData = await contract.users(address);
         
-        // دریافت موجودی LVL کاربر
-        const lvlBalance = await contract.balanceOf(address);
-        const lvlBalanceFormatted = ethers.formatUnits(lvlBalance, 18);
+        // دریافت موجودی CPA کاربر
+        const cpaBalance = await contract.balanceOf(address);
+        const cpaBalanceFormatted = ethers.formatUnits(cpaBalance, 18);
         
         // دریافت قیمت‌ها و اطلاعات ثبت‌نام
         const [regprice, tokenPriceMatic] = await Promise.all([
@@ -50,7 +50,7 @@ async function loadRegisterData(contract, address, tokenPriceUSDFormatted) {
         // دریافت قیمت MATIC/USD از API
         const maticPriceUSD = await window.fetchPolUsdPrice();
         const maticPriceUSDFormatted = parseFloat(maticPriceUSD).toFixed(6);
-        // قیمت LVL/USD = (LVL/MATIC) * (MATIC/USD)
+        // قیمت CPA/USD = (CPA/MATIC) * (MATIC/USD)
         const tokenPriceUSD = parseFloat(tokenPriceMaticFormatted) * parseFloat(maticPriceUSD);
         const tokenPriceUSDFormatted = tokenPriceUSD.toFixed(6);
         const regpriceFormatted = ethers.formatUnits(regprice, 18); // مقدار توکن مورد نیاز
@@ -69,9 +69,9 @@ async function loadRegisterData(contract, address, tokenPriceUSDFormatted) {
         const twelveCentsInTokens = (twelveCentsInMatic * 1e18) / parseFloat(tokenPriceMaticFormatted);
         const twelveCentsInTokensFormatted = twelveCentsInTokens.toFixed(6);
         // محاسبه ارزش دلاری موجودی
-        const lvlBalanceUSD = (parseFloat(lvlBalanceFormatted) * parseFloat(tokenPriceUSDFormatted)).toFixed(2);
+        const cpaBalanceUSD = (parseFloat(cpaBalanceFormatted) * parseFloat(tokenPriceUSDFormatted)).toFixed(2);
         // به‌روزرسانی نمایش موجودی
-        updateBalanceDisplay(lvlBalanceFormatted, lvlBalanceUSD);
+        updateBalanceDisplay(cpaBalanceFormatted, cpaBalanceUSD);
         // بررسی وضعیت ثبت‌نام
         if (userData.activated) {
             // فقط فرم ارتقا را نمایش بده
@@ -128,11 +128,11 @@ window.setRegisterTabSelected = setRegisterTabSelected;
 async function loadUpgradeData(contract, address, tokenPriceUSD) {
     try {
         const userData = await contract.users(address);
-        const lvlBalance = await contract.balanceOf(address);
-        const lvlBalanceFormatted = ethers.formatUnits(lvlBalance, 18);
+        const cpaBalance = await contract.balanceOf(address);
+        const cpaBalanceFormatted = ethers.formatUnits(cpaBalance, 18);
         
         // به‌روزرسانی محاسبات ارتقا
-        updateUpgradeCalculations(lvlBalanceFormatted, tokenPriceUSD, userData.binaryPointCap);
+        updateUpgradeCalculations(cpaBalanceFormatted, tokenPriceUSD, userData.binaryPointCap);
         
     } catch (error) {
         // console.error("Error loading upgrade data:", error);
@@ -140,7 +140,7 @@ async function loadUpgradeData(contract, address, tokenPriceUSD) {
 }
 
 // تابع به‌روزرسانی محاسبات ارتقا
-function updateUpgradeCalculations(lvlBalance, tokenPriceUSD, currentCap) {
+    function updateUpgradeCalculations(cpaBalance, tokenPriceUSD, currentCap) {
     const upgradeAmountInput = document.getElementById('upgrade-amount');
     const usdValueElement = document.getElementById('upgrade-usd-value');
     const pointsGainElement = document.getElementById('upgrade-points-gain');
@@ -162,7 +162,7 @@ function updateUpgradeCalculations(lvlBalance, tokenPriceUSD, currentCap) {
             }
             
             if (upgradeBtn) {
-                const userBalanceNum = parseFloat(lvlBalance);
+                const userBalanceNum = parseFloat(cpaBalance);
                 upgradeBtn.disabled = amount > userBalanceNum;
             }
         });
@@ -308,16 +308,16 @@ function showRegisterError(message) {
 }
 
 // تابع به‌روزرسانی نمایش موجودی
-function updateBalanceDisplay(lvlBalance, lvlBalanceUSD) {
-    const lvlBalanceElement = document.getElementById('user-lvl-balance');
+    function updateBalanceDisplay(cpaBalance, cpaBalanceUSD) {
+        const lvlBalanceElement = document.getElementById('user-lvl-balance');
     const lvlUsdElement = document.getElementById('user-lvl-usd-value');
     
     if (lvlBalanceElement) {
-        lvlBalanceElement.textContent = `${parseFloat(lvlBalance).toFixed(2)} LVL`;
+        lvlBalanceElement.textContent = `${parseFloat(cpaBalance).toFixed(2)} CPA`;
     }
     
     if (lvlUsdElement) {
-        lvlUsdElement.textContent = `$${lvlBalanceUSD} USD`;
+        lvlUsdElement.textContent = `$${cpaBalanceUSD} USD`;
     }
 }
 
@@ -331,7 +331,7 @@ function displayRegistrationInfo(registrationPrice, regprice, tokenPriceUSD, tok
                 <div style="display: grid; gap: 0.5rem; font-size: 0.9rem;">
                     <div style="display: flex; justify-content: space-between;">
                         <span style="color: #ccc;">مقدار توکن مورد نیاز (دقیقاً طبق قرارداد):</span>
-                        <span style="color: #00ff88; font-weight: bold;">${registrationPrice} LVL</span>
+                        <span style="color: #00ff88; font-weight: bold;">${registrationPrice} CPA</span>
                     </div>
                     <div style="display: flex; justify-content: space-between;">
                         <span style="color: #ccc;">ارزش دلاری (هدف قرارداد):</span>
@@ -379,14 +379,12 @@ async function showRegistrationForm() {
         const { contract, address } = window.contractConfig;
         const regprice = await contract.regprice();
         requiredTokenAmount = ethers.formatUnits(regprice, 18);
-        const lvlBalance = await contract.balanceOf(address);
-        userLvlBalance = ethers.formatUnits(lvlBalance, 18);
+        const cpaBalance = await contract.balanceOf(address);
+        userLvlBalance = ethers.formatUnits(cpaBalance, 18);
     } catch (e) {
         requiredTokenAmount = '-';
         userLvlBalance = '0';
     }
-    const requiredTokenInput = document.getElementById('required-token-amount');
-    if (requiredTokenInput) requiredTokenInput.value = requiredTokenAmount;
 
     // دکمه ثبت‌نام
     const registerBtn = document.getElementById('register-btn');
@@ -395,8 +393,8 @@ async function showRegistrationForm() {
         // فعال/غیرفعال کردن دکمه بر اساس موجودی
         if (parseFloat(userLvlBalance) < parseFloat(requiredTokenAmount)) {
             registerBtn.disabled = true;
-            registerBtn.textContent = 'موجودی LVL کافی نیست';
-            if (registerStatus) registerStatus.textContent = 'برای ثبت‌نام باید حداقل '+requiredTokenAmount+' LVL داشته باشید.';
+            registerBtn.textContent = 'موجودی CPA کافی نیست';
+            if (registerStatus) registerStatus.textContent = 'برای ثبت‌نام باید حداقل '+requiredTokenAmount+' CPA داشته باشید.';
         } else {
             registerBtn.disabled = false;
             registerBtn.textContent = 'ثبت‌ نام';

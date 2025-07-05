@@ -24,29 +24,31 @@
     <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
 </head>
 <body>
-    <!-- Header با لوگو و دکمه بازگشت -->
-    <header style="background: #232946; padding: 1rem; border-bottom: 2px solid #a786ff; position: sticky; top: 0; z-index: 1000;">
-        <div style="display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto;">
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <a href="index.html" style="text-decoration: none; color: #a786ff; font-size: 1.2rem; font-weight: bold;">
-                    ← بازگشت به داشبورد
-                </a>
+    <!-- Header کوچک و ساده -->
+    <header style="background: rgba(35, 41, 70, 0.85); backdrop-filter: blur(10px); padding: 0.5rem; border-bottom: 1px solid rgba(167, 134, 255, 0.6); position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000; box-shadow: 0 -2px 10px rgba(0,0,0,0.2);">
+        <div style="display: flex; justify-content: space-between; align-items: center; max-width: 400px; margin: 0 auto; padding: 0 1rem;">
+            <a href="index.html" style="text-decoration: none; color: #a786ff; font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.2rem;">←</span>
+                <span style="display: none;">بازگشت</span>
+            </a>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <img src="lvl.jpg" alt="CPA" style="height: 24px; width: auto; border-radius: 8px;">
+                <span style="color: #a786ff; font-size: 0.9rem; font-weight: bold;">اخبار</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <img src="lvl.jpg" alt="LVL Logo" style="height: 40px; width: auto; border-radius: 12px;">
-                <h1 style="color: #a786ff; margin: 0; font-size: 1.5rem;">اخبار LevelUp</h1>
-            </div>
+            <div style="width: 40px;"></div> <!-- برای تعادل -->
         </div>
     </header>
 
     <!-- Main Content Container -->
-    <div class="news-main-container" style="max-width: 1200px; margin: 0 auto; padding: 1rem;">
+    <div class="news-main-container" style="max-width: 1200px; margin: 0 auto; padding: 1rem; padding-bottom: 4rem;">
         
         <!-- فیلترهای اخبار -->
         <div class="news-filters" style="margin-bottom: 2rem;">
             <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
                 <button class="news-filter-btn active" data-category="all">📰 همه اخبار</button>
                 <button class="news-filter-btn" data-category="crypto">₿ ارزهای دیجیتال</button>
+                <button class="news-filter-btn" data-category="forex">💱 فارکس</button>
+                <button class="news-filter-btn" data-category="economy">📊 اقتصاد</button>
                 <button class="news-filter-btn" data-category="trading">📈 معاملات</button>
                 <button class="news-filter-btn" data-category="platform">🏢 پلتفرم</button>
                 <button class="news-filter-btn" data-category="education">📚 آموزش</button>

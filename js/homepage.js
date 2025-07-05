@@ -6,9 +6,7 @@
 let dashboardLoading = false;
 let dashboardInitialized = false;
 let lastDashboardUpdate = 0;
-let lastConnectionAttempt = 0;
 let dashboardUpdateInterval = null;
-const CONNECTION_COOLDOWN = 3000; // 3 seconds cooldown between connection attempts
 const DASHBOARD_UPDATE_INTERVAL = 30000; // 30 seconds between dashboard updates
 
 // متغیرهای سراسری
@@ -67,11 +65,15 @@ function startDashboardAutoUpdate() {
     
     dashboardUpdateInterval = setInterval(async () => {
         try {
+            // بررسی اینکه آیا صفحه فعال است
+            if (document.hidden) {
+                return; // اگر صفحه مخفی است، به‌روزرسانی نکن
+            }
             await loadDashboardData();
         } catch (error) {
             // console.error('Dashboard auto-update error:', error);
         }
-    }, 30000); // هر 30 ثانیه
+    }, 60000); // هر 1 دقیقه (کاهش فرکانس)
 }
 
 // تابع توقف به‌روزرسانی خودکار داشبورد
@@ -121,7 +123,7 @@ async function loadDashboardData() {
         if (walletConnected.connected) {
             // دریافت داده‌ها به صورت موازی
             const [prices, stats, additionalStats, tradingVolume] = await Promise.all([
-                window.getPrices().catch(() => ({ lvlPriceUSD: 0, lvlPriceMatic: 0 })),
+                window.getPrices().catch(() => ({ cpaPriceUSD: 0, cpaPriceMatic: 0 })),
                 window.getContractStats().catch(() => ({
                     totalSupply: "0",
                     circulatingSupply: "0",
@@ -139,12 +141,19 @@ async function loadDashboardData() {
             // محاسبه تغییرات قیمت
             const priceChanges = await calculatePriceChanges();
             
+            // بارگذاری آمار شبکه
+            try {
+                await window.autoLoadNetworkStats();
+            } catch (error) {
+                console.warn('Failed to load network stats:', error);
+            }
+            
             // به‌روزرسانی UI
             await updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceChanges);
         } else {
             // اگر کیف پول متصل نیست، فقط قیمت‌ها را بارگذاری کن
             try {
-                const prices = await window.getPrices().catch(() => ({ lvlPriceUSD: 0, lvlPriceMatic: 0 }));
+                const prices = await window.getPrices().catch(() => ({ cpaPriceUSD: 0, cpaPriceMatic: 0 }));
                 const defaultStats = {
                     totalSupply: "0",
                     circulatingSupply: "0",
@@ -157,7 +166,7 @@ async function loadDashboardData() {
                 };
                 const defaultAdditionalStats = { wallets: 0, helpFund: 0 };
                 const defaultTradingVolume = 0;
-                const priceChanges = { lvlPriceChange: '0%', maticPriceChange: '0%', volumeChange: '0%' };
+                const priceChanges = { cpaPriceChange: '0%', maticPriceChange: '0%', volumeChange: '0%' };
                 
                 await updateDashboardUI(prices, defaultStats, defaultAdditionalStats, defaultTradingVolume, priceChanges);
                 updateConnectionStatus('info', 'برای مشاهده داده‌های کامل، کیف پول خود را متصل کنید');
@@ -181,14 +190,14 @@ async function calculatePriceChanges() {
         // برای مثال، مقایسه با قیمت قبلی یا میانگین قیمت‌ها
         
         return {
-            lvlPriceChange: '0%',
+            cpaPriceChange: '0%',
             maticPriceChange: '0%',
             volumeChange: '0%'
         };
     } catch (error) {
         // console.error('Dashboard: Error calculating price changes:', error);
         return {
-            lvlPriceChange: '0%',
+            cpaPriceChange: '0%',
             maticPriceChange: '0%',
             volumeChange: '0%'
         };
@@ -217,7 +226,7 @@ async function updateDashboardUI(prices, stats, additionalStats, tradingVolume, 
     };
     
     // به‌روزرسانی قیمت‌ها
-    updateElement('token-price', prices.lvlPriceUSD, '$', '', false, 6);
+    updateElement('token-price', prices.cpaPriceUSD, '$', '', false, 6);
     // نمایش قیمت توکن به POL با نماد علمی
     const updateElementExponential = (id, value, suffix = '') => {
         const element = document.getElementById(id);
@@ -239,7 +248,7 @@ async function updateDashboardUI(prices, stats, additionalStats, tradingVolume, 
             }
         }
     };
-    updateElementExponential('token-price-matic', prices.lvlPriceMatic, ' POL');
+    updateElementExponential('token-price-matic', prices.cpaPriceMatic, ' POL');
     
     // مقداردهی توکن‌های در گردش و کل پوینت‌ها مستقیماً از توابع قرارداد
     try {
@@ -247,7 +256,7 @@ async function updateDashboardUI(prices, stats, additionalStats, tradingVolume, 
             const { contract } = await window.connectWallet();
             // contractTotalSupply
             let supply = await contract.contractTotalSupply();
-            updateElement('circulating-supply', parseInt(ethers.formatUnits(supply, 18)), '', ' LVL', true);
+            updateElement('circulating-supply', parseInt(ethers.formatUnits(supply, 18)), '', ' CPA', true);
             // totalClaimablePoints
             let points = await contract.totalClaimablePoints();
             updateElement('total-points', parseInt(ethers.formatUnits(points, 0)), '', ' POINT', true);
@@ -270,12 +279,12 @@ async function updateDashboardUI(prices, stats, additionalStats, tradingVolume, 
     const tradingVolumeNum = Number(tradingVolume);
     updateElement('trading-volume', isNaN(tradingVolumeNum) ? 0 : tradingVolumeNum, '', ' POL', false, 6);
     
-    // ارزش پوینت = pointValue (به صورت LVL)
-    let pointValueLVL = parseFloat(stats.pointValue);
-    let contractTokenBalanceLVL = parseFloat(stats.contractTokenBalance);
+    // ارزش پوینت = pointValue (به صورت CPA)
+    let pointValueCPA = parseFloat(stats.pointValue);
+    let contractTokenBalanceCPA = parseFloat(stats.contractTokenBalance);
     
-    updateElement('point-value', pointValueLVL, '', ' LVL', false, 6);
-    updateElement('contract-token-balance', contractTokenBalanceLVL, '', ' LVL', false, 4);
+    updateElement('point-value', pointValueCPA, '', ' CPA', false, 6);
+    updateElement('contract-token-balance', contractTokenBalanceCPA, '', ' CPA', false, 4);
     let rewardPoolPOL = parseFloat(stats.rewardPool);
     updateElement('reward-pool', rewardPoolPOL, '', ' POL', false, 4);
 }
@@ -426,13 +435,6 @@ function startConnectionMonitoring() {
     // بررسی تغییرات اتصال MetaMask
     if (typeof window.ethereum !== 'undefined') {
         window.ethereum.on('accountsChanged', async (accounts) => {
-            // Check cooldown to prevent frequent updates
-            const now = Date.now();
-            if (now - lastConnectionAttempt < CONNECTION_COOLDOWN) {
-                return;
-            }
-            lastConnectionAttempt = now;
-            
             if (accounts && accounts.length > 0) {
                 try {
                     // ریست کردن وضعیت اتصال
@@ -454,13 +456,6 @@ function startConnectionMonitoring() {
         });
         
         window.ethereum.on('chainChanged', async (chainId) => {
-            // Check cooldown to prevent frequent updates
-            const now = Date.now();
-            if (now - lastConnectionAttempt < CONNECTION_COOLDOWN) {
-                return;
-            }
-            lastConnectionAttempt = now;
-            
             if (chainId === '0x89') {
                 try {
                     // ریست کردن وضعیت اتصال
@@ -482,13 +477,6 @@ function startConnectionMonitoring() {
         });
         
         window.ethereum.on('connect', async (connectInfo) => {
-            // Check cooldown to prevent frequent updates
-            const now = Date.now();
-            if (now - lastConnectionAttempt < CONNECTION_COOLDOWN) {
-                return;
-            }
-            lastConnectionAttempt = now;
-            
             try {
                 // ریست کردن وضعیت اتصال
                 window.resetConnectionState();
@@ -513,13 +501,6 @@ function startConnectionMonitoring() {
     // بررسی اتصال WalletConnect
     if (window.walletConnectProvider) {
         window.walletConnectProvider.on('accountsChanged', async (accounts) => {
-            // Check cooldown to prevent frequent updates
-            const now = Date.now();
-            if (now - lastConnectionAttempt < CONNECTION_COOLDOWN) {
-                return;
-            }
-            lastConnectionAttempt = now;
-            
             if (accounts && accounts.length > 0) {
                 try {
                     await handleWalletConnectSuccess(window.walletConnectProvider);
@@ -639,14 +620,6 @@ async function connectWithQRCode() {
 // تابع اتصال هوشمند
 async function connectWallet() {
     try {
-        // Check cooldown period - but allow if no connection exists
-        const now = Date.now();
-        if (now - lastConnectionAttempt < CONNECTION_COOLDOWN && window.contractConfig && window.contractConfig.contract) {
-            return window.contractConfig;
-        }
-        
-        lastConnectionAttempt = now;
-        
         // بررسی اتصال موجود
         if (window.contractConfig && window.contractConfig.contract && window.contractConfig.address) {
             return window.contractConfig;

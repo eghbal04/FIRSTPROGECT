@@ -168,19 +168,29 @@ function shortenTransactionHash(hash) {
         try {
             const { contract, address } = await connectWallet();
             const reports = [];
-            const currentBlock = await contract.runner.provider.getBlockNumber();
+            
+            // استفاده از retry برای دریافت block number
+            const currentBlock = await window.retryRpcOperation(async () => {
+                return await contract.runner.provider.getBlockNumber();
+            });
+            
             const fromBlock = Math.max(0, currentBlock - 50000);
             // Activated
             let activatedEvents = [];
-        try {
-                activatedEvents = await contract.queryFilter(contract.filters.Activated(), fromBlock, currentBlock);
-            } catch (e) {}
+            try {
+                activatedEvents = await window.retryRpcOperation(async () => {
+                    return await contract.queryFilter(contract.filters.Activated(), fromBlock, currentBlock);
+                });
+            } catch (e) {
+                console.warn('Failed to fetch Activated events:', e);
+                activatedEvents = [];
+            }
             activatedEvents.forEach(event => {
                 if (event.args.user.toLowerCase() === address.toLowerCase()) {
                     reports.push({
                         type: 'registration',
                         title: 'ثبت‌نام',
-                        amount: formatNumber(event.args.amountLvl || event.args.amountlvl, 18) + ' LVL',
+                        amount: formatNumber(event.args.amountLvl || event.args.amountlvl, 18) + ' CPA',
                         timestamp: event.blockNumber,
                         transactionHash: event.transactionHash,
                         blockNumber: event.blockNumber,
@@ -192,14 +202,19 @@ function shortenTransactionHash(hash) {
             // PurchaseKind
             let purchaseEvents = [];
             try {
-                purchaseEvents = await contract.queryFilter(contract.filters.PurchaseKind(), fromBlock, currentBlock);
-            } catch (e) {}
+                purchaseEvents = await window.retryRpcOperation(async () => {
+                    return await contract.queryFilter(contract.filters.PurchaseKind(), fromBlock, currentBlock);
+                });
+            } catch (e) {
+                console.warn('Failed to fetch PurchaseKind events:', e);
+                purchaseEvents = [];
+            }
                 purchaseEvents.forEach(event => {
                 if (event.args.user.toLowerCase() === address.toLowerCase()) {
                     reports.push({
                         type: 'purchase',
                         title: 'خرید توکن',
-                        amount: formatNumber(event.args.amountLvl || event.args.amountlvl, 18) + ' LVL',
+                        amount: formatNumber(event.args.amountLvl || event.args.amountlvl, 18) + ' CPA',
                         timestamp: event.blockNumber,
                         transactionHash: event.transactionHash,
                         blockNumber: event.blockNumber,
@@ -218,7 +233,7 @@ function shortenTransactionHash(hash) {
                     reports.push({
                         type: 'trading',
                         title: 'خرید توکن با POL',
-                        amount: `${formatNumber(event.args.maticAmount, 18)} POL → ${formatNumber(event.args.tokenAmount, 18)} LVL`,
+                        amount: `${formatNumber(event.args.maticAmount, 18)} POL → ${formatNumber(event.args.tokenAmount, 18)} CPA`,
                         timestamp: event.blockNumber,
                         transactionHash: event.transactionHash,
                         blockNumber: event.blockNumber,
@@ -237,7 +252,7 @@ function shortenTransactionHash(hash) {
                     reports.push({
                         type: 'trading',
                         title: 'فروش توکن',
-                        amount: `${formatNumber(event.args.tokenAmount, 18)} LVL → ${formatNumber(event.args.maticAmount, 18)} POL`,
+                        amount: `${formatNumber(event.args.tokenAmount, 18)} CPA → ${formatNumber(event.args.maticAmount, 18)} POL`,
                         timestamp: event.blockNumber,
                         transactionHash: event.transactionHash,
                         blockNumber: event.blockNumber,
@@ -275,7 +290,7 @@ function shortenTransactionHash(hash) {
                     reports.push({
                         type: 'binary',
                         title: 'دریافت پاداش باینری',
-                        amount: `${formatNumber(event.args.claimerReward, 18)} LVL`,
+                        amount: `${formatNumber(event.args.claimerReward, 18)} CPA`,
                         timestamp: event.blockNumber,
                         transactionHash: event.transactionHash,
                         blockNumber: event.blockNumber,
@@ -313,7 +328,7 @@ function shortenTransactionHash(hash) {
                     reports.push({
                         type: 'transfer',
                         title: 'انتقال توکن',
-                        amount: `${formatNumber(event.args.value, 18)} LVL`,
+                        amount: `${formatNumber(event.args.value, 18)} CPA`,
                         timestamp: event.blockNumber,
                         transactionHash: event.transactionHash,
                         blockNumber: event.blockNumber,
@@ -332,7 +347,7 @@ function shortenTransactionHash(hash) {
                     reports.push({
                         type: 'approval',
                         title: 'تأییدیه انتقال',
-                        amount: `${formatNumber(event.args.value, 18)} LVL`,
+                        amount: `${formatNumber(event.args.value, 18)} CPA`,
                         timestamp: event.blockNumber,
                         transactionHash: event.transactionHash,
                         blockNumber: event.blockNumber,
@@ -364,7 +379,9 @@ function shortenTransactionHash(hash) {
             reports.sort((a, b) => b.blockNumber - a.blockNumber);
             return reports;
         } catch (error) {
-            throw error;
+            console.error('Error fetching reports:', error);
+            // در صورت خطا، گزارش خالی برگردان
+            return [];
         }
     }
     

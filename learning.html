@@ -24,18 +24,18 @@
     <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
 </head>
 <body>
-    <!-- Header با لوگو و دکمه بازگشت -->
-    <header style="background: #232946; padding: 1rem; border-bottom: 2px solid #a786ff; position: sticky; top: 0; z-index: 1000;">
-        <div style="display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto;">
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <a href="index.html" style="text-decoration: none; color: #a786ff; font-size: 1.2rem; font-weight: bold;">
-                    ← بازگشت به داشبورد
-                </a>
+    <!-- Header کوچک و ساده -->
+    <header style="background: rgba(35, 41, 70, 0.85); backdrop-filter: blur(10px); padding: 0.5rem; border-bottom: 1px solid rgba(167, 134, 255, 0.6); position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000; box-shadow: 0 -2px 10px rgba(0,0,0,0.2);">
+        <div style="display: flex; justify-content: space-between; align-items: center; max-width: 400px; margin: 0 auto; padding: 0 1rem;">
+            <a href="index.html" style="text-decoration: none; color: #a786ff; font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.2rem;">←</span>
+                <span style="display: none;">بازگشت</span>
+            </a>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <img src="lvl.jpg" alt="CPA" style="height: 24px; width: auto; border-radius: 8px;">
+                <span style="color: #a786ff; font-size: 0.9rem; font-weight: bold;">یادگیری</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <img src="lvl.jpg" alt="LVL Logo" style="height: 40px; width: auto; border-radius: 12px;">
-                <h1 style="color: #a786ff; margin: 0; font-size: 1.5rem;">مرکز یادگیری LevelUp</h1>
-            </div>
+            <div style="width: 40px;"></div> <!-- برای تعادل -->
         </div>
     </header>
 
@@ -48,7 +48,7 @@
     </div>
 
     <!-- Main Content Container -->
-    <div class="learning-main-container" style="max-width: 1200px; margin: 0 auto; padding: 1rem;">
+    <div class="learning-main-container" style="max-width: 1200px; margin: 0 auto; padding: 1rem; padding-bottom: 4rem;">
         
         <!-- دوره‌های آموزشی -->
         <div id="courses-section" class="learning-content-section">
@@ -364,15 +364,47 @@
                     <span class="live-indicator">🔴 LIVE</span>
                     <span class="viewer-count">👥 <span id="viewer-count">0</span> بیننده</span>
                 </div>
-                <button id="test-stream-btn" style="background: #00ccff; color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; margin-left: 1rem;">
-                    🧪 تست لایو استریم
-                </button>
+                <div class="stream-controls">
+                    <button id="test-stream-btn" style="background: #00ccff; color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; margin-left: 1rem;">
+                        🧪 تست لایو استریم
+                    </button>
+                    <button id="quick-sessions-btn" style="background: #a786ff; color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; margin-left: 0.5rem;">
+                        ⚡ جلسات سریع
+                    </button>
+                    <button id="session-history-btn" style="background: #00ff88; color: #000; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; margin-left: 0.5rem;">
+                        📚 تاریخچه جلسات
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Session Info Panel -->
+            <div id="session-info-panel" class="session-info-panel" style="display:none;">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">🎥 جلسه فعال:</span>
+                        <span id="active-session-name" class="info-value"></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">⏱️ مدت زمان:</span>
+                        <span id="session-duration" class="info-value">00:00:00</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">👥 شرکت‌کنندگان:</span>
+                        <span id="participants-count" class="info-value">0</span>
+                    </div>
+                    <div id="recording-status" class="recording-status" style="display:none;">
+                        🔴 در حال ضبط
+                    </div>
+                </div>
             </div>
             
             <div class="live-stream-container">
                 <!-- ویدیو استریم -->
-                <div class="video-stream">
-                    <video id="admin-video" autoplay muted style="width: 100%; border-radius: 12px; background: #000;">
+                <div class="video-stream" id="video-stream-container">
+                    <!-- Jitsi Meet Placeholder -->
+                    <div id="jitsi-container" style="display:none; width:100%; min-height:400px; border-radius:12px; overflow:hidden; background:#000;"></div>
+                    <!-- Old video fallback (hidden when Jitsi active) -->
+                    <video id="admin-video" autoplay muted style="width: 100%; border-radius: 12px; background: #000; display:none;">
                         <source src="" type="video/webm">
                         مرورگر شما از ویدیو پشتیبانی نمی‌کند.
                     </video>
@@ -382,6 +414,75 @@
                             <span class="stream-time" id="stream-time">00:00:00</span>
                         </div>
                     </div>
+                </div>
+                <!-- Jitsi Start Modal -->
+                <div id="jitsi-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(35,41,70,0.85); z-index:2000; align-items:center; justify-content:center;">
+                  <div style="background:#232946; border-radius:16px; padding:2rem; max-width:400px; margin:auto; box-shadow:0 8px 32px rgba(0,0,0,0.3); text-align:center;">
+                    <h3 style="color:#a786ff; margin-bottom:1rem;">شروع جلسه ویدیویی</h3>
+                    <div style="margin-bottom:1rem;">
+                        <label style="color:#fff; display:block; margin-bottom:0.5rem;">نام جلسه:</label>
+                        <input id="jitsi-room-input" type="text" placeholder="مثلاً: cpa-class1" style="width:100%; padding:0.7rem; border-radius:8px; border:1px solid #a786ff; text-align:center; font-size:1rem; background:#181c2a; color:#fff;">
+                    </div>
+                    <div style="margin-bottom:1rem;">
+                        <label style="color:#fff; display:block; margin-bottom:0.5rem;">نوع جلسه:</label>
+                        <select id="session-type" style="width:100%; padding:0.7rem; border-radius:8px; border:1px solid #a786ff; text-align:center; font-size:1rem; background:#181c2a; color:#fff;">
+                            <option value="class">کلاس آموزشی</option>
+                            <option value="meeting">جلسه کاری</option>
+                            <option value="consultation">مشاوره</option>
+                            <option value="presentation">ارائه</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom:1rem;">
+                        <label style="color:#fff; display:block; margin-bottom:0.5rem;">تنظیمات:</label>
+                        <div style="display:flex; gap:0.5rem; justify-content:center;">
+                            <label style="color:#fff; display:flex; align-items:center; gap:0.3rem;">
+                                <input type="checkbox" id="auto-record" style="margin:0;">
+                                ضبط خودکار
+                            </label>
+                            <label style="color:#fff; display:flex; align-items:center; gap:0.3rem;">
+                                <input type="checkbox" id="waiting-room" style="margin:0;">
+                                اتاق انتظار
+                            </label>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:1rem;">
+                      <button id="jitsi-start-btn" style="flex:1; background:#00ccff; color:#fff; border:none; border-radius:8px; padding:0.7rem; font-weight:bold; cursor:pointer;">شروع جلسه</button>
+                      <button id="jitsi-cancel-btn" style="flex:1; background:#444; color:#fff; border:none; border-radius:8px; padding:0.7rem; font-weight:bold; cursor:pointer;">انصراف</button>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Quick Sessions Modal -->
+                <div id="quick-sessions-modal" class="quick-sessions-modal">
+                  <div class="quick-sessions-content">
+                    <h3 class="professional-modal-title">جلسات سریع</h3>
+                    <div class="quick-sessions-grid">
+                        <button class="quick-session-btn basic-class" data-room="cpa-basic-class" data-type="class">
+                            📚 کلاس پایه CPA
+                        </button>
+                        <button class="quick-session-btn advanced-class" data-room="cpa-advanced-class" data-type="class">
+                            🚀 کلاس پیشرفته CPA
+                        </button>
+                        <button class="quick-session-btn consultation" data-room="cpa-consultation" data-type="consultation">
+                            💼 مشاوره شخصی
+                        </button>
+                        <button class="quick-session-btn meeting" data-room="cpa-meeting" data-type="meeting">
+                            🤝 جلسه تیمی
+                        </button>
+                    </div>
+                    <button id="close-quick-sessions" class="professional-modal-btn secondary">بستن</button>
+                  </div>
+                </div>
+                
+                <!-- Session History Modal -->
+                <div id="session-history-modal" class="session-history-modal">
+                  <div class="session-history-content">
+                    <h3 class="professional-modal-title">تاریخچه جلسات</h3>
+                    <div id="session-history-list" class="session-history-list">
+                        <!-- Sessions will be loaded here -->
+                    </div>
+                    <button id="close-session-history" class="professional-modal-btn secondary">بستن</button>
+                  </div>
                 </div>
                 
                 <!-- چت زنده -->
@@ -411,6 +512,7 @@
                 <div class="control-buttons">
                     <button class="control-btn" id="start-stream-btn">▶️ شروع استریم</button>
                     <button class="control-btn" id="stop-stream-btn">⏹️ توقف استریم</button>
+                    <button class="control-btn" id="start-jitsi-btn" style="background:#00ccff; color:#fff;">🎥 شروع جلسه ویدیویی</button>
                     <button class="control-btn" id="mute-audio-btn">🔇 قطع صدا</button>
                     <button class="control-btn" id="share-screen-btn">🖥️ اشتراک صفحه</button>
                     <button class="control-btn" id="ban-user-btn">🚫 مسدود کردن کاربر</button>

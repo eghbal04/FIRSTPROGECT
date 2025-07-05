@@ -159,7 +159,7 @@ async function renderTreeNode(contract, index, container, level = 0) {
                 if (typeof registerNewUserWithReferrer === 'function') {
                     window.registerNewUserWithReferrer(referrerAddress, newAddress, statusDiv);
                 } else {
-                    statusDiv.textContent = 'برای ثبت‌نام باید کیف پول متصل و مقدار کافی توکن LVL داشته باشید.';
+                    statusDiv.textContent = 'برای ثبت‌نام باید کیف پول متصل و مقدار کافی توکن CPA داشته باشید.';
                     statusDiv.className = 'profile-status error';
                 }
             } else {
@@ -280,4 +280,77 @@ window.initializeNetworkTab = async function() {
     if (userCard) userCard.remove();
     if (!window.contractConfig || !window.contractConfig.address) return;
     await window.renderNetworkTree(window.contractConfig.address);
-}; 
+    
+    // راه‌اندازی بخش ثبت‌نام و ارتقا
+    if (typeof window.setRegisterTabSelected === 'function') {
+        window.setRegisterTabSelected(true);
+    }
+    
+    // راه‌اندازی دکمه‌های ثبت‌نام و ارتقا
+    if (typeof setupRegistrationButton === 'function') {
+        setupRegistrationButton();
+    }
+    if (typeof setupUpgradeForm === 'function') {
+        setupUpgradeForm();
+    }
+};
+
+// بارگذاری خودکار درخت شبکه در زمان رفرش صفحه
+document.addEventListener('DOMContentLoaded', async function() {
+    // کمی صبر کن تا همه اسکریپت‌ها لود شوند
+    setTimeout(async () => {
+        try {
+            // اگر تب network فعال است، درخت را بارگذاری کن
+            const networkSection = document.getElementById('main-network');
+            if (networkSection && networkSection.style.display !== 'none') {
+                if (typeof window.initializeNetworkTab === 'function') {
+                    await window.initializeNetworkTab();
+                }
+            }
+        } catch (error) {
+            console.log('Auto-load network tree error:', error);
+        }
+    }, 3000); // 3 ثانیه صبر کن تا همه چیز لود شود
+});
+
+// بارگذاری خودکار درخت شبکه بعد از اتصال کیف پول
+window.addEventListener('load', async function() {
+    // کمی صبر کن تا همه چیز لود شود
+    setTimeout(async () => {
+        try {
+            // اگر تب network فعال است، درخت را بارگذاری کن
+            const networkSection = document.getElementById('main-network');
+            if (networkSection && networkSection.style.display !== 'none') {
+                if (typeof window.initializeNetworkTab === 'function') {
+                    await window.initializeNetworkTab();
+                }
+            }
+        } catch (error) {
+            console.log('Window load network tree error:', error);
+        }
+    }, 5000); // 5 ثانیه صبر کن تا همه چیز لود شود
+});
+
+// بارگذاری درخت شبکه وقتی کیف پول متصل می‌شود
+const originalConnectWallet = window.connectWallet;
+if (originalConnectWallet) {
+    window.connectWallet = async function() {
+        const result = await originalConnectWallet();
+        
+        // بعد از اتصال موفق، درخت شبکه را بارگذاری کن
+        setTimeout(async () => {
+            try {
+                const networkSection = document.getElementById('main-network');
+                if (networkSection && networkSection.style.display !== 'none') {
+                    if (typeof window.initializeNetworkTab === 'function') {
+                        await window.initializeNetworkTab();
+                    }
+                }
+            } catch (error) {
+                console.log('Network tree load after wallet connect error:', error);
+            }
+        }, 1500);
+        
+        return result;
+    };
+} 

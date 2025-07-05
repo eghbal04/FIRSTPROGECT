@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet Connection Test</title>
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js" type="application/javascript"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Wallet Connection Test</h1>
+        
+        <div id="status" class="status info">
+            Ready to test wallet connection...
+        </div>
+        
+        <div>
+            <button id="connectBtn" onclick="testConnection()">Test Connection</button>
+            <button id="clearBtn" onclick="clearCache()">Clear Cache</button>
+            <button id="retryBtn" onclick="testRetry()">Test Retry</button>
+            <button id="recursionBtn" onclick="testRecursionFix()">Test Recursion Fix</button>
+        </div>
+        
+        <div id="results"></div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script>
+        function updateStatus(message, type = 'info') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+        }
+
+        function addResult(title, data) {
+            const resultsEl = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.innerHTML = `
+                <h3>${title}</h3>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+            resultsEl.appendChild(resultDiv);
+        }
+
+        async function testConnection() {
+            try {
+                updateStatus('Testing wallet connection...', 'info');
+                
+                const startTime = Date.now();
+                const connection = await window.connectWallet();
+                const endTime = Date.now();
+                
+                if (connection && connection.contract && connection.address) {
+                    updateStatus(`Connection successful! (${endTime - startTime}ms)`, 'success');
+                    addResult('Connection Result', {
+                        address: connection.address,
+                        hasContract: !!connection.contract,
+                        hasSigner: !!connection.signer,
+                        hasProvider: !!connection.provider,
+                        timeMs: endTime - startTime
+                    });
+                } else {
+                    updateStatus('Connection failed - missing required properties', 'error');
+                    addResult('Connection Error', connection);
+                }
+            } catch (error) {
+                updateStatus(`Connection failed: ${error.message}`, 'error');
+                addResult('Connection Error', {
+                    message: error.message,
+                    stack: error.stack
+                });
+            }
+        }
+
+        async function clearCache() {
+            try {
+                updateStatus('Clearing connection cache...', 'info');
+                window.clearConnectionCache();
+                updateStatus('Cache cleared successfully', 'success');
+                addResult('Cache Clear', { success: true });
+            } catch (error) {
+                updateStatus(`Failed to clear cache: ${error.message}`, 'error');
+                addResult('Cache Clear Error', {
+                    message: error.message
+                });
+            }
+        }
+
+        async function testRetry() {
+            try {
+                updateStatus('Testing retry mechanism...', 'info');
+                
+                // Clear cache first
+                window.clearConnectionCache();
+                
+                // Try multiple connections
+                const results = [];
+                for (let i = 0; i < 3; i++) {
+                    try {
+                        const startTime = Date.now();
+                        const connection = await window.connectWallet();
+                        const endTime = Date.now();
+                        
+                        results.push({
+                            attempt: i + 1,
+                            success: true,
+                            timeMs: endTime - startTime,
+                            address: connection.address
+                        });
+                        
+                        // Clear cache for next attempt
+                        window.clearConnectionCache();
+                        
+                    } catch (error) {
+                        results.push({
+                            attempt: i + 1,
+                            success: false,
+                            error: error.message
+                        });
+                    }
+                }
+                
+                updateStatus('Retry test completed', 'success');
+                addResult('Retry Test Results', results);
+                
+            } catch (error) {
+                updateStatus(`Retry test failed: ${error.message}`, 'error');
+                addResult('Retry Test Error', {
+                    message: error.message
+                });
+            }
+        }
+
+        async function testRecursionFix() {
+            try {
+                updateStatus('Testing recursion fix...', 'info');
+                
+                // Clear cache first
+                window.clearConnectionCache();
+                
+                // Test multiple rapid calls to simulate the original issue
+                const promises = [];
+                const startTime = Date.now();
+                
+                // Create 10 simultaneous connection attempts
+                for (let i = 0; i < 10; i++) {
+                    promises.push(
+                        window.connectWallet().catch(error => ({
+                            attempt: i + 1,
+                            error: error.message
+                        }))
+                    );
+                }
+                
+                const results = await Promise.allSettled(promises);
+                const endTime = Date.now();
+                
+                const testResults = {
+                    totalTime: endTime - startTime,
+                    totalAttempts: 10,
+                    successful: 0,
+                    failed: 0,
+                    results: results.map((result, index) => {
+                        if (result.status === 'fulfilled') {
+                            if (result.value && result.value.address) {
+                                testResults.successful++;
+                                return {
+                                    attempt: index + 1,
+                                    success: true,
+                                    address: result.value.address
+                                };
+                            } else {
+                                testResults.failed++;
+                                return {
+                                    attempt: index + 1,
+                                    success: false,
+                                    error: 'No connection data'
+                                };
+                            }
+                        } else {
+                            testResults.failed++;
+                            return {
+                                attempt: index + 1,
+                                success: false,
+                                error: result.reason.message || 'Unknown error'
+                            };
+                        }
+                    })
+                };
+                
+                if (testResults.successful > 0) {
+                    updateStatus(`Recursion test passed! ${testResults.successful} successful connections in ${testResults.totalTime}ms`, 'success');
+                } else {
+                    updateStatus(`Recursion test completed but no successful connections`, 'error');
+                }
+                
+                addResult('Recursion Fix Test', testResults);
+                
+            } catch (error) {
+                updateStatus(`Recursion test failed: ${error.message}`, 'error');
+                addResult('Recursion Test Error', {
+                    message: error.message,
+                    stack: error.stack
+                });
+            }
+        }
+
+        // Test on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStatus('Page loaded. Click "Test Connection" to begin.', 'info');
+        });
+    </script>
+</body>
+</html> 
