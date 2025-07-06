@@ -21,12 +21,12 @@ async function checkConnection() {
     try {
         const result = await window.checkConnection();
         if (!result.connected) {
-            showSwapError('لطفاً ابتدا کیف پول خود را متصل کنید');
+            showSwapError('برای ادامه، ابتدا کیف پول خود را متصل کنید.');
             return false;
         }
         return true;
     } catch (error) {
-        showSwapError('خطا در بررسی اتصال کیف پول');
+        showSwapError('مشکلی در بررسی اتصال کیف پول رخ داد. لطفاً دوباره تلاش کنید.');
         return false;
     }
 }
@@ -126,7 +126,7 @@ async function setMaxAmount() {
         const walletConfig = await window.connectWallet();
         
         if (!walletConfig || !walletConfig.contract || !walletConfig.address || !walletConfig.provider) {
-            showSwapError('لطفاً ابتدا کیف پول را متصل کنید');
+            showSwapError('برای تعیین حداکثر مقدار، ابتدا کیف پول را متصل کنید.');
             return;
         }
         
@@ -152,7 +152,7 @@ async function setMaxAmount() {
         await updateRateInfo();
         
     } catch (error) {
-        showSwapError('خطا در تنظیم حداکثر مقدار');
+        showSwapError('امکان تعیین حداکثر مقدار وجود ندارد. لطفاً بعداً دوباره تلاش کنید.');
     }
 }
 
@@ -192,10 +192,10 @@ async function transferMatic(to, amount) {
     const value = ethers.parseEther(amount.toString());
     const tx = await walletConfig.signer.sendTransaction({ to, value });
     await tx.wait();
-    showSwapSuccess('انتقال POL با موفقیت انجام شد');
+    showSwapSuccess('انتقال POL با موفقیت انجام شد.');
     await loadBalances();
   } catch (e) {
-    showSwapError('خطا در انتقال POL: ' + (e.message || e));
+    showSwapError('انتقال POL انجام نشد: ' + (e.message || e) + '\nلطفاً مقدار و آدرس مقصد را بررسی کنید و دوباره تلاش نمایید.');
   }
 }
 
@@ -207,10 +207,10 @@ async function transferLvl(to, amount) {
     const value = ethers.parseUnits(amount.toString(), 18);
     const tx = await walletConfig.contract.transfer(to, value);
     await tx.wait();
-    showSwapSuccess('انتقال CPA با موفقیت انجام شد');
+    showSwapSuccess('انتقال CPA با موفقیت انجام شد.');
     await loadBalances();
   } catch (e) {
-    showSwapError('خطا در انتقال CPA: ' + (e.message || e));
+    showSwapError('انتقال CPA انجام نشد: ' + (e.message || e) + '\nلطفاً مقدار و آدرس مقصد را بررسی کنید و دوباره تلاش نمایید.');
   }
 }
 
@@ -414,13 +414,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const idx = searchIndexInput.value;
             if (!idx || isNaN(idx) || parseInt(idx) < 1) {
                 transferTo.value = '';
-                alert('ایندکس معتبر وارد کنید');
+                alert('لطفاً یک ایندکس معتبر (عدد مثبت) وارد کنید.');
                 return;
             }
             try {
                 const walletConfig = await window.connectWallet();
                 if (!walletConfig || !walletConfig.contract) {
-                    alert('اتصال به قرارداد برقرار نیست');
+                    alert('اتصال به قرارداد برقرار نیست. لطفاً کیف پول خود را بررسی کنید.');
                     return;
                 }
                 const contract = walletConfig.contract;
@@ -430,11 +430,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     transferTo.value = address;
                 } else {
                     transferTo.value = '';
-                    alert('آدرسی برای این ایندکس یافت نشد');
+                    alert('هیچ آدرسی برای این ایندکس پیدا نشد. لطفاً ایندکس را بررسی کنید.');
                 }
             } catch (e) {
                 transferTo.value = '';
-                alert('خطا در دریافت آدرس: ' + (e.message || e));
+                alert('دریافت آدرس با خطا مواجه شد: ' + (e.message || e) + '\nلطفاً بعداً دوباره تلاش کنید.');
             }
         });
     }
@@ -457,12 +457,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 const to = document.getElementById('transferTo').value;
                 
                 if (!amount || parseFloat(amount) <= 0) {
-                    showSwapError('مقدار معتبر وارد کنید');
+                    showSwapError('لطفاً یک مقدار معتبر (بزرگ‌تر از صفر) وارد کنید.');
                     return;
                 }
                 
                 if (!to || !ethers.isAddress(to)) {
-                    showSwapError('آدرس مقصد معتبر نیست');
+                    showSwapError('آدرس مقصد وارد شده معتبر نیست. لطفاً آدرس را به‌درستی وارد کنید.');
                     return;
                 }
                 
