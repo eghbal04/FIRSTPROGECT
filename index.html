@@ -262,7 +262,7 @@
             <div class="swap-info" id="swapInfo">نرخ تبدیل: -</div>
             <button type="submit" id="swapButton">تبدیل</button>
             <div class="balances">
-              <span id="maticBalance">MATIC: -</span> | <span id="lvlBalance">CPA: -</span>
+              <span id="maticBalance">pol: -</span> | <span id="lvlBalance">CPA: -</span>
             </div>
             <div class="swap-status" id="swapStatus"></div>
           </form>
@@ -270,31 +270,29 @@
         
         <!-- باکس انتقال توکن/متیک -->
         <div style="flex: 1; min-width: 300px; max-width: 400px;">
-          <div id="transfer-box" style="background:rgba(0,255,136,0.05);border-radius:12px;padding:1.5rem 1rem;box-shadow:0 2px 12px #00ff8840;">
+          <form id="transferForm" class="swap-form">
             <h3 style="color:#00ff88;margin-bottom:1rem;text-align:center;">انتقال</h3>
-            <form id="transferForm">
-              <!-- انتخاب نوع انتقال -->
-              <div style="display:flex;gap:1rem;justify-content:center;margin-bottom:1rem;">
-                <label><input type="radio" name="transferType" value="matic" checked> POL</label>
-                <label><input type="radio" name="transferType" value="lvl"> CPA</label>
-              </div>
-              <!-- مقدار -->
-              <div class="amount-row">
-                <input type="number" id="transferAmount" placeholder="مقدار را وارد کنید" step="any" style="width:100%;margin-bottom:0.5rem;" />
-              </div>
-              <!-- جستجوی ایندکس (یکپارچه با انتقال) -->
-              <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;">
-                <input type="number" id="searchIndexInput" placeholder="ایندکس کاربر" style="width:50%;direction:ltr;" />
-                <button type="button" id="searchIndexBtn" style="width:50%;background:#a786ff;color:#fff;border-radius:8px;">جستجوی ایندکس</button>
-              </div>
-              <!-- فیلد آدرس مقصد -->
-              <div class="amount-row">
-                <input type="text" id="transferTo" placeholder="آدرس مقصد (0x...)" style="direction:ltr;width:100%;" />
-              </div>
-              <button type="submit" id="transferButton" style="width:100%;margin-top:1rem;background:#00ff88;color:#181c2a;font-weight:bold;border-radius:8px;padding:0.7rem 0;">انتقال</button>
-              <div class="swap-status" id="transferStatus" style="margin-top:0.7rem;"></div>
-            </form>
-          </div>
+            <!-- انتخاب نوع انتقال -->
+            <div style="display:flex;gap:1rem;justify-content:center;margin-bottom:1rem;">
+              <label><input type="radio" name="transferType" value="matic" checked> POL</label>
+              <label><input type="radio" name="transferType" value="lvl"> CPA</label>
+            </div>
+            <!-- مقدار -->
+            <div class="amount-row">
+              <input type="number" id="transferAmount" placeholder="مقدار را وارد کنید" step="any" />
+            </div>
+            <!-- جستجوی ایندکس (یکپارچه با انتقال) -->
+            <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;">
+              <input type="number" id="searchIndexInput" placeholder="ایندکس کاربر" style="width:50%;direction:ltr;" />
+              <button type="button" id="searchIndexBtn" class="max-btn" style="width:50%;">جستجوی ایندکس</button>
+            </div>
+            <!-- فیلد آدرس مقصد -->
+            <div class="amount-row">
+              <input type="text" id="transferTo" placeholder="آدرس مقصد (0x...)" style="direction:ltr;width:100%;" />
+            </div>
+            <button type="submit" id="transferButton" style="width:100%;margin-top:1rem;background:#00ff88;color:#181c2a;font-weight:bold;border-radius:8px;padding:0.7rem 0;">انتقال</button>
+            <div class="swap-status" id="transferStatus" style="margin-top:0.7rem;"></div>
+          </form>
         </div>
       </div>
 
