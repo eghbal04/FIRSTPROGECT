@@ -419,11 +419,6 @@ window.renderNetworkTree = async function(rootAddress) {
     console.log('Found network-tree container, clearing content');
     container.innerHTML = '';
     
-    // اضافه کردن تست ساده برای بررسی نمایش
-    container.style.border = '2px solid red';
-    container.style.minHeight = '200px';
-    container.style.padding = '20px';
-    
     try {
         const { contract } = window.contractConfig;
         console.log('Contract config found:', !!contract);
@@ -432,20 +427,9 @@ window.renderNetworkTree = async function(rootAddress) {
         await renderTreeNode(contract, index, container, 0);
         console.log('Network tree rendered successfully');
         
-        // بررسی تعداد گره‌های نمایش داده شده
-        const nodes = container.querySelectorAll('.tree-node');
-        console.log('Number of rendered nodes:', nodes.length);
-        
-        // اضافه کردن پیام تست
-        if (nodes.length === 0) {
-            container.innerHTML += '<div style="color: yellow; text-align: center; padding: 20px;">تست: درخت شبکه بارگذاری شد اما گره‌ای نمایش داده نشد</div>';
-        } else {
-            container.innerHTML += '<div style="color: green; text-align: center; padding: 20px;">تست: ' + nodes.length + ' گره نمایش داده شد</div>';
-        }
-        
     } catch (e) {
         console.error('Error rendering network tree:', e);
-        container.innerHTML = '<div style="color:#ff4444;text-align:center;padding:2rem;">خطا در بارگذاری درخت شبکه: ' + e.message + '</div>';
+        container.innerHTML = '<div style="color:#ff4444;text-align:center;padding:2rem;">خطا در بارگذاری درخت شبکه</div>';
     }
 };
 
