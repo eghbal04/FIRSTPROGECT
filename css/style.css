@@ -599,8 +599,8 @@ width: 100%;
 /* Swap Section Styling */
 .swap-container {
   position: relative;
-  max-width: 500px;
-margin: 0 auto;
+  max-width: 1200px;
+  margin: 0 auto;
   padding: 2rem;
 }
 
