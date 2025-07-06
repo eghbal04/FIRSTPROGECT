@@ -3,6 +3,10 @@ let isShopLoading = false;
 let shopSubAdmins = [];
 let currentEditingShopAdmin = null;
 
+// متغیر برای جلوگیری از درخواست‌های همزمان
+let isConnecting = false;
+let connectionPromise = null;
+
 document.addEventListener('DOMContentLoaded', function() {
     // Shop section loaded, waiting for wallet connection...
     waitForWalletConnection();
@@ -352,6 +356,30 @@ async function connectWallet() {
 
 // تابع بررسی وضعیت اتصال
 async function checkConnection() {
+    // اگر در حال اتصال هستیم، منتظر بمانیم
+    if (isConnecting && connectionPromise) {
+        try {
+            return await connectionPromise;
+        } catch (error) {
+            console.error('Error in existing connection:', error);
+        }
+    }
+    
+    // شروع اتصال جدید
+    isConnecting = true;
+    connectionPromise = performConnection();
+    
+    try {
+        const result = await connectionPromise;
+        return result;
+    } finally {
+        isConnecting = false;
+        connectionPromise = null;
+    }
+}
+
+// تابع اصلی اتصال
+async function performConnection() {
     try {
         const result = await connectWallet();
         if (!result || !result.contract || !result.address) {

@@ -65,7 +65,7 @@ function startDashboardAutoUpdate() {
     
     dashboardUpdateInterval = setInterval(async () => {
         try {
-            // بررسی اینکه آیا صفحه فعال است
+            // بررسی اینکه صفحه فعال است
             if (document.hidden) {
                 return; // اگر صفحه مخفی است، به‌روزرسانی نکن
             }
@@ -87,16 +87,23 @@ function stopDashboardAutoUpdate() {
 // تابع انتظار برای اتصال کیف پول
 async function waitForWalletConnection() {
     let attempts = 0;
-    const maxAttempts = 15; // کاهش به 15 ثانیه
+    const maxAttempts = 10; // کاهش به 10 ثانیه
     
     while (attempts < maxAttempts) {
         try {
-            const result = await window.checkConnection();
-            if (result.connected) {
-                return result;
+            // بررسی اینکه آیا تابع checkConnection موجود است
+            if (typeof window.checkConnection === 'function') {
+                const result = await window.checkConnection();
+                if (result && result.connected) {
+                    return result;
+                }
+            } else {
+                // اگر تابع checkConnection موجود نیست، منتظر بمانیم
+                await new Promise(resolve => setTimeout(resolve, 1000));
             }
         } catch (error) {
-            // خطا را نادیده بگیر
+            console.warn('Wallet connection attempt failed:', error);
+            // خطا را نادیده بگیر و ادامه بده
         }
         
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -153,23 +160,45 @@ async function loadDashboardData() {
         } else {
             // اگر کیف پول متصل نیست، فقط قیمت‌ها را بارگذاری کن
             try {
-                const prices = await window.getPrices().catch(() => ({ cpaPriceUSD: 0, cpaPriceMatic: 0 }));
-                const defaultStats = {
-                    totalSupply: "0",
-                    circulatingSupply: "0",
-                    binaryPool: "0",
-                    totalPoints: "0",
-                    totalClaimableBinaryPoints: "0",
-                    pointValue: "0",
-                    rewardPool: "0",
-                    contractTokenBalance: "0"
-                };
-                const defaultAdditionalStats = { wallets: 0, helpFund: 0 };
-                const defaultTradingVolume = 0;
-                const priceChanges = { cpaPriceChange: '0%', maticPriceChange: '0%', volumeChange: '0%' };
-                
-                await updateDashboardUI(prices, defaultStats, defaultAdditionalStats, defaultTradingVolume, priceChanges);
-                updateConnectionStatus('info', 'برای مشاهده داده‌های کامل، کیف پول خود را متصل کنید');
+                // بررسی اینکه آیا تابع getPrices موجود است
+                if (typeof window.getPrices === 'function') {
+                    const prices = await window.getPrices().catch(() => ({ cpaPriceUSD: 0, cpaPriceMatic: 0 }));
+                    const defaultStats = {
+                        totalSupply: "0",
+                        circulatingSupply: "0",
+                        binaryPool: "0",
+                        totalPoints: "0",
+                        totalClaimableBinaryPoints: "0",
+                        pointValue: "0",
+                        rewardPool: "0",
+                        contractTokenBalance: "0"
+                    };
+                    const defaultAdditionalStats = { wallets: 0, helpFund: 0 };
+                    const defaultTradingVolume = 0;
+                    const priceChanges = { cpaPriceChange: '0%', maticPriceChange: '0%', volumeChange: '0%' };
+                    
+                    await updateDashboardUI(prices, defaultStats, defaultAdditionalStats, defaultTradingVolume, priceChanges);
+                    updateConnectionStatus('info', 'برای مشاهده داده‌های کامل، کیف پول خود را متصل کنید');
+                } else {
+                    // اگر تابع getPrices موجود نیست، داده‌های پیش‌فرض نمایش بده
+                    const defaultPrices = { cpaPriceUSD: 0, cpaPriceMatic: 0 };
+                    const defaultStats = {
+                        totalSupply: "0",
+                        circulatingSupply: "0",
+                        binaryPool: "0",
+                        totalPoints: "0",
+                        totalClaimableBinaryPoints: "0",
+                        pointValue: "0",
+                        rewardPool: "0",
+                        contractTokenBalance: "0"
+                    };
+                    const defaultAdditionalStats = { wallets: 0, helpFund: 0 };
+                    const defaultTradingVolume = 0;
+                    const priceChanges = { cpaPriceChange: '0%', maticPriceChange: '0%', volumeChange: '0%' };
+                    
+                    await updateDashboardUI(defaultPrices, defaultStats, defaultAdditionalStats, defaultTradingVolume, priceChanges);
+                    updateConnectionStatus('info', 'برای مشاهده داده‌های کامل، کیف پول خود را متصل کنید');
+                }
             } catch (error) {
                 console.warn('Dashboard: Error loading prices without wallet:', error);
             }
