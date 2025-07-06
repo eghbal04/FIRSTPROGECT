@@ -292,20 +292,23 @@ async function renderTreeNode(contract, index, container, level = 0) {
     emojiDiv.style.transition = 'transform 0.2s';
     emojiDiv.style.position = 'relative';
     emojiDiv.style.zIndex = '2';
-    emojiDiv.style.marginRight = '0.5rem';
     
     // نمایش ایندکس کاربر
     const indexDiv = document.createElement('div');
     indexDiv.textContent = index.toString();
-    indexDiv.style.fontSize = '1.8em';
+    indexDiv.style.fontSize = '0.9em';
     indexDiv.style.fontWeight = 'bold';
     indexDiv.style.color = '#00ff88';
     indexDiv.style.background = 'rgba(0, 255, 136, 0.15)';
-    indexDiv.style.padding = '0.4rem 0.8rem';
-    indexDiv.style.borderRadius = '8px';
+    indexDiv.style.padding = '0.2rem 0.4rem';
+    indexDiv.style.borderRadius = '6px';
     indexDiv.style.border = '1px solid rgba(0, 255, 136, 0.3)';
-    indexDiv.style.minWidth = '3rem';
+    indexDiv.style.minWidth = '2rem';
     indexDiv.style.textAlign = 'center';
+    indexDiv.style.position = 'absolute';
+    indexDiv.style.top = '-0.5rem';
+    indexDiv.style.right = '-0.5rem';
+    indexDiv.style.zIndex = '3';
     
     // انیمیشن hover
     nodeDiv.onmouseenter = () => {
