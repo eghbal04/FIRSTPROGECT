@@ -156,11 +156,11 @@ function updateProfileUI(profile) {
         claimBtn.disabled = !hasPoints;
         
         if (hasPoints) {
-            claimBtn.textContent = `💰 برداشت پاداش‌های باینری (${formatNumber(profile.binaryPoints)} پوینت)`;
+            claimBtn.textContent = `💰 برداشت پاداش‌های باینری (⏳ 12 ساعت)`;
             claimBtn.style.opacity = '1';
             claimBtn.style.cursor = 'pointer';
         } else {
-            claimBtn.textContent = '💰 برداشت پاداش‌های باینری (بدون پوینت)';
+            claimBtn.textContent = '💰 برداشت پاداش‌های باینری (⏳ 12 ساعت)';
             claimBtn.style.opacity = '0.5';
             claimBtn.style.cursor = 'not-allowed';
         }
