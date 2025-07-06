@@ -323,17 +323,11 @@
           
           <!-- اطلاعات موجودی -->
           <div id="user-balance-box" style="background: #101c2c; border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 12px #0002; display:none;">
-            <h4 style="color: #fff; margin-bottom: 1rem; text-align: center;">💰 موجودی شما</h4>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-              <span style="color: #ccc;">موجودی CPA:</span>
-              <span id="user-lvl-balance" style="color: #00ff88; font-weight: bold;">-</span>
-            </div>
             <div style="display: flex; justify-content: space-between;">
-              <span style="color: #ccc;">ارزش دلاری:</span>
-              <span id="user-lvl-usd-value" style="color: #00ccff; font-weight: bold;">-</span>
+              <span style="color: #ccc; font-size: 0.9rem;">موجودی CPA:</span>
+              <span id="user-lvl-balance" style="color: #00ff88; font-weight: bold; font-size: 0.9rem;">-</span>
             </div>
           </div>
-          <div id="user-balance-hint" style="background: #232946; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; color: #a786ff; text-align: center; display:none;">برای مشاهده موجودی، کیف پول خود را متصل کنید.</div>
         </div>
         
         <!-- نمایش درخت شبکه -->
@@ -350,34 +344,175 @@
     </div>
     <div class="expand-content">
       <div class="profile-container">
-        <div class="profile-info">
-          <div class="profile-row"><span class="profile-label">آدرس:</span><span class="profile-value" id="profile-address">-</span></div>
-          <div class="profile-row"><span class="profile-label">معرف:</span><span class="profile-value" id="profile-referrer">-</span></div>
-          <div class="profile-row"><span class="profile-label">موجودی POL:</span><span class="profile-value" id="profile-matic">-</span><span class="profile-value" id="profile-matic-usd"></span></div>
-          <div class="profile-row"><span class="profile-label">موجودی CPA:</span><span class="profile-value" id="profile-lvl">-</span><span class="profile-value" id="profile-lvl-usd"></span></div>
-          <div class="profile-row"><span class="profile-label">سقف درآمد باینری:</span><span class="profile-value" id="profile-income-cap">-</span></div>
-          <div class="profile-row"><span class="profile-label">دریافت‌شده:</span><span class="profile-value" id="profile-received">-</span></div>
-          <div class="profile-row"><span class="profile-label">باقیمانده خریدهای قبلی:</span><span class="profile-value" id="profile-purchased-kind">-</span></div>
-          <div class="profile-row"><span class="profile-label">درآمد رفرال ثبت‌نام:</span><span class="profile-value" id="profile-refclimed">-</span></div>
-          <div class="profile-row"><span class="profile-label">لینک دعوت:</span><span class="profile-value" id="profile-referral-link">-</span><button id="copyProfileReferral" class="copy-btn">کپی</button></div>
-          <div class="profile-row"><span class="profile-label">امتیاز چپ:</span><span class="profile-value" id="profile-leftPoints">-</span></div>
-          <div class="profile-row"><span class="profile-label">امتیاز راست:</span><span class="profile-value" id="profile-rightPoints">-</span></div>
-          <div class="profile-row"><span class="profile-label">آخرین برداشت پاداش:</span><span class="profile-value" id="profile-lastClaimTime">-</span></div>
-          <div class="profile-row"><span class="profile-label">آخرین برداشت ماهانه:</span><span class="profile-value" id="profile-lastMonthlyClaim">-</span></div>
-          <div class="profile-row"><span class="profile-label">کل سود ماهانه:</span><span class="profile-value" id="profile-totalMonthlyRewarded">-</span></div>
-          <div class="profile-row"><span class="profile-label">کل واریزی:</span><span class="profile-value" id="profile-depositedAmount">-</span></div>
+        <!-- کارت اطلاعات شخصی -->
+        <div class="profile-section">
+          <div class="section-header">
+            <div class="section-icon">👤</div>
+            <h3>اطلاعات شخصی</h3>
+          </div>
+          <div class="section-content">
+            <div class="info-grid">
+              <div class="info-item">
+                <div class="info-label">آدرس کیف پول</div>
+                <div class="info-value" id="profile-address">-</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">معرف</div>
+                <div class="info-value" id="profile-referrer">-</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">لینک دعوت</div>
+                <div class="info-value-with-action">
+                  <span id="profile-referral-link">-</span>
+                  <button id="copyProfileReferral" class="action-btn">📋 کپی</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- کارت موجودی‌ها -->
+        <div class="profile-section">
+          <div class="section-header">
+            <div class="section-icon">💰</div>
+            <h3>موجودی‌ها</h3>
+          </div>
+          <div class="section-content">
+            <div class="balance-grid">
+              <div class="balance-card">
+                <div class="balance-icon">🟣</div>
+                <div class="balance-info">
+                  <div class="balance-label">موجودی POL</div>
+                  <div class="balance-value" id="profile-matic">-</div>
+                  <div class="balance-usd" id="profile-matic-usd">-</div>
+                </div>
+              </div>
+              <div class="balance-card">
+                <div class="balance-icon">🟢</div>
+                <div class="balance-info">
+                  <div class="balance-label">موجودی CPA</div>
+                  <div class="balance-value" id="profile-lvl">-</div>
+                  <div class="balance-usd" id="profile-lvl-usd">-</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- کارت شبکه باینری -->
+        <div class="profile-section">
+          <div class="section-header">
+            <div class="section-icon">🌳</div>
+            <h3>شبکه باینری</h3>
+          </div>
+          <div class="section-content">
+            <div class="binary-grid">
+              <div class="binary-stat">
+                <div class="stat-icon">⬅️</div>
+                <div class="stat-info">
+                  <div class="stat-label">امتیاز چپ</div>
+                  <div class="stat-value" id="profile-leftPoints">-</div>
+                </div>
+              </div>
+              <div class="binary-stat">
+                <div class="stat-icon">➡️</div>
+                <div class="stat-info">
+                  <div class="stat-label">امتیاز راست</div>
+                  <div class="stat-value" id="profile-rightPoints">-</div>
+                </div>
+              </div>
+              <div class="binary-stat">
+                <div class="stat-icon">📊</div>
+                <div class="stat-info">
+                  <div class="stat-label">سقف درآمد</div>
+                  <div class="stat-value" id="profile-income-cap">-</div>
+                </div>
+              </div>
+              <div class="binary-stat">
+                <div class="stat-icon">💸</div>
+                <div class="stat-info">
+                  <div class="stat-label">دریافت‌شده</div>
+                  <div class="stat-value" id="profile-received">-</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- کارت معاملات -->
+        <div class="profile-section">
+          <div class="section-header">
+            <div class="section-icon">📈</div>
+            <h3>معاملات و سرمایه‌گذاری</h3>
+          </div>
+          <div class="section-content">
+            <div class="transaction-grid">
+              <div class="transaction-item">
+                <div class="transaction-label">کل واریزی</div>
+                <div class="transaction-value" id="profile-depositedAmount">-</div>
+              </div>
+              <div class="transaction-item">
+                <div class="transaction-label">باقیمانده خریدها</div>
+                <div class="transaction-value" id="profile-purchased-kind">-</div>
+              </div>
+              <div class="transaction-item">
+                <div class="transaction-label">درآمد رفرال</div>
+                <div class="transaction-value" id="profile-refclimed">-</div>
+              </div>
+              <div class="transaction-item">
+                <div class="transaction-label">کل سود ماهانه</div>
+                <div class="transaction-value" id="profile-totalMonthlyRewarded">-</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- کارت تاریخچه -->
+        <div class="profile-section">
+          <div class="section-header">
+            <div class="section-icon">📅</div>
+            <h3>تاریخچه برداشت‌ها</h3>
+          </div>
+          <div class="section-content">
+            <div class="history-grid">
+              <div class="history-item">
+                <div class="history-label">آخرین برداشت پاداش</div>
+                <div class="history-value" id="profile-lastClaimTime">-</div>
+              </div>
+              <div class="history-item">
+                <div class="history-label">آخرین برداشت ماهانه</div>
+                <div class="history-value" id="profile-lastMonthlyClaim">-</div>
+              </div>
+            </div>
+          </div>
         </div>
         
-        <!-- دکمه برداشت پاداش‌ها -->
-        <div style="margin-top: 1.5rem; text-align: center;">
-          <button id="profile-claim-btn" class="register-btn" style="width: 100%; max-width: 300px; margin: 0 auto;">
-            💰 برداشت پاداش‌های باینری
-          </button>
-          <button id="profile-claim-monthly-btn" class="register-btn" style="width: 100%; max-width: 300px; margin: 0.5rem auto 0 auto; background: #a786ff; color: #fff;">
-            🗓️ برداشت پاداش ماهانه
-          </button>
-          <div id="profile-claim-status" class="profile-status" style="margin-top: 0.5rem;"></div>
-          <div id="profile-claim-monthly-status" class="profile-status" style="margin-top: 0.5rem;"></div>
+        <!-- کارت دکمه‌های برداشت -->
+        <div class="profile-section">
+          <div class="section-header">
+            <div class="section-icon">💸</div>
+            <h3>برداشت پاداش‌ها</h3>
+          </div>
+          <div class="section-content">
+            <div class="claim-buttons-grid">
+              <button id="profile-claim-btn" class="claim-btn primary">
+                <div class="claim-btn-icon">🥇</div>
+                <div class="claim-btn-content">
+                  <div class="claim-btn-title">برداشت پاداش‌های باینری (1 پوینت)</div>
+                  <div class="claim-btn-subtitle">پاداش‌های شبکه</div>
+                </div>
+              </button>
+              <button id="profile-claim-monthly-btn" class="claim-btn secondary">
+                <div class="claim-btn-icon">🗓️</div>
+                <div class="claim-btn-content">
+                  <div class="claim-btn-title">برداشت پاداش ماهانه</div>
+                  <div class="claim-btn-subtitle">پاداش ماهانه</div>
+                </div>
+              </button>
+            </div>
+            <div id="profile-claim-status" class="claim-status"></div>
+            <div id="profile-claim-monthly-status" class="claim-status"></div>
+          </div>
         </div>
         
         <div id="profileStatus" class="profile-status"></div>

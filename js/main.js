@@ -454,8 +454,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // نمایش موجودی و ارزش دلاری فقط با اتصال کیف پول
 async function showUserBalanceBox() {
     const box = document.getElementById('user-balance-box');
-    const hint = document.getElementById('user-balance-hint');
-    if (!box || !hint) return;
+    if (!box) return;
     try {
         const { contract, address } = await connectWallet();
         if (!contract || !address) throw new Error('No wallet');
@@ -472,13 +471,184 @@ async function showUserBalanceBox() {
         document.getElementById('user-lvl-balance').textContent = lvl;
         document.getElementById('user-lvl-usd-value').textContent = usdValue + ' $';
         box.style.display = 'block';
-        hint.style.display = 'none';
     } catch (e) {
         box.style.display = 'none';
-        hint.style.display = 'block';
     }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
     setTimeout(showUserBalanceBox, 1500);
 });
+
+// تابع نمایش اطلاعات یک گره شبکه در باکس موجودی شما
+window.updateUserBalanceBoxWithNode = async function(address, userData) {
+    console.log('updateUserBalanceBoxWithNode called with:', address, userData);
+    console.log('UserData fields:', Object.keys(userData || {}));
+    console.log('All userData values:', userData);
+    console.log('binaryPoints:', userData?.binaryPoints);
+    console.log('binaryPointCap:', userData?.binaryPointCap);
+    console.log('activated:', userData?.activated);
+    console.log('leftPoints:', userData?.leftPoints);
+    console.log('rightPoints:', userData?.rightPoints);
+    console.log('index:', userData?.index);
+    console.log('totalPurchasedKind:', userData?.totalPurchasedKind);
+    console.log('binaryPointsClaimed:', userData?.binaryPointsClaimed);
+    console.log('depositedAmount:', userData?.depositedAmount);
+    
+    const box = document.getElementById('user-balance-box');
+    if (!box) {
+        console.log('user-balance-box not found');
+        return;
+    }
+    console.log('Found user-balance-box, setting display to block');
+    box.style.display = 'block';
+    
+    // آدرس کوتاه شده
+    const shortAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '-';
+    console.log('Short address:', shortAddress);
+    
+    // دریافت معرف از قرارداد
+    let referrerAddress = '-';
+    try {
+        if (window.contractConfig && window.contractConfig.contract) {
+            const contract = window.contractConfig.contract;
+            const userIndex = userData?.index;
+            if (userIndex && userIndex > 0) {
+                referrerAddress = await contract.getReferrer(userIndex);
+                referrerAddress = referrerAddress && referrerAddress !== '0x0000000000000000000000000000000000000000' 
+                    ? shortWallet(referrerAddress) : '-';
+            }
+        }
+    } catch (e) {
+        console.log('Error getting referrer:', e);
+        referrerAddress = '-';
+    }
+    
+    // اطلاعات اصلی
+    const lvlBalanceElement = document.getElementById('user-lvl-balance');
+    
+    if (lvlBalanceElement) {
+        // دریافت موجودی واقعی CPA از قرارداد
+        let balanceInCPA = '-';
+        try {
+            if (window.contractConfig && window.contractConfig.contract) {
+                const contract = window.contractConfig.contract;
+                const balance = await contract.balanceOf(address);
+                const balanceStr = balance ? (typeof balance === 'bigint' ? balance.toString() : balance) : null;
+                // تبدیل از wei به CPA (18 رقم اعشار)
+                balanceInCPA = balanceStr ? (parseInt(balanceStr) / Math.pow(10, 18)).toFixed(2) : null;
+            }
+        } catch (e) {
+            console.log('Error getting CPA balance:', e);
+            balanceInCPA = '-';
+        }
+        lvlBalanceElement.textContent = balanceInCPA ? `${balanceInCPA} CPA` : '-';
+        console.log('Updated lvl balance:', lvlBalanceElement.textContent);
+    }
+    
+    // ایجاد یا آپدیت بخش اطلاعات تکمیلی
+    let extraInfo = document.getElementById('node-extra-info');
+    if (!extraInfo) {
+        extraInfo = document.createElement('div');
+        extraInfo.id = 'node-extra-info';
+        extraInfo.style.cssText = `
+            margin-top: 0.5rem;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+        `;
+        box.appendChild(extraInfo);
+        console.log('Created new extra-info div');
+    }
+    
+    // محتوای اطلاعات دسته‌بندی شده - فشرده و بهینه برای موبایل
+    extraInfo.innerHTML = `
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; font-size: 0.8rem;">
+            <!-- آدرس و وضعیت در یک ردیف -->
+            <div style="grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem; padding-bottom: 0.3rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <div style="color: #b8c1ec; font-family: monospace; font-size: 0.75rem;">${shortAddress}</div>
+                <div style="color: ${userData?.[4] ? '#4ade80' : '#f87171'}; font-size: 0.7rem; padding: 0.1rem 0.4rem; background: ${userData?.[4] ? 'rgba(74,222,128,0.1)' : 'rgba(248,113,113,0.1)'}; border-radius: 3px;">
+                    ${userData?.[4] ? 'فعال' : 'غیرفعال'}
+                </div>
+            </div>
+            
+            <!-- معرف -->
+            <div style="display: flex; flex-direction: column; gap: 0.1rem;">
+                <div style="color: #a786ff; font-size: 0.7rem; opacity: 0.8;">👤 معرف</div>
+                <div style="color: #b8c1ec; font-size: 0.7rem; font-family: monospace;">
+                    ${referrerAddress}
+                </div>
+            </div>
+            
+            <!-- سقف درآمد -->
+            <div style="display: flex; flex-direction: column; gap: 0.1rem;">
+                <div style="color: #a786ff; font-size: 0.7rem; opacity: 0.8;">💰 سقف</div>
+                <div style="color: #b8c1ec; font-size: 0.7rem;">${userData?.[2] ? (typeof userData[2] === 'bigint' ? userData[2].toString() : userData[2]) : '-'} پوینت</div>
+            </div>
+            
+            <!-- امتیاز چپ -->
+            <div style="display: flex; flex-direction: column; gap: 0.1rem;">
+                <div style="color: #a786ff; font-size: 0.7rem; opacity: 0.8;">⬅️ چپ</div>
+                <div style="color: #b8c1ec; font-size: 0.7rem;">${userData?.[8] ? (typeof userData[8] === 'bigint' ? userData[8].toString() : userData[8]) : '-'}</div>
+            </div>
+            
+            <!-- امتیاز راست -->
+            <div style="display: flex; flex-direction: column; gap: 0.1rem;">
+                <div style="color: #a786ff; font-size: 0.7rem; opacity: 0.8;">➡️ راست</div>
+                <div style="color: #b8c1ec; font-size: 0.7rem;">${userData?.[7] ? (typeof userData[7] === 'bigint' ? userData[7].toString() : userData[7]) : '-'}</div>
+            </div>
+            
+            <!-- لینک رفرال -->
+            <div style="grid-column: 1 / -1; display: flex; align-items: center; gap: 0.3rem; margin-top: 0.2rem; padding-top: 0.2rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                <div style="color: #a786ff; font-size: 0.7rem; opacity: 0.8;">🔗 دعوت:</div>
+                <div style="color: #b8c1ec; font-size: 0.65rem; font-family: monospace; flex: 1;">${shortWallet(address)}</div>
+                <button onclick="copyReferralLink('${address}')" style="background: #a786ff; color: white; border: none; border-radius: 3px; padding: 0.2rem 0.4rem; font-size: 0.6rem; cursor: pointer;">کپی</button>
+            </div>
+        </div>
+    `;
+    console.log('Updated extra info content');
+};
+
+// تابع کوتاه کردن آدرس
+function shortWallet(address) {
+    if (!address) return '-';
+    return `${address.slice(0, 3)}...${address.slice(-3)}`;
+}
+
+// تابع کپی کردن لینک رفرال
+window.copyReferralLink = function(address) {
+    const referralLink = `${window.location.origin}${window.location.pathname}?ref=${address}`;
+    navigator.clipboard.writeText(referralLink).then(() => {
+        // نمایش پیام موفقیت
+        const button = event.target;
+        const originalText = button.textContent;
+        button.textContent = 'کپی شد!';
+        button.style.background = '#4ade80';
+        setTimeout(() => {
+            button.textContent = originalText;
+            button.style.background = '#a786ff';
+        }, 2000);
+    }).catch(err => {
+        console.error('خطا در کپی کردن لینک:', err);
+        // روش جایگزین برای مرورگرهای قدیمی
+        const textArea = document.createElement('textarea');
+        textArea.value = referralLink;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        const button = event.target;
+        const originalText = button.textContent;
+        button.textContent = 'کپی شد!';
+        button.style.background = '#4ade80';
+        setTimeout(() => {
+            button.textContent = originalText;
+            button.style.background = '#a786ff';
+        }, 2000);
+    });
+};
+
+window.networkRendered = false;
