@@ -25,9 +25,74 @@
   <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
 </head>
 <body>
-  <a href="https://levelupwithus.netlify.app/" target="_blank" style="position:fixed;top:18px;left:24px;z-index:2000;display:flex;align-items:center;text-decoration:none;">
-            <img src="lvl.jpg" alt="CPA Logo" style="height:48px;width:auto;border-radius:16px;box-shadow:0 2px 12px #00ff8840;transition:transform 0.2s;">
-  </a>
+  <script>
+    // این متغیر را هر زمان جلسه آنلاین فعال بود true کنید
+    var isSessionActive = false; // مقدار پیش‌فرض: جلسه فعال نیست
+  </script>
+  <div id="online-session-bubble" style="display:none;">
+    <span class="bubble-text">جلسه آنلاین در حال برگزاری است! 🚀</span>
+    <span class="bubble-timer" id="bubble-timer"></span>
+    <a href="learning.html" class="bubble-link" target="_blank">ورود به کلاس</a>
+    <span class="bubble-close" id="bubble-close">×</span>
+  </div>
+  <div id="bubble-mini" style="display:none;">
+    <span class="bubble-mini-icon">🚀</span>
+  </div>
+  <script>
+    function formatCountdown(ms) {
+      if (ms <= 0) return '00:00:00';
+      let s = Math.floor(ms / 1000);
+      let h = Math.floor(s / 3600);
+      s = s % 3600;
+      let m = Math.floor(s / 60);
+      s = s % 60;
+      return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+    }
+    function showSessionBubble() {
+      const info = window.sessionInfo;
+      if (!info || !info.active) return;
+      const bubble = document.getElementById('online-session-bubble');
+      const mini = document.getElementById('bubble-mini');
+      const timer = document.getElementById('bubble-timer');
+      const link = bubble.querySelector('.bubble-link');
+      link.href = info.link || 'learning.html';
+      bubble.style.display = 'flex';
+      mini.style.display = 'none';
+      // شمارش معکوس
+      function updateTimer() {
+        const now = Date.now();
+        if (now < info.startTime) {
+          timer.textContent = 'شروع تا جلسه: ' + formatCountdown(info.startTime - now);
+        } else if (now < info.endTime) {
+          timer.textContent = 'زمان باقی‌مانده: ' + formatCountdown(info.endTime - now);
+        } else {
+          timer.textContent = 'جلسه به پایان رسید';
+        }
+      }
+      updateTimer();
+      window._bubbleTimerInterval = setInterval(updateTimer, 1000);
+    }
+    function hideSessionBubble() {
+      document.getElementById('online-session-bubble').style.display = 'none';
+      document.getElementById('bubble-mini').style.display = 'flex';
+      if (window._bubbleTimerInterval) clearInterval(window._bubbleTimerInterval);
+    }
+    function showMiniBubble() {
+      document.getElementById('bubble-mini').style.display = 'flex';
+      document.getElementById('online-session-bubble').style.display = 'none';
+    }
+    function expandMiniBubble() {
+      showSessionBubble();
+    }
+    // رویداد بستن
+    document.addEventListener('DOMContentLoaded', function() {
+      if (window.sessionInfo && window.sessionInfo.active) {
+        showSessionBubble();
+      }
+      document.getElementById('bubble-close').onclick = hideSessionBubble;
+      document.getElementById('bubble-mini').onclick = expandMiniBubble;
+    });
+  </script>
 
   <div id="main-dashboard" class="page-section expandable-container">
     <div class="expand-header">
@@ -116,19 +181,19 @@
         </div>
         
         <!-- Price Cards Grid -->
-        <div class="price-chart-squares-row" style="margin:0 auto;gap:1.2rem;display:flex;flex-direction:row;justify-content:center;align-items:center;background:none;border:none;box-shadow:none;width:90%;max-width:480px;">
-          <div style="display:flex;flex-direction:column;align-items:center;font-size:1.1rem;flex:1;min-width:120px;text-align:center;padding:0.7rem 1.2rem;background:#181c2a;border-radius:16px;box-shadow:0 2px 8px #0002;">
-                    <span style="font-weight:bold;color:#00ff88;" id="chart-lvl-usd">-</span>
-        <span style="color:#00ccff;font-size:0.95rem;">CPA (USD)</span>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:center;font-size:1.1rem;flex:1;min-width:120px;text-align:center;padding:0.7rem 1.2rem;background:#181c2a;border-radius:16px;box-shadow:0 2px 8px #0002;">
-                    <span style="font-weight:bold;color:#00ccff;" id="chart-lvl-pol">-</span>
-        <span style="color:#00ccff;font-size:0.95rem;">CPA / POL</span>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:center;font-size:1.1rem;flex:1;min-width:120px;text-align:center;padding:0.7rem 1.2rem;background:#181c2a;border-radius:16px;box-shadow:0 2px 8px #0002;">
-            <span style="font-weight:bold;color:#ff6b6b;" id="chart-pol-usd">-</span>
+        <div class="three-buttons-row" style="margin:0 auto;gap:1.2rem;display:flex;flex-direction:row;justify-content:center;align-items:center;width:90%;max-width:480px;">
+          <button class="three-btn" style="min-width:120px;" disabled>
+            <span style="font-weight:bold;color:#ff6b6b;" id="chart-pol-usd">-</span><br>
             <span style="color:#00ccff;font-size:0.95rem;">POL (USD)</span>
-          </div>
+          </button>
+          <button class="three-btn" style="min-width:120px;" disabled>
+            <span style="font-weight:bold;color:#00ccff;" id="chart-lvl-pol">-</span><br>
+            <span style="color:#00ccff;font-size:0.95rem;">CPA / POL</span>
+          </button>
+          <button class="three-btn" style="min-width:120px;" disabled>
+            <span style="font-weight:bold;color:#00ff88;" id="chart-lvl-usd">-</span><br>
+            <span style="color:#00ccff;font-size:0.95rem;">CPA (USD)</span>
+          </button>
         </div>
         
         <!-- Chart Controls -->
@@ -168,6 +233,9 @@
         <a class="tab-btn list-btn" id="tab-learning-btn" href="learning.html" style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;">LEARNING</a>
         <a class="tab-btn list-btn" id="tab-lottery-btn" href="lottery.html" style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;">LOTTERY</a>
         <button class="tab-btn list-btn" id="tab-about-btn" type="button" style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;">ABOUT</button>
+        <a class="tab-btn list-btn" id="tab-prop-btn" href="prop.html" style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;">پاس پراپ</a>
+        <a class="tab-btn list-btn" id="tab-autotrade-btn" href="autotrade-license.html" style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;">ربات‌های اتوترید</a>
+        <a class="tab-btn list-btn" id="tab-signal-btn" href="signal.html" style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;">سیگنال‌ها</a>
       </div>
     </div>
   </div>
@@ -787,3 +855,159 @@
 
 </body>
 </html>
+
+<style>
+.three-buttons-row {
+  display: flex;
+  gap: 1rem;
+  margin: 2rem 0 1rem 0;
+  width: 100%;
+}
+.three-btn {
+  flex: 1;
+  padding: 1.1rem 0.5rem;
+  background: linear-gradient(135deg, #232946, #a786ff);
+  color: #fff !important;
+  border: none;
+  border-radius: 15px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(167,134,255,0.08);
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+.three-btn:hover {
+  background: linear-gradient(135deg, #a786ff, #ff6b9d);
+  color: #fff !important;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(167, 134, 255, 0.2);
+}
+@media (max-width: 768px) {
+  .three-buttons-row {
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+  .three-btn {
+    font-size: 1rem;
+    padding: 1rem 0.5rem;
+  }
+}
+#online-session-bubble {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 3000;
+  background: linear-gradient(90deg, #00ff88 0%, #a786ff 100%);
+  color: #181c2a;
+  padding: 1rem 2.2rem 1rem 1.2rem;
+  border-radius: 2.5rem;
+  box-shadow: 0 6px 32px #00ff8840, 0 1.5px 0 #fff;
+  display: flex;
+  align-items: center;
+  font-size: 1.15rem;
+  font-weight: bold;
+  animation: bubble-move 3.5s ease-in-out infinite alternate;
+  border: 2px solid #fff;
+  gap: 1.2rem;
+  transition: all 0.3s;
+}
+.bubble-text {
+  margin-left: 0.7rem;
+  font-family: 'Noto Sans Arabic', 'Montserrat', sans-serif;
+}
+.bubble-timer {
+  background: #fff2;
+  color: #232946;
+  border-radius: 1rem;
+  padding: 0.2rem 0.8rem;
+  font-size: 1rem;
+  margin-left: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.bubble-link {
+  background: #232946;
+  color: #fff !important;
+  padding: 0.5rem 1.2rem;
+  border-radius: 1.2rem;
+  text-decoration: none;
+  font-weight: 700;
+  margin-left: 0.7rem;
+  transition: background 0.2s;
+  box-shadow: 0 2px 8px #a786ff40;
+}
+.bubble-link:hover {
+  background: #a786ff;
+  color: #232946 !important;
+}
+.bubble-close {
+  cursor: pointer;
+  font-size: 1.5rem;
+  margin-right: 0.5rem;
+  color: #232946;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+.bubble-close:hover {
+  opacity: 1;
+}
+#bubble-mini {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 3001;
+  width: 54px;
+  height: 54px;
+  background: linear-gradient(135deg, #00ff88 0%, #a786ff 100%);
+  border-radius: 50%;
+  box-shadow: 0 4px 16px #00ff8840, 0 1.5px 0 #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: 2px solid #fff;
+  font-size: 2rem;
+  opacity: 0.95;
+}
+#bubble-mini:hover {
+  opacity: 1;
+  box-shadow: 0 8px 32px #a786ff40;
+}
+.bubble-mini-icon {
+  font-size: 2rem;
+  color: #232946;
+}
+@keyframes bubble-move {
+  0% { transform: translateY(0) scale(1); box-shadow: 0 6px 32px #00ff8840; }
+  50% { transform: translateY(-12px) scale(1.04); box-shadow: 0 16px 48px #a786ff40; }
+  100% { transform: translateY(0) scale(1); box-shadow: 0 6px 32px #00ff8840; }
+}
+@media (max-width: 600px) {
+  #online-session-bubble {
+    right: 8px;
+    left: 8px;
+    top: 8px;
+    padding: 0.7rem 1rem 0.7rem 0.7rem;
+    font-size: 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+    border-radius: 1.2rem;
+    gap: 0.5rem;
+  }
+  .bubble-link {
+    margin-left: 0;
+    margin-top: 0.3rem;
+  }
+  #bubble-mini {
+    right: 8px;
+    top: 8px;
+    width: 44px;
+    height: 44px;
+    font-size: 1.3rem;
+  }
+}
+</style>

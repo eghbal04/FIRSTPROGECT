@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>سیگنال‌های معاملاتی</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body { background: #181c2a; color: #fff; font-family: 'Noto Sans Arabic', sans-serif; }
+    .signal-container { max-width: 900px; margin: 2rem auto; background: #232946; border-radius: 18px; box-shadow: 0 4px 24px #00ff8820; padding: 2.5rem 2rem; }
+    .signal-title { font-size: 2rem; font-weight: bold; color: #00ff88; margin-bottom: 1.2rem; text-align: center; }
+    .signal-desc { font-size: 1.1rem; color: #a786ff; margin-bottom: 2rem; text-align: center; }
+    .signal-tabs { display: flex; gap: 1.2rem; justify-content: center; margin-bottom: 2rem; }
+    .signal-tab { background: #181c2a; color: #a786ff; border: none; border-radius: 8px; padding: 0.6rem 1.5rem; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: background 0.2s, color 0.2s; }
+    .signal-tab.active, .signal-tab:hover { background: #00ff88; color: #232946; }
+    .signal-list { display: flex; flex-wrap: wrap; gap: 1.2rem; justify-content: center; }
+    .signal-card { background: #181c2a; border-radius: 14px; box-shadow: 0 2px 12px #00ff8840; padding: 1.2rem 1.5rem; min-width: 220px; max-width: 320px; color: #fff; display: flex; flex-direction: column; gap: 0.7rem; position: relative; }
+    .signal-market { font-size: 1.1rem; color: #00ccff; font-weight: bold; }
+    .signal-symbol { font-size: 1.3rem; color: #00ff88; font-weight: bold; }
+    .signal-type { font-size: 1rem; color: #a786ff; }
+    .signal-price { font-size: 1.1rem; color: #fff; }
+    .signal-status { position: absolute; top: 1rem; left: 1rem; background: #00ff88; color: #232946; border-radius: 8px; padding: 0.2rem 0.8rem; font-size: 0.95rem; font-weight: bold; }
+    .signal-card.closed .signal-status { background: #ff6b6b; color: #fff; }
+    .signal-card .signal-time { font-size: 0.95rem; color: #a786ff; }
+    .signal-premium { background: #a786ff; color: #232946; border-radius: 8px; padding: 0.2rem 0.8rem; font-size: 0.95rem; font-weight: bold; position: absolute; top: 1rem; right: 1rem; }
+    .signal-empty { color: #a786ff; text-align: center; margin: 2rem 0; }
+    .signal-form { margin-top: 2.5rem; background: #181c2a; border-radius: 14px; padding: 1.5rem; box-shadow: 0 2px 12px #a786ff40; max-width: 400px; margin-left: auto; margin-right: auto; }
+    .signal-form label { display: block; margin-bottom: 0.3rem; color: #fff; }
+    .signal-form input, .signal-form textarea { width: 100%; padding: 0.7rem; border-radius: 8px; border: 1px solid #333; background: #232946; color: #fff; margin-bottom: 1rem; }
+    .signal-form button { background: linear-gradient(90deg,#00ff88,#a786ff); color: #181c2a; font-weight: bold; border: none; border-radius: 8px; padding: 0.8rem 2.2rem; font-size: 1.1rem; cursor: pointer; transition: background 0.2s; }
+    .signal-form button:hover { background: linear-gradient(90deg,#a786ff,#00ff88); }
+    .signal-success { color: #00ff88; margin-top: 1rem; text-align: center; font-weight: bold; }
+    .back-btn { display:inline-block;margin-bottom:1.5rem;background:#a786ff;color:#181c2a;padding:0.5rem 1.5rem;border-radius:10px;font-weight:bold;text-decoration:none;box-shadow:0 2px 8px #a786ff40;transition:background 0.2s; }
+    .back-btn:hover { background:#00ff88; color:#232946; }
+    @media (max-width: 700px) { .signal-list { flex-direction: column; align-items: center; } .signal-card { min-width: 90vw; max-width: 98vw; } }
+  </style>
+</head>
+<body>
+  <div class="signal-container">
+    <a href="index.html" class="back-btn">← بازگشت به صفحه اصلی</a>
+    <div class="signal-title">سیگنال‌های معاملاتی</div>
+    <div class="signal-desc">جدیدترین سیگنال‌های فارکس و کریپتو با تحلیل تخصصی و مدیریت ریسک</div>
+    <div class="signal-tabs">
+      <button class="signal-tab active" onclick="showSignals('all', this)">همه</button>
+      <button class="signal-tab" onclick="showSignals('forex', this)">فارکس</button>
+      <button class="signal-tab" onclick="showSignals('crypto', this)">کریپتو</button>
+    </div>
+    <div class="signal-list" id="signalList"></div>
+    <div class="signal-empty" id="signalEmpty" style="display:none;">هیچ سیگنالی برای نمایش وجود ندارد.</div>
+    <form class="signal-form" id="signalForm">
+      <label for="name">نام و نام خانوادگی</label>
+      <input type="text" id="name" name="name" required>
+      <label for="email">ایمیل</label>
+      <input type="email" id="email" name="email" required>
+      <label for="desc">توضیحات (اختیاری)</label>
+      <textarea id="desc" name="desc" rows="2"></textarea>
+      <button type="submit">درخواست عضویت ویژه سیگنال</button>
+      <div class="signal-success" id="signalSuccess" style="display:none;">درخواست شما با موفقیت ثبت شد! کارشناسان ما به زودی با شما تماس خواهند گرفت.</div>
+    </form>
+  </div>
+  <script>
+    // نمونه سیگنال‌های فرضی (برای نمایش اولیه)
+    const signals = [
+      { market: 'فارکس', symbol: 'EURUSD', type: 'خرید', price: '1.0850', time: '۱۴:۳۵', status: 'باز', premium: false },
+      { market: 'کریپتو', symbol: 'BTCUSDT', type: 'فروش', price: '42500', time: '۱۲:۱۰', status: 'باز', premium: true },
+      { market: 'فارکس', symbol: 'GBPUSD', type: 'خرید', price: '1.2650', time: '۱۰:۵۵', status: 'بسته', premium: false },
+      { market: 'کریپتو', symbol: 'ETHUSDT', type: 'خرید', price: '2250', time: '۱۶:۴۵', status: 'باز', premium: false },
+    ];
+    function showSignals(type, btn) {
+      document.querySelectorAll('.signal-tab').forEach(tab => tab.classList.remove('active'));
+      btn.classList.add('active');
+      let filtered = signals;
+      if (type === 'forex') filtered = signals.filter(s => s.market === 'فارکس');
+      if (type === 'crypto') filtered = signals.filter(s => s.market === 'کریپتو');
+      const list = document.getElementById('signalList');
+      const empty = document.getElementById('signalEmpty');
+      list.innerHTML = '';
+      if (filtered.length === 0) { empty.style.display = 'block'; return; } else { empty.style.display = 'none'; }
+      filtered.forEach(sig => {
+        const div = document.createElement('div');
+        div.className = 'signal-card' + (sig.status === 'بسته' ? ' closed' : '');
+        div.innerHTML = `
+          <div class="signal-market">${sig.market}</div>
+          <div class="signal-symbol">${sig.symbol}</div>
+          <div class="signal-type">نوع: ${sig.type}</div>
+          <div class="signal-price">قیمت: ${sig.price}</div>
+          <div class="signal-time">ساعت: ${sig.time}</div>
+          <div class="signal-status">${sig.status}</div>
+          ${sig.premium ? '<div class="signal-premium">ویژه</div>' : ''}
+        `;
+        list.appendChild(div);
+      });
+    }
+    showSignals('all', document.querySelector('.signal-tab.active'));
+    document.getElementById('signalForm').onsubmit = function(e) {
+      e.preventDefault();
+      document.getElementById('signalSuccess').style.display = 'block';
+      this.reset();
+    };
+  </script>
+</body>
+</html> 

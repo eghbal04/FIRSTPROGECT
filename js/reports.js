@@ -411,7 +411,7 @@ function shortenTransactionHash(hash) {
                 <div class="report-item">
                     <div class="report-header">
                         <div class="report-type">${getReportIcon(type)} ${title}</div>
-                        <div class="report-time">${formatDate(timestamp)}</div>
+                        <!-- <div class="report-time">${formatDate(timestamp)}</div> -->
                     </div>
                     <div class="report-details">
                         <div class="report-details-row">

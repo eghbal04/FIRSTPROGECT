@@ -1,6 +1,6 @@
 // تنظیمات قرارداد LevelUp
-const CONTRACT_ADDRESS = '0x6E86b7F3EEA331A35f64785063793529a115f49f';
-const CONTRACT_LOTARY = '0x8c8C580f1A3e0Ddf3Ba52DA1B9D09D1406953a62';
+const CONTRACT_ADDRESS = '0xA388311768B164024e5FbfB7A17643875d2469c9';
+const CONTRACT_LOTARY = '0xd6DFb59c7Ad94c7fFA8EE68f12B71f950C55967d';
 const LOTARI_ABI =[
 	{
 		"inputs": [
@@ -228,8 +228,26 @@ const LOTARI_ABI =[
 			{
 				"indexed": true,
 				"internalType": "address",
-				"name": "user",
+				"name": "creator",
 				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "memberCount",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amountPerUser",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "winnersCount",
+				"type": "uint256"
 			}
 		],
 		"name": "LotteryCreated",
@@ -2297,28 +2315,32 @@ window.getPrices = async function() {
             if (!connection || !connection.contract) {
                 throw new Error('No wallet connection available');
             }
-            
             const { contract } = connection;
             // دریافت قیمت LVL/MATIC از قرارداد و قیمت MATIC/USD از API
             const [lvlPriceMatic, polPrice] = await Promise.all([
                 contract.getTokenPrice().catch(() => ethers.parseUnits("0.0012", 18)),
                 window.fetchPolUsdPrice()
             ]);
-            if (polPrice === null || polPrice === undefined || isNaN(Number(polPrice))) throw new Error('No valid POL/USD price');
-            const lvlPriceMaticFormatted = ethers.formatUnits(lvlPriceMatic, 18);
+            let lvlPriceMaticFormatted = ethers.formatUnits(lvlPriceMatic, 18);
+            let polPriceValid = (polPrice !== null && polPrice !== undefined && !isNaN(Number(polPrice)));
+            if (!polPriceValid) {
+                // مقدار پیش‌فرض اگر API قطع بود
+                lvlPriceMaticFormatted = "0.0012";
+            }
             // قیمت LVL/USD = (LVL/MATIC) * (MATIC/USD)
-            const lvlPriceUSD = parseFloat(lvlPriceMaticFormatted) * parseFloat(polPrice);
+            let lvlPriceUSD = polPriceValid ? (parseFloat(lvlPriceMaticFormatted) * parseFloat(polPrice)) : (parseFloat(lvlPriceMaticFormatted) * 0.38);
             return {
                 lvlPriceUSD: lvlPriceUSD.toFixed(6),
                 lvlPricePol: lvlPriceMaticFormatted,
-                polPrice: Number(polPrice).toFixed(6)
+                polPrice: polPriceValid ? Number(polPrice).toFixed(6) : "0.380000"
             };
         } catch (error) {
             console.error('Central: Error fetching prices:', error);
+            // مقادیر پیش‌فرض اگر هیچ قیمتی نبود
             return {
-                lvlPriceUSD: null,
-                lvlPricePol: null,
-                polPrice: null
+                lvlPriceUSD: "0.000456",
+                lvlPricePol: "0.0012",
+                polPrice: "0.380000"
             };
         }
     });

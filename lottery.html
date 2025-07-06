@@ -879,6 +879,43 @@
         transform: translateY(-2px);
         box-shadow: 0 10px 30px rgba(167, 134, 255, 0.3);
       }
+
+      .three-buttons-row {
+        display: flex;
+        gap: 1rem;
+        margin: 2rem 0 1rem 0;
+      }
+      .three-btn {
+        flex: 1;
+        padding: 1.1rem 0.5rem;
+        background: linear-gradient(135deg, #232946, #a786ff);
+        color: #fff;
+        border: none;
+        border-radius: 15px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 16px rgba(167,134,255,0.08);
+        position: relative;
+        overflow: hidden;
+      }
+      .three-btn:hover {
+        background: linear-gradient(135deg, #a786ff, #ff6b9d);
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(167, 134, 255, 0.2);
+      }
+      @media (max-width: 768px) {
+        .three-buttons-row {
+          flex-direction: column;
+          gap: 0.7rem;
+        }
+        .three-btn {
+          font-size: 1rem;
+          padding: 1rem 0.5rem;
+        }
+      }
     </style>
 </head>
 <body>
@@ -923,33 +960,12 @@
             <div class="balance-label">موجودی شما:</div>
             <div class="balance-value" id="user-balance">0 CPA</div>
           </div>
-          <button class="balance-refresh-btn" onclick="showLotteryBalance()" title="به‌روزرسانی موجودی">
-            🔄
-          </button>
         </div>
-        <div class="connection-status" id="connection-status" style="margin-top: 1rem; text-align: center;">
-          <button onclick="checkLotteryConnection()" style="
-            background: linear-gradient(135deg, #a786ff, #ff6b9d);
-            border: none;
-            color: white;
-            padding: 0.8rem 1.5rem;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 0.9rem;
-            margin-right: 0.5rem;
-          ">🔗 بررسی اتصال کیف پول</button>
-          <button onclick="testLotteryContract()" style="
-            background: linear-gradient(135deg, #00ff88, #4ecdc4);
-            border: none;
-            color: white;
-            padding: 0.8rem 1.5rem;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 0.9rem;
-          ">🧪 تست قرارداد لاتاری</button>
-        </div>
+      </div>
+      <div class="three-buttons-row">
+        <button class="three-btn" onclick="showLotteryBalance()" title="به‌روزرسانی موجودی">🔄 به‌روزرسانی موجودی</button>
+        <button class="three-btn" onclick="checkLotteryConnection()">🔗 بررسی اتصال کیف پول</button>
+        <button class="three-btn" onclick="testLotteryContract()">🧪 تست قرارداد لاتاری</button>
       </div>
     </div>
 
@@ -1016,6 +1032,8 @@
 
     <!-- Floating Action Button -->
     <button class="fab" id="fab-create" title="ایجاد لاتاری جدید">+</button>
+    
+
 
     <!-- Modal -->
     <div class="modal-overlay" id="modal-overlay"></div>
@@ -1109,6 +1127,8 @@
       modalClose.addEventListener('click', closeModal);
       btnCancel.addEventListener('click', closeModal);
       modalOverlay.addEventListener('click', closeModal);
+
+
 
       // Form Submission
       lotteryForm.addEventListener('submit', function(e) {

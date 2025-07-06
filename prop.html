@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>پاس پراپ | Prop Trading</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body { background: #181c2a; color: #fff; font-family: 'Noto Sans Arabic', sans-serif; }
+    .prop-container { max-width: 600px; margin: 2rem auto; background: #232946; border-radius: 18px; box-shadow: 0 4px 24px #00ff8820; padding: 2.5rem 2rem; }
+    .prop-title { font-size: 2.1rem; font-weight: bold; color: #00ff88; margin-bottom: 1.2rem; text-align: center; }
+    .prop-desc { font-size: 1.1rem; color: #a786ff; margin-bottom: 2rem; text-align: center; }
+    .prop-steps { margin-bottom: 2rem; }
+    .prop-steps li { margin-bottom: 0.7rem; font-size: 1rem; }
+    .prop-benefits { background: #181c2a; border-radius: 12px; padding: 1.2rem; margin-bottom: 2rem; }
+    .prop-benefits li { color: #00ccff; margin-bottom: 0.5rem; }
+    .prop-form label { display: block; margin-bottom: 0.3rem; color: #fff; }
+    .prop-form input, .prop-form textarea { width: 100%; padding: 0.7rem; border-radius: 8px; border: 1px solid #333; background: #232946; color: #fff; margin-bottom: 1rem; }
+    .prop-form button { background: linear-gradient(90deg,#00ff88,#a786ff); color: #181c2a; font-weight: bold; border: none; border-radius: 8px; padding: 0.8rem 2.2rem; font-size: 1.1rem; cursor: pointer; transition: background 0.2s; }
+    .prop-form button:hover { background: linear-gradient(90deg,#a786ff,#00ff88); }
+    .prop-success { color: #00ff88; margin-top: 1rem; text-align: center; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="prop-container">
+    <a href="index.html" style="display:inline-block;margin-bottom:1.5rem;background:#a786ff;color:#181c2a;padding:0.5rem 1.5rem;border-radius:10px;font-weight:bold;text-decoration:none;box-shadow:0 2px 8px #a786ff40;transition:background 0.2s;">← بازگشت به صفحه اصلی</a>
+    <div class="prop-title">خدمات پاس پراپ (Prop Trading)</div>
+    <div class="prop-desc">
+      با استفاده از خدمات پراپ تریدینگ ما، بدون نیاز به سرمایه شخصی، با سرمایه شرکت معامله کنید و سود کسب کنید!
+    </div>
+    <ul class="prop-steps">
+      <li>۱. ثبت‌نام و ارسال درخواست</li>
+      <li>۲. ارزیابی مهارت ترید (دمو یا لایو)</li>
+      <li>۳. دریافت سرمایه و شروع معامله</li>
+      <li>۴. برداشت سود و ارتقا حساب</li>
+    </ul>
+    <div class="prop-benefits">
+      <b>مزایای پراپ تریدینگ ما:</b>
+      <ul>
+        <li>بدون ریسک از دست دادن سرمایه شخصی</li>
+        <li>دریافت سرمایه تا ۱۰۰,۰۰۰ دلار</li>
+        <li>برداشت سود منظم و سریع</li>
+        <li>پشتیبانی حرفه‌ای و آموزش رایگان</li>
+      </ul>
+    </div>
+    <form class="prop-form" id="propForm">
+      <label for="name">نام و نام خانوادگی</label>
+      <input type="text" id="name" name="name" required>
+      <label for="email">ایمیل</label>
+      <input type="email" id="email" name="email" required>
+      <label for="phone">شماره تماس</label>
+      <input type="text" id="phone" name="phone" required>
+      <label for="desc">تجربه و توضیحات (اختیاری)</label>
+      <textarea id="desc" name="desc" rows="3"></textarea>
+      <button type="submit">ثبت درخواست پراپ</button>
+      <div class="prop-success" id="propSuccess" style="display:none;">درخواست شما با موفقیت ثبت شد! کارشناسان ما به زودی با شما تماس خواهند گرفت.</div>
+    </form>
+  </div>
+  <script>
+    document.getElementById('propForm').onsubmit = function(e) {
+      e.preventDefault();
+      document.getElementById('propSuccess').style.display = 'block';
+      this.reset();
+    };
+  </script>
+</body>
+</html> 

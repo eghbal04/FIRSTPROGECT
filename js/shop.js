@@ -848,20 +848,23 @@ function setupShopSubAdminModals() {
     const modal = document.getElementById('shop-sub-admin-modal');
     const deleteModal = document.getElementById('shop-delete-confirm-modal');
     const form = document.getElementById('shop-sub-admin-form');
-    document.getElementById('cancel-shop-sub-admin-btn').onclick = () => {
+    const cancelSubAdminBtn = document.getElementById('cancel-shop-sub-admin-btn');
+    const cancelDeleteBtn = document.getElementById('cancel-shop-delete-btn');
+    const confirmDeleteBtn = document.getElementById('confirm-shop-delete-btn');
+    if (cancelSubAdminBtn) cancelSubAdminBtn.onclick = () => {
         modal.style.display = 'none';
         resetShopSubAdminForm();
     };
-    document.getElementById('cancel-shop-delete-btn').onclick = () => {
+    if (cancelDeleteBtn) cancelDeleteBtn.onclick = () => {
         deleteModal.style.display = 'none';
     };
-    document.getElementById('confirm-shop-delete-btn').onclick = deleteShopSubAdmin;
-    form.onsubmit = (e) => {
+    if (confirmDeleteBtn) confirmDeleteBtn.onclick = deleteShopSubAdmin;
+    if (form) form.onsubmit = (e) => {
         e.preventDefault();
         saveShopSubAdmin();
     };
-    modal.onclick = (e) => { if (e.target === modal) { modal.style.display = 'none'; resetShopSubAdminForm(); } };
-    deleteModal.onclick = (e) => { if (e.target === deleteModal) deleteModal.style.display = 'none'; };
+    if (modal) modal.onclick = (e) => { if (e.target === modal) { modal.style.display = 'none'; resetShopSubAdminForm(); } };
+    if (deleteModal) deleteModal.onclick = (e) => { if (e.target === deleteModal) deleteModal.style.display = 'none'; };
 }
 
 function showAddShopSubAdminModal() {

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>پنل ادمین پراپ</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body { background: #181c2a; color: #fff; font-family: 'Noto Sans Arabic', sans-serif; }
+    .admin-container { max-width: 700px; margin: 2rem auto; background: #232946; border-radius: 18px; box-shadow: 0 4px 24px #00ff8820; padding: 2.5rem 2rem; }
+    .admin-title { font-size: 2rem; font-weight: bold; color: #00ff88; margin-bottom: 1.2rem; text-align: center; }
+    .admin-form label { display: block; margin-bottom: 0.3rem; color: #fff; }
+    .admin-form input, .admin-form textarea { width: 100%; padding: 0.7rem; border-radius: 8px; border: 1px solid #333; background: #232946; color: #fff; margin-bottom: 1rem; }
+    .admin-form button { background: linear-gradient(90deg,#00ff88,#a786ff); color: #181c2a; font-weight: bold; border: none; border-radius: 8px; padding: 0.7rem 2rem; font-size: 1rem; cursor: pointer; transition: background 0.2s; }
+    .admin-form button:hover { background: linear-gradient(90deg,#a786ff,#00ff88); }
+    .prop-list { margin-top: 2rem; }
+    .prop-item { background: #181c2a; border-radius: 12px; padding: 1.2rem; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .prop-actions { display: flex; gap: 1rem; margin-top: 0.5rem; }
+    .prop-actions button { background: #a786ff; color: #232946; border: none; border-radius: 6px; padding: 0.3rem 1.2rem; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+    .prop-actions button:hover { background: #00ff88; color: #181c2a; }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <div class="admin-title">پنل مدیریت پراپ‌ها</div>
+    <form class="admin-form" id="addPropForm">
+      <label for="propName">نام پراپ</label>
+      <input type="text" id="propName" required>
+      <label for="propDesc">توضیح کوتاه</label>
+      <textarea id="propDesc" rows="2"></textarea>
+      <label for="propPrice">قیمت (تومان یا تتر یا CPA)</label>
+      <input type="number" id="propPrice" required>
+      <button type="submit">افزودن پراپ</button>
+    </form>
+    <div class="prop-list" id="propList"></div>
+  </div>
+  <script>
+    function getProps() {
+      return JSON.parse(localStorage.getItem('props') || '[]');
+    }
+    function saveProps(props) {
+      localStorage.setItem('props', JSON.stringify(props));
+    }
+    function renderProps() {
+      const list = document.getElementById('propList');
+      const props = getProps();
+      if (props.length === 0) {
+        list.innerHTML = '<div style="color:#a786ff;text-align:center;">هیچ پراپی ثبت نشده است.</div>';
+        return;
+      }
+      list.innerHTML = '';
+      props.forEach((prop, idx) => {
+        const div = document.createElement('div');
+        div.className = 'prop-item';
+        div.innerHTML = `
+          <b>نام:</b> ${prop.name}<br>
+          <b>توضیح:</b> ${prop.desc || '-'}<br>
+          <b>قیمت:</b> ${prop.price}
+          <div class="prop-actions">
+            <button onclick="editProp(${idx})">ویرایش</button>
+            <button onclick="deleteProp(${idx})">حذف</button>
+          </div>
+        `;
+        list.appendChild(div);
+      });
+    }
+    document.getElementById('addPropForm').onsubmit = function(e) {
+      e.preventDefault();
+      const name = document.getElementById('propName').value.trim();
+      const desc = document.getElementById('propDesc').value.trim();
+      const price = document.getElementById('propPrice').value;
+      if (!name || !price) return;
+      const props = getProps();
+      props.push({ name, desc, price });
+      saveProps(props);
+      renderProps();
+      this.reset();
+    };
+    window.deleteProp = function(idx) {
+      const props = getProps();
+      props.splice(idx, 1);
+      saveProps(props);
+      renderProps();
+    };
+    window.editProp = function(idx) {
+      const props = getProps();
+      const prop = props[idx];
+      document.getElementById('propName').value = prop.name;
+      document.getElementById('propDesc').value = prop.desc;
+      document.getElementById('propPrice').value = prop.price;
+      props.splice(idx, 1);
+      saveProps(props);
+      renderProps();
+    };
+    renderProps();
+  </script>
+</body>
+</html> 

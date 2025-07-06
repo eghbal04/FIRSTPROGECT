@@ -378,8 +378,10 @@ async function lockTabsForDeactivatedUsers() {
             if (el) {
                 el.innerHTML = '🔒 ' + tab.label;
                 el.classList.add('locked-tab');
-                el.style.pointerEvents = 'none';
-                el.style.opacity = '0.5';
+                if (el.style) {
+                  el.style.pointerEvents = 'none';
+                  el.style.opacity = '0.5';
+                }
                 el.title = 'این بخش فقط برای کاربران فعال باز است';
             }
         });
