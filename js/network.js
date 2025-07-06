@@ -437,25 +437,43 @@ window.initializeNetworkTab = async function() {
     if (window.networkRendered) return;
     window.networkRendered = true;
     console.log('initializeNetworkTab called');
+    
     // حذف فرم وسط صفحه (کارت اطلاعات کاربر شبکه)
     var userCard = document.getElementById('network-user-card');
     if (userCard) userCard.remove();
-    if (!window.contractConfig || !window.contractConfig.address) {
-        console.log('No contract config or address found');
-        return;
+    
+    // انتظار برای contract config
+    let attempts = 0;
+    const maxAttempts = 10;
+    
+    while (attempts < maxAttempts) {
+        if (window.contractConfig && window.contractConfig.address) {
+            console.log('Contract config and address found, calling renderNetworkTree');
+            await window.renderNetworkTree(window.contractConfig.address);
+            // راه‌اندازی بخش ثبت‌نام و ارتقا
+            if (typeof window.setRegisterTabSelected === 'function') {
+                window.setRegisterTabSelected(true);
+            }
+            // راه‌اندازی دکمه‌های ثبت‌نام و ارتقا
+            if (typeof setupRegistrationButton === 'function') {
+                setupRegistrationButton();
+            }
+            if (typeof setupUpgradeForm === 'function') {
+                setupUpgradeForm();
+            }
+            return;
+        }
+        
+        console.log(`Waiting for contract config... (attempt ${attempts + 1}/${maxAttempts})`);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        attempts++;
     }
-    console.log('Contract config and address found, calling renderNetworkTree');
-    await window.renderNetworkTree(window.contractConfig.address);
-    // راه‌اندازی بخش ثبت‌نام و ارتقا
-    if (typeof window.setRegisterTabSelected === 'function') {
-        window.setRegisterTabSelected(true);
-    }
-    // راه‌اندازی دکمه‌های ثبت‌نام و ارتقا
-    if (typeof setupRegistrationButton === 'function') {
-        setupRegistrationButton();
-    }
-    if (typeof setupUpgradeForm === 'function') {
-        setupUpgradeForm();
+    
+    console.log('No contract config or address found after waiting');
+    // نمایش پیام به کاربر
+    const container = document.getElementById('network-tree');
+    if (container) {
+        container.innerHTML = '<div style="color:#ffaa00;text-align:center;padding:2rem;">برای مشاهده درخت شبکه، کیف پول خود را متصل کنید</div>';
     }
 };
 
