@@ -43,6 +43,8 @@ async function loadUserProfile() {
         
         setupReferralCopy();
         
+        startBinaryClaimCountdown(profile.lastClaimTime);
+        
     } catch (error) {
         showProfileError('خطا در بارگذاری پروفایل: ' + error.message);
     }
@@ -279,4 +281,26 @@ function formatTimestamp(ts) {
     if (!ts || ts === '0') return '---';
     const date = new Date(Number(ts) * 1000);
     return date.toLocaleDateString('fa-IR') + ' ' + date.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+}
+
+// شمارش معکوس برای دکمه برداشت پاداش‌های باینری
+function startBinaryClaimCountdown(lastClaimTime) {
+    const timerEl = document.getElementById('binary-claim-timer');
+    if (!timerEl) return;
+    function updateTimer() {
+        const now = Math.floor(Date.now() / 1000);
+        const nextClaim = Number(lastClaimTime) + 12 * 3600;
+        const diff = nextClaim - now;
+        if (diff <= 0) {
+            timerEl.textContent = '';
+            return;
+        }
+        const hours = Math.floor(diff / 3600);
+        const minutes = Math.floor((diff % 3600) / 60);
+        const seconds = diff % 60;
+        timerEl.textContent = `${hours.toString().padStart(2, '0')}:${minutes
+            .toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        setTimeout(updateTimer, 1000);
+    }
+    updateTimer();
 }
