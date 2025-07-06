@@ -652,3 +652,151 @@ window.copyReferralLink = function(address) {
 };
 
 window.networkRendered = false;
+
+// اضافه کردن گزینه‌های انتقال برای همه کاربران
+function addTransferOptions() {
+    const swapDirection = document.getElementById('swapDirection');
+    if (swapDirection && !document.getElementById('transfer-matic-option')) {
+        swapDirection.insertAdjacentHTML('beforeend', `
+            <option value="transfer-matic" id="transfer-matic-option">انتقال POL</option>
+            <option value="transfer-lvl" id="transfer-lvl-option">انتقال CPA</option>
+        `);
+    }
+
+    // افزودن ورودی آدرس مقصد
+    const swapForm = document.getElementById('swapForm');
+    if (swapForm && !document.getElementById('transferAddressRow')) {
+        const amountRow = document.querySelector('.amount-row');
+        if (amountRow) {
+            const transferRow = document.createElement('div');
+            transferRow.className = 'amount-row';
+            transferRow.id = 'transferAddressRow';
+            transferRow.style.display = 'none';
+            transferRow.innerHTML = `
+                <input type="text" id="transferAddress" placeholder="آدرس مقصد (0x...)" style="direction:ltr;" />
+            `;
+            amountRow.parentNode.insertBefore(transferRow, amountRow.nextSibling);
+        }
+    }
+
+    // نمایش/مخفی‌سازی ورودی آدرس بر اساس نوع عملیات
+    if (swapDirection) {
+        swapDirection.addEventListener('change', function() {
+            const transferRow = document.getElementById('transferAddressRow');
+            if (transferRow) {
+                if (swapDirection.value === 'transfer-matic' || swapDirection.value === 'transfer-lvl') {
+                    transferRow.style.display = 'flex';
+                } else {
+                    transferRow.style.display = 'none';
+                }
+            }
+        });
+    }
+}
+
+// تابع ارسال متیک
+async function transferMatic(to, amount) {
+    try {
+        const walletConfig = await window.connectWallet();
+        if (!walletConfig || !walletConfig.signer) throw new Error('اتصال کیف پول برقرار نشد');
+        const value = ethers.parseEther(amount.toString());
+        const tx = await walletConfig.signer.sendTransaction({ to, value });
+        await tx.wait();
+        showTransferSuccess('انتقال POL با موفقیت انجام شد');
+        if (window.loadBalances) await window.loadBalances();
+    } catch (e) {
+        showTransferError('خطا در انتقال POL: ' + (e.message || e));
+    }
+}
+
+// تابع ارسال CPA (توکن)
+async function transferLvl(to, amount) {
+    try {
+        const walletConfig = await window.connectWallet();
+        if (!walletConfig || !walletConfig.contract) throw new Error('اتصال کیف پول برقرار نشد');
+        const value = ethers.parseUnits(amount.toString(), 18);
+        const tx = await walletConfig.contract.transfer(to, value);
+        await tx.wait();
+        showTransferSuccess('انتقال CPA با موفقیت انجام شد');
+        if (window.loadBalances) await window.loadBalances();
+    } catch (e) {
+        showTransferError('خطا در انتقال CPA: ' + (e.message || e));
+    }
+}
+
+// تابع نمایش موفقیت انتقال
+function showTransferSuccess(message) {
+    const statusElement = document.getElementById('swapStatus');
+    if (statusElement) {
+        statusElement.textContent = message;
+        statusElement.className = 'swap-status success';
+        setTimeout(() => {
+            statusElement.textContent = '';
+            statusElement.className = 'swap-status';
+        }, 5000);
+    }
+}
+
+// تابع نمایش خطای انتقال
+function showTransferError(message) {
+    const statusElement = document.getElementById('swapStatus');
+    if (statusElement) {
+        statusElement.textContent = message;
+        statusElement.className = 'swap-status error';
+        setTimeout(() => {
+            statusElement.textContent = '';
+            statusElement.className = 'swap-status';
+        }, 5000);
+    }
+}
+
+// اضافه کردن هندلر فرم انتقال
+function setupTransferHandler() {
+    const swapForm = document.getElementById('swapForm');
+    if (swapForm) {
+        // حذف event listener قبلی اگر وجود دارد
+        const newForm = swapForm.cloneNode(true);
+        swapForm.parentNode.replaceChild(newForm, swapForm);
+        
+        newForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const direction = document.getElementById('swapDirection').value;
+            const amount = document.getElementById('swapAmount').value;
+            const to = document.getElementById('transferAddress') ? document.getElementById('transferAddress').value : '';
+            
+            if (direction === 'transfer-matic') {
+                if (!to || !ethers.isAddress(to)) {
+                    showTransferError('آدرس مقصد معتبر نیست');
+                    return;
+                }
+                if (!amount || parseFloat(amount) <= 0) {
+                    showTransferError('مقدار معتبر وارد کنید');
+                    return;
+                }
+                await transferMatic(to, amount);
+            } else if (direction === 'transfer-lvl') {
+                if (!to || !ethers.isAddress(to)) {
+                    showTransferError('آدرس مقصد معتبر نیست');
+                    return;
+                }
+                if (!amount || parseFloat(amount) <= 0) {
+                    showTransferError('مقدار معتبر وارد کنید');
+                    return;
+                }
+                await transferLvl(to, amount);
+            } else {
+                // منطق سواپ قبلی - اجازه دهید swap.js آن را مدیریت کند
+                return true;
+            }
+        });
+    }
+}
+
+// راه‌اندازی گزینه‌های انتقال
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+        addTransferOptions();
+        setupTransferHandler();
+    }, 1000);
+});

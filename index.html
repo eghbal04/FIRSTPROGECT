@@ -250,11 +250,22 @@
           <select id="swapDirection">
                     <option value="matic-to-lvl">POL → CPA</option>
         <option value="lvl-to-matic">CPA → POL</option>
+        <option value="transfer-matic">انتقال POL</option>
+        <option value="transfer-lvl">انتقال CPA</option>
           </select>
           <label for="swapAmount">مقدار:</label>
           <div class="amount-row">
             <input type="number" id="swapAmount" placeholder="مقدار را وارد کنید" step="any" />
             <button type="button" id="maxButton" class="max-btn">حداکثر</button>
+          </div>
+          <div class="amount-row" id="transferAddressRow" style="display: none;">
+            <div class="amount-row">
+              <!-- لیست زیرمجموعه‌ها -->
+              <select id="subUserSelect" style="width:100%;margin-bottom:0.5rem;">
+                <option value="">انتخاب زیرمجموعه (اختیاری)</option>
+              </select>
+              <input type="text" id="transferTo" placeholder="آدرس مقصد (0x...)" style="direction:ltr;width:100%;" />
+            </div>
           </div>
           <div class="swap-info" id="swapInfo">نرخ تبدیل: -</div>
           <button type="submit" id="swapButton">تبدیل</button>
@@ -264,8 +275,24 @@
           <div class="swap-status" id="swapStatus"></div>
         </form>
         
-        <!-- Container برای نمایش قیمت‌های مختلف -->
-        <div id="swap-price-info"></div>
+        <!-- باکس انتقال توکن/متیک -->
+        <div id="transfer-box" style="background:rgba(0,255,136,0.05);border-radius:12px;padding:1.5rem 1rem;margin-top:2rem;box-shadow:0 2px 12px #00ff8840;max-width:400px;margin-left:auto;margin-right:auto;">
+          <h3 style="color:#00ff88;margin-bottom:1rem;text-align:center;">انتقال توکن یا POL</h3>
+          <form id="transferForm">
+            <div style="display:flex;gap:1rem;justify-content:center;margin-bottom:1rem;">
+              <label><input type="radio" name="transferType" value="matic" checked> POL</label>
+              <label><input type="radio" name="transferType" value="lvl"> CPA</label>
+            </div>
+            <div class="amount-row">
+              <input type="number" id="transferAmount" placeholder="مقدار را وارد کنید" step="any" style="width:100%;" />
+            </div>
+            <div class="amount-row">
+              <input type="text" id="transferTo" placeholder="آدرس مقصد (0x...)" style="direction:ltr;width:100%;" />
+            </div>
+            <button type="submit" id="transferButton" style="width:100%;margin-top:1rem;background:#00ff88;color:#181c2a;font-weight:bold;border-radius:8px;padding:0.7rem 0;">انتقال</button>
+            <div class="swap-status" id="transferStatus" style="margin-top:0.7rem;"></div>
+          </form>
+        </div>
       </div>
     </div>
   </div>
@@ -986,6 +1013,129 @@
       }
     }
   })();
+  </script>
+
+  <!-- کنترل نمایش ورودی آدرس مقصد -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const swapDirection = document.getElementById('swapDirection');
+      const transferAddressRow = document.getElementById('transferAddressRow');
+      
+      if (swapDirection && transferAddressRow) {
+        swapDirection.addEventListener('change', function() {
+          if (swapDirection.value === 'transfer-matic' || swapDirection.value === 'transfer-lvl') {
+            transferAddressRow.style.display = 'flex';
+          } else {
+            transferAddressRow.style.display = 'none';
+          }
+        });
+      }
+    });
+  </script>
+
+  <!-- کنترل عملکرد فرم انتقال POL و CPA -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const transferForm = document.getElementById('transferForm');
+      const transferType = () => document.querySelector('input[name="transferType"]:checked').value;
+      const transferAmount = document.getElementById('transferAmount');
+      const transferTo = document.getElementById('transferTo');
+      const transferStatus = document.getElementById('transferStatus');
+      const transferButton = document.getElementById('transferButton');
+
+      async function transferMatic(to, amount) {
+        try {
+          transferButton.disabled = true;
+          transferStatus.textContent = 'در حال ارسال...';
+          const walletConfig = await window.connectWallet();
+          if (!walletConfig || !walletConfig.signer) throw new Error('اتصال کیف پول برقرار نشد');
+          const value = ethers.parseEther(amount.toString());
+          const tx = await walletConfig.signer.sendTransaction({ to, value });
+          await tx.wait();
+          transferStatus.textContent = 'انتقال POL با موفقیت انجام شد';
+          transferStatus.className = 'swap-status success';
+        } catch (e) {
+          transferStatus.textContent = 'خطا در انتقال POL: ' + (e.message || e);
+          transferStatus.className = 'swap-status error';
+        } finally {
+          transferButton.disabled = false;
+        }
+      }
+
+      async function transferLvl(to, amount) {
+        try {
+          transferButton.disabled = true;
+          transferStatus.textContent = 'در حال ارسال...';
+          const walletConfig = await window.connectWallet();
+          if (!walletConfig || !walletConfig.contract) throw new Error('اتصال کیف پول برقرار نشد');
+          const value = ethers.parseUnits(amount.toString(), 18);
+          const tx = await walletConfig.contract.transfer(to, value);
+          await tx.wait();
+          transferStatus.textContent = 'انتقال CPA با موفقیت انجام شد';
+          transferStatus.className = 'swap-status success';
+        } catch (e) {
+          transferStatus.textContent = 'خطا در انتقال CPA: ' + (e.message || e);
+          transferStatus.className = 'swap-status error';
+        } finally {
+          transferButton.disabled = false;
+        }
+      }
+
+      if (transferForm) {
+        transferForm.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          transferStatus.textContent = '';
+          transferStatus.className = 'swap-status';
+          const type = transferType();
+          const amount = transferAmount.value;
+          const to = transferTo.value;
+          if (!to || !ethers.isAddress(to)) {
+            transferStatus.textContent = 'آدرس مقصد معتبر نیست';
+            transferStatus.className = 'swap-status error';
+            return;
+          }
+          if (!amount || parseFloat(amount) <= 0) {
+            transferStatus.textContent = 'مقدار معتبر وارد کنید';
+            transferStatus.className = 'swap-status error';
+            return;
+          }
+          if (type === 'matic') {
+            await transferMatic(to, amount);
+          } else {
+            await transferLvl(to, amount);
+          }
+        });
+      }
+    });
+  </script>
+
+  <!-- اسکریپت تستی زیرمجموعه‌ها -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // آرایه فرضی زیرمجموعه‌ها (بعداً از قرارداد یا سرور جایگزین شود)
+      const subUsers = [
+        { address: '0x1111111111111111111111111111111111111111', index: 1 },
+        { address: '0x2222222222222222222222222222222222222222', index: 2 },
+        { address: '0x3333333333333333333333333333333333333333', index: 3 }
+      ];
+      const subUserSelect = document.getElementById('subUserSelect');
+      const transferTo = document.getElementById('transferTo');
+      if (subUserSelect && transferTo) {
+        // مقداردهی اولیه لیست
+        subUsers.forEach(sub => {
+          const opt = document.createElement('option');
+          opt.value = sub.address;
+          opt.textContent = `${sub.address.slice(0, 6)}...${sub.address.slice(-4)} (ایندکس ${sub.index})`;
+          subUserSelect.appendChild(opt);
+        });
+        // هنگام انتخاب، مقدار را در فیلد مقصد قرار بده
+        subUserSelect.addEventListener('change', function() {
+          if (subUserSelect.value) {
+            transferTo.value = subUserSelect.value;
+          }
+        });
+      }
+    });
   </script>
 
 </body>
