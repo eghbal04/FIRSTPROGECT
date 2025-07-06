@@ -280,6 +280,10 @@ async function renderTreeNode(contract, index, container, level = 0) {
     nodeDiv.style.cursor = 'pointer';
     nodeDiv.style.transition = 'transform 0.2s';
     nodeDiv.style.userSelect = 'none';
+    nodeDiv.style.background = 'rgba(0, 255, 136, 0.05)';
+    nodeDiv.style.border = '1px solid rgba(0, 255, 136, 0.2)';
+    nodeDiv.style.borderRadius = '12px';
+    nodeDiv.style.padding = '0.8rem';
     
     // ادمک با سر
     const emojiDiv = document.createElement('div');
@@ -288,6 +292,20 @@ async function renderTreeNode(contract, index, container, level = 0) {
     emojiDiv.style.transition = 'transform 0.2s';
     emojiDiv.style.position = 'relative';
     emojiDiv.style.zIndex = '2';
+    emojiDiv.style.marginRight = '0.5rem';
+    
+    // نمایش ایندکس کاربر
+    const indexDiv = document.createElement('div');
+    indexDiv.textContent = index.toString();
+    indexDiv.style.fontSize = '1.8em';
+    indexDiv.style.fontWeight = 'bold';
+    indexDiv.style.color = '#00ff88';
+    indexDiv.style.background = 'rgba(0, 255, 136, 0.15)';
+    indexDiv.style.padding = '0.4rem 0.8rem';
+    indexDiv.style.borderRadius = '8px';
+    indexDiv.style.border = '1px solid rgba(0, 255, 136, 0.3)';
+    indexDiv.style.minWidth = '3rem';
+    indexDiv.style.textAlign = 'center';
     
     // انیمیشن hover
     nodeDiv.onmouseenter = () => {
@@ -404,6 +422,7 @@ async function renderTreeNode(contract, index, container, level = 0) {
     
     // مونتاژ گره
     nodeDiv.appendChild(emojiDiv);
+    nodeDiv.appendChild(indexDiv);
     container.appendChild(nodeDiv);
     container.appendChild(childrenDiv);
     console.log('Node added to container:', address);

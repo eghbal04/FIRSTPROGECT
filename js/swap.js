@@ -8,6 +8,7 @@ const swapStatus = document.getElementById('swapStatus');
 
 let userMaticBalance = 0;
 let userCpaBalance = 0;
+let currentSwapDirection = 'default';
 
 // دکمه سواپ در ابتدا غیرفعال باشد
 if (swapButton) {
@@ -240,39 +241,7 @@ async function displaySwapPrices() {
     }
 }
 
-// افزودن گزینه‌های جدید به سِلکت
-// (در رویداد DOMContentLoaded یا ابتدای فایل)
-const swapDirection = document.getElementById('swapDirection');
-if (swapDirection && !document.getElementById('transfer-matic-option')) {
-  swapDirection.insertAdjacentHTML('beforeend', `
-    <option value="transfer-matic" id="transfer-matic-option">انتقال POL</option>
-    <option value="transfer-lvl" id="transfer-lvl-option">انتقال CPA</option>
-  `);
-}
 
-// افزودن ورودی آدرس مقصد
-const swapForm = document.getElementById('swapForm');
-if (swapForm && !document.getElementById('transferAddressRow')) {
-  const amountRow = document.querySelector('.amount-row');
-  const transferRow = document.createElement('div');
-  transferRow.className = 'amount-row';
-  transferRow.id = 'transferAddressRow';
-  transferRow.style.display = 'none';
-  transferRow.innerHTML = `
-    <input type="text" id="transferAddress" placeholder="آدرس مقصد (0x...)" style="direction:ltr;" />
-  `;
-  amountRow.parentNode.insertBefore(transferRow, amountRow.nextSibling);
-}
-
-// نمایش/مخفی‌سازی ورودی آدرس بر اساس نوع عملیات
-swapDirection.addEventListener('change', function() {
-  const transferRow = document.getElementById('transferAddressRow');
-  if (swapDirection.value === 'transfer-matic' || swapDirection.value === 'transfer-lvl') {
-    transferRow.style.display = 'flex';
-  } else {
-    transferRow.style.display = 'none';
-  }
-});
 
 // تابع ارسال متیک
 async function transferMatic(to, amount) {
@@ -304,32 +273,10 @@ async function transferLvl(to, amount) {
   }
 }
 
-// ویرایش هندلر فرم سواپ
-if (swapForm) {
-  swapForm.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const direction = swapDirection.value;
-    const amount = document.getElementById('swapAmount').value;
-    const to = document.getElementById('transferAddress') ? document.getElementById('transferAddress').value : '';
-    if (direction === 'transfer-matic') {
-      if (!to || !ethers.isAddress(to)) return showSwapError('آدرس مقصد معتبر نیست');
-      if (!amount || parseFloat(amount) <= 0) return showSwapError('مقدار معتبر وارد کنید');
-      await transferMatic(to, amount);
-    } else if (direction === 'transfer-lvl') {
-      if (!to || !ethers.isAddress(to)) return showSwapError('آدرس مقصد معتبر نیست');
-      if (!amount || parseFloat(amount) <= 0) return showSwapError('مقدار معتبر وارد کنید');
-      await transferLvl(to, amount);
-    } else {
-      // منطق سواپ قبلی
-      // ... existing code ...
-    }
-  });
-}
+
 
 // راه‌اندازی event listeners
 document.addEventListener('DOMContentLoaded', function() {
-    const swapForm = document.getElementById('swapForm');
-    const swapDirection = document.getElementById('swapDirection');
     const swapAmount = document.getElementById('swapAmount');
     const maxButton = document.getElementById('maxButton');
     const swapButton = document.getElementById('swapButton');
@@ -365,6 +312,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 const { contract } = walletConfig;
                 let tx;
+                
+                // Check for transfer operations first
+                if (direction === 'transfer-matic') {
+                    const to = document.getElementById('transferAddress') ? document.getElementById('transferAddress').value : '';
+                    if (!to || !ethers.isAddress(to)) {
+                        showSwapError('آدرس مقصد معتبر نیست');
+                        return;
+                    }
+                    await transferMatic(to, amount);
+                    return;
+                } else if (direction === 'transfer-lvl') {
+                    const to = document.getElementById('transferAddress') ? document.getElementById('transferAddress').value : '';
+                    if (!to || !ethers.isAddress(to)) {
+                        showSwapError('آدرس مقصد معتبر نیست');
+                        return;
+                    }
+                    await transferLvl(to, amount);
+                    return;
+                }
+                
+                // Regular swap operations
                 if (direction === 'matic-to-lvl') {
                     const maticWei = ethers.parseEther(amount);
                     tx = await contract.buyTokens({ value: maticWei });
@@ -428,10 +396,43 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Add transfer options to the select element
+    if (swapDirection && !document.getElementById('transfer-matic-option')) {
+        swapDirection.insertAdjacentHTML('beforeend', `
+            <option value="transfer-matic" id="transfer-matic-option">انتقال POL</option>
+            <option value="transfer-lvl" id="transfer-lvl-option">انتقال CPA</option>
+        `);
+    }
+
+    // Add transfer address input field
+    if (swapForm && !document.getElementById('transferAddressRow')) {
+        const amountRow = document.querySelector('.amount-row');
+        if (amountRow) {
+            const transferRow = document.createElement('div');
+            transferRow.className = 'amount-row';
+            transferRow.id = 'transferAddressRow';
+            transferRow.style.display = 'none';
+            transferRow.innerHTML = `
+                <input type="text" id="transferAddress" placeholder="آدرس مقصد (0x...)" style="direction:ltr;" />
+            `;
+            amountRow.parentNode.insertBefore(transferRow, amountRow.nextSibling);
+        }
+    }
+    
     if (swapDirection) {
         swapDirection.addEventListener('change', function() {
             validateSwapAmount();
             updateRateInfo();
+            
+            // Show/hide transfer address field
+            const transferRow = document.getElementById('transferAddressRow');
+            if (transferRow) {
+                if (swapDirection.value === 'transfer-matic' || swapDirection.value === 'transfer-lvl') {
+                    transferRow.style.display = 'flex';
+                } else {
+                    transferRow.style.display = 'none';
+                }
+            }
         });
     }
     
@@ -448,4 +449,39 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // بارگذاری اولیه
     loadBalances();
+    
+    // جستجوی ایندکس برای فرم انتقال
+    const searchIndexBtn = document.getElementById('searchIndexBtn');
+    const searchIndexInput = document.getElementById('searchIndexInput');
+    const transferTo = document.getElementById('transferTo');
+    
+    if (searchIndexBtn && searchIndexInput && transferTo) {
+        searchIndexBtn.addEventListener('click', async function() {
+            const idx = searchIndexInput.value;
+            if (!idx || isNaN(idx) || parseInt(idx) < 1) {
+                transferTo.value = '';
+                alert('ایندکس معتبر وارد کنید');
+                return;
+            }
+            try {
+                const walletConfig = await window.connectWallet();
+                if (!walletConfig || !walletConfig.contract) {
+                    alert('اتصال به قرارداد برقرار نیست');
+                    return;
+                }
+                const contract = walletConfig.contract;
+                const indexBig = BigInt(idx);
+                const address = await contract.indexToAddress(indexBig);
+                if (address && address !== '0x0000000000000000000000000000000000000000') {
+                    transferTo.value = address;
+                } else {
+                    transferTo.value = '';
+                    alert('آدرسی برای این ایندکس یافت نشد');
+                }
+            } catch (e) {
+                transferTo.value = '';
+                alert('خطا در دریافت آدرس: ' + (e.message || e));
+            }
+        });
+    }
 }); 

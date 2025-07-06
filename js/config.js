@@ -2571,17 +2571,6 @@ async function loadNetworkStats(contract) {
         // فقط از توابع موجود استفاده کن
         const totalClaimableBinaryPoints = await contract.totalClaimableBinaryPoints().catch(() => 0n);
         
-        // به‌روزرسانی عناصر UI
-        const updateElement = (id, value) => {
-            const element = document.getElementById(id);
-            if (element) {
-                element.textContent = value.toString();
-            }
-        };
-        
-        updateElement('network-points', parseInt(totalClaimableBinaryPoints.toString()));
-        updateElement('network-rewards', parseInt(totalClaimableBinaryPoints.toString()));
-        
         console.log('Network stats loaded successfully');
         return {
             totalClaimableBinaryPoints

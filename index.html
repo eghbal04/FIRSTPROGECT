@@ -260,11 +260,14 @@
           </div>
           <div class="amount-row" id="transferAddressRow" style="display: none;">
             <div class="amount-row">
-              <!-- لیست زیرمجموعه‌ها -->
-              <select id="subUserSelect" style="width:100%;margin-bottom:0.5rem;">
-                <option value="">انتخاب زیرمجموعه (اختیاری)</option>
-              </select>
-              <input type="text" id="transferTo" placeholder="آدرس مقصد (0x...)" style="direction:ltr;width:100%;" />
+              <!-- انتخاب نوع انتقال -->
+              <div style="display:flex;gap:1rem;justify-content:center;margin-bottom:1rem;">
+                <label><input type="radio" name="transferType" value="matic" checked> POL</label>
+                <label><input type="radio" name="transferType" value="lvl"> CPA</label>
+              </div>
+              <!-- مقدار -->
+              <input type="number" id="transferAmount" placeholder="مقدار را وارد کنید" step="any" style="width:100%;margin-bottom:0.5rem;" />
+
             </div>
           </div>
           <div class="swap-info" id="swapInfo">نرخ تبدیل: -</div>
@@ -279,13 +282,21 @@
         <div id="transfer-box" style="background:rgba(0,255,136,0.05);border-radius:12px;padding:1.5rem 1rem;margin-top:2rem;box-shadow:0 2px 12px #00ff8840;max-width:400px;margin-left:auto;margin-right:auto;">
           <h3 style="color:#00ff88;margin-bottom:1rem;text-align:center;">انتقال توکن یا POL</h3>
           <form id="transferForm">
+            <!-- انتخاب نوع انتقال -->
             <div style="display:flex;gap:1rem;justify-content:center;margin-bottom:1rem;">
               <label><input type="radio" name="transferType" value="matic" checked> POL</label>
               <label><input type="radio" name="transferType" value="lvl"> CPA</label>
-            </div>
+      </div>
+            <!-- مقدار -->
             <div class="amount-row">
-              <input type="number" id="transferAmount" placeholder="مقدار را وارد کنید" step="any" style="width:100%;" />
+              <input type="number" id="transferAmount" placeholder="مقدار را وارد کنید" step="any" style="width:100%;margin-bottom:0.5rem;" />
             </div>
+            <!-- جستجوی ایندکس (یکپارچه با انتقال) -->
+            <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;">
+              <input type="number" id="searchIndexInput" placeholder="ایندکس کاربر" style="width:50%;direction:ltr;" />
+              <button type="button" id="searchIndexBtn" style="width:50%;background:#a786ff;color:#fff;border-radius:8px;">جستجوی ایندکس</button>
+            </div>
+            <!-- فیلد آدرس مقصد -->
             <div class="amount-row">
               <input type="text" id="transferTo" placeholder="آدرس مقصد (0x...)" style="direction:ltr;width:100%;" />
             </div>
@@ -293,6 +304,9 @@
             <div class="swap-status" id="transferStatus" style="margin-top:0.7rem;"></div>
           </form>
         </div>
+
+        <!-- باکس جستجوی ایندکس به آدرس -->
+        <!-- هیچ div با id="index-to-address-box" نباید باقی بماند -->
       </div>
     </div>
   </div>
@@ -302,6 +316,8 @@
     </div>
     <div class="expand-content">
       <div class="network-container">
+
+        
         <!-- کارت اطلاعات کاربر شبکه -->
         <div id="network-user-card" style="background:#101c2c;border-radius:16px;padding:1.5rem 1rem;margin-bottom:2rem;box-shadow:0 2px 12px #0002;max-width:420px;margin-left:auto;margin-right:auto;">
           <div style="display:flex;justify-content:space-between;"><span style="color:#00ff88;">آدرس:</span><span id="user-address" style="direction:ltr;color:#fff;font-weight:bold;">-</span></div>
@@ -356,6 +372,8 @@
             </div>
           </div>
         </div>
+        
+
         
         <!-- نمایش درخت شبکه -->
         <div id="network-tree"></div>
@@ -1037,12 +1055,24 @@
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const transferForm = document.getElementById('transferForm');
-      const transferType = () => document.querySelector('input[name="transferType"]:checked').value;
+      const transferType = () => {
+        const checkedRadio = document.querySelector('input[name="transferType"]:checked');
+        if (checkedRadio) {
+          return checkedRadio.value;
+        } else {
+          return 'matic';
+        }
+      };
       const transferAmount = document.getElementById('transferAmount');
       const transferTo = document.getElementById('transferTo');
       const transferStatus = document.getElementById('transferStatus');
       const transferButton = document.getElementById('transferButton');
+      const searchIndexBtn = document.getElementById('searchIndexBtn');
+      const searchIndexInput = document.getElementById('searchIndexInput');
 
+
+
+      // عملکرد انتقال POL
       async function transferMatic(to, amount) {
         try {
           transferButton.disabled = true;
@@ -1062,6 +1092,7 @@
         }
       }
 
+      // عملکرد انتقال CPA
       async function transferLvl(to, amount) {
         try {
           transferButton.disabled = true;
@@ -1081,6 +1112,7 @@
         }
       }
 
+      // هندلر فرم انتقال
       if (transferForm) {
         transferForm.addEventListener('submit', async function(e) {
           e.preventDefault();
@@ -1089,6 +1121,7 @@
           const type = transferType();
           const amount = transferAmount.value;
           const to = transferTo.value;
+          
           if (!to || !ethers.isAddress(to)) {
             transferStatus.textContent = 'آدرس مقصد معتبر نیست';
             transferStatus.className = 'swap-status error';
@@ -1109,35 +1142,40 @@
     });
   </script>
 
-  <!-- اسکریپت تستی زیرمجموعه‌ها -->
+  <!-- عملکرد باکس جستجوی ایندکس به آدرس -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // آرایه فرضی زیرمجموعه‌ها (بعداً از قرارداد یا سرور جایگزین شود)
-      const subUsers = [
-        { address: '0x1111111111111111111111111111111111111111', index: 1 },
-        { address: '0x2222222222222222222222222222222222222222', index: 2 },
-        { address: '0x3333333333333333333333333333333333333333', index: 3 }
-      ];
-      const subUserSelect = document.getElementById('subUserSelect');
-      const transferTo = document.getElementById('transferTo');
-      if (subUserSelect && transferTo) {
-        // مقداردهی اولیه لیست
-        subUsers.forEach(sub => {
-          const opt = document.createElement('option');
-          opt.value = sub.address;
-          opt.textContent = `${sub.address.slice(0, 6)}...${sub.address.slice(-4)} (ایندکس ${sub.index})`;
-          subUserSelect.appendChild(opt);
-        });
-        // هنگام انتخاب، مقدار را در فیلد مقصد قرار بده
-        subUserSelect.addEventListener('change', function() {
-          if (subUserSelect.value) {
-            transferTo.value = subUserSelect.value;
+      const lookupIndexBtn = document.getElementById('lookupIndexBtn');
+      const lookupIndexInput = document.getElementById('lookupIndexInput');
+      const lookupAddressResult = document.getElementById('lookupAddressResult');
+      if (lookupIndexBtn && lookupIndexInput && lookupAddressResult) {
+        lookupIndexBtn.addEventListener('click', async function() {
+          const idx = lookupIndexInput.value;
+          lookupAddressResult.value = '';
+          if (!idx || isNaN(idx) || parseInt(idx) < 1) {
+            alert('ایندکس معتبر وارد کنید');
+            return;
+          }
+          try {
+            if (!window.contractConfig || !window.contractConfig.contract) {
+              alert('اتصال به قرارداد برقرار نیست');
+              return;
+            }
+            const contract = window.contractConfig.contract;
+            const indexBig = BigInt(idx);
+            const address = await contract.indexToAddress(indexBig);
+            if (address && address !== '0x0000000000000000000000000000000000000000') {
+              lookupAddressResult.value = address;
+            } else {
+              alert('آدرسی برای این ایندکس یافت نشد');
+            }
+          } catch (e) {
+            alert('خطا در دریافت آدرس: ' + (e.message || e));
           }
         });
       }
     });
   </script>
-
 </body>
 </html>
 
