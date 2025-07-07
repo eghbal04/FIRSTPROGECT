@@ -118,10 +118,35 @@ function updateProfileUI(profile) {
     const copyBtn = document.getElementById('copyProfileReferral');
     if (copyBtn) {
         copyBtn.onclick = async () => {
-            if (profile.address) {
-                const fullLink = window.location.origin + '/?ref=' + profile.address;
-                await navigator.clipboard.writeText(fullLink);
-                copyBtn.textContent = 'کپی شد!';
+            try {
+                if (profile.address) {
+                    const fullLink = window.location.origin + '/?ref=' + profile.address;
+                    console.log('Copying referral link:', fullLink);
+                    
+                    // تلاش برای کپی کردن
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        await navigator.clipboard.writeText(fullLink);
+                        copyBtn.textContent = 'کپی شد!';
+                        setTimeout(() => copyBtn.textContent = 'کپی', 1500);
+                    } else {
+                        // روش جایگزین برای مرورگرهای قدیمی
+                        const textArea = document.createElement('textarea');
+                        textArea.value = fullLink;
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        copyBtn.textContent = 'کپی شد!';
+                        setTimeout(() => copyBtn.textContent = 'کپی', 1500);
+                    }
+                } else {
+                    console.error('No profile address available');
+                    copyBtn.textContent = 'خطا: آدرس موجود نیست';
+                    setTimeout(() => copyBtn.textContent = 'کپی', 1500);
+                }
+            } catch (error) {
+                console.error('Error copying referral link:', error);
+                copyBtn.textContent = 'خطا در کپی';
                 setTimeout(() => copyBtn.textContent = 'کپی', 1500);
             }
         };
@@ -206,16 +231,39 @@ function updateProfileUI(profile) {
 function setupReferralCopy() {
     const copyBtn = document.getElementById('copyProfileReferral');
     if (copyBtn) {
-        copyBtn.addEventListener('click', async () => {
+        // حذف event listener های قبلی برای جلوگیری از تداخل
+        copyBtn.replaceWith(copyBtn.cloneNode(true));
+        const newCopyBtn = document.getElementById('copyProfileReferral');
+        
+        newCopyBtn.addEventListener('click', async () => {
             try {
                 const { address } = await window.connectWallet();
-                const referralLink = `${window.location.origin}/?ref=${address}`;
+                if (!address) {
+                    throw new Error('آدرس کیف پول در دسترس نیست');
+                }
                 
-                await navigator.clipboard.writeText(referralLink);
-                copyBtn.textContent = 'کپی شد!';
-                setTimeout(() => copyBtn.textContent = 'کپی', 1500);
+                const referralLink = `${window.location.origin}/?ref=${address}`;
+                console.log('Copying referral link from setupReferralCopy:', referralLink);
+                
+                // تلاش برای کپی کردن
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(referralLink);
+                    newCopyBtn.textContent = 'کپی شد!';
+                    setTimeout(() => newCopyBtn.textContent = 'کپی', 1500);
+                } else {
+                    // روش جایگزین برای مرورگرهای قدیمی
+                    const textArea = document.createElement('textarea');
+                    textArea.value = referralLink;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    newCopyBtn.textContent = 'کپی شد!';
+                    setTimeout(() => newCopyBtn.textContent = 'کپی', 1500);
+                }
             } catch (error) {
-                showProfileError('خطا در کپی کردن لینک دعوت');
+                console.error('Error in setupReferralCopy:', error);
+                showProfileError('خطا در کپی کردن لینک دعوت: ' + error.message);
             }
         });
     }
