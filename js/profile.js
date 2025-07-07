@@ -172,6 +172,26 @@ function updateProfileUI(profile) {
     if (leftPointsEl) leftPointsEl.textContent = profile.leftPoints || '۰';
     const rightPointsEl = document.getElementById('profile-rightPoints');
     if (rightPointsEl) rightPointsEl.textContent = profile.rightPoints || '۰';
+    
+    // مدیریت وضعیت دکمه پاداش ماهانه بر اساس خالی بودن فرزندان
+    const claimMonthlyBtn = document.getElementById('profile-claim-monthly-btn');
+    if (claimMonthlyBtn) {
+        const leftPoints = Number(profile.leftPoints || 0);
+        const rightPoints = Number(profile.rightPoints || 0);
+        const bothChildrenEmpty = leftPoints === 0 && rightPoints === 0;
+        
+        if (bothChildrenEmpty) {
+            // نمایش دکمه اگر هر دو فرزند خالی هستند
+            claimMonthlyBtn.style.display = 'block';
+            claimMonthlyBtn.disabled = false;
+            claimMonthlyBtn.style.opacity = '1';
+            claimMonthlyBtn.style.cursor = 'pointer';
+        } else {
+            // مخفی کردن دکمه اگر حداقل یکی از فرزندان خالی نیست
+            claimMonthlyBtn.style.display = 'none';
+        }
+    }
+    
     const lastClaimTimeEl = document.getElementById('profile-lastClaimTime');
     if (lastClaimTimeEl) lastClaimTimeEl.textContent = formatTimestamp(profile.lastClaimTime);
     const lastMonthlyClaimEl = document.getElementById('profile-lastMonthlyClaim');
