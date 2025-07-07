@@ -142,6 +142,11 @@ const updateElement = (id, value) => {
     if (userDashboard) userDashboard.style.display = 'block';
     if (mainContent) mainContent.style.display = 'none';
     
+    // راه‌اندازی تایمر پاداش باینری
+    if (profile.lastClaimTime && typeof startBinaryClaimCountdown === 'function') {
+        startBinaryClaimCountdown(profile.lastClaimTime);
+    }
+    
     // به‌روزرسانی ناوبار بر اساس وضعیت کاربر
     updateNavbarBasedOnUserStatus();
 }
