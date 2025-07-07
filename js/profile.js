@@ -304,3 +304,6 @@ function startBinaryClaimCountdown(lastClaimTime) {
     }
     updateTimer();
 }
+
+// اضافه کردن تابع به window برای دسترسی جهانی
+window.startBinaryClaimCountdown = startBinaryClaimCountdown;

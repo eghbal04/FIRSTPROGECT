@@ -143,8 +143,32 @@ const updateElement = (id, value) => {
     if (mainContent) mainContent.style.display = 'none';
     
     // راه‌اندازی تایمر پاداش باینری
-    if (profile.lastClaimTime && typeof startBinaryClaimCountdown === 'function') {
-        startBinaryClaimCountdown(profile.lastClaimTime);
+    if (profile.lastClaimTime) {
+        // بررسی وجود تابع startBinaryClaimCountdown
+        if (typeof window.startBinaryClaimCountdown === 'function') {
+            window.startBinaryClaimCountdown(profile.lastClaimTime);
+        } else {
+            // اگر تابع موجود نیست، مستقیماً تایمر را راه‌اندازی کن
+            const timerEl = document.getElementById('binary-claim-timer');
+            if (timerEl) {
+                function updateTimer() {
+                    const now = Math.floor(Date.now() / 1000);
+                    const nextClaim = Number(profile.lastClaimTime) + 12 * 3600;
+                    const diff = nextClaim - now;
+                    if (diff <= 0) {
+                        timerEl.textContent = '';
+                        return;
+                    }
+                    const hours = Math.floor(diff / 3600);
+                    const minutes = Math.floor((diff % 3600) / 60);
+                    const seconds = diff % 60;
+                    timerEl.textContent = `${hours.toString().padStart(2, '0')}:${minutes
+                        .toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    setTimeout(updateTimer, 1000);
+                }
+                updateTimer();
+            }
+        }
     }
     
     // به‌روزرسانی ناوبار بر اساس وضعیت کاربر
