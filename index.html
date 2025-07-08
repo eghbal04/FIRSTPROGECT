@@ -94,74 +94,74 @@
     });
   </script>
 
-  <div id="main-dashboard" class="page-section expandable-container">
-    <div class="expand-header">
-      <header>
+  <div id="main-dashboard" class="page-section" style="position:relative;overflow:visible;">
+    <header>
+      <div style="display:flex;align-items:center;gap:1.2rem;justify-content:center;">
+        <img src="cpa.jpg" alt="CPA Logo" style="height:48px;width:auto;display:inline-block;margin-left:1rem;border-radius:12px;box-shadow:0 2px 12px #00ff8840;" loading="lazy">
         <h1 class="shimmer-title" style="font-family: 'Montserrat', sans-serif; font-size:2.5rem; letter-spacing:0.12em; color:#222; text-transform:uppercase; font-weight:700; text-shadow:0 2px 12px #00ff8840, 0 1px 0 #fff;">CONTINUOUS PROFIT ACADEMY</h1>
-      
-      </header>
-    </div>
-    <div class="expand-content">
-      <div class="dashboard-cards" style="display:flex;justify-content:center;flex-wrap:wrap;gap:1rem;max-width:1200px;margin:0 auto;">
-        <div class="dashboard-card">
-          <div class="dashboard-card-icon">👛</div>
-          <div class="dashboard-card-content">
-            <div id="dashboard-wallets-count">-WALLET</div>
-            <h4 style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;text-transform:uppercase;font-size:1.1rem;">ALL WALLETS</h4>
-          </div>
+      </div>
+    </header>
+    <div class="dashboard-cards" style="display:flex;justify-content:center;flex-wrap:wrap;gap:1rem;max-width:1200px;margin:0 auto;">
+      <div class="dashboard-card">
+        <div class="dashboard-card-icon">👛</div>
+        <div class="dashboard-card-content">
+          <div id="dashboard-wallets-count">-WALLET</div>
+          <h4 style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;text-transform:uppercase;font-size:1.1rem;">ALL WALLETS</h4>
         </div>
+      </div>
 
-        <!-- حذف کارت قیمت LVL (USD) -->
-        <!-- حذف کارت قیمت LVL (POL) -->
-        <div class="dashboard-card">
-          <div class="dashboard-card-icon"></div>
-          <div class="dashboard-card-content">
-            <div id="circulating-supply">-CPA</div>
-            <h4 style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;text-transform:uppercase;font-size:1.1rem;">TOTAL SUPPLY</h4>
-      </div>
+      <!-- حذف کارت قیمت LVL (USD) -->
+      <!-- حذف کارت قیمت LVL (POL) -->
+      <div class="dashboard-card">
+        <div class="dashboard-card-icon"></div>
+        <div class="dashboard-card-content">
+          <div id="circulating-supply">-CPA</div>
+          <h4 style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;text-transform:uppercase;font-size:1.1rem;">TOTAL SUPPLY</h4>
     </div>
-    <!-- کارت total-users (کاربران) حذف شد -->
-            <div class="dashboard-card">
-          <div class="dashboard-card-icon"></div>
-          <div class="dashboard-card-content">
-            <div id="total-points">-POINT</div>
-            <h4 style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;text-transform:uppercase;font-size:1.1rem;">TOTAL POINTS</h4>
-      </div>
+  </div>
+  <!-- کارت total-users (کاربران) حذف شد -->
+          <div class="dashboard-card">
+        <div class="dashboard-card-icon"></div>
+        <div class="dashboard-card-content">
+          <div id="total-points">-POINT</div>
+          <h4 style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;text-transform:uppercase;font-size:1.1rem;">TOTAL POINTS</h4>
     </div>
-    <div class="dashboard-card">
-          <div class="dashboard-card-icon"></div>
-          <div class="dashboard-card-content">
-            <div id="point-value">-CPA</div>
-            <h4 style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;text-transform:uppercase;font-size:1.1rem;">POINT VALUE</h4>
-      </div>
+  </div>
+  <div class="dashboard-card">
+        <div class="dashboard-card-icon"></div>
+        <div class="dashboard-card-content">
+          <div id="point-value">-CPA</div>
+          <h4 style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;text-transform:uppercase;font-size:1.1rem;">POINT VALUE</h4>
     </div>
-    <div class="dashboard-card">
-      <div class="dashboard-card-icon"></div>
-      <div class="dashboard-card-content">
-            <div id="contract-token-balance">-CPA</div>
-    <h4 style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;text-transform:uppercase;font-size:1.1rem;">CPA BALANCE</h4>
-      </div>
+  </div>
+  <div class="dashboard-card">
+    <div class="dashboard-card-icon"></div>
+    <div class="dashboard-card-content">
+          <div id="contract-token-balance">-CPA</div>
+  <h4 style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;text-transform:uppercase;font-size:1.1rem;">CPA BALANCE</h4>
     </div>
-    <div class="dashboard-card">
-      <div class="dashboard-card-icon"></div>
-      <div class="dashboard-card-content">
-        <div id="reward-pool">-POL</div>
-        <h4 style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;text-transform:uppercase;font-size:1.1rem;">POL BALANCE</h4>
-      </div>
+  </div>
+  <div class="dashboard-card">
+    <div class="dashboard-card-icon"></div>
+    <div class="dashboard-card-content">
+      <div id="reward-pool">-POL</div>
+      <h4 style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;text-transform:uppercase;font-size:1.1rem;">POL BALANCE</h4>
     </div>
-    <div class="dashboard-card" id="dashboard-cashback-card">
-      <div class="dashboard-card-icon"></div>
-      <div class="dashboard-card-content">
-        <div id="dashboard-cashback-value">-</div>
-        <h4 style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;text-transform:uppercase;font-size:1.1rem;">HELP FUND</h4>
-      </div>
+  </div>
+  <div class="dashboard-card" id="dashboard-cashback-card">
+    <div class="dashboard-card-icon"></div>
+    <div class="dashboard-card-content">
+      <div id="dashboard-cashback-value">-</div>
+      <h4 style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;text-transform:uppercase;font-size:1.1rem;">HELP FUND</h4>
     </div>
-      </div>
+  </div>
     </div>
   </div>
 
+
+
   <!-- Price Chart Section -->
-  <div id="price-chart-section" class="page-section expandable-container" style="width:100vw;max-width:none;margin:0;left:0;right:0;padding:0.5rem 0;">
+  <div id="price-chart-section" class="page-section" style="width:100vw;max-width:none;margin:0;left:0;right:0;padding:0.5rem 0;">
     <div class="expand-header" style="padding:0 1.5rem;">
       <h2 style="margin:0 0 0.5rem 0;">📈 چارت قیمت‌ها</h2>
               <p style="margin:0 0 0.5rem 0;">نمایش لحظه‌ای قیمت‌های توکن CPA، POL و نرخ تبدیل</p>
@@ -182,7 +182,8 @@
         
         <!-- Price Cards Grid -->
         <div class="three-buttons-row" style="margin:0 auto;gap:1.2rem;display:flex;flex-direction:row;justify-content:center;align-items:center;width:90%;max-width:480px;">
-          <button class="three-btn" style="min-width:120px;" disabled>
+          <!-- حذف کارت POL (USD) -->
+          <button class="three-btn" style="min-width:120px;display:none;" disabled>
             <span style="font-weight:bold;color:#ff6b6b;" id="chart-pol-usd">-</span><br>
             <span style="color:#00ccff;font-size:0.95rem;">POL (USD)</span>
           </button>
@@ -212,95 +213,234 @@
     </div>
   </div>
 
-  <!-- تایمر تبلیغاتی جلسه آنلاین بعدی -->
-  <div id="session-timer-box" style="display:none;max-width:600px;margin:2rem auto 1rem auto;text-align:center;">
-    <h2 style="margin-bottom:0.5rem;">⏰ شمارش معکوس جلسه آنلاین بعدی</h2>
-    <div id="session-timer" style="font-size:2rem;font-weight:bold;background:linear-gradient(90deg,#00ff88,#00ccff);color:#181c2a;padding:1rem 2rem;border-radius:12px;display:inline-block;"></div>
-    <div style="margin-top:1rem;">
-        <a href="learning.html" id="join-session-btn" style="display:inline-block;padding:0.7rem 2rem;background:#a786ff;color:#181c2a;border-radius:8px;font-weight:bold;text-decoration:none;font-size:1.1rem;">ورود به کلاس آنلاین</a>
+  <!-- Swap Section -->
+  <div id="main-swap" class="page-section expandable-container" style="width:100vw;max-width:none;margin:0;left:0;right:0;padding:0.5rem 0;display:none;">
+    <div class="expand-header" style="padding:0 1.5rem;">
+      <h2 style="margin:0 0 0.5rem 0;">🔄 تبدیل ارز</h2>
+      <p style="margin:0 0 0.5rem 0;">تبدیل بین توکن‌های POL و CPA</p>
     </div>
-  </div>
-
-  <div class="tab-container" style="max-width:700px;margin:0.5rem auto 0.5rem auto;">
-    <div class="tab-headers" style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
-      <div class="dashboard-cards-list">
-        <button class="tab-btn list-btn active" id="tab-swap-btn" type="button" style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;">SWAP</button>
-        <button class="tab-btn list-btn" id="tab-network-btn" type="button" style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;">NETWORK</button>
-        <button class="tab-btn list-btn" id="tab-profile-btn" type="button" style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;">PROFILE</button>
-        <button class="tab-btn list-btn" id="tab-reports-btn" type="button" style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;">REPORTS</button>
-        <a class="tab-btn list-btn" id="tab-news-btn" href="news.html" style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;">NEWS</a>
-        <a class="tab-btn list-btn" id="tab-shop-btn" href="shop.html" style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;">SHOP</a>
-        <a class="tab-btn list-btn" id="tab-learning-btn" href="learning.html" style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;">LEARNING</a>
-        <a class="tab-btn list-btn" id="tab-lottery-btn" href="lottery.html" style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;">LOTTERY</a>
-        <button class="tab-btn list-btn" id="tab-about-btn" type="button" style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;">ABOUT</button>
-        <a class="tab-btn list-btn" id="tab-prop-btn" href="prop.html" style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;">پاس پراپ</a>
-        <a class="tab-btn list-btn" id="tab-autotrade-btn" href="autotrade-license.html" style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;">ربات‌های اتوترید</a>
-        <a class="tab-btn list-btn" id="tab-signal-btn" href="signal.html" style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;">سیگنال‌ها</a>
-      </div>
-    </div>
-  </div>
-  <div id="main-swap" class="page-section expandable-container" style="width:100vw;max-width:none;margin:0;left:0;right:0;padding:0.5rem 0;">
-    <div class="expand-header">
-      <h2 class="swap-title">  </h2>
-    </div>
-    <div class="expand-content">
-            <div class="swap-container" style="display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;">
-        <!-- باکس تبدیل -->
-        <div style="flex: 1; min-width: 300px; max-width: 400px;">
-          <form id="swapForm" class="swap-form">
-            <h3 style="color:#00ff88;margin-bottom:1rem;text-align:center;">تبدیل</h3>
+    <div class="expand-content" style="padding:0;">
+      <div class="swap-container" style="max-width:600px;margin:0 auto;padding:1.5rem;">
+        <form id="swapForm" class="swap-form">
+          <div class="swap-row">
             <label for="swapDirection">نوع تبدیل:</label>
-            <select id="swapDirection">
-              <option value="matic-to-lvl">POL → CPA</option>
-              <option value="lvl-to-matic">CPA → POL</option>
+            <select id="swapDirection" required>
+              <option value="pol-to-cpa">POL → CPA</option>
+              <option value="cpa-to-pol">CPA → POL</option>
             </select>
+          </div>
+          
+          <div class="swap-row">
             <label for="swapAmount">مقدار:</label>
-            <div class="amount-row">
-              <input type="number" id="swapAmount" placeholder="مقدار را وارد کنید" step="any" />
-              <button type="button" id="maxButton" class="max-btn">حداکثر</button>
+            <div class="amount-input-group">
+              <input type="number" id="swapAmount" placeholder="مقدار را وارد کنید" min="0" step="any" required>
+              <button type="button" id="maxBtn" class="max-btn">حداکثر</button>
             </div>
-            <div class="swap-info" id="swapInfo">نرخ تبدیل: -</div>
-            <button type="submit" id="swapButton">تبدیل</button>
-            <div class="balances">
-              <span id="maticBalance">pol: -</span> | <span id="lvlBalance">CPA: -</span>
-            </div>
-            <div class="swap-status" id="swapStatus"></div>
-          </form>
-        </div>
+          </div>
+          
+          <div id="swapRate" class="swap-rate">نرخ تبدیل: 1 POL = 2 CPA</div>
+          <div id="swapPreview" class="swap-preview"></div>
+          
+          <button type="submit" class="swap-btn">تبدیل</button>
+          <div id="swapStatus" class="swap-status"></div>
+        </form>
         
-        <!-- باکس انتقال توکن/متیک -->
-        <div style="flex: 1; min-width: 300px; max-width: 400px;">
-          <form id="transferForm" class="swap-form">
-            <h3 style="color:#00ff88;margin-bottom:1rem;text-align:center;">انتقال</h3>
-            <!-- انتخاب نوع انتقال -->
-            <div style="display:flex;gap:1rem;justify-content:center;margin-bottom:1rem;">
-              <label><input type="radio" name="transferType" value="matic" checked> POL</label>
-              <label><input type="radio" name="transferType" value="lvl"> CPA</label>
-            </div>
-            <!-- مقدار -->
-            <div class="amount-row">
-              <input type="number" id="transferAmount" placeholder="مقدار را وارد کنید" step="any" />
-            </div>
-            <!-- جستجوی ایندکس (یکپارچه با انتقال) -->
-            <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;">
-              <input type="number" id="searchIndexInput" placeholder="ایندکس کاربر" style="width:50%;direction:ltr;" />
-              <button type="button" id="searchIndexBtn" class="max-btn" style="width:50%;">جستجوی ایندکس</button>
-            </div>
-            <!-- فیلد آدرس مقصد -->
-            <div class="amount-row">
-              <input type="text" id="transferTo" placeholder="آدرس مقصد (0x...)" style="direction:ltr;width:100%;" />
-            </div>
-            <button type="submit" id="transferButton" style="width:100%;margin-top:1rem;background:#00ff88;color:#181c2a;font-weight:bold;border-radius:8px;padding:0.7rem 0;">انتقال</button>
-            <div class="swap-status" id="transferStatus" style="margin-top:0.7rem;"></div>
-          </form>
+        <div class="swap-balances">
+          <div class="balance-item">
+            <span class="balance-label">موجودی POL:</span>
+            <span class="balance-value" id="polBalance">-</span>
+          </div>
+          <div class="balance-item">
+            <span class="balance-label">موجودی CPA:</span>
+            <span class="balance-value" id="cpaBalance">-</span>
+          </div>
         </div>
-      </div>
-
-        <!-- باکس جستجوی ایندکس به آدرس -->
-        <!-- هیچ div با id="index-to-address-box" نباید باقی بماند -->
       </div>
     </div>
   </div>
+
+  <!-- Transfer Section -->
+  <div id="main-transfer" class="page-section expandable-container" style="width:100vw;max-width:none;margin:0;left:0;right:0;padding:0.5rem 0;display:none;">
+    <div class="expand-header">
+      <h2 style="margin:0 0 0.5rem 0;">💸 ترانسفر</h2>
+      <p style="margin:0 0 0.5rem 0;">انتقال توکن به کیف پول دیگر</p>
+    </div>
+    <div class="expand-content" style="padding:0;">
+      <div class="transfer-container" style="max-width:600px;margin:0 auto;padding:1.5rem;">
+        <form id="transferForm" class="transfer-form">
+          <div class="transfer-row">
+            <label for="transferTo">آدرس مقصد:</label>
+            <input type="text" id="transferTo" placeholder="0x..." required style="direction:ltr;">
+          </div>
+          <div class="transfer-row" style="margin-bottom:0.5rem;">
+            <label for="searchIndex">جستجو با ایندکس:</label>
+            <div style="display:flex;gap:0.5rem;align-items:center;">
+              <input type="number" id="searchIndex" placeholder="ایندکس کاربر" min="0" style="width:120px;direction:ltr;">
+              <button type="button" id="searchIndexBtn" class="transfer-btn" style="padding:0.5rem 1.2rem;font-size:1rem;min-width:80px;">جستجو</button>
+            </div>
+            <div id="searchIndexStatus" class="transfer-status" style="margin-top:0.3rem;"></div>
+          </div>
+          <div class="transfer-row">
+            <label for="transferAmount">مقدار:</label>
+            <input type="number" id="transferAmount" placeholder="مقدار را وارد کنید" min="0" step="any" required>
+          </div>
+          <div class="transfer-row">
+            <label for="transferToken">نوع توکن:</label>
+            <select id="transferToken" required>
+              <option value="pol">POL</option>
+              <option value="cpa">CPA</option>
+            </select>
+          </div>
+          <button type="submit" class="transfer-btn">انتقال</button>
+          <div id="transferStatus" class="transfer-status"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hamburger Menu -->
+  <style>
+    .hamburger {
+      display: inline-block;
+      cursor: pointer;
+      width: 48px;
+      height: 48px;
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 2001;
+      background: #181c2a;
+      border-radius: 50%;
+      box-shadow: 0 2px 16px #0007;
+      transition: background 0.2s;
+    }
+    .hamburger:hover {
+      background: #222;
+    }
+    .hamburger span {
+      display: block;
+      width: 32px;
+      height: 5px;
+      margin: 7px auto;
+      background: #00ff88;
+      border-radius: 2px;
+      transition: 0.3s;
+    }
+    .hamburger-menu {
+      display: none;
+      flex-direction: column !important;
+      background: rgba(35,36,58,0.85);
+      width: 200px;
+      min-width: 200px;
+      max-width: 200px;
+      box-shadow: 0 8px 32px #0008;
+      font-size: 0.97rem;
+      padding: 1rem 0.8rem 1.5rem 0.8rem;
+      gap: 0.6rem;
+      border-radius: 18px;
+      animation: fadeInMenu 0.25s;
+      backdrop-filter: blur(6px);
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+    .hamburger-menu.open {
+      display: flex;
+      flex-direction: column !important;
+    }
+    .hamburger-menu button, .hamburger-menu a {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 0.98rem;
+      text-align: right;
+      padding: 0.8rem 0.5rem 0.8rem 1.5rem;
+      border-radius: 10px;
+      cursor: pointer;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: background 0.18s, color 0.18s;
+      position: relative;
+      min-height: 44px;
+    }
+    .hamburger-menu button:hover, .hamburger-menu a:hover {
+      background: #181c2a;
+      color: #00ff88;
+    }
+    .menu-icon {
+      font-size: 1em;
+      margin-left: 0.3em;
+      color: #00ff88;
+      flex-shrink: 0;
+    }
+    @media (max-width: 700px) {
+      .hamburger-menu { 
+        width: 200px; 
+        min-width: 200px; 
+        max-width: 200px; 
+        right: 8px; 
+        bottom: 68px; 
+        gap: 0.8rem;
+        padding: 1.2rem 1rem 1.8rem 1rem;
+      }
+      .hamburger-menu button, .hamburger-menu a {
+        padding: 1rem 0.6rem 1rem 1.6rem;
+        min-height: 48px;
+        font-size: 1rem;
+      }
+      .hamburger { bottom: 12px; right: 12px; }
+    }
+    
+    @media (max-width: 480px) {
+      .hamburger-menu { 
+        width: 180px; 
+        min-width: 180px; 
+        max-width: 180px; 
+        right: 6px; 
+        bottom: 60px; 
+        gap: 1rem;
+        padding: 1.5rem 1.2rem 2rem 1.2rem;
+      }
+      .hamburger-menu button, .hamburger-menu a {
+        padding: 1.2rem 0.8rem 1.2rem 1.8rem;
+        min-height: 52px;
+        font-size: 1.05rem;
+        border-radius: 12px;
+      }
+      .hamburger { bottom: 10px; right: 10px; }
+    }
+    @keyframes fadeInMenu {
+      from { opacity: 0; transform: translateY(30px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+  </style>
+  <div style="position:fixed;z-index:2001;bottom:24px;right:24px;">
+    <div class="hamburger" id="hamburgerBtn" aria-label="باز کردن منو" tabindex="0">
+      <span></span>
+      <span></span>
+      <span></span>
+      </div>
+    <nav class="hamburger-menu" id="hamburgerMenu">
+      <button onclick="showTab('network')"><span class="menu-icon">🌐</span>شبکه</button>
+      <button onclick="showTab('profile')"><span class="menu-icon">👤</span>پروفایل</button>
+      <button onclick="showTab('reports')"><span class="menu-icon">📊</span>گزارشات</button>
+      <button onclick="showTab('swap')"><span class="menu-icon">🔄</span>تبدیل ارز</button>
+      <button onclick="showTab('transfer')"><span class="menu-icon">💸</span>ترانسفر</button>
+
+      <button onclick="navigateToPage('news.html')"><span class="menu-icon">📰</span>اخبار</button>
+      <button onclick="navigateToPage('shop.html')"><span class="menu-icon">🛒</span>فروشگاه</button>
+      <button onclick="navigateToPage('learning.html')"><span class="menu-icon">🎓</span>آموزش</button>
+      <button onclick="navigateToPage('lottery.html')"><span class="menu-icon">🎲</span>قرعه‌کشی</button>
+      <button onclick="showTab('about')"><span class="menu-icon">ℹ️</span>درباره ما</button>
+      <button onclick="navigateToPage('admin-prop.html')"><span class="menu-icon">📄</span>پاس پراپ</button>
+      <button onclick="navigateToPage('autotrade-license.html')"><span class="menu-icon">🤖</span>ربات اتوترید</button>
+      <button onclick="navigateToPage('signal.html')"><span class="menu-icon">📈</span>سیگنال‌ها</button>
+    </nav>
+    </div>
+  <!-- END Hamburger Menu -->
+
+
   <div id="main-network" class="page-section expandable-container" style="width:100vw;max-width:none;margin:0;left:0;right:0;padding:0.5rem 0;display:none;">
     <div class="expand-header">
       <h2 class="network-title"></h2>
@@ -677,7 +817,6 @@
   <script src="js/config.js"></script>
   <script src="js/web3-interactions.js"></script>
   <script src="js/main.js"></script>
-  <script src="js/swap.js?v=5.7"></script>
   <script src="js/network.js?v=5.7"></script>
   <script src="js/profile.js?v=5.7"></script>
   <script src="js/reports.js?v=5.7"></script>
@@ -686,60 +825,9 @@
   <script src="js/homepage.js?v=5.8"></script>
   <script src="js/price-chart.js?v=5.7"></script>
   <script src="js/register.js?v=5.7"></script>
-  <script>
-    // ذخیره تب فعال در localStorage
-    function setActiveTab(tab) {
-      localStorage.setItem('activeTab', tab);
-    }
-    // بازیابی تب فعال از localStorage
-    document.addEventListener('DOMContentLoaded', function() {
-      const savedTab = localStorage.getItem('activeTab');
-      if (savedTab) {
-        showTab(savedTab);
-      }
-      
-      // بارگذاری خودکار درخت شبکه بعد از اتصال کیف پول
-      setTimeout(async () => {
-        try {
-          if (window.contractConfig && window.contractConfig.address) {
-            // اگر تب network فعال است، درخت را بارگذاری کن
-            const networkSection = document.getElementById('main-network');
-            if (networkSection && networkSection.style.display !== 'none') {
-              if (typeof window.initializeNetworkTab === 'function') {
-                await window.initializeNetworkTab();
-              }
-            }
-          }
-        } catch (error) {
-          console.log('Network tree auto-load error:', error);
-        }
-      }, 4000); // 4 ثانیه صبر کن تا همه چیز لود شود
-    });
-    // افزودن ذخیره‌سازی به کلیک هر تب
-    document.getElementById('tab-swap-btn').onclick = function() { setActiveTab('swap'); showTab('swap'); };
-    document.getElementById('tab-network-btn').onclick = async function() { 
-        setActiveTab('network'); 
-        showTab('network'); 
-        
-        // بارگذاری خودکار درخت شبکه
-        setTimeout(async () => {
-            try {
-                if (typeof window.initializeNetworkTab === 'function') {
-                    await window.initializeNetworkTab();
-                }
-            } catch (error) {
-                console.log('Network tab click load error:', error);
-            }
-        }, 500);
-    };
-    document.getElementById('tab-profile-btn').onclick = function() { setActiveTab('profile'); showTab('profile'); };
-    document.getElementById('tab-reports-btn').onclick = function() { setActiveTab('reports'); showTab('reports'); };
-    // NEWS and SHOP are now separate pages - no event listeners needed
-    document.getElementById('tab-learning-btn').onclick = function() { setActiveTab('learning'); showTab('learning'); };
-    document.getElementById('tab-about-btn').onclick = function() { setActiveTab('about'); showTab('about'); };
-  </script>
+  <script src="js/swap.js?v=5.7"></script>
   
-  <!-- Disable expandable functionality -->
+
   <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Remove all expand toggle buttons
@@ -832,11 +920,7 @@
         document.getElementById('dashboard-wallets-count').innerText = '-';
       }
     }
-    // Update wallets count when dashboard (swap tab) is shown
-    const swapBtn = document.getElementById('tab-swap-btn');
-    if (swapBtn) {
-      swapBtn.addEventListener('click', updateDashboardWalletsCount);
-    }
+
     // Also update on initial load
     document.addEventListener('DOMContentLoaded', updateDashboardWalletsCount);
   </script>
@@ -956,17 +1040,75 @@
   <br>  <br>  <br>  <br>  <br>  <br>  <br>
   </div>
   <script>
-    window.showTab = async function(tab) {
-      const tabs = ['swap','network','profile','reports','news','shop','learning','about'];
+    // تابع ناوبری به صفحات خارجی
+  window.navigateToPage = function(pageUrl) {
+    // بستن منوی همبرگر
+    const hamburgerMenu = document.getElementById('hamburgerMenu');
+    if (hamburgerMenu) {
+      hamburgerMenu.classList.remove('open');
+    }
+    
+    // اسکرول به بالای صفحه قبل از انتقال
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // انتقال به صفحه جدید بعد از کمی تاخیر
+    setTimeout(() => {
+      window.location.href = pageUrl;
+    }, 300);
+  };
+
+  window.showTab = async function(tab) {
+      const tabs = ['network','profile','reports','swap','transfer','news','shop','learning','about'];
       tabs.forEach(function(name) {
         var mainEl = document.getElementById('main-' + name);
-        if (mainEl) mainEl.style.display = (name === tab) ? '' : 'none';
+        if (mainEl) {
+          if (name === tab) {
+            mainEl.style.display = '';
+            // اضافه کردن انیمیشن fade-in
+            mainEl.style.opacity = '0';
+            mainEl.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+              mainEl.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+              mainEl.style.opacity = '1';
+              mainEl.style.transform = 'translateY(0)';
+            }, 50);
+          } else {
+            mainEl.style.display = 'none';
+            mainEl.style.opacity = '1';
+            mainEl.style.transform = 'translateY(0)';
+          }
+        }
         var btnEl = document.getElementById('tab-' + name + '-btn');
         if (btnEl) btnEl.classList.toggle('active', name === tab);
       });
+      
+      // اسکرول به بخش انتخاب شده
+      const targetElement = document.getElementById('main-' + tab);
+      if (targetElement) {
+        // بستن منوی همبرگر
+        const hamburgerMenu = document.getElementById('hamburgerMenu');
+        if (hamburgerMenu) {
+          hamburgerMenu.classList.remove('open');
+        }
+        
+        // اسکرول نرم به بخش
+        setTimeout(() => {
+          // ابتدا به بالای صفحه اسکرول کن
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          
+          // سپس به بخش مورد نظر اسکرول کن
+          setTimeout(() => {
+            targetElement.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'start',
+              inline: 'nearest'
+            });
+          }, 200);
+        }, 100);
+      }
+      
       try {
         switch(tab) {
-          case 'swap': break;
           case 'network':
             if (typeof window.initializeNetworkTab === 'function') {
               await window.initializeNetworkTab();
@@ -980,6 +1122,14 @@
             break;
           case 'reports':
             if (typeof loadReports === 'function') await loadReports();
+            break;
+          case 'swap':
+            if (window.swapManager) {
+              await window.swapManager.refreshSwapData();
+            }
+            break;
+          case 'transfer':
+            // No extra logic needed for now
             break;
           case 'news':
             if (typeof loadNews === 'function') loadNews();
@@ -1025,144 +1175,147 @@
   <!-- کنترل نمایش ورودی آدرس مقصد -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      const swapDirection = document.getElementById('swapDirection');
-      const transferAddressRow = document.getElementById('transferAddressRow');
-      
-      if (swapDirection && transferAddressRow) {
-        swapDirection.addEventListener('change', function() {
-          if (swapDirection.value === 'transfer-matic' || swapDirection.value === 'transfer-lvl') {
-            transferAddressRow.style.display = 'flex';
-          } else {
-            transferAddressRow.style.display = 'none';
-          }
-        });
-      }
-    });
-  </script>
-
-  <!-- کنترل عملکرد فرم انتقال POL و CPA -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
       const transferForm = document.getElementById('transferForm');
-      const transferType = () => {
-        const checkedRadio = document.querySelector('input[name="transferType"]:checked');
-        if (checkedRadio) {
-          return checkedRadio.value;
-        } else {
-          return 'matic';
+      if (!transferForm) return;
+      transferForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const to = document.getElementById('transferTo').value.trim();
+        const amount = parseFloat(document.getElementById('transferAmount').value);
+        const token = document.getElementById('transferToken').value;
+        const status = document.getElementById('transferStatus');
+        status.textContent = '';
+        status.className = 'transfer-status';
+        if (!to || !amount || amount <= 0) {
+          status.textContent = 'آدرس مقصد و مقدار معتبر وارد کنید';
+          status.className = 'transfer-status error';
+          return;
         }
-      };
-      const transferAmount = document.getElementById('transferAmount');
-      const transferTo = document.getElementById('transferTo');
-      const transferStatus = document.getElementById('transferStatus');
-      const transferButton = document.getElementById('transferButton');
-      const searchIndexBtn = document.getElementById('searchIndexBtn');
-      const searchIndexInput = document.getElementById('searchIndexInput');
-
-
-
-      // عملکرد انتقال POL
-      async function transferMatic(to, amount) {
+        if (!window.contractConfig || !window.contractConfig.contract || !window.contractConfig.signer) {
+          status.textContent = 'اتصال کیف پول برقرار نیست';
+          status.className = 'transfer-status error';
+          return;
+        }
         try {
-          transferButton.disabled = true;
-          transferStatus.textContent = 'در حال ارسال...';
-          const walletConfig = await window.connectWallet();
-          if (!walletConfig || !walletConfig.signer) throw new Error('اتصال کیف پول برقرار نشد');
-          const value = ethers.parseEther(amount.toString());
-          const tx = await walletConfig.signer.sendTransaction({ to, value });
-          await tx.wait();
-          transferStatus.textContent = 'انتقال POL با موفقیت انجام شد';
-          transferStatus.className = 'swap-status success';
-        } catch (e) {
-          transferStatus.textContent = 'خطا در انتقال POL: ' + (e.message || e);
-          transferStatus.className = 'swap-status error';
-        } finally {
-          transferButton.disabled = false;
-        }
-      }
-
-      // عملکرد انتقال CPA
-      async function transferLvl(to, amount) {
-        try {
-          transferButton.disabled = true;
-          transferStatus.textContent = 'در حال ارسال...';
-          const walletConfig = await window.connectWallet();
-          if (!walletConfig || !walletConfig.contract) throw new Error('اتصال کیف پول برقرار نشد');
-          const value = ethers.parseUnits(amount.toString(), 18);
-          const tx = await walletConfig.contract.transfer(to, value);
-          await tx.wait();
-          transferStatus.textContent = 'انتقال CPA با موفقیت انجام شد';
-          transferStatus.className = 'swap-status success';
-        } catch (e) {
-          transferStatus.textContent = 'خطا در انتقال CPA: ' + (e.message || e);
-          transferStatus.className = 'swap-status error';
-        } finally {
-          transferButton.disabled = false;
-        }
-      }
-
-      // هندلر فرم انتقال
-      if (transferForm) {
-        transferForm.addEventListener('submit', async function(e) {
-          e.preventDefault();
-          transferStatus.textContent = '';
-          transferStatus.className = 'swap-status';
-          const type = transferType();
-          const amount = transferAmount.value;
-          const to = transferTo.value;
-          
-          if (!to || !ethers.isAddress(to)) {
-            transferStatus.textContent = 'آدرس مقصد معتبر نیست';
-            transferStatus.className = 'swap-status error';
-            return;
-          }
-          if (!amount || parseFloat(amount) <= 0) {
-            transferStatus.textContent = 'مقدار معتبر وارد کنید';
-            transferStatus.className = 'swap-status error';
-            return;
-          }
-          if (type === 'matic') {
-            await transferMatic(to, amount);
+          status.textContent = 'در حال ارسال...';
+          status.className = 'transfer-status loading';
+          if (token === 'pol') {
+            // انتقال MATIC/POL
+            const tx = await window.contractConfig.signer.sendTransaction({
+              to,
+              value: ethers.parseEther(amount.toString())
+            });
+            await tx.wait();
+            status.textContent = 'انتقال با موفقیت انجام شد!\nکد تراکنش: ' + tx.hash;
+            status.className = 'transfer-status success';
           } else {
-            await transferLvl(to, amount);
+            // انتقال CPA
+            const contract = window.contractConfig.contract;
+            const tx = await contract.transfer(to, ethers.parseEther(amount.toString()));
+            await tx.wait();
+            status.textContent = 'انتقال با موفقیت انجام شد!\nکد تراکنش: ' + tx.hash;
+            status.className = 'transfer-status success';
           }
-        });
-      }
+          transferForm.reset();
+        } catch (error) {
+          let msg = error && error.message ? error.message : error;
+          if (msg.includes('user rejected')) msg = 'تراکنش توسط کاربر لغو شد';
+          else if (msg.includes('insufficient funds')) msg = 'موجودی کافی نیست';
+          else if (msg.includes('invalid address')) msg = 'آدرس مقصد نامعتبر است';
+          else if (msg.includes('nonce')) msg = 'خطا در شماره تراکنش. لطفاً دوباره تلاش کنید';
+          else if (msg.includes('execution reverted')) msg = 'تراکنش ناموفق بود. لطفاً شرایط را بررسی کنید';
+          else msg = 'خطا در انتقال: ' + msg;
+          status.textContent = msg;
+          status.className = 'transfer-status error';
+        }
+      });
     });
   </script>
 
-  <!-- عملکرد باکس جستجوی ایندکس به آدرس -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      const lookupIndexBtn = document.getElementById('lookupIndexBtn');
-      const lookupIndexInput = document.getElementById('lookupIndexInput');
-      const lookupAddressResult = document.getElementById('lookupAddressResult');
-      if (lookupIndexBtn && lookupIndexInput && lookupAddressResult) {
-        lookupIndexBtn.addEventListener('click', async function() {
-          const idx = lookupIndexInput.value;
-          lookupAddressResult.value = '';
-          if (!idx || isNaN(idx) || parseInt(idx) < 1) {
-            alert('ایندکس معتبر وارد کنید');
+      const searchBtn = document.getElementById('searchIndexBtn');
+      const searchInput = document.getElementById('searchIndex');
+      const searchStatus = document.getElementById('searchIndexStatus');
+      if (searchBtn && searchInput) {
+        searchBtn.onclick = async function() {
+          searchStatus.textContent = '';
+          const idx = searchInput.value.trim();
+          if (!idx || isNaN(idx) || Number(idx) < 0) {
+            searchStatus.textContent = 'ایندکس معتبر وارد کنید';
+            searchStatus.className = 'transfer-status error';
+            return;
+          }
+          if (!window.contractConfig || !window.contractConfig.contract) {
+            searchStatus.textContent = 'اتصال کیف پول برقرار نیست';
+            searchStatus.className = 'transfer-status error';
             return;
           }
           try {
-            if (!window.contractConfig || !window.contractConfig.contract) {
-              alert('اتصال به قرارداد برقرار نیست');
-              return;
-            }
+            searchStatus.textContent = 'در حال جستجو...';
+            searchStatus.className = 'transfer-status loading';
             const contract = window.contractConfig.contract;
-            const indexBig = BigInt(idx);
-            const address = await contract.indexToAddress(indexBig);
-            if (address && address !== '0x0000000000000000000000000000000000000000') {
-              lookupAddressResult.value = address;
+            const address = await contract.indexToAddress(BigInt(idx));
+            if (!address || address === '0x0000000000000000000000000000000000000000') {
+              searchStatus.textContent = 'آدرس ولت برای این ایندکس یافت نشد';
+              searchStatus.className = 'transfer-status error';
+              document.getElementById('transferTo').value = '';
             } else {
-              alert('آدرسی برای این ایندکس یافت نشد');
+              searchStatus.textContent = 'آدرس ولت پیدا شد';
+              searchStatus.className = 'transfer-status success';
+              document.getElementById('transferTo').value = address;
             }
-          } catch (e) {
-            alert('خطا در دریافت آدرس: ' + (e.message || e));
+          } catch (err) {
+            searchStatus.textContent = 'خطا در جستجو: ' + (err && err.message ? err.message : err);
+            searchStatus.className = 'transfer-status error';
+            document.getElementById('transferTo').value = '';
           }
-        });
+        };
       }
+    });
+  </script>
+
+  <script>
+    // تابع باز/بسته کردن بخش‌های قابل گسترش
+    function toggleExpandable(containerId) {
+      const container = document.getElementById(containerId);
+      if (container) {
+        container.classList.toggle('collapsed');
+        
+        // ذخیره وضعیت در localStorage
+        const isCollapsed = container.classList.contains('collapsed');
+        localStorage.setItem(`expandable_${containerId}`, isCollapsed ? 'collapsed' : 'expanded');
+      }
+    }
+
+    // بازیابی وضعیت بخش‌های قابل گسترش از localStorage
+    function restoreExpandableStates() {
+      const expandableContainers = document.querySelectorAll('.expandable-container');
+      expandableContainers.forEach(container => {
+        const containerId = container.id;
+        const savedState = localStorage.getItem(`expandable_${containerId}`);
+        if (savedState === 'collapsed') {
+          container.classList.add('collapsed');
+        }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // بازیابی وضعیت بخش‌های قابل گسترش
+      restoreExpandableStates();
+      
+      const hamburgerBtn = document.getElementById('hamburgerBtn');
+      const hamburgerMenu = document.getElementById('hamburgerMenu');
+      hamburgerBtn.onclick = function() {
+        hamburgerMenu.classList.toggle('open');
+      };
+      document.addEventListener('click', function(e) {
+        if (!hamburgerMenu.contains(e.target) && !hamburgerBtn.contains(e.target)) {
+          hamburgerMenu.classList.remove('open');
+        }
+      });
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') hamburgerMenu.classList.remove('open');
+      });
     });
   </script>
 </body>

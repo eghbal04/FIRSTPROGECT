@@ -2111,17 +2111,15 @@ window.cleanupNetworkIntervals = function() {
 
 // تابع مرکزی دریافت پروفایل کاربر
 window.getUserProfile = async function() {
+    let address = null; // اضافه شد تا همیشه در دسترس باشد
     return await preventConcurrentCalls('getUserProfile', async () => {
         try {
             const connection = await window.connectWallet();
             if (!connection || !connection.contract || !connection.address) {
                 throw new Error('No wallet connection available');
             }
-            
-            const { contract, address, provider, signer } = connection;
-            if (!address) {
-                throw new Error('No wallet address available');
-            }
+            const { contract, address: addr, provider, signer } = connection;
+            address = addr; // مقداردهی به address بعد از اتصال موفق
             
             // بررسی cache برای جلوگیری از فراخوانی مکرر
             const cacheKey = `userProfile_${address}`;
