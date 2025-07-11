@@ -7511,3 +7511,79 @@ body.signal-page { background: #181c2a; color: #fff; font-family: 'Noto Sans Ara
   0%, 50% { opacity: 1; }
   51%, 100% { opacity: 0; }
 }
+
+/* --- Dashboard Terminal Typewriter Fix --- */
+#dashboard-terminal-info {
+  font-family: 'Fira Mono', 'Consolas', 'Courier New', 'Noto Sans Arabic', monospace !important;
+  direction: ltr !important;
+  text-align: left !important;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  unicode-bidi: plaintext;
+  word-break: break-all;
+  background: #111;
+  color: #00ff88;
+  border-radius: 8px;
+  border: 1.5px solid #333;
+  padding: 0.5rem 0.8rem;
+  min-width: 280px;
+  width: 100%;
+  margin: 0;
+  overflow-x: auto;
+}
+
+.dashboard-terminal-title {
+  font-family: 'Fira Mono', 'Consolas', 'Courier New', 'Noto Sans Arabic', monospace !important;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #00ff88;
+  letter-spacing: 0.5px;
+}
+
+.dashboard-cursor {
+  color: #00ff88;
+  animation: blink 1s steps(1) infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Optional: Responsive for mobile */
+@media (max-width: 600px) {
+  #dashboard-terminal-info {
+    font-size: 0.85rem;
+    padding: 0.3rem 0.3rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .register-form {
+    padding: 0.7rem 0.3rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+  }
+  .register-form-title {
+    font-size: 1.1rem;
+  }
+  .register-form-balance,
+  .register-form-balance-usd,
+  .register-form-required {
+    font-size: 1rem;
+  }
+  .register-form input,
+  .register-form select {
+    width: 100% !important;
+    font-size: 1rem;
+    padding: 0.6rem 0.7rem;
+    margin-bottom: 0.7rem;
+    border-radius: 7px;
+  }
+  .register-form button {
+    width: 100%;
+    font-size: 1.1rem;
+    padding: 0.8rem 0;
+    margin-top: 0.7rem;
+  }
+}

@@ -1,6 +1,6 @@
 const CONTRACT_LOTARY = '0x0000000000000000000000000000000000000000';
 // تنظیمات قرارداد LevelUp
-const CONTRACT_ADDRESS = '0x8226B6750b25dA1605473FDb915941f56854Ee8F';
+const CONTRACT_ADDRESS = '0x840091A79d8A11FBCeFe29A3B0929BE74c17a413';
 const USDC_ADDRESS = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174'; // Polygon USDC
 const USDC_ABI = [
   {
@@ -2951,11 +2951,14 @@ if (!window._dashboardIntervalSet) {
   window._dashboardIntervalSet = true;
 }
 
-window.showDashboardInfoWithTypewriter && showDashboardInfoWithTypewriter()
-
+// ... existing code ...
+// حذف فراخوانی تایپ‌رایتر تکراری
+// window.showDashboardInfoWithTypewriter && showDashboardInfoWithTypewriter()
+// ... existing code ...
 document.addEventListener('DOMContentLoaded', function() {
-  if (typeof showDashboardInfoWithTypewriter === 'function') {
-    showDashboardInfoWithTypewriter();
-  }
+  // if (typeof showDashboardInfoWithTypewriter === 'function') {
+  //   showDashboardInfoWithTypewriter();
+  // }
 });
+// ... existing code ...
 

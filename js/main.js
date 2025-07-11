@@ -73,15 +73,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
     await updateContractStats();
-    // Example: update dashboard UI with cached stats
-    if (document.getElementById('dashboard-terminal-info')) {
-        document.getElementById('dashboard-terminal-info').textContent =
-            `Total Points: ${window.contractStats.totalPoints}\n` +
-            `USDC Balance: ${window.contractStats.usdcBalance}\n` +
-            `Token Balance: ${window.contractStats.tokenBalance}\n` +
-            `Wallets: ${window.contractStats.wallets}\n` +
-            `Total Supply: ${window.contractStats.totalSupply}`;
-    }
+    // حذف مقداردهی مستقیم به dashboard-terminal-info برای جلوگیری از تداخل تایپ‌رایتر
+    // if (document.getElementById('dashboard-terminal-info')) {
+    //     document.getElementById('dashboard-terminal-info').textContent =
+    //         `Total Points: ${window.contractStats.totalPoints}\n` +
+    //         `USDC Balance: ${window.contractStats.usdcBalance}\n` +
+    //         `Token Balance: ${window.contractStats.tokenBalance}\n` +
+    //         `Wallets: ${window.contractStats.wallets}\n` +
+    //         `Total Supply: ${window.contractStats.totalSupply}`;
+    // }
 });
 
 function shortenAddress(address) {
