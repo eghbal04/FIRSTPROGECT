@@ -1458,7 +1458,7 @@
         let totalPoints = '-';
         try {
           const totalPointsRaw = await contract.totalClaimableBinaryPoints();
-          totalPoints = (BigInt(totalPointsRaw) / 10n ** 18n).toString();
+          totalPoints = totalPointsRaw.toString();
         } catch(e){}
         
         // Point Value
