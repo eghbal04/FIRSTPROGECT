@@ -326,21 +326,21 @@
   background: #111;
   color: #00ff88;
   font-family: monospace;
-  border-radius: 16px;
+  border-radius: 4px;
   box-shadow: 0 2px 12px #00ff8840;
-  margin: 2rem 0 1.5rem 0;
+  margin: 0.2rem 0;
   width: 100%;
   text-align: left;
   direction: ltr;
-  padding: 2rem 2.5rem;
+  padding: 0.3rem 0.4rem;
 }
 #dashboard-terminal-info {
   background: #111;
   border: 1.5px solid #333;
-  padding: 1.2rem 1.5rem;
-  border-radius: 12px;
+  padding: 0.3rem 0.4rem;
+  border-radius: 4px;
   color: #00ff88;
-  font-size: 1.15rem;
+  font-size: 1rem;
   line-height: 2;
   font-family: monospace;
   overflow-x: auto;
@@ -349,7 +349,25 @@
   text-align: left;
   white-space: pre;
   direction: ltr;
+  caret-color: transparent;
+  direction: ltr !important;
+  font-family: monospace, 'Courier New', Courier !important;
+  unicode-bidi: plaintext;
 }
+#dashboard-terminal-info.collapsed {
+  max-height: 4.8em; /* ~3 lines, line-height: 1.6em */
+  overflow-y: auto;
+  transition: max-height 0.3s;
+}
+#dashboard-terminal-info {
+  transition: max-height 0.3s;
+}
+
+/* Optional: style for expand/collapse button */
+#dashboard-expand-btn {
+  user-select: none;
+}
+
 .price-chart-canvas-container {
   background: linear-gradient(135deg,#1e293b,#334155);
   border-radius: 20px;
@@ -7453,4 +7471,43 @@ body.signal-page { background: #181c2a; color: #fff; font-family: 'Noto Sans Ara
 
 #chart-error {
   animation: chartError 0.5s ease-in-out;
+}
+
+@media (max-width: 600px) {
+  #dashboard-terminal-card {
+    min-width: unset !important;
+    width: 100% !important;
+    border-radius: 2px !important;
+    box-shadow: none !important;
+    margin: 0.1rem 0 !important;
+    padding: 0.1rem 0.1rem !important;
+  }
+  #dashboard-terminal-info {
+    font-size: 0.85rem !important;
+    padding: 0.2rem 0.2rem !important;
+    word-break: break-all !important;
+    overflow-wrap: anywhere !important;
+    border-radius: 2px !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+}
+
+.dashboard-terminal-title {
+  font-weight: bold;
+  text-align: center;
+  display: block;
+  font-size: 1.3em;
+  margin-bottom: 0.2em;
+}
+
+.dashboard-cursor {
+  font-weight: bold;
+  color: #00ff88;
+  animation: blink-cursor 1s steps(1) infinite;
+}
+@keyframes blink-cursor {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
 }

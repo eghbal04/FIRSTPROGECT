@@ -5,34 +5,48 @@
 window.dashboardTerminalLang = 'en';
 
 // خطوط ترمینال به دو زبان (فارسی با اعداد فارسی)
+// Utility: Remove box-drawing characters from all output lines
+function removeBoxDrawingChars(lines) {
+  const boxChars = /[╔╗╝╚═║]+/g;
+  return lines.map(line => line.replace(boxChars, '').trim());
+}
+
 window.dashboardTerminalLines = {
   en: function(data) {
-    return [
-      '╔══════════════════════════════════════════════════════════════╗',
-      '║                    CONTINUOUS PROFIT ACADEMY                 ║',
-      '║                        CPA TERMINAL v2.0                    ║',
-      '╚══════════════════════════════════════════════════════════════╝',
+    const lines = [
+      'CONTINUOUS PROFIT ACADEMY',
       '',
-      '🚀 Welcome to CPA Terminal!',
+      '🚀 Welcome to CPA!',
       '📊 Loading blockchain data...',
       '',
-      '╔══════════════════════════════════════════════════════════════╗',
-      '║                        SYSTEM STATUS                         ║',
-      '╚══════════════════════════════════════════════════════════════╝',
+      'SYSTEM STATUS',
       '',
       `🌐 All Wallets: ${data.wallets}`,
       `💰 Total Supply: ${data.totalSupply}`,
-      `🎯 Total Points: ${data.totalPoints}`,
-      `💎 Point Value: ${data.pointValue}`,
-      `📈 Current Token Price: ${data.tokenPrice}`,
-      `🏦 Contract Token Bal.: ${data.contractTokenBalance}`,
-      `💚 Help Fund: ${data.cashback}`,
-      `💵 USDC Contract Bal.: ${data.usdcBalance}`,
+      `💸 Binary Pool: ${data.binaryPool}`,
+      `🟢 Point Value: ${data.pointValue}`,
       '',
-      '╔══════════════════════════════════════════════════════════════╗',
-      '║                    TERMINAL READY                            ║',
-      '╚══════════════════════════════════════════════════════════════╝'
+      'READY'
     ];
+    return removeBoxDrawingChars(lines);
+  },
+  fa: function(data) {
+    const lines = [
+      'آکادمی سود مستمر',
+      '',
+      '🚀 خوش آمدید!',
+      '📊 در حال بارگذاری اطلاعات بلاکچین...',
+      '',
+      'وضعیت سیستم',
+      '',
+      `🌐 تعداد کیف پول‌ها: ${data.wallets}`,
+      `💰 عرضه کل: ${data.totalSupply}`,
+      `💸 استخر باینری: ${data.binaryPool}`,
+      `🟢 ارزش هر امتیاز: ${data.pointValue}`,
+      '',
+      'آماده'
+    ];
+    return removeBoxDrawingChars(lines);
   }
 };
 
@@ -63,41 +77,73 @@ document.addEventListener('DOMContentLoaded', setDashboardTerminalDirection);
 window.typewriterDashboardInfo = function(lines, isWaiting = false) {
   const el = document.getElementById('dashboard-terminal-info');
   if (!el) return;
-  
+
+  // حذف کرسر چشمک‌زن در حالت انتظار
   if (isWaiting) {
-    // نمایش کرسر چشمک‌زن برای انتظار
-    el.textContent = '|';
-    let cursorVisible = true;
-    const cursorInterval = setInterval(() => {
-      el.textContent = cursorVisible ? '|' : ' ';
-      cursorVisible = !cursorVisible;
-    }, 500);
-    
-    // ذخیره interval برای پاک کردن بعداً
-    el._cursorInterval = cursorInterval;
+    el.textContent = '';
     return;
   }
-  
-  // پاک کردن interval قبلی
+
   if (el._cursorInterval) {
     clearInterval(el._cursorInterval);
     el._cursorInterval = null;
   }
-  
-  el.textContent = '';
+
+  el.innerHTML = '';
   let line = 0, char = 0;
-  
+  let lastLineStart = 0;
+
   function type() {
     if (line < lines.length) {
+      let prefix = (lines[line].trim() !== '') ? 'cpa> ' : '';
+      // Special style for the first line (title)
+      if (line === 0 && lines[line].trim() !== '') {
+        const span = document.createElement('span');
+        span.className = 'dashboard-terminal-title';
+        span.textContent = lines[line];
+        el.appendChild(span);
+        el.appendChild(document.createElement('br'));
+        el.appendChild(document.createElement('br'));
+        line++;
+        // Ensure only one empty line after the title
+        while (line < lines.length && lines[line].trim() === '') line++;
+        setTimeout(type, 60);
+        return;
+      }
+      if (char === 0) el.innerHTML += prefix;
       if (char < lines[line].length) {
-        el.textContent += lines[line][char];
+        el.innerHTML += lines[line][char];
         char++;
-        setTimeout(type, 25); // کمی سریع‌تر
+        setTimeout(type, 25);
       } else {
-        el.textContent += '\n';
+        el.innerHTML += '<br>';
         line++;
         char = 0;
-        setTimeout(type, 60); // کمی سریع‌تر
+        setTimeout(type, 60);
+      }
+    } else {
+      // Blinking cursor only after 'READY'
+      let html = el.innerHTML;
+      // Remove any previous cursor
+      html = html.replace(/\|<span class="dashboard-cursor">\|<\/span>/g, '');
+      // Find the last non-empty line
+      let linesArr = html.split('<br>');
+      let lastIdx = linesArr.length - 1;
+      while (lastIdx > 0 && linesArr[lastIdx].trim() === '') lastIdx--;
+      // Only add cursor if last line is 'cpa> READY' (case-insensitive)
+      if (linesArr[lastIdx].toLowerCase().includes('ready')) {
+        function setCursor(visible) {
+          let newLines = linesArr.slice();
+          newLines[lastIdx] = newLines[lastIdx].replace(/\|<span class="dashboard-cursor">\|<\/span>/g, '');
+          if (visible) newLines[lastIdx] += '<span class="dashboard-cursor">|</span>';
+          el.innerHTML = newLines.join('<br>');
+        }
+        let visible = true;
+        setCursor(visible);
+        el._cursorInterval = setInterval(() => {
+          visible = !visible;
+          setCursor(visible);
+        }, 500);
       }
     }
   }
@@ -110,9 +156,7 @@ window.updateDashboardTerminalInfo = async function() {
     if (!window.contractConfig || !window.contractConfig.contract) {
       try { await window.connectWallet(); } catch (e) {
         window.typewriterDashboardInfo([
-          '╔══════════════════════════════════════════════════════════════╗',
-          '║                    WALLET NOT CONNECTED                     ║',
-          '╚══════════════════════════════════════════════════════════════╝',
+          'WALLET NOT CONNECTED',
           '',
           '🔌 Please connect your wallet to view dashboard data',
           '🔄 Retrying connection...',
@@ -130,6 +174,8 @@ window.updateDashboardTerminalInfo = async function() {
       wallets: window.contractStats.wallets,
       totalSupply: window.contractStats.totalSupply
     };
+    // --- Fetch contract state variables ---
+    let stateVars = [];
     try { data.pointValue = formatPriceScientific(parseFloat(ethers.formatUnits(await contract.getPointValue(), 18))) + ' CPA'; } catch(e){ data.pointValue = '-'; }
     try { 
       const priceRaw = await contract.getTokenPrice(); 
@@ -138,35 +184,86 @@ window.updateDashboardTerminalInfo = async function() {
     } catch(e){ data.tokenPrice = '-'; }
     try { data.contractTokenBalance = formatPriceScientific(ethers.formatUnits(await contract.balanceOf(contract.target), 18)) + ' CPA'; } catch(e){ data.contractTokenBalance = '-'; }
     try { data.cashback = formatPriceScientific(ethers.formatUnits(await (contract.cashBack ? contract.cashBack() : contract.cashback()), 18)) + ' CPA'; } catch(e){ data.cashback = '-'; }
-        // USDC Contract Balance - Using contract's getContractUSDCBalance function
-        try {
-          const usdcBalanceRaw = await contract.getContractUSDCBalance();
-          const usdcBalanceFormatted = formatPriceScientific(ethers.formatUnits(usdcBalanceRaw, 6));
-          data.usdcBalance = usdcBalanceFormatted + ' USDC';
-        } catch(e){ 
-          console.error('Error fetching USDC balance via contract function:', e);
-          // Fallback to direct USDC contract call
-          try {
-            if (typeof USDC_ADDRESS !== 'undefined' && typeof USDC_ABI !== 'undefined') {
-              const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, contract.provider);
-              const usdcBalanceRaw = await usdcContract.balanceOf(contract.target);
-              const usdcBalanceFormatted = formatPriceScientific(ethers.formatUnits(usdcBalanceRaw, 6));
-              data.usdcBalance = usdcBalanceFormatted + ' USDC';
-            } else {
-              data.usdcBalance = 'Config Error';
-            }
-          } catch(fallbackError) {
-            console.error('Fallback USDC balance fetch failed:', fallbackError);
-            data.usdcBalance = 'Error: ' + e.message;
-          }
+    // USDC Contract Balance
+    try {
+      const usdcBalanceRaw = await contract.getContractUSDCBalance();
+      const usdcBalanceFormatted = formatPriceScientific(ethers.formatUnits(usdcBalanceRaw, 6));
+      data.usdcBalance = usdcBalanceFormatted + ' USDC';
+    } catch(e){ 
+      data.usdcBalance = 'Error';
+    }
+    stateVars = [
+      'CONTRACT STATE',
+      '--------------',
+      `Total Supply: ${data.totalSupply}`,
+      `Wallets: ${data.wallets}`,
+      `Point Value: ${data.pointValue}`,
+      `Token Price: ${data.tokenPrice}`,
+      `Contract Token Balance: ${data.contractTokenBalance}`,
+      `Cashback: ${data.cashback}`,
+      `USDC Contract Balance: ${data.usdcBalance}`,
+      ''
+    ];
+    // --- Fetch user profile and add to terminal ---
+    let profileLines = [];
+    try {
+      const profile = await window.getUserProfile();
+      if (profile) {
+        profileLines = [
+          'USER PROFILE',
+          '-------------',
+          `Address: ${profile.address}`,
+          `Referrer: ${profile.referrer}`,
+          `Activated: ${profile.activated}`,
+          `Registered: ${profile.registered}`,
+          `Index: ${profile.index}`,
+          `Left Points: ${profile.leftPoints}`,
+          `Right Points: ${profile.rightPoints}`,
+          `Binary Points: ${profile.binaryPoints}`,
+          `Binary Point Cap: ${profile.binaryPointCap}`,
+          `Binary Points Claimed: ${profile.binaryPointsClaimed}`,
+          `Total Purchased (CPA): ${profile.totalPurchasedKind}`,
+          `Total Purchased (MATIC): ${profile.totalPurchasedMATIC}`,
+          `Deposited Amount: ${profile.depositedAmount}`,
+          `Referral Claimed: ${profile.refclimed}`,
+          `Last Claim Time: ${profile.lastClaimTime}`,
+          `Last Monthly Claim: ${profile.lastMonthlyClaim}`,
+          `Total Monthly Rewarded: ${profile.totalMonthlyRewarded}`,
+          `CPA Balance: ${profile.lvlBalance}`,
+          `POL Balance: ${profile.polBalance}`,
+          `MATIC Balance: ${profile.maticBalance}`,
+          `USDC Balance: ${profile.usdcBalance}`,
+          `CPA Value (USD): ${profile.lvlValueUSD}`,
+          `POL Value (USD): ${profile.polValueUSD}`,
+          ''
+        ];
+      }
+    } catch (e) {
+      profileLines = ['','USER PROFILE','Error loading user profile',''];
+    }
+    // --- List external/public functions from ABI ---
+    let abiLines = [];
+    try {
+      const abi = window.contractConfig.LEVELUP_ABI || [];
+      abiLines = ['EXTERNAL FUNCTIONS','------------------'];
+      abi.forEach(item => {
+        if(item.type === 'function') {
+          const inputs = (item.inputs || []).map(i => i.type).join(',');
+          abiLines.push(`${item.name}(${inputs})`);
         }
-    const lines = window.dashboardTerminalLines.en(data);
+      });
+      abiLines.push('');
+    } catch(e) {
+      abiLines = ['','EXTERNAL FUNCTIONS','Error loading ABI',''];
+    }
+    // --- Compose all lines ---
+    let lines = [];
+    lines = lines.concat(stateVars, profileLines, abiLines);
+    lines.push('READY');
     window.typewriterDashboardInfo(lines);
   } catch (e) {
     window.typewriterDashboardInfo([
-      '╔══════════════════════════════════════════════════════════════╗',
-      '║                        ERROR DETECTED                        ║',
-      '╚══════════════════════════════════════════════════════════════╝',
+      'ERROR DETECTED',
       '',
       '❌ Error loading dashboard info',
       '🔄 Retrying connection...',

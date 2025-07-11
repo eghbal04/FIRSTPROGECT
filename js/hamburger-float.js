@@ -431,4 +431,29 @@
       }
     }
   };
+
+  // اضافه کردن تابع باز/بستن منو به صورت سراسری
+  window.toggleHamburgerMenu = function(force) {
+    var menu = document.getElementById('hamburgerMenu');
+    if (!menu) return;
+    if (typeof force === 'boolean') {
+      if (force) {
+        menu.classList.add('open');
+      } else {
+        menu.classList.remove('open');
+      }
+    } else {
+      menu.classList.toggle('open');
+    }
+  };
+
+  // بستن منو با کلیک بیرون از آن
+  document.addEventListener('mousedown', function(event) {
+    var menu = document.getElementById('hamburgerMenu');
+    if (!menu) return;
+    if (!menu.classList.contains('open')) return;
+    if (!menu.contains(event.target)) {
+      menu.classList.remove('open');
+    }
+  });
 })(); 

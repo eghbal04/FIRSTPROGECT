@@ -1047,40 +1047,90 @@ async function showDashboardInfoWithTypewriter() {
     }
     const contract = window.contractConfig.contract;
     const lines = [];
-    // Add welcome line at the top
-    lines.push('Welcome to CPA Terminal!');
+    // --- اطلاعات کلی سیستم ---
+    lines.push('--- اطلاعات کلی سیستم ---');
     let wallets = '-';
     try { wallets = (await contract.wallets()).toString(); } catch(e){}
-    lines.push(`All Wallets: ${wallets}`);
+    lines.push(`تعداد کل کیف پول‌ها: ${wallets}`);
     let totalSupply = '-';
     try { totalSupply = ethers.formatUnits(await contract.totalSupply(), 18) + ' CPA'; } catch(e){}
-    lines.push(`Total Supply: ${totalSupply}`);
+    lines.push(`کل عرضه توکن: ${totalSupply}`);
     let totalPoints = '-';
     try {
       totalPoints = (await contract.totalClaimableBinaryPoints()).toString();
     } catch(e){}
-    lines.push(`Total Points: ${totalPoints}`);
+    lines.push(`کل امتیازها: ${totalPoints}`);
     let pointValue = '-';
     try { pointValue = parseFloat(ethers.formatUnits(await contract.getPointValue(), 18)).toFixed(2) + ' CPA'; } catch(e){}
-    lines.push(`Point Value: ${pointValue}`);
+    lines.push(`ارزش هر امتیاز: ${pointValue}`);
     let tokenPrice = '-';
     try {
       const priceRaw = await contract.getTokenPrice();
       tokenPrice = ethers.formatUnits(priceRaw, 18);
     } catch(e){}
-    lines.push(`Current Token Price: ${tokenPrice}`);
+    lines.push(`قیمت فعلی توکن: ${tokenPrice}`);
     let contractTokenBalance = '-';
     try { contractTokenBalance = ethers.formatUnits(await contract.balanceOf(contract.target), 18) + ' CPA'; } catch(e){}
-    lines.push(`Contract Token Bal.: ${contractTokenBalance}`);
+    lines.push(`موجودی توکن قرارداد: ${contractTokenBalance}`);
     let cashback = '-';
     try { cashback = ethers.formatUnits(await (contract.cashBack ? contract.cashBack() : contract.cashback()), 18) + ' CPA'; } catch(e){}
-    lines.push(`Help Fund: ${cashback}`);
+    lines.push(`صندوق کمک (Help Fund): ${cashback}`);
     let usdcBalance = '-';
     try {
       const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, contract.provider);
       usdcBalance = ethers.formatUnits(await usdcContract.balanceOf(contract.target), 6) + ' USDC';
     } catch(e){}
-    lines.push(`USDC Contract Bal.: ${usdcBalance}`);
+    lines.push(`موجودی USDC قرارداد: ${usdcBalance}`);
+    lines.push('');
+    // --- اطلاعات شخصی کاربر ---
+    lines.push('--- پروفایل شما ---');
+    let profile = null;
+    try {
+      profile = await window.getUserProfile();
+    } catch(e) {
+      lines.push('خطا در دریافت پروفایل کاربر');
+    }
+    if (profile && profile.activated) {
+      // اطلاعات حساب
+      lines.push('■ اطلاعات حساب:');
+      lines.push(`آدرس: ${profile.address}`);
+      lines.push(`ایندکس: ${profile.index}`);
+      lines.push(`معرف: ${profile.referrer}`);
+      lines.push(`وضعیت فعال بودن: ${profile.activated ? 'فعال' : 'غیرفعال'}`);
+      lines.push('');
+      // موجودی‌ها
+      lines.push('■ موجودی‌ها:');
+      lines.push(`موجودی متیک: ${profile.maticBalance} MATIC`);
+      lines.push(`موجودی CPA: ${profile.lvlBalance} CPA`);
+      lines.push(`موجودی POL: ${profile.polBalance} POL`);
+      lines.push(`موجودی USDC: ${profile.usdcBalance} USDC`);
+      lines.push(`ارزش دلاری CPA: ${profile.lvlValueUSD} $`);
+      lines.push(`ارزش دلاری POL: ${profile.polValueUSD} $`);
+      lines.push('');
+      // امتیازها و پاداش‌ها
+      lines.push('■ امتیازها و پاداش‌ها:');
+      lines.push(`امتیاز باینری: ${profile.binaryPoints}`);
+      lines.push(`سقف امتیاز باینری: ${profile.binaryPointCap}`);
+      lines.push(`امتیازهای برداشت‌شده: ${profile.binaryPointsClaimed}`);
+      lines.push(`امتیاز سمت چپ: ${profile.leftPoints}`);
+      lines.push(`امتیاز سمت راست: ${profile.rightPoints}`);
+      lines.push(`پاداش ماهانه کل: ${profile.totalMonthlyRewarded}`);
+      lines.push(`آخرین برداشت ماهانه: ${profile.lastMonthlyClaim}`);
+      lines.push(`آخرین برداشت: ${profile.lastClaimTime}`);
+      lines.push(`پاداش معرف: ${profile.refclimed}`);
+      lines.push('');
+      // خریدها و واریزها
+      lines.push('■ خریدها و واریزها:');
+      lines.push(`کل خرید CPA: ${profile.totalPurchasedKind}`);
+      lines.push(`کل واریز: ${profile.depositedAmount}`);
+    } else if (profile && !profile.activated) {
+      lines.push('شما هنوز ثبت‌نام نکرده‌اید.');
+      lines.push('برای استفاده کامل از امکانات، ابتدا ثبت‌نام و فعال‌سازی را انجام دهید.');
+    } else {
+      lines.push('پروفایل یافت نشد.');
+    }
+    lines.push('');
+    lines.push('cpa> READY █');
     // Stop waiting cursor if running
     if (window._dashboardTypewriterWait && window._dashboardTypewriterWait.stop) {
       window._dashboardTypewriterWait.stop();
@@ -1088,17 +1138,26 @@ async function showDashboardInfoWithTypewriter() {
     }
     if (typeof typewriterDashboardInfo === 'function') {
       typewriterDashboardInfo(lines, false);
+    } else if (typeof typewriterEffect === 'function') {
+      // Fallback: use typewriterEffect if available
+      const el = document.getElementById('dashboard-terminal-info');
+      if (el) typewriterEffect('dashboard-terminal-info', lines, 40);
     }
   } catch (e) {
     if (window._dashboardTypewriterWait && window._dashboardTypewriterWait.stop) {
       window._dashboardTypewriterWait.stop();
       window._dashboardTypewriterWait = null;
     }
+    const errorLines = [
+      'Error loading dashboard info',
+      (e && e.message ? e.message : String(e)),
+      'cpa> READY █'
+    ];
     if (typeof typewriterDashboardInfo === 'function') {
-      typewriterDashboardInfo([
-        'Error loading dashboard info',
-        (e && e.message ? e.message : String(e))
-      ], false);
+      typewriterDashboardInfo(errorLines, false);
+    } else if (typeof typewriterEffect === 'function') {
+      const el = document.getElementById('dashboard-terminal-info');
+      if (el) typewriterEffect('dashboard-terminal-info', errorLines, 40);
     }
   }
 }

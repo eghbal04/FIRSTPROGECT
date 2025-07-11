@@ -188,11 +188,6 @@
   </div>
   
   <div id="main-dashboard" class="page-section" style="position:relative;overflow:visible;">
-    <header>
-      <div style="display:flex;align-items:center;gap:1.2rem;justify-content:center;">
-        <h1 class="shimmer-title" style="font-family: 'Merriweather', 'Georgia', serif; font-size:1.3rem; letter-spacing:0.12em; color:#222; text-transform:uppercase; font-weight:700; text-shadow:0 2px 12px #00ff8840, 0 1px 0 #fff;">CONTINUOUS PROFIT ACADEMY</h1>
-      </div>
-    </header>
     <div class="dashboard-cards" style="display:flex;justify-content:center;flex-wrap:wrap;gap:1rem;max-width:1400px;margin:0 auto;">
       <div class="dashboard-card" id="dashboard-terminal-card" style="background:#111;color:#00ff88;font-family:monospace;border-radius:16px;box-shadow:0 2px 12px #00ff8840;min-width:320px;max-width:1400px;margin:1rem auto;width:100%;text-align:left;direction:ltr;position:relative;">
         <button id="dashboard-expand-btn" style="position:absolute;left:0.7rem;top:0.7rem;background:none;border:none;color:#ff4b4b;font-size:1.2rem;cursor:pointer;z-index:2;line-height:1;padding:0.1rem 0.4rem;border-radius:6px;">-</button>
@@ -259,11 +254,19 @@
   document.addEventListener('DOMContentLoaded', function() {
     const expandBtn = document.getElementById('dashboard-expand-btn');
     const terminalInfo = document.getElementById('dashboard-terminal-info');
-    let expanded = true;
+    let expanded = false;
+    // Start collapsed
+    terminalInfo.classList.add('collapsed');
+    expandBtn.textContent = '+';
     expandBtn.onclick = function() {
       expanded = !expanded;
-      terminalInfo.style.display = expanded ? '' : 'none';
-      expandBtn.textContent = expanded ? '-' : '+';
+      if (expanded) {
+        terminalInfo.classList.remove('collapsed');
+        expandBtn.textContent = '-';
+      } else {
+        terminalInfo.classList.add('collapsed');
+        expandBtn.textContent = '+';
+      }
     };
   });
 </script>
@@ -1370,32 +1373,21 @@
     function typewriterDashboardInfo(lines, isWaiting = false) {
       const el = document.getElementById('dashboard-terminal-info');
       if (!el) return;
-      
+      // حذف کرسر چشمک‌زن
       if (isWaiting) {
-        // نمایش کرسر چشمک‌زن برای انتظار
-        el.textContent = '|';
-        let cursorVisible = true;
-        const cursorInterval = setInterval(() => {
-          el.textContent = cursorVisible ? '|' : ' ';
-          cursorVisible = !cursorVisible;
-        }, 500);
-        
-        // ذخیره interval برای پاک کردن بعداً
-        el._cursorInterval = cursorInterval;
+        el.textContent = '';
         return;
       }
-      
-      // پاک کردن interval قبلی
       if (el._cursorInterval) {
         clearInterval(el._cursorInterval);
         el._cursorInterval = null;
       }
-      
       el.textContent = '';
       let line = 0, char = 0;
-      
       function type() {
         if (line < lines.length) {
+          let prefix = (lines[line].trim() !== '') ? 'cpa> ' : '';
+          if (char === 0) el.textContent += prefix;
           if (char < lines[line].length) {
             el.textContent += lines[line][char];
             char++;
@@ -1434,9 +1426,10 @@
             await window.connectWallet();
           } catch (e) {
             typewriterDashboardInfo([
-              '╔══════════════════════════════════════════════════════════════╗',
-              '║                    WALLET NOT CONNECTED                     ║',
-              '╚══════════════════════════════════════════════════════════════╝',
+              //'╔══════════════════════════════════════════════════════════════╗',
+              //'║                    WALLET NOT CONNECTED                     ║',
+              //'╚══════════════════════════════════════════════════════════════╝',
+              'WALLET NOT CONNECTED',
               '',
               '🔌 Please connect your wallet to view dashboard data',
               '🔄 Retrying connection...',
@@ -1523,17 +1516,17 @@
         }
         
         const lines = [
-          '╔══════════════════════════════════════════════════════════════╗',
-          '║                    CONTINUOUS PROFIT ACADEMY                 ║',
-          '║                        CPA TERMINAL v2.0                    ║',
-          '╚══════════════════════════════════════════════════════════════╝',
+          //'╔══════════════════════════════════════════════════════════════╗',
+          'CONTINUOUS PROFIT ACADEMY',
+          //'╚══════════════════════════════════════════════════════════════╝',
           '',
-          '🚀 Welcome to CPA Terminal!',
+          '🚀 Welcome to CPA!',
           '📊 Loading blockchain data...',
           '',
-          '╔══════════════════════════════════════════════════════════════╗',
-          '║                        SYSTEM STATUS                         ║',
-          '╚══════════════════════════════════════════════════════════════╝',
+          //'╔══════════════════════════════════════════════════════════════╗',
+          //'║                        SYSTEM STATUS                         ║',
+          //'╚══════════════════════════════════════════════════════════════╝',
+          'SYSTEM STATUS',
           '',
           `🌐 All Wallets: ${wallets}`,
           `💰 Total Supply: ${totalSupply}`,
@@ -1544,9 +1537,10 @@
           `💚 Help Fund: ${cashback}`,
           `💵 USDC Contract Bal.: ${usdcBalance}`,
           '',
-          '╔══════════════════════════════════════════════════════════════╗',
-          '║                    TERMINAL READY                            ║',
-          '╚══════════════════════════════════════════════════════════════╝'
+          //'╔══════════════════════════════════════════════════════════════╗',
+          //'║                        READY                                 ║',
+          //'╚══════════════════════════════════════════════════════════════╝',
+          'READY'
         ];
         
         typewriterDashboardInfo(lines);
@@ -1558,9 +1552,10 @@
         updatePriceStats();
       } catch (e) {
         typewriterDashboardInfo([
-          '╔══════════════════════════════════════════════════════════════╗',
-          '║                        ERROR DETECTED                        ║',
-          '╚══════════════════════════════════════════════════════════════╝',
+          //'╔══════════════════════════════════════════════════════════════╗',
+          //'║                        ERROR DETECTED                        ║',
+          //'╚══════════════════════════════════════════════════════════════╝',
+          'ERROR DETECTED',
           '',
           '❌ Error loading dashboard info',
           '🔄 Retrying connection...',
