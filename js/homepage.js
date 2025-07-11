@@ -157,44 +157,45 @@ async function loadDashboardData() {
             
             // به‌روزرسانی UI
             await updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceChanges);
+            await updateUSDCContractBalance();
         } else {
             // اگر کیف پول متصل نیست، فقط قیمت‌ها را بارگذاری کن
             try {
                 // بررسی اینکه آیا تابع getPrices موجود است
                 if (typeof window.getPrices === 'function') {
-                    const prices = await window.getPrices().catch(() => ({ cpaPriceUSD: 0, cpaPriceMatic: 0 }));
+                    const prices = await window.getPrices().catch(() => ({ cpaPriceUSD: null, cpaPriceMatic: null }));
                     const defaultStats = {
-                        totalSupply: "0",
-                        circulatingSupply: "0",
-                        binaryPool: "0",
-                        totalPoints: "0",
-                        totalClaimableBinaryPoints: "0",
-                        pointValue: "0",
-                        rewardPool: "0",
-                        contractTokenBalance: "0"
+                        totalSupply: "-",
+                        circulatingSupply: "-",
+                        binaryPool: "-",
+                        totalPoints: "-",
+                        totalClaimableBinaryPoints: "-",
+                        pointValue: "-",
+                        rewardPool: "-",
+                        contractTokenBalance: "-"
                     };
                     const defaultAdditionalStats = { wallets: 0, helpFund: 0 };
                     const defaultTradingVolume = 0;
-                    const priceChanges = { cpaPriceChange: '0%', maticPriceChange: '0%', volumeChange: '0%' };
+                    const priceChanges = { cpaPriceChange: '-', maticPriceChange: '-', volumeChange: '-' };
                     
                     await updateDashboardUI(prices, defaultStats, defaultAdditionalStats, defaultTradingVolume, priceChanges);
                     updateConnectionStatus('info', 'برای مشاهده داده‌های کامل، کیف پول خود را متصل کنید');
                 } else {
-                    // اگر تابع getPrices موجود نیست، داده‌های پیش‌فرض نمایش بده
-                    const defaultPrices = { cpaPriceUSD: 0, cpaPriceMatic: 0 };
+                    // اگر تابع getPrices موجود نیست، داده‌های خالی نمایش بده
+                    const defaultPrices = { cpaPriceUSD: null, cpaPriceMatic: null };
                     const defaultStats = {
-                        totalSupply: "0",
-                        circulatingSupply: "0",
-                        binaryPool: "0",
-                        totalPoints: "0",
-                        totalClaimableBinaryPoints: "0",
-                        pointValue: "0",
-                        rewardPool: "0",
-                        contractTokenBalance: "0"
+                        totalSupply: "-",
+                        circulatingSupply: "-",
+                        binaryPool: "-",
+                        totalPoints: "-",
+                        totalClaimableBinaryPoints: "-",
+                        pointValue: "-",
+                        rewardPool: "-",
+                        contractTokenBalance: "-"
                     };
                     const defaultAdditionalStats = { wallets: 0, helpFund: 0 };
                     const defaultTradingVolume = 0;
-                    const priceChanges = { cpaPriceChange: '0%', maticPriceChange: '0%', volumeChange: '0%' };
+                    const priceChanges = { cpaPriceChange: '-', maticPriceChange: '-', volumeChange: '-' };
                     
                     await updateDashboardUI(defaultPrices, defaultStats, defaultAdditionalStats, defaultTradingVolume, priceChanges);
                     updateConnectionStatus('info', 'برای مشاهده داده‌های کامل، کیف پول خود را متصل کنید');
@@ -219,16 +220,16 @@ async function calculatePriceChanges() {
         // برای مثال، مقایسه با قیمت قبلی یا میانگین قیمت‌ها
         
         return {
-            cpaPriceChange: '0%',
-            maticPriceChange: '0%',
-            volumeChange: '0%'
+            cpaPriceChange: '-',
+            maticPriceChange: '-',
+            volumeChange: '-'
         };
     } catch (error) {
         // console.error('Dashboard: Error calculating price changes:', error);
         return {
-            cpaPriceChange: '0%',
-            maticPriceChange: '0%',
-            volumeChange: '0%'
+            cpaPriceChange: '-',
+            maticPriceChange: '-',
+            volumeChange: '-'
         };
     }
 }
@@ -236,47 +237,52 @@ async function calculatePriceChanges() {
 // تابع به‌روزرسانی UI داشبورد
 async function updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceChanges) {
     const safeFormat = (val, prefix = '', suffix = '', isInteger = false, maxDecimals = 4) => {
-        if (val === undefined || val === null || val === 'undefined' || val === '' || isNaN(val)) return '-';
-        if (typeof val === 'string' && val.trim() === '') return '-';
-        if (typeof val === 'number') {
-            if (isInteger) {
-                return prefix + Math.round(val).toLocaleString() + suffix;
-            } else {
-                return prefix + val.toFixed(maxDecimals).replace(/\.?0+$/, '') + suffix;
-            }
+        if (val === null || val === undefined || val === '') return '-';
+        if (typeof val === 'string' && val.includes('e')) return val; // Already in scientific notation
+        const num = parseFloat(val);
+        if (isNaN(num)) return val;
+        if (num === 0) return '0';
+        if (num < 0.000001) {
+            return num.toExponential(6);
         }
-        return prefix + val + suffix;
+        if (isInteger) return Math.floor(num).toString();
+        return num.toFixed(maxDecimals);
     };
+
     const updateElement = (id, value, prefix = '', suffix = '', isInteger = false, maxDecimals = 4) => {
-        const element = document.getElementById(id);
-        if (element) {
-            element.textContent = safeFormat(value, prefix, suffix, isInteger, maxDecimals);
+        const el = document.getElementById(id);
+        if (el) {
+            const formatted = safeFormat(value, prefix, suffix, isInteger, maxDecimals);
+            el.textContent = formatted;
+        }
+    };
+
+    const updateElementExponential = (id, value, suffix = '') => {
+        const el = document.getElementById(id);
+        if (el) {
+            const num = parseFloat(value);
+            if (isNaN(num)) {
+                el.textContent = value;
+            } else if (num === 0) {
+                el.textContent = '0' + suffix;
+            } else if (num < 0.000001) {
+                el.textContent = num.toExponential(6) + suffix;
+            } else {
+                el.textContent = num.toFixed(6) + suffix;
+            }
         }
     };
     
-    // به‌روزرسانی قیمت‌ها
-    updateElement('token-price', prices.cpaPriceUSD, '$', '', false, 6);
-    // نمایش قیمت توکن به POL با نماد علمی
-    const updateElementExponential = (id, value, suffix = '') => {
-        const element = document.getElementById(id);
+    // به‌روزرسانی قیمت‌ها با 18 رقم اعشار
+    if (prices.cpaPriceUSD && prices.cpaPriceUSD !== null) {
+        const element = document.getElementById('token-price');
         if (element) {
-            if (value === undefined || value === null || value === 'undefined' || value === '' || isNaN(value)) {
-                element.textContent = '-';
-            } else {
-                const num = parseFloat(value);
-                if (isNaN(num)) {
-                    element.textContent = value + suffix;
-                } else {
-                    // اگر مقدار خیلی بزرگ بود، با E نمایش بده
-                    if (num >= 1e6) {
-                        element.textContent = num.toExponential(3) + suffix;
-                    } else {
-                        element.textContent = num.toLocaleString('en-US', { maximumFractionDigits: 6 }) + suffix;
-                    }
-                }
-            }
+            element.textContent = prices.cpaPriceUSD;
         }
-    };
+    } else {
+        updateElement('token-price', null, '', '', false, 6);
+    }
+    // نمایش قیمت توکن به POL با نماد علمی
     updateElementExponential('token-price-matic', prices.cpaPriceMatic, ' POL');
     
     // مقداردهی توکن‌های در گردش و کل پوینت‌ها مستقیماً از توابع قرارداد
@@ -289,13 +295,18 @@ async function updateDashboardUI(prices, stats, additionalStats, tradingVolume, 
             // totalClaimablePoints
             let points = await contract.totalClaimablePoints();
             updateElement('total-points', parseInt(ethers.formatUnits(points, 0)), '', ' POINT', true);
+            // pointValue از قرارداد
+            let pointValue = await contract.getPointValue();
+            updateElement('point-value', parseFloat(ethers.formatUnits(pointValue, 18)), '', ' CPA', false, 2);
         } else {
             // اگر قرارداد در دسترس نیست، از stats استفاده کن
             updateElement('total-points', parseInt(stats.totalClaimableBinaryPoints.replace(/\..*$/, '')), '', ' POINT', true);
+            updateElement('point-value', pointValueCPA, '', ' CPA', false, 2);
         }
     } catch (e) {
         // اگر خطا بود، از stats قبلی استفاده کن
         updateElement('total-points', parseInt(stats.totalClaimableBinaryPoints.replace(/\..*$/, '')), '', ' POINT', true);
+        updateElement('point-value', pointValueCPA, '', ' CPA', false, 2);
     }
     
     // پوینت‌های ادعا شده = 0 (چون هنوز ادعا نشدن)
@@ -308,11 +319,8 @@ async function updateDashboardUI(prices, stats, additionalStats, tradingVolume, 
     const tradingVolumeNum = Number(tradingVolume);
     updateElement('trading-volume', isNaN(tradingVolumeNum) ? 0 : tradingVolumeNum, '', ' POL', false, 6);
     
-    // ارزش پوینت = pointValue (به صورت CPA)
-    let pointValueCPA = parseFloat(stats.pointValue);
+    // contract token balance
     let contractTokenBalanceCPA = parseFloat(stats.contractTokenBalance);
-    
-    updateElement('point-value', pointValueCPA, '', ' CPA', false, 6);
     updateElement('contract-token-balance', contractTokenBalanceCPA, '', ' CPA', false, 4);
     let rewardPoolPOL = parseFloat(stats.rewardPool);
     updateElement('reward-pool', rewardPoolPOL, '', ' POL', false, 4);
@@ -734,6 +742,29 @@ async function autoConnectWallet() {
         return false;
     }
 }
+
+// Add after DOMContentLoaded or main dashboard load logic:
+async function updateUSDCContractBalance() {
+  try {
+    // Wait for wallet connection and contract
+    let contract = null;
+    if (window.contractConfig && window.contractConfig.contract) {
+      contract = window.contractConfig.contract;
+    } else if (typeof window.connectWallet === 'function') {
+      const conn = await window.connectWallet();
+      contract = conn && conn.contract ? conn.contract : null;
+    }
+    if (!contract) return;
+    const usdcBalance = await contract.getContractUSDCBalance();
+    const usdcFormatted = (Number(usdcBalance) / 1e6).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    const el = document.getElementById('dashboard-usdc-balance');
+    if (el) el.textContent = usdcFormatted + ' USDC';
+  } catch (e) {
+    const el = document.getElementById('dashboard-usdc-balance');
+    if (el) el.textContent = '-';
+  }
+}
+document.addEventListener('DOMContentLoaded', updateUSDCContractBalance);
 
 // اضافه کردن event listener برای بارگذاری صفحه
 document.addEventListener('DOMContentLoaded', function() {

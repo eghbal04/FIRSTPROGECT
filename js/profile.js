@@ -67,7 +67,9 @@ function updateProfileUI(profile) {
 
     let referrerText = 'بدون معرف';
     if (profile.referrer) {
-        if (profile.referrer.toLowerCase() === profile.address.toLowerCase()) {
+        if (profile.referrer === '0x0000000000000000000000000000000000000000') {
+            referrerText = 'بدون معرف';
+        } else if (profile.referrer.toLowerCase() === profile.address.toLowerCase()) {
             referrerText = 'خود شما';
         } else {
             referrerText = shorten(profile.referrer);
@@ -76,34 +78,8 @@ function updateProfileUI(profile) {
     const referrerEl = document.getElementById('profile-referrer');
     if (referrerEl) referrerEl.textContent = referrerText;
 
-    const maticEl = document.getElementById('profile-matic');
-    if (maticEl) maticEl.textContent = formatNumber(profile.maticBalance || profile.polBalance, 6);
-    const maticUsdEl = document.getElementById('profile-matic-usd');
-    if (maticUsdEl) {
-        const usd = profile.polValueUSD || profile.maticValueUSD;
-        maticUsdEl.textContent = usd && usd !== '0' ? `(${formatNumber(usd, 2)}$)` : '';
-    }
-    const lvlEl = document.getElementById('profile-lvl');
-    if (lvlEl) lvlEl.textContent = formatNumber(profile.lvlBalance, 6);
-    const lvlUsdEl = document.getElementById('profile-lvl-usd');
-    if (lvlUsdEl) {
-        if (profile.lvlValueUSD && profile.lvlValueUSD !== '0') {
-            const lvlValue = Number(profile.lvlValueUSD);
-            if (lvlValue > 1_000_000) {
-                lvlUsdEl.textContent = `(${lvlValue.toExponential(3)}$)`;
-                lvlUsdEl.title = 'ارزش دلاری غیرواقعی به دلیل نقدینگی یا عرضه کم توکن. این مقدار واقعی نیست.';
-                lvlUsdEl.style.color = '#ff6b6b';
-            } else {
-                lvlUsdEl.textContent = `(${formatNumber(profile.lvlValueUSD, 2)}$)`;
-                lvlUsdEl.title = '';
-                lvlUsdEl.style.color = '';
-            }
-        } else {
-            lvlUsdEl.textContent = '';
-            lvlUsdEl.title = '';
-            lvlUsdEl.style.color = '';
-        }
-    }
+    const usdcEl = document.getElementById('profile-usdc');
+    if (usdcEl) usdcEl.textContent = profile.usdcBalance ? formatNumber(profile.usdcBalance, 2) + ' USDC' : '0 USDC';
 
     const capEl = document.getElementById('profile-income-cap');
     if (capEl) capEl.textContent = profile.binaryPointCap || '۰';
@@ -111,9 +87,20 @@ function updateProfileUI(profile) {
     if (receivedEl) receivedEl.textContent = profile.binaryPointsClaimed || '۰';
 
     const linkEl = document.getElementById('profile-referral-link');
-    if (linkEl) linkEl.textContent = profile.address
-        ? shorten(profile.address)
-        : 'لینک دعوت در دسترس نیست';
+    if (linkEl) {
+        if (profile.address) {
+            const fullLink = window.location.origin + '/?ref=' + profile.address;
+            linkEl.href = fullLink;
+            linkEl.textContent = fullLink;
+            linkEl.style.pointerEvents = 'auto';
+            linkEl.style.opacity = '1';
+        } else {
+            linkEl.href = '#';
+            linkEl.textContent = 'لینک دعوت در دسترس نیست';
+            linkEl.style.pointerEvents = 'none';
+            linkEl.style.opacity = '0.6';
+        }
+    }
 
     const copyBtn = document.getElementById('copyProfileReferral');
     if (copyBtn) {
@@ -225,6 +212,78 @@ function updateProfileUI(profile) {
     if (totalMonthlyRewardedEl) totalMonthlyRewardedEl.textContent = profile.totalMonthlyRewarded || '۰';
     const depositedAmountEl = document.getElementById('profile-depositedAmount');
     if (depositedAmountEl) depositedAmountEl.textContent = profile.depositedAmount || '۰';
+
+    // موجودی متیک
+    const maticEl = document.getElementById('profile-matic');
+    if (maticEl) maticEl.textContent = profile.maticBalance ? formatNumber(profile.maticBalance, 4) + ' MATIC' : '0 MATIC';
+    // موجودی CPA
+    const cpaEl = document.getElementById('profile-lvl');
+    if (cpaEl) cpaEl.textContent = profile.lvlBalance ? formatNumber(profile.lvlBalance, 4) + ' CPA' : '0 CPA';
+    // تعداد پوینت
+    const pointsEl = document.getElementById('profile-total-points');
+    if (pointsEl) pointsEl.textContent = profile.binaryPoints ? formatNumber(profile.binaryPoints, 0) : '۰';
+    // تعداد پوینت‌های دریافت‌نشده
+    const unclaimedPointsEl = document.getElementById('profile-unclaimed-points');
+    if (unclaimedPointsEl) {
+        const total = Number(profile.binaryPoints || 0);
+        const claimed = Number(profile.binaryPointsClaimed || 0);
+        const unclaimed = Math.max(total - claimed, 0);
+        unclaimedPointsEl.textContent = isNaN(unclaimed) ? '۰' : unclaimed.toLocaleString('en-US', {maximumFractionDigits: 0});
+    }
+}
+
+// Add/replace this function to update the referrer field in the profile section
+async function updateProfileReferrer() {
+  try {
+    if (!window.connectWallet) return;
+    const { contract, address } = await window.connectWallet();
+    if (!contract || !address) return;
+    const user = await contract.users(address);
+    let referrer = '-';
+    if (user && user.index !== undefined) {
+      let idx = user.index;
+      if (typeof idx === 'bigint') idx = Number(idx);
+      else idx = parseInt(idx);
+      console.log('[Referrer Debug] user.index =', idx);
+      if (idx === 0) {
+        referrer = address; // Only if index is 0
+        console.log('[Referrer Debug] index=0, referrer set to self:', referrer);
+      } else {
+        try {
+          referrer = await contract.getReferrer(idx);
+          console.log('[Referrer Debug] getReferrer(', idx, ') =', referrer);
+        } catch (e) {
+          referrer = '-';
+          console.log('[Referrer Debug] getReferrer error:', e);
+        }
+      }
+    } else {
+      console.log('[Referrer Debug] user or user.index undefined:', user);
+    }
+    const refEl = document.getElementById('profile-referrer');
+    if (refEl) {
+      if (referrer === '0x0000000000000000000000000000000000000000' || referrer === '-' || !referrer) {
+        refEl.textContent = 'بدون معرف';
+      } else if (referrer.toLowerCase() === address.toLowerCase()) {
+        refEl.textContent = 'خود شما';
+      } else {
+        refEl.textContent = shorten(referrer);
+      }
+    }
+  } catch (e) {
+    const refEl = document.getElementById('profile-referrer');
+    if (refEl) refEl.textContent = 'بدون معرف';
+    console.log('[Referrer Debug] Exception:', e);
+  }
+}
+
+// Patch loadUserProfile to always update referrer from contract after profile loads
+if (window.loadUserProfile) {
+  const origLoadUserProfile = window.loadUserProfile;
+  window.loadUserProfile = async function() {
+    await origLoadUserProfile.apply(this, arguments);
+    await updateProfileReferrer(); // Always update referrer from contract, no delay
+  };
 }
 
 // تابع راه‌اندازی دکمه کپی لینک دعوت

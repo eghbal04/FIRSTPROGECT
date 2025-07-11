@@ -1,562 +1,297 @@
-// network.js - نمایش درخت باینری ستونی با ایندکس عددی و آدرس ولت کوتاه به صورت لینک
+// نمایش درخت باینری با lazy load: هر گره با کلیک expand می‌شود و فقط فرزندان همان گره نمایش داده می‌شوند
 
-function shortWallet(address) {
-    if (!address) return '-';
-    return `${address.slice(0, 3)}...${address.slice(-3)}`;
+function shortAddress(addr) {
+    if (!addr) return '-';
+    return addr.slice(0, 5) + '...' + addr.slice(-4);
 }
 
-function showUserInfoPopup(address, userData) {
-    // حذف قبلی
-    let old = document.getElementById('user-info-popup');
-    if (old) old.remove();
-    // آرایه فیلدها با نام فارسی و کلید struct
-    const fieldNames = [
-      { key: 'index', label: 'ایندکس' },
-      { key: 'binaryPoints', label: 'امتیاز باینری' },
-      { key: 'binaryPointCap', label: 'سقف درآمد باینری' },
-      { key: 'binaryPointsClaimed', label: 'دریافت‌شده' },
-      { key: 'activated', label: 'فعال' },
-      { key: 'totalPurchasedKind', label: 'حجم فروش' },
-      { key: 'lastClaimTime', label: 'آخرین برداشت' },
-      { key: 'leftPoints', label: 'امتیاز چپ' },
-      { key: 'rightPoints', label: 'امتیاز راست' }
+function showUserPopup(address, user) {
+    // Prepare struct info as English strings
+    const infoLines = [
+        `Address:   ${address}`,
+        `Index:     ${user.index}`,
+        `Activated: ${user.activated ? 'Yes' : 'No'}`,
+        `BinaryPoints: ${user.binaryPoints}`,
+        `Cap:      ${user.binaryPointCap}`,
+        `Left:     ${user.leftPoints}`,
+        `Right:    ${user.rightPoints}`,
+        `Refclimed:${user.refclimed}`,
+        '',
+        '--- Financial Info ---',
+        `Binary Claimed: ${user.binaryPointsClaimed}`,
+        `Monthly Withdrawn: ${user.totalMonthlyRewarded}`,
+        `Total Deposited: ${user.depositedAmount}`,
+        `Total Purchased: ${user.totalPurchasedKind}`
     ];
-    // تابع تبدیل یونیکس به تاریخ و ساعت خوانا
-    function formatTimestamp(ts) {
-        if (!ts || ts === '0') return '-';
-        const d = new Date(Number(ts) * 1000);
-        return d.toLocaleString('fa-IR');
-    }
-    // ساخت باکس
-    const popup = document.createElement('div');
-    popup.id = 'user-info-popup';
-    popup.style.position = 'fixed';
-    popup.style.top = '30%';
-    popup.style.left = '50%';
-    popup.style.transform = 'translate(-50%, -50%)';
-    popup.style.background = '#181c2a';
-    popup.style.color = '#fff';
-    popup.style.padding = '1.2rem 2.2rem';
-    popup.style.borderRadius = '16px';
-    popup.style.boxShadow = '0 8px 32px #000a';
-    popup.style.zIndex = 9999;
-    popup.style.minWidth = '320px';
-    popup.style.fontSize = '1.05em';
-    let info = `<div style='text-align:left;direction:ltr;font-size:0.95em;margin-bottom:0.7rem;'><b>${address}</b></div>`;
-    fieldNames.forEach((f, i) => {
-      let val = userData[f.key];
-      if (val === undefined && userData[i] !== undefined) val = userData[i];
-      if (f.key === 'lastClaimTime') {
-        val = formatTimestamp(val);
-      } else if (typeof val === 'bigint' || typeof val === 'number') {
-        val = val.toString();
-      } else if (typeof val === 'boolean') {
-        val = val ? 'بله' : 'خیر';
-      }
-      info += `<div><b>${f.label}:</b> ${val ?? '-'}</div>`;
-    });
-    // اضافه کردن لینک رفرال
-    const referralLink = `${window.location.origin}/?ref=${address}`;
-    info += `
-        <div style='margin-top:1.2rem;padding-top:1rem;border-top:1px solid #a786ff33;'>
-            <div style='margin-bottom:0.5rem;color:#a786ff;font-weight:bold;'>لینک دعوت:</div>
-            <div style='display:flex;align-items:center;gap:0.5rem;'>
-                <input type='text' id='referral-link-input' value='${referralLink}' readonly style='flex:1;padding:0.5rem;border-radius:6px;border:1px solid #a786ff55;background:#232946;color:#fff;font-size:0.9em;direction:ltr;'>
-                <button id='copy-referral-link' style='padding:0.5rem 1rem;border-radius:6px;background:#a786ff;color:#fff;border:none;cursor:pointer;font-size:0.9em;font-weight:bold;'>کپی</button>
-            </div>
-        </div>
+    let html = `
+      <div style="direction:ltr;font-family:monospace;background:#111;color:#00ff88;padding:1.5rem 2.5rem;border-radius:16px;box-shadow:0 2px 12px #00ff8840;min-width:320px;max-width:95vw;position:relative;">
+        <pre id="user-popup-terminal" style="background:#111;border:1.5px solid #333;padding:1.2rem 1.5rem;border-radius:12px;color:#00ff88;font-size:1.05rem;line-height:2;font-family:monospace;overflow-x:auto;margin-bottom:1.2rem;box-shadow:0 2px 12px #00ff8840;min-width:280px;"></pre>
+        <button id="close-user-popup" style="position:absolute;top:10px;right:10px;font-size:1.3rem;background:none;border:none;color:#fff;cursor:pointer;">×</button>
+      </div>
     `;
-    info += `<div style='margin-top:1.2rem;text-align:center;'><button id='close-user-info-popup' style='padding:0.5rem 1.5rem;border-radius:8px;background:#00ff88;color:#222;border:none;cursor:pointer;font-weight:bold;'>بستن</button></div>`;
-    popup.innerHTML = info;
+    let popup = document.createElement('div');
+    popup.id = 'user-popup';
+    popup.style.position = 'fixed';
+    popup.style.top = '50%';
+    popup.style.left = '50%';
+    popup.style.transform = 'translate(-50%,-50%)';
+    popup.style.zIndex = 9999;
+    popup.innerHTML = html;
     document.body.appendChild(popup);
-    
-    // راه‌اندازی دکمه کپی
-    document.getElementById('copy-referral-link').onclick = async () => {
-        try {
-            await navigator.clipboard.writeText(referralLink);
-            const copyBtn = document.getElementById('copy-referral-link');
-            copyBtn.textContent = 'کپی شد!';
-            copyBtn.style.background = '#4CAF50';
-            setTimeout(() => {
-                copyBtn.textContent = 'کپی';
-                copyBtn.style.background = '#a786ff';
-            }, 1500);
-        } catch (error) {
-            console.error('Error copying referral link:', error);
-        }
-    };
-    
-    document.getElementById('close-user-info-popup').onclick = () => popup.remove();
+    document.getElementById('close-user-popup').onclick = () => popup.remove();
+    // Typewriter effect
+    typewriterEffect('user-popup-terminal', infoLines, 40);
 }
 
-async function renderTreeNode(contract, index, container, level = 0) {
-    console.log('renderTreeNode called with index:', index.toString(), 'level:', level);
-    if (typeof index === 'number') index = BigInt(index);
-    let address;
-    let userData;
-    try {
-        address = await contract.indexToAddress(index);
-        userData = await contract.users(address);
-        console.log('Node data retrieved:', { address, userData: !!userData });
-    } catch (e) {
-        console.error('Error getting node data:', e);
-        address = null;
-        userData = null;
+function typewriterEffect(elementId, lines, speed = 40) {
+    const el = document.getElementById(elementId);
+    el.textContent = '';
+    let line = 0, char = 0;
+    function type() {
+        if (line < lines.length) {
+            if (char < lines[line].length) {
+                el.textContent += lines[line][char];
+                char++;
+                setTimeout(type, speed);
+            } else {
+                el.textContent += '\n';
+                line++;
+                char = 0;
+                setTimeout(type, speed * 4);
+            }
+        }
     }
+    type();
+}
+
+async function renderNodeLazy(index, container) {
+    const { contract } = await window.connectWallet();
+    let address = await contract.indexToAddress(index);
     if (!address || address === '0x0000000000000000000000000000000000000000') {
-        console.log('Empty node at index:', index.toString());
-        // گره خالی: نمایش ادمک علامت سوال
-        let referrerAddress = null;
-        try {
-            referrerAddress = await contract.getReferrer(index);
-        } catch (e) {
-            referrerAddress = null;
-        }
-        // اگر معرف خالی یا صفر بود، مقدار را برابر با آدرس دیپلویِر قرار بده
-        if (!referrerAddress || referrerAddress === '0x0000000000000000000000000000000000000000') {
-            try {
-                referrerAddress = await contract.deployer();
-            } catch (e) {
-                // اگر باز هم نشد، خالی بگذار
-                referrerAddress = null;
-            }
-        }
-        
-        // ساختار گره خالی با ادمک علامت سوال
-        const emptyNodeDiv = document.createElement('div');
-        emptyNodeDiv.className = 'empty-tree-node';
-        emptyNodeDiv.style.display = 'flex';
-        emptyNodeDiv.style.alignItems = 'center';
-        emptyNodeDiv.style.justifyContent = 'center';
-        emptyNodeDiv.style.margin = '0.5rem 0';
-        emptyNodeDiv.style.position = 'relative';
-        emptyNodeDiv.style.cursor = 'pointer';
-        emptyNodeDiv.style.transition = 'transform 0.2s';
-        emptyNodeDiv.style.userSelect = 'none';
-        
-        // ادمک علامت سوال
-        const questionEmoji = document.createElement('div');
-        questionEmoji.textContent = '❓';
-        questionEmoji.style.fontSize = '2em';
-        questionEmoji.style.transition = 'transform 0.2s';
-        questionEmoji.style.opacity = '0.7';
-        
-        // انیمیشن hover
-        emptyNodeDiv.onmouseenter = () => {
-            questionEmoji.style.transform = 'scale(1.2)';
-            questionEmoji.style.opacity = '1';
-        };
-        emptyNodeDiv.onmouseleave = () => {
-            questionEmoji.style.transform = 'scale(1)';
-            questionEmoji.style.opacity = '0.7';
-        };
-        
-        // کلیک روی ادمک برای باز کردن فرم
-        emptyNodeDiv.onclick = function(e) {
-            e.stopPropagation();
-            
-            // حذف فرم قبلی
-            let oldForm = document.getElementById('registration-form-popup');
-            if (oldForm) oldForm.remove();
-            
-            // ایجاد فرم جدید
-            const formPopup = document.createElement('div');
-            formPopup.id = 'registration-form-popup';
-            formPopup.style.position = 'fixed';
-            formPopup.style.top = '50%';
-            formPopup.style.left = '50%';
-            formPopup.style.transform = 'translate(-50%, -50%)';
-            formPopup.style.background = '#181c2a';
-            formPopup.style.color = '#fff';
-            formPopup.style.padding = '2rem';
-            formPopup.style.borderRadius = '16px';
-            formPopup.style.boxShadow = '0 8px 32px #000a';
-            formPopup.style.zIndex = '9999';
-            formPopup.style.minWidth = '400px';
-            formPopup.style.border = '2px solid #00ff88';
-            
-            // محتوای فرم
-            formPopup.innerHTML = `
-                <div style="text-align: center; margin-bottom: 1.5rem;">
-                    <div style="font-size: 2em; margin-bottom: 0.5rem;">👔</div>
-                    <h3 style="color: #00ff88; margin: 0;">ثبت کاربر جدید</h3>
-                    <div style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;">
-                        <span style="font-size: 1.2em; cursor: pointer; opacity: 1; transition: opacity 0.2s;" onclick="changeRegistrationEmoji('👔', this)">👔</span>
-                        <span style="font-size: 1.2em; cursor: pointer; opacity: 0.7; transition: opacity 0.2s;" onclick="changeRegistrationEmoji('👨‍💼', this)">👨‍💼</span>
-                        <span style="font-size: 1.2em; cursor: pointer; opacity: 0.7; transition: opacity 0.2s;" onclick="changeRegistrationEmoji('👩‍💼', this)">👩‍💼</span>
-                        <span style="font-size: 1.2em; cursor: pointer; opacity: 0.7; transition: opacity 0.2s;" onclick="changeRegistrationEmoji('👨‍💻', this)">👨‍💻</span>
-                        <span style="font-size: 1.2em; cursor: pointer; opacity: 0.7; transition: opacity 0.2s;" onclick="changeRegistrationEmoji('👩‍💻', this)">👩‍💻</span>
-                        <span style="font-size: 1.2em; cursor: pointer; opacity: 0.7; transition: opacity 0.2s;" onclick="changeRegistrationEmoji('👨‍🎓', this)">👨‍🎓</span>
-                        <span style="font-size: 1.2em; cursor: pointer; opacity: 0.7; transition: opacity 0.2s;" onclick="changeRegistrationEmoji('👩‍🎓', this)">👩‍🎓</span>
-                        <span style="font-size: 1.2em; cursor: pointer; opacity: 0.7; transition: opacity 0.2s;" onclick="changeRegistrationEmoji('👨‍⚕️', this)">👨‍⚕️</span>
-                        <span style="font-size: 1.2em; cursor: pointer; opacity: 0.7; transition: opacity 0.2s;" onclick="changeRegistrationEmoji('👩‍⚕️', this)">👩‍⚕️</span>
-                        <span style="font-size: 1.2em; cursor: pointer; opacity: 0.7; transition: opacity 0.2s;" onclick="changeRegistrationEmoji('👨‍🏫', this)">👨‍🏫</span>
-                        <span style="font-size: 1.2em; cursor: pointer; opacity: 0.7; transition: opacity 0.2s;" onclick="changeRegistrationEmoji('👩‍🏫', this)">👩‍🏫</span>
-                    </div>
-                </div>
-                
-                <div style="margin-bottom: 1rem;">
-                    <div style="color: #a786ff; font-size: 0.9rem; margin-bottom: 0.5rem;">معرف:</div>
-                    <div style="background: #232946; padding: 0.5rem; border-radius: 8px; font-family: monospace; font-size: 0.9rem; color: #b8c1ec;">
-                        ${referrerAddress ? shortWallet(referrerAddress) : '-'}
-                    </div>
-                </div>
-                
-                <div style="margin-bottom: 1.5rem;">
-                    <div style="color: #a786ff; font-size: 0.9rem; margin-bottom: 0.5rem;">آدرس ولت کاربر جدید:</div>
-                    <input type="text" id="new-user-address" placeholder="0x..." 
-                           style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #a786ff55; background: #232946; color: #fff; font-size: 0.95em; direction: ltr; box-sizing: border-box;">
-                </div>
-                
-                <div id="registration-status" style="margin-bottom: 1rem; font-size: 0.9rem;"></div>
-                
-                <div style="display: flex; gap: 1rem;">
-                    <button id="register-new-user" style="flex: 1; padding: 0.8rem; border-radius: 8px; background: #00ff88; color: #000; border: none; cursor: pointer; font-weight: bold; font-size: 0.95em;">
-                        ثبت کاربر
-                    </button>
-                    <button id="close-registration-form" style="flex: 1; padding: 0.8rem; border-radius: 8px; background: #ff4444; color: #fff; border: none; cursor: pointer; font-weight: bold; font-size: 0.95em;">
-                        انصراف
-                    </button>
-                </div>
-            `;
-            
-            document.body.appendChild(formPopup);
-            
-            // راه‌اندازی دکمه‌ها
-            document.getElementById('register-new-user').onclick = function() {
-                const newAddress = document.getElementById('new-user-address').value.trim();
-                const statusDiv = document.getElementById('registration-status');
-                
-                if (newAddress && referrerAddress) {
-                    if (typeof window.registerNewUserWithReferrer === 'function') {
-                        window.registerNewUserWithReferrer(referrerAddress, newAddress, statusDiv);
-                    } else {
-                        statusDiv.textContent = 'برای ثبت‌نام باید کیف پول متصل و مقدار کافی توکن CPA داشته باشید.';
-                        statusDiv.style.color = '#ff4444';
-                    }
-                } else {
-                    statusDiv.textContent = 'آدرس رفرر یافت نشد یا آدرس وارد نشد.';
-                    statusDiv.style.color = '#ff4444';
-                }
-            };
-            
-                    document.getElementById('close-registration-form').onclick = function() {
-            formPopup.remove();
-        };
-        
-        // راه‌اندازی تابع تغییر ادمک
-        window.changeRegistrationEmoji = function(emoji, element) {
-            // تغییر ادمک اصلی
-            const mainEmoji = formPopup.querySelector('div[style*="font-size: 2em"]');
-            if (mainEmoji) {
-                mainEmoji.textContent = emoji;
-            }
-            
-            // تغییر opacity همه ادمک‌ها
-            const allEmojis = formPopup.querySelectorAll('span[onclick*="changeRegistrationEmoji"]');
-            allEmojis.forEach(span => {
-                span.style.opacity = '0.7';
-            });
-            
-            // فعال کردن ادمک انتخاب شده
-            element.style.opacity = '1';
-        };
-        };
-        
-        // مونتاژ گره خالی
-        emptyNodeDiv.appendChild(questionEmoji);
-        container.appendChild(emptyNodeDiv);
+        renderEmptyNode(index, container);
         return;
     }
-    console.log('Creating node for address:', address);
-    // ساختار گره به صورت ادمک ساده
-    const nodeDiv = document.createElement('div');
-    nodeDiv.className = 'modern-tree-node';
+    let user = await contract.users(address);
+    // ساخت ادمک
+    let nodeDiv = document.createElement('div');
     nodeDiv.style.display = 'flex';
+    nodeDiv.style.flexDirection = 'column';
     nodeDiv.style.alignItems = 'center';
-    nodeDiv.style.justifyContent = 'center';
-    nodeDiv.style.margin = '0.5rem 0';
-    nodeDiv.style.position = 'relative';
+    nodeDiv.style.margin = '0.5em';
     nodeDiv.style.cursor = 'pointer';
-    nodeDiv.style.transition = 'transform 0.2s';
-    nodeDiv.style.userSelect = 'none';
-    nodeDiv.style.background = 'rgba(0, 255, 136, 0.05)';
-    nodeDiv.style.border = '1px solid rgba(0, 255, 136, 0.2)';
-    nodeDiv.style.borderRadius = '12px';
-    nodeDiv.style.padding = '0.8rem';
-    
-    // ادمک با سر
-    const emojiDiv = document.createElement('div');
-    emojiDiv.textContent = '👨‍💼';
-    emojiDiv.style.fontSize = '2.5em';
-    emojiDiv.style.transition = 'transform 0.2s';
-    emojiDiv.style.position = 'relative';
-    emojiDiv.style.zIndex = '2';
-    
-    // نمایش ایندکس کاربر
-    const indexDiv = document.createElement('div');
-    indexDiv.textContent = index.toString();
-    indexDiv.style.fontSize = '0.9em';
-    indexDiv.style.fontWeight = 'bold';
-    indexDiv.style.color = '#00ff88';
-    indexDiv.style.background = 'rgba(0, 255, 136, 0.15)';
-    indexDiv.style.padding = '0.2rem 0.4rem';
-    indexDiv.style.borderRadius = '6px';
-    indexDiv.style.border = '1px solid rgba(0, 255, 136, 0.3)';
-    indexDiv.style.minWidth = '2rem';
-    indexDiv.style.textAlign = 'center';
-    indexDiv.style.position = 'absolute';
-    indexDiv.style.top = '-0.5rem';
-    indexDiv.style.right = '-0.5rem';
-    indexDiv.style.zIndex = '3';
-    
-    // انیمیشن hover
-    nodeDiv.onmouseenter = () => {
-        emojiDiv.style.transform = 'scale(1.2)';
-    };
-    nodeDiv.onmouseleave = () => {
-        emojiDiv.style.transform = 'scale(1)';
-    };
-    
-    // کلیک روی ادمک
-    nodeDiv.onclick = function(e) {
+    nodeDiv.style.position = 'relative';
+    nodeDiv.innerHTML = `<div style='font-size:2.2em;'>👤</div><div style='font-size:0.9em;color:#00ff88;'>${user.index}</div><div style='font-size:0.8em;'>${shortAddress(address)}</div>`;
+    // دکمه expand/collapse
+    let expandBtn = document.createElement('button');
+    expandBtn.textContent = '+';
+    expandBtn.style.marginTop = '0.3em';
+    expandBtn.style.fontSize = '1em';
+    expandBtn.style.background = '#232946';
+    expandBtn.style.color = '#00ff88';
+    expandBtn.style.border = 'none';
+    expandBtn.style.borderRadius = '6px';
+    expandBtn.style.cursor = 'pointer';
+    nodeDiv.appendChild(expandBtn);
+    // container برای فرزندان
+    let childrenDiv = document.createElement('div');
+    childrenDiv.style.display = 'none';
+    childrenDiv.style.justifyContent = 'center';
+    childrenDiv.style.gap = '2em';
+    nodeDiv.appendChild(childrenDiv);
+    // مدیریت expand/collapse
+    let expanded = false;
+    expandBtn.onclick = async function(e) {
         e.stopPropagation();
-        console.log('Emoji clicked!');
-        console.log('Node clicked:', address, userData);
-        
-        // نمایش اطلاعات در باکس موجودی شما
-        if (window.updateUserBalanceBoxWithNode) {
-            console.log('Calling updateUserBalanceBoxWithNode');
-            window.updateUserBalanceBoxWithNode(address, userData);
-        } else {
-            console.log('updateUserBalanceBoxWithNode function not found');
-        }
-        
-        // باز/بسته کردن سطح بعدی
-        if (childrenDiv.style.display === 'none') {
+        if (!expanded) {
+            expandBtn.textContent = '-';
             childrenDiv.style.display = 'flex';
             if (!childrenDiv.hasChildNodes()) {
-                // ایجاد container برای فرزندان
-                const childrenContainer = document.createElement('div');
-                childrenContainer.style.display = 'flex';
-                childrenContainer.style.justifyContent = 'space-between';
-                childrenContainer.style.width = '100%';
-                childrenContainer.style.position = 'relative';
-                childrenContainer.style.marginTop = '1rem';
-                
-                // خط عمودی از والد به فرزندان
-                const verticalLine = document.createElement('div');
-                verticalLine.style.position = 'absolute';
-                verticalLine.style.top = '-1rem';
-                verticalLine.style.left = '50%';
-                verticalLine.style.transform = 'translateX(-50%)';
-                verticalLine.style.width = '2px';
-                verticalLine.style.height = '1rem';
-                verticalLine.style.background = '#00ff88';
-                verticalLine.style.zIndex = '1';
-                childrenContainer.appendChild(verticalLine);
-                
-                // container برای فرزند راست
-                const rightChildContainer = document.createElement('div');
-                rightChildContainer.style.display = 'flex';
-                rightChildContainer.style.flexDirection = 'column';
-                rightChildContainer.style.alignItems = 'center';
-                rightChildContainer.style.position = 'relative';
-                rightChildContainer.style.width = '50%';
-                
-                // container برای فرزند چپ
-                const leftChildContainer = document.createElement('div');
-                leftChildContainer.style.display = 'flex';
-                leftChildContainer.style.flexDirection = 'column';
-                leftChildContainer.style.alignItems = 'center';
-                leftChildContainer.style.position = 'relative';
-                leftChildContainer.style.width = '50%';
-                
-                // خط افقی بین فرزندان
-                const horizontalLine = document.createElement('div');
-                horizontalLine.style.position = 'absolute';
-                horizontalLine.style.top = '0';
-                horizontalLine.style.left = '0';
-                horizontalLine.style.right = '0';
-                horizontalLine.style.height = '2px';
-                horizontalLine.style.background = '#00ff88';
-                horizontalLine.style.zIndex = '1';
-                childrenContainer.appendChild(horizontalLine);
-                
-                // خطوط عمودی به فرزندان
-                const leftVerticalLine = document.createElement('div');
-                leftVerticalLine.style.position = 'absolute';
-                leftVerticalLine.style.top = '0';
-                leftVerticalLine.style.left = '25%';
-                leftVerticalLine.style.width = '2px';
-                leftVerticalLine.style.height = '1rem';
-                leftVerticalLine.style.background = '#00ff88';
-                leftVerticalLine.style.zIndex = '1';
-                childrenContainer.appendChild(leftVerticalLine);
-                
-                const rightVerticalLine = document.createElement('div');
-                rightVerticalLine.style.position = 'absolute';
-                rightVerticalLine.style.top = '0';
-                rightVerticalLine.style.right = '25%';
-                rightVerticalLine.style.width = '2px';
-                rightVerticalLine.style.height = '1rem';
-                rightVerticalLine.style.background = '#00ff88';
-                rightVerticalLine.style.zIndex = '1';
-                childrenContainer.appendChild(rightVerticalLine);
-                
-                // اول فرزند راست، بعد چپ
-                renderTreeNode(contract, index * 2n + 1n, rightChildContainer, level + 1);
-                renderTreeNode(contract, index * 2n, leftChildContainer, level + 1);
-                
-                childrenContainer.appendChild(rightChildContainer);
-                childrenContainer.appendChild(leftChildContainer);
-                childrenDiv.appendChild(childrenContainer);
+                await renderNodeLazy(index * 2n, childrenDiv);
+                await renderNodeLazy(index * 2n + 1n, childrenDiv);
             }
+            expanded = true;
         } else {
+            expandBtn.textContent = '+';
             childrenDiv.style.display = 'none';
+            expanded = false;
         }
     };
-    
-    // خطوط عمودی بین والد و فرزند (در صورت وجود فرزند)
-    const childrenDiv = document.createElement('div');
-    childrenDiv.style.display = 'none';
-    childrenDiv.style.position = 'relative';
-    childrenDiv.style.width = '100%';
-    
-    // مونتاژ گره
-    nodeDiv.appendChild(emojiDiv);
-    nodeDiv.appendChild(indexDiv);
+    // نمایش popup struct با کلیک روی ادمک (نه دکمه)
+    nodeDiv.querySelector('div').onclick = (e) => {
+        e.stopPropagation();
+        showUserPopup(address, user);
+    };
     container.appendChild(nodeDiv);
-    container.appendChild(childrenDiv);
-    console.log('Node added to container:', address);
 }
 
-window.renderNetworkTree = async function(rootAddress) {
-    console.log('renderNetworkTree called with rootAddress:', rootAddress);
+// تابع رندر گره خالی (علامت سؤال)
+function renderEmptyNode(index, container) {
+    const emptyNode = document.createElement('span');
+    emptyNode.className = 'empty-node';
+    emptyNode.setAttribute('data-index', index);
+    emptyNode.textContent = '❓';
+    emptyNode.style.cursor = 'pointer';
+    emptyNode.title = 'ثبت‌نام زیرمجموعه جدید';
+    container.appendChild(emptyNode);
+}
+
+window.renderSimpleBinaryTree = async function() {
     const container = document.getElementById('network-tree');
-    if (!container) {
-        console.log('network-tree container not found');
-        return;
-    }
-    console.log('Found network-tree container, clearing content');
+    if (!container) return;
     container.innerHTML = '';
-    
     try {
-        const { contract } = window.contractConfig;
-        console.log('Contract config found:', !!contract);
-        let index = await contract.users(rootAddress).then(u => typeof u.index === 'number' ? BigInt(u.index) : u.index);
-        console.log('User index:', index.toString());
-        await renderTreeNode(contract, index, container, 0);
-        console.log('Network tree rendered successfully');
-        
+        const { contract, address } = await window.connectWallet();
+        const user = await contract.users(address);
+        const index = user.index;
+        await renderNodeLazy(BigInt(index), container);
     } catch (e) {
-        console.error('Error rendering network tree:', e);
-        container.innerHTML = '<div style="color:#ff4444;text-align:center;padding:2rem;">خطا در بارگذاری درخت شبکه</div>';
+        container.innerHTML = '<div style="color:#ff4444">خطا در بارگذاری درخت</div>';
     }
 };
 
-window.networkRendered = false;
-
-window.initializeNetworkTab = async function() {
-    if (window.networkRendered) return;
-    window.networkRendered = true;
-    console.log('initializeNetworkTab called');
-    
-    // حذف فرم وسط صفحه (کارت اطلاعات کاربر شبکه)
-    var userCard = document.getElementById('network-user-card');
-    if (userCard) userCard.remove();
-    
-    // انتظار برای contract config
-    let attempts = 0;
-    const maxAttempts = 10;
-    
-    while (attempts < maxAttempts) {
-        if (window.contractConfig && window.contractConfig.address) {
-            console.log('Contract config and address found, calling renderNetworkTree');
-            await window.renderNetworkTree(window.contractConfig.address);
-            // راه‌اندازی بخش ثبت‌نام و ارتقا
-            if (typeof window.setRegisterTabSelected === 'function') {
-                window.setRegisterTabSelected(true);
-            }
-            // راه‌اندازی دکمه‌های ثبت‌نام و ارتقا
-            if (typeof setupRegistrationButton === 'function') {
-                setupRegistrationButton();
-            }
-            if (typeof setupUpgradeForm === 'function') {
-                setupUpgradeForm();
-            }
-            return;
+if (typeof window.showTab === 'function') {
+    const origShowTab = window.showTab;
+    window.showTab = async function(tab) {
+        await origShowTab.apply(this, arguments);
+        if (tab === 'network') {
+            setTimeout(() => window.renderSimpleBinaryTree(), 500);
         }
-        
-        console.log(`Waiting for contract config... (attempt ${attempts + 1}/${maxAttempts})`);
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        attempts++;
-    }
-    
-    console.log('No contract config or address found after waiting');
-    // نمایش پیام به کاربر
-    const container = document.getElementById('network-tree');
-    if (container) {
-        container.innerHTML = '<div style="color:#ffaa00;text-align:center;padding:2rem;">برای مشاهده درخت شبکه، کیف پول خود را متصل کنید</div>';
-    }
-};
-
-// بارگذاری خودکار درخت شبکه در زمان رفرش صفحه
-document.addEventListener('DOMContentLoaded', async function() {
-    // کمی صبر کن تا همه اسکریپت‌ها لود شوند
-    setTimeout(async () => {
-        try {
-            // اگر تب network فعال است، درخت را بارگذاری کن
-            const networkSection = document.getElementById('main-network');
-            if (networkSection && networkSection.style.display !== 'none') {
-                if (typeof window.initializeNetworkTab === 'function') {
-                    await window.initializeNetworkTab();
-                }
-            }
-        } catch (error) {
-            console.log('Auto-load network tree error:', error);
-        }
-    }, 3000); // 3 ثانیه صبر کن تا همه چیز لود شود
-});
-
-// بارگذاری خودکار درخت شبکه بعد از اتصال کیف پول
-window.addEventListener('load', async function() {
-    // کمی صبر کن تا همه چیز لود شود
-    setTimeout(async () => {
-        try {
-            // اگر تب network فعال است، درخت را بارگذاری کن
-            const networkSection = document.getElementById('main-network');
-            if (networkSection && networkSection.style.display !== 'none') {
-                if (typeof window.initializeNetworkTab === 'function') {
-                    await window.initializeNetworkTab();
-                }
-            }
-        } catch (error) {
-            console.log('Window load network tree error:', error);
-        }
-    }, 5000); // 5 ثانیه صبر کن تا همه چیز لود شود
-});
-
-// بارگذاری درخت شبکه وقتی کیف پول متصل می‌شود
-const originalConnectWallet = window.connectWallet;
-if (originalConnectWallet) {
-    window.connectWallet = async function() {
-        const result = await originalConnectWallet();
-        
-        // بعد از اتصال موفق، درخت شبکه را بارگذاری کن
-        setTimeout(async () => {
-            try {
-                const networkSection = document.getElementById('main-network');
-                if (networkSection && networkSection.style.display !== 'none') {
-                    if (typeof window.initializeNetworkTab === 'function') {
-                        await window.initializeNetworkTab();
-                    }
-                }
-            } catch (error) {
-                console.log('Network tree load after wallet connect error:', error);
-            }
-        }, 1500);
-        
-        return result;
     };
-} 
+}
+
+// اطمینان از اتصال توابع به window برای نمایش شبکه
+if (typeof renderSimpleBinaryTree === 'function') {
+    window.renderSimpleBinaryTree = renderSimpleBinaryTree;
+}
+window.initializeNetworkTab = async function() {
+    if (typeof window.renderSimpleBinaryTree === 'function') {
+        await window.renderSimpleBinaryTree();
+    }
+};
+
+function getReferrerFromURL() {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get('ref') || urlParams.get('referrer');
+}
+
+// تابع گرفتن معرف نهایی (کد رفرال یا دیپلویر)
+async function getFinalReferrer(contract) {
+  let ref = getReferrerFromURL();
+  if (ref && /^0x[a-fA-F0-9]{40}$/.test(ref)) return ref;
+  // اگر کد رفرال نبود، دیپلویر را بگیر
+  try {
+    return await contract.deployer();
+  } catch (e) {
+    return null;
+  }
+}
+
+// نمایش modal ثبت‌نام برای گره خالی
+function showRegisterModal(parentIndex, parentAddress) {
+    // ابتدا modal قبلی را حذف کن
+    let old = document.getElementById('register-modal');
+    if (old) old.remove();
+    // ساخت modal
+    const modal = document.createElement('div');
+    modal.id = 'register-modal';
+    modal.style = 'position:fixed;z-index:3000;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;';
+    modal.innerHTML = `
+      <div style="background:#232946;padding:2rem 2.5rem;border-radius:18px;box-shadow:0 8px 32px #000a;min-width:320px;max-width:95vw;direction:ltr;position:relative;">
+        <button id="register-modal-close" style="position:absolute;top:10px;right:10px;font-size:1.3rem;background:none;border:none;color:#fff;cursor:pointer;">×</button>
+        <div style="margin-bottom:1.2rem;padding:0.7rem 1rem;background:#181c2a;border-radius:10px;border:1px solid #a786ff;">
+          <span style='color:#a786ff;font-size:1.1rem;font-weight:bold;'>معرف (Referrer):</span><br>
+          <span style='color:#fff;font-size:1rem;'><b>Index:</b> ${parentIndex}</span><br>
+          <span style='color:#00ff88;font-family:monospace;font-size:1rem;'><b>Address:</b> ${parentAddress}</span>
+        </div>
+        <h3 style="color:#00ff88;margin-bottom:1.2rem;">ثبت‌نام زیرمجموعه جدید</h3>
+        <div style="margin-bottom:0.7rem;">
+          <label style="color:#fff;">آدرس ولت جدید:</label><br>
+          <input id="register-new-address" type="text" placeholder="0x..." style="width:100%;padding:0.5rem;border-radius:8px;border:1px solid #a786ff;margin-top:0.3rem;direction:ltr;" />
+        </div>
+        <div id="register-fee-info" style="color:#fff;margin-bottom:0.7rem;font-size:0.95rem;">Loading fee info...</div>
+        <div id="register-matic-info" style="color:#fff;margin-bottom:1.2rem;font-size:0.95rem;">Loading MATIC balance...</div>
+        <button id="register-submit-btn" style="background:#00ff88;color:#232946;font-weight:bold;padding:0.7rem 2.2rem;border:none;border-radius:10px;font-size:1.1rem;cursor:pointer;">ثبت‌نام</button>
+        <div id="register-modal-status" style="margin-top:1rem;color:#ff6b6b;"></div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    // بستن modal
+    document.getElementById('register-modal-close').onclick = () => modal.remove();
+    // گرفتن اطلاعات هزینه ثبت‌نام و موجودی متیک
+    (async function() {
+      try {
+        const { contract, address, provider } = await window.connectWallet();
+        // مقدار توکن مورد نیاز (فرض: contract.registrationFee())
+        let fee = '-';
+        try {
+          if (contract.registrationFee) {
+            const feeVal = await contract.registrationFee();
+            fee = window.ethers ? window.ethers.formatUnits(feeVal, 18) : feeVal.toString();
+          } else {
+            fee = '---';
+          }
+        } catch (e) { fee = '---'; }
+        document.getElementById('register-fee-info').textContent = `Registration Fee: ${fee} CPA`;
+        // موجودی متیک
+        let matic = '-';
+        try {
+          if (provider && address) {
+            const bal = await provider.getBalance(address);
+            matic = window.ethers ? window.ethers.formatUnits(bal, 18) : bal.toString();
+          }
+        } catch (e) { matic = '---'; }
+        document.getElementById('register-matic-info').textContent = `Your MATIC Balance: ${matic}`;
+      } catch (e) {
+        document.getElementById('register-fee-info').textContent = 'Error loading fee info';
+        document.getElementById('register-matic-info').textContent = 'Error loading MATIC balance';
+      }
+    })();
+    // ثبت‌نام
+    document.getElementById('register-submit-btn').onclick = async function() {
+      const status = document.getElementById('register-modal-status');
+      status.textContent = '';
+      const newAddr = document.getElementById('register-new-address').value.trim();
+      if (!/^0x[a-fA-F0-9]{40}$/.test(newAddr)) {
+        status.textContent = 'آدرس ولت جدید معتبر نیست!';
+        return;
+      }
+      // استفاده از منطق ثبت‌نام اصلی پروژه
+      if (window.registerNewUserWithReferrer) {
+        const referrerAddress = await getFinalReferrer(contract);
+        if (!referrerAddress) {
+          status.textContent = 'معرف معتبری پیدا نشد. لطفاً به صفحه قبلی بروید یا یک کد رفرال در URL ارسال کنید.';
+          return;
+        }
+        await window.registerNewUserWithReferrer(referrerAddress, newAddr, status);
+        // بعد از موفقیت، درخت شبکه را رفرش کن
+        setTimeout(() => { modal.remove(); window.renderSimpleBinaryTree && window.renderSimpleBinaryTree(); }, 1500);
+      } else {
+        status.textContent = 'تابع ثبت‌نام اصلی پیدا نشد!';
+      }
+    };
+}
+
+// هندل کلیک روی علامت سؤال (گره خالی)
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('empty-node')) {
+    const parentIndex = e.target.getAttribute('data-index');
+    (async function() {
+      try {
+        const { contract } = await window.connectWallet();
+        // اگر parentIndex صفر است، معرف وجود ندارد (ریشه)
+        if (parentIndex === 0) {
+          alert('ثبت‌نام زیر ریشه مجاز نیست!');
+          return;
+        }
+        const referrerAddress = await contract.indexToAddress(BigInt(parentIndex));
+        if (!referrerAddress || referrerAddress === '0x0000000000000000000000000000000000000000') {
+          // فقط اگر آدرس صفر بود، ثبت‌نام مجاز نیست
+          return;
+        }
+        showRegisterModal(parentIndex, referrerAddress); // معرف = آدرس گره والد واقعی
+      } catch (e) {
+        alert('خطا در دریافت آدرس معرف: ' + (e && e.message ? e.message : e));
+      }
+    })();
+  }
+}); 

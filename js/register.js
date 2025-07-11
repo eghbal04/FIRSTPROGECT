@@ -37,41 +37,33 @@ async function loadRegisterData(contract, address, tokenPriceUSDFormatted) {
         // دریافت اطلاعات کاربر
         const userData = await contract.users(address);
         
-        // دریافت موجودی CPA کاربر
-        const cpaBalance = await contract.balanceOf(address);
-        const cpaBalanceFormatted = ethers.formatUnits(cpaBalance, 18);
+        // تغییر به USDC:
+        const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, signer);
+        const usdcBalance = await usdcContract.balanceOf(address);
+        const usdcDecimals = await usdcContract.decimals();
+        const usdcBalanceFormatted = ethers.formatUnits(usdcBalance, usdcDecimals);
         
         // دریافت قیمت‌ها و اطلاعات ثبت‌نام
         const [regprice, tokenPriceMatic] = await Promise.all([
             contract.regprice(),
             contract.getTokenPrice() // قیمت توکن بر حسب MATIC
         ]);
-        const tokenPriceMaticFormatted = ethers.formatUnits(tokenPriceMatic, 18);
-        // دریافت قیمت MATIC/USD از API
-        const maticPriceUSD = await window.fetchPolUsdPrice();
-        const maticPriceUSDFormatted = parseFloat(maticPriceUSD).toFixed(6);
-        // قیمت CPA/USD = (CPA/MATIC) * (MATIC/USD)
-        const tokenPriceUSD = parseFloat(tokenPriceMaticFormatted) * parseFloat(maticPriceUSD);
-        const tokenPriceUSDFormatted = tokenPriceUSD.toFixed(6);
+        const tokenPriceFormatted = ethers.formatUnits(tokenPriceMatic, 18);
+        // قیمت CPA/USDC (مستقیماً از قرارداد)
+        const tokenPriceUSDFormatted = tokenPriceFormatted;
         const regpriceFormatted = ethers.formatUnits(regprice, 18); // مقدار توکن مورد نیاز
         const regpriceUSD = ethers.formatUnits(regprice, 8); // مقدار دلاری
-        // محاسبه مقدار توکن برای 1 سنت و ...
-        const oneCentInUSD = 0.01;
-        const oneCentInMatic = (oneCentInUSD * 1e18) / parseFloat(maticPriceUSDFormatted);
-        const oneCentTokens = (oneCentInMatic * 1e18) / parseFloat(tokenPriceMaticFormatted);
+        // محاسبه مقدار توکن برای مقادیر مختلف (USDC همیشه 1 دلار است)
+        const oneCentTokens = 0.01 / parseFloat(tokenPriceFormatted);
         const oneCentTokensFormatted = oneCentTokens.toFixed(6);
-        const tenCentsInUSD = 0.1;
-        const tenCentsInMatic = (tenCentsInUSD * 1e18) / parseFloat(maticPriceUSDFormatted);
-        const tenCentsInTokens = (tenCentsInMatic * 1e18) / parseFloat(tokenPriceMaticFormatted);
+        const tenCentsInTokens = 0.1 / parseFloat(tokenPriceFormatted);
         const tenCentsInTokensFormatted = tenCentsInTokens.toFixed(6);
-        const twelveCentsInUSD = 0.12;
-        const twelveCentsInMatic = (twelveCentsInUSD * 1e18) / parseFloat(maticPriceUSDFormatted);
-        const twelveCentsInTokens = (twelveCentsInMatic * 1e18) / parseFloat(tokenPriceMaticFormatted);
+        const twelveCentsInTokens = 0.12 / parseFloat(tokenPriceFormatted);
         const twelveCentsInTokensFormatted = twelveCentsInTokens.toFixed(6);
         // محاسبه ارزش دلاری موجودی
-        const cpaBalanceUSD = (parseFloat(cpaBalanceFormatted) * parseFloat(tokenPriceUSDFormatted)).toFixed(2);
+        const cpaBalanceUSD = (parseFloat(usdcBalanceFormatted) * parseFloat(tokenPriceUSDFormatted)).toFixed(2);
         // به‌روزرسانی نمایش موجودی
-        updateBalanceDisplay(cpaBalanceFormatted, cpaBalanceUSD);
+        updateBalanceDisplay(usdcBalanceFormatted, usdcBalanceFormatted); // فرض بر این که مقدار مورد نیاز هم بر حسب USDC است
         // بررسی وضعیت ثبت‌نام
         if (userData.activated) {
             // فقط فرم ارتقا را نمایش بده
@@ -203,29 +195,28 @@ function setupUpgradeForm() {
 async function performRegistration() {
     try {
         if (!window.contractConfig || !window.contractConfig.contract) {
-            throw new Error('No wallet connection');
+            throw new Error('اتصال کیف پول برقرار نیست');
         }
         const { contract, address } = window.contractConfig;
-        // مقدار معرف را از input کاربر بگیر
+        // مقدار معرف را از input یا URL یا localStorage بگیر
         let referrerInput = document.getElementById('referrer-address');
         let referrerAddress = referrerInput && referrerInput.value ? referrerInput.value.trim() : '';
-        // اگر مقدار وارد نشده بود، از URL یا localStorage بگیر
         if (!referrerAddress) {
             referrerAddress = getReferrerFromURL() || getReferrerFromStorage();
         }
         if (!referrerAddress) {
             referrerAddress = await contract.deployer();
         }
-        // بررسی معتبر بودن معرف
-        try {
-            const referrerData = await contract.users(referrerAddress);
-            if (!referrerData.activated) {
-                throw new Error('Referrer is not activated');
-            }
-        } catch (error) {
-            referrerAddress = await contract.deployer();
-        }
+        // هیچ چک اضافه‌ای روی فعال بودن معرف انجام نده
+        // فقط ثبت‌نام را انجام بده
         const regprice = await contract.regprice();
+        // منطق approve قبل از ثبت‌نام:
+        const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, window.contractConfig.signer);
+        const allowance = await usdcContract.allowance(address, CONTRACT_ADDRESS);
+        if (allowance < regprice) {
+          const approveTx = await usdcContract.approve(CONTRACT_ADDRESS, regprice);
+          await approveTx.wait();
+        }
         const tx = await contract.registerAndActivate(referrerAddress, address);
         await tx.wait();
         showRegisterSuccess("ثبت‌نام با موفقیت انجام شد!");
@@ -234,7 +225,7 @@ async function performRegistration() {
             loadRegisterData(contract, address, tokenPriceUSDFormatted);
         }, 2000);
     } catch (error) {
-        throw error;
+        showRegisterError(error.message || 'خطا در ثبت‌نام.');
     }
 }
 
@@ -293,7 +284,7 @@ async function performUpgrade() {
 function showRegisterSuccess(message) {
     const statusElement = document.getElementById('register-status');
     if (statusElement) {
-        statusElement.textContent = message;
+        statusElement.textContent = message || 'ثبت‌نام با موفقیت انجام شد! به جمع کاربران ما خوش آمدید.';
         statusElement.className = 'profile-status success';
     }
 }
@@ -302,7 +293,7 @@ function showRegisterSuccess(message) {
 function showRegisterError(message) {
     const statusElement = document.getElementById('register-status');
     if (statusElement) {
-        statusElement.textContent = message;
+        statusElement.textContent = message || 'خطا در ثبت‌نام. لطفاً مجدداً تلاش کنید یا با پشتیبانی تماس بگیرید.';
         statusElement.className = 'profile-status error';
     }
 }
@@ -313,11 +304,11 @@ function showRegisterError(message) {
     const lvlUsdElement = document.getElementById('user-lvl-usd-value');
     
     if (lvlBalanceElement) {
-        lvlBalanceElement.textContent = `${parseFloat(cpaBalance).toFixed(2)} CPA`;
+        lvlBalanceElement.textContent = `${parseFloat(usdcBalanceFormatted).toFixed(2)} USDC`;
     }
     
     if (lvlUsdElement) {
-        lvlUsdElement.textContent = `$${cpaBalanceUSD} USD`;
+        lvlUsdElement.textContent = `$${usdcBalanceFormatted} USDC`;
     }
 }
 
@@ -331,7 +322,7 @@ function displayRegistrationInfo(registrationPrice, regprice, tokenPriceUSD, tok
                 <div style="display: grid; gap: 0.5rem; font-size: 0.9rem;">
                     <div style="display: flex; justify-content: space-between;">
                         <span style="color: #ccc;">مقدار توکن مورد نیاز (دقیقاً طبق قرارداد):</span>
-                        <span style="color: #00ff88; font-weight: bold;">${registrationPrice} CPA</span>
+                        <span style="color: #00ff88; font-weight: bold;">${registrationPrice} USDC</span>
                     </div>
                     <div style="display: flex; justify-content: space-between;">
                         <span style="color: #ccc;">ارزش دلاری (هدف قرارداد):</span>
@@ -363,14 +354,35 @@ async function showRegistrationForm() {
 
     // مقداردهی آدرس معرف: اولویت با لینک رفرال
     let referrer = getReferrerFromURL();
+    const refInputGroup = document.getElementById('register-ref-input-group');
+    const refSummary = document.getElementById('register-ref-summary');
+    const walletAddressSpan = document.getElementById('register-wallet-address');
+    const referrerAddressSpan = document.getElementById('register-referrer-address');
+    let isReferralMode = false;
     if (!referrer) {
         // اگر در URL نبود، از userData یا deployer استفاده کن
         const { contract } = window.contractConfig;
         const userData = await contract.users(window.contractConfig.address);
         referrer = userData.referrer || (await contract.deployer());
+    } else {
+        // اگر رفرر در URL بود، حالت رفرال فعال شود
+        isReferralMode = true;
     }
     const referrerInput = document.getElementById('referrer-address');
     if (referrerInput) referrerInput.value = referrer || '';
+
+    // اگر حالت رفرال است، ورودی را مخفی و خلاصه را نمایش بده
+    if (isReferralMode) {
+        if (refInputGroup) refInputGroup.style.display = 'none';
+        if (refSummary) {
+            refSummary.style.display = 'block';
+            if (walletAddressSpan) walletAddressSpan.textContent = window.contractConfig.address;
+            if (referrerAddressSpan) referrerAddressSpan.textContent = referrer;
+        }
+    } else {
+        if (refInputGroup) refInputGroup.style.display = 'block';
+        if (refSummary) refSummary.style.display = 'none';
+    }
 
     // مقدار توکن مورد نیاز را از قرارداد بگیر
     let requiredTokenAmount = '';
@@ -385,45 +397,163 @@ async function showRegistrationForm() {
         requiredTokenAmount = '-';
         userLvlBalance = '0';
     }
+    // نمایش موجودی و مقدار مورد نیاز
+    const cpaBalanceSpan = document.getElementById('register-cpa-balance');
+    const cpaRequiredSpan = document.getElementById('register-cpa-required');
+    if (cpaBalanceSpan) cpaBalanceSpan.textContent = userLvlBalance;
+    if (cpaRequiredSpan) cpaRequiredSpan.textContent = requiredTokenAmount;
 
-    // دکمه ثبت‌نام
+    // 1. Add logic to fetch MATIC balance and required MATIC for registration
+    async function fetchMaticBalance(address, contract) {
+      try {
+        const maticWei = await contract.provider.getBalance(address);
+        return ethers.formatEther(maticWei);
+      } catch (e) {
+        return '0';
+      }
+    }
+
+    // 2. Update registration form logic to show MATIC balance and required MATIC
+    // (Find the main registration form logic and add after CPA balance logic)
+
+    // Set required MATIC (for registration, e.g. 0.05 MATIC for gas)
+    const requiredMatic = 0.05; // You can adjust this value as needed
+    const maticRequiredSpan = document.getElementById('register-matic-required');
+    if (maticRequiredSpan) maticRequiredSpan.textContent = requiredMatic + ' MATIC';
+
+    // 3. Update register button logic to check both CPA and MATIC balance
     const registerBtn = document.getElementById('register-btn');
     const registerStatus = document.getElementById('register-status');
     if (registerBtn) {
-        // فعال/غیرفعال کردن دکمه بر اساس موجودی
-        if (parseFloat(userLvlBalance) < parseFloat(requiredTokenAmount)) {
-            registerBtn.disabled = true;
-            registerBtn.textContent = 'موجودی CPA کافی نیست';
-            if (registerStatus) registerStatus.textContent = 'برای ثبت‌نام باید حداقل '+requiredTokenAmount+' CPA داشته باشید.';
+      // Get user address from input (not just connected wallet)
+      const userAddressInput = document.getElementById('register-user-address');
+      let targetUserAddress = userAddressInput ? userAddressInput.value.trim() : '';
+      const referrerInput = document.getElementById('referrer-address');
+      let referrer = referrerInput ? referrerInput.value.trim() : '';
+
+      if (!/^0x[a-fA-F0-9]{40}$/.test(targetUserAddress)) {
+        if (registerStatus) registerStatus.textContent = 'آدرس کیف پول کاربر جدید معتبر نیست.';
+        registerBtn.disabled = false;
+        registerBtn.textContent = 'ثبت‌ نام';
+        return;
+      }
+      if (!/^0x[a-fA-F0-9]{40}$/.test(referrer)) {
+        if (registerStatus) registerStatus.textContent = 'آدرس معرف معتبر نیست.';
+        registerBtn.disabled = false;
+        registerBtn.textContent = 'ثبت‌ نام';
+        return;
+      }
+      // بررسی ثبت‌نام نبودن کاربر جدید
+      let userData;
+      try {
+        userData = await contract.users(targetUserAddress);
+      } catch (e) { userData = null; }
+      if (userData && userData.activated) {
+        if (registerStatus) registerStatus.textContent = 'این آدرس قبلاً ثبت‌نام کرده است.';
+        registerBtn.disabled = false;
+        registerBtn.textContent = 'ثبت‌ نام';
+        return;
+      }
+      // بررسی فعال بودن رفرر
+      let refData;
+      try {
+        refData = await contract.users(referrer);
+      } catch (e) { refData = null; }
+      if (!refData || !refData.activated) {
+        if (registerStatus) registerStatus.textContent = 'معرف فعال نیست.';
+        registerBtn.disabled = false;
+        registerBtn.textContent = 'ثبت‌ نام';
+        return;
+      }
+      // بررسی موجودی ولت متصل (address)
+      if (parseFloat(userLvlBalance) < parseFloat(requiredTokenAmount)) {
+        registerBtn.disabled = true;
+        registerBtn.textContent = 'موجودی USDC کافی نیست';
+        if (registerStatus) registerStatus.textContent = 'برای ثبت‌نام باید حداقل '+requiredTokenAmount+' USDC داشته باشید. لطفاً ابتدا کیف پول خود را شارژ کنید.';
+        return;
+      } else if (parseFloat(maticBalance) < requiredMatic) {
+        registerBtn.disabled = true;
+        registerBtn.textContent = 'موجودی متیک کافی نیست';
+        if (registerStatus) registerStatus.textContent = 'برای ثبت‌نام باید حداقل '+requiredMatic+' MATIC در کیف پول خود داشته باشید.';
+        return;
+      }
+      // ثبت‌نام
+      registerBtn.disabled = true;
+      registerBtn.textContent = 'در حال ثبت‌نام...';
+      try {
+        await contract.registerAndActivate(referrer, targetUserAddress);
+        registerStatus.textContent = 'ثبت‌نام با موفقیت انجام شد!';
+        registerBtn.style.display = 'none';
+      } catch (e) {
+        if (e.code === 4001) {
+          registerStatus.textContent = 'فرآیند ثبت‌نام توسط شما لغو شد.';
         } else {
-            registerBtn.disabled = false;
-            registerBtn.textContent = 'ثبت‌ نام';
-            if (registerStatus) registerStatus.textContent = '';
+          registerStatus.textContent = 'خطا در ثبت‌نام: ' + (e.message || e);
         }
-        registerBtn.onclick = async function() {
-            if (registerBtn.disabled) return;
-            registerBtn.disabled = true;
-            registerBtn.textContent = 'در حال ثبت‌نام...';
+        registerBtn.disabled = false;
+        registerBtn.textContent = 'ثبت‌ نام';
+      }
+    }
+
+    // دکمه ثبت‌نام
+    const newRegisterBtn = document.getElementById('new-register-btn');
+    const newRegisterModal = document.getElementById('new-registration-modal');
+    const closeNewRegister = document.getElementById('close-new-register');
+    const submitNewRegister = document.getElementById('submit-new-register');
+    if (newRegisterBtn && newRegisterModal && closeNewRegister && submitNewRegister) {
+        newRegisterBtn.onclick = function() {
+            newRegisterModal.style.display = 'flex';
+        };
+        closeNewRegister.onclick = function() {
+            newRegisterModal.style.display = 'none';
+            document.getElementById('new-user-address').value = '';
+            document.getElementById('new-referrer-address').value = '';
+            document.getElementById('new-register-status').textContent = '';
+        };
+        submitNewRegister.onclick = async function() {
+            const userAddr = document.getElementById('new-user-address').value.trim();
+            const refAddr = document.getElementById('new-referrer-address').value.trim();
+            const statusDiv = document.getElementById('new-register-status');
+            if (!userAddr || !refAddr) {
+                statusDiv.textContent = 'آدرس نفر جدید و معرف را وارد کنید';
+                statusDiv.className = 'profile-status error';
+                return;
+            }
+            submitNewRegister.disabled = true;
+            const oldText = submitNewRegister.textContent;
+            submitNewRegister.textContent = 'در حال ثبت...';
             try {
-                await registerUser(referrer, requiredTokenAmount);
-                registerStatus.textContent = 'ثبت‌نام با موفقیت انجام شد!';
+                if (!window.contractConfig || !window.contractConfig.contract) throw new Error('اتصال کیف پول برقرار نیست');
+                const { contract } = window.contractConfig;
+                // بررسی معتبر بودن معرف
+                const refData = await contract.users(refAddr);
+                if (!refData.activated) throw new Error('معرف فعال نیست');
+                // بررسی ثبت‌نام نبودن نفر جدید
+                const userData = await contract.users(userAddr);
+                if (userData.activated) throw new Error('این آدرس قبلاً ثبت‌نام کرده است');
+                // ثبت‌نام نفر جدید (با ولت فعلی)
+                const tx = await contract.registerAndActivate(refAddr, userAddr);
+                await tx.wait();
+                statusDiv.textContent = 'ثبت‌نام نفر جدید با موفقیت انجام شد!';
+                statusDiv.className = 'profile-status success';
                 setTimeout(() => location.reload(), 1200);
             } catch (e) {
-                registerStatus.textContent = 'خطا در ثبت‌نام: ' + (e.message || e);
+                statusDiv.textContent = e.message || 'خطا در ثبت‌نام نفر جدید';
+                statusDiv.className = 'profile-status error';
             }
-            registerBtn.disabled = false;
-            registerBtn.textContent = 'ثبت‌ نام';
+            submitNewRegister.disabled = false;
+            submitNewRegister.textContent = oldText;
         };
     }
 }
 
 // تابع ثبت‌نام ساده
-async function registerUser(referrer, requiredTokenAmount) {
+async function registerUser(referrer, requiredTokenAmount, targetUserAddress) {
     const { contract, address } = await window.connectWallet();
     if (!contract || !address) throw new Error('کیف پول متصل نیست');
     // تبدیل مقدار به wei (عدد صحیح)
     const amountInWei = ethers.parseUnits(requiredTokenAmount, 18);
-    await contract.registerAndActivate(referrer, address);
+    await contract.registerAndActivate(referrer, targetUserAddress);
 }
 
 // مدیریت نمایش فرم ثبت جدید و ثبت نفر جدید
@@ -522,3 +652,4 @@ window.registerNewUserWithReferrer = async function(referrer, newUserAddress, st
         }
     }
 };
+window.loadRegisterData = loadRegisterData;

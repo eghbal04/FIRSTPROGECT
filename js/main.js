@@ -15,26 +15,72 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
     
+    // === اضافه کردن دکمه مخفی پنل اونر به منوی همبرگری ===
+    try {
+        const hamburgerMenu = document.getElementById('hamburgerMenu');
+        if (hamburgerMenu && window.contractConfig && window.contractConfig.contract && window.contractConfig.address) {
+            // گرفتن آدرس owner از قرارداد
+            const ownerAddress = await window.contractConfig.contract.owner();
+            const userAddress = window.contractConfig.address;
+            // بررسی تطابق آدرس owner و کاربر
+            if (ownerAddress && userAddress && ownerAddress.toLowerCase() === userAddress.toLowerCase()) {
+                // اگر دکمه قبلاً اضافه نشده بود، اضافه کن
+                if (!document.getElementById('owner-panel-btn')) {
+                    const divider = document.createElement('div');
+                    divider.className = 'menu-divider';
+                    divider.id = 'owner-panel-divider'; // Added ID for removal
+                    const btn = document.createElement('button');
+                    btn.id = 'owner-panel-btn';
+                    btn.innerHTML = '<span class="menu-icon">🛡️</span>پنل اونر';
+                    btn.onclick = function() { window.location.href = 'admin-owner-panel.html'; };
+                    btn.style.background = '#232946';
+                    btn.style.color = '#a786ff';
+                    btn.style.fontWeight = 'bold';
+                    btn.style.display = 'block';
+                    btn.style.border = '1px solid #a786ff';
+                    btn.style.marginTop = '10px';
+                    btn.style.padding = '10px';
+                    btn.style.borderRadius = '8px';
+                    btn.style.cursor = 'pointer';
+                    // اضافه کردن به انتهای منو
+                    hamburgerMenu.appendChild(divider);
+                    hamburgerMenu.appendChild(btn);
+                }
+            }
+        }
+    } catch (e) { console.warn('Owner panel button error:', e); }
+
     // به‌روزرسانی ناوبار بر اساس وضعیت کاربر
     await updateNavbarBasedOnUserStatus();
 
     // کشبک داشبورد
     const cashbackValueEl = document.getElementById('dashboard-cashback-value');
-    const cashbackDescEl = document.getElementById('dashboard-cashback-desc');
     if (cashbackValueEl) {
         try {
             let cashback = await window.contractConfig.contract.cashBack();
             cashback = cashback.toString();
             cashbackValueEl.textContent = Number(cashback) / 1e18 + ' CPA';
+            const cashbackDescEl = document.getElementById('dashboard-cashback-desc');
             if (cashbackDescEl) {
                 cashbackDescEl.textContent = `۵٪ از هر ثبت‌نام به این صندوق اضافه می‌شود. مجموع فعلی: ${Number(cashback) / 1e18} CPA`;
             }
         } catch (e) {
             cashbackValueEl.textContent = '-';
+            const cashbackDescEl = document.getElementById('dashboard-cashback-desc');
             if (cashbackDescEl) {
                 cashbackDescEl.textContent = '۵٪ از هر ثبت‌نام به این صندوق اضافه می‌شود.';
             }
         }
+    }
+    await updateContractStats();
+    // Example: update dashboard UI with cached stats
+    if (document.getElementById('dashboard-terminal-info')) {
+        document.getElementById('dashboard-terminal-info').textContent =
+            `Total Points: ${window.contractStats.totalPoints}\n` +
+            `USDC Balance: ${window.contractStats.usdcBalance}\n` +
+            `Token Balance: ${window.contractStats.tokenBalance}\n` +
+            `Wallets: ${window.contractStats.wallets}\n` +
+            `Total Supply: ${window.contractStats.totalSupply}`;
     }
 });
 
@@ -42,6 +88,56 @@ function shortenAddress(address) {
     if (!address) return '---';
     return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
 }
+
+function shorten(address) {
+    if (!address) return '---';
+    return address.substring(0, 6) + '...' + address.substring(address.length - 4);
+}
+
+// تابع اضافه کردن دکمه owner به انتهای منوی همبرگری فقط برای owner
+window.addOwnerPanelButtonIfOwner = async function() {
+    try {
+        const hamburgerMenu = document.getElementById('hamburgerMenu');
+        if (!hamburgerMenu) return;
+        // حذف دکمه قبلی اگر وجود دارد
+        const existingBtn = document.getElementById('owner-panel-btn');
+        if (existingBtn) existingBtn.remove();
+        // حذف divider قبلی اگر وجود دارد
+        const existingDivider = document.getElementById('owner-panel-divider');
+        if (existingDivider) existingDivider.remove();
+        // بررسی اتصال و قرارداد
+        if (!window.contractConfig || !window.contractConfig.contract || !window.contractConfig.address) return;
+        // گرفتن owner از قرارداد
+        let ownerAddress;
+        try {
+            ownerAddress = await window.contractConfig.contract.owner();
+        } catch (e) { return; }
+        const userAddress = window.contractConfig.address;
+        if (!ownerAddress || !userAddress) return;
+        if (ownerAddress.toLowerCase() !== userAddress.toLowerCase()) return;
+        // اضافه کردن divider
+        const divider = document.createElement('div');
+        divider.className = 'menu-divider';
+        divider.id = 'owner-panel-divider';
+        // ایجاد دکمه
+        const btn = document.createElement('button');
+        btn.id = 'owner-panel-btn';
+        btn.innerHTML = '<span class="menu-icon">🛡️</span>پنل اونر';
+        btn.onclick = function() { window.location.href = 'admin-owner-panel.html'; };
+        btn.style.background = '#232946';
+        btn.style.color = '#a786ff';
+        btn.style.fontWeight = 'bold';
+        btn.style.display = 'block';
+        btn.style.border = '1px solid #a786ff';
+        btn.style.marginTop = '10px';
+        btn.style.padding = '10px';
+        btn.style.borderRadius = '8px';
+        btn.style.cursor = 'pointer';
+        // اضافه کردن به انتهای منو
+        hamburgerMenu.appendChild(divider);
+        hamburgerMenu.appendChild(btn);
+    } catch (e) {}
+};
 
 // تابع اتصال کیف پول با نوع مشخص
 async function connectWalletAndUpdateUI(walletType) {
@@ -74,6 +170,9 @@ async function connectWalletAndUpdateUI(walletType) {
 
         // به‌روزرسانی UI
         updateConnectionUI(profile, address, walletType);
+
+        // بعد از به‌روزرسانی UI:
+        setTimeout(window.addOwnerPanelButtonIfOwner, 500);
 
     } catch (error) {
         alert("اتصال کیف پول ناموفق بود: " + error.message);
@@ -133,8 +232,8 @@ const updateElement = (id, value) => {
 };
 
     updateElement('user-address', shortenAddress(address));
-    updateElement('matic-balance', profile.maticBalance + ' POL');
-    updateElement('lvl-balance', profile.lvlBalance + ' CPA');
+    updateElement('usdc-balance', profile.usdcBalance + ' USDC');
+    updateElement('profile-usdc', profile.usdcBalance + ' USDC');
 
     const userDashboard = document.getElementById('user-dashboard');
     const mainContent = document.getElementById('main-content');
@@ -173,6 +272,9 @@ const updateElement = (id, value) => {
     
     // به‌روزرسانی ناوبار بر اساس وضعیت کاربر
     updateNavbarBasedOnUserStatus();
+    
+    // بعد از به‌روزرسانی UI:
+    setTimeout(window.addOwnerPanelButtonIfOwner, 500);
 }
 
 // تابع fetchUserProfile که در main.js فراخوانی می‌شود
@@ -180,10 +282,15 @@ async function fetchUserProfile() {
     try {
         const { contract, address } = await connectWallet();
         // دریافت موجودی‌ها
-        const [maticBalance, lvlBalance] = await Promise.all([
-            contract.provider.getBalance(address),
-            contract.balanceOf(address)
-        ]);
+        const provider = contract.provider;
+        const signer = contract.signer || (provider && provider.getSigner ? await provider.getSigner() : null);
+        let usdcBalance = '0';
+        if (signer && typeof USDC_ADDRESS !== 'undefined' && typeof USDC_ABI !== 'undefined') {
+          const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, signer);
+          const usdcDecimals = await usdcContract.decimals();
+          const usdcRaw = await usdcContract.balanceOf(address);
+          usdcBalance = ethers.formatUnits(usdcRaw, usdcDecimals);
+        }
         // دریافت اطلاعات کاربر
         const userData = await contract.users(address);
         // دریافت قیمت LVL/MATIC و MATIC/USD
@@ -201,10 +308,7 @@ async function fetchUserProfile() {
         const lvlValueUSD = parseFloat(formattedLvlBalance) * tokenPriceUSD;
         return {
             address,
-            maticBalance: formattedMaticBalance,
-            lvlBalance: formattedLvlBalance,
-            maticValueUSD: maticValueUSD.toFixed(2),
-            lvlValueUSD: lvlValueUSD.toFixed(2),
+            usdcBalance,
             isRegistered: userData.activated,
             binaryPoints: ethers.formatUnits(userData.binaryPoints, 18),
             binaryPointCap: userData.binaryPointCap.toString(),
@@ -213,10 +317,7 @@ async function fetchUserProfile() {
     } catch (error) {
         return {
             address: '---',
-            maticBalance: '0',
-            lvlBalance: '0',
-            maticValueUSD: '0',
-            lvlValueUSD: '0',
+            usdcBalance: '0',
             isRegistered: false,
             binaryPoints: '0',
             binaryPointCap: '0',
@@ -443,7 +544,8 @@ if (document.getElementById('session-timer')) {
     if (window.getUserProfile) {
         const profile = await loadUserProfileOnce();
         if (profile && profile.activated) {
-            document.getElementById('session-timer-box').style.display = 'block';
+            var sessionBox = document.getElementById('session-timer-box');
+            if (sessionBox) sessionBox.style.display = 'block';
         }
     }
 })();
@@ -454,25 +556,18 @@ async function showTokenPricesForAll() {
         // اگر contractConfig و contract آماده است
         if (window.contractConfig && window.contractConfig.contract) {
             const contract = window.contractConfig.contract;
-            // قیمت CPA/MATIC و قیمت MATIC/USD
-            const [tokenPriceMatic, maticPriceUSD] = await Promise.all([
-                contract.getTokenPrice(),
-                window.fetchPolUsdPrice()
-            ]);
-            const tokenPriceMaticFormatted = ethers.formatUnits(tokenPriceMatic, 18);
-            const tokenPriceUSD = parseFloat(tokenPriceMaticFormatted) * parseFloat(maticPriceUSD);
+            // قیمت CPA به USDC (قیمت توکن مستقیماً به USDC است)
+            const tokenPrice = await contract.getTokenPrice();
+            const tokenPriceFormatted = ethers.formatUnits(tokenPrice, 18);
+            
             // نمایش در عناصر
             const cpaUsd = document.getElementById('chart-lvl-usd');
-            const polUsd = document.getElementById('chart-pol-usd');
-            if (cpaUsd) cpaUsd.textContent = tokenPriceUSD.toFixed(4);
-            if (polUsd) polUsd.textContent = parseFloat(maticPriceUSD).toFixed(4);
+            if (cpaUsd) cpaUsd.textContent = '$' + tokenPriceFormatted;
         }
     } catch (e) {
         // اگر خطا بود، مقدار پیش‌فرض نمایش بده
         const cpaUsd = document.getElementById('chart-lvl-usd');
-        const polUsd = document.getElementById('chart-pol-usd');
         if (cpaUsd) cpaUsd.textContent = '-';
-        if (polUsd) polUsd.textContent = '-';
     }
 }
 
@@ -488,15 +583,13 @@ async function showUserBalanceBox() {
         const { contract, address } = await connectWallet();
         if (!contract || !address) throw new Error('No wallet');
         // دریافت موجودی و قیمت
-        const [lvlBalance, tokenPriceMatic, maticPriceUSD] = await Promise.all([
+        const [lvlBalance, tokenPrice] = await Promise.all([
             contract.balanceOf(address),
-            contract.getTokenPrice(),
-            window.fetchPolUsdPrice()
+            contract.getTokenPrice()
         ]);
         const lvl = ethers.formatUnits(lvlBalance, 18);
-        const tokenPriceMaticFormatted = ethers.formatUnits(tokenPriceMatic, 18);
-        const tokenPriceUSD = parseFloat(tokenPriceMaticFormatted) * parseFloat(maticPriceUSD);
-        const usdValue = (parseFloat(lvl) * tokenPriceUSD).toFixed(2);
+        const tokenPriceFormatted = ethers.formatUnits(tokenPrice, 18);
+        const usdValue = (parseFloat(lvl) * parseFloat(tokenPriceFormatted)).toFixed(2);
         document.getElementById('user-lvl-balance').textContent = lvl;
         document.getElementById('user-lvl-usd-value').textContent = usdValue + ' $';
         box.style.display = 'block';
@@ -545,7 +638,7 @@ window.updateUserBalanceBoxWithNode = async function(address, userData) {
             if (userIndex && userIndex > 0) {
                 referrerAddress = await contract.getReferrer(userIndex);
                 referrerAddress = referrerAddress && referrerAddress !== '0x0000000000000000000000000000000000000000' 
-                    ? shortWallet(referrerAddress) : '-';
+                    ? shortenAddress(referrerAddress) : '-';
             }
         }
     } catch (e) {
@@ -721,3 +814,291 @@ window.copyReferralLink = function(address) {
         }, 2000);
     });
 };
+
+window.showTab = async function(tab) {
+      const tabs = ['network','profile','reports','swap','transfer','news','shop','learning','about','register'];
+      tabs.forEach(function(name) {
+        var mainEl = document.getElementById('main-' + name);
+        if (mainEl) {
+          if (name === tab) {
+            mainEl.style.display = '';
+            // اضافه کردن انیمیشن fade-in
+            mainEl.style.opacity = '0';
+            mainEl.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+              mainEl.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+              mainEl.style.opacity = '1';
+              mainEl.style.transform = 'translateY(0)';
+            }, 50);
+          } else {
+            mainEl.style.display = 'none';
+            mainEl.style.opacity = '1';
+            mainEl.style.transform = 'translateY(0)';
+          }
+        }
+        var btnEl = document.getElementById('tab-' + name + '-btn');
+        if (btnEl) btnEl.classList.toggle('active', name === tab);
+      });
+      // اسکرول به بخش انتخاب شده
+      const targetElement = document.getElementById('main-' + tab);
+      if (targetElement) {
+        // بستن منوی همبرگر
+        const hamburgerMenu = document.getElementById('hamburgerMenu');
+        if (hamburgerMenu) {
+          hamburgerMenu.classList.remove('open');
+        }
+        // اسکرول نرم به بخش
+        setTimeout(() => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          setTimeout(() => {
+            targetElement.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'start',
+              inline: 'nearest'
+            });
+          }, 200);
+        }, 100);
+      }
+      try {
+        switch(tab) {
+          case 'network':
+            if (typeof window.initializeNetworkTab === 'function') {
+              await window.initializeNetworkTab();
+            } else {
+              if (typeof updateNetworkStats === 'function') await updateNetworkStats();
+            }
+            break;
+          case 'profile':
+            if (typeof window.loadUserProfile === 'function') await window.loadUserProfile();
+            break;
+          case 'reports':
+            if (typeof window.loadReports === 'function') await window.loadReports();
+            break;
+          case 'swap':
+            if (typeof window.loadSwapTab === 'function') await window.loadSwapTab();
+            break;
+          case 'transfer':
+            if (typeof window.loadTransferTab === 'function') await window.loadTransferTab();
+            break;
+          case 'register':
+            if (typeof window.setRegisterTabSelected === 'function') window.setRegisterTabSelected(true);
+            if (typeof window.loadRegisterData === 'function' && window.contractConfig) {
+              await window.loadRegisterData(window.contractConfig.contract, window.contractConfig.address, window.tokenPriceUSDFormatted);
+            }
+            break;
+        }
+      } catch (e) { console.error(e); }
+    }
+
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('empty-node')) {
+    (async function() {
+      const { contract, address, provider } = await window.connectWallet();
+      const userData = await contract.users(address);
+      let referrerAddress;
+      let defaultNewWallet = '';
+      if (userData.activated) {
+        // حالت ۱: کاربر ثبت‌نام کرده و می‌خواهد زیرمجموعه بگیرد
+        const childIndex = e.target.getAttribute('data-index');
+        const parentIndex = Math.floor(Number(childIndex) / 2);
+        referrerAddress = await contract.indexToAddress(BigInt(parentIndex));
+        defaultNewWallet = '';
+      } else {
+        // حالت ۲ و ۳: کاربر ثبت‌نام نکرده
+        referrerAddress = getReferrerFromURL() || getReferrerFromStorage();
+        if (!referrerAddress) {
+          referrerAddress = await contract.deployer();
+        }
+        defaultNewWallet = address;
+      }
+      showRegisterForm(referrerAddress, defaultNewWallet, address, provider, contract);
+    })();
+  }
+});
+
+// فرم ثبت‌نام با ورودی آدرس ولت جدید و نمایش موجودی متیک و توکن
+function showRegisterForm(referrerAddress, defaultNewWallet, connectedAddress, provider, contract) {
+  let old = document.getElementById('register-form-modal');
+  if (old) old.remove();
+  const modal = document.createElement('div');
+  modal.id = 'register-form-modal';
+  modal.style = 'position:fixed;z-index:3000;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;';
+  modal.innerHTML = `
+    <div style=\"background:#181c2a;padding:2rem 2.5rem;border-radius:18px;box-shadow:0 8px 32px #000a;min-width:340px;max-width:95vw;direction:ltr;position:relative;\">
+      <button id=\"register-form-close\" style=\"position:absolute;top:10px;right:10px;font-size:1.3rem;background:none;border:none;color:#fff;cursor:pointer;\">×</button>
+      <h3 style=\"color:#00ff88;margin-bottom:1.2rem;font-family:monospace;letter-spacing:1px;\">ثبت‌نام (Terminal Style)</h3>
+      <pre id=\"register-terminal-info\" style=\"background:#232946;border:1.5px solid #333;padding:1.2rem 1.5rem;border-radius:12px;color:#00ff88;font-size:1.05rem;line-height:2;font-family:monospace;overflow-x:auto;margin-bottom:1.2rem;box-shadow:0 2px 12px #00ff8840;\">
+معرف (Referrer):   <span style=\"color:#a786ff;\">${referrerAddress}</span>
+آدرس ولت جدید:    <input id=\"register-new-wallet\" type=\"text\" placeholder=\"0x...\" style=\"width:70%;padding:0.3rem 0.5rem;border-radius:6px;border:1px solid #a786ff;margin-left:0.5rem;direction:ltr;font-family:monospace;font-size:1rem;background:#232946;color:#fff;\" value=\"${defaultNewWallet}\" />
+موجودی متیک:      <span id=\"register-matic-balance\" style=\"color:#fff;\">در حال دریافت...</span>
+موجودی CPA:        <span id=\"register-cpa-balance\" style=\"color:#fff;\">در حال دریافت...</span>
+      </pre>
+      <button id=\"register-form-confirm\" style=\"background:#00ff88;color:#232946;font-weight:bold;padding:0.7rem 2.2rem;border:none;border-radius:10px;font-size:1.1rem;cursor:pointer;margin-left:1rem;\">ثبت‌نام</button>
+      <button id=\"register-form-cancel\" style=\"background:#a786ff;color:#fff;font-weight:bold;padding:0.7rem 2.2rem;border:none;border-radius:10px;font-size:1.1rem;cursor:pointer;\">انصراف</button>
+      <div id=\"register-form-status\" style=\"margin-top:1rem;color:#ff6b6b;\"></div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  document.getElementById('register-form-close').onclick = () => modal.remove();
+  document.getElementById('register-form-cancel').onclick = () => modal.remove();
+  // دریافت و نمایش موجودی متیک و توکن
+  (async function() {
+    try {
+      let matic = '-';
+      let cpa = '-';
+      if (provider && connectedAddress) {
+        const bal = await provider.getBalance(connectedAddress);
+        matic = window.ethers ? window.ethers.formatUnits(bal, 18) : bal.toString();
+      }
+      if (contract && connectedAddress) {
+        const cpaBal = await contract.balanceOf(connectedAddress);
+        cpa = window.ethers ? window.ethers.formatUnits(cpaBal, 18) : cpaBal.toString();
+      }
+      document.getElementById('register-matic-balance').textContent = matic;
+      document.getElementById('register-cpa-balance').textContent = cpa;
+    } catch (e) {
+      document.getElementById('register-matic-balance').textContent = '-';
+      document.getElementById('register-cpa-balance').textContent = '-';
+    }
+  })();
+  document.getElementById('register-form-confirm').onclick = async function() {
+    const statusDiv = document.getElementById('register-form-status');
+    let newWallet = document.getElementById('register-new-wallet').value.trim();
+    if (!/^0x[a-fA-F0-9]{40}$/.test(newWallet)) {
+      statusDiv.textContent = 'آدرس ولت جدید معتبر نیست!';
+      return;
+    }
+    try {
+      const { contract } = await window.connectWallet();
+      await contract.registerAndActivate(referrerAddress, newWallet);
+      statusDiv.textContent = 'ثبت‌نام با موفقیت انجام شد!';
+      setTimeout(() => { modal.remove(); location.reload(); }, 1200);
+    } catch (e) {
+      statusDiv.textContent = 'خطا در ثبت‌نام: ' + (e && e.message ? e.message : e);
+    }
+  };
+}
+
+function showUserPopup(address, user) {
+    // تابع کوتاه‌کننده آدرس
+    function shortAddress(addr) {
+        if (!addr) return '-';
+        return addr.slice(0, 6) + '...' + addr.slice(-4);
+    }
+    // اطلاعات struct را به صورت رشته آماده کن
+    const infoLines = [
+        `Address:   ${shortAddress(address)}`,
+        `Index:     ${user.index}`,
+        `Activated: ${user.activated ? 'Yes' : 'No'}`,
+        `BinaryPoints: ${user.binaryPoints}`,
+        `Cap:      ${user.binaryPointCap}`,
+        `Left:     ${user.leftPoints}`,
+        `Right:    ${user.rightPoints}`,
+        `Refclimed:${user.refclimed}`
+    ];
+    let html = `
+      <div style="direction:ltr;font-family:monospace;background:#181c2a;color:#00ff88;padding:1.5rem 2.5rem;border-radius:16px;box-shadow:0 2px 12px #00ff8840;min-width:320px;max-width:95vw;position:relative;">
+        <pre id="user-popup-terminal" style="background:#232946;border:1.5px solid #333;padding:1.2rem 1.5rem;border-radius:12px;color:#00ff88;font-size:1.05rem;line-height:2;font-family:monospace;overflow-x:auto;margin-bottom:1.2rem;box-shadow:0 2px 12px #00ff8840;min-width:280px;" title="${address}"></pre>
+        <button id="close-user-popup" style="position:absolute;top:10px;right:10px;font-size:1.3rem;background:none;border:none;color:#fff;cursor:pointer;">×</button>
+      </div>
+    `;
+    let popup = document.createElement('div');
+    popup.id = 'user-popup';
+    popup.style.position = 'fixed';
+    popup.style.top = '50%';
+    popup.style.left = '50%';
+    popup.style.transform = 'translate(-50%,-50%)';
+    popup.style.zIndex = 9999;
+    popup.innerHTML = html;
+    document.body.appendChild(popup);
+    document.getElementById('close-user-popup').onclick = () => popup.remove();
+
+    // افکت تایپ تدریجی
+    typewriterEffect('user-popup-terminal', infoLines, 40);
+}
+
+// تابع افکت تایپ تدریجی
+function typewriterEffect(elementId, lines, speed = 40) {
+    const el = document.getElementById(elementId);
+    el.textContent = '';
+    let line = 0, char = 0;
+    function type() {
+        if (line < lines.length) {
+            if (char < lines[line].length) {
+                el.textContent += lines[line][char];
+                char++;
+                setTimeout(type, speed);
+            } else {
+                el.textContent += '\n';
+                line++;
+                char = 0;
+                setTimeout(type, speed * 4); // کمی مکث بین خطوط
+            }
+        }
+    }
+    type();
+}
+
+// پس از دریافت داده‌های داشبورد و آماده‌سازی خطوط:
+async function showDashboardInfoWithTypewriter() {
+  try {
+    if (!window.contractConfig || !window.contractConfig.contract) {
+      await window.connectWallet();
+    }
+    const contract = window.contractConfig.contract;
+    const lines = [];
+    // Add welcome line at the top
+    lines.push('Welcome to CPA Terminal!');
+    let wallets = '-';
+    try { wallets = (await contract.wallets()).toString(); } catch(e){}
+    lines.push(`All Wallets: ${wallets}`);
+    let totalSupply = '-';
+    try { totalSupply = ethers.formatUnits(await contract.totalSupply(), 18) + ' CPA'; } catch(e){}
+    lines.push(`Total Supply: ${totalSupply}`);
+    let totalPoints = '-';
+    try {
+      totalPoints = (await contract.totalClaimableBinaryPoints()).toString();
+    } catch(e){}
+    lines.push(`Total Points: ${totalPoints}`);
+    let pointValue = '-';
+    try { pointValue = parseFloat(ethers.formatUnits(await contract.getPointValue(), 18)).toFixed(2) + ' CPA'; } catch(e){}
+    lines.push(`Point Value: ${pointValue}`);
+    let tokenPrice = '-';
+    try {
+      const priceRaw = await contract.getTokenPrice();
+      tokenPrice = ethers.formatUnits(priceRaw, 18);
+    } catch(e){}
+    lines.push(`Current Token Price: ${tokenPrice}`);
+    let contractTokenBalance = '-';
+    try { contractTokenBalance = ethers.formatUnits(await contract.balanceOf(contract.target), 18) + ' CPA'; } catch(e){}
+    lines.push(`Contract Token Bal.: ${contractTokenBalance}`);
+    let cashback = '-';
+    try { cashback = ethers.formatUnits(await (contract.cashBack ? contract.cashBack() : contract.cashback()), 18) + ' CPA'; } catch(e){}
+    lines.push(`Help Fund: ${cashback}`);
+    let usdcBalance = '-';
+    try {
+      const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, contract.provider);
+      usdcBalance = ethers.formatUnits(await usdcContract.balanceOf(contract.target), 6) + ' USDC';
+    } catch(e){}
+    lines.push(`USDC Contract Bal.: ${usdcBalance}`);
+    // Stop waiting cursor if running
+    if (window._dashboardTypewriterWait && window._dashboardTypewriterWait.stop) {
+      window._dashboardTypewriterWait.stop();
+      window._dashboardTypewriterWait = null;
+    }
+    if (typeof typewriterDashboardInfo === 'function') {
+      typewriterDashboardInfo(lines, false);
+    }
+  } catch (e) {
+    if (window._dashboardTypewriterWait && window._dashboardTypewriterWait.stop) {
+      window._dashboardTypewriterWait.stop();
+      window._dashboardTypewriterWait = null;
+    }
+    if (typeof typewriterDashboardInfo === 'function') {
+      typewriterDashboardInfo([
+        'Error loading dashboard info',
+        (e && e.message ? e.message : String(e))
+      ], false);
+    }
+  }
+}

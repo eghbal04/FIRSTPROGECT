@@ -11,7 +11,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/index-custom.css">
 
     <!-- بارگذاری ethers.js نسخه 6 از CDN -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
@@ -25,10 +27,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
 </head>
 <body>
-  <script>
-    // این متغیر را هر زمان جلسه آنلاین فعال بود true کنید
-    var isSessionActive = false; // مقدار پیش‌فرض: جلسه فعال نیست
-  </script>
   <div id="online-session-bubble" style="display:none;">
     <span class="bubble-text">جلسه آنلاین در حال برگزاری است! 🚀</span>
     <span class="bubble-timer" id="bubble-timer"></span>
@@ -94,124 +92,184 @@
     });
   </script>
 
+  <!-- Floating Logo as Hamburger Menu -->
+  <img id="floating-logo" src="cpa.jpg" alt="CPA Logo" style="height:48px;width:48px;display:inline-block;border-radius:50%;box-shadow:0 2px 12px #00ff8840;position:fixed;bottom:24px;right:24px;z-index:999999;background:#181c2a;cursor:pointer;transition:all 0.3s ease;object-fit:cover;" loading="lazy" onmouseover="this.style.transform='scale(1.1) rotate(360deg)'" onmouseout="this.style.transform='scale(1) rotate(0deg)'" onclick="toggleHamburgerMenu()">
+  
+  <!-- Test Button for Menu -->
+  <button onclick="toggleHamburgerMenu()" style="position:fixed;bottom:24px;left:24px;z-index:999999;background:#ff6b6b;color:#fff;border:none;border-radius:8px;padding:0.5rem 1rem;cursor:pointer;">تست منو</button>
+  
+  <!-- Hamburger Menu -->
+  <div id="hamburgerMenu" class="hamburger-menu">
+    <div style="text-align:center;margin-bottom:1rem;padding-bottom:0.8rem;border-bottom:1px solid rgba(167,134,255,0.2);">
+      <h3 style="margin:0;color:#00ff88;font-size:1rem;font-weight:bold;">CONTINUOUS PROFIT ACADEMY</h3>
+    </div>
+    
+    <!-- Dashboard Section -->
+    <div class="menu-group">
+      <div class="menu-group-title">📊 داشبورد</div>
+      <button onclick="showTab('dashboard')" class="menu-btn">
+        <span class="menu-icon">🏠</span>
+        <span class="menu-label">داشبورد اصلی</span>
+      </button>
+    </div>
+    
+    <div class="menu-divider"></div>
+    
+    <!-- Education Section -->
+    <div class="menu-group">
+      <div class="menu-group-title">📚 آموزش</div>
+      <button onclick="navigateToPage('learning.html')" class="menu-btn">
+        <span class="menu-icon">🎓</span>
+        <span class="menu-label">آموزش و یادگیری</span>
+      </button>
+      <button onclick="navigateToPage('news.html')" class="menu-btn">
+        <span class="menu-icon">📰</span>
+        <span class="menu-label">اخبار و تحلیل</span>
+      </button>
+    </div>
+    
+    <div class="menu-divider"></div>
+    
+    <!-- Tools Section -->
+    <div class="menu-group">
+      <div class="menu-group-title">🛠️ ابزارها</div>
+      <button onclick="showTab('swap')" class="menu-btn">
+        <span class="menu-icon">🔄</span>
+        <span class="menu-label">تبدیل ارز</span>
+      </button>
+      <button onclick="showTab('transfer')" class="menu-btn">
+        <span class="menu-icon">💸</span>
+        <span class="menu-label">انتقال</span>
+      </button>
+      <button onclick="showTab('network')" class="menu-btn">
+        <span class="menu-icon">🌐</span>
+        <span class="menu-label">شبکه</span>
+      </button>
+    </div>
+    
+    <div class="menu-divider"></div>
+    
+    <!-- Others Section -->
+    <div class="menu-group">
+      <div class="menu-group-title">📋 سایر</div>
+      <button onclick="showTab('profile')" class="menu-btn">
+        <span class="menu-icon">👤</span>
+        <span class="menu-label">پروفایل</span>
+      </button>
+      <button onclick="showTab('reports')" class="menu-btn">
+        <span class="menu-icon">📊</span>
+        <span class="menu-label">گزارشات</span>
+      </button>
+      <button onclick="navigateToPage('shop.html')" class="menu-btn">
+        <span class="menu-icon">🛒</span>
+        <span class="menu-label">فروشگاه</span>
+      </button>
+      <button onclick="showTab('about')" class="menu-btn">
+        <span class="menu-icon">ℹ️</span>
+        <span class="menu-label">درباره ما</span>
+      </button>
+    </div>
+    
+    <div class="menu-divider"></div>
+    
+    <!-- Admin Section -->
+    <div class="menu-group admin-group">
+      <div class="menu-group-title">🔐 مدیریت</div>
+      <button onclick="navigateToPage('admin-owner-panel.html')" class="menu-btn admin-btn">
+        <span class="menu-icon">👑</span>
+        <span class="menu-label">پنل Owner</span>
+      </button>
+      <button onclick="navigateToPage('admin-prop.html')" class="menu-btn admin-btn">
+        <span class="menu-icon">⚙️</span>
+        <span class="menu-label">مدیریت پراپ‌ها</span>
+      </button>
+      <button onclick="showSubAdminModal()" class="menu-btn admin-btn">
+        <span class="menu-icon">👥</span>
+        <span class="menu-label">مدیریت ساب ادمین</span>
+      </button>
+    </div>
+  </div>
+  
   <div id="main-dashboard" class="page-section" style="position:relative;overflow:visible;">
     <header>
       <div style="display:flex;align-items:center;gap:1.2rem;justify-content:center;">
-        <img src="cpa.jpg" alt="CPA Logo" style="height:48px;width:auto;display:inline-block;margin-left:1rem;border-radius:12px;box-shadow:0 2px 12px #00ff8840;" loading="lazy">
-        <h1 class="shimmer-title" style="font-family: 'Montserrat', sans-serif; font-size:2.5rem; letter-spacing:0.12em; color:#222; text-transform:uppercase; font-weight:700; text-shadow:0 2px 12px #00ff8840, 0 1px 0 #fff;">CONTINUOUS PROFIT ACADEMY</h1>
+        <h1 class="shimmer-title" style="font-family: 'Merriweather', 'Georgia', serif; font-size:1.3rem; letter-spacing:0.12em; color:#222; text-transform:uppercase; font-weight:700; text-shadow:0 2px 12px #00ff8840, 0 1px 0 #fff;">CONTINUOUS PROFIT ACADEMY</h1>
       </div>
     </header>
-    <div class="dashboard-cards" style="display:flex;justify-content:center;flex-wrap:wrap;gap:1rem;max-width:1200px;margin:0 auto;">
-      <div class="dashboard-card">
-        <div class="dashboard-card-icon">👛</div>
-        <div class="dashboard-card-content">
-          <div id="dashboard-wallets-count">-WALLET</div>
-          <h4 style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;text-transform:uppercase;font-size:1.1rem;">ALL WALLETS</h4>
-        </div>
+    <div class="dashboard-cards" style="display:flex;justify-content:center;flex-wrap:wrap;gap:1rem;max-width:1400px;margin:0 auto;">
+      <div class="dashboard-card" id="dashboard-terminal-card" style="background:#111;color:#00ff88;font-family:monospace;border-radius:16px;box-shadow:0 2px 12px #00ff8840;min-width:320px;max-width:1400px;margin:1rem auto;width:100%;text-align:left;direction:ltr;position:relative;">
+        <button id="dashboard-expand-btn" style="position:absolute;left:0.7rem;top:0.7rem;background:none;border:none;color:#ff4b4b;font-size:1.2rem;cursor:pointer;z-index:2;line-height:1;padding:0.1rem 0.4rem;border-radius:6px;">-</button>
+        <pre id="dashboard-terminal-info" style="background:#111;border:1.5px solid #333;padding:0.5rem 0.8rem;border-radius:8px;color:#00ff88;font-size:0.85rem;line-height:1.5;font-family:monospace;overflow-x:hidden;word-wrap:break-word;white-space:pre-wrap;min-width:280px;width:100%;margin:0;text-align:left;direction:ltr;"></pre>
       </div>
 
-      <!-- حذف کارت قیمت LVL (USD) -->
-      <!-- حذف کارت قیمت LVL (POL) -->
-      <div class="dashboard-card">
-        <div class="dashboard-card-icon"></div>
-        <div class="dashboard-card-content">
-          <div id="circulating-supply">-CPA</div>
-          <h4 style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;text-transform:uppercase;font-size:1.1rem;">TOTAL SUPPLY</h4>
-    </div>
-  </div>
-  <!-- کارت total-users (کاربران) حذف شد -->
-          <div class="dashboard-card">
-        <div class="dashboard-card-icon"></div>
-        <div class="dashboard-card-content">
-          <div id="total-points">-POINT</div>
-          <h4 style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;text-transform:uppercase;font-size:1.1rem;">TOTAL POINTS</h4>
-    </div>
-  </div>
-  <div class="dashboard-card">
-        <div class="dashboard-card-icon"></div>
-        <div class="dashboard-card-content">
-          <div id="point-value">-CPA</div>
-          <h4 style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;text-transform:uppercase;font-size:1.1rem;">POINT VALUE</h4>
-    </div>
-  </div>
-  <div class="dashboard-card">
-    <div class="dashboard-card-icon"></div>
-    <div class="dashboard-card-content">
-          <div id="contract-token-balance">-CPA</div>
-  <h4 style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;text-transform:uppercase;font-size:1.1rem;">CPA BALANCE</h4>
-    </div>
-  </div>
-  <div class="dashboard-card">
-    <div class="dashboard-card-icon"></div>
-    <div class="dashboard-card-content">
-      <div id="reward-pool">-POL</div>
-      <h4 style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;text-transform:uppercase;font-size:1.1rem;">POL BALANCE</h4>
-    </div>
-  </div>
-  <div class="dashboard-card" id="dashboard-cashback-card">
-    <div class="dashboard-card-icon"></div>
-    <div class="dashboard-card-content">
-      <div id="dashboard-cashback-value">-</div>
-      <h4 style="font-family:'Montserrat',sans-serif;letter-spacing:0.04em;text-transform:uppercase;font-size:1.1rem;">HELP FUND</h4>
-    </div>
-  </div>
-    </div>
-  </div>
+      <!-- Price Chart Section -->
+      <div class="dashboard-card" id="price-chart-section" style="background:linear-gradient(135deg,#1a1f2e,#232946);border-radius:16px;box-shadow:0 4px 20px rgba(0,255,136,0.15);min-width:100%;max-width:100%;margin:1rem 0;width:100%;padding:1.5rem;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#00ff88,#a786ff,#00ff88);animation:shimmer 2s linear infinite;"></div>
+        
+        <!-- Current Prices Display -->
+        <!-- حذف شد: نمایش قیمت توکن و پوینت -->
 
-
-
-  <!-- Price Chart Section -->
-  <div id="price-chart-section" class="page-section" style="width:100vw;max-width:none;margin:0;left:0;right:0;padding:0.5rem 0;">
-    <div class="expand-header" style="padding:0 1.5rem;">
-      <h2 style="margin:0 0 0.5rem 0;">📈 چارت قیمت‌ها</h2>
-              <p style="margin:0 0 0.5rem 0;">نمایش لحظه‌ای قیمت‌های توکن CPA، POL و نرخ تبدیل</p>
-    </div>
-    <div class="expand-content" style="padding:0;">
-      <div class="price-chart-container" style="padding:0;width:100%;">
-        <!-- Time Period Filters -->
-        <div class="price-chart-time-filters-container" style="margin:0 0 0.5rem 0;">
-          <div class="price-chart-time-filters" id="price-chart-time-filters" style="gap:0.2rem;">
-            <!-- Time period buttons will be added here by JavaScript -->
+        <!-- Token Chart Controls -->
+        <div style="display:flex;justify-content:center;align-items:center;gap:0.5rem;margin-bottom:0.5rem;flex-wrap:wrap;">
+          <select id="token-period-select" style="background:rgba(0,255,136,0.1);color:#00ff88;border:1px solid #00ff88;border-radius:6px;padding:0.4rem 1rem;font-size:0.9rem;font-family:monospace;cursor:pointer;">
+            <option value="day">Day (24h)</option>
+            <option value="week">Week (7d)</option>
+            <option value="month">Month (30d)</option>
+            <option value="year">Year (12m)</option>
+          </select>
+          <div style="text-align:center;padding:0.3rem 0.8rem;background:rgba(0,0,0,0.3);border-radius:6px;border:1px solid rgba(0,255,136,0.2);min-width:120px;">
+            <div style="color:#00ff88;font-size:0.8rem;font-family:monospace;">Token Min: <span id="token-min-price" style="color:#fff;">-</span></div>
+          </div>
+          <div style="text-align:center;padding:0.3rem 0.8rem;background:rgba(0,0,0,0.3);border-radius:6px;border:1px solid rgba(0,255,136,0.2);min-width:120px;">
+            <div style="color:#00ff88;font-size:0.8rem;font-family:monospace;">Token Max: <span id="token-max-price" style="color:#fff;">-</span></div>
           </div>
         </div>
         
-        <!-- Line Chart Canvas -->
-        <div class="price-chart-canvas-container" style="margin:0;min-width:0;width:100%;">
-          <canvas id="price-chart-canvas" style="width:100%!important;"></canvas>
+        <!-- Token Chart Container -->
+        <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:0.8rem;border:1px solid rgba(0,255,136,0.2);width:100%;max-width:100%;margin-bottom:1rem;">
+          <div style="color:#00ff88;font-size:0.9rem;font-weight:bold;text-align:center;margin-bottom:0.3rem;font-family:monospace;">Token Price Chart</div>
+          <canvas id="price-chart-canvas" style="width:100% !important;height:180px !important;border-radius:4px;max-width:100%;"></canvas>
         </div>
         
-        <!-- Price Cards Grid -->
-        <div class="three-buttons-row" style="margin:0 auto;gap:1.2rem;display:flex;flex-direction:row;justify-content:center;align-items:center;width:90%;max-width:480px;">
-          <!-- حذف کارت POL (USD) -->
-          <button class="three-btn" style="min-width:120px;display:none;" disabled>
-            <span style="font-weight:bold;color:#ff6b6b;" id="chart-pol-usd">-</span><br>
-            <span style="color:#00ccff;font-size:0.95rem;">POL (USD)</span>
-          </button>
-          <button class="three-btn" style="min-width:120px;" disabled>
-            <span style="font-weight:bold;color:#00ccff;" id="chart-lvl-pol">-</span><br>
-            <span style="color:#00ccff;font-size:0.95rem;">CPA / POL</span>
-          </button>
-          <button class="three-btn" style="min-width:120px;" disabled>
-            <span style="font-weight:bold;color:#00ff88;" id="chart-lvl-usd">-</span><br>
-            <span style="color:#00ccff;font-size:0.95rem;">CPA (USD)</span>
-          </button>
-        </div>
-        
-        <!-- Chart Controls -->
-        <div class="price-chart-controls" style="display:flex;justify-content:center;">
-          <div class="price-chart-info">
-            <span>آخرین بروزرسانی: <span id="price-chart-last-update">-</span></span>
+        <!-- Point Chart Controls -->
+        <div style="display:flex;justify-content:center;align-items:center;gap:0.5rem;margin-bottom:0.5rem;flex-wrap:wrap;">
+          <select id="point-period-select" style="background:rgba(167,134,255,0.1);color:#a786ff;border:1px solid #a786ff;border-radius:6px;padding:0.4rem 1rem;font-size:0.9rem;font-family:monospace;cursor:pointer;">
+            <option value="day">Day (24h)</option>
+            <option value="week">Week (7d)</option>
+            <option value="month">Month (30d)</option>
+            <option value="year">Year (12m)</option>
+          </select>
+          <div style="text-align:center;padding:0.3rem 0.8rem;background:rgba(0,0,0,0.3);border-radius:6px;border:1px solid rgba(167,134,255,0.2);min-width:120px;">
+            <div style="color:#a786ff;font-size:0.8rem;font-family:monospace;">Point Min: <span id="point-min-price" style="color:#fff;">-</span></div>
+          </div>
+          <div style="text-align:center;padding:0.3rem 0.8rem;background:rgba(0,0,0,0.3);border-radius:6px;border:1px solid rgba(167,134,255,0.2);min-width:120px;">
+            <div style="color:#a786ff;font-size:0.8rem;font-family:monospace;">Point Max: <span id="point-max-price" style="color:#fff;">-</span></div>
           </div>
         </div>
         
-        <!-- Messages -->
-        <div class="price-chart-messages">
-          <div class="price-chart-error" id="price-chart-error"></div>
-          <div class="price-chart-success" id="price-chart-success"></div>
+        <!-- Point Chart Container -->
+        <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:0.8rem;border:1px solid rgba(167,134,255,0.2);width:100%;max-width:100%;">
+          <div style="color:#a786ff;font-size:0.9rem;font-weight:bold;text-align:center;margin-bottom:0.3rem;font-family:monospace;">Point Value Chart</div>
+          <canvas id="point-chart-canvas" style="width:100% !important;height:180px !important;border-radius:4px;max-width:100%;"></canvas>
         </div>
+        
+
+        
+
       </div>
-    </div>
-  </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const expandBtn = document.getElementById('dashboard-expand-btn');
+    const terminalInfo = document.getElementById('dashboard-terminal-info');
+    let expanded = true;
+    expandBtn.onclick = function() {
+      expanded = !expanded;
+      terminalInfo.style.display = expanded ? '' : 'none';
+      expandBtn.textContent = expanded ? '-' : '+';
+    };
+  });
+</script>
 
   <!-- Swap Section -->
   <div id="main-swap" class="page-section expandable-container" style="width:100vw;max-width:none;margin:0;left:0;right:0;padding:0.5rem 0;display:none;">
@@ -225,8 +283,10 @@
           <div class="swap-row">
             <label for="swapDirection">نوع تبدیل:</label>
             <select id="swapDirection" required>
-              <option value="pol-to-cpa">POL → CPA</option>
-              <option value="cpa-to-pol">CPA → POL</option>
+              <option value="usdc-to-pol">USDC → POL</option>
+              <option value="pol-to-usdc">POL → USDC</option>
+              <option value="usdc-to-cpa">USDC → CPA</option>
+              <option value="cpa-to-usdc">CPA → USDC</option>
             </select>
           </div>
           
@@ -253,6 +313,10 @@
           <div class="balance-item">
             <span class="balance-label">موجودی CPA:</span>
             <span class="balance-value" id="cpaBalance">-</span>
+          </div>
+          <div class="balance-item">
+            <span class="balance-label">موجودی USDC:</span>
+            <span class="balance-value" id="usdcBalance">-</span>
           </div>
         </div>
       </div>
@@ -287,6 +351,7 @@
           <div class="transfer-row">
             <label for="transferToken">نوع توکن:</label>
             <select id="transferToken" required>
+              <option value="usdc" selected>USDC</option>
               <option value="pol">POL</option>
               <option value="cpa">CPA</option>
             </select>
@@ -299,146 +364,6 @@
   </div>
 
   <!-- Hamburger Menu -->
-  <style>
-    .hamburger {
-      display: inline-block;
-      cursor: pointer;
-      width: 48px;
-      height: 48px;
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      z-index: 2001;
-      background: #181c2a;
-      border-radius: 50%;
-      box-shadow: 0 2px 16px #0007;
-      transition: background 0.2s;
-    }
-    .hamburger:hover {
-      background: #222;
-    }
-    .hamburger span {
-      display: block;
-      width: 32px;
-      height: 5px;
-      margin: 7px auto;
-      background: #00ff88;
-      border-radius: 2px;
-      transition: 0.3s;
-    }
-    .hamburger-menu {
-      display: none;
-      flex-direction: column !important;
-      background: rgba(35,36,58,0.85);
-      width: 200px;
-      min-width: 200px;
-      max-width: 200px;
-      box-shadow: 0 8px 32px #0008;
-      font-size: 0.97rem;
-      padding: 1rem 0.8rem 1.5rem 0.8rem;
-      gap: 0.6rem;
-      border-radius: 18px;
-      animation: fadeInMenu 0.25s;
-      backdrop-filter: blur(6px);
-      max-height: 70vh;
-      overflow-y: auto;
-    }
-    .hamburger-menu.open {
-      display: flex;
-      flex-direction: column !important;
-    }
-    .hamburger-menu button, .hamburger-menu a {
-      background: none;
-      border: none;
-      color: #fff;
-      font-size: 0.98rem;
-      text-align: right;
-      padding: 0.8rem 0.5rem 0.8rem 1.5rem;
-      border-radius: 10px;
-      cursor: pointer;
-      width: 100%;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      transition: background 0.18s, color 0.18s;
-      position: relative;
-      min-height: 44px;
-    }
-    .hamburger-menu button:hover, .hamburger-menu a:hover {
-      background: #181c2a;
-      color: #00ff88;
-    }
-    .menu-icon {
-      font-size: 1em;
-      margin-left: 0.3em;
-      color: #00ff88;
-      flex-shrink: 0;
-    }
-    @media (max-width: 700px) {
-      .hamburger-menu { 
-        width: 200px; 
-        min-width: 200px; 
-        max-width: 200px; 
-        right: 8px; 
-        bottom: 68px; 
-        gap: 0.8rem;
-        padding: 1.2rem 1rem 1.8rem 1rem;
-      }
-      .hamburger-menu button, .hamburger-menu a {
-        padding: 1rem 0.6rem 1rem 1.6rem;
-        min-height: 48px;
-        font-size: 1rem;
-      }
-      .hamburger { bottom: 12px; right: 12px; }
-    }
-    
-    @media (max-width: 480px) {
-      .hamburger-menu { 
-        width: 180px; 
-        min-width: 180px; 
-        max-width: 180px; 
-        right: 6px; 
-        bottom: 60px; 
-        gap: 1rem;
-        padding: 1.5rem 1.2rem 2rem 1.2rem;
-      }
-      .hamburger-menu button, .hamburger-menu a {
-        padding: 1.2rem 0.8rem 1.2rem 1.8rem;
-        min-height: 52px;
-        font-size: 1.05rem;
-        border-radius: 12px;
-      }
-      .hamburger { bottom: 10px; right: 10px; }
-    }
-    @keyframes fadeInMenu {
-      from { opacity: 0; transform: translateY(30px) scale(0.98); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-  </style>
-  <div style="position:fixed;z-index:2001;bottom:24px;right:24px;">
-    <div class="hamburger" id="hamburgerBtn" aria-label="باز کردن منو" tabindex="0">
-      <span></span>
-      <span></span>
-      <span></span>
-      </div>
-    <nav class="hamburger-menu" id="hamburgerMenu">
-      <button onclick="showTab('network')"><span class="menu-icon">🌐</span>شبکه</button>
-      <button onclick="showTab('profile')"><span class="menu-icon">👤</span>پروفایل</button>
-      <button onclick="showTab('reports')"><span class="menu-icon">📊</span>گزارشات</button>
-      <button onclick="showTab('swap')"><span class="menu-icon">🔄</span>تبدیل ارز</button>
-      <button onclick="showTab('transfer')"><span class="menu-icon">💸</span>ترانسفر</button>
-
-      <button onclick="navigateToPage('news.html')"><span class="menu-icon">📰</span>اخبار</button>
-      <button onclick="navigateToPage('shop.html')"><span class="menu-icon">🛒</span>فروشگاه</button>
-      <button onclick="navigateToPage('learning.html')"><span class="menu-icon">🎓</span>آموزش</button>
-      <button onclick="navigateToPage('lottery.html')"><span class="menu-icon">🎲</span>قرعه‌کشی</button>
-      <button onclick="showTab('about')"><span class="menu-icon">ℹ️</span>درباره ما</button>
-      <button onclick="navigateToPage('admin-prop.html')"><span class="menu-icon">📄</span>پاس پراپ</button>
-      <button onclick="navigateToPage('autotrade-license.html')"><span class="menu-icon">🤖</span>ربات اتوترید</button>
-      <button onclick="navigateToPage('signal.html')"><span class="menu-icon">📈</span>سیگنال‌ها</button>
-    </nav>
-    </div>
-  <!-- END Hamburger Menu -->
 
 
   <div id="main-network" class="page-section expandable-container" style="width:100vw;max-width:none;margin:0;left:0;right:0;padding:0.5rem 0;display:none;">
@@ -447,63 +372,6 @@
     </div>
     <div class="expand-content">
       <div class="network-container">
-
-        
-        <!-- کارت اطلاعات کاربر شبکه -->
-        <div id="network-user-card" style="background:#101c2c;border-radius:16px;padding:1.5rem 1rem;margin-bottom:2rem;box-shadow:0 2px 12px #0002;max-width:420px;margin-left:auto;margin-right:auto;">
-          <div style="display:flex;justify-content:space-between;"><span style="color:#00ff88;">آدرس:</span><span id="user-address" style="direction:ltr;color:#fff;font-weight:bold;">-</span></div>
-          <div style="display:flex;justify-content:space-between;margin-top:0.7rem;"><span style="color:#00ff88;">معرف:</span><span id="user-referrer" style="color:#fff;">-</span></div>
-          <div style="display:flex;justify-content:space-between;margin-top:0.7rem;"><span style="color:#00ccff;">موجودی POL:</span><span id="user-pol-balance" style="color:#fff;">-</span></div>
-          <div style="display:flex;justify-content:space-between;margin-top:0.7rem;"><span style="color:#00ccff;">موجودی CPA:</span><span id="user-lvl-balance" style="color:#fff;">-</span></div>
-          <div style="display:flex;justify-content:space-between;margin-top:0.7rem;"><span style="color:#00ff88;">سقف درآمد باینری:</span><span id="user-binary-cap" style="color:#fff;">-</span></div>
-          <div style="display:flex;justify-content:space-between;margin-top:0.7rem;"><span style="color:#00ff88;">دریافت‌شده:</span><span id="user-claimed" style="color:#fff;">-</span></div>
-          <div style="display:flex;justify-content:space-between;margin-top:0.7rem;align-items:center;"><span style="color:#00ff88;">لینک دعوت:</span><span id="user-ref-link" style="direction:ltr;color:#fff;background:#181c2a;padding:0.3rem 0.7rem;border-radius:8px;">-</span><button id="copy-ref-link" style="margin-right:0.5rem;background:linear-gradient(90deg,#00ff88,#00ccff);color:#000;border:none;border-radius:8px;padding:0.3rem 1.2rem;cursor:pointer;">کپی</button></div>
-        </div>
-        
-        <!-- بخش ثبت‌نام و ارتقا -->
-        <div id="main-register" style="max-width: 600px; margin: 0 auto; padding: 1rem;">
-          <!-- فرم ثبت‌نام برای کاربران جدید -->
-          <div id="registration-form" style="display: none; background: #101c2c; border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 12px #0002;">
-            <h3 style="color: #00ff88; margin-bottom: 1rem; text-align: center;">📝 ثبت‌نام جدید</h3>
-            <div style="margin-bottom: 1rem;">
-              <label for="referrer-address" style="color: #fff; display: block; margin-bottom: 0.5rem;">آدرس معرف (اختیاری):</label>
-              <input type="text" id="referrer-address" placeholder="0x..." style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #333; background: #181c2a; color: #fff; font-family: monospace;">
-            </div>
-            <div id="registration-info"></div>
-            <button id="register-btn" class="register-btn" style="width: 100%; margin-top: 1rem;">ثبت‌نام</button>
-            <div id="register-status" class="profile-status" style="margin-top: 0.5rem;"></div>
-          </div>
-          
-          <!-- فرم ارتقا برای کاربران فعال -->
-          <div id="upgrade-form" style="display: none; background: #101c2c; border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 12px #0002;">
-            <h3 style="color: #00ccff; margin-bottom: 1rem; text-align: center;">🚀 ارتقا حساب</h3>
-            <div style="margin-bottom: 1rem;">
-              <label for="upgrade-amount" style="color: #fff; display: block; margin-bottom: 0.5rem;">مقدار CPA برای ارتقا:</label>
-              <input type="number" id="upgrade-amount" placeholder="0.0" step="0.1" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #333; background: #181c2a; color: #fff;">
-            </div>
-            <div style="background: rgba(0, 0, 0, 0.3); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
-              <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                <span style="color: #ccc;">ارزش دلاری:</span>
-                <span id="upgrade-usd-value" style="color: #00ccff; font-weight: bold;">$0.00 USD</span>
-              </div>
-              <div style="display: flex; justify-content: space-between;">
-                <span style="color: #ccc;">امتیاز کسب شده:</span>
-                <span id="upgrade-points-gain" style="color: #00ff88; font-weight: bold;">0 امتیاز</span>
-              </div>
-            </div>
-            <button id="upgrade-btn" class="register-btn" style="width: 100%; margin-top: 1rem; background: #00ccff; color: #000;">ارتقا</button>
-            <div id="upgrade-status" class="profile-status" style="margin-top: 0.5rem;"></div>
-          </div>
-          
-          <!-- اطلاعات موجودی -->
-          <div id="user-balance-box" style="background: #101c2c; border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 2px 12px #0002; display:none;">
-            <div style="display: flex; justify-content: space-between;">
-              <span style="color: #ccc; font-size: 0.9rem;">موجودی CPA:</span>
-              <span id="user-lvl-balance" style="color: #00ff88; font-weight: bold; font-size: 0.9rem;">-</span>
-            </div>
-          </div>
-        </div>
-        
 
         
         <!-- نمایش درخت شبکه -->
@@ -539,7 +407,7 @@
               <div class="info-item">
                 <div class="info-label">لینک دعوت</div>
                 <div class="info-value-with-action">
-                  <span id="profile-referral-link">-</span>
+                  <a id="profile-referral-link" href="#" target="_blank" style="direction:ltr;user-select:all;word-break:break-all;text-decoration:underline;color:#00ff88;">-</a>
                   <button id="copyProfileReferral" class="action-btn">📋 کپی</button>
                 </div>
               </div>
@@ -569,6 +437,13 @@
                   <div class="balance-label">موجودی CPA</div>
                   <div class="balance-value" id="profile-lvl">-</div>
                   <div class="balance-usd" id="profile-lvl-usd">-</div>
+                </div>
+              </div>
+              <div class="balance-card">
+                <div class="balance-icon">💵</div>
+                <div class="balance-info">
+                  <div class="balance-label">موجودی USDC</div>
+                  <div class="balance-value" id="profile-usdc">-</div>
                 </div>
               </div>
             </div>
@@ -609,6 +484,13 @@
                 <div class="stat-info">
                   <div class="stat-label">دریافت‌شده</div>
                   <div class="stat-value" id="profile-received">-</div>
+                </div>
+              </div>
+              <div class="binary-stat">
+                <div class="stat-icon">🟣</div>
+                <div class="stat-info">
+                  <div class="stat-label">پوینت‌های دریافت‌نشده</div>
+                  <div class="stat-value" id="profile-unclaimed-points">-</div>
                 </div>
               </div>
             </div>
@@ -708,7 +590,6 @@
             <option value="binary">پاداش‌های باینری</option>
             <option value="trading">معاملات</option>
           </select>
-          <button id="refresh-reports">به‌روزرسانی</button>
         </div>
         <div id="reports-container">
           <div class="loading-message">در حال بارگذاری گزارشات...</div>
@@ -823,20 +704,76 @@
   <script src="js/news.js?v=5.7"></script>
   <script src="js/shop.js?v=5.7"></script>
   <script src="js/homepage.js?v=5.8"></script>
-  <script src="js/price-chart.js?v=5.7"></script>
+  <script src="js/price-history-manager.js?v=5.8"></script>
+  <script src="js/price-chart.js?v=5.8"></script>
+  <script src="js/point-chart.js?v=5.8"></script>
+  
+  <style>
+    /* Fix for chart width issues */
+    #price-chart-section {
+      width: 100% !important;
+      max-width: 100% !important;
+      overflow-x: hidden !important;
+    }
+    
+    #price-chart-canvas,
+    #point-chart-canvas {
+      width: 100% !important;
+      max-width: 100% !important;
+      height: 150px !important;
+      box-sizing: border-box !important;
+    }
+    
+    @media (max-width: 768px) {
+      #price-chart-canvas,
+      #point-chart-canvas {
+        height: 120px !important;
+      }
+    }
+  </style>
   <script src="js/register.js?v=5.7"></script>
   <script src="js/swap.js?v=5.7"></script>
   
 
   <script>
+    // تابع باز/بسته کردن منو همبرگری
+    function toggleHamburgerMenu() {
+      const menu = document.getElementById('hamburgerMenu');
+      if (menu) {
+        menu.classList.toggle('open');
+        console.log('Menu toggled, open class:', menu.classList.contains('open'));
+        
+        // اگر منو باز است، مطمئن شو که قابل مشاهده است
+        if (menu.classList.contains('open')) {
+          menu.style.visibility = 'visible';
+          menu.style.opacity = '1';
+          menu.style.transform = 'scale(1)';
+          menu.style.display = 'block';
+        } else {
+          menu.style.visibility = 'hidden';
+          menu.style.opacity = '0';
+          menu.style.transform = 'scale(0.9)';
+        }
+      } else {
+        console.log('Menu element not found!');
+      }
+    }
+    
+    // تابع نمایش مودال ساب ادمین
+    function showSubAdminModal() {
+      const modal = document.getElementById('sub-admin-modal');
+      if (modal) {
+        modal.style.display = 'flex';
+        // بستن منوی همبرگری
+        const menu = document.getElementById('hamburgerMenu');
+        if (menu) {
+          menu.classList.remove('open');
+        }
+      }
+    }
+    
     document.addEventListener('DOMContentLoaded', function() {
-        // Remove all expand toggle buttons
-        const expandButtons = document.querySelectorAll('.expand-toggle-btn');
-        expandButtons.forEach(button => {
-            button.style.display = 'none';
-        });
-
-        // Ensure all containers are expanded
+        // فقط داشبورد را نمایش بده، بقیه مخفی باشند
         const expandableContainers = document.querySelectorAll('.expandable-container');
         expandableContainers.forEach(container => {
             container.classList.remove('collapsed');
@@ -862,6 +799,23 @@
         if (typeof window.priceChart !== 'undefined' && typeof window.priceChart.initialize === 'function') {
             window.priceChart.initialize();
         }
+        
+        // بستن منو با کلیک خارج از آن
+        document.addEventListener('click', function(e) {
+          const menu = document.getElementById('hamburgerMenu');
+          const logo = document.getElementById('floating-logo');
+          if (menu && !menu.contains(e.target) && !logo.contains(e.target)) {
+            menu.classList.remove('open');
+          }
+        });
+        
+        // بستن منو با کلید Escape
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape') {
+            const menu = document.getElementById('hamburgerMenu');
+            if (menu) menu.classList.remove('open');
+          }
+        });
     });
   </script>
   <!-- Chart.js CDN -->
@@ -903,27 +857,7 @@
       aboutBtn.addEventListener('click', updateAboutWalletsCount);
     }
   </script>
-  <script>
-    async function updateDashboardWalletsCount() {
-      try {
-        if (!window.contractConfig || !window.contractConfig.contract) {
-          await window.connectWallet();
-        }
-        const contract = window.contractConfig.contract;
-        if (contract && contract.wallets) {
-          const walletsCount = await contract.wallets();
-          document.getElementById('dashboard-wallets-count').innerText = walletsCount.toString();
-        } else {
-          document.getElementById('dashboard-wallets-count').innerText = '-';
-        }
-      } catch (e) {
-        document.getElementById('dashboard-wallets-count').innerText = '-';
-      }
-    }
 
-    // Also update on initial load
-    document.addEventListener('DOMContentLoaded', updateDashboardWalletsCount);
-  </script>
   <script>
     function toggleDashboardChart(chartId, btn) {
       const chartDiv = document.getElementById(chartId);
@@ -1042,10 +976,10 @@
   <script>
     // تابع ناوبری به صفحات خارجی
   window.navigateToPage = function(pageUrl) {
-    // بستن منوی همبرگر
-    const hamburgerMenu = document.getElementById('hamburgerMenu');
-    if (hamburgerMenu) {
-      hamburgerMenu.classList.remove('open');
+    // بستن منوی همبرگری
+    const menu = document.getElementById('hamburgerMenu');
+    if (menu) {
+      menu.classList.remove('open');
     }
     
     // اسکرول به بالای صفحه قبل از انتقال
@@ -1058,7 +992,13 @@
   };
 
   window.showTab = async function(tab) {
-      const tabs = ['network','profile','reports','swap','transfer','news','shop','learning','about'];
+      // بستن منوی همبرگری
+      const menu = document.getElementById('hamburgerMenu');
+      if (menu) {
+        menu.classList.remove('open');
+      }
+      
+      const tabs = ['network','profile','reports','swap','transfer','about'];
       tabs.forEach(function(name) {
         var mainEl = document.getElementById('main-' + name);
         if (mainEl) {
@@ -1085,11 +1025,6 @@
       // اسکرول به بخش انتخاب شده
       const targetElement = document.getElementById('main-' + tab);
       if (targetElement) {
-        // بستن منوی همبرگر
-        const hamburgerMenu = document.getElementById('hamburgerMenu');
-        if (hamburgerMenu) {
-          hamburgerMenu.classList.remove('open');
-        }
         
         // اسکرول نرم به بخش
         setTimeout(() => {
@@ -1106,6 +1041,12 @@
           }, 200);
         }, 100);
       }
+      
+      // فعال کردن دکمه انتخاب شده
+      tabs.forEach(function(name) {
+        var btnEl = document.getElementById('tab-' + name + '-btn');
+        if (btnEl) btnEl.classList.toggle('active', name === tab);
+      });
       
       try {
         switch(tab) {
@@ -1130,16 +1071,6 @@
             break;
           case 'transfer':
             // No extra logic needed for now
-            break;
-          case 'news':
-            if (typeof loadNews === 'function') loadNews();
-            if (typeof loadTutorials === 'function') loadTutorials();
-            break;
-          case 'shop':
-            if (typeof loadProducts === 'function') loadProducts();
-            break;
-          case 'learning':
-            if (typeof initializeLearningTab === 'function') initializeLearningTab();
             break;
           case 'about': break;
         }
@@ -1179,6 +1110,12 @@
       if (!transferForm) return;
       transferForm.addEventListener('submit', async function(e) {
         e.preventDefault();
+        const transferBtn = transferForm.querySelector('button[type="submit"]');
+        if (transferBtn) {
+          transferBtn.disabled = true;
+          var oldText = transferBtn.textContent;
+          transferBtn.textContent = 'در حال پردازش...';
+        }
         const to = document.getElementById('transferTo').value.trim();
         const amount = parseFloat(document.getElementById('transferAmount').value);
         const token = document.getElementById('transferToken').value;
@@ -1188,11 +1125,13 @@
         if (!to || !amount || amount <= 0) {
           status.textContent = 'آدرس مقصد و مقدار معتبر وارد کنید';
           status.className = 'transfer-status error';
+          if (transferBtn) { transferBtn.disabled = false; transferBtn.textContent = oldText; }
           return;
         }
         if (!window.contractConfig || !window.contractConfig.contract || !window.contractConfig.signer) {
           status.textContent = 'اتصال کیف پول برقرار نیست';
           status.className = 'transfer-status error';
+          if (transferBtn) { transferBtn.disabled = false; transferBtn.textContent = oldText; }
           return;
         }
         try {
@@ -1206,6 +1145,15 @@
             });
             await tx.wait();
             status.textContent = 'انتقال با موفقیت انجام شد!\nکد تراکنش: ' + tx.hash;
+            status.className = 'transfer-status success';
+          } else if (token === 'usdc') {
+            // انتقال USDC
+            const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, window.contractConfig.signer);
+            const decimals = 6; // USDC has 6 decimals
+            const parsedAmount = ethers.parseUnits(amount.toString(), decimals);
+            const tx = await usdcContract.transfer(to, parsedAmount);
+            await tx.wait();
+            status.textContent = 'انتقال USDC با موفقیت انجام شد!\nکد تراکنش: ' + tx.hash;
             status.className = 'transfer-status success';
           } else {
             // انتقال CPA
@@ -1227,6 +1175,7 @@
           status.textContent = msg;
           status.className = 'transfer-status error';
         }
+        if (transferBtn) { transferBtn.disabled = false; transferBtn.textContent = oldText; }
       });
     });
   </script>
@@ -1303,176 +1252,341 @@
       // بازیابی وضعیت بخش‌های قابل گسترش
       restoreExpandableStates();
       
-      const hamburgerBtn = document.getElementById('hamburgerBtn');
-      const hamburgerMenu = document.getElementById('hamburgerMenu');
-      hamburgerBtn.onclick = function() {
-        hamburgerMenu.classList.toggle('open');
-      };
-      document.addEventListener('click', function(e) {
-        if (!hamburgerMenu.contains(e.target) && !hamburgerBtn.contains(e.target)) {
-          hamburgerMenu.classList.remove('open');
+      
+    });
+  </script>
+
+  <script>
+    // تابع نمایش قیمت با نماد علمی
+    window.formatTokenPrice = function(priceWei) {
+      if (!priceWei || priceWei === '0') return '0';
+      let priceString = priceWei.toString();
+      while (priceString.length < 18) priceString = '0' + priceString;
+      if (priceString.length > 18) priceString = priceString.slice(-18);
+      const result = '0.' + priceString;
+      const numResult = parseFloat(result);
+      if (numResult < 0.000001) {
+        return numResult.toExponential(6);
+      }
+      return result;
+    }
+
+    // تابع بروزرسانی نمایش قیمت
+    async function updateTokenPriceDisplay() {
+      try {
+        if (!window.contractConfig || !window.contractConfig.contract) {
+          await window.connectWallet();
+          if (!window.contractConfig || !window.contractConfig.contract) {
+            const el = document.getElementById('chart-lvl-usd');
+            if (el) el.textContent = 'اتصال ناموفق';
+            return;
+          }
         }
-      });
-      document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') hamburgerMenu.classList.remove('open');
-      });
+        const contract = window.contractConfig.contract;
+        const tokenPrice = await contract.getTokenPrice();
+        const priceFormatted = window.formatTokenPrice(tokenPrice);
+        const el = document.getElementById('chart-lvl-usd');
+        if (el) el.textContent = priceFormatted;
+        // بروزرسانی point-value از قرارداد
+        try {
+          const pointValue = await contract.getPointValue();
+          const pointValueNum = parseFloat(ethers.formatUnits(pointValue, 18));
+          const pointValueFormatted = pointValueNum < 0.000001 ? pointValueNum.toExponential(6) : pointValueNum.toFixed(2);
+          const el2 = document.getElementById('point-value');
+          if (el2) el2.textContent = pointValueFormatted + ' CPA';
+        } catch (error) {
+          // ...
+        }
+      } catch (error) {
+        const el = document.getElementById('chart-lvl-usd');
+        if (el) el.textContent = 'خطا در بارگذاری';
+      }
+    }
+    // ... existing code ...
+  </script>
+
+  <script>
+    if (window.loadUserProfile) {
+      const origLoadUserProfile = window.loadUserProfile;
+      window.loadUserProfile = async function() {
+        await origLoadUserProfile.apply(this, arguments);
+        await updateProfileReferrer(); // اینجا با await و بدون تاخیر
+      };
+    }
+  </script>
+
+
+
+  <script src="js/dashboard-typewriter.js"></script>
+  <script src="js/token-price.js"></script>
+  <script src="js/remove-archive-btn.js"></script>
+  <script src="js/hamburger-float.js"></script>
+  
+  <!-- Dashboard Terminal Script - Moved after config.js -->
+  <script>
+    // به‌روزرسانی نمایش قیمت پوینت
+    async function updatePointPriceDisplay() {
+      try {
+        if (window.priceHistoryManager) {
+          const pointPrice = await window.priceHistoryManager.updatePointPrice();
+          if (pointPrice !== null) {
+            const pointDisplay = document.getElementById('current-point-display');
+            if (pointDisplay) {
+              pointDisplay.textContent = window.priceHistoryManager.formatPrice(pointPrice);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error updating point price display:', error);
+        const pointDisplay = document.getElementById('current-point-display');
+        if (pointDisplay) pointDisplay.textContent = 'Error loading';
+      }
+    }
+
+    // به‌روزرسانی آمار قیمت‌ها
+    function updatePriceStats() {
+      try {
+        if (window.priceHistoryManager) {
+          const tokenPeriod = window.priceChart?.currentTimePeriod || 'day';
+          const pointPeriod = window.pointChart?.currentTimePeriod || 'day';
+          
+          // آمار توکن
+          const tokenStats = window.priceHistoryManager.getHistoryStats('token', tokenPeriod);
+          const tokenMinEl = document.getElementById('token-min-price');
+          const tokenMaxEl = document.getElementById('token-max-price');
+          if (tokenMinEl) tokenMinEl.textContent = window.priceHistoryManager.formatPrice(tokenStats.min);
+          if (tokenMaxEl) tokenMaxEl.textContent = window.priceHistoryManager.formatPrice(tokenStats.max);
+          
+          // آمار پوینت
+          const pointStats = window.priceHistoryManager.getHistoryStats('point', pointPeriod);
+          const pointMinEl = document.getElementById('point-min-price');
+          const pointMaxEl = document.getElementById('point-max-price');
+          if (pointMinEl) pointMinEl.textContent = window.priceHistoryManager.formatPrice(pointStats.min);
+          if (pointMaxEl) pointMaxEl.textContent = window.priceHistoryManager.formatPrice(pointStats.max);
+        }
+      } catch (error) {
+        console.error('Error updating price stats:', error);
+      }
+    }
+
+    // افکت تایپ تدریجی برای اطلاعات داشبورد
+    function typewriterDashboardInfo(lines, isWaiting = false) {
+      const el = document.getElementById('dashboard-terminal-info');
+      if (!el) return;
+      
+      if (isWaiting) {
+        // نمایش کرسر چشمک‌زن برای انتظار
+        el.textContent = '|';
+        let cursorVisible = true;
+        const cursorInterval = setInterval(() => {
+          el.textContent = cursorVisible ? '|' : ' ';
+          cursorVisible = !cursorVisible;
+        }, 500);
+        
+        // ذخیره interval برای پاک کردن بعداً
+        el._cursorInterval = cursorInterval;
+        return;
+      }
+      
+      // پاک کردن interval قبلی
+      if (el._cursorInterval) {
+        clearInterval(el._cursorInterval);
+        el._cursorInterval = null;
+      }
+      
+      el.textContent = '';
+      let line = 0, char = 0;
+      
+      function type() {
+        if (line < lines.length) {
+          if (char < lines[line].length) {
+            el.textContent += lines[line][char];
+            char++;
+            setTimeout(type, 25);
+          } else {
+            el.textContent += '\n';
+            line++;
+            char = 0;
+            setTimeout(type, 60);
+          }
+        }
+      }
+      type();
+    }
+
+    // Helper function to format prices in scientific notation
+    function formatPriceScientific(price) {
+      if (price === 0 || price === '0') return '0';
+      const numPrice = parseFloat(price);
+      if (isNaN(numPrice)) return price;
+      if (numPrice < 0.000001) {
+        return numPrice.toExponential(6);
+      }
+      return numPrice.toFixed(6);
+    }
+
+    // Helper function to pad labels
+    function padLabel(label) {
+      return label.padEnd(20);
+    }
+
+    async function updateDashboardTerminalInfo() {
+      try {
+        if (!window.contractConfig || !window.contractConfig.contract) {
+          try {
+            await window.connectWallet();
+          } catch (e) {
+            typewriterDashboardInfo([
+              '╔══════════════════════════════════════════════════════════════╗',
+              '║                    WALLET NOT CONNECTED                     ║',
+              '╚══════════════════════════════════════════════════════════════╝',
+              '',
+              '🔌 Please connect your wallet to view dashboard data',
+              '🔄 Retrying connection...',
+              '',
+              'Click the wallet connect button to proceed.'
+            ]);
+            return;
+          }
+        }
+        const contract = window.contractConfig.contract;
+        
+        // All Wallets
+        let wallets = '-';
+        try { wallets = (await contract.wallets()).toString(); } catch(e){}
+        
+        // Total Supply
+        let totalSupply = '-';
+        try { 
+          const supply = await contract.totalSupply();
+          const supplyFormatted = formatPriceScientific(ethers.formatUnits(supply, 18));
+          totalSupply = supplyFormatted + ' CPA'; 
+        } catch(e){}
+        
+        // Total Points
+        let totalPoints = '-';
+        try {
+          const totalPointsRaw = await contract.totalClaimableBinaryPoints();
+          totalPoints = (BigInt(totalPointsRaw) / 10n ** 18n).toString();
+        } catch(e){}
+        
+        // Point Value
+        let pointValue = '-';
+        try { 
+          const pointValueRaw = await contract.getPointValue();
+          const pointValueNum = parseFloat(ethers.formatUnits(pointValueRaw, 18));
+          pointValue = formatPriceScientific(pointValueNum) + ' CPA'; 
+        } catch(e){}
+        
+        // Current Token Price
+        let tokenPrice = '-';
+        try {
+          const priceRaw = await contract.getTokenPrice();
+          const priceFormatted = formatPriceScientific(ethers.formatUnits(priceRaw, 18));
+          tokenPrice = priceFormatted;
+        } catch(e){}
+        
+        // Contract Token Balance
+        let contractTokenBalance = '-';
+        try { 
+          const balance = await contract.balanceOf(contract.target);
+          const balanceFormatted = formatPriceScientific(ethers.formatUnits(balance, 18));
+          contractTokenBalance = balanceFormatted + ' CPA'; 
+        } catch(e){}
+        
+        // Help Fund
+        let cashback = '-';
+        try { 
+          const cashbackRaw = await (contract.cashBack ? contract.cashBack() : contract.cashback());
+          const cashbackFormatted = formatPriceScientific(ethers.formatUnits(cashbackRaw, 18));
+          cashback = cashbackFormatted + ' CPA'; 
+        } catch(e){}
+        
+        // USDC Contract Balance
+        let usdcBalance = '-';
+        try {
+          const usdcBalanceRaw = await contract.getContractUSDCBalance();
+          const usdcBalanceFormatted = formatPriceScientific(ethers.formatUnits(usdcBalanceRaw, 6));
+          usdcBalance = usdcBalanceFormatted + ' USDC';
+        } catch(e){
+          console.error('Error fetching USDC balance via contract function:', e);
+          try {
+            if (typeof USDC_ADDRESS !== 'undefined' && typeof USDC_ABI !== 'undefined') {
+              const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, contract.provider);
+              const usdcBalanceRaw = await usdcContract.balanceOf(contract.target);
+              const usdcBalanceFormatted = formatPriceScientific(ethers.formatUnits(usdcBalanceRaw, 6));
+              usdcBalance = usdcBalanceFormatted + ' USDC';
+            } else {
+              usdcBalance = 'Config Error';
+            }
+          } catch(fallbackError) {
+            console.error('Fallback USDC balance fetch failed:', fallbackError);
+            usdcBalance = 'Error: ' + e.message;
+          }
+        }
+        
+        const lines = [
+          '╔══════════════════════════════════════════════════════════════╗',
+          '║                    CONTINUOUS PROFIT ACADEMY                 ║',
+          '║                        CPA TERMINAL v2.0                    ║',
+          '╚══════════════════════════════════════════════════════════════╝',
+          '',
+          '🚀 Welcome to CPA Terminal!',
+          '📊 Loading blockchain data...',
+          '',
+          '╔══════════════════════════════════════════════════════════════╗',
+          '║                        SYSTEM STATUS                         ║',
+          '╚══════════════════════════════════════════════════════════════╝',
+          '',
+          `🌐 All Wallets: ${wallets}`,
+          `💰 Total Supply: ${totalSupply}`,
+          `🎯 Total Points: ${totalPoints}`,
+          `💎 Point Value: ${pointValue}`,
+          `📈 Current Token Price: ${tokenPrice}`,
+          `🏦 Contract Token Bal.: ${contractTokenBalance}`,
+          `💚 Help Fund: ${cashback}`,
+          `💵 USDC Contract Bal.: ${usdcBalance}`,
+          '',
+          '╔══════════════════════════════════════════════════════════════╗',
+          '║                    TERMINAL READY                            ║',
+          '╚══════════════════════════════════════════════════════════════╝'
+        ];
+        
+        typewriterDashboardInfo(lines);
+        
+        // به‌روزرسانی نمایش قیمت پوینت
+        updatePointPriceDisplay();
+        
+        // به‌روزرسانی آمار قیمت‌ها
+        updatePriceStats();
+      } catch (e) {
+        typewriterDashboardInfo([
+          '╔══════════════════════════════════════════════════════════════╗',
+          '║                        ERROR DETECTED                        ║',
+          '╚══════════════════════════════════════════════════════════════╝',
+          '',
+          '❌ Error loading dashboard info',
+          '🔄 Retrying connection...',
+          '',
+          'Please check your wallet connection and try again.'
+        ]);
+      }
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      // نمایش کرسر چشمک‌زن تا زمان دریافت اطلاعات
+      typewriterDashboardInfo([], true);
+      
+      // فراخوانی دریافت اطلاعات داشبورد
+      setTimeout(updateDashboardTerminalInfo, 1000);
+      
+      // شروع به‌روزرسانی خودکار قیمت‌ها
+      setInterval(() => {
+        updatePointPriceDisplay();
+        updatePriceStats();
+      }, 30000); // هر 30 ثانیه
+      
+
     });
   </script>
 </body>
 </html>
-
-<style>
-.three-buttons-row {
-  display: flex;
-  gap: 1rem;
-  margin: 2rem 0 1rem 0;
-  width: 100%;
-}
-.three-btn {
-  flex: 1;
-  padding: 1.1rem 0.5rem;
-  background: linear-gradient(135deg, #232946, #a786ff);
-  color: #fff !important;
-  border: none;
-  border-radius: 15px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 16px rgba(167,134,255,0.08);
-  position: relative;
-  overflow: hidden;
-  text-align: center;
-}
-.three-btn:hover {
-  background: linear-gradient(135deg, #a786ff, #ff6b9d);
-  color: #fff !important;
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(167, 134, 255, 0.2);
-}
-@media (max-width: 768px) {
-  .three-buttons-row {
-    flex-direction: column;
-    gap: 0.7rem;
-  }
-  .three-btn {
-    font-size: 1rem;
-    padding: 1rem 0.5rem;
-  }
-}
-#online-session-bubble {
-  position: fixed;
-  top: 24px;
-  right: 24px;
-  z-index: 3000;
-  background: linear-gradient(90deg, #00ff88 0%, #a786ff 100%);
-  color: #181c2a;
-  padding: 1rem 2.2rem 1rem 1.2rem;
-  border-radius: 2.5rem;
-  box-shadow: 0 6px 32px #00ff8840, 0 1.5px 0 #fff;
-  display: flex;
-  align-items: center;
-  font-size: 1.15rem;
-  font-weight: bold;
-  animation: bubble-move 3.5s ease-in-out infinite alternate;
-  border: 2px solid #fff;
-  gap: 1.2rem;
-  transition: all 0.3s;
-}
-.bubble-text {
-  margin-left: 0.7rem;
-  font-family: 'Noto Sans Arabic', 'Montserrat', sans-serif;
-}
-.bubble-timer {
-  background: #fff2;
-  color: #232946;
-  border-radius: 1rem;
-  padding: 0.2rem 0.8rem;
-  font-size: 1rem;
-  margin-left: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-.bubble-link {
-  background: #232946;
-  color: #fff !important;
-  padding: 0.5rem 1.2rem;
-  border-radius: 1.2rem;
-  text-decoration: none;
-  font-weight: 700;
-  margin-left: 0.7rem;
-  transition: background 0.2s;
-  box-shadow: 0 2px 8px #a786ff40;
-}
-.bubble-link:hover {
-  background: #a786ff;
-  color: #232946 !important;
-}
-.bubble-close {
-  cursor: pointer;
-  font-size: 1.5rem;
-  margin-right: 0.5rem;
-  color: #232946;
-  opacity: 0.7;
-  transition: opacity 0.2s;
-}
-.bubble-close:hover {
-  opacity: 1;
-}
-#bubble-mini {
-  position: fixed;
-  top: 24px;
-  right: 24px;
-  z-index: 3001;
-  width: 54px;
-  height: 54px;
-  background: linear-gradient(135deg, #00ff88 0%, #a786ff 100%);
-  border-radius: 50%;
-  box-shadow: 0 4px 16px #00ff8840, 0 1.5px 0 #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s;
-  border: 2px solid #fff;
-  font-size: 2rem;
-  opacity: 0.95;
-}
-#bubble-mini:hover {
-  opacity: 1;
-  box-shadow: 0 8px 32px #a786ff40;
-}
-.bubble-mini-icon {
-  font-size: 2rem;
-  color: #232946;
-}
-@keyframes bubble-move {
-  0% { transform: translateY(0) scale(1); box-shadow: 0 6px 32px #00ff8840; }
-  50% { transform: translateY(-12px) scale(1.04); box-shadow: 0 16px 48px #a786ff40; }
-  100% { transform: translateY(0) scale(1); box-shadow: 0 6px 32px #00ff8840; }
-}
-@media (max-width: 600px) {
-  #online-session-bubble {
-    right: 8px;
-    left: 8px;
-    top: 8px;
-    padding: 0.7rem 1rem 0.7rem 0.7rem;
-    font-size: 1rem;
-    flex-direction: column;
-    align-items: flex-start;
-    border-radius: 1.2rem;
-    gap: 0.5rem;
-  }
-  .bubble-link {
-    margin-left: 0;
-    margin-top: 0.3rem;
-  }
-  #bubble-mini {
-    right: 8px;
-    top: 8px;
-    width: 44px;
-    height: 44px;
-    font-size: 1.3rem;
-  }
-}
-</style>
