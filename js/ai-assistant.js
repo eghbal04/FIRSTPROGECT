@@ -311,6 +311,37 @@ class AIAssistant {
         // Test the toggle function
         this.toggleFullWidth();
     }
+    
+    // Simple test function to check if assistant is working
+    testAssistant() {
+        console.log('🧪 Testing AI Assistant...');
+        console.log('Assistant instance:', this);
+        console.log('Is deployer:', this.isDeployer);
+        console.log('Is minimized:', this.isMinimized);
+        console.log('Is dropdown open:', this.isDropdownOpen);
+        
+        const container = document.getElementById('ai-assistant-container');
+        if (container) {
+            console.log('✅ Container found');
+            console.log('Container HTML:', container.outerHTML.substring(0, 200) + '...');
+        } else {
+            console.log('❌ Container not found');
+        }
+        
+        const dropdown = document.getElementById('ai-dropdown-content');
+        if (dropdown) {
+            console.log('✅ Dropdown found');
+        } else {
+            console.log('❌ Dropdown not found');
+        }
+        
+        const input = document.getElementById('ai-input');
+        if (input) {
+            console.log('✅ Input found');
+        } else {
+            console.log('❌ Input not found');
+        }
+    }
 
     // Function to show current button configuration
     showCurrentConfiguration() {
@@ -2163,11 +2194,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Export for use in other files
-window.AIAssistant = AIAssistant; 
-
-// Initialize AI Assistant
-window.aiAssistant = new AIAssistant();
-window.aiAssistant.init();
+window.AIAssistant = AIAssistant;
 
 // Global test functions for browser console
 window.testAIAssistant = {
@@ -2238,10 +2265,37 @@ window.testAIAssistant = {
         }
     },
     
+    // Test assistant functionality
+    testAssistant: () => {
+        if (window.aiAssistant) {
+            window.aiAssistant.testAssistant();
+        } else {
+            console.log('❌ AI Assistant not initialized');
+        }
+    },
+    
     // Force full-width mode
     forceFullWidth: () => {
         if (window.aiAssistant) {
             window.aiAssistant.forceFullWidth();
+        } else {
+            console.log('❌ AI Assistant not initialized');
+        }
+    },
+    
+    // Reset assistant
+    reset: () => {
+        if (window.aiAssistant) {
+            console.log('🔄 Resetting AI Assistant...');
+            // Remove existing container
+            const existingContainer = document.getElementById('ai-assistant-container');
+            if (existingContainer) {
+                existingContainer.remove();
+            }
+            
+            // Create new instance
+            window.aiAssistant = new AIAssistant();
+            console.log('✅ AI Assistant reset complete');
         } else {
             console.log('❌ AI Assistant not initialized');
         }
@@ -2260,7 +2314,9 @@ window.testAIAssistant = {
 6. testAIAssistant.toggleMinimize() - Toggle minimize mode
 7. testAIAssistant.testFullWidth() - Test full-width mode
 8. testAIAssistant.forceFullWidth() - Force full-width mode
-9. testAIAssistant.help() - Show this help
+9. testAIAssistant.testAssistant() - Test if assistant is working properly
+10. testAIAssistant.reset() - Reset and recreate assistant
+11. testAIAssistant.help() - Show this help
 
 Keyboard Shortcuts:
 - Ctrl/Cmd + Shift + A: Toggle full-width mode
@@ -2278,3 +2334,18 @@ Expected Results:
 
 // Show help on load
 console.log('🧪 AI Assistant test functions loaded. Type testAIAssistant.help() for commands.');
+
+// Test if AI Assistant is working
+setTimeout(() => {
+    if (window.aiAssistant) {
+        console.log('✅ AI Assistant is initialized and working');
+        const container = document.getElementById('ai-assistant-container');
+        if (container) {
+            console.log('✅ AI Assistant container found in DOM');
+        } else {
+            console.log('❌ AI Assistant container not found in DOM');
+        }
+    } else {
+        console.log('❌ AI Assistant not initialized');
+    }
+}, 2000);
