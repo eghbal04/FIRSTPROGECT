@@ -503,6 +503,15 @@ class AIAssistant {
             container.classList.add('full-width');
             body.classList.add('ai-assistant-fullscreen');
             
+            // Set body styles for horizontal scrolling
+            body.style.cssText = `
+                overflow-x: auto !important;
+                overflow-y: hidden !important;
+                position: fixed !important;
+                width: 200vw !important;
+                height: 100vh !important;
+            `;
+            
             // Apply inline styles to force full coverage
             container.style.cssText = `
                 position: fixed !important;
@@ -510,10 +519,10 @@ class AIAssistant {
                 left: 0 !important;
                 right: 0 !important;
                 bottom: 0 !important;
-                width: 100vw !important;
+                width: 200vw !important;
                 height: 100vh !important;
-                max-width: 100vw !important;
-                min-width: 100vw !important;
+                max-width: 200vw !important;
+                min-width: 200vw !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 border-radius: 0 !important;
@@ -544,6 +553,9 @@ class AIAssistant {
             
             // Reset container styles
             container.style.cssText = '';
+            
+            // Reset body styles
+            body.style.cssText = '';
             
             // Show all elements again
             const allElements = document.querySelectorAll('*');

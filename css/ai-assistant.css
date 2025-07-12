@@ -31,10 +31,10 @@
     left: 0 !important;
     right: 0 !important;
     bottom: 0 !important;
-    width: 100vw !important;
+    width: 200vw !important;
     height: 100vh !important;
-    max-width: 100vw !important;
-    min-width: 100vw !important;
+    max-width: 200vw !important;
+    min-width: 200vw !important;
     margin: 0 !important;
     padding: 0 !important;
     border-radius: 0 !important;
@@ -47,9 +47,10 @@
 
 /* Ensure body doesn't scroll when AI assistant is full-width */
 body.ai-assistant-fullscreen {
-    overflow: hidden !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
     position: fixed !important;
-    width: 100vw !important;
+    width: 200vw !important;
     height: 100vh !important;
 }
 
