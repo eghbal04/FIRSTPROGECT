@@ -932,6 +932,8 @@ function showRegisterForm(referrerAddress, defaultNewWallet, connectedAddress, p
 آدرس ولت جدید:    <input id=\"register-new-wallet\" type=\"text\" placeholder=\"0x...\" style=\"width:70%;padding:0.3rem 0.5rem;border-radius:6px;border:1px solid #a786ff;margin-left:0.5rem;direction:ltr;font-family:monospace;font-size:1rem;background:#232946;color:#fff;\" value=\"${defaultNewWallet}\" />
 موجودی متیک:      <span id=\"register-matic-balance\" style=\"color:#fff;\">در حال دریافت...</span>
 موجودی CPA:        <span id=\"register-cpa-balance\" style=\"color:#fff;\">در حال دریافت...</span>
+موجودی USDC:       <span id=\"register-usdc-balance\" style=\"color:#fff;\">در حال دریافت...</span>
+مقدار مورد نیاز:   <span id=\"register-required-usdc\" style=\"color:#ff6b6b;\">در حال دریافت...</span>
       </pre>
       <button id=\"register-form-confirm\" style=\"background:#00ff88;color:#232946;font-weight:bold;padding:0.7rem 2.2rem;border:none;border-radius:10px;font-size:1.1rem;cursor:pointer;margin-left:1rem;\">ثبت‌نام</button>
       <button id=\"register-form-cancel\" style=\"background:#a786ff;color:#fff;font-weight:bold;padding:0.7rem 2.2rem;border:none;border-radius:10px;font-size:1.1rem;cursor:pointer;\">انصراف</button>
@@ -946,6 +948,8 @@ function showRegisterForm(referrerAddress, defaultNewWallet, connectedAddress, p
     try {
       let matic = '-';
       let cpa = '-';
+      let usdc = '-';
+      let requiredUsdc = '-';
       if (provider && connectedAddress) {
         const bal = await provider.getBalance(connectedAddress);
         matic = window.ethers ? window.ethers.formatUnits(bal, 18) : bal.toString();
@@ -953,12 +957,31 @@ function showRegisterForm(referrerAddress, defaultNewWallet, connectedAddress, p
       if (contract && connectedAddress) {
         const cpaBal = await contract.balanceOf(connectedAddress);
         cpa = window.ethers ? window.ethers.formatUnits(cpaBal, 18) : cpaBal.toString();
+        
+        // دریافت موجودی USDC
+        const USDC_ADDRESS = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174';
+        const USDC_ABI = ["function balanceOf(address) view returns (uint256)"];
+        const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, contract.signer);
+        const usdcBal = await usdcContract.balanceOf(connectedAddress);
+        usdc = window.ethers ? window.ethers.formatUnits(usdcBal, 6) : usdcBal.toString();
+        
+        // دریافت مقدار مورد نیاز برای ثبت‌نام
+        try {
+          const regprice = await contract.regprice();
+          requiredUsdc = window.ethers ? window.ethers.formatUnits(regprice, 18) : regprice.toString();
+        } catch (e) {
+          requiredUsdc = '0.01'; // مقدار پیش‌فرض
+        }
       }
       document.getElementById('register-matic-balance').textContent = matic;
       document.getElementById('register-cpa-balance').textContent = cpa;
+      document.getElementById('register-usdc-balance').textContent = usdc;
+      document.getElementById('register-required-usdc').textContent = requiredUsdc + ' USDC';
     } catch (e) {
       document.getElementById('register-matic-balance').textContent = '-';
       document.getElementById('register-cpa-balance').textContent = '-';
+      document.getElementById('register-usdc-balance').textContent = '-';
+      document.getElementById('register-required-usdc').textContent = '-';
     }
   })();
   document.getElementById('register-form-confirm').onclick = async function() {
