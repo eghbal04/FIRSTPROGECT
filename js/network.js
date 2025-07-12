@@ -16,6 +16,24 @@ function showUserPopup(address, user) {
     let oldPopup = document.getElementById('user-popup');
     if (oldPopup) oldPopup.remove();
     
+    // اطلاعات برای نمایش
+    const infoLines = [
+        `🔗 Address:   ${address}`,
+        `📋 Index:     ${user.index}`,
+        `✅ Activated: ${user.activated ? 'بله' : 'خیر'}`,
+        `🎯 BinaryPoints: ${user.binaryPoints}`,
+        `📈 Cap:      ${user.binaryPointCap}`,
+        `⬅️ Left:     ${user.leftPoints}`,
+        `➡️ Right:    ${user.rightPoints}`,
+        `💰 Refclimed:${user.refclimed}`,
+        '',
+        '--- Financial Info ---',
+        `🏆 Binary Claimed: ${user.binaryPointsClaimed}`,
+        `🗓️ Monthly Withdrawn: ${user.totalMonthlyRewarded}`,
+        `💳 Total Deposited: ${user.depositedAmount}`,
+        `🛒 Total Purchased: ${user.totalPurchasedKind}`
+    ];
+    
     // ساخت popup بهینه‌سازی شده برای موبایل
     const popup = document.createElement('div');
     popup.id = 'user-popup';
@@ -81,113 +99,7 @@ function showUserPopup(address, user) {
             transition: background 0.3s;
           " onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='none'">×</button>
         </div>
-
-        <!-- Address Info -->
-        <div style="
-          background: rgba(167, 134, 255, 0.1);
-          border: 1px solid #a786ff;
-          border-radius: 12px;
-          padding: 1rem;
-          margin-bottom: 1.5rem;
-        ">
-          <div style="color: #a786ff; font-weight: bold; margin-bottom: 0.5rem;">🔗 آدرس کیف پول:</div>
-          <div style="
-            color: #fff;
-            font-family: monospace;
-            font-size: 0.9rem;
-            word-break: break-all;
-            background: rgba(0,0,0,0.3);
-            padding: 0.5rem;
-            border-radius: 6px;
-            direction: ltr;
-            text-align: left;
-          " title="${address}">${address}</div>
-        </div>
-
-        <!-- Basic Info -->
-        <div style="
-          background: rgba(0, 255, 136, 0.1);
-          border: 1px solid #00ff88;
-          border-radius: 12px;
-          padding: 1rem;
-          margin-bottom: 1.5rem;
-        ">
-          <div style="color: #00ff88; font-weight: bold; margin-bottom: 1rem;">📊 اطلاعات پایه:</div>
-          <div style="display: grid; gap: 0.8rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="color: #fff;">📋 Index:</span>
-              <span style="color: #00ff88; font-weight: bold;">${user.index}</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="color: #fff;">✅ فعال:</span>
-              <span style="color: ${user.activated ? '#00ff88' : '#ff6b6b'}; font-weight: bold;">${user.activated ? 'بله' : 'خیر'}</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="color: #fff;">🎯 امتیاز باینری:</span>
-              <span style="color: #00ccff; font-weight: bold;">${user.binaryPoints}</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="color: #fff;">📈 سقف امتیاز:</span>
-              <span style="color: #ff9500; font-weight: bold;">${user.binaryPointCap}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Network Info -->
-        <div style="
-          background: rgba(0, 204, 255, 0.1);
-          border: 1px solid #00ccff;
-          border-radius: 12px;
-          padding: 1rem;
-          margin-bottom: 1.5rem;
-        ">
-          <div style="color: #00ccff; font-weight: bold; margin-bottom: 1rem;">🌳 اطلاعات شبکه:</div>
-          <div style="display: grid; gap: 0.8rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="color: #fff;">⬅️ امتیاز چپ:</span>
-              <span style="color: #00ccff; font-weight: bold;">${user.leftPoints}</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="color: #fff;">➡️ امتیاز راست:</span>
-              <span style="color: #00ccff; font-weight: bold;">${user.rightPoints}</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="color: #fff;">💰 درآمد رفرال:</span>
-              <span style="color: #ff9500; font-weight: bold;">${user.refclimed}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Financial Info -->
-        <div style="
-          background: rgba(255, 149, 0, 0.1);
-          border: 1px solid #ff9500;
-          border-radius: 12px;
-          padding: 1rem;
-          margin-bottom: 1.5rem;
-        ">
-          <div style="color: #ff9500; font-weight: bold; margin-bottom: 1rem;">💸 اطلاعات مالی:</div>
-          <div style="display: grid; gap: 0.8rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="color: #fff;">🏆 برداشت باینری:</span>
-              <span style="color: #ff9500; font-weight: bold;">${user.binaryPointsClaimed}</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="color: #fff;">🗓️ برداشت ماهانه:</span>
-              <span style="color: #ff9500; font-weight: bold;">${user.totalMonthlyRewarded}</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="color: #fff;">💳 کل واریزی:</span>
-              <span style="color: #ff9500; font-weight: bold;">${user.depositedAmount}</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="color: #fff;">🛒 کل خرید:</span>
-              <span style="color: #ff9500; font-weight: bold;">${user.totalPurchasedKind}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Close Button -->
+        <pre id="user-popup-typewriter" style="background:rgba(0,0,0,0.2);border:1.5px solid #333;padding:1.2rem 1.5rem;border-radius:12px;color:#00ff88;font-size:1.05rem;line-height:2;font-family:monospace;overflow-x:auto;margin-bottom:1.2rem;box-shadow:0 2px 12px #00ff8840;min-width:180px;direction:ltr;text-align:left;white-space:pre-wrap;min-height:220px;"></pre>
         <button id="close-user-popup-btn" style="
           background: linear-gradient(135deg, #a786ff, #8b6bff);
           color: #fff;
@@ -211,11 +123,27 @@ function showUserPopup(address, user) {
     // Close button functionality
     document.getElementById('close-user-popup').onclick = () => popup.remove();
     document.getElementById('close-user-popup-btn').onclick = () => popup.remove();
-    
     // Close on background click
     popup.onclick = (e) => {
         if (e.target === popup) popup.remove();
     };
+
+    // Typewriter effect
+    function typeWriter(lines, el, lineIdx = 0, charIdx = 0) {
+        if (lineIdx >= lines.length) return;
+        if (charIdx === 0 && lineIdx > 0) el.textContent += '\n';
+        if (charIdx < lines[lineIdx].length) {
+            el.textContent += lines[lineIdx][charIdx];
+            setTimeout(() => typeWriter(lines, el, lineIdx, charIdx + 1), 18);
+        } else {
+            setTimeout(() => typeWriter(lines, el, lineIdx + 1, 0), 120);
+        }
+    }
+    const typewriterEl = document.getElementById('user-popup-typewriter');
+    if (typewriterEl) {
+        typewriterEl.textContent = '';
+        typeWriter(infoLines, typewriterEl);
+    }
 }
 
 async function renderNodeLazy(index, container) {
