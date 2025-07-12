@@ -362,9 +362,6 @@ class AIAssistant {
                     <button class="ai-close-btn" id="ai-close-btn">
                         <i class="fas fa-minus"></i>
                     </button>
-                    <button class="ai-expand-btn" id="ai-expand-btn" title="Full Width Mode">
-                        <i class="fas fa-expand"></i>
-                    </button>
                 </div>
             </div>
             <div class="ai-assistant-body">
@@ -445,22 +442,16 @@ class AIAssistant {
             this.toggleMinimize();
         });
         
-        // Expand button to toggle full-width mode
-        document.getElementById('ai-expand-btn').addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.toggleFullWidth();
-        });
-        
         // Header click to toggle
         document.querySelector('.ai-assistant-header').addEventListener('click', () => {
             this.toggleMinimize();
         });
         
-        // Double click header to toggle full-width mode
-        document.querySelector('.ai-assistant-header').addEventListener('dblclick', (e) => {
-            e.stopPropagation();
-            this.toggleFullWidth();
-        });
+        // Double click header to toggle full-width mode (اختیاری)
+        // document.querySelector('.ai-assistant-header').addEventListener('dblclick', (e) => {
+        //     e.stopPropagation();
+        //     this.toggleFullWidth();
+        // });
         
         // Send message
         document.getElementById('ai-send-btn').addEventListener('click', () => {
@@ -483,22 +474,8 @@ class AIAssistant {
         // Initialize hamburger menu monitoring
         this.initHamburgerMenuMonitoring();
         
-        // Add keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            // Ctrl/Cmd + Shift + A to toggle full-width
-            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'A') {
-                e.preventDefault();
-                this.toggleFullWidth();
-            }
-            
-            // Escape to exit full-width mode
-            if (e.key === 'Escape') {
-                const container = document.getElementById('ai-assistant-container');
-                if (container && container.classList.contains('full-width')) {
-                    this.toggleFullWidth();
-                }
-            }
-        });
+        // --- اتوماتیک کردن حالت full-width و minimize ---
+        this.setupAutoFullWidth();
     }
     
     autoResizeTextarea(textarea) {
@@ -2072,6 +2049,48 @@ class AIAssistant {
         setTimeout(() => {
             this.testFullWidthMode();
         }, 100);
+    }
+
+    setupAutoFullWidth() {
+        const container = document.getElementById('ai-assistant-container');
+        const input = document.getElementById('ai-input');
+        let inactivityTimer = null;
+        let isInteracting = false;
+        // تابع فعال‌سازی full-width
+        const activateFullWidth = () => {
+            if (!container.classList.contains('full-width')) {
+                this.toggleFullWidth();
+            }
+            isInteracting = true;
+            if (inactivityTimer) clearTimeout(inactivityTimer);
+        };
+        // تابع غیرفعال‌سازی (minimize)
+        const deactivateFullWidth = () => {
+            if (container.classList.contains('full-width')) {
+                this.toggleFullWidth();
+            }
+            isInteracting = false;
+        };
+        // وقتی موس وارد شد یا کلیک شد یا تایپ شد
+        container.addEventListener('mouseenter', activateFullWidth);
+        container.addEventListener('mousedown', activateFullWidth);
+        input.addEventListener('focus', activateFullWidth);
+        input.addEventListener('input', activateFullWidth);
+        // وقتی موس خارج شد یا فوکوس textarea از بین رفت
+        container.addEventListener('mouseleave', () => {
+            isInteracting = false;
+            if (inactivityTimer) clearTimeout(inactivityTimer);
+            inactivityTimer = setTimeout(() => {
+                if (!isInteracting) deactivateFullWidth();
+            }, 4000); // 4 ثانیه بعد از خروج موس
+        });
+        input.addEventListener('blur', () => {
+            isInteracting = false;
+            if (inactivityTimer) clearTimeout(inactivityTimer);
+            inactivityTimer = setTimeout(() => {
+                if (!isInteracting) deactivateFullWidth();
+            }, 4000);
+        });
     }
 }
 
