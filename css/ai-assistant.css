@@ -47,10 +47,16 @@
 
 /* Dropdown in full-width mode */
 .ai-assistant-container.full-width .ai-dropdown-content {
-    max-height: 80vh !important;
-    height: 80vh !important;
-    min-width: 250px !important;
-    max-width: 400px !important;
+    max-height: 100vh !important;
+    height: 100vh !important;
+    min-width: 300px !important;
+    max-width: 500px !important;
+    position: fixed !important;
+    top: 0 !important;
+    right: 20px !important;
+    bottom: 0 !important;
+    margin: 0 !important;
+    border-radius: 20px !important;
 }
 
 /* Ensure body doesn't scroll when AI assistant is full-width */
@@ -430,8 +436,8 @@ body.ai-assistant-fullscreen > *:not(#ai-assistant-container) {
     z-index: 1000;
     min-width: 200px;
     max-width: 300px;
-    max-height: 350px;
-    height: 350px;
+    max-height: 400px;
+    height: 400px;
     overflow-y: auto;
     direction: rtl;
     text-align: right;
