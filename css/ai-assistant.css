@@ -45,6 +45,14 @@
     background: linear-gradient(135deg, #232946 0%, #1a1f2e 100%) !important;
 }
 
+/* Dropdown in full-width mode */
+.ai-assistant-container.full-width .ai-dropdown-content {
+    max-height: 80vh !important;
+    height: 80vh !important;
+    min-width: 250px !important;
+    max-width: 400px !important;
+}
+
 /* Ensure body doesn't scroll when AI assistant is full-width */
 body.ai-assistant-fullscreen {
     overflow-x: auto !important;
@@ -422,7 +430,8 @@ body.ai-assistant-fullscreen > *:not(#ai-assistant-container) {
     z-index: 1000;
     min-width: 200px;
     max-width: 300px;
-    max-height: 400px;
+    max-height: 350px;
+    height: 350px;
     overflow-y: auto;
     direction: rtl;
     text-align: right;
