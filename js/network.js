@@ -163,37 +163,198 @@ async function getFinalReferrer(contract) {
   }
 }
 
-// نمایش modal ثبت‌نام برای گره خالی
+// نمایش modal ثبت‌نام برای گره خالی - بهینه‌سازی شده برای موبایل
 function showRegisterModal(parentIndex, parentAddress) {
     // ابتدا modal قبلی را حذف کن
     let old = document.getElementById('register-modal');
     if (old) old.remove();
+    
     // ساخت modal
     const modal = document.createElement('div');
     modal.id = 'register-modal';
-    modal.style = 'position:fixed;z-index:3000;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;';
+    modal.style = `
+      position: fixed;
+      z-index: 3000;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      box-sizing: border-box;
+    `;
+    
     modal.innerHTML = `
-      <div style="background:#232946;padding:2rem 2.5rem;border-radius:18px;box-shadow:0 8px 32px #000a;min-width:320px;max-width:95vw;direction:ltr;position:relative;">
-        <button id="register-modal-close" style="position:absolute;top:10px;right:10px;font-size:1.3rem;background:none;border:none;color:#fff;cursor:pointer;">×</button>
-        <div style="margin-bottom:1.2rem;padding:0.7rem 1rem;background:#181c2a;border-radius:10px;border:1px solid #a786ff;">
-          <span style='color:#a786ff;font-size:1.1rem;font-weight:bold;'>معرف (Referrer):</span><br>
-          <span style='color:#fff;font-size:1rem;'><b>Index:</b> ${parentIndex}</span><br>
-          <span style='color:#00ff88;font-family:monospace;font-size:1rem;'><b>Address:</b> ${parentAddress}</span>
+      <div style="
+        background: linear-gradient(135deg, #232946, #181c2a);
+        padding: 1.5rem;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        width: 100%;
+        max-width: 500px;
+        max-height: 90vh;
+        overflow-y: auto;
+        direction: rtl;
+        position: relative;
+        border: 2px solid #a786ff;
+      ">
+        <!-- Header -->
+        <div style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 1.5rem;
+          padding-bottom: 1rem;
+          border-bottom: 2px solid #a786ff;
+        ">
+          <h3 style="
+            color: #00ff88;
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: bold;
+            text-align: center;
+            flex: 1;
+          ">🌳 ثبت‌نام زیرمجموعه</h3>
+          <button id="register-modal-close" style="
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+          " onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='none'">×</button>
         </div>
-        <h3 style="color:#00ff88;margin-bottom:1.2rem;">ثبت‌نام زیرمجموعه جدید</h3>
-        <div style="margin-bottom:0.7rem;">
-          <label style="color:#fff;">آدرس ولت جدید:</label><br>
-          <input id="register-new-address" type="text" placeholder="0x..." style="width:100%;padding:0.5rem;border-radius:8px;border:1px solid #a786ff;margin-top:0.3rem;direction:ltr;" />
+
+        <!-- Referrer Info -->
+        <div style="
+          background: rgba(167, 134, 255, 0.1);
+          border: 1px solid #a786ff;
+          border-radius: 12px;
+          padding: 1rem;
+          margin-bottom: 1.5rem;
+        ">
+          <div style="color: #a786ff; font-weight: bold; margin-bottom: 0.8rem;">👤 اطلاعات معرف:</div>
+          <div style="display: grid; gap: 0.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #fff;">📊 Index:</span>
+              <span style="color: #00ff88; font-weight: bold;">${parentIndex}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #fff;">🔗 Address:</span>
+              <span style="
+                color: #00ff88;
+                font-family: monospace;
+                font-size: 0.9rem;
+                word-break: break-all;
+                max-width: 60%;
+                text-align: left;
+              ">${parentAddress}</span>
+            </div>
+          </div>
         </div>
-        <div id="register-fee-info" style="color:#fff;margin-bottom:0.7rem;font-size:0.95rem;">Loading fee info...</div>
-        <div id="register-matic-info" style="color:#fff;margin-bottom:1.2rem;font-size:0.95rem;">Loading MATIC balance...</div>
-        <button id="register-submit-btn" style="background:#00ff88;color:#232946;font-weight:bold;padding:0.7rem 2.2rem;border:none;border-radius:10px;font-size:1.1rem;cursor:pointer;">ثبت‌نام</button>
-        <div id="register-modal-status" style="margin-top:1rem;color:#ff6b6b;"></div>
+
+        <!-- New Address Input -->
+        <div style="margin-bottom: 1.5rem;">
+          <label for="register-new-address" style="
+            display: block;
+            color: #fff;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+          ">🔑 آدرس ولت جدید:</label>
+          <input id="register-new-address" 
+            type="text" 
+            placeholder="0x..." 
+            style="
+              width: 100%;
+              padding: 1rem;
+              border-radius: 12px;
+              border: 2px solid #a786ff;
+              background: rgba(0,0,0,0.3);
+              color: #fff;
+              font-family: monospace;
+              font-size: 1rem;
+              direction: ltr;
+              text-align: left;
+              box-sizing: border-box;
+              transition: border-color 0.3s;
+            "
+            onfocus="this.style.borderColor='#00ff88'"
+            onblur="this.style.borderColor='#a786ff'"
+          />
+        </div>
+
+        <!-- Fee Info -->
+        <div id="register-fee-info" style="
+          background: rgba(255, 107, 107, 0.1);
+          border: 1px solid #ff6b6b;
+          border-radius: 12px;
+          padding: 1rem;
+          margin-bottom: 1rem;
+          color: #ff6b6b;
+          font-weight: bold;
+          text-align: center;
+        ">در حال بارگذاری اطلاعات هزینه...</div>
+
+        <!-- MATIC Info -->
+        <div id="register-matic-info" style="
+          background: rgba(0, 255, 136, 0.1);
+          border: 1px solid #00ff88;
+          border-radius: 12px;
+          padding: 1rem;
+          margin-bottom: 1.5rem;
+          color: #00ff88;
+          font-weight: bold;
+          text-align: center;
+        ">در حال بارگذاری موجودی MATIC...</div>
+
+        <!-- Action Button -->
+        <button id="register-submit-btn" style="
+          background: linear-gradient(135deg, #00ff88, #00cc66);
+          color: #232946;
+          font-weight: bold;
+          padding: 1rem;
+          border: none;
+          border-radius: 12px;
+          font-size: 1.1rem;
+          cursor: pointer;
+          transition: all 0.3s;
+          box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+          width: 100%;
+        " onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(0,255,136,0.4)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 15px rgba(0,255,136,0.3)'">
+          ✅ ثبت‌نام زیرمجموعه
+        </button>
+
+        <!-- Status Message -->
+        <div id="register-modal-status" style="
+          margin-top: 1rem;
+          padding: 1rem;
+          border-radius: 8px;
+          text-align: center;
+          font-weight: bold;
+          min-height: 20px;
+        "></div>
       </div>
     `;
+    
     document.body.appendChild(modal);
+    
     // بستن modal
     document.getElementById('register-modal-close').onclick = () => modal.remove();
+    
+    // Close on background click
+    modal.onclick = (e) => {
+      if (e.target === modal) modal.remove();
+    };
     // گرفتن اطلاعات هزینه ثبت‌نام و موجودی متیک
     (async function() {
       try {

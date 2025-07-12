@@ -5535,6 +5535,83 @@ footer[style*="position: fixed"] {
   align-items: center;
   justify-content: center;
   animation: fadeIn 0.3s ease;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+/* Mobile-optimized registration form styles */
+#register-form-modal,
+#register-modal {
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+#register-form-modal > div,
+#register-modal > div {
+  max-height: 90vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Mobile input optimizations */
+#register-form-modal input,
+#register-modal input {
+  font-size: 16px !important; /* Prevents zoom on iOS */
+  -webkit-appearance: none;
+  border-radius: 12px !important;
+}
+
+/* Mobile button optimizations */
+#register-form-modal button,
+#register-modal button {
+  min-height: 44px; /* iOS recommended touch target size */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 768px) {
+  #register-form-modal,
+  #register-modal {
+    padding: 0.5rem;
+  }
+  
+  #register-form-modal > div,
+  #register-modal > div {
+    padding: 1rem;
+    border-radius: 16px;
+  }
+  
+  #register-form-modal h3,
+  #register-modal h3 {
+    font-size: 1.2rem;
+  }
+  
+  #register-form-modal input,
+  #register-modal input {
+    padding: 0.8rem;
+    font-size: 16px;
+  }
+  
+  #register-form-modal button,
+  #register-modal button {
+    padding: 0.8rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  #register-form-modal > div,
+  #register-modal > div {
+    padding: 0.8rem;
+    margin: 0;
+    width: 100%;
+    max-width: none;
+  }
+  
+  #register-form-modal h3,
+  #register-modal h3 {
+    font-size: 1.1rem;
+  }
 }
 
 .professional-modal-content {

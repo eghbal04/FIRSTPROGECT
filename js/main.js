@@ -916,33 +916,228 @@ document.addEventListener('click', function(e) {
   }
 });
 
-// فرم ثبت‌نام با ورودی آدرس ولت جدید و نمایش موجودی متیک و توکن
+// فرم ثبت‌نام با ورودی آدرس ولت جدید و نمایش موجودی متیک و توکن - بهینه‌سازی شده برای موبایل
 function showRegisterForm(referrerAddress, defaultNewWallet, connectedAddress, provider, contract) {
   let old = document.getElementById('register-form-modal');
   if (old) old.remove();
+  
   const modal = document.createElement('div');
   modal.id = 'register-form-modal';
-  modal.style = 'position:fixed;z-index:3000;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;';
+  modal.style = `
+    position: fixed;
+    z-index: 3000;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    box-sizing: border-box;
+  `;
+  
   modal.innerHTML = `
-    <div style=\"background:#181c2a;padding:2rem 2.5rem;border-radius:18px;box-shadow:0 8px 32px #000a;min-width:340px;max-width:95vw;direction:ltr;position:relative;\">
-      <button id=\"register-form-close\" style=\"position:absolute;top:10px;right:10px;font-size:1.3rem;background:none;border:none;color:#fff;cursor:pointer;\">×</button>
-      <h3 style=\"color:#00ff88;margin-bottom:1.2rem;font-family:monospace;letter-spacing:1px;\">ثبت‌نام (Terminal Style)</h3>
-      <pre id=\"register-terminal-info\" style=\"background:#232946;border:1.5px solid #333;padding:1.2rem 1.5rem;border-radius:12px;color:#00ff88;font-size:1.05rem;line-height:2;font-family:monospace;overflow-x:auto;margin-bottom:1.2rem;box-shadow:0 2px 12px #00ff8840;\">
-معرف (Referrer):   <span style=\"color:#a786ff;\">${referrerAddress}</span>
-آدرس ولت جدید:    <input id=\"register-new-wallet\" type=\"text\" placeholder=\"0x...\" style=\"width:70%;padding:0.3rem 0.5rem;border-radius:6px;border:1px solid #a786ff;margin-left:0.5rem;direction:ltr;font-family:monospace;font-size:1rem;background:#232946;color:#fff;\" value=\"${defaultNewWallet}\" />
-موجودی متیک:      <span id=\"register-matic-balance\" style=\"color:#fff;\">در حال دریافت...</span>
-موجودی CPA:        <span id=\"register-cpa-balance\" style=\"color:#fff;\">در حال دریافت...</span>
-موجودی USDC:       <span id=\"register-usdc-balance\" style=\"color:#fff;\">در حال دریافت...</span>
-مقدار مورد نیاز:   <span id=\"register-required-usdc\" style=\"color:#ff6b6b;\">در حال دریافت...</span>
-      </pre>
-      <button id=\"register-form-confirm\" style=\"background:#00ff88;color:#232946;font-weight:bold;padding:0.7rem 2.2rem;border:none;border-radius:10px;font-size:1.1rem;cursor:pointer;margin-left:1rem;\">ثبت‌نام</button>
-      <button id=\"register-form-cancel\" style=\"background:#a786ff;color:#fff;font-weight:bold;padding:0.7rem 2.2rem;border:none;border-radius:10px;font-size:1.1rem;cursor:pointer;\">انصراف</button>
-      <div id=\"register-form-status\" style=\"margin-top:1rem;color:#ff6b6b;\"></div>
+    <div style="
+      background: linear-gradient(135deg, #181c2a, #232946);
+      padding: 1.5rem;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      direction: rtl;
+      position: relative;
+      border: 2px solid #a786ff;
+    ">
+      <!-- Header -->
+      <div style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #a786ff;
+      ">
+        <h3 style="
+          color: #00ff88;
+          margin: 0;
+          font-size: 1.3rem;
+          font-weight: bold;
+          text-align: center;
+          flex: 1;
+        ">📝 ثبت‌نام جدید</h3>
+        <button id="register-form-close" style="
+          background: none;
+          border: none;
+          color: #fff;
+          font-size: 1.5rem;
+          cursor: pointer;
+          padding: 0.5rem;
+          border-radius: 50%;
+          width: 40px;
+          height: 40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: background 0.3s;
+        " onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='none'">×</button>
+      </div>
+
+      <!-- Referrer Info -->
+      <div style="
+        background: rgba(167, 134, 255, 0.1);
+        border: 1px solid #a786ff;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+      ">
+        <div style="color: #a786ff; font-weight: bold; margin-bottom: 0.5rem;">👤 معرف (Referrer):</div>
+        <div style="
+          color: #fff;
+          font-family: monospace;
+          font-size: 0.9rem;
+          word-break: break-all;
+          background: rgba(0,0,0,0.3);
+          padding: 0.5rem;
+          border-radius: 6px;
+        ">${referrerAddress}</div>
+      </div>
+
+      <!-- New Wallet Input -->
+      <div style="margin-bottom: 1.5rem;">
+        <label for="register-new-wallet" style="
+          display: block;
+          color: #fff;
+          font-weight: bold;
+          margin-bottom: 0.5rem;
+        ">🔑 آدرس ولت جدید:</label>
+        <input id="register-new-wallet" 
+          type="text" 
+          placeholder="0x..." 
+          value="${defaultNewWallet}"
+          style="
+            width: 100%;
+            padding: 1rem;
+            border-radius: 12px;
+            border: 2px solid #a786ff;
+            background: rgba(0,0,0,0.3);
+            color: #fff;
+            font-family: monospace;
+            font-size: 1rem;
+            direction: ltr;
+            text-align: left;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+          "
+          onfocus="this.style.borderColor='#00ff88'"
+          onblur="this.style.borderColor='#a786ff'"
+        />
+      </div>
+
+      <!-- Balance Info -->
+      <div style="
+        background: rgba(0, 255, 136, 0.1);
+        border: 1px solid #00ff88;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+      ">
+        <div style="color: #00ff88; font-weight: bold; margin-bottom: 1rem;">💰 موجودی‌های شما:</div>
+        
+        <div style="display: grid; gap: 0.8rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: #fff;">🟣 POL:</span>
+            <span id="register-matic-balance" style="color: #a786ff; font-weight: bold;">در حال دریافت...</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: #fff;">🟢 CPA:</span>
+            <span id="register-cpa-balance" style="color: #00ff88; font-weight: bold;">در حال دریافت...</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: #fff;">💵 USDC:</span>
+            <span id="register-usdc-balance" style="color: #00ccff; font-weight: bold;">در حال دریافت...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Required Amount -->
+      <div style="
+        background: rgba(255, 107, 107, 0.1);
+        border: 1px solid #ff6b6b;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+      ">
+        <div style="color: #ff6b6b; font-weight: bold; margin-bottom: 0.5rem;">⚠️ مقدار مورد نیاز:</div>
+        <div id="register-required-usdc" style="
+          color: #ff6b6b;
+          font-size: 1.1rem;
+          font-weight: bold;
+          text-align: center;
+        ">در حال دریافت...</div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="
+        display: flex;
+        gap: 1rem;
+        flex-direction: column;
+      ">
+        <button id="register-form-confirm" style="
+          background: linear-gradient(135deg, #00ff88, #00cc66);
+          color: #232946;
+          font-weight: bold;
+          padding: 1rem;
+          border: none;
+          border-radius: 12px;
+          font-size: 1.1rem;
+          cursor: pointer;
+          transition: all 0.3s;
+          box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+        " onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(0,255,136,0.4)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 15px rgba(0,255,136,0.3)'">
+          ✅ ثبت‌نام
+        </button>
+        <button id="register-form-cancel" style="
+          background: linear-gradient(135deg, #a786ff, #8b6bff);
+          color: #fff;
+          font-weight: bold;
+          padding: 1rem;
+          border: none;
+          border-radius: 12px;
+          font-size: 1.1rem;
+          cursor: pointer;
+          transition: all 0.3s;
+          box-shadow: 0 4px 15px rgba(167, 134, 255, 0.3);
+        " onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(167,134,255,0.4)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 15px rgba(167,134,255,0.3)'">
+          ❌ انصراف
+        </button>
+      </div>
+
+      <!-- Status Message -->
+      <div id="register-form-status" style="
+        margin-top: 1rem;
+        padding: 1rem;
+        border-radius: 8px;
+        text-align: center;
+        font-weight: bold;
+        min-height: 20px;
+      "></div>
     </div>
   `;
+  
   document.body.appendChild(modal);
+  
+  // Close button functionality
   document.getElementById('register-form-close').onclick = () => modal.remove();
   document.getElementById('register-form-cancel').onclick = () => modal.remove();
+  
+  // Close on background click
+  modal.onclick = (e) => {
+    if (e.target === modal) modal.remove();
+  };
   // دریافت و نمایش موجودی متیک و توکن
   (async function() {
     try {
