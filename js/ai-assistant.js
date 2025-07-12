@@ -2065,47 +2065,57 @@ class AIAssistant {
         const input = document.getElementById('ai-input');
         let inactivityTimer = null;
         let isInteracting = false;
-        // تابع فعال‌سازی full-width
+        
+        // تابع فعال‌سازی full-width (فقط در صورت نیاز)
         const activateFullWidth = () => {
-            if (!container.classList.contains('full-width')) {
-                this.toggleFullWidth();
+            // فقط اگر در حالت minimized باشد، full-width کن
+            if (container.classList.contains('minimized')) {
+                this.toggleMinimize(); // از حالت minimized خارج کن
             }
             isInteracting = true;
             if (inactivityTimer) clearTimeout(inactivityTimer);
         };
+        
         // تابع غیرفعال‌سازی (minimize)
         const deactivateFullWidth = () => {
+            // فقط اگر در حالت full-width باشد، minimize کن
             if (container.classList.contains('full-width')) {
                 this.toggleFullWidth();
             }
             isInteracting = false;
         };
-        // وقتی موس وارد شد یا تایپ شد
-        container.addEventListener('mouseenter', activateFullWidth);
+        
+        // فقط وقتی روی textarea کلیک می‌شود یا تایپ می‌شود
         input.addEventListener('focus', activateFullWidth);
         input.addEventListener('input', activateFullWidth);
         
-        // کلیک روی container (به جز header)
+        // کلیک روی container (به جز header و دکمه‌ها)
         container.addEventListener('mousedown', (e) => {
-            // اگر کلیک روی header نبود، full-width کن
-            if (!e.target.closest('.ai-assistant-header')) {
+            const target = e.target;
+            // اگر کلیک روی header، دکمه‌ها، یا dropdown نبود
+            if (!target.closest('.ai-assistant-header') && 
+                !target.closest('.ai-assistant-controls') && 
+                !target.closest('.ai-dropdown')) {
                 activateFullWidth();
             }
         });
-        // وقتی موس خارج شد یا فوکوس textarea از بین رفت
+        
+        // وقتی موس خارج شد
         container.addEventListener('mouseleave', () => {
             isInteracting = false;
             if (inactivityTimer) clearTimeout(inactivityTimer);
             inactivityTimer = setTimeout(() => {
                 if (!isInteracting) deactivateFullWidth();
-            }, 4000); // 4 ثانیه بعد از خروج موس
+            }, 8000); // 8 ثانیه بعد از خروج موس
         });
+        
+        // وقتی فوکوس textarea از بین رفت
         input.addEventListener('blur', () => {
             isInteracting = false;
             if (inactivityTimer) clearTimeout(inactivityTimer);
             inactivityTimer = setTimeout(() => {
                 if (!isInteracting) deactivateFullWidth();
-            }, 4000);
+            }, 8000);
         });
     }
 }
