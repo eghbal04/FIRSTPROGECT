@@ -5541,13 +5541,15 @@ footer[style*="position: fixed"] {
 
 /* Mobile-optimized registration form styles */
 #register-form-modal,
-#register-modal {
+#register-modal,
+#user-popup {
   padding: 1rem;
   box-sizing: border-box;
 }
 
 #register-form-modal > div,
-#register-modal > div {
+#register-modal > div,
+#user-popup > div {
   max-height: 90vh;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -5563,9 +5565,20 @@ footer[style*="position: fixed"] {
 
 /* Mobile button optimizations */
 #register-form-modal button,
-#register-modal button {
+#register-modal button,
+#user-popup button {
   min-height: 44px; /* iOS recommended touch target size */
   -webkit-tap-highlight-color: transparent;
+}
+
+/* User popup specific styles */
+#user-popup {
+  z-index: 9999;
+}
+
+#user-popup > div {
+  border: 2px solid #a786ff;
+  background: linear-gradient(135deg, #181c2a, #232946);
 }
 
 /* Mobile-specific improvements */

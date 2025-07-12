@@ -6,39 +6,216 @@ function shortAddress(addr) {
 }
 
 function showUserPopup(address, user) {
-    // Prepare struct info as English strings
-    const infoLines = [
-        `Address:   ${address}`,
-        `Index:     ${user.index}`,
-        `Activated: ${user.activated ? 'Yes' : 'No'}`,
-        `BinaryPoints: ${user.binaryPoints}`,
-        `Cap:      ${user.binaryPointCap}`,
-        `Left:     ${user.leftPoints}`,
-        `Right:    ${user.rightPoints}`,
-        `Refclimed:${user.refclimed}`,
-        '',
-        '--- Financial Info ---',
-        `Binary Claimed: ${user.binaryPointsClaimed}`,
-        `Monthly Withdrawn: ${user.totalMonthlyRewarded}`,
-        `Total Deposited: ${user.depositedAmount}`,
-        `Total Purchased: ${user.totalPurchasedKind}`
-    ];
-    let html = `
-      <div style="direction:ltr;font-family:monospace;background:#111;color:#00ff88;padding:1.5rem 2.5rem;border-radius:16px;box-shadow:0 2px 12px #00ff8840;min-width:320px;max-width:95vw;position:relative;">
-        <pre id="user-popup-terminal" style="background:#111;border:1.5px solid #333;padding:1.2rem 1.5rem;border-radius:12px;color:#00ff88;font-size:1.05rem;line-height:2;font-family:monospace;overflow-x:auto;margin-bottom:1.2rem;box-shadow:0 2px 12px #00ff8840;min-width:280px;"></pre>
-        <button id="close-user-popup" style="position:absolute;top:10px;right:10px;font-size:1.3rem;background:none;border:none;color:#fff;cursor:pointer;">×</button>
+    // تابع کوتاه‌کننده آدرس
+    function shortAddress(addr) {
+        if (!addr) return '-';
+        return addr.slice(0, 6) + '...' + addr.slice(-4);
+    }
+    
+    // حذف popup قبلی اگر وجود دارد
+    let oldPopup = document.getElementById('user-popup');
+    if (oldPopup) oldPopup.remove();
+    
+    // ساخت popup بهینه‌سازی شده برای موبایل
+    const popup = document.createElement('div');
+    popup.id = 'user-popup';
+    popup.style = `
+      position: fixed;
+      z-index: 9999;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      box-sizing: border-box;
+    `;
+    
+    popup.innerHTML = `
+      <div style="
+        background: linear-gradient(135deg, #181c2a, #232946);
+        padding: 1.5rem;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        width: 100%;
+        max-width: 500px;
+        max-height: 90vh;
+        overflow-y: auto;
+        direction: rtl;
+        position: relative;
+        border: 2px solid #a786ff;
+      ">
+        <!-- Header -->
+        <div style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 1.5rem;
+          padding-bottom: 1rem;
+          border-bottom: 2px solid #a786ff;
+        ">
+          <h3 style="
+            color: #00ff88;
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: bold;
+            text-align: center;
+            flex: 1;
+          ">👤 اطلاعات کاربر</h3>
+          <button id="close-user-popup" style="
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+          " onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='none'">×</button>
+        </div>
+
+        <!-- Address Info -->
+        <div style="
+          background: rgba(167, 134, 255, 0.1);
+          border: 1px solid #a786ff;
+          border-radius: 12px;
+          padding: 1rem;
+          margin-bottom: 1.5rem;
+        ">
+          <div style="color: #a786ff; font-weight: bold; margin-bottom: 0.5rem;">🔗 آدرس کیف پول:</div>
+          <div style="
+            color: #fff;
+            font-family: monospace;
+            font-size: 0.9rem;
+            word-break: break-all;
+            background: rgba(0,0,0,0.3);
+            padding: 0.5rem;
+            border-radius: 6px;
+            direction: ltr;
+            text-align: left;
+          " title="${address}">${address}</div>
+        </div>
+
+        <!-- Basic Info -->
+        <div style="
+          background: rgba(0, 255, 136, 0.1);
+          border: 1px solid #00ff88;
+          border-radius: 12px;
+          padding: 1rem;
+          margin-bottom: 1.5rem;
+        ">
+          <div style="color: #00ff88; font-weight: bold; margin-bottom: 1rem;">📊 اطلاعات پایه:</div>
+          <div style="display: grid; gap: 0.8rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #fff;">📋 Index:</span>
+              <span style="color: #00ff88; font-weight: bold;">${user.index}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #fff;">✅ فعال:</span>
+              <span style="color: ${user.activated ? '#00ff88' : '#ff6b6b'}; font-weight: bold;">${user.activated ? 'بله' : 'خیر'}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #fff;">🎯 امتیاز باینری:</span>
+              <span style="color: #00ccff; font-weight: bold;">${user.binaryPoints}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #fff;">📈 سقف امتیاز:</span>
+              <span style="color: #ff9500; font-weight: bold;">${user.binaryPointCap}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Network Info -->
+        <div style="
+          background: rgba(0, 204, 255, 0.1);
+          border: 1px solid #00ccff;
+          border-radius: 12px;
+          padding: 1rem;
+          margin-bottom: 1.5rem;
+        ">
+          <div style="color: #00ccff; font-weight: bold; margin-bottom: 1rem;">🌳 اطلاعات شبکه:</div>
+          <div style="display: grid; gap: 0.8rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #fff;">⬅️ امتیاز چپ:</span>
+              <span style="color: #00ccff; font-weight: bold;">${user.leftPoints}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #fff;">➡️ امتیاز راست:</span>
+              <span style="color: #00ccff; font-weight: bold;">${user.rightPoints}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #fff;">💰 درآمد رفرال:</span>
+              <span style="color: #ff9500; font-weight: bold;">${user.refclimed}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Financial Info -->
+        <div style="
+          background: rgba(255, 149, 0, 0.1);
+          border: 1px solid #ff9500;
+          border-radius: 12px;
+          padding: 1rem;
+          margin-bottom: 1.5rem;
+        ">
+          <div style="color: #ff9500; font-weight: bold; margin-bottom: 1rem;">💸 اطلاعات مالی:</div>
+          <div style="display: grid; gap: 0.8rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #fff;">🏆 برداشت باینری:</span>
+              <span style="color: #ff9500; font-weight: bold;">${user.binaryPointsClaimed}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #fff;">🗓️ برداشت ماهانه:</span>
+              <span style="color: #ff9500; font-weight: bold;">${user.totalMonthlyRewarded}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #fff;">💳 کل واریزی:</span>
+              <span style="color: #ff9500; font-weight: bold;">${user.depositedAmount}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: #fff;">🛒 کل خرید:</span>
+              <span style="color: #ff9500; font-weight: bold;">${user.totalPurchasedKind}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Close Button -->
+        <button id="close-user-popup-btn" style="
+          background: linear-gradient(135deg, #a786ff, #8b6bff);
+          color: #fff;
+          font-weight: bold;
+          padding: 1rem;
+          border: none;
+          border-radius: 12px;
+          font-size: 1.1rem;
+          cursor: pointer;
+          transition: all 0.3s;
+          box-shadow: 0 4px 15px rgba(167, 134, 255, 0.3);
+          width: 100%;
+        " onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(167,134,255,0.4)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 15px rgba(167,134,255,0.3)'">
+          ❌ بستن
+        </button>
       </div>
     `;
-    let popup = document.createElement('div');
-    popup.id = 'user-popup';
-    popup.style.position = 'fixed';
-    popup.style.top = '50%';
-    popup.style.left = '50%';
-    popup.style.transform = 'translate(-50%,-50%)';
-    popup.style.zIndex = 9999;
-    popup.innerHTML = html;
+    
     document.body.appendChild(popup);
+    
+    // Close button functionality
     document.getElementById('close-user-popup').onclick = () => popup.remove();
+    document.getElementById('close-user-popup-btn').onclick = () => popup.remove();
+    
+    // Close on background click
+    popup.onclick = (e) => {
+        if (e.target === popup) popup.remove();
+    };
 }
 
 async function renderNodeLazy(index, container) {
