@@ -442,8 +442,17 @@ class AIAssistant {
             this.toggleMinimize();
         });
         
-        // Header click to toggle
-        document.querySelector('.ai-assistant-header').addEventListener('click', () => {
+        // Header click to close/minimize
+        document.querySelector('.ai-assistant-header').addEventListener('click', (e) => {
+            e.stopPropagation();
+            const container = document.getElementById('ai-assistant-container');
+            
+            // اگر در حالت full-width است، ابتدا از آن خارج شو
+            if (container.classList.contains('full-width')) {
+                this.toggleFullWidth();
+            }
+            
+            // سپس minimize کن
             this.toggleMinimize();
         });
         
@@ -2071,11 +2080,18 @@ class AIAssistant {
             }
             isInteracting = false;
         };
-        // وقتی موس وارد شد یا کلیک شد یا تایپ شد
+        // وقتی موس وارد شد یا تایپ شد
         container.addEventListener('mouseenter', activateFullWidth);
-        container.addEventListener('mousedown', activateFullWidth);
         input.addEventListener('focus', activateFullWidth);
         input.addEventListener('input', activateFullWidth);
+        
+        // کلیک روی container (به جز header)
+        container.addEventListener('mousedown', (e) => {
+            // اگر کلیک روی header نبود، full-width کن
+            if (!e.target.closest('.ai-assistant-header')) {
+                activateFullWidth();
+            }
+        });
         // وقتی موس خارج شد یا فوکوس textarea از بین رفت
         container.addEventListener('mouseleave', () => {
             isInteracting = false;
