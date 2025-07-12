@@ -289,6 +289,28 @@ class AIAssistant {
         
         return this.isDeployer;
     }
+    
+    // Test full-width mode
+    testFullWidthMode() {
+        console.log('🧪 Testing full-width mode...');
+        const container = document.getElementById('ai-assistant-container');
+        const body = document.body;
+        
+        console.log('Container found:', !!container);
+        console.log('Container classes:', container ? container.className : 'N/A');
+        console.log('Body classes:', body.className);
+        console.log('Container width:', container ? container.style.width : 'N/A');
+        console.log('Body width:', body.style.width);
+        
+        if (container) {
+            console.log('Container computed width:', window.getComputedStyle(container).width);
+            console.log('Container offset width:', container.offsetWidth);
+            console.log('Is full-width?', container.classList.contains('full-width'));
+        }
+        
+        // Test the toggle function
+        this.toggleFullWidth();
+    }
 
     // Function to show current button configuration
     showCurrentConfiguration() {
@@ -339,6 +361,9 @@ class AIAssistant {
                 <div class="ai-assistant-controls">
                     <button class="ai-close-btn" id="ai-close-btn">
                         <i class="fas fa-minus"></i>
+                    </button>
+                    <button class="ai-expand-btn" id="ai-expand-btn" title="Full Width Mode">
+                        <i class="fas fa-expand"></i>
                     </button>
                 </div>
             </div>
@@ -418,6 +443,12 @@ class AIAssistant {
         document.getElementById('ai-close-btn').addEventListener('click', (e) => {
             e.stopPropagation();
             this.toggleMinimize();
+        });
+        
+        // Expand button to toggle full-width mode
+        document.getElementById('ai-expand-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggleFullWidth();
         });
         
         // Header click to toggle
@@ -503,6 +534,14 @@ class AIAssistant {
             container.classList.add('full-width');
             body.classList.add('ai-assistant-fullscreen');
             
+            // Update expand button
+            const expandBtn = document.getElementById('ai-expand-btn');
+            if (expandBtn) {
+                expandBtn.classList.add('full-width');
+                expandBtn.innerHTML = '<i class="fas fa-compress"></i>';
+                expandBtn.title = 'Exit Full Width Mode';
+            }
+            
             // Set body styles for horizontal scrolling
             body.style.cssText = `
                 overflow-x: auto !important;
@@ -550,6 +589,14 @@ class AIAssistant {
             // Remove classes
             container.classList.remove('full-width');
             body.classList.remove('ai-assistant-fullscreen');
+            
+            // Reset expand button
+            const expandBtn = document.getElementById('ai-expand-btn');
+            if (expandBtn) {
+                expandBtn.classList.remove('full-width');
+                expandBtn.innerHTML = '<i class="fas fa-expand"></i>';
+                expandBtn.title = 'Full Width Mode';
+            }
             
             // Reset container styles
             container.style.cssText = '';

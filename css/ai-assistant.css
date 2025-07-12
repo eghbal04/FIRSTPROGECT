@@ -164,6 +164,29 @@ body.ai-assistant-fullscreen > *:not(#ai-assistant-container) {
     transform: scale(1.05);
 }
 
+.ai-expand-btn {
+    background: rgba(24,28,42,0.2) !important;
+    border: none !important;
+    color: #00ff88 !important;
+    cursor: pointer !important;
+    padding: 8px !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease !important;
+    font-weight: 600 !important;
+    font-size: 1rem !important;
+    line-height: 1 !important;
+}
+
+.ai-expand-btn:hover {
+    background: rgba(0,255,136,0.1) !important;
+    transform: scale(1.05) !important;
+}
+
+.ai-expand-btn.full-width {
+    background: rgba(255,0,0,0.2) !important;
+    color: #ff4444 !important;
+}
+
 .ai-assistant-body {
     flex: 1;
     display: flex;
