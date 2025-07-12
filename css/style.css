@@ -322,51 +322,10 @@
   width: 100%;
   padding: 0 1rem;
 }
-#dashboard-terminal-card {
-  background: #111;
-  color: #00ff88;
-  font-family: monospace;
-  border-radius: 4px;
-  box-shadow: 0 2px 12px #00ff8840;
-  margin: 0.2rem 0;
-  width: 100%;
-  text-align: left;
-  direction: ltr;
-  padding: 0.3rem 0.4rem;
-}
-#dashboard-terminal-info {
-  background: #111;
-  border: 1.5px solid #333;
-  padding: 0.3rem 0.4rem;
-  border-radius: 4px;
-  color: #00ff88;
-  font-size: 1rem;
-  line-height: 2;
-  font-family: monospace;
-  overflow-x: auto;
-  width: 100%;
-  margin: 0;
-  text-align: left;
-  white-space: pre;
-  direction: ltr;
-  caret-color: transparent;
-  direction: ltr !important;
-  font-family: monospace, 'Courier New', Courier !important;
-  unicode-bidi: plaintext;
-}
-#dashboard-terminal-info.collapsed {
-  max-height: 4.8em; /* ~3 lines, line-height: 1.6em */
-  overflow-y: auto;
-  transition: max-height 0.3s;
-}
-#dashboard-terminal-info {
-  transition: max-height 0.3s;
-}
+/* Dashboard terminal card styles removed - replaced with AI Assistant */
+/* Dashboard terminal info styles removed - replaced with AI Assistant */
 
-/* Optional: style for expand/collapse button */
-#dashboard-expand-btn {
-  user-select: none;
-}
+/* Dashboard expand button styles removed - replaced with AI Assistant */
 
 .price-chart-canvas-container {
   background: linear-gradient(135deg,#1e293b,#334155);
@@ -7473,90 +7432,13 @@ body.signal-page { background: #181c2a; color: #fff; font-family: 'Noto Sans Ara
   animation: chartError 0.5s ease-in-out;
 }
 
-@media (max-width: 600px) {
-  #dashboard-terminal-card {
-    min-width: unset !important;
-    width: 100% !important;
-    border-radius: 2px !important;
-    box-shadow: none !important;
-    margin: 0.1rem 0 !important;
-    padding: 0.1rem 0.1rem !important;
-  }
-  #dashboard-terminal-info {
-    font-size: 0.85rem !important;
-    padding: 0.2rem 0.2rem !important;
-    word-break: break-all !important;
-    overflow-wrap: anywhere !important;
-    border-radius: 2px !important;
-    box-shadow: none !important;
-    width: 100% !important;
-    margin: 0 !important;
-  }
-}
-
-.dashboard-terminal-title {
-  font-weight: bold;
-  text-align: center;
-  display: block;
-  font-size: 1.3em;
-  margin-bottom: 0.2em;
-}
-
-.dashboard-cursor {
-  font-weight: bold;
-  color: #00ff88;
-  animation: blink-cursor 1s steps(1) infinite;
-}
+/* Dashboard terminal responsive styles removed - replaced with AI Assistant */
 @keyframes blink-cursor {
   0%, 50% { opacity: 1; }
   51%, 100% { opacity: 0; }
 }
 
-/* --- Dashboard Terminal Typewriter Fix --- */
-#dashboard-terminal-info {
-  font-family: 'Fira Mono', 'Consolas', 'Courier New', 'Noto Sans Arabic', monospace !important;
-  direction: ltr !important;
-  text-align: left !important;
-  font-size: 0.95rem;
-  line-height: 1.7;
-  unicode-bidi: plaintext;
-  word-break: break-all;
-  background: #111;
-  color: #00ff88;
-  border-radius: 8px;
-  border: 1.5px solid #333;
-  padding: 0.5rem 0.8rem;
-  min-width: 280px;
-  width: 100%;
-  margin: 0;
-  overflow-x: auto;
-}
-
-.dashboard-terminal-title {
-  font-family: 'Fira Mono', 'Consolas', 'Courier New', 'Noto Sans Arabic', monospace !important;
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: #00ff88;
-  letter-spacing: 0.5px;
-}
-
-.dashboard-cursor {
-  color: #00ff88;
-  animation: blink 1s steps(1) infinite;
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-
-/* Optional: Responsive for mobile */
-@media (max-width: 600px) {
-  #dashboard-terminal-info {
-    font-size: 0.85rem;
-    padding: 0.3rem 0.3rem;
-  }
-}
+/* Dashboard terminal styles removed - replaced with AI Assistant */
 
 @media (max-width: 600px) {
   .register-form {
@@ -7585,5 +7467,203 @@ body.signal-page { background: #181c2a; color: #fff; font-family: 'Noto Sans Ara
     font-size: 1.1rem;
     padding: 0.8rem 0;
     margin-top: 0.7rem;
+  }
+}
+
+/* Account Management Styles */
+.account-management-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.account-action-card {
+  background: linear-gradient(135deg, #232946, #2a2f4c);
+  border-radius: 16px;
+  padding: 1.5rem;
+  border: 1px solid rgba(167, 134, 255, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.account-action-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #00ff88, #a786ff);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.account-action-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(167, 134, 255, 0.2);
+  border-color: rgba(167, 134, 255, 0.4);
+}
+
+.account-action-card:hover::before {
+  opacity: 1;
+}
+
+.action-icon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #00ff88, #00ccff);
+  border-radius: 50%;
+  color: #232946;
+  font-weight: bold;
+}
+
+.action-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.action-title {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 0.3rem;
+}
+
+.action-description {
+  color: #a786ff;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.action-input-group {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.action-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.8rem 1rem;
+  border: 1px solid rgba(167, 134, 255, 0.3);
+  border-radius: 12px;
+  background: rgba(24, 28, 42, 0.8);
+  color: #fff;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  direction: ltr;
+}
+
+.action-input:focus {
+  outline: none;
+  border-color: #00ff88;
+  box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
+  background: rgba(24, 28, 42, 0.9);
+}
+
+.action-input::placeholder {
+  color: #a786ff;
+  opacity: 0.7;
+}
+
+.action-btn {
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  min-width: 120px;
+}
+
+.action-btn.primary {
+  background: linear-gradient(135deg, #00ff88, #00ccff);
+  color: #232946;
+}
+
+.action-btn.primary:hover {
+  background: linear-gradient(135deg, #00ccff, #00ff88);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+}
+
+.action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.action-status {
+  margin-top: 1rem;
+  padding: 0.8rem 1rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+  transition: all 0.3s ease;
+  min-height: 20px;
+}
+
+.action-status.success {
+  color: #00ff88;
+  background: rgba(0, 255, 136, 0.1);
+  border-color: rgba(0, 255, 136, 0.3);
+}
+
+.action-status.error {
+  color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.1);
+  border-color: rgba(255, 107, 107, 0.3);
+}
+
+.action-status.loading {
+  color: #00ccff;
+  background: rgba(0, 204, 255, 0.1);
+  border-color: rgba(0, 204, 255, 0.3);
+}
+
+.action-status.info {
+  color: #a786ff;
+  background: rgba(167, 134, 255, 0.1);
+  border-color: rgba(167, 134, 255, 0.3);
+}
+
+@media (max-width: 768px) {
+  .account-action-card {
+    padding: 1.2rem;
+  }
+  
+  .action-input-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .action-input {
+    min-width: auto;
+  }
+  
+  .action-btn {
+    width: 100%;
+  }
+  
+  .action-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+  }
+  
+  .action-title {
+    font-size: 1.2rem;
   }
 }

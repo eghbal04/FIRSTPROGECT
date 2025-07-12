@@ -128,21 +128,12 @@ async function loadDashboardData() {
         const walletConnected = await waitForWalletConnection();
         
         if (walletConnected.connected) {
-            // دریافت داده‌ها به صورت موازی
+            // دریافت داده‌ها به صورت موازی - بدون fallback values
             const [prices, stats, additionalStats, tradingVolume] = await Promise.all([
-                window.getPrices().catch(() => ({ cpaPriceUSD: 0, cpaPriceMatic: 0 })),
-                window.getContractStats().catch(() => ({
-                    totalSupply: "0",
-                    circulatingSupply: "0",
-                    binaryPool: "0",
-                    totalPoints: "0",
-                    totalClaimableBinaryPoints: "0",
-                    pointValue: "0",
-                    rewardPool: "0",
-                    contractTokenBalance: "0"
-                })),
-                getAdditionalStats().catch(() => ({ wallets: 0, helpFund: 0 })),
-                getTradingVolume().catch(() => 0)
+                window.getPrices(),
+                window.getContractStats(),
+                getAdditionalStats(),
+                getTradingVolume()
             ]);
             
             // محاسبه تغییرات قیمت
@@ -159,50 +150,28 @@ async function loadDashboardData() {
             await updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceChanges);
             await updateUSDCContractBalance();
         } else {
-            // اگر کیف پول متصل نیست، فقط قیمت‌ها را بارگذاری کن
-            try {
-                // بررسی اینکه آیا تابع getPrices موجود است
-                if (typeof window.getPrices === 'function') {
-                    const prices = await window.getPrices().catch(() => ({ cpaPriceUSD: null, cpaPriceMatic: null }));
-                    const defaultStats = {
-                        totalSupply: "-",
-                        circulatingSupply: "-",
-                        binaryPool: "-",
-                        totalPoints: "-",
-                        totalClaimableBinaryPoints: "-",
-                        pointValue: "-",
-                        rewardPool: "-",
-                        contractTokenBalance: "-"
-                    };
-                    const defaultAdditionalStats = { wallets: 0, helpFund: 0 };
-                    const defaultTradingVolume = 0;
-                    const priceChanges = { cpaPriceChange: '-', maticPriceChange: '-', volumeChange: '-' };
-                    
-                    await updateDashboardUI(prices, defaultStats, defaultAdditionalStats, defaultTradingVolume, priceChanges);
-                    updateConnectionStatus('info', 'برای مشاهده داده‌های کامل، کیف پول خود را متصل کنید');
-                } else {
-                    // اگر تابع getPrices موجود نیست، داده‌های خالی نمایش بده
-                    const defaultPrices = { cpaPriceUSD: null, cpaPriceMatic: null };
-                    const defaultStats = {
-                        totalSupply: "-",
-                        circulatingSupply: "-",
-                        binaryPool: "-",
-                        totalPoints: "-",
-                        totalClaimableBinaryPoints: "-",
-                        pointValue: "-",
-                        rewardPool: "-",
-                        contractTokenBalance: "-"
-                    };
-                    const defaultAdditionalStats = { wallets: 0, helpFund: 0 };
-                    const defaultTradingVolume = 0;
-                    const priceChanges = { cpaPriceChange: '-', maticPriceChange: '-', volumeChange: '-' };
-                    
-                    await updateDashboardUI(defaultPrices, defaultStats, defaultAdditionalStats, defaultTradingVolume, priceChanges);
-                    updateConnectionStatus('info', 'برای مشاهده داده‌های کامل، کیف پول خود را متصل کنید');
-                }
-            } catch (error) {
-                console.warn('Dashboard: Error loading prices without wallet:', error);
-            }
+            // اگر کیف پول متصل نیست، پیام مناسب نمایش بده
+            updateConnectionStatus('info', 'برای مشاهده داده‌های کامل، کیف پول خود را متصل کنید');
+            
+            // نمایش حالت خالی بدون مقادیر پیش‌فرض
+            const emptyData = {
+                prices: { cpaPriceUSD: null, cpaPriceMatic: null },
+                stats: {
+                    totalSupply: null,
+                    circulatingSupply: null,
+                    binaryPool: null,
+                    totalPoints: null,
+                    totalClaimableBinaryPoints: null,
+                    pointValue: null,
+                    rewardPool: null,
+                    contractTokenBalance: null
+                },
+                additionalStats: { wallets: null, helpFund: null },
+                tradingVolume: null,
+                priceChanges: { cpaPriceChange: null, maticPriceChange: null, volumeChange: null }
+            };
+            
+            await updateDashboardUI(emptyData.prices, emptyData.stats, emptyData.additionalStats, emptyData.tradingVolume, emptyData.priceChanges);
         }
         
     } catch (error) {
@@ -219,17 +188,18 @@ async function calculatePriceChanges() {
         // در اینجا می‌توانید تغییرات قیمت را محاسبه کنید
         // برای مثال، مقایسه با قیمت قبلی یا میانگین قیمت‌ها
         
+        // اگر داده‌ای برای محاسبه تغییرات موجود نیست، null برگردان
         return {
-            cpaPriceChange: '-',
-            maticPriceChange: '-',
-            volumeChange: '-'
+            cpaPriceChange: null,
+            maticPriceChange: null,
+            volumeChange: null
         };
     } catch (error) {
-        // console.error('Dashboard: Error calculating price changes:', error);
+        console.error('Dashboard: Error calculating price changes:', error);
         return {
-            cpaPriceChange: '-',
-            maticPriceChange: '-',
-            volumeChange: '-'
+            cpaPriceChange: null,
+            maticPriceChange: null,
+            volumeChange: null
         };
     }
 }
@@ -237,10 +207,10 @@ async function calculatePriceChanges() {
 // تابع به‌روزرسانی UI داشبورد
 async function updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceChanges) {
     const safeFormat = (val, prefix = '', suffix = '', isInteger = false, maxDecimals = 4) => {
-        if (val === null || val === undefined || val === '') return '-';
+        if (val === null || val === undefined || val === '') return 'در دسترس نیست';
         if (typeof val === 'string' && val.includes('e')) return val; // Already in scientific notation
         const num = parseFloat(val);
-        if (isNaN(num)) return val;
+        if (isNaN(num)) return 'در دسترس نیست';
         if (num === 0) return '0';
         if (num < 0.000001) {
             return num.toExponential(6);
@@ -260,9 +230,13 @@ async function updateDashboardUI(prices, stats, additionalStats, tradingVolume, 
     const updateElementExponential = (id, value, suffix = '') => {
         const el = document.getElementById(id);
         if (el) {
+            if (value === null || value === undefined) {
+                el.textContent = 'در دسترس نیست';
+                return;
+            }
             const num = parseFloat(value);
             if (isNaN(num)) {
-                el.textContent = value;
+                el.textContent = 'در دسترس نیست';
             } else if (num === 0) {
                 el.textContent = '0' + suffix;
             } else if (num < 0.000001) {
@@ -301,12 +275,12 @@ async function updateDashboardUI(prices, stats, additionalStats, tradingVolume, 
         } else {
             // اگر قرارداد در دسترس نیست، از stats استفاده کن
             updateElement('total-points', parseInt(stats.totalClaimableBinaryPoints.replace(/\..*$/, '')), '', ' POINT', true);
-            updateElement('point-value', pointValueCPA, '', ' CPA', false, 2);
+            updateElement('point-value', stats.pointValue, '', ' CPA', false, 2);
         }
     } catch (e) {
-        // اگر خطا بود، از stats قبلی استفاده کن
-        updateElement('total-points', parseInt(stats.totalClaimableBinaryPoints.replace(/\..*$/, '')), '', ' POINT', true);
-        updateElement('point-value', pointValueCPA, '', ' CPA', false, 2);
+        // اگر خطا بود، null نمایش بده
+        updateElement('total-points', null, '', ' POINT', true);
+        updateElement('point-value', null, '', ' CPA', false, 2);
     }
     
     // پوینت‌های ادعا شده = 0 (چون هنوز ادعا نشدن)
@@ -317,7 +291,7 @@ async function updateDashboardUI(prices, stats, additionalStats, tradingVolume, 
     
     // موجودی قرارداد با نهایتاً ۶ رقم اعشار
     const tradingVolumeNum = Number(tradingVolume);
-    updateElement('trading-volume', isNaN(tradingVolumeNum) ? 0 : tradingVolumeNum, '', ' POL', false, 6);
+    updateElement('trading-volume', isNaN(tradingVolumeNum) ? null : tradingVolumeNum, '', ' POL', false, 6);
     
     // contract token balance
     let contractTokenBalanceCPA = parseFloat(stats.contractTokenBalance);

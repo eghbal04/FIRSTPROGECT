@@ -15,6 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Fira+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/index-custom.css">
+    <link rel="stylesheet" href="css/ai-assistant.css">
 
     <!-- بارگذاری ethers.js نسخه 6 از CDN -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
@@ -23,9 +24,13 @@
     <!-- بارگذاری WalletConnect Handler -->
     <script src="js/walletconnect-handler.js?v=5.7"></script>
 
-  <!-- بارگذاری WalletConnect UMD به صورت لوکال -->
+      <!-- بارگذاری WalletConnect UMD به صورت لوکال -->
   <script src="js/walletconnect-v1.8.0.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+  
+  <!-- بارگذاری AI Assistant -->
+  <script src="js/ai-assistant.js"></script>
+  <script src="js/ai-help-system.js"></script>
 </head>
 <body>
   <div id="online-session-bubble" style="display:none;">
@@ -190,10 +195,7 @@
   
   <div id="main-dashboard" class="page-section" style="position:relative;overflow:visible;">
     <div class="dashboard-cards" style="display:flex;justify-content:center;flex-wrap:wrap;gap:1rem;max-width:1400px;margin:0 auto;">
-      <div class="dashboard-card" id="dashboard-terminal-card" style="background:#111;color:#00ff88;font-family:monospace;border-radius:16px;box-shadow:0 2px 12px #00ff8840;min-width:320px;max-width:1400px;margin:1rem auto;width:100%;text-align:left;direction:ltr;position:relative;">
-        <button id="dashboard-expand-btn" style="position:absolute;left:0.7rem;top:0.7rem;background:none;border:none;color:#ff4b4b;font-size:1.2rem;cursor:pointer;z-index:2;line-height:1;padding:0.1rem 0.4rem;border-radius:6px;">-</button>
-        <pre id="dashboard-terminal-info" style="background:#111;border:1.5px solid #333;padding:0.5rem 0.8rem;border-radius:8px;color:#00ff88;font-size:0.85rem;line-height:1.5;font-family:monospace;overflow-x:hidden;word-wrap:break-word;white-space:pre-wrap;min-width:280px;width:100%;margin:0;text-align:left;direction:ltr;"></pre>
-      </div>
+      <!-- AI Assistant will be inserted here by JavaScript -->
 
       <!-- Price Chart Section -->
       <div class="dashboard-card" id="price-chart-section" style="background:linear-gradient(135deg,#1a1f2e,#232946);border-radius:16px;box-shadow:0 4px 20px rgba(0,255,136,0.15);min-width:100%;max-width:100%;margin:1rem 0;width:100%;padding:1.5rem;position:relative;overflow:hidden;">
@@ -251,26 +253,7 @@
 
       </div>
 
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const expandBtn = document.getElementById('dashboard-expand-btn');
-    const terminalInfo = document.getElementById('dashboard-terminal-info');
-    let expanded = false;
-    // Start collapsed
-    terminalInfo.classList.add('collapsed');
-    expandBtn.textContent = '+';
-    expandBtn.onclick = function() {
-      expanded = !expanded;
-      if (expanded) {
-        terminalInfo.classList.remove('collapsed');
-        expandBtn.textContent = '-';
-      } else {
-        terminalInfo.classList.add('collapsed');
-        expandBtn.textContent = '+';
-      }
-    };
-  });
-</script>
+
 
   <!-- Swap Section -->
   <div id="main-swap" class="page-section expandable-container" style="width:100vw;max-width:none;margin:0;left:0;right:0;padding:0.5rem 0;display:none;">
@@ -569,6 +552,30 @@
             </div>
             <div id="profile-claim-status" class="claim-status"></div>
             <div id="profile-claim-monthly-status" class="claim-status"></div>
+          </div>
+        </div>
+
+        <!-- کارت مدیریت حساب -->
+        <div class="profile-section">
+          <div class="section-header">
+            <div class="section-icon">⚙️</div>
+            <h3>مدیریت حساب</h3>
+          </div>
+          <div class="section-content">
+            <div class="account-management-grid">
+              <div class="account-action-card">
+                <div class="action-icon">🔄</div>
+                <div class="action-info">
+                  <div class="action-title">انتقال مالکیت حساب</div>
+                  <div class="action-description">انتقال مالکیت حساب به آدرس جدید</div>
+                  <div class="action-input-group">
+                    <input type="text" id="transfer-ownership-address" placeholder="آدرس جدید (0x...)" class="action-input">
+                    <button id="transfer-ownership-btn" class="action-btn primary">انتقال مالکیت</button>
+                  </div>
+                  <div id="transfer-ownership-status" class="action-status"></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         
@@ -1318,268 +1325,12 @@
 
 
 
-  <script src="js/dashboard-typewriter.js"></script>
+
   <script src="js/token-price.js"></script>
   <script src="js/remove-archive-btn.js"></script>
   <script src="js/hamburger-float.js"></script>
   
   <!-- Dashboard Terminal Script - Moved after config.js -->
-  <script>
-    // به‌روزرسانی نمایش قیمت پوینت
-    async function updatePointPriceDisplay() {
-      try {
-        if (window.priceHistoryManager) {
-          const pointPrice = await window.priceHistoryManager.updatePointPrice();
-          if (pointPrice !== null) {
-            const pointDisplay = document.getElementById('current-point-display');
-            if (pointDisplay) {
-              pointDisplay.textContent = window.priceHistoryManager.formatPrice(pointPrice);
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Error updating point price display:', error);
-        const pointDisplay = document.getElementById('current-point-display');
-        if (pointDisplay) pointDisplay.textContent = 'Error loading';
-      }
-    }
 
-    // به‌روزرسانی آمار قیمت‌ها
-    function updatePriceStats() {
-      try {
-        if (window.priceHistoryManager) {
-          const tokenPeriod = window.priceChart?.currentTimePeriod || 'day';
-          const pointPeriod = window.pointChart?.currentTimePeriod || 'day';
-          
-          // آمار توکن
-          const tokenStats = window.priceHistoryManager.getHistoryStats('token', tokenPeriod);
-          const tokenMinEl = document.getElementById('token-min-price');
-          const tokenMaxEl = document.getElementById('token-max-price');
-          if (tokenMinEl) tokenMinEl.textContent = window.priceHistoryManager.formatPrice(tokenStats.min);
-          if (tokenMaxEl) tokenMaxEl.textContent = window.priceHistoryManager.formatPrice(tokenStats.max);
-          
-          // آمار پوینت
-          const pointStats = window.priceHistoryManager.getHistoryStats('point', pointPeriod);
-          const pointMinEl = document.getElementById('point-min-price');
-          const pointMaxEl = document.getElementById('point-max-price');
-          if (pointMinEl) pointMinEl.textContent = window.priceHistoryManager.formatPrice(pointStats.min);
-          if (pointMaxEl) pointMaxEl.textContent = window.priceHistoryManager.formatPrice(pointStats.max);
-        }
-      } catch (error) {
-        console.error('Error updating price stats:', error);
-      }
-    }
-
-    // افکت تایپ تدریجی برای اطلاعات داشبورد
-    function typewriterDashboardInfo(lines, isWaiting = false) {
-      const el = document.getElementById('dashboard-terminal-info');
-      if (!el) return;
-      // حذف کرسر چشمک‌زن
-      if (isWaiting) {
-        el.textContent = '';
-        return;
-      }
-      if (el._cursorInterval) {
-        clearInterval(el._cursorInterval);
-        el._cursorInterval = null;
-      }
-      el.textContent = '';
-      let line = 0, char = 0;
-      function type() {
-        if (line < lines.length) {
-          let prefix = (lines[line].trim() !== '') ? 'cpa> ' : '';
-          if (char === 0) el.textContent += prefix;
-          if (char < lines[line].length) {
-            el.textContent += lines[line][char];
-            char++;
-            setTimeout(type, 25);
-          } else {
-            el.textContent += '\n';
-            line++;
-            char = 0;
-            setTimeout(type, 60);
-          }
-        }
-      }
-      type();
-    }
-
-    // Helper function to format prices in scientific notation
-    function formatPriceScientific(price) {
-      if (price === 0 || price === '0') return '0';
-      const numPrice = parseFloat(price);
-      if (isNaN(numPrice)) return price;
-      if (numPrice < 0.000001) {
-        return numPrice.toExponential(6);
-      }
-      return numPrice.toFixed(6);
-    }
-
-    // Helper function to pad labels
-    function padLabel(label) {
-      return label.padEnd(20);
-    }
-
-    async function updateDashboardTerminalInfo() {
-      try {
-        if (!window.contractConfig || !window.contractConfig.contract) {
-          try {
-            await window.connectWallet();
-          } catch (e) {
-            typewriterDashboardInfo([
-              //'╔══════════════════════════════════════════════════════════════╗',
-              //'║                    WALLET NOT CONNECTED                     ║',
-              //'╚══════════════════════════════════════════════════════════════╝',
-              'WALLET NOT CONNECTED',
-              '',
-              '🔌 Please connect your wallet to view dashboard data',
-              '🔄 Retrying connection...',
-              '',
-              'Click the wallet connect button to proceed.'
-            ]);
-            return;
-          }
-        }
-        const contract = window.contractConfig.contract;
-        
-        // All Wallets
-        let wallets = '-';
-        try { wallets = (await contract.wallets()).toString(); } catch(e){}
-        
-        // Total Supply
-        let totalSupply = '-';
-        try { 
-          const supply = await contract.totalSupply();
-          const supplyFormatted = formatPriceScientific(ethers.formatUnits(supply, 18));
-          totalSupply = supplyFormatted + ' CPA'; 
-        } catch(e){}
-        
-        // Total Points
-        let totalPoints = '-';
-        try {
-          const totalPointsRaw = await contract.totalClaimableBinaryPoints();
-          totalPoints = totalPointsRaw.toString();
-        } catch(e){}
-        
-        // Point Value
-        let pointValue = '-';
-        try { 
-          const pointValueRaw = await contract.getPointValue();
-          const pointValueNum = parseFloat(ethers.formatUnits(pointValueRaw, 18));
-          pointValue = formatPriceScientific(pointValueNum) + ' CPA'; 
-        } catch(e){}
-        
-        // Current Token Price
-        let tokenPrice = '-';
-        try {
-          const priceRaw = await contract.getTokenPrice();
-          const priceFormatted = formatPriceScientific(ethers.formatUnits(priceRaw, 18));
-          tokenPrice = priceFormatted;
-        } catch(e){}
-        
-        // Contract Token Balance
-        let contractTokenBalance = '-';
-        try { 
-          const balance = await contract.balanceOf(contract.target);
-          const balanceFormatted = formatPriceScientific(ethers.formatUnits(balance, 18));
-          contractTokenBalance = balanceFormatted + ' CPA'; 
-        } catch(e){}
-        
-        // Help Fund
-        let cashback = '-';
-        try { 
-          const cashbackRaw = await (contract.cashBack ? contract.cashBack() : contract.cashback());
-          const cashbackFormatted = formatPriceScientific(ethers.formatUnits(cashbackRaw, 18));
-          cashback = cashbackFormatted + ' CPA'; 
-        } catch(e){}
-        
-        // USDC Contract Balance
-        let usdcBalance = '-';
-        try {
-          const usdcBalanceRaw = await contract.getContractUSDCBalance();
-          const usdcBalanceFormatted = formatPriceScientific(ethers.formatUnits(usdcBalanceRaw, 6));
-          usdcBalance = usdcBalanceFormatted + ' USDC';
-        } catch(e){
-          console.error('Error fetching USDC balance via contract function:', e);
-          try {
-            if (typeof USDC_ADDRESS !== 'undefined' && typeof USDC_ABI !== 'undefined') {
-              const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, contract.provider);
-              const usdcBalanceRaw = await usdcContract.balanceOf(contract.target);
-              const usdcBalanceFormatted = formatPriceScientific(ethers.formatUnits(usdcBalanceRaw, 6));
-              usdcBalance = usdcBalanceFormatted + ' USDC';
-            } else {
-              usdcBalance = 'Config Error';
-            }
-          } catch(fallbackError) {
-            console.error('Fallback USDC balance fetch failed:', fallbackError);
-            usdcBalance = 'Error: ' + e.message;
-          }
-        }
-        
-        const lines = [
-          //'╔══════════════════════════════════════════════════════════════╗',
-          'CONTINUOUS PROFIT ACADEMY',
-          //'╚══════════════════════════════════════════════════════════════╝',
-          '',
-          '🚀 Welcome to CPA!',
-          '📊 Loading blockchain data...',
-          '',
-          //'╔══════════════════════════════════════════════════════════════╗',
-          //'║                        SYSTEM STATUS                         ║',
-          //'╚══════════════════════════════════════════════════════════════╝',
-          'SYSTEM STATUS',
-          '',
-          `🌐 All Wallets: ${wallets}`,
-          `💰 Total Supply: ${totalSupply}`,
-          `🎯 Total Points: ${totalPoints}`,
-          `💎 Point Value: ${pointValue}`,
-          `📈 Current Token Price: ${tokenPrice}`,
-          `🏦 Contract Token Bal.: ${contractTokenBalance}`,
-          `💚 Help Fund: ${cashback}`,
-          `💵 USDC Contract Bal.: ${usdcBalance}`,
-          '',
-          //'╔══════════════════════════════════════════════════════════════╗',
-          //'║                        READY                                 ║',
-          //'╚══════════════════════════════════════════════════════════════╝',
-          'READY'
-        ];
-        
-        typewriterDashboardInfo(lines);
-        
-        // به‌روزرسانی نمایش قیمت پوینت
-        updatePointPriceDisplay();
-        
-        // به‌روزرسانی آمار قیمت‌ها
-        updatePriceStats();
-      } catch (e) {
-        typewriterDashboardInfo([
-          //'╔══════════════════════════════════════════════════════════════╗',
-          //'║                        ERROR DETECTED                        ║',
-          //'╚══════════════════════════════════════════════════════════════╝',
-          'ERROR DETECTED',
-          '',
-          '❌ Error loading dashboard info',
-          '🔄 Retrying connection...',
-          '',
-          'Please check your wallet connection and try again.'
-        ]);
-      }
-    }
-    document.addEventListener('DOMContentLoaded', function() {
-      // نمایش کرسر چشمک‌زن تا زمان دریافت اطلاعات
-      typewriterDashboardInfo([], true);
-      
-      // فراخوانی دریافت اطلاعات داشبورد
-      setTimeout(updateDashboardTerminalInfo, 1000);
-      
-      // شروع به‌روزرسانی خودکار قیمت‌ها
-      setInterval(() => {
-        updatePointPriceDisplay();
-        updatePriceStats();
-      }, 30000); // هر 30 ثانیه
-      
-
-    });
-  </script>
 </body>
 </html>

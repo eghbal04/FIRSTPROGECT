@@ -316,14 +316,15 @@ class LotteryManager {
     const timeLeft = endTime - now;
     const timeLeftText = this.formatTimeLeft(timeLeft);
 
-    // بررسی وضعیت
-    const isActive = lottery.status === 1; // 1 = فعال
-    const isPending = lottery.status === 0; // 0 = در انتظار
-    const isCompleted = lottery.status === 2; // 2 = تکمیل شده
+          // بررسی وضعیت
+      const isActive = lottery.status === 1; // 1 = فعال
+      const isPending = lottery.status === 0; // 0 = در انتظار
+      const isCompleted = lottery.status === 2; // 2 = تکمیل شده
+      const isCancelled = lottery.status === 3; // 3 = لغو شده
 
-    let statusClass = 'status-pending';
-    let statusText = 'در انتظار';
-    let statusIcon = '🟡';
+      let statusClass = 'status-pending';
+      let statusText = 'در انتظار';
+      let statusIcon = '🟡';
 
     if (isActive) {
       statusClass = 'status-active';
@@ -478,8 +479,6 @@ class LotteryManager {
       const tx = await this.lotteryContract.joinLottery(lotteryIndex);
       await tx.wait();
 
-      this.showSuccess('با موفقیت در لاتاری شرکت کردید!');
-      
       // بارگذاری مجدد داده‌ها
       await this.loadLotteryData();
 
@@ -541,8 +540,6 @@ class LotteryManager {
       const tx = await this.contract.joinGroupDraw(groupIndex);
       await tx.wait();
 
-      this.showSuccess('با موفقیت به گروه پیوستید!');
-      
       // بارگذاری مجدد داده‌ها
       await this.loadLotteryData();
 
@@ -592,8 +589,6 @@ class LotteryManager {
       const tx = await this.lotteryContract.createLottery(_maxParticipants, _ticketPrice, _winnersCount);
       await tx.wait();
 
-      this.showSuccess('لاتاری با موفقیت ایجاد شد!');
-      
       // بارگذاری مجدد داده‌ها
       await this.loadLotteryData();
 
@@ -616,8 +611,6 @@ class LotteryManager {
       const tx = await this.contract.createGroupDraw(_memberCount, _amountPerUser);
       await tx.wait();
 
-      this.showSuccess('قرعه‌کشی گروهی با موفقیت ایجاد شد!');
-      
       // بارگذاری مجدد داده‌ها
       await this.loadLotteryData();
 

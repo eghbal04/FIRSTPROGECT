@@ -39,29 +39,6 @@ function showUserPopup(address, user) {
     popup.innerHTML = html;
     document.body.appendChild(popup);
     document.getElementById('close-user-popup').onclick = () => popup.remove();
-    // Typewriter effect
-    typewriterEffect('user-popup-terminal', infoLines, 40);
-}
-
-function typewriterEffect(elementId, lines, speed = 40) {
-    const el = document.getElementById(elementId);
-    el.textContent = '';
-    let line = 0, char = 0;
-    function type() {
-        if (line < lines.length) {
-            if (char < lines[line].length) {
-                el.textContent += lines[line][char];
-                char++;
-                setTimeout(type, speed);
-            } else {
-                el.textContent += '\n';
-                line++;
-                char = 0;
-                setTimeout(type, speed * 4);
-            }
-        }
-    }
-    type();
 }
 
 async function renderNodeLazy(index, container) {

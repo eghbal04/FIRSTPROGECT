@@ -22,58 +22,9 @@ async function waitForWalletConnection() {
     }
 }
 
-// محصولات فروشگاه با درصد سود ثابت (خدماتی: درصد بالاتر، فیزیکی: درصد پایین‌تر)
+// محصولات فروشگاه - فقط محصولات واقعی
 const products = [
-    {
-        id: 1,
-        name: "دوره آموزشی بلاکچین",
-        description: "آموزش جامع مفاهیم بلاکچین و ارزهای دیجیتال",
-        price: 50,
-        currency: "USD",
-        icon: "🔗",
-        color: "#00ff88",
-        percent: 70 // خدماتی - سود بالا
-    },
-    {
-        id: 2,
-        name: "دوره آموزشی DeFi",
-        description: "آموزش امور مالی غیرمتمرکز و پروتکل‌های DeFi",
-        price: 75,
-        currency: "USD",
-        icon: "💰",
-        color: "#00ccff",
-        percent: 65 // خدماتی - سود بالا
-    },
-    {
-        id: 3,
-        name: "دوره آموزشی NFT",
-        description: "آموزش کامل مفاهیم NFT و نحوه ساخت و فروش",
-        price: 60,
-        currency: "USD",
-        icon: "🎨",
-        color: "#ff6b6b",
-        percent: 60 // خدماتی - سود بالا
-    },
-    {
-        id: 4,
-        name: "پکیج سخت‌افزاری کیف پول",
-        description: "کیف پول سخت‌افزاری فیزیکی برای نگهداری امن رمزارزها",
-        price: 120,
-        currency: "USD",
-        icon: "💾",
-        color: "#4ecdc4",
-        percent: 35 // فیزیکی - سود پایین
-    },
-    {
-        id: 5,
-        name: "کتاب چاپی بلاکچین",
-        description: "کتاب فیزیکی آموزش بلاکچین و رمزارزها",
-        price: 40,
-        currency: "USD",
-        icon: "📚",
-        color: "#ffb347",
-        percent: 25 // فیزیکی - سود پایین
-    }
+    // محصولات واقعی در اینجا اضافه می‌شوند
 ];
 
 // آرایه سفارشات (در حافظه موقت)
@@ -426,7 +377,7 @@ async function fetchUserProfile() {
         
         // بررسی اینکه آیا همه موارد مورد نیاز موجود هستند
         if (!provider || !contract || !address) {
-            throw new Error("Wallet connection incomplete");
+            throw new Error("اتصال کیف پول ناقص است. لطفاً دوباره تلاش کنید.");
         }
 
         // دریافت موجودی‌ها به صورت موازی
@@ -442,7 +393,17 @@ async function fetchUserProfile() {
         };
     } catch (error) {
         console.error("Error fetching user profile:", error);
-        throw error;
+        
+        // مدیریت خطاهای مختلف
+        if (error.message.includes("Wallet connection incomplete")) {
+            throw new Error("اتصال کیف پول ناقص است. لطفاً کیف پول خود را متصل کنید.");
+        } else if (error.message.includes("User rejected")) {
+            throw new Error("کاربر اتصال کیف پول را رد کرد.");
+        } else if (error.message.includes("network")) {
+            throw new Error("خطای شبکه. لطفاً اتصال اینترنت خود را بررسی کنید.");
+        } else {
+            throw new Error("خطا در دریافت اطلاعات کاربر: " + error.message);
+        }
     }
 }
 
@@ -521,7 +482,6 @@ function handleAddProductSubmit(e) {
     const color = document.getElementById('new-product-color').value || '#00ccff';
     const percent = parseInt(document.getElementById('new-product-percent').value) || 30;
     if (!name || !description || isNaN(price) || price <= 0) {
-        alert('لطفاً همه فیلدها را به درستی وارد کنید.');
         return;
     }
     // افزودن محصول به لیست (در حافظه موقت)
@@ -540,7 +500,6 @@ function handleAddProductSubmit(e) {
     document.getElementById('add-product-form-container').style.display = 'none';
     document.getElementById('add-product-form-container').innerHTML = '';
     loadProducts();
-    showShopSuccess('محصول جدید با موفقیت اضافه شد!');
 }
 
 async function depositMaticToContract() {
