@@ -69,7 +69,7 @@ function showUserPopup(address, user) {
         <!-- Header -->
         <div style="
           display: flex;
-          justify-content: space-between;
+          justify-content: center;
           align-items: center;
           margin-bottom: 1.5rem;
           padding-bottom: 1rem;
@@ -81,51 +81,20 @@ function showUserPopup(address, user) {
             font-size: 1.3rem;
             font-weight: bold;
             text-align: center;
-            flex: 1;
           ">👤 اطلاعات کاربر</h3>
-          <button id="close-user-popup" style="
-            background: none;
-            border: none;
-            color: #fff;
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 0.5rem;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.3s;
-          " onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='none'">×</button>
         </div>
-        <pre id="user-popup-typewriter" style="background:rgba(0,0,0,0.2);border:1.5px solid #333;padding:1.2rem 1.5rem;border-radius:12px;color:#00ff88;font-size:1.05rem;line-height:2;font-family:monospace;overflow-x:auto;margin-bottom:1.2rem;box-shadow:0 2px 12px #00ff8840;min-width:180px;direction:ltr;text-align:left;white-space:pre-wrap;min-height:220px;"></pre>
-        <button id="close-user-popup-btn" style="
-          background: linear-gradient(135deg, #a786ff, #8b6bff);
-          color: #fff;
-          font-weight: bold;
-          padding: 1rem;
-          border: none;
-          border-radius: 12px;
-          font-size: 1.1rem;
-          cursor: pointer;
-          transition: all 0.3s;
-          box-shadow: 0 4px 15px rgba(167, 134, 255, 0.3);
-          width: 100%;
-        " onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(167,134,255,0.4)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 15px rgba(167,134,255,0.3)'">
-          ❌ بستن
-        </button>
+        <pre id="user-popup-typewriter" style="background:rgba(0,0,0,0.2);border:1.5px solid #333;padding:1.2rem 1.5rem;border-radius:12px;color:#00ff88;font-size:1.05rem;line-height:2;font-family:monospace;overflow-x:auto;margin-bottom:0;box-shadow:0 2px 12px #00ff8840;min-width:180px;direction:ltr;text-align:left;white-space:pre-wrap;min-height:220px;"></pre>
       </div>
     `;
     
     document.body.appendChild(popup);
     
-    // Close button functionality
-    document.getElementById('close-user-popup').onclick = () => popup.remove();
-    document.getElementById('close-user-popup-btn').onclick = () => popup.remove();
-    // Close on background click
+    // Close when clicking anywhere outside the content area
     popup.onclick = (e) => {
-        if (e.target === popup) popup.remove();
+        // Check if click is on the popup background or outside the content div
+        if (e.target === popup || !e.target.closest('div[style*="background: linear-gradient"]')) {
+            popup.remove();
+        }
     };
 
     // Typewriter effect

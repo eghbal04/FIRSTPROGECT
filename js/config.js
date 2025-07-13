@@ -1883,6 +1883,11 @@ window.getUserProfile = async function() {
                 console.warn('Failed to load network stats:', error);
             });
             
+            // مدیریت دکمه ثبت‌نام اصلی
+            if (typeof window.manageMainRegistrationButton === 'function') {
+                window.manageMainRegistrationButton();
+            }
+            
             const profile = {
                 address: address,
                 referrer: referrer,
@@ -2211,6 +2216,149 @@ window.claimMonthlyReward = async function() {
 // تابع دریافت قیمت USDC - همیشه 1 دلار
 window.fetchPolUsdPrice = async function() {
     return 1.0; // USDC همیشه 1 دلار است
+};
+
+// تابع نمایش تاریخچه قیمت‌ها
+window.showPriceHistory = function() {
+    if (!window.priceHistoryManager) {
+        console.log('❌ Price history manager not available');
+        return;
+    }
+    
+    console.log('📊 === PRICE HISTORY ===');
+    console.log('Token Price History:', window.priceHistoryManager.tokenHistory);
+    console.log('Point Price History:', window.priceHistoryManager.pointHistory);
+    
+    // نمایش آمار
+    const tokenStats = window.priceHistoryManager.getHistoryStats('token', 'day');
+    const pointStats = window.priceHistoryManager.getHistoryStats('point', 'day');
+    
+    console.log('📈 Token Price Stats (24h):', tokenStats);
+    console.log('📈 Point Price Stats (24h):', pointStats);
+    
+    return {
+        tokenHistory: window.priceHistoryManager.tokenHistory,
+        pointHistory: window.priceHistoryManager.pointHistory,
+        tokenStats,
+        pointStats
+    };
+};
+
+// تابع پاک کردن تاریخچه قیمت‌ها
+window.clearPriceHistory = function() {
+    if (!window.priceHistoryManager) {
+        console.log('❌ Price history manager not available');
+        return;
+    }
+    
+    window.priceHistoryManager.clearHistory();
+    console.log('🗑️ Price history cleared');
+};
+
+// تابع نمایش تاریخچه قیمت‌ها به صورت جدول
+window.displayPriceHistoryTable = function() {
+    if (!window.priceHistoryManager) {
+        console.log('❌ Price history manager not available');
+        return;
+    }
+    
+    console.log('📊 === PRICE HISTORY TABLE ===');
+    
+    // نمایش آخرین 10 قیمت توکن
+    console.log('🪙 Last 10 Token Prices:');
+    const lastTokenPrices = window.priceHistoryManager.tokenHistory.slice(-10);
+    lastTokenPrices.forEach((entry, index) => {
+        const date = new Date(entry.timestamp).toLocaleString('fa-IR');
+        console.log(`${index + 1}. ${entry.price} USDC - ${date}`);
+    });
+    
+    // نمایش آخرین 10 قیمت پوینت
+    console.log('💎 Last 10 Point Prices:');
+    const lastPointPrices = window.priceHistoryManager.pointHistory.slice(-10);
+    lastPointPrices.forEach((entry, index) => {
+        const date = new Date(entry.timestamp).toLocaleString('fa-IR');
+        console.log(`${index + 1}. ${entry.price} CPA - ${date}`);
+    });
+    
+    // نمایش آمار
+    const tokenStats = window.priceHistoryManager.getHistoryStats('token', 'day');
+    const pointStats = window.priceHistoryManager.getHistoryStats('point', 'day');
+    
+    console.log('📈 24h Statistics:');
+    console.log('Token - Min:', tokenStats.min, 'Max:', tokenStats.max, 'Avg:', tokenStats.avg.toFixed(6));
+    console.log('Point - Min:', pointStats.min, 'Max:', pointStats.max, 'Avg:', pointStats.avg.toFixed(6));
+};
+
+// تابع export تاریخچه قیمت‌ها
+window.exportPriceHistory = function() {
+    if (!window.priceHistoryManager) {
+        console.log('❌ Price history manager not available');
+        return;
+    }
+    
+    const exportData = {
+        tokenHistory: window.priceHistoryManager.tokenHistory,
+        pointHistory: window.priceHistoryManager.pointHistory,
+        exportDate: new Date().toISOString(),
+        totalTokenEntries: window.priceHistoryManager.tokenHistory.length,
+        totalPointEntries: window.priceHistoryManager.pointHistory.length
+    };
+    
+    const jsonString = JSON.stringify(exportData, null, 2);
+    
+    // ایجاد فایل برای دانلود
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `price-history-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    console.log('📤 Price history exported successfully');
+    return exportData;
+};
+
+// تابع نمایش آمار تاریخچه قیمت‌ها
+window.showPriceHistoryStats = function() {
+    if (!window.priceHistoryManager) {
+        console.log('❌ Price history manager not available');
+        return;
+    }
+    
+    const tokenCount = window.priceHistoryManager.tokenHistory.length;
+    const pointCount = window.priceHistoryManager.pointHistory.length;
+    
+    console.log('📊 === PRICE HISTORY STATISTICS ===');
+    console.log(`🪙 Token Prices: ${tokenCount} entries`);
+    console.log(`💎 Point Prices: ${pointCount} entries`);
+    
+    if (tokenCount > 0) {
+        const lastToken = window.priceHistoryManager.tokenHistory[tokenCount - 1];
+        const firstToken = window.priceHistoryManager.tokenHistory[0];
+        const tokenTimeSpan = new Date(lastToken.timestamp) - new Date(firstToken.timestamp);
+        const tokenHours = Math.round(tokenTimeSpan / (1000 * 60 * 60));
+        console.log(`🪙 Token History: ${tokenHours} hours of data`);
+        console.log(`🪙 Latest Token Price: ${lastToken.price} USDC`);
+    }
+    
+    if (pointCount > 0) {
+        const lastPoint = window.priceHistoryManager.pointHistory[pointCount - 1];
+        const firstPoint = window.priceHistoryManager.pointHistory[0];
+        const pointTimeSpan = new Date(lastPoint.timestamp) - new Date(firstPoint.timestamp);
+        const pointHours = Math.round(pointTimeSpan / (1000 * 60 * 60));
+        console.log(`💎 Point History: ${pointHours} hours of data`);
+        console.log(`💎 Latest Point Price: ${lastPoint.price} CPA`);
+    }
+    
+    return {
+        tokenCount,
+        pointCount,
+        tokenHistory: window.priceHistoryManager.tokenHistory,
+        pointHistory: window.priceHistoryManager.pointHistory
+    };
 };
 
 (async () => {
@@ -2549,10 +2697,21 @@ async function refreshTotalSupply() {
 
 // Make updateDashboardStats globally accessible
 window.updateDashboardStats = async function() {
+  // Prevent multiple simultaneous calls
+  if (window._dashboardUpdateInProgress) {
+    console.log('⏳ Dashboard update already in progress, skipping...');
+    return;
+  }
+  
+  window._dashboardUpdateInProgress = true;
+  
   try {
+    console.log('🔄 Starting dashboard stats update...');
+    
     // Ensure we have a valid connection
     let contract;
     if (!window.contractConfig || !window.contractConfig.contract) {
+      console.log('📡 Connecting wallet for dashboard stats...');
       const connection = await window.connectWallet();
       contract = connection.contract;
     } else {
@@ -2562,18 +2721,50 @@ window.updateDashboardStats = async function() {
     if (!contract) {
       throw new Error('No contract available');
     }
+    
+    console.log('✅ Contract connection established for dashboard stats');
+    
+    // Check if contract has required functions
+    console.log('🔍 Checking contract functions...');
+    const hasTotalSupply = typeof contract.totalSupply === 'function';
+    const hasTotalPoints = typeof contract.totalClaimableBinaryPoints === 'function';
+    const hasWallets = typeof contract.wallets === 'function';
+    const hasGetTokenPrice = typeof contract.getTokenPrice === 'function';
+    const hasGetPointValue = typeof contract.getPointValue === 'function';
+    
+    console.log('📋 Contract function availability:', {
+      totalSupply: hasTotalSupply,
+      totalClaimableBinaryPoints: hasTotalPoints,
+      wallets: hasWallets,
+      getTokenPrice: hasGetTokenPrice,
+      getPointValue: hasGetPointValue
+    });
+    
+    // Test basic contract call
+    try {
+      console.log('🧪 Testing basic contract call...');
+      const symbol = await contract.symbol();
+      console.log('✅ Basic contract call successful, symbol:', symbol);
+    } catch (e) {
+      console.error('❌ Basic contract call failed:', e);
+    }
 
     // Helper function to safely update element
     const safeUpdate = (id, value) => {
       const el = document.getElementById(id);
-      if (el) el.innerText = value;
+      if (el) {
+        el.innerText = value;
+        console.log(`✅ Updated ${id}: ${value}`);
+      } else {
+        console.warn(`⚠️ Element with id '${id}' not found`);
+      }
     };
 
     // Update blockchain information cards
     
 
     // Show loading state
-    const loadingElements = ['circulating-supply', 'total-points', 'contract-token-balance', 'dashboard-cashback-value', 'dashboard-usdc-balance'];
+    const loadingElements = ['circulating-supply', 'total-points', 'contract-token-balance', 'dashboard-cashback-value', 'dashboard-usdc-balance', 'dashboard-wallets-count', 'dashboard-registration-price'];
     loadingElements.forEach(id => {
       const el = document.getElementById(id);
       if (el) el.innerText = 'Loading...';
@@ -2581,20 +2772,36 @@ window.updateDashboardStats = async function() {
 
     // TOTAL SUPPLY (circulating supply)
     try {
-      const totalSupply = await contract.totalSupply();
+      console.log('📊 Fetching total supply...');
+      
+      // Add timeout protection
+      const totalSupplyPromise = contract.totalSupply();
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Total supply fetch timeout')), 10000)
+      );
+      
+      const totalSupply = await Promise.race([totalSupplyPromise, timeoutPromise]);
       const formattedSupply = parseFloat(ethers.formatUnits(totalSupply, 18)).toLocaleString('en-US', {maximumFractionDigits: 2});
       safeUpdate('circulating-supply', formattedSupply + ' CPA');
+      console.log('✅ Total supply updated:', formattedSupply + ' CPA');
 
     } catch (e) {
       console.error('❌ Error fetching total supply:', e);
+      console.error('❌ Error details:', {
+        message: e.message,
+        code: e.code,
+        stack: e.stack
+      });
       safeUpdate('circulating-supply', 'Error');
     }
 
     // TOTAL POINTS
     try {
+      console.log('🎯 Fetching total points...');
       const totalPoints = await contract.totalClaimableBinaryPoints();
       const formattedPoints = parseFloat(ethers.formatUnits(totalPoints, 18)).toLocaleString('en-US', {maximumFractionDigits: 2});
       safeUpdate('total-points', formattedPoints);
+      console.log('✅ Total points updated:', formattedPoints);
 
     } catch (e) {
       console.error('❌ Error fetching total points:', e);
@@ -2603,9 +2810,11 @@ window.updateDashboardStats = async function() {
 
     // CPA BALANCE (contract's own token balance)
     try {
+      console.log('🏦 Fetching contract token balance...');
       const contractTokenBalance = await contract.balanceOf(contract.target);
       const formattedBalance = parseFloat(ethers.formatUnits(contractTokenBalance, 18)).toLocaleString('en-US', {maximumFractionDigits: 2});
       safeUpdate('contract-token-balance', formattedBalance + ' CPA');
+      console.log('✅ Contract token balance updated:', formattedBalance + ' CPA');
 
     } catch (e) {
       console.error('❌ Error fetching contract token balance:', e);
@@ -2614,6 +2823,7 @@ window.updateDashboardStats = async function() {
 
     // HELP FUND (cashback)
     try {
+      console.log('💝 Fetching cashback...');
       let cashback;
       
       // Try different possible function names
@@ -2628,6 +2838,7 @@ window.updateDashboardStats = async function() {
       
       const formattedCashback = parseFloat(ethers.formatUnits(cashback, 18)).toLocaleString('en-US', {maximumFractionDigits: 2});
       safeUpdate('dashboard-cashback-value', formattedCashback + ' CPA');
+      console.log('✅ Cashback updated:', formattedCashback + ' CPA');
 
     } catch (e) {
       console.error('❌ Error fetching cashback:', e);
@@ -2636,6 +2847,7 @@ window.updateDashboardStats = async function() {
 
     // USDC CONTRACT BALANCE - Using contract's getContractUSDCBalance function
     try {
+      console.log('💵 Fetching USDC contract balance...');
       let usdcBalance;
       
       // Try different possible function names
@@ -2653,6 +2865,7 @@ window.updateDashboardStats = async function() {
       
       const formattedUsdc = parseFloat(ethers.formatUnits(usdcBalance, 6)).toLocaleString('en-US', {maximumFractionDigits: 2});
       safeUpdate('dashboard-usdc-balance', formattedUsdc + ' USDC');
+      console.log('✅ USDC contract balance updated:', formattedUsdc + ' USDC');
 
     } catch (e) {
       console.error('❌ Error fetching USDC balance:', e);
@@ -2670,9 +2883,18 @@ window.updateDashboardStats = async function() {
 
     // POINT VALUE (ارزش هر پوینت)
     try {
+      console.log('💎 Fetching point value...');
       const pointValue = await contract.getPointValue();
-      const formattedPointValue = parseFloat(ethers.formatUnits(pointValue, 18)).toLocaleString('en-US', {maximumFractionDigits: 6});
+      const pointValueNum = parseFloat(ethers.formatUnits(pointValue, 18));
+      const formattedPointValue = pointValueNum.toLocaleString('en-US', {maximumFractionDigits: 6});
       safeUpdate('dashboard-point-value', formattedPointValue + ' CPA');
+      console.log('✅ Point value updated:', formattedPointValue + ' CPA');
+      
+      // Save point price to history
+      if (window.priceHistoryManager) {
+        await window.priceHistoryManager.addPointPrice(pointValueNum);
+        console.log('📊 Point price saved to history');
+      }
     } catch (e) {
       console.error('❌ Error fetching point value:', e);
       safeUpdate('dashboard-point-value', 'Error');
@@ -2680,29 +2902,72 @@ window.updateDashboardStats = async function() {
 
     // TOKEN PRICE (قیمت توکن CPA)
     try {
+      console.log('💲 Fetching token price...');
       const tokenPrice = await contract.getTokenPrice();
-      let formattedTokenPrice = parseFloat(ethers.formatUnits(tokenPrice, 18));
-      if (formattedTokenPrice < 0.0001) {
-        formattedTokenPrice = formattedTokenPrice.toExponential(2);
+      const tokenPriceNum = parseFloat(ethers.formatUnits(tokenPrice, 18));
+      let formattedTokenPrice;
+      if (tokenPriceNum < 0.0001) {
+        formattedTokenPrice = tokenPriceNum.toExponential(2);
       } else {
-        formattedTokenPrice = formattedTokenPrice.toLocaleString('en-US', {maximumFractionDigits: 6});
+        formattedTokenPrice = tokenPriceNum.toLocaleString('en-US', {maximumFractionDigits: 6});
       }
       safeUpdate('dashboard-token-price', formattedTokenPrice + ' USDC');
+      console.log('✅ Token price updated:', formattedTokenPrice + ' USDC');
+      
+      // Save token price to history
+      if (window.priceHistoryManager) {
+        await window.priceHistoryManager.addTokenPrice(tokenPriceNum);
+        console.log('📊 Token price saved to history');
+      }
     } catch (e) {
       console.error('❌ Error fetching token price:', e);
       safeUpdate('dashboard-token-price', 'Error');
     }
 
+    // WALLET COUNT (تعداد ولت‌های متصل)
+    try {
+      console.log('👛 Fetching wallets count...');
+      const walletsCount = await contract.wallets();
+      safeUpdate('dashboard-wallets-count', walletsCount.toString());
+      console.log('✅ Wallets count updated:', walletsCount.toString());
+    } catch (e) {
+      console.error('❌ Error fetching wallets count:', e);
+      safeUpdate('dashboard-wallets-count', 'Error');
+    }
 
+    // REGISTRATION PRICE (قیمت ثبت‌نام)
+    try {
+      console.log('🎫 Fetching registration price...');
+      const registrationPrice = await window.getRegistrationPrice(contract);
+      const formattedRegPrice = parseFloat(ethers.formatUnits(registrationPrice, 18)).toLocaleString('en-US', {maximumFractionDigits: 0});
+      safeUpdate('dashboard-registration-price', formattedRegPrice + ' CPA');
+      console.log('✅ Registration price updated:', formattedRegPrice + ' CPA');
+    } catch (e) {
+      console.error('❌ Error fetching registration price:', e);
+      safeUpdate('dashboard-registration-price', 'Error');
+    }
+
+    console.log('🎉 Dashboard stats update completed successfully!');
+    
+    // نمایش خلاصه تاریخچه قیمت‌ها
+    if (window.priceHistoryManager) {
+      const tokenCount = window.priceHistoryManager.tokenHistory.length;
+      const pointCount = window.priceHistoryManager.pointHistory.length;
+      console.log(`📊 Price History Summary: ${tokenCount} token prices, ${pointCount} point prices stored`);
+    }
 
   } catch (e) {
     console.error('❌ Error updating dashboard stats:', e);
     // اگر خطا داشتیم، همه را Error بگذار
-    const elements = ['circulating-supply', 'total-points', 'contract-token-balance', 'dashboard-cashback-value', 'dashboard-usdc-balance'];
+    const elements = ['circulating-supply', 'total-points', 'contract-token-balance', 'dashboard-cashback-value', 'dashboard-usdc-balance', 'dashboard-wallets-count', 'dashboard-registration-price'];
     elements.forEach(id => {
       const el = document.getElementById(id);
       if (el) el.innerText = 'Error';
     });
+  } finally {
+    // Always clear the progress flag
+    window._dashboardUpdateInProgress = false;
+    console.log('🏁 Dashboard update process finished');
   }
 }
 
@@ -2716,7 +2981,7 @@ document.addEventListener('DOMContentLoaded', function() {
     } catch (error) {
       console.error('❌ Error in initial setup:', error);
       // Show error in UI
-      const elements = ['circulating-supply', 'total-points', 'contract-token-balance', 'dashboard-cashback-value', 'dashboard-usdc-balance'];
+      const elements = ['circulating-supply', 'total-points', 'contract-token-balance', 'dashboard-cashback-value', 'dashboard-usdc-balance', 'dashboard-wallets-count', 'dashboard-registration-price'];
       elements.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerText = 'Connection Error';

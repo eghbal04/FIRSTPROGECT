@@ -271,6 +271,12 @@ async function performRegistration() {
         const tx = await contract.registerAndActivate(referrerAddress, address);
         await tx.wait();
         showRegisterSuccess("ثبت‌نام با موفقیت انجام شد!");
+        
+        // مخفی کردن دکمه ثبت‌نام اصلی
+        if (typeof window.hideMainRegistrationButton === 'function') {
+            window.hideMainRegistrationButton();
+        }
+        
         registerDataLoaded = false;
         setTimeout(() => {
             loadRegisterData(contract, address, tokenPriceUSDFormatted);
@@ -699,6 +705,12 @@ window.registerNewUserWithReferrer = async function(referrer, newUserAddress, st
         // ثبت‌نام نفر جدید (با ولت فعلی)
         const tx = await contract.registerAndActivate(referrer, newUserAddress);
         await tx.wait();
+        
+        // مخفی کردن دکمه ثبت‌نام اصلی
+        if (typeof window.hideMainRegistrationButton === 'function') {
+            window.hideMainRegistrationButton();
+        }
+        
         if (statusElement) {
             statusElement.textContent = 'ثبت‌نام نفر جدید با موفقیت انجام شد!';
             statusElement.className = 'profile-status success';
@@ -712,27 +724,6 @@ window.registerNewUserWithReferrer = async function(referrer, newUserAddress, st
     }
 };
 window.loadRegisterData = loadRegisterData;
-
-// تابع ساده برای دریافت مقدار مورد نیاز در console
-async function getRegistrationPrice() {
-    try {
-        console.log('🔍 Fetching registration price...');
-        const { contract } = await window.connectWallet();
-        
-        // استفاده از تابع مرکزی
-        const regPrice = await window.getRegistrationPrice(contract);
-        
-        console.log('✅ Registration price (raw):', regPrice.toString());
-        console.log('✅ Registration price (formatted):', ethers.formatUnits(regPrice, 18) + ' CPA');
-        
-        return regPrice; // Return BigInt, not formatted string
-    } catch (e) {
-        console.error('❌ Error fetching registration price:', e);
-        return ethers.parseUnits('100', 18); // Return fallback value
-    }
-}
-
-
 
 // تابع نمایش موجودی‌های کاربر
 async function displayUserBalances() {
@@ -791,6 +782,5 @@ async function displayUserBalances() {
 }
 
 // Export for global use
-window.getRegistrationPrice = getRegistrationPrice;
 window.displayUserBalances = displayUserBalances;
 

@@ -497,27 +497,1044 @@ async function lockTabsForDeactivatedUsers() {
     if (!window.getUserProfile) return;
     const profile = await loadUserProfileOnce();
     if (!profile.activated) {
+        // Lock main tabs
         const lockTabs = [
-            { id: 'tab-shop-btn', label: 'SHOP' },
-            { id: 'tab-reports-btn', label: 'REPORTS' },
-            { id: 'tab-learning-btn', label: 'LEARNING' }
+            { id: 'tab-shop-btn', label: 'فروشگاه', icon: '🛒' },
+            { id: 'tab-reports-btn', label: 'گزارشات', icon: '📊' },
+            { id: 'tab-learning-btn', label: 'آموزش', icon: '📚' },
+            { id: 'tab-news-btn', label: 'اخبار', icon: '📰' }
         ];
         lockTabs.forEach(tab => {
             const el = document.getElementById(tab.id);
             if (el) {
-                el.innerHTML = '🔒 ' + tab.label;
+                el.innerHTML = `🔒 ${tab.icon} ${tab.label}`;
                 el.classList.add('locked-tab');
                 if (el.style) {
                   el.style.pointerEvents = 'none';
                   el.style.opacity = '0.5';
+                  el.style.cursor = 'not-allowed';
                 }
-                el.title = 'این بخش فقط برای کاربران فعال باز است';
+                el.title = '🔒 این بخش فقط برای کاربران فعال باز است - لطفاً ابتدا ثبت‌نام کنید';
             }
         });
+        
+        // Lock hamburger menu items
+        setTimeout(lockHamburgerMenuItems, 1000); // Wait for hamburger menu to load
+        
+        // مدیریت دکمه ثبت‌نام اصلی
+        if (typeof window.manageMainRegistrationButton === 'function') {
+            window.manageMainRegistrationButton();
+        }
     }
 }
 
+// Lock hamburger menu items for deactivated users
+function lockHamburgerMenuItems() {
+    const restrictedMenuItems = [
+        { selector: 'button[onclick*="navigateToPage(\'shop.html\')"]', label: 'فروشگاه' },
+        { selector: 'button[onclick*="navigateToPage(\'news.html\')"]', label: 'اخبار' },
+        { selector: 'button[onclick*="navigateToPage(\'learning.html\')"]', label: 'آموزش' },
+        { selector: 'button[onclick*="navigateToPage(\'signal.html\')"]', label: 'سیگنال' },
+        { selector: 'button[onclick*="navigateToPage(\'autotrade-license.html\')"]', label: 'ربات' },
+        { selector: 'button[onclick*="navigateToPage(\'admin-prop.html\')"]', label: 'پاس پراپ' },
+        { selector: 'button[onclick*="showTab(\'reports\')"]', label: 'گزارشات' }
+    ];
+    
+    restrictedMenuItems.forEach(item => {
+        const elements = document.querySelectorAll(item.selector);
+        elements.forEach(el => {
+            // Add lock icon to button text
+            const btnText = el.querySelector('.btn-text');
+            if (btnText) {
+                btnText.innerHTML = '🔒 ' + item.label;
+            }
+            
+            // Add locked class
+            el.classList.add('locked-menu-item');
+            
+            // Disable click
+            el.style.pointerEvents = 'none';
+            el.style.opacity = '0.5';
+            el.style.cursor = 'not-allowed';
+            
+            // Add title
+            el.title = '🔒 این بخش فقط برای کاربران فعال باز است - لطفاً ابتدا ثبت‌نام کنید';
+            
+            // Override onclick to show registration prompt
+            el.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                showRegistrationPrompt();
+                return false;
+            };
+        });
+    });
+}
+
+// نمایش پیام ثبت‌نام برای تب‌های قفل شده
+function showRegistrationPrompt() {
+    // Remove existing prompt if any
+    const existingPrompt = document.getElementById('registration-prompt');
+    if (existingPrompt) existingPrompt.remove();
+    
+    const prompt = document.createElement('div');
+    prompt.id = 'registration-prompt';
+    prompt.style = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: linear-gradient(135deg, #232946, #181c2a);
+        border: 2px solid #a786ff;
+        border-radius: 20px;
+        padding: 2rem;
+        z-index: 10000;
+        text-align: center;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    `;
+    
+    prompt.innerHTML = `
+        <div style="font-size: 3rem; margin-bottom: 1rem;">🔒</div>
+        <h3 style="color: #00ff88; margin-bottom: 1rem; font-size: 1.3rem;">دسترسی محدود</h3>
+        <p style="color: #b8c1ec; margin-bottom: 1.5rem; line-height: 1.6;">
+            این بخش فقط برای کاربران فعال باز است.<br>
+            لطفاً ابتدا ثبت‌نام کنید تا به تمام امکانات دسترسی داشته باشید.
+        </p>
+        <button onclick="showDirectRegistrationForm()" style="
+            background: linear-gradient(135deg, #a786ff, #8b6bff);
+            color: #fff;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        ">ثبت‌نام کنید</button>
+    `;
+    
+    document.body.appendChild(prompt);
+    
+    // Close on background click
+    const overlay = document.createElement('div');
+    overlay.id = 'registration-prompt-overlay';
+    overlay.style = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.7);
+        z-index: 9999;
+    `;
+    overlay.onclick = () => {
+        prompt.remove();
+        overlay.remove();
+    };
+    document.body.appendChild(overlay);
+}
+
+// تابع نمایش مستقیم فرم ثبت‌نام
+window.showDirectRegistrationForm = async function() {
+    try {
+        // اضافه کردن حالت loading به دکمه
+        const registrationButton = document.getElementById('main-registration-button');
+        if (registrationButton) {
+            registrationButton.classList.add('loading');
+            const button = registrationButton.querySelector('button');
+            if (button) {
+                button.textContent = '⏳ در حال بارگذاری...';
+            }
+        }
+        
+        // بستن پیام ثبت‌نام فعلی
+        const existingPrompt = document.getElementById('registration-prompt');
+        const existingOverlay = document.getElementById('registration-prompt-overlay');
+        if (existingPrompt) existingPrompt.remove();
+        if (existingOverlay) existingOverlay.remove();
+        
+        // اتصال به کیف پول
+        const connection = await window.connectWallet();
+        const { contract, address, provider } = connection;
+        
+        // دریافت آدرس معرف (deployer)
+        let referrerAddress;
+        try {
+            referrerAddress = await contract.deployer();
+        } catch (e) {
+            console.error('Error getting deployer address:', e);
+            referrerAddress = address; // fallback to connected address
+        }
+        
+        // نمایش فرم ثبت‌نام
+        if (typeof window.showRegisterForm === 'function') {
+            window.showRegisterForm(referrerAddress, '', address, provider, contract);
+        } else {
+            // fallback به تب شبکه
+            if (typeof window.showTab === 'function') {
+                window.showTab('network');
+            }
+        }
+        
+        // حذف حالت loading
+        if (registrationButton) {
+            registrationButton.classList.remove('loading');
+            const button = registrationButton.querySelector('button');
+            if (button) {
+                button.textContent = '🚀 ثبت‌نام اکنون';
+            }
+        }
+        
+    } catch (error) {
+        console.error('Error showing direct registration form:', error);
+        
+        // حذف حالت loading در صورت خطا
+        const registrationButton = document.getElementById('main-registration-button');
+        if (registrationButton) {
+            registrationButton.classList.remove('loading');
+            const button = registrationButton.querySelector('button');
+            if (button) {
+                button.textContent = '🚀 ثبت‌نام اکنون';
+            }
+        }
+        
+        // در صورت خطا، به تب شبکه هدایت کن
+        if (typeof window.showTab === 'function') {
+            window.showTab('network');
+        }
+    }
+};
+
 document.addEventListener('DOMContentLoaded', lockTabsForDeactivatedUsers);
+
+// تابع تست برای بررسی وضعیت قفل‌ها
+window.testLockStatus = async function() {
+    console.log('🔍 Testing lock status...');
+    
+    try {
+        if (!window.getUserProfile) {
+            console.log('❌ getUserProfile function not available');
+            return;
+        }
+        
+        const profile = await loadUserProfileOnce();
+        console.log('👤 User profile:', profile);
+        console.log('🔓 User activated:', profile.activated);
+        
+        if (!profile.activated) {
+            console.log('🔒 User is not activated, applying locks...');
+            
+            // Test main tabs
+            const testTabs = ['tab-shop-btn', 'tab-reports-btn', 'tab-learning-btn', 'tab-news-btn'];
+            testTabs.forEach(tabId => {
+                const el = document.getElementById(tabId);
+                if (el) {
+                    console.log(`✅ Found tab: ${tabId}`);
+                    el.innerHTML = `🔒 ${tabId.replace('tab-', '').replace('-btn', '').toUpperCase()}`;
+                    el.classList.add('locked-tab');
+                    el.style.pointerEvents = 'none';
+                    el.style.opacity = '0.5';
+                    el.style.cursor = 'not-allowed';
+                    el.title = '🔒 این بخش فقط برای کاربران فعال باز است';
+                } else {
+                    console.log(`❌ Tab not found: ${tabId}`);
+                }
+            });
+            
+            // Test hamburger menu
+            setTimeout(() => {
+                lockHamburgerMenuItems();
+                console.log('🍔 Hamburger menu items locked');
+            }, 1000);
+            
+        } else {
+            console.log('✅ User is activated, no locks needed');
+        }
+        
+    } catch (error) {
+        console.error('❌ Error testing lock status:', error);
+    }
+};
+
+// اجرای تست قفل‌ها بعد از 3 ثانیه
+setTimeout(() => {
+    if (typeof window.testLockStatus === 'function') {
+        window.testLockStatus();
+    }
+}, 3000);
+
+// تابع اجباری برای قفل کردن همه چیز
+window.forceLockAll = function() {
+    console.log('🔒 Force locking all restricted areas...');
+    
+    // قفل کردن تب‌های اصلی
+    const mainTabs = [
+        { id: 'tab-shop-btn', label: 'فروشگاه' },
+        { id: 'tab-reports-btn', label: 'گزارشات' },
+        { id: 'tab-learning-btn', label: 'آموزش' },
+        { id: 'tab-news-btn', label: 'اخبار' }
+    ];
+    
+    mainTabs.forEach(tab => {
+        const el = document.getElementById(tab.id);
+        if (el) {
+            el.innerHTML = `🔒 ${tab.label}`;
+            el.classList.add('locked-tab');
+            el.style.pointerEvents = 'none';
+            el.style.opacity = '0.5';
+            el.style.cursor = 'not-allowed';
+            el.title = '🔒 این بخش فقط برای کاربران فعال باز است';
+            console.log(`🔒 Locked tab: ${tab.id}`);
+        }
+    });
+    
+    // قفل کردن منوی همبرگری
+    const hamburgerItems = [
+        { selector: 'button[onclick*="shop.html"]', label: 'فروشگاه' },
+        { selector: 'button[onclick*="news.html"]', label: 'اخبار' },
+        { selector: 'button[onclick*="learning.html"]', label: 'آموزش' },
+        { selector: 'button[onclick*="signal.html"]', label: 'سیگنال' },
+        { selector: 'button[onclick*="autotrade-license.html"]', label: 'ربات' },
+        { selector: 'button[onclick*="admin-prop.html"]', label: 'پاس پراپ' },
+        { selector: 'button[onclick*="showTab(\'reports\')"]', label: 'گزارشات' }
+    ];
+    
+    hamburgerItems.forEach(item => {
+        const elements = document.querySelectorAll(item.selector);
+        elements.forEach(el => {
+            const btnText = el.querySelector('.btn-text');
+            if (btnText) {
+                btnText.innerHTML = `🔒 ${item.label}`;
+            }
+            el.classList.add('locked-menu-item');
+            el.style.pointerEvents = 'none';
+            el.style.opacity = '0.5';
+            el.style.cursor = 'not-allowed';
+            el.title = '🔒 این بخش فقط برای کاربران فعال باز است';
+            el.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                showRegistrationPrompt();
+                return false;
+            };
+            console.log(`🔒 Locked hamburger item: ${item.label}`);
+        });
+    });
+    
+    console.log('✅ All restrictions applied');
+};
+
+// اجرای قفل اجباری بعد از 5 ثانیه
+setTimeout(() => {
+    if (typeof window.forceLockAll === 'function') {
+        window.forceLockAll();
+    }
+}, 5000);
+
+// نمایش پیام خوشامدگویی و ثبت‌نام برای کاربران غیرفعال
+window.showWelcomeRegistrationPrompt = async function() {
+    try {
+        // بررسی وضعیت کاربر
+        if (!window.getUserProfile) return;
+        
+        const profile = await loadUserProfileOnce();
+        if (profile.activated) return; // اگر کاربر فعال است، پیام نمایش نده
+        
+        // بررسی اینکه آیا قبلاً این پیام نمایش داده شده
+        const hasShownWelcome = sessionStorage.getItem('welcomeRegistrationShown');
+        if (hasShownWelcome) return;
+        
+        // دریافت قیمت ثبت‌نام
+        let registrationPrice = '100';
+        try {
+            if (window.contractConfig && window.contractConfig.contract) {
+                const price = await window.getRegistrationPrice(window.contractConfig.contract);
+                registrationPrice = parseFloat(ethers.formatUnits(price, 18)).toFixed(0);
+            }
+        } catch (e) {
+            console.log('Using default registration price');
+        }
+        
+        // دریافت قیمت فعلی CPA
+        let cpaPriceUSD = '0.000001';
+        try {
+            if (window.contractConfig && window.contractConfig.contract) {
+                const price = await window.contractConfig.contract.getTokenPrice();
+                cpaPriceUSD = parseFloat(ethers.formatUnits(price, 18)).toFixed(6);
+            }
+        } catch (e) {
+            console.log('Using default CPA price');
+        }
+        
+        // محاسبه ارزش دلاری ثبت‌نام
+        const registrationValueUSD = (parseFloat(registrationPrice) * parseFloat(cpaPriceUSD)).toFixed(6);
+        
+        // ایجاد پیام خوشامدگویی
+        const welcomeModal = document.createElement('div');
+        welcomeModal.id = 'welcome-registration-modal';
+        welcomeModal.style = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        `;
+        
+        welcomeModal.innerHTML = `
+            <div style="
+                background: linear-gradient(135deg, #232946, #181c2a);
+                border: 2px solid #a786ff;
+                border-radius: 24px;
+                padding: 2.5rem;
+                max-width: 500px;
+                width: 90%;
+                text-align: center;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+                position: relative;
+            ">
+                <!-- دکمه بستن -->
+                <button onclick="closeWelcomeModal()" style="
+                    position: absolute;
+                    top: 1rem;
+                    right: 1rem;
+                    background: none;
+                    border: none;
+                    color: #a786ff;
+                    font-size: 1.5rem;
+                    cursor: pointer;
+                    padding: 0.5rem;
+                    border-radius: 50%;
+                    width: 40px;
+                    height: 40px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: all 0.3s;
+                " onmouseover="this.style.background='rgba(167,134,255,0.1)'" onmouseout="this.style.background='none'">×</button>
+                
+                <!-- آیکون خوشامدگویی -->
+                <div style="font-size: 4rem; margin-bottom: 1rem;">🎉</div>
+                
+                <!-- عنوان -->
+                <h2 style="
+                    color: #00ff88;
+                    margin-bottom: 1rem;
+                    font-size: 1.8rem;
+                    font-weight: bold;
+                ">به CPA خوش آمدید!</h2>
+                
+                <!-- توضیحات -->
+                <p style="
+                    color: #b8c1ec;
+                    margin-bottom: 1.5rem;
+                    line-height: 1.6;
+                    font-size: 1.1rem;
+                ">
+                    برای استفاده از تمام امکانات CPA و دسترسی به خدمات پیشرفته، 
+                    لطفاً ثبت‌نام کنید.
+                </p>
+                
+                <!-- کارت اطلاعات ثبت‌نام -->
+                <div style="
+                    background: rgba(167, 134, 255, 0.1);
+                    border: 1px solid rgba(167, 134, 255, 0.3);
+                    border-radius: 16px;
+                    padding: 1.5rem;
+                    margin: 1.5rem 0;
+                    backdrop-filter: blur(10px);
+                ">
+                    <h3 style="
+                        color: #a786ff;
+                        margin-bottom: 1rem;
+                        font-size: 1.3rem;
+                        font-weight: bold;
+                    ">💎 هزینه ثبت‌نام</h3>
+                    
+                    <div style="
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 1rem;
+                        margin-bottom: 1rem;
+                    ">
+                        <div style="text-align: center;">
+                            <div style="
+                                color: #00ff88;
+                                font-size: 1.5rem;
+                                font-weight: bold;
+                                margin-bottom: 0.3rem;
+                            ">${registrationPrice} CPA</div>
+                            <div style="
+                                color: #b8c1ec;
+                                font-size: 0.9rem;
+                            ">مبلغ ثبت‌نام</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="
+                                color: #00ccff;
+                                font-size: 1.5rem;
+                                font-weight: bold;
+                                margin-bottom: 0.3rem;
+                            ">$${registrationValueUSD}</div>
+                            <div style="
+                                color: #b8c1ec;
+                                font-size: 0.9rem;
+                            ">ارزش دلاری</div>
+                        </div>
+                    </div>
+                    
+                    <div style="
+                        color: #a786ff;
+                        font-size: 0.9rem;
+                        line-height: 1.4;
+                    ">
+                        💡 قیمت فعلی CPA: $${cpaPriceUSD} USDC
+                    </div>
+                </div>
+                
+                <!-- کارت مزایا -->
+                <div style="
+                    background: rgba(0, 255, 136, 0.1);
+                    border: 1px solid rgba(0, 255, 136, 0.3);
+                    border-radius: 16px;
+                    padding: 1.5rem;
+                    margin: 1.5rem 0;
+                    backdrop-filter: blur(10px);
+                ">
+                    <h3 style="
+                        color: #00ff88;
+                        margin-bottom: 1rem;
+                        font-size: 1.3rem;
+                        font-weight: bold;
+                    ">🚀 مزایای ثبت‌نام</h3>
+                    
+                    <div style="
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 0.8rem;
+                        text-align: right;
+                    ">
+                        <div style="
+                            color: #b8c1ec;
+                            font-size: 0.9rem;
+                            display: flex;
+                            align-items: center;
+                            gap: 0.5rem;
+                        ">
+                            <span style="color: #00ff88;">✅</span>
+                            دسترسی به فروشگاه
+                        </div>
+                        <div style="
+                            color: #b8c1ec;
+                            font-size: 0.9rem;
+                            display: flex;
+                            align-items: center;
+                            gap: 0.5rem;
+                        ">
+                            <span style="color: #00ff88;">✅</span>
+                            سیگنال‌های معاملاتی
+                        </div>
+                        <div style="
+                            color: #b8c1ec;
+                            font-size: 0.9rem;
+                            display: flex;
+                            align-items: center;
+                            gap: 0.5rem;
+                        ">
+                            <span style="color: #00ff88;">✅</span>
+                            ربات‌های معاملاتی
+                        </div>
+                        <div style="
+                            color: #b8c1ec;
+                            font-size: 0.9rem;
+                            display: flex;
+                            align-items: center;
+                            gap: 0.5rem;
+                        ">
+                            <span style="color: #00ff88;">✅</span>
+                            آموزش‌های پیشرفته
+                        </div>
+                        <div style="
+                            color: #b8c1ec;
+                            font-size: 0.9rem;
+                            display: flex;
+                            align-items: center;
+                            gap: 0.5rem;
+                        ">
+                            <span style="color: #00ff88;">✅</span>
+                            گزارشات تفصیلی
+                        </div>
+                        <div style="
+                            color: #b8c1ec;
+                            font-size: 0.9rem;
+                            display: flex;
+                            align-items: center;
+                            gap: 0.5rem;
+                        ">
+                            <span style="color: #00ff88;">✅</span>
+                            پشتیبانی ویژه
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- دکمه‌های عملیات -->
+                <div style="
+                    display: flex;
+                    gap: 1rem;
+                    justify-content: center;
+                    margin-top: 2rem;
+                ">
+                    <button onclick="registerNow()" style="
+                        background: linear-gradient(135deg, #00ff88, #00cc66);
+                        color: #181c2a;
+                        border: none;
+                        padding: 1rem 2rem;
+                        border-radius: 12px;
+                        font-size: 1.1rem;
+                        font-weight: bold;
+                        cursor: pointer;
+                        transition: all 0.3s;
+                        flex: 1;
+                        max-width: 200px;
+                    " onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 20px rgba(0,255,136,0.3)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='none'">
+                        🚀 ثبت‌نام کنید
+                    </button>
+                    
+                    <button onclick="closeWelcomeModal()" style="
+                        background: rgba(255, 255, 255, 0.1);
+                        color: #b8c1ec;
+                        border: 1px solid rgba(255, 255, 255, 0.3);
+                        padding: 1rem 2rem;
+                        border-radius: 12px;
+                        font-size: 1.1rem;
+                        cursor: pointer;
+                        transition: all 0.3s;
+                        flex: 1;
+                        max-width: 200px;
+                    " onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                        بعداً
+                    </button>
+                </div>
+                
+                <!-- پیام اضافی -->
+                <p style="
+                    color: #888;
+                    font-size: 0.9rem;
+                    margin-top: 1.5rem;
+                    line-height: 1.4;
+                ">
+                    💡 می‌توانید با معرفی دوستان خود، 
+                    <span style="color: #a786ff;">کمیسیون دریافت کنید</span> و 
+                    <span style="color: #00ff88;">درآمد کسب کنید</span>!
+                </p>
+                
+                <!-- دکمه اطلاعات رفرال -->
+                <button onclick="showReferralInfo()" style="
+                    background: none;
+                    border: 1px solid #a786ff;
+                    color: #a786ff;
+                    padding: 0.5rem 1rem;
+                    border-radius: 8px;
+                    font-size: 0.9rem;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                    margin-top: 1rem;
+                " onmouseover="this.style.background='rgba(167,134,255,0.1)'" onmouseout="this.style.background='none'">
+                    🤝 اطلاعات رفرال و کمیسیون
+                </button>
+            </div>
+        `;
+        
+        document.body.appendChild(welcomeModal);
+        
+        // ذخیره اینکه پیام نمایش داده شده
+        sessionStorage.setItem('welcomeRegistrationShown', 'true');
+        
+    } catch (error) {
+        console.error('Error showing welcome registration prompt:', error);
+    }
+};
+
+// تابع بستن مودال خوشامدگویی
+window.closeWelcomeModal = function() {
+    const modal = document.getElementById('welcome-registration-modal');
+    if (modal) {
+        modal.remove();
+    }
+};
+
+// تابع ثبت‌نام مستقیم
+window.registerNow = function() {
+    closeWelcomeModal();
+    // استفاده از تابع نمایش مستقیم فرم ثبت‌نام
+    if (typeof window.showDirectRegistrationForm === 'function') {
+        window.showDirectRegistrationForm();
+    } else if (typeof window.showTab === 'function') {
+        window.showTab('network');
+    }
+};
+
+// تابع مدیریت دکمه ثبت‌نام اصلی
+window.manageMainRegistrationButton = async function() {
+    try {
+        // بررسی وضعیت کاربر
+        if (!window.getUserProfile) {
+            console.log('getUserProfile function not available');
+            return;
+        }
+        
+        const profile = await loadUserProfileOnce();
+        const registrationButton = document.getElementById('main-registration-button');
+        
+        if (!registrationButton) {
+            console.log('Main registration button not found');
+            return;
+        }
+        
+        if (!profile.activated) {
+            // کاربر ثبت‌نام نکرده - نمایش دکمه
+            registrationButton.style.display = 'block';
+            
+            // بروزرسانی هزینه ثبت‌نام
+            try {
+                if (window.contractConfig && window.contractConfig.contract) {
+                    const price = await window.getRegistrationPrice(window.contractConfig.contract);
+                    const formattedPrice = parseFloat(ethers.formatUnits(price, 18)).toFixed(0);
+                    const costDisplay = document.getElementById('registration-cost-display');
+                    if (costDisplay) {
+                        costDisplay.textContent = `${formattedPrice} CPA`;
+                    }
+                }
+            } catch (e) {
+                console.log('Could not update registration cost:', e);
+            }
+            
+            console.log('✅ Main registration button shown for unregistered user');
+        } else {
+            // کاربر ثبت‌نام کرده - مخفی کردن دکمه
+            registrationButton.style.display = 'none';
+            console.log('✅ Main registration button hidden for registered user');
+        }
+        
+    } catch (error) {
+        console.error('Error managing main registration button:', error);
+        // در صورت خطا، دکمه را مخفی کن
+        const registrationButton = document.getElementById('main-registration-button');
+        if (registrationButton) {
+            registrationButton.style.display = 'none';
+        }
+    }
+};
+
+// تابع پاک کردن دکمه ثبت‌نام اصلی (بعد از ثبت‌نام موفق)
+window.hideMainRegistrationButton = function() {
+    const registrationButton = document.getElementById('main-registration-button');
+    if (registrationButton) {
+        registrationButton.style.display = 'none';
+        console.log('✅ Main registration button hidden after successful registration');
+    }
+};
+
+// نمایش پیام خوشامدگویی بعد از 2 ثانیه
+setTimeout(() => {
+    if (typeof window.showWelcomeRegistrationPrompt === 'function') {
+        window.showWelcomeRegistrationPrompt();
+    }
+}, 2000);
+
+// مدیریت دکمه ثبت‌نام اصلی بعد از 3 ثانیه
+setTimeout(() => {
+    if (typeof window.manageMainRegistrationButton === 'function') {
+        window.manageMainRegistrationButton();
+    }
+}, 3000);
+
+// تابع نمایش اطلاعات رفرال و کمیسیون
+window.showReferralInfo = function() {
+    const referralModal = document.createElement('div');
+    referralModal.id = 'referral-info-modal';
+    referralModal.style = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 10001;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.3s ease;
+    `;
+    
+    referralModal.innerHTML = `
+        <div style="
+            background: linear-gradient(135deg, #232946, #181c2a);
+            border: 2px solid #00ff88;
+            border-radius: 24px;
+            padding: 2.5rem;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            position: relative;
+        ">
+            <!-- دکمه بستن -->
+            <button onclick="closeReferralModal()" style="
+                position: absolute;
+                top: 1rem;
+                right: 1rem;
+                background: none;
+                border: none;
+                color: #00ff88;
+                font-size: 1.5rem;
+                cursor: pointer;
+                padding: 0.5rem;
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.3s;
+            " onmouseover="this.style.background='rgba(0,255,136,0.1)'" onmouseout="this.style.background='none'">×</button>
+            
+            <!-- آیکون رفرال -->
+            <div style="font-size: 4rem; margin-bottom: 1rem;">🤝</div>
+            
+            <!-- عنوان -->
+            <h2 style="
+                color: #00ff88;
+                margin-bottom: 1rem;
+                font-size: 1.8rem;
+                font-weight: bold;
+            ">سیستم رفرال CPA</h2>
+            
+            <!-- توضیحات -->
+            <p style="
+                color: #b8c1ec;
+                margin-bottom: 1.5rem;
+                line-height: 1.6;
+                font-size: 1.1rem;
+            ">
+                با معرفی دوستان خود، کمیسیون دریافت کنید و درآمد کسب کنید!
+            </p>
+            
+            <!-- کارت اطلاعات رفرال -->
+            <div style="
+                background: rgba(0, 255, 136, 0.1);
+                border: 1px solid rgba(0, 255, 136, 0.3);
+                border-radius: 16px;
+                padding: 1.5rem;
+                margin: 1.5rem 0;
+                backdrop-filter: blur(10px);
+            ">
+                <h3 style="
+                    color: #00ff88;
+                    margin-bottom: 1rem;
+                    font-size: 1.3rem;
+                    font-weight: bold;
+                ">💰 ساختار کمیسیون</h3>
+                
+                <div style="
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 1rem;
+                    margin-bottom: 1rem;
+                ">
+                    <div style="text-align: center;">
+                        <div style="
+                            color: #00ccff;
+                            font-size: 1.5rem;
+                            font-weight: bold;
+                            margin-bottom: 0.3rem;
+                        ">5%</div>
+                        <div style="
+                            color: #b8c1ec;
+                            font-size: 0.9rem;
+                        ">کمیسیون مستقیم</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="
+                            color: #a786ff;
+                            font-size: 1.5rem;
+                            font-weight: bold;
+                            margin-bottom: 0.3rem;
+                        ">2%</div>
+                        <div style="
+                            color: #b8c1ec;
+                            font-size: 0.9rem;
+                        ">کمیسیون غیرمستقیم</div>
+                    </div>
+                </div>
+                
+                <div style="
+                    color: #00ff88;
+                    font-size: 0.9rem;
+                    line-height: 1.4;
+                    margin-top: 1rem;
+                ">
+                    💡 برای هر ثبت‌نام 100 CPA، شما 5 CPA کمیسیون مستقیم دریافت می‌کنید
+                </div>
+            </div>
+            
+            <!-- کارت مزایای رفرال -->
+            <div style="
+                background: rgba(167, 134, 255, 0.1);
+                border: 1px solid rgba(167, 134, 255, 0.3);
+                border-radius: 16px;
+                padding: 1.5rem;
+                margin: 1.5rem 0;
+                backdrop-filter: blur(10px);
+            ">
+                <h3 style="
+                    color: #a786ff;
+                    margin-bottom: 1rem;
+                    font-size: 1.3rem;
+                    font-weight: bold;
+                ">🎯 مزایای رفرال</h3>
+                
+                <div style="
+                    display: grid;
+                    grid-template-columns: 1fr;
+                    gap: 0.8rem;
+                    text-align: right;
+                ">
+                    <div style="
+                        color: #b8c1ec;
+                        font-size: 0.9rem;
+                        display: flex;
+                        align-items: center;
+                        gap: 0.5rem;
+                    ">
+                        <span style="color: #00ff88;">✅</span>
+                        درآمد مستمر از فعالیت‌های معرفی شده
+                    </div>
+                    <div style="
+                        color: #b8c1ec;
+                        font-size: 0.9rem;
+                        display: flex;
+                        align-items: center;
+                        gap: 0.5rem;
+                    ">
+                        <span style="color: #00ff88;">✅</span>
+                        کمیسیون از تمام معاملات زیرمجموعه
+                    </div>
+                    <div style="
+                        color: #b8c1ec;
+                        font-size: 0.9rem;
+                        display: flex;
+                        align-items: center;
+                        gap: 0.5rem;
+                    ">
+                        <span style="color: #00ff88;">✅</span>
+                        پاداش‌های ویژه برای رفرال‌های موفق
+                    </div>
+                    <div style="
+                        color: #b8c1ec;
+                        font-size: 0.9rem;
+                        display: flex;
+                        align-items: center;
+                        gap: 0.5rem;
+                    ">
+                        <span style="color: #00ff88;">✅</span>
+                        دسترسی به ابزارهای مدیریت رفرال
+                    </div>
+                </div>
+            </div>
+            
+            <!-- دکمه‌های عملیات -->
+            <div style="
+                display: flex;
+                gap: 1rem;
+                justify-content: center;
+                margin-top: 2rem;
+            ">
+                <button onclick="copyReferralLink()" style="
+                    background: linear-gradient(135deg, #a786ff, #8b6bff);
+                    color: #fff;
+                    border: none;
+                    padding: 1rem 2rem;
+                    border-radius: 12px;
+                    font-size: 1.1rem;
+                    font-weight: bold;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                    flex: 1;
+                    max-width: 200px;
+                " onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 20px rgba(167,134,255,0.3)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='none'">
+                    📋 کپی لینک رفرال
+                </button>
+                
+                <button onclick="closeReferralModal()" style="
+                    background: rgba(255, 255, 255, 0.1);
+                    color: #b8c1ec;
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    padding: 1rem 2rem;
+                    border-radius: 12px;
+                    font-size: 1.1rem;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                    flex: 1;
+                    max-width: 200px;
+                " onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                    بستن
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(referralModal);
+};
+
+// تابع بستن مودال رفرال
+window.closeReferralModal = function() {
+    const modal = document.getElementById('referral-info-modal');
+    if (modal) {
+        modal.remove();
+    }
+};
+
+// تابع کپی لینک رفرال
+window.copyReferralLink = async function() {
+    try {
+        const profile = await loadUserProfileOnce();
+        const currentUrl = window.location.origin + window.location.pathname;
+        const referralLink = `${currentUrl}?ref=${profile.address}`;
+        
+        await navigator.clipboard.writeText(referralLink);
+        
+        // نمایش پیام موفقیت
+        const successMsg = document.createElement('div');
+        successMsg.style = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #00ff88, #00cc66);
+            color: #181c2a;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            font-weight: bold;
+            z-index: 10002;
+            animation: slideInRight 0.3s ease;
+        `;
+        successMsg.textContent = '✅ لینک رفرال کپی شد!';
+        document.body.appendChild(successMsg);
+        
+        setTimeout(() => {
+            successMsg.remove();
+        }, 3000);
+        
+    } catch (error) {
+        console.error('Error copying referral link:', error);
+    }
+};
 
 // تایمر شمارش معکوس جلسه آنلاین بعدی (فقط برای کاربران فعال)
 const nextSessionDate = new Date("2025-07-01T16:30:00+03:30"); // تاریخ و ساعت جلسه بعدی را اینجا تنظیم کنید
@@ -916,7 +1933,7 @@ document.addEventListener('click', function(e) {
 });
 
 // فرم ثبت‌نام با ورودی آدرس ولت جدید و نمایش موجودی متیک و توکن - بهینه‌سازی شده برای موبایل
-function showRegisterForm(referrerAddress, defaultNewWallet, connectedAddress, provider, contract) {
+window.showRegisterForm = function(referrerAddress, defaultNewWallet, connectedAddress, provider, contract) {
   let old = document.getElementById('register-form-modal');
   if (old) old.remove();
   
@@ -1226,6 +2243,12 @@ function showRegisterForm(referrerAddress, defaultNewWallet, connectedAddress, p
       const { contract } = await window.connectWallet();
       await contract.registerAndActivate(referrerAddress, newWallet);
       statusDiv.textContent = 'ثبت‌نام با موفقیت انجام شد!';
+      
+      // مخفی کردن دکمه ثبت‌نام اصلی
+      if (typeof window.hideMainRegistrationButton === 'function') {
+        window.hideMainRegistrationButton();
+      }
+      
       setTimeout(() => { modal.remove(); location.reload(); }, 1200);
     } catch (e) {
       statusDiv.textContent = 'خطا در ثبت‌نام: ' + (e && e.message ? e.message : e);

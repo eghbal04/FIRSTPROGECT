@@ -305,6 +305,22 @@
             <div style="color:#00ff88;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="dashboard-token-price">-</div>
             <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">USDC per CPA</div>
           </div>
+          
+          <!-- Wallet Count Card -->
+          <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(255,165,0,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
+            <div style="color:#ffa500;font-size:1.2rem;margin-bottom:0.3rem;">👛</div>
+            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">تعداد ولت‌ها</div>
+            <div style="color:#ffa500;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="dashboard-wallets-count">-</div>
+            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">Connected Wallets</div>
+          </div>
+          
+          <!-- Registration Price Card -->
+          <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(138,43,226,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
+            <div style="color:#8a2be2;font-size:1.2rem;margin-bottom:0.3rem;">🎫</div>
+            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">قیمت ثبت‌نام</div>
+            <div style="color:#8a2be2;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="dashboard-registration-price">-</div>
+            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">CPA per Registration</div>
+          </div>
         </div>
         
         <!-- Last Update Info -->
@@ -370,6 +386,27 @@
 
         
 
+      </div>
+
+      <!-- Registration Button for Unregistered Users -->
+      <div id="main-registration-button" style="display:none;background:linear-gradient(135deg,#00ff88,#00cc66);border-radius:18px;box-shadow:0 8px 32px rgba(0,255,136,0.3);margin:2rem auto 1.5rem auto;padding:2rem;max-width:600px;width:100%;text-align:center;position:relative;overflow:hidden;cursor:pointer;transition:all 0.3s ease;" onmouseover="this.style.transform='translateY(-5px)';this.style.boxShadow='0 12px 40px rgba(0,255,136,0.4)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 8px 32px rgba(0,255,136,0.3)'" onclick="showDirectRegistrationForm()">
+        <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#00ff88,#a786ff,#00ff88);animation:shimmer 2s linear infinite;"></div>
+        <div style="font-size:4rem;margin-bottom:1rem;">🎯</div>
+        <h2 style="color:#181c2a;font-family:'Montserrat','Noto Sans Arabic',sans-serif;font-size:1.8rem;font-weight:bold;margin-bottom:1rem;">ثبت‌نام کنید و شروع کنید!</h2>
+        <p style="color:#181c2a;font-size:1.1rem;line-height:1.6;margin-bottom:1.5rem;opacity:0.9;">
+          برای دسترسی به تمام امکانات آکادمی سود مستمر،<br>
+          لطفاً ثبت‌نام کنید و به جامعه ما بپیوندید
+        </p>
+        <div style="background:rgba(24,28,42,0.1);border-radius:12px;padding:1rem;margin-bottom:1.5rem;border:2px solid rgba(24,28,42,0.2);">
+          <div style="color:#181c2a;font-size:1rem;font-weight:bold;margin-bottom:0.5rem;">💰 هزینه ثبت‌نام:</div>
+          <div style="color:#181c2a;font-size:1.2rem;font-family:monospace;font-weight:bold;" id="registration-cost-display">100 CPA</div>
+        </div>
+        <button style="background:rgba(24,28,42,0.9);color:#00ff88;border:2px solid #181c2a;border-radius:12px;padding:1rem 2rem;font-size:1.2rem;font-weight:bold;cursor:pointer;transition:all 0.3s;box-shadow:0 4px 15px rgba(24,28,42,0.3);" onmouseover="this.style.background='#181c2a';this.style.color='#00ff88';this.style.transform='scale(1.05)'" onmouseout="this.style.background='rgba(24,28,42,0.9)';this.style.color='#00ff88';this.style.transform='scale(1)'">
+          🚀 ثبت‌نام اکنون
+        </button>
+        <div style="margin-top:1rem;color:#181c2a;font-size:0.9rem;opacity:0.8;">
+          ⚡ ثبت‌نام سریع و آسان - فقط چند کلیک
+        </div>
       </div>
 
       <!-- CPA Introduction Section -->

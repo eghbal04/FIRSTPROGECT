@@ -655,12 +655,12 @@ class FloatingAIAssistant {
                 </div>
             `;
         } else {
-            messageDiv.innerHTML = `
-                <div class="ai-full-message-content" style="text-align: ${alignment}">
-                    <div class="ai-full-message-icon">${icon}</div>
-                    <div class="ai-full-message-text">${this.escapeHtml(content)}</div>
-                </div>
-            `;
+        messageDiv.innerHTML = `
+            <div class="ai-full-message-content" style="text-align: ${alignment}">
+                <div class="ai-full-message-icon">${icon}</div>
+                <div class="ai-full-message-text">${this.escapeHtml(content)}</div>
+            </div>
+        `;
         }
         
         messagesContainer.appendChild(messageDiv);
@@ -1103,7 +1103,7 @@ class FloatingAIAssistant {
                     for (const q in kb.faq) {
                         content += `\n• ${q}`;
                     }
-                } else {
+        } else {
                     content += 'اطلاعات موجود نیست.';
                 }
                 break;
@@ -1197,7 +1197,7 @@ class FloatingAIAssistant {
             else if (typeof val === 'object') {
                 content = Object.keys(val).map(k=>`<b>${k}:</b> ${typeof val[k]==='string'?val[k]:JSON.stringify(val[k])}`).join('<br>');
             }
-        } else {
+    } else {
             content = 'اطلاعاتی برای این بخش وجود ندارد.';
         }
         this.addMessageToUI(content, 'assistant');
@@ -1210,8 +1210,8 @@ class FloatingAIAssistant {
             console.warn('Could not save chat history:', e);
         }
     }
-}
-
+    }
+    
     // Create global instance
 window.floatingAI = new FloatingAIAssistant(); 
 
@@ -1256,7 +1256,7 @@ if (optionsMenu) {
   ];
   const circularMenu = createCircularMenu(actions);
   optionsMenu.appendChild(circularMenu);
-}
+    }
 // --- Wheel Picker Enhancement ---
 function setupWheelPicker() {
   const picker = document.getElementById('ai-wheel-picker');

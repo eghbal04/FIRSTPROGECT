@@ -8011,3 +8011,138 @@ body.signal-page { background: #181c2a; color: #fff; font-family: 'Noto Sans Ara
 .blockchain-info-success .blockchain-info-value {
   color: #28a745 !important;
 }
+
+/* Locked Tab Styles */
+.locked-tab {
+  position: relative;
+  opacity: 0.5 !important;
+  pointer-events: none !important;
+  cursor: not-allowed !important;
+  filter: grayscale(50%);
+  transition: all 0.3s ease;
+}
+
+.locked-tab::before {
+  content: "🔒";
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  font-size: 0.8rem;
+  color: #ff6b6b;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.locked-tab:hover {
+  opacity: 0.7 !important;
+  transform: scale(1.05);
+}
+
+/* Registration Prompt Styles */
+#registration-prompt {
+  animation: fadeIn 0.3s ease;
+}
+
+#registration-prompt-overlay {
+  animation: fadeIn 0.3s ease;
+}
+
+/* Mobile responsive for locked tabs */
+@media (max-width: 768px) {
+  .locked-tab::before {
+    top: -3px;
+    right: -3px;
+    width: 16px;
+    height: 16px;
+    font-size: 0.7rem;
+  }
+}
+
+/* Locked Hamburger Menu Item Styles */
+.locked-menu-item {
+  position: relative;
+  opacity: 0.5 !important;
+  pointer-events: none !important;
+  cursor: not-allowed !important;
+  filter: grayscale(50%);
+  transition: all 0.3s ease;
+}
+
+.locked-menu-item::before {
+  content: "🔒";
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  font-size: 0.7rem;
+  color: #ff6b6b;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.locked-menu-item:hover {
+  opacity: 0.7 !important;
+  transform: scale(1.02);
+}
+
+/* Mobile responsive for locked menu items */
+@media (max-width: 768px) {
+  .locked-menu-item::before {
+    top: -1px;
+    right: -1px;
+    width: 14px;
+    height: 14px;
+    font-size: 0.6rem;
+  }
+}
+
+/* Welcome Modal Animations */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Welcome Modal Responsive */
+@media (max-width: 768px) {
+  #welcome-registration-modal > div,
+  #referral-info-modal > div {
+    padding: 1.5rem;
+    margin: 1rem;
+  }
+  
+  #welcome-registration-modal h2,
+  #referral-info-modal h2 {
+    font-size: 1.5rem;
+  }
+  
+  #welcome-registration-modal .grid,
+  #referral-info-modal .grid {
+    grid-template-columns: 1fr;
+  }
+}
