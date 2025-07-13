@@ -494,71 +494,132 @@ window.clearUserProfileCache = clearUserProfileCache;
 
 // Lock navigation for deactivated users
 async function lockTabsForDeactivatedUsers() {
-    if (!window.getUserProfile) return;
-    const profile = await loadUserProfileOnce();
-    if (!profile.activated) {
-        // Lock main tabs
-        const lockTabs = [
-            { id: 'tab-shop-btn', label: 'فروشگاه', icon: '🛒' },
-            { id: 'tab-reports-btn', label: 'گزارشات', icon: '📊' },
-            { id: 'tab-learning-btn', label: 'آموزش', icon: '📚' },
-            { id: 'tab-news-btn', label: 'اخبار', icon: '📰' }
-        ];
-        lockTabs.forEach(tab => {
-            const el = document.getElementById(tab.id);
-            if (el) {
-                el.innerHTML = `🔒 ${tab.icon} ${tab.label}`;
-                el.classList.add('locked-tab');
-                if (el.style) {
-                  el.style.pointerEvents = 'none';
-                  el.style.opacity = '0.5';
-                  el.style.cursor = 'not-allowed';
-                }
-                el.title = '🔒 این بخش فقط برای کاربران فعال باز است - لطفاً ابتدا ثبت‌نام کنید';
-            }
-        });
-        
-        // Lock hamburger menu items
-        setTimeout(lockHamburgerMenuItems, 1000); // Wait for hamburger menu to load
-        
-        // مدیریت دکمه ثبت‌نام اصلی
-        if (typeof window.manageMainRegistrationButton === 'function') {
-            window.manageMainRegistrationButton();
+    try {
+        if (!window.getUserProfile) {
+            console.log('getUserProfile not available, skipping lock check');
+            return;
         }
+        
+        const profile = await loadUserProfileOnce();
+        
+        if (!profile) {
+            console.log('No profile available, skipping lock check');
+            return;
+        }
+        
+        console.log('User activation status:', profile.activated);
+        
+        if (!profile.activated) {
+            console.log('User is not activated, locking tabs');
+            
+            // Lock main tabs
+            const lockTabs = [
+                { id: 'tab-shop-btn', label: 'فروشگاه', icon: '🛒' },
+                { id: 'tab-reports-btn', label: 'گزارشات', icon: '📊' },
+                { id: 'tab-learning-btn', label: 'آموزش', icon: '📚' },
+                { id: 'tab-news-btn', label: 'اخبار', icon: '📰' }
+            ];
+            lockTabs.forEach(tab => {
+                const el = document.getElementById(tab.id);
+                if (el) {
+                    el.innerHTML = `🔒 ${tab.icon} ${tab.label}`;
+                    el.classList.add('locked-tab');
+                    if (el.style) {
+                      el.style.pointerEvents = 'none';
+                      el.style.opacity = '0.5';
+                      el.style.cursor = 'not-allowed';
+                    }
+                    el.title = '🔒 این بخش فقط برای کاربران فعال باز است - لطفاً ابتدا ثبت‌نام کنید';
+                }
+            });
+            
+            // Lock hamburger menu items
+            setTimeout(() => lockHamburgerMenuItems(), 1000); // Wait for hamburger menu to load
+            
+            // مدیریت دکمه ثبت‌نام اصلی
+            if (typeof window.manageMainRegistrationButton === 'function') {
+                window.manageMainRegistrationButton();
+            }
+        } else {
+            console.log('User is activated, unlocking tabs');
+            
+            // Unlock main tabs
+            const unlockTabs = [
+                { id: 'tab-shop-btn', label: 'فروشگاه', icon: '🛒' },
+                { id: 'tab-reports-btn', label: 'گزارشات', icon: '📊' },
+                { id: 'tab-learning-btn', label: 'آموزش', icon: '📚' },
+                { id: 'tab-news-btn', label: 'اخبار', icon: '📰' }
+            ];
+            unlockTabs.forEach(tab => {
+                const el = document.getElementById(tab.id);
+                if (el) {
+                    el.innerHTML = `${tab.icon} ${tab.label}`;
+                    el.classList.remove('locked-tab');
+                    if (el.style) {
+                      el.style.pointerEvents = 'auto';
+                      el.style.opacity = '1';
+                      el.style.cursor = 'pointer';
+                    }
+                    el.title = '';
+                }
+            });
+            
+            // Unlock hamburger menu items
+            unlockHamburgerMenuItems();
+        }
+    } catch (error) {
+        console.error('Error in lockTabsForDeactivatedUsers:', error);
     }
 }
 
 // Lock hamburger menu items for deactivated users
-function lockHamburgerMenuItems() {
-    const restrictedMenuItems = [
-        { selector: 'button[onclick*="navigateToPage(\'shop.html\')"]', label: 'فروشگاه' },
-        { selector: 'button[onclick*="navigateToPage(\'news.html\')"]', label: 'اخبار' },
-        { selector: 'button[onclick*="navigateToPage(\'learning.html\')"]', label: 'آموزش' },
-        { selector: 'button[onclick*="navigateToPage(\'signal.html\')"]', label: 'سیگنال' },
-        { selector: 'button[onclick*="navigateToPage(\'autotrade-license.html\')"]', label: 'ربات' },
-        { selector: 'button[onclick*="navigateToPage(\'admin-prop.html\')"]', label: 'پاس پراپ' },
-        { selector: 'button[onclick*="showTab(\'reports\')"]', label: 'گزارشات' }
-    ];
-    
-    restrictedMenuItems.forEach(item => {
-        const elements = document.querySelectorAll(item.selector);
-        elements.forEach(el => {
-            // Add lock icon to button text
-            const btnText = el.querySelector('.btn-text');
-            if (btnText) {
-                btnText.innerHTML = '🔒 ' + item.label;
+async function lockHamburgerMenuItems() {
+    try {
+        // بررسی وضعیت ثبت‌نام کاربر
+        const profile = await loadUserProfileOnce();
+        
+        // اگر کاربر ثبت‌نام کرده، قفل نکن
+        if (profile && profile.activated) {
+            console.log('User is activated, not locking hamburger menu items');
+            return;
+        }
+        
+        console.log('User is not activated, locking hamburger menu items');
+        
+        const restrictedMenuItems = [
+            { selector: 'button[onclick*="navigateToPage(\'shop.html\')"]', label: 'فروشگاه' },
+            { selector: 'button[onclick*="navigateToPage(\'news.html\')"]', label: 'اخبار' },
+            { selector: 'button[onclick*="navigateToPage(\'learning.html\')"]', label: 'آموزش' },
+            { selector: 'button[onclick*="navigateToPage(\'signal.html\')"]', label: 'سیگنال' },
+            { selector: 'button[onclick*="navigateToPage(\'autotrade-license.html\')"]', label: 'ربات' },
+            { selector: 'button[onclick*="navigateToPage(\'admin-prop.html\')"]', label: 'پاس پراپ' },
+            { selector: 'button[onclick*="showTab(\'reports\')"]', label: 'گزارشات' }
+        ];
+        
+        restrictedMenuItems.forEach(item => {
+            const elements = document.querySelectorAll(item.selector);
+            elements.forEach(el => {
+                // Add lock icon to button text
+                const btnText = el.querySelector('.btn-text');
+                if (btnText) {
+                    btnText.innerHTML = '🔒 ' + item.label;
+                }
+                
+                // Add locked class
+                el.classList.add('locked-menu-item');
+                
+                // Disable click
+                el.style.pointerEvents = 'none';
+                el.style.opacity = '0.5';
+                el.style.cursor = 'not-allowed';
+                
+                // Add title
+                el.title = '🔒 این بخش فقط برای کاربران فعال باز است - لطفاً ابتدا ثبت‌نام کنید';
+                
+                            // Store original onclick if not already stored
+            if (!el.dataset.originalOnclick && el.onclick) {
+                el.dataset.originalOnclick = el.onclick.toString();
             }
-            
-            // Add locked class
-            el.classList.add('locked-menu-item');
-            
-            // Disable click
-            el.style.pointerEvents = 'none';
-            el.style.opacity = '0.5';
-            el.style.cursor = 'not-allowed';
-            
-            // Add title
-            el.title = '🔒 این بخش فقط برای کاربران فعال باز است - لطفاً ابتدا ثبت‌نام کنید';
             
             // Override onclick to show registration prompt
             el.onclick = function(e) {
@@ -567,8 +628,58 @@ function lockHamburgerMenuItems() {
                 showRegistrationPrompt();
                 return false;
             };
+            });
         });
-    });
+    } catch (error) {
+        console.error('Error in lockHamburgerMenuItems:', error);
+    }
+}
+
+// Unlock hamburger menu items for activated users
+function unlockHamburgerMenuItems() {
+    try {
+        console.log('Unlocking hamburger menu items for activated user');
+        
+        const restrictedMenuItems = [
+            { selector: 'button[onclick*="navigateToPage(\'shop.html\')"]', label: 'فروشگاه' },
+            { selector: 'button[onclick*="navigateToPage(\'news.html\')"]', label: 'اخبار' },
+            { selector: 'button[onclick*="navigateToPage(\'learning.html\')"]', label: 'آموزش' },
+            { selector: 'button[onclick*="navigateToPage(\'signal.html\')"]', label: 'سیگنال' },
+            { selector: 'button[onclick*="navigateToPage(\'autotrade-license.html\')"]', label: 'ربات' },
+            { selector: 'button[onclick*="navigateToPage(\'admin-prop.html\')"]', label: 'پاس پراپ' },
+            { selector: 'button[onclick*="showTab(\'reports\')"]', label: 'گزارشات' }
+        ];
+        
+        restrictedMenuItems.forEach(item => {
+            const elements = document.querySelectorAll(item.selector);
+            elements.forEach(el => {
+                // Remove lock icon from button text
+                const btnText = el.querySelector('.btn-text');
+                if (btnText) {
+                    btnText.innerHTML = item.label;
+                }
+                
+                // Remove locked class
+                el.classList.remove('locked-menu-item');
+                
+                // Enable click
+                el.style.pointerEvents = 'auto';
+                el.style.opacity = '1';
+                el.style.cursor = 'pointer';
+                
+                // Remove title
+                el.title = '';
+                
+                // Restore original onclick (if it was stored)
+                if (el.dataset.originalOnclick) {
+                    el.onclick = new Function(el.dataset.originalOnclick);
+                    delete el.dataset.originalOnclick;
+                }
+            });
+        });
+    } catch (error) {
+        console.error('Error in unlockHamburgerMenuItems:', error);
+    }
 }
 
 // نمایش پیام ثبت‌نام برای تب‌های قفل شده
@@ -634,6 +745,41 @@ function showRegistrationPrompt() {
     };
     document.body.appendChild(overlay);
 }
+
+// تابع تست وضعیت قفل
+window.testLockStatus = async function() {
+    try {
+        console.log('🔍 Testing lock status...');
+        
+        const profile = await loadUserProfileOnce();
+        console.log('📋 User profile:', profile);
+        
+        if (profile) {
+            console.log('✅ Profile loaded successfully');
+            console.log('🔓 Activation status:', profile.activated);
+            console.log('👤 User address:', profile.address);
+        } else {
+            console.log('❌ No profile available');
+        }
+        
+        // Check tab lock status
+        const lockedTabs = document.querySelectorAll('.locked-tab');
+        console.log('🔒 Locked tabs count:', lockedTabs.length);
+        
+        // Check hamburger menu lock status
+        const lockedMenuItems = document.querySelectorAll('.locked-menu-item');
+        console.log('🔒 Locked menu items count:', lockedMenuItems.length);
+        
+        return {
+            profile: profile,
+            lockedTabs: lockedTabs.length,
+            lockedMenuItems: lockedMenuItems.length
+        };
+    } catch (error) {
+        console.error('Error testing lock status:', error);
+        return { error: error.message };
+    }
+};
 
 // تابع نمایش مستقیم فرم ثبت‌نام
 window.showDirectRegistrationForm = async function() {
