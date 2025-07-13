@@ -963,23 +963,7 @@ window.showLotteryBalance = async function() {
   }
 };
 
-// تابع تست قرارداد لاتاری
-window.testLotteryContract = async function() {
-  console.log('تست قرارداد لاتاری...');
-  if (lotteryManager.isInitialized && lotteryManager.lotteryContract) {
-    try {
-      console.log('آدرس قرارداد لاتاری:', lotteryManager.lotteryContract.address);
-      console.log('قرارداد لاتاری آماده است');
-      return true;
-    } catch (error) {
-      console.error('خطا در تست قرارداد لاتاری:', error);
-      return false;
-    }
-  } else {
-    console.log('قرارداد لاتاری راه‌اندازی نشده');
-    return false;
-  }
-};
+
 
 // Export برای استفاده در HTML
 window.lotteryManager = lotteryManager; 

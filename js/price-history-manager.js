@@ -9,7 +9,7 @@ class PriceHistoryManager {
 
     init() {
         this.loadHistory();
-        console.log('PriceHistoryManager initialized');
+
     }
 
     // Add new token price to history

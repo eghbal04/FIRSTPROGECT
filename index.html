@@ -15,7 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Fira+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/index-custom.css">
-    <link rel="stylesheet" href="css/ai-assistant.css">
+    <link rel="stylesheet" href="css/floating-ai-assistant.css">
 
     <!-- بارگذاری ethers.js نسخه 6 از CDN -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
@@ -28,9 +28,41 @@
   <script src="js/walletconnect-v1.8.0.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
   
-  <!-- بارگذاری AI Assistant -->
-  <script src="js/ai-assistant.js"></script>
-  <script src="js/ai-help-system.js"></script>
+  <!-- بارگذاری دانش پایه قرارداد -->
+  <script src="js/contract-knowledge-base.js"></script>
+  
+  <!-- بارگذاری Floating AI Assistants -->
+  <script src="js/floating-ai-assistant.js"></script>
+  
+  <!-- Immediate AI Assistant Initialization -->
+  <script>
+    // Force immediate initialization
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('🚀 DOM Content Loaded - Initializing AI Assistant...');
+
+      setTimeout(() => {
+        // فقط دستیار پیشرفته را مقداردهی کن
+        if (typeof FloatingAIAssistant !== 'undefined') {
+          console.log('✅ FloatingAIAssistant class found');
+
+          if (!window.floatingAI) {
+            console.log('🔄 Creating new FloatingAIAssistant instance...');
+            window.floatingAI = new FloatingAIAssistant();
+          }
+          
+          if (window.floatingAI) {
+            console.log('✅ FloatingAI instance ready');
+            window.floatingAI.switchToIdleState();
+          }
+        } else {
+          console.error('❌ FloatingAIAssistant class not found');
+        }
+      }, 1000);
+    });
+  </script>
+  
+  <!-- Test script for floating AI -->
+
 </head>
 <body>
   <div id="online-session-bubble" style="display:none;">
@@ -100,6 +132,8 @@
 
   <!-- Floating Logo as Hamburger Menu -->
   <img id="floating-logo" src="cpa.jpg" alt="CPA Logo" style="height:48px;width:48px;display:inline-block;border-radius:50%;box-shadow:0 2px 12px #00ff8840;position:fixed;bottom:24px;right:24px;z-index:999999;background:#181c2a;cursor:pointer;transition:all 0.3s ease;object-fit:cover;" loading="lazy" onmouseover="this.style.transform='scale(1.1) rotate(360deg)'" onmouseout="this.style.transform='scale(1) rotate(0deg)'" onclick="toggleHamburgerMenu()">
+  
+
   
   <!-- Hamburger Menu -->
   <div id="hamburgerMenu" class="hamburger-menu">
@@ -196,6 +230,76 @@
   <div id="main-dashboard" class="page-section" style="position:relative;overflow:visible;">
     <div class="dashboard-cards" style="display:flex;justify-content:center;flex-wrap:wrap;gap:1rem;max-width:1400px;margin:0 auto;">
       <!-- AI Assistant will be inserted here by JavaScript -->
+
+      <!-- Blockchain Information Cards -->
+      <div class="dashboard-card" style="background:linear-gradient(135deg,#1a1f2e,#232946);border-radius:16px;box-shadow:0 4px 20px rgba(0,255,136,0.15);min-width:100%;max-width:100%;margin:1rem 0;width:100%;padding:1.5rem;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#00ff88,#a786ff,#00ff88);animation:shimmer 2s linear infinite;"></div>
+        
+        <div style="text-align:center;margin-bottom:1.5rem;">
+          <h3 style="color:#00ff88;font-size:1.2rem;font-weight:bold;margin:0;font-family:monospace;">CONTINUOUS PROFIT ACADEMY</h3>
+        </div>
+        
+        <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;">
+          <!-- Total Supply Card -->
+          <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(0,255,136,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
+            <div style="color:#00ff88;font-size:1.2rem;margin-bottom:0.3rem;">💰</div>
+            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">کل عرضه</div>
+            <div style="color:#00ff88;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="circulating-supply">-</div>
+            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">CPA Tokens</div>
+          </div>
+          
+          <!-- Total Points Card -->
+          <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(167,134,255,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
+            <div style="color:#a786ff;font-size:1.2rem;margin-bottom:0.3rem;">🎯</div>
+            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">کل پوینت‌ها</div>
+            <div style="color:#a786ff;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="total-points">-</div>
+            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">Binary Points</div>
+          </div>
+          
+          <!-- Contract Token Balance Card -->
+          <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(255,193,7,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
+            <div style="color:#ffc107;font-size:1.2rem;margin-bottom:0.3rem;">🏦</div>
+            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">موجودی قرارداد</div>
+            <div style="color:#ffc107;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="contract-token-balance">-</div>
+            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">CPA in Contract</div>
+          </div>
+          
+          <!-- Help Fund Card -->
+          <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(220,53,69,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
+            <div style="color:#dc3545;font-size:1.2rem;margin-bottom:0.3rem;">💝</div>
+            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">صندوق کمک</div>
+            <div style="color:#dc3545;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="dashboard-cashback-value">-</div>
+            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">Cashback Pool</div>
+          </div>
+          
+          <!-- USDC Contract Balance Card -->
+          <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(0,123,255,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
+            <div style="color:#007bff;font-size:1.2rem;margin-bottom:0.3rem;">💵</div>
+            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">موجودی USDC</div>
+            <div style="color:#007bff;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="dashboard-usdc-balance">-</div>
+            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">USDC in Contract</div>
+          </div>
+          
+          <!-- Network Status Card -->
+          <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(40,167,69,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
+            <div style="color:#28a745;font-size:1.2rem;margin-bottom:0.3rem;">🌐</div>
+            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">وضعیت شبکه</div>
+            <div style="color:#28a745;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="network-status">Polygon</div>
+            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">Active</div>
+          </div>
+        </div>
+        
+        <!-- Last Update Info -->
+        <div style="text-align:center;margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.1);">
+          <div style="color:#888;font-size:0.8rem;font-family:monospace;margin-bottom:0.5rem;">
+            آخرین بروزرسانی: <span id="blockchain-last-update">-</span>
+          </div>
+          <button onclick="updateDashboardStats()" style="background:rgba(0,255,136,0.1);color:#00ff88;border:1px solid #00ff88;border-radius:6px;padding:0.4rem 1rem;font-size:0.8rem;font-family:monospace;cursor:pointer;transition:all 0.3s ease;" onmouseover="this.style.background='rgba(0,255,136,0.2)'" onmouseout="this.style.background='rgba(0,255,136,0.1)'">
+            🔄 بروزرسانی
+          </button>
+
+        </div>
+      </div>
 
       <!-- Price Chart Section -->
       <div class="dashboard-card" id="price-chart-section" style="background:linear-gradient(135deg,#1a1f2e,#232946);border-radius:16px;box-shadow:0 4px 20px rgba(0,255,136,0.15);min-width:100%;max-width:100%;margin:1rem 0;width:100%;padding:1.5rem;position:relative;overflow:hidden;">
@@ -347,17 +451,16 @@
 
   <div id="main-network" class="page-section expandable-container" style="width:100vw;max-width:none;margin:0;left:0;right:0;padding:0.5rem 0;display:none;">
     <div class="expand-header">
-      <h2 class="network-title"></h2>
+      <h2 style="color: #00ff88; margin: 0;">🌐 Network</h2>
     </div>
     <div class="expand-content">
-      <div class="network-container">
-
+      <div class="network-container" style="max-width: 800px; margin: 0 auto; padding: 1rem;">
+        <!-- Network Stats -->
+        <div id="network-stats"></div>
         
-        <!-- نمایش درخت شبکه -->
+        <!-- Network Members List -->
         <div id="network-tree"></div>
       </div>
-      <!-- دکمه ثبت جدید برای حساب فعال در شبکه -->
-      <button id="new-register-btn" class="register-btn" style="width: 100%; display: none; margin: 2rem 0;">ثبت جدید</button>
     </div>
   </div>
 
@@ -744,7 +847,7 @@
       const menu = document.getElementById('hamburgerMenu');
       if (menu) {
         menu.classList.toggle('open');
-        console.log('Menu toggled, open class:', menu.classList.contains('open'));
+
         
         // اگر منو باز است، مطمئن شو که قابل مشاهده است
         if (menu.classList.contains('open')) {
@@ -758,7 +861,7 @@
           menu.style.transform = 'scale(0.9)';
         }
       } else {
-        console.log('Menu element not found!');
+
       }
     }
     
@@ -827,15 +930,13 @@
     (async () => {
       const { contract, address } = await window.connectWallet();
       const user = await contract.users(address);
-      console.log('totalPurchasedKind:', user.totalPurchasedKind?.toString?.() ?? user.totalPurchasedKind);
+  
     })();
   </script>
   <script>
-    (async () => {
-      const { contract, address } = await window.connectWallet();
-      const events = await contract.queryFilter(contract.filters.PurchaseKind());
-      console.log(events);
-    })();
+    // Removed problematic queryFilter call that was causing RPC timeout
+    // This was trying to fetch all PurchaseKind events from block 0 to latest
+    // which is not needed for basic functionality
   </script>
   <script>
     async function updateAboutWalletsCount() {
@@ -971,6 +1072,16 @@
         <button class="modal-btn secondary" id="cancel-delete-btn">❌ انصراف</button>
       </div>
     </div>
+  </div>
+
+  <!-- دکمه تست دستیار هوشمند -->
+  <div style="position:fixed; top:20px; right:20px; z-index:999999;">
+    <button onclick="window.testFloatingAI()" style="background:linear-gradient(135deg, #00ff88, #a786ff); color:#fff; border:none; padding:10px 15px; border-radius:8px; cursor:pointer; font-size:12px; box-shadow:0 4px 12px rgba(0,255,136,0.3);">
+      🧪 تست دستیار
+    </button>
+    <button onclick="window.floatingAI.switchToMessageState()" style="background:linear-gradient(135deg, #a786ff, #00cfff); color:#fff; border:none; padding:10px 15px; border-radius:8px; cursor:pointer; font-size:12px; box-shadow:0 4px 12px rgba(167,134,255,0.3); margin-left:10px;">
+      💬 باز کردن دستیار
+    </button>
   </div>
 
   <div id="custom-footer-div" style="text-align:center; padding:2rem; color:#00ff88; font-size:1.2rem;">
@@ -1324,6 +1435,8 @@
   <script src="js/token-price.js"></script>
   <script src="js/remove-archive-btn.js"></script>
   <script src="js/hamburger-float.js"></script>
+  
+
   
   <!-- Dashboard Terminal Script - Moved after config.js -->
 

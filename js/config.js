@@ -3,7 +3,7 @@ const deepseek_api ='sk-6074908ce7954bd89d494d57651392a8';
 
 
 // تنظیمات قرارداد LevelUp
-const CONTRACT_ADDRESS = '0x045401e0692a84ecDd9c0c0fce3b2E23D864F076';
+const CONTRACT_ADDRESS = '0xbC687eb423a781F9E057dFdA13E32f530B5e12fF';
 const USDC_ADDRESS = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174'; // Polygon USDC
 const USDC_ABI = [
   {
@@ -77,6 +77,30 @@ const USDC_ABI = [
   }
 ];
 const LEVELUP_ABI =[
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "spender",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "approve",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
 	{
 		"inputs": [],
 		"stateMutability": "nonpayable",
@@ -305,6 +329,33 @@ const LEVELUP_ABI =[
 		"type": "event"
 	},
 	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "usdcAmount",
+				"type": "uint256"
+			}
+		],
+		"name": "buyTokens",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "claim",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "claimMonthlyReward",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
 		"anonymous": false,
 		"inputs": [
 			{
@@ -336,6 +387,24 @@ const LEVELUP_ABI =[
 		"type": "event"
 	},
 	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "amountCPA",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "payout",
+				"type": "uint256"
+			}
+		],
+		"name": "purchase",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
 		"anonymous": false,
 		"inputs": [
 			{
@@ -353,6 +422,37 @@ const LEVELUP_ABI =[
 		],
 		"name": "PurchaseKind",
 		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "referrer",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "newUser",
+				"type": "address"
+			}
+		],
+		"name": "registerAndActivate",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "tokenAmount",
+				"type": "uint256"
+			}
+		],
+		"name": "sellTokens",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
 	},
 	{
 		"anonymous": false,
@@ -405,6 +505,30 @@ const LEVELUP_ABI =[
 		"type": "event"
 	},
 	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "transfer",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
 		"anonymous": false,
 		"inputs": [
 			{
@@ -428,6 +552,48 @@ const LEVELUP_ABI =[
 		],
 		"name": "Transfer",
 		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "transferFrom",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "newOwner",
+				"type": "address"
+			}
+		],
+		"name": "transferIndexOwnership",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
 	},
 	{
 		"anonymous": false,
@@ -467,32 +633,6 @@ const LEVELUP_ABI =[
 		"type": "event"
 	},
 	{
-		"inputs": [],
-		"name": "MAX_BINARY_POINT_CAP",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "REFERRAL_FEE_PERCENT",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
 		"inputs": [
 			{
 				"internalType": "address",
@@ -520,61 +660,11 @@ const LEVELUP_ABI =[
 		"inputs": [
 			{
 				"internalType": "address",
-				"name": "spender",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "value",
-				"type": "uint256"
-			}
-		],
-		"name": "approve",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
 				"name": "account",
 				"type": "address"
 			}
 		],
 		"name": "balanceOf",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "usdcAmount",
-				"type": "uint256"
-			}
-		],
-		"name": "buyTokens",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "cashBack",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -600,16 +690,15 @@ const LEVELUP_ABI =[
 	},
 	{
 		"inputs": [],
-		"name": "claim",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "claimMonthlyReward",
-		"outputs": [],
-		"stateMutability": "nonpayable",
+		"name": "cashBack",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{
@@ -935,6 +1024,19 @@ const LEVELUP_ABI =[
 	},
 	{
 		"inputs": [],
+		"name": "MAX_BINARY_POINT_CAP",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
 		"name": "name",
 		"outputs": [
 			{
@@ -947,52 +1049,16 @@ const LEVELUP_ABI =[
 		"type": "function"
 	},
 	{
-		"inputs": [
+		"inputs": [],
+		"name": "REFERRAL_FEE_PERCENT",
+		"outputs": [
 			{
 				"internalType": "uint256",
-				"name": "amountCPA",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "payout",
+				"name": "",
 				"type": "uint256"
 			}
 		],
-		"name": "purchase",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "referrer",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "newUser",
-				"type": "address"
-			}
-		],
-		"name": "registerAndActivate",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "tokenAmount",
-				"type": "uint256"
-			}
-		],
-		"name": "sellTokens",
-		"outputs": [],
-		"stateMutability": "nonpayable",
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{
@@ -1045,72 +1111,6 @@ const LEVELUP_ABI =[
 			}
 		],
 		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "to",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "value",
-				"type": "uint256"
-			}
-		],
-		"name": "transfer",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "from",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "to",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "value",
-				"type": "uint256"
-			}
-		],
-		"name": "transferFrom",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "newOwner",
-				"type": "address"
-			}
-		],
-		"name": "transferIndexOwnership",
-		"outputs": [],
-		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -1606,6 +1606,8 @@ window.clearConnectionCache = function() {
     debounceTimers.clear();
 };
 
+
+
 // تنظیم event listeners برای MetaMask
 if (typeof window.ethereum !== 'undefined') {
     // پاک کردن کش هنگام تغییر حساب
@@ -1626,6 +1628,31 @@ if (typeof window.ethereum !== 'undefined') {
         window.clearConnectionCache();
     });
 }
+
+// Global error handler for unhandled promise rejections
+window.addEventListener('unhandledrejection', function(event) {
+    const error = event.reason;
+    
+    // Handle RPC errors gracefully
+    if (error && (error.message || error.code)) {
+        const errorType = window.handleRpcError(error, 'unhandled');
+        
+        if (errorType === null) {
+            // Error was handled and should be ignored
+            event.preventDefault();
+            return;
+        }
+        
+        if (errorType === 'retry' || errorType === 'wait') {
+            // Error was handled and will be retried
+            event.preventDefault();
+            return;
+        }
+    }
+    
+    // Log other unhandled errors
+    console.warn('Unhandled promise rejection:', event.reason);
+});
 
 // تابع جلوگیری از فراخوانی همزمان توابع
 const functionCallCache = new Map();
@@ -2214,6 +2241,12 @@ window.handleRpcError = function(error, operation = 'unknown') {
         return null;
     }
     
+    // Handle "could not coalesce error" - این خطا معمولاً قابل نادیده گرفتن است
+    if (error.message && error.message.includes('could not coalesce error')) {
+        console.warn('Coalesce error - ignoring...');
+        return null;
+    }
+    
     // اگر خطای timeout بود
     if (error.code === 'TIMEOUT' || error.message.includes('timeout') || 
         error.message.includes('Request timeout error') || error.code === -32064) {
@@ -2258,12 +2291,6 @@ window.handleRpcError = function(error, operation = 'unknown') {
         return 'retry';
     }
     
-    // Handle "could not coalesce error" - این خطا معمولاً قابل نادیده گرفتن است
-    if (error.message && error.message.includes('could not coalesce error')) {
-        console.warn('Coalesce error - ignoring...');
-        return null;
-    }
-    
     // سایر خطاها
     return 'error';
 };
@@ -2274,7 +2301,26 @@ window.retryRpcOperation = async function(operation, maxRetries = 3) {
         try {
             return await operation();
         } catch (error) {
-            if (i === maxRetries - 1) throw error;
+            // Handle specific error types
+            const errorType = window.handleRpcError(error, 'retry');
+            
+            if (errorType === null) {
+                // Error should be ignored, don't retry
+                throw error;
+            }
+            
+            if (errorType === 'wait') {
+                // Wait longer before retry
+                await new Promise(resolve => setTimeout(resolve, 2000 * (i + 1)));
+                continue;
+            }
+            
+            if (i === maxRetries - 1) {
+                // Last attempt, throw the error
+                throw error;
+            }
+            
+            // Default retry delay
             await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
         }
     }
@@ -2321,118 +2367,96 @@ window.handleMetaMaskError = function(error) {
     };
 };
 
-// تابع تست اتصال و قرارداد
-window.testConnection = async function() {
+
+
+// تابع امن برای query کردن events
+window.safeQueryEvents = async function(contract, eventFilter, fromBlock = 'latest', toBlock = 'latest') {
     try {
-        console.log('=== Testing Connection ===');
+        // اگر fromBlock برابر 'latest' است، فقط آخرین block را query کن
+        if (fromBlock === 'latest') {
+            const currentBlock = await contract.provider.getBlockNumber();
+            fromBlock = currentBlock;
+            toBlock = currentBlock;
+        }
         
-        // Test concurrent calls
-        console.log('Testing concurrent connection calls...');
-        const promises = [
-            window.connectWallet(),
-            window.connectWallet(),
-            window.connectWallet(),
-            window.getUserProfile(),
-            window.getPrices(),
-            window.checkConnection()
-        ];
+        // اگر fromBlock برابر 0 است، از آخرین 1000 block شروع کن
+        if (fromBlock === 0 || fromBlock === '0x0') {
+            const currentBlock = await contract.provider.getBlockNumber();
+            fromBlock = Math.max(0, currentBlock - 1000);
+            toBlock = currentBlock;
+        }
         
-        const results = await Promise.allSettled(promises);
-        console.log('Concurrent call results:', results);
+        return await contract.queryFilter(eventFilter, fromBlock, toBlock);
+    } catch (error) {
+        const errorType = window.handleRpcError(error, 'event_query');
         
-        // تست اتصال کیف پول
-        const connection = await window.checkConnection();
-        console.log('Connection status:', connection);
+        if (errorType === null) {
+            // Error should be ignored
+            return [];
+        }
         
-        if (connection.connected) {
-            // تست قرارداد
-            const { contract } = await window.connectWallet();
-            console.log('Contract address:', contract.target);
-            
-            // تست توابع ساده
+        if (errorType === 'retry' || errorType === 'wait') {
+            // Retry with a smaller block range
             try {
-                const totalSupply = await contract.totalSupply();
-                console.log('Total supply:', ethers.formatUnits(totalSupply, 18));
-            } catch (e) {
-                console.error('Error calling totalSupply:', e);
-            }
-            
-            try {
-                const pointValue = await contract.getPointValue();
-                console.log('Point value:', ethers.formatUnits(pointValue, 18));
-            } catch (e) {
-                console.error('Error calling getPointValue:', e);
-            }
-            
-            try {
-                const wallets = await contract.wallets();
-                console.log('Wallets:', wallets.toString());
-            } catch (e) {
-                console.error('Error calling wallets:', e);
-            }
-            
-            try {
-                const totalPoints = await contract.totalClaimableBinaryPoints;
-                console.log('Total points:', ethers.formatUnits(totalPoints, 18));
-            } catch (e) {
-                console.error('Error calling totalClaimableBinaryPoints:', e);
+                const currentBlock = await contract.provider.getBlockNumber();
+                const smallerFromBlock = Math.max(0, currentBlock - 100);
+                return await contract.queryFilter(eventFilter, smallerFromBlock, currentBlock);
+            } catch (retryError) {
+                console.warn('Event query retry failed:', retryError);
+                return [];
             }
         }
         
-        return connection;
-    } catch (error) {
-        console.error('Test connection error:', error);
-        return { connected: false, error: error.message };
+        throw error;
     }
 };
 
-// تابع تست API قیمت‌ها
-window.testPriceAPI = async function() {
+// تابع مرکزی برای دریافت قیمت ثبت‌نام
+window.getRegistrationPrice = async function(contract = null) {
     try {
-        console.log('=== Testing Price API ===');
+        if (!contract) {
+            const connection = await window.connectWallet();
+            contract = connection.contract;
+        }
         
-        const polPrice = 1.0; // USDC همیشه 1 دلار است
-        console.log('POL/USD price:', polPrice);
+        // Try to get registration price from contract, fallback to hardcoded value
+        let regPrice;
+        try {
+            // First try getRegPrice (new function)
+            if (typeof contract.getRegPrice === 'function') {
+                regPrice = await contract.getRegPrice();
+                console.log('✅ Using getRegPrice function');
+            }
+            // Then try regprice (old function name)
+            else if (typeof contract.regprice === 'function') {
+                regPrice = await contract.regprice();
+                console.log('✅ Using regprice function');
+            }
+            // Then try regPrice (alternative spelling)
+            else if (typeof contract.regPrice === 'function') {
+                regPrice = await contract.regPrice();
+                console.log('✅ Using regPrice function');
+            }
+            else {
+                // Fallback to hardcoded registration price (100 CPA)
+                regPrice = ethers.parseUnits('100', 18);
+                console.log('⚠️ No registration price function found, using hardcoded value');
+            }
+        } catch (e) {
+            // Fallback to hardcoded registration price (100 CPA)
+            regPrice = ethers.parseUnits('100', 18);
+            console.log('⚠️ Error calling registration price function, using hardcoded value:', e.message);
+        }
         
-        const prices = await window.getPrices();
-        console.log('All prices:', prices);
+        console.log('✅ Registration price (raw):', regPrice.toString());
+        console.log('✅ Registration price (formatted):', ethers.formatUnits(regPrice, 18) + ' CPA');
         
-        return { polPrice, prices };
+        return regPrice;
     } catch (error) {
-        console.error('Test price API error:', error);
-        return { error: error.message };
+        console.error('Error getting registration price:', error);
+        // Return hardcoded value as last resort
+        return ethers.parseUnits('100', 18);
     }
-};
-
-// تابع تست آمار قرارداد
-window.testContractStats = async function() {
-    try {
-        console.log('=== Testing Contract Stats ===');
-        
-        const stats = await window.getContractStats();
-        console.log('Contract stats:', stats);
-        
-        return stats;
-    } catch (error) {
-        console.error('Test contract stats error:', error);
-        return { error: error.message };
-    }
-};
-
-// تابع تست کامل
-window.runFullTest = async function() {
-    console.log('=== Running Full Test ===');
-    
-    const connection = await window.testConnection();
-    const priceTest = await window.testPriceAPI();
-    const statsTest = await window.testContractStats();
-    
-    console.log('=== Test Results ===');
-    console.log('Connection:', connection);
-    console.log('Price API:', priceTest);
-    console.log('Contract Stats:', statsTest);
-    
-    return { connection, priceTest, statsTest };
 };
 
 function setupViewerMode() {
@@ -2483,115 +2507,7 @@ window.handleWalletConnectionError = function(error) {
     };
 };
 
-// تابع تست و عیب‌یابی شبکه
-window.testNetworkConnection = async function() {
-    try {
-        console.log('=== Testing Network Connection ===');
-        
-        const { contract, provider, address } = await window.connectWallet();
-        
-        // تست اتصال شبکه
-        console.log('Testing network connection...');
-        const network = await window.retryRpcOperation(() => provider.getNetwork(), 2);
-        console.log('Network:', network);
-        
-        // تست موجودی کیف پول
-        console.log('Testing wallet balance...');
-        const balance = await window.retryRpcOperation(() => provider.getBalance(address), 2);
-        console.log('Wallet balance:', ethers.formatEther(balance));
-        
-        // تست قرارداد
-        console.log('Testing contract connection...');
-        const totalSupply = await window.retryRpcOperation(() => contract.totalSupply(), 2);
-        console.log('Contract total supply:', ethers.formatUnits(totalSupply, 18));
-        
-        // تست اطلاعات کاربر
-        console.log('Testing user data...');
-        const user = await window.retryRpcOperation(() => contract.users(address), 2);
-        console.log('User data:', {
-            activated: user.activated,
-            index: user.index ? user.index.toString() : '0',
-            binaryPoints: user.binaryPoints ? user.binaryPoints.toString() : '0'
-        });
-        
-        return {
-            success: true,
-            network: network.name,
-            chainId: network.chainId,
-            balance: ethers.formatEther(balance),
-            totalSupply: ethers.formatUnits(totalSupply, 18),
-            userActivated: user.activated
-        };
-        
-    } catch (error) {
-        console.error('Network test failed:', error);
-        return {
-            success: false,
-            error: error.message,
-            code: error.code
-        };
-    }
-};
 
-// تابع تست ثبت‌نام
-window.testRegistration = async function() {
-    try {
-        console.log('=== Testing Registration ===');
-        
-        const { contract, address } = await window.connectWallet();
-        
-        // بررسی وضعیت ثبت‌نام
-        const user = await window.retryRpcOperation(() => contract.users(address), 2);
-        
-        if (user.activated) {
-            console.log('User is already registered and activated');
-            return {
-                registered: true,
-                activated: true,
-                message: 'کاربر قبلاً ثبت‌نام شده است'
-            };
-        }
-        
-        // بررسی قیمت ثبت‌نام
-        const regPrice = await window.retryRpcOperation(() => contract.regprice(), 2);
-        console.log('Registration price:', ethers.formatEther(regPrice));
-        
-        // بررسی موجودی کیف پول
-        const { provider } = await window.connectWallet();
-        const balance = await window.retryRpcOperation(() => provider.getBalance(address), 2);
-        console.log('Wallet balance:', ethers.formatEther(balance));
-        
-        if (balance < regPrice) {
-            return {
-                registered: false,
-                activated: false,
-                canRegister: false,
-                message: 'موجودی کافی برای ثبت‌نام نیست',
-                required: ethers.formatEther(regPrice),
-                available: ethers.formatEther(balance)
-            };
-        }
-        
-        return {
-            registered: false,
-            activated: false,
-            canRegister: true,
-            message: 'امکان ثبت‌نام وجود دارد',
-            required: ethers.formatEther(regPrice),
-            available: ethers.formatEther(balance)
-        };
-        
-    } catch (error) {
-        console.error('Registration test failed:', error);
-        return {
-            registered: false,
-            activated: false,
-            canRegister: false,
-            error: error.message,
-            code: error.code
-        };
-    }
-};
 
 
 
@@ -2631,12 +2547,21 @@ async function refreshTotalSupply() {
   }
 }
 
-async function updateDashboardStats() {
+// Make updateDashboardStats globally accessible
+window.updateDashboardStats = async function() {
   try {
+    // Ensure we have a valid connection
+    let contract;
     if (!window.contractConfig || !window.contractConfig.contract) {
-      await window.connectWallet();
+      const connection = await window.connectWallet();
+      contract = connection.contract;
+    } else {
+      contract = window.contractConfig.contract;
     }
-    const contract = window.contractConfig.contract;
+    
+    if (!contract) {
+      throw new Error('No contract available');
+    }
 
     // Helper function to safely update element
     const safeUpdate = (id, value) => {
@@ -2644,73 +2569,152 @@ async function updateDashboardStats() {
       if (el) el.innerText = value;
     };
 
+    // Update blockchain information cards
+    
+
+    // Show loading state
+    const loadingElements = ['circulating-supply', 'total-points', 'contract-token-balance', 'dashboard-cashback-value', 'dashboard-usdc-balance'];
+    loadingElements.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerText = 'Loading...';
+    });
+
     // TOTAL SUPPLY (circulating supply)
     try {
       const totalSupply = await contract.totalSupply();
-      safeUpdate('circulating-supply', ethers.formatUnits(totalSupply, 18) + ' CPA');
+      const formattedSupply = parseFloat(ethers.formatUnits(totalSupply, 18)).toLocaleString('en-US', {maximumFractionDigits: 2});
+      safeUpdate('circulating-supply', formattedSupply + ' CPA');
+
     } catch (e) {
-      safeUpdate('circulating-supply', '-');
+      console.error('❌ Error fetching total supply:', e);
+      safeUpdate('circulating-supply', 'Error');
     }
 
     // TOTAL POINTS
     try {
       const totalPoints = await contract.totalClaimableBinaryPoints();
-      safeUpdate('total-points', ethers.formatUnits(totalPoints, 18));
+      const formattedPoints = parseFloat(ethers.formatUnits(totalPoints, 18)).toLocaleString('en-US', {maximumFractionDigits: 2});
+      safeUpdate('total-points', formattedPoints);
+
     } catch (e) {
-      safeUpdate('total-points', '-');
+      console.error('❌ Error fetching total points:', e);
+      safeUpdate('total-points', 'Error');
     }
 
     // CPA BALANCE (contract's own token balance)
     try {
       const contractTokenBalance = await contract.balanceOf(contract.target);
-      safeUpdate('contract-token-balance', ethers.formatUnits(contractTokenBalance, 18) + ' CPA');
+      const formattedBalance = parseFloat(ethers.formatUnits(contractTokenBalance, 18)).toLocaleString('en-US', {maximumFractionDigits: 2});
+      safeUpdate('contract-token-balance', formattedBalance + ' CPA');
+
     } catch (e) {
-      safeUpdate('contract-token-balance', '-');
+      console.error('❌ Error fetching contract token balance:', e);
+      safeUpdate('contract-token-balance', 'Error');
     }
 
     // HELP FUND (cashback)
     try {
-      const cashback = await contract.cashBack ? await contract.cashBack() : await contract.cashback();
-      safeUpdate('dashboard-cashback-value', ethers.formatUnits(cashback, 18) + ' CPA');
+      let cashback;
+      
+      // Try different possible function names
+      if (typeof contract.cashBack === 'function') {
+        cashback = await contract.cashBack();
+      } else if (typeof contract.cashback === 'function') {
+        cashback = await contract.cashback();
+      } else {
+        // If no cashback function exists, use 0
+        cashback = 0n;
+      }
+      
+      const formattedCashback = parseFloat(ethers.formatUnits(cashback, 18)).toLocaleString('en-US', {maximumFractionDigits: 2});
+      safeUpdate('dashboard-cashback-value', formattedCashback + ' CPA');
+
     } catch (e) {
-      safeUpdate('dashboard-cashback-value', '-');
+      console.error('❌ Error fetching cashback:', e);
+      safeUpdate('dashboard-cashback-value', 'N/A');
     }
 
     // USDC CONTRACT BALANCE - Using contract's getContractUSDCBalance function
     try {
-      const usdcBalance = await contract.getContractUSDCBalance();
-      safeUpdate('dashboard-usdc-balance', ethers.formatUnits(usdcBalance, 6) + ' USDC');
-    } catch (e) {
-      console.error('Error fetching USDC balance via contract function:', e);
-      // Fallback to direct USDC contract call
-      try {
+      let usdcBalance;
+      
+      // Try different possible function names
+      if (typeof contract.getContractUSDCBalance === 'function') {
+        usdcBalance = await contract.getContractUSDCBalance();
+      } else {
+        // Fallback to direct USDC contract call
         if (typeof USDC_ADDRESS !== 'undefined' && typeof USDC_ABI !== 'undefined') {
           const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, contract.provider);
-          const usdcBalance = await usdcContract.balanceOf(contract.target);
-          safeUpdate('dashboard-usdc-balance', ethers.formatUnits(usdcBalance, 6) + ' USDC');
+          usdcBalance = await usdcContract.balanceOf(contract.target);
         } else {
-          safeUpdate('dashboard-usdc-balance', 'Config Error');
+          usdcBalance = 0n;
         }
-      } catch (fallbackError) {
-        console.error('Fallback USDC balance fetch failed:', fallbackError);
-        safeUpdate('dashboard-usdc-balance', '-');
       }
+      
+      const formattedUsdc = parseFloat(ethers.formatUnits(usdcBalance, 6)).toLocaleString('en-US', {maximumFractionDigits: 2});
+      safeUpdate('dashboard-usdc-balance', formattedUsdc + ' USDC');
+
+    } catch (e) {
+      console.error('❌ Error fetching USDC balance:', e);
+      safeUpdate('dashboard-usdc-balance', 'N/A');
     }
+
+    // Update last update timestamp
+    const now = new Date();
+    const timeString = now.toLocaleTimeString('fa-IR', { 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      second: '2-digit' 
+    });
+    safeUpdate('blockchain-last-update', timeString);
+
+
+
   } catch (e) {
-    console.error('Error updating dashboard stats:', e);
-    // اگر خطا داشتیم، همه را - بگذار
+    console.error('❌ Error updating dashboard stats:', e);
+    // اگر خطا داشتیم، همه را Error بگذار
     const elements = ['circulating-supply', 'total-points', 'contract-token-balance', 'dashboard-cashback-value', 'dashboard-usdc-balance'];
     elements.forEach(id => {
       const el = document.getElementById(id);
-      if (el) el.innerText = '-';
+      if (el) el.innerText = 'Error';
     });
   }
 }
 
 // اجرا در ابتدای بارگذاری صفحه
 document.addEventListener('DOMContentLoaded', function() {
-  setTimeout(updateDashboardStats, 2000);
+  // Initial update after 2 seconds
+  setTimeout(async () => {
+    try {
+      const connection = await window.connectWallet();
+      await updateDashboardStats();
+    } catch (error) {
+      console.error('❌ Error in initial setup:', error);
+      // Show error in UI
+      const elements = ['circulating-supply', 'total-points', 'contract-token-balance', 'dashboard-cashback-value', 'dashboard-usdc-balance'];
+      elements.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = 'Connection Error';
+      });
+    }
+  }, 2000);
+  
+  // Set up interval for blockchain info updates (every 30 seconds)
+  if (!window._blockchainInfoIntervalSet) {
+    setInterval(async () => {
+      try {
+        await updateDashboardStats();
+      } catch (error) {
+        console.error('❌ Error in scheduled update:', error);
+      }
+    }, 30000); // 30 seconds
+    window._blockchainInfoIntervalSet = true;
+  }
 });
+
+
+
+
 
 // Example for all assignments:
 const elChartLvlUsd = document.getElementById('chart-lvl-usd');
@@ -2718,7 +2722,7 @@ if (elChartLvlUsd) elChartLvlUsd.textContent = '';
 const elChartLvlUsdChange = document.getElementById('chart-lvl-usd-change');
 if (elChartLvlUsdChange) elChartLvlUsdChange.textContent = '';
 const elPriceChartLastUpdate = document.getElementById('price-chart-last-update');
-if (elPriceChartLastUpdate) elPriceChartLastUpdate.textContent = '';
+if (elPriceChartLastUpdate) elChartLvlUsdChange.textContent = '';
 // ... repeat for all similar assignments ...
 // For removed elements, comment out or remove the line:
 // const elRemoved = document.getElementById('removed-id');

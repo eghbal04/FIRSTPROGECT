@@ -91,6 +91,20 @@
             });
         };
     </script>
+    <!-- Floating AI Assistant CSS -->
+    <link rel="stylesheet" href="css/floating-ai-assistant.css">
+    <!-- Floating AI Assistant JS -->
+    <script src="js/floating-ai-assistant.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(() => {
+          if (typeof FloatingAIAssistant !== 'undefined' && !window.floatingAI) {
+            window.floatingAI = new FloatingAIAssistant();
+            window.floatingAI.switchToIdleState();
+          }
+        }, 500);
+      });
+    </script>
     <!-- دکمه شناور بازگشت به خانه -->
     <a href="index.html" class="fab-main" title="بازگشت به خانه" style="position: fixed; bottom: 24px; right: 24px; z-index: 9999;">
         <span class="sf-home" style="font-size: 2rem;"></span>

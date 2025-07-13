@@ -755,24 +755,3 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 500);
 });
 
-// تابع تست totalClaimablePoints
-window.testTotalClaimablePoints = async function() {
-    try {
-        const { contract } = await window.connectWallet();
-        const points = await contract.totalClaimablePoints();
-        console.log('totalClaimablePoints:', ethers.formatUnits(points, 18));
-    } catch (e) {
-        console.error('Error calling totalClaimablePoints:', e);
-    }
-};
-
-// تابع تست contractTotalSupply
-window.testContractTotalSupply = async function() {
-    try {
-        const { contract } = await window.connectWallet();
-        const supply = await contract.contractTotalSupply();
-        console.log('contractTotalSupply:', ethers.formatUnits(supply, 18));
-    } catch (e) {
-        console.error('Error calling contractTotalSupply:', e);
-    }
-};

@@ -22,6 +22,20 @@
     <!-- بارگذاری WalletConnect UMD به صورت لوکال -->
     <script src="js/walletconnect-v1.8.0.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+    <!-- Floating AI Assistant CSS -->
+    <link rel="stylesheet" href="css/floating-ai-assistant.css">
+    <!-- Floating AI Assistant JS -->
+    <script src="js/floating-ai-assistant.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(() => {
+          if (typeof FloatingAIAssistant !== 'undefined' && !window.floatingAI) {
+            window.floatingAI = new FloatingAIAssistant();
+            window.floatingAI.switchToIdleState();
+          }
+        }, 500);
+      });
+    </script>
 </head>
 <body>
     <script>

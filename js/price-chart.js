@@ -14,11 +14,11 @@ class PriceChart {
     }
 
     init() {
-        console.log('PriceChart init() called');
+
         this.initializeChart();
         this.setupTimePeriodButtons();
         this.startPriceUpdates();
-        console.log('PriceChart init() completed');
+
     }
 
     setupTimePeriodButtons() {
@@ -243,13 +243,13 @@ class PriceChart {
     }
 
     async startPriceUpdates() {
-        console.log('Starting price updates...');
+
         // Generate initial data for current time period
         this.generateTimePeriodData();
         
         // Update price every 30 seconds
         setInterval(async () => {
-            console.log('Price update interval triggered');
+    
             await this.updatePrice();
         }, 30000);
     }
@@ -290,9 +290,9 @@ class PriceChart {
 
 // Initialize chart when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Initializing PriceChart...');
+
     window.priceChart = new PriceChart();
-    console.log('PriceChart initialized:', window.priceChart);
+
 });
 
 // Export for use in other files

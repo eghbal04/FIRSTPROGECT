@@ -14,11 +14,11 @@ class PointChart {
     }
 
     init() {
-        console.log('PointChart init() called');
+
         this.initializeChart();
         this.setupTimePeriodSelect();
         this.startPointUpdates();
-        console.log('PointChart init() completed');
+
     }
 
     setupTimePeriodSelect() {

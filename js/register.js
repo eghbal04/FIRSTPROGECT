@@ -7,6 +7,59 @@ document.addEventListener('DOMContentLoaded', function() {
     // Register section loaded, waiting for wallet connection...
 });
 
+// تابع دریافت و نمایش مقدار توکن مورد نیاز برای ثبت‌نام
+async function updateRegisterRequiredAmount() {
+    console.log('🔄 updateRegisterRequiredAmount called');
+    
+    // بررسی المنت‌های مختلف که ممکن است وجود داشته باشند
+    const el = document.getElementById('register-required-usdc') || document.getElementById('register-cpa-required');
+    if (!el) {
+        console.log('❌ Register required amount element not found');
+        console.log('Available elements:', document.querySelectorAll('[id*="register"]'));
+        return;
+    }
+    
+    console.log('✅ Found element:', el.id);
+    el.innerText = 'در حال دریافت...';
+    
+    try {
+        console.log('🔗 Connecting to wallet...');
+        const { contract } = await window.connectWallet();
+        console.log('📋 Fetching registration price...');
+        
+        // استفاده از تابع مرکزی برای دریافت قیمت ثبت‌نام
+        const regPrice = await window.getRegistrationPrice(contract);
+        
+        // فرض بر این است که regPrice بر حسب 18 رقم اعشار (CPA) است
+        const formatted = parseFloat(ethers.formatUnits(regPrice, 18)).toLocaleString('en-US', {maximumFractionDigits: 6});
+        el.innerText = `${formatted} CPA`;
+        
+        console.log('✅ Updated element text to:', formatted + ' CPA');
+        
+        // نمایش موجودی‌های کاربر
+        await window.displayUserBalances();
+        
+        // همچنین در status message نمایش بده - بررسی المنت‌های مختلف
+        const statusElements = [
+            document.getElementById('register-status'),
+            document.getElementById('register-form-status'),
+            document.getElementById('new-register-status')
+        ].filter(el => el); // فقط المنت‌های موجود
+        
+        console.log('📝 Found status elements:', statusElements.length);
+        
+
+        
+        console.log('🎉 Registration required amount updated successfully:', formatted + ' CPA');
+        
+    } catch (e) {
+        console.error('❌ Error in updateRegisterRequiredAmount:', e);
+        el.innerText = 'خطا در دریافت مقدار مورد نیاز';
+        
+
+    }
+}
+
 // تابع بارگذاری اطلاعات ثبت‌نام
 async function loadRegisterData(contract, address, tokenPriceUSDFormatted) {
     if (isRegisterLoading || registerDataLoaded) {
@@ -44,10 +97,29 @@ async function loadRegisterData(contract, address, tokenPriceUSDFormatted) {
         const usdcBalanceFormatted = ethers.formatUnits(usdcBalance, usdcDecimals);
         
         // دریافت قیمت‌ها و اطلاعات ثبت‌نام
-        const [regprice, tokenPriceMatic] = await Promise.all([
-            contract.regprice(),
-            contract.getTokenPrice() // قیمت توکن بر حسب MATIC
-        ]);
+        // Try to get registration price from contract, fallback to hardcoded value
+        let regprice;
+        try {
+            // First try getRegPrice (new function)
+            if (typeof contract.getRegPrice === 'function') {
+                regprice = await contract.getRegPrice();
+            }
+            // Then try regprice (old function name)
+            else if (typeof contract.regprice === 'function') {
+                regprice = await contract.regprice();
+            }
+            // Then try regPrice (alternative spelling)
+            else if (typeof contract.regPrice === 'function') {
+                regprice = await contract.regPrice();
+            }
+            else {
+                regprice = ethers.parseUnits('100', 18);
+            }
+        } catch (e) {
+            regprice = ethers.parseUnits('100', 18);
+        }
+        
+        const tokenPriceMatic = await contract.getTokenPrice(); // قیمت توکن بر حسب MATIC
         const tokenPriceFormatted = ethers.formatUnits(tokenPriceMatic, 18);
         // قیمت CPA/USDC (مستقیماً از قرارداد)
         const tokenPriceUSDFormatted = tokenPriceFormatted;
@@ -62,8 +134,8 @@ async function loadRegisterData(contract, address, tokenPriceUSDFormatted) {
         const twelveCentsInTokensFormatted = twelveCentsInTokens.toFixed(6);
         // محاسبه ارزش دلاری موجودی
         const cpaBalanceUSD = (parseFloat(usdcBalanceFormatted) * parseFloat(tokenPriceUSDFormatted)).toFixed(2);
-        // به‌روزرسانی نمایش موجودی
-        updateBalanceDisplay(usdcBalanceFormatted, usdcBalanceFormatted); // فرض بر این که مقدار مورد نیاز هم بر حسب USDC است
+        // به‌روزرسانی نمایش موجودی‌ها
+        await window.displayUserBalances();
         // بررسی وضعیت ثبت‌نام
         if (userData.activated) {
             // فقط فرم ارتقا را نمایش بده
@@ -103,6 +175,8 @@ async function loadRegisterData(contract, address, tokenPriceUSDFormatted) {
     }
 }
 
+
+
 // تابع تنظیم وضعیت تب register
 function setRegisterTabSelected(selected) {
     registerTabSelected = selected;
@@ -113,8 +187,9 @@ function setRegisterTabSelected(selected) {
     }
 }
 
-// Export function for global use
+// Export functions for global use
 window.setRegisterTabSelected = setRegisterTabSelected;
+window.updateRegisterRequiredAmount = updateRegisterRequiredAmount;
 
 // تابع بارگذاری اطلاعات ارتقا
 async function loadUpgradeData(contract, address, tokenPriceUSD) {
@@ -209,7 +284,27 @@ async function performRegistration() {
         }
         // هیچ چک اضافه‌ای روی فعال بودن معرف انجام نده
         // فقط ثبت‌نام را انجام بده
-        const regprice = await contract.regprice();
+        // Try to get registration price from contract, fallback to hardcoded value
+        let regprice;
+        try {
+            // First try getRegPrice (new function)
+            if (typeof contract.getRegPrice === 'function') {
+                regprice = await contract.getRegPrice();
+            }
+            // Then try regprice (old function name)
+            else if (typeof contract.regprice === 'function') {
+                regprice = await contract.regprice();
+            }
+            // Then try regPrice (alternative spelling)
+            else if (typeof contract.regPrice === 'function') {
+                regprice = await contract.regPrice();
+            }
+            else {
+                regprice = ethers.parseUnits('100', 18);
+            }
+        } catch (e) {
+            regprice = ethers.parseUnits('100', 18);
+        }
         // منطق approve قبل از ثبت‌نام:
         const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, window.contractConfig.signer);
         const allowance = await usdcContract.allowance(address, CONTRACT_ADDRESS);
@@ -299,16 +394,16 @@ function showRegisterError(message) {
 }
 
 // تابع به‌روزرسانی نمایش موجودی
-    function updateBalanceDisplay(cpaBalance, cpaBalanceUSD) {
-        const lvlBalanceElement = document.getElementById('user-lvl-balance');
+function updateBalanceDisplay(cpaBalance, cpaBalanceUSD) {
+    const lvlBalanceElement = document.getElementById('user-lvl-balance');
     const lvlUsdElement = document.getElementById('user-lvl-usd-value');
     
     if (lvlBalanceElement) {
-        lvlBalanceElement.textContent = `${parseFloat(usdcBalanceFormatted).toFixed(2)} USDC`;
+        lvlBalanceElement.textContent = `${parseFloat(cpaBalance).toFixed(2)} USDC`;
     }
     
     if (lvlUsdElement) {
-        lvlUsdElement.textContent = `$${usdcBalanceFormatted} USDC`;
+        lvlUsdElement.textContent = `$${cpaBalanceUSD} USD`;
     }
 }
 
@@ -352,6 +447,12 @@ async function showRegistrationForm() {
     if (!registrationForm) return;
     registrationForm.style.display = 'block';
 
+    // دریافت و نمایش مقدار توکن مورد نیاز برای ثبت‌نام
+    await updateRegisterRequiredAmount();
+    
+    // نمایش موجودی‌های کاربر
+    await window.displayUserBalances();
+
     // مقداردهی آدرس معرف: اولویت با لینک رفرال
     let referrer = getReferrerFromURL();
     const refInputGroup = document.getElementById('register-ref-input-group');
@@ -389,18 +490,22 @@ async function showRegistrationForm() {
     let userLvlBalance = '';
     try {
         const { contract, address } = window.contractConfig;
-        const regprice = await contract.regprice();
+        
+        // استفاده از تابع مرکزی برای دریافت قیمت ثبت‌نام
+        const regprice = await window.getRegistrationPrice(contract);
         requiredTokenAmount = ethers.formatUnits(regprice, 18);
+        
         const cpaBalance = await contract.balanceOf(address);
         userLvlBalance = ethers.formatUnits(cpaBalance, 18);
     } catch (e) {
         requiredTokenAmount = '-';
         userLvlBalance = '0';
     }
-    // نمایش موجودی و مقدار مورد نیاز
-    const cpaBalanceSpan = document.getElementById('register-cpa-balance');
+    // نمایش موجودی‌های کاربر
+    await window.displayUserBalances();
+    
+    // نمایش مقدار مورد نیاز
     const cpaRequiredSpan = document.getElementById('register-cpa-required');
-    if (cpaBalanceSpan) cpaBalanceSpan.textContent = userLvlBalance;
     if (cpaRequiredSpan) cpaRequiredSpan.textContent = requiredTokenAmount;
 
     // 1. Add logic to fetch MATIC balance and required MATIC for registration
@@ -653,3 +758,85 @@ window.registerNewUserWithReferrer = async function(referrer, newUserAddress, st
     }
 };
 window.loadRegisterData = loadRegisterData;
+
+// تابع ساده برای دریافت مقدار مورد نیاز در console
+async function getRegistrationPrice() {
+    try {
+        console.log('🔍 Fetching registration price...');
+        const { contract } = await window.connectWallet();
+        
+        // استفاده از تابع مرکزی
+        const regPrice = await window.getRegistrationPrice(contract);
+        
+        console.log('✅ Registration price (raw):', regPrice.toString());
+        console.log('✅ Registration price (formatted):', ethers.formatUnits(regPrice, 18) + ' CPA');
+        
+        return regPrice; // Return BigInt, not formatted string
+    } catch (e) {
+        console.error('❌ Error fetching registration price:', e);
+        return ethers.parseUnits('100', 18); // Return fallback value
+    }
+}
+
+
+
+// تابع نمایش موجودی‌های کاربر
+async function displayUserBalances() {
+    try {
+        const { contract, address } = await window.connectWallet();
+        // مقداردهی robust برای provider
+        const provider =
+            (contract && contract.provider) ||
+            (window.contractConfig && window.contractConfig.provider) ||
+            (window.ethereum ? new ethers.BrowserProvider(window.ethereum) : null);
+        if (!provider) throw new Error('No provider available for getBalance');
+
+        // دریافت موجودی‌های مختلف
+        const [cpaBalance, usdcBalance, maticBalance] = await Promise.all([
+            contract.balanceOf(address),
+            (function() {
+                const USDC_ADDRESS = window.USDC_ADDRESS || '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174';
+                const USDC_ABI = window.USDC_ABI || ["function balanceOf(address) view returns (uint256)"];
+                const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, provider);
+                return usdcContract.balanceOf(address);
+            })(),
+            provider.getBalance(address)
+        ]);
+        
+        // فرمت کردن موجودی‌ها
+        const cpaFormatted = parseFloat(ethers.formatUnits(cpaBalance, 18)).toFixed(4);
+        const usdcFormatted = parseFloat(ethers.formatUnits(usdcBalance, 6)).toFixed(2);
+        const maticFormatted = parseFloat(ethers.formatEther(maticBalance)).toFixed(4);
+        
+        // به‌روزرسانی المنت‌های موجودی
+        const balanceElements = {
+            'user-cpa-balance': `${cpaFormatted} CPA`,
+            'user-usdc-balance': `${usdcFormatted} USDC`,
+            'user-matic-balance': `${maticFormatted} MATIC`,
+            'register-cpa-balance': `${cpaFormatted} CPA`,
+            'register-usdc-balance': `${usdcFormatted} USDC`,
+            'register-matic-balance': `${maticFormatted} MATIC`
+        };
+        
+        // به‌روزرسانی همه المنت‌های موجود
+        Object.entries(balanceElements).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = value;
+                console.log(`✅ Updated ${id}: ${value}`);
+            }
+        });
+        
+        console.log('✅ User balances displayed successfully');
+        return { cpaFormatted, usdcFormatted, maticFormatted };
+        
+    } catch (error) {
+        console.error('❌ Error displaying user balances:', error);
+        return null;
+    }
+}
+
+// Export for global use
+window.getRegistrationPrice = getRegistrationPrice;
+window.displayUserBalances = displayUserBalances;
+

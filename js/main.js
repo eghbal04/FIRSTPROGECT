@@ -1138,45 +1138,90 @@ function showRegisterForm(referrerAddress, defaultNewWallet, connectedAddress, p
   modal.onclick = (e) => {
     if (e.target === modal) modal.remove();
   };
-  // دریافت و نمایش موجودی متیک و توکن
+  // دریافت و نمایش موجودی متیک و توکن و مقدار مورد نیاز ثبت‌نام
   (async function() {
     try {
+      // اطمینان از مقداردهی provider و contract و connectedAddress
+      if (!provider || !contract || !connectedAddress) {
+        const connection = await window.connectWallet();
+        provider = connection.provider;
+        contract = connection.contract;
+        connectedAddress = connection.address;
+      }
       let matic = '-';
       let cpa = '-';
       let usdc = '-';
       let requiredUsdc = '-';
+
+      console.log('provider:', provider);
+      console.log('contract:', contract);
+      console.log('connectedAddress:', connectedAddress);
+
       if (provider && connectedAddress) {
-        const bal = await provider.getBalance(connectedAddress);
-        matic = window.ethers ? window.ethers.formatUnits(bal, 18) : bal.toString();
+        try {
+          const bal = await provider.getBalance(connectedAddress);
+          matic = window.ethers ? window.ethers.formatUnits(bal, 18) : bal.toString();
+          console.log('matic:', matic);
+        } catch (e) {
+          matic = 'خطا در دریافت POL';
+          console.error('Error fetching MATIC:', e);
+        }
       }
       if (contract && connectedAddress) {
-        const cpaBal = await contract.balanceOf(connectedAddress);
-        cpa = window.ethers ? window.ethers.formatUnits(cpaBal, 18) : cpaBal.toString();
-        
-        // دریافت موجودی USDC
-        const USDC_ADDRESS = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174';
-        const USDC_ABI = ["function balanceOf(address) view returns (uint256)"];
-        const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, contract.signer);
-        const usdcBal = await usdcContract.balanceOf(connectedAddress);
-        usdc = window.ethers ? window.ethers.formatUnits(usdcBal, 6) : usdcBal.toString();
-        
-        // دریافت مقدار مورد نیاز برای ثبت‌نام
         try {
-          const regprice = await contract.regprice();
-          requiredUsdc = window.ethers ? window.ethers.formatUnits(regprice, 18) : regprice.toString();
+          const cpaBal = await contract.balanceOf(connectedAddress);
+          cpa = window.ethers ? window.ethers.formatUnits(cpaBal, 18) : cpaBal.toString();
+          console.log('cpa:', cpa);
         } catch (e) {
-          requiredUsdc = '0.01'; // مقدار پیش‌فرض
+          cpa = 'خطا در دریافت CPA';
+          console.error('Error fetching CPA:', e);
+        }
+        // دریافت موجودی USDC
+        try {
+          const USDC_ADDRESS = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174';
+          const USDC_ABI = ["function balanceOf(address) view returns (uint256)"];
+          // استفاده از provider به جای signer
+          const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, provider || contract.provider);
+          const usdcBal = await usdcContract.balanceOf(connectedAddress);
+          usdc = window.ethers ? window.ethers.formatUnits(usdcBal, 6) : usdcBal.toString();
+          console.log('usdc:', usdc);
+        } catch (e) {
+          usdc = 'خطا در دریافت USDC';
+          console.error('Error fetching USDC:', e);
+        }
+        // مقدار مورد نیاز ثبت‌نام
+        try {
+          const regprice = await window.getRegistrationPrice(contract);
+          const formatted = parseFloat(ethers.formatUnits(regprice, 18)).toLocaleString('en-US', {maximumFractionDigits: 6});
+          requiredUsdc = formatted + ' CPA';
+          console.log('requiredUsdc:', requiredUsdc);
+        } catch (e) {
+          requiredUsdc = 'خطا در دریافت مقدار';
+          console.error('Error fetching regprice:', e);
         }
       }
       document.getElementById('register-matic-balance').textContent = matic;
       document.getElementById('register-cpa-balance').textContent = cpa;
       document.getElementById('register-usdc-balance').textContent = usdc;
-      document.getElementById('register-required-usdc').textContent = requiredUsdc + ' USDC';
+      document.getElementById('register-required-usdc').textContent = requiredUsdc;
+
+
+
+      // فراخوانی تابع displayUserBalances برای اطمینان از نمایش صحیح موجودی‌ها
+      if (window.displayUserBalances) {
+        await window.displayUserBalances();
+      }
+
+      // فراخوانی تابع updateRegisterRequiredAmount برای اطمینان از نمایش صحیح
+      if (window.updateRegisterRequiredAmount) {
+        await window.updateRegisterRequiredAmount();
+      }
     } catch (e) {
       document.getElementById('register-matic-balance').textContent = '-';
       document.getElementById('register-cpa-balance').textContent = '-';
       document.getElementById('register-usdc-balance').textContent = '-';
       document.getElementById('register-required-usdc').textContent = '-';
+      console.error('General error in register modal:', e);
     }
   })();
   document.getElementById('register-form-confirm').onclick = async function() {
