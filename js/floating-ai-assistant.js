@@ -12,8 +12,9 @@ class FloatingAIAssistant {
         this.messageQueue = [];
         this.isProcessingMessage = false;
         this.isInitialized = false;
-        
-
+        this.CHAT_HISTORY_KEY = 'ai-assistant-chat-history'; // کلید ثابت برای تاریخچه چت
+        // Restore chat history from localStorage
+        this.restoreChatHistory();
         this.init();
     }
     
@@ -58,6 +59,15 @@ class FloatingAIAssistant {
             
             this.isInitialized = true;
             console.log('✅ Floating AI Assistant initialized successfully!');
+            
+            // Render chat history in message/full state
+            setTimeout(() => {
+                if (this.conversationHistory && this.conversationHistory.length > 0) {
+                    this.conversationHistory.forEach(msg => {
+                        this.addMessageToUI(msg.content, msg.type);
+                    });
+                }
+            }, 500);
             
         } catch (error) {
             console.error('❌ Error in initializeComponents:', error);
@@ -134,48 +144,68 @@ class FloatingAIAssistant {
                   <div style="font-size:0.95rem;color:#a786ff;">یک سوال بپرسید یا روی میکروفون بزنید!</div>
                 </div>
                 <div class="ai-message-options-menu" id="ai-message-options-menu" style="display:none;position:absolute;bottom:60px;left:50%;transform:translateX(-50%);background:#232946;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.18);padding:0.7rem 0.5rem;z-index:9999999;min-width:180px;">
-                  <div id="ai-quick-info" style="padding:0.5rem 0.5rem 0.7rem 0.5rem;text-align:center;font-size:0.98rem;color:#00ff88;"></div>
-                  <button class="ai-quick-btn" data-action="buy-tokens">💰 خرید توکن</button>
-                  <button class="ai-quick-btn" data-action="check-balance">💳 موجودی</button>
-                  <button class="ai-quick-btn" data-action="network-stats">🌐 آمار شبکه</button>
-                  <button class="ai-quick-btn" data-action="help">❓ راهنما</button>
-                  <button class="ai-quick-btn" data-action="shop">🛒 فروشگاه</button>
-                  <button class="ai-quick-btn" data-action="news">📰 اخبار</button>
+                  <div class="ai-picker-wheel"></div>
                 </div>
             </div>
         `;
         document.body.appendChild(messageInterface);
 
-        // Add dynamic info update for quick menu
-        const optionsBtn = messageInterface.querySelector('#ai-message-options');
-        const optionsMenu = messageInterface.querySelector('#ai-message-options-menu');
-        const quickInfo = messageInterface.querySelector('#ai-quick-info');
-        if (optionsBtn && optionsMenu && quickInfo) {
-            optionsBtn.addEventListener('click', async () => {
-                // Show loading
-                quickInfo.innerHTML = '<span style="color:#a786ff">در حال دریافت اطلاعات...</span>';
-                // Try to get balance and stats
-                try {
-                    let infoHtml = '';
-                    if (window.getUserProfile) {
-                        const profile = await window.getUserProfile();
-                        infoHtml += `<div style=\"margin-bottom:0.2rem;\">💳 <b>CPA:</b> <span style=\"color:#fff\">${profile.lvlBalance}</span></div>`;
-                        infoHtml += `<div style=\"margin-bottom:0.2rem;\">💵 <b>USDC:</b> <span style=\"color:#fff\">${profile.usdcBalance}</span></div>`;
-                        infoHtml += `<div style=\"margin-bottom:0.2rem;\">🟣 <b>POL:</b> <span style=\"color:#fff\">${profile.polBalance}</span></div>`;
-                    }
-                    if (window.getContractStats) {
-                        const stats = await window.getContractStats();
-                        infoHtml += `<div style=\"margin-bottom:0.2rem;\">🌐 <b>شبکه:</b> <span style=\"color:#fff\">Polygon</span></div>`;
-                        infoHtml += `<div style=\"margin-bottom:0.2rem;\">📊 <b>کل عرضه:</b> <span style=\"color:#fff\">${stats.totalSupply}</span></div>`;
-                        infoHtml += `<div style=\"margin-bottom:0.2rem;\">🎯 <b>کل پوینت‌ها:</b> <span style=\"color:#fff\">${stats.totalPoints}</span></div>`;
-                    }
-                    if (!infoHtml) infoHtml = '<span style="color:#ff6b6b">اتصال برقرار نیست</span>';
-                    quickInfo.innerHTML = infoHtml;
-                } catch (e) {
-                    quickInfo.innerHTML = '<span style="color:#ff6b6b">خطا در دریافت اطلاعات</span>';
-                }
-            });
+        // بازطراحی منوی wheel بر اساس نالج‌بیس
+        const picker = messageInterface.querySelector('.ai-picker-wheel');
+        // افزایش ارتفاع و استایل لیست باکس
+        picker.style.height = '260px'; // یا هر مقدار بزرگ‌تر که مناسب است
+        picker.style.minHeight = '220px';
+        picker.style.maxHeight = '340px';
+        picker.style.display = 'flex';
+        picker.style.flexDirection = 'column';
+        picker.style.justifyContent = 'center';
+        picker.style.alignItems = 'center';
+        picker.style.overflow = 'hidden';
+        // موضوعات اصلی نالج‌بیس و آیکون‌ها
+        const kb = window.CPA_KNOWLEDGE_BASE || {};
+        const defaultIcons = ['📄','📚','💱','🪙','🏦','🎁','🔒','📝','🛡️','🌐','🧑‍💼','🛒','⚙️','��','🎓','🪙','💡'];
+        const topics = Object.entries(kb)
+          .filter(([key, value]) => value && value.title)
+          .map(([key, value], i) => ({
+            icon: value.icon || defaultIcons[i % defaultIcons.length],
+            label: value.title,
+            key: key
+          }));
+        let state = {
+          items: [],
+          selectedIdx: 0,
+          visibleCount: 3
+        };
+        function renderPicker() {
+          picker.innerHTML = '';
+          topics.forEach((topic, idx) => {
+            const item = document.createElement('div');
+            item.className = 'ai-picker-item' + (idx === state.selectedIdx ? ' selected' : '');
+            item.dataset.topic = topic.key;
+            item.innerHTML = topic.icon + ' ' + topic.label;
+            // Remove all position/top/left/right styles for flex layout
+            picker.appendChild(item);
+          });
         }
+        renderPicker();
+        picker.addEventListener('wheel', (e) => {
+          if (e.deltaY > 0) {
+            state.selectedIdx = (state.selectedIdx + 1 + topics.length) % topics.length;
+            renderPicker();
+          } else if (e.deltaY < 0) {
+            state.selectedIdx = (state.selectedIdx - 1 + topics.length) % topics.length;
+            renderPicker();
+          }
+        });
+        picker.onclick = (e) => {
+          const items = Array.from(picker.getElementsByClassName('ai-picker-item'));
+          const idx = items.indexOf(e.target);
+          if (idx === -1) return;
+          state.selectedIdx = idx;
+          renderPicker();
+          const topicKey = topics[state.selectedIdx].key;
+          this.showKnowledgeSubtopics(topicKey);
+        };
     }
     
     // Create full state interface
@@ -205,7 +235,7 @@ class FloatingAIAssistant {
                             </div>
                             <div class="ai-welcome-capabilities">
                                 <div class="ai-capability">💰 خرید و فروش توکن</div>
-                                <div class="ai-capability">🌐 مدیریت شبکه</div>
+                                <div class="ai-capability">�� مدیریت شبکه</div>
                                 <div class="ai-capability">📊 گزارشات و آمار</div>
                                 <div class="ai-capability">🎓 آموزش و راهنما</div>
                                 <div class="ai-capability">🛒 فروشگاه</div>
@@ -223,7 +253,6 @@ class FloatingAIAssistant {
                         <div class="ai-full-quick-actions">
                             <button class="ai-quick-action" data-action="buy-tokens">💰 خرید توکن</button>
                             <button class="ai-quick-action" data-action="check-balance">💳 موجودی</button>
-                            <button class="ai-quick-action" data-action="network-stats">🌐 آمار شبکه</button>
                             <button class="ai-quick-action" data-action="help">❓ راهنما</button>
                         </div>
                     </div>
@@ -587,6 +616,8 @@ class FloatingAIAssistant {
         } else if (this.currentState === 'full') {
             this.addMessageToFullState(content, type);
         }
+        // Save after adding message
+        this.saveChatHistory();
     }
     
     addMessageToMessageState(content, type) {
@@ -615,12 +646,22 @@ class FloatingAIAssistant {
         const icon = type === 'user' ? '👤' : '🤖';
         const alignment = type === 'user' ? 'right' : 'left';
         
-        messageDiv.innerHTML = `
-            <div class="ai-full-message-content" style="text-align: ${alignment}">
-                <div class="ai-full-message-icon">${icon}</div>
-                <div class="ai-full-message-text">${this.escapeHtml(content)}</div>
-            </div>
-        `;
+        // اگر پیام assistant یا ai و با < شروع می‌شود، HTML را رندر کن
+        if ((type === 'assistant' || type === 'ai') && typeof content === 'string' && content.trim().startsWith('<')) {
+            messageDiv.innerHTML = `
+                <div class="ai-full-message-content" style="text-align: ${alignment}">
+                    <div class="ai-full-message-icon">${icon}</div>
+                    <div class="ai-full-message-text">${content}</div>
+                </div>
+            `;
+        } else {
+            messageDiv.innerHTML = `
+                <div class="ai-full-message-content" style="text-align: ${alignment}">
+                    <div class="ai-full-message-icon">${icon}</div>
+                    <div class="ai-full-message-text">${this.escapeHtml(content)}</div>
+                </div>
+            `;
+        }
         
         messagesContainer.appendChild(messageDiv);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -1011,62 +1052,243 @@ class FloatingAIAssistant {
         observer.observe(el, { attributes: true, attributeFilter: ['style'] });
     }
     
+    // Optionally, add a clear history method
+    clearChatHistory() {
+        this.conversationHistory = [];
+        localStorage.removeItem('floatingAIChatHistory');
+        // Optionally clear UI messages
+        // ...
+    }
+
+    // اضافه کردن متد بازیابی تاریخچه چت
+    restoreChatHistory() {
+        try {
+            const history = localStorage.getItem(this.CHAT_HISTORY_KEY);
+            if (history) {
+                this.conversationHistory = JSON.parse(history);
+            } else {
+                this.conversationHistory = [];
+            }
+        } catch (e) {
+            this.conversationHistory = [];
+        }
+    }
+
+    // نمایش خلاصه یا پاسخ هر مبحث از نالج‌بیس
+    showKnowledgeTopic(topicKey) {
+        const kb = window.CPA_KNOWLEDGE_BASE;
+        let content = '';
+        switch(topicKey) {
+            case 'registration':
+                content = kb.assistantResponses && kb.assistantResponses.registration ? kb.assistantResponses.registration : 'اطلاعات ثبت‌نام موجود نیست.';
+                break;
+            case 'trading':
+                content = kb.assistantResponses && kb.assistantResponses.trading ? kb.assistantResponses.trading : 'اطلاعات خرید/فروش موجود نیست.';
+                break;
+            case 'rewards':
+                content = kb.assistantResponses && kb.assistantResponses.rewards ? kb.assistantResponses.rewards : 'اطلاعات پاداش موجود نیست.';
+                break;
+            case 'network':
+                content = kb.assistantResponses && kb.assistantResponses.network ? kb.assistantResponses.network : 'اطلاعات شبکه موجود نیست.';
+                break;
+            case 'specialFeatures':
+                content = 'ویژگی‌های خاص:\n' + (kb.specialFeatures ? JSON.stringify(kb.specialFeatures, null, 2) : 'اطلاعات موجود نیست.');
+                break;
+            case 'security':
+                content = kb.assistantResponses && kb.assistantResponses.security ? kb.assistantResponses.security : 'اطلاعات امنیت موجود نیست.';
+                break;
+            case 'faq':
+                content = 'سوالات متداول:\n';
+                if (kb.faq) {
+                    for (const q in kb.faq) {
+                        content += `\n• ${q}`;
+                    }
+                } else {
+                    content += 'اطلاعات موجود نیست.';
+                }
+                break;
+            case 'technicalNotes':
+                content = 'نکات فنی مهم:\n' + (kb.technicalNotes ? kb.technicalNotes.map(n=>`• ${n}`).join('\n') : 'اطلاعات موجود نیست.');
+                break;
+            case 'importantFunctions':
+                content = 'توابع مهم قرارداد:\n';
+                if (kb.importantFunctions) {
+                    for (const fn in kb.importantFunctions) {
+                        content += `\n• ${fn}: ${kb.importantFunctions[fn]}`;
+                    }
+                } else {
+                    content += 'اطلاعات موجود نیست.';
+                }
+                break;
+            default:
+                content = 'اطلاعاتی برای این مبحث وجود ندارد.';
+        }
+        this.addMessageToUI(content, 'assistant');
+    }
+
+    // نمایش زیرعناوین هر دسته به صورت لینک در چت
+    showKnowledgeSubtopics(topicKey) {
+        const kb = window.CPA_KNOWLEDGE_BASE;
+        console.log('topicKey:', topicKey, 'kb[topicKey]:', kb[topicKey]);
+        let subtopics = [];
+        let title = '';
+        // اگر بخش دارای subtopics بود، لیست زیرعناوین را به صورت لینک نمایش بده
+        if (kb[topicKey] && Array.isArray(kb[topicKey].subtopics) && kb[topicKey].subtopics.length > 0) {
+            title = kb[topicKey].title || '';
+            subtopics = kb[topicKey].subtopics;
+            let html = `<div style='font-weight:bold;margin-bottom:0.5rem;'>${title}</div>`;
+            subtopics.forEach(st => {
+                html += `<a href='#' class='ai-subtopic-link' data-topic='${topicKey}' data-sub='${st.id}' style='display:block;color:#00ff88;margin-bottom:0.3rem;text-decoration:underline;'>${st.title}</a>`;
+            });
+            this.addMessageToUI(html, 'assistant');
+            // رویداد کلیک روی لینک‌ها
+            setTimeout(() => {
+                document.querySelectorAll('.ai-subtopic-link').forEach(link => {
+                    link.onclick = (e) => {
+                        e.preventDefault();
+                        const topic = link.getAttribute('data-topic');
+                        const sub = link.getAttribute('data-sub');
+                        this.showKnowledgeDetail(topic, sub);
+                    };
+                });
+            }, 100);
+            return;
+        }
+        // اگر زیرعناوین خالی بود پیام مناسب نمایش بده
+        if (!subtopics || subtopics.length === 0) {
+            this.addMessageToUI('برای این بخش زیرعنوانی وجود ندارد.', 'assistant');
+            return;
+        }
+        let html = `<div style='font-weight:bold;margin-bottom:0.5rem;'>${title}</div>`;
+        subtopics.forEach(st => {
+            html += `<a href='#' class='ai-subtopic-link' data-topic='${topicKey}' data-sub='${st.key}' style='display:block;color:#00ff88;margin-bottom:0.3rem;text-decoration:underline;'>${st.label}</a>`;
+        });
+        this.addMessageToUI(html, 'assistant');
+        // رویداد کلیک روی لینک‌ها
+        setTimeout(() => {
+            document.querySelectorAll('.ai-subtopic-link').forEach(link => {
+                link.onclick = (e) => {
+                    e.preventDefault();
+                    const topic = link.getAttribute('data-topic');
+                    const sub = link.getAttribute('data-sub');
+                    this.showKnowledgeDetail(topic, sub);
+                };
+            });
+        }, 100);
+    }
+
+    // نمایش محتوای هر زیرعنوان
+    showKnowledgeDetail(topicKey, subKey) {
+        const kb = window.CPA_KNOWLEDGE_BASE;
+        let content = '';
+        // اگر بخش دارای subtopics بود، content زیرعنوان را نمایش بده
+        if (kb[topicKey] && Array.isArray(kb[topicKey].subtopics)) {
+            const sub = kb[topicKey].subtopics.find(s => s.id === subKey);
+            if (sub) {
+                content = `<div style='font-weight:bold;margin-bottom:0.5rem;'>${sub.title}</div><div>${sub.content}</div>`;
+                this.addMessageToUI(content, 'assistant');
+                return;
+            }
+        }
+        if (kb[topicKey] && kb[topicKey][subKey]) {
+            const val = kb[topicKey][subKey];
+            if (typeof val === 'string') content = val;
+            else if (Array.isArray(val)) content = val.map(v=>`• ${typeof v==='string'?v:(v.label||v.name||JSON.stringify(v))}`).join('<br>');
+            else if (typeof val === 'object') {
+                content = Object.keys(val).map(k=>`<b>${k}:</b> ${typeof val[k]==='string'?val[k]:JSON.stringify(val[k])}`).join('<br>');
+            }
+        } else {
+            content = 'اطلاعاتی برای این بخش وجود ندارد.';
+        }
+        this.addMessageToUI(content, 'assistant');
+    }
+
+    saveChatHistory() {
+        try {
+            localStorage.setItem(this.CHAT_HISTORY_KEY, JSON.stringify(this.conversationHistory || []));
+        } catch (e) {
+            console.warn('Could not save chat history:', e);
+        }
+    }
 }
 
     // Create global instance
-window.floatingAI = new FloatingAIAssistant();
+window.floatingAI = new FloatingAIAssistant(); 
 
-// تابع تست برای بررسی عملکرد دستیار
-window.testFloatingAI = function() {
-    console.log('🧪 Testing Floating AI Assistant...');
-    
-    // بررسی وجود عناصر
-    const elements = [
-        'floating-ai-idle',
-        'floating-ai-message', 
-        'floating-ai-full',
-        'ai-message-input',
-        'ai-message-send',
-        'ai-message-voice',
-        'ai-message-expand',
-        'ai-message-close',
-        'ai-full-input',
-        'ai-full-send',
-        'ai-full-voice',
-        'ai-full-minimize',
-        'ai-full-close'
-    ];
-    
-    elements.forEach(id => {
-        const element = document.getElementById(id);
-        if (element) {
-            console.log(`✅ ${id} found`);
-        } else {
-            console.error(`❌ ${id} not found`);
-        }
+// --- Circular Rotary Menu for Quick Actions ---
+function createCircularMenu(actions) {
+  const container = document.createElement('div');
+  container.className = 'ai-circular-menu';
+  const radius = 80; // px
+  const center = 100; // px
+  actions.forEach((action, i) => {
+    const angle = (2 * Math.PI * i) / actions.length;
+    const x = center + radius * Math.cos(angle - Math.PI/2);
+    const y = center + radius * Math.sin(angle - Math.PI/2);
+    const item = document.createElement('div');
+    item.className = 'ai-circular-item';
+    item.style.position = 'absolute';
+    item.style.left = x + 'px';
+    item.style.top = y + 'px';
+    item.style.transform = 'translate(-50%, -50%)';
+    item.innerHTML = action.icon + ' ' + action.label;
+    item.dataset.action = action.action;
+    container.appendChild(item);
+  });
+  container.style.position = 'relative';
+  container.style.width = '200px';
+  container.style.height = '200px';
+  container.style.margin = '0 auto';
+  return container;
+}
+// Usage in message interface:
+// Replace the .ai-wheel-picker with the circular menu
+const optionsMenu = document.getElementById('ai-message-options-menu');
+if (optionsMenu) {
+  const oldWheel = optionsMenu.querySelector('.ai-wheel-picker');
+  if (oldWheel) oldWheel.remove();
+  const actions = [
+    {icon:'💰', label:'خرید توکن', action:'buy-tokens'},
+    {icon:'💳', label:'موجودی', action:'check-balance'},
+    {icon:'❓', label:'راهنما', action:'help'},
+    {icon:'🛒', label:'فروشگاه', action:'shop'},
+    {icon:'📰', label:'اخبار', action:'news'}
+  ];
+  const circularMenu = createCircularMenu(actions);
+  optionsMenu.appendChild(circularMenu);
+}
+// --- Wheel Picker Enhancement ---
+function setupWheelPicker() {
+  const picker = document.getElementById('ai-wheel-picker');
+  if (!picker) return;
+  const items = Array.from(picker.getElementsByClassName('ai-wheel-item'));
+  function updateSelectedItem() {
+    const pickerRect = picker.getBoundingClientRect();
+    let minDist = Infinity, selectedIdx = 0;
+    items.forEach((item, idx) => {
+      const rect = item.getBoundingClientRect();
+      const dist = Math.abs(rect.top + rect.height/2 - (pickerRect.top + pickerRect.height/2));
+      if (dist < minDist) {
+        minDist = dist;
+        selectedIdx = idx;
+      }
     });
-    
-    // بررسی دانش پایه
-    if (window.CPA_KNOWLEDGE_BASE) {
-        console.log('✅ Knowledge base loaded');
-    } else {
-        console.error('❌ Knowledge base not loaded');
-    }
-    
-    // تست پاسخ‌دهی
-    if (window.getAssistantResponse) {
-        const testResponse = window.getAssistantResponse('هزینه ثبت‌نام');
-        console.log('✅ Test response:', testResponse);
-    } else {
-        console.error('❌ getAssistantResponse not available');
-    }
-    
-    console.log('🧪 Test completed');
-};
-
-// اجرای تست بعد از بارگذاری صفحه
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-        window.testFloatingAI();
-    }, 2000);
-}); 
+    items.forEach((item, idx) => {
+      item.classList.toggle('selected', idx === selectedIdx);
+    });
+  }
+  picker.addEventListener('scroll', () => {
+    requestAnimationFrame(updateSelectedItem);
+  });
+  items.forEach(item => {
+    item.addEventListener('click', () => {
+      item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  });
+  // Initial highlight
+  updateSelectedItem();
+}
+// Call this after rendering the wheel picker menu
+if (typeof window !== 'undefined') {
+  setTimeout(setupWheelPicker, 1000);
+} 

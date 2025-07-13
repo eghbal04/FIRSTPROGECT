@@ -29,12 +29,13 @@
   <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
   
   <!-- بارگذاری دانش پایه قرارداد -->
-  <script src="js/contract-knowledge-base.js"></script>
+  <!-- <script src="js/contract-knowledge-base.js"></script> -->
   
   <!-- بارگذاری Floating AI Assistants -->
-  <script src="js/floating-ai-assistant.js"></script>
+  <!-- <script src="js/floating-ai-assistant.js"></script> -->
   
   <!-- Immediate AI Assistant Initialization -->
+  <!--
   <script>
     // Force immediate initialization
     document.addEventListener('DOMContentLoaded', function() {
@@ -60,6 +61,7 @@
       }, 1000);
     });
   </script>
+  -->
   
   <!-- Test script for floating AI -->
 
@@ -287,6 +289,22 @@
             <div style="color:#28a745;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="network-status">Polygon</div>
             <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">Active</div>
           </div>
+          
+          <!-- Point Value Card -->
+          <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(0,255,136,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
+            <div style="color:#00ff88;font-size:1.2rem;margin-bottom:0.3rem;">💎</div>
+            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">ارزش هر پوینت</div>
+            <div style="color:#00ff88;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="dashboard-point-value">-</div>
+            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">CPA per Point</div>
+          </div>
+          
+          <!-- Token Price Card -->
+          <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(0,255,136,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
+            <div style="color:#00ff88;font-size:1.2rem;margin-bottom:0.3rem;">💲</div>
+            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">قیمت توکن CPA</div>
+            <div style="color:#00ff88;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="dashboard-token-price">-</div>
+            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">USDC per CPA</div>
+          </div>
         </div>
         
         <!-- Last Update Info -->
@@ -294,10 +312,7 @@
           <div style="color:#888;font-size:0.8rem;font-family:monospace;margin-bottom:0.5rem;">
             آخرین بروزرسانی: <span id="blockchain-last-update">-</span>
           </div>
-          <button onclick="updateDashboardStats()" style="background:rgba(0,255,136,0.1);color:#00ff88;border:1px solid #00ff88;border-radius:6px;padding:0.4rem 1rem;font-size:0.8rem;font-family:monospace;cursor:pointer;transition:all 0.3s ease;" onmouseover="this.style.background='rgba(0,255,136,0.2)'" onmouseout="this.style.background='rgba(0,255,136,0.1)'">
-            🔄 بروزرسانی
-          </button>
-
+          <!-- دکمه بروزرسانی حذف شد -->
         </div>
       </div>
 
@@ -357,7 +372,58 @@
 
       </div>
 
+      <!-- CPA Introduction Section -->
+      <div class="cpa-intro-section" style="background:linear-gradient(135deg,#181c2a,#232946);border-radius:18px;box-shadow:0 4px 24px rgba(0,255,136,0.10);margin:2rem 0 1.5rem 0;padding:2.2rem 1.5rem;max-width:900px;width:100%;margin-left:auto;margin-right:auto;direction:rtl;">
+        <h2 style="color:#00ff88;font-family:'Montserrat','Noto Sans Arabic',sans-serif;font-size:1.5rem;font-weight:bold;margin-bottom:1.2rem;text-align:center;">درباره آکادمی سود مستمر (CPA)</h2>
+        <div id="cpa-typewriter-wrapper" style="position:relative;max-height:2.1em;overflow:hidden;transition:max-height 0.5s cubic-bezier(.4,2,.6,1);">
+          <div id="cpa-typewriter" style="color:#fff;font-size:1.08rem;line-height:2.1;text-align:justify;min-height:220px;"></div>
+          <div id="cpa-fade" style="position:absolute;left:0;right:0;bottom:0;height:70px;background:linear-gradient(0deg,#181c2a 80%,rgba(35,41,70,0.01) 100%);pointer-events:none;transition:opacity 0.3s;"></div>
+        </div>
+        <div style="text-align:center;margin-top:1.2rem;">
+          <button id="cpa-expand-btn" style="background:linear-gradient(90deg,#00ff88,#a786ff);color:#181c2a;font-weight:bold;border:none;border-radius:8px;padding:0.7rem 2.2rem;font-size:1rem;cursor:pointer;box-shadow:0 2px 12px rgba(0,255,136,0.10);transition:background 0.2s,box-shadow 0.2s;">نمایش بیشتر</button>
+        </div>
+      </div>
+      <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const text = `آکادمی سود مستمر (CPA) یک اکوسیستم نوآورانه و مردم‌محور است که با هدف ارائه خدمات مالی، آموزشی و معاملاتی کاملاً غیرمتمرکز و شفاف، بنیان نهاده شده است. در این مجموعه، سرمایه شما همیشه در اختیار خودتان باقی می‌ماند؛ چه در حساب شخصی‌تان در صرافی، چه در بروکر، و چه در کیف پول هوشمند متصل به قرارداد غیرمتمرکز.\n\nخدمات ما:\n• ارائه سیگنال‌های تخصصی و ربات‌های اتوترید برای بازارهای مالی\n• امکان فعالیت به عنوان ایجنت برای افراد و IB در بروکرها\n• امکان بازاریابی شبکه‌ای برای دوستانی که می‌خواهند این مجموعه را ارتقا دهند\n• شما می‌توانید از سهام‌های معرفی افراد (Referral Shares) بهره‌مند شوید.\n• همچنین می‌توانید با سرمایه‌گذاری در صندوق CPA و توکن افزایشی آن، به صورت تضمینی به سود برسید.\n• آموزش‌های جامع فارکس و ارز دیجیتال\n• پشتیبانی از صندوق غیرمتمرکز CPA و توکن CPA\n• خدمات کپی‌ترید: اگر ربات CPA سود کند، شما هم سود می‌کنید و اگر ضرر کند، شما نیز ضرر می‌کنید؛ هیچ سودی از حساب شما در زمان ضرر برداشت نمی‌شود و تا جبران ضرر، CPA سهمی دریافت نمی‌کند.\n• شعار ما: سرمایه‌ات در حساب خودت، سودت واقعی و شفاف\n\nصداقت، شفافیت و خدمات صددرصدی، اصول بنیادین ماست. هیچ‌گاه سرمایه شما به حساب CPA منتقل نمی‌شود؛ بلکه شما همواره کنترل کامل دارایی خود را دارید و تنها در سود واقعی شریک هستیم. در دنیایی که بسیاری به دنبال جذب سرمایه مردم و ارائه وعده‌های توخالی هستند، ما در CPA تنها زمانی سود می‌بریم که شما واقعاً سود کنید و در زیان، شریک و همراه شما خواهیم بود.\n\nCPA؛ انتخابی برای آینده‌ای مطمئن، شفاف و مردم‌محور.`;
+        const container = document.getElementById('cpa-typewriter');
+        let i = 0;
+        let speed = 40; // ms per character (slower)
+        function typeWriter() {
+          if (i < text.length) {
+            let char = text.charAt(i);
+            if (char === '\\n' || char === '\n') {
+              container.innerHTML += '<br>';
+              i++;
+              setTimeout(typeWriter, 350); // longer pause for line breaks
+            } else {
+              container.innerHTML += char;
+              i++;
+              setTimeout(typeWriter, speed);
+            }
+          }
+        }
+        typeWriter();
 
+        // Expand/collapse logic
+        const wrapper = document.getElementById('cpa-typewriter-wrapper');
+        const fade = document.getElementById('cpa-fade');
+        const btn = document.getElementById('cpa-expand-btn');
+        let expanded = false;
+        btn.addEventListener('click', function() {
+          expanded = !expanded;
+          if (expanded) {
+            wrapper.style.maxHeight = '2000px';
+            fade.style.opacity = '0';
+            btn.textContent = 'نمایش کمتر';
+          } else {
+            wrapper.style.maxHeight = '2.1em';
+            fade.style.opacity = '1';
+            btn.textContent = 'نمایش بیشتر';
+          }
+        });
+      });
+      </script>
 
   <!-- Swap Section -->
   <div id="main-swap" class="page-section expandable-container" style="width:100vw;max-width:none;margin:0;left:0;right:0;padding:0.5rem 0;display:none;">
@@ -782,7 +848,7 @@
 
   <footer style="direction:ltr;text-align:left;padding:0.2rem 1rem;font-size:0.7rem;color:rgba(170,170,170,0.7);position:fixed;left:0;bottom:0;width:100vw;background:rgba(35,41,70,0.75);backdrop-filter:blur(8px);z-index:100;text-align:center;border-top:1px solid rgba(167,134,255,0.3);box-shadow:0 -2px 10px rgba(0,0,0,0.15);">
     <div style="display:flex;justify-content:center;align-items:center;gap:0.5rem;max-width:300px;margin:0 auto;">
-      <span style="font-size:0.65rem;">© LevelUp</span>
+      <span style="font-size:0.65rem;">© Continuous Profit Academy</span>
       <span style="color:rgba(167,134,255,0.6);font-size:0.6rem;">•</span>
       <span style="font-size:0.6rem;">Blockchain</span>
     </div>
@@ -1074,15 +1140,7 @@
     </div>
   </div>
 
-  <!-- دکمه تست دستیار هوشمند -->
-  <div style="position:fixed; top:20px; right:20px; z-index:999999;">
-    <button onclick="window.testFloatingAI()" style="background:linear-gradient(135deg, #00ff88, #a786ff); color:#fff; border:none; padding:10px 15px; border-radius:8px; cursor:pointer; font-size:12px; box-shadow:0 4px 12px rgba(0,255,136,0.3);">
-      🧪 تست دستیار
-    </button>
-    <button onclick="window.floatingAI.switchToMessageState()" style="background:linear-gradient(135deg, #a786ff, #00cfff); color:#fff; border:none; padding:10px 15px; border-radius:8px; cursor:pointer; font-size:12px; box-shadow:0 4px 12px rgba(167,134,255,0.3); margin-left:10px;">
-      💬 باز کردن دستیار
-    </button>
-  </div>
+
 
   <div id="custom-footer-div" style="text-align:center; padding:2rem; color:#00ff88; font-size:1.2rem;">
   <br>  <br>  <br>  <br>  <br>  <br>  <br>

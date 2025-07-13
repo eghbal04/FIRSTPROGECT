@@ -2668,6 +2668,31 @@ window.updateDashboardStats = async function() {
     });
     safeUpdate('blockchain-last-update', timeString);
 
+    // POINT VALUE (ارزش هر پوینت)
+    try {
+      const pointValue = await contract.getPointValue();
+      const formattedPointValue = parseFloat(ethers.formatUnits(pointValue, 18)).toLocaleString('en-US', {maximumFractionDigits: 6});
+      safeUpdate('dashboard-point-value', formattedPointValue + ' CPA');
+    } catch (e) {
+      console.error('❌ Error fetching point value:', e);
+      safeUpdate('dashboard-point-value', 'Error');
+    }
+
+    // TOKEN PRICE (قیمت توکن CPA)
+    try {
+      const tokenPrice = await contract.getTokenPrice();
+      let formattedTokenPrice = parseFloat(ethers.formatUnits(tokenPrice, 18));
+      if (formattedTokenPrice < 0.0001) {
+        formattedTokenPrice = formattedTokenPrice.toExponential(2);
+      } else {
+        formattedTokenPrice = formattedTokenPrice.toLocaleString('en-US', {maximumFractionDigits: 6});
+      }
+      safeUpdate('dashboard-token-price', formattedTokenPrice + ' USDC');
+    } catch (e) {
+      console.error('❌ Error fetching token price:', e);
+      safeUpdate('dashboard-token-price', 'Error');
+    }
+
 
 
   } catch (e) {

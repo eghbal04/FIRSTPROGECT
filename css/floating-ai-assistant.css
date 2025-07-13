@@ -239,7 +239,9 @@
     z-index: 9999999;
     min-width: 170px;
     max-width: 95vw;
-    max-height: 220px;
+    min-height: unset;
+    height: auto;
+    max-height: 80vh;
     gap: 0.5rem;
     display: flex;
     flex-direction: column;
@@ -829,3 +831,113 @@
     height: 100vh !important;
     cursor: default !important;
 } 
+
+.ai-picker-wheel {
+  display: block;
+  position: relative;
+  width: 100%;
+  min-width: 220px;
+  max-width: 100%;
+  min-height: unset;
+  height: auto;
+  max-height: 70vh;
+  margin: 0 auto;
+  padding: 0.5rem 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.ai-picker-item {
+  font-size: 0.92rem;
+  padding: 0.45rem 1.2rem;
+  border-radius: 12px;
+  background: transparent;
+  color: #fff;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(.4,0,.2,1);
+  opacity: 0.55;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  position: absolute;
+  left: 0;
+  right: 0;
+  width: 90%;
+  max-width: 220px;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+  z-index: 1;
+}
+
+.ai-picker-item.selected {
+  font-size: 1.08rem;
+  font-weight: bold;
+  background: linear-gradient(90deg, #00ff88 0%, #a786ff 100%);
+  color: #181c2a;
+  opacity: 1;
+  box-shadow: 0 2px 12px #00ff8840;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  width: 96%;
+  max-width: 240px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.ai-picker-item.above {
+  opacity: 0.35;
+  font-size: 0.85rem;
+  top: calc(50% - 48px);
+  position: absolute;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%) scale(0.95);
+  z-index: 1;
+}
+
+.ai-picker-item.below {
+  opacity: 0.35;
+  font-size: 0.85rem;
+  top: calc(50% + 48px);
+  position: absolute;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%) scale(0.95);
+  z-index: 1;
+}
+
+/* اگر wheel بیش از 5 آیتم دارد، آیتم‌های دورتر را محو کن */
+.ai-picker-item:not(.selected):not(.above):not(.below) {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ai-picker-wheel::before,
+.ai-picker-wheel::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 40px;
+  pointer-events: none;
+  z-index: 1;
+  background: none !important;
+}
+.ai-picker-wheel::before {
+  top: 0;
+  /* Remove gradient for full transparency */
+  background: none !important;
+}
+.ai-picker-wheel::after {
+  bottom: 0;
+  background: none !important;
+}
+/* Hide old wheel picker */
+.ai-wheel-picker { display: none !important; } 

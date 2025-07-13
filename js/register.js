@@ -8,57 +8,10 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // تابع دریافت و نمایش مقدار توکن مورد نیاز برای ثبت‌نام
-async function updateRegisterRequiredAmount() {
-    console.log('🔄 updateRegisterRequiredAmount called');
-    
-    // بررسی المنت‌های مختلف که ممکن است وجود داشته باشند
+window.updateRegisterRequiredAmount = function() {
     const el = document.getElementById('register-required-usdc') || document.getElementById('register-cpa-required');
-    if (!el) {
-        console.log('❌ Register required amount element not found');
-        console.log('Available elements:', document.querySelectorAll('[id*="register"]'));
-        return;
-    }
-    
-    console.log('✅ Found element:', el.id);
-    el.innerText = 'در حال دریافت...';
-    
-    try {
-        console.log('🔗 Connecting to wallet...');
-        const { contract } = await window.connectWallet();
-        console.log('📋 Fetching registration price...');
-        
-        // استفاده از تابع مرکزی برای دریافت قیمت ثبت‌نام
-        const regPrice = await window.getRegistrationPrice(contract);
-        
-        // فرض بر این است که regPrice بر حسب 18 رقم اعشار (CPA) است
-        const formatted = parseFloat(ethers.formatUnits(regPrice, 18)).toLocaleString('en-US', {maximumFractionDigits: 6});
-        el.innerText = `${formatted} CPA`;
-        
-        console.log('✅ Updated element text to:', formatted + ' CPA');
-        
-        // نمایش موجودی‌های کاربر
-        await window.displayUserBalances();
-        
-        // همچنین در status message نمایش بده - بررسی المنت‌های مختلف
-        const statusElements = [
-            document.getElementById('register-status'),
-            document.getElementById('register-form-status'),
-            document.getElementById('new-register-status')
-        ].filter(el => el); // فقط المنت‌های موجود
-        
-        console.log('📝 Found status elements:', statusElements.length);
-        
-
-        
-        console.log('🎉 Registration required amount updated successfully:', formatted + ' CPA');
-        
-    } catch (e) {
-        console.error('❌ Error in updateRegisterRequiredAmount:', e);
-        el.innerText = 'خطا در دریافت مقدار مورد نیاز';
-        
-
-    }
-}
+    if (el) el.innerText = '100 CPA';
+};
 
 // تابع بارگذاری اطلاعات ثبت‌نام
 async function loadRegisterData(contract, address, tokenPriceUSDFormatted) {
@@ -189,7 +142,10 @@ function setRegisterTabSelected(selected) {
 
 // Export functions for global use
 window.setRegisterTabSelected = setRegisterTabSelected;
-window.updateRegisterRequiredAmount = updateRegisterRequiredAmount;
+window.updateRegisterRequiredAmount = function() {
+    const el = document.getElementById('register-required-usdc') || document.getElementById('register-cpa-required');
+    if (el) el.innerText = '100 CPA';
+};
 
 // تابع بارگذاری اطلاعات ارتقا
 async function loadUpgradeData(contract, address, tokenPriceUSD) {
@@ -448,7 +404,7 @@ async function showRegistrationForm() {
     registrationForm.style.display = 'block';
 
     // دریافت و نمایش مقدار توکن مورد نیاز برای ثبت‌نام
-    await updateRegisterRequiredAmount();
+    // await updateRegisterRequiredAmount(); // Disabled infinite fetch
     
     // نمایش موجودی‌های کاربر
     await window.displayUserBalances();
@@ -486,27 +442,25 @@ async function showRegistrationForm() {
     }
 
     // مقدار توکن مورد نیاز را از قرارداد بگیر
-    let requiredTokenAmount = '';
-    let userLvlBalance = '';
-    try {
-        const { contract, address } = window.contractConfig;
-        
-        // استفاده از تابع مرکزی برای دریافت قیمت ثبت‌نام
-        const regprice = await window.getRegistrationPrice(contract);
-        requiredTokenAmount = ethers.formatUnits(regprice, 18);
-        
-        const cpaBalance = await contract.balanceOf(address);
-        userLvlBalance = ethers.formatUnits(cpaBalance, 18);
-    } catch (e) {
-        requiredTokenAmount = '-';
-        userLvlBalance = '0';
-    }
+    // let requiredTokenAmount = '';
+    // let userLvlBalance = '';
+    // try {
+    //     const { contract, address } = window.contractConfig;
+    //     // استفاده از تابع مرکزی برای دریافت قیمت ثبت‌نام
+    //     const regprice = await window.getRegistrationPrice(contract);
+    //     requiredTokenAmount = ethers.formatUnits(regprice, 18);
+    //     const cpaBalance = await contract.balanceOf(address);
+    //     userLvlBalance = ethers.formatUnits(cpaBalance, 18);
+    // } catch (e) {
+    //     requiredTokenAmount = '-';
+    //     userLvlBalance = '0';
+    // }
     // نمایش موجودی‌های کاربر
     await window.displayUserBalances();
     
     // نمایش مقدار مورد نیاز
     const cpaRequiredSpan = document.getElementById('register-cpa-required');
-    if (cpaRequiredSpan) cpaRequiredSpan.textContent = requiredTokenAmount;
+    if (cpaRequiredSpan) cpaRequiredSpan.textContent = '100 CPA'; // Static value
 
     // 1. Add logic to fetch MATIC balance and required MATIC for registration
     async function fetchMaticBalance(address, contract) {

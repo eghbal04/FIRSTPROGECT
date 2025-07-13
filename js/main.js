@@ -499,7 +499,6 @@ async function lockTabsForDeactivatedUsers() {
     if (!profile.activated) {
         const lockTabs = [
             { id: 'tab-shop-btn', label: 'SHOP' },
-            { id: 'tab-lottery-btn', label: 'LOTTERY' },
             { id: 'tab-reports-btn', label: 'REPORTS' },
             { id: 'tab-learning-btn', label: 'LEARNING' }
         ];
@@ -1190,15 +1189,7 @@ function showRegisterForm(referrerAddress, defaultNewWallet, connectedAddress, p
           console.error('Error fetching USDC:', e);
         }
         // مقدار مورد نیاز ثبت‌نام
-        try {
-          const regprice = await window.getRegistrationPrice(contract);
-          const formatted = parseFloat(ethers.formatUnits(regprice, 18)).toLocaleString('en-US', {maximumFractionDigits: 6});
-          requiredUsdc = formatted + ' CPA';
-          console.log('requiredUsdc:', requiredUsdc);
-        } catch (e) {
-          requiredUsdc = 'خطا در دریافت مقدار';
-          console.error('Error fetching regprice:', e);
-        }
+        requiredUsdc = '100 CPA'; // Static value
       }
       document.getElementById('register-matic-balance').textContent = matic;
       document.getElementById('register-cpa-balance').textContent = cpa;
@@ -1213,9 +1204,9 @@ function showRegisterForm(referrerAddress, defaultNewWallet, connectedAddress, p
       }
 
       // فراخوانی تابع updateRegisterRequiredAmount برای اطمینان از نمایش صحیح
-      if (window.updateRegisterRequiredAmount) {
-        await window.updateRegisterRequiredAmount();
-      }
+      // if (window.updateRegisterRequiredAmount) {
+      //   await window.updateRegisterRequiredAmount();
+      // }
     } catch (e) {
       document.getElementById('register-matic-balance').textContent = '-';
       document.getElementById('register-cpa-balance').textContent = '-';

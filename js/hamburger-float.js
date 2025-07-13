@@ -86,10 +86,6 @@
           <span class="btn-icon">🤖</span>
           <span class="btn-text">ربات</span>
         </button>
-        <button onclick="navigateToPage('lottery.html')" class="menu-btn">
-          <span class="btn-icon">🎲</span>
-          <span class="btn-text">قرعه‌کشی</span>
-        </button>
         <button onclick="navigateToPage('admin-prop.html')" class="menu-btn">
           <span class="btn-icon">📄</span>
           <span class="btn-text">پاس پراپ</span>
@@ -109,10 +105,10 @@
           <span id="desc-arrow" class="btn-arrow">▼</span>
         </button>
         <div id="desc-submenu" class="submenu">
-          <button onclick="alert('بروکرها')" class="submenu-btn">بروکرها</button>
-          <button onclick="alert('صرافی‌ها')" class="submenu-btn">صرافی‌ها</button>
-          <button onclick="alert('ای‌بی')" class="submenu-btn">ای‌بی</button>
-          <button onclick="alert('ایجنت')" class="submenu-btn">ایجنت</button>
+          <button onclick="navigateToPage('broker.html')" class="submenu-btn">بروکرها</button>
+          <button onclick="navigateToPage('exchange.html')" class="submenu-btn">صرافی‌ها</button>
+          <button onclick="navigateToPage('ib.html')" class="submenu-btn">ای‌بی</button>
+          <button onclick="navigateToPage('agent.html')" class="submenu-btn">ایجنت</button>
         </div>
       </div>
     </div>
