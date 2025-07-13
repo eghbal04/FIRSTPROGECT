@@ -1,12 +1,51 @@
 {
-  "name": "levelup-platform-new",
-  "version": "1.0.0",
-  "description": "A new, advanced Web3 platform for LevelUp.",
+  "name": "cpaforex-platform",
+  "version": "2.0.0",
+  "description": "A comprehensive Web3 platform for CPA Forex trading and MLM system",
+  "main": "index.html",
   "scripts": {
-    "start": "servor --reload"
+    "start": "servor --reload",
+    "dev": "servor --reload --port 3000",
+    "build": "echo 'Static site - no build required'",
+    "test": "echo 'No tests specified'",
+    "lint": "echo 'No linter configured'",
+    "serve": "python -m http.server 8000",
+    "clean": "rm -rf node_modules package-lock.json && npm install"
   },
+  "keywords": [
+    "web3",
+    "blockchain",
+    "cryptocurrency",
+    "trading",
+    "mlm",
+    "polygon",
+    "ethereum",
+    "defi",
+    "forex",
+    "cpa"
+  ],
+  "author": "CPA Forex Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Cpaforex/Cpaforex.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Cpaforex/Cpaforex/issues"
+  },
+  "homepage": "https://github.com/Cpaforex/Cpaforex#readme",
   "dependencies": {
     "@walletconnect/ethereum-provider": "^2.21.4",
+    "ethers": "^6.15.0",
     "servor": "^4.0.2"
-  }
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
 }
