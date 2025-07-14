@@ -3182,3 +3182,8 @@ if (!window._dashboardIntervalSet) {
   window._dashboardIntervalSet = true;
 }
 
+function unlockHamburgerMenuItems() {
+    console.log('>>> unlockHamburgerMenuItems CALLED');
+    // ... ادامه کد ...
+}
+

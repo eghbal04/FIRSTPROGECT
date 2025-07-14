@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="css/floating-ai-assistant.css">
 
     <!-- بارگذاری ethers.js نسخه 6 از CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
     <!-- بارگذاری WalletConnect Provider از CDN رسمی -->
     <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
     <!-- بارگذاری WalletConnect Handler -->
@@ -157,10 +157,10 @@
     <!-- Education Section -->
     <div class="menu-group">
       <div class="menu-group-title">📚 آموزش</div>
-      <button onclick="navigateToPage('learning.html')" class="menu-btn">
+      <a href="learning.html" class="menu-btn">
         <span class="menu-icon">🎓</span>
-        <span class="menu-label">آموزش و یادگیری</span>
-      </button>
+        <span class="menu-label">آموزش</span>
+      </a>
       <button onclick="navigateToPage('news.html')" class="menu-btn">
         <span class="menu-icon">📰</span>
         <span class="menu-label">اخبار و تحلیل</span>
@@ -183,6 +183,10 @@
       <button onclick="showTab('network')" class="menu-btn">
         <span class="menu-icon">🌐</span>
         <span class="menu-label">شبکه</span>
+      </button>
+      <button onclick="showSignalBox()" class="menu-btn">
+        <span class="menu-icon">📈</span>
+        <span class="menu-label">سیگنال</span>
       </button>
     </div>
     
@@ -214,10 +218,6 @@
     <!-- Admin Section -->
     <div class="menu-group admin-group">
       <div class="menu-group-title">🔐 مدیریت</div>
-      <button onclick="navigateToPage('admin-owner-panel.html')" class="menu-btn admin-btn">
-        <span class="menu-icon">👑</span>
-        <span class="menu-label">پنل Owner</span>
-      </button>
       <button onclick="navigateToPage('admin-prop.html')" class="menu-btn admin-btn">
         <span class="menu-icon">⚙️</span>
         <span class="menu-label">مدیریت پراپ‌ها</span>
@@ -1523,17 +1523,8 @@
       };
     }
   </script>
-
-
-
-
   <script src="js/token-price.js"></script>
   <script src="js/remove-archive-btn.js"></script>
   <script src="js/hamburger-float.js"></script>
-  
-
-  
-  <!-- Dashboard Terminal Script - Moved after config.js -->
-
 </body>
 </html>
