@@ -58,12 +58,19 @@ document.addEventListener('DOMContentLoaded', function() {
       transferForm.reset();
     } catch (error) {
       let msg = error && error.message ? error.message : error;
-      if (msg.includes('user rejected')) msg = 'تراکنش توسط کاربر لغو شد';
-      else if (msg.includes('insufficient funds')) msg = 'موجودی کافی نیست';
-      else if (msg.includes('invalid address')) msg = 'آدرس مقصد نامعتبر است';
-      else if (msg.includes('nonce')) msg = 'خطا در شماره تراکنش. لطفاً دوباره تلاش کنید';
-      else if (msg.includes('execution reverted')) msg = 'تراکنش ناموفق بود. لطفاً شرایط را بررسی کنید';
-      else msg = 'خطا در انتقال: ' + msg;
+      if (msg.includes('user rejected')) msg = '❌ تراکنش توسط کاربر لغو شد.';
+      else if (msg.includes('insufficient funds')) msg = 'موجودی کافی برای پرداخت کارمزد یا انتقال وجود ندارد.';
+      else if (msg.includes('insufficient balance')) msg = 'موجودی کافی نیست.';
+      else if (msg.includes('invalid address')) msg = 'آدرس مقصد نامعتبر است.';
+      else if (msg.includes('not allowed') || msg.includes('only owner')) msg = 'شما مجاز به انجام این عملیات نیستید.';
+      else if (msg.includes('already transferred') || msg.includes('already exists')) msg = 'این عملیات قبلاً انجام شده است یا تکراری است.';
+      else if (msg.includes('slippage')) msg = 'اختلاف قیمت (slippage) زیاد است. لطفاً مقدار را تغییر دهید.';
+      else if (msg.includes('price changed')) msg = 'قیمت تغییر کرده است. لطفاً دوباره تلاش کنید.';
+      else if (msg.includes('nonce')) msg = 'خطا در شماره تراکنش. لطفاً دوباره تلاش کنید.';
+      else if (msg.includes('execution reverted')) msg = 'تراکنش ناموفق بود. لطفاً شرایط انتقال را بررسی کنید.';
+      else if (msg.includes('network') || msg.includes('connection')) msg = '❌ خطا در اتصال شبکه. لطفاً اینترنت خود را بررسی کنید.';
+      else if (msg.includes('timeout')) msg = 'زمان تراکنش به پایان رسید. دوباره تلاش کنید.';
+      else msg = '❌ خطا در انتقال: ' + msg;
       status.textContent = msg;
       status.className = 'transfer-status error';
     }

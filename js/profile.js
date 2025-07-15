@@ -357,6 +357,53 @@ function shortenAddress(address) {
     return address.substring(0, 6) + '...' + address.substring(address.length - 4);
 }
 
+// تابع انتقال مالکیت موقعیت (پروفایل)
+window.transferProfileOwnership = async function(newOwnerAddress, statusElement) {
+    const btn = document.getElementById('transfer-ownership-btn');
+    if (btn) btn.disabled = true;
+    if (statusElement) statusElement.textContent = 'در حال انتقال مالکیت...';
+    try {
+        if (!window.contractConfig || !window.contractConfig.contract) {
+            if (statusElement) statusElement.textContent = 'اتصال کیف پول برقرار نیست.';
+            return;
+        }
+        const { contract } = window.contractConfig;
+        if (!newOwnerAddress || !/^0x[a-fA-F0-9]{40}$/.test(newOwnerAddress)) {
+            if (statusElement) statusElement.textContent = 'آدرس مقصد معتبر نیست.';
+            return;
+        }
+        // ارسال تراکنش انتقال مالکیت
+        const tx = await contract.transferIndexOwnership(newOwnerAddress);
+        if (statusElement) statusElement.textContent = 'در انتظار تایید تراکنش...';
+        await tx.wait();
+        if (statusElement) statusElement.textContent = '✅ انتقال مالکیت با موفقیت انجام شد!';
+    } catch (error) {
+        let msg = error && error.message ? error.message : error;
+        if (error.code === 4001 || msg.includes('user denied')) {
+            msg = '❌ تراکنش توسط کاربر لغو شد.';
+        } else if (error.code === -32002 || msg.includes('Already processing')) {
+            msg = '⏳ متامسک در حال پردازش درخواست قبلی است. لطفاً چند لحظه صبر کنید.';
+        } else if (error.code === 'NETWORK_ERROR' || msg.includes('network')) {
+            msg = '❌ خطای شبکه! اتصال اینترنت یا شبکه بلاکچین را بررسی کنید.';
+        } else if (msg.includes('insufficient funds')) {
+            msg = 'موجودی کافی برای پرداخت کارمزد یا انتقال وجود ندارد.';
+        } else if (msg.includes('invalid address')) {
+            msg = 'آدرس مقصد نامعتبر است.';
+        } else if (msg.includes('not allowed') || msg.includes('only owner')) {
+            msg = 'شما مجاز به انجام این عملیات نیستید.';
+        } else if (msg.includes('root position') || msg.includes('cannot transfer root')) {
+            msg = 'موقعیت ریشه قابل انتقال نیست.';
+        } else if (msg.includes('execution reverted')) {
+            msg = 'تراکنش ناموفق بود. شرایط انتقال را بررسی کنید.';
+        } else {
+            msg = '❌ خطا در انتقال مالکیت: ' + (msg || 'خطای ناشناخته');
+        }
+        if (statusElement) statusElement.textContent = msg;
+    } finally {
+        if (btn) btn.disabled = false;
+    }
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     const claimBtn = document.getElementById('profile-claim-btn');
     const claimStatus = document.getElementById('profile-claim-status');
@@ -401,6 +448,47 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             claimMonthlyBtn.disabled = false;
         };
+    }
+
+    // اتصال فرم انتقال مالکیت به تابع انتقال
+    const btn = document.getElementById('transfer-ownership-btn');
+    const input = document.getElementById('transfer-ownership-address');
+    const status = document.getElementById('transfer-ownership-status');
+    if (btn && input && status) {
+        btn.onclick = function() {
+            window.transferProfileOwnership(input.value.trim(), status);
+        };
+    }
+
+    // نمایش آدرس قرارداد در پروفایل
+    const contractAddress = (window.contractConfig && window.contractConfig.CONTRACT_ADDRESS) ? window.contractConfig.CONTRACT_ADDRESS : (typeof CONTRACT_ADDRESS !== 'undefined' ? CONTRACT_ADDRESS : '');
+    if (contractAddress) {
+        let el = document.getElementById('profile-contract-address');
+        if (!el) {
+            // اگر المنت وجود ندارد، ایجاد کن و به ابتدای پروفایل اضافه کن
+            const profileSection = document.getElementById('profile-section') || document.body;
+            el = document.createElement('div');
+            el.id = 'profile-contract-address';
+            el.style.margin = '12px 0';
+            el.innerHTML = `<span style="font-weight:bold;">آدرس قرارداد:</span> <span id="contract-address-value" style="font-family:monospace;direction:ltr;user-select:all;cursor:pointer;">${contractAddress}</span> <button id="copy-contract-address" style="font-size:12px;">کپی</button>`;
+            if (profileSection.firstChild) profileSection.insertBefore(el, profileSection.firstChild);
+            else profileSection.appendChild(el);
+        }
+        // رویداد کپی
+        const copyBtn = document.getElementById('copy-contract-address');
+        const addrVal = document.getElementById('contract-address-value');
+        if (copyBtn && addrVal) {
+            copyBtn.onclick = function() {
+                navigator.clipboard.writeText(contractAddress);
+                copyBtn.textContent = 'کپی شد!';
+                setTimeout(() => copyBtn.textContent = 'کپی', 1200);
+            };
+            addrVal.onclick = function() {
+                navigator.clipboard.writeText(contractAddress);
+                copyBtn.textContent = 'کپی شد!';
+                setTimeout(() => copyBtn.textContent = 'کپی', 1200);
+            };
+        }
     }
 });
 

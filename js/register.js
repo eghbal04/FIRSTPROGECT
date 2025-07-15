@@ -188,23 +188,37 @@ function setupRegistrationButton() {
     const registerStatus = document.getElementById('register-status');
     if (registerBtn) {
         registerBtn.onclick = async () => {
-            // ساده و معقول: دکمه غیرفعال و متن تغییر کند
             const oldText = registerBtn.textContent;
             registerBtn.disabled = true;
             registerBtn.textContent = 'در حال ثبت‌نام...';
             if (registerStatus) registerStatus.textContent = '';
             try {
                 await performRegistration();
-                if (registerStatus) {
-                    registerStatus.textContent = 'ثبت‌نام با موفقیت انجام شد!';
-                    registerStatus.className = 'profile-status success';
-                }
+                if (registerStatus) registerStatus.textContent = '✅ ثبت‌نام با موفقیت انجام شد!';
                 registerBtn.style.display = 'none';
             } catch (error) {
-                if (registerStatus) {
-                    registerStatus.textContent = error.message || 'خطا در ثبت‌نام';
-                    registerStatus.className = 'profile-status error';
+                let msg = error && error.message ? error.message : error;
+                if (error.code === 4001 || msg.includes('user denied')) {
+                    msg = '❌ تراکنش توسط کاربر لغو شد.';
+                } else if (error.code === -32002 || msg.includes('Already processing')) {
+                    msg = '⏳ متامسک در حال پردازش درخواست قبلی است. لطفاً چند لحظه صبر کنید.';
+                } else if (error.code === 'NETWORK_ERROR' || msg.includes('network')) {
+                    msg = '❌ خطای شبکه! اتصال اینترنت یا شبکه بلاکچین را بررسی کنید.';
+                } else if (msg.includes('insufficient funds')) {
+                    msg = 'موجودی کافی برای پرداخت کارمزد یا ثبت‌نام وجود ندارد.';
+                } else if (msg.includes('invalid address')) {
+                    msg = 'آدرس معرف یا مقصد نامعتبر است.';
+                } else if (msg.includes('not allowed') || msg.includes('only owner')) {
+                    msg = 'شما مجاز به انجام این عملیات نیستید.';
+                } else if (msg.includes('already registered') || msg.includes('already exists')) {
+                    msg = 'شما قبلاً ثبت‌نام کرده‌اید یا این آدرس قبلاً ثبت شده است.';
+                } else if (msg.includes('execution reverted')) {
+                    msg = 'تراکنش ناموفق بود. شرایط ثبت‌نام را بررسی کنید.';
+                } else {
+                    msg = '❌ خطا در ثبت‌نام: ' + (msg || 'خطای ناشناخته');
                 }
+                if (registerStatus) registerStatus.textContent = msg;
+            } finally {
                 registerBtn.disabled = false;
                 registerBtn.textContent = oldText;
             }

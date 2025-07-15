@@ -82,6 +82,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     //         `Wallets: ${window.contractStats.wallets}\n` +
     //         `Total Supply: ${window.contractStats.totalSupply}`;
     // }
+
+    // نمایش آدرس قرارداد در کارت داشبورد (بدون دکمه، فقط با کلیک روی آدرس)
+    const contractAddress = (window.contractConfig && window.contractConfig.CONTRACT_ADDRESS) ? window.contractConfig.CONTRACT_ADDRESS : (typeof CONTRACT_ADDRESS !== 'undefined' ? CONTRACT_ADDRESS : '');
+    const dashAddrEl = document.getElementById('dashboard-contract-address');
+    if (dashAddrEl && contractAddress) {
+        dashAddrEl.textContent = contractAddress;
+        dashAddrEl.onclick = function() {
+            navigator.clipboard.writeText(contractAddress);
+            const old = dashAddrEl.textContent;
+            dashAddrEl.textContent = 'کپی شد!';
+            dashAddrEl.style.background = '#bbf7d0';
+            setTimeout(() => {
+                dashAddrEl.textContent = old;
+                dashAddrEl.style.background = '#f1f5f9';
+            }, 1200);
+        };
+    }
+    if (dashCopyBtn && contractAddress) {
+        dashCopyBtn.onclick = function() {
+            navigator.clipboard.writeText(contractAddress);
+            dashCopyBtn.textContent = 'کپی شد!';
+            setTimeout(() => dashCopyBtn.textContent = 'کپی', 1200);
+        };
+    }
 });
 
 function shortenAddress(address) {

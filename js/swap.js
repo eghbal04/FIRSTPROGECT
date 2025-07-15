@@ -297,14 +297,19 @@ class SwapManager {
     // تبدیل خطا به پیام کاربرپسند
     getErrorMessage(error) {
         const msg = error?.message || error?.data?.message || error?.toString() || '';
-        if (msg.includes('user rejected')) return 'تراکنش توسط کاربر لغو شد';
-        if (msg.includes('insufficient funds')) return 'موجودی کافی نیست';
-        if (msg.includes('insufficient balance')) return 'موجودی کافی نیست';
-        if (msg.includes('allowance')) return 'مجوز کافی نیست، لطفاً دوباره تلاش کنید';
-        if (msg.includes('execution reverted')) return 'تراکنش ناموفق بود. شرایط را بررسی کنید.';
-        if (msg.includes('network') || msg.includes('connection')) return 'خطا در اتصال شبکه. لطفاً اینترنت خود را بررسی کنید.';
+        if (msg.includes('user rejected')) return '❌ تراکنش توسط کاربر لغو شد.';
+        if (msg.includes('insufficient funds')) return 'موجودی کافی برای پرداخت کارمزد یا سواپ وجود ندارد.';
+        if (msg.includes('insufficient balance')) return 'موجودی کافی نیست.';
+        if (msg.includes('allowance')) return 'مجوز کافی نیست، لطفاً دوباره تلاش کنید.';
+        if (msg.includes('invalid address')) return 'آدرس مقصد یا ورودی نامعتبر است.';
+        if (msg.includes('not allowed') || msg.includes('only owner')) return 'شما مجاز به انجام این عملیات نیستید.';
+        if (msg.includes('already swapped') || msg.includes('already exists')) return 'این عملیات قبلاً انجام شده است یا تکراری است.';
+        if (msg.includes('slippage')) return 'اختلاف قیمت (slippage) زیاد است. لطفاً مقدار را تغییر دهید.';
+        if (msg.includes('price changed')) return 'قیمت تغییر کرده است. لطفاً دوباره تلاش کنید.';
+        if (msg.includes('execution reverted')) return 'تراکنش ناموفق بود. شرایط سواپ را بررسی کنید.';
+        if (msg.includes('network') || msg.includes('connection')) return '❌ خطا در اتصال شبکه. لطفاً اینترنت خود را بررسی کنید.';
         if (msg.includes('timeout')) return 'زمان تراکنش به پایان رسید. دوباره تلاش کنید.';
-        return msg || 'خطا در انجام تراکنش. لطفاً دوباره تلاش کنید.';
+        return msg ? '❌ خطا: ' + msg : 'خطا در انجام تراکنش. لطفاً دوباره تلاش کنید.';
     }
 
     // بروزرسانی داده‌ها
