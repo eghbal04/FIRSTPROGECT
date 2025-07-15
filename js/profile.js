@@ -470,24 +470,29 @@ document.addEventListener('DOMContentLoaded', function() {
             el = document.createElement('div');
             el.id = 'profile-contract-address';
             el.style.margin = '12px 0';
-            el.innerHTML = `<span style="font-weight:bold;">آدرس قرارداد:</span> <span id="contract-address-value" style="font-family:monospace;direction:ltr;user-select:all;cursor:pointer;">${contractAddress}</span> <button id="copy-contract-address" style="font-size:12px;">کپی</button>`;
+            el.innerHTML = `<span style="font-weight:bold;">آدرس قرارداد:</span> <span id="contract-address-value" style="font-family:monospace;direction:ltr;user-select:all;cursor:pointer;background:rgba(0,255,136,0.07);padding:2px 8px;border-radius:6px;transition:background 0.2s;">${contractAddress}</span> <span id="contract-address-copy-status" style="color:#00c853;font-size:12px;margin-right:8px;display:none;">کپی شد!</span>`;
             if (profileSection.firstChild) profileSection.insertBefore(el, profileSection.firstChild);
             else profileSection.appendChild(el);
         }
-        // رویداد کپی
-        const copyBtn = document.getElementById('copy-contract-address');
+        // حذف دکمه کپی اگر وجود دارد
+        const oldBtn = document.getElementById('copy-contract-address');
+        if (oldBtn) oldBtn.remove();
+        // رویداد کپی فقط روی آدرس
         const addrVal = document.getElementById('contract-address-value');
-        if (copyBtn && addrVal) {
-            copyBtn.onclick = function() {
-                navigator.clipboard.writeText(contractAddress);
-                copyBtn.textContent = 'کپی شد!';
-                setTimeout(() => copyBtn.textContent = 'کپی', 1200);
-            };
+        const statusEl = document.getElementById('contract-address-copy-status');
+        if (addrVal) {
             addrVal.onclick = function() {
                 navigator.clipboard.writeText(contractAddress);
-                copyBtn.textContent = 'کپی شد!';
-                setTimeout(() => copyBtn.textContent = 'کپی', 1200);
+                if (statusEl) {
+                    statusEl.style.display = 'inline';
+                    addrVal.style.background = '#bbf7d0';
+                    setTimeout(() => {
+                        statusEl.style.display = 'none';
+                        addrVal.style.background = 'rgba(0,255,136,0.07)';
+                    }, 1200);
+                }
             };
+            addrVal.title = 'برای کپی کلیک کنید';
         }
     }
 });

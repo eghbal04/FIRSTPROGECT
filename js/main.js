@@ -88,6 +88,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const dashAddrEl = document.getElementById('dashboard-contract-address');
     if (dashAddrEl && contractAddress) {
         dashAddrEl.textContent = contractAddress;
+        dashAddrEl.style.cursor = 'pointer';
+        dashAddrEl.style.userSelect = 'all';
+        dashAddrEl.style.background = 'rgba(0,255,136,0.07)';
+        dashAddrEl.style.padding = '2px 8px';
+        dashAddrEl.style.borderRadius = '6px';
+        dashAddrEl.title = 'برای کپی کلیک کنید';
         dashAddrEl.onclick = function() {
             navigator.clipboard.writeText(contractAddress);
             const old = dashAddrEl.textContent;
@@ -95,17 +101,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             dashAddrEl.style.background = '#bbf7d0';
             setTimeout(() => {
                 dashAddrEl.textContent = old;
-                dashAddrEl.style.background = '#f1f5f9';
+                dashAddrEl.style.background = 'rgba(0,255,136,0.07)';
             }, 1200);
         };
     }
-    if (dashCopyBtn && contractAddress) {
-        dashCopyBtn.onclick = function() {
-            navigator.clipboard.writeText(contractAddress);
-            dashCopyBtn.textContent = 'کپی شد!';
-            setTimeout(() => dashCopyBtn.textContent = 'کپی', 1200);
-        };
-    }
+    // حذف هر دکمه کپی اضافی اگر وجود دارد
+    const dashCopyBtn = document.getElementById('dashboard-contract-copy-btn');
+    if (dashCopyBtn) dashCopyBtn.remove();
 });
 
 function shortenAddress(address) {
