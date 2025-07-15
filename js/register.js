@@ -185,13 +185,28 @@ async function loadUpgradeData(contract, address, tokenPriceUSD) {
 // تابع راه‌اندازی دکمه ثبت‌نام
 function setupRegistrationButton() {
     const registerBtn = document.getElementById('register-btn');
+    const registerStatus = document.getElementById('register-status');
     if (registerBtn) {
         registerBtn.onclick = async () => {
+            // ساده و معقول: دکمه غیرفعال و متن تغییر کند
+            const oldText = registerBtn.textContent;
+            registerBtn.disabled = true;
+            registerBtn.textContent = 'در حال ثبت‌نام...';
+            if (registerStatus) registerStatus.textContent = '';
             try {
                 await performRegistration();
+                if (registerStatus) {
+                    registerStatus.textContent = 'ثبت‌نام با موفقیت انجام شد!';
+                    registerStatus.className = 'profile-status success';
+                }
+                registerBtn.style.display = 'none';
             } catch (error) {
-                // console.error("Registration error:", error);
-                showRegisterError("خطا در ثبت‌نام");
+                if (registerStatus) {
+                    registerStatus.textContent = error.message || 'خطا در ثبت‌نام';
+                    registerStatus.className = 'profile-status error';
+                }
+                registerBtn.disabled = false;
+                registerBtn.textContent = oldText;
             }
         };
     }
