@@ -3,9 +3,9 @@ const deepseek_api ='sk-6074908ce7954bd89d494d57651392a8';
 
 
 // تنظیمات قرارداد LevelUp
-<<<<<<< HEAD
+
 const CONTRACT_ADDRESS = '0x0973BaBB6b9DAd3476a0e4Def6b35c919b1355AA';
-=======
+
 const USDC_ADDRESS = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174'; // Polygon USDC
 const USDC_ABI =[
 	{
