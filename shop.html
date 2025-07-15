@@ -12,16 +12,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/floating-ai-assistant.css">
 
     <!-- بارگذاری ethers.js نسخه 6 از CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
     <!-- بارگذاری WalletConnect Provider از CDN رسمی -->
     <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
     <!-- بارگذاری WalletConnect Handler -->
     <script src="js/walletconnect-handler.js?v=5.7"></script>
     <!-- بارگذاری WalletConnect UMD به صورت لوکال -->
     <script src="js/walletconnect-v1.8.0.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
     <!-- Floating AI Assistant CSS -->
     <!-- <link rel="stylesheet" href="css/floating-ai-assistant.css"> -->
     <!-- Floating AI Assistant JS -->
@@ -38,17 +38,120 @@
     </script>
 </head>
 <body>
-    <script>
-    (async function() {
-      if (window.getUserProfile) {
-        const profile = await window.getUserProfile();
-        if (!profile.activated) {
-          document.body.innerHTML = '<div style="color:#ff6b6b;text-align:center;padding:3rem;font-size:1.5rem;">دسترسی به این بخش فقط برای کاربران فعال مجاز است.<br>🔒</div>';
-          document.body.style.background = '#181c2a';
+  <!-- Floating Logo as Hamburger Menu -->
+  <img id="floating-logo" src="cpa.jpg" alt="CPA Logo" class="floating-logo" loading="lazy" onclick="toggleHamburgerMenu()">
+  <!-- Hamburger Menu -->
+  <div id="hamburgerMenu" class="hamburger-menu">
+    <div class="menu-header">
+      <h3 class="menu-header-title">CONTINUOUS PROFIT ACADEMY</h3>
+    </div>
+    <!-- Dashboard Section -->
+    <div class="menu-group">
+      <div class="menu-group-title">📊 داشبورد</div>
+      <a href="index.html" class="menu-btn">
+        <span class="menu-icon">🏠</span>
+        <span class="menu-label">خانه</span>
+      </a>
+    </div>
+    <div class="menu-divider"></div>
+    <!-- Education Section -->
+    <div class="menu-group">
+      <div class="menu-group-title">📚 آموزش</div>
+      <a href="learning.html" class="menu-btn">
+        <span class="menu-icon">🎓</span>
+        <span class="menu-label">آموزش</span>
+      </a>
+      <a href="news.html" class="menu-btn">
+        <span class="menu-icon">📰</span>
+        <span class="menu-label">اخبار و تحلیل</span>
+      </a>
+    </div>
+    <div class="menu-divider"></div>
+    <!-- Tools Section -->
+    <div class="menu-group">
+      <div class="menu-group-title">🛠️ ابزارها</div>
+      <a href="shop.html" class="menu-btn">
+        <span class="menu-icon">🛒</span>
+        <span class="menu-label">فروشگاه</span>
+      </a>
+      <a href="signal.html" class="menu-btn">
+        <span class="menu-icon">📈</span>
+        <span class="menu-label">سیگنال</span>
+      </a>
+      <a href="autotrade-license.html" class="menu-btn">
+        <span class="menu-icon">🤖</span>
+        <span class="menu-label">لایسنس اتوترید</span>
+      </a>
+    </div>
+    <div class="menu-divider"></div>
+    <!-- Admin Section -->
+    <div class="menu-group admin-group">
+      <div class="menu-group-title">🔐 مدیریت</div>
+      <a href="admin-prop.html" class="menu-btn admin-btn">
+        <span class="menu-icon">⚙️</span>
+        <span class="menu-label">مدیریت پراپ‌ها</span>
+      </a>
+    </div>
+  </div>
+  <script>
+    function toggleHamburgerMenu() {
+      const menu = document.getElementById('hamburgerMenu');
+      if (menu) {
+        menu.classList.toggle('open');
+        if (menu.classList.contains('open')) {
+          menu.style.visibility = 'visible';
+          menu.style.opacity = '1';
+          menu.style.transform = 'scale(1)';
+          menu.style.display = 'block';
+        } else {
+          menu.style.visibility = 'hidden';
+          menu.style.opacity = '0';
+          menu.style.transform = 'scale(0.9)';
         }
       }
-    })();
-    </script>
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      document.addEventListener('click', function(e) {
+        const menu = document.getElementById('hamburgerMenu');
+        const logo = document.getElementById('floating-logo');
+        if (menu && !menu.contains(e.target) && !logo.contains(e.target)) {
+          menu.classList.remove('open');
+        }
+      });
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          const menu = document.getElementById('hamburgerMenu');
+          if (menu) menu.classList.remove('open');
+        }
+      });
+    });
+  </script>
+  <div id="auth-loading" style="color:#00ccff;text-align:center;margin-top:80px;font-size:1.2rem;font-weight:bold;">در حال احراز هویت...</div>
+  <script src="js/config.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+      try {
+        if (window.getUserProfile) {
+          const profile = await window.getUserProfile();
+          if (!profile.activated) {
+            document.body.innerHTML = '<div style="color:red;text-align:center;margin-top:80px;font-size:1.3rem;font-weight:bold;">شما کاربر فعال نیستید، در حال انتقال به ثبت‌نام...</div>';
+            setTimeout(function() {
+              window.location.href = "index.html#main-register";
+            }, 2000);
+            return;
+          }
+        }
+        // اگر فعال بود، لودینگ را حذف کن
+        var loading = document.getElementById('auth-loading');
+        if (loading) loading.remove();
+      } catch (e) {
+        document.body.innerHTML = '<div style="color:red;text-align:center;margin-top:80px;font-size:1.3rem;font-weight:bold;">شما کاربر فعال نیستید، در حال انتقال به ثبت‌نام...</div>';
+        setTimeout(function() {
+          window.location.href = "index.html#main-register";
+        }, 2000);
+      }
+    });
+  </script>
     <!-- Main Content Container -->
     <div class="shop-main-container" style="max-width: 1200px; margin: 0 auto; padding: 1rem; padding-bottom: 4rem;">
         
@@ -79,9 +182,19 @@
             console.log('- products-list:', document.getElementById('products-list'));
         });
     </script>
-    <!-- دکمه شناور بازگشت به خانه -->
-    <a href="index.html" class="fab-main" title="بازگشت به خانه" style="position: fixed; bottom: 24px; right: 24px; z-index: 9999;">
-        <span class="sf-home" style="font-size: 2rem;"></span>
-    </a>
-</body>
+    <script src="js/main.js"></script>
+    <script src="js/hamburger-float.js"></script>
+    <!-- دکمه شناور بازگشت به خانه حذف شد -->
+    <script>
+      window.navigateToPage = function(pageUrl) {
+        const menu = document.getElementById('hamburgerMenu');
+        if (menu) menu.classList.remove('open');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setTimeout(() => { window.location.href = pageUrl; }, 300);
+      };
+      window.showTab = function(tab) {
+        window.location.href = 'index.html#' + tab;
+      };
+    </script>
+  </body>
 </html> 

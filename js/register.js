@@ -57,17 +57,7 @@ async function loadRegisterData(contract, address, tokenPriceUSDFormatted) {
             if (typeof contract.getRegPrice === 'function') {
                 regprice = await contract.getRegPrice();
             }
-            // Then try regprice (old function name)
-            else if (typeof contract.regprice === 'function') {
-                regprice = await contract.regprice();
-            }
-            // Then try regPrice (alternative spelling)
-            else if (typeof contract.regPrice === 'function') {
-                regprice = await contract.regPrice();
-            }
-            else {
-                regprice = ethers.parseUnits('100', 18);
-            }
+
         } catch (e) {
             regprice = ethers.parseUnits('100', 18);
         }
@@ -238,29 +228,7 @@ async function performRegistration() {
         if (!referrerAddress) {
             referrerAddress = await contract.deployer();
         }
-        // هیچ چک اضافه‌ای روی فعال بودن معرف انجام نده
-        // فقط ثبت‌نام را انجام بده
-        // Try to get registration price from contract, fallback to hardcoded value
-        let regprice;
-        try {
-            // First try getRegPrice (new function)
-            if (typeof contract.getRegPrice === 'function') {
-                regprice = await contract.getRegPrice();
-            }
-            // Then try regprice (old function name)
-            else if (typeof contract.regprice === 'function') {
-                regprice = await contract.regprice();
-            }
-            // Then try regPrice (alternative spelling)
-            else if (typeof contract.regPrice === 'function') {
-                regprice = await contract.regPrice();
-            }
-            else {
-                regprice = ethers.parseUnits('100', 18);
-            }
-        } catch (e) {
-            regprice = ethers.parseUnits('100', 18);
-        }
+
         // منطق approve قبل از ثبت‌نام:
         const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, window.contractConfig.signer);
         const allowance = await usdcContract.allowance(address, CONTRACT_ADDRESS);
@@ -447,26 +415,13 @@ async function showRegistrationForm() {
         if (refSummary) refSummary.style.display = 'none';
     }
 
-    // مقدار توکن مورد نیاز را از قرارداد بگیر
-    // let requiredTokenAmount = '';
-    // let userLvlBalance = '';
-    // try {
-    //     const { contract, address } = window.contractConfig;
-    //     // استفاده از تابع مرکزی برای دریافت قیمت ثبت‌نام
-    //     const regprice = await window.getRegistrationPrice(contract);
-    //     requiredTokenAmount = ethers.formatUnits(regprice, 18);
-    //     const cpaBalance = await contract.balanceOf(address);
-    //     userLvlBalance = ethers.formatUnits(cpaBalance, 18);
-    // } catch (e) {
-    //     requiredTokenAmount = '-';
-    //     userLvlBalance = '0';
-    // }
+
     // نمایش موجودی‌های کاربر
     await window.displayUserBalances();
     
     // نمایش مقدار مورد نیاز
     const cpaRequiredSpan = document.getElementById('register-cpa-required');
-    if (cpaRequiredSpan) cpaRequiredSpan.textContent = '100 CPA'; // Static value
+    if (cpaRequiredSpan) cpaRequiredSpan.textContent = regPrice; // Static value
 
     // 1. Add logic to fetch MATIC balance and required MATIC for registration
     async function fetchMaticBalance(address, contract) {

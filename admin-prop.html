@@ -7,6 +7,152 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <!-- Floating Logo as Hamburger Menu -->
+  <img id="floating-logo" src="cpa.jpg" alt="CPA Logo" class="floating-logo" loading="lazy" onclick="toggleHamburgerMenu()">
+  <!-- Hamburger Menu -->
+  <div id="hamburgerMenu" class="hamburger-menu">
+    <div class="menu-header">
+      <h3 class="menu-header-title">CONTINUOUS PROFIT ACADEMY</h3>
+    </div>
+    <!-- Dashboard Section -->
+    <div class="menu-group">
+      <div class="menu-group-title">📊 داشبورد</div>
+      <a href="index.html" class="menu-btn">
+        <span class="menu-icon">🏠</span>
+        <span class="menu-label">خانه</span>
+      </a>
+    </div>
+    <div class="menu-divider"></div>
+    <!-- Education Section -->
+    <div class="menu-group">
+      <div class="menu-group-title">📚 آموزش</div>
+      <a href="learning.html" class="menu-btn">
+        <span class="menu-icon">🎓</span>
+        <span class="menu-label">آموزش</span>
+      </a>
+      <a href="news.html" class="menu-btn">
+        <span class="menu-icon">📰</span>
+        <span class="menu-label">اخبار و تحلیل</span>
+      </a>
+    </div>
+    <div class="menu-divider"></div>
+    <!-- Tools Section -->
+    <div class="menu-group">
+      <div class="menu-group-title">🛠️ ابزارها</div>
+      <a href="shop.html" class="menu-btn">
+        <span class="menu-icon">🛒</span>
+        <span class="menu-label">فروشگاه</span>
+      </a>
+      <a href="signal.html" class="menu-btn">
+        <span class="menu-icon">📈</span>
+        <span class="menu-label">سیگنال</span>
+      </a>
+      <a href="autotrade-license.html" class="menu-btn">
+        <span class="menu-icon">🤖</span>
+        <span class="menu-label">لایسنس اتوترید</span>
+      </a>
+    </div>
+    <div class="menu-divider"></div>
+    <!-- Admin Section -->
+    <div class="menu-group admin-group">
+      <div class="menu-group-title">🔐 مدیریت</div>
+      <a href="admin-prop.html" class="menu-btn admin-btn">
+        <span class="menu-icon">⚙️</span>
+        <span class="menu-label">مدیریت پراپ‌ها</span>
+      </a>
+    </div>
+  </div>
+  <script>
+    function toggleHamburgerMenu() {
+      const menu = document.getElementById('hamburgerMenu');
+      if (menu) {
+        menu.classList.toggle('open');
+        if (menu.classList.contains('open')) {
+          menu.style.visibility = 'visible';
+          menu.style.opacity = '1';
+          menu.style.transform = 'scale(1)';
+          menu.style.display = 'block';
+        } else {
+          menu.style.visibility = 'hidden';
+          menu.style.opacity = '0';
+          menu.style.transform = 'scale(0.9)';
+        }
+      }
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      document.addEventListener('click', function(e) {
+        const menu = document.getElementById('hamburgerMenu');
+        const logo = document.getElementById('floating-logo');
+        if (menu && !menu.contains(e.target) && !logo.contains(e.target)) {
+          menu.classList.remove('open');
+        }
+      });
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          const menu = document.getElementById('hamburgerMenu');
+          if (menu) menu.classList.remove('open');
+        }
+      });
+    });
+  </script>
+  <div id="auth-loading" style="color:#00ccff;text-align:center;margin-top:80px;font-size:1.2rem;font-weight:bold;">در حال احراز هویت...</div>
+  <script>
+    window.addEventListener('DOMContentLoaded', async function() {
+      try {
+        console.log('[AdminProp] DOMContentLoaded');
+        if (window.clearUserProfileCache) {
+          console.log('[AdminProp] Clearing user profile cache...');
+          window.clearUserProfileCache();
+        }
+        if (window.getUserProfile) {
+          console.log('[AdminProp] Calling getUserProfile...');
+          const profile = await window.getUserProfile();
+          console.log('[AdminProp] User profile:', profile);
+          if (!profile || !profile.activated) {
+            console.log('[AdminProp] Access denied: not activated or no profile');
+            document.body.innerHTML = '<div style="color:#ff6b6b;text-align:center;margin-top:120px;font-size:1.3rem;font-weight:bold;">دسترسی فقط برای کاربران فعال مجاز است.</div>';
+            return;
+          }
+        } else {
+          console.log('[AdminProp] getUserProfile is not defined!');
+        }
+        var loading = document.getElementById('auth-loading');
+        if (loading) loading.style.display = 'none';
+        console.log('[AdminProp] Auth loading removed, page should be visible.');
+      } catch (e) {
+        console.log('[AdminProp] Error in auth block:', e);
+        document.body.innerHTML = '<div style="color:#ff6b6b;text-align:center;margin-top:120px;font-size:1.3rem;font-weight:bold;">خطا در احراز هویت کاربر</div>';
+      }
+    });
+  </script>
+  <div id="profile-section" style="display:none; margin: 2rem auto; max-width: 400px; background: #232946; color: #fff; border-radius: 16px; box-shadow: 0 2px 12px #a786ff40; padding: 2rem;">
+    <h2 style="text-align:center;">پروفایل کاربر</h2>
+    <div id="profile-info" style="margin-top:1rem;text-align:center;">اطلاعات پروفایل اینجا نمایش داده می‌شود.</div>
+  </div>
+  <script>
+    function showProfileSection() {
+      document.getElementById('profile-section').style.display = 'block';
+      // سایر بخش‌ها را در صورت نیاز مخفی کنید
+      // document.querySelector('.admin-container').style.display = 'none';
+      // window.toggleHamburgerMenu(false); // This line is removed as per the new menu structure
+    }
+    // اتصال دکمه پروفایل منوی همبرگری به این تابع
+    // document.addEventListener('DOMContentLoaded', function() { // This block is removed as per the new menu structure
+    //   var menuInterval = setInterval(function() {
+    //     var menu = document.getElementById('hamburgerMenu');
+    //     if (menu) {
+    //       var profileBtn = menu.querySelector('a[href="index.html#profile"], a.menu-btn[href="#profile"]');
+    //       if (profileBtn) {
+    //         profileBtn.addEventListener('click', function(e) {
+    //           e.preventDefault();
+    //           showProfileSection();
+    //         });
+    //         clearInterval(menuInterval);
+    //       }
+    //     }
+    //   }, 500);
+    // });
+  </script>
   <div class="admin-container">
     <div class="admin-title">پنل مدیریت پراپ‌ها</div>
     <form class="admin-form" id="addPropForm">
@@ -80,9 +226,22 @@
     };
     renderProps();
   </script>
-    <!-- دکمه شناور بازگشت به خانه -->
-    <a href="index.html" class="fab-main" title="بازگشت به خانه" style="position: fixed; bottom: 24px; right: 24px; z-index: 9999;">
-        <span class="sf-home" style="font-size: 2rem;"></span>
-    </a>
+  <!-- Hamburger Menu Floating Button and Menu -->
+  <!-- This section is removed as per the new menu structure -->
+  <script src="js/hamburger-float.js"></script>
+  <script>
+    // Ensure menu navigation works everywhere
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('#hamburgerMenu a').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+          if (this.id === 'logout-link') {
+            window.location.href = 'logout';
+          } else {
+            window.location.href = this.getAttribute('href');
+          }
+        });
+      });
+    });
+  </script>
 </body>
 </html> 

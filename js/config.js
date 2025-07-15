@@ -3,7 +3,7 @@ const deepseek_api ='sk-6074908ce7954bd89d494d57651392a8';
 
 
 // تنظیمات قرارداد LevelUp
-const CONTRACT_ADDRESS = '0x689f492F5320165e471F4DB546917c86136f2b68';
+const CONTRACT_ADDRESS = '0x0973BaBB6b9DAd3476a0e4Def6b35c919b1355AA';
 const USDC_ADDRESS = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174'; // Polygon USDC
 const USDC_ABI = [
   {
@@ -799,6 +799,19 @@ const LEVELUP_ABI =[
 				"internalType": "address",
 				"name": "",
 				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getRegPrice",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",
@@ -2066,6 +2079,7 @@ window.getContractStats = async function() {
             pointValue: ethers.formatUnits(pointValue, 18),
             rewardPool: ethers.formatEther(contractBalance), // استخر پاداش = موجودی POL قرارداد (نه توکن)
             contractTokenBalance: ethers.formatUnits(contractTokenBalance, 18) // موجودی توکن قرارداد
+            
         };
         
         return result;
@@ -2559,53 +2573,6 @@ window.safeQueryEvents = async function(contract, eventFilter, fromBlock = 'late
     }
 };
 
-// تابع مرکزی برای دریافت قیمت ثبت‌نام
-window.getRegistrationPrice = async function(contract = null) {
-    try {
-        if (!contract) {
-            const connection = await window.connectWallet();
-            contract = connection.contract;
-        }
-        
-        // Try to get registration price from contract, fallback to hardcoded value
-        let regPrice;
-        try {
-            // First try getRegPrice (new function)
-            if (typeof contract.getRegPrice === 'function') {
-                regPrice = await contract.getRegPrice();
-                console.log('✅ Using getRegPrice function');
-            }
-            // Then try regprice (old function name)
-            else if (typeof contract.regprice === 'function') {
-                regPrice = await contract.regprice();
-                console.log('✅ Using regprice function');
-            }
-            // Then try regPrice (alternative spelling)
-            else if (typeof contract.regPrice === 'function') {
-                regPrice = await contract.regPrice();
-                console.log('✅ Using regPrice function');
-            }
-            else {
-                // Fallback to hardcoded registration price (100 CPA)
-                regPrice = ethers.parseUnits('100', 18);
-                console.log('⚠️ No registration price function found, using hardcoded value');
-            }
-        } catch (e) {
-            // Fallback to hardcoded registration price (100 CPA)
-            regPrice = ethers.parseUnits('100', 18);
-            console.log('⚠️ Error calling registration price function, using hardcoded value:', e.message);
-        }
-        
-        console.log('✅ Registration price (raw):', regPrice.toString());
-        console.log('✅ Registration price (formatted):', ethers.formatUnits(regPrice, 18) + ' CPA');
-        
-        return regPrice;
-    } catch (error) {
-        console.error('Error getting registration price:', error);
-        // Return hardcoded value as last resort
-        return ethers.parseUnits('100', 18);
-    }
-};
 
 function setupViewerMode() {
     // شبیه‌سازی اتصال به استریم
@@ -2938,7 +2905,7 @@ window.updateDashboardStats = async function() {
     // REGISTRATION PRICE (قیمت ثبت‌نام)
     try {
       console.log('🎫 Fetching registration price...');
-      const registrationPrice = await window.getRegistrationPrice(contract);
+      const registrationPrice = await window.getRegPrice(contract);
       const formattedRegPrice = parseFloat(ethers.formatUnits(registrationPrice, 18)).toLocaleString('en-US', {maximumFractionDigits: 0});
       safeUpdate('dashboard-registration-price', formattedRegPrice + ' CPA');
       console.log('✅ Registration price updated:', formattedRegPrice + ' CPA');
@@ -3181,4 +3148,33 @@ if (!window._dashboardIntervalSet) {
   }, 30000);
   window._dashboardIntervalSet = true;
 }
+
+function unlockHamburgerMenuItems() {
+    console.log('>>> unlockHamburgerMenuItems CALLED');
+    // ... ادامه کد ...
+}
+
+// ... existing code ...
+
+// تابع global برای دریافت قیمت ثبت‌نام از قرارداد
+window.getRegPrice = async function(contract) {
+  try {
+    if (!contract) {
+      if (window.contractConfig && window.contractConfig.contract) {
+        contract = window.contractConfig.contract;
+      } else {
+        const connection = await window.connectWallet();
+        contract = connection.contract;
+      }
+    }
+    if (typeof contract.getRegPrice === 'function') {
+      return await contract.getRegPrice();
+    } else {
+      // fallback value
+      return ethers.parseUnits('100', 18);
+    }
+  } catch (e) {
+    return ethers.parseUnits('100', 18);
+  }
+};
 
