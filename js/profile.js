@@ -1,5 +1,7 @@
 // Profile Module - فقط توابع مخصوص پروفایل
 
+console.log('profile.js loaded, window.getUserProfile =', window.getUserProfile ? window.getUserProfile.toString() : 'undefined');
+
 window.cachedUserProfile = window.cachedUserProfile || null;
 async function loadUserProfileOnce() {
     if (window.cachedUserProfile) return window.cachedUserProfile;

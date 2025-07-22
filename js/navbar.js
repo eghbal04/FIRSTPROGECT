@@ -279,6 +279,10 @@
           target.scrollIntoView({behavior:'smooth',block:'start'});
         }, 100);
       }
+      // اگر پروفایل فعال شد، اطلاعات را رفرش کن
+      if (sectionId === 'main-profile' && typeof loadUserProfile === 'function') {
+        loadUserProfile();
+      }
     };
   }
 })(); 
