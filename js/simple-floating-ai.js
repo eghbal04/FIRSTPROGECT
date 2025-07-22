@@ -9,19 +9,19 @@ class SimpleFloatingAI {
     
     init() {
         try {
-            console.log('🚀 Initializing Simple Floating AI...');
+            // Initializing Simple Floating AI
             
             // Wait for DOM to be ready
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', () => {
                     this.createButton();
                     this.isInitialized = true;
-                    console.log('✅ Simple Floating AI initialized successfully');
+                    // Simple Floating AI initialized successfully
                 });
             } else {
                 this.createButton();
                 this.isInitialized = true;
-                console.log('✅ Simple Floating AI initialized successfully');
+                // Simple Floating AI initialized successfully
             }
         } catch (error) {
             console.error('❌ Error initializing Simple Floating AI:', error);
@@ -29,7 +29,7 @@ class SimpleFloatingAI {
     }
     
     createButton() {
-        console.log('🔨 Creating simple AI button...');
+        // Creating simple AI button
         
         // Remove existing button if it exists
         const existingButton = document.getElementById('simple-ai-button');
@@ -86,7 +86,7 @@ class SimpleFloatingAI {
         // Add to page
         document.body.appendChild(button);
         this.isVisible = true;
-        console.log('✅ Simple AI button created and visible');
+        // Simple AI button created and visible
         
         // Add floating animation
         this.startFloatingAnimation(button);
@@ -109,7 +109,7 @@ class SimpleFloatingAI {
     }
     
     handleClick() {
-        console.log('🎯 Simple AI button clicked!');
+        // Simple AI button clicked
         
         // Show a simple alert for now
         const message = 'سلام! من دستیار هوشمند CPA هستم. 🤖\n\nمی‌تونم در موارد زیر کمکتون کنم:\n• خرید و فروش توکن\n• بررسی موجودی\n• آمار شبکه\n• راهنمایی\n\nبرای استفاده کامل، به نسخه پیشرفته مراجعه کنید.';
@@ -197,7 +197,7 @@ class SimpleFloatingAI {
             button.style.visibility = 'visible';
             button.style.opacity = '1';
             this.isVisible = true;
-            console.log('✅ Simple AI button shown');
+            // Simple AI button shown
         }
     }
     

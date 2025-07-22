@@ -16,29 +16,24 @@ window.updateRegisterRequiredAmount = function() {
 // تابع بارگذاری اطلاعات ثبت‌نام
 async function loadRegisterData(contract, address, tokenPriceUSDFormatted) {
     if (isRegisterLoading || registerDataLoaded) {
-        // console.log('Register: Already loading or loaded, skipping...');
         return;
     }
     
     // فقط اگر تب register انتخاب شده باشد
     if (!registerTabSelected) {
-        // console.log('Register: Tab not selected, skipping...');
         return;
     }
     
     isRegisterLoading = true;
     
     try {
-        // console.log('Register: Loading register data...');
         
         // بررسی اتصال کیف پول
         if (!window.contractConfig || !window.contractConfig.contract) {
-            // console.log('Register: No wallet connection, skipping...');
             return;
         }
         
         const { contract, address } = window.contractConfig;
-        // console.log('Register: Wallet connected, loading register data...');
         
         // دریافت اطلاعات کاربر
         const userData = await contract.users(address);
@@ -108,10 +103,8 @@ async function loadRegisterData(contract, address, tokenPriceUSDFormatted) {
             await showRegistrationForm();
         }
         registerDataLoaded = true;
-        // console.log('Register: Data loaded successfully');
         
     } catch (error) {
-        // console.error('Error loading register data:', error);
         showRegisterError("خطا در بارگذاری اطلاعات ثبت‌نام");
     } finally {
         isRegisterLoading = false;
@@ -190,7 +183,7 @@ function setupRegistrationButton() {
         registerBtn.onclick = async () => {
             const oldText = registerBtn.textContent;
             registerBtn.disabled = true;
-            registerBtn.textContent = 'در حال ثبت‌نام...';
+            registerBtn.innerHTML = '<span class="spinner" style="display:inline-block;width:18px;height:18px;border:2px solid #fff;border-top:2px solid #00ff88;border-radius:50%;margin-left:8px;vertical-align:middle;animation:spin 0.8s linear infinite;"></span> در حال ثبت‌نام...';
             if (registerStatus) registerStatus.textContent = '';
             try {
                 await performRegistration();
@@ -401,7 +394,7 @@ function displayRegistrationInfo(registrationPrice, regprice, tokenPriceUSD, tok
 }
 
 // تابع نمایش فرم ثبت‌نام
-async function showRegistrationForm() {
+window.showRegistrationForm = async function() {
     const registrationForm = document.getElementById('registration-form');
     if (!registrationForm) return;
     registrationForm.style.display = 'block';
@@ -517,8 +510,8 @@ async function showRegistrationForm() {
       // بررسی موجودی ولت متصل (address)
       if (parseFloat(userLvlBalance) < parseFloat(requiredTokenAmount)) {
         registerBtn.disabled = true;
-        registerBtn.textContent = 'موجودی USDC کافی نیست';
-        if (registerStatus) registerStatus.textContent = 'برای ثبت‌نام باید حداقل '+requiredTokenAmount+' USDC داشته باشید. لطفاً ابتدا کیف پول خود را شارژ کنید.';
+        registerBtn.textContent = 'موجودی CPA کافی نیست';
+        if (registerStatus) registerStatus.innerHTML = 'موجودی توکن CPA شما برای ثبت‌نام کافی نیست.<br>برای ثبت‌نام باید حداقل '+requiredTokenAmount+' CPA داشته باشید.<br>لطفاً ابتدا کیف پول خود را شارژ یا از بخش سواپ/فروشگاه توکن CPA تهیه کنید.';
         return;
       } else if (parseFloat(maticBalance) < requiredMatic) {
         registerBtn.disabled = true;
@@ -558,6 +551,9 @@ async function showRegistrationForm() {
             document.getElementById('new-user-address').value = '';
             document.getElementById('new-referrer-address').value = '';
             document.getElementById('new-register-status').textContent = '';
+            // Hide any duplicate or leftover registration forms
+            const allModals = document.querySelectorAll('.new-registration-modal, #new-registration-modal');
+            allModals.forEach(m => m.style.display = 'none');
         };
         submitNewRegister.onclick = async function() {
             const userAddr = document.getElementById('new-user-address').value.trim();
@@ -620,6 +616,9 @@ window.addEventListener('DOMContentLoaded', function() {
             document.getElementById('new-user-address').value = '';
             document.getElementById('new-referrer-address').value = '';
             document.getElementById('new-register-status').textContent = '';
+            // Hide any duplicate or leftover registration forms
+            const allModals = document.querySelectorAll('.new-registration-modal, #new-registration-modal');
+            allModals.forEach(m => m.style.display = 'none');
         };
         submitNewRegister.onclick = async function() {
             const userAddr = document.getElementById('new-user-address').value.trim();
@@ -752,12 +751,13 @@ async function displayUserBalances() {
             const element = document.getElementById(id);
             if (element) {
                 element.textContent = value;
-                console.log(`✅ Updated ${id}: ${value}`);
+                // Updated element
             }
         });
         
-        console.log('✅ User balances displayed successfully');
-        return { cpaFormatted, usdcFormatted, maticFormatted };
+        if (balances) {
+            // User balances displayed successfully
+        }
         
     } catch (error) {
         console.error('❌ Error displaying user balances:', error);
@@ -767,4 +767,12 @@ async function displayUserBalances() {
 
 // Export for global use
 window.displayUserBalances = displayUserBalances;
+
+// Add spinner animation CSS to the page if not present
+if (!document.getElementById('register-spinner-style')) {
+  const style = document.createElement('style');
+  style.id = 'register-spinner-style';
+  style.innerHTML = '@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }';
+  document.head.appendChild(style);
+}
 

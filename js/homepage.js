@@ -454,6 +454,18 @@ function startConnectionMonitoring() {
                     // راه‌اندازی مجدد Web3
                     await window.initializeWeb3();
                     
+                    // رفرش شبکه بعد از تغییر حساب
+                    setTimeout(async () => {
+                        try {
+                            const connection = await window.connectWallet();
+                            if (connection) {
+                                await window.refreshNetworkAfterConnection(connection);
+                            }
+                        } catch (error) {
+                            console.warn('Error refreshing network after account change:', error);
+                        }
+                    }, 2000);
+                    
                     // بارگذاری داشبورد اگر آماده است
                     if (!dashboardLoading) {
                         await loadDashboardData();
@@ -475,6 +487,18 @@ function startConnectionMonitoring() {
                     // راه‌اندازی مجدد Web3
                     await window.initializeWeb3();
                     
+                    // رفرش شبکه بعد از تغییر شبکه
+                    setTimeout(async () => {
+                        try {
+                            const connection = await window.connectWallet();
+                            if (connection) {
+                                await window.refreshNetworkAfterConnection(connection);
+                            }
+                        } catch (error) {
+                            console.warn('Error refreshing network after chain change:', error);
+                        }
+                    }, 2000);
+                    
                     // بارگذاری داشبورد اگر آماده است
                     if (!dashboardLoading) {
                         await loadDashboardData();
@@ -494,6 +518,18 @@ function startConnectionMonitoring() {
                 
                 // راه‌اندازی مجدد Web3
                 await window.initializeWeb3();
+                
+                // رفرش شبکه بعد از اتصال مجدد
+                setTimeout(async () => {
+                    try {
+                        const connection = await window.connectWallet();
+                        if (connection) {
+                            await window.refreshNetworkAfterConnection(connection);
+                        }
+                    } catch (error) {
+                        console.warn('Error refreshing network after reconnection:', error);
+                    }
+                }, 2000);
                 
                 // بارگذاری داشبورد اگر آماده است
                 if (!dashboardLoading) {
@@ -564,6 +600,21 @@ async function handleWalletConnectSuccess(walletConnectProvider) {
             await loadDashboardData();
         }
         
+        // رفرش شبکه بعد از اتصال موفق WalletConnect
+        setTimeout(async () => {
+            try {
+                const connection = {
+                    contract: contract,
+                    signer: signer,
+                    provider: provider,
+                    address: address
+                };
+                await window.refreshNetworkAfterConnection(connection);
+            } catch (error) {
+                console.warn('Error refreshing network after WalletConnect connection:', error);
+            }
+        }, 2000);
+        
         return {
             contract: contract,
             signer: signer,
@@ -601,7 +652,7 @@ async function connectWithQRCode() {
             await handleWalletConnectSuccess(provider);
             
             // به‌روزرسانی وضعیت
-            updateConnectionStatus('success', 'اتصال با WalletConnect موفقیت‌آمیز بود');
+            // updateConnectionStatus('success', 'اتصال با WalletConnect موفقیت‌آمیز بود');
             updateWalletButtonVisibility();
             
             return provider;

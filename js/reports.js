@@ -20,10 +20,10 @@ async function waitForWalletConnection() {
         await loadReports();
 
         // راه‌اندازی فیلترها
-        setupFilters();
+        // setupFilters(); // حذف شد
 
         // به‌روزرسانی خودکار هر 5 دقیقه
-        setInterval(loadReports, 300000);
+        // setInterval(loadReports, 300000); // حذف شد
 
     } catch (error) {
         showReportsError("خطا در بارگذاری گزارشات");
@@ -167,6 +167,7 @@ function shortenTransactionHash(hash) {
     async function fetchReports() {
         try {
             const { contract, address } = await connectWallet();
+            const provider = contract.runner && contract.runner.provider ? contract.runner.provider : contract.provider;
             const reports = [];
             
             // استفاده از retry برای دریافت block number
@@ -209,7 +210,7 @@ function shortenTransactionHash(hash) {
                 if (event.args.user.toLowerCase() === address.toLowerCase()) {
                     reports.push({
                         type: 'purchase',
-                        title: 'خرید توکن',
+                        title: 'خرید با USDC',
                         amount: formatNumber(event.args.amountLvl || event.args.amountlvl, 18) + ' CPA',
                         timestamp: event.blockNumber,
                         transactionHash: event.transactionHash,
@@ -228,7 +229,7 @@ function shortenTransactionHash(hash) {
                 if (event.args.buyer.toLowerCase() === address.toLowerCase()) {
                     reports.push({
                         type: 'trading',
-                        title: 'خرید توکن با POL',
+                        title: 'خرید با USDC',
                         amount: `${formatNumber(event.args.maticAmount, 18)} POL → ${formatNumber(event.args.tokenAmount, 18)} CPA`,
                         timestamp: event.blockNumber,
                         transactionHash: event.transactionHash,
@@ -302,10 +303,14 @@ function shortenTransactionHash(hash) {
             } catch (e) {}
             treeEvents.forEach(event => {
                 if ([event.args.user, event.args.parent, event.args.referrer].map(a=>a.toLowerCase()).includes(address.toLowerCase())) {
+                    let posLabel = '';
+                    if (event.args.position == 0) posLabel = 'فرزند سمت چپ ثبت شد';
+                    else if (event.args.position == 1) posLabel = 'فرزند سمت راست ثبت شد';
+                    else posLabel = `موقعیت: ${event.args.position}`;
                     reports.push({
                         type: 'network',
                         title: 'تغییر ساختار شبکه',
-                        amount: `موقعیت: ${event.args.position} - زمان: ${event.args.timestamp}`,
+                        amount: posLabel,
                         timestamp: event.blockNumber,
                         transactionHash: event.transactionHash,
                         blockNumber: event.blockNumber,
@@ -371,6 +376,21 @@ function shortenTransactionHash(hash) {
                     });
                 }
                 });
+            // After collecting all events into reports array, fetch timestamps for each unique blockNumber
+            const blockNumbers = [...new Set(reports.map(r => r.blockNumber))];
+            const blockTimestamps = {};
+            for (const bn of blockNumbers) {
+                try {
+                    const block = await provider.getBlock(bn);
+                    blockTimestamps[bn] = block.timestamp;
+                } catch (e) {
+                    blockTimestamps[bn] = null;
+                }
+            }
+            // Assign real timestamp to each report
+            reports.forEach(r => {
+                r.timestamp = blockTimestamps[r.blockNumber] ? blockTimestamps[r.blockNumber] * 1000 : null;
+            });
             // مرتب‌سازی بر اساس تاریخ (جدیدترین اول)
             reports.sort((a, b) => b.blockNumber - a.blockNumber);
             return reports;
@@ -382,32 +402,28 @@ function shortenTransactionHash(hash) {
     }
     
     // تابع نمایش گزارشات
-    function displayReports(reports, filterType = 'all') {
-    const reportsContainer = document.getElementById('reports-container');
+    function displayReports(reports) {
+        const reportsContainer = document.getElementById('reports-container');
         if (!reportsContainer) return;
         
-        const filteredReports = filterType === 'all' 
-            ? reports 
-            : reports.filter(report => report.type === filterType);
-        
-        if (filteredReports.length === 0) {
+        // نمایش همه گزارشات بدون فیلتر
+        if (reports.length === 0) {
             reportsContainer.innerHTML = `
-            <div class="no-reports">
+                <div class="no-reports">
                     <p>هیچ گزارشی یافت نشد.</p>
                     <p>برای مشاهده گزارشات، ابتدا فعالیتی در پلتفرم انجام دهید.</p>
-        </div>
-    `;
+                </div>
+            `;
             return;
         }
     
-        const reportsHTML = filteredReports.map(report => {
+        const reportsHTML = reports.map(report => {
             const { type, title, amount, timestamp, blockNumber, address, usdcAmount } = report;
-            // حذف دکمه کپی
             const reportHTML = `
                 <div class="report-item">
                     <div class="report-header">
                         <div class="report-type">${getReportIcon(type)} ${title}</div>
-                        <!-- <div class="report-time">${formatDate(timestamp)}</div> -->
+                        <div class="report-time" style="font-size:0.95em;color:#a786ff;">${formatDate(timestamp)}</div>
                     </div>
                     <div class="report-details">
                         <div class="report-details-row">
@@ -460,7 +476,7 @@ function shortenTransactionHash(hash) {
         displayReports(reports);
         
         // تنظیم فیلترها
-        setupFilters();
+        // setupFilters(); // حذف شد
             
         } catch (error) {
         showReportsError("خطا در بارگذاری گزارشات");
@@ -501,13 +517,4 @@ function showReportsError(message) {
             }
         }
     
-// تابع راه‌اندازی فیلترها
-function setupFilters() {
-    const reportTypeFilter = document.getElementById('report-type-filter');
-    
-    if (reportTypeFilter) {
-        reportTypeFilter.addEventListener('change', () => {
-            loadReports();
-        });
-    }
-} 
+// تابع راه‌اندازی فیلترها حذف شد - همه گزارشات نمایش داده می‌شوند 

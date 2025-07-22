@@ -4,7 +4,7 @@ const deepseek_api ='sk-6074908ce7954bd89d494d57651392a8';
 
 // تنظیمات قرارداد LevelUp
 
-const CONTRACT_ADDRESS = '0x0973BaBB6b9DAd3476a0e4Def6b35c919b1355AA';
+const CONTRACT_ADDRESS = '0xA324B982c070d803BE0828890325483b6696Cd24';
 
 const USDC_ADDRESS = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174'; // Polygon USDC
 const USDC_ABI =[
@@ -1441,7 +1441,13 @@ const LEVELUP_ABI =[
 		"type": "function"
 	},
 	{
-		"inputs": [],
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "minReward",
+				"type": "uint256"
+			}
+		],
 		"name": "claimMonthlyReward",
 		"outputs": [],
 		"stateMutability": "nonpayable",
@@ -1479,6 +1485,62 @@ const LEVELUP_ABI =[
 		"type": "event"
 	},
 	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "reward",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "monthsPassed",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			}
+		],
+		"name": "MonthlyRewardClaimed",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "reason",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			}
+		],
+		"name": "MonthlyRewardFailed",
+		"type": "event"
+	},
+	{
 		"inputs": [
 			{
 				"internalType": "uint256",
@@ -1489,6 +1551,11 @@ const LEVELUP_ABI =[
 				"internalType": "uint256",
 				"name": "payout",
 				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "seller",
+				"type": "address"
 			}
 		],
 		"name": "purchase",
@@ -2329,6 +2396,7 @@ const LEVELUP_ABI =[
 		"type": "function"
 	}
 ];
+
 // مدیریت درخواست‌های همزمان
 let isInitializing = false;
 let initializationPromise = null;
@@ -2635,6 +2703,15 @@ window.connectWallet = async function() {
                 // راه‌اندازی Web3
                 const result = await window.contractConfig.initializeWeb3();
                 if (result && result.contract && result.address) {
+                    // رفرش شبکه بعد از اتصال موفق
+                    setTimeout(async () => {
+                        try {
+                            await window.refreshNetworkAfterConnection(result);
+                        } catch (error) {
+                            console.warn('Error refreshing network data after connection:', error);
+                        }
+                    }, 1000); // 1 ثانیه صبر کن
+                    
                     return {
                         contract: result.contract,
                         address: result.address,
@@ -2676,6 +2753,193 @@ window.connectWallet = async function() {
     });
 };
 
+// تابع رفرش شبکه بعد از اتصال کیف پول
+window.refreshNetworkAfterConnection = async function(connection) {
+    try {
+        // رفرش آمار شبکه
+        if (typeof window.loadNetworkStats === 'function' && connection && connection.contract) {
+            await window.loadNetworkStats(connection.contract);
+        }
+        
+        // رفرش درخت شبکه
+        if (typeof window.renderSimpleBinaryTree === 'function') {
+            await window.renderSimpleBinaryTree();
+        } else if (typeof window.renderNetworkTree === 'function') {
+            await window.renderNetworkTree();
+        }
+        
+        // رفرش پروفایل کاربر
+        if (typeof window.loadUserProfile === 'function') {
+            await window.loadUserProfile();
+        }
+        
+        // رفرش موجودی‌های ترنسفر
+        if (typeof window.updateTransferBalancesOnConnect === 'function') {
+            await window.updateTransferBalancesOnConnect();
+        }
+        
+        // رفرش داده‌های سواپ
+        if (window.swapManager && typeof window.swapManager.refreshSwapData === 'function') {
+            await window.swapManager.refreshSwapData();
+        }
+        
+    } catch (error) {
+        console.warn('Error refreshing network data:', error);
+    }
+};
+
+// تابع نمایش پیام موفقیت
+window.showSuccessMessage = function(message) {
+    try {
+        // ایجاد عنصر پیام
+        const messageElement = document.createElement('div');
+        messageElement.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #00ff88, #00cc66);
+            color: #181c2a;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-weight: bold;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0,255,136,0.3);
+            border: 1px solid rgba(0,255,136,0.5);
+            max-width: 300px;
+            word-wrap: break-word;
+            animation: slideInRight 0.5s ease;
+        `;
+        messageElement.textContent = message;
+        messageElement.id = 'success-message';
+        
+        // اضافه کردن CSS animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOutRight {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // حذف پیام قبلی اگر وجود دارد
+        const existingMessage = document.getElementById('success-message');
+        if (existingMessage) {
+            existingMessage.remove();
+        }
+        
+        document.body.appendChild(messageElement);
+        
+        // حذف خودکار بعد از 5 ثانیه
+        setTimeout(() => {
+            if (messageElement.parentNode) {
+                messageElement.style.animation = 'slideOutRight 0.5s ease';
+                setTimeout(() => {
+                    if (messageElement.parentNode) {
+                        messageElement.remove();
+                    }
+                }, 500);
+            }
+        }, 5000);
+        
+    } catch (error) {
+        console.warn('Error showing success message:', error);
+    }
+};
+
+// تابع نمایش پیام خطا
+window.showErrorMessage = function(message) {
+    try {
+        // ایجاد عنصر پیام
+        const messageElement = document.createElement('div');
+        messageElement.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #ff4444, #cc0000);
+            color: #ffffff;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-weight: bold;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(255,68,68,0.3);
+            border: 1px solid rgba(255,68,68,0.5);
+            max-width: 300px;
+            word-wrap: break-word;
+            animation: slideInRight 0.5s ease;
+        `;
+        messageElement.textContent = message;
+        messageElement.id = 'error-message';
+        
+        // حذف پیام قبلی اگر وجود دارد
+        const existingMessage = document.getElementById('error-message');
+        if (existingMessage) {
+            existingMessage.remove();
+        }
+        
+        document.body.appendChild(messageElement);
+        
+        // حذف خودکار بعد از 5 ثانیه
+        setTimeout(() => {
+            if (messageElement.parentNode) {
+                messageElement.style.animation = 'slideOutRight 0.5s ease';
+                setTimeout(() => {
+                    if (messageElement.parentNode) {
+                        messageElement.remove();
+                    }
+                }, 500);
+            }
+        }, 5000);
+        
+    } catch (error) {
+        console.warn('Error showing error message:', error);
+    }
+};
+
+// تابع رفرش شبکه بعد از تایید متامسک
+window.refreshNetworkAfterMetaMaskApproval = async function() {
+    try {
+        // نمایش پیام موفقیت
+        // if (typeof window.showSuccessMessage === 'function') {
+        //     window.showSuccessMessage('کیف پول با موفقیت متصل شد و شبکه رفرش شد');
+        // }
+        
+        // کمی صبر کن تا اتصال برقرار شود
+        setTimeout(async () => {
+            try {
+                const connection = await window.connectWallet();
+                if (connection) {
+                    await window.refreshNetworkAfterConnection(connection);
+                    
+                    // رفرش مخصوص درخت باینری
+                    if (typeof window.refreshBinaryTreeAfterMetaMask === 'function') {
+                        await window.refreshBinaryTreeAfterMetaMask();
+                    }
+                    
+                    // نمایش پیام موفقیت نهایی
+                    // if (typeof window.showSuccessMessage === 'function') {
+                    //     window.showSuccessMessage('شبکه و درخت باینری با موفقیت به‌روزرسانی شد');
+                    // }
+                }
+            } catch (error) {
+                console.warn('Error refreshing network after MetaMask approval:', error);
+                
+                // نمایش پیام خطا
+                if (typeof window.showErrorMessage === 'function') {
+                    window.showErrorMessage('خطا در به‌روزرسانی شبکه');
+                }
+            }
+        }, 3000);
+        
+    } catch (error) {
+        console.warn('Error in refreshNetworkAfterMetaMaskApproval:', error);
+    }
+};
+
 // تابع پاک کردن کش اتصال
 window.clearConnectionCache = function() {
     connectionCache = null;
@@ -2715,15 +2979,72 @@ window.clearConnectionCache = function() {
 // تنظیم event listeners برای MetaMask
 if (typeof window.ethereum !== 'undefined') {
     // پاک کردن کش هنگام تغییر حساب
-    window.ethereum.on('accountsChanged', function (accounts) {
+    window.ethereum.on('accountsChanged', async function (accounts) {
         console.log('MetaMask accounts changed:', accounts);
         window.clearConnectionCache();
+        
+        // بررسی وضعیت کاربر جدید و نمایش فرم ثبت‌نام اگر فعال نیست
+        if (accounts && accounts.length > 0) {
+            try {
+                // کمی صبر کن تا اتصال جدید برقرار شود
+                setTimeout(async () => {
+                    try {
+                        if (window.contractConfig && window.contractConfig.contract) {
+                            const { contract } = window.contractConfig;
+                            const userData = await contract.users(accounts[0]);
+                            if (!userData.activated) {
+                                // کاربر فعال نیست - فرم ثبت‌نام را نمایش بده
+                                if (typeof window.showRegistrationFormForInactiveUser === 'function') {
+                                    window.showRegistrationFormForInactiveUser();
+                                }
+                            }
+                        }
+                        
+                        // رفرش شبکه بعد از تغییر حساب کاربر
+                        const connection = await window.connectWallet();
+                        if (connection) {
+                            await window.refreshNetworkAfterConnection(connection);
+                        }
+                        
+                        // فراخوانی تابع رفرش بعد از تایید متامسک
+                        setTimeout(() => {
+                            window.refreshNetworkAfterMetaMaskApproval();
+                        }, 1000); // 1 ثانیه صبر کن
+                        
+                    } catch (error) {
+                        console.log('Could not check user status after account change:', error);
+                    }
+                }, 2000); // 2 ثانیه صبر کن
+            } catch (error) {
+                console.log('Error handling account change:', error);
+            }
+        }
     });
     
     // پاک کردن کش هنگام تغییر شبکه
-    window.ethereum.on('chainChanged', function (chainId) {
+    window.ethereum.on('chainChanged', async function (chainId) {
         console.log('MetaMask chain changed:', chainId);
         window.clearConnectionCache();
+        
+        // رفرش شبکه بعد از تغییر شبکه
+        if (chainId === '0x89') { // Polygon network
+            try {
+                // کمی صبر کن تا اتصال جدید برقرار شود
+                setTimeout(async () => {
+                    try {
+                        const connection = await window.connectWallet();
+                        if (connection) {
+                            await window.refreshNetworkAfterConnection(connection);
+                        }
+                    } catch (error) {
+                        console.warn('Error refreshing network data after chain change:', error);
+                    }
+                }, 2000); // 2 ثانیه صبر کن
+                
+            } catch (error) {
+                console.warn('Error handling chain change:', error);
+            }
+        }
     });
     
     // پاک کردن کش هنگام قطع اتصال
@@ -2731,6 +3052,25 @@ if (typeof window.ethereum !== 'undefined') {
         console.log('MetaMask disconnected:', error);
         window.clearConnectionCache();
     });
+    
+    // رفرش شبکه هنگام اتصال مجدد
+    window.ethereum.on('connect', async function (connectInfo) {
+        console.log('MetaMask connected:', connectInfo);
+        
+        // کمی صبر کن تا اتصال جدید برقرار شود
+        setTimeout(async () => {
+            try {
+                const connection = await window.connectWallet();
+                if (connection) {
+                    await window.refreshNetworkAfterConnection(connection);
+                }
+            } catch (error) {
+                console.warn('Error refreshing network data after reconnection:', error);
+            }
+        }, 2000); // 2 ثانیه صبر کن
+    });
+    
+
 }
 
 // Global error handler for unhandled promise rejections
@@ -2990,6 +3330,13 @@ window.getUserProfile = async function() {
             // مدیریت دکمه ثبت‌نام اصلی
             if (typeof window.manageMainRegistrationButton === 'function') {
                 window.manageMainRegistrationButton();
+            }
+            
+            // به‌روزرسانی نمایش ID کاربر
+            if (user.index) {
+                if (typeof window.updateCPAIdDisplay === 'function') {
+                    window.updateCPAIdDisplay(user.index);
+                }
             }
             
             const profile = {
@@ -4240,10 +4587,6 @@ if (!window._dashboardIntervalSet) {
   window._dashboardIntervalSet = true;
 }
 
-function unlockHamburgerMenuItems() {
-    console.log('>>> unlockHamburgerMenuItems CALLED');
-    // ... ادامه کد ...
-}
 
 // ... existing code ...
 
@@ -4268,4 +4611,421 @@ window.getRegPrice = async function(contract) {
     return ethers.parseUnits('100', 18);
   }
 };
+// ... existing code ...
+
+// فرض: تب‌ها با data-tab یا id مشخص می‌شوند
+function saveActiveTab(tabId) {
+  localStorage.setItem('activeTab', tabId);
+}
+
+// هنگام کلیک روی تب یا پس از تایید متامسک:
+saveActiveTab('networkTab'); // یا هر شناسه‌ای که دارید
+
+window.addEventListener('DOMContentLoaded', function() {
+  const activeTab = localStorage.getItem('activeTab');
+  if (activeTab) {
+    if (typeof window.showTab === 'function') {
+      window.showTab(activeTab);
+    }
+    localStorage.removeItem('activeTab');
+  }
+});
+
+// فرض: بعد از تایید تراکنش متامسک
+saveActiveTab('networkTab');
+// به جای رفرش، فقط داده‌های مورد نیاز را به‌روزرسانی کنید
+if (typeof updateDashboardStats === 'function') {
+  updateDashboardStats();
+}
+if (typeof window.showTab === 'function') {
+  window.showTab('network');
+}
+
+// تابع تولید ID بر اساس ایندکس کاربر
+window.generateCPAId = function(index) {
+    if (!index || index === 0) return 'CPA00000';
+    
+    // تبدیل به عدد
+    const numIndex = typeof index === 'bigint' ? Number(index) : parseInt(index);
+    if (isNaN(numIndex) || numIndex < 0) return 'CPA00000';
+    
+    // تولید ID با فرمت CPA + 5 رقم
+    return `CPA${numIndex.toString().padStart(5, '0')}`;
+};
+
+// تابع نمایش ID در گوشه بالا سمت راست
+window.displayCPAIdInCorner = function(index) {
+    // حذف ID قبلی اگر وجود دارد
+    const existingId = document.getElementById('cpa-id-corner');
+    if (existingId) existingId.remove();
+    
+    if (!index || index === 0) return;
+    
+    const cpaId = window.generateCPAId(index);
+    
+    // ایجاد عنصر ID
+    const idElement = document.createElement('div');
+    idElement.id = 'cpa-id-corner';
+    idElement.textContent = cpaId;
+    idElement.style.cssText = `
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: linear-gradient(135deg, #00ff88, #a786ff);
+        color: #181c2a;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-family: monospace;
+        font-weight: bold;
+        font-size: 0.9rem;
+        z-index: 9999;
+        box-shadow: 0 2px 8px rgba(0,255,136,0.3);
+        border: 1px solid rgba(167,134,255,0.3);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    `;
+    
+    // اضافه کردن hover effect
+    idElement.onmouseover = function() {
+        this.style.transform = 'scale(1.05)';
+        this.style.boxShadow = '0 4px 12px rgba(0,255,136,0.4)';
+    };
+    
+    idElement.onmouseout = function() {
+        this.style.transform = 'scale(1)';
+        this.style.boxShadow = '0 2px 8px rgba(0,255,136,0.3)';
+    };
+    
+    // کلیک برای کپی کردن
+    idElement.onclick = function() {
+        navigator.clipboard.writeText(cpaId);
+        const originalText = this.textContent;
+        this.textContent = 'کپی شد!';
+        this.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
+        setTimeout(() => {
+            this.textContent = originalText;
+            this.style.background = 'linear-gradient(135deg, #00ff88, #a786ff)';
+        }, 1000);
+    };
+    
+    document.body.appendChild(idElement);
+};
+
+// تابع به‌روزرسانی نمایش ID در تمام بخش‌ها
+window.updateCPAIdDisplay = function(index) {
+    const cpaId = window.generateCPAId(index);
+    
+    // به‌روزرسانی در پروفایل
+    const profileIndexEl = document.getElementById('profile-index');
+    if (profileIndexEl) {
+        profileIndexEl.textContent = cpaId;
+    }
+    
+    // به‌روزرسانی در داشبورد
+    const dashboardIndexEl = document.getElementById('dashboard-user-index');
+    if (dashboardIndexEl) {
+        dashboardIndexEl.textContent = cpaId;
+    }
+    
+    // نمایش بخش اطلاعات کاربر در داشبورد
+    const dashboardUserInfo = document.getElementById('dashboard-user-info');
+    if (dashboardUserInfo) {
+        dashboardUserInfo.style.display = 'block';
+        
+        // به‌روزرسانی آدرس کیف پول
+        const dashboardUserAddress = document.getElementById('dashboard-user-address');
+        if (dashboardUserAddress && window.contractConfig && window.contractConfig.address) {
+            dashboardUserAddress.textContent = window.shortenAddress ? window.shortenAddress(window.contractConfig.address) : window.contractConfig.address.substring(0, 6) + '...' + window.contractConfig.address.substring(38);
+        }
+        
+        // به‌روزرسانی وضعیت
+        const dashboardUserStatus = document.getElementById('dashboard-user-status');
+        if (dashboardUserStatus) {
+            dashboardUserStatus.textContent = 'فعال';
+            dashboardUserStatus.style.color = '#00ff88';
+        }
+    }
+    
+    // به‌روزرسانی در شبکه
+    const networkIndexEl = document.getElementById('network-user-index');
+    if (networkIndexEl) {
+        networkIndexEl.textContent = cpaId;
+    }
+    
+    // نمایش در گوشه
+    window.displayCPAIdInCorner(index);
+};
+
+// پیام‌های خطا و راهنمایی برای اتصال متامسک
+const META_MASK_MESSAGES = {
+    // پیام‌های اتصال
+    CONNECTION: {
+        NOT_DETECTED: "متامسک یافت نشد! لطفاً متامسک را نصب کنید و دوباره تلاش کنید.",
+        NOT_CONNECTED: "متامسک متصل نیست. لطفاً ابتدا کیف پول خود را متصل کنید.",
+        CONNECTION_FAILED: "خطا در اتصال به متامسک. لطفاً دوباره تلاش کنید.",
+        NETWORK_ERROR: "شبکه اشتباه است. لطفاً به شبکه Polygon تغییر دهید.",
+        ACCOUNT_CHANGED: "حساب کاربری تغییر کرده است. لطفاً دوباره وارد شوید.",
+        REQUEST_PENDING: "درخواست اتصال در حال پردازش است...",
+        ALREADY_CONNECTING: "در حال اتصال... لطفاً صبر کنید."
+    },
+    
+    // پیام‌های ثبت‌نام و فعال‌سازی
+    REGISTRATION: {
+        NOT_REGISTERED: "شما ثبت‌نام نشده‌اید. ابتدا باید ثبت‌نام کنید.",
+        ALREADY_REGISTERED: "شما قبلاً ثبت‌نام کرده‌اید.",
+        INSUFFICIENT_BALANCE: "موجودی توکن شما برای ثبت‌نام کافی نیست.",
+        INVALID_REFERRER: "معرف نامعتبر است. لطفاً آدرس معرف صحیح را وارد کنید.",
+        REFERRER_NOT_ACTIVE: "معرف شما فعال نیست.",
+        REGISTRATION_SUCCESS: "ثبت‌نام با موفقیت انجام شد!",
+        ACTIVATION_SUCCESS: "حساب شما با موفقیت فعال شد!"
+    },
+    
+    // پیام‌های خرید و فروش توکن
+    TRADING: {
+        MIN_BUY_AMOUNT: "حداقل مبلغ خرید 1 USDC است.",
+        MIN_SELL_AMOUNT: "حداقل مبلغ فروش 1 توکن است.",
+        INSUFFICIENT_TOKEN_BALANCE: "موجودی توکن شما کافی نیست.",
+        INSUFFICIENT_USDC_BALANCE: "موجودی USDC شما کافی نیست.",
+        EXCEEDS_BUY_LIMIT: "مبلغ خرید از حد مجاز بیشتر است.",
+        EXCEEDS_SELL_LIMIT: "مبلغ فروش از حد مجاز بیشتر است (حداکثر 50% موجودی).",
+        FIRST_BUY_MINIMUM: "برای اولین خرید حداقل 500 USDC نیاز است.",
+        CONTRACT_EMPTY: "موجودی قرارداد صفر است. حداقل خرید 1000 USDC است.",
+        BUY_SUCCESS: "خرید با موفقیت انجام شد!",
+        SELL_SUCCESS: "فروش با موفقیت انجام شد!",
+        PRICE_CALCULATION_ERROR: "خطا در محاسبه قیمت توکن."
+    },
+    
+    // پیام‌های پاداش و ادعا
+    REWARDS: {
+        NO_POINTS_TO_CLAIM: "نقطه‌ای برای ادعا ندارید.",
+        NO_GLOBAL_POINTS: "نقطه‌ای در سیستم موجود نیست.",
+        COOLDOWN_NOT_FINISHED: "زمان انتظار هنوز تمام نشده است (12 ساعت).",
+        REWARD_TOO_LOW: "مقدار پاداش خیلی کم است.",
+        CLAIM_SUCCESS: "پاداش با موفقیت دریافت شد!",
+        MONTHLY_REWARD_NOT_ELIGIBLE: "شما واجد شرایط دریافت پاداش ماهانه نیستید.",
+        MONTHLY_REWARD_WAIT: "هنوز زمان دریافت پاداش ماهانه نرسیده است (30 روز).",
+        MAX_CASHBACK_REACHED: "حداکثر مقدار کاش‌بک دریافت شده است.",
+        NO_CASHBACK_AVAILABLE: "کاش‌بک موجود نیست.",
+        MONTHLY_REWARD_SUCCESS: "پاداش ماهانه با موفقیت دریافت شد!"
+    },
+    
+    // پیام‌های شبکه و درخت
+    NETWORK: {
+        USER_NOT_FOUND: "کاربر یافت نشد.",
+        TREE_LOADING: "در حال بارگذاری درخت شبکه...",
+        TREE_ERROR: "خطا در بارگذاری درخت شبکه.",
+        NETWORK_STATS_LOADING: "در حال بارگذاری آمار شبکه...",
+        NETWORK_STATS_ERROR: "خطا در بارگذاری آمار شبکه."
+    },
+    
+    // پیام‌های عمومی
+    GENERAL: {
+        TRANSACTION_PENDING: "تراکنش در حال پردازش است...",
+        TRANSACTION_SUCCESS: "تراکنش با موفقیت انجام شد!",
+        TRANSACTION_FAILED: "تراکنش ناموفق بود. لطفاً دوباره تلاش کنید.",
+        NETWORK_ERROR: "خطا در شبکه. لطفاً اتصال خود را بررسی کنید.",
+        CONTRACT_ERROR: "خطا در قرارداد هوشمند.",
+        GAS_ERROR: "خطا در پرداخت گاز. موجودی شما کافی نیست.",
+        USER_REJECTED: "کاربر تراکنش را لغو کرد.",
+        UNKNOWN_ERROR: "خطای ناشناخته رخ داد. لطفاً دوباره تلاش کنید."
+    },
+    
+    // پیام‌های راهنمایی
+    HELP: {
+        CONNECT_WALLET: "برای استفاده از امکانات سایت، ابتدا کیف پول خود را متصل کنید.",
+        SWITCH_NETWORK: "لطفاً شبکه خود را به Polygon تغییر دهید.",
+        INSTALL_METAMASK: "متامسک نصب نیست. لطفاً از Chrome Web Store نصب کنید.",
+        APPROVE_TRANSACTION: "لطفاً تراکنش را در متامسک تأیید کنید.",
+        CHECK_BALANCE: "موجودی خود را بررسی کنید.",
+        WAIT_CONFIRMATION: "لطفاً منتظر تأیید تراکنش باشید."
+    }
+};
+
+// تابع نمایش پیام‌های خطا
+function showErrorMessage(category, messageKey, customMessage = null) {
+    const message = customMessage || META_MASK_MESSAGES[category]?.[messageKey] || META_MASK_MESSAGES.GENERAL.UNKNOWN_ERROR;
+    
+    // نمایش پیام در UI
+    if (typeof showNotification === 'function') {
+        showNotification(message, 'error');
+    } else {
+        alert(message);
+    }
+    
+    console.error(`[${category}] ${messageKey}:`, message);
+}
+
+// تابع نمایش پیام‌های موفقیت
+function showSuccessMessage(category, messageKey, customMessage = null) {
+    const message = customMessage || META_MASK_MESSAGES[category]?.[messageKey] || 'عملیات با موفقیت انجام شد!';
+    
+    // نمایش پیام در UI
+    if (typeof showNotification === 'function') {
+        showNotification(message, 'success');
+    } else {
+        alert(message);
+    }
+    
+    console.log(`[${category}] ${messageKey}:`, message);
+}
+
+// تابع نمایش پیام‌های راهنمایی
+function showHelpMessage(category, messageKey, customMessage = null) {
+    const message = customMessage || META_MASK_MESSAGES.HELP[messageKey] || 'لطفاً راهنمای سایت را مطالعه کنید.';
+    
+    // نمایش پیام در UI
+    if (typeof showNotification === 'function') {
+        showNotification(message, 'info');
+    } else {
+        alert(message);
+    }
+    
+    console.info(`[HELP] ${messageKey}:`, message);
+}
+
+// تابع بررسی وضعیت اتصال
+function checkConnectionStatus() {
+    if (typeof window.ethereum === 'undefined') {
+        showErrorMessage('CONNECTION', 'NOT_DETECTED');
+        showHelpMessage('HELP', 'INSTALL_METAMASK');
+        return false;
+    }
+    
+    if (!window.ethereum.isConnected()) {
+        showErrorMessage('CONNECTION', 'NOT_CONNECTED');
+        showHelpMessage('HELP', 'CONNECT_WALLET');
+        return false;
+    }
+    
+    return true;
+}
+
+// تابع بررسی شبکه
+function checkNetwork() {
+    if (typeof window.ethereum === 'undefined') {
+        return false;
+    }
+    
+    // بررسی شبکه Polygon (Chain ID: 137)
+    if (window.ethereum.chainId !== '0x89') {
+        showErrorMessage('CONNECTION', 'NETWORK_ERROR');
+        showHelpMessage('HELP', 'SWITCH_NETWORK');
+        return false;
+    }
+    
+    return true;
+}
+
+// تابع مدیریت خطاهای قرارداد
+function handleContractError(error) {
+    const errorMessage = error.message || error.toString();
+    
+    if (errorMessage.includes('not registered')) {
+        showErrorMessage('REGISTRATION', 'NOT_REGISTERED');
+    } else if (errorMessage.includes('Already registered')) {
+        showErrorMessage('REGISTRATION', 'ALREADY_REGISTERED');
+    } else if (errorMessage.includes('Insufficient token balance')) {
+        showErrorMessage('TRADING', 'INSUFFICIENT_TOKEN_BALANCE');
+    } else if (errorMessage.includes('Minimum 1 USDC required')) {
+        showErrorMessage('TRADING', 'MIN_BUY_AMOUNT');
+    } else if (errorMessage.includes('Minimum 1 token required')) {
+        showErrorMessage('TRADING', 'MIN_SELL_AMOUNT');
+    } else if (errorMessage.includes('Amount exceeds buy limit')) {
+        showErrorMessage('TRADING', 'EXCEEDS_BUY_LIMIT');
+    } else if (errorMessage.includes('Amount exceeds sell limit')) {
+        showErrorMessage('TRADING', 'EXCEEDS_SELL_LIMIT');
+    } else if (errorMessage.includes('No points to claim')) {
+        showErrorMessage('REWARDS', 'NO_POINTS_TO_CLAIM');
+    } else if (errorMessage.includes('Cooldown not finished')) {
+        showErrorMessage('REWARDS', 'COOLDOWN_NOT_FINISHED');
+    } else if (errorMessage.includes('User rejected')) {
+        showErrorMessage('GENERAL', 'USER_REJECTED');
+    } else if (errorMessage.includes('gas')) {
+        showErrorMessage('GENERAL', 'GAS_ERROR');
+    } else {
+        showErrorMessage('GENERAL', 'CONTRACT_ERROR', errorMessage);
+    }
+}
+
+// تابع ثبت‌نام کاربر جدید با معرف
+window.registerNewUserWithReferrer = async function(referrerAddress, newUserAddress, statusElement) {
+    try {
+        // بررسی اتصال کیف پول
+        const { contract, address } = await window.connectWallet();
+        if (!contract || !address) {
+            if (statusElement) statusElement.textContent = 'اتصال کیف پول در دسترس نیست';
+            showErrorMessage('CONNECTION', 'NOT_CONNECTED');
+            return false;
+        }
+
+        // بررسی موجودی توکن
+        const userBalance = await contract.balanceOf(address);
+        
+        // دریافت قیمت ثبت‌نام - بررسی اینکه آیا تابع وجود دارد
+        let regPrice;
+        try {
+            if (typeof contract.getRegPrice === 'function') {
+                regPrice = await contract.getRegPrice();
+            } else if (typeof contract.regPrice === 'function') {
+                regPrice = await contract.regPrice();
+            } else {
+                // اگر تابع نبود، از مقدار ثابت استفاده کن
+                regPrice = ethers.parseUnits('100', 18);
+            }
+        } catch (e) {
+            console.log('Using default registration price');
+            regPrice = ethers.parseUnits('100', 18);
+        }
+        
+        if (userBalance < regPrice) {
+            if (statusElement) statusElement.textContent = 'موجودی توکن شما برای ثبت‌نام کافی نیست';
+            showErrorMessage('REGISTRATION', 'INSUFFICIENT_BALANCE');
+            return false;
+        }
+
+        // نمایش وضعیت
+        if (statusElement) {
+            statusElement.style.color = '#00ff88';
+            statusElement.textContent = 'در حال ثبت‌نام... لطفاً صبر کنید';
+        }
+
+        // فراخوانی تابع ثبت‌نام قرارداد
+        const tx = await contract.registerAndActivate(referrerAddress, newUserAddress, { gasLimit: 500000 });
+        
+        // انتظار برای تأیید تراکنش
+        if (statusElement) {
+            statusElement.textContent = 'تراکنش در حال پردازش...';
+        }
+        
+        const receipt = await tx.wait();
+        
+        if (receipt.status === 1) {
+            if (statusElement) {
+                statusElement.style.color = '#00ff88';
+                statusElement.textContent = 'ثبت‌نام با موفقیت انجام شد!';
+            }
+            showSuccessMessage('REGISTRATION', 'REGISTRATION_SUCCESS');
+            return true;
+        } else {
+            if (statusElement) {
+                statusElement.style.color = '#ff4444';
+                statusElement.textContent = 'تراکنش ناموفق بود';
+            }
+            showErrorMessage('GENERAL', 'TRANSACTION_FAILED');
+            return false;
+        }
+
+    } catch (error) {
+        console.error('Error registering new user:', error);
+        
+        if (statusElement) {
+            statusElement.style.color = '#ff4444';
+            statusElement.textContent = `خطا: ${error.message}`;
+        }
+        
+        handleContractError(error);
+        return false;
+    }
+};
+
 // ... existing code ...

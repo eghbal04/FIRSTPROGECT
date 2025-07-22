@@ -9,8 +9,12 @@ class SwapManager {
     }
 
     async initializeSwap() {
-        this.setupEventListeners();
         await this.loadSwapData();
+        this.setupEventListeners();
+        this.updateSwapRate();
+        await this.updateSwapPreview();
+        await this.updateSwapLimitInfo();
+        this.updateMaxAmount();
     }
 
     async updateSwapLimitInfo() {
@@ -35,10 +39,18 @@ class SwapManager {
                 } else {
                     maxBuy = usdcBalanceNum * 0.01;
                 }
-                html += `حداقل خرید: ۱ USDC`;
-                html += `<br>سقف خرید فعلی: ${maxBuy.toLocaleString('en-US', {maximumFractionDigits:2})} USDC`;
-                html += `<br>کارمزد خرید: ۲٪ (۰.۵٪ توسعه‌دهنده، ۰.۵٪ معرف، ۱٪ پشتوانه)`;
-                html += `<br>سهم شما: ۹۸٪ از مبلغ خرید به توکن تبدیل می‌شود.`;
+                html += `<div style="background:#e8f5e8;padding:12px;border-radius:8px;border-left:4px solid #4caf50;margin-bottom:10px;">
+                    <h4 style="margin:0 0 8px 0;color:#2e7d32;">🛒 خرید CPA با USDC</h4>
+                    <p style="margin:5px 0;color:#555;"><strong>حداقل خرید:</strong> ۱ USDC</p>
+                    <p style="margin:5px 0;color:#555;"><strong>سقف خرید فعلی:</strong> ${maxBuy.toLocaleString('en-US', {maximumFractionDigits:2})} USDC</p>
+                    <p style="margin:5px 0;color:#555;"><strong>کارمزد خرید:</strong> ۲٪ کل</p>
+                    <ul style="margin:5px 0;padding-left:20px;color:#555;">
+                        <li>۰.۵٪ برای توسعه‌دهنده</li>
+                        <li>۰.۵٪ برای معرف</li>
+                        <li>۱٪ برای پشتوانه قرارداد</li>
+                    </ul>
+                    <p style="margin:5px 0;color:#2e7d32;"><strong>سهم شما: ۹۸٪ از مبلغ خرید به توکن تبدیل می‌شود</strong></p>
+                </div>`;
             } else if (direction.value === 'cpa-to-usdc') {
                 // Sell limits
                 const totalSupply = await contract.totalSupply();
@@ -49,13 +61,21 @@ class SwapManager {
                 } else {
                     maxSell = totalSupplyNum * 0.5;
                 }
-                html += `حداقل فروش: ۱ توکن`;
-                html += `<br>سقف فروش فعلی: ${maxSell.toLocaleString('en-US', {maximumFractionDigits:2})} توکن`;
-                html += `<br>کارمزد فروش: ۲٪ (۰.۵٪ توسعه‌دهنده، ۰.۵٪ معرف، ۱٪ پشتوانه)`;
-                html += `<br>سهم شما: ۹۸٪ از مقدار فروش به USDC تبدیل می‌شود.`;
+                html += `<div style="background:#fff3e0;padding:12px;border-radius:8px;border-left:4px solid #ff9800;margin-bottom:10px;">
+                    <h4 style="margin:0 0 8px 0;color:#e65100;">💰 فروش CPA و دریافت USDC</h4>
+                    <p style="margin:5px 0;color:#555;"><strong>حداقل فروش:</strong> ۱ توکن CPA</p>
+                    <p style="margin:5px 0;color:#555;"><strong>سقف فروش فعلی:</strong> ${maxSell.toLocaleString('en-US', {maximumFractionDigits:2})} توکن</p>
+                    <p style="margin:5px 0;color:#555;"><strong>کارمزد فروش:</strong> ۲٪ کل</p>
+                    <ul style="margin:5px 0;padding-left:20px;color:#555;">
+                        <li>۰.۵٪ برای توسعه‌دهنده</li>
+                        <li>۰.۵٪ برای معرف</li>
+                        <li>۱٪ برای پشتوانه قرارداد</li>
+                    </ul>
+                    <p style="margin:5px 0;color:#e65100;"><strong>سهم شما: ۹۸٪ از مقدار فروش به USDC تبدیل می‌شود</strong></p>
+                </div>`;
             }
         } catch (e) {
-            html = 'در حال دریافت اطلاعات محدودیت‌ها...';
+            html = '<div style="background:#ffebee;padding:12px;border-radius:8px;border-left:4px solid #f44336;color:#c62828;">در حال دریافت اطلاعات محدودیت‌ها...</div>';
         }
         infoDiv.innerHTML = html;
     }
@@ -134,19 +154,16 @@ class SwapManager {
     }
 
     updateSwapRate() {
-        const direction = document.getElementById('swapDirection');
-        const rateDisplay = document.getElementById('swapRate');
-        if (direction && rateDisplay) {
-            if (this.tokenPrice && !isNaN(this.tokenPrice) && Number(this.tokenPrice) > 0) {
-                if (direction.value === 'usdc-to-cpa') {
-                    const cpaPerUsdc = 1 / Number(this.tokenPrice);
-                    rateDisplay.textContent = `نرخ تبدیل: 1 USDC = ${cpaPerUsdc.toFixed(6)} CPA`;
-                } else if (direction.value === 'cpa-to-usdc') {
-                    rateDisplay.textContent = `نرخ تبدیل: 1 CPA = ${Number(this.tokenPrice).toFixed(6)} USDC`;
-                }
-            } else {
-                rateDisplay.textContent = 'قیمت در دسترس نیست';
-            }
+        const rateEl = document.getElementById('swapRate');
+        if (rateEl && this.tokenPrice && Number(this.tokenPrice) > 0) {
+            const price = Number(this.tokenPrice);
+            rateEl.innerHTML = `<div style="background:#f3e5f5;padding:10px;border-radius:6px;text-align:center;margin:10px 0;">
+                <strong>💱 نرخ تبدیل فعلی:</strong><br>
+                ۱ USDC = ${price.toFixed(6)} CPA<br>
+                ۱ CPA = ${(1/price).toFixed(6)} USDC
+            </div>`;
+        } else if (rateEl) {
+            rateEl.innerHTML = '<div style="background:#ffebee;padding:10px;border-radius:6px;text-align:center;color:#c62828;">قیمت در دسترس نیست</div>';
         }
     }
 
@@ -157,41 +174,118 @@ class SwapManager {
         if (amount && direction && preview && this.tokenPrice && Number(this.tokenPrice) > 0) {
             const value = parseFloat(amount.value) || 0;
             let result = 0;
+            let previewHtml = '';
+            
             if (direction.value === 'usdc-to-cpa') {
                 result = value / Number(this.tokenPrice);
-                preview.textContent = `${value} USDC = ${result.toFixed(6)} CPA`;
+                const fees = value * 0.02; // 2% fees
+                const netAmount = value - fees;
+                const netTokens = netAmount / Number(this.tokenPrice);
+                
+                previewHtml = `<div style="background:#e8f5e8;padding:12px;border-radius:6px;margin:10px 0;">
+                    <h4 style="margin:0 0 8px 0;color:#2e7d32;">📊 پیش‌نمایش خرید</h4>
+                    <p style="margin:5px 0;color:#555;"><strong>مبلغ ورودی:</strong> ${value.toFixed(2)} USDC</p>
+                    <p style="margin:5px 0;color:#555;"><strong>کارمزد (۲٪):</strong> ${fees.toFixed(2)} USDC</p>
+                    <p style="margin:5px 0;color:#555;"><strong>مبلغ خالص:</strong> ${netAmount.toFixed(2)} USDC</p>
+                    <p style="margin:5px 0;color:#2e7d32;"><strong>توکن دریافتی:</strong> ${netTokens.toFixed(6)} CPA</p>
+                </div>`;
             } else if (direction.value === 'cpa-to-usdc') {
                 result = value * Number(this.tokenPrice);
-                preview.textContent = `${value} CPA = ${result.toFixed(6)} USDC`;
+                const fees = result * 0.02; // 2% fees
+                const netUsdc = result - fees;
+                
+                previewHtml = `<div style="background:#fff3e0;padding:12px;border-radius:6px;margin:10px 0;">
+                    <h4 style="margin:0 0 8px 0;color:#e65100;">📊 پیش‌نمایش فروش</h4>
+                    <p style="margin:5px 0;color:#555;"><strong>توکن ورودی:</strong> ${value.toFixed(6)} CPA</p>
+                    <p style="margin:5px 0;color:#555;"><strong>ارزش کل:</strong> ${result.toFixed(6)} USDC</p>
+                    <p style="margin:5px 0;color:#555;"><strong>کارمزد (۲٪):</strong> ${fees.toFixed(6)} USDC</p>
+                    <p style="margin:5px 0;color:#e65100;"><strong>USDC دریافتی:</strong> ${netUsdc.toFixed(6)} USDC</p>
+                </div>`;
             }
+            preview.innerHTML = previewHtml;
         } else if (preview) {
-            preview.textContent = 'قیمت در دسترس نیست';
+            preview.innerHTML = '<div style="background:#ffebee;padding:10px;border-radius:6px;text-align:center;color:#c62828;">قیمت در دسترس نیست</div>';
         }
     }
 
     updateMaxAmount() {
         const direction = document.getElementById('swapDirection');
-        const maxBtn = document.getElementById('maxBtn');
-        if (direction && maxBtn && this.userBalances) {
+        const amount = document.getElementById('swapAmount');
+        if (direction && amount) {
             if (direction.value === 'usdc-to-cpa') {
-                maxBtn.textContent = `حداکثر (${this.userBalances.usdc} USDC)`;
-            } else {
-                maxBtn.textContent = `حداکثر (${this.userBalances.cpa} CPA)`;
+                amount.max = this.userBalances.usdc;
+            } else if (direction.value === 'cpa-to-usdc') {
+                amount.max = this.userBalances.cpa;
             }
         }
     }
 
     async setMaxAmount() {
-        const amount = document.getElementById('swapAmount');
         const direction = document.getElementById('swapDirection');
-        if (amount && direction && this.userBalances) {
+        const amount = document.getElementById('swapAmount');
+        if (direction && amount) {
             if (direction.value === 'usdc-to-cpa') {
-                amount.value = this.userBalances.usdc.toString();
+                amount.value = this.userBalances.usdc.toFixed(2);
             } else if (direction.value === 'cpa-to-usdc') {
-                amount.value = this.userBalances.cpa.toString();
+                amount.value = this.userBalances.cpa.toFixed(6);
             }
             await this.updateSwapPreview();
         }
+    }
+
+    setUIBusy(busy) {
+        const submitBtn = document.querySelector('#swapForm button[type="submit"]');
+        const inputs = document.querySelectorAll('#swapForm input, #swapForm select');
+        if (submitBtn) {
+            submitBtn.disabled = busy;
+            submitBtn.textContent = busy ? 'در حال پردازش...' : 'تبدیل';
+        }
+        inputs.forEach(input => input.disabled = busy);
+    }
+
+    getErrorMessage(error) {
+        if (error.code === 4001) return 'لغو توسط کاربر';
+        if (error.message.includes('insufficient funds')) return 'موجودی کافی نیست';
+        if (error.message.includes('exceeds buy limit')) return 'مقدار از سقف خرید بیشتر است';
+        if (error.message.includes('exceeds sell limit')) return 'مقدار از سقف فروش بیشتر است';
+        if (error.message.includes('minimum')) return 'مقدار کمتر از حداقل مجاز است';
+        if (error.message.includes('allowance')) return 'ابتدا مجوز USDC را تایید کنید';
+        if (error.message.includes('cooldown')) return 'لطفا کمی صبر کنید و دوباره تلاش کنید';
+        return error.message || 'خطای نامشخص';
+    }
+
+    showStatus(message, type = 'info', txHash = null) {
+        const statusEl = document.getElementById('swapStatus');
+        if (!statusEl) return;
+        
+        let className = 'swap-status';
+        let icon = '';
+        
+        switch(type) {
+            case 'success':
+                className += ' success';
+                icon = '✅ ';
+                break;
+            case 'error':
+                className += ' error';
+                icon = '❌ ';
+                break;
+            case 'loading':
+                className += ' loading';
+                icon = '⏳ ';
+                break;
+            default:
+                className += ' info';
+                icon = 'ℹ️ ';
+        }
+        
+        let html = `${icon}${message}`;
+        if (txHash) {
+            html += `<br><small style="color:#666;">تراکنش: ${txHash}</small>`;
+        }
+        
+        statusEl.className = className;
+        statusEl.innerHTML = html;
     }
 
     // تابع اصلی سواپ
@@ -218,6 +312,8 @@ class SwapManager {
             await this.refreshSwapData();
             amount.value = '';
             await this.updateSwapPreview();
+            // ذخیره تب فعال و رفرش صفحه
+            localStorage.setItem('activeTab', 'swap');
         } catch (error) {
             this.showStatus(this.getErrorMessage(error), 'error');
         }
@@ -237,85 +333,42 @@ class SwapManager {
         ];
         const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, signer);
         const usdcAmountWei = ethers.parseUnits(usdcAmount.toString(), 6);
+        
         // بررسی allowance
         const allowance = await usdcContract.allowance(address, contract.target);
         if (allowance < usdcAmountWei) {
-            this.showStatus('در حال تایید مجوز USDC...', 'loading');
+            this.showStatus('🔐 در حال تایید مجوز USDC...', 'loading');
             const approveTx = await usdcContract.approve(contract.target, ethers.MaxUint256);
-            this.showStatus('در انتظار تایید تراکنش approve...', 'loading', approveTx.hash);
+            this.showStatus('⏳ در انتظار تایید مجوز USDC...', 'loading', approveTx.hash);
             await approveTx.wait();
+            this.showStatus('✅ مجوز USDC تایید شد', 'success');
         }
+        
         // خرید CPA
-        this.showStatus('در حال خرید توکن...', 'loading');
+        this.showStatus('🛒 در حال خرید توکن CPA...', 'loading');
         const tx = await contract.buyTokens(usdcAmountWei);
-        this.showStatus('در انتظار تایید تراکنش خرید...', 'loading', tx.hash);
+        this.showStatus('⏳ در انتظار تایید تراکنش خرید...', 'loading', tx.hash);
         await tx.wait();
-        this.showStatus('خرید موفق!','success',tx.hash);
+        this.showStatus('✅ خرید موفق! توکن‌های CPA به کیف پول شما اضافه شد', 'success', tx.hash);
     }
 
     // فروش CPA و دریافت USDC
     async sellTokensForUSDC(cpaAmount) {
         const contract = window.contractConfig.contract;
         const cpaAmountWei = ethers.parseUnits(cpaAmount.toString(), 18);
-        this.showStatus('در حال فروش توکن...', 'loading');
+        
+        this.showStatus('💰 در حال فروش توکن CPA...', 'loading');
         const tx = await contract.sellTokens(cpaAmountWei);
-        this.showStatus('در انتظار تایید تراکنش فروش...', 'loading', tx.hash);
+        this.showStatus('⏳ در انتظار تایید تراکنش فروش...', 'loading', tx.hash);
         await tx.wait();
-        this.showStatus('فروش موفق!','success',tx.hash);
+        this.showStatus('✅ فروش موفق! USDC به کیف پول شما اضافه شد', 'success', tx.hash);
     }
 
-    // مدیریت وضعیت UI
-    setUIBusy(isBusy) {
-        const btn = document.querySelector('.swap-btn');
-        if (btn) btn.disabled = isBusy;
-        const amount = document.getElementById('swapAmount');
-        if (amount) amount.disabled = isBusy;
-        const direction = document.getElementById('swapDirection');
-        if (direction) direction.disabled = isBusy;
-        const maxBtn = document.getElementById('maxBtn');
-        if (maxBtn) maxBtn.disabled = isBusy;
-    }
-
-    // نمایش وضعیت و هش تراکنش
-    showStatus(message, type, txHash = null) {
-        const status = document.getElementById('swapStatus');
-        if (!status) return;
-        status.textContent = message;
-        status.className = `swap-status ${type}`;
-        if (txHash) {
-            const scanLink = `https://polygonscan.com/tx/${txHash}`;
-            status.innerHTML += `<br><a href='${scanLink}' target='_blank' style='color:#00f;text-decoration:underline;'>مشاهده تراکنش در اسکنر</a>`;
-        }
-        if (type === 'success' || type === 'error') {
-            setTimeout(() => {
-                status.textContent = '';
-                status.className = 'swap-status';
-            }, 8000);
-        }
-    }
-
-    // تبدیل خطا به پیام کاربرپسند
-    getErrorMessage(error) {
-        const msg = error?.message || error?.data?.message || error?.toString() || '';
-        if (msg.includes('user rejected')) return '❌ تراکنش توسط کاربر لغو شد.';
-        if (msg.includes('insufficient funds')) return 'موجودی کافی برای پرداخت کارمزد یا سواپ وجود ندارد.';
-        if (msg.includes('insufficient balance')) return 'موجودی کافی نیست.';
-        if (msg.includes('allowance')) return 'مجوز کافی نیست، لطفاً دوباره تلاش کنید.';
-        if (msg.includes('invalid address')) return 'آدرس مقصد یا ورودی نامعتبر است.';
-        if (msg.includes('not allowed') || msg.includes('only owner')) return 'شما مجاز به انجام این عملیات نیستید.';
-        if (msg.includes('already swapped') || msg.includes('already exists')) return 'این عملیات قبلاً انجام شده است یا تکراری است.';
-        if (msg.includes('slippage')) return 'اختلاف قیمت (slippage) زیاد است. لطفاً مقدار را تغییر دهید.';
-        if (msg.includes('price changed')) return 'قیمت تغییر کرده است. لطفاً دوباره تلاش کنید.';
-        if (msg.includes('execution reverted')) return 'تراکنش ناموفق بود. شرایط سواپ را بررسی کنید.';
-        if (msg.includes('network') || msg.includes('connection')) return '❌ خطا در اتصال شبکه. لطفاً اینترنت خود را بررسی کنید.';
-        if (msg.includes('timeout')) return 'زمان تراکنش به پایان رسید. دوباره تلاش کنید.';
-        return msg ? '❌ خطا: ' + msg : 'خطا در انجام تراکنش. لطفاً دوباره تلاش کنید.';
-    }
-
-    // بروزرسانی داده‌ها
     async refreshSwapData() {
         await this.loadSwapData();
+        this.updateSwapRate();
         await this.updateSwapPreview();
+        await this.updateSwapLimitInfo();
     }
 }
 

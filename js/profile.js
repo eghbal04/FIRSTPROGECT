@@ -28,23 +28,56 @@ async function waitForWalletConnection() {
     throw new Error('Profile: Timeout waiting for wallet connection');
 }
 
-// تابع بارگذاری پروفایل کاربر
+// تابع بارگذاری پروفایل کاربر (بازنویسی برای گرفتن اطلاعات کامل ولت و یوزر)
 async function loadUserProfile() {
     try {
         await waitForWalletConnection();
-        
-        const profile = await loadUserProfileOnce();
-        
-        if (!profile || !profile.address) {
-            throw new Error('Invalid profile data received');
+        // اتصال به ولت و قرارداد
+        let connection = null;
+        if (window.connectWallet) {
+            connection = await window.connectWallet();
+        } else if (window.contractConfig && window.contractConfig.contract && window.contractConfig.address) {
+            connection = window.contractConfig;
         }
-        
+        if (!connection || !connection.contract || !connection.address) {
+            throw new Error('اتصال کیف پول برقرار نشد');
+        }
+        const { contract, address, provider } = connection;
+        // گرفتن اطلاعات یوزر از قرارداد
+        const userStruct = await contract.users(address);
+        // گرفتن موجودی‌ها
+        let maticBalance = '0', lvlBalance = '0', usdcBalance = '0';
+        if (provider) {
+            maticBalance = await provider.getBalance(address);
+            maticBalance = ethers.formatEther(maticBalance);
+        }
+        if (contract.balanceOf) {
+            lvlBalance = await contract.balanceOf(address);
+            lvlBalance = ethers.formatUnits(lvlBalance, 18);
+        }
+        // گرفتن USDC (در صورت وجود USDC_ADDRESS و ABI)
+        try {
+            if (typeof USDC_ADDRESS !== 'undefined' && typeof USDC_ABI !== 'undefined') {
+                const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, provider);
+                const usdcRaw = await usdcContract.balanceOf(address);
+                usdcBalance = (Number(usdcRaw) / 1e6).toFixed(2);
+            }
+        } catch (e) { usdcBalance = '0'; }
+        // ساخت پروفایل کامل
+        const profile = {
+            address,
+            maticBalance,
+            lvlBalance,
+            usdcBalance,
+            userStruct: userStruct // کل ساختار یوزر قرارداد
+        };
+        // نمایش اطلاعات در UI
         updateProfileUI(profile);
-        
         setupReferralCopy();
-        
-        startBinaryClaimCountdown(profile.lastClaimTime);
-        
+        // اگر تایمر نیاز است:
+        if (userStruct && userStruct.lastClaimTime) {
+            startBinaryClaimCountdown(userStruct.lastClaimTime);
+        }
     } catch (error) {
         showProfileError('خطا در بارگذاری پروفایل: ' + error.message);
     }
@@ -66,13 +99,13 @@ function updateProfileUI(profile) {
     if (addressEl) addressEl.textContent = profile.address ? shorten(profile.address) : '---';
 
     let referrerText = 'بدون معرف';
-    if (profile.referrer) {
-        if (profile.referrer === '0x0000000000000000000000000000000000000000') {
+    if (profile.userStruct && profile.userStruct.referrer) {
+        if (profile.userStruct.referrer === '0x0000000000000000000000000000000000000000') {
             referrerText = 'بدون معرف';
-        } else if (profile.referrer.toLowerCase() === profile.address.toLowerCase()) {
+        } else if (profile.userStruct.referrer.toLowerCase() === profile.address.toLowerCase()) {
             referrerText = 'خود شما';
         } else {
-            referrerText = shorten(profile.referrer);
+            referrerText = shorten(profile.userStruct.referrer);
         }
     }
     const referrerEl = document.getElementById('profile-referrer');
@@ -82,9 +115,9 @@ function updateProfileUI(profile) {
     if (usdcEl) usdcEl.textContent = profile.usdcBalance ? formatNumber(profile.usdcBalance, 2) + ' USDC' : '0 USDC';
 
     const capEl = document.getElementById('profile-income-cap');
-    if (capEl) capEl.textContent = profile.binaryPointCap || '۰';
+    if (capEl) capEl.textContent = profile.userStruct.binaryPointCap || '۰';
     const receivedEl = document.getElementById('profile-received');
-    if (receivedEl) receivedEl.textContent = profile.binaryPointsClaimed || '۰';
+    if (receivedEl) receivedEl.textContent = profile.userStruct.binaryPointsClaimed || '۰';
 
     const linkEl = document.getElementById('profile-referral-link');
     if (linkEl) {
@@ -108,7 +141,6 @@ function updateProfileUI(profile) {
             try {
                 if (profile.address) {
                     const fullLink = window.location.origin + '/?ref=' + profile.address;
-                    console.log('Copying referral link:', fullLink);
                     
                     // تلاش برای کپی کردن
                     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -127,12 +159,10 @@ function updateProfileUI(profile) {
                         setTimeout(() => copyBtn.textContent = 'کپی', 1500);
                     }
                 } else {
-                    console.error('No profile address available');
                     copyBtn.textContent = 'خطا: آدرس موجود نیست';
                     setTimeout(() => copyBtn.textContent = 'کپی', 1500);
                 }
             } catch (error) {
-                console.error('Error copying referral link:', error);
                 copyBtn.textContent = 'خطا در کپی';
                 setTimeout(() => copyBtn.textContent = 'کپی', 1500);
             }
@@ -141,7 +171,8 @@ function updateProfileUI(profile) {
 
     const statusElement = document.getElementById('profileStatus');
     if (statusElement) {
-        if (profile.registered) {
+        // وضعیت ثبت‌نام را فقط بر اساس userStruct.activated نمایش بده
+        if (profile.userStruct && profile.userStruct.activated) {
             statusElement.textContent = 'کاربر ثبت‌نام شده';
             statusElement.className = 'profile-status success';
         } else {
@@ -152,19 +183,19 @@ function updateProfileUI(profile) {
 
     const purchasedKindEl = document.getElementById('profile-purchased-kind');
     if (purchasedKindEl) {
-        let rawValue = Number(profile.totalPurchasedKind) / 1e18;
+        let rawValue = Number(profile.userStruct.totalPurchasedKind) / 1e18;
         let lvlDisplay = rawValue.toLocaleString('en-US', { maximumFractionDigits: 5, minimumFractionDigits: 0 });
         lvlDisplay += ' LVL';
         purchasedKindEl.textContent = lvlDisplay;
     }
 
     const refclimedEl = document.getElementById('profile-refclimed');
-    if (refclimedEl) refclimedEl.textContent = profile.refclimed ? Number(profile.refclimed) / 1e18 + ' LVL' : '۰';
+    if (refclimedEl) refclimedEl.textContent = profile.userStruct.refclimed ? Math.floor(Number(profile.userStruct.refclimed) / 1e18) + ' LVL' : '۰';
 
     // مدیریت وضعیت دکمه کلایم بر اساس پوینت‌های باینری
     const claimBtn = document.getElementById('profile-claim-btn');
     if (claimBtn) {
-        const binaryPoints = Number(profile.binaryPoints || 0);
+        const binaryPoints = Number(profile.userStruct.binaryPoints || 0);
         const hasPoints = binaryPoints > 0;
         
         claimBtn.disabled = !hasPoints;
@@ -181,15 +212,15 @@ function updateProfileUI(profile) {
     }
 
     const leftPointsEl = document.getElementById('profile-leftPoints');
-    if (leftPointsEl) leftPointsEl.textContent = profile.leftPoints || '۰';
+    if (leftPointsEl) leftPointsEl.textContent = profile.userStruct.leftPoints || '۰';
     const rightPointsEl = document.getElementById('profile-rightPoints');
-    if (rightPointsEl) rightPointsEl.textContent = profile.rightPoints || '۰';
+    if (rightPointsEl) rightPointsEl.textContent = profile.userStruct.rightPoints || '۰';
     
     // مدیریت وضعیت دکمه پاداش ماهانه بر اساس خالی بودن فرزندان
     const claimMonthlyBtn = document.getElementById('profile-claim-monthly-btn');
     if (claimMonthlyBtn) {
-        const leftPoints = Number(profile.leftPoints || 0);
-        const rightPoints = Number(profile.rightPoints || 0);
+        const leftPoints = Number(profile.userStruct.leftPoints || 0);
+        const rightPoints = Number(profile.userStruct.rightPoints || 0);
         const bothChildrenEmpty = leftPoints === 0 && rightPoints === 0;
         
         if (bothChildrenEmpty) {
@@ -205,13 +236,22 @@ function updateProfileUI(profile) {
     }
     
     const lastClaimTimeEl = document.getElementById('profile-lastClaimTime');
-    if (lastClaimTimeEl) lastClaimTimeEl.textContent = formatTimestamp(profile.lastClaimTime);
+    if (lastClaimTimeEl) lastClaimTimeEl.textContent = formatTimestamp(profile.userStruct.lastClaimTime);
     const lastMonthlyClaimEl = document.getElementById('profile-lastMonthlyClaim');
-    if (lastMonthlyClaimEl) lastMonthlyClaimEl.textContent = formatTimestamp(profile.lastMonthlyClaim);
+    if (lastMonthlyClaimEl) lastMonthlyClaimEl.textContent = formatTimestamp(profile.userStruct.lastMonthlyClaim);
     const totalMonthlyRewardedEl = document.getElementById('profile-totalMonthlyRewarded');
-    if (totalMonthlyRewardedEl) totalMonthlyRewardedEl.textContent = profile.totalMonthlyRewarded || '۰';
+    if (totalMonthlyRewardedEl) totalMonthlyRewardedEl.textContent = profile.userStruct.totalMonthlyRewarded || '۰';
     const depositedAmountEl = document.getElementById('profile-depositedAmount');
-    if (depositedAmountEl) depositedAmountEl.textContent = profile.depositedAmount || '۰';
+    if (depositedAmountEl) {
+      let val = profile.userStruct.depositedAmount || '۰';
+      // اگر مقدار 18 رقم اعشار دارد (مثلاً BigNumber)، آن را به عدد صحیح تبدیل کن
+      if (typeof val === 'string' && val.length > 18) {
+        val = parseInt((BigInt(val) / 1000000000000000000n).toString(), 10);
+      } else if (!isNaN(val)) {
+        val = parseInt(val, 10);
+      }
+      depositedAmountEl.textContent = isNaN(val) ? '۰' : val.toLocaleString('fa');
+    }
 
     // موجودی متیک
     const maticEl = document.getElementById('profile-matic');
@@ -219,14 +259,19 @@ function updateProfileUI(profile) {
     // موجودی CPA
     const cpaEl = document.getElementById('profile-lvl');
     if (cpaEl) cpaEl.textContent = profile.lvlBalance ? formatNumber(profile.lvlBalance, 4) + ' CPA' : '0 CPA';
+    // نمایش ارزش دلاری CPA و POL
+    const maticUsdEl = document.getElementById('profile-matic-usd');
+    if (maticUsdEl) maticUsdEl.textContent = profile.polValueUSD ? formatNumber(profile.polValueUSD, 2) + ' $' : '0 $';
+    const cpaUsdEl = document.getElementById('profile-lvl-usd');
+    if (cpaUsdEl) cpaUsdEl.textContent = profile.lvlValueUSD ? formatNumber(profile.lvlValueUSD, 2) + ' $' : '0 $';
     // تعداد پوینت
     const pointsEl = document.getElementById('profile-total-points');
-    if (pointsEl) pointsEl.textContent = profile.binaryPoints ? formatNumber(profile.binaryPoints, 0) : '۰';
+    if (pointsEl) pointsEl.textContent = profile.userStruct.binaryPoints ? formatNumber(profile.userStruct.binaryPoints, 0) : '۰';
     // تعداد پوینت‌های دریافت‌نشده
     const unclaimedPointsEl = document.getElementById('profile-unclaimed-points');
     if (unclaimedPointsEl) {
-        const total = Number(profile.binaryPoints || 0);
-        const claimed = Number(profile.binaryPointsClaimed || 0);
+        const total = Number(profile.userStruct.binaryPoints || 0);
+        const claimed = Number(profile.userStruct.binaryPointsClaimed || 0);
         const unclaimed = Math.max(total - claimed, 0);
         unclaimedPointsEl.textContent = isNaN(unclaimed) ? '۰' : unclaimed.toLocaleString('en-US', {maximumFractionDigits: 0});
     }
@@ -244,21 +289,16 @@ async function updateProfileReferrer() {
       let idx = user.index;
       if (typeof idx === 'bigint') idx = Number(idx);
       else idx = parseInt(idx);
-      console.log('[Referrer Debug] user.index =', idx);
       if (idx === 0) {
         referrer = address; // Only if index is 0
-        console.log('[Referrer Debug] index=0, referrer set to self:', referrer);
       } else {
         try {
           referrer = await contract.getReferrer(idx);
-          console.log('[Referrer Debug] getReferrer(', idx, ') =', referrer);
         } catch (e) {
           referrer = '-';
-          console.log('[Referrer Debug] getReferrer error:', e);
         }
       }
     } else {
-      console.log('[Referrer Debug] user or user.index undefined:', user);
     }
     const refEl = document.getElementById('profile-referrer');
     if (refEl) {
@@ -273,7 +313,6 @@ async function updateProfileReferrer() {
   } catch (e) {
     const refEl = document.getElementById('profile-referrer');
     if (refEl) refEl.textContent = 'بدون معرف';
-    console.log('[Referrer Debug] Exception:', e);
   }
 }
 
@@ -302,7 +341,6 @@ function setupReferralCopy() {
                 }
                 
                 const referralLink = `${window.location.origin}/?ref=${address}`;
-                console.log('Copying referral link from setupReferralCopy:', referralLink);
                 
                 // تلاش برای کپی کردن
                 if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -321,7 +359,6 @@ function setupReferralCopy() {
                     setTimeout(() => newCopyBtn.textContent = 'کپی', 1500);
                 }
             } catch (error) {
-                console.error('Error in setupReferralCopy:', error);
                 showProfileError('خطا در کپی کردن لینک دعوت: ' + error.message);
             }
         });
@@ -361,48 +398,71 @@ function shortenAddress(address) {
 window.transferProfileOwnership = async function(newOwnerAddress, statusElement) {
     const btn = document.getElementById('transfer-ownership-btn');
     if (btn) btn.disabled = true;
-    if (statusElement) statusElement.textContent = 'در حال انتقال مالکیت...';
+    if (statusElement) statusElement.textContent = '⏳ در حال انتقال مالکیت...';
     try {
         if (!window.contractConfig || !window.contractConfig.contract) {
-            if (statusElement) statusElement.textContent = 'اتصال کیف پول برقرار نیست.';
+            if (statusElement) statusElement.textContent = '❌ اتصال کیف پول برقرار نیست. لطفاً ابتدا کیف پول خود را متصل کنید.';
+            if (btn) btn.disabled = false;
             return;
         }
         const { contract } = window.contractConfig;
         if (!newOwnerAddress || !/^0x[a-fA-F0-9]{40}$/.test(newOwnerAddress)) {
-            if (statusElement) statusElement.textContent = 'آدرس مقصد معتبر نیست.';
+            if (statusElement) statusElement.textContent = '❌ آدرس مقصد معتبر نیست. لطفاً یک آدرس ولت صحیح وارد کنید.';
+            if (btn) btn.disabled = false;
             return;
         }
         // ارسال تراکنش انتقال مالکیت
         const tx = await contract.transferIndexOwnership(newOwnerAddress);
-        if (statusElement) statusElement.textContent = 'در انتظار تایید تراکنش...';
+        if (statusElement) statusElement.textContent = '⏳ در انتظار تایید تراکنش در کیف پول شما...';
         await tx.wait();
-        if (statusElement) statusElement.textContent = '✅ انتقال مالکیت با موفقیت انجام شد!';
+        if (statusElement) statusElement.textContent = '✅ انتقال مالکیت با موفقیت انجام شد! حساب جدید اکنون مالک این موقعیت است.';
     } catch (error) {
         let msg = error && error.message ? error.message : error;
         if (error.code === 4001 || msg.includes('user denied')) {
             msg = '❌ تراکنش توسط کاربر لغو شد.';
         } else if (error.code === -32002 || msg.includes('Already processing')) {
-            msg = '⏳ متامسک در حال پردازش درخواست قبلی است. لطفاً چند لحظه صبر کنید.';
+            msg = '⏳ کیف پول شما در حال پردازش یک درخواست دیگر است. لطفاً چند لحظه صبر کنید و دوباره تلاش کنید.';
         } else if (error.code === 'NETWORK_ERROR' || msg.includes('network')) {
             msg = '❌ خطای شبکه! اتصال اینترنت یا شبکه بلاکچین را بررسی کنید.';
         } else if (msg.includes('insufficient funds')) {
-            msg = 'موجودی کافی برای پرداخت کارمزد یا انتقال وجود ندارد.';
+            msg = '❌ موجودی کافی برای پرداخت کارمزد یا انتقال وجود ندارد.';
         } else if (msg.includes('invalid address')) {
-            msg = 'آدرس مقصد نامعتبر است.';
+            msg = '❌ آدرس مقصد نامعتبر است. لطفاً یک آدرس ولت صحیح وارد کنید.';
         } else if (msg.includes('not allowed') || msg.includes('only owner')) {
-            msg = 'شما مجاز به انجام این عملیات نیستید.';
+            msg = '❌ شما مجاز به انجام این عملیات نیستید. فقط مالک فعلی می‌تواند انتقال انجام دهد.';
         } else if (msg.includes('root position') || msg.includes('cannot transfer root')) {
-            msg = 'موقعیت ریشه قابل انتقال نیست.';
-        } else if (msg.includes('execution reverted')) {
-            msg = 'تراکنش ناموفق بود. شرایط انتقال را بررسی کنید.';
+            msg = '❌ موقعیت ریشه قابل انتقال نیست.';
+        } else if (msg.includes('New owner has existing index')) {
+            msg = '❌ آدرس مقصد قبلاً یک موقعیت فعال دارد و نمی‌تواند مالکیت جدید دریافت کند.';
         } else {
-            msg = '❌ خطا در انتقال مالکیت: ' + (msg || 'خطای ناشناخته');
+            msg = '❌ خطا در انتقال مالکیت: ' + msg;
         }
         if (statusElement) statusElement.textContent = msg;
     } finally {
         if (btn) btn.disabled = false;
     }
 };
+
+// اطمینان از وجود window.checkConnection برای پروفایل
+if (!window.checkConnection) {
+  window.checkConnection = async function() {
+    try {
+      if (window.contractConfig && window.contractConfig.contract && window.contractConfig.address) {
+        return { connected: true, address: window.contractConfig.address };
+      }
+      // تلاش برای اتصال
+      if (window.connectWallet) {
+        const result = await window.connectWallet();
+        if (result && result.address) {
+          return { connected: true, address: result.address };
+        }
+      }
+      return { connected: false };
+    } catch (e) {
+      return { connected: false, error: e.message };
+    }
+  };
+}
 
 document.addEventListener('DOMContentLoaded', function() {
     const claimBtn = document.getElementById('profile-claim-btn');
@@ -418,7 +478,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 claimStatus.className = 'profile-status success';
                 setTimeout(() => location.reload(), 1200);
             } catch (e) {
-                claimStatus.textContent = 'خطا در برداشت: ' + (e && e.message ? e.message : e);
+                let msg = e && e.message ? e.message : e;
+                if (e.code === 4001 || (msg && msg.includes('user denied'))) {
+                    msg = '❌ تراکنش توسط کاربر لغو شد.';
+                } else if (e.code === -32002 || (msg && msg.includes('Already processing'))) {
+                    msg = '⏳ متامسک در حال پردازش درخواست قبلی است. لطفاً چند لحظه صبر کنید.';
+                } else if (e.code === 'NETWORK_ERROR' || (msg && msg.includes('network'))) {
+                    msg = '❌ خطای شبکه! اتصال اینترنت یا شبکه بلاکچین را بررسی کنید.';
+                } else if (msg && msg.includes('insufficient funds')) {
+                    msg = 'موجودی کافی برای پرداخت کارمزد یا برداشت وجود ندارد.';
+                } else if (msg && msg.includes('Cooldown not finished')) {
+                    msg = '⏳ هنوز زمان برداشت بعدی فرا نرسیده است. لطفاً تا پایان شمارش معکوس صبر کنید.';
+                } else if (msg && msg.includes('execution reverted')) {
+                    msg = 'تراکنش ناموفق بود. شرایط برداشت را بررسی کنید.';
+                } else {
+                    msg = '❌ خطا در برداشت: ' + (msg || 'خطای ناشناخته');
+                }
+                claimStatus.textContent = msg;
                 claimStatus.className = 'profile-status error';
             }
             claimBtn.disabled = false;
@@ -440,10 +516,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 setTimeout(() => location.reload(), 1200);
             } catch (e) {
                 let msg = e && e.message ? e.message : e;
-                if (msg && msg.includes('No cashback available')) {
+                if (e.code === 4001 || (msg && msg.includes('user denied'))) {
+                    msg = '❌ تراکنش توسط کاربر لغو شد.';
+                } else if (e.code === -32002 || (msg && msg.includes('Already processing'))) {
+                    msg = '⏳ متامسک در حال پردازش درخواست قبلی است. لطفاً چند لحظه صبر کنید.';
+                } else if (e.code === 'NETWORK_ERROR' || (msg && msg.includes('network'))) {
+                    msg = '❌ خطای شبکه! اتصال اینترنت یا شبکه بلاکچین را بررسی کنید.';
+                } else if (msg && msg.includes('insufficient funds')) {
+                    msg = 'موجودی کافی برای پرداخت کارمزد یا برداشت وجود ندارد.';
+                } else if (msg && msg.includes('Cooldown not finished')) {
+                    msg = '⏳ هنوز زمان برداشت بعدی فرا نرسیده است. لطفاً تا پایان شمارش معکوس صبر کنید.';
+                } else if (msg && msg.includes('execution reverted')) {
+                    msg = 'تراکنش ناموفق بود. شرایط برداشت را بررسی کنید.';
+                } else if (msg && msg.includes('No cashback available')) {
                     msg = 'شما در حال حاضر پاداش ماهانه‌ای برای برداشت ندارید.\n\nتوضیح: پاداش ماهانه فقط زمانی قابل برداشت است که مقدار کافی از فعالیت یا خرید ماهانه داشته باشید و هنوز آن را دریافت نکرده باشید.';
+                } else {
+                    msg = '❌ خطا در برداشت ماهانه: ' + (msg || 'خطای ناشناخته');
                 }
-                claimMonthlyStatus.textContent = 'خطا در برداشت ماهانه: ' + msg;
+                claimMonthlyStatus.textContent = msg;
                 claimMonthlyStatus.className = 'profile-status error';
             }
             claimMonthlyBtn.disabled = false;

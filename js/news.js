@@ -375,18 +375,18 @@ function setupAutoRefresh() {
     }
     
     // تنظیم به‌روزرسانی هر 10 دقیقه (کاهش فرکانس)
-    autoRefreshInterval = setInterval(async () => {
-        try {
-            // بررسی اینکه آیا صفحه فعال است
-            if (document.hidden) {
-                return; // اگر صفحه مخفی است، به‌روزرسانی نکن
-            }
-            console.log('به‌روزرسانی خودکار اخبار...');
-            await loadNews();
-        } catch (error) {
-            console.error('خطا در به‌روزرسانی خودکار:', error);
-        }
-    }, 10 * 60 * 1000); // 10 دقیقه
+    // autoRefreshInterval = setInterval(async () => {
+    //     try {
+    //         // بررسی اینکه آیا صفحه فعال است
+    //         if (document.hidden) {
+    //             return; // اگر صفحه مخفی است، به‌روزرسانی نکن
+    //         }
+    //         console.log('به‌روزرسانی خودکار اخبار...');
+    //         await loadNews();
+    //     } catch (error) {
+    //         console.error('خطا در به‌روزرسانی خودکار:', error);
+    //     }
+    // }, 10 * 60 * 1000); // 10 دقیقه
 }
 
 // فیلتر کردن اخبار

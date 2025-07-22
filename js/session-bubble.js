@@ -29,7 +29,7 @@ function showSessionBubble() {
     }
   }
   updateTimer();
-  window._bubbleTimerInterval = setInterval(updateTimer, 1000);
+  // window._bubbleTimerInterval = setInterval(updateTimer, 1000); // حذف شد
 }
 function hideSessionBubble() {
   document.getElementById('online-session-bubble').style.display = 'none';

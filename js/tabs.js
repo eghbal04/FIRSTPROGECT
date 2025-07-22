@@ -102,9 +102,17 @@ window.showDirectRegistrationForm = async function() {
     // دریافت آدرس معرف (deployer)
     let referrerAddress;
     try {
-      referrerAddress = await contract.deployer();
+      // ابتدا بررسی کنیم که آیا کاربر متصل فعال است و ایندکس دارد
+      const connectedUserData = await contract.users(address);
+      if (connectedUserData.activated) {
+        // اگر کاربر فعال است، از آدرس خودش به عنوان معرف استفاده کن
+        referrerAddress = address;
+      } else {
+        // اگر کاربر فعال نیست، از deployer استفاده کن
+        referrerAddress = await contract.deployer();
+      }
     } catch (e) {
-      console.error('Error getting deployer address:', e);
+      console.error('Error getting referrer address:', e);
       referrerAddress = address; // fallback to connected address
     }
     
@@ -135,8 +143,11 @@ window.navigateToPage = function(pageUrl) {
   }, 300);
 };
 window.showTab = async function(tab) {
+  // ذخیره تب فعال در localStorage
+  localStorage.setItem('currentActiveTab', tab);
+  
   // Check if user is activated for restricted tabs
-  const restrictedTabs = ['shop', 'reports', 'learning', 'news'];
+  const restrictedTabs = ['reports', 'learning', 'news'];
   if (restrictedTabs.includes(tab)) {
     try {
       if (window.getUserProfile) {
@@ -154,7 +165,7 @@ window.showTab = async function(tab) {
     }
   }
 
-  const tabs = ['network','profile','reports','swap','transfer','news','shop','learning','about'];
+  const tabs = ['network','profile','reports','swap','transfer','register','news','shop','learning','about'];
   tabs.forEach(function(name) {
     var mainEl = document.getElementById('main-' + name);
     if (mainEl) {
@@ -227,11 +238,15 @@ window.showTab = async function(tab) {
 
 // Check user status on page load and redirect if needed
 window.checkUserAccessOnLoad = async function() {
-  // Get current tab from URL or default
+  // بازیابی تب فعال از localStorage
+  const savedTab = localStorage.getItem('currentActiveTab');
   const urlParams = new URLSearchParams(window.location.search);
-  const currentTab = urlParams.get('tab') || 'network';
+  const urlTab = urlParams.get('tab');
   
-  const restrictedTabs = ['shop', 'reports', 'learning', 'news'];
+  // اولویت: URL parameter > localStorage > default
+  const currentTab = urlTab || savedTab || 'network';
+  
+  const restrictedTabs = ['reports', 'learning', 'news'];
   if (restrictedTabs.includes(currentTab)) {
     try {
       if (window.getUserProfile) {
@@ -244,17 +259,44 @@ window.checkUserAccessOnLoad = async function() {
           setTimeout(() => {
             showRegistrationPrompt();
           }, 1000);
+        } else {
+          // کاربر فعال است، تب ذخیره شده را نمایش بده
+          if (typeof window.showTab === 'function') {
+            window.showTab(currentTab);
+          }
+        }
+      } else {
+        // اگر getUserProfile موجود نیست، تب ذخیره شده را نمایش بده
+        if (typeof window.showTab === 'function') {
+          window.showTab(currentTab);
         }
       }
     } catch (error) {
       console.warn('Could not check user status on load:', error);
+      // در صورت خطا، تب ذخیره شده را نمایش بده
+      if (typeof window.showTab === 'function') {
+        window.showTab(currentTab);
+      }
+    }
+  } else {
+    // تب محدود نیست، مستقیماً نمایش بده
+    if (typeof window.showTab === 'function') {
+      window.showTab(currentTab);
     }
   }
 };
 
 // Run access check when page loads
 document.addEventListener('DOMContentLoaded', function() {
+  // بررسی تب فعال از localStorage قدیمی (برای سازگاری)
+  const oldActiveTab = localStorage.getItem('activeTab');
+  if (oldActiveTab) {
+    localStorage.setItem('currentActiveTab', oldActiveTab);
+    localStorage.removeItem('activeTab');
+  }
+  
+  // اجرای بررسی دسترسی با کمی تاخیر
   setTimeout(() => {
     window.checkUserAccessOnLoad();
-  }, 2000); // Wait for user profile to load
+  }, 1000); // Wait for user profile to load
 }); 

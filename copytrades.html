@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>لینک کپی تریدها (Copytrades)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/index-custom.css">
+  <link rel="stylesheet" href="css/floating-ai-assistant.css">
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
+</head>
+<body>
+  <h1 style="text-align:center;color:#00ff88;font-size:2rem;margin-top:2rem;">سرویس لینک کپی تریدها</h1>
+  <div id="service-content" style="max-width:600px;margin:3rem auto;padding:2rem;background:#232946;border-radius:18px;text-align:center;box-shadow:0 4px 24px #00ff8840;display:none;">
+    <h1 style="color:#00ff88;">🔗 لینک کپی تریدها</h1>
+    <p style="color:#fff;font-size:1.2rem;">این یک صفحه تست برای سرویس لینک کپی تریدها است.</p>
+    <a href="index.html" style="color:#a786ff;text-decoration:underline;">بازگشت به صفحه اصلی</a>
+  </div>
+  <div id="locked-message" style="max-width:600px;margin:3rem auto;padding:2rem;background:#181c2a;border-radius:18px;text-align:center;box-shadow:0 4px 24px #ff6b6b40;display:none;">
+    <h2 style="color:#ff6b6b;">دسترسی فقط برای کاربران فعال مجاز است</h2>
+    <p style="color:#fff;">برای استفاده از این سرویس باید حساب شما فعال باشد.</p>
+    <a href="index.html" style="color:#a786ff;text-decoration:underline;">بازگشت به صفحه اصلی</a>
+  </div>
+  <div id="auth-loading" style="color:#00ccff;text-align:center;margin-top:80px;font-size:1.2rem;font-weight:bold;">در حال احراز هویت...</div>
+  <script src="js/config.js"></script>
+  <script src="js/auth-redirect.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      checkUserActivation();
+    });
+  </script>
+  <script>
+    async function checkActive() {
+      if (window.getUserProfile) {
+        const profile = await window.getUserProfile();
+        if (profile && profile.activated) {
+          document.getElementById('service-content').style.display = 'block';
+          document.getElementById('locked-message').style.display = 'none';
+        } else {
+          document.getElementById('service-content').style.display = 'none';
+          document.getElementById('locked-message').style.display = 'block';
+        }
+      } else {
+        document.getElementById('service-content').style.display = 'none';
+        document.getElementById('locked-message').style.display = 'block';
+      }
+    }
+    window.addEventListener('DOMContentLoaded', checkActive);
+  </script>
+  <script>
+function showTab(tab) {
+  switch(tab) {
+    case 'dashboard': window.location.href = 'index.html#dashboard'; break;
+    case 'swap': window.location.href = 'swap.html'; break;
+    case 'transfer': window.location.href = 'transfer.html'; break;
+    case 'network': window.location.href = 'network.html'; break;
+    case 'profile': window.location.href = 'profile.html'; break;
+    case 'reports': window.location.href = 'reports.html'; break;
+    case 'about': window.location.href = 'index.html#about'; break;
+    case 'prop': window.location.href = 'admin-prop.html'; break;
+    case 'prop-service': window.location.href = 'prop-service.html'; break;
+    case 'autotrade-license': window.location.href = 'autotrade-license.html'; break;
+    case 'copytrades': window.location.href = 'copytrades.html'; break;
+    default: window.location.href = 'index.html';
+  }
+}
+function navigateToPage(page) {
+  window.location.href = page;
+}
+function showSignalBox() {
+  window.location.href = 'signal.html';
+}
+function showSubAdminModal() {
+  window.location.href = 'admin-owner-panel.html';
+}
+</script>
+
+</body>
+</html> 

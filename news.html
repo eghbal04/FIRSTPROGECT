@@ -28,95 +28,7 @@
     <!-- <script src="js/floating-ai-assistant.js"></script> -->
 </head>
 <body>
-  <!-- Floating Logo as Hamburger Menu -->
-  <img id="floating-logo" src="cpa.jpg" alt="CPA Logo" class="floating-logo" loading="lazy" onclick="toggleHamburgerMenu()">
-  <!-- Hamburger Menu -->
-  <div id="hamburgerMenu" class="hamburger-menu">
-    <div class="menu-header">
-      <h3 class="menu-header-title">CONTINUOUS PROFIT ACADEMY</h3>
-    </div>
-    <!-- Dashboard Section -->
-    <div class="menu-group">
-      <div class="menu-group-title">📊 داشبورد</div>
-      <a href="index.html" class="menu-btn">
-        <span class="menu-icon">🏠</span>
-        <span class="menu-label">خانه</span>
-      </a>
-    </div>
-    <div class="menu-divider"></div>
-    <!-- Education Section -->
-    <div class="menu-group">
-      <div class="menu-group-title">📚 آموزش</div>
-      <a href="learning.html" class="menu-btn">
-        <span class="menu-icon">🎓</span>
-        <span class="menu-label">آموزش</span>
-      </a>
-      <a href="news.html" class="menu-btn">
-        <span class="menu-icon">📰</span>
-        <span class="menu-label">اخبار و تحلیل</span>
-      </a>
-    </div>
-    <div class="menu-divider"></div>
-    <!-- Tools Section -->
-    <div class="menu-group">
-      <div class="menu-group-title">🛠️ ابزارها</div>
-      <a href="shop.html" class="menu-btn">
-        <span class="menu-icon">🛒</span>
-        <span class="menu-label">فروشگاه</span>
-      </a>
-      <a href="signal.html" class="menu-btn">
-        <span class="menu-icon">📈</span>
-        <span class="menu-label">سیگنال</span>
-      </a>
-      <a href="autotrade-license.html" class="menu-btn">
-        <span class="menu-icon">🤖</span>
-        <span class="menu-label">لایسنس اتوترید</span>
-      </a>
-    </div>
-    <div class="menu-divider"></div>
-    <!-- Admin Section -->
-    <div class="menu-group admin-group">
-      <div class="menu-group-title">🔐 مدیریت</div>
-      <a href="admin-prop.html" class="menu-btn admin-btn">
-        <span class="menu-icon">⚙️</span>
-        <span class="menu-label">مدیریت پراپ‌ها</span>
-      </a>
-    </div>
-  </div>
-  <script>
-    function toggleHamburgerMenu() {
-      const menu = document.getElementById('hamburgerMenu');
-      if (menu) {
-        menu.classList.toggle('open');
-        if (menu.classList.contains('open')) {
-          menu.style.visibility = 'visible';
-          menu.style.opacity = '1';
-          menu.style.transform = 'scale(1)';
-          menu.style.display = 'block';
-        } else {
-          menu.style.visibility = 'hidden';
-          menu.style.opacity = '0';
-          menu.style.transform = 'scale(0.9)';
-        }
-      }
-    }
-    document.addEventListener('DOMContentLoaded', function() {
-      document.addEventListener('click', function(e) {
-        const menu = document.getElementById('hamburgerMenu');
-        const logo = document.getElementById('floating-logo');
-        if (menu && !menu.contains(e.target) && !logo.contains(e.target)) {
-          menu.classList.remove('open');
-        }
-      });
-      document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-          const menu = document.getElementById('hamburgerMenu');
-          if (menu) menu.classList.remove('open');
-        }
-      });
-    });
-  </script>
-  <button id="hamburgerToggle" class="hamburger-toggle" onclick="toggleHamburgerMenu()" style="position: fixed; bottom: 24px; right: 24px; z-index: 100000; font-size: 2rem; background: none; border: none; color: #fff; cursor: pointer;">☰</button>
+
   <div id="auth-loading" style="color:#00ccff;text-align:center;margin-top:80px;font-size:1.2rem;font-weight:bold;">در حال احراز هویت...</div>
   <script src="js/config.js"></script>
   <script>
@@ -245,17 +157,6 @@
         }, 500);
       });
     </script>
-    <script src="js/hamburger-float.js"></script>
-    <script>
-      window.navigateToPage = function(pageUrl) {
-        const menu = document.getElementById('hamburgerMenu');
-        if (menu) menu.classList.remove('open');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        setTimeout(() => { window.location.href = pageUrl; }, 300);
-      };
-      window.showTab = function(tab) {
-        window.location.href = 'index.html#' + tab;
-      };
-    </script>
+    <script src="js/navbar.js"></script>
   </body>
 </html> 

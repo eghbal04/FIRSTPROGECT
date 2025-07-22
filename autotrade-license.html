@@ -8,94 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
 </head>
 <body>
-  <!-- Floating Logo as Hamburger Menu -->
-  <img id="floating-logo" src="cpa.jpg" alt="CPA Logo" class="floating-logo" loading="lazy" onclick="toggleHamburgerMenu()">
-  <!-- Hamburger Menu -->
-  <div id="hamburgerMenu" class="hamburger-menu">
-    <div class="menu-header">
-      <h3 class="menu-header-title">CONTINUOUS PROFIT ACADEMY</h3>
-    </div>
-    <!-- Dashboard Section -->
-    <div class="menu-group">
-      <div class="menu-group-title">📊 داشبورد</div>
-      <a href="index.html" class="menu-btn">
-        <span class="menu-icon">🏠</span>
-        <span class="menu-label">خانه</span>
-      </a>
-    </div>
-    <div class="menu-divider"></div>
-    <!-- Education Section -->
-    <div class="menu-group">
-      <div class="menu-group-title">📚 آموزش</div>
-      <a href="learning.html" class="menu-btn">
-        <span class="menu-icon">🎓</span>
-        <span class="menu-label">آموزش</span>
-      </a>
-      <a href="news.html" class="menu-btn">
-        <span class="menu-icon">📰</span>
-        <span class="menu-label">اخبار و تحلیل</span>
-      </a>
-    </div>
-    <div class="menu-divider"></div>
-    <!-- Tools Section -->
-    <div class="menu-group">
-      <div class="menu-group-title">🛠️ ابزارها</div>
-      <a href="shop.html" class="menu-btn">
-        <span class="menu-icon">🛒</span>
-        <span class="menu-label">فروشگاه</span>
-      </a>
-      <a href="signal.html" class="menu-btn">
-        <span class="menu-icon">📈</span>
-        <span class="menu-label">سیگنال</span>
-      </a>
-      <a href="autotrade-license.html" class="menu-btn">
-        <span class="menu-icon">🤖</span>
-        <span class="menu-label">لایسنس اتوترید</span>
-      </a>
-    </div>
-    <div class="menu-divider"></div>
-    <!-- Admin Section -->
-    <div class="menu-group admin-group">
-      <div class="menu-group-title">🔐 مدیریت</div>
-      <a href="admin-prop.html" class="menu-btn admin-btn">
-        <span class="menu-icon">⚙️</span>
-        <span class="menu-label">مدیریت پراپ‌ها</span>
-      </a>
-    </div>
-  </div>
-  <script>
-    function toggleHamburgerMenu() {
-      const menu = document.getElementById('hamburgerMenu');
-      if (menu) {
-        menu.classList.toggle('open');
-        if (menu.classList.contains('open')) {
-          menu.style.visibility = 'visible';
-          menu.style.opacity = '1';
-          menu.style.transform = 'scale(1)';
-          menu.style.display = 'block';
-        } else {
-          menu.style.visibility = 'hidden';
-          menu.style.opacity = '0';
-          menu.style.transform = 'scale(0.9)';
-        }
-      }
-    }
-    document.addEventListener('DOMContentLoaded', function() {
-      document.addEventListener('click', function(e) {
-        const menu = document.getElementById('hamburgerMenu');
-        const logo = document.getElementById('floating-logo');
-        if (menu && !menu.contains(e.target) && !logo.contains(e.target)) {
-          menu.classList.remove('open');
-        }
-      });
-      document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-          const menu = document.getElementById('hamburgerMenu');
-          if (menu) menu.classList.remove('open');
-        }
-      });
-    });
-  </script>
+  
   <div id="auth-loading" style="color:#00ccff;text-align:center;margin-top:80px;font-size:1.2rem;font-weight:bold;">در حال احراز هویت...</div>
   <script>
     window.addEventListener('DOMContentLoaded', async function() {
@@ -141,6 +54,28 @@
         <li>پشتیبانی و آموزش رایگان</li>
       </ul>
     </div>
+    <div class="auto-info-section">
+      <div class="info-card">
+        <h2>کپی ترید (Copy Trading)</h2>
+        <p>با کپی ترید، معاملات معامله‌گران حرفه‌ای را به صورت خودکار در حساب خود اجرا کنید و بدون نیاز به دانش تخصصی، از سود آن‌ها بهره‌مند شوید. مناسب برای افراد کم‌تجربه یا کسانی که زمان کافی برای معامله ندارند.</p>
+      </div>
+      <div class="info-card">
+        <h2>پم ترید (PAMM Trading)</h2>
+        <p>در سیستم PAMM، سرمایه شما با سرمایه سایر سرمایه‌گذاران تجمیع شده و توسط یک معامله‌گر حرفه‌ای مدیریت می‌شود. سود و زیان به نسبت سرمایه بین همه تقسیم می‌شود. شفافیت و مدیریت حرفه‌ای از مزایای این روش است.</p>
+      </div>
+      <div class="info-card">
+        <h2>ربات اختصاصی اتوترید</h2>
+        <p>با استفاده از ربات‌های اختصاصی ما، استراتژی‌های معاملاتی پیشرفته را به صورت خودکار اجرا کنید. ربات‌ها قابل تنظیم و شخصی‌سازی هستند و با بازارهای مختلف سازگارند.</p>
+      </div>
+      <div class="info-card">
+        <h2>خرید لایسنس و فعال‌سازی</h2>
+        <p>با خرید لایسنس، دسترسی کامل به ربات و خدمات اتوترید را دریافت می‌کنید. فعال‌سازی سریع و پشتیبانی کامل در تمام مراحل استفاده.</p>
+      </div>
+      <div class="info-card">
+        <h2>درصدهای ایجنت و همکاری</h2>
+        <p>اگر به عنوان ایجنت یا همکار فعالیت می‌کنید، می‌توانید درصد همکاری و پورسانت دریافت کنید. برای اطلاعات بیشتر و شرایط همکاری با ما تماس بگیرید.</p>
+      </div>
+    </div>
     <div class="auto-plans">
       <div class="plan-card">
         <div class="plan-title">پلن ماهانه</div>
@@ -182,9 +117,7 @@
       this.reset();
     };
   </script>
-    <!-- دکمه شناور بازگشت به خانه -->
-    <a href="index.html" class="fab-main" title="بازگشت به خانه" style="position: fixed; bottom: 24px; right: 24px; z-index: 9999;">
-        <span class="sf-home" style="font-size: 2rem;"></span>
-    </a>
+    <!-- نوار پایین دکمه‌ها حذف شد -->
+    <script src="js/navbar.js"></script>
 </body>
 </html> 

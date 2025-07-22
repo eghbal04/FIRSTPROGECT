@@ -1,0 +1,51 @@
+
+
+
+
+.menu-group {
+  margin-bottom: 1.2rem;
+}
+.menu-group-title {
+  color: #00ff88;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+  letter-spacing: 0.5px;
+}
+.menu-btn, .menu-btn.admin-btn, .menu-btn:visited, .menu-btn:active {
+  width: 100%;
+  background: #232946;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 0.7rem 1rem;
+  margin-bottom: 0.4rem;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  text-align: right;
+  text-decoration: none;
+}
+.menu-btn:hover, .menu-btn.admin-btn:hover {
+  background: #00ff8840;
+  color: #00ff88;
+}
+.menu-icon {
+  font-size: 1.3rem;
+  margin-left: 0.7rem;
+}
+.menu-label {
+  flex: 1;
+  text-align: right;
+}
+.menu-divider {
+  border-bottom: 1px solid #232946;
+  margin: 0.7rem 0;
+}
+.admin-group .menu-group-title {
+  color: #a786ff;
+} 
+
