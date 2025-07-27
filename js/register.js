@@ -603,6 +603,10 @@ async function registerUser(referrer, requiredTokenAmount, targetUserAddress) {
 
 // مدیریت نمایش فرم ثبت جدید و ثبت نفر جدید
 window.addEventListener('DOMContentLoaded', function() {
+    // راه‌اندازی دکمه ثبت‌نام اصلی
+    setupRegistrationButton();
+    setupUpgradeForm();
+    
     const newRegisterBtn = document.getElementById('new-register-btn');
     const newRegisterModal = document.getElementById('new-registration-modal');
     const closeNewRegister = document.getElementById('close-new-register');
