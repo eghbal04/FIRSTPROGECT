@@ -40,62 +40,51 @@ class PointChart {
     }
 
     generateTimePeriodData() {
-        this.loadPersistentHistory();
-        const period = this.currentTimePeriod;
-        const now = new Date();
-        let dataPoints = [];
-        const realPrices = window.priceHistoryManager ? 
-            window.priceHistoryManager.getRealPricesUpToNow('point', period) : 
-            Array(period === 'day' ? 24 : period === 'week' ? 7 : period === 'month' ? 30 : 12).fill(0);
-        if (period === 'day') {
-            const currentHour = now.getHours();
-            for (let i = 0; i < 24; i++) {
-                const hour = new Date(now);
-                hour.setHours(i, 0, 0, 0);
-                dataPoints.push({
-                    time: hour.getTime(),
-                    price: (i <= currentHour) ? (realPrices[i] || 0) : null
-                });
-            }
-        } else if (period === 'week') {
-            const today = new Date();
-            const dayOfWeek = today.getDay();
-            for (let i = 0; i < 7; i++) {
-                const d = new Date(today);
-                d.setDate(today.getDate() - dayOfWeek + i);
-                d.setHours(12, 0, 0, 0);
-                dataPoints.push({
-                    time: d.getTime(),
-                    price: (i <= dayOfWeek) ? (realPrices[i] || 0) : null
-                });
-            }
-        } else if (period === 'month') {
-            const today = new Date();
-            const currentDay = today.getDate();
-            for (let i = 0; i < 30; i++) {
-                const d = new Date(today);
-                d.setDate(i + 1);
-                d.setHours(12, 0, 0, 0);
-                dataPoints.push({
-                    time: d.getTime(),
-                    price: (i < currentDay) ? (realPrices[i] || 0) : null
-                });
-            }
-        } else if (period === 'year') {
-            const today = new Date();
-            const currentMonth = today.getMonth();
-            for (let i = 0; i < 12; i++) {
-                const d = new Date(today);
-                d.setMonth(i);
-                d.setDate(15);
-                d.setHours(12, 0, 0, 0);
-                dataPoints.push({
-                    time: d.getTime(),
-                    price: (i <= currentMonth) ? (realPrices[i] || 0) : null
-                });
-            }
+        // Try to get real data from Firebase first
+        if (window.priceHistoryManager && window.priceHistoryManager.pointHistory && window.priceHistoryManager.pointHistory.length > 0) {
+            console.log('📊 استفاده از داده‌های واقعی Firebase برای چارت پوینت');
+            this.pointHistory = window.priceHistoryManager.pointHistory.slice(-24); // Last 24 records
+            this.updateChart();
+            return;
         }
-        this.pointHistory = dataPoints;
+
+        // Fallback to simulated data if no real data available
+        console.log('📊 استفاده از داده‌های شبیه‌سازی شده برای چارت پوینت');
+        
+        const now = Date.now();
+        const period = this.currentTimePeriod;
+        let dataPoints = 24;
+        let interval = 60 * 60 * 1000; // 1 hour default
+
+        switch (period) {
+            case 'day':
+                dataPoints = 24;
+                interval = 60 * 60 * 1000; // 1 hour
+                break;
+            case 'week':
+                dataPoints = 7;
+                interval = 24 * 60 * 60 * 1000; // 1 day
+                break;
+            case 'month':
+                dataPoints = 30;
+                interval = 24 * 60 * 60 * 1000; // 1 day
+                break;
+            case 'year':
+                dataPoints = 12;
+                interval = 30 * 24 * 60 * 60 * 1000; // 30 days
+                break;
+        }
+
+        this.pointHistory = [];
+        for (let i = 0; i < dataPoints; i++) {
+            const timestamp = now - (dataPoints - i - 1) * interval;
+            const price = this.generateSimulatedPrice(timestamp);
+            this.pointHistory.push({
+                time: new Date(timestamp),
+                price: price
+            });
+        }
+
         this.updateChart();
     }
 
@@ -106,140 +95,292 @@ class PointChart {
 
     initializeChart() {
         const ctx = document.getElementById('point-chart-canvas');
-        if (!ctx) return;
+        if (!ctx) {
+            console.warn('⚠️ المنت point-chart-canvas پیدا نشد، چارت ساخته نمی‌شود');
+            return;
+        }
 
-        this.chart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [{
-                    label: 'Point Value',
-                    data: [],
-                    borderColor: '#a786ff',
-                    backgroundColor: 'rgba(167, 134, 255, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 3,
-                    pointBackgroundColor: '#a786ff',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointHoverRadius: 6,
-                    pointHoverBackgroundColor: '#a786ff',
-                    pointHoverBorderColor: '#fff',
-                    pointHoverBorderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: {
-                    intersect: false,
-                    mode: 'index'
-                },
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        enabled: true,
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        titleColor: '#a786ff',
-                        bodyColor: '#fff',
+        // Destroy existing chart if it exists
+        if (this.chart) {
+            try {
+                this.chart.destroy();
+            } catch (err) {
+                console.warn('⚠️ خطا در حذف چارت قبلی:', err);
+            }
+        }
+
+        // Check if canvas is already in use by another chart
+        try {
+            const existingChart = Chart.getChart(ctx);
+            if (existingChart) {
+                console.log('🔄 حذف چارت موجود از canvas...');
+                existingChart.destroy();
+            }
+        } catch (err) {
+            console.warn('⚠️ خطا در بررسی چارت موجود:', err);
+        }
+
+        try {
+            this.chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Point Value',
+                        data: [],
                         borderColor: '#a786ff',
-                        borderWidth: 1,
-                        cornerRadius: 8,
-                        displayColors: false,
-                        callbacks: {
-                            title: function(context) {
-                                const dataIndex = context[0].dataIndex;
-                                const period = window.pointChart?.currentTimePeriod || 'day';
-                                const timestamp = window.pointChart?.pointHistory?.[dataIndex]?.time;
-                                
-                                if (timestamp) {
-                                    const date = new Date(timestamp);
-                                    if (period === 'day') {
-                                        return '•';
-                                    } else if (period === 'week') {
-                                        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-                                        return days[dataIndex] || '•';
-                                    } else if (period === 'month') {
-                                        return '•';
-                                    } else if (period === 'year') {
-                                        return '•';
-                                    }
-                                }
-                                return '•';
-                            },
-                            label: function(context) {
-                                const price = context.parsed.y;
-                                if (price === 0 || price === null) {
-                                    return 'No data';
-                                }
-                                return `Point Value: ${window.priceHistoryManager ? 
-                                    window.priceHistoryManager.formatPrice(price) : 
-                                    price.toFixed(6)} CPA`;
-                            }
-                        }
-                    }
+                        backgroundColor: 'rgba(167, 134, 255, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        pointBackgroundColor: '#a786ff',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointHoverRadius: 6,
+                        pointHoverBackgroundColor: '#a786ff',
+                        pointHoverBorderColor: '#fff',
+                        pointHoverBorderWidth: 2
+                    }]
                 },
-                scales: {
-                    x: {
-                        display: false,
-                        grid: {
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    plugins: {
+                        legend: {
                             display: false
+                        },
+                        tooltip: {
+                            enabled: true,
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#a786ff',
+                            bodyColor: '#fff',
+                            borderColor: '#a786ff',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            displayColors: false,
+                            callbacks: {
+                                title: function(context) {
+                                    const dataIndex = context[0].dataIndex;
+                                    const period = window.pointChart?.currentTimePeriod || 'day';
+                                    const timestamp = window.pointChart?.pointHistory?.[dataIndex]?.time;
+                                    
+                                    if (timestamp) {
+                                        const date = new Date(timestamp);
+                                        if (period === 'day') {
+                                            return '•';
+                                        } else if (period === 'week') {
+                                            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                                            return days[dataIndex] || '•';
+                                        } else if (period === 'month') {
+                                            return '•';
+                                        } else if (period === 'year') {
+                                            return '•';
+                                        }
+                                    }
+                                    return '•';
+                                },
+                                label: function(context) {
+                                    const price = context.parsed.y;
+                                    if (price === 0 || price === null) {
+                                        return 'No data';
+                                    }
+                                    return `Point Value: ${window.priceHistoryManager ? 
+                                        window.priceHistoryManager.formatPrice(price) : 
+                                        price.toFixed(6)} CPA`;
+                                }
+                            }
                         }
                     },
-                    y: {
-                        display: true,
-                        position: 'right',
-                        grid: {
-                            color: 'rgba(167, 134, 255, 0.1)',
-                            drawBorder: false
+                    scales: {
+                        x: {
+                            display: false,
+                            grid: {
+                                display: false
+                            }
                         },
-                        ticks: {
-                            color: '#a786ff',
-                            font: {
-                                family: 'monospace',
-                                size: 10
+                        y: {
+                            display: true,
+                            position: 'right',
+                            grid: {
+                                color: 'rgba(167, 134, 255, 0.1)',
+                                drawBorder: false
                             },
-                            callback: function(value) {
-                                if (value === 0) return '';
-                                return window.priceHistoryManager ? 
-                                    window.priceHistoryManager.formatPrice(value) : 
-                                    value.toFixed(6);
+                            ticks: {
+                                color: '#a786ff',
+                                font: {
+                                    family: 'monospace',
+                                    size: 10
+                                },
+                                callback: function(value) {
+                                    if (value === 0) return '';
+                                    return window.priceHistoryManager ? 
+                                        window.priceHistoryManager.formatPrice(value) : 
+                                        value.toFixed(6);
+                                }
                             }
                         }
-                    }
-                },
-                elements: {
-                    point: {
-                        hoverRadius: 6
+                    },
+                    elements: {
+                        point: {
+                            hoverRadius: 6
+                        }
                     }
                 }
+            });
+        } catch (e) {
+            if (e.message && e.message.includes('Canvas is already in use')) {
+                if (this.chart) {
+                    try { this.chart.destroy(); } catch (err) {}
+                }
+                this.chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: 'Point Value',
+                            data: [],
+                            borderColor: '#a786ff',
+                            backgroundColor: 'rgba(167, 134, 255, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 3,
+                            pointBackgroundColor: '#a786ff',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointHoverRadius: 6,
+                            pointHoverBackgroundColor: '#a786ff',
+                            pointHoverBorderColor: '#fff',
+                            pointHoverBorderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                enabled: true,
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleColor: '#a786ff',
+                                bodyColor: '#fff',
+                                borderColor: '#a786ff',
+                                borderWidth: 1,
+                                cornerRadius: 8,
+                                displayColors: false,
+                                callbacks: {
+                                    title: function(context) {
+                                        const dataIndex = context[0].dataIndex;
+                                        const period = window.pointChart?.currentTimePeriod || 'day';
+                                        const timestamp = window.pointChart?.pointHistory?.[dataIndex]?.time;
+                                        
+                                        if (timestamp) {
+                                            const date = new Date(timestamp);
+                                            if (period === 'day') {
+                                                return '•';
+                                            } else if (period === 'week') {
+                                                const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                                                return days[dataIndex] || '•';
+                                            } else if (period === 'month') {
+                                                return '•';
+                                            } else if (period === 'year') {
+                                                return '•';
+                                            }
+                                        }
+                                        return '•';
+                                    },
+                                    label: function(context) {
+                                        const price = context.parsed.y;
+                                        if (price === 0 || price === null) {
+                                            return 'No data';
+                                        }
+                                        return `Point Value: ${window.priceHistoryManager ? 
+                                            window.priceHistoryManager.formatPrice(price) : 
+                                            price.toFixed(6)} CPA`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                display: false,
+                                grid: {
+                                    display: false
+                                }
+                            },
+                            y: {
+                                display: true,
+                                position: 'right',
+                                grid: {
+                                    color: 'rgba(167, 134, 255, 0.1)',
+                                    drawBorder: false
+                                },
+                                ticks: {
+                                    color: '#a786ff',
+                                    font: {
+                                        family: 'monospace',
+                                        size: 10
+                                    },
+                                    callback: function(value) {
+                                        if (value === 0) return '';
+                                        return window.priceHistoryManager ? 
+                                            window.priceHistoryManager.formatPrice(value) : 
+                                            value.toFixed(6);
+                                    }
+                                }
+                            }
+                        },
+                        elements: {
+                            point: {
+                                hoverRadius: 6
+                            }
+                        }
+                    }
+                });
+            } else {
+                throw e;
             }
-        });
+        }
     }
 
     async startPointUpdates() {
+        // Generate initial data for current time period
+        this.generateTimePeriodData();
+        
+        // Initial update
+        await this.updatePoint();
+        
         // Update point price every 30 seconds
         setInterval(async () => {
             await this.updatePoint();
         }, 30000);
-        
-        // Initial update
-        await this.updatePoint();
     }
 
     async updatePoint() {
         try {
             if (!window.contractConfig || !window.contractConfig.contract) {
+                console.log('⏳ منتظر اتصال به قرارداد...');
                 return;
             }
             
             const contract = window.contractConfig.contract;
+            console.log('💎 دریافت قیمت پوینت از قرارداد...');
+            
             const pointValue = await contract.getPointValue();
             const pointValueNum = parseFloat(ethers.formatUnits(pointValue, 18));
+            
+            console.log('✅ قیمت پوینت دریافت شد:', pointValueNum);
             
             // Update current point display
             const pointDisplay = document.getElementById('current-point-display');
@@ -254,16 +395,25 @@ class PointChart {
                 await window.priceHistoryManager.addPointPrice(pointValueNum);
             }
             
-            // Update chart data
-            this.generateTimePeriodData();
+            // Update chart data only if chart is properly initialized
+            if (this.chart && this.chart.data && this.chart.data.datasets) {
+                this.generateTimePeriodData();
+                this.updateChart();
+            } else {
+                console.log('⏳ چارت هنوز آماده نیست، منتظر راه‌اندازی...');
+            }
             
         } catch (error) {
-            console.error('Error updating point price:', error);
+            console.error('❌ خطا در به‌روزرسانی قیمت پوینت:', error);
         }
     }
 
     updateChart() {
-        if (!this.chart) return;
+        const ctx = document.getElementById('point-chart-canvas');
+        if (!ctx) {
+            console.warn('⚠️ المنت point-chart-canvas برای آپدیت پیدا نشد');
+            return;
+        }
         
         const labels = this.pointHistory.map((point, index) => {
             const period = this.currentTimePeriod;

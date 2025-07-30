@@ -160,6 +160,11 @@ out/
 test-results/
 coverage/
 
+<<<<<<< HEAD
+# Environment variables
+.env
+FIRSTPROGECT
+=======
 # API keys and secrets
 config.local.js
 secrets.json
@@ -184,3 +189,5 @@ secrets.json
 # Local development files
 .local/
 dev/
+>>>>>>> e8a7abda7fd7c03c29d2042026e5769930714287
+*.sol

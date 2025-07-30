@@ -1,4 +1,4 @@
-// news.js - سیستم اخبار زنده و به‌روزرسانی شونده
+// news.js - سیستم اخبار زنده و به‌روزرسانی شونده با منابع معتبر
 let newsData = [];
 let currentCategory = 'all';
 let currentPage = 1;
@@ -6,129 +6,143 @@ let isLoading = false;
 let autoRefreshInterval = null;
 let lastUpdateTime = null;
 
-// تنظیمات API های خبری
+// تنظیمات API های خبری معتبر و به‌روز
 const NEWS_APIS = {
+    // اخبار ارزهای دیجیتال از CoinGecko (رایگان و معتبر)
     crypto: {
-        name: 'CryptoCompare',
-        url: 'https://min-api.cryptocompare.com/data/v2/news/?lang=EN',
-        transform: (data) => data.Data.map(item => ({
-            id: item.id,
-            title: item.title,
-            content: item.body,
-            url: item.url,
-            image: item.imageurl,
+        name: 'CoinGecko',
+        url: 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=20&page=1&sparkline=false&locale=en',
+        transform: async (data) => {
+            const cryptoNews = [];
+            for (const coin of data.slice(0, 10)) {
+                const priceChange = coin.price_change_percentage_24h;
+                const trend = priceChange > 0 ? '📈' : '📉';
+                const status = priceChange > 0 ? 'افزایش' : 'کاهش';
+                
+                cryptoNews.push({
+                    id: `crypto-${coin.id}`,
+                    title: `${trend} قیمت ${coin.name} (${coin.symbol.toUpperCase()})`,
+                    content: `قیمت فعلی ${coin.name}: $${coin.current_price.toLocaleString()} | تغییر 24 ساعته: ${priceChange.toFixed(2)}% ${status}`,
+                    url: `https://www.coingecko.com/en/coins/${coin.id}`,
+                    image: coin.image,
             category: 'crypto',
-            date: new Date(item.published_on * 1000),
-            source: item.source,
-            tags: item.categories ? item.categories.split('|') : []
-        }))
+                    date: new Date(),
+                    source: 'CoinGecko',
+                    tags: [coin.symbol.toUpperCase(), 'کریپتو', 'قیمت'],
+                    price: coin.current_price,
+                    change24h: priceChange
+                });
+            }
+            return cryptoNews;
+        }
     },
-    cryptoPersian: {
-        name: 'CoinGecko News',
-        url: 'https://api.coingecko.com/api/v3/news',
-        transform: (data) => data.map(item => ({
-            id: item.id,
+    
+    // اخبار اقتصادی از Alpha Vantage (رایگان)
+    economy: {
+        name: 'Alpha Vantage',
+        url: 'https://www.alphavantage.co/query?function=NEWS_SENTIMENT&topics=economy&apikey=demo',
+        transform: (data) => {
+            if (!data.feed) return [];
+            return data.feed.slice(0, 10).map(item => ({
+                id: `economy-${item.url}`,
             title: item.title,
-            content: item.description,
+                content: item.summary,
             url: item.url,
-            image: item.image?.small || 'https://via.placeholder.com/300x200/232946/a786ff?text=Crypto+News',
-            category: 'crypto',
-            date: new Date(item.published_at),
+                image: 'https://via.placeholder.com/300x200/232946/00ccff?text=Economy',
+                category: 'economy',
+                date: new Date(item.time_published),
             source: item.source,
-            tags: ['کریپتو', 'ارز دیجیتال']
-        }))
+                tags: ['اقتصاد', 'بازار', 'مالی']
+            }));
+        }
     },
+    
+    // اخبار فارکس از Exchange Rate API
     forex: {
-        name: 'Forex Factory',
-        url: 'https://www.forexfactory.com/api/news',
-        transform: (data) => data.map(item => ({
-            id: item.id,
-            title: item.title,
-            content: item.description,
-            url: item.url,
-            image: 'https://via.placeholder.com/300x200/232946/00ccff?text=Forex+News',
+        name: 'Exchange Rate API',
+        url: 'https://api.exchangerate-api.com/v4/latest/USD',
+        transform: (data) => {
+            const forexNews = [];
+            const majorPairs = ['EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY'];
+            
+            majorPairs.forEach(currency => {
+                const rate = data.rates[currency];
+                if (rate) {
+                    forexNews.push({
+                        id: `forex-${currency}`,
+                        title: `💱 نرخ ارز USD/${currency}`,
+                        content: `نرخ تبدیل دلار آمریکا به ${currency}: ${rate.toFixed(4)} | آخرین به‌روزرسانی: ${new Date().toLocaleString('fa-IR')}`,
+                        url: 'https://exchangerate-api.com',
+                        image: 'https://via.placeholder.com/300x200/232946/00ff88?text=Forex',
             category: 'forex',
-            date: new Date(item.published_at),
-            source: item.source,
-            tags: ['فارکس', 'معاملات ارزی']
-        }))
-    },
-    general: {
-        name: 'NewsAPI',
-        url: 'https://newsapi.org/v2/top-headlines?country=us&category=business&apiKey=YOUR_API_KEY',
-        transform: (data) => data.articles.map(item => ({
-            id: item.url,
-            title: item.title,
-            content: item.description,
-            url: item.url,
-            image: item.urlToImage,
-            category: 'general',
-            date: new Date(item.publishedAt),
-            source: item.source.name,
-            tags: []
-        }))
+                        date: new Date(),
+                        source: 'Exchange Rate API',
+                        tags: ['فارکس', 'USD', currency, 'نرخ ارز'],
+                        rate: rate
+                    });
+                }
+            });
+            return forexNews;
+        }
     }
 };
 
-// اخبار محلی و استاتیک - فقط اخبار واقعی و تأیید شده
+// اخبار محلی پلتفرم LevelUp (واقعی و مفید)
 const localNews = [
-    // اخبار واقعی پلتفرم LevelUp
-    {
-        id: 'platform-1',
-        title: '🎉 راهنمای کامل استفاده از LevelUp',
-        content: 'آموزش جامع نحوه استفاده از تمام امکانات پلتفرم LevelUp شامل ثبت‌نام، خرید توکن، سیستم باینری و برداشت پاداش‌ها.',
-        url: '#',
-        image: 'https://via.placeholder.com/300x200/232946/a786ff?text=LevelUp+Guide',
-        category: 'platform',
-        date: new Date('2025-01-15'),
-        source: 'LevelUp Team',
-        tags: ['آموزش', 'راهنما', 'پلتفرم']
-    },
-    {
-        id: 'platform-2',
-        title: '🔗 آموزش اتصال کیف پول به پلتفرم',
-        content: 'مراحل کامل اتصال MetaMask و WalletConnect به پلتفرم LevelUp و نحوه تأیید تراکنش‌ها.',
-        url: '#',
-        image: 'https://via.placeholder.com/300x200/232946/00ff88?text=Wallet+Connection',
-        category: 'education',
-        date: new Date('2025-01-14'),
-        source: 'LevelUp Team',
-        tags: ['کیف پول', 'MetaMask', 'WalletConnect']
-    },
     {
         id: 'platform-3',
         title: '💱 نحوه خرید و فروش توکن LVL',
-        content: 'آموزش کامل نحوه سواپ توکن LVL با MATIC و مدیریت موجودی کیف پول.',
+        content: 'آموزش کامل نحوه سواپ توکن LVL با MATIC و مدیریت موجودی کیف پول. شامل محاسبه کارمزدها و بهترین زمان‌ها برای معامله.',
         url: '#',
         image: 'https://via.placeholder.com/300x200/232946/00ccff?text=Token+Swap',
         category: 'trading',
         date: new Date('2025-01-13'),
         source: 'LevelUp Team',
         tags: ['خرید', 'فروش', 'سواپ', 'LVL']
-    },
-    {
-        id: 'platform-4',
-        title: '🌳 راهنمای سیستم باینری و پاداش‌ها',
-        content: 'درک کامل سیستم باینری، نحوه کسب امتیاز و برداشت پاداش‌های ماهانه.',
-        url: '#',
-        image: 'https://via.placeholder.com/300x200/232946/ff9500?text=Binary+System',
-        category: 'education',
-        date: new Date('2025-01-12'),
-        source: 'LevelUp Team',
-        tags: ['باینری', 'پاداش', 'امتیاز']
-    },
-    {
-        id: 'platform-5',
-        title: '📝 آموزش ثبت‌نام و فعال‌سازی حساب',
-        content: 'مراحل کامل ثبت‌نام در پلتفرم، انتخاب معرف و فعال‌سازی حساب کاربری.',
-        url: '#',
-        image: 'https://via.placeholder.com/300x200/232946/a786ff?text=Registration',
-        category: 'platform',
-        date: new Date('2025-01-11'),
-        source: 'LevelUp Team',
-        tags: ['ثبت‌نام', 'فعال‌سازی', 'معرف']
     }
 ];
+
+// دریافت اخبار ارزهای دیجیتال از CoinGecko
+async function fetchCryptoNews() {
+    try {
+        const response = await fetch(NEWS_APIS.crypto.url);
+        if (!response.ok) throw new Error('Network response was not ok');
+        
+        const data = await response.json();
+        return await NEWS_APIS.crypto.transform(data);
+    } catch (error) {
+        console.error('خطا در دریافت اخبار ارزهای دیجیتال:', error);
+        return [];
+    }
+}
+
+// دریافت اخبار اقتصادی
+async function fetchEconomyNews() {
+    try {
+        const response = await fetch(NEWS_APIS.economy.url);
+        if (!response.ok) throw new Error('Network response was not ok');
+        
+        const data = await response.json();
+        return NEWS_APIS.economy.transform(data);
+    } catch (error) {
+        console.error('خطا در دریافت اخبار اقتصادی:', error);
+        return [];
+    }
+}
+
+// دریافت اخبار فارکس
+async function fetchForexNews() {
+    try {
+        const response = await fetch(NEWS_APIS.forex.url);
+        if (!response.ok) throw new Error('Network response was not ok');
+        
+        const data = await response.json();
+        return NEWS_APIS.forex.transform(data);
+    } catch (error) {
+        console.error('خطا در دریافت اخبار فارکس:', error);
+        return [];
+    }
+}
 
 // تابع اصلی بارگذاری اخبار
 async function loadNews() {
@@ -139,26 +153,27 @@ async function loadNews() {
         // ترکیب اخبار محلی و خارجی
         let allNews = [...localNews];
         
-        // تلاش برای دریافت اخبار خارجی
+        // دریافت اخبار ارزهای دیجیتال
         try {
             const cryptoNews = await fetchCryptoNews();
+            if (cryptoNews && cryptoNews.length > 0) {
             allNews = [...cryptoNews, ...allNews];
-        } catch (error) {
-            console.log('خطا در دریافت اخبار خارجی:', error);
-        }
-        
-        // تلاش برای دریافت اخبار کریپتو فارسی
-        try {
-            const cryptoPersianNews = await fetchCryptoPersianNews();
-            if (cryptoPersianNews && cryptoPersianNews.length > 0) {
-                allNews = [...cryptoPersianNews, ...allNews];
             }
         } catch (error) {
-            console.log('خطا در دریافت اخبار کریپتو فارسی:', error);
-            // در صورت خطا، اخبار محلی اضافه نکن - فقط پیام خطا نمایش بده
+            console.log('خطا در دریافت اخبار ارزهای دیجیتال:', error);
         }
         
-        // تلاش برای دریافت اخبار فارکس
+        // دریافت اخبار اقتصادی
+        try {
+            const economyNews = await fetchEconomyNews();
+            if (economyNews && economyNews.length > 0) {
+                allNews = [...economyNews, ...allNews];
+            }
+        } catch (error) {
+            console.log('خطا در دریافت اخبار اقتصادی:', error);
+        }
+        
+        // دریافت اخبار فارکس
         try {
             const forexNews = await fetchForexNews();
             if (forexNews && forexNews.length > 0) {
@@ -166,7 +181,6 @@ async function loadNews() {
             }
         } catch (error) {
             console.log('خطا در دریافت اخبار فارکس:', error);
-            // در صورت خطا، اخبار محلی اضافه نکن - فقط پیام خطا نمایش بده
         }
         
         // مرتب‌سازی بر اساس تاریخ
@@ -185,103 +199,6 @@ async function loadNews() {
     }
 }
 
-// دریافت اخبار ارزهای دیجیتال
-async function fetchCryptoNews() {
-    try {
-        const response = await fetch(NEWS_APIS.crypto.url);
-        const data = await response.json();
-        return NEWS_APIS.crypto.transform(data);
-    } catch (error) {
-        console.error('خطا در دریافت اخبار ارزهای دیجیتال:', error);
-        return [];
-    }
-}
-
-// دریافت اخبار کریپتو فارسی
-async function fetchCryptoPersianNews() {
-    try {
-        // استفاده از API های جایگزین که CORS ندارند
-        const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
-        const data = await response.json();
-        
-        // تبدیل داده‌های نرخ ارز به فرمت اخبار کریپتو
-        const cryptoNews = [];
-        const cryptoCurrencies = ['BTC', 'ETH', 'ADA', 'DOT', 'LINK', 'LTC', 'BCH', 'XLM'];
-        
-        cryptoCurrencies.forEach((currency, index) => {
-            // شبیه‌سازی قیمت‌های کریپتو
-            const basePrice = {
-                'BTC': 45000,
-                'ETH': 3000,
-                'ADA': 1.5,
-                'DOT': 25,
-                'LINK': 15,
-                'LTC': 150,
-                'BCH': 300,
-                'XLM': 0.3
-            }[currency] || 100;
-            
-            const randomChange = (Math.random() - 0.5) * 10; // تغییر تصادفی ±5%
-            const currentPrice = basePrice * (1 + randomChange / 100);
-            
-            cryptoNews.push({
-                id: `crypto-${index}`,
-                title: `قیمت ${currency} در بازار کریپتو`,
-                content: `قیمت فعلی ${currency} برابر با $${currentPrice.toFixed(2)} است. تغییرات 24 ساعته: ${randomChange.toFixed(2)}%`,
-                category: 'crypto',
-                source: 'Crypto Market',
-                url: '#',
-                image: `https://via.placeholder.com/300x200/232946/a786ff?text=${currency}`,
-                date: new Date().toISOString(),
-                tags: [currency, 'crypto', 'price']
-            });
-        });
-        
-        return cryptoNews;
-    } catch (error) {
-        console.error('خطا در دریافت اخبار کریپتو فارسی:', error);
-        // در صورت خطا، اخبار محلی را برگردان
-        return generateRandomPersianNews();
-    }
-}
-
-// دریافت اخبار فارکس
-async function fetchForexNews() {
-    try {
-        // استفاده از API های جایگزین برای فارکس
-        const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
-        const data = await response.json();
-        
-        // تبدیل داده‌های نرخ ارز به فرمت اخبار
-        const forexNews = [];
-        const currencies = ['EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'CNY'];
-        
-        currencies.forEach((currency, index) => {
-            const rate = data.rates[currency];
-            if (rate) {
-                forexNews.push({
-                    id: `forex-${index}`,
-                    title: `نرخ ارز USD/${currency}`,
-                    content: `نرخ تبدیل دلار آمریکا به ${currency} برابر با ${rate.toFixed(4)} است.`,
-                    category: 'forex',
-                    source: 'Exchange Rate API',
-                    url: 'https://exchangerate-api.com',
-                    image: 'https://via.placeholder.com/300x200/232946/a786ff?text=Forex',
-                    date: new Date().toISOString(),
-                    tags: ['USD', currency, 'forex', 'exchange']
-                });
-            }
-        });
-        
-        return forexNews;
-    } catch (error) {
-        console.error('خطا در دریافت اخبار فارکس:', error);
-        // در صورت خطا، اخبار محلی را برگردان
-        const localNews = generateRandomPersianNews();
-        return localNews.filter(news => news.category === 'forex');
-    }
-}
-
 // نمایش اخبار
 function displayNews() {
     const container = document.getElementById('news-container');
@@ -294,7 +211,7 @@ function displayNews() {
     }
     
     // محدود کردن تعداد اخبار نمایش داده شده
-    const newsPerPage = 10;
+    const newsPerPage = 12;
     const startIndex = (currentPage - 1) * newsPerPage;
     const endIndex = startIndex + newsPerPage;
     const displayNews = filteredNews.slice(startIndex, endIndex);
@@ -320,12 +237,17 @@ function displayNews() {
 
 // ایجاد کارت خبر
 function createNewsCard(news) {
-    const isLocal = news.id.startsWith('local-');
+    const isLocal = news.id.startsWith('platform-');
     const categoryEmoji = getCategoryEmoji(news.category);
     const timeAgo = getTimeAgo(news.date);
     
+    // اضافه کردن کلاس مخصوص برای اخبار قیمت
+    const isPriceNews = news.category === 'crypto' && news.price;
+    const priceClass = isPriceNews ? 'price-news' : '';
+    const changeClass = isPriceNews && news.change24h ? (news.change24h > 0 ? 'positive-change' : 'negative-change') : '';
+    
     return `
-        <div class="news-card ${isLocal ? 'local-news' : 'external-news'}" data-category="${news.category}" data-id="${news.id}">
+        <div class="news-card ${isLocal ? 'local-news' : 'external-news'} ${priceClass} ${changeClass}" data-category="${news.category}" data-id="${news.id}">
             <div class="news-card-header">
                 <div class="news-card-image">
                     <img src="${news.image || 'https://via.placeholder.com/300x200/232946/a786ff?text=News'}" 
@@ -335,11 +257,17 @@ function createNewsCard(news) {
                 <div class="news-card-category">
                     <span class="category-badge">${categoryEmoji} ${getCategoryName(news.category)}</span>
                 </div>
+                ${isPriceNews && news.price ? `
+                    <div class="price-info">
+                        <span class="price-value">$${news.price.toLocaleString()}</span>
+                        ${news.change24h ? `<span class="price-change ${news.change24h > 0 ? 'positive' : 'negative'}">${news.change24h > 0 ? '+' : ''}${news.change24h.toFixed(2)}%</span>` : ''}
+                    </div>
+                ` : ''}
             </div>
             
             <div class="news-card-body">
                 <h3 class="news-card-title">${news.title}</h3>
-                <p class="news-card-content">${news.content.substring(0, 150)}${news.content.length > 150 ? '...' : ''}</p>
+                <p class="news-card-content">${news.content.substring(0, 120)}${news.content.length > 120 ? '...' : ''}</p>
                 
                 <div class="news-card-meta">
                     <span class="news-source">📰 ${news.source}</span>
@@ -374,19 +302,19 @@ function setupAutoRefresh() {
         clearInterval(autoRefreshInterval);
     }
     
-    // تنظیم به‌روزرسانی هر 10 دقیقه (کاهش فرکانس)
-    // autoRefreshInterval = setInterval(async () => {
-    //     try {
-    //         // بررسی اینکه آیا صفحه فعال است
-    //         if (document.hidden) {
-    //             return; // اگر صفحه مخفی است، به‌روزرسانی نکن
-    //         }
-    //         console.log('به‌روزرسانی خودکار اخبار...');
-    //         await loadNews();
-    //     } catch (error) {
-    //         console.error('خطا در به‌روزرسانی خودکار:', error);
-    //     }
-    // }, 10 * 60 * 1000); // 10 دقیقه
+    // تنظیم به‌روزرسانی هر 5 دقیقه برای اخبار قیمت
+    autoRefreshInterval = setInterval(async () => {
+        try {
+            // بررسی اینکه آیا صفحه فعال است
+            if (document.hidden) {
+                return; // اگر صفحه مخفی است، به‌روزرسانی نکن
+            }
+            console.log('به‌روزرسانی خودکار اخبار...');
+            await loadNews();
+        } catch (error) {
+            console.error('خطا در به‌روزرسانی خودکار:', error);
+        }
+    }, 5 * 60 * 1000); // 5 دقیقه
 }
 
 // فیلتر کردن اخبار
@@ -462,11 +390,10 @@ function getCategoryEmoji(category) {
         'crypto': '₿',
         'forex': '💱',
         'economy': '📊',
-        'trading': '📈',
-        'platform': '🏢',
-        'education': '📚',
         'events': '🎉',
-        'general': '📰'
+        'general': '📰',
+        'nft': '🎨',
+        'airdrop': '🎁'
     };
     return emojis[category] || '📰';
 }
@@ -476,11 +403,10 @@ function getCategoryName(category) {
         'crypto': 'ارزهای دیجیتال',
         'forex': 'فارکس',
         'economy': 'اقتصاد',
-        'trading': 'معاملات',
-        'platform': 'پلتفرم',
-        'education': 'آموزش',
         'events': 'رویدادها',
-        'general': 'عمومی'
+        'general': 'عمومی',
+        'nft': 'NFT',
+        'airdrop': 'ایردراپ'
     };
     return names[category] || 'عمومی';
 }
@@ -631,20 +557,9 @@ window.addEventListener('beforeunload', () => {
     console.log('News intervals cleared on page unload');
 });
 
-// حذف تابع generateRandomPersianNews - اخبار جعلی تولید نمی‌کنیم
-// function generateRandomPersianNews() {
-//     // این تابع حذف شده است - ما اخبار جعلی تولید نمی‌کنیم
-// }
-
-function getRandomColor() {
-    const colors = ['a786ff', '00ff88', '00ccff', 'ff9500', 'ff6b6b', '4ecdc4'];
-    return colors[Math.floor(Math.random() * colors.length)];
-}
-
 // Export functions for global use
 window.loadNews = loadNews;
 window.filterNews = filterNews;
 window.searchNews = searchNews;
 window.openNewsModal = openNewsModal;
 window.closeNewsModal = closeNewsModal;
-// window.generateRandomPersianNews = generateRandomPersianNews; 

@@ -1,520 +1,299 @@
-// reports.js - بخش گزارشات و فعالیت‌ها
-let isReportsLoading = false;
+// reports.js - گزارشات کامل و دسته‌بندی شده بر اساس ABI قرارداد CPA
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Reports section loaded, waiting for wallet connection...
-    waitForWalletConnection();
-});
-
-async function waitForWalletConnection() {
-    try {
-        // Reports section loaded, waiting for wallet connection...
-        // بررسی اتصال کیف پول
-        const connection = await checkConnection();
-        if (!connection.connected) {
-            showReportsError("لطفا ابتدا کیف پول خود را متصل کنید");
-        return;
-    }
-    
-        // بارگذاری گزارشات
-        await loadReports();
-
-        // راه‌اندازی فیلترها
-        // setupFilters(); // حذف شد
-
-        // به‌روزرسانی خودکار هر 5 دقیقه
-        // setInterval(loadReports, 300000); // حذف شد
-
-    } catch (error) {
-        showReportsError("خطا در بارگذاری گزارشات");
-    }
-}
-
-// تابع اتصال به کیف پول با انتظار
-async function connectWallet() {
-    try {
-        // بررسی اتصال موجود
-        if (window.contractConfig && window.contractConfig.contract) {
-            return window.contractConfig;
-        }
-        
-        // بررسی اتصال MetaMask موجود
-        if (typeof window.ethereum !== 'undefined') {
-            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-            if (accounts && accounts.length > 0) {
-                try {
-                    await initializeWeb3();
-                    return window.contractConfig;
-                } catch (error) {
-                    throw new Error('خطا در راه‌اندازی Web3');
-                }
-            }
-        }
-        
-        throw new Error('لطفاً ابتدا کیف پول خود را متصل کنید');
-        
-    } catch (error) {
-        showReportsError('خطا در اتصال به کیف پول');
-        throw error;
-    }
-}
-
-// تابع فرمت کردن آدرس
+// ابزارهای کمکی
 function shortenAddress(address) {
     if (!address) return '-';
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
-
-// تابع فرمت کردن هش تراکنش
-function shortenTransactionHash(hash) {
-    if (!hash) return '-';
-    return `${hash.slice(0, 8)}...${hash.slice(-6)}`;
+function ultraShortAddress(address) {
+    if (!address) return '-';
+    return `${address.slice(0, 4)}...${address.slice(-3)}`;
+}
+// ابزار جدید: گرفتن ایندکس کاربر از آدرس (در شبکه)
+async function getIndexByAddress(address, contract) {
+    try {
+        if (!address || !contract) return null;
+        // جستجو در mapping indexToAddress (بدون محدودیت)
+        let i = 1;
+        while (true) {
+            let addr = await contract.indexToAddress(i);
+            if (!addr || addr === '0x0000000000000000000000000000000000000000') break;
+            if (addr.toLowerCase() === address.toLowerCase()) return i;
+            i++;
+        }
+        return null;
+    } catch { return null; }
+}
+// ابزار جدید: نمایش آدرس یا ایندکس یا قرارداد
+async function displayAddress(addr, contract, contractAddress) {
+    if (!addr) return '-';
+    if (addr.toLowerCase() === contractAddress.toLowerCase()) return 'قرارداد';
+    const idx = await getIndexByAddress(addr, contract);
+    if (idx) return `CPA${idx.toString().padStart(5, '0')}`;
+    return shortenAddress(addr);
+}
+function formatDate(timestamp) {
+    if (!timestamp || isNaN(timestamp)) return 'Invalid date';
+    let ts = Number(timestamp);
+    if (ts > 1e9 && ts < 1e12) ts = ts * 1000;
+    const date = new Date(ts);
+    // تاریخ میلادی محلی با فرمت YYYY/MM/DD HH:mm
+    return date.getFullYear() + '/' + String(date.getMonth()+1).padStart(2,'0') + '/' + String(date.getDate()).padStart(2,'0') + ' ' + String(date.getHours()).padStart(2,'0') + ':' + String(date.getMinutes()).padStart(2,'0');
+}
+function formatNumber(value, decimals = 18) {
+    try {
+        if (!value || value.toString() === '0') return '0';
+        const formatted = ethers.formatUnits(value, decimals);
+        const num = parseFloat(formatted);
+        if (num < 0.000001) return num.toExponential(2);
+        return num.toLocaleString('en-US', { maximumFractionDigits: 6 });
+    } catch { return '0'; }
 }
 
-// تابع فرمت تاریخ بهبود یافته
-    function formatDate(timestamp) {
-    try {
-        // بررسی اعتبار timestamp
-        if (!timestamp || isNaN(timestamp)) {
-            return "تاریخ نامعتبر";
+// جمع‌آوری همه ایونت‌ها
+window.fetchReports = async function(address) {
+    const { contract, address: userAddress } = await connectWallet();
+    const provider = (contract.runner && contract.runner.provider) || contract.provider;
+    const contractWithProvider = contract.connect ? contract.connect(provider) : contract;
+    contractWithProvider.provider = provider; // تضمین provider معتبر برای safeQueryEvents
+    const reports = [];
+    const currentBlock = await provider.getBlockNumber();
+    const fromBlock = 0; // بدون محدودیت، از بلاک صفر
+    // Helper: اضافه کردن ایونت به reports
+    async function pushReport(type, title, amount, event, addr, provider) {
+        let ts = null;
+        if (event.args && event.args.timestamp) {
+            ts = Number(event.args.timestamp) * 1000;
+        } else if (event.blockNumber && provider) {
+            const block = await provider.getBlock(event.blockNumber);
+            ts = block.timestamp * 1000;
         }
-        
-        // تبدیل timestamp به تاریخ
-        let date;
-        if (timestamp < 1000000000000) {
-            // اگر timestamp در ثانیه است، به میلی‌ثانیه تبدیل کن
-            date = new Date(timestamp * 1000);
-        } else {
-            // اگر timestamp در میلی‌ثانیه است
-            date = new Date(timestamp);
-        }
-        
-        // بررسی اعتبار تاریخ
-        if (isNaN(date.getTime())) {
-            return "تاریخ نامعتبر";
-        }
-        
-        const now = new Date();
-        const diffInSeconds = Math.floor((now - date) / 1000);
-        
-        // اگر کمتر از 1 دقیقه
-        if (diffInSeconds < 60) {
-            return `${diffInSeconds} ثانیه پیش`;
-        }
-        
-        // اگر کمتر از 1 ساعت
-        if (diffInSeconds < 3600) {
-            const minutes = Math.floor(diffInSeconds / 60);
-            return `${minutes} دقیقه پیش`;
-        }
-        
-        // اگر کمتر از 1 روز
-        if (diffInSeconds < 86400) {
-            const hours = Math.floor(diffInSeconds / 3600);
-            return `${hours} ساعت پیش`;
-        }
-        
-        // اگر کمتر از 7 روز
-        if (diffInSeconds < 604800) {
-            const days = Math.floor(diffInSeconds / 86400);
-            return `${days} روز پیش`;
-        }
-        
-        // برای تاریخ‌های قدیمی، نمایش تاریخ کامل
-        const persianMonths = [
-            'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
-            'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'
-        ];
-        
-        const persianDays = [
-            'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه', 'شنبه'
-        ];
-        
-        // تبدیل به تاریخ شمسی (تقریبی)
-        const year = date.getFullYear();
-        const month = date.getMonth();
-        const day = date.getDate();
-        const hours = date.getHours();
-        const minutes = date.getMinutes();
-        
-        // تبدیل تقریبی به شمسی (سال شمسی = سال میلادی - 621)
-        const persianYear = year - 621;
-        const persianMonth = persianMonths[month];
-        
-        return `${day} ${persianMonth} ${persianYear} - ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-        
-    } catch (error) {
-        return "خطا در نمایش تاریخ";
+        // مقدار پیش‌فرض برای title و amount اگر خالی یا undefined بود
+        const safeTitle = (typeof title !== 'undefined' && title !== null && title !== '') ? title : '---';
+        const safeAmount = (typeof amount !== 'undefined' && amount !== null && amount !== '') ? amount : '---';
+        reports.push({
+            type,
+            title: safeTitle,
+            amount: safeAmount,
+            timestamp: ts,
+            transactionHash: event.transactionHash,
+            blockNumber: event.blockNumber,
+            address: addr,
+            logIndex: event.logIndex
+        });
     }
+    // Activated
+    const eventsActivated = await window.safeQueryEvents(contractWithProvider, contractWithProvider.filters.Activated(), fromBlock, currentBlock);
+    for (const e of eventsActivated) {
+        if (e.args.user && e.args.user.toLowerCase() === userAddress.toLowerCase())
+            await pushReport('activated', 'فعال‌سازی', formatNumber(e.args.amountCPA, 18) + ' CPA', e, e.args.user, provider);
     }
-    
-    // تابع فرمت کردن اعداد
-    function formatNumber(value, decimals = 18) {
-        try {
-            if (!value || value.toString() === '0') return '0';
-            const formatted = ethers.formatUnits(value, decimals);
-            const num = parseFloat(formatted);
-            if (num < 0.000001) {
-                return num.toExponential(2);
-            }
-            return num.toLocaleString('en-US', { maximumFractionDigits: 6 });
-        } catch (error) {
-            return '0';
-        }
+    // PurchaseKind
+    const eventsPurchaseKind = await window.safeQueryEvents(contractWithProvider, contractWithProvider.filters.PurchaseKind(), fromBlock, currentBlock);
+    for (const e of eventsPurchaseKind) {
+        if (e.args.user && e.args.user.toLowerCase() === userAddress.toLowerCase())
+            await pushReport('purchase', 'خرید', formatNumber(e.args.amountCPA, 18) + ' CPA', e, e.args.user, provider);
     }
-    
-    // تابع دریافت گزارشات از قرارداد
-    async function fetchReports() {
-        try {
-            const { contract, address } = await connectWallet();
-            const provider = contract.runner && contract.runner.provider ? contract.runner.provider : contract.provider;
-            const reports = [];
-            
-            // استفاده از retry برای دریافت block number
-            const currentBlock = await window.retryRpcOperation(async () => {
-                return await contract.runner.provider.getBlockNumber();
-            });
-            
-            const fromBlock = Math.max(0, currentBlock - 50000);
-            // Activated
-            let activatedEvents = [];
-            try {
-                activatedEvents = await window.safeQueryEvents(contract, contract.filters.Activated(), fromBlock, currentBlock);
-            } catch (e) {
-                console.warn('Failed to fetch Activated events:', e);
-                activatedEvents = [];
-            }
-            activatedEvents.forEach(event => {
-                if (event.args.user.toLowerCase() === address.toLowerCase()) {
-                    reports.push({
-                        type: 'registration',
-                        title: 'ثبت‌نام',
-                        amount: formatNumber(event.args.amountLvl || event.args.amountlvl, 18) + ' CPA',
-                        timestamp: event.blockNumber,
-                        transactionHash: event.transactionHash,
-                        blockNumber: event.blockNumber,
-                        address: event.args.user,
-                        logIndex: event.logIndex
-                    });
-                }
-            });
-            // PurchaseKind
-            let purchaseEvents = [];
-            try {
-                purchaseEvents = await window.safeQueryEvents(contract, contract.filters.PurchaseKind(), fromBlock, currentBlock);
-            } catch (e) {
-                console.warn('Failed to fetch PurchaseKind events:', e);
-                purchaseEvents = [];
-            }
-                purchaseEvents.forEach(event => {
-                if (event.args.user.toLowerCase() === address.toLowerCase()) {
-                    reports.push({
-                        type: 'purchase',
-                        title: 'خرید با USDC',
-                        amount: formatNumber(event.args.amountLvl || event.args.amountlvl, 18) + ' CPA',
-                        timestamp: event.blockNumber,
-                        transactionHash: event.transactionHash,
-                        blockNumber: event.blockNumber,
-                        address: event.args.user,
-                        logIndex: event.logIndex
-                    });
-                }
-                });
-            // TokensBought
-            let buyEvents = [];
-            try {
-                buyEvents = await window.safeQueryEvents(contract, contract.filters.TokensBought(), fromBlock, currentBlock);
-            } catch (e) {}
-                buyEvents.forEach(event => {
-                if (event.args.buyer.toLowerCase() === address.toLowerCase()) {
-                    reports.push({
-                        type: 'trading',
-                        title: 'خرید با USDC',
-                        amount: `${formatNumber(event.args.maticAmount, 18)} POL → ${formatNumber(event.args.tokenAmount, 18)} CPA`,
-                        timestamp: event.blockNumber,
-                        transactionHash: event.transactionHash,
-                        blockNumber: event.blockNumber,
-                        address: event.args.buyer,
-                        logIndex: event.logIndex
-                    });
-                }
-                });
-            // TokensSold
-            let sellEvents = [];
-            try {
-                sellEvents = await window.safeQueryEvents(contract, contract.filters.TokensSold(), fromBlock, currentBlock);
-            } catch (e) {}
-                sellEvents.forEach(event => {
-                if (event.args.seller.toLowerCase() === address.toLowerCase()) {
-                    reports.push({
-                        type: 'trading',
-                        title: 'فروش توکن',
-                        amount: `${formatNumber(event.args.tokenAmount, 18)} CPA → ${formatNumber(event.args.maticAmount, 18)} POL`,
-                        timestamp: event.blockNumber,
-                        transactionHash: event.transactionHash,
-                        blockNumber: event.blockNumber,
-                        address: event.args.seller,
-                        logIndex: event.logIndex
-                    });
-                }
-                });
-            // BinaryPointsUpdated
-            let binaryEvents = [];
-            try {
-                binaryEvents = await window.safeQueryEvents(contract, contract.filters.BinaryPointsUpdated(), fromBlock, currentBlock);
-            } catch (e) {}
-                binaryEvents.forEach(event => {
-                if (event.args.user.toLowerCase() === address.toLowerCase()) {
-                    reports.push({
-                        type: 'binary',
-                        title: 'به‌روزرسانی امتیاز باینری',
-                        amount: `${formatNumber(event.args.newPoints, 18)} امتیاز (سقف: ${formatNumber(event.args.newCap, 18)})`,
-                        timestamp: event.blockNumber,
-                        transactionHash: event.transactionHash,
-                        blockNumber: event.blockNumber,
-                        address: event.args.user,
-                        logIndex: event.logIndex
-                    });
-                }
-            });
-            // BinaryRewardDistributed
-            let binaryRewardEvents = [];
-            try {
-                binaryRewardEvents = await window.safeQueryEvents(contract, contract.filters.BinaryRewardDistributed(), fromBlock, currentBlock);
-            } catch (e) {}
-            binaryRewardEvents.forEach(event => {
-                if (event.args.claimer.toLowerCase() === address.toLowerCase()) {
-                    reports.push({
-                        type: 'binary',
-                        title: 'دریافت پاداش باینری',
-                        amount: `${formatNumber(event.args.claimerReward, 18)} CPA`,
-                        timestamp: event.blockNumber,
-                        transactionHash: event.transactionHash,
-                        blockNumber: event.blockNumber,
-                        address: event.args.claimer,
-                        logIndex: event.logIndex
-                    });
-                }
-            });
-            // TreeStructureUpdated
-            let treeEvents = [];
-            try {
-                treeEvents = await window.safeQueryEvents(contract, contract.filters.TreeStructureUpdated(), fromBlock, currentBlock);
-            } catch (e) {}
-            treeEvents.forEach(event => {
-                if ([event.args.user, event.args.parent, event.args.referrer].map(a=>a.toLowerCase()).includes(address.toLowerCase())) {
-                    let posLabel = '';
-                    if (event.args.position == 0) posLabel = 'فرزند سمت چپ ثبت شد';
-                    else if (event.args.position == 1) posLabel = 'فرزند سمت راست ثبت شد';
-                    else posLabel = `موقعیت: ${event.args.position}`;
-                    reports.push({
-                        type: 'network',
-                        title: 'تغییر ساختار شبکه',
-                        amount: posLabel,
-                        timestamp: event.blockNumber,
-                        transactionHash: event.transactionHash,
-                        blockNumber: event.blockNumber,
-                        address: event.args.user,
-                        logIndex: event.logIndex
-                    });
-                }
-            });
-            // Transfer
-            let transferEvents = [];
-            try {
-                transferEvents = await contract.queryFilter(contract.filters.Transfer(), fromBlock, currentBlock);
-            } catch (e) {}
-            transferEvents.forEach(event => {
-                if ([event.args.from, event.args.to].map(a=>a.toLowerCase()).includes(address.toLowerCase())) {
-                    reports.push({
-                        type: 'transfer',
-                        title: 'انتقال توکن',
-                        amount: `${formatNumber(event.args.value, 18)} CPA`,
-                        timestamp: event.blockNumber,
-                        transactionHash: event.transactionHash,
-                        blockNumber: event.blockNumber,
-                        address: event.args.from === address ? event.args.to : event.args.from,
-                        logIndex: event.logIndex
-                    });
-                }
-            });
-            // Approval
-            let approvalEvents = [];
-            try {
-                approvalEvents = await contract.queryFilter(contract.filters.Approval(), fromBlock, currentBlock);
-            } catch (e) {}
-            approvalEvents.forEach(event => {
-                if ([event.args.owner, event.args.spender].map(a=>a.toLowerCase()).includes(address.toLowerCase())) {
-                    reports.push({
-                        type: 'approval',
-                        title: 'تأییدیه انتقال',
-                        amount: `${formatNumber(event.args.value, 18)} CPA`,
-                        timestamp: event.blockNumber,
-                        transactionHash: event.transactionHash,
-                        blockNumber: event.blockNumber,
-                        address: event.args.owner === address ? event.args.spender : event.args.owner,
-                        logIndex: event.logIndex
-                    });
-                }
-            });
-            // DirectMATICReceived
-            let directMaticEvents = [];
-            try {
-                directMaticEvents = await contract.queryFilter(contract.filters.DirectMATICReceived(), fromBlock, currentBlock);
-            } catch (e) {}
-            directMaticEvents.forEach(event => {
-                if (event.args.sender.toLowerCase() === address.toLowerCase()) {
-                    reports.push({
-                        type: 'deposit',
-                        title: 'واریز مستقیم MATIC',
-                        amount: `${formatNumber(event.args.amount, 18)} MATIC`,
-                        timestamp: event.blockNumber,
-                        transactionHash: event.transactionHash,
-                        blockNumber: event.blockNumber,
-                        address: event.args.sender,
-                        logIndex: event.logIndex
-                    });
-                }
-                });
-            // After collecting all events into reports array, fetch timestamps for each unique blockNumber
-            const blockNumbers = [...new Set(reports.map(r => r.blockNumber))];
-            const blockTimestamps = {};
-            for (const bn of blockNumbers) {
-                try {
-                    const block = await provider.getBlock(bn);
-                    blockTimestamps[bn] = block.timestamp;
-                } catch (e) {
-                    blockTimestamps[bn] = null;
-                }
-            }
-            // Assign real timestamp to each report
-            reports.forEach(r => {
-                r.timestamp = blockTimestamps[r.blockNumber] ? blockTimestamps[r.blockNumber] * 1000 : null;
-            });
-            // مرتب‌سازی بر اساس تاریخ (جدیدترین اول)
-            reports.sort((a, b) => b.blockNumber - a.blockNumber);
-            return reports;
-        } catch (error) {
-            console.error('Error fetching reports:', error);
-            // در صورت خطا، گزارش خالی برگردان
-            return [];
+    // TokensBought
+    const eventsTokensBought = await window.safeQueryEvents(contractWithProvider, contractWithProvider.filters.TokensBought(), fromBlock, currentBlock);
+    for (const e of eventsTokensBought) {
+        if (e.args.buyer && e.args.buyer.toLowerCase() === userAddress.toLowerCase())
+            await pushReport('tokensbought', 'خرید توکن', `${formatNumber(e.args.daiAmount, 18)} DAI → ${formatNumber(e.args.tokenAmount, 18)} CPA`, e, e.args.buyer, provider);
+    }
+    // TokensSold
+    const eventsTokensSold = await window.safeQueryEvents(contractWithProvider, contractWithProvider.filters.TokensSold(), fromBlock, currentBlock);
+    for (const e of eventsTokensSold) {
+        if (e.args.seller && e.args.seller.toLowerCase() === userAddress.toLowerCase())
+            await pushReport('tokenssold', 'فروش توکن', `${formatNumber(e.args.tokenAmount, 18)} CPA → ${formatNumber(e.args.daiAmount, 18)} DAI`, e, e.args.seller, provider);
+    }
+    // BinaryPointsUpdated
+    const eventsBinaryPoints = await window.safeQueryEvents(contractWithProvider, contractWithProvider.filters.BinaryPointsUpdated(), fromBlock, currentBlock);
+    for (const e of eventsBinaryPoints) {
+        await pushReport('binarypoints', 'به‌روزرسانی امتیاز باینری', `${formatNumber(e.args.newPoints, 18)} امتیاز (سقف: ${formatNumber(e.args.newCap, 18)})`, e, e.args.user, provider);
+    }
+    // BinaryRewardDistributed
+    const eventsBinaryReward = await window.safeQueryEvents(contractWithProvider, contractWithProvider.filters.BinaryRewardDistributed(), fromBlock, currentBlock);
+    for (const e of eventsBinaryReward) {
+        await pushReport('binaryreward', 'دریافت پاداش باینری', `${formatNumber(e.args.claimerReward, 18)} CPA`, e, e.args.claimer, provider);
+    }
+    // BinaryPoolUpdated
+    const eventsBinaryPool = await window.safeQueryEvents(contractWithProvider, contractWithProvider.filters.BinaryPoolUpdated(), fromBlock, currentBlock);
+    for (const e of eventsBinaryPool) {
+        await pushReport('binarypool', 'به‌روزرسانی استخر باینری', `${formatNumber(e.args.addedAmount, 18)} CPA (سایز جدید: ${formatNumber(e.args.newPoolSize, 18)})`, e, null, provider);
+    }
+    // TreeStructureUpdated
+    const eventsTree = await window.safeQueryEvents(contractWithProvider, contractWithProvider.filters.TreeStructureUpdated(), fromBlock, currentBlock);
+    for (const e of eventsTree) {
+        let posLabel = e.args.position == 0 ? 'فرزند چپ' : e.args.position == 1 ? 'فرزند راست' : `موقعیت: ${e.args.position}`;
+        await pushReport('tree', 'تغییر ساختار شبکه', posLabel, e, e.args.user, provider);
+    }
+    // Transfer
+    const eventsTransfer = await contractWithProvider.queryFilter(contractWithProvider.filters.Transfer(), fromBlock, currentBlock);
+    for (const e of eventsTransfer) {
+        if ((e.args[0] && e.args[0].toLowerCase() === userAddress.toLowerCase()) ||
+            (e.args[1] && e.args[1].toLowerCase() === userAddress.toLowerCase())) {
+            await pushReport(
+                'transfer',
+                'انتقال توکن',
+                `${formatNumber(e.args[2], 18)} CPA`,
+                e,
+                {from: e.args[0], to: e.args[1]},
+                provider
+            );
         }
     }
-    
-    // تابع نمایش گزارشات
-    function displayReports(reports) {
-        const reportsContainer = document.getElementById('reports-container');
-        if (!reportsContainer) return;
-        
-        // نمایش همه گزارشات بدون فیلتر
-        if (reports.length === 0) {
-            reportsContainer.innerHTML = `
-                <div class="no-reports">
-                    <p>هیچ گزارشی یافت نشد.</p>
-                    <p>برای مشاهده گزارشات، ابتدا فعالیتی در پلتفرم انجام دهید.</p>
-                </div>
-            `;
-            return;
-        }
-    
-        const reportsHTML = reports.map(report => {
-            const { type, title, amount, timestamp, blockNumber, address, usdcAmount } = report;
-            const reportHTML = `
-                <div class="report-item">
-                    <div class="report-header">
-                        <div class="report-type">${getReportIcon(type)} ${title}</div>
-                        <div class="report-time" style="font-size:0.95em;color:#a786ff;">${formatDate(timestamp)}</div>
-                    </div>
-                    <div class="report-details">
-                        <div class="report-details-row">
-                            <span class="report-details-label">آدرس:</span>
-                            <span class="report-details-value">
-                                <a href="https://polygonscan.com/address/${address}" target="_blank" style="color:#a786ff;text-decoration:underline;">${shortenAddress(address || '')}</a>
-                            </span>
-                        </div>
-                        <div class="report-details-row">
-                            <span class="report-details-label">مقدار:</span>
-                            <span class="report-details-value">${amount}</span>
-                        </div>
-                        ${usdcAmount ? `<div class="report-details-row"><span class="report-details-label">مقدار USDC:</span><span class="report-details-value">${Number(usdcAmount).toLocaleString('en-US', {maximumFractionDigits: 2})} USDC</span></div>` : ''}
-                    </div>
-                </div>
-            `;
-            return reportHTML;
-        }).join('');
-        
-        reportsContainer.innerHTML = reportsHTML;
+    // Approval
+    const eventsApproval = await contractWithProvider.queryFilter(contractWithProvider.filters.Approval(), fromBlock, currentBlock);
+    for (const e of eventsApproval) {
+        await pushReport('approval', 'تأییدیه انتقال', `${formatNumber(e.args.value, 18)} CPA`, e, e.args.owner === userAddress ? e.args.spender : e.args.owner, provider);
     }
+    // IndexTransferred
+    const eventsIndexTransfer = await window.safeQueryEvents(contractWithProvider, contractWithProvider.filters.IndexTransferred(), fromBlock, currentBlock);
+    for (const e of eventsIndexTransfer) {
+        if ((e.args.previousOwner && e.args.previousOwner.toLowerCase() === userAddress.toLowerCase()) ||
+            (e.args.newOwner && e.args.newOwner.toLowerCase() === userAddress.toLowerCase())) {
+            await pushReport('indextransfer', 'انتقال ایندکس', `از ${shortenAddress(e.args.previousOwner)} به ${shortenAddress(e.args.newOwner)} (ایندکس: ${e.args.index})`, e, e.args.previousOwner === userAddress ? e.args.newOwner : e.args.previousOwner, provider);
+        }
+    }
+    // MonthlyRewardClaimed
+    const eventsMonthlyReward = await window.safeQueryEvents(contractWithProvider, contractWithProvider.filters.MonthlyRewardClaimed(), fromBlock, currentBlock);
+    for (const e of eventsMonthlyReward) {
+        await pushReport('monthlyreward', 'دریافت پاداش ماهانه', `${formatNumber(e.args.reward, 18)} CPA (${e.args.monthsPassed} ماه)`, e, e.args.user, provider);
+    }
+    // MonthlyRewardFailed
+    const eventsMonthlyFail = await window.safeQueryEvents(contractWithProvider, contractWithProvider.filters.MonthlyRewardFailed(), fromBlock, currentBlock);
+    for (const e of eventsMonthlyFail) {
+        await pushReport('monthlyfail', 'عدم موفقیت پاداش ماهانه', e.args.reason, e, e.args.user, provider);
+    }
+    // مرتب‌سازی بر اساس تاریخ (جدیدترین اول)
+    reports.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+    return reports;
+};
 
-    // تابع دریافت آیکون برای نوع گزارش
-    function getReportIcon(type) {
-        const icons = {
-        'purchase': '🛒',
-        'registration': '📝',
-        'activation': '✅',
-        'trading': '💱',
-        'binary': '📊'
-        };
-    return icons[type] || '📄';
-    }
-    
-    // تابع بارگذاری گزارشات
-    async function loadReports() {
-    if (isReportsLoading) {
+// نمایش گزارشات دسته‌بندی شده
+window.loadReports = async function(address) {
+    const reportsContainer = document.getElementById('reports-list');
+    reportsContainer.innerHTML = '<div class="loading">در حال بارگذاری گزارشات...</div>';
+    const reports = await window.fetchReports(address);
+    if (!reports || reports.length === 0) {
+        reportsContainer.innerHTML = '<div class="no-reports">هیچ گزارشی برای شما یافت نشد.</div>';
         return;
     }
-    
-    isReportsLoading = true;
-    
-    try {
-        const { contract, address } = await connectWallet();
-        
-        // دریافت گزارشات
-            const reports = await fetchReports();
-        
-        // نمایش گزارشات
-        displayReports(reports);
-        
-        // تنظیم فیلترها
-        // setupFilters(); // حذف شد
-            
-        } catch (error) {
-        showReportsError("خطا در بارگذاری گزارشات");
-    } finally {
-        isReportsLoading = false;
-    }
-}
-
-// تابع بررسی اتصال کیف پول
-async function checkConnection() {
-    try {
-        const { provider, address } = await connectWallet();
-        const network = await provider.getNetwork();
-        
-        return {
-            connected: true,
-            address,
-            network: network.name,
-            chainId: network.chainId
-        };
-    } catch (error) {
-        return {
-            connected: false,
-            error: error.message
-        };
-    }
-}
-
-// تابع نمایش پیغام خطا در صفحه گزارشات
-function showReportsError(message) {
-    const reportsContainer = document.getElementById('reports-container');
-    if (reportsContainer) {
-            reportsContainer.innerHTML = `
-            <div class="error-message">
-                <p>${message}</p>
-                </div>
-            `;
+    // دسته‌بندی
+    const grouped = {};
+    reports.forEach(r => { if (!grouped[r.type]) grouped[r.type] = []; grouped[r.type].push(r); });
+    const typeOrder = [
+        'activated','purchase','tokensbought','tokenssold','binarypoints','binaryreward','binarypool','tree','transfer','approval','indextransfer','monthlyreward','monthlyfail'
+    ];
+    const typeTitles = {
+        activated: 'فعال‌سازی', purchase: 'خرید', tokensbought: 'خرید توکن', tokenssold: 'فروش توکن',
+        binarypoints: 'امتیاز باینری', binaryreward: 'پاداش باینری', binarypool: 'استخر باینری',
+        tree: 'ساختار شبکه', transfer: 'انتقال توکن', approval: 'تأییدیه انتقال',
+        indextransfer: 'انتقال ایندکس', monthlyreward: 'پاداش ماهانه', monthlyfail: 'خطاهای پاداش ماهانه'
+    };
+    // تابع نمایش بر اساس دسته انتخابی
+    async function renderReportsByType(selectedType) {
+        reportsContainer.innerHTML = '';
+        let typesToShow = typeOrder;
+        if (selectedType && selectedType !== 'all') typesToShow = [selectedType];
+        for (const type of typesToShow) {
+            if (grouped[type] && grouped[type].length > 0) {
+                const h = document.createElement('h3');
+                h.textContent = typeTitles[type] || type;
+                h.style.marginTop = '32px';
+                h.style.color = '#1976d2';
+                h.style.fontWeight = 'bold';
+                h.style.fontSize = '1.15em';
+                reportsContainer.appendChild(h);
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'event-group';
+                groupDiv.dataset.type = type;
+                reportsContainer.appendChild(groupDiv);
+                for (const report of grouped[type]) {
+                    const div = document.createElement('div');
+                    div.className = 'report-sentence';
+                    // جمله را به صورت async بساز
+                    const sentence = await getReportSentence(report);
+                    div.innerHTML = sentence;
+                    groupDiv.appendChild(div);
+                }
             }
         }
-    
-// تابع راه‌اندازی فیلترها حذف شد - همه گزارشات نمایش داده می‌شوند 
+    }
+    // مقدار اولیه (همه دسته‌ها)
+    await renderReportsByType('all');
+    // لیسنر برای select
+    const select = document.getElementById('event-type-select');
+    if (select) {
+        select.onchange = function() {
+            renderReportsByType(this.value);
+        };
+    }
+};
+
+// جمله فارسی برای هر ایونت
+async function getReportSentence(report) {
+    const time = report.timestamp ? `<span class='report-time'>${formatDate(report.timestamp)}</span>` : '';
+    const amount = (typeof report.amount !== 'undefined' && report.amount !== null) ? report.amount : '';
+    const title = (typeof report.title !== 'undefined' && report.title !== null) ? report.title : '';
+    if (report.type === 'transfer') {
+        let fromPromise = '';
+        let toPromise = '';
+        if (report.address && typeof report.address === 'object') {
+            if (window.contractConfig && window.contractConfig.contract) {
+                fromPromise = displayAddress(report.address.from, window.contractConfig.contract, window.contractConfig.CONTRACT_ADDRESS).then(addr => {
+                    if (addr.startsWith('CPA')) return addr;
+                    if (addr === 'قرارداد') return addr;
+                    return ultraShortAddress(report.address.from);
+                });
+                toPromise = displayAddress(report.address.to, window.contractConfig.contract, window.contractConfig.CONTRACT_ADDRESS).then(addr => {
+                    if (addr.startsWith('CPA')) return addr;
+                    if (addr === 'قرارداد') return addr;
+                    return ultraShortAddress(report.address.to);
+                });
+            } else {
+                fromPromise = Promise.resolve(ultraShortAddress(report.address.from));
+                toPromise = Promise.resolve(ultraShortAddress(report.address.to));
+            }
+        } else {
+            fromPromise = Promise.resolve('-');
+            toPromise = Promise.resolve('-');
+        }
+        return Promise.all([fromPromise, toPromise]).then(([fromAddr, toAddr]) => {
+            let fromText = fromAddr;
+            let toText = toAddr;
+            return `${time} انتقال توکن از <span class='wallet-address'>${fromText}</span> به <span class='wallet-address'>${toText}</span> مقدار: ${amount}`;
+        });
+    }
+    switch (report.type) {
+        case 'activated':
+            return `${time} شما با پرداخت ${amount} فعال شدید.`;
+        case 'purchase':
+            return `${time} شما ثبت‌نام کردید. ۵٪ توکن سوزانده شد و معادل آن به کشبک اضافه شد، ۱۰٪ به دیپلویِر، ۱۰٪ به رفرر و ۷۵٪ به قرارداد واریز شد.`;
+        case 'tokensbought':
+            return `${time} شما ${amount} خریدید.`;
+        case 'tokenssold':
+            return `${time} شما ${amount} فروختید.`;
+        case 'binarypoints':
+            return `${time} امتیاز باینری شما به ${amount} تغییر یافت.`;
+        case 'binaryreward':
+            return `${time} شما پاداش باینری به مقدار ${amount} دریافت کردید.`;
+        case 'binarypool':
+            return `${time} ${amount}`;
+        case 'tree':
+            return `${time} یک کاربر جدید در سمت ${amount} شما ثبت شد.`;
+        case 'approval':
+            return displayAddress(report.address, window.contractConfig.contract, window.contractConfig.CONTRACT_ADDRESS).then(addr => `${time} شما مجوز انتقال ${amount} را صادر کردید. آدرس مقابل: <span class='wallet-address'>${addr}</span>`);
+        case 'indextransfer':
+            return `${time} انتقال ایندکس ${amount}`;
+        case 'monthlyreward':
+            return `${time} شما پاداش ماهانه به مقدار ${amount} دریافت کردید.`;
+        case 'monthlyfail':
+            return `${time} تلاش برای دریافت پاداش ماهانه ناموفق بود: ${amount}`;
+        default:
+            if (title && amount) return `${time} ${title}: ${amount}`;
+            if (amount) return `${time} ${amount}`;
+            if (title) return `${time} ${title}`;
+            return `${time} گزارش بدون عنوان`;
+    }
+} // پایان تابع getReportSentence

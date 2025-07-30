@@ -1,7 +1,5 @@
 // Profile Module - فقط توابع مخصوص پروفایل
 
-console.log('profile.js loaded, window.getUserProfile =', window.getUserProfile ? window.getUserProfile.toString() : 'undefined');
-
 window.cachedUserProfile = window.cachedUserProfile || null;
 async function loadUserProfileOnce() {
     if (window.cachedUserProfile) return window.cachedUserProfile;
@@ -12,7 +10,7 @@ async function loadUserProfileOnce() {
 // تابع انتظار برای اتصال کیف پول
 async function waitForWalletConnection() {
     let attempts = 0;
-    const maxAttempts = 30; // 30 ثانیه
+    const maxAttempts = 15; // کاهش به 15 ثانیه
     
     while (attempts < maxAttempts) {
         try {
@@ -48,7 +46,7 @@ async function loadUserProfile() {
         // گرفتن اطلاعات یوزر از قرارداد
         const userStruct = await contract.users(address);
         // گرفتن موجودی‌ها
-        let maticBalance = '0', lvlBalance = '0', usdcBalance = '0';
+        let maticBalance = '0', lvlBalance = '0', daiBalance = '0';
         if (provider) {
             maticBalance = await provider.getBalance(address);
             maticBalance = ethers.formatEther(maticBalance);
@@ -57,20 +55,20 @@ async function loadUserProfile() {
             lvlBalance = await contract.balanceOf(address);
             lvlBalance = ethers.formatUnits(lvlBalance, 18);
         }
-        // گرفتن USDC (در صورت وجود USDC_ADDRESS و ABI)
+        // گرفتن DAI (در صورت وجود DAI_ADDRESS و ABI)
         try {
-            if (typeof USDC_ADDRESS !== 'undefined' && typeof USDC_ABI !== 'undefined') {
-                const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, provider);
-                const usdcRaw = await usdcContract.balanceOf(address);
-                usdcBalance = (Number(usdcRaw) / 1e6).toFixed(2);
+            if (typeof window.DAI_ADDRESS !== 'undefined' && typeof window.DAI_ABI !== 'undefined') {
+                const daiContract = new ethers.Contract(window.DAI_ADDRESS, window.DAI_ABI, provider);
+                const daiRaw = await daiContract.balanceOf(address);
+                daiBalance = (Number(daiRaw) / 1e18).toFixed(2);
             }
-        } catch (e) { usdcBalance = '0'; }
+        } catch (e) { daiBalance = '0'; }
         // ساخت پروفایل کامل
         const profile = {
             address,
             maticBalance,
             lvlBalance,
-            usdcBalance,
+            daiBalance,
             userStruct: userStruct // کل ساختار یوزر قرارداد
         };
         // نمایش اطلاعات در UI
@@ -113,8 +111,8 @@ function updateProfileUI(profile) {
     const referrerEl = document.getElementById('profile-referrer');
     if (referrerEl) referrerEl.textContent = referrerText;
 
-    const usdcEl = document.getElementById('profile-usdc');
-    if (usdcEl) usdcEl.textContent = profile.usdcBalance ? formatNumber(profile.usdcBalance, 2) + ' USDC' : '0 USDC';
+    const daiEl = document.getElementById('profile-dai');
+    if (daiEl) daiEl.textContent = profile.daiBalance ? formatNumber(profile.daiBalance, 2) + ' DAI' : '0 DAI';
 
     const capEl = document.getElementById('profile-income-cap');
     if (capEl) capEl.textContent = profile.userStruct.binaryPointCap || '۰';
@@ -245,22 +243,23 @@ function updateProfileUI(profile) {
     if (totalMonthlyRewardedEl) totalMonthlyRewardedEl.textContent = profile.userStruct.totalMonthlyRewarded || '۰';
     const depositedAmountEl = document.getElementById('profile-depositedAmount');
     if (depositedAmountEl) {
-      let val = profile.userStruct.depositedAmount || '۰';
-      // اگر مقدار 18 رقم اعشار دارد (مثلاً BigNumber)، آن را به عدد صحیح تبدیل کن
-      if (typeof val === 'string' && val.length > 18) {
-        val = parseInt((BigInt(val) / 1000000000000000000n).toString(), 10);
-      } else if (!isNaN(val)) {
-        val = parseInt(val, 10);
+      let val = profile.userStruct.depositedAmount;
+      if (val && typeof val === 'object' && typeof val.toString === 'function') {
+        val = ethers.formatUnits(val.toString(), 18);
+      } else if (typeof val === 'bigint') {
+        val = ethers.formatUnits(val, 18);
+      } else if (typeof val === 'string' && val.length > 18) {
+        val = ethers.formatUnits(val, 18);
       }
-      depositedAmountEl.textContent = isNaN(val) ? '۰' : val.toLocaleString('fa');
+      depositedAmountEl.textContent = val ? val : '۰';
     }
 
     // موجودی متیک
     const maticEl = document.getElementById('profile-matic');
-    if (maticEl) maticEl.textContent = profile.maticBalance ? formatNumber(profile.maticBalance, 4) + ' MATIC' : '0 MATIC';
+    if (maticEl) maticEl.textContent = profile.maticBalance ? (Number(profile.maticBalance).toFixed(2) + ' MATIC') : '0 MATIC';
     // موجودی CPA
     const cpaEl = document.getElementById('profile-lvl');
-    if (cpaEl) cpaEl.textContent = profile.lvlBalance ? formatNumber(profile.lvlBalance, 4) + ' CPA' : '0 CPA';
+    if (cpaEl) cpaEl.textContent = profile.lvlBalance ? profile.lvlBalance + ' CPA' : '0 CPA';
     // نمایش ارزش دلاری CPA و POL
     const maticUsdEl = document.getElementById('profile-matic-usd');
     if (maticUsdEl) maticUsdEl.textContent = profile.polValueUSD ? formatNumber(profile.polValueUSD, 2) + ' $' : '0 $';
@@ -619,3 +618,132 @@ function startBinaryClaimCountdown(lastClaimTime) {
 
 // اضافه کردن تابع به window برای دسترسی جهانی
 window.startBinaryClaimCountdown = startBinaryClaimCountdown;
+
+// تابع محاسبه تعداد ولت‌های سمت راست و چپ
+async function calculateWalletCounts(userIndex, contract) {
+    try {
+        console.log(`🔍 محاسبه تعداد ولت‌ها برای ایندکس ${userIndex}...`);
+        
+        let leftCount = 0;
+        let rightCount = 0;
+        
+        // بررسی فرزندان مستقیم
+        const leftChildIndex = BigInt(userIndex) * 2n;
+        const rightChildIndex = BigInt(userIndex) * 2n + 1n;
+        
+        // بررسی فرزند چپ
+        try {
+            const leftAddress = await contract.indexToAddress(leftChildIndex);
+            if (leftAddress && leftAddress !== '0x0000000000000000000000000000000000000000') {
+                const leftUser = await contract.users(leftAddress);
+                if (leftUser && leftUser.activated) {
+                    leftCount = 1;
+                    // محاسبه بازگشتی برای فرزندان فرزند چپ
+                    leftCount += await calculateSubtreeCount(leftChildIndex, contract, 'left');
+                }
+            }
+        } catch (e) {
+            console.log(`خطا در بررسی فرزند چپ:`, e);
+        }
+        
+        // بررسی فرزند راست
+        try {
+            const rightAddress = await contract.indexToAddress(rightChildIndex);
+            if (rightAddress && rightAddress !== '0x0000000000000000000000000000000000000000') {
+                const rightUser = await contract.users(rightAddress);
+                if (rightUser && rightUser.activated) {
+                    rightCount = 1;
+                    // محاسبه بازگشتی برای فرزندان فرزند راست
+                    rightCount += await calculateSubtreeCount(rightChildIndex, contract, 'right');
+                }
+            }
+        } catch (e) {
+            console.log(`خطا در بررسی فرزند راست:`, e);
+        }
+        
+        console.log(`✅ تعداد ولت‌ها: چپ=${leftCount}, راست=${rightCount}`);
+        return { leftCount, rightCount };
+        
+    } catch (error) {
+        console.error(`خطا در محاسبه تعداد ولت‌ها:`, error);
+        return { leftCount: 0, rightCount: 0 };
+    }
+}
+
+// تابع محاسبه بازگشتی تعداد ولت‌ها در زیرمجموعه
+async function calculateSubtreeCount(parentIndex, contract, side) {
+    let count = 0;
+    // const maxDepth = 10; // حذف محدودیت عمق
+    async function countRecursive(index) {
+        const leftChildIndex = BigInt(index) * 2n;
+        const rightChildIndex = BigInt(index) * 2n + 1n;
+        let subtreeCount = 0;
+        // بررسی فرزند چپ
+        try {
+            const leftAddress = await contract.indexToAddress(leftChildIndex);
+            if (leftAddress && leftAddress !== '0x0000000000000000000000000000000000000000') {
+                const leftUser = await contract.users(leftAddress);
+                if (leftUser && leftUser.activated) {
+                    subtreeCount += 1;
+                    subtreeCount += await countRecursive(leftChildIndex);
+                }
+            }
+        } catch (e) {
+            // نادیده گرفتن خطاها
+        }
+        // بررسی فرزند راست
+        try {
+            const rightAddress = await contract.indexToAddress(rightChildIndex);
+            if (rightAddress && rightAddress !== '0x0000000000000000000000000000000000000000') {
+                const rightUser = await contract.users(rightAddress);
+                if (rightUser && rightUser.activated) {
+                    subtreeCount += 1;
+                    subtreeCount += await countRecursive(rightChildIndex);
+                }
+            }
+        } catch (e) {
+            // نادیده گرفتن خطاها
+        }
+        return subtreeCount;
+    }
+    return await countRecursive(parentIndex);
+}
+
+// تابع به‌روزرسانی نمایش تعداد ولت‌ها در پروفایل
+async function updateWalletCountsDisplay() {
+    try {
+        if (!window.connectWallet) return;
+        
+        const { contract, address } = await window.connectWallet();
+        if (!contract || !address) return;
+        
+        const user = await contract.users(address);
+        if (!user || !user.activated || !user.index) return;
+        
+        const userIndex = parseInt(user.index);
+        const counts = await calculateWalletCounts(userIndex, contract);
+        
+        // به‌روزرسانی نمایش در پروفایل
+        const leftCountEl = document.getElementById('profile-left-wallets');
+        const rightCountEl = document.getElementById('profile-right-wallets');
+        
+        if (leftCountEl) {
+            leftCountEl.textContent = counts.leftCount;
+            leftCountEl.style.color = counts.leftCount > 0 ? '#00ff88' : '#666';
+        }
+        
+        if (rightCountEl) {
+            rightCountEl.textContent = counts.rightCount;
+            rightCountEl.style.color = counts.rightCount > 0 ? '#00ff88' : '#666';
+        }
+        
+        console.log(`✅ نمایش تعداد ولت‌ها به‌روزرسانی شد: چپ=${counts.leftCount}, راست=${counts.rightCount}`);
+        
+    } catch (error) {
+        console.error(`خطا در به‌روزرسانی نمایش تعداد ولت‌ها:`, error);
+    }
+}
+
+// اضافه کردن توابع به window برای دسترسی جهانی
+window.calculateWalletCounts = calculateWalletCounts;
+window.updateWalletCountsDisplay = updateWalletCountsDisplay;

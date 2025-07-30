@@ -6,8 +6,8 @@ const deepseek_api ='sk-6074908ce7954bd89d494d57651392a8';
 
 const CONTRACT_ADDRESS = '0x3c07cE8c5CBD79E4358161a00A55046dd0Eadb70';
 
-const USDC_ADDRESS = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174'; // Polygon USDC
-const USDC_ABI =[
+const DAI_ADDRESS = '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063'; // Polygon USDC
+const DAI_ABI =[
 	{
 		"inputs": [
 			{
@@ -2436,65 +2436,17 @@ async function requestAccountsWithDeduplication() {
 
 async function performWeb3Initialization() {
     try {
-        if (typeof window.ethereum === 'undefined') {
-            throw new Error('MetaMask not detected');
-        }
-        
-        // بررسی شبکه Polygon
-        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-        if (chainId !== '0x89') {
-            try {
-                await window.ethereum.request({
-                    method: 'wallet_switchEthereumChain',
-                    params: [{ chainId: '0x89' }]
-                });
-            } catch (switchError) {
-                if (switchError.code === 4902) {
-                    await window.ethereum.request({
-                        method: 'wallet_addEthereumChain',
-               
-				        params: [{
-                            chainId: '0x89',
-                            chainName: 'Polygon',
-                            nativeCurrency: {
-                                name: 'POL',
-                                symbol: 'POL',
-                                decimals: 18
-                            },
-                            rpcUrls: ['https://polygon-rpc.com/'],
-                            blockExplorerUrls: ['https://polygonscan.com/']
-                        }]
-                    });
-                } else {
-                    throw switchError;
-                }
-            }
-        }
-        
-        const provider = new ethers.BrowserProvider(window.ethereum, {
-            name: 'Polygon',
-            chainId: 137
-        });
-        
-        // تنظیم timeout و retry برای provider - فقط اگر connection موجود باشد
-        if (provider.connection) {
-            provider.connection.timeout = 30000; // 30 ثانیه timeout
-        }
-        
+        const provider = new ethers.BrowserProvider(window.ethereum);
         let signer;
-        
-        // بررسی وضعیت اتصال فعلی
         const accounts = await window.ethereum.request({ method: 'eth_accounts' });
         if (accounts && accounts.length > 0) {
             signer = await provider.getSigner();
         } else {
-            // Use deduplicated request for eth_requestAccounts
             try {
                 await requestAccountsWithDeduplication();
                 signer = await provider.getSigner();
             } catch (permissionError) {
                 if (permissionError.code === -32002) {
-                    // Wait for user to approve in another tab/window
                     await new Promise(resolve => {
                         const checkInterval = setInterval(async () => {
                             try {
@@ -2503,18 +2455,13 @@ async function performWeb3Initialization() {
                                     clearInterval(checkInterval);
                                     resolve();
                                 }
-                            } catch (error) {
-                                // ادامه انتظار
-                            }
-                        }, 2000); // افزایش فاصله زمانی
-                        
+                            } catch (error) {}
+                        }, 2000);
                         setTimeout(() => {
                             clearInterval(checkInterval);
                             resolve();
-                        }, 15000); // کاهش زمان انتظار
+                        }, 15000);
                     });
-                    
-                    // تلاش مجدد
                     const retryAccounts = await window.ethereum.request({ method: 'eth_accounts' });
                     if (retryAccounts && retryAccounts.length > 0) {
                         signer = await provider.getSigner();
@@ -2526,13 +2473,12 @@ async function performWeb3Initialization() {
                 }
             }
         }
-        
+
+        // این بخش را اضافه کنید:
         const contract = new ethers.Contract(CONTRACT_ADDRESS, LEVELUP_ABI, signer);
-        
         const address = await signer.getAddress();
-        
         const network = await provider.getNetwork();
-        
+
         const connectionData = {
             provider: provider,
             signer: signer,
@@ -2540,30 +2486,30 @@ async function performWeb3Initialization() {
             address: address,
             initializeWeb3: initializeWeb3
         };
-        
+
         window.contractConfig = {
             ...window.contractConfig,
             ...connectionData
         };
-        
+
         // Cache the connection
         connectionCache = connectionData;
-        
+
         return window.contractConfig;
-        
+
     } catch (error) {
         console.error('خطا در راه‌اندازی Web3:', error);
-        
+
         if (window.contractConfig) {
             window.contractConfig.provider = null;
             window.contractConfig.signer = null;
             window.contractConfig.contract = null;
             window.contractConfig.address = null;
         }
-        
+
         // Clear cache on error
         connectionCache = null;
-        
+
         throw error;
     }
 }
@@ -2627,9 +2573,7 @@ window.contractConfig = {
     initializeWeb3: initializeWeb3
 };
 
-// ===== توابع مرکزی برای استفاده در همه فایل‌ها =====
 
-// Add debounce mechanism for wallet operations
 const debounceTimers = new Map();
 
 function debounce(key, func, delay = 1000) {
@@ -2742,9 +2686,9 @@ window.connectWallet = async function() {
                     window.contractConfig.address = null;
                 }
                 
-                // If this is not the last attempt, wait before retrying
+                // کاهش delay retry برای سرعت بیشتر
                 if (attempt < maxRetries) {
-                    await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1))); // Exponential backoff
+                    await new Promise(resolve => setTimeout(resolve, 500 * (attempt + 1))); // Faster retry
                 }
             }
         }
@@ -3822,14 +3766,7 @@ window.showPriceHistoryStats = function() {
   }
 })();
 
-// --- Lottery Config ---
-window.LOTTERY_CONFIG = {
-  tokenAddress: CONTRACT_ADDRESS,
-  lotteryAddress: CONTRACT_LOTARY,
-  tokenAbi: LEVELUP_ABI,
-  ticketPrice: 1,
-  maxTicketsPerUser: 5
-};
+
 
 // تابع مدیریت خطاهای RPC
 window.handleRpcError = function(error, operation = 'unknown') {
@@ -3910,8 +3847,8 @@ window.retryRpcOperation = async function(operation, maxRetries = 3) {
             }
             
             if (errorType === 'wait') {
-                // Wait longer before retry
-                await new Promise(resolve => setTimeout(resolve, 2000 * (i + 1)));
+                // کاهش زمان انتظار قبل از retry
+                await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
                 continue;
             }
             
@@ -3920,8 +3857,8 @@ window.retryRpcOperation = async function(operation, maxRetries = 3) {
                 throw error;
             }
             
-            // Default retry delay
-            await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+            // کاهش delay retry برای سرعت بیشتر
+            await new Promise(resolve => setTimeout(resolve, 500 * (i + 1)));
         }
     }
 };
@@ -4061,9 +3998,6 @@ window.handleWalletConnectionError = function(error) {
 };
 
 
-
-
-
 // Event listener برای پاکسازی intervals هنگام خروج از صفحه
 window.addEventListener('beforeunload', function() {
     if (window.priceUpdateInterval) {
@@ -4104,7 +4038,7 @@ async function refreshTotalSupply() {
 window.updateDashboardStats = async function() {
   // Prevent multiple simultaneous calls
   if (window._dashboardUpdateInProgress) {
-    console.log('⏳ Dashboard update already in progress, skipping...');
+    console.debug('⏳ Dashboard update already in progress, skipping...');
     return;
   }
   
@@ -4154,14 +4088,13 @@ window.updateDashboardStats = async function() {
       console.error('❌ Basic contract call failed:', e);
     }
 
-    // Helper function to safely update element
+    // Helper function to safely update element (حفظ مقدار قبلی)
     const safeUpdate = (id, value) => {
       const el = document.getElementById(id);
       if (el) {
-        el.innerText = value;
-        console.log(`✅ Updated ${id}: ${value}`);
-      } else {
-        console.warn(`⚠️ Element with id '${id}' not found`);
+        if (value !== undefined && value !== null && value !== 'Error' && value !== 'در دسترس نیست') {
+          el.innerText = value;
+        } // اگر مقدار جدید معتبر نبود، مقدار قبلی را نگه دار
       }
     };
 
@@ -4179,10 +4112,10 @@ window.updateDashboardStats = async function() {
     try {
       console.log('📊 Fetching total supply...');
       
-      // Add timeout protection
+      // افزایش timeout از ۵ ثانیه به ۷ ثانیه
       const totalSupplyPromise = contract.totalSupply();
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Total supply fetch timeout')), 10000)
+        setTimeout(() => reject(new Error('Total supply fetch timeout')), 7000)
       );
       
       const totalSupply = await Promise.race([totalSupplyPromise, timeoutPromise]);
@@ -4197,14 +4130,15 @@ window.updateDashboardStats = async function() {
         code: e.code,
         stack: e.stack
       });
-      safeUpdate('circulating-supply', 'Error');
+      safeUpdate('circulating-supply', 'خطا در دریافت مقدار');
     }
 
     // TOTAL POINTS
     try {
       console.log('🎯 Fetching total points...');
-      const totalPoints = await contract.totalClaimableBinaryPoints();
-      const formattedPoints = parseFloat(ethers.formatUnits(totalPoints, 18)).toLocaleString('en-US', {maximumFractionDigits: 2});
+      const totalPoints = await contract.totalClaimablePoints();
+      // استفاده از ethers.formatUnits برای تبدیل صحیح BigInt به عدد
+      const formattedPoints = parseInt(ethers.formatUnits(totalPoints, 0)).toLocaleString('en-US');
       safeUpdate('total-points', formattedPoints);
       console.log('✅ Total points updated:', formattedPoints);
 
@@ -4250,7 +4184,7 @@ window.updateDashboardStats = async function() {
       safeUpdate('dashboard-cashback-value', 'N/A');
     }
 
-    // USDC CONTRACT BALANCE - Using contract's getContractUSDCBalance function
+    // DAI CONTRACT BALANCE - Using contract's getContractUSDCBalance function
     try {
       console.log('💵 Fetching USDC contract balance...');
       let usdcBalance;
@@ -4394,7 +4328,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }, 2000);
   
-  // Set up interval for blockchain info updates (every 30 seconds)
+  // Set up interval for blockchain info updates (every 5 seconds)
   if (!window._blockchainInfoIntervalSet) {
     setInterval(async () => {
       try {
@@ -4402,13 +4336,10 @@ document.addEventListener('DOMContentLoaded', function() {
       } catch (error) {
         console.error('❌ Error in scheduled update:', error);
       }
-    }, 30000); // 30 seconds
+    }, 5000); // 5 seconds
     window._blockchainInfoIntervalSet = true;
   }
 });
-
-
-
 
 
 // Example for all assignments:
@@ -4418,11 +4349,7 @@ const elChartLvlUsdChange = document.getElementById('chart-lvl-usd-change');
 if (elChartLvlUsdChange) elChartLvlUsdChange.textContent = '';
 const elPriceChartLastUpdate = document.getElementById('price-chart-last-update');
 if (elPriceChartLastUpdate) elChartLvlUsdChange.textContent = '';
-// ... repeat for all similar assignments ...
-// For removed elements, comment out or remove the line:
-// const elRemoved = document.getElementById('removed-id');
-// if (elRemoved) elRemoved.textContent = '';
-// ... existing code ...
+
 
 async function updatePriceChart() {
     try {
@@ -4457,7 +4384,7 @@ async function getContractUSDCBalance() {
 }
 
 // ... existing code ...
-// Returns the raw totalClaimableBinaryPoints value (BigInt)
+// Returns the raw totalClaimablePoints value (BigInt)
 async function getTotalClaimableBinaryPoints() {
   if (typeof ethers === 'undefined') throw new Error('ethers.js not loaded');
   const provider = (window.contractConfig && window.contractConfig.contract && window.contractConfig.contract.provider)
@@ -4467,13 +4394,14 @@ async function getTotalClaimableBinaryPoints() {
       : (window.ethereum ? new ethers.BrowserProvider(window.ethereum) : null);
   if (!provider) throw new Error('No provider');
   const contract = new ethers.Contract(CONTRACT_ADDRESS, LEVELUP_ABI, provider);
-  const pointsRaw = await contract.totalClaimableBinaryPoints();
+  const pointsRaw = await contract.totalClaimablePoints();
   return pointsRaw; // BigInt or string
 }
 // Returns the integer value (no decimals)
 async function getTotalClaimableBinaryPointsInteger() {
   const pointsRaw = await getTotalClaimableBinaryPoints();
-  return (BigInt(pointsRaw) / 10n ** 18n).toString();
+  // استفاده از ethers.formatUnits برای تبدیل صحیح BigInt به عدد
+  return parseInt(ethers.formatUnits(pointsRaw, 0)).toString();
 }
 // ... existing code ...
 
@@ -4516,7 +4444,7 @@ async function updateContractStats() {
     if (!provider) throw new Error('No provider');
     const contract = new ethers.Contract(CONTRACT_ADDRESS, LEVELUP_ABI, provider);
     // Total Points (integer, no decimals)
-    window.contractStats.totalPoints = (await contract.totalClaimableBinaryPoints()).toString();
+    window.contractStats.totalPoints = (await contract.totalClaimablePoints()).toString();
     // USDC Balance (calls helper)
     window.contractStats.usdcBalance = await getContractUSDCBalance();
     // Token Balance (calls helper)
@@ -4588,7 +4516,6 @@ if (!window._dashboardIntervalSet) {
 }
 
 
-// ... existing code ...
 
 // تابع global برای دریافت قیمت ثبت‌نام از قرارداد
 window.getRegPrice = async function(contract) {
@@ -4604,11 +4531,10 @@ window.getRegPrice = async function(contract) {
     if (typeof contract.getRegPrice === 'function') {
       return await contract.getRegPrice();
     } else {
-      // fallback value
-      return ethers.parseUnits('100', 18);
+      return undefined;
     }
   } catch (e) {
-    return ethers.parseUnits('100', 18);
+    return undefined;
   }
 };
 // ... existing code ...
@@ -4969,12 +4895,14 @@ window.registerNewUserWithReferrer = async function(referrerAddress, newUserAddr
             } else if (typeof contract.regPrice === 'function') {
                 regPrice = await contract.regPrice();
             } else {
-                // اگر تابع نبود، از مقدار ثابت استفاده کن
-                regPrice = ethers.parseUnits('100', 18);
+                if (statusElement) statusElement.textContent = 'قیمت ثبت‌نام قابل دریافت نیست.';
+                showErrorMessage('REGISTRATION', 'NO_REG_PRICE');
+                return false;
             }
         } catch (e) {
-            console.log('Using default registration price');
-            regPrice = ethers.parseUnits('100', 18);
+            if (statusElement) statusElement.textContent = 'قیمت ثبت‌نام قابل دریافت نیست.';
+            showErrorMessage('REGISTRATION', 'NO_REG_PRICE');
+            return false;
         }
         
         if (userBalance < regPrice) {
@@ -5028,4 +4956,35 @@ window.registerNewUserWithReferrer = async function(referrerAddress, newUserAddr
     }
 };
 
+
+// تابع مرکزی برای گرفتن همه گزارشات
+window.getAllReports = async function(address) {
+  // اگر تابع fetchReports وجود دارد، از آن استفاده کن
+  if (typeof window.fetchReports === 'function') {
+    return await window.fetchReports(address);
+  }
+  // اگر تابع واقعی وجود ندارد، پیام خطا برگردان
+  return [];
+};
 // ... existing code ...
+
+var searchIndexBtn = document.getElementById('search-index-btn');
+if (searchIndexBtn) {
+  searchIndexBtn.onclick = async function() {
+    const index = document.getElementById('index').value.trim();
+    // ...
+    const refAddr = await contract.indexToAddress(index);
+    document.getElementById('referrer-address').value = refAddr;
+    // ...
+  };
+}
+
+// مقداردهی سراسری برای استفاده در products-manager.js و سایر بخش‌ها
+window.tokenAddress = CONTRACT_ADDRESS;
+window.tokenAbi = LEVELUP_ABI;
+
+// ... existing code ...
+window.DAI_ADDRESS = DAI_ADDRESS;
+window.DAI_ABI = DAI_ABI;
+window.CONTRACT_ADDRESS = CONTRACT_ADDRESS;
+window.CONTRACT_ABI = LEVELUP_ABI;

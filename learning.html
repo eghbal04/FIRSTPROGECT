@@ -37,13 +37,31 @@
       }
     });
   </script>
-    <div id="main-box">
-        <h1>کلاس آنلاین آکادمی سود مستمر</h1>
-        <div id="status">منتظر شروع جلسه آنلاین...</div>
-        <button id="start-btn">ورود به کلاس آنلاین</button>
-        <button id="share-btn">📋 کپی لینک دعوت</button>
-        <div id="copied-msg">لینک کپی شد!</div>
-        <div id="jitsi-container"></div>
+    <div class="learning-main">
+      <div class="learning-intro">
+        <h2>👨‍🏫 خوش آمدید به کلاس آنلاین آکادمی سود مستمر (CPA)</h2>
+        <p>
+          شما وارد بخش <b>کلاس آنلاین</b> آکادمی سود مستمر شده‌اید.<br>
+          در این بخش می‌توانید به صورت زنده در کلاس‌های آموزشی تخصصی بازارهای مالی، ارز دیجیتال و سرمایه‌گذاری شرکت کنید.<br>
+          <b>امکانات این بخش:</b>
+          <ul style="text-align:right; margin: 1rem auto 1.5rem auto; max-width: 400px; direction: rtl;">
+            <li>شرکت در جلسات آنلاین با اساتید حرفه‌ای</li>
+            <li>پرسش و پاسخ زنده و تعامل با استاد</li>
+            <li>دریافت لینک دعوت و اشتراک‌گذاری با دوستان</li>
+            <li>نمایش تعداد حاضرین و وضعیت جلسه</li>
+            <li>دسترسی آسان از موبایل و دسکتاپ</li>
+          </ul>
+          <span style="color:#a786ff;">برای ورود به کلاس، منتظر شروع جلسه باشید و سپس روی دکمه ورود کلیک کنید.</span>
+        </p>
+      </div>
+      <h1>کلاس آنلاین آکادمی سود مستمر</h1>
+      <div id="status" class="learning-status">منتظر شروع جلسه آنلاین...</div>
+      <div class="learning-btn-row">
+        <button id="start-btn" class="learning-btn"><span class="sf-video"></span> ورود به کلاس آنلاین</button>
+        <button id="share-btn" class="learning-btn secondary"><span class="sf-copy"></span> کپی لینک دعوت</button>
+      </div>
+      <div id="copied-msg" class="learning-copied">لینک کپی شد!</div>
+      <div id="jitsi-container" class="learning-jitsi"></div>
     </div>
     <script src="https://meet.jit.si/external_api.js"></script>
     <script>

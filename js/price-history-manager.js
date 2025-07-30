@@ -1,15 +1,87 @@
-// Price History Manager - Manages both token and point price history
+// Price History Manager - Manages both token and point price history with Firebase integration
 class PriceHistoryManager {
     constructor() {
         this.tokenHistory = [];
         this.pointHistory = [];
         this.maxHistoryLength = 1000; // Maximum number of price points to store
+        this.firebaseEnabled = false;
         this.init();
     }
 
     init() {
         this.loadHistory();
+        this.checkFirebaseAvailability();
+    }
 
+    // Check if Firebase is available and enabled
+    async checkFirebaseAvailability() {
+        if (window.firebasePriceHistory && window.firebasePriceHistory.get) {
+            try {
+                // Test Firebase connection by trying to get stats
+                const stats = await window.firebasePriceHistory.getStats();
+                if (stats !== null) {
+                    this.firebaseEnabled = true;
+                    console.log('✅ Firebase برای تاریخچه قیمت فعال شد');
+                    // Load data from Firebase
+                    await this.loadFromFirebase();
+                }
+            } catch (error) {
+                console.warn('⚠️ Firebase در دسترس نیست، از localStorage استفاده می‌شود:', error);
+                this.firebaseEnabled = false;
+            }
+        } else {
+            console.log('ℹ️ Firebase در دسترس نیست، از localStorage استفاده می‌شود');
+            this.firebaseEnabled = false;
+        }
+    }
+
+    // Load data from Firebase
+    async loadFromFirebase() {
+        if (!this.firebaseEnabled || !window.firebasePriceHistory) {
+            return;
+        }
+
+        try {
+            console.log('📥 بارگذاری تاریخچه قیمت از Firebase...');
+            const firebaseHistory = await window.firebasePriceHistory.get(1000);
+            
+            // Separate token and point history
+            this.tokenHistory = [];
+            this.pointHistory = [];
+            
+            if (firebaseHistory && Array.isArray(firebaseHistory) && firebaseHistory.length > 0) {
+                firebaseHistory.forEach(record => {
+                    const timestamp = record.timestamp.getTime ? record.timestamp.getTime() : new Date(record.timestamp).getTime();
+                    
+                    if (record.tokenPrice !== undefined && record.tokenPrice !== null) {
+                        this.tokenHistory.push({
+                            timestamp: timestamp,
+                            price: record.tokenPrice,
+                            time: new Date(timestamp)
+                        });
+                    }
+                    
+                    if (record.pointPrice !== undefined && record.pointPrice !== null) {
+                        this.pointHistory.push({
+                            timestamp: timestamp,
+                            price: record.pointPrice,
+                            time: new Date(timestamp)
+                        });
+                    }
+                });
+
+                // Sort by timestamp
+                this.tokenHistory.sort((a, b) => a.timestamp - b.timestamp);
+                this.pointHistory.sort((a, b) => a.timestamp - b.timestamp);
+                
+                console.log(`✅ ${this.tokenHistory.length} رکورد توکن و ${this.pointHistory.length} رکورد پوینت از Firebase بارگذاری شد`);
+            } else {
+                console.log('ℹ️ هیچ داده‌ای در Firebase یافت نشد');
+            }
+        } catch (error) {
+            console.error('❌ خطا در بارگذاری از Firebase:', error);
+            this.firebaseEnabled = false;
+        }
     }
 
     // Add new token price to history
@@ -28,9 +100,11 @@ class PriceHistoryManager {
             this.tokenHistory = this.tokenHistory.slice(-this.maxHistoryLength);
         }
 
+        // Save to localStorage as backup
         this.saveHistory();
         
-        // Update current price display
+        // حذف ذخیره در Firebase
+        // فقط نمایش قیمت فعلی
         const priceDisplay = document.getElementById('current-price-display');
         if (priceDisplay) {
             priceDisplay.textContent = this.formatPrice(price);
@@ -53,9 +127,11 @@ class PriceHistoryManager {
             this.pointHistory = this.pointHistory.slice(-this.maxHistoryLength);
         }
 
+        // Save to localStorage as backup
         this.saveHistory();
         
-        // Update current point display
+        // حذف ذخیره در Firebase
+        // فقط نمایش قیمت فعلی
         const pointDisplay = document.getElementById('current-point-display');
         if (pointDisplay) {
             pointDisplay.textContent = this.formatPrice(price);
@@ -135,7 +211,7 @@ class PriceHistoryManager {
             }
         } else if (period === 'year') {
             // Get prices for the last 12 months
-            const yearAgo = new Date(now.getTime() - 12 * 30 * 24 * 60 * 60 * 1000);
+            const yearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
             const yearPrices = history.filter(entry => entry.timestamp >= yearAgo.getTime());
             
             // Group by month and get the latest price for each month
@@ -162,8 +238,9 @@ class PriceHistoryManager {
         return prices;
     }
 
-    // Get statistics for a specific period
+    // Get history statistics
     getHistoryStats(type, period) {
+        const history = type === 'point' ? this.pointHistory : this.tokenHistory;
         const prices = this.getRealPricesUpToNow(type, period).filter(p => p > 0);
         
         if (prices.length === 0) {
@@ -228,7 +305,7 @@ class PriceHistoryManager {
         }
     }
 
-    // Save history to localStorage
+    // Save history to localStorage (backup)
     saveHistory() {
         try {
             localStorage.setItem('tokenPriceHistory', JSON.stringify(this.tokenHistory));
@@ -238,7 +315,7 @@ class PriceHistoryManager {
         }
     }
 
-    // Load history from localStorage
+    // Load history from localStorage (backup)
     loadHistory() {
         try {
             const tokenHistory = localStorage.getItem('tokenPriceHistory');
@@ -254,7 +331,7 @@ class PriceHistoryManager {
     }
 
     // Clear all history
-    clearHistory() {
+    async clearHistory() {
         this.tokenHistory = [];
         this.pointHistory = [];
         this.saveHistory();
@@ -266,6 +343,26 @@ class PriceHistoryManager {
         } catch (error) {
             console.error('Error clearing price history:', error);
         }
+
+        // Clear Firebase if available
+        if (this.firebaseEnabled && window.firebasePriceHistory && window.firebasePriceHistory.cleanup) {
+            try {
+                await window.firebasePriceHistory.cleanup(0); // Remove all records
+                console.log('✅ تاریخچه Firebase پاک شد');
+            } catch (error) {
+                console.error('❌ خطا در پاک کردن تاریخچه Firebase:', error);
+            }
+        }
+    }
+
+    // Get Firebase status
+    isFirebaseEnabled() {
+        return this.firebaseEnabled;
+    }
+
+    // Force reload from Firebase
+    async reloadFromFirebase() {
+        await this.loadFromFirebase();
     }
 }
 

@@ -15,79 +15,115 @@ function showUserPopup(address, user) {
     let existingPopup = document.getElementById('user-popup');
     if (existingPopup) existingPopup.remove();
     // اطلاعات مورد نیاز
-    const cpaId = window.generateCPAId ? window.generateCPAId(user.index) : user.index;
-    const binaryPoints = user.binaryPoints ? Number(user.binaryPoints) : 0;
-    const binaryPointCap = user.binaryPointCap ? Number(user.binaryPointCap) : 0;
-    const totalBinaryReward = user.totalMonthlyRewarded ? Number(user.totalMonthlyRewarded) : 0;
-    const binaryPointsClaimed = user.binaryPointsClaimed ? Number(user.binaryPointsClaimed) : 0;
-    const referral = user.refclimed ? Math.floor(Number(user.refclimed) / 1e18) : 0;
-    const deposited = user.depositedAmount ? Math.floor(Number(user.depositedAmount) / 1e18) : 0;
-    const leftCount = user.leftCount ? Number(user.leftCount) : 0;
-    const rightCount = user.rightCount ? Number(user.rightCount) : 0;
-    // اطلاعات تکمیلی
-    const isActive = user.activated ? true : false;
-    const lastClaim = user.lastClaimTime ? Number(user.lastClaimTime) : 0;
-    const joinTime = user.joinTime ? Number(user.joinTime) : 0;
-    const cpaBalance = user.lvlBalance ? Number(user.lvlBalance) : null;
-    const maticBalance = user.maticBalance ? Number(user.maticBalance) : null;
-    const usdcBalance = user.usdcBalance ? Number(user.usdcBalance) : null;
-    // آیتم‌های کامل با عنوان انگلیسی کامل
-    const items = [];
-    if (cpaBalance !== null) items.push({icon:'🟢', val:cpaBalance, label:'CPA Balance'});
-    items.push(
-      {icon:'🆔', val:cpaId, label:'CPA ID'},
-      {icon:'🔗', val:shortAddress(address), label:'Wallet', short:true},
-      {icon:'🎯', val:binaryPoints, label:'Binary Points'},
-      {icon:'🏆', val:binaryPointCap, label:'Binary Cap'},
-      {icon:'💎', val:totalBinaryReward, label:'Total Binary Reward'},
-      {icon:'✅', val:binaryPointsClaimed, label:'Claimed Points'},
-      {icon:'🤝', val:referral, label:'Referral Income'},
-      {icon:'💰', val:deposited, label:'Total Deposit'},
-      {icon:'⬅️', val:leftCount, label:'Left Count'},
-      {icon:'➡️', val:rightCount, label:'Right Count'}
-    );
-    if (maticBalance !== null) items.push({icon:'🟣', val:maticBalance, label:'MATIC Balance'});
-    if (usdcBalance !== null) items.push({icon:'💵', val:usdcBalance, label:'USDC Balance'});
-    if (isActive !== undefined) items.push({icon:isActive?'✅':'❌', val:isActive?'Active':'Inactive', label:'Active Status'});
-    if (lastClaim) items.push({icon:'⏰', val:new Date(lastClaim*1000).toLocaleDateString('en-GB'), label:'Last Claim Date'});
-    if (joinTime) items.push({icon:'📅', val:new Date(joinTime*1000).toLocaleDateString('en-GB'), label:'Join Date'});
-    // ساخت popup
+    const cpaId = user && user.index !== undefined && user.index !== null ? (window.generateCPAId ? window.generateCPAId(user.index) : user.index) : '-';
+    const walletAddress = address || '-';
+    const isActive = user && user.activated ? true : false;
+    // لیست struct
+    const infoList = [
+      {icon:'🎯', label:'امتیاز باینری', val:user.binaryPoints},
+      {icon:'🏆', label:'سقف باینری', val:user.binaryPointCap},
+      {icon:'💎', label:'پاداش کل باینری', val:user.totalMonthlyRewarded},
+      {icon:'✅', label:'امتیاز دریافت‌شده', val:user.binaryPointsClaimed},
+      {icon:'🤝', label:'درآمد رفرال', val:user.refclimed ? Math.floor(Number(user.refclimed) / 1e18) : 0},
+      {icon:'💰', label:'سپرده کل', val:user.depositedAmount ? Math.floor(Number(user.depositedAmount) / 1e18) : 0},
+      {icon:'🟢', label:'CPA', val:'در حال بارگذاری...'},
+      {icon:'🟣', label:'MATIC', val:'در حال بارگذاری...'},
+      {icon:'💵', label:'USDC', val:'در حال بارگذاری...'},
+      {icon:'⬅️', label:'امتیاز چپ', val:user.leftPoints},
+      {icon:'➡️', label:'امتیاز راست', val:user.rightPoints}
+    ];
     const popup = document.createElement('div');
     popup.id = 'user-popup';
     popup.style = `
-      position: fixed;
-      z-index: 9999;
-      top: 64px;
-      left: 0;
-      right: 0;
-      width: 100vw;
-      min-width: 100vw;
-      max-width: 100vw;
-      background: rgba(24,28,42,0.97);
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      padding: 0.5rem 0.5vw 0.5rem 0.5vw;
-      box-sizing: border-box;
-      font-family: 'Montserrat', 'Noto Sans Arabic', monospace;
-      font-size: 0.93rem;
-    `;
+      position: fixed;z-index: 9999;top: 64px;left: 0;right: 0;width: 100vw;min-width: 100vw;max-width: 100vw;background: rgba(24,28,42,0.97);display: flex;align-items: flex-start;justify-content: center;padding: 0.5rem 0.5vw 0.5rem 0.5vw;box-sizing: border-box;font-family: 'Montserrat', 'Noto Sans Arabic', monospace;font-size: 0.93rem;`;
     popup.innerHTML = `
-      <div style="width:100%;max-width:1200px;background:rgba(35,41,70,0.98);border-radius:14px;padding:0.7rem 1.2rem 0.7rem 1.2rem;margin:0 auto;position:relative;overflow-x:visible;">
-        <div style="width:100%;overflow-x:auto;overflow-y:hidden;padding-bottom:0.3em;">
-          <div style="display:flex;flex-direction:row;flex-wrap:nowrap;gap:0.5em;align-items:center;justify-content:flex-start;min-height:1px;">
-            ${items.map(i=>{
-              const wide = i.label === 'Last Claim Date';
-              return `<span class='user-info-item' style='display:flex;flex-direction:row;align-items:center;gap:0.35em;background:linear-gradient(90deg,#232946,#181c2a);border-radius:8px;padding:0.7em 0.7em;font-size:0.97em;min-width:${wide ? '320px' : '240px'};max-width:${wide ? '320px' : '240px'};width:${wide ? '320px' : '240px'};justify-content:center;transition:background 0.2s,transform 0.2s;box-shadow:0 2px 8px #00ff8820;cursor:default;white-space:nowrap;overflow:hidden;'><span style='font-size:1.1em;'>${i.icon}</span><span style='font-weight:bold;color:#fff;margin:0 0.2em;${i.short ? 'overflow:hidden;text-overflow:ellipsis;max-width:70px;display:inline-block;' : ''}'>${typeof i.val==='number'?i.val.toLocaleString():i.val}</span><span style='color:#a786ff;font-size:0.97em;display:inline-block;max-width:90px;overflow:visible;'>${i.label}</span></span>`;
-            }).join('')}
-          </div>
+      <div class="user-info-card">
+        <button class="close-btn" id="close-user-popup">×</button>
+        <div class="user-info-btn-row">
+          <button class="user-info-btn cpa-id-btn" title="کپی CPA ID" id="copy-cpa-id">🆔 <span>${cpaId}</span></button>
+          <button class="user-info-btn wallet-address-btn" title="کپی آدرس ولت" id="copy-wallet-address">🔗 <span>${walletAddress ? shortAddress(walletAddress) : '-'}</span></button>
+          <button class="user-info-btn status-btn">${isActive ? '✅ فعال' : '❌ غیرفعال'}</button>
         </div>
+        <ul class="user-info-list">
+          ${infoList.map(i=>`<li><span>${i.icon}</span> <b>${i.label}:</b> ${i.val !== undefined && i.val !== null && i.val !== '' ? i.val : '-'}</li>`).join('')}
+        </ul>
+        <div id="copy-msg" style="display:none;text-align:center;color:#00ff88;font-size:1em;margin-top:0.7em;">کپی شد!</div>
       </div>
-      <style>
-      .user-info-item:hover { background: #00ff8840 !important; transform: scale(1.07); }
-      </style>
     `;
     document.body.appendChild(popup);
+    document.getElementById('close-user-popup').onclick = () => popup.remove();
+    // قابلیت کپی
+    function showCopyMsg() {
+      const msg = document.getElementById('copy-msg');
+      if (!msg) return;
+      msg.style.display = 'block';
+      setTimeout(()=>{msg.style.display='none';}, 1200);
+    }
+    document.getElementById('copy-cpa-id').onclick = function() {
+      navigator.clipboard.writeText(cpaId+'');
+      showCopyMsg();
+    };
+    document.getElementById('copy-wallet-address').onclick = function() {
+      navigator.clipboard.writeText(walletAddress+'');
+      showCopyMsg();
+    };
+
+    async function getLiveBalances(addr) {
+        let cpa = '-', usdc = '-', matic = '-';
+        try {
+            const { contract, provider } = await window.connectWallet();
+            
+            // دریافت موجودی CPA
+            if (contract && typeof contract.balanceOf === 'function') {
+                try {
+                    let cpaRaw = await contract.balanceOf(addr);
+                    cpa = (typeof ethers !== 'undefined') ? Number(ethers.formatEther(cpaRaw)).toFixed(2) : (Number(cpaRaw)/1e18).toFixed(2);
+                } catch(e) {
+                    console.warn('خطا در دریافت موجودی CPA:', e);
+                }
+            }
+            
+            // دریافت موجودی USDC
+            try {
+                if (typeof USDC_ADDRESS !== 'undefined' && typeof USDC_ABI !== 'undefined') {
+                    const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, provider);
+                    let usdcRaw = await usdcContract.balanceOf(addr);
+                    usdc = (typeof ethers !== 'undefined') ? Number(ethers.formatUnits(usdcRaw, 6)).toFixed(2) : (Number(usdcRaw)/1e6).toFixed(2);
+                }
+            } catch(e) {
+                console.warn('خطا در دریافت موجودی USDC:', e);
+            }
+            
+            // دریافت موجودی MATIC
+            if (provider) {
+                try {
+                    let maticRaw = await provider.getBalance(addr);
+                    matic = (typeof ethers !== 'undefined') ? Number(ethers.formatEther(maticRaw)).toFixed(3) : (Number(maticRaw)/1e18).toFixed(3);
+                } catch(e) {
+                    console.warn('خطا در دریافت موجودی MATIC:', e);
+                }
+            }
+        } catch(e) {
+            console.error('خطا در دریافت موجودی‌ها:', e);
+        }
+        return {cpa, usdc, matic};
+    }
+
+    (async function() {
+        const {cpa, usdc, matic} = await getLiveBalances(address);
+        // به‌روزرسانی موجودی‌ها در لیست
+        const listItems = document.querySelectorAll('.user-info-list li');
+        listItems.forEach(item => {
+            const text = item.textContent;
+            if (text.includes('🟢 CPA:')) {
+                item.innerHTML = item.innerHTML.replace(/🟢 <b>CPA:<\/b> [^<]*/, `🟢 <b>CPA:</b> ${cpa}`);
+            } else if (text.includes('🟣 MATIC:')) {
+                item.innerHTML = item.innerHTML.replace(/🟣 <b>MATIC:<\/b> [^<]*/, `🟣 <b>MATIC:</b> ${matic}`);
+            } else if (text.includes('💵 USDC:')) {
+                item.innerHTML = item.innerHTML.replace(/💵 <b>USDC:<\/b> [^<]*/, `💵 <b>USDC:</b> ${usdc}`);
+            }
+        });
+    })();
 }
 
 // تابع جدید: رندر عمودی ساده با حفظ رفتارها
@@ -182,6 +218,39 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
             showUserPopup(address, user);
         });
         container.appendChild(nodeDiv);
+        
+        // ذخیره گره در دیتابیس
+        if (window.saveNetworkNode) {
+            try {
+                const nodeData = {
+                    index: index.toString(),
+                    address: address,
+                    cpaId: cpaId,
+                    level: level,
+                    hasDirects: hasDirects,
+                    leftActive: leftActive,
+                    rightActive: rightActive,
+                    userData: {
+                        activated: user.activated,
+                        binaryPoints: user.binaryPoints,
+                        binaryPointCap: user.binaryPointCap,
+                        totalMonthlyRewarded: user.totalMonthlyRewarded,
+                        binaryPointsClaimed: user.binaryPointsClaimed,
+                        refclimed: user.refclimed,
+                        depositedAmount: user.depositedAmount,
+                        lvlBalance: 'در حال بارگذاری...',
+                        maticBalance: 'در حال بارگذاری...',
+                        usdcBalance: 'در حال بارگذاری...',
+                        leftPoints: user.leftPoints,
+                        rightPoints: user.rightPoints
+                    }
+                };
+                await window.saveNetworkNode(nodeData);
+            } catch (error) {
+                console.warn('⚠️ خطا در ذخیره گره در دیتابیس:', error);
+            }
+        }
+        
         // div فرزندان (در ابتدا بسته یا باز بر اساس autoExpand)
         if (expandBtn) {
             childrenDiv = document.createElement('div');
@@ -211,16 +280,19 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         if (!leftActive || !rightActive) {
             let newBtn = document.createElement('button');
             newBtn.textContent = 'ثبت جدید';
-            newBtn.style.whiteSpace = 'nowrap';
-            newBtn.style.fontSize = '0.93em';
-            newBtn.style.padding = '0.18em 0.7em';
             newBtn.title = 'ثبت‌نام زیرمجموعه جدید';
             newBtn.style.background = 'linear-gradient(90deg,#a786ff,#00ff88)';
             newBtn.style.color = '#181c2a';
             newBtn.style.fontWeight = 'bold';
             newBtn.style.border = 'none';
             newBtn.style.borderRadius = '6px';
+            newBtn.style.padding = '0.2em 0.9em';
             newBtn.style.cursor = 'pointer';
+            newBtn.style.fontSize = '0.95em';
+            newBtn.style.marginRight = '0.7em';
+            newBtn.style.marginLeft = '0.7em';
+            newBtn.style.whiteSpace = 'nowrap';
+            newBtn.style.fontSize = '0.8em';
             newBtn.onclick = async function(e) {
                 e.stopPropagation();
                 // اگر modal قبلی باز است، حذف کن
@@ -334,6 +406,8 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                   this.disabled = true;
                   // مقدار آواتار انتخابی را لاگ کن (در صورت نیاز بعداً به قرارداد هم می‌توان ارسال کرد)
                   console.log('انتخاب آواتار کاربر:', selectedAvatar);
+                  // مقدار آواتار انتخابی را ذخیره کن
+                  localStorage.setItem('avatar_' + newAddress, selectedAvatar);
                   try {
                     const { contract } = await window.connectWallet();
                     const tx = await contract.registerAndActivate(address, newAddress);
@@ -384,6 +458,26 @@ function renderEmptyNodeVertical(index, container, level) {
         renderEmptyNode(index, container);
     };
     container.appendChild(emptyNode);
+    
+    // ذخیره گره خالی در دیتابیس
+    if (window.saveNetworkNode) {
+        try {
+            const nodeData = {
+                index: index.toString(),
+                address: null,
+                cpaId: null,
+                level: level,
+                hasDirects: false,
+                leftActive: false,
+                rightActive: false,
+                isEmpty: true,
+                userData: null
+            };
+            window.saveNetworkNode(nodeData);
+        } catch (error) {
+            console.warn('⚠️ خطا در ذخیره گره خالی در دیتابیس:', error);
+        }
+    }
 }
 // جایگزینی رندر اصلی درخت با مدل عمودی
 window.renderSimpleBinaryTree = async function() {
@@ -408,19 +502,31 @@ window.renderSimpleBinaryTree = async function() {
         }
         // در window.renderSimpleBinaryTree مقدار autoExpand فقط برای ریشه true باشد:
         await renderVerticalNodeLazy(BigInt(user.index), container, 0, true);
+        
+        // ذخیره درخت در دیتابیس بعد از رندر
+        if (window.saveCurrentNetworkTree) {
+            setTimeout(async () => {
+                try {
+                    await window.saveCurrentNetworkTree();
+                } catch (error) {
+                    console.warn('⚠️ خطا در ذخیره درخت در دیتابیس:', error);
+                }
+            }, 2000); // 2 ثانیه صبر کن تا رندر کامل شود
+        }
     } catch (error) {
         console.error('❌ Error rendering binary tree:', error);
         container.innerHTML = `<div style="color:#ff4444;text-align:center;padding:2rem;">❌ خطا در بارگذاری درخت شبکه<br><small style="color:#ccc;">${error.message}</small></div>`;
     }
 };
 
-// حذف event listener اضافی که باعث رندر مکرر می‌شود
-// این بخش حذف شد چون در tabs.js و main.js event listener های مناسب وجود دارد
 
 // اطمینان از اتصال توابع به window برای نمایش شبکه
 if (typeof renderSimpleBinaryTree === 'function') {
     window.renderSimpleBinaryTree = renderSimpleBinaryTree;
 }
+
+// اضافه کردن تابع initializeNetworkTab به window
+// window.initializeNetworkTab = initializeNetworkTab; // این خط حذف شد چون تابع بعداً تعریف می‌شود
 
 // اضافه کردن event listener برای تب network
 document.addEventListener('DOMContentLoaded', function() {

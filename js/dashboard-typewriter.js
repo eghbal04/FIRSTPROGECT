@@ -151,7 +151,7 @@ window.updateDashboardTerminalInfo = async function() {
   let tokenPrice = '-';
   let contractTokenBalance = '-';
   let cashback = '-';
-  let usdcBalance = '-';
+  let daiBalance = '-';
   try {
     if (window.contractConfig && window.contractConfig.contract) {
       const contract = window.contractConfig.contract;
@@ -161,9 +161,11 @@ window.updateDashboardTerminalInfo = async function() {
       tokenPrice = ethers.formatUnits(await contract.getTokenPrice(), 18);
       contractTokenBalance = ethers.formatUnits(await contract.balanceOf(contract.target), 18) + ' CPA';
       cashback = ethers.formatUnits(await (contract.cashBack ? contract.cashBack() : contract.cashback()), 18) + ' CPA';
-      if (typeof USDC_ADDRESS !== 'undefined' && typeof USDC_ABI !== 'undefined') {
-        const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, contract.provider);
-        usdcBalance = ethers.formatUnits(await usdcContract.balanceOf(contract.target), 6) + ' USDC';
+      if (typeof window.DAI_ADDRESS !== 'undefined' && typeof window.DAI_ABI !== 'undefined') {
+        const daiAddress = window.DAI_ADDRESS;
+        const daiAbi = window.DAI_ABI;
+        const daiContract = new ethers.Contract(daiAddress, daiAbi, contract.provider);
+        daiBalance = ethers.formatUnits(await daiContract.balanceOf(contract.target), 18) + ' DAI';
       }
     }
   } catch(e){}
@@ -173,7 +175,7 @@ window.updateDashboardTerminalInfo = async function() {
   lines.push(`Token Price: ${tokenPrice}`);
   lines.push(`Contract Token Balance: ${contractTokenBalance}`);
   lines.push(`Help Fund: ${cashback}`);
-  lines.push(`Contract USDC Balance: ${usdcBalance}`);
+  lines.push(`Contract USDC Balance: ${daiBalance}`);
   lines.push('');
   // --- USER PROFILE ---
   let profile = null;

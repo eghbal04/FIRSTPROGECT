@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>گزارشات فعالیت</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap');
+        body {
+            font-family: 'Vazirmatn', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #232946 0%, #181c2a 100%);
+            margin: 0;
+            padding: 0;
+            direction: rtl;
+            color: #e0e6f7;
+        }
+        .container {
+            max-width: 650px;
+            margin: 40px auto;
+            background: rgba(35,41,70,0.98);
+            border-radius: 18px;
+            box-shadow: 0 4px 24px #0005;
+            padding: 36px 22px 28px 22px;
+            border: 2px solid #a786ff33;
+        }
+        h1 {
+            text-align: center;
+            color: #00ff88;
+            margin-bottom: 28px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            font-size: 2.1em;
+            text-shadow: 0 2px 8px #00ff8822;
+        }
+        #reports-list { min-height: 120px; }
+        .report-sentence {
+            padding: 14px 0;
+            font-size: 1.13em;
+            border-bottom: 1px solid #2d3250;
+            text-align: right;
+            line-height: 2.1;
+            color: #e0e6f7;
+            word-break: break-word;
+        }
+        .report-time {
+            color: #a786ff;
+            font-size: 0.98em;
+            margin-right: 8px;
+            margin-left: 0;
+            display: inline-block;
+        }
+        .wallet-address {
+            font-family: monospace;
+            color: #00ff88;
+            direction: ltr;
+            display: inline-block;
+            margin: 0 4px;
+        }
+        .error-message {
+            color: #ff4444;
+            background: #2d3250;
+            border-radius: 8px;
+            padding: 14px;
+            margin: 18px 0;
+            text-align: center;
+            border: 1.5px solid #ff444455;
+        }
+        .no-reports {
+            color: #a786ff;
+            text-align: center;
+            margin: 28px 0;
+        }
+        .loading {
+            color: #00ff88;
+            text-align: center;
+            margin: 28px 0;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid #2d3250;
+            margin: 0;
+        }
+        #connect-wallet-btn {
+            display: block;
+            margin: 0 auto 24px auto;
+            padding: 12px 32px;
+            font-size: 1.13em;
+            background: linear-gradient(90deg,#00ff88,#a786ff);
+            color: #181c2a;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s;
+            font-family: inherit;
+            font-weight: bold;
+            box-shadow: 0 2px 8px #00ff8822;
+        }
+        #connect-wallet-btn:hover {
+            background: linear-gradient(90deg,#a786ff,#00ff88);
+            box-shadow: 0 4px 16px #00ff8844;
+        }
+        #event-type-select, #report-date-from, #report-date-to {
+            background: #181c2a;
+            color: #e0e6f7;
+            border: 1.5px solid #a786ff;
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-size: 1.08em;
+            margin-bottom: 8px;
+            box-shadow: 0 2px 8px #a786ff22;
+            min-width: 120px;
+        }
+        #category-btn, #filter-date-btn {
+            background: linear-gradient(90deg,#00ff88,#a786ff);
+            color: #181c2a;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 18px;
+            font-size: 1.08em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 8px #00ff8822;
+            transition: background 0.2s, box-shadow 0.2s;
+            margin-bottom: 8px;
+        }
+        #category-btn:hover, #filter-date-btn:hover {
+            background: linear-gradient(90deg,#a786ff,#00ff88);
+            box-shadow: 0 4px 16px #00ff8844;
+        }
+        .event-group h3 {
+            color: #a786ff;
+            font-size: 1.15em;
+            font-weight: bold;
+            margin-top: 32px;
+            margin-bottom: 10px;
+            letter-spacing: 0.2px;
+        }
+        .event-group {
+            background: #232946;
+            border-radius: 10px;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 8px #a786ff11;
+            padding: 8px 12px 2px 12px;
+            overflow-x: auto;
+        }
+        /* موبایل */
+        @media (max-width: 700px) {
+            .container { max-width: 99vw; padding: 10px 2vw; }
+            h1 { font-size: 1.2em; }
+            #reports-list { font-size: 0.98em; }
+            .event-group { padding: 6px 2vw 2px 2vw; }
+            .report-sentence { font-size: 1em; padding: 10px 0; }
+            #event-type-select, #report-date-from, #report-date-to, #category-btn, #filter-date-btn {
+                font-size: 1em;
+                min-width: 90px;
+                padding: 7px 6px;
+                margin-bottom: 6px;
+            }
+            .wallet-address { font-size: 0.98em; }
+            .report-time { font-size: 0.92em; }
+            .container > div[style*='display:flex'] {
+                flex-direction: column !important;
+                gap: 6px !important;
+                align-items: stretch !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <script src="js/navbar.js"></script>
+    <div class="container">
+        <h1>گزارشات فعالیت شما</h1>
+        <button id="connect-wallet-btn">اتصال کیف پول</button>
+        <div style="display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:18px;">
+            <input type="date" id="report-date-from" style="padding:7px 10px;font-size:1em;border-radius:6px;border:1px solid #1976d2;" />
+            <span style="color:#a786ff;">تا</span>
+            <input type="date" id="report-date-to" style="padding:7px 10px;font-size:1em;border-radius:6px;border:1px solid #1976d2;" />
+            <button id="filter-date-btn" style="padding:7px 18px;font-size:1em;border-radius:6px;border:1px solid #1976d2;background:#1976d2;color:#fff;cursor:pointer;">فیلتر تاریخ</button>
+            <button id="category-btn" style="padding:7px 18px;font-size:1em;border-radius:6px;border:1px solid #1976d2;background:#1976d2;color:#fff;cursor:pointer;">دسته‌بندی</button>
+            <select id="event-type-select" style="padding:7px 18px;font-size:1em;border-radius:6px;border:1px solid #ddd;max-width:220px;">
+                <option value="all">همه دسته‌ها</option>
+                <option value="activated">فعال‌سازی</option>
+                <option value="purchase">خرید</option>
+                <option value="tokensbought">خرید توکن</option>
+                <option value="tokenssold">فروش توکن</option>
+                <option value="binarypoints">امتیاز باینری</option>
+                <option value="binaryreward">پاداش باینری</option>
+                <option value="binarypool">استخر باینری</option>
+                <option value="tree">ساختار شبکه</option>
+                <option value="transfer">انتقال توکن</option>
+                <option value="approval">تأییدیه انتقال</option>
+                <option value="indextransfer">انتقال ایندکس</option>
+                <option value="monthlyreward">پاداش ماهانه</option>
+                <option value="monthlyfail">خطاهای پاداش ماهانه</option>
+            </select>
+        </div>
+        <div id="reports-list"></div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/web3-interactions.js"></script>
+    <script src="js/reports.js"></script>
+    <script>
+        // --- رفع خطا: تعریف توابع کمکی برای نمایش دسته و توضیح ایونت ---
+        window.getEventTypeLabel = function(type) {
+            const labels = {
+                activated: 'فعال‌سازی', purchase: 'خرید', tokensbought: 'خرید توکن', tokenssold: 'فروش توکن',
+                binarypoints: 'امتیاز باینری', binaryreward: 'پاداش باینری', binarypool: 'استخر باینری',
+                tree: 'ساختار شبکه', transfer: 'انتقال توکن', approval: 'تأییدیه انتقال',
+                indextransfer: 'انتقال ایندکس', monthlyreward: 'پاداش ماهانه', monthlyfail: 'خطاهای پاداش ماهانه'
+            };
+            return labels[type] || type;
+        };
+        window.getEventDescription = function(type, details) {
+            // اگر details رشته است، همان را برگردان
+            if (typeof details === 'string') return details;
+            // اگر details شیء است، مقادیر مهم را نمایش بده
+            if (typeof details === 'object' && details !== null) {
+                return Object.values(details).join(' | ');
+            }
+            return '';
+        };
+        // تلاش برای بارگذاری گزارشات هنگام لود صفحه
+        async function tryLoadReports() {
+            if (window.loadReports) window.loadReports();
+        }
+        document.getElementById('connect-wallet-btn').onclick = async function() {
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    this.style.display = 'none';
+                    tryLoadReports();
+                } catch (e) {
+                    alert('اتصال به کیف پول لغو شد.');
+                }
+            } else {
+                alert('لطفاً افزونه MetaMask یا کیف پول Web3 را نصب کنید.');
+            }
+        };
+        // دکمه دسته‌بندی، روی select فوکوس می‌کند
+        document.getElementById('category-btn').onclick = function() {
+            document.getElementById('event-type-select').focus();
+        };
+        // تابع فیلتر تاریخ روی گزارشات
+        let allReportsCache = [];
+        function filterReportsByDate(reports, from, to) {
+            if (!from && !to) return reports;
+            const fromTime = from ? new Date(from).getTime() : 0;
+            const toTime = to ? new Date(to).getTime() + 24*3600*1000 : Infinity;
+            return reports.filter(r => r.timestamp >= fromTime && r.timestamp < toTime);
+        }
+        // اگر کیف پول قبلاً متصل است، دکمه را مخفی کن و گزارشات را لود کن
+        window.addEventListener('DOMContentLoaded', async function() {
+            if (typeof window.ethereum !== 'undefined') {
+                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                if (accounts && accounts.length > 0) {
+                    document.getElementById('connect-wallet-btn').style.display = 'none';
+                    tryLoadReports();
+                }
+            }
+        });
+        window.loadReports = async function(address) {
+            const reportsContainer = document.getElementById('reports-list');
+            reportsContainer.innerHTML = '<div class="loading">در حال بارگذاری گزارشات...</div>';
+            const reports = await window.fetchReports(address);
+            allReportsCache = reports;
+            renderFilteredReports();
+            // لیسنر فیلتر تاریخ
+            document.getElementById('filter-date-btn').onclick = function() {
+                renderFilteredReports();
+            };
+        };
+        function renderFilteredReports() {
+            const reportsContainer = document.getElementById('reports-list');
+            const from = document.getElementById('report-date-from').value;
+            const to = document.getElementById('report-date-to').value;
+            let filtered = allReportsCache;
+            if (from || to) {
+                filtered = filterReportsByDate(allReportsCache, from, to);
+            }
+            reportsContainer.innerHTML = '';
+            if (filtered.length === 0) {
+                reportsContainer.innerHTML = '<div class="no-reports">گزارشی پیدا نشد.</div>';
+                return;
+            }
+            // دسته‌بندی بر اساس type
+            const eventGroups = {};
+            filtered.forEach(report => {
+                const eventType = report.type;
+                if (!eventGroups[eventType]) {
+                    eventGroups[eventType] = [];
+                }
+                eventGroups[eventType].push(report);
+            });
+            // نمایش هر گروه
+            for (const eventType in eventGroups) {
+                const reports = eventGroups[eventType];
+                if (reports.length > 0) {
+                    const groupElement = document.createElement('div');
+                    groupElement.classList.add('event-group');
+                    const h3 = document.createElement('h3');
+                    h3.textContent = window.getEventTypeLabel ? window.getEventTypeLabel(eventType) : eventType;
+                    groupElement.appendChild(h3);
+                    // نمایش هر گزارش با getReportSentence
+                    reports.forEach(report => {
+                        const sentenceDiv = document.createElement('div');
+                        sentenceDiv.classList.add('report-sentence');
+                        // پشتیبانی از async بودن getReportSentence
+                        if (window.getReportSentence) {
+                            window.getReportSentence(report).then(sentence => {
+                                sentenceDiv.innerHTML = sentence;
+                            });
+                        } else {
+                            sentenceDiv.textContent = report.title || '-';
+                        }
+                        groupElement.appendChild(sentenceDiv);
+                    });
+                    reportsContainer.appendChild(groupElement);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

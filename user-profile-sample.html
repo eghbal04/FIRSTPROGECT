@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>پروفایل کاربر نمونه - CPA Forex</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/hamburger-menu.css">
+    <!-- <link rel="stylesheet" href="css/floating-ai-assistant.css"> -->
+    <style>
+        .profile-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .profile-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+            margin: 0 auto 20px;
+            border: 4px solid rgba(255,255,255,0.3);
+        }
+        
+        .profile-name {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .profile-bio {
+            font-size: 1.2em;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+        
+        .profile-address {
+            font-family: monospace;
+            background: rgba(255,255,255,0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+        
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #1976d2;
+        }
+        
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .profile-sections {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .profile-section {
+            background: #fff;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .section-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .social-link {
+            display: flex;
+            align-items: center;
+            padding: 8px 15px;
+            background: #f8f9fa;
+            border-radius: 20px;
+            text-decoration: none;
+            color: #333;
+            transition: background 0.3s ease;
+        }
+        
+        .social-link:hover {
+            background: #e9ecef;
+        }
+        
+        .purchase-history {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .purchase-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .purchase-item:last-child {
+            border-bottom: none;
+        }
+        
+        .purchase-info {
+            flex: 1;
+        }
+        
+        .purchase-title {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .purchase-date {
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .purchase-amount {
+            font-weight: bold;
+            color: #1976d2;
+        }
+        
+        .edit-profile-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .edit-profile-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .profile-sections {
+                grid-template-columns: 1fr;
+            }
+            
+            .profile-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .profile-name {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-container">
+        <div class="profile-header">
+            <button class="edit-profile-btn" onclick="editProfile()">✏️ ویرایش پروفایل</button>
+            <div class="profile-avatar">👤</div>
+            <div class="profile-name">کاربر نمونه</div>
+            <div class="profile-bio">معامله‌گر حرفه‌ای فارکس با 3 سال تجربه</div>
+            <div class="profile-address">0x1234567890123456789012345678901234567890</div>
+        </div>
+        
+        <div class="profile-stats">
+            <div class="stat-card">
+                <div class="stat-number">15</div>
+                <div class="stat-label">تعداد خرید</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">2,500</div>
+                <div class="stat-label">مجموع هزینه (CPA)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">8</div>
+                <div class="stat-label">تعداد نظرات</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">45</div>
+                <div class="stat-label">روز عضویت</div>
+            </div>
+        </div>
+        
+        <div class="profile-sections">
+            <div class="profile-section">
+                <div class="section-title">لینک‌های اجتماعی</div>
+                <div class="social-links">
+                    <a href="https://t.me/sampleuser" class="social-link" target="_blank">
+                        📱 تلگرام
+                    </a>
+                    <a href="https://twitter.com/sampleuser" class="social-link" target="_blank">
+                        🐦 توییتر
+                    </a>
+                    <a href="mailto:sample@example.com" class="social-link">
+                        📧 ایمیل
+                    </a>
+                </div>
+            </div>
+            
+            <div class="profile-section">
+                <div class="section-title">تاریخچه خرید</div>
+                <div class="purchase-history">
+                    <div class="purchase-item">
+                        <div class="purchase-info">
+                            <div class="purchase-title">دوره آموزشی فارکس</div>
+                            <div class="purchase-date">1402/12/15</div>
+                        </div>
+                        <div class="purchase-amount">500 CPA</div>
+                    </div>
+                    <div class="purchase-item">
+                        <div class="purchase-info">
+                            <div class="purchase-title">سیگنال‌های VIP</div>
+                            <div class="purchase-date">1402/12/10</div>
+                        </div>
+                        <div class="purchase-amount">300 CPA</div>
+                    </div>
+                    <div class="purchase-item">
+                        <div class="purchase-info">
+                            <div class="purchase-title">ربات معاملاتی</div>
+                            <div class="purchase-date">1402/12/05</div>
+                        </div>
+                        <div class="purchase-amount">1000 CPA</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/navbar.js"></script>
+    <!-- <script src="js/floating-ai-assistant.js"></script> -->
+    <script src="js/user-profile-manager.js"></script>
+    <script>
+        const userProfileManager = new UserProfileManager();
+        
+        function editProfile() {
+            // در اینجا می‌توانید فرم ویرایش پروفایل را نمایش دهید
+            alert('قابلیت ویرایش پروفایل به زودی اضافه خواهد شد');
+        }
+    </script>
+</body>
+</html> 

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تست داشبورد ولت - CPA</title>
+    <style>
+        body {
+            font-family: 'Noto Sans Arabic', sans-serif;
+            background: linear-gradient(135deg, #1a1f2e, #232946);
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+        }
+        .test-button {
+            background: linear-gradient(90deg, #00ff88, #00cc66);
+            color: #232946;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 1rem;
+            font-size: 1.1rem;
+        }
+        .status {
+            margin: 2rem 0;
+            padding: 1rem;
+            border-radius: 8px;
+            background: rgba(0,255,136,0.1);
+            border: 1px solid rgba(0,255,136,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 تست داشبورد ولت</h1>
+        <div class="status">
+            <h3>✅ صفحه با موفقیت بارگذاری شد</h3>
+            <p>این صفحه برای تست عملکرد پایه ایجاد شده است.</p>
+        </div>
+        
+        <button class="test-button" onclick="testWalletDashboard()">
+            🔗 تست اتصال به داشبورد اصلی
+        </button>
+        
+        <button class="test-button" onclick="window.open('wallet-dashboard.html', '_blank')">
+            🚀 باز کردن داشبورد اصلی
+        </button>
+        
+        <button class="test-button" onclick="window.location.href='index.html'">
+            🏠 بازگشت به صفحه اصلی
+        </button>
+    </div>
+
+    <script>
+        function testWalletDashboard() {
+            try {
+                const testWindow = window.open('wallet-dashboard.html', '_blank');
+                if (testWindow) {
+                    console.log('✅ پنجره داشبورد با موفقیت باز شد');
+                    alert('✅ پنجره داشبورد با موفقیت باز شد');
+                } else {
+                    console.error('❌ نتوانست پنجره را باز کند');
+                    alert('❌ نتوانست پنجره را باز کند');
+                }
+            } catch (error) {
+                console.error('❌ خطا در باز کردن پنجره:', error);
+                alert('❌ خطا در باز کردن پنجره: ' + error.message);
+            }
+        }
+        
+        console.log('🧪 صفحه تست بارگذاری شد');
+    </script>
+</body>
+</html> 

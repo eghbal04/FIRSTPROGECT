@@ -147,7 +147,7 @@ window.showTab = async function(tab) {
   localStorage.setItem('currentActiveTab', tab);
   
   // Check if user is activated for restricted tabs
-  const restrictedTabs = ['reports', 'learning', 'news'];
+  const restrictedTabs = ['shop', 'reports', 'learning', 'news'];
   if (restrictedTabs.includes(tab)) {
     try {
       if (window.getUserProfile) {
@@ -246,7 +246,7 @@ window.checkUserAccessOnLoad = async function() {
   // اولویت: URL parameter > localStorage > default
   const currentTab = urlTab || savedTab || 'network';
   
-  const restrictedTabs = ['reports', 'learning', 'news'];
+  const restrictedTabs = ['shop', 'reports', 'learning', 'news'];
   if (restrictedTabs.includes(currentTab)) {
     try {
       if (window.getUserProfile) {

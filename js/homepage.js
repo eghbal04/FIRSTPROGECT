@@ -27,7 +27,45 @@ function updateConnectionStatus(type, message) {
     }
 }
 
+// --- کش داشبورد: ذخیره و بازیابی ---
+function cacheDashboardData(data) {
+  try {
+    localStorage.setItem('dashboardCache', JSON.stringify({
+      data,
+      timestamp: Date.now()
+    }));
+  } catch (e) { /* نادیده بگیر */ }
+}
+function getCachedDashboardData() {
+  const cached = localStorage.getItem('dashboardCache');
+  if (cached) {
+    try {
+      return JSON.parse(cached).data;
+    } catch { return null; }
+  }
+  return null;
+}
+// --- افکت نرم برای آپدیت مقدار ---
+function animateValueChange(el, newValue) {
+  if (!el) return;
+  if (el.textContent == newValue) return;
+  el.style.transition = 'background 0.5s';
+  el.style.background = '#ffe066';
+  setTimeout(() => {
+    el.textContent = newValue;
+    el.style.background = '';
+  }, 300);
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
+    // نمایش داده کش‌شده بلافاصله
+    const cached = getCachedDashboardData();
+    if (cached) {
+      await updateDashboardUI(
+        cached.prices, cached.stats, cached.additionalStats, cached.tradingVolume, cached.priceChanges
+      );
+    }
+    // سپس آپدیت بک‌گراند را شروع کن
     try {
         // به‌روزرسانی نمایش دکمه‌های کیف پول
         if (window.WalletConnectHandler) {
@@ -87,7 +125,7 @@ function stopDashboardAutoUpdate() {
 // تابع انتظار برای اتصال کیف پول
 async function waitForWalletConnection() {
     let attempts = 0;
-    const maxAttempts = 10; // کاهش به 10 ثانیه
+    const maxAttempts = 5; // کاهش به 5 ثانیه
     
     while (attempts < maxAttempts) {
         try {
@@ -149,6 +187,8 @@ async function loadDashboardData() {
             // به‌روزرسانی UI
             await updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceChanges);
             await updateUSDCContractBalance();
+            // ذخیره داده جدید در کش
+            cacheDashboardData({prices, stats, additionalStats, tradingVolume, priceChanges});
         } else {
             // اگر کیف پول متصل نیست، پیام مناسب نمایش بده
             updateConnectionStatus('info', 'برای مشاهده داده‌های کامل، کیف پول خود را متصل کنید');
@@ -223,27 +263,29 @@ async function updateDashboardUI(prices, stats, additionalStats, tradingVolume, 
         const el = document.getElementById(id);
         if (el) {
             const formatted = safeFormat(value, prefix, suffix, isInteger, maxDecimals);
-            el.textContent = formatted;
+            animateValueChange(el, formatted);
         }
     };
 
     const updateElementExponential = (id, value, suffix = '') => {
         const el = document.getElementById(id);
         if (el) {
+            let formatted;
             if (value === null || value === undefined) {
-                el.textContent = 'در دسترس نیست';
-                return;
-            }
-            const num = parseFloat(value);
-            if (isNaN(num)) {
-                el.textContent = 'در دسترس نیست';
-            } else if (num === 0) {
-                el.textContent = '0' + suffix;
-            } else if (num < 0.000001) {
-                el.textContent = num.toExponential(6) + suffix;
+                formatted = 'در دسترس نیست';
             } else {
-                el.textContent = num.toFixed(6) + suffix;
+                const num = parseFloat(value);
+                if (isNaN(num)) {
+                    formatted = 'در دسترس نیست';
+                } else if (num === 0) {
+                    formatted = '0' + suffix;
+                } else if (num < 0.000001) {
+                    formatted = num.toExponential(6) + suffix;
+                } else {
+                    formatted = num.toFixed(6) + suffix;
+                }
             }
+            animateValueChange(el, formatted);
         }
     };
     
@@ -268,26 +310,58 @@ async function updateDashboardUI(prices, stats, additionalStats, tradingVolume, 
             updateElement('circulating-supply', parseInt(ethers.formatUnits(supply, 18)), '', ' CPA', true);
             // totalClaimablePoints
             let points = await contract.totalClaimablePoints();
-            updateElement('total-points', parseInt(ethers.formatUnits(points, 0)), '', ' POINT', true);
+            // updateElement('total-points', parseInt(ethers.formatUnits(points, 0)), '', ' POINT', true);
             // pointValue از قرارداد
             let pointValue = await contract.getPointValue();
             updateElement('point-value', parseFloat(ethers.formatUnits(pointValue, 18)), '', ' CPA', false, 2);
         } else {
             // اگر قرارداد در دسترس نیست، از stats استفاده کن
-            updateElement('total-points', parseInt(stats.totalClaimableBinaryPoints.replace(/\..*$/, '')), '', ' POINT', true);
-            updateElement('point-value', stats.pointValue, '', ' CPA', false, 2);
+            if (stats.totalClaimableBinaryPoints) {
+                const totalPoints = typeof stats.totalClaimableBinaryPoints === 'string' 
+                    ? parseInt(stats.totalClaimableBinaryPoints.replace(/\..*$/, ''))
+                    : parseInt(stats.totalClaimableBinaryPoints);
+                // updateElement('total-points', totalPoints, '', ' POINT', true);
+            } else {
+                // updateElement('total-points', 0, '', ' POINT', true);
+            }
+            
+            if (stats.pointValue) {
+                updateElement('point-value', stats.pointValue, '', ' CPA', false, 2);
+            } else {
+                updateElement('point-value', 0, '', ' CPA', false, 2);
+            }
         }
     } catch (e) {
-        // اگر خطا بود، null نمایش بده
-        updateElement('total-points', null, '', ' POINT', true);
-        updateElement('point-value', null, '', ' CPA', false, 2);
+        console.warn('Error fetching contract data:', e);
+        // اگر خطا بود، از stats استفاده کن
+        if (stats.totalClaimableBinaryPoints) {
+            const totalPoints = typeof stats.totalClaimableBinaryPoints === 'string' 
+                ? parseInt(stats.totalClaimableBinaryPoints.replace(/\..*$/, ''))
+                : parseInt(stats.totalClaimableBinaryPoints);
+            // updateElement('total-points', totalPoints, '', ' POINT', true);
+        } else {
+            // updateElement('total-points', 0, '', ' POINT', true);
+        }
+        
+        if (stats.pointValue) {
+            updateElement('point-value', stats.pointValue, '', ' CPA', false, 2);
+        } else {
+            updateElement('point-value', 0, '', ' CPA', false, 2);
+        }
     }
     
     // پوینت‌های ادعا شده = 0 (چون هنوز ادعا نشدن)
     updateElement('claimed-points', 0, '', '', true);
     
     // پوینت‌های باقیمانده = کل پوینت‌ها
-    updateElement('remaining-points', parseInt(stats.totalClaimableBinaryPoints.replace(/\..*$/, '')), '', '', true);
+    if (stats.totalClaimableBinaryPoints) {
+        const totalPoints = typeof stats.totalClaimableBinaryPoints === 'string' 
+            ? parseInt(stats.totalClaimableBinaryPoints.replace(/\..*$/, ''))
+            : parseInt(stats.totalClaimableBinaryPoints);
+        // updateElement('remaining-points', totalPoints, '', '', true);
+    } else {
+        // updateElement('remaining-points', 0, '', '', true);
+    }
     
     // موجودی قرارداد با نهایتاً ۶ رقم اعشار
     const tradingVolumeNum = Number(tradingVolume);
@@ -402,7 +476,7 @@ async function getAdditionalStats() {
         // دریافت totalClaimableBinaryPoints به صورت جداگانه (متغیر state)
         let totalClaimableBinaryPoints = 0n;
         try {
-            totalClaimableBinaryPoints = await contract.totalClaimableBinaryPoints;
+            totalClaimableBinaryPoints = await contract.totalClaimableBinaryPoints();
         } catch (e) {
             console.warn('Could not fetch totalClaimableBinaryPoints:', e);
             totalClaimableBinaryPoints = 0n;

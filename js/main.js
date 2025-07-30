@@ -1,4 +1,7 @@
 // main.js
+// پاک‌سازی کنسول در ابتدای برنامه
+console.clear();
+
 document.addEventListener('DOMContentLoaded', async () => {
     const connectButton = document.getElementById('connectButton');
     const walletConnectButton = document.getElementById('walletConnectButton');
@@ -62,9 +65,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         set('dashboard-usdc-balance', Number(usdcBalance) / 1e6);
         set('contract-token-balance', Number(tokenBalance) / 1e18);
         set('dashboard-wallets-count', Number(wallets));
-        set('total-points', Math.floor(Number(totalPoints) / 1e18).toLocaleString('en-US'));
+        // set('total-points', Math.floor(Number(totalPoints) / 1e18).toLocaleString('en-US'));
+        // set('total-points', '-');
       } catch (e) {
-        set('total-points', '-');
+        // set('total-points', '-');
       }
     }
 
@@ -108,9 +112,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     const totalPointsEl = document.getElementById('total-points');
     if (totalPointsEl && window.contractConfig && window.contractConfig.contract) {
       try {
-        const totalPoints = await window.contractConfig.contract.totalClaimableBinaryPoints();
-        totalPointsEl.textContent = Math.floor(Number(totalPoints) / 1e18).toLocaleString('en-US');
+        // استفاده از تابع totalClaimablePoints برای نمایش کل پوینت‌های باینری
+        const contract = window.contractConfig.contract;
+        const result = await contract.totalClaimablePoints();
+        // استفاده از ethers.formatUnits برای تبدیل صحیح BigInt به عدد
+        const totalPoints = parseInt(ethers.formatUnits(result, 0));
+        
+        totalPointsEl.textContent = totalPoints.toLocaleString('en-US');
+        console.log(`📊 کل پوینت‌های باینری: ${totalPoints.toLocaleString('en-US')}`);
+        
       } catch (e) {
+        console.warn('⚠️ خطا در دریافت پوینت‌های باینری:', e);
         totalPointsEl.textContent = '-';
       }
     }
@@ -637,7 +649,7 @@ window.testLockStatus = async function() {
         
         // Check tab lock status
         const lockedTabs = document.querySelectorAll('.locked-tab');
-        
+        const lockedMenuItems = document.querySelectorAll('.locked-menu-item') || [];
 
         return {
             profile: profile,
@@ -760,29 +772,34 @@ window.showWelcomeRegistrationPrompt = async function() {
         if (hasShownWelcome) return;
         
         // دریافت قیمت ثبت‌نام
-        let registrationPrice = '100';
+        let registrationPrice = null;
         try {
             if (window.contractConfig && window.contractConfig.contract) {
                 const price = await window.getRegPrice(window.contractConfig.contract);
                 registrationPrice = parseFloat(ethers.formatUnits(price, 18)).toFixed(0);
             }
         } catch (e) {
-            console.log('Using default registration price');
+            registrationPrice = null;
         }
         
         // دریافت قیمت فعلی CPA
-        let cpaPriceUSD = '0.000001';
+        let cpaPriceUSD = null;
         try {
             if (window.contractConfig && window.contractConfig.contract) {
                 const price = await window.contractConfig.contract.getTokenPrice();
                 cpaPriceUSD = parseFloat(ethers.formatUnits(price, 18)).toFixed(6);
             }
         } catch (e) {
-            console.log('Using default CPA price');
+            cpaPriceUSD = null;
         }
         
         // محاسبه ارزش دلاری ثبت‌نام
-        const registrationValueUSD = (parseFloat(registrationPrice) * parseFloat(cpaPriceUSD)).toFixed(6);
+        let registrationValueUSD = '';
+        if (registrationPrice && cpaPriceUSD) {
+            registrationValueUSD = (parseFloat(registrationPrice) * parseFloat(cpaPriceUSD)).toFixed(6);
+        } else {
+            registrationValueUSD = 'در حال دریافت...';
+        }
         
         // ایجاد پیام خوشامدگویی
         const welcomeModal = document.createElement('div');
@@ -908,7 +925,7 @@ window.showWelcomeRegistrationPrompt = async function() {
                         font-size: 0.9rem;
                         line-height: 1.4;
                     ">
-                        💡 قیمت فعلی CPA: $${cpaPriceUSD} USDC
+                        💡 قیمت فعلی CPA: $${cpaPriceUSD ? cpaPriceUSD : 'در حال دریافت...'} USDC
                     </div>
                 </div>
                 
@@ -3337,3 +3354,34 @@ window.refreshWalletConnection = async function() {
         throw error;
     }
 };
+
+
+
+
+
+
+
+
+
+// تابع دریافت کل پوینت‌های باینری از قرارداد
+window.getTotalBinaryPoints = async function() {
+    try {
+        if (!window.contractConfig || !window.contractConfig.contract) {
+            console.error('❌ قرارداد متصل نیست');
+            return 0;
+        }
+        
+        const contract = window.contractConfig.contract;
+        const result = await contract.totalClaimablePoints();
+        // استفاده از ethers.formatUnits برای تبدیل صحیح BigInt به عدد
+        const totalPoints = parseInt(ethers.formatUnits(result, 0));
+        
+        console.log(`📊 کل پوینت‌های باینری: ${totalPoints.toLocaleString('en-US')}`);
+        return totalPoints;
+        
+    } catch (error) {
+        console.error('❌ خطا در دریافت پوینت‌های باینری:', error);
+        return 0;
+    }
+};
+

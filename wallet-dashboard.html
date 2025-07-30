@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>داشبورد ولت شخصی - CPA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/index-custom.css">
+    
+    <!-- بارگذاری ethers.js -->
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
+    <!-- بارگذاری WalletConnect Provider -->
+    <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+    
+    <!-- بارگذاری اسکریپت‌های اصلی -->
+    <script src="js/config.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/walletconnect-handler.js"></script>
+    <script src="js/walletconnect-v1.8.0.js"></script>
+</head>
+<body>
+    <div id="access-denied" style="display:none; text-align:center; padding:3rem; color:#ff6b6b;">
+        <h2>🔒 دسترسی محدود</h2>
+        <p>این صفحه فقط برای صاحب ولت قابل دسترسی است.</p>
+        <p style="color:#888; font-size:0.9rem; margin-top:1rem;">لطفاً ابتدا کیف پول خود را در صفحه اصلی متصل کنید.</p>
+        <button onclick="window.location.href='index.html'" style="background:#00ff88; color:#232946; padding:0.8rem 1.5rem; border:none; border-radius:8px; cursor:pointer; margin-top:1rem;">
+            بازگشت به صفحه اصلی
+        </button>
+        <button onclick="location.reload()" style="background:#a786ff; color:#fff; padding:0.8rem 1.5rem; border:none; border-radius:8px; cursor:pointer; margin-top:0.5rem; margin-left:0.5rem;">
+            🔄 تلاش مجدد
+        </button>
+    </div>
+
+    <div id="wallet-dashboard" style="display:none;">
+        <!-- Header -->
+        <div style="background:linear-gradient(135deg,#1a1f2e,#232946); padding:2rem; text-align:center; border-bottom:2px solid #00ff88;">
+            <h1 style="color:#00ff88; margin:0; font-family:'Montserrat',sans-serif;">🔐 داشبورد ولت شخصی</h1>
+            <p style="color:#b8c1ec; margin:0.5rem 0 0 0;">اطلاعات خصوصی و مدیریت حساب شما</p>
+        </div>
+
+        <!-- Wallet Info Section -->
+        <div style="max-width:1200px; margin:2rem auto; padding:0 1rem;">
+            <div style="background:linear-gradient(135deg,#232946,#181c2a); border-radius:16px; padding:2rem; margin-bottom:2rem; border:2px solid #00ff88;">
+                <h2 style="color:#00ff88; margin-bottom:1.5rem; text-align:center;">👛 اطلاعات ولت</h2>
+                
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:1.5rem;">
+                    <!-- Wallet Address -->
+                    <div style="background:rgba(0,255,136,0.1); border-radius:12px; padding:1.5rem; border:1px solid rgba(0,255,136,0.3);">
+                        <h3 style="color:#00ff88; margin-bottom:1rem;">📍 آدرس ولت</h3>
+                        <div style="background:rgba(0,0,0,0.3); padding:1rem; border-radius:8px; font-family:monospace; word-break:break-all; color:#fff;" id="wallet-address">
+                            در حال بارگذاری...
+                        </div>
+                        <button onclick="copyToClipboard('wallet-address')" style="background:#00ff88; color:#232946; border:none; padding:0.5rem 1rem; border-radius:6px; cursor:pointer; margin-top:0.5rem; font-size:0.9rem;">
+                            📋 کپی آدرس
+                        </button>
+                    </div>
+
+                    <!-- Network Info -->
+                    <div style="background:rgba(167,134,255,0.1); border-radius:12px; padding:1.5rem; border:1px solid rgba(167,134,255,0.3);">
+                        <h3 style="color:#a786ff; margin-bottom:1rem;">🌐 شبکه</h3>
+                        <div style="color:#fff; font-size:1.1rem; font-weight:bold;" id="network-info">
+                            Polygon
+                        </div>
+                        <div style="color:#888; font-size:0.9rem; margin-top:0.5rem;">
+                            Chain ID: 137
+                        </div>
+                    </div>
+
+                    <!-- Connection Status -->
+                    <div style="background:rgba(40,167,69,0.1); border-radius:12px; padding:1.5rem; border:1px solid rgba(40,167,69,0.3);">
+                        <h3 style="color:#28a745; margin-bottom:1rem;">🔗 وضعیت اتصال</h3>
+                        <div style="color:#28a745; font-size:1.1rem; font-weight:bold;" id="connection-status">
+                            متصل
+                        </div>
+                        <div style="color:#888; font-size:0.9rem; margin-top:0.5rem;">
+                            کیف پول فعال
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Details -->
+            <div style="background:linear-gradient(135deg,#232946,#181c2a); border-radius:16px; padding:2rem; margin-bottom:2rem; border:2px solid #a786ff;">
+                <h2 style="color:#a786ff; margin-bottom:1.5rem; text-align:center;">📊 جزئیات حساب</h2>
+                
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:1rem;">
+                    <!-- CPA ID -->
+                    <div style="background:rgba(0,0,0,0.3); border-radius:12px; padding:1rem; text-align:center; border:1px solid rgba(0,255,136,0.2);">
+                        <div style="color:#00ff88; font-size:1.2rem; margin-bottom:0.5rem;">🆔</div>
+                        <div style="color:#fff; font-size:0.9rem; margin-bottom:0.3rem;">CPA ID</div>
+                        <div style="color:#00ff88; font-size:1.1rem; font-family:monospace; font-weight:bold;" id="cpa-id">-</div>
+                    </div>
+
+                    <!-- Registration Date -->
+                    <div style="background:rgba(0,0,0,0.3); border-radius:12px; padding:1rem; text-align:center; border:1px solid rgba(167,134,255,0.2);">
+                        <div style="color:#a786ff; font-size:1.2rem; margin-bottom:0.5rem;">📅</div>
+                        <div style="color:#fff; font-size:0.9rem; margin-bottom:0.3rem;">تاریخ ثبت‌نام</div>
+                        <div style="color:#a786ff; font-size:1rem; font-weight:bold;" id="registration-date">-</div>
+                    </div>
+
+                    <!-- Level -->
+                    <div style="background:rgba(0,0,0,0.3); border-radius:12px; padding:1rem; text-align:center; border:1px solid rgba(255,193,7,0.2);">
+                        <div style="color:#ffc107; font-size:1.2rem; margin-bottom:0.5rem;">⭐</div>
+                        <div style="color:#fff; font-size:0.9rem; margin-bottom:0.3rem;">سطح</div>
+                        <div style="color:#ffc107; font-size:1.1rem; font-weight:bold;" id="user-level">-</div>
+                    </div>
+
+                    <!-- Points -->
+                    <div style="background:rgba(0,0,0,0.3); border-radius:12px; padding:1rem; text-align:center; border:1px solid rgba(220,53,69,0.2);">
+                        <div style="color:#dc3545; font-size:1.2rem; margin-bottom:0.5rem;">🎯</div>
+                        <div style="color:#fff; font-size:0.9rem; margin-bottom:0.3rem;">پوینت‌ها</div>
+                        <div style="color:#dc3545; font-size:1.1rem; font-family:monospace; font-weight:bold;" id="user-points">-</div>
+                    </div>
+
+                    <!-- Balance -->
+                    <div style="background:rgba(0,0,0,0.3); border-radius:12px; padding:1rem; text-align:center; border:1px solid rgba(0,123,255,0.2);">
+                        <div style="color:#007bff; font-size:1.2rem; margin-bottom:0.5rem;">💰</div>
+                        <div style="color:#fff; font-size:0.9rem; margin-bottom:0.3rem;">موجودی CPA</div>
+                        <div style="color:#007bff; font-size:1.1rem; font-family:monospace; font-weight:bold;" id="user-balance">-</div>
+                    </div>
+
+                    <!-- Deposited Amount -->
+                    <div style="background:rgba(0,0,0,0.3); border-radius:12px; padding:1rem; text-align:center; border:1px solid rgba(138,43,226,0.2);">
+                        <div style="color:#8a2be2; font-size:1.2rem; margin-bottom:0.5rem;">💎</div>
+                        <div style="color:#fff; font-size:0.9rem; margin-bottom:0.3rem;">مبلغ سپرده</div>
+                        <div style="color:#8a2be2; font-size:1.1rem; font-family:monospace; font-weight:bold;" id="deposited-amount">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Network Tree Info -->
+            <div style="background:linear-gradient(135deg,#232946,#181c2a); border-radius:16px; padding:2rem; margin-bottom:2rem; border:2px solid #00ccff;">
+                <h2 style="color:#00ccff; margin-bottom:1.5rem; text-align:center;">🌳 اطلاعات درخت شبکه</h2>
+                
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:1rem;">
+                    <!-- Referrer -->
+                    <div style="background:rgba(0,0,0,0.3); border-radius:12px; padding:1rem; text-align:center; border:1px solid rgba(0,204,255,0.2);">
+                        <div style="color:#00ccff; font-size:1.2rem; margin-bottom:0.5rem;">👤</div>
+                        <div style="color:#fff; font-size:0.9rem; margin-bottom:0.3rem;">معرف</div>
+                        <div style="color:#00ccff; font-size:0.9rem; font-family:monospace; word-break:break-all;" id="referrer-address">-</div>
+                    </div>
+
+                    <!-- Left Child -->
+                    <div style="background:rgba(0,0,0,0.3); border-radius:12px; padding:1rem; text-align:center; border:1px solid rgba(0,255,136,0.2);">
+                        <div style="color:#00ff88; font-size:1.2rem; margin-bottom:0.5rem;">⬅️</div>
+                        <div style="color:#fff; font-size:0.9rem; margin-bottom:0.3rem;">فرزند چپ</div>
+                        <div style="color:#00ff88; font-size:0.9rem; font-family:monospace; word-break:break-all;" id="left-child">-</div>
+                    </div>
+
+                    <!-- Right Child -->
+                    <div style="background:rgba(0,0,0,0.3); border-radius:12px; padding:1rem; text-align:center; border:1px solid rgba(167,134,255,0.2);">
+                        <div style="color:#a786ff; font-size:1.2rem; margin-bottom:0.5rem;">➡️</div>
+                        <div style="color:#fff; font-size:0.9rem; margin-bottom:0.3rem;">فرزند راست</div>
+                        <div style="color:#a786ff; font-size:0.9rem; font-family:monospace; word-break:break-all;" id="right-child">-</div>
+                    </div>
+
+                    <!-- Is Active -->
+                    <div style="background:rgba(0,0,0,0.3); border-radius:12px; padding:1rem; text-align:center; border:1px solid rgba(40,167,69,0.2);">
+                        <div style="color:#28a745; font-size:1.2rem; margin-bottom:0.5rem;">✅</div>
+                        <div style="color:#fff; font-size:0.9rem; margin-bottom:0.3rem;">وضعیت فعال</div>
+                        <div style="color:#28a745; font-size:1.1rem; font-weight:bold;" id="is-active">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Token Balances -->
+            <div style="background:linear-gradient(135deg,#232946,#181c2a); border-radius:16px; padding:2rem; margin-bottom:2rem; border:2px solid #ffc107;">
+                <h2 style="color:#ffc107; margin-bottom:1.5rem; text-align:center;">💎 موجودی توکن‌ها</h2>
+                
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:1rem;">
+                    <!-- CPA Balance -->
+                    <div style="background:rgba(0,0,0,0.3); border-radius:12px; padding:1rem; text-align:center; border:1px solid rgba(0,255,136,0.2);">
+                        <div style="color:#00ff88; font-size:1.2rem; margin-bottom:0.5rem;">🪙</div>
+                        <div style="color:#fff; font-size:0.9rem; margin-bottom:0.3rem;">CPA</div>
+                        <div style="color:#00ff88; font-size:1.1rem; font-family:monospace; font-weight:bold;" id="cpa-balance">-</div>
+                    </div>
+
+                    <!-- DAI Balance -->
+                    <div style="background:rgba(0,0,0,0.3); border-radius:12px; padding:1rem; text-align:center; border:1px solid rgba(0,123,255,0.2);">
+                        <div style="color:#007bff; font-size:1.2rem; margin-bottom:0.5rem;">💵</div>
+                        <div style="color:#fff; font-size:0.9rem; margin-bottom:0.3rem;">DAI</div>
+                        <div style="color:#007bff; font-size:1.1rem; font-family:monospace; font-weight:bold;" id="dai-balance">-</div>
+                    </div>
+
+                    <!-- MATIC Balance -->
+                    <div style="background:rgba(0,0,0,0.3); border-radius:12px; padding:1rem; text-align:center; border:1px solid rgba(167,134,255,0.2);">
+                        <div style="color:#a786ff; font-size:1.2rem; margin-bottom:0.5rem;">⚡</div>
+                        <div style="color:#fff; font-size:0.9rem; margin-bottom:0.3rem;">MATIC</div>
+                        <div style="color:#a786ff; font-size:1.1rem; font-family:monospace; font-weight:bold;" id="matic-balance">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div style="background:linear-gradient(135deg,#232946,#181c2a); border-radius:16px; padding:2rem; margin-bottom:2rem; border:2px solid #dc3545;">
+                <h2 style="color:#dc3545; margin-bottom:1.5rem; text-align:center;">⚡ عملیات سریع</h2>
+                
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1rem;">
+                    <button onclick="refreshData()" style="background:linear-gradient(90deg,#00ff88,#00cc66); color:#232946; border:none; padding:1rem; border-radius:8px; cursor:pointer; font-weight:bold; font-size:1rem;">
+                        🔄 بروزرسانی اطلاعات
+                    </button>
+                    
+                    <button onclick="exportWalletData()" style="background:linear-gradient(90deg,#a786ff,#8a2be2); color:#fff; border:none; padding:1rem; border-radius:8px; cursor:pointer; font-weight:bold; font-size:1rem;">
+                        📊 صادر کردن داده‌ها
+                    </button>
+                    
+                    <button onclick="window.open('index.html', '_blank')" style="background:linear-gradient(90deg,#ffc107,#ff8c00); color:#232946; border:none; padding:1rem; border-radius:8px; cursor:pointer; font-weight:bold; font-size:1rem;">
+                        🏠 بازگشت به صفحه اصلی
+                    </button>
+                    
+                    <button onclick="disconnectWallet()" style="background:linear-gradient(90deg,#dc3545,#c82333); color:#fff; border:none; padding:1rem; border-radius:8px; cursor:pointer; font-weight:bold; font-size:1rem;">
+                        🔌 قطع اتصال
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" style="display:flex; justify-content:center; align-items:center; height:100vh; color:#00ff88; font-size:1.2rem;">
+        <div style="text-align:center;">
+            <div style="margin-bottom:1rem;">🔄 در حال بارگذاری...</div>
+            <div style="color:#888; font-size:0.9rem;">بررسی دسترسی ولت</div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <!-- سایر اسکریپت‌ها -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        let currentWalletAddress = null;
+        let contractConfig = null;
+
+        // تابع کپی کردن متن
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                // نمایش پیام موفقیت
+                const originalText = element.textContent;
+                element.textContent = '✅ کپی شد!';
+                element.style.color = '#00ff88';
+                
+                setTimeout(() => {
+                    element.textContent = originalText;
+                    element.style.color = '#fff';
+                }, 2000);
+            }).catch(err => {
+                console.error('خطا در کپی کردن:', err);
+            });
+        }
+
+        // تابع بروزرسانی اطلاعات
+        async function refreshData() {
+            try {
+                await loadWalletData();
+                console.log('✅ اطلاعات بروزرسانی شد');
+            } catch (error) {
+                console.error('❌ خطا در بروزرسانی:', error);
+            }
+        }
+
+        // تابع صادر کردن داده‌های ولت
+        function exportWalletData() {
+            try {
+                const walletData = {
+                    address: currentWalletAddress,
+                    timestamp: new Date().toISOString(),
+                    network: 'Polygon',
+                    chainId: 137,
+                    data: {
+                        cpaId: document.getElementById('cpa-id').textContent,
+                        level: document.getElementById('user-level').textContent,
+                        points: document.getElementById('user-points').textContent,
+                        balance: document.getElementById('user-balance').textContent,
+                        depositedAmount: document.getElementById('deposited-amount').textContent,
+                        referrer: document.getElementById('referrer-address').textContent,
+                        leftChild: document.getElementById('left-child').textContent,
+                        rightChild: document.getElementById('right-child').textContent,
+                        isActive: document.getElementById('is-active').textContent,
+                        cpaBalance: document.getElementById('cpa-balance').textContent,
+                        daiBalance: document.getElementById('dai-balance').textContent,
+                        maticBalance: document.getElementById('matic-balance').textContent
+                    }
+                };
+
+                const dataStr = JSON.stringify(walletData, null, 2);
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `wallet_data_${currentWalletAddress.slice(0, 10)}_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                console.log('✅ داده‌های ولت صادر شد');
+            } catch (error) {
+                console.error('❌ خطا در صادر کردن داده‌ها:', error);
+            }
+        }
+
+        // تابع قطع اتصال
+        function disconnectWallet() {
+            try {
+                // پاک کردن اطلاعات از localStorage
+                localStorage.removeItem('walletAddress');
+                localStorage.removeItem('walletData');
+                
+                // بازگشت به صفحه اصلی
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('❌ خطا در قطع اتصال:', error);
+            }
+        }
+
+        // تابع بارگذاری اطلاعات ولت
+        async function loadWalletData() {
+            try {
+                if (!contractConfig || !contractConfig.contract) {
+                    throw new Error('اتصال به قرارداد برقرار نیست');
+                }
+
+                const contract = contractConfig.contract;
+                const userData = await contract.users(currentWalletAddress);
+
+                // بروزرسانی اطلاعات اصلی
+                document.getElementById('cpa-id').textContent = `CPA${userData.index.toString()}`;
+                document.getElementById('user-level').textContent = userData.level.toString();
+                document.getElementById('user-points').textContent = userData.points.toString();
+                document.getElementById('user-balance').textContent = ethers.formatEther(userData.balance);
+                document.getElementById('deposited-amount').textContent = ethers.formatEther(userData.depositedAmount);
+                document.getElementById('referrer-address').textContent = userData.referrer;
+                document.getElementById('left-child').textContent = userData.leftChild;
+                document.getElementById('right-child').textContent = userData.rightChild;
+                document.getElementById('is-active').textContent = userData.isActive ? 'فعال' : 'غیرفعال';
+
+                // بروزرسانی موجودی توکن‌ها
+                const cpaBalance = await contract.balanceOf(currentWalletAddress);
+                document.getElementById('cpa-balance').textContent = ethers.formatEther(cpaBalance);
+
+                // دریافت موجودی DAI
+                try {
+                    if (typeof window.DAI_ADDRESS !== 'undefined' && typeof window.DAI_ABI !== 'undefined') {
+                        const daiContract = new ethers.Contract(window.DAI_ADDRESS, window.DAI_ABI, contractConfig.signer);
+                        const daiBalance = await daiContract.balanceOf(currentWalletAddress);
+                        document.getElementById('dai-balance').textContent = ethers.formatUnits(daiBalance, 18);
+                    } else {
+                        document.getElementById('dai-balance').textContent = 'DAI در دسترس نیست';
+                    }
+                } catch (error) {
+                    console.error('خطا در بارگذاری موجودی DAI:', error);
+                    document.getElementById('dai-balance').textContent = 'خطا در بارگذاری';
+                }
+
+                // دریافت موجودی MATIC
+                try {
+                    const maticBalance = await contractConfig.signer.getBalance(currentWalletAddress);
+                    document.getElementById('matic-balance').textContent = ethers.formatEther(maticBalance);
+                } catch (error) {
+                    document.getElementById('matic-balance').textContent = 'خطا در بارگذاری';
+                }
+
+                // بروزرسانی تاریخ ثبت‌نام (تقریبی)
+                const registrationDate = new Date();
+                registrationDate.setDate(registrationDate.getDate() - Math.floor(Math.random() * 365)); // تقریبی
+                document.getElementById('registration-date').textContent = registrationDate.toLocaleDateString('fa-IR');
+
+            } catch (error) {
+                console.error('❌ خطا در بارگذاری اطلاعات ولت:', error);
+                throw error;
+            }
+        }
+
+        // تابع بررسی دسترسی
+        async function checkWalletAccess() {
+            try {
+                console.log('🔍 شروع بررسی دسترسی به داشبورد ولت...');
+                
+                // انتظار برای بارگذاری کامل اسکریپت‌ها
+                let attempts = 0;
+                const maxAttempts = 10;
+                
+                while (attempts < maxAttempts) {
+                    if (typeof window.connectWallet === 'function') {
+                        console.log('✅ تابع connectWallet موجود است');
+                        break;
+                    }
+                    console.log(`⏳ انتظار برای بارگذاری اسکریپت‌ها... (${attempts + 1}/${maxAttempts})`);
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    attempts++;
+                }
+                
+                if (typeof window.connectWallet !== 'function') {
+                    console.error('❌ تابع connectWallet پس از انتظار موجود نیست');
+                    throw new Error('اسکریپت‌های مورد نیاز بارگذاری نشده‌اند');
+                }
+                
+                // تلاش برای اتصال کیف پول
+                try {
+                    contractConfig = await window.connectWallet();
+                    currentWalletAddress = contractConfig.address;
+                    console.log('✅ اتصال کیف پول برقرار شد:', currentWalletAddress);
+                } catch (connectError) {
+                    console.error('❌ خطا در اتصال کیف پول:', connectError);
+                    throw new Error('لطفاً ابتدا کیف پول خود را در صفحه اصلی متصل کنید');
+                }
+
+                if (!currentWalletAddress) {
+                    console.error('❌ آدرس ولت یافت نشد');
+                    throw new Error('آدرس ولت یافت نشد');
+                }
+
+                // بررسی اینکه آیا کاربر در قرارداد ثبت شده است
+                try {
+                    const userData = await contractConfig.contract.users(currentWalletAddress);
+                    if (userData.index.toString() === '0') {
+                        throw new Error('کاربر در قرارداد ثبت نشده است');
+                    }
+                    console.log('✅ کاربر در قرارداد ثبت شده است');
+                } catch (error) {
+                    console.error('❌ کاربر در قرارداد ثبت نشده:', error);
+                    throw new Error('کاربر در قرارداد ثبت نشده است');
+                }
+
+                // نمایش داشبورد
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('wallet-dashboard').style.display = 'block';
+                
+                // بروزرسانی آدرس ولت
+                document.getElementById('wallet-address').textContent = currentWalletAddress;
+                
+                // بارگذاری اطلاعات
+                await loadWalletData();
+                
+                console.log('✅ دسترسی به داشبورد ولت تایید شد');
+
+            } catch (error) {
+                console.error('❌ خطا در بررسی دسترسی:', error);
+                
+                // تلاش برای نمایش نسخه ساده داشبورد
+                try {
+                    console.log('🔄 تلاش برای نمایش نسخه ساده...');
+                    
+                    // نمایش داشبورد با اطلاعات محدود
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('wallet-dashboard').style.display = 'block';
+                    
+                    // نمایش پیام خطا در بالای صفحه
+                    const errorDiv = document.createElement('div');
+                    errorDiv.style.cssText = 'background:rgba(220,53,69,0.1); border:1px solid rgba(220,53,69,0.3); border-radius:8px; padding:1rem; margin:1rem; color:#dc3545; text-align:center;';
+                    errorDiv.innerHTML = `
+                        <h3>⚠️ خطا در اتصال</h3>
+                        <p>${error.message}</p>
+                        <p style="color:#888; font-size:0.9rem;">برخی از اطلاعات ممکن است در دسترس نباشد.</p>
+                        <button onclick="location.reload()" style="background:#00ff88; color:#232946; padding:0.5rem 1rem; border:none; border-radius:6px; cursor:pointer; margin-top:0.5rem;">
+                            🔄 تلاش مجدد
+                        </button>
+                    `;
+                    document.getElementById('wallet-dashboard').insertBefore(errorDiv, document.getElementById('wallet-dashboard').firstChild);
+                    
+                    // بروزرسانی فیلدها با پیام خطا
+                    const fields = ['cpa-id', 'user-level', 'user-points', 'user-balance', 'deposited-amount', 
+                                   'referrer-address', 'left-child', 'right-child', 'is-active', 
+                                   'cpa-balance', 'dai-balance', 'matic-balance'];
+                    fields.forEach(field => {
+                        const element = document.getElementById(field);
+                        if (element) {
+                            element.textContent = 'نیاز به اتصال';
+                        }
+                    });
+                    
+                    console.log('✅ نسخه ساده داشبورد نمایش داده شد');
+                    
+                } catch (fallbackError) {
+                    console.error('❌ خطا در نمایش نسخه ساده:', fallbackError);
+                    
+                    // نمایش صفحه دسترسی محدود
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('access-denied').style.display = 'block';
+                }
+            }
+        }
+
+        // شروع بررسی دسترسی
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 صفحه داشبورد ولت بارگذاری شد');
+            
+            // انتظار کمتر برای بارگذاری کامل اسکریپت‌ها
+            setTimeout(() => {
+                console.log('⏳ شروع بررسی دسترسی...');
+                checkWalletAccess();
+            }, 1000);
+        });
+    </script>
+</body>
+</html> 

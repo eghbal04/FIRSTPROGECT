@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محصولات و خدمات - CPA Forex</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/hamburger-menu.css">
+    <!-- <link rel="stylesheet" href="css/floating-ai-assistant.css"> -->
+    <style>
+        .products-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .product-card {
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .product-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2em;
+        }
+        
+        .product-info {
+            padding: 20px;
+        }
+        
+        .product-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .product-description {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        
+        .product-price {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #1976d2;
+            margin-bottom: 15px;
+        }
+        
+        .product-seller {
+            color: #888;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+        
+        .purchase-form {
+            margin-top: 15px;
+        }
+        
+        .purchase-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+        
+        .purchase-input:focus {
+            border-color: #1976d2;
+            outline: none;
+        }
+        
+        .purchase-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .purchase-btn:hover {
+            background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+        }
+        
+        .purchase-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .admin-panel {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .admin-section {
+            margin-bottom: 20px;
+        }
+        
+        .admin-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .admin-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .admin-input {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+        
+        .admin-btn {
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .admin-btn:hover {
+            background: #218838;
+        }
+        
+        .admin-btn.danger {
+            background: #dc3545;
+        }
+        
+        .admin-btn.danger:hover {
+            background: #c82333;
+        }
+        
+        .seller-page-link {
+            display: inline-block;
+            padding: 8px 15px;
+            background: #17a2b8;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+        
+        .seller-page-link:hover {
+            background: #138496;
+        }
+        
+        .status-message {
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-select {
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1em;
+        }
+        
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1em;
+        }
+        
+
+        
+
+        
+        @media (max-width: 768px) {
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .admin-form {
+                grid-template-columns: 1fr;
+            }
+            
+            .filters {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+
+    <div class="products-container">
+        <h1>محصولات و خدمات</h1>
+        <p>در این صفحه می‌توانید محصولات و خدمات مختلف را مشاهده و خریداری کنید.</p>
+        
+        <!-- پنل ادمین (فقط برای ایندکس‌های 1، 2، 3) -->
+        <div id="admin-panel" class="admin-panel" style="display: none;">
+            <div class="admin-title">پنل مدیریت محصولات</div>
+            
+            <!-- مدیریت فروشندگان -->
+            <div class="admin-section">
+                <h3>مدیریت فروشندگان</h3>
+                <div class="admin-form">
+                    <input type="text" id="seller-address" class="admin-input" placeholder="آدرس فروشنده">
+                    <input type="text" id="seller-name" class="admin-input" placeholder="نام فروشنده">
+                    <input type="text" id="seller-page-url" class="admin-input" placeholder="آدرس صفحه فروشنده">
+                    <button onclick="addSeller()" class="admin-btn">افزودن فروشنده</button>
+                    <button onclick="removeSeller()" class="admin-btn danger">حذف فروشنده</button>
+                </div>
+            </div>
+            
+            <!-- مدیریت محصولات -->
+            <div class="admin-section">
+                <h3>مدیریت محصولات</h3>
+                <div class="admin-form">
+                    <input type="text" id="product-title" class="admin-input" placeholder="عنوان محصول">
+                    <textarea id="product-description" class="admin-input" placeholder="توضیحات محصول" rows="3"></textarea>
+                    <input type="number" id="product-price" class="admin-input" placeholder="قیمت (CPA)">
+                    <input type="number" id="product-payout" class="admin-input" placeholder="درصد تبلیغات (1-100)">
+                    <input type="text" id="product-seller" class="admin-input" placeholder="آدرس فروشنده">
+                    <button onclick="addProduct()" class="admin-btn">افزودن محصول</button>
+                    <button onclick="removeProduct()" class="admin-btn danger">حذف محصول</button>
+                </div>
+            </div>
+            
+            <!-- مدیریت ساب ادمین -->
+            <div class="admin-section">
+                <h3>مدیریت ساب ادمین</h3>
+                <div class="admin-form">
+                    <input type="text" id="subadmin-address" class="admin-input" placeholder="آدرس ساب ادمین">
+                    <input type="text" id="subadmin-name" class="admin-input" placeholder="نام ساب ادمین">
+                    <button onclick="addSubAdmin()" class="admin-btn">افزودن ساب ادمین</button>
+                    <button onclick="removeSubAdmin()" class="admin-btn danger">حذف ساب ادمین</button>
+                </div>
+            </div>
+            
+            <div id="admin-message"></div>
+        </div>
+        
+        <!-- فیلترها -->
+        <div class="filters">
+            <input type="text" id="search-products" class="search-input" placeholder="جستجو در محصولات...">
+            <select id="seller-filter" class="filter-select">
+                <option value="">همه فروشندگان</option>
+            </select>
+            <select id="price-filter" class="filter-select">
+                <option value="">همه قیمت‌ها</option>
+                <option value="0-100">0-100 CPA</option>
+                <option value="100-500">100-500 CPA</option>
+                <option value="500-1000">500-1000 CPA</option>
+                <option value="1000+">1000+ CPA</option>
+            </select>
+        </div>
+        
+        <!-- لیست محصولات -->
+        <div id="products-grid" class="products-grid">
+            <!-- محصولات به صورت داینامیک اضافه می‌شوند -->
+        </div>
+    </div>
+
+    <!-- دستیار هوشمند شناور -->
+    <!-- <div id="floating-ai-assistant"></div> -->
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@latest/dist/ethers.umd.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/navbar.js"></script>
+    <!-- <script src="js/floating-ai-assistant.js"></script> -->
+    <script src="js/user-profile-manager.js"></script>
+    <script src="js/products-manager.js"></script>
+</body>
+</html> 

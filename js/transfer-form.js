@@ -1,6 +1,20 @@
 // کنترل فرم انتقال توکن
 
 document.addEventListener('DOMContentLoaded', function() {
+  async function updateDaiBalance() {
+    if (!window.contractConfig || !window.contractConfig.signer) return;
+    try {
+      const address = await window.contractConfig.signer.getAddress();
+      const daiContract = new ethers.Contract(window.DAI_ADDRESS, window.DAI_ABI, window.contractConfig.signer);
+      const daiBalance = await daiContract.balanceOf(address);
+      const el = document.getElementById('transfer-dai-balance');
+      if (el) el.textContent = ethers.formatUnits(daiBalance, 18);
+    } catch (e) {
+      const el = document.getElementById('transfer-dai-balance');
+      if (el) el.textContent = 'خطا';
+    }
+  }
+  updateDaiBalance();
   const transferForm = document.getElementById('transferForm');
   if (!transferForm) return;
   transferForm.addEventListener('submit', async function(e) {
@@ -40,13 +54,13 @@ document.addEventListener('DOMContentLoaded', function() {
         await tx.wait();
         status.textContent = 'انتقال با موفقیت انجام شد!\nکد تراکنش: ' + tx.hash;
         status.className = 'transfer-status success';
-      } else if (token === 'usdc') {
-        const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, window.contractConfig.signer);
-        const decimals = 6;
+      } else if (token === 'dai') {
+        const daiContract = new ethers.Contract(window.DAI_ADDRESS, window.DAI_ABI, window.contractConfig.signer);
+        const decimals = 18;
         const parsedAmount = ethers.parseUnits(amount.toString(), decimals);
-        const tx = await usdcContract.transfer(to, parsedAmount);
+        const tx = await daiContract.transfer(to, parsedAmount);
         await tx.wait();
-        status.textContent = 'انتقال USDC با موفقیت انجام شد!\nکد تراکنش: ' + tx.hash;
+        status.textContent = 'انتقال DAI با موفقیت انجام شد!\nکد تراکنش: ' + tx.hash;
         status.className = 'transfer-status success';
       } else {
         const contract = window.contractConfig.contract;
@@ -56,6 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
         status.className = 'transfer-status success';
       }
       transferForm.reset();
+      await updateDaiBalance(); // بعد از انتقال موفق، موجودی DAI را به‌روز کن
     } catch (error) {
       let msg = error && error.message ? error.message : error;
       if (msg.includes('user rejected')) msg = '❌ تراکنش توسط کاربر لغو شد.';

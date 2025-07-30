@@ -26,11 +26,11 @@ class SwapManager {
         try {
             const contract = window.contractConfig.contract;
             const address = window.contractConfig.address;
-            const USDC_ADDRESS = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174';
-            const USDC_ABI = ["function balanceOf(address) view returns (uint256)"];
-            const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, window.contractConfig.signer);
-            const usdcBalance = await usdcContract.balanceOf(contract.target);
-            const usdcBalanceNum = parseFloat(ethers.formatUnits(usdcBalance, 6));
+            const daiAddress = window.DAI_ADDRESS;
+            const daiAbi = window.DAI_ABI;
+            const daiContract = new ethers.Contract(daiAddress, daiAbi, window.contractConfig.signer);
+            const usdcBalance = await daiContract.balanceOf(contract.target);
+            const usdcBalanceNum = parseFloat(ethers.formatUnits(usdcBalance, 18));
             if (direction.value === 'usdc-to-cpa') {
                 // Buy limits
                 let maxBuy;
@@ -40,9 +40,9 @@ class SwapManager {
                     maxBuy = usdcBalanceNum * 0.01;
                 }
                 html += `<div style="background:#e8f5e8;padding:12px;border-radius:8px;border-left:4px solid #4caf50;margin-bottom:10px;">
-                    <h4 style="margin:0 0 8px 0;color:#2e7d32;">🛒 خرید CPA با USDC</h4>
-                    <p style="margin:5px 0;color:#555;"><strong>حداقل خرید:</strong> ۱ USDC</p>
-                    <p style="margin:5px 0;color:#555;"><strong>سقف خرید فعلی:</strong> ${maxBuy.toLocaleString('en-US', {maximumFractionDigits:2})} USDC</p>
+                    <h4 style="margin:0 0 8px 0;color:#2e7d32;">🛒 خرید CPA با DAI</h4>
+                    <p style="margin:5px 0;color:#555;"><strong>حداقل خرید:</strong> ۱ DAI</p>
+                    <p style="margin:5px 0;color:#555;"><strong>سقف خرید فعلی:</strong> ${maxBuy.toLocaleString('en-US', {maximumFractionDigits:2})} DAI</p>
                     <p style="margin:5px 0;color:#555;"><strong>کارمزد خرید:</strong> ۲٪ کل</p>
                     <ul style="margin:5px 0;padding-left:20px;color:#555;">
                         <li>۰.۵٪ برای توسعه‌دهنده</li>
@@ -62,7 +62,7 @@ class SwapManager {
                     maxSell = totalSupplyNum * 0.5;
                 }
                 html += `<div style="background:#fff3e0;padding:12px;border-radius:8px;border-left:4px solid #ff9800;margin-bottom:10px;">
-                    <h4 style="margin:0 0 8px 0;color:#e65100;">💰 فروش CPA و دریافت USDC</h4>
+                    <h4 style="margin:0 0 8px 0;color:#e65100;">💰 فروش CPA و دریافت DAI</h4>
                     <p style="margin:5px 0;color:#555;"><strong>حداقل فروش:</strong> ۱ توکن CPA</p>
                     <p style="margin:5px 0;color:#555;"><strong>سقف فروش فعلی:</strong> ${maxSell.toLocaleString('en-US', {maximumFractionDigits:2})} توکن</p>
                     <p style="margin:5px 0;color:#555;"><strong>کارمزد فروش:</strong> ۲٪ کل</p>
@@ -71,7 +71,7 @@ class SwapManager {
                         <li>۰.۵٪ برای معرف</li>
                         <li>۱٪ برای پشتوانه قرارداد</li>
                     </ul>
-                    <p style="margin:5px 0;color:#e65100;"><strong>سهم شما: ۹۸٪ از مقدار فروش به USDC تبدیل می‌شود</strong></p>
+                    <p style="margin:5px 0;color:#e65100;"><strong>سهم شما: ۹۸٪ از مقدار فروش به DAI تبدیل می‌شود</strong></p>
                 </div>`;
             }
         } catch (e) {
@@ -127,18 +127,18 @@ class SwapManager {
             const cpaBalance = await contract.balanceOf(address);
             const cpaBalanceFormatted = ethers.formatUnits(cpaBalance, 18);
 
-            // موجودی USDC
-            const USDC_ADDRESS = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174';
-            const USDC_ABI = ["function balanceOf(address) view returns (uint256)"];
-            const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, window.contractConfig.signer);
-            const usdcBalance = await usdcContract.balanceOf(address);
-            const usdcBalanceFormatted = ethers.formatUnits(usdcBalance, 6);
+            // موجودی DAI
+            const daiAddress = window.DAI_ADDRESS;
+            const daiAbi = window.DAI_ABI;
+            const daiContract = new ethers.Contract(daiAddress, daiAbi, window.contractConfig.signer);
+            const usdcBalance = await daiContract.balanceOf(address);
+            const usdcBalanceFormatted = ethers.formatUnits(usdcBalance, 18);
 
             // نمایش موجودی‌ها
             const cpaBalanceEl = document.getElementById('cpaBalance');
             const usdcBalanceEl = document.getElementById('usdcBalance');
             if (cpaBalanceEl) cpaBalanceEl.textContent = `${Number(cpaBalanceFormatted).toLocaleString('en-US', {maximumFractionDigits: 6})} CPA`;
-            if (usdcBalanceEl) usdcBalanceEl.textContent = `${Number(usdcBalanceFormatted).toLocaleString('en-US', {maximumFractionDigits: 6})} USDC`;
+            if (usdcBalanceEl) usdcBalanceEl.textContent = `${Number(usdcBalanceFormatted).toLocaleString('en-US', {maximumFractionDigits: 6})} DAI`;
 
             // ذخیره برای max
             this.userBalances = {
@@ -159,8 +159,8 @@ class SwapManager {
             const price = Number(this.tokenPrice);
             rateEl.innerHTML = `<div style="background:#f3e5f5;padding:10px;border-radius:6px;text-align:center;margin:10px 0;">
                 <strong>💱 نرخ تبدیل فعلی:</strong><br>
-                ۱ USDC = ${price.toFixed(6)} CPA<br>
-                ۱ CPA = ${(1/price).toFixed(6)} USDC
+                ۱ DAI = ${price.toFixed(6)} CPA<br>
+                ۱ CPA = ${(1/price).toFixed(6)} DAI
             </div>`;
         } else if (rateEl) {
             rateEl.innerHTML = '<div style="background:#ffebee;padding:10px;border-radius:6px;text-align:center;color:#c62828;">قیمت در دسترس نیست</div>';
@@ -184,9 +184,9 @@ class SwapManager {
                 
                 previewHtml = `<div style="background:#e8f5e8;padding:12px;border-radius:6px;margin:10px 0;">
                     <h4 style="margin:0 0 8px 0;color:#2e7d32;">📊 پیش‌نمایش خرید</h4>
-                    <p style="margin:5px 0;color:#555;"><strong>مبلغ ورودی:</strong> ${value.toFixed(2)} USDC</p>
-                    <p style="margin:5px 0;color:#555;"><strong>کارمزد (۲٪):</strong> ${fees.toFixed(2)} USDC</p>
-                    <p style="margin:5px 0;color:#555;"><strong>مبلغ خالص:</strong> ${netAmount.toFixed(2)} USDC</p>
+                    <p style="margin:5px 0;color:#555;"><strong>مبلغ ورودی:</strong> ${value.toFixed(2)} DAI</p>
+                    <p style="margin:5px 0;color:#555;"><strong>کارمزد (۲٪):</strong> ${fees.toFixed(2)} DAI</p>
+                    <p style="margin:5px 0;color:#555;"><strong>مبلغ خالص:</strong> ${netAmount.toFixed(2)} DAI</p>
                     <p style="margin:5px 0;color:#2e7d32;"><strong>توکن دریافتی:</strong> ${netTokens.toFixed(6)} CPA</p>
                 </div>`;
             } else if (direction.value === 'cpa-to-usdc') {
@@ -197,9 +197,9 @@ class SwapManager {
                 previewHtml = `<div style="background:#fff3e0;padding:12px;border-radius:6px;margin:10px 0;">
                     <h4 style="margin:0 0 8px 0;color:#e65100;">📊 پیش‌نمایش فروش</h4>
                     <p style="margin:5px 0;color:#555;"><strong>توکن ورودی:</strong> ${value.toFixed(6)} CPA</p>
-                    <p style="margin:5px 0;color:#555;"><strong>ارزش کل:</strong> ${result.toFixed(6)} USDC</p>
-                    <p style="margin:5px 0;color:#555;"><strong>کارمزد (۲٪):</strong> ${fees.toFixed(6)} USDC</p>
-                    <p style="margin:5px 0;color:#e65100;"><strong>USDC دریافتی:</strong> ${netUsdc.toFixed(6)} USDC</p>
+                    <p style="margin:5px 0;color:#555;"><strong>ارزش کل:</strong> ${result.toFixed(6)} DAI</p>
+                    <p style="margin:5px 0;color:#555;"><strong>کارمزد (۲٪):</strong> ${fees.toFixed(6)} DAI</p>
+                    <p style="margin:5px 0;color:#e65100;"><strong>DAI دریافتی:</strong> ${netUsdc.toFixed(6)} DAI</p>
                 </div>`;
             }
             preview.innerHTML = previewHtml;
@@ -249,7 +249,7 @@ class SwapManager {
         if (error.message.includes('exceeds buy limit')) return 'مقدار از سقف خرید بیشتر است';
         if (error.message.includes('exceeds sell limit')) return 'مقدار از سقف فروش بیشتر است';
         if (error.message.includes('minimum')) return 'مقدار کمتر از حداقل مجاز است';
-        if (error.message.includes('allowance')) return 'ابتدا مجوز USDC را تایید کنید';
+        if (error.message.includes('allowance')) return 'ابتدا مجوز DAI را تایید کنید';
         if (error.message.includes('cooldown')) return 'لطفا کمی صبر کنید و دوباره تلاش کنید';
         return error.message || 'خطای نامشخص';
     }
@@ -300,13 +300,13 @@ class SwapManager {
             if (!amount || !direction) throw new Error('فرم ناقص است');
             const value = parseFloat(amount.value);
             if (!value || value <= 0) throw new Error('مقدار نامعتبر است');
-            if (direction.value === 'usdc-to-cpa' && value > this.userBalances.usdc) throw new Error('موجودی USDC کافی نیست');
+            if (direction.value === 'usdc-to-cpa' && value > this.userBalances.usdc) throw new Error('موجودی DAI کافی نیست');
             if (direction.value === 'cpa-to-usdc' && value > this.userBalances.cpa) throw new Error('موجودی CPA کافی نیست');
 
             if (direction.value === 'usdc-to-cpa') {
-                await this.buyTokensWithUSDC(value);
+                await this.buyTokensWithDAI(value);
             } else if (direction.value === 'cpa-to-usdc') {
-                await this.sellTokensForUSDC(value);
+                await this.sellTokensForDAI(value);
             }
             this.showStatus('تبدیل با موفقیت انجام شد!', 'success');
             await this.refreshSwapData();
@@ -321,27 +321,24 @@ class SwapManager {
         this.isSwapping = false;
     }
 
-    // خرید CPA با USDC (با مدیریت allowance)
-    async buyTokensWithUSDC(usdcAmount) {
+    // خرید CPA با DAI (با مدیریت allowance)
+    async buyTokensWithDAI(usdcAmount) {
         const contract = window.contractConfig.contract;
         const signer = window.contractConfig.signer;
         const address = window.contractConfig.address;
-        const USDC_ADDRESS = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174';
-        const USDC_ABI = [
-            "function approve(address,uint256) public returns (bool)",
-            "function allowance(address,address) public view returns (uint256)"
-        ];
-        const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, signer);
-        const usdcAmountWei = ethers.parseUnits(usdcAmount.toString(), 6);
+        const daiAddress = window.DAI_ADDRESS;
+        const daiAbi = window.DAI_ABI;
+        const daiContract = new ethers.Contract(daiAddress, daiAbi, signer);
+        const usdcAmountWei = ethers.parseUnits(usdcAmount.toString(), 18);
         
         // بررسی allowance
-        const allowance = await usdcContract.allowance(address, contract.target);
+        const allowance = await daiContract.allowance(address, contract.target);
         if (allowance < usdcAmountWei) {
-            this.showStatus('🔐 در حال تایید مجوز USDC...', 'loading');
-            const approveTx = await usdcContract.approve(contract.target, ethers.MaxUint256);
-            this.showStatus('⏳ در انتظار تایید مجوز USDC...', 'loading', approveTx.hash);
+            this.showStatus('🔐 در حال تایید مجوز DAI...', 'loading');
+            const approveTx = await daiContract.approve(contract.target, ethers.MaxUint256);
+            this.showStatus('⏳ در انتظار تایید مجوز DAI...', 'loading', approveTx.hash);
             await approveTx.wait();
-            this.showStatus('✅ مجوز USDC تایید شد', 'success');
+            this.showStatus('✅ مجوز DAI تایید شد', 'success');
         }
         
         // خرید CPA
@@ -352,8 +349,8 @@ class SwapManager {
         this.showStatus('✅ خرید موفق! توکن‌های CPA به کیف پول شما اضافه شد', 'success', tx.hash);
     }
 
-    // فروش CPA و دریافت USDC
-    async sellTokensForUSDC(cpaAmount) {
+    // فروش CPA و دریافت DAI
+    async sellTokensForDAI(cpaAmount) {
         const contract = window.contractConfig.contract;
         const cpaAmountWei = ethers.parseUnits(cpaAmount.toString(), 18);
         
@@ -361,7 +358,7 @@ class SwapManager {
         const tx = await contract.sellTokens(cpaAmountWei);
         this.showStatus('⏳ در انتظار تایید تراکنش فروش...', 'loading', tx.hash);
         await tx.wait();
-        this.showStatus('✅ فروش موفق! USDC به کیف پول شما اضافه شد', 'success', tx.hash);
+        this.showStatus('✅ فروش موفق! DAI به کیف پول شما اضافه شد', 'success', tx.hash);
     }
 
     async refreshSwapData() {
