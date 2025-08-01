@@ -4,17 +4,23 @@ document.addEventListener('DOMContentLoaded', function() {
   async function updateDaiBalance() {
     if (!window.contractConfig || !window.contractConfig.signer) return;
     try {
-      const address = await window.contractConfig.signer.getAddress();
+      // دقیقاً مثل swap.js: گرفتن آدرس کاربر از window.contractConfig.address
+      const address = window.contractConfig.address;
       const daiContract = new ethers.Contract(window.DAI_ADDRESS, window.DAI_ABI, window.contractConfig.signer);
       const daiBalance = await daiContract.balanceOf(address);
       const el = document.getElementById('transfer-dai-balance');
-      if (el) el.textContent = ethers.formatUnits(daiBalance, 18);
+      if (el) {
+        const value = ethers.formatUnits(daiBalance, 18); // مثل swap.js
+        el.textContent = parseFloat(value).toFixed(2);
+      }
     } catch (e) {
       const el = document.getElementById('transfer-dai-balance');
       if (el) el.textContent = 'خطا';
     }
   }
   updateDaiBalance();
+  // اتصال به window برای فراخوانی از هر جای دیگر (مانند سواپ)
+  window.updateTransferDaiBalance = updateDaiBalance;
   const transferForm = document.getElementById('transferForm');
   if (!transferForm) return;
   transferForm.addEventListener('submit', async function(e) {

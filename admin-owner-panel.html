@@ -38,10 +38,10 @@
       <span id="contract-balance">در حال بارگذاری...</span><br>
       <b>CPA در دست کاربران/owner:</b>
       <span id="supply-diff">در حال بارگذاری...</span><br>
-      <b>ارزش کل (USDC):</b>
+      <b>ارزش کل (DAI):</b>
       <span id="total-supply-value">در حال بارگذاری...</span>
       <button onclick="refreshTotalSupply()">بروزرسانی</button>
-      <div class="desc">مقدار کل توکن‌های صادر شده، موجودی CPA در قرارداد و اختلاف آن‌ها (CPA در دست کاربران/owner) و ارزش تقریبی کل بر اساس قیمت فعلی توکن (USDC).</div>
+      <div class="desc">مقدار کل توکن‌های صادر شده، موجودی CPA در قرارداد و اختلاف آن‌ها (CPA در دست کاربران/owner) و ارزش تقریبی کل بر اساس قیمت فعلی توکن (DAI).</div>
     </div>
     <hr>
     <div class="section">
@@ -74,21 +74,21 @@
     <div class="section">
       <label>کد صحیح توابع خرید و فروش (Solidity)</label>
       <pre style="background:#f5f5f5;border-radius:6px;padding:12px;direction:ltr;font-size:0.95em;overflow-x:auto;">
-// خرید CPA با USDC (با فرض قیمت با 6 رقم اعشار)
-function _usdcToTokens(uint256 usdcAmount) internal view returns (uint256) {
+// خرید CPA با DAI (با فرض قیمت با 6 رقم اعشار)
+function _daiToTokens(uint256 daiAmount) internal view returns (uint256) {
     uint256 price = getTokenPrice(); // قیمت با 6 رقم اعشار
     require(price > 0, "Token price is zero");
-    return (usdcAmount * 1e18) / price;
+    return (daiAmount * 1e18) / price;
 }
 
-// فروش CPA و دریافت USDC (با فرض قیمت با 6 رقم اعشار)
-function _tokensToUsdc(uint256 tokenAmount) internal view returns (uint256) {
+// فروش CPA و دریافت DAI (با فرض قیمت با 6 رقم اعشار)
+function _tokensToDai(uint256 tokenAmount) internal view returns (uint256) {
     uint256 price = getTokenPrice(); // قیمت با 6 رقم اعشار
     require(price > 0, "Token price is zero");
     return (tokenAmount * price) / 1e18;
 }
       </pre>
-      <div class="desc">این کد را دقیقاً در قرارداد خود جایگزین توابع خرید و فروش کن. اگر قیمت را با 6 رقم اعشار برمی‌گردانی (که استاندارد USDC است)، این فرمول‌ها کاملاً صحیح هستند و مقدار mint و burn دقیق خواهد بود.</div>
+      <div class="desc">این کد را دقیقاً در قرارداد خود جایگزین توابع خرید و فروش کن. اگر قیمت را با 6 رقم اعشار برمی‌گردانی (که استاندارد DAI است)، این فرمول‌ها کاملاً صحیح هستند و مقدار mint و burn دقیق خواهد بود.</div>
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.8.1/dist/ethers.umd.min.js"></script>
@@ -172,7 +172,7 @@ function _tokensToUsdc(uint256 tokenAmount) internal view returns (uint256) {
         const totalSupplyNum = Number(ethers.formatUnits(totalSupply, 18));
         const tokenPriceNum = Number(ethers.formatUnits(tokenPrice, 6)); // 6 رقم اعشار
         document.getElementById('total-supply').innerText = totalSupplyNum.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' CPA';
-        document.getElementById('total-supply-value').innerText = (totalSupplyNum * tokenPriceNum).toLocaleString('en-US', {maximumFractionDigits: 2}) + ' USDC';
+        document.getElementById('total-supply-value').innerText = (totalSupplyNum * tokenPriceNum).toLocaleString('en-US', {maximumFractionDigits: 2}) + ' DAI';
 
         // استفاده صحیح از contract.target
         const contractBalance = await contract.balanceOf(contract.target);

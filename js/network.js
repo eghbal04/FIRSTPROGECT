@@ -28,7 +28,7 @@ function showUserPopup(address, user) {
       {icon:'💰', label:'سپرده کل', val:user.depositedAmount ? Math.floor(Number(user.depositedAmount) / 1e18) : 0},
       {icon:'🟢', label:'CPA', val:'در حال بارگذاری...'},
       {icon:'🟣', label:'MATIC', val:'در حال بارگذاری...'},
-      {icon:'💵', label:'USDC', val:'در حال بارگذاری...'},
+      {icon:'💵', label:'DAI', val:'در حال بارگذاری...'},
       {icon:'⬅️', label:'امتیاز چپ', val:user.leftPoints},
       {icon:'➡️', label:'امتیاز راست', val:user.rightPoints}
     ];
@@ -69,7 +69,7 @@ function showUserPopup(address, user) {
     };
 
     async function getLiveBalances(addr) {
-        let cpa = '-', usdc = '-', matic = '-';
+        let cpa = '-', dai = '-', matic = '-';
         try {
             const { contract, provider } = await window.connectWallet();
             
@@ -83,15 +83,15 @@ function showUserPopup(address, user) {
                 }
             }
             
-            // دریافت موجودی USDC
+            // دریافت موجودی DAI
             try {
-                if (typeof USDC_ADDRESS !== 'undefined' && typeof USDC_ABI !== 'undefined') {
-                    const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, provider);
-                    let usdcRaw = await usdcContract.balanceOf(addr);
-                    usdc = (typeof ethers !== 'undefined') ? Number(ethers.formatUnits(usdcRaw, 6)).toFixed(2) : (Number(usdcRaw)/1e6).toFixed(2);
+                if (typeof DAI_ADDRESS !== 'undefined' && typeof DAI_ABI !== 'undefined') {
+                    const daiContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, provider);
+                    let daiRaw = await daiContract.balanceOf(addr);
+                    dai = (typeof ethers !== 'undefined') ? Number(ethers.formatUnits(daiRaw, 6)).toFixed(2) : (Number(daiRaw)/1e6).toFixed(2);
                 }
             } catch(e) {
-                console.warn('خطا در دریافت موجودی USDC:', e);
+                console.warn('خطا در دریافت موجودی DAI:', e);
             }
             
             // دریافت موجودی MATIC
@@ -106,11 +106,11 @@ function showUserPopup(address, user) {
         } catch(e) {
             console.error('خطا در دریافت موجودی‌ها:', e);
         }
-        return {cpa, usdc, matic};
+        return {cpa, dai, matic};
     }
 
     (async function() {
-        const {cpa, usdc, matic} = await getLiveBalances(address);
+        const {cpa, dai, matic} = await getLiveBalances(address);
         // به‌روزرسانی موجودی‌ها در لیست
         const listItems = document.querySelectorAll('.user-info-list li');
         listItems.forEach(item => {
@@ -119,8 +119,8 @@ function showUserPopup(address, user) {
                 item.innerHTML = item.innerHTML.replace(/🟢 <b>CPA:<\/b> [^<]*/, `🟢 <b>CPA:</b> ${cpa}`);
             } else if (text.includes('🟣 MATIC:')) {
                 item.innerHTML = item.innerHTML.replace(/🟣 <b>MATIC:<\/b> [^<]*/, `🟣 <b>MATIC:</b> ${matic}`);
-            } else if (text.includes('💵 USDC:')) {
-                item.innerHTML = item.innerHTML.replace(/💵 <b>USDC:<\/b> [^<]*/, `💵 <b>USDC:</b> ${usdc}`);
+            } else if (text.includes('💵 DAI:')) {
+                item.innerHTML = item.innerHTML.replace(/💵 <b>DAI:<\/b> [^<]*/, `💵 <b>DAI:</b> ${dai}`);
             }
         });
     })();
@@ -240,7 +240,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                         depositedAmount: user.depositedAmount,
                         lvlBalance: 'در حال بارگذاری...',
                         maticBalance: 'در حال بارگذاری...',
-                        usdcBalance: 'در حال بارگذاری...',
+                        daiBalance: 'در حال بارگذاری...',
                         leftPoints: user.leftPoints,
                         rightPoints: user.rightPoints
                     }
@@ -771,7 +771,7 @@ window.showUserStructTypewriter = function(address, user) {
     `پاداش رفرال:  ${user.refclimed ? Math.floor(Number(user.refclimed) / 1e18) : '0'}`,
     `موجودی CPA:  ${user.lvlBalance ? user.lvlBalance : '0'}`,
     `موجودی POL:  ${user.maticBalance ? user.maticBalance : '0'}`,
-    `موجودی USDC:  ${user.usdcBalance ? user.usdcBalance : '0'}`
+    `موجودی DAI:  ${user.daiBalance ? user.daiBalance : '0'}`
   ];
   const popup = document.createElement('div');
   popup.id = 'user-popup';

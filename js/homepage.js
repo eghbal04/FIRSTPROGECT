@@ -186,7 +186,7 @@ async function loadDashboardData() {
             
             // به‌روزرسانی UI
             await updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceChanges);
-            await updateUSDCContractBalance();
+            await updateDAIContractBalance();
             // ذخیره داده جدید در کش
             cacheDashboardData({prices, stats, additionalStats, tradingVolume, priceChanges});
         } else {
@@ -644,8 +644,8 @@ async function handleWalletConnectSuccess(walletConnectProvider) {
         const provider = new ethers.BrowserProvider(walletConnectProvider);
         const signer = await provider.getSigner();
         const contract = new ethers.Contract(
-            window.contractConfig.CONTRACT_ADDRESS,
-            window.contractConfig.LEVELUP_ABI,
+            window.contractConfig.CPA_ADDRESS,
+            window.contractConfig.CPA_ABI,
             signer
         );
         
@@ -843,7 +843,7 @@ async function autoConnectWallet() {
 }
 
 // Add after DOMContentLoaded or main dashboard load logic:
-async function updateUSDCContractBalance() {
+async function updateDAIContractBalance() {
   try {
     // Wait for wallet connection and contract
     let contract = null;
@@ -854,16 +854,16 @@ async function updateUSDCContractBalance() {
       contract = conn && conn.contract ? conn.contract : null;
     }
     if (!contract) return;
-    const usdcBalance = await contract.getContractUSDCBalance();
-    const usdcFormatted = (Number(usdcBalance) / 1e6).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    const el = document.getElementById('dashboard-usdc-balance');
-    if (el) el.textContent = usdcFormatted + ' USDC';
+    const daiBalance = await contract.getContractDAIBalance();
+    const daiFormatted = (Number(daiBalance) / 1e6).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    const el = document.getElementById('dashboard-dai-balance');
+    if (el) el.textContent = daiFormatted + ' DAI';
   } catch (e) {
-    const el = document.getElementById('dashboard-usdc-balance');
+    const el = document.getElementById('dashboard-dai-balance');
     if (el) el.textContent = '-';
   }
 }
-document.addEventListener('DOMContentLoaded', updateUSDCContractBalance);
+document.addEventListener('DOMContentLoaded', updateDAIContractBalance);
 
 // اضافه کردن event listener برای بارگذاری صفحه
 document.addEventListener('DOMContentLoaded', function() {

@@ -107,8 +107,8 @@
       const contractAddressElement = document.getElementById('contract-address');
       const copyAddressBtn = document.getElementById('copy-address-btn');
       
-      if (contractAddressElement && typeof CONTRACT_ADDRESS !== 'undefined') {
-        contractAddressElement.textContent = CONTRACT_ADDRESS;
+      if (contractAddressElement && typeof CPA_ADDRESS !== 'undefined') {
+        contractAddressElement.textContent = CPA_ADDRESS;
         
         // Add copy functionality
         function copyToClipboard(text) {
@@ -135,13 +135,13 @@
         // Add click event to copy button
         if (copyAddressBtn) {
           copyAddressBtn.addEventListener('click', function() {
-            copyToClipboard(CONTRACT_ADDRESS);
+            copyToClipboard(CPA_ADDRESS);
           });
         }
         
         // Add click event to address span
         contractAddressElement.addEventListener('click', function() {
-          copyToClipboard(CONTRACT_ADDRESS);
+          copyToClipboard(CPA_ADDRESS);
         });
         
       } else if (contractAddressElement) {

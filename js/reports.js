@@ -241,12 +241,12 @@ async function getReportSentence(report) {
         let toPromise = '';
         if (report.address && typeof report.address === 'object') {
             if (window.contractConfig && window.contractConfig.contract) {
-                fromPromise = displayAddress(report.address.from, window.contractConfig.contract, window.contractConfig.CONTRACT_ADDRESS).then(addr => {
+                fromPromise = displayAddress(report.address.from, window.contractConfig.contract, window.contractConfig.CPA_ADDRESS).then(addr => {
                     if (addr.startsWith('CPA')) return addr;
                     if (addr === 'قرارداد') return addr;
                     return ultraShortAddress(report.address.from);
                 });
-                toPromise = displayAddress(report.address.to, window.contractConfig.contract, window.contractConfig.CONTRACT_ADDRESS).then(addr => {
+                toPromise = displayAddress(report.address.to, window.contractConfig.contract, window.contractConfig.CPA_ADDRESS).then(addr => {
                     if (addr.startsWith('CPA')) return addr;
                     if (addr === 'قرارداد') return addr;
                     return ultraShortAddress(report.address.to);
@@ -283,7 +283,7 @@ async function getReportSentence(report) {
         case 'tree':
             return `${time} یک کاربر جدید در سمت ${amount} شما ثبت شد.`;
         case 'approval':
-            return displayAddress(report.address, window.contractConfig.contract, window.contractConfig.CONTRACT_ADDRESS).then(addr => `${time} شما مجوز انتقال ${amount} را صادر کردید. آدرس مقابل: <span class='wallet-address'>${addr}</span>`);
+            return displayAddress(report.address, window.contractConfig.contract, window.contractConfig.CPA_ADDRESS).then(addr => `${time} شما مجوز انتقال ${amount} را صادر کردید. آدرس مقابل: <span class='wallet-address'>${addr}</span>`);
         case 'indextransfer':
             return `${time} انتقال ایندکس ${amount}`;
         case 'monthlyreward':

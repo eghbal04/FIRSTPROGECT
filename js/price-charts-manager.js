@@ -295,10 +295,10 @@ class PriceChartsManager {
         if (stats.tokenChart) {
             console.log('💲 === آمار قیمت توکن ===');
             console.log(`📈 تعداد داده‌ها: ${stats.tokenChart.dataPoints}`);
-            console.log(`📉 حداقل قیمت: ${stats.tokenChart.minPrice.toFixed(6)} USDC`);
-            console.log(`📈 حداکثر قیمت: ${stats.tokenChart.maxPrice.toFixed(6)} USDC`);
-            console.log(`📊 میانگین قیمت: ${stats.tokenChart.avgPrice.toFixed(6)} USDC`);
-            console.log(`💰 قیمت فعلی: ${stats.tokenChart.currentPrice.toFixed(6)} USDC`);
+            console.log(`📉 حداقل قیمت: ${stats.tokenChart.minPrice.toFixed(6)} DAI`);
+            console.log(`📈 حداکثر قیمت: ${stats.tokenChart.maxPrice.toFixed(6)} DAI`);
+            console.log(`📊 میانگین قیمت: ${stats.tokenChart.avgPrice.toFixed(6)} DAI`);
+            console.log(`💰 قیمت فعلی: ${stats.tokenChart.currentPrice.toFixed(6)} DAI`);
         }
         
         if (stats.pointChart) {
@@ -365,7 +365,7 @@ class PriceChartsManager {
                 if (stats.newestRecord) {
                     console.log(`📅 جدیدترین رکورد: ${stats.newestRecord.timestamp.toLocaleString('fa-IR')}`);
                 }
-                console.log(`📊 میانگین قیمت توکن: ${stats.averageTokenPrice?.toFixed(6) || 0} USDC`);
+                console.log(`📊 میانگین قیمت توکن: ${stats.averageTokenPrice?.toFixed(6) || 0} DAI`);
                 console.log(`📊 میانگین قیمت پوینت: ${stats.averagePointPrice?.toFixed(6) || 0} CPA`);
             }
             return stats;

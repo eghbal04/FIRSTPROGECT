@@ -643,7 +643,7 @@ window.transferTreeToNewContract = async function(newContractAddress) {
         
         const newContract = new ethers.Contract(
             newContractAddress, 
-            window.LEVELUP_ABI, 
+            window.CPA_ABI, 
             window.contractConfig.signer
         );
         
@@ -728,7 +728,7 @@ window.checkNewContractReadiness = async function(newContractAddress) {
         
         const newContract = new ethers.Contract(
             newContractAddress, 
-            window.LEVELUP_ABI, 
+            window.CPA_ABI, 
             window.contractConfig.signer
         );
         

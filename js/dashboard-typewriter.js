@@ -175,7 +175,7 @@ window.updateDashboardTerminalInfo = async function() {
   lines.push(`Token Price: ${tokenPrice}`);
   lines.push(`Contract Token Balance: ${contractTokenBalance}`);
   lines.push(`Help Fund: ${cashback}`);
-  lines.push(`Contract USDC Balance: ${daiBalance}`);
+  lines.push(`Contract DAI Balance: ${daiBalance}`);
   lines.push('');
   // --- USER PROFILE ---
   let profile = null;
@@ -193,7 +193,7 @@ window.updateDashboardTerminalInfo = async function() {
     lines.push(`  MATIC: ${profile.maticBalance}`);
     lines.push(`  CPA: ${profile.lvlBalance}`);
     lines.push(`  POL: ${profile.polBalance}`);
-    lines.push(`  USDC: ${profile.usdcBalance}`);
+    lines.push(`  DAI: ${profile.daiBalance}`);
     lines.push(`  CPA Value (USD): ${profile.lvlValueUSD}`);
     lines.push(`  POL Value (USD): ${profile.polValueUSD}`);
     lines.push('');

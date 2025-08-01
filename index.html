@@ -431,8 +431,8 @@
           <div class="swap-row">
             <label for="swapDirection">نوع تبدیل:</label>
             <select id="swapDirection" required>
-              <option value="usdc-to-cpa">DAI → CPA</option>
-              <option value="cpa-to-usdc">CPA → DAI</option>
+              <option value="dai-to-cpa">DAI → CPA</option>
+              <option value="cpa-to-dai">CPA → DAI</option>
             </select>
             <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">نوع تبدیل مورد نظر را انتخاب کنید</small>
           </div>
@@ -460,7 +460,7 @@
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
             <div style="text-align:center;">
               <div style="color:#00ff88;font-weight:bold;">DAI</div>
-              <div id="usdcBalance" style="color:#b8c1ec;font-family:monospace;">-</div>
+              <div id="daiBalance" style="color:#b8c1ec;font-family:monospace;">-</div>
             </div>
             <div style="text-align:center;">
               <div style="color:#00ccff;font-weight:bold;">CPA</div>
@@ -547,7 +547,7 @@
           <div class="transfer-row">
             <label for="transferToken">نوع توکن:</label>
             <select id="transferToken" required>
-              <option value="usdc" selected>DAI</option>
+              <option value="dai" selected>DAI</option>
               <option value="pol">POL</option>
               <option value="cpa">CPA</option>
             </select>
@@ -760,6 +760,84 @@
       transform: none;
     }
   </style>
+  
+  <!-- تعریف متغیرهای مورد نیاز برای سواپ -->
+  <script>
+    // آدرس قرارداد DAI (DAI) در شبکه Polygon
+    window.DAI_ADDRESS = '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063';
+    
+    // ABI ساده برای DAI (DAI)
+    window.DAI_ABI = [
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "spender",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "value",
+            "type": "uint256"
+          }
+        ],
+        "name": "approve",
+        "outputs": [
+          {
+            "internalType": "bool",
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "spender",
+            "type": "address"
+          }
+        ],
+        "name": "allowance",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "account",
+            "type": "address"
+          }
+        ],
+        "name": "balanceOf",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      }
+    ];
+  </script>
+  
   <script src="js/swap.js?v=5.7"></script>
   
 
@@ -992,12 +1070,12 @@
             await tx.wait();
             status.textContent = 'انتقال با موفقیت انجام شد!\nکد تراکنش: ' + tx.hash;
             status.className = 'transfer-status success';
-          } else if (token === 'usdc') {
+          } else if (token === 'dai') {
             // انتقال DAI
-            const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, window.contractConfig.signer);
+            const daiContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, window.contractConfig.signer);
             const decimals = 6; // DAI has 18 decimals
             const parsedAmount = ethers.parseUnits(amount.toString(), decimals);
-            const tx = await usdcContract.transfer(to, parsedAmount);
+            const tx = await daiContract.transfer(to, parsedAmount);
             await tx.wait();
             status.textContent = 'انتقال DAI با موفقیت انجام شد!\nکد تراکنش: ' + tx.hash;
             status.className = 'transfer-status success';
@@ -1185,6 +1263,78 @@
   </script>
 
   <script src="js/navbar.js"></script>
+  
+  <!-- مقداردهی SwapManager -->
+  <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+      console.log('🚀 شروع مقداردهی SwapManager...');
+      
+      // اطمینان از بارگذاری swap.js
+      if (typeof SwapManager !== 'undefined') {
+        try {
+          console.log('✅ کلاس SwapManager یافت شد');
+          
+          // کمی صبر کن تا DOM کاملاً بارگذاری شود
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          // بررسی وجود عناصر مورد نیاز
+          const requiredElements = ['swapForm', 'swapDirection', 'swapAmount', 'maxBtn', 'swapRate', 'swapPreview', 'swapLimitInfo', 'swapStatus'];
+          const missingElements = requiredElements.filter(id => !document.getElementById(id));
+          
+          if (missingElements.length > 0) {
+            console.warn('⚠️ عناصر زیر یافت نشدند:', missingElements);
+            return;
+          }
+          
+          console.log('✅ تمام عناصر مورد نیاز موجود هستند');
+          
+          // بررسی وجود متغیرهای مورد نیاز
+          if (!window.DAI_ADDRESS || !window.DAI_ABI) {
+            console.error('❌ متغیرهای DAI_ADDRESS یا DAI_ABI تعریف نشده‌اند');
+            return;
+          }
+          
+          console.log('✅ متغیرهای DAI موجود هستند');
+          
+          // ایجاد نمونه SwapManager
+          window.swapManager = new SwapManager();
+          console.log('✅ نمونه SwapManager ایجاد شد');
+          
+          // مقداردهی اولیه
+          await window.swapManager.initializeSwap();
+          console.log('✅ SwapManager با موفقیت مقداردهی شد');
+          
+        } catch (error) {
+          console.error('❌ خطا در مقداردهی SwapManager:', error);
+        }
+      } else {
+        console.warn('⚠️ SwapManager تعریف نشده است - فایل swap.js بارگذاری نشده');
+      }
+    });
+    
+    // مقداردهی مجدد بعد از اتصال کیف پول
+    if (window.connectWallet) {
+      const originalConnectWallet = window.connectWallet;
+      window.connectWallet = async function() {
+        const result = await originalConnectWallet();
+        
+        // مقداردهی مجدد SwapManager بعد از اتصال
+        setTimeout(async () => {
+          if (window.swapManager && typeof window.swapManager.refreshSwapData === 'function') {
+            try {
+              console.log('🔄 رفرش SwapManager بعد از اتصال کیف پول...');
+              await window.swapManager.refreshSwapData();
+              console.log('✅ SwapManager رفرش شد');
+            } catch (error) {
+              console.warn('⚠️ خطا در رفرش SwapManager:', error);
+            }
+          }
+        }, 1000);
+        
+        return result;
+      };
+    }
+  </script>
   </div>
 </body>
 </html>

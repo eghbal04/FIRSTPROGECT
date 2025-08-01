@@ -7868,12 +7868,12 @@ body.signal-page { background: #181c2a; color: #fff; font-family: 'Noto Sans Ara
   color: #dc3545;
 }
 
-.blockchain-info-item.usdc-card {
+.blockchain-info-item.dai-card {
   border: 1px solid rgba(0,123,255,0.2);
 }
 
-.blockchain-info-item.usdc-card .blockchain-info-icon,
-.blockchain-info-item.usdc-card .blockchain-info-value {
+.blockchain-info-item.dai-card .blockchain-info-icon,
+.blockchain-info-item.dai-card .blockchain-info-value {
   color: #007bff;
 }
 

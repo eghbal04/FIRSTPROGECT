@@ -806,7 +806,7 @@ class FloatingAIAssistant {
 - آدرس قرارداد: 0x045401e0692a84ecDd9c0c0fce3b2E23D864F076
 
 ویژگی‌های اصلی:
-- سیستم خرید/فروش توکن با USDC
+- سیستم خرید/فروش توکن با DAI
 - ساختار درختی باینری برای بازاریابی
 - سیستم پاداش باینری (هر 12 ساعت)
 - Cashback ماهانه برای کاربران بدون زیرمجموعه
@@ -890,7 +890,7 @@ class FloatingAIAssistant {
             const connection = await window.connectWallet();
             if (connection && connection.address) {
                 const profile = await window.getUserProfile();
-                const balanceText = `موجودی شما:\nPOL: ${profile.polBalance}\nCPA: ${profile.lvlBalance}\nUSDC: ${profile.usdcBalance}`;
+                const balanceText = `موجودی شما:\nPOL: ${profile.polBalance}\nCPA: ${profile.lvlBalance}\nDAI: ${profile.daiBalance}`;
                 this.addMessageToUI(balanceText, 'ai');
             } else {
                 this.addMessageToUI('لطفاً ابتدا کیف پول خود را متصل کنید.', 'ai');

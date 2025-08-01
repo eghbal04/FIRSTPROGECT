@@ -49,20 +49,20 @@ document.addEventListener('DOMContentLoaded', async () => {
       try {
         const [
           totalSupply,
-          usdcBalance,
+          daiBalance,
           tokenBalance,
           wallets,
           totalPoints
         ] = await Promise.all([
           contract.totalSupply(),
-          contract.usdcBalance ? contract.usdcBalance() : Promise.resolve(0),
+          contract.daiBalance ? contract.daiBalance() : Promise.resolve(0),
           contract.tokenBalance ? contract.tokenBalance() : Promise.resolve(0),
           contract.wallets(),
           contract.totalClaimableBinaryPoints()
         ]);
         const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
         set('circulating-supply', Number(totalSupply) / 1e18);
-        set('dashboard-usdc-balance', Number(usdcBalance) / 1e6);
+        set('dashboard-dai-balance', Number(daiBalance) / 1e6);
         set('contract-token-balance', Number(tokenBalance) / 1e18);
         set('dashboard-wallets-count', Number(wallets));
         // set('total-points', Math.floor(Number(totalPoints) / 1e18).toLocaleString('en-US'));
@@ -76,14 +76,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // if (document.getElementById('dashboard-terminal-info')) {
     //     document.getElementById('dashboard-terminal-info').textContent =
     //         `Total Points: ${window.contractStats.totalPoints}\n` +
-    //         `USDC Balance: ${window.contractStats.usdcBalance}\n` +
+    //         `DAI Balance: ${window.contractStats.daiBalance}\n` +
     //         `Token Balance: ${window.contractStats.tokenBalance}\n` +
     //         `Wallets: ${window.contractStats.wallets}\n` +
     //         `Total Supply: ${window.contractStats.totalSupply}`;
     // }
 
     // نمایش آدرس قرارداد در کارت داشبورد (بدون دکمه، فقط با کلیک روی آدرس)
-    const contractAddress = (window.contractConfig && window.contractConfig.CONTRACT_ADDRESS) ? window.contractConfig.CONTRACT_ADDRESS : (typeof CONTRACT_ADDRESS !== 'undefined' ? CONTRACT_ADDRESS : '');
+    const contractAddress = (window.contractConfig && window.contractConfig.CPA_ADDRESS) ? window.contractConfig.CPA_ADDRESS : (typeof CPA_ADDRESS !== 'undefined' ? CPA_ADDRESS : '');
     const dashAddrEl = document.getElementById('dashboard-contract-address');
     if (dashAddrEl && contractAddress) {
         dashAddrEl.textContent = contractAddress;
@@ -227,8 +227,8 @@ const updateElement = (id, value) => {
 };
 
     updateElement('user-address', shortenAddress(address));
-    updateElement('usdc-balance', profile.usdcBalance + ' USDC');
-    updateElement('profile-usdc', profile.usdcBalance + ' USDC');
+    updateElement('dai-balance', profile.daiBalance + ' DAI');
+    updateElement('profile-dai', profile.daiBalance + ' DAI');
 
     const userDashboard = document.getElementById('user-dashboard');
     const mainContent = document.getElementById('main-content');
@@ -279,12 +279,12 @@ async function fetchUserProfile() {
         // دریافت موجودی‌ها
         const provider = contract.provider;
         const signer = contract.signer || (provider && provider.getSigner ? await provider.getSigner() : null);
-        let usdcBalance = '0';
-        if (signer && typeof USDC_ADDRESS !== 'undefined' && typeof USDC_ABI !== 'undefined') {
-          const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, signer);
-          const usdcDecimals = await usdcContract.decimals();
-          const usdcRaw = await usdcContract.balanceOf(address);
-          usdcBalance = ethers.formatUnits(usdcRaw, usdcDecimals);
+        let daiBalance = '0';
+        if (signer && typeof DAI_ADDRESS !== 'undefined' && typeof DAI_ABI !== 'undefined') {
+          const daiContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, signer);
+          const daiDecimals = await daiContract.decimals();
+          const daiRaw = await daiContract.balanceOf(address);
+          daiBalance = ethers.formatUnits(daiRaw, daiDecimals);
         }
         // دریافت اطلاعات کاربر
         const userData = await contract.users(address);
@@ -303,7 +303,7 @@ async function fetchUserProfile() {
         const lvlValueUSD = parseFloat(formattedLvlBalance) * tokenPriceUSD;
         return {
             address,
-            usdcBalance,
+            daiBalance,
             isRegistered: userData.activated,
             binaryPoints: ethers.formatUnits(userData.binaryPoints, 18),
             binaryPointCap: userData.binaryPointCap.toString(),
@@ -312,7 +312,7 @@ async function fetchUserProfile() {
     } catch (error) {
         return {
             address: '---',
-            usdcBalance: '0',
+            daiBalance: '0',
             isRegistered: false,
             binaryPoints: '0',
             binaryPointCap: '0',
@@ -925,7 +925,7 @@ window.showWelcomeRegistrationPrompt = async function() {
                         font-size: 0.9rem;
                         line-height: 1.4;
                     ">
-                        💡 قیمت فعلی CPA: $${cpaPriceUSD ? cpaPriceUSD : 'در حال دریافت...'} USDC
+                        💡 قیمت فعلی CPA: $${cpaPriceUSD ? cpaPriceUSD : 'در حال دریافت...'} DAI
                     </div>
                 </div>
                 
@@ -1503,7 +1503,7 @@ async function showTokenPricesForAll() {
         // اگر contractConfig و contract آماده است
         if (window.contractConfig && window.contractConfig.contract) {
             const contract = window.contractConfig.contract;
-            // قیمت CPA به USDC (قیمت توکن مستقیماً به USDC است)
+            // قیمت CPA به DAI (قیمت توکن مستقیماً به DAI است)
             const tokenPrice = await contract.getTokenPrice();
             const tokenPriceFormatted = ethers.formatUnits(tokenPrice, 18);
             
@@ -2042,8 +2042,8 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
             <span id="register-cpa-balance" style="color: #00ff88; font-weight: bold;">در حال دریافت...</span>
           </div>
           <div style="display: flex; justify-content: space-between; align-items: center; font-size:0.95em;">
-            <span style="color: #fff;">💵 USDC:</span>
-            <span id="register-usdc-balance" style="color: #00ccff; font-weight: bold;">در حال دریافت...</span>
+            <span style="color: #fff;">💵 DAI:</span>
+            <span id="register-dai-balance" style="color: #00ccff; font-weight: bold;">در حال دریافت...</span>
           </div>
         </div>
       </div>
@@ -2057,7 +2057,7 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
         margin-bottom: 0.7rem;
       ">
         <div style="color: #ff6b6b; font-weight: bold; margin-bottom: 0.3rem; font-size:0.95em;">⚠️ مقدار مورد نیاز:</div>
-        <div id="register-required-usdc" style="
+        <div id="register-required-dai" style="
           color: #ff6b6b;
           font-size: 1rem;
           font-weight: bold;
@@ -2136,8 +2136,8 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
       }
       let matic = '-';
       let cpa = '-';
-      let usdc = '-';
-      let requiredUsdc = '-';
+      let dai = '-';
+      let requiredDai = '-';
 
       if (provider && connectedAddress) {
         try {
@@ -2154,32 +2154,32 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
         } catch (e) {
           cpa = 'خطا در دریافت CPA';
         }
-        // دریافت موجودی USDC
+        // دریافت موجودی DAI
         try {
-          const USDC_ADDRESS = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174';
-          const USDC_ABI = ["function balanceOf(address) view returns (uint256)"];
-          const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, provider || contract.provider);
-          const usdcBal = await usdcContract.balanceOf(connectedAddress);
-          usdc = window.ethers ? window.ethers.formatUnits(usdcBal, 6) : usdcBal.toString();
+          const DAI_ADDRESS = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174';
+          const DAI_ABI = ["function balanceOf(address) view returns (uint256)"];
+          const daiContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, provider || contract.provider);
+          const daiBal = await daiContract.balanceOf(connectedAddress);
+          dai = window.ethers ? window.ethers.formatUnits(daiBal, 6) : daiBal.toString();
         } catch (e) {
-          usdc = 'خطا در دریافت USDC';
+          dai = 'خطا در دریافت DAI';
         }
         // مقدار مورد نیاز ثبت‌نام از قرارداد
         try {
           if (window.getRegPrice) {
             const regPrice = await window.getRegPrice(contract);
-            requiredUsdc = parseFloat(window.ethers.formatUnits(regPrice, 18)).toFixed(0) + ' CPA';
+            requiredDai = parseFloat(window.ethers.formatUnits(regPrice, 18)).toFixed(0) + ' CPA';
           } else {
-            requiredUsdc = '...';
+            requiredDai = '...';
           }
         } catch (e) {
-          requiredUsdc = 'خطا';
+          requiredDai = 'خطا';
         }
       }
       document.getElementById('register-matic-balance').textContent = matic;
       document.getElementById('register-cpa-balance').textContent = cpa;
-      document.getElementById('register-usdc-balance').textContent = usdc;
-      document.getElementById('register-required-usdc').textContent = requiredUsdc;
+      document.getElementById('register-dai-balance').textContent = dai;
+      document.getElementById('register-required-dai').textContent = requiredDai;
 
       if (window.displayUserBalances) {
         await window.displayUserBalances();
@@ -2187,8 +2187,8 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
     } catch (e) {
       document.getElementById('register-matic-balance').textContent = '-';
       document.getElementById('register-cpa-balance').textContent = '-';
-      document.getElementById('register-usdc-balance').textContent = '-';
-      document.getElementById('register-required-usdc').textContent = '-';
+      document.getElementById('register-dai-balance').textContent = '-';
+      document.getElementById('register-required-dai').textContent = '-';
     }
   })();
   
@@ -2907,11 +2907,11 @@ window.loadTransferTab = async function() {
 // تابع به‌روزرسانی موجودی‌ها در قسمت ترنسفر
 async function updateTransferBalances(contract, address, provider) {
     try {
-        const usdcBalanceDiv = document.getElementById('transfer-usdc-balance');
+        const daiBalanceDiv = document.getElementById('transfer-dai-balance');
         const polyBalanceDiv = document.getElementById('transfer-poly-balance');
         const cpaBalanceDiv = document.getElementById('transfer-cpa-balance');
         
-        if (!usdcBalanceDiv || !polyBalanceDiv || !cpaBalanceDiv) {
+        if (!daiBalanceDiv || !polyBalanceDiv || !cpaBalanceDiv) {
             console.log('Transfer balance elements not found');
             return;
         }
@@ -2951,7 +2951,7 @@ async function updateTransferBalances(contract, address, provider) {
             // تنظیم مقادیر به حالت خطا
             polyBalanceDiv.textContent = 'متصل نیست';
             cpaBalanceDiv.textContent = 'متصل نیست';
-            usdcBalanceDiv.textContent = 'متصل نیست';
+            daiBalanceDiv.textContent = 'متصل نیست';
             return;
         }
         
@@ -2985,24 +2985,24 @@ async function updateTransferBalances(contract, address, provider) {
             cpaBalance = 'خطا';
         }
         
-        // دریافت موجودی USDC
-        let usdcBalance = '-';
+        // دریافت موجودی DAI
+        let daiBalance = '-';
         try {
-            const USDC_ADDRESS = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174';
-            const USDC_ABI = ["function balanceOf(address) view returns (uint256)"];
-            const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, provider);
-            const usdcBal = await usdcContract.balanceOf(address);
-            usdcBalance = parseFloat(ethers.formatUnits(usdcBal, 6)).toFixed(2);
-            console.log('USDC balance:', usdcBalance);
+            const DAI_ADDRESS = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174';
+            const DAI_ABI = ["function balanceOf(address) view returns (uint256)"];
+            const daiContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, provider);
+            const daiBal = await daiContract.balanceOf(address);
+            daiBalance = parseFloat(ethers.formatUnits(daiBal, 6)).toFixed(2);
+            console.log('DAI balance:', daiBalance);
         } catch (e) {
-            console.error('Error getting USDC balance:', e);
-            usdcBalance = 'خطا';
+            console.error('Error getting DAI balance:', e);
+            daiBalance = 'خطا';
         }
         
         // به‌روزرسانی نمایش
         polyBalanceDiv.textContent = polyBalance;
         cpaBalanceDiv.textContent = cpaBalance;
-        usdcBalanceDiv.textContent = usdcBalance;
+        daiBalanceDiv.textContent = daiBalance;
         
         console.log('Transfer balances updated successfully');
         

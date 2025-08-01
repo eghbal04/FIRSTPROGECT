@@ -552,7 +552,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // نمایش آدرس قرارداد در پروفایل
-    const contractAddress = (window.contractConfig && window.contractConfig.CONTRACT_ADDRESS) ? window.contractConfig.CONTRACT_ADDRESS : (typeof CONTRACT_ADDRESS !== 'undefined' ? CONTRACT_ADDRESS : '');
+    const contractAddress = (window.contractConfig && window.contractConfig.CPA_ADDRESS) ? window.contractConfig.CPA_ADDRESS : (typeof CPA_ADDRESS !== 'undefined' ? CPA_ADDRESS : '');
     if (contractAddress) {
         let el = document.getElementById('profile-contract-address');
         if (!el) {

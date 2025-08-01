@@ -1,12 +1,11 @@
-const CONTRACT_LOTARY = '0x0000000000000000000000000000000000000000';
 const deepseek_api ='sk-6074908ce7954bd89d494d57651392a8';
 
 
 // تنظیمات قرارداد LevelUp
 
-const CONTRACT_ADDRESS = '0x31445529038Fc94CE4F883443a5433b6D5C1D5D0';
+const CPA_ADDRESS = '0x31445529038Fc94CE4F883443a5433b6D5C1D5D0';
 
-const DAI_ADDRESS = '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063'; // Polygon USDC
+const DAI_ADDRESS = '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063'; // Polygon DAI
 const DAI_ABI =[
 	{
 		"inputs": [
@@ -263,7 +262,7 @@ const DAI_ABI =[
 		"inputs": [
 			{
 				"internalType": "uint256",
-				"name": "usdcAmount",
+				"name": "daiAmount",
 				"type": "uint256"
 			}
 		],
@@ -397,7 +396,7 @@ const DAI_ABI =[
 			{
 				"indexed": false,
 				"internalType": "uint256",
-				"name": "usdcAmount",
+				"name": "daiAmount",
 				"type": "uint256"
 			},
 			{
@@ -428,7 +427,7 @@ const DAI_ABI =[
 			{
 				"indexed": false,
 				"internalType": "uint256",
-				"name": "usdcAmount",
+				"name": "daiAmount",
 				"type": "uint256"
 			}
 		],
@@ -675,7 +674,7 @@ const DAI_ABI =[
 		"inputs": [
 			{
 				"internalType": "uint256",
-				"name": "usdcAmount",
+				"name": "daiAmount",
 				"type": "uint256"
 			}
 		],
@@ -724,7 +723,7 @@ const DAI_ABI =[
 	},
 	{
 		"inputs": [],
-		"name": "getContractUSDCBalance",
+		"name": "getContractDAIBalance",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -1059,7 +1058,7 @@ const DAI_ABI =[
 	},
 	{
 		"inputs": [],
-		"name": "usdcToken",
+		"name": "daiToken",
 		"outputs": [
 			{
 				"internalType": "contract IERC20",
@@ -1168,7 +1167,31 @@ const DAI_ABI =[
 		"type": "function"
 	}
 ];
-const LEVELUP_ABI =[
+const CPA_ABI =[
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "spender",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "approve",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
 	{
 		"inputs": [],
 		"stateMutability": "nonpayable",
@@ -1397,6 +1420,39 @@ const LEVELUP_ABI =[
 		"type": "event"
 	},
 	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "daiAmount",
+				"type": "uint256"
+			}
+		],
+		"name": "buyTokens",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "claim",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "minReward",
+				"type": "uint256"
+			}
+		],
+		"name": "claimMonthlyReward",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
 		"anonymous": false,
 		"inputs": [
 			{
@@ -1425,43 +1481,6 @@ const LEVELUP_ABI =[
 			}
 		],
 		"name": "IndexTransferred",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "address[]",
-				"name": "winners",
-				"type": "address[]"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "totalReward",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "burnedAmount",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "timestamp",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "index",
-				"type": "uint256"
-			}
-		],
-		"name": "LotteryHeld",
 		"type": "event"
 	},
 	{
@@ -1521,6 +1540,29 @@ const LEVELUP_ABI =[
 		"type": "event"
 	},
 	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "amountCPA",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "payout",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "seller",
+				"type": "address"
+			}
+		],
+		"name": "purchase",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
 		"anonymous": false,
 		"inputs": [
 			{
@@ -1538,6 +1580,37 @@ const LEVELUP_ABI =[
 		],
 		"name": "PurchaseKind",
 		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "referrer",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "newUser",
+				"type": "address"
+			}
+		],
+		"name": "registerAndActivate",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "tokenAmount",
+				"type": "uint256"
+			}
+		],
+		"name": "sellTokens",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
 	},
 	{
 		"anonymous": false,
@@ -1590,6 +1663,30 @@ const LEVELUP_ABI =[
 		"type": "event"
 	},
 	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "transfer",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
 		"anonymous": false,
 		"inputs": [
 			{
@@ -1613,6 +1710,48 @@ const LEVELUP_ABI =[
 		],
 		"name": "Transfer",
 		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "transferFrom",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "newOwner",
+				"type": "address"
+			}
+		],
+		"name": "transferIndexOwnership",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
 	},
 	{
 		"anonymous": false,
@@ -1652,58 +1791,6 @@ const LEVELUP_ABI =[
 		"type": "event"
 	},
 	{
-		"inputs": [],
-		"name": "LOTTERY_FEE_PERCENT",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "MAX_BINARY_POINT_CAP",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "REFERRAL_FEE_PERCENT",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "WINNERS_COUNT",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
 		"inputs": [
 			{
 				"internalType": "address",
@@ -1731,61 +1818,11 @@ const LEVELUP_ABI =[
 		"inputs": [
 			{
 				"internalType": "address",
-				"name": "spender",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "value",
-				"type": "uint256"
-			}
-		],
-		"name": "approve",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
 				"name": "account",
 				"type": "address"
 			}
 		],
 		"name": "balanceOf",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "daiAmount",
-				"type": "uint256"
-			}
-		],
-		"name": "buyTokens",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "cashBack",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -1811,27 +1848,7 @@ const LEVELUP_ABI =[
 	},
 	{
 		"inputs": [],
-		"name": "claim",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "minReward",
-				"type": "uint256"
-			}
-		],
-		"name": "claimMonthlyReward",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "contractTotalSupply",
+		"name": "cashBack",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -1844,12 +1861,12 @@ const LEVELUP_ABI =[
 	},
 	{
 		"inputs": [],
-		"name": "daiToken",
+		"name": "contractTotalSupply",
 		"outputs": [
 			{
-				"internalType": "contract IERC20",
+				"internalType": "uint256",
 				"name": "",
-				"type": "address"
+				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",
@@ -1879,19 +1896,6 @@ const LEVELUP_ABI =[
 			}
 		],
 		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "tokenAmount",
-				"type": "uint256"
-			}
-		],
-		"name": "enterLottery",
-		"outputs": [],
-		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -1947,7 +1951,7 @@ const LEVELUP_ABI =[
 	},
 	{
 		"inputs": [],
-		"name": "getContractdaiBalance",
+		"name": "getContractDAIBalance",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -2173,19 +2177,6 @@ const LEVELUP_ABI =[
 	{
 		"inputs": [
 			{
-				"internalType": "uint256[]",
-				"name": "participantsIndices",
-				"type": "uint256[]"
-			}
-		],
-		"name": "holdLottery",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
 				"internalType": "uint256",
 				"name": "",
 				"type": "uint256"
@@ -2204,7 +2195,7 @@ const LEVELUP_ABI =[
 	},
 	{
 		"inputs": [],
-		"name": "lotteryPool",
+		"name": "MAX_BINARY_POINT_CAP",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -2229,75 +2220,16 @@ const LEVELUP_ABI =[
 		"type": "function"
 	},
 	{
-		"inputs": [
+		"inputs": [],
+		"name": "REFERRAL_FEE_PERCENT",
+		"outputs": [
 			{
 				"internalType": "uint256",
-				"name": "amountCPA",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "payout",
-				"type": "uint256"
-			},
-			{
-				"internalType": "address",
-				"name": "seller",
-				"type": "address"
-			}
-		],
-		"name": "purchase",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "referrer",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "newUser",
-				"type": "address"
-			}
-		],
-		"name": "registerAndActivate",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "referrer",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "newUser",
-				"type": "address"
-			}
-		],
-		"name": "registerFree",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "tokenAmount",
+				"name": "",
 				"type": "uint256"
 			}
 		],
-		"name": "sellTokens",
-		"outputs": [],
-		"stateMutability": "nonpayable",
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{
@@ -2353,69 +2285,16 @@ const LEVELUP_ABI =[
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "to",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "value",
-				"type": "uint256"
-			}
-		],
-		"name": "transfer",
+		"inputs": [],
+		"name": "daiToken",
 		"outputs": [
 			{
-				"internalType": "bool",
+				"internalType": "contract IERC20",
 				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "from",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "to",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "value",
-				"type": "uint256"
-			}
-		],
-		"name": "transferFrom",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "newOwner",
 				"type": "address"
 			}
 		],
-		"name": "transferIndexOwnership",
-		"outputs": [],
-		"stateMutability": "nonpayable",
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{
@@ -2595,7 +2474,7 @@ async function performWeb3Initialization() {
         }
 
         // این بخش را اضافه کنید:
-        const contract = new ethers.Contract(CONTRACT_ADDRESS, LEVELUP_ABI, signer);
+        const contract = new ethers.Contract(CPA_ADDRESS, CPA_ABI, signer);
         const address = await signer.getAddress();
         const network = await provider.getNetwork();
 
@@ -2684,8 +2563,8 @@ async function initializeWeb3() {
 
 // تنظیمات قرارداد
 window.contractConfig = {
-    CONTRACT_ADDRESS: CONTRACT_ADDRESS,
-    LEVELUP_ABI: LEVELUP_ABI,
+    CPA_ADDRESS: CPA_ADDRESS,
+    CPA_ABI: CPA_ABI,
     provider: null,
     signer: null,
     contract: null,
@@ -3343,14 +3222,14 @@ window.getUserProfile = async function() {
                 polValueUSD = parseFloat(ethers.formatEther(polBalance));
             }
             
-            // دریافت موجودی USDC
-            let usdcBalance = '0';
+            // دریافت موجودی DAI
+            let daiBalance = '0';
             try {
-                const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, provider);
-                const usdcRaw = await usdcContract.balanceOf(address);
-                usdcBalance = (Number(usdcRaw) / 1e6).toFixed(2);
+                const daiContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, provider);
+                const daiRaw = await daiContract.balanceOf(address);
+                daiBalance = (Number(daiRaw) / 1e6).toFixed(2);
             } catch (e) {
-                usdcBalance = '0';
+                daiBalance = '0';
             }
             
             // فرمت‌دهی خروجی و جلوگیری از undefined
@@ -3417,7 +3296,7 @@ window.getUserProfile = async function() {
                 lvlBalance: ethers.formatUnits(lvlBalance || 0n, 18),
                 polValueUSD: safeFormat(polValueUSD, 8),
                 lvlValueUSD: safeFormat(lvlValueUSD, 8),
-                usdcBalance: usdcBalance,
+                daiBalance: daiBalance,
                 registered: user.activated || false,
                 index: user.index ? user.index.toString() : '0',
                 refclimed: user.refclimed ? user.refclimed.toString() : '0',
@@ -3729,9 +3608,9 @@ window.claimMonthlyReward = async function() {
     }
 };
 
-// تابع دریافت قیمت USDC - همیشه 1 دلار
+// تابع دریافت قیمت DAI - همیشه 1 دلار
 window.fetchPolUsdPrice = async function() {
-    return 1.0; // USDC همیشه 1 دلار است
+    return 1.0; // DAI همیشه 1 دلار است
 };
 
 // تابع نمایش تاریخچه قیمت‌ها
@@ -3785,7 +3664,7 @@ window.displayPriceHistoryTable = function() {
     const lastTokenPrices = window.priceHistoryManager.tokenHistory.slice(-10);
     lastTokenPrices.forEach((entry, index) => {
         const date = new Date(entry.timestamp).toLocaleString('fa-IR');
-        console.log(`${index + 1}. ${entry.price} USDC - ${date}`);
+        console.log(`${index + 1}. ${entry.price} DAI - ${date}`);
     });
     
     // نمایش آخرین 10 قیمت پوینت
@@ -3857,7 +3736,7 @@ window.showPriceHistoryStats = function() {
         const tokenTimeSpan = new Date(lastToken.timestamp) - new Date(firstToken.timestamp);
         const tokenHours = Math.round(tokenTimeSpan / (1000 * 60 * 60));
         console.log(`🪙 Token History: ${tokenHours} hours of data`);
-        console.log(`🪙 Latest Token Price: ${lastToken.price} USDC`);
+        console.log(`🪙 Latest Token Price: ${lastToken.price} DAI`);
     }
     
     if (pointCount > 0) {
@@ -4138,14 +4017,14 @@ async function refreshTotalSupply() {
 
     const totalSupplyNum = Number(ethers.formatUnits(totalSupply, 18));
     const contractBalanceNum = Number(ethers.formatUnits(contractBalance, 18));
-    const tokenPriceNum = Number(ethers.formatUnits(tokenPrice, 6)); // قیمت با 6 رقم اعشار (USDC)
+    const tokenPriceNum = Number(ethers.formatUnits(tokenPrice, 6)); // قیمت با 6 رقم اعشار (DAI)
 
     const elTotalSupply = document.getElementById('total-supply');
     if (elTotalSupply) elTotalSupply.innerText = totalSupplyNum.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' CPA';
     const elContractBalance = document.getElementById('contract-balance');
     if (elContractBalance) elContractBalance.innerText = contractBalanceNum.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' CPA';
     document.getElementById('supply-diff').innerText = (totalSupplyNum - contractBalanceNum).toLocaleString('en-US', {maximumFractionDigits: 4}) + ' CPA';
-    document.getElementById('total-supply-value').innerText = (totalSupplyNum * tokenPriceNum).toLocaleString('en-US', {maximumFractionDigits: 2}) + ' USDC';
+    document.getElementById('total-supply-value').innerText = (totalSupplyNum * tokenPriceNum).toLocaleString('en-US', {maximumFractionDigits: 2}) + ' DAI';
   } catch (e) {
     document.getElementById('total-supply').innerText = 'خطا';
     document.getElementById('contract-balance').innerText = 'خطا';
@@ -4222,7 +4101,7 @@ window.updateDashboardStats = async function() {
     
 
     // Show loading state
-    const loadingElements = ['circulating-supply', 'total-points', 'contract-token-balance', 'dashboard-cashback-value', 'dashboard-usdc-balance', 'dashboard-wallets-count', 'dashboard-registration-price'];
+    const loadingElements = ['circulating-supply', 'total-points', 'contract-token-balance', 'dashboard-cashback-value', 'dashboard-dai-balance', 'dashboard-wallets-count', 'dashboard-registration-price'];
     loadingElements.forEach(id => {
       const el = document.getElementById(id);
       if (el) el.innerText = 'Loading...';
@@ -4304,31 +4183,31 @@ window.updateDashboardStats = async function() {
       safeUpdate('dashboard-cashback-value', 'N/A');
     }
 
-    // DAI CONTRACT BALANCE - Using contract's getContractUSDCBalance function
+    // DAI CONTRACT BALANCE - Using contract's getContractDAIBalance function
     try {
-      console.log('💵 Fetching USDC contract balance...');
-      let usdcBalance;
+      console.log('💵 Fetching DAI contract balance...');
+      let daiBalance;
       
       // Try different possible function names
-      if (typeof contract.getContractUSDCBalance === 'function') {
-        usdcBalance = await contract.getContractUSDCBalance();
+      if (typeof contract.getContractDAIBalance === 'function') {
+        daiBalance = await contract.getContractDAIBalance();
       } else {
-        // Fallback to direct USDC contract call
-        if (typeof USDC_ADDRESS !== 'undefined' && typeof USDC_ABI !== 'undefined') {
-          const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, contract.provider);
-          usdcBalance = await usdcContract.balanceOf(contract.target);
+        // Fallback to direct DAI contract call
+        if (typeof DAI_ADDRESS !== 'undefined' && typeof DAI_ABI !== 'undefined') {
+          const daiContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, contract.provider);
+          daiBalance = await daiContract.balanceOf(contract.target);
         } else {
-          usdcBalance = 0n;
+          daiBalance = 0n;
         }
       }
       
-      const formattedUsdc = parseFloat(ethers.formatUnits(usdcBalance, 6)).toLocaleString('en-US', {maximumFractionDigits: 2});
-      safeUpdate('dashboard-usdc-balance', formattedUsdc + ' USDC');
-      console.log('✅ USDC contract balance updated:', formattedUsdc + ' USDC');
+      const formattedDai = parseFloat(ethers.formatUnits(daiBalance, 6)).toLocaleString('en-US', {maximumFractionDigits: 2});
+      safeUpdate('dashboard-dai-balance', formattedDai + ' DAI');
+      console.log('✅ DAI contract balance updated:', formattedDai + ' DAI');
 
     } catch (e) {
-      console.error('❌ Error fetching USDC balance:', e);
-      safeUpdate('dashboard-usdc-balance', 'N/A');
+      console.error('❌ Error fetching DAI balance:', e);
+      safeUpdate('dashboard-dai-balance', 'N/A');
     }
 
     // Update last update timestamp
@@ -4370,8 +4249,8 @@ window.updateDashboardStats = async function() {
       } else {
         formattedTokenPrice = tokenPriceNum.toLocaleString('en-US', {maximumFractionDigits: 6});
       }
-      safeUpdate('dashboard-token-price', formattedTokenPrice + ' USDC');
-      console.log('✅ Token price updated:', formattedTokenPrice + ' USDC');
+      safeUpdate('dashboard-token-price', formattedTokenPrice + ' DAI');
+      console.log('✅ Token price updated:', formattedTokenPrice + ' DAI');
       
       // Save token price to history
       if (window.priceHistoryManager) {
@@ -4418,7 +4297,7 @@ window.updateDashboardStats = async function() {
   } catch (e) {
     console.error('❌ Error updating dashboard stats:', e);
     // اگر خطا داشتیم، همه را Error بگذار
-    const elements = ['circulating-supply', 'total-points', 'contract-token-balance', 'dashboard-cashback-value', 'dashboard-usdc-balance', 'dashboard-wallets-count', 'dashboard-registration-price'];
+    const elements = ['circulating-supply', 'total-points', 'contract-token-balance', 'dashboard-cashback-value', 'dashboard-dai-balance', 'dashboard-wallets-count', 'dashboard-registration-price'];
     elements.forEach(id => {
       const el = document.getElementById(id);
       if (el) el.innerText = 'Error';
@@ -4440,7 +4319,7 @@ document.addEventListener('DOMContentLoaded', function() {
     } catch (error) {
       console.error('❌ Error in initial setup:', error);
       // Show error in UI
-      const elements = ['circulating-supply', 'total-points', 'contract-token-balance', 'dashboard-cashback-value', 'dashboard-usdc-balance', 'dashboard-wallets-count', 'dashboard-registration-price'];
+      const elements = ['circulating-supply', 'total-points', 'contract-token-balance', 'dashboard-cashback-value', 'dashboard-dai-balance', 'dashboard-wallets-count', 'dashboard-registration-price'];
       elements.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerText = 'Connection Error';
@@ -4489,8 +4368,8 @@ async function updatePriceChart() {
     }
 }
 
-// Returns the USDC balance of the main contract (CONTRACT_ADDRESS) as a string in USDC units (6 decimals)
-async function getContractUSDCBalance() {
+// Returns the DAI balance of the main contract (CPA_ADDRESS) as a string in DAI units (6 decimals)
+async function getContractDAIBalance() {
   if (typeof ethers === 'undefined') throw new Error('ethers.js not loaded');
   const provider = (window.contractConfig && window.contractConfig.contract && window.contractConfig.contract.provider)
     ? window.contractConfig.contract.provider
@@ -4498,8 +4377,8 @@ async function getContractUSDCBalance() {
       ? window.contractConfig.provider
       : (window.ethereum ? new ethers.BrowserProvider(window.ethereum) : null);
   if (!provider) throw new Error('No provider');
-  const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, provider);
-  const balanceRaw = await usdcContract.balanceOf(CONTRACT_ADDRESS);
+  const daiContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, provider);
+  const balanceRaw = await daiContract.balanceOf(CPA_ADDRESS);
   return ethers.formatUnits(balanceRaw, 6); // returns as string, e.g. '123.456789'
 }
 
@@ -4513,7 +4392,7 @@ async function getTotalClaimableBinaryPoints() {
       ? window.contractConfig.provider
       : (window.ethereum ? new ethers.BrowserProvider(window.ethereum) : null);
   if (!provider) throw new Error('No provider');
-  const contract = new ethers.Contract(CONTRACT_ADDRESS, LEVELUP_ABI, provider);
+  const contract = new ethers.Contract(CPA_ADDRESS, CPA_ABI, provider);
   const pointsRaw = await contract.totalClaimablePoints();
   return pointsRaw; // BigInt or string
 }
@@ -4528,7 +4407,7 @@ async function getTotalClaimableBinaryPointsInteger() {
 
 
 // ... existing code ...
-// Returns the CPA token balance of the contract using balanceOf(CONTRACT_ADDRESS)
+// Returns the CPA token balance of the contract using balanceOf(CPA_ADDRESS)
 async function getContractTokenBalance() {
   if (typeof ethers === 'undefined') throw new Error('ethers.js not loaded');
   const provider = (window.contractConfig && window.contractConfig.contract && window.contractConfig.contract.provider)
@@ -4537,8 +4416,8 @@ async function getContractTokenBalance() {
       ? window.contractConfig.provider
       : (window.ethereum ? new ethers.BrowserProvider(window.ethereum) : null);
   if (!provider) throw new Error('No provider');
-  const contract = new ethers.Contract(CONTRACT_ADDRESS, LEVELUP_ABI, provider);
-  const tokenRaw = await contract.balanceOf(CONTRACT_ADDRESS);
+  const contract = new ethers.Contract(CPA_ADDRESS, CPA_ABI, provider);
+  const tokenRaw = await contract.balanceOf(CPA_ADDRESS);
   return ethers.formatUnits(tokenRaw, 18); // returns as string, e.g. '123.456789012345678901'
 }
 // ... existing code ...
@@ -4546,7 +4425,7 @@ async function getContractTokenBalance() {
 // Global cache for public contract stats
 window.contractStats = {
   totalPoints: null,
-  usdcBalance: null,
+  daiBalance: null,
   tokenBalance: null,
   wallets: null,
   totalSupply: null,
@@ -4562,11 +4441,11 @@ async function updateContractStats() {
         ? window.contractConfig.provider
         : (window.ethereum ? new ethers.BrowserProvider(window.ethereum) : null);
     if (!provider) throw new Error('No provider');
-    const contract = new ethers.Contract(CONTRACT_ADDRESS, LEVELUP_ABI, provider);
+    const contract = new ethers.Contract(CPA_ADDRESS, CPA_ABI, provider);
     // Total Points (integer, no decimals)
     window.contractStats.totalPoints = (await contract.totalClaimablePoints()).toString();
-    // USDC Balance (calls helper)
-    window.contractStats.usdcBalance = await getContractUSDCBalance();
+    // DAI Balance (calls helper)
+    window.contractStats.daiBalance = await getContractDAIBalance();
     // Token Balance (calls helper)
     window.contractStats.tokenBalance = await getContractTokenBalance();
     // Wallets count
@@ -4828,14 +4707,14 @@ const META_MASK_MESSAGES = {
     
     // پیام‌های خرید و فروش توکن
     TRADING: {
-        MIN_BUY_AMOUNT: "حداقل مبلغ خرید 1 USDC است.",
+        MIN_BUY_AMOUNT: "حداقل مبلغ خرید 1 DAI است.",
         MIN_SELL_AMOUNT: "حداقل مبلغ فروش 1 توکن است.",
         INSUFFICIENT_TOKEN_BALANCE: "موجودی توکن شما کافی نیست.",
-        INSUFFICIENT_USDC_BALANCE: "موجودی USDC شما کافی نیست.",
+        INSUFFICIENT_DAI_BALANCE: "موجودی DAI شما کافی نیست.",
         EXCEEDS_BUY_LIMIT: "مبلغ خرید از حد مجاز بیشتر است.",
         EXCEEDS_SELL_LIMIT: "مبلغ فروش از حد مجاز بیشتر است (حداکثر 50% موجودی).",
-        FIRST_BUY_MINIMUM: "برای اولین خرید حداقل 500 USDC نیاز است.",
-        CONTRACT_EMPTY: "موجودی قرارداد صفر است. حداقل خرید 1000 USDC است.",
+        FIRST_BUY_MINIMUM: "برای اولین خرید حداقل 500 DAI نیاز است.",
+        CONTRACT_EMPTY: "موجودی قرارداد صفر است. حداقل خرید 1000 DAI است.",
         BUY_SUCCESS: "خرید با موفقیت انجام شد!",
         SELL_SUCCESS: "فروش با موفقیت انجام شد!",
         PRICE_CALCULATION_ERROR: "خطا در محاسبه قیمت توکن."
@@ -4972,7 +4851,7 @@ function handleContractError(error) {
         showErrorMessage('REGISTRATION', 'ALREADY_REGISTERED');
     } else if (errorMessage.includes('Insufficient token balance')) {
         showErrorMessage('TRADING', 'INSUFFICIENT_TOKEN_BALANCE');
-    } else if (errorMessage.includes('Minimum 1 USDC required')) {
+    } else if (errorMessage.includes('Minimum 1 DAI required')) {
         showErrorMessage('TRADING', 'MIN_BUY_AMOUNT');
     } else if (errorMessage.includes('Minimum 1 token required')) {
         showErrorMessage('TRADING', 'MIN_SELL_AMOUNT');
@@ -5100,11 +4979,11 @@ if (searchIndexBtn) {
 }
 
 // مقداردهی سراسری برای استفاده در products-manager.js و سایر بخش‌ها
-window.tokenAddress = CONTRACT_ADDRESS;
-window.tokenAbi = LEVELUP_ABI;
+window.tokenAddress = CPA_ADDRESS;
+window.tokenAbi = CPA_ABI;
 
 // ... existing code ...
 window.DAI_ADDRESS = DAI_ADDRESS;
 window.DAI_ABI = DAI_ABI;
-window.CONTRACT_ADDRESS = CONTRACT_ADDRESS;
-window.CONTRACT_ABI = LEVELUP_ABI;
+window.CPA_ADDRESS = CPA_ADDRESS;
+window.CONTRACT_ABI = CPA_ABI;
