@@ -188,7 +188,7 @@ async function savePriceHistory(tokenPrice, pointPrice, options = {}) {
         const newPointPrice = parseFloat(pointPrice);
         
         // فقط اگر هر دو مقدار معتبر باشند ذخیره کن
-        if (isNaN(newTokenPrice) || isNaN(newPointPrice)) {
+        if (isNaN(newTokenPrice) || isNaN(newPointPrice) || newTokenPrice === 0 || newPointPrice === 0) {
             console.warn('⚠️ یکی از قیمت‌ها نامعتبر است - ذخیره نمی‌شود', {tokenPrice, pointPrice});
             return false;
         }

@@ -45,19 +45,38 @@ function getCachedDashboardData() {
   }
   return null;
 }
-// --- افکت نرم برای آپدیت مقدار ---
+// --- افکت نرم برای آپدیت مقدار - بروزرسانی هوشمند ---
 function animateValueChange(el, newValue) {
   if (!el) return;
-  if (el.textContent == newValue) return;
-  el.style.transition = 'background 0.5s';
-  el.style.background = '#ffe066';
-  setTimeout(() => {
-    el.textContent = newValue;
-    el.style.background = '';
-  }, 300);
+  
+  // استفاده از سیستم بروزرسانی هوشمند (فقط در صورت تغییر)
+  if (window.smartUpdate) {
+    return window.smartUpdate(el, newValue, {
+      transitionDuration: 500,
+      numberAnimation: true,
+      preventFlicker: true
+    });
+  } else if (window.updateValueSmoothly) {
+    // Fallback به سیستم نرم قدیمی
+    window.updateValueSmoothly(el, newValue, {
+      transitionDuration: 500,
+      numberAnimation: true,
+      preventFlicker: true
+    });
+  } else {
+    // Fallback نهایی
+    if (el.textContent !== newValue) {
+      el.textContent = newValue;
+    }
+  }
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // تنظیم loading state برای تمام elements
+    if (window.dashboardLoadingManager) {
+        window.dashboardLoadingManager.setDashboardLoading(true);
+    }
+    
     // نمایش داده کش‌شده بلافاصله
     const cached = getCachedDashboardData();
     if (cached) {
@@ -83,8 +102,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             await loadDashboardData();
             dashboardInitialized = true;
 
-            // به‌روزرسانی خودکار هر 30 ثانیه
-            startDashboardAutoUpdate();
+            // سیستم مرکزی به صورت خودکار راه‌اندازی می‌شود
+            console.log('✅ کیف پول متصل شد - سیستم مرکزی مدیریت بروزرسانی را انجام می‌دهد');
         } else {
             // شروع نظارت بر اتصال
             startConnectionMonitoring();
@@ -95,23 +114,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// تابع شروع به‌روزرسانی خودکار داشبورد
+// تابع شروع به‌روزرسانی خودکار داشبورد - غیرفعال شده (سیستم مرکزی جایگزین شده)
 function startDashboardAutoUpdate() {
-    if (dashboardUpdateInterval) {
-        clearInterval(dashboardUpdateInterval);
-    }
-    
-    dashboardUpdateInterval = setInterval(async () => {
-        try {
-            // بررسی اینکه صفحه فعال است
-            if (document.hidden) {
-                return; // اگر صفحه مخفی است، به‌روزرسانی نکن
-            }
-            await loadDashboardData();
-        } catch (error) {
-            // console.error('Dashboard auto-update error:', error);
-        }
-    }, 60000); // هر 1 دقیقه (کاهش فرکانس)
+    console.log('⚠️ startDashboardAutoUpdate غیرفعال شده - سیستم مرکزی فعال است');
+    // این تابع غیرفعال شده و سیستم مرکزی جایگزین آن شده است
 }
 
 // تابع توقف به‌روزرسانی خودکار داشبورد
@@ -184,11 +190,31 @@ async function loadDashboardData() {
                 console.warn('Failed to load network stats:', error);
             }
             
-            // به‌روزرسانی UI
-            await updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceChanges);
-            await updateDAIContractBalance();
-            // ذخیره داده جدید در کش
-            cacheDashboardData({prices, stats, additionalStats, tradingVolume, priceChanges});
+            // بررسی تغییرات قبل از بروزرسانی UI (بروزرسانی هوشمند)
+            const newDashboardData = {prices, stats, additionalStats, tradingVolume, priceChanges};
+            
+            // بررسی تغییر در داده‌های کلی
+            if (window.hasObjectChanged && window.hasObjectChanged('dashboardData', newDashboardData)) {
+                console.log('🔄 تغییرات در داده‌های داشبورد تشخیص داده شد - بروزرسانی UI');
+                
+                // به‌روزرسانی UI فقط در صورت تغییر
+                await updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceChanges);
+                await updateDAIContractBalance();
+                
+                // ذخیره داده جدید در کش
+                cacheDashboardData(newDashboardData);
+                
+                // حذف loading state بعد از تکمیل بروزرسانی
+                if (window.dashboardLoadingManager) {
+                    window.dashboardLoadingManager.setDashboardLoading(false);
+                }
+            } else {
+                console.log('⚡ هیچ تغییری در داده‌های داشبورد نیست - بروزرسانی UI لغو شد');
+                // در صورت عدم تغییر هم loading را حذف کن
+                if (window.dashboardLoadingManager) {
+                    window.dashboardLoadingManager.setDashboardLoading(false);
+                }
+            }
         } else {
             // اگر کیف پول متصل نیست، پیام مناسب نمایش بده
             updateConnectionStatus('info', 'برای مشاهده داده‌های کامل، کیف پول خود را متصل کنید');
@@ -305,15 +331,17 @@ async function updateDashboardUI(prices, stats, additionalStats, tradingVolume, 
     try {
         if (window.contractConfig && window.contractConfig.contract) {
             const { contract } = await window.connectWallet();
-            // contractTotalSupply
-            let supply = await contract.contractTotalSupply();
-            updateElement('circulating-supply', parseInt(ethers.formatUnits(supply, 18)), '', ' CPA', true);
+            // totalSupply
+            let supply = await contract.totalSupply();
+            const supplyNum = parseFloat(ethers.formatUnits(supply, 18));
+            const formattedSupply = supplyNum.toLocaleString('en-US', {maximumFractionDigits: 2});
+            updateElement('circulating-supply', formattedSupply, '', '', false); // استفاده از فرمت شده بجای parseInt
             // totalClaimablePoints
             let points = await contract.totalClaimablePoints();
             // updateElement('total-points', parseInt(ethers.formatUnits(points, 0)), '', ' POINT', true);
             // pointValue از قرارداد
             let pointValue = await contract.getPointValue();
-            updateElement('point-value', parseFloat(ethers.formatUnits(pointValue, 18)), '', ' CPA', false, 2);
+            updateElement('point-value', parseFloat(ethers.formatUnits(pointValue, 18)), '', '', false, 2); // حذف پسوند CPA
         } else {
             // اگر قرارداد در دسترس نیست، از stats استفاده کن
             if (stats.totalClaimableBinaryPoints) {
@@ -369,7 +397,7 @@ async function updateDashboardUI(prices, stats, additionalStats, tradingVolume, 
     
     // contract token balance
     let contractTokenBalanceCPA = parseFloat(stats.contractTokenBalance);
-    updateElement('contract-token-balance', contractTokenBalanceCPA, '', ' CPA', false, 4);
+    updateElement('contract-token-balance', contractTokenBalanceCPA, '', '', false, 4); // حذف پسوند CPA
     let rewardPoolPOL = parseFloat(stats.rewardPool);
     updateElement('reward-pool', rewardPoolPOL, '', ' POL', false, 4);
 }
@@ -809,8 +837,8 @@ async function loadHomepage() {
         // بارگذاری داده‌های داشبورد
         await loadDashboardData();
         
-        // شروع به‌روزرسانی خودکار
-        startDashboardAutoUpdate();
+        // شروع به‌روزرسانی خودکار - غیرفعال شده
+        // startDashboardAutoUpdate();
         
     } catch (error) {
         // console.error('Error loading homepage:', error);
@@ -854,10 +882,21 @@ async function updateDAIContractBalance() {
       contract = conn && conn.contract ? conn.contract : null;
     }
     if (!contract) return;
-    const daiBalance = await contract.getContractDAIBalance();
-    const daiFormatted = (Number(daiBalance) / 1e6).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    const el = document.getElementById('dashboard-dai-balance');
-    if (el) el.textContent = daiFormatted + ' DAI';
+    // Try correct function name first, then fallback
+    let daiBalance;
+    if (typeof contract.getContractdaiBalance === 'function') {
+      daiBalance = await contract.getContractdaiBalance();
+    } else if (typeof contract.getContractDAIBalance === 'function') {
+      daiBalance = await contract.getContractDAIBalance();
+            } else {
+            // Fallback to direct DAI contract call (display as USDC)
+            const daiContract = new ethers.Contract(window.DAI_ADDRESS, window.DAI_ABI, contract.provider);
+            daiBalance = await daiContract.balanceOf(contract.target);
+        }
+            // DAI has 18 decimals (display as USDC)
+        const usdcFormatted = (Number(daiBalance) / 1e18).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        const el = document.getElementById('dashboard-dai-balance');
+        if (el) el.textContent = usdcFormatted; // حذف پسوند DAI
   } catch (e) {
     const el = document.getElementById('dashboard-dai-balance');
     if (el) el.textContent = '-';
@@ -875,8 +914,8 @@ document.addEventListener('DOMContentLoaded', function() {
         updateWalletButtonVisibility();
         // شروع نظارت بر وضعیت اتصال
         startConnectionMonitoring();
-        // فراخوانی loadHomepage
-        loadHomepage();
+        // فراخوانی loadHomepage - غیرفعال شده
+// loadHomepage();
     }, 500);
 });
 

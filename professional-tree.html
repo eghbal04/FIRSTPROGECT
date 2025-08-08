@@ -375,6 +375,153 @@
             background: rgba(10,13,26,0.98);
             margin-top: 0 !important;
         }
+
+        /* استایل‌های جدید برای نمایش موبایل */
+        #user-popup {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(24,28,42,0.98);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 20px 20px 0 0;
+            box-shadow: 0 -4px 24px rgba(0,0,0,0.2);
+            transform: translateY(100%);
+            transition: transform 0.3s ease-out;
+            z-index: 9999;
+            padding: 20px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        #user-popup.active {
+            transform: translateY(0);
+        }
+
+        .user-info-card {
+            position: relative;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(167,134,255,0.1);
+            border: none;
+            color: #a786ff;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .close-btn:active {
+            transform: scale(0.95);
+            background: rgba(167,134,255,0.2);
+        }
+
+        .user-info-btn-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .user-info-btn {
+            flex: 1;
+            min-width: 100px;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(167,134,255,0.2);
+            background: rgba(167,134,255,0.05);
+            color: #fff;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .user-info-btn:active {
+            transform: scale(0.98);
+            background: rgba(167,134,255,0.1);
+        }
+
+        .user-info-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .user-info-list li {
+            background: rgba(0,255,136,0.05);
+            border: 1px solid rgba(0,255,136,0.1);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .user-info-list li span {
+            font-size: 1.2rem;
+        }
+
+        .user-info-list li b {
+            font-size: 0.8rem;
+            color: #a786ff;
+            opacity: 0.8;
+        }
+
+        #copy-msg {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,255,136,0.9);
+            color: #232946;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        #copy-msg.show {
+            opacity: 1;
+        }
+
+        @media (max-width: 480px) {
+            .user-info-btn-row {
+                flex-direction: column;
+            }
+            
+            .user-info-btn {
+                width: 100%;
+            }
+
+            .user-info-list {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @supports (padding: max(0px)) {
+            #user-popup {
+                padding-bottom: max(20px, env(safe-area-inset-bottom));
+            }
+        }
     </style>
 </head>
 <body>
@@ -417,25 +564,33 @@
     <script src="js/walletconnect-handler.js"></script>
     <script src="js/network.js"></script>
     <script src="js/navbar.js"></script>
+    <script src="js/token-balances.js"></script>
+    <script src="js/mobile-user-popup.js"></script>
+    <script src="js/tree-events.js"></script>
+    <link rel="stylesheet" href="css/mobile-user-popup.css">
     
     <script>
-        // Initialize when page loads
+                // Initialize when page loads
         document.addEventListener('DOMContentLoaded', async function() {
             try {
-                console.log('🌳 Professional tree page loaded');
-                
                 // Try to load network data automatically
                 setTimeout(async () => {
                     try {
-                        console.log('🔄 Loading network data...');
-                        
                         // Initialize network tab
                         if (typeof window.initializeNetworkTab === 'function') {
                             await window.initializeNetworkTab();
+                        } else if (typeof window.renderSimpleBinaryTree === 'function') {
+                            await window.renderSimpleBinaryTree();
                         } else {
-                            console.log('🔄 Network tab function not found, trying direct render...');
-                            if (typeof window.renderSimpleBinaryTree === 'function') {
-                                await window.renderSimpleBinaryTree();
+                            // نمایش پیام خطا به کاربر
+                            const container = document.getElementById('network-tree');
+                            if (container) {
+                                container.innerHTML = `
+                                    <div style="color:#ff4444;text-align:center;padding:2rem;">
+                                        ❌ خطا در بارگذاری درخت شبکه<br>
+                                        <small style="color:#ccc;">توابع مورد نیاز در دسترس نیستند</small>
+                                    </div>
+                                `;
                             }
                         }
                         
@@ -449,5 +604,8 @@
             }
         });
     </script>
+    
+    <!-- Floating Token Growth Card - کارت شناور رشد توکن -->
+    <script src="js/floating-token-card.js"></script>
 </body>
 </html> 

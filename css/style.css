@@ -6608,6 +6608,81 @@ body.signal-page { background: #181c2a; color: #fff; font-family: 'Noto Sans Ara
 
 .amount-input-group input {
   flex: 1;
+  padding: 0.8rem 1.2rem !important;
+  font-size: 1rem !important;
+  border-radius: 8px !important;
+  border: 2px solid #444 !important;
+  background: rgba(255,255,255,0.05) !important;
+  color: #e2e8f0 !important;
+  min-height: 48px !important;
+  box-sizing: border-box !important;
+}
+
+/* اولویت بالاتر برای فیلد مقدار در swap */
+.swap-row .amount-input-group input#swapAmount {
+  flex: 1 !important;
+  padding: 0.8rem 1.2rem !important;
+  font-size: 1rem !important;
+  border-radius: 8px !important;
+  border: 2px solid #444 !important;
+  background: rgba(255,255,255,0.05) !important;
+  color: #e2e8f0 !important;
+  min-height: 48px !important;
+  box-sizing: border-box !important;
+  width: auto !important;
+}
+
+/* بهینه‌سازی موبایل - فیلد ورودی و دکمه هم‌اندازه */
+@media (max-width: 768px) {
+  .amount-input-group {
+    display: flex !important;
+    gap: 0.5rem !important;
+    align-items: stretch !important;
+    width: 100% !important;
+  }
+  
+  .swap-row .amount-input-group input#swapAmount {
+    flex: 1 !important;
+    min-width: 0 !important;
+    padding: 0.8rem 1rem !important;
+    font-size: 1rem !important;
+    border-radius: 8px !important;
+    border: 2px solid #444 !important;
+    background: rgba(255,255,255,0.05) !important;
+    color: #e2e8f0 !important;
+    min-height: 48px !important;
+    box-sizing: border-box !important;
+  }
+  
+  .max-btn {
+    flex-shrink: 0 !important;
+    padding: 0.8rem 1rem !important;
+    min-width: 80px !important;
+    min-height: 48px !important;
+    font-size: 0.9rem !important;
+    border-radius: 8px !important;
+    box-sizing: border-box !important;
+  }
+}
+
+/* موبایل‌های کوچک */
+@media (max-width: 480px) {
+  .amount-input-group {
+    gap: 0.3rem !important;
+  }
+  
+  .swap-row .amount-input-group input#swapAmount {
+    padding: 0.7rem 0.8rem !important;
+    font-size: 0.95rem !important;
+    min-height: 44px !important;
+  }
+  
+  .max-btn {
+    padding: 0.7rem 0.8rem !important;
+    min-width: 70px !important;
+    min-height: 44px !important;
+    font-size: 0.85rem !important;
+  }
 }
 
 .max-btn {
@@ -6620,6 +6695,11 @@ body.signal-page { background: #181c2a; color: #fff; font-family: 'Noto Sans Ara
   cursor: pointer;
   transition: background 0.2s;
   white-space: nowrap;
+  min-height: 48px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .max-btn:hover {
@@ -8187,5 +8267,50 @@ body.signal-page { background: #181c2a; color: #fff; font-family: 'Noto Sans Ara
   #welcome-registration-modal .grid,
   #referral-info-modal .grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Quick Sell Button Styles */
+.quick-sell-btn {
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.quick-sell-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.quick-sell-btn:active {
+  transform: scale(0.98);
+}
+
+/* Quick Sell Section Responsive */
+@media (max-width: 768px) {
+  #quick-sell-section {
+    margin: 1rem 0;
+  }
+  
+  #quick-sell-section > div {
+    padding: 1rem;
+  }
+  
+  #quick-sell-section .quick-sell-btn {
+    padding: 0.6rem;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  #quick-sell-section > div {
+    padding: 0.8rem;
+  }
+  
+  #quick-sell-section h3 {
+    font-size: 1rem;
+  }
+  
+  #quick-sell-section p {
+    font-size: 0.8rem;
   }
 }

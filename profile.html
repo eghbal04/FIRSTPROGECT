@@ -140,6 +140,32 @@
             // موجودی‌ها
             const maticBalance = await provider.getBalance(address);
             const cpaBalance = await contract.balanceOf(address);
+            
+            // تابع کوتاه کردن اعداد بزرگ
+            function formatLargeNumber(num) {
+                if (num >= 1000000) {
+                    return (num / 1000000).toFixed(1) + 'M';
+                } else if (num >= 1000) {
+                    return (num / 1000).toFixed(1) + 'K';
+                } else {
+                    return num.toFixed(2);
+                }
+            }
+            
+            // محاسبه معادل دلاری CPA
+            let cpaUsdValue = 0;
+            let tokenPrice = 0;
+            try {
+                if (typeof contract.getTokenPrice === 'function') {
+                    const tokenPriceRaw = await contract.getTokenPrice();
+                    tokenPrice = Number(ethers.formatUnits(tokenPriceRaw, 18));
+                    const cpaAmount = Number(ethers.formatUnits(cpaBalance, 18));
+                    cpaUsdValue = cpaAmount * tokenPrice;
+                }
+            } catch (e) {
+                console.log('خطا در دریافت قیمت توکن:', e);
+            }
+            
             // DAI
             let daiBalance = '0';
             try {
@@ -149,7 +175,7 @@
                 const daiRaw = await dai.balanceOf(address);
                 daiBalance = ethers.formatUnits(daiRaw, 18);
             } catch {}
-            // ایندکس و CPA ID
+            // ایندکس
             const cpaId = user.index ? `CPA${user.index.toString().padStart(5, '0')}` : '-';
             // شرط فعال بودن دکمه کشبک ماهانه
             let canMonthlyCashback = false;
@@ -177,15 +203,16 @@
                 <div class="balance-box">
                     <div class="balance-item">
                         <div class="balance-label">CPA</div>
-                        <span class="balance-value">${Number.parseFloat(ethers.formatUnits(cpaBalance.toString(), 18)).toLocaleString('en-US', {maximumFractionDigits: 4})}</span>
+                        <span class="balance-value" title="${Number.parseFloat(ethers.formatUnits(cpaBalance.toString(), 18)).toLocaleString('en-US', {maximumFractionDigits: 4})}">${formatLargeNumber(Number.parseFloat(ethers.formatUnits(cpaBalance.toString(), 18)))}</span>
+                        <div style="font-size:0.8rem;color:#a786ff;margin-top:2px;">≈ $${formatLargeNumber(cpaUsdValue)}</div>
                     </div>
                     <div class="balance-item">
                         <div class="balance-label">MATIC</div>
-                        <span class="balance-value">${Number.parseFloat(ethers.formatEther(maticBalance.toString())).toLocaleString('en-US', {maximumFractionDigits: 4})}</span>
+                        <span class="balance-value" title="${Number.parseFloat(ethers.formatEther(maticBalance.toString())).toLocaleString('en-US', {maximumFractionDigits: 4})}">${formatLargeNumber(Number.parseFloat(ethers.formatEther(maticBalance.toString())))}</span>
                     </div>
                     <div class="balance-item">
                         <div class="balance-label">DAI</div>
-                        <span class="balance-value">${Number.parseFloat(daiBalance.toString()).toLocaleString('en-US', {maximumFractionDigits: 4})}</span>
+                        <span class="balance-value" title="${Number.parseFloat(daiBalance.toString()).toLocaleString('en-US', {maximumFractionDigits: 4})}">${formatLargeNumber(Number.parseFloat(daiBalance.toString()))}</span>
                     </div>
                 </div>
                 <div style="display:flex;gap:1.2rem;justify-content:center;margin-bottom:1.5rem;">
@@ -194,7 +221,7 @@
                 </div>
                 <div id="monthly-cashback-msg" style="display:none;color:#ff4444;text-align:center;margin-bottom:1.2rem;font-size:1.05em;transition:opacity 0.3s;"></div>
                 <div class="profile-row"><span class="profile-label">آدرس کیف پول:</span><span class="profile-value">${address}</span></div>
-                <div class="profile-row"><span class="profile-label">CPA ID:</span><span class="profile-value">${cpaId}</span></div>
+                <div class="profile-row"><span class="profile-label">ایندکس:</span><span class="profile-value">${cpaId}</span></div>
                 <div class="profile-row"><span class="profile-label">ایندکس:</span><span class="profile-value">${user.index}</span></div>
                 <div class="profile-row"><span class="profile-label">فعال:</span><span class="profile-value">${user.activated ? 'بله' : 'خیر'}</span></div>
                 <div class="profile-row"><span class="profile-label">امتیاز باینری:</span><span class="profile-value">${user.binaryPoints}</span></div>
@@ -372,5 +399,8 @@
         }
     });
     </script>
+    
+    <!-- Floating Token Growth Card - کارت شناور رشد توکن -->
+    <script src="js/floating-token-card.js"></script>
 </body>
 </html> 

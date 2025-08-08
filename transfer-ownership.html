@@ -64,16 +64,50 @@
 <body>
   <div class="transfer-ownership-container">
     <h2>انتقال مالکیت موقعیت</h2>
+    
+    <!-- نمایش موجودی‌ها -->
+    <div style="background:#f8f9ff;border:1px solid #00bfae;color:#2c3e50;padding:1rem 0.8rem;border-radius:8px;margin-bottom:1.2rem;font-size:0.9rem;">
+      <b>💰 موجودی‌های شما:</b><br>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:0.5rem;margin-top:0.5rem;">
+        <span>🪙 CPA: <strong id="user-cpa-balance">-</strong></span>
+        <span>💵 DAI: <strong id="user-dai-balance">-</strong></span>
+        <span>⚡ MATIC: <strong id="user-matic-balance">-</strong></span>
+      </div>
+    </div>
+    
     <div style="background:#fffbe6;border:1px solid #ffe082;color:#b26a00;padding:1rem 0.8rem;border-radius:8px;margin-bottom:1.2rem;font-size:0.98rem;line-height:1.8;">
       <b>هشدار مهم:</b><br>
       با انتقال مالکیت، تمام دسترسی‌ها و کنترل این موقعیت به آدرس جدید منتقل می‌شود و شما دیگر هیچ دسترسی‌ای به این اکانت نخواهید داشت.<br>
       این عملیات غیرقابل بازگشت است. لطفاً قبل از انجام، از صحت آدرس مقصد اطمینان حاصل کنید.<br>
       <b>توصیه:</b> آدرس مقصد را با دقت و چند بار بررسی کنید. در صورت اشتباه، امکان بازگردانی وجود ندارد.<br>
     </div>
+    
+    <div style="background:#f0f8ff;border:1px solid #4a90e2;color:#2c3e50;padding:1rem 0.8rem;border-radius:8px;margin-bottom:1.2rem;font-size:0.9rem;line-height:1.6;">
+      <b>💡 راهنمای کپی و چسباندن:</b><br>
+      • 📋 کپی آدرس وارد شده یا آدرس فعلی شما<br>
+      • 📄 چسباندن آدرس از کلیپ‌برد<br>
+      • 🗑️ پاک کردن فیلد آدرس<br>
+      • 👤 پر کردن آدرس فعلی شما<br>
+      <small>کلیدهای میانبر: Ctrl+C (کپی)، Ctrl+V (چسباندن)، Ctrl+X (پاک کردن)، Ctrl+F (آدرس فعلی)</small>
+    </div>
     <form id="transferOwnershipForm">
       <div class="form-group">
         <label for="newOwnerAddress">آدرس مالک جدید</label>
-        <input type="text" id="newOwnerAddress" placeholder="مثال: 0x..." autocomplete="off" required>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <input type="text" id="newOwnerAddress" placeholder="مثال: 0x..." autocomplete="off" required style="flex: 1;">
+          <button type="button" id="copyAddressBtn" style="width: auto; padding: 0.7rem 1rem; font-size: 0.9rem;" title="کپی آدرس">
+            📋
+          </button>
+          <button type="button" id="pasteAddressBtn" style="width: auto; padding: 0.7rem 1rem; font-size: 0.9rem;" title="چسباندن از کلیپ‌برد">
+            📄
+          </button>
+          <button type="button" id="clearAddressBtn" style="width: auto; padding: 0.7rem 1rem; font-size: 0.9rem;" title="پاک کردن">
+            🗑️
+          </button>
+          <button type="button" id="fillCurrentAddressBtn" style="width: auto; padding: 0.7rem 1rem; font-size: 0.9rem;" title="پر کردن آدرس فعلی">
+            👤
+          </button>
+        </div>
       </div>
       <button type="submit" id="transferOwnershipBtn">انتقال مالکیت</button>
       <div class="status" id="transferOwnershipStatus"></div>
@@ -82,6 +116,52 @@
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
   <script src="js/config.js"></script>
   <script>
+    // تابع بروزرسانی اطلاعات خودکار
+    async function autoRefreshBalances() {
+      try {
+        if (!window.contractConfig || !window.contractConfig.contract || !window.contractConfig.signer) {
+          return;
+        }
+        
+        const userAddress = window.contractConfig.address;
+        const contract = window.contractConfig.contract;
+        const signer = window.contractConfig.signer;
+        
+        // بروزرسانی اطلاعات کاربر از قرارداد
+        const user = await contract.users(userAddress);
+        const userTree = await contract.getUserTree(userAddress);
+        
+        // نمایش اطلاعات کاربر (اگر المان‌ها موجود باشند)
+        const updateElement = (id, value) => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = value;
+        };
+        
+        // بروزرسانی موجودی‌ها
+        try {
+          // موجودی CPA
+          const cpaBalance = await contract.balanceOf(userAddress);
+          updateElement('user-cpa-balance', parseFloat(ethers.formatEther(cpaBalance)).toFixed(2) + ' CPA');
+          
+          // موجودی DAI
+          const daiContract = new ethers.Contract(window.DAI_ADDRESS, window.DAI_ABI, signer);
+          const daiBalance = await daiContract.balanceOf(userAddress);
+          updateElement('user-dai-balance', parseFloat(ethers.formatUnits(daiBalance, 18)).toFixed(2) + ' DAI');
+          
+          // موجودی MATIC
+          const maticBalance = await signer.provider.getBalance(userAddress);
+          updateElement('user-matic-balance', parseFloat(ethers.formatEther(maticBalance)).toFixed(4) + ' MATIC');
+          
+        } catch (balanceError) {
+          console.warn('خطا در بروزرسانی موجودی‌ها:', balanceError);
+        }
+        
+        console.log('✅ اطلاعات خودکار بروزرسانی شد');
+      } catch (error) {
+        console.warn('خطا در بروزرسانی خودکار:', error);
+      }
+    }
+
     async function transferIndexOwnership(newOwner, statusEl, btn) {
       if (!window.contractConfig || !window.contractConfig.contract) {
         statusEl.textContent = '❌ اتصال کیف پول برقرار نیست.';
@@ -108,6 +188,9 @@
         await tx.wait();
         statusEl.className = 'status success';
         statusEl.textContent = '✅ انتقال مالکیت با موفقیت انجام شد!';
+        
+        // بروزرسانی اطلاعات بعد از انتقال موفق
+        setTimeout(autoRefreshBalances, 2000);
       } catch (error) {
         let msg = error && error.message ? error.message : error;
         statusEl.className = 'status error';
@@ -129,6 +212,122 @@
         btn.disabled = false;
       }
     }
+    
+    // تابع کپی کردن آدرس
+    async function copyAddressToClipboard() {
+      const addressInput = document.getElementById('newOwnerAddress');
+      const address = addressInput.value.trim();
+      
+      if (!address) {
+        // اگر آدرسی وارد نشده، آدرس فعلی کاربر را کپی کن
+        if (window.contractConfig && window.contractConfig.address) {
+          try {
+            await navigator.clipboard.writeText(window.contractConfig.address);
+            showCopyStatus('✅ آدرس فعلی شما کپی شد', 'success');
+          } catch (error) {
+            showCopyStatus('❌ خطا در کپی کردن آدرس', 'error');
+          }
+        } else {
+          showCopyStatus('❌ آدرس وارد نشده و اتصال کیف پول برقرار نیست', 'error');
+        }
+        return;
+      }
+      
+      // کپی کردن آدرس وارد شده
+      try {
+        await navigator.clipboard.writeText(address);
+        showCopyStatus('✅ آدرس کپی شد', 'success');
+      } catch (error) {
+        showCopyStatus('❌ خطا در کپی کردن آدرس', 'error');
+      }
+    }
+    
+    // تابع چسباندن آدرس از کلیپ‌برد
+    async function pasteAddressFromClipboard() {
+      try {
+        const clipboardText = await navigator.clipboard.readText();
+        const addressInput = document.getElementById('newOwnerAddress');
+        
+        // بررسی اینکه آیا متن کپی شده آدرس اتریوم معتبر است
+        if (clipboardText && /^0x[a-fA-F0-9]{40}$/.test(clipboardText.trim())) {
+          addressInput.value = clipboardText.trim();
+          showCopyStatus('✅ آدرس از کلیپ‌برد چسبانده شد', 'success');
+        } else {
+          showCopyStatus('❌ محتوای کلیپ‌برد آدرس اتریوم معتبر نیست', 'error');
+        }
+      } catch (error) {
+        showCopyStatus('❌ خطا در خواندن از کلیپ‌برد', 'error');
+      }
+    }
+    
+    // نمایش وضعیت کپی
+    function showCopyStatus(message, type) {
+      const statusEl = document.getElementById('transferOwnershipStatus');
+      statusEl.className = `status ${type}`;
+      statusEl.textContent = message;
+      
+      // پاک کردن پیام بعد از 3 ثانیه
+      setTimeout(() => {
+        if (statusEl.textContent === message) {
+          statusEl.className = 'status';
+          statusEl.textContent = '';
+        }
+      }, 3000);
+    }
+    
+    // رویداد کلیک روی دکمه کپی
+    document.getElementById('copyAddressBtn').addEventListener('click', copyAddressToClipboard);
+    
+    // تابع پاک کردن آدرس
+    function clearAddress() {
+      const addressInput = document.getElementById('newOwnerAddress');
+      addressInput.value = '';
+      showCopyStatus('✅ فیلد آدرس پاک شد', 'success');
+    }
+    
+    // تابع پر کردن خودکار آدرس فعلی کاربر
+    function fillCurrentUserAddress() {
+      if (window.contractConfig && window.contractConfig.address) {
+        const addressInput = document.getElementById('newOwnerAddress');
+        addressInput.value = window.contractConfig.address;
+        showCopyStatus('✅ آدرس فعلی شما در فیلد قرار گرفت', 'success');
+      }
+    }
+    
+    // رویداد کلیک روی دکمه چسباندن
+    document.getElementById('pasteAddressBtn').addEventListener('click', pasteAddressFromClipboard);
+    
+    // رویداد کلیک روی دکمه پاک کردن
+    document.getElementById('clearAddressBtn').addEventListener('click', clearAddress);
+    
+    // رویداد کلیک روی دکمه پر کردن آدرس فعلی
+    document.getElementById('fillCurrentAddressBtn').addEventListener('click', fillCurrentUserAddress);
+    
+    // کلیدهای میانبر
+    document.addEventListener('keydown', function(e) {
+      // Ctrl+V برای چسباندن
+      if (e.ctrlKey && e.key === 'v') {
+        e.preventDefault();
+        pasteAddressFromClipboard();
+      }
+      // Ctrl+C برای کپی کردن
+      if (e.ctrlKey && e.key === 'c') {
+        e.preventDefault();
+        copyAddressToClipboard();
+      }
+      // Ctrl+X برای پاک کردن
+      if (e.ctrlKey && e.key === 'x') {
+        e.preventDefault();
+        clearAddress();
+      }
+      // Ctrl+F برای پر کردن آدرس فعلی
+      if (e.ctrlKey && e.key === 'f') {
+        e.preventDefault();
+        fillCurrentUserAddress();
+      }
+    });
+    
+    // رویداد submit فرم
     document.getElementById('transferOwnershipForm').addEventListener('submit', function(e) {
       e.preventDefault();
       const newOwner = document.getElementById('newOwnerAddress').value.trim();
@@ -137,8 +336,30 @@
       statusEl.className = 'status';
       transferIndexOwnership(newOwner, statusEl, btn);
     });
+
+    // بروزرسانی خودکار هنگام بارگذاری صفحه
+    document.addEventListener('DOMContentLoaded', function() {
+      // بررسی وضعیت اتصال کیف پول
+      if (window.contractConfig && window.contractConfig.contract) {
+        autoRefreshBalances();
+      } else {
+        // انتظار برای اتصال کیف پول
+        const checkConnection = setInterval(() => {
+          if (window.contractConfig && window.contractConfig.contract) {
+            autoRefreshBalances();
+            clearInterval(checkConnection);
+          }
+        }, 1000);
+        
+        // متوقف کردن بررسی بعد از 10 ثانیه
+        setTimeout(() => clearInterval(checkConnection), 10000);
+      }
+    });
   </script>
   <script src="js/navbar.js"></script>
   <script src="js/main.js"></script>
+  
+  <!-- Floating Token Growth Card - کارت شناور رشد توکن -->
+  <script src="js/floating-token-card.js"></script>
 </body>
 </html> 

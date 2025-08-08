@@ -50,6 +50,128 @@ class SwapManager {
         }
     }
 
+
+
+    // تابع تبدیل USD به توکن (برای فیلد USD)
+    convertSwapUsdToToken() {
+        console.log('🔄 تبدیل USD به توکن...');
+        
+        const usdAmount = document.getElementById('swapUsdAmount');
+        const swapAmount = document.getElementById('swapAmount');
+        const direction = document.getElementById('swapDirection');
+        
+        if (!usdAmount || !swapAmount || !direction) {
+            console.warn('⚠️ عناصر مورد نیاز برای تبدیل USD یافت نشدند');
+            return;
+        }
+        
+        const usdValue = parseFloat(usdAmount.value);
+        if (!usdValue || usdValue <= 0) {
+            this.showStatus('لطفاً مقدار دلاری معتبر وارد کنید', 'error');
+            return;
+        }
+        
+        if (!this.tokenPrice || Number(this.tokenPrice) <= 0) {
+            this.showStatus('قیمت توکن در دسترس نیست', 'error');
+            return;
+        }
+        
+        const tokenPrice = Number(this.tokenPrice);
+        
+        if (direction.value === 'dai-to-cpa') {
+            // تبدیل USD به DAI (فرض بر این که 1 USD = 1 DAI)
+            const daiAmount = usdValue;
+            swapAmount.value = daiAmount.toFixed(2);
+            console.log('✅ USD به DAI تبدیل شد:', daiAmount);
+        } else if (direction.value === 'cpa-to-dai') {
+            // تبدیل USD به CPA
+            const cpaAmount = usdValue / tokenPrice;
+            swapAmount.value = cpaAmount.toFixed(6);
+            console.log('✅ USD به CPA تبدیل شد:', cpaAmount);
+        }
+        
+        // به‌روزرسانی پیش‌نمایش
+        this.updateSwapPreview();
+        this.showStatus(`✅ مقدار ${usdValue} دلار به توکن تبدیل شد`, 'success');
+    }
+
+    // به‌روزرسانی معادل دلاری وقتی مقدار توکن تغییر می‌کند
+    updateSwapUsdValue() {
+        const swapAmount = document.getElementById('swapAmount');
+        const swapUsdAmount = document.getElementById('swapUsdAmount');
+        const direction = document.getElementById('swapDirection');
+        
+        if (!swapAmount || !swapUsdAmount || !direction) {
+            return;
+        }
+        
+        const tokenAmount = parseFloat(swapAmount.value) || 0;
+        if (tokenAmount <= 0) {
+            swapUsdAmount.value = '';
+            return;
+        }
+        
+        if (!this.tokenPrice || Number(this.tokenPrice) <= 0) {
+            return;
+        }
+        
+        const tokenPrice = Number(this.tokenPrice);
+        
+        if (direction.value === 'dai-to-cpa') {
+            // DAI به USD (فرض بر این که 1 DAI = 1 USD)
+            const usdValue = tokenAmount;
+            swapUsdAmount.value = usdValue.toFixed(2);
+        } else if (direction.value === 'cpa-to-dai') {
+            // CPA به USD
+            const usdValue = tokenAmount * tokenPrice;
+            swapUsdAmount.value = usdValue.toFixed(2);
+        }
+    }
+
+    // نمایش/مخفی کردن فیلد USD بر اساس جهت سواپ
+    toggleSwapUsdConverter() {
+        const direction = document.getElementById('swapDirection');
+        const usdConverterRow = document.getElementById('swap-usd-converter-row');
+        
+        if (!direction || !usdConverterRow) {
+            return;
+        }
+        
+        if (direction.value === 'cpa-to-dai') {
+            usdConverterRow.style.display = 'block';
+        } else {
+            usdConverterRow.style.display = 'none';
+        }
+    }
+
+    // به‌روزرسانی پیش‌نمایش USD
+    updateSwapUsdPreview() {
+        const swapUsdAmount = document.getElementById('swapUsdAmount');
+        const swapAmount = document.getElementById('swapAmount');
+        const direction = document.getElementById('swapDirection');
+        
+        if (!swapUsdAmount || !swapAmount || !direction) {
+            return;
+        }
+        
+        const usdValue = parseFloat(swapUsdAmount.value) || 0;
+        if (usdValue <= 0) {
+            return;
+        }
+        
+        if (!this.tokenPrice || Number(this.tokenPrice) <= 0) {
+            return;
+        }
+        
+        const tokenPrice = Number(this.tokenPrice);
+        
+        if (direction.value === 'cpa-to-dai') {
+            const cpaAmount = usdValue / tokenPrice;
+            swapAmount.value = cpaAmount.toFixed(6);
+            this.updateSwapPreview();
+        }
+    }
+
     async updateSwapLimitInfo() {
         const infoDiv = document.getElementById('swapLimitInfo');
         if (!infoDiv) {
@@ -96,9 +218,8 @@ class SwapManager {
                     <p style="margin:5px 0;color:#555;"><strong>سقف خرید فعلی:</strong> ${maxBuy.toLocaleString('en-US', {maximumFractionDigits:2})} DAI</p>
                     <p style="margin:5px 0;color:#555;"><strong>کارمزد خرید:</strong> ۲٪ کل</p>
                     <ul style="margin:5px 0;padding-left:20px;color:#555;">
-                        <li>۰.۵٪ برای توسعه‌دهنده</li>
-                        <li>۰.۵٪ برای معرف</li>
-                        <li>۱٪ برای پشتوانه قرارداد</li>
+                        <li>0.5٪ برای توسعه‌دهنده</li>
+                        <li>1.5٪ برای پشتوانه قرارداد</li>
                     </ul>
                     <p style="margin:5px 0;color:#2e7d32;"><strong>سهم شما: ۹۸٪ از مبلغ خرید به توکن تبدیل می‌شود</strong></p>
                 </div>`;
@@ -118,9 +239,8 @@ class SwapManager {
                     <p style="margin:5px 0;color:#555;"><strong>سقف فروش فعلی:</strong> ${maxSell.toLocaleString('en-US', {maximumFractionDigits:2})} توکن</p>
                     <p style="margin:5px 0;color:#555;"><strong>کارمزد فروش:</strong> ۲٪ کل</p>
                     <ul style="margin:5px 0;padding-left:20px;color:#555;">
-                        <li>۰.۵٪ برای توسعه‌دهنده</li>
-                        <li>۰.۵٪ برای معرف</li>
-                        <li>۱٪ برای پشتوانه قرارداد</li>
+                        <li>0.5٪ برای توسعه‌دهنده</li>
+                        <li>1.5٪ برای پشتوانه قرارداد</li>
                     </ul>
                     <p style="margin:5px 0;color:#e65100;"><strong>سهم شما: ۹۸٪ از مقدار فروش به DAI تبدیل می‌شود</strong></p>
                 </div>`;
@@ -162,6 +282,9 @@ class SwapManager {
                 await this.updateSwapPreview();
                 this.updateMaxAmount();
                 await this.updateSwapLimitInfo();
+                
+                // نمایش/مخفی کردن فیلد USD بر اساس جهت سواپ
+                this.toggleSwapUsdConverter();
             });
             console.log('✅ Event listener جهت سواپ متصل شد');
         } else {
@@ -173,6 +296,9 @@ class SwapManager {
                 console.log('📝 مقدار سواپ تغییر کرد:', swapAmount.value);
                 await this.updateSwapPreview();
                 await this.updateSwapLimitInfo();
+                
+                // Real-time محاسبه معادل دلاری وقتی مقدار توکن تغییر میکنه
+                this.updateSwapUsdValue();
             });
             console.log('✅ Event listener مقدار سواپ متصل شد');
         } else {
@@ -189,6 +315,41 @@ class SwapManager {
         } else {
             console.warn('⚠️ دکمه حداکثر یافت نشد');
         }
+        
+        // Event listeners برای USD converter
+        const swapUsdConverterRow = document.getElementById('swap-usd-converter-row');
+        const swapUsdAmount = document.getElementById('swapUsdAmount');
+        const swapUsdToTokenBtn = document.getElementById('swapUsdToTokenBtn');
+        
+        if (swapUsdToTokenBtn) {
+            swapUsdToTokenBtn.addEventListener('click', () => {
+                this.convertSwapUsdToToken();
+            });
+            console.log('✅ Event listener دکمه تبدیل USD متصل شد');
+        }
+        
+        if (swapUsdAmount) {
+            // Enter key در فیلد USD
+            swapUsdAmount.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.convertSwapUsdToToken();
+                }
+            });
+            
+            // Real-time محاسبه وقتی کاربر تایپ می‌کنه
+            let swapUsdTimeout;
+            swapUsdAmount.addEventListener('input', () => {
+                clearTimeout(swapUsdTimeout);
+                swapUsdTimeout = setTimeout(() => {
+                    this.updateSwapUsdPreview();
+                }, 500);
+            });
+            console.log('✅ Event listeners فیلد USD متصل شدند');
+        }
+        
+        // اجرای اولیه برای تنظیم وضعیت اولیه
+        this.toggleSwapUsdConverter();
         
         console.log('✅ تمام event listeners تنظیم شدند');
     }
@@ -247,11 +408,34 @@ class SwapManager {
             const daiBalanceFormatted = ethers.formatUnits(daiBalance, 18);
             console.log('✅ موجودی DAI دریافت شد:', daiBalanceFormatted);
 
+            // تابع کوتاه کردن اعداد بزرگ
+            function formatLargeNumber(num) {
+                if (num >= 1000000) {
+                    return (num / 1000000).toFixed(1) + 'M';
+                } else if (num >= 1000) {
+                    return (num / 1000).toFixed(1) + 'K';
+                } else {
+                    return num.toFixed(2);
+                }
+            }
+            
+            // محاسبه معادل دلاری CPA
+            const cpaUsdValue = parseFloat(cpaBalanceFormatted) * parseFloat(this.tokenPrice);
+            
             // نمایش موجودی‌ها
             const cpaBalanceEl = document.getElementById('cpaBalance');
             const daiBalanceEl = document.getElementById('daiBalance');
-            if (cpaBalanceEl) cpaBalanceEl.textContent = `${Number(cpaBalanceFormatted).toLocaleString('en-US', {maximumFractionDigits: 6})} CPA`;
-            if (daiBalanceEl) daiBalanceEl.textContent = `${Number(daiBalanceFormatted).toLocaleString('en-US', {maximumFractionDigits: 6})} DAI`;
+            if (cpaBalanceEl) {
+                const fullCpaAmount = Number(cpaBalanceFormatted).toLocaleString('en-US', {maximumFractionDigits: 6});
+                cpaBalanceEl.innerHTML = `
+                    <span title="${fullCpaAmount} CPA">${formatLargeNumber(Number(cpaBalanceFormatted))} CPA</span>
+                    <div style="font-size:0.8rem;color:#a786ff;margin-top:2px;">≈ $${formatLargeNumber(cpaUsdValue)}</div>
+                `;
+            }
+            if (daiBalanceEl) {
+                const fullDaiAmount = Number(daiBalanceFormatted).toLocaleString('en-US', {maximumFractionDigits: 6});
+                daiBalanceEl.innerHTML = `<span title="${fullDaiAmount} DAI">${formatLargeNumber(Number(daiBalanceFormatted))} DAI</span>`;
+            }
 
             // ذخیره برای max
             this.userBalances = {
@@ -378,16 +562,90 @@ class SwapManager {
             return;
         }
         
-        if (direction.value === 'dai-to-cpa') {
-            amount.value = this.userBalances.dai.toFixed(2);
-            console.log('✅ مقدار حداکثر DAI تنظیم شد:', this.userBalances.dai.toFixed(2));
-        } else if (direction.value === 'cpa-to-dai') {
-            amount.value = this.userBalances.cpa.toFixed(6);
-            console.log('✅ مقدار حداکثر CPA تنظیم شد:', this.userBalances.cpa.toFixed(6));
+        try {
+            if (direction.value === 'dai-to-cpa') {
+                // محاسبه سقف خرید هوشمند
+                const contract = window.contractConfig.contract;
+                const daiAddress = window.DAI_ADDRESS;
+                const daiAbi = window.DAI_ABI;
+                
+                if (!contract || !daiAddress || !daiAbi) {
+                    throw new Error('تنظیمات قرارداد ناقص است');
+                }
+                
+                const daiContract = new ethers.Contract(daiAddress, daiAbi, window.contractConfig.signer);
+                const daiBalance = await daiContract.balanceOf(contract.target);
+                const daiBalanceNum = parseFloat(ethers.formatUnits(daiBalance, 18));
+                
+                // محاسبه سقف خرید بر اساس موجودی قرارداد
+                let maxBuy;
+                if (daiBalanceNum <= 100000) {
+                    maxBuy = 1000;
+                } else {
+                    maxBuy = daiBalanceNum * 0.01;
+                }
+                
+                // انتخاب کمترین مقدار بین موجودی کاربر و سقف مجاز
+                const maxAmount = Math.min(this.userBalances.dai, maxBuy);
+                amount.value = maxAmount.toFixed(2);
+                
+                console.log('✅ حداکثر خرید هوشمند:', {
+                    userBalance: this.userBalances.dai.toFixed(2),
+                    buyLimit: maxBuy.toFixed(2),
+                    finalAmount: maxAmount.toFixed(2)
+                });
+                
+            } else if (direction.value === 'cpa-to-dai') {
+                // محاسبه سقف فروش هوشمند
+                const contract = window.contractConfig.contract;
+                const daiAddress = window.DAI_ADDRESS;
+                const daiAbi = window.DAI_ABI;
+                
+                if (!contract || !daiAddress || !daiAbi) {
+                    throw new Error('تنظیمات قرارداد ناقص است');
+                }
+                
+                const daiContract = new ethers.Contract(daiAddress, daiAbi, window.contractConfig.signer);
+                const daiBalance = await daiContract.balanceOf(contract.target);
+                const daiBalanceNum = parseFloat(ethers.formatUnits(daiBalance, 18));
+                
+                const totalSupply = await contract.totalSupply();
+                const totalSupplyNum = parseFloat(ethers.formatUnits(totalSupply, 18));
+                
+                // محاسبه سقف فروش بر اساس موجودی DAI قرارداد
+                let maxSell;
+                if (daiBalanceNum >= 500) {
+                    maxSell = totalSupplyNum * 0.01;
+                } else {
+                    maxSell = totalSupplyNum * 0.5;
+                }
+                
+                // انتخاب کمترین مقدار بین موجودی کاربر و سقف مجاز
+                const maxAmount = Math.min(this.userBalances.cpa, maxSell);
+                amount.value = maxAmount.toFixed(6);
+                
+                console.log('✅ حداکثر فروش هوشمند:', {
+                    userBalance: this.userBalances.cpa.toFixed(6),
+                    sellLimit: maxSell.toFixed(6),
+                    finalAmount: maxAmount.toFixed(6)
+                });
+            }
+            
+            await this.updateSwapPreview();
+            console.log('✅ پیش‌نمایش بعد از تنظیم حداکثر هوشمند به‌روزرسانی شد');
+            
+        } catch (error) {
+            console.error('❌ خطا در محاسبه حداکثر هوشمند:', error);
+            
+            // در صورت خطا، از روش قبلی استفاده کن
+            if (direction.value === 'dai-to-cpa') {
+                amount.value = this.userBalances.dai.toFixed(2);
+            } else if (direction.value === 'cpa-to-dai') {
+                amount.value = this.userBalances.cpa.toFixed(6);
+            }
+            
+            await this.updateSwapPreview();
         }
-        
-        await this.updateSwapPreview();
-        console.log('✅ پیش‌نمایش بعد از تنظیم حداکثر به‌روزرسانی شد');
     }
 
     setUIBusy(busy) {

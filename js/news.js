@@ -303,6 +303,7 @@ function setupAutoRefresh() {
     }
     
     // تنظیم به‌روزرسانی هر 5 دقیقه برای اخبار قیمت
+    /* // News auto refresh غیرفعال شده
     autoRefreshInterval = setInterval(async () => {
         try {
             // بررسی اینکه آیا صفحه فعال است
@@ -314,7 +315,9 @@ function setupAutoRefresh() {
         } catch (error) {
             console.error('خطا در به‌روزرسانی خودکار:', error);
         }
-    }, 5 * 60 * 1000); // 5 دقیقه
+    }, 5 * 60 * 1000); // غیرفعال شده - سیستم مرکزی جایگزین شده
+    */
+    console.log('⚠️ News auto refresh غیرفعال شده برای بهینه‌سازی عملکرد');
 }
 
 // فیلتر کردن اخبار

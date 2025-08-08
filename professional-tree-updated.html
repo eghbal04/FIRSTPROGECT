@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>درخت حرفه‌ای شبکه - CPA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    
+    <!-- استایل‌های فرم اطلاعات کاربر -->
+    <link href="css/user-info-modal.css" rel="stylesheet">
+    
+    <!-- بارگذاری ethers.js -->
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background: linear-gradient(135deg, #050709, #0a0d1a, #050709);
+            color: #ffffff;
+            min-height: 100vh;
+            direction: rtl;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .tree-container {
+            background: linear-gradient(135deg, #0a0d1a, #1a1f2e, #0a0d1a);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem auto;
+            max-width: 1400px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .tree-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        /* استایل گره‌های شبکه */
+        .network-node {
+            background: rgba(167, 134, 255, 0.1);
+            border: 1px solid rgba(167, 134, 255, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .network-node:hover {
+            background: rgba(167, 134, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .network-node:active {
+            transform: translateY(0);
+        }
+
+        /* استایل‌های موبایل */
+        @media (max-width: 768px) {
+            .tree-container {
+                padding: 1rem;
+                margin: 1rem;
+                border-radius: 10px;
+            }
+
+            .tree-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .network-node {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="tree-container">
+        <!-- محتوای درخت شبکه -->
+    </div>
+
+    <!-- اسکریپت‌های مورد نیاز -->
+    <script src="js/config.js"></script>
+    <script src="js/web3-interactions.js"></script>
+    <script src="js/network-database.js"></script>
+    <script src="js/node-click-handler.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // راه‌اندازی مدیریت کلیک روی گره‌ها
+            window.initializeNetworkNodes();
+        });
+    </script>
+    
+    <!-- Floating Token Growth Card - کارت شناور رشد توکن -->
+    <script src="js/floating-token-card.js"></script>
+</body>
+</html>

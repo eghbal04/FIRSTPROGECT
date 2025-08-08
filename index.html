@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/index-custom.css">
     <link rel="stylesheet" href="css/floating-ai-assistant.css">
+    <link rel="stylesheet" href="css/smooth-transitions.css">
 
     <!-- بارگذاری ethers.js نسخه 6 از CDN -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
@@ -76,6 +77,8 @@
   <div id="bubble-mini" style="display:none;">
     <span class="bubble-mini-icon">🚀</span>
   </div>
+
+
   <script>
     function formatCountdown(ms) {
       if (ms <= 0) return '00:00:00';
@@ -150,7 +153,7 @@
         <div id="dashboard-user-info" style="background:rgba(0,255,136,0.1);border-radius:12px;padding:1rem;margin-bottom:1rem;border:1px solid rgba(0,255,136,0.2);display:none;">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
             <div style="text-align:center;flex:1;min-width:120px;">
-              <div style="color:#00ff88;font-size:0.8rem;font-weight:bold;margin-bottom:0.3rem;">CPA ID</div>
+                                  <div style="color:#00ff88;font-size:0.8rem;font-weight:bold;margin-bottom:0.3rem;">ایندکس</div>
               <div style="color:#fff;font-size:1rem;font-family:monospace;font-weight:bold;" id="dashboard-user-index">-</div>
             </div>
             <div style="text-align:center;flex:1;min-width:120px;">
@@ -165,28 +168,62 @@
         </div>
         
         <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;">
-          <!-- Total Supply Card -->
+          <!-- 1. کل عرضه - اولویت اول -->
           <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(0,255,136,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
             <div style="color:#00ff88;font-size:1.2rem;margin-bottom:0.3rem;">💰</div>
             <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">کل عرضه</div>
-            <div style="color:#00ff88;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="circulating-supply">-</div>
+            <div style="color:#00ff88;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="circulating-supply" class="dashboard-value smooth-value-transition numeric-value">-</div>
             <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">CPA Tokens</div>
           </div>
+          
+          <!-- 2. موجودی CPA قرارداد - اولویت دوم -->
+          <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(255,193,7,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
+            <div style="color:#ffc107;font-size:1.2rem;margin-bottom:0.3rem;">🏦</div>
+            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">موجودی قرارداد</div>
+            <div style="color:#ffc107;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="contract-token-balance" class="dashboard-value smooth-value-transition numeric-value">-</div>
+            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">CPA in Contract</div>
+          </div>
+          
+          <!-- 3. موجودی قرارداد DAI - اولویت سوم -->
+          <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(0,123,255,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
+            <div style="color:#007bff;font-size:1.2rem;margin-bottom:0.3rem;">💵</div>
+            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">موجودی قرارداد</div>
+            <div style="color:#007bff;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="dashboard-dai-balance" class="dashboard-value smooth-value-transition numeric-value">-</div>
+            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">Contract Balance</div>
+          </div>
+          
+          <!-- 4. قیمت توکن - اولویت چهارم -->
+          <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(0,255,136,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
+            <div style="color:#00ff88;font-size:1.2rem;margin-bottom:0.3rem;">💲</div>
+            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">قیمت توکن CPA</div>
+            <div style="color:#00ff88;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="dashboard-token-price" class="dashboard-value smooth-value-transition numeric-value">-</div>
+            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">DAI per CPA</div>
+          </div>
+          
+          <!-- 5. قیمت ثبت‌نام - اولویت پنجم -->
+          <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(138,43,226,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
+            <div style="color:#8a2be2;font-size:1.2rem;margin-bottom:0.3rem;">🎫</div>
+            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">قیمت ثبت‌نام</div>
+            <div style="color:#8a2be2;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="dashboard-registration-price" class="dashboard-value smooth-value-transition numeric-value">-</div>
+            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">CPA per Registration</div>
+          </div>
+          
+          <!-- بقیه کارت‌ها -->
           
           <!-- Total Points Card -->
           <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(167,134,255,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
             <div style="color:#a786ff;font-size:1.2rem;margin-bottom:0.3rem;">🎯</div>
             <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">کل پوینت‌ها</div>
-            <div style="color:#a786ff;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="total-points">-</div>
+            <div style="color:#a786ff;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="total-points" class="dashboard-value smooth-value-transition numeric-value">-</div>
             <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">Binary Points</div>
           </div>
           
-          <!-- Contract Token Balance Card -->
-          <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(255,193,7,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
-            <div style="color:#ffc107;font-size:1.2rem;margin-bottom:0.3rem;">🏦</div>
-            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">موجودی قرارداد</div>
-            <div style="color:#ffc107;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="contract-token-balance">-</div>
-            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">CPA in Contract</div>
+          <!-- Point Value Card -->
+          <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(0,255,136,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
+            <div style="color:#00ff88;font-size:1.2rem;margin-bottom:0.3rem;">💎</div>
+            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">ارزش هر پوینت</div>
+            <div style="color:#00ff88;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="dashboard-point-value" class="dashboard-value smooth-value-transition numeric-value">-</div>
+            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">CPA per Point</div>
           </div>
           
           <!-- Help Fund Card -->
@@ -197,12 +234,12 @@
             <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">Cashback Pool</div>
           </div>
           
-          <!-- DAI Contract Balance Card -->
-          <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(0,123,255,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
-            <div style="color:#007bff;font-size:1.2rem;margin-bottom:0.3rem;">💵</div>
-            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">موجودی DAI</div>
-            <div style="color:#007bff;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="dashboard-dai-balance">-</div>
-            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">DAI in Contract</div>
+          <!-- Wallet Count Card -->
+          <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(255,165,0,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
+            <div style="color:#ffa500;font-size:1.2rem;margin-bottom:0.3rem;">👛</div>
+            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">تعداد ولت‌ها</div>
+            <div style="color:#ffa500;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="dashboard-wallets-count" class="dashboard-value smooth-value-transition numeric-value">-</div>
+            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">Connected Wallets</div>
           </div>
           
           <!-- Network Status Card -->
@@ -211,38 +248,6 @@
             <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">وضعیت شبکه</div>
             <div style="color:#28a745;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="network-status">Polygon</div>
             <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">Active</div>
-          </div>
-          
-          <!-- Point Value Card -->
-          <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(0,255,136,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
-            <div style="color:#00ff88;font-size:1.2rem;margin-bottom:0.3rem;">💎</div>
-            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">ارزش هر پوینت</div>
-            <div style="color:#00ff88;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="dashboard-point-value">-</div>
-            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">CPA per Point</div>
-          </div>
-          
-          <!-- Token Price Card -->
-          <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(0,255,136,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
-            <div style="color:#00ff88;font-size:1.2rem;margin-bottom:0.3rem;">💲</div>
-            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">قیمت توکن CPA</div>
-            <div style="color:#00ff88;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="dashboard-token-price">-</div>
-            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">DAI per CPA</div>
-          </div>
-          
-          <!-- Wallet Count Card -->
-          <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(255,165,0,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
-            <div style="color:#ffa500;font-size:1.2rem;margin-bottom:0.3rem;">👛</div>
-            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">تعداد ولت‌ها</div>
-            <div style="color:#ffa500;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="dashboard-wallets-count">-</div>
-            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">Connected Wallets</div>
-          </div>
-          
-          <!-- Registration Price Card -->
-          <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(138,43,226,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
-            <div style="color:#8a2be2;font-size:1.2rem;margin-bottom:0.3rem;">🎫</div>
-            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">قیمت ثبت‌نام</div>
-            <div style="color:#8a2be2;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="dashboard-registration-price">-</div>
-            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">CPA per Registration</div>
           </div>
         </div>
         
@@ -413,20 +418,7 @@
           </div>
         </div>
         <!-- داشبورد اطلاعات بلاکچین (افزوده شده برای جلوگیری از خطاهای not found) -->
-<div id="main-dashboard">
-  <div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:24px;">
-    <div><b>CPA در گردش:</b> <span id="circulating-supply">...</span></div>
-    <div><b>امتیاز کل:</b> <span id="total-points">...</span></div>
-    <div><b>موجودی CPA قرارداد:</b> <span id="contract-token-balance">...</span></div>
-    <div><b>کَش‌بَک:</b> <span id="dashboard-cashback-value">...</span></div>
-    <div><b>موجودی DAI قرارداد:</b> <span id="dashboard-dai-balance">...</span></div>
-    <div><b>ارزش هر امتیاز:</b> <span id="dashboard-point-value">...</span></div>
-    <div><b>قیمت توکن:</b> <span id="dashboard-token-price">...</span></div>
-    <div><b>تعداد کیف پول‌ها:</b> <span id="dashboard-wallets-count">...</span></div>
-    <div><b>هزینه ثبت‌نام:</b> <span id="dashboard-registration-price">...</span></div>
-    <div><b>آخرین بروزرسانی:</b> <span id="blockchain-last-update">...</span></div>
-  </div>
-</div>
+
         <form id="swapForm" class="swap-form">
           <div class="swap-row">
             <label for="swapDirection">نوع تبدیل:</label>
@@ -444,6 +436,26 @@
               <button type="button" id="maxBtn" class="max-btn">حداکثر</button>
             </div>
             <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">مقدار مورد نظر برای تبدیل را وارد کنید</small>
+          </div>
+          
+          <div class="swap-row" id="swap-usd-converter-row" style="display:none;">
+            <label for="swapUsdAmount">💰 معادل دلاری:</label>
+            <div style="display:flex;gap:0.5rem;align-items:center;">
+              <span style="color:#00ff88;font-weight:bold;">$</span>
+              <input type="number" id="swapUsdAmount" placeholder="5.00" min="0" step="0.01" style="flex:1;">
+              <button type="button" id="swapUsdToTokenBtn" style="
+                background: linear-gradient(90deg,#00ff88,#a786ff);
+                color: #181c2a;
+                border: none;
+                border-radius: 6px;
+                padding: 0.4rem 0.8rem;
+                font-size: 0.8rem;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                font-weight: bold;
+              ">🔄 تبدیل</button>
+            </div>
+            <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">مقدار دلاری وارد کنید تا به توکن تبدیل شود (مثل: 5 برای $5)</small>
           </div>
           
           <div id="swapRate" class="swap-rate">نرخ تبدیل: در حال بارگذاری...</div>
@@ -465,6 +477,7 @@
             <div style="text-align:center;">
               <div style="color:#00ccff;font-weight:bold;">CPA</div>
               <div id="cpaBalance" style="color:#b8c1ec;font-family:monospace;">-</div>
+              <div id="cpaUsdValue" style="color:#a786ff;font-size:0.8rem;margin-top:2px;">-</div>
             </div>
           </div>
         </div>
@@ -542,7 +555,39 @@
           <div class="transfer-row">
             <label for="transferAmount">مقدار:</label>
             <input type="number" id="transferAmount" placeholder="مقدار را وارد کنید" min="0" step="any" required>
-            <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">مقدار انتقال را وارد کنید (حداقل 0.001)</small>
+            <button type="button" id="maxAmountBtn" style="
+              background: linear-gradient(90deg,#ff6b6b,#ee5a52);
+              color: #fff;
+              border: none;
+              border-radius: 6px;
+              padding: 0.4rem 0.8rem;
+              font-size: 0.8rem;
+              cursor: pointer;
+              margin-top: 0.5rem;
+              transition: all 0.3s ease;
+              width: auto;
+              display: inline-block;
+            ">🔥 حداکثر موجودی</button>
+            <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">مقدار انتقال را وارد کنید یا روی "حداکثر" کلیک کنید</small>
+          </div>
+          <div class="transfer-row" id="usd-converter-row" style="display:none;">
+            <label for="transferUsdAmount">💰 معادل دلاری (فقط برای CPA):</label>
+            <div style="display:flex;gap:0.5rem;align-items:center;">
+              <span style="color:#00ff88;font-weight:bold;">$</span>
+              <input type="number" id="transferUsdAmount" placeholder="5.00" min="0" step="0.01" style="flex:1;">
+              <button type="button" id="usdToCpaBtn" style="
+                background: linear-gradient(90deg,#00ff88,#a786ff);
+                color: #181c2a;
+                border: none;
+                border-radius: 6px;
+                padding: 0.4rem 0.8rem;
+                font-size: 0.8rem;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                font-weight: bold;
+              ">🔄 تبدیل</button>
+            </div>
+            <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">مقدار دلاری وارد کنید تا به CPA تبدیل شود (مثل: 5 برای $5)</small>
           </div>
           <div class="transfer-row">
             <label for="transferToken">نوع توکن:</label>
@@ -555,7 +600,7 @@
           </div>
           
           <!-- Balance Check -->
-          <div style="background:rgba(167,134,255,0.1);border-radius:8px;padding:1rem;margin-bottom:1rem;">
+          <div style="background:rgba(167,134,255,0.1);border-radius:8px;padding:1rem;margin-bottom:1rem;" class="balance-check">
             <h4 style="color:#a786ff;margin-bottom:0.8rem;">💰 موجودی فعلی شما:</h4>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;">
               <div style="text-align:center;">
@@ -569,6 +614,7 @@
               <div style="text-align:center;">
                 <div style="color:#00ccff;font-weight:bold;">CPA</div>
                 <div id="transfer-cpa-balance" style="color:#b8c1ec;font-family:monospace;">-</div>
+                <div id="transfer-cpa-usd" style="color:#a786ff;font-size:0.8rem;margin-top:2px;">-</div>
               </div>
             </div>
           </div>
@@ -630,7 +676,13 @@
     
     <!-- سایر اسکریپت‌ها -->
     <script src="js/firebase-config.js"></script>
-    <script src="js/price-charts-manager.js"></script>
+    <script src="js/smooth-value-updater.js"></script>
+    <script src="js/smart-dashboard-updater.js"></script>
+    <script src="js/central-dashboard-updater.js"></script>
+    <script src="js/usdc-balance-debugger.js"></script>
+    <script src="js/test-address-config.js"></script>
+    <script src="js/final-test-config.js"></script>
+    <script src="js/dashboard-loading-manager.js"></script>
     <script src="js/config.js"></script>
   <script src="js/reports.js"></script>
   <script src="js/web3-interactions.js"></script>
@@ -643,6 +695,9 @@
   <script src="js/price-history-manager.js?v=5.8"></script>
   <script src="js/price-chart.js?v=5.8"></script>
   <script src="js/point-chart.js?v=5.8"></script>
+  <script src="js/price-charts-manager.js?v=5.8"></script>
+  <script src="js/chart-testing-helper.js?v=1.0"></script>
+  <script src="js/real-chart-validator.js?v=1.0"></script>
 
   <style>
     /* Fix for chart width issues */
@@ -844,6 +899,99 @@
  
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+  
+  <script>
+    // راه‌اندازی چارت‌ها بعد از لود Chart.js
+    let chartsInitialized = false;
+    
+    function initializeCharts() {
+      if (chartsInitialized) return;
+      
+      console.log('🔄 تلاش برای راه‌اندازی چارت‌ها...');
+      console.log('Chart.js وضعیت:', typeof Chart !== 'undefined' ? '✅ آماده' : '❌ نامعلوم');
+      console.log('PriceChart کلاس:', typeof PriceChart !== 'undefined' ? '✅ آماده' : '❌ نامعلوم');
+      console.log('PointChart کلاس:', typeof PointChart !== 'undefined' ? '✅ آماده' : '❌ نامعلوم');
+      console.log('PriceChartsManager کلاس:', typeof PriceChartsManager !== 'undefined' ? '✅ آماده' : '❌ نامعلوم');
+      
+      // بررسی canvas ها
+      const priceCanvas = document.getElementById('price-chart-canvas');
+      const pointCanvas = document.getElementById('point-chart-canvas');
+      console.log('price-chart-canvas:', priceCanvas ? '✅ موجود' : '❌ یافت نشد');
+      console.log('point-chart-canvas:', pointCanvas ? '✅ موجود' : '❌ یافت نشد');
+      
+      if (typeof Chart === 'undefined') {
+        console.log('⏳ منتظر بارگذاری Chart.js...');
+        setTimeout(initializeCharts, 500);
+        return;
+      }
+      
+      console.log('📊 Chart.js آماده - راه‌اندازی چارت‌ها...');
+      
+      // روش اول: استفاده از PriceChartsManager
+      if (typeof PriceChartsManager !== 'undefined') {
+        if (!window.priceChartsManager) {
+          window.priceChartsManager = new PriceChartsManager();
+        }
+        
+        setTimeout(async () => {
+          try {
+            await window.priceChartsManager.setupCharts();
+            console.log('✅ چارت‌ها از طریق PriceChartsManager راه‌اندازی شدند');
+            chartsInitialized = true;
+          } catch (error) {
+            console.error('❌ خطا در راه‌اندازی چارت‌ها با PriceChartsManager:', error);
+            // fallback to manual initialization
+            tryManualChartInit();
+          }
+        }, 1000);
+      } else {
+        console.warn('⚠️ کلاس PriceChartsManager پیدا نشد - سعی در راه‌اندازی دستی...');
+        tryManualChartInit();
+      }
+    }
+    
+    // راه‌اندازی دستی چارت‌ها
+    function tryManualChartInit() {
+      console.log('🔧 تلاش برای راه‌اندازی دستی چارت‌ها...');
+      
+      try {
+        // راه‌اندازی چارت قیمت توکن
+        if (typeof PriceChart !== 'undefined' && document.getElementById('price-chart-canvas')) {
+          const priceChart = new PriceChart();
+          priceChart.init();
+          console.log('✅ چارت قیمت توکن به صورت دستی راه‌اندازی شد');
+        }
+        
+        // راه‌اندازی چارت قیمت پوینت
+        if (typeof PointChart !== 'undefined' && document.getElementById('point-chart-canvas')) {
+          const pointChart = new PointChart();
+          pointChart.init();
+          console.log('✅ چارت قیمت پوینت به صورت دستی راه‌اندازی شد');
+        }
+        
+        chartsInitialized = true;
+        console.log('✅ تمام چارت‌ها به صورت دستی راه‌اندازی شدند');
+      } catch (error) {
+        console.error('❌ خطا در راه‌اندازی دستی چارت‌ها:', error);
+      }
+    }
+    
+    // شروع راه‌اندازی
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(initializeCharts, 2000);
+    });
+    
+    // backup initialization
+    window.addEventListener('load', function() {
+      setTimeout(() => {
+        if (!chartsInitialized) {
+          console.log('🔄 backup initialization - تلاش مجدد...');
+          initializeCharts();
+        }
+      }, 3000);
+    });
+  </script>
+  
   <script>
     (async () => {
       const { contract, address } = await window.connectWallet();
@@ -1029,9 +1177,243 @@
 
   <!-- کنترل نمایش ورودی آدرس مقصد -->
   <script>
+    // تابع بروزرسانی خودکار موجودی‌های ترنسفر
+    async function autoRefreshTransferBalances() {
+      try {
+        if (window.updateTransferBalancesOnConnect) {
+          await window.updateTransferBalancesOnConnect();
+          console.log('✅ موجودی‌های ترنسفر خودکار بروزرسانی شد');
+        }
+      } catch (error) {
+        console.warn('خطا در بروزرسانی خودکار موجودی‌های ترنسفر:', error);
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
       const transferForm = document.getElementById('transferForm');
       if (!transferForm) return;
+
+      // بروزرسانی خودکار موجودی‌ها هنگام بارگذاری صفحه
+      const initTransferBalances = () => {
+        if (window.contractConfig && window.contractConfig.contract) {
+          autoRefreshTransferBalances();
+        } else {
+          // انتظار برای اتصال کیف پول
+          const checkConnection = setInterval(() => {
+            if (window.contractConfig && window.contractConfig.contract) {
+              autoRefreshTransferBalances();
+              clearInterval(checkConnection);
+            }
+          }, 1000);
+          
+          // متوقف کردن بررسی بعد از 15 ثانیه
+          setTimeout(() => clearInterval(checkConnection), 15000);
+        }
+      };
+
+      // شروع بروزرسانی
+      initTransferBalances();
+
+      // USD Converter functionality
+      const usdConverterRow = document.getElementById('usd-converter-row');
+      const transferUsdAmount = document.getElementById('transferUsdAmount');
+      const usdToCpaBtn = document.getElementById('usdToCpaBtn');
+      
+      // نمایش/مخفی کردن فیلد USD بر اساس نوع توکن
+      function toggleUsdConverter() {
+        const selectedToken = transferTokenSelect.value;
+        if (selectedToken === 'cpa') {
+          usdConverterRow.style.display = 'block';
+        } else {
+          usdConverterRow.style.display = 'none';
+          transferUsdAmount.value = '';
+        }
+      }
+      
+      // تبدیل USD به CPA
+      async function convertUsdToCpa() {
+        const usdAmount = parseFloat(transferUsdAmount.value);
+        if (isNaN(usdAmount) || usdAmount <= 0) {
+          alert('لطفاً مقدار معتبری برای دلار وارد کنید');
+          return;
+        }
+        
+        try {
+          // دریافت قیمت توکن از smart contract
+          const connection = await window.connectWallet();
+          if (!connection || !connection.contract) {
+            alert('ابتدا کیف پول خود را متصل کنید');
+            return;
+          }
+          
+          usdToCpaBtn.textContent = '⏳ در حال محاسبه...';
+          usdToCpaBtn.disabled = true;
+          
+          const tokenPriceRaw = await connection.contract.getTokenPrice();
+          const tokenPrice = Number(ethers.formatUnits(tokenPriceRaw, 18));
+          
+          // محاسبه مقدار CPA مورد نیاز
+          const cpaAmount = (usdAmount / tokenPrice).toFixed(6);
+          
+          // قرار دادن مقدار در فیلد اصلی
+          transferAmountInput.value = cpaAmount;
+          
+          // نمایش پیام موفقیت
+          const statusDiv = document.getElementById('transferStatus');
+          if (statusDiv) {
+            statusDiv.innerHTML = `✅ $${usdAmount} معادل ${parseFloat(cpaAmount).toLocaleString('en-US', {maximumFractionDigits: 6})} CPA است`;
+            statusDiv.style.color = '#00ff88';
+            setTimeout(() => {
+              statusDiv.innerHTML = '';
+            }, 3000);
+          }
+          
+        } catch (error) {
+          console.error('خطا در تبدیل USD به CPA:', error);
+          alert('خطا در تبدیل. لطفاً دوباره تلاش کنید.');
+        } finally {
+          usdToCpaBtn.textContent = '🔄 تبدیل';
+          usdToCpaBtn.disabled = false;
+        }
+      }
+      
+      // دکمه حداکثر
+      const maxAmountBtn = document.getElementById('maxAmountBtn');
+      const transferAmountInput = document.getElementById('transferAmount');
+      const transferTokenSelect = document.getElementById('transferToken');
+
+      if (maxAmountBtn && transferAmountInput && transferTokenSelect) {
+        maxAmountBtn.addEventListener('click', function() {
+          const selectedToken = transferTokenSelect.value;
+          let maxAmount = '0';
+          
+          // دریافت موجودی بر اساس توکن انتخاب شده
+          if (selectedToken === 'dai') {
+            const daiBalanceEl = document.getElementById('transfer-dai-balance');
+            if (daiBalanceEl && daiBalanceEl.textContent !== '-' && daiBalanceEl.textContent !== 'خطا' && daiBalanceEl.textContent !== 'متصل نیست') {
+              maxAmount = parseFloat(daiBalanceEl.textContent).toString();
+            }
+          } else if (selectedToken === 'pol') {
+            const polBalanceEl = document.getElementById('transfer-poly-balance');
+            if (polBalanceEl && polBalanceEl.textContent !== '-' && polBalanceEl.textContent !== 'خطا' && polBalanceEl.textContent !== 'متصل نیست') {
+              // برای POL، 0.01 کمتر از موجودی (برای کارمزد شبکه)
+              const polBalance = parseFloat(polBalanceEl.textContent);
+              maxAmount = Math.max(0, polBalance - 0.01).toString();
+            }
+          } else if (selectedToken === 'cpa') {
+            const cpaBalanceEl = document.getElementById('transfer-cpa-balance');
+            if (cpaBalanceEl && cpaBalanceEl.textContent !== '-' && cpaBalanceEl.textContent !== 'خطا' && cpaBalanceEl.textContent !== 'متصل نیست') {
+              maxAmount = parseFloat(cpaBalanceEl.textContent).toString();
+            }
+          }
+          
+          // تنظیم مقدار در فیلد ورودی
+          if (parseFloat(maxAmount) > 0) {
+            transferAmountInput.value = maxAmount;
+            // تغییر متن دکمه به صورت موقت
+            const originalText = maxAmountBtn.textContent;
+            maxAmountBtn.textContent = '✓ تنظیم شد';
+            maxAmountBtn.style.background = 'linear-gradient(90deg,#00ff88,#00cc66)';
+            setTimeout(() => {
+              maxAmountBtn.textContent = originalText;
+              maxAmountBtn.style.background = 'linear-gradient(90deg,#ff6b6b,#ee5a52)';
+            }, 1500);
+          } else {
+            // نمایش پیام خطا
+            maxAmountBtn.textContent = '❌ موجودی کافی نیست';
+            maxAmountBtn.style.background = 'linear-gradient(90deg,#666,#555)';
+            setTimeout(() => {
+              maxAmountBtn.textContent = 'حداکثر';
+              maxAmountBtn.style.background = 'linear-gradient(90deg,#ff6b6b,#ee5a52)';
+            }, 2000);
+          }
+        });
+      }
+      
+      // Event listeners برای USD converter
+      if (transferTokenSelect) {
+        // تغییر نوع توکن
+        transferTokenSelect.addEventListener('change', toggleUsdConverter);
+        
+        // اجرای اولیه برای تنظیم وضعیت اولیه
+        toggleUsdConverter();
+      }
+      
+      if (usdToCpaBtn) {
+        // کلیک دکمه تبدیل
+        usdToCpaBtn.addEventListener('click', convertUsdToCpa);
+      }
+      
+      if (transferUsdAmount) {
+        // Enter key در فیلد USD
+        transferUsdAmount.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            convertUsdToCpa();
+          }
+        });
+        
+        // Real-time محاسبه وقتی کاربر تایپ می‌کنه
+        let usdTimeout;
+        transferUsdAmount.addEventListener('input', function() {
+          clearTimeout(usdTimeout);
+          usdTimeout = setTimeout(async () => {
+            const usdAmount = parseFloat(transferUsdAmount.value);
+            if (!isNaN(usdAmount) && usdAmount > 0) {
+              try {
+                const connection = await window.connectWallet();
+                if (connection && connection.contract) {
+                  const tokenPriceRaw = await connection.contract.getTokenPrice();
+                  const tokenPrice = Number(ethers.formatUnits(tokenPriceRaw, 18));
+                  const cpaAmount = (usdAmount / tokenPrice).toFixed(6);
+                  
+                  // نمایش preview در placeholder
+                  transferAmountInput.placeholder = `≈ ${parseFloat(cpaAmount).toLocaleString('en-US', {maximumFractionDigits: 6})} CPA`;
+                }
+              } catch (e) {
+                // خطا در real-time - نادیده بگیر
+              }
+            } else {
+              transferAmountInput.placeholder = 'مقدار را وارد کنید';
+            }
+          }, 500); // 500ms delay برای جلوگیری از کال‌های زیاد
+        });
+      }
+      
+      // Real-time محاسبه معادل دلاری وقتی مقدار CPA تغییر میکنه
+      if (transferAmountInput) {
+        let cpaTimeout;
+        transferAmountInput.addEventListener('input', function() {
+          if (transferTokenSelect.value === 'cpa') {
+            clearTimeout(cpaTimeout);
+            cpaTimeout = setTimeout(async () => {
+              const cpaAmount = parseFloat(transferAmountInput.value);
+              if (!isNaN(cpaAmount) && cpaAmount > 0) {
+                try {
+                  const connection = await window.connectWallet();
+                  if (connection && connection.contract) {
+                    const tokenPriceRaw = await connection.contract.getTokenPrice();
+                    const tokenPrice = Number(ethers.formatUnits(tokenPriceRaw, 18));
+                    const usdValue = (cpaAmount * tokenPrice).toFixed(2);
+                    
+                    // نمایش معادل دلاری در فیلد USD
+                    if (transferUsdAmount) {
+                      transferUsdAmount.placeholder = `≈ $${parseFloat(usdValue).toLocaleString('en-US', {maximumFractionDigits: 2})}`;
+                    }
+                  }
+                } catch (e) {
+                  // خطا در real-time - نادیده بگیر
+                }
+              } else {
+                if (transferUsdAmount) {
+                  transferUsdAmount.placeholder = '5.00';
+                }
+              }
+            }, 500);
+          }
+        });
+      }
+
       transferForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         const transferBtn = transferForm.querySelector('button[type="submit"]');
@@ -1071,9 +1453,9 @@
             status.textContent = 'انتقال با موفقیت انجام شد!\nکد تراکنش: ' + tx.hash;
             status.className = 'transfer-status success';
           } else if (token === 'dai') {
-            // انتقال DAI
+            // انتقال DAI - تصحیح decimal به 18
             const daiContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, window.contractConfig.signer);
-            const decimals = 6; // DAI has 18 decimals
+            const decimals = 18; // DAI has 18 decimals, not 6
             const parsedAmount = ethers.parseUnits(amount.toString(), decimals);
             const tx = await daiContract.transfer(to, parsedAmount);
             await tx.wait();
@@ -1088,6 +1470,9 @@
             status.className = 'transfer-status success';
           }
           transferForm.reset();
+          
+          // بروزرسانی موجودی‌ها بعد از انتقال موفق
+          setTimeout(autoRefreshTransferBalances, 2000);
         } catch (error) {
           let msg = error && error.message ? error.message : error;
           if (msg.includes('user rejected')) msg = 'تراکنش توسط کاربر لغو شد';
@@ -1217,7 +1602,7 @@
           const pointValueNum = parseFloat(ethers.formatUnits(pointValue, 18));
           const pointValueFormatted = pointValueNum < 0.000001 ? pointValueNum.toExponential(6) : pointValueNum.toFixed(2);
           const el2 = document.getElementById('point-value');
-          if (el2) el2.textContent = pointValueFormatted + ' CPA';
+          if (el2) el2.textContent = pointValueFormatted; // حذف پسوند CPA
         } catch (error) {
           // ...
         }
@@ -1336,6 +1721,269 @@
     }
   </script>
   </div>
+
+<style>
+/* فایل تمیز شد - CSS جدید در انتها قرار دارد */
+
+/* === همه کارت‌ها فیکس عرض در موبایل === */
+@media (max-width: 768px) {
+  /* کانتینر اصلی کارت‌ها */
+  div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.8rem !important;
+    width: 100% !important;
+    padding: 0 0.5rem !important;
+  }
+  
+  /* همه کارت‌ها فیکس عرض کامل */
+  div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    flex: none !important;
+    padding: 1.2rem !important;
+    margin: 0 !important;
+    margin-bottom: 0.8rem !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3) !important;
+    backdrop-filter: blur(6px) !important;
+    border: 1.5px solid rgba(255,255,255,0.15) !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+  
+  /* آیکون‌های کارت */
+  div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] > div[style*="font-size:1.2rem;margin-bottom:0.3rem;"] {
+    font-size: 1.8rem !important;
+    margin-bottom: 0.6rem !important;
+    text-align: center !important;
+  }
+  
+  /* عنوان کارت‌ها */
+  div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] > div[style*="font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;"] {
+    font-size: 1rem !important;
+    margin-bottom: 0.4rem !important;
+    letter-spacing: 0.3px !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  
+  /* مقادیر کارت‌ها - فیکس overflow */
+  div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] > div[style*="font-size:0.9rem;font-family:monospace;font-weight:bold;"] {
+    font-size: 1.1rem !important;
+    margin: 0.6rem 0 !important;
+    letter-spacing: 0.2px !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.4) !important;
+    text-align: center !important;
+    word-break: break-all !important;
+    overflow-wrap: break-word !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* توضیحات کارت‌ها */
+  div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] > div[style*="font-size:0.7rem;margin-top:0.2rem;"] {
+    font-size: 0.8rem !important;
+    margin-top: 0.4rem !important;
+    opacity: 0.7 !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  
+  /* کارت‌های خاص - اندازه‌های ویژه */
+  
+  /* کارت کل عرضه */
+  div[style*="border:1px solid rgba(0,255,136,0.2)"] {
+    border: 3px solid rgba(0,255,136,0.4) !important;
+    background: rgba(0,255,136,0.1) !important;
+  }
+  
+  /* کارت موجودی قرارداد CPA */
+  div[style*="border:1px solid rgba(255,193,7,0.2)"] {
+    border: 3px solid rgba(255,193,7,0.4) !important;
+    background: rgba(255,193,7,0.1) !important;
+  }
+  
+  /* کارت موجودی DAI */
+  div[style*="border:1px solid rgba(0,123,255,0.2)"] {
+    border: 3px solid rgba(0,123,255,0.4) !important;
+    background: rgba(0,123,255,0.1) !important;
+  }
+  
+  /* کارت قیمت ثبت‌نام */
+  div[style*="border:1px solid rgba(138,43,226,0.2)"] {
+    border: 3px solid rgba(138,43,226,0.4) !important;
+    background: rgba(138,43,226,0.1) !important;
+  }
+  
+  /* انیمیشن ورود کارت‌ها */
+  div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] {
+    animation: slideUpMobile 0.6s ease-out !important;
+    animation-delay: calc(var(--card-index, 0) * 0.1s) !important;
+  }
+}
+
+/* انیمیشن ورود کارت‌ها در موبایل */
+@keyframes slideUpMobile {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* مخصوص صفحات خیلی کوچک */
+@media (max-width: 480px) {
+  /* کانتینر کارت‌ها */
+  div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] {
+    padding: 0 0.3rem !important;
+    gap: 0.6rem !important;
+  }
+  
+  /* کارت‌ها */
+  div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] {
+    padding: 1rem !important;
+    margin-bottom: 0.6rem !important;
+    border-radius: 10px !important;
+  }
+  
+  /* آیکون‌ها */
+  div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] > div[style*="font-size:1.2rem;margin-bottom:0.3rem;"] {
+    font-size: 1.5rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+  
+  /* عناوین */
+  div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] > div[style*="font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;"] {
+    font-size: 0.9rem !important;
+    margin-bottom: 0.3rem !important;
+  }
+  
+  /* مقادیر */
+  div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] > div[style*="font-size:0.9rem;font-family:monospace;font-weight:bold;"] {
+    font-size: 1rem !important;
+    margin: 0.5rem 0 !important;
+    line-height: 1.2 !important;
+  }
+  
+  /* توضیحات */
+  div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] > div[style*="font-size:0.7rem;margin-top:0.2rem;"] {
+    font-size: 0.75rem !important;
+    margin-top: 0.3rem !important;
+  }
+}
+</style>
+
+<script>
+// مدیریت کارت‌ها و مقادیر در موبایل
+function optimizeCardsForMobile() {
+  if (window.innerWidth <= 768) {
+    // پیدا کردن همه کارت‌ها
+    const cards = document.querySelectorAll('div[style*="background:rgba(0,0,0,0.3)"]');
+    
+    cards.forEach((card, index) => {
+      // فیکس کردن عرض
+      card.style.width = '100%';
+      card.style.maxWidth = '100%';
+      card.style.minWidth = '100%';
+      card.style.boxSizing = 'border-box';
+      card.style.overflow = 'hidden';
+      
+      // انیمیشن ورود
+      card.style.setProperty('--card-index', index.toString());
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(20px)';
+      
+      // تاخیر برای انیمیشن
+      setTimeout(() => {
+        card.style.transition = 'all 0.4s ease';
+        card.style.opacity = '1';
+        card.style.transform = 'translateY(0)';
+      }, index * 80);
+      
+      // بهینه‌سازی مقادیر داخل کارت
+      const valueElements = card.querySelectorAll('div[style*="font-family:monospace"]');
+      valueElements.forEach(valueEl => {
+        valueEl.style.wordBreak = 'break-all';
+        valueEl.style.overflowWrap = 'break-word';
+        valueEl.style.maxWidth = '100%';
+        valueEl.style.textAlign = 'center';
+        
+        // اگر مقدار خیلی بلند است، فونت را کوچک‌تر کن
+        const text = valueEl.textContent || '';
+        if (text.length > 15) {
+          valueEl.style.fontSize = '0.9rem';
+          valueEl.style.lineHeight = '1.2';
+        }
+        if (text.length > 25) {
+          valueEl.style.fontSize = '0.8rem';
+          valueEl.style.lineHeight = '1.1';
+        }
+      });
+    });
+    
+    // بهینه‌سازی کانتینر اصلی
+    const container = document.querySelector('div[style*="display:flex;flex-wrap:wrap"]');
+    if (container) {
+      container.style.width = '100%';
+      container.style.padding = '0 0.5rem';
+      container.style.boxSizing = 'border-box';
+    }
+  }
+}
+
+// مدیریت دکمه رفرش موبایل
+document.addEventListener('DOMContentLoaded', function() {
+  // بهینه‌سازی کارت‌ها برای موبایل
+  setTimeout(() => {
+    optimizeCardsForMobile();
+  }, 800);
+  
+  // بهینه‌سازی مجدد هنگام تغییر اندازه صفحه
+  let resizeTimeout;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+      optimizeCardsForMobile();
+    }, 300);
+  });
+  
+  // بهینه‌سازی مجدد هنگام بروزرسانی مقادیر
+  const observer = new MutationObserver(() => {
+    if (window.innerWidth <= 768) {
+      setTimeout(optimizeCardsForMobile, 200);
+    }
+  });
+  
+  // نظارت بر تغییرات در کارت‌ها
+  const targetNode = document.querySelector('div[style*="display:flex;flex-wrap:wrap"]');
+  if (targetNode) {
+    observer.observe(targetNode, {
+      childList: true,
+      subtree: true,
+      characterData: true
+    });
+  }
+  
+  // کدهای اصلی صفحه
+});
+
+
+
+// پایان اسکریپت‌های اصلی
+
+</script>
+
+<!-- Floating Token Growth Card - کارت شناور رشد توکن -->
+<script src="js/floating-token-card.js"></script>
+
 </body>
 </html>
-

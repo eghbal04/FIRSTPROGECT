@@ -105,29 +105,35 @@ class PriceChartsManager {
     initializeCharts() {
         // راه‌اندازی چارت قیمت توکن
         if (document.getElementById('price-chart-canvas')) {
-            this.tokenChart = new PriceChart();
-            console.log('✅ چارت قیمت توکن راه‌اندازی شد');
+            try {
+                this.tokenChart = new PriceChart();
+                this.tokenChart.init();
+                console.log('✅ چارت قیمت توکن راه‌اندازی و آماده‌سازی شد');
+            } catch (error) {
+                console.error('❌ خطا در راه‌اندازی چارت توکن:', error);
+            }
+        } else {
+            console.warn('⚠️ price-chart-canvas پیدا نشد');
         }
         
         // راه‌اندازی چارت قیمت پوینت
         if (document.getElementById('point-chart-canvas')) {
-            this.pointChart = new PointChart();
-            console.log('✅ چارت قیمت پوینت راه‌اندازی شد');
+            try {
+                this.pointChart = new PointChart();
+                this.pointChart.init();
+                console.log('✅ چارت قیمت پوینت راه‌اندازی و آماده‌سازی شد');
+            } catch (error) {
+                console.error('❌ خطا در راه‌اندازی چارت پوینت:', error);
+            }
+        } else {
+            console.warn('⚠️ point-chart-canvas پیدا نشد');
         }
     }
     
     startUpdates() {
-        // پاک کردن interval قبلی
-        if (this.updateInterval) {
-            clearInterval(this.updateInterval);
-        }
-        
-        // شروع به‌روزرسانی همزمان
-        this.updateInterval = setInterval(async () => {
-            await this.updateAllPrices();
-        }, this.updateFrequency);
-        
-        console.log(`🔄 به‌روزرسانی خودکار هر ${this.updateFrequency / 1000} ثانیه`);
+        // سیستم مرکزی جایگزین شده - این interval غیرفعال شد
+        console.log('⚠️ PriceChartsManager interval غیرفعال شده - سیستم مرکزی مدیریت قیمت‌ها را انجام می‌دهد');
+        // interval حذف شده و سیستم مرکزی جایگزین شده است
     }
     
     async updateAllPrices() {
@@ -197,20 +203,56 @@ class PriceChartsManager {
     }
     
     displayPrices(tokenPrice, pointValue) {
-        // نمایش قیمت توکن
+        // نمایش قیمت توکن با انتقال نرم
         const priceDisplay = document.getElementById('current-price-display');
         if (priceDisplay && tokenPrice !== null) {
-            priceDisplay.textContent = window.priceHistoryManager ? 
+            const formattedPrice = window.priceHistoryManager ? 
                 window.priceHistoryManager.formatPrice(tokenPrice) : 
                 tokenPrice.toFixed(6);
+            
+            if (window.smartUpdate) {
+                window.smartUpdate(priceDisplay, formattedPrice, {
+                    transitionDuration: 600,
+                    numberAnimation: true,
+                    preventFlicker: true
+                });
+            } else if (window.updateValueSmoothly) {
+                window.updateValueSmoothly(priceDisplay, formattedPrice, {
+                    transitionDuration: 600,
+                    numberAnimation: true,
+                    preventFlicker: true
+                });
+            } else {
+                if (priceDisplay.textContent !== formattedPrice) {
+                    priceDisplay.textContent = formattedPrice;
+                }
+            }
         }
         
-        // نمایش قیمت پوینت
+        // نمایش قیمت پوینت با انتقال نرم
         const pointDisplay = document.getElementById('current-point-display');
         if (pointDisplay && pointValue !== null) {
-            pointDisplay.textContent = window.priceHistoryManager ? 
+            const formattedPointValue = window.priceHistoryManager ? 
                 window.priceHistoryManager.formatPrice(pointValue) : 
                 pointValue.toFixed(6);
+            
+            if (window.smartUpdate) {
+                window.smartUpdate(pointDisplay, formattedPointValue, {
+                    transitionDuration: 600,
+                    numberAnimation: true,
+                    preventFlicker: true
+                });
+            } else if (window.updateValueSmoothly) {
+                window.updateValueSmoothly(pointDisplay, formattedPointValue, {
+                    transitionDuration: 600,
+                    numberAnimation: true,
+                    preventFlicker: true
+                });
+            } else {
+                if (pointDisplay.textContent !== formattedPointValue) {
+                    pointDisplay.textContent = formattedPointValue;
+                }
+            }
         }
     }
     

@@ -76,18 +76,43 @@
       </div>
       <div class="form-group">
         <label for="new-user-address">آدرس کاربر جدید</label>
-         <div style="font-size:0.8rem;color:#718096;margin-bottom:6px;background:rgba(113,128,150,0.1);padding:6px;border-radius:4px;">
-           👤 آدرس کیف پول کاربری که می‌خواهید ثبت‌نام کنید. این آدرس نباید قبلاً ثبت‌نام شده باشد.
-         </div>
+        <div style="font-size:0.8rem;color:#718096;margin-bottom:6px;background:rgba(113,128,150,0.1);padding:6px;border-radius:4px;">
+          👤 آدرس کیف پول کاربری که می‌خواهید ثبت‌نام کنید. این آدرس نباید قبلاً ثبت‌نام شده باشد.
+        </div>
         <input type="text" id="new-user-address" class="register-form-input" placeholder="0x..." autocomplete="off">
       </div>
+      
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          const addressInput = document.getElementById('new-user-address');
+          
+          // وقتی کاربر روی اینپوت کلیک کند
+          addressInput.addEventListener('click', async function() {
+            try {
+              // خواندن محتوای کلیپبورد
+              const clipboardText = await navigator.clipboard.readText();
+              
+              // بررسی اینکه آیا متن کپی شده شبیه آدرس اتریوم است
+              if (clipboardText.match(/^0x[a-fA-F0-9]{40}$/)) {
+                addressInput.value = clipboardText;
+                
+                // نمایش پیام موفقیت آمیز (اختیاری)
+                alert('آدرس از کلیپبورد با موفقیت وارد شد!');
+              }
+            } catch (err) {
+              console.error('خطا در دسترسی به کلیپبورد:', err);
+              // در صورت نیاز می‌توانید یک پیام خطا به کاربر نمایش دهید
+            }
+          });
+        });
+      </script>
       <div class="info-box" id="register-info" style="background:rgba(28,28,40,0.97);color:#fff;font-weight:bold;font-size:1.08rem;box-shadow:0 2px 8px #a786ff22;margin-bottom:18px;">
         <div style="margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(167,134,255,0.3);">
           <div style="color:#a786ff;font-size:0.9rem;margin-bottom:4px;">📊 اطلاعات ثبت‌نام:</div>
         </div>
         <div style="margin-bottom:8px;">🎯 ایندکس رفرر: <b id="parent-index">...</b></div>
         <div style="margin-bottom:8px;">📍 ایندکس جایگاه جدید: <b id="empty-index">...</b></div>
-        <div style="margin-bottom:8px;">💰 هزینه ثبت‌نام: <b id="register-cost">...</b> CPA</div>
+        <div style="margin-bottom:8px;">💰 هزینه ثبت‌نام:<br><b id="register-cost" style="display:inline-block;margin-top:4px;font-size:1.1rem;color:#00ff88;">...</b></div>
         
         <div style="margin-top:12px;padding-top:8px;border-top:1px solid rgba(167,134,255,0.3);">
           <div style="color:#a786ff;font-size:0.9rem;margin-bottom:8px;">💳 موجودی کیف پول:</div>
@@ -114,6 +139,10 @@
       </div>
       <button class="register-btn buy-btn" id="register-btn" type="button" style="width:100%;margin-top:18px;">ثبت‌نام</button>
       <div class="register-form-status" id="status-message"></div>
+      
+      <div style="margin-top:20px;padding:12px;background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3);border-radius:8px;text-align:center;font-size:0.9rem;color:#ffc107;">
+          ⚠️ برای ثبت‌نام نیاز به موجودی کافی CPA و MATIC دارید
+      </div>
     </form>
   </main>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
@@ -220,7 +249,7 @@
           // مقداردهی پیش‌فرض فیلد ایندکس فقط اگر مقدار فعلی راهنما یا خالی است
           const indexInput = document.getElementById('index-search');
           if ((!indexInput.value || indexInput.value === defaultGuide) && user.activated && user.index) {
-            // فرمت CPA ID
+            // فرمت ایندکس
             let cpaId = 'CPA' + user.index.toString().padStart(5, '0');
             indexInput.value = cpaId;
             indexInput.style.background = '';
@@ -254,9 +283,12 @@
         let regCost = '...';
         if (window.getRegPrice) {
           let cost = await window.getRegPrice(contract);
-          regCost = cost ? (typeof ethers !== 'undefined' ? ethers.formatEther(cost) : (Number(cost)/1e18).toFixed(2)) : '...';
+          if (cost) {
+            let costValue = typeof ethers !== 'undefined' ? ethers.formatEther(cost) : (Number(cost)/1e18);
+            regCost = Math.round(parseFloat(costValue)).toString(); // حذف اعشار و گرد کردن
+          }
         }
-        document.getElementById('register-cost').textContent = regCost;
+        document.getElementById('register-cost').textContent = regCost + ' CPA';
         // موجودی متیک
         let maticBalance = '...';
         if (isConnected && contract && myAddress) {
@@ -274,6 +306,32 @@
           try {
             let cpa = await contract.balanceOf(myAddress);
             cpaBalance = cpa ? (typeof ethers !== 'undefined' ? Number(ethers.formatEther(cpa)).toFixed(2) : (Number(cpa)/1e18).toFixed(2)) : '0.00';
+            
+            // بررسی کفایت موجودی CPA برای ثبت‌نام
+            const cpaBalanceElement = document.getElementById('cpa-balance');
+            const registerCostElement = document.getElementById('register-cost');
+            try {
+              // دریافت هزینه ثبت‌نام
+              let requiredCPA = 0;
+              if (window.getRegPrice && contract) {
+                let cost = await window.getRegPrice(contract);
+                if (cost) {
+                  let costValue = typeof ethers !== 'undefined' ? ethers.formatEther(cost) : (Number(cost)/1e18);
+                  requiredCPA = Math.round(parseFloat(costValue));
+                }
+              }
+              
+              // رنگ موجودی و هزینه بر اساس کفایت موجودی
+              if (parseFloat(cpaBalance) >= requiredCPA) {
+                cpaBalanceElement.style.color = '#00ff88'; // سبز: کافی است
+                if (registerCostElement) registerCostElement.style.color = '#00ff88';
+              } else {
+                cpaBalanceElement.style.color = '#ff453a'; // قرمز: کافی نیست  
+                if (registerCostElement) registerCostElement.style.color = '#ff453a';
+              }
+            } catch (e) {
+              console.log('خطا در بررسی کفایت موجودی:', e);
+            }
           } catch (e) {
             cpaBalance = '0.00';
           }
@@ -719,5 +777,8 @@
       }
     });
   </script>
+  
+  <!-- Floating Token Growth Card - کارت شناور رشد توکن -->
+  <script src="js/floating-token-card.js"></script>
 </body>
 </html> 

@@ -1,23 +1,196 @@
 // نمایش درخت باینری با lazy load: هر گره با کلیک expand می‌شود و فقط فرزندان همان گره نمایش داده می‌شوند
 
-function shortAddress(addr) {
-    if (!addr) return '-';
-    return addr.slice(0, 3) + '...' + addr.slice(-2);
+// متغیرهای سراسری برای مدیریت رندر درخت
+let lastRenderedIndex = null;
+let isRenderingTree = false;
+let lastRenderedTime = 0;
+
+// تابع fallback برای generateCPAId اگر موجود نباشد
+if (!window.generateCPAId) {
+    window.generateCPAId = function(index) {
+        if (!index || index === 0) return '0';
+        return index.toString();
+    };
 }
 
-function showUserPopup(address, user) {
+// تابع محاسبه رنگ بر اساس سطح درخت
+function getNodeColorByLevel(level, isActive = true) {
+    if (isActive) {
+        // برای گره‌های فعال: از روشن به تیره
+        const baseAlpha = 0.98;
+        const alphaStep = 0.15;
+        const alpha = Math.max(0.3, baseAlpha - (level * alphaStep));
+        
+        // رنگ اصلی: آبی-سبز روشن برای ریشه، تیره‌تر برای سطوح پایین‌تر
+        const baseR = 35;
+        const baseG = 41;
+        const baseB = 70;
+        const darkenStep = 15;
+        
+        const r = Math.max(20, baseR - (level * darkenStep));
+        const g = Math.max(25, baseG - (level * darkenStep));
+        const b = Math.max(45, baseB - (level * darkenStep));
+        
+        return `rgba(${r},${g},${b},${alpha})`;
+    } else {
+        // برای گره‌های خالی: از روشن به تیره
+        const baseAlpha = 0.04;
+        const alphaStep = 0.02;
+        const alpha = Math.max(0.01, baseAlpha - (level * alphaStep));
+        
+        return `rgba(255,255,255,${alpha})`;
+    }
+}
+
+function shortAddress(addr) {
+    if (!addr || addr === '-') return '-';
+    return addr.slice(0, 4) + '...' + addr.slice(-3);
+}
+
+async function showUserPopup(address, user) {
+    console.log('🚀 showUserPopup called with:', { address, user });
+    
     // تابع کوتاه‌کننده آدرس
     function shortAddress(addr) {
-        if (!addr) return '-';
-        return addr.slice(0, 6) + '...' + addr.slice(-4);
+        if (!addr || addr === '-') return '-';
+        return addr.slice(0, 4) + '...' + addr.slice(-3);
     }
-    // حذف popup قبلی
+    
+    // حذف popup قبلی اگر وجود دارد
     let existingPopup = document.getElementById('user-popup');
-    if (existingPopup) existingPopup.remove();
+    if (existingPopup) {
+        existingPopup.remove();
+    }
+    
     // اطلاعات مورد نیاز
-    const cpaId = user && user.index !== undefined && user.index !== null ? (window.generateCPAId ? window.generateCPAId(user.index) : user.index) : '-';
+    const cpaId = user && user.index !== undefined && user.index !== null ? 
+        (window.generateCPAId ? window.generateCPAId(user.index) : user.index) : '-';
     const walletAddress = address || '-';
     const isActive = user && user.activated ? true : false;
+    
+    // تابع محاسبه تعداد ولت‌های سمت راست و چپ
+    async function calculateWalletCounts(userIndex, contract) {
+        try {
+            console.log(`🔍 محاسبه تعداد ولت‌ها برای ایندکس ${userIndex}...`);
+            
+            let leftCount = 0;
+            let rightCount = 0;
+            
+            // بررسی فرزندان مستقیم
+            const leftChildIndex = BigInt(userIndex) * 2n;
+            const rightChildIndex = BigInt(userIndex) * 2n + 1n;
+            
+            console.log(`📊 فرزند چپ: ${leftChildIndex}, فرزند راست: ${rightChildIndex}`);
+            
+            // بررسی فرزند چپ
+            try {
+                console.log(`🔍 بررسی فرزند چپ: ${leftChildIndex}`);
+                const leftAddress = await contract.indexToAddress(leftChildIndex);
+                console.log(`📍 آدرس فرزند چپ: ${leftAddress}`);
+                if (leftAddress && leftAddress !== '0x0000000000000000000000000000000000000000') {
+                    const leftUser = await contract.users(leftAddress);
+                    console.log(`👤 اطلاعات فرزند چپ:`, leftUser);
+                    if (leftUser && leftUser.activated) {
+                        leftCount = 1;
+                        console.log(`✅ فرزند چپ فعال است، شروع محاسبه زیرمجموعه...`);
+                        // محاسبه بازگشتی برای فرزندان فرزند چپ
+                        leftCount += await calculateSubtreeCount(leftChildIndex, contract, 'left');
+                    } else {
+                        console.log(`❌ فرزند چپ فعال نیست`);
+                    }
+                } else {
+                    console.log(`❌ آدرس فرزند چپ خالی است`);
+                }
+            } catch (e) {
+                console.log(`خطا در بررسی فرزند چپ:`, e);
+            }
+            
+            // بررسی فرزند راست
+            try {
+                console.log(`🔍 بررسی فرزند راست: ${rightChildIndex}`);
+                const rightAddress = await contract.indexToAddress(rightChildIndex);
+                console.log(`📍 آدرس فرزند راست: ${rightAddress}`);
+                if (rightAddress && rightAddress !== '0x0000000000000000000000000000000000000000') {
+                    const rightUser = await contract.users(rightAddress);
+                    console.log(`👤 اطلاعات فرزند راست:`, rightUser);
+                    if (rightUser && rightUser.activated) {
+                        rightCount = 1;
+                        console.log(`✅ فرزند راست فعال است، شروع محاسبه زیرمجموعه...`);
+                        // محاسبه بازگشتی برای فرزندان فرزند راست
+                        rightCount += await calculateSubtreeCount(rightChildIndex, contract, 'right');
+                    } else {
+                        console.log(`❌ فرزند راست فعال نیست`);
+                    }
+                } else {
+                    console.log(`❌ آدرس فرزند راست خالی است`);
+                }
+            } catch (e) {
+                console.log(`خطا در بررسی فرزند راست:`, e);
+            }
+            
+            console.log(`✅ تعداد ولت‌ها: چپ=${leftCount}, راست=${rightCount}`);
+            return { leftCount, rightCount };
+            
+        } catch (error) {
+            console.error(`خطا در محاسبه تعداد ولت‌ها:`, error);
+            return { leftCount: 0, rightCount: 0 };
+        }
+    }
+
+    // تابع محاسبه بازگشتی تعداد ولت‌ها در زیرمجموعه
+    async function calculateSubtreeCount(parentIndex, contract, side) {
+        let count = 0;
+        async function countRecursive(index) {
+            const leftChildIndex = BigInt(index) * 2n;
+            const rightChildIndex = BigInt(index) * 2n + 1n;
+            let subtreeCount = 0;
+            // بررسی فرزند چپ
+            try {
+                const leftAddress = await contract.indexToAddress(leftChildIndex);
+                if (leftAddress && leftAddress !== '0x0000000000000000000000000000000000000000') {
+                    const leftUser = await contract.users(leftAddress);
+                    if (leftUser && leftUser.activated) {
+                        subtreeCount += 1;
+                        subtreeCount += await countRecursive(leftChildIndex);
+                    }
+                }
+            } catch (e) {
+                // نادیده گرفتن خطاها
+            }
+            // بررسی فرزند راست
+            try {
+                const rightAddress = await contract.indexToAddress(rightChildIndex);
+                if (rightAddress && rightAddress !== '0x0000000000000000000000000000000000000000') {
+                    const rightUser = await contract.users(rightAddress);
+                    if (rightUser && rightUser.activated) {
+                        subtreeCount += 1;
+                        subtreeCount += await countRecursive(rightChildIndex);
+                    }
+                }
+            } catch (e) {
+                // نادیده گرفتن خطاها
+            }
+            return subtreeCount;
+        }
+        return await countRecursive(parentIndex);
+    }
+
+    // محاسبه تعداد ولت‌ها
+    let walletCounts = { leftCount: '⏳', rightCount: '⏳' };
+    if (window.contractConfig && window.contractConfig.contract && user.index) {
+        try {
+            console.log('🔍 شروع محاسبه تعداد ولت‌ها برای کاربر:', user.index);
+            walletCounts = await calculateWalletCounts(user.index, window.contractConfig.contract);
+            console.log('✅ محاسبه تعداد ولت‌ها تکمیل شد:', walletCounts);
+        } catch (error) {
+            console.error('خطا در محاسبه تعداد ولت‌ها:', error);
+            walletCounts = { leftCount: 'خطا', rightCount: 'خطا' };
+        }
+    } else {
+        console.log('⚠️ contract یا user.index موجود نیست');
+        walletCounts = { leftCount: 'نامشخص', rightCount: 'نامشخص' };
+    }
+
     // لیست struct
     const infoList = [
       {icon:'🎯', label:'امتیاز باینری', val:user.binaryPoints},
@@ -26,32 +199,72 @@ function showUserPopup(address, user) {
       {icon:'✅', label:'امتیاز دریافت‌شده', val:user.binaryPointsClaimed},
       {icon:'🤝', label:'درآمد رفرال', val:user.refclimed ? Math.floor(Number(user.refclimed) / 1e18) : 0},
       {icon:'💰', label:'سپرده کل', val:user.depositedAmount ? Math.floor(Number(user.depositedAmount) / 1e18) : 0},
-      {icon:'🟢', label:'CPA', val:'در حال بارگذاری...'},
-      {icon:'🟣', label:'MATIC', val:'در حال بارگذاری...'},
-      {icon:'💵', label:'DAI', val:'در حال بارگذاری...'},
       {icon:'⬅️', label:'امتیاز چپ', val:user.leftPoints},
-      {icon:'➡️', label:'امتیاز راست', val:user.rightPoints}
+      {icon:'➡️', label:'امتیاز راست', val:user.rightPoints},
+      {icon:'👥⬅️', label:'تعداد ولت چپ', val:`${walletCounts.leftCount} (تست)`},
+      {icon:'👥➡️', label:'تعداد ولت راست', val:`${walletCounts.rightCount} (تست)`}
     ];
-    const popup = document.createElement('div');
-    popup.id = 'user-popup';
-    popup.style = `
+
+    const popupEl = document.createElement('div');
+    popupEl.id = 'user-popup';
+    popupEl.style = `
       position: fixed;z-index: 9999;top: 64px;left: 0;right: 0;width: 100vw;min-width: 100vw;max-width: 100vw;background: rgba(24,28,42,0.97);display: flex;align-items: flex-start;justify-content: center;padding: 0.5rem 0.5vw 0.5rem 0.5vw;box-sizing: border-box;font-family: 'Montserrat', 'Noto Sans Arabic', monospace;font-size: 0.93rem;`;
-    popup.innerHTML = `
+    
+    // نمایش loading برای موجودی‌ها
+    const balanceSpinner = '<div style="display:inline-block;width:12px;height:12px;border:2px solid #00ff88;border-radius:50%;border-top-color:transparent;animation:spin 1s linear infinite;margin-right:5px;"></div>';
+    
+    popupEl.innerHTML = `
       <div class="user-info-card">
         <button class="close-btn" id="close-user-popup">×</button>
         <div class="user-info-btn-row">
-          <button class="user-info-btn cpa-id-btn" title="کپی CPA ID" id="copy-cpa-id">🆔 <span>${cpaId}</span></button>
+            <button class="user-info-btn cpa-id-btn" title="کپی CPA ID" id="copy-cpa-id">🆔 <span>${cpaId}</span></button>
           <button class="user-info-btn wallet-address-btn" title="کپی آدرس ولت" id="copy-wallet-address">🔗 <span>${walletAddress ? shortAddress(walletAddress) : '-'}</span></button>
           <button class="user-info-btn status-btn">${isActive ? '✅ فعال' : '❌ غیرفعال'}</button>
         </div>
         <ul class="user-info-list">
           ${infoList.map(i=>`<li><span>${i.icon}</span> <b>${i.label}:</b> ${i.val !== undefined && i.val !== null && i.val !== '' ? i.val : '-'}</li>`).join('')}
         </ul>
+        
+        <div class="token-balances-container">
+          <h3 class="balance-title">موجودی‌های زنده</h3>
+          <div class="balance-grid">
+            <div class="balance-item" id="cpa-balance" title="برای کپی کلیک کنید">
+              <div class="balance-icon">🟢</div>
+              <div class="balance-info">
+                <span class="balance-label">CPA</span>
+                <span class="balance-value copy-value" data-token="CPA">⏳</span>
+              </div>
+            </div>
+            <div class="balance-item" id="matic-balance" title="برای کپی کلیک کنید">
+              <div class="balance-icon">🟣</div>
+              <div class="balance-info">
+                <span class="balance-label">MATIC</span>
+                <span class="balance-value copy-value" data-token="MATIC">⏳</span>
+              </div>
+            </div>
+            <div class="balance-item" id="dai-balance" title="برای کپی کلیک کنید">
+              <div class="balance-icon">💵</div>
+              <div class="balance-info">
+                <span class="balance-label">DAI</span>
+                <span class="balance-value copy-value" data-token="DAI">⏳</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="wallet-info">
+          <div class="wallet-label">آدرس کیف پول:</div>
+          <div class="wallet-address copy-value" data-address="${walletAddress}" title="برای کپی کلیک کنید">
+            ${shortAddress(walletAddress)}
+          </div>
+        </div>
+        
         <div id="copy-msg" style="display:none;text-align:center;color:#00ff88;font-size:1em;margin-top:0.7em;">کپی شد!</div>
       </div>
     `;
-    document.body.appendChild(popup);
-    document.getElementById('close-user-popup').onclick = () => popup.remove();
+    document.body.appendChild(popupEl);
+    document.getElementById('close-user-popup').onclick = () => popupEl.remove();
+    
     // قابلیت کپی
     function showCopyMsg() {
       const msg = document.getElementById('copy-msg');
@@ -59,14 +272,86 @@ function showUserPopup(address, user) {
       msg.style.display = 'block';
       setTimeout(()=>{msg.style.display='none';}, 1200);
     }
+    
     document.getElementById('copy-cpa-id').onclick = function() {
       navigator.clipboard.writeText(cpaId+'');
       showCopyMsg();
     };
+    
     document.getElementById('copy-wallet-address').onclick = function() {
       navigator.clipboard.writeText(walletAddress+'');
       showCopyMsg();
     };
+
+    // نمایش پیام کپی
+    function showCopyTooltip(element, message = 'کپی شد!') {
+        const tooltip = document.createElement('div');
+        tooltip.className = 'copy-tooltip';
+        tooltip.textContent = message;
+        
+        // موقعیت tooltip
+        const rect = element.getBoundingClientRect();
+        tooltip.style.top = `${rect.top - 30}px`;
+        tooltip.style.left = `${rect.left + (rect.width / 2)}px`;
+        
+        document.body.appendChild(tooltip);
+        
+        // حذف tooltip بعد از 1.5 ثانیه
+        setTimeout(() => {
+            tooltip.classList.add('fade-out');
+            setTimeout(() => tooltip.remove(), 300);
+        }, 1500);
+    }
+
+    // اضافه کردن قابلیت کپی به همه المان‌های کپی
+    document.querySelectorAll('.copy-value').forEach(element => {
+        element.addEventListener('click', async function() {
+            try {
+                let textToCopy;
+                
+                if (this.dataset.token) {
+                    // کپی موجودی توکن
+                    const value = this.textContent.trim();
+                    textToCopy = `${value} ${this.dataset.token}`;
+                } else if (this.dataset.address) {
+                    // کپی آدرس کیف پول
+                    textToCopy = this.dataset.address;
+                }
+                
+                if (textToCopy && textToCopy !== '-' && textToCopy !== '❌' && textToCopy !== '⏳') {
+                    await navigator.clipboard.writeText(textToCopy);
+                    showCopyTooltip(this);
+                }
+            } catch (error) {
+                console.warn('Error copying to clipboard:', error);
+            }
+        });
+    });
+
+    // دریافت موجودی‌های زنده
+    if (walletAddress !== '-') {
+        window.TokenBalances.getAllBalances(walletAddress).then(balances => {
+            const { cpa, dai, matic } = balances;
+            
+            // به‌روزرسانی موجودی CPA
+            document.querySelector('#cpa-balance .balance-value').textContent = cpa;
+            
+            // به‌روزرسانی موجودی MATIC
+            document.querySelector('#matic-balance .balance-value').textContent = matic;
+            
+            // به‌روزرسانی موجودی DAI
+            document.querySelector('#dai-balance .balance-value').textContent = dai;
+        }).catch(error => {
+            console.warn('Error fetching balances:', error);
+            document.querySelector('#cpa-balance .balance-value').textContent = '❌';
+            document.querySelector('#matic-balance .balance-value').textContent = '❌';
+            document.querySelector('#dai-balance .balance-value').textContent = '❌';
+        });
+    } else {
+        document.querySelector('#cpa-balance .balance-value').textContent = '-';
+        document.querySelector('#matic-balance .balance-value').textContent = '-';
+        document.querySelector('#dai-balance .balance-value').textContent = '-';
+    }
 
     async function getLiveBalances(addr) {
         let cpa = '-', dai = '-', matic = '-';
@@ -88,7 +373,7 @@ function showUserPopup(address, user) {
                 if (typeof DAI_ADDRESS !== 'undefined' && typeof DAI_ABI !== 'undefined') {
                     const daiContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, provider);
                     let daiRaw = await daiContract.balanceOf(addr);
-                    dai = (typeof ethers !== 'undefined') ? Number(ethers.formatUnits(daiRaw, 6)).toFixed(2) : (Number(daiRaw)/1e6).toFixed(2);
+                    dai = (typeof ethers !== 'undefined') ? Number(ethers.formatUnits(daiRaw, 18)).toFixed(2) : (Number(daiRaw)/1e18).toFixed(2);
                 }
             } catch(e) {
                 console.warn('خطا در دریافت موجودی DAI:', e);
@@ -128,16 +413,29 @@ function showUserPopup(address, user) {
 
 // تابع جدید: رندر عمودی ساده با حفظ رفتارها
 async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = false) {
+    console.log(`🔄 renderVerticalNodeLazy called with index: ${index}, level: ${level}`);
     try {
+        console.log('🔄 Getting contract connection...');
         const { contract } = await window.connectWallet();
         if (!contract) throw new Error('No contract connection available');
+        console.log('✅ Contract connection obtained');
+        
+        console.log(`🔄 Getting address for index: ${index}`);
         let address = await contract.indexToAddress(index);
+        console.log('✅ Address obtained:', address);
+        
         if (!address || address === '0x0000000000000000000000000000000000000000') {
+            console.log('⚠️ Empty address, rendering empty node');
             renderEmptyNodeVertical(index, container, level);
             return;
         }
+        
+        console.log('🔄 Getting user data for address:', address);
         let user = await contract.users(address);
+        console.log('✅ User data obtained:', user);
+        
         if (!user) {
+            console.log('⚠️ No user data, rendering empty node');
             renderEmptyNodeVertical(index, container, level);
             return;
         }
@@ -162,44 +460,54 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         nodeDiv.style.alignItems = 'center';
         nodeDiv.style.justifyContent = 'flex-start';
         nodeDiv.style.flexWrap = 'nowrap';
-        nodeDiv.style.marginRight = (level * 2) + 'em';
-        nodeDiv.style.marginBottom = '0.7em';
+        // کاهش فاصله افقی برای سطوح عمیق‌تر
+        const marginMultiplier = level <= 3 ? 3 : (level <= 5 ? 2 : 1);
+        nodeDiv.style.marginRight = (level * marginMultiplier) + 'em';
+        nodeDiv.style.marginBottom = '1.2em'; // افزایش فاصله عمودی
         nodeDiv.style.position = 'relative';
-        nodeDiv.style.background = 'rgba(35,41,70,0.98)';
+        nodeDiv.style.background = getNodeColorByLevel(level, true);
         nodeDiv.style.borderRadius = '12px';
-        nodeDiv.style.padding = '0.7em 1.5em';
-        nodeDiv.style.minWidth = '320px';
-        nodeDiv.style.maxWidth = '320px';
-        nodeDiv.style.height = '64px';
+        // اندازه فیکس برای گره‌ها
+        const cpaId = window.generateCPAId ? window.generateCPAId(user.index) : user.index;
+        
+        nodeDiv.style.padding = '0.8em 1.5em';
+        nodeDiv.style.width = '200px'; // عرض فیکس
+        nodeDiv.style.minWidth = '200px';
+        nodeDiv.style.maxWidth = '200px';
+        nodeDiv.style.height = '50px'; // ارتفاع فیکس
+        nodeDiv.style.minHeight = '50px';
+        nodeDiv.style.maxHeight = '50px';
         nodeDiv.style.color = '#00ff88';
         nodeDiv.style.fontFamily = 'monospace';
         nodeDiv.style.fontSize = '1.08em';
         nodeDiv.style.boxShadow = '0 4px 16px rgba(0,255,136,0.10)';
         nodeDiv.style.cursor = 'pointer';
         nodeDiv.style.transition = 'background 0.2s, box-shadow 0.2s';
+        nodeDiv.style.whiteSpace = 'nowrap';
+        nodeDiv.style.overflow = 'hidden';
+        nodeDiv.style.textOverflow = 'ellipsis';
         nodeDiv.onmouseover = function() { this.style.background = '#232946'; this.style.boxShadow = '0 6px 24px #00ff8840'; };
-        nodeDiv.onmouseout = function() { this.style.background = 'rgba(35,41,70,0.98)'; this.style.boxShadow = '0 4px 16px rgba(0,255,136,0.10)'; };
-        const cpaId = window.generateCPAId ? window.generateCPAId(user.index) : user.index;
+        nodeDiv.onmouseout = function() { this.style.background = getNodeColorByLevel(level, true); this.style.boxShadow = '0 4px 16px rgba(0,255,136,0.10)'; };
+        
         // دکمه expand/collapse اگر دایرکت دارد یا جای خالی دارد
         let expandBtn = null;
         let childrenDiv = null;
         if (hasDirects || !leftActive || !rightActive) {
             expandBtn = document.createElement('button');
             expandBtn.textContent = autoExpand ? '▼' : '▶';
-            expandBtn.style.marginLeft = '0.7em';
+            expandBtn.style.marginLeft = '0.5em';
             expandBtn.style.background = 'transparent';
             expandBtn.style.border = 'none';
             expandBtn.style.color = '#a786ff';
-            expandBtn.style.fontSize = '1em';
+            expandBtn.style.fontSize = '1.2em';
             expandBtn.style.cursor = 'pointer';
             expandBtn.style.verticalAlign = 'middle';
+            expandBtn.style.fontWeight = 'bold';
             expandBtn.setAttribute('aria-label', 'Expand/Collapse');
         }
         // حذف ساخت علامت سوال کنار گره
         nodeDiv.innerHTML = `
-            <span style="color:#a786ff;font-size:0.85em;margin-left:1em;">Level ${level}</span>
-            <span style="font-size:1.2em;">👤</span>
-            <span style="margin-right:0.7em;">${cpaId}</span>
+            <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 1.1em; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-weight: bold;">${cpaId}</span>
         `;
         if (expandBtn) nodeDiv.prepend(expandBtn);
         nodeDiv.addEventListener('click', function(e) {
@@ -257,13 +565,15 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
             childrenDiv.style.display = autoExpand ? 'block' : 'none';
             childrenDiv.style.transition = 'all 0.3s';
             childrenDiv.style.flexDirection = 'column'; // عمودی
-            childrenDiv.style.gap = '0.2em';
+            childrenDiv.style.gap = '0.8em'; // افزایش فاصله بین فرزندان
             container.appendChild(childrenDiv);
             // چپ
             if (leftActive) {
                 let leftChildDiv = document.createElement('div');
                 leftChildDiv.style.display = 'block';
-                leftChildDiv.style.marginRight = ((level + 1) * 2) + 'em';
+                // کاهش فاصله افقی برای سطوح عمیق‌تر
+                const childMarginMultiplier = (level + 1) <= 3 ? 3 : ((level + 1) <= 5 ? 2 : 1);
+                leftChildDiv.style.marginRight = ((level + 1) * childMarginMultiplier) + 'em';
                 await renderVerticalNodeLazy(BigInt(leftUser.index), leftChildDiv, level + 1, false);
                 childrenDiv.appendChild(leftChildDiv);
             }
@@ -271,7 +581,9 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
             if (rightActive) {
                 let rightChildDiv = document.createElement('div');
                 rightChildDiv.style.display = 'block';
-                rightChildDiv.style.marginRight = ((level + 1) * 2) + 'em';
+                // کاهش فاصله افقی برای سطوح عمیق‌تر
+                const childMarginMultiplier = (level + 1) <= 3 ? 3 : ((level + 1) <= 5 ? 2 : 1);
+                rightChildDiv.style.marginRight = ((level + 1) * childMarginMultiplier) + 'em';
                 await renderVerticalNodeLazy(BigInt(rightUser.index), rightChildDiv, level + 1, false);
                 childrenDiv.appendChild(rightChildDiv);
             }
@@ -279,20 +591,20 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         // اگر جایگاه خالی وجود دارد، فقط یک دکمه کوچک "نیو" نمایش بده
         if (!leftActive || !rightActive) {
             let newBtn = document.createElement('button');
-            newBtn.textContent = 'ثبت جدید';
+            newBtn.textContent = 'N';
             newBtn.title = 'ثبت‌نام زیرمجموعه جدید';
             newBtn.style.background = 'linear-gradient(90deg,#a786ff,#00ff88)';
             newBtn.style.color = '#181c2a';
             newBtn.style.fontWeight = 'bold';
             newBtn.style.border = 'none';
             newBtn.style.borderRadius = '6px';
-            newBtn.style.padding = '0.2em 0.9em';
+            newBtn.style.padding = '0.4em 1.2em';
             newBtn.style.cursor = 'pointer';
-            newBtn.style.fontSize = '0.95em';
-            newBtn.style.marginRight = '0.7em';
-            newBtn.style.marginLeft = '0.7em';
+            newBtn.style.fontSize = '0.9em';
+            newBtn.style.marginRight = '0.8em';
+            newBtn.style.marginLeft = '0.8em';
             newBtn.style.whiteSpace = 'nowrap';
-            newBtn.style.fontSize = '0.8em';
+            newBtn.style.fontWeight = 'bold';
             newBtn.onclick = async function(e) {
                 e.stopPropagation();
                 // اگر modal قبلی باز است، حذف کن
@@ -362,7 +674,12 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                     // مقدار مورد نیاز برای ثبت‌نام
                     if (window.getRegPrice) {
                       let cost = await window.getRegPrice(contract);
-                      registerCost = cost ? (typeof ethers !== 'undefined' ? ethers.formatEther(cost) : (Number(cost)/1e18).toFixed(2)) : '...';
+                      if (cost) {
+                        let costValue = typeof ethers !== 'undefined' ? ethers.formatEther(cost) : (Number(cost)/1e18);
+                        registerCost = Math.round(parseFloat(costValue)).toString(); // حذف اعشار و گرد کردن
+                      } else {
+                        registerCost = '...';
+                      }
                     }
                     // موجودی متیک
                     if (provider && myAddress) {
@@ -430,24 +747,34 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
 }
 // تابع رندر گره خالی (علامت سؤال) به صورت عمودی
 function renderEmptyNodeVertical(index, container, level) {
+    // اندازه فیکس برای گره خالی
     const emptyNode = document.createElement('div');
     emptyNode.className = 'empty-node';
     emptyNode.setAttribute('data-index', index);
     emptyNode.style.display = 'block';
-    emptyNode.style.marginRight = (level * 2) + 'em';
-    emptyNode.style.marginBottom = '0.5em';
-    emptyNode.style.background = 'rgba(255,255,255,0.04)';
+    // کاهش فاصله افقی برای سطوح عمیق‌تر
+    const marginMultiplier = level <= 3 ? 3 : (level <= 5 ? 2 : 1);
+    emptyNode.style.marginRight = (level * marginMultiplier) + 'em';
+    emptyNode.style.marginBottom = '1.2em'; // افزایش فاصله عمودی
+    emptyNode.style.background = getNodeColorByLevel(level, false);
     emptyNode.style.borderRadius = '8px';
-    emptyNode.style.padding = '0.4em 1em';
+    emptyNode.style.padding = '0.6em 1.2em';
+    emptyNode.style.width = '180px'; // عرض فیکس برای گره خالی
+    emptyNode.style.minWidth = '180px';
+    emptyNode.style.maxWidth = '180px';
+    emptyNode.style.height = '45px'; // ارتفاع فیکس برای گره خالی
+    emptyNode.style.minHeight = '45px';
+    emptyNode.style.maxHeight = '45px';
     emptyNode.style.color = '#888';
     emptyNode.style.fontFamily = 'monospace';
     emptyNode.style.fontSize = '1em';
     emptyNode.style.cursor = 'pointer';
     emptyNode.style.opacity = '0.7';
+    emptyNode.style.whiteSpace = 'nowrap';
+    emptyNode.style.overflow = 'hidden';
+    emptyNode.style.textOverflow = 'ellipsis';
     emptyNode.innerHTML = `
-        <span style="color:#a786ff;font-size:0.85em;margin-left:1em;">Level ${level}</span>
-        <span style="font-size:1.2em;opacity:0.5;">❓</span>
-        <span style="margin-right:0.7em;">${index}</span>
+        <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 1em; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-weight: bold;">${index}</span>
     `;
     emptyNode.title = 'ثبت‌نام زیرمجموعه جدید';
     emptyNode.onmouseover = function() { this.style.opacity = '1'; };
@@ -481,27 +808,35 @@ function renderEmptyNodeVertical(index, container, level) {
 }
 // جایگزینی رندر اصلی درخت با مدل عمودی
 window.renderSimpleBinaryTree = async function() {
+    console.log('🔄 Starting renderSimpleBinaryTree...');
     const container = document.getElementById('network-tree');
     if (!container) {
         console.error('❌ Network tree container not found');
         return;
     }
+    console.log('✅ Network tree container found');
     container.innerHTML = '';
     container.style.overflow = 'auto';
     container.style.whiteSpace = 'normal';
     container.style.padding = '2rem 0';
     container.style.display = 'block';
     try {
+        console.log('🔄 Connecting to wallet...');
         const { contract, address } = await window.connectWallet();
         if (!contract || !address) {
             throw new Error('اتصال کیف پول در دسترس نیست');
         }
+        console.log('✅ Wallet connected, address:', address);
+        console.log('🔄 Getting user data...');
         const user = await contract.users(address);
         if (!user || !user.index) {
             throw new Error('کاربر پیدا نشد یا ثبت‌نام نشده است');
         }
+        console.log('✅ User data retrieved, index:', user.index);
         // در window.renderSimpleBinaryTree مقدار autoExpand فقط برای ریشه true باشد:
+        console.log('🔄 Rendering vertical node...');
         await renderVerticalNodeLazy(BigInt(user.index), container, 0, true);
+        console.log('✅ Vertical node rendered successfully');
         
         // ذخیره درخت در دیتابیس بعد از رندر
         if (window.saveCurrentNetworkTree) {
@@ -528,13 +863,16 @@ if (typeof renderSimpleBinaryTree === 'function') {
 // اضافه کردن تابع initializeNetworkTab به window
 // window.initializeNetworkTab = initializeNetworkTab; // این خط حذف شد چون تابع بعداً تعریف می‌شود
 
+
+
 // اضافه کردن event listener برای تب network
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔄 DOMContentLoaded event fired for network.js');
+    
     // بررسی اینکه آیا در تب network هستیم
     const networkTab = document.getElementById('tab-network-btn');
     if (networkTab) {
         networkTab.addEventListener('click', function() {
-            console.log('🔄 Network tab clicked, initializing...');
             setTimeout(() => {
                 if (typeof window.initializeNetworkTab === 'function') {
                     window.initializeNetworkTab();
@@ -546,7 +884,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // بررسی اینکه آیا در تب network هستیم و شبکه رندر نشده
     const networkSection = document.getElementById('main-network');
     if (networkSection && networkSection.style.display !== 'none') {
-        console.log('🔄 Network section visible on load, initializing...');
         setTimeout(() => {
             if (typeof window.initializeNetworkTab === 'function') {
                 window.initializeNetworkTab();
@@ -560,7 +897,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
                 const visibleNetworkSection = document.getElementById('main-network');
                 if (visibleNetworkSection && visibleNetworkSection.style.display !== 'none') {
-                    console.log('🔄 Network section became visible, initializing...');
                     setTimeout(() => {
                         if (typeof window.initializeNetworkTab === 'function') {
                             window.initializeNetworkTab();
@@ -576,6 +912,8 @@ document.addEventListener('DOMContentLoaded', function() {
         observer.observe(networkSection, { attributes: true, attributeFilter: ['style'] });
     }
 });
+
+
 
 // تابع رفرش درخت باینری بعد از تایید متامسک
 window.refreshBinaryTreeAfterMetaMask = async function() {
@@ -619,7 +957,9 @@ window.initializeNetworkTab = async function() {
     console.log('🔄 Initializing network tab...');
     
     // پاک کردن درخت قبل از رندر جدید
-    window.clearBinaryTree();
+    if (typeof window.clearBinaryTree === 'function') {
+        window.clearBinaryTree();
+    }
     
     // بررسی وجود container
     const container = document.getElementById('network-tree');
@@ -632,6 +972,19 @@ window.initializeNetworkTab = async function() {
     
     // نمایش وضعیت بارگذاری
     container.innerHTML = '<div style="color:#00ccff;text-align:center;padding:2rem;">🔄 در حال بارگذاری درخت شبکه...</div>';
+    
+    // تست ساده برای بررسی اتصال
+    try {
+        console.log('🔄 Testing wallet connection...');
+        const { contract, address } = await window.connectWallet();
+        console.log('✅ Wallet connection test successful');
+        console.log('Contract:', contract);
+        console.log('Address:', address);
+    } catch (error) {
+        console.error('❌ Wallet connection test failed:', error);
+        container.innerHTML = `<div style="color:#ff4444;text-align:center;padding:2rem;">❌ خطا در اتصال کیف پول<br><small style="color:#ccc;">${error.message}</small></div>`;
+        return;
+    }
     
     // retry logic
     let retryCount = 0;
@@ -771,7 +1124,7 @@ window.showUserStructTypewriter = function(address, user) {
     `پاداش رفرال:  ${user.refclimed ? Math.floor(Number(user.refclimed) / 1e18) : '0'}`,
     `موجودی CPA:  ${user.lvlBalance ? user.lvlBalance : '0'}`,
     `موجودی POL:  ${user.maticBalance ? user.maticBalance : '0'}`,
-    `موجودی DAI:  ${user.daiBalance ? user.daiBalance : '0'}`
+            `موجودی DAI:  ${user.daiBalance ? user.daiBalance : '0'}`
   ];
   const popup = document.createElement('div');
   popup.id = 'user-popup';

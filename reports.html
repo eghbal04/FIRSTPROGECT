@@ -179,19 +179,26 @@
             <button id="category-btn" style="padding:7px 18px;font-size:1em;border-radius:6px;border:1px solid #1976d2;background:#1976d2;color:#fff;cursor:pointer;">دسته‌بندی</button>
             <select id="event-type-select" style="padding:7px 18px;font-size:1em;border-radius:6px;border:1px solid #ddd;max-width:220px;">
                 <option value="all">همه دسته‌ها</option>
-                <option value="activated">فعال‌سازی</option>
-                <option value="purchase">خرید</option>
-                <option value="tokensbought">خرید توکن</option>
-                <option value="tokenssold">فروش توکن</option>
+                <option value="registration">ثبت‌نام و فعال‌سازی</option>
+                <option value="referral_registration">معرفی و ثبت‌نام</option>
+                <option value="purchase">خرید اضافی</option>
+                <option value="tokensbought">خرید توکن (DAI→CPA)</option>
+                <option value="tokenssold">فروش توکن (CPA→DAI)</option>
+                <option value="reward_transfer">دریافت از قرارداد</option>
+                <option value="payment_transfer">پرداخت به قرارداد</option>
+                <option value="incoming_transfer">انتقال CPA ورودی</option>
+                <option value="outgoing_transfer">انتقال CPA خروجی</option>
+                <option value="dai_incoming_transfer">انتقال DAI ورودی</option>
+                <option value="dai_outgoing_transfer">انتقال DAI خروجی</option>
+                <option value="dai_approval">تأییدیه DAI</option>
                 <option value="binarypoints">امتیاز باینری</option>
                 <option value="binaryreward">پاداش باینری</option>
-                <option value="binarypool">استخر باینری</option>
                 <option value="tree">ساختار شبکه</option>
-                <option value="transfer">انتقال توکن</option>
-                <option value="approval">تأییدیه انتقال</option>
                 <option value="indextransfer">انتقال ایندکس</option>
                 <option value="monthlyreward">پاداش ماهانه</option>
-                <option value="monthlyfail">خطاهای پاداش ماهانه</option>
+                <option value="approval">تأییدیه انتقال</option>
+                <option value="binarypool">استخر باینری</option>
+                <option value="monthlyfail">خطاهای پاداش</option>
             </select>
         </div>
         <div id="reports-list"></div>
@@ -204,10 +211,26 @@
         // --- رفع خطا: تعریف توابع کمکی برای نمایش دسته و توضیح ایونت ---
         window.getEventTypeLabel = function(type) {
             const labels = {
-                activated: 'فعال‌سازی', purchase: 'خرید', tokensbought: 'خرید توکن', tokenssold: 'فروش توکن',
-                binarypoints: 'امتیاز باینری', binaryreward: 'پاداش باینری', binarypool: 'استخر باینری',
-                tree: 'ساختار شبکه', transfer: 'انتقال توکن', approval: 'تأییدیه انتقال',
-                indextransfer: 'انتقال ایندکس', monthlyreward: 'پاداش ماهانه', monthlyfail: 'خطاهای پاداش ماهانه'
+                registration: '🎯 ثبت‌نام و فعال‌سازی',
+                referral_registration: '👥 معرفی و ثبت‌نام',
+                purchase: '🛒 خرید اضافی', 
+                tokensbought: '💰 خرید توکن (DAI→CPA)', 
+                tokenssold: '💸 فروش توکن (CPA→DAI)',
+                reward_transfer: '🎁 دریافت از قرارداد',
+                payment_transfer: '💳 پرداخت به قرارداد',
+                incoming_transfer: '📥 انتقال CPA ورودی',
+                outgoing_transfer: '📤 انتقال CPA خروجی',
+                dai_incoming_transfer: '💵📥 انتقال DAI ورودی',
+                dai_outgoing_transfer: '💵📤 انتقال DAI خروجی',
+                dai_approval: '💵✅ تأییدیه DAI',
+                binarypoints: '⭐ امتیاز باینری', 
+                binaryreward: '🏆 پاداش باینری', 
+                tree: '🌳 ساختار شبکه',
+                indextransfer: '🔄 انتقال ایندکس', 
+                monthlyreward: '📅 پاداش ماهانه',
+                approval: '✅ تأییدیه انتقال',
+                binarypool: '🏊 استخر باینری',
+                monthlyfail: '❌ خطاهای پاداش'
             };
             return labels[type] || type;
         };
@@ -320,5 +343,8 @@
             }
         }
     </script>
+    
+    <!-- Floating Token Growth Card - کارت شناور رشد توکن -->
+    <script src="js/floating-token-card.js"></script>
 </body>
 </html>

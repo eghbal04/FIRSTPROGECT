@@ -55,16 +55,26 @@ document.addEventListener('DOMContentLoaded', async () => {
           totalPoints
         ] = await Promise.all([
           contract.totalSupply(),
-          contract.daiBalance ? contract.daiBalance() : Promise.resolve(0),
-          contract.tokenBalance ? contract.tokenBalance() : Promise.resolve(0),
+          // Use correct function name for DAI balance
+                  contract.getContractdaiBalance ? contract.getContractdaiBalance() :
+        (new ethers.Contract(window.DAI_ADDRESS, window.DAI_ABI, contract.provider)).balanceOf(contract.target),
+          contract.balanceOf ? contract.balanceOf(contract.target) : Promise.resolve(0),
           contract.wallets(),
           contract.totalClaimableBinaryPoints()
         ]);
-        const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-        set('circulating-supply', Number(totalSupply) / 1e18);
-        set('dashboard-dai-balance', Number(daiBalance) / 1e6);
-        set('contract-token-balance', Number(tokenBalance) / 1e18);
-        set('dashboard-wallets-count', Number(wallets));
+        const setFormatted = (id, val, decimals = 18, suffix = '') => { 
+          const el = document.getElementById(id); 
+          if (el) {
+            const num = Number(val) / Math.pow(10, decimals);
+            const formatted = num.toLocaleString('en-US', {maximumFractionDigits: 2}) + suffix;
+            el.textContent = formatted;
+          } 
+        };
+        
+        setFormatted('circulating-supply', totalSupply, 18, ''); // حذف پسوند CPA
+        setFormatted('dashboard-dai-balance', daiBalance, 18, ''); // حذف پسوند DAI
+        setFormatted('contract-token-balance', tokenBalance, 18, ''); // حذف پسوند CPA
+        setFormatted('dashboard-wallets-count', wallets, 0, '');
         // set('total-points', Math.floor(Number(totalPoints) / 1e18).toLocaleString('en-US'));
         // set('total-points', '-');
       } catch (e) {
@@ -72,15 +82,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    // حذف مقداردهی مستقیم به dashboard-terminal-info برای جلوگیری از تداخل تایپ‌رایتر
-    // if (document.getElementById('dashboard-terminal-info')) {
-    //     document.getElementById('dashboard-terminal-info').textContent =
-    //         `Total Points: ${window.contractStats.totalPoints}\n` +
-    //         `DAI Balance: ${window.contractStats.daiBalance}\n` +
-    //         `Token Balance: ${window.contractStats.tokenBalance}\n` +
-    //         `Wallets: ${window.contractStats.wallets}\n` +
-    //         `Total Supply: ${window.contractStats.totalSupply}`;
-    // }
+
 
     // نمایش آدرس قرارداد در کارت داشبورد (بدون دکمه، فقط با کلیک روی آدرس)
     const contractAddress = (window.contractConfig && window.contractConfig.CPA_ADDRESS) ? window.contractConfig.CPA_ADDRESS : (typeof CPA_ADDRESS !== 'undefined' ? CPA_ADDRESS : '');
@@ -227,8 +229,8 @@ const updateElement = (id, value) => {
 };
 
     updateElement('user-address', shortenAddress(address));
-    updateElement('dai-balance', profile.daiBalance + ' DAI');
-    updateElement('profile-dai', profile.daiBalance + ' DAI');
+            updateElement('dai-balance', profile.daiBalance); // حذف پسوند DAI
+        updateElement('profile-dai', profile.daiBalance); // حذف پسوند DAI
 
     const userDashboard = document.getElementById('user-dashboard');
     const mainContent = document.getElementById('main-content');
@@ -280,11 +282,10 @@ async function fetchUserProfile() {
         const provider = contract.provider;
         const signer = contract.signer || (provider && provider.getSigner ? await provider.getSigner() : null);
         let daiBalance = '0';
-        if (signer && typeof DAI_ADDRESS !== 'undefined' && typeof DAI_ABI !== 'undefined') {
-          const daiContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, signer);
-          const daiDecimals = await daiContract.decimals();
+        if (signer && typeof window.DAI_ADDRESS !== 'undefined' && typeof window.DAI_ABI !== 'undefined') {
+          const daiContract = new ethers.Contract(window.DAI_ADDRESS, window.DAI_ABI, signer);
           const daiRaw = await daiContract.balanceOf(address);
-          daiBalance = ethers.formatUnits(daiRaw, daiDecimals);
+          daiBalance = ethers.formatUnits(daiRaw, 18); // DAI has 18 decimals (display as USDC)
         }
         // دریافت اطلاعات کاربر
         const userData = await contract.users(address);
@@ -348,6 +349,9 @@ async function connectWallet() {
         throw error;
     }
 }
+
+// تعریف تابع connectWallet در window برای استفاده در فایل‌های دیگر
+window.connectWallet = connectWallet;
 
 // تابع به‌روزرسانی ناوبار بر اساس وضعیت کاربر
 async function updateNavbarBasedOnUserStatus() {
@@ -1611,7 +1615,7 @@ window.updateUserBalanceBoxWithNode = async function(address, userData) {
             console.log('Error getting CPA balance:', e);
             balanceInCPA = '-';
         }
-        lvlBalanceElement.textContent = balanceInCPA ? `${balanceInCPA} CPA` : '-';
+        lvlBalanceElement.textContent = balanceInCPA ? balanceInCPA : '-'; // حذف پسوند CPA
         console.log('Updated lvl balance:', lvlBalanceElement.textContent);
     }
     
@@ -2156,11 +2160,10 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
         }
         // دریافت موجودی DAI
         try {
-          const DAI_ADDRESS = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174';
           const DAI_ABI = ["function balanceOf(address) view returns (uint256)"];
-          const daiContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, provider || contract.provider);
+          const daiContract = new ethers.Contract(window.DAI_ADDRESS, DAI_ABI, provider || contract.provider);
           const daiBal = await daiContract.balanceOf(connectedAddress);
-          dai = window.ethers ? window.ethers.formatUnits(daiBal, 6) : daiBal.toString();
+          dai = window.ethers ? window.ethers.formatUnits(daiBal, 18) : daiBal.toString(); // DAI has 18 decimals
         } catch (e) {
           dai = 'خطا در دریافت DAI';
         }
@@ -2168,7 +2171,8 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
         try {
           if (window.getRegPrice) {
             const regPrice = await window.getRegPrice(contract);
-            requiredDai = parseFloat(window.ethers.formatUnits(regPrice, 18)).toFixed(0) + ' CPA';
+            let priceValue = parseFloat(window.ethers.formatUnits(regPrice, 18));
+            requiredDai = Math.round(priceValue) + ' CPA'; // گرد کردن بدون اعشار
           } else {
             requiredDai = '...';
           }
@@ -2295,7 +2299,7 @@ function showUserPopup(address, user) {
     const leftColumn = [
         `Address:   ${shortAddress(address)}`,
         `Index:     ${user.index}`,
-        `CPA ID:    ${window.generateCPAId ? window.generateCPAId(user.index) : user.index}`,
+        `ایندکس:    ${window.generateCPAId ? window.generateCPAId(user.index) : user.index}`,
         `Activated: ${user.activated ? 'Yes' : 'No'}`
     ];
     
@@ -2714,6 +2718,17 @@ async function updatePermanentRegistrationForm(connection) {
             referrerAddressInput.value = referrerAddress;
         }
         
+        // تابع کوتاه کردن اعداد بزرگ
+        function formatLargeNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            } else {
+                return num.toFixed(2);
+            }
+        }
+        
         // به‌روزرسانی موجودی‌ها
         if (balancesDiv && cpaBalanceDiv && maticBalanceDiv) {
             try {
@@ -2722,11 +2737,13 @@ async function updatePermanentRegistrationForm(connection) {
                     connection.provider.getBalance(address)
                 ]);
                 
-                const cpaFormatted = parseFloat(ethers.formatUnits(cpaBalance, 18)).toFixed(2);
-                const maticFormatted = parseFloat(ethers.formatEther(maticBalance)).toFixed(4);
+                const cpaFormatted = parseFloat(ethers.formatUnits(cpaBalance, 18));
+                const maticFormatted = parseFloat(ethers.formatEther(maticBalance));
                 
-                cpaBalanceDiv.textContent = cpaFormatted;
-                maticBalanceDiv.textContent = maticFormatted;
+                cpaBalanceDiv.textContent = formatLargeNumber(cpaFormatted);
+                cpaBalanceDiv.title = cpaFormatted.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' CPA';
+                maticBalanceDiv.textContent = formatLargeNumber(maticFormatted);
+                maticBalanceDiv.title = maticFormatted.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' MATIC';
                 
                 balancesDiv.style.display = 'block';
                 
@@ -2974,12 +2991,38 @@ async function updateTransferBalances(contract, address, provider) {
             polyBalance = 'خطا';
         }
         
+        // تابع کوتاه کردن اعداد بزرگ
+        function formatLargeNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            } else {
+                return num.toFixed(2);
+            }
+        }
+        
         // دریافت موجودی CPA
         let cpaBalance = '-';
+        let cpaUsdValue = 0;
+        let cpaFullAmount = 0;
         try {
             const cpaBal = await contract.balanceOf(address);
-            cpaBalance = parseFloat(ethers.formatUnits(cpaBal, 18)).toFixed(2);
+            cpaFullAmount = parseFloat(ethers.formatUnits(cpaBal, 18));
+            cpaBalance = formatLargeNumber(cpaFullAmount);
             console.log('CPA balance:', cpaBalance);
+            
+            // محاسبه معادل دلاری CPA
+            try {
+                if (typeof contract.getTokenPrice === 'function') {
+                    const tokenPriceRaw = await contract.getTokenPrice();
+                    const tokenPrice = Number(ethers.formatUnits(tokenPriceRaw, 18));
+                    cpaUsdValue = cpaFullAmount * tokenPrice;
+                    console.log('CPA USD value:', cpaUsdValue);
+                }
+            } catch (e) {
+                console.log('خطا در دریافت قیمت توکن:', e);
+            }
         } catch (e) {
             console.error('Error getting CPA balance:', e);
             cpaBalance = 'خطا';
@@ -2988,21 +3031,32 @@ async function updateTransferBalances(contract, address, provider) {
         // دریافت موجودی DAI
         let daiBalance = '-';
         try {
-            const DAI_ADDRESS = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174';
+            const DAI_ADDRESS = '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063'; // آدرس صحیح DAI در قرارداد
             const DAI_ABI = ["function balanceOf(address) view returns (uint256)"];
             const daiContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, provider);
             const daiBal = await daiContract.balanceOf(address);
-            daiBalance = parseFloat(ethers.formatUnits(daiBal, 6)).toFixed(2);
+            daiBalance = parseFloat(ethers.formatUnits(daiBal, 18)).toFixed(2); // DAI has 18 decimals
             console.log('DAI balance:', daiBalance);
-        } catch (e) {
-            console.error('Error getting DAI balance:', e);
-            daiBalance = 'خطا';
+                } catch (e) {
+          console.error('Error getting DAI balance:', e);
+          daiBalance = 'خطا';
         }
         
         // به‌روزرسانی نمایش
         polyBalanceDiv.textContent = polyBalance;
         cpaBalanceDiv.textContent = cpaBalance;
+        if (cpaFullAmount > 0) {
+            cpaBalanceDiv.title = cpaFullAmount.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' CPA';
+        }
         daiBalanceDiv.textContent = daiBalance;
+        
+        // نمایش معادل دلاری CPA
+        const cpaUsdDiv = document.getElementById('transfer-cpa-usd');
+        if (cpaUsdDiv && cpaBalance !== '-' && cpaBalance !== 'خطا') {
+            cpaUsdDiv.textContent = `≈ $${formatLargeNumber(cpaUsdValue)}`;
+        } else if (cpaUsdDiv) {
+            cpaUsdDiv.textContent = '-';
+        }
         
         console.log('Transfer balances updated successfully');
         
@@ -3076,54 +3130,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 1000);
     }
     
-    // اضافه کردن دکمه به‌روزرسانی دستی موجودی‌ها
-    const transferContainer = document.querySelector('.transfer-container');
-    if (transferContainer) {
-        const refreshButton = document.createElement('button');
-        refreshButton.innerHTML = '🔄 به‌روزرسانی موجودی‌ها';
-        refreshButton.style.cssText = `
-            background: linear-gradient(90deg, #a786ff, #8b6bff);
-            color: #fff;
-            border: none;
-            border-radius: 6px;
-            padding: 0.5rem 1rem;
-            font-size: 0.9rem;
-            cursor: pointer;
-            margin-bottom: 1rem;
-            transition: all 0.3s ease;
-        `;
-        
-        refreshButton.onclick = async function() {
-            try {
-                refreshButton.textContent = 'در حال به‌روزرسانی...';
-                refreshButton.disabled = true;
-                
-                if (window.updateTransferBalancesOnConnect) {
-                    await window.updateTransferBalancesOnConnect();
-                }
-                
-                refreshButton.textContent = '✅ به‌روزرسانی شد';
-                setTimeout(() => {
-                    refreshButton.textContent = '🔄 به‌روزرسانی موجودی‌ها';
-                    refreshButton.disabled = false;
-                }, 2000);
-                
-            } catch (error) {
-                console.error('Error refreshing balances:', error);
-                refreshButton.textContent = '❌ خطا در به‌روزرسانی';
-                setTimeout(() => {
-                    refreshButton.textContent = '🔄 به‌روزرسانی موجودی‌ها';
-                    refreshButton.disabled = false;
-                }, 2000);
-            }
-        };
-        
-        // اضافه کردن دکمه به ابتدای فرم
-        const form = transferContainer.querySelector('#transferForm');
-        if (form) {
-            form.insertBefore(refreshButton, form.firstChild);
-        }
-    }
+    // دکمه بروزرسانی دستی حذف شد - اکنون بروزرسانی خودکار است
     
     // اضافه کردن event listener برای دکمه اتصال کیف پول در تب ترنسفر
     document.addEventListener('click', function(e) {
@@ -3137,7 +3144,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // حذف دکمه شناور CPA ID در زمان بارگذاری صفحه
+    // حذف دکمه شناور ایندکس در زمان بارگذاری صفحه
     setTimeout(() => {
         if (window.removeFloatingCPAId) {
             window.removeFloatingCPAId();
@@ -3151,6 +3158,7 @@ window.startTransferBalanceAutoRefresh = function() {
         clearInterval(window.transferBalanceInterval);
     }
     
+    /* // Transfer balance interval غیرفعال شده
     window.transferBalanceInterval = setInterval(async () => {
         try {
             if (window.contractConfig && window.contractConfig.contract) {
@@ -3160,7 +3168,9 @@ window.startTransferBalanceAutoRefresh = function() {
         } catch (error) {
             console.error('Error in auto-refresh transfer balances:', error);
         }
-    }, 30000); // هر 30 ثانیه
+    }, 30000); // غیرفعال شده برای بهینه‌سازی - سیستم مرکزی جایگزین شده
+    */
+    console.log('⚠️ Transfer balance interval غیرفعال شده برای بهینه‌سازی عملکرد');
 };
 
 // تابع توقف به‌روزرسانی خودکار
@@ -3173,15 +3183,14 @@ window.stopTransferBalanceAutoRefresh = function() {
 
 // تابع تولید ID بر اساس ایندکس کاربر
 function generateCPAId(index) {
-    if (!index || index === 0) return 'CPA00000';
+    if (!index || index === 0) return '0';
     
-    // تبدیل به عدد
-    const numIndex = typeof index === 'bigint' ? Number(index) : parseInt(index);
-    if (isNaN(numIndex) || numIndex < 0) return 'CPA00000';
-    
-    // تولید ID با فرمت CPA + 5 رقم
-    return `CPA${numIndex.toString().padStart(5, '0')}`;
+    // نمایش دقیق همان مقدار کنترکت بدون هیچ تغییری
+    return index.toString();
 }
+
+// تعریف تابع generateCPAId در window برای استفاده در فایل‌های دیگر
+window.generateCPAId = generateCPAId;
 
 // تابع نمایش ID در گوشه بالا سمت راست - غیرفعال شده
 function displayCPAIdInCorner(index) {
@@ -3291,12 +3300,12 @@ function updateCPAIdDisplay(index) {
     // displayCPAIdInCorner(index);
 }
 
-// تابع حذف دکمه شناور CPA ID
+// تابع حذف دکمه شناور ایندکس
 window.removeFloatingCPAId = function() {
     const existingId = document.getElementById('cpa-id-corner');
     if (existingId) {
         existingId.remove();
-        console.log('✅ Floating CPA ID removed');
+        console.log('✅ Floating index removed');
     }
 };
 
@@ -3384,4 +3393,193 @@ window.getTotalBinaryPoints = async function() {
         return 0;
     }
 };
+
+// دستور پاک کردن کامل دیتابیس و Firebase - این دستور بعد از اجرا خودش را پاک می‌کند
+window.clearAllDatabaseData = async function() {
+    console.log('🗑️ شروع پاک کردن کامل دیتابیس و Firebase...');
+    
+    try {
+        // پاک کردن Firebase
+        console.log('🔥 پاک کردن Firebase...');
+        
+        // پاک کردن Firebase Price History
+        if (window.firebasePriceHistory && window.firebasePriceHistory.cleanup) {
+            try {
+                await window.firebasePriceHistory.cleanup(0); // پاک کردن تمام رکوردها
+                console.log('✅ Firebase Price History پاک شد');
+            } catch (error) {
+                console.error('❌ خطا در پاک کردن Firebase Price History:', error);
+            }
+        }
+        
+        // پاک کردن Firebase Network Database
+        if (window.firebaseNetworkDB && window.firebaseNetworkDB.cleanup) {
+            try {
+                await window.firebaseNetworkDB.cleanup(0); // پاک کردن تمام رکوردها
+                console.log('✅ Firebase Network Database پاک شد');
+            } catch (error) {
+                console.error('❌ خطا در پاک کردن Firebase Network Database:', error);
+            }
+        }
+        
+        // پاک کردن مستقیم Firebase Collections
+        if (typeof firebase !== 'undefined' && firebase.firestore) {
+            try {
+                const db = firebase.firestore();
+                
+                // پاک کردن collection price_history
+                const priceHistorySnapshot = await db.collection('price_history').get();
+                const priceHistoryBatch = db.batch();
+                priceHistorySnapshot.docs.forEach(doc => {
+                    priceHistoryBatch.delete(doc.ref);
+                });
+                await priceHistoryBatch.commit();
+                console.log(`✅ ${priceHistorySnapshot.docs.length} رکورد از price_history پاک شد`);
+                
+                // پاک کردن collection network_trees
+                const networkTreesSnapshot = await db.collection('network_trees').get();
+                const networkTreesBatch = db.batch();
+                networkTreesSnapshot.docs.forEach(doc => {
+                    networkTreesBatch.delete(doc.ref);
+                });
+                await networkTreesBatch.commit();
+                console.log(`✅ ${networkTreesSnapshot.docs.length} رکورد از network_trees پاک شد`);
+                
+                // پاک کردن collection network_nodes
+                const networkNodesSnapshot = await db.collection('network_nodes').get();
+                const networkNodesBatch = db.batch();
+                networkNodesSnapshot.docs.forEach(doc => {
+                    networkNodesBatch.delete(doc.ref);
+                });
+                await networkNodesBatch.commit();
+                console.log(`✅ ${networkNodesSnapshot.docs.length} رکورد از network_nodes پاک شد`);
+                
+            } catch (error) {
+                console.error('❌ خطا در پاک کردن Firebase Collections:', error);
+            }
+        }
+        
+        // پاک کردن localStorage
+        console.log('💾 پاک کردن localStorage...');
+        const localStorageKeys = [
+            'network_tree_nodes',
+            'network_tree_full',
+            'tokenPriceHistory',
+            'pointPriceHistory',
+            'cpa_products',
+            'activeTab',
+            'walletAddress',
+            'walletData',
+            'floatingAIChatHistory',
+            'extractedNetworkTree'
+        ];
+        
+        localStorageKeys.forEach(key => {
+            localStorage.removeItem(key);
+            console.log(`✅ ${key} از localStorage پاک شد`);
+        });
+        
+        // پاک کردن sessionStorage
+        console.log('💾 پاک کردن sessionStorage...');
+        const sessionStorageKeys = Object.keys(sessionStorage);
+        sessionStorageKeys.forEach(key => {
+            if (key.startsWith('userProfile_') || key.startsWith('ai_')) {
+                sessionStorage.removeItem(key);
+                console.log(`✅ ${key} از sessionStorage پاک شد`);
+            }
+        });
+        
+        // پاک کردن کش‌های مختلف
+        console.log('🧹 پاک کردن کش‌ها...');
+        if (window.clearConnectionCache) {
+            window.clearConnectionCache();
+            console.log('✅ کش اتصال پاک شد');
+        }
+        
+        if (window.clearUserProfileCache) {
+            window.clearUserProfileCache();
+            console.log('✅ کش پروفایل کاربر پاک شد');
+        }
+        
+        if (window.clearNetworkTreeInterval) {
+            window.clearNetworkTreeInterval();
+            console.log('✅ interval درخت شبکه پاک شد');
+        }
+        
+        // پاک کردن تاریخچه قیمت‌ها
+        if (window.clearAllPriceHistory) {
+            await window.clearAllPriceHistory();
+            console.log('✅ تاریخچه قیمت‌ها پاک شد');
+        }
+        
+        // پاک کردن دیتابیس شبکه
+        if (window.clearNetworkDatabase) {
+            window.clearNetworkDatabase();
+            console.log('✅ دیتابیس شبکه پاک شد');
+        }
+        
+        // ریست کردن dashboard
+        if (window.resetDashboard) {
+            window.resetDashboard();
+            console.log('✅ داشبورد ریست شد');
+        }
+        
+        // پاک کردن متغیرهای سراسری
+        if (typeof connectionCache !== 'undefined') {
+            connectionCache = null;
+        }
+        if (typeof globalConnectionPromise !== 'undefined') {
+            globalConnectionPromise = null;
+        }
+        if (typeof pendingAccountRequest !== 'undefined') {
+            pendingAccountRequest = null;
+        }
+        
+        // پاک کردن contractConfig
+        if (window.contractConfig) {
+            window.contractConfig.provider = null;
+            window.contractConfig.signer = null;
+            window.contractConfig.contract = null;
+            window.contractConfig.address = null;
+        }
+        
+        console.log('✅ پاک کردن کامل دیتابیس و Firebase تمام شد');
+        console.log('🔄 صفحه در حال رفرش...');
+        
+        // رفرش صفحه بعد از 3 ثانیه
+        setTimeout(() => {
+            location.reload();
+        }, 3000);
+        
+        // حذف این تابع از window
+        setTimeout(() => {
+            delete window.clearAllDatabaseData;
+            console.log('🗑️ دستور پاک کردن دیتابیس حذف شد');
+        }, 4000);
+        
+        return true;
+        
+    } catch (error) {
+        console.error('❌ خطا در پاک کردن دیتابیس:', error);
+        return false;
+    }
+};
+
+// تابع ثبت‌نام رزرو - همان فرم register.html ولی با registerFree
+window.openReserveRegistration = function() {
+    window.open('register-free.html', '_blank');
+};
+
+// تابع بررسی اعتبار آدرس اتریوم
+function isValidEthereumAddress(address) {
+    return /^0x[a-fA-F0-9]{40}$/.test(address);
+}
+
+
+
+
+
+// نمایش دستور در کنسول
+console.log('💡 دستور پاک کردن کامل دیتابیس و Firebase آماده است: window.clearAllDatabaseData()');
+console.log('🎯 باز کردن صفحه ثبت‌نام رزرو: window.openReserveRegistration()');
 

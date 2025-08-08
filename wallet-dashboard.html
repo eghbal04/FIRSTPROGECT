@@ -15,6 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Fira+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/index-custom.css">
+    <link rel="stylesheet" href="css/smooth-transitions.css">
     
     <!-- بارگذاری ethers.js -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
@@ -22,6 +23,9 @@
     <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
     
     <!-- بارگذاری اسکریپت‌های اصلی -->
+    <script src="js/smooth-value-updater.js"></script>
+    <script src="js/smart-dashboard-updater.js"></script>
+    <script src="js/central-dashboard-updater.js"></script>
     <script src="js/config.js"></script>
     <script src="js/main.js"></script>
     <script src="js/walletconnect-handler.js"></script>
@@ -93,10 +97,10 @@
                 <h2 style="color:#a786ff; margin-bottom:1.5rem; text-align:center;">📊 جزئیات حساب</h2>
                 
                 <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:1rem;">
-                    <!-- CPA ID -->
+                    <!-- ایندکس -->
                     <div style="background:rgba(0,0,0,0.3); border-radius:12px; padding:1rem; text-align:center; border:1px solid rgba(0,255,136,0.2);">
                         <div style="color:#00ff88; font-size:1.2rem; margin-bottom:0.5rem;">🆔</div>
-                        <div style="color:#fff; font-size:0.9rem; margin-bottom:0.3rem;">CPA ID</div>
+                        <div style="color:#fff; font-size:0.9rem; margin-bottom:0.3rem;">ایندکس</div>
                         <div style="color:#00ff88; font-size:1.1rem; font-family:monospace; font-weight:bold;" id="cpa-id">-</div>
                     </div>
 
@@ -182,6 +186,7 @@
                         <div style="color:#00ff88; font-size:1.2rem; margin-bottom:0.5rem;">🪙</div>
                         <div style="color:#fff; font-size:0.9rem; margin-bottom:0.3rem;">CPA</div>
                         <div style="color:#00ff88; font-size:1.1rem; font-family:monospace; font-weight:bold;" id="cpa-balance">-</div>
+                        <div style="color:#a786ff; font-size:0.8rem; margin-top:0.3rem;" id="cpa-usd-value">-</div>
                     </div>
 
                     <!-- DAI Balance -->
@@ -339,27 +344,99 @@
                 const contract = contractConfig.contract;
                 const userData = await contract.users(currentWalletAddress);
 
-                // بروزرسانی اطلاعات اصلی
-                document.getElementById('cpa-id').textContent = `CPA${userData.index.toString()}`;
-                document.getElementById('user-level').textContent = userData.level.toString();
-                document.getElementById('user-points').textContent = userData.points.toString();
-                document.getElementById('user-balance').textContent = ethers.formatEther(userData.balance);
-                document.getElementById('deposited-amount').textContent = ethers.formatEther(userData.depositedAmount);
-                document.getElementById('referrer-address').textContent = userData.referrer;
-                document.getElementById('left-child').textContent = userData.leftChild;
-                document.getElementById('right-child').textContent = userData.rightChild;
-                document.getElementById('is-active').textContent = userData.isActive ? 'فعال' : 'غیرفعال';
+                // بروزرسانی اطلاعات اصلی با انتقال نرم
+                const updates = [
+                    { element: 'cpa-id', value: `CPA${userData.index.toString()}` },
+                    { element: 'user-level', value: userData.level.toString() },
+                    { element: 'user-points', value: userData.points.toString() },
+                    { element: 'user-balance', value: ethers.formatEther(userData.balance) },
+                    { element: 'deposited-amount', value: ethers.formatEther(userData.depositedAmount) },
+                    { element: 'referrer-address', value: userData.referrer },
+                    { element: 'left-child', value: userData.leftChild },
+                    { element: 'right-child', value: userData.rightChild },
+                    { element: 'is-active', value: userData.isActive ? 'فعال' : 'غیرفعال' }
+                ];
+                
+                if (window.smartUpdateMultiple) {
+                    const updatedCount = window.smartUpdateMultiple(updates);
+                    if (updatedCount > 0) {
+                        console.log(`🔄 ${updatedCount} مقدار در wallet dashboard بروزرسانی شد`);
+                    }
+                } else if (window.updateMultipleValuesSmoothly) {
+                    window.updateMultipleValuesSmoothly(updates);
+                } else {
+                    // Fallback
+                    updates.forEach(update => {
+                        const el = document.getElementById(update.element);
+                        if (el && el.textContent !== update.value) {
+                            el.textContent = update.value;
+                        }
+                    });
+                }
 
-                // بروزرسانی موجودی توکن‌ها
+                // بروزرسانی موجودی توکن‌ها با انتقال نرم
                 const cpaBalance = await contract.balanceOf(currentWalletAddress);
-                document.getElementById('cpa-balance').textContent = ethers.formatEther(cpaBalance);
+                const cpaAmount = Number(ethers.formatEther(cpaBalance));
+                
+                // تابع کوتاه کردن اعداد بزرگ
+                function formatLargeNumber(num) {
+                    if (num >= 1000000) {
+                        return (num / 1000000).toFixed(1) + 'M';
+                    } else if (num >= 1000) {
+                        return (num / 1000).toFixed(1) + 'K';
+                    } else {
+                        return num.toFixed(2);
+                    }
+                }
+                
+                // محاسبه معادل دلاری CPA
+                let cpaUsdValue = 0;
+                try {
+                    if (typeof contract.getTokenPrice === 'function') {
+                        const tokenPriceRaw = await contract.getTokenPrice();
+                        const tokenPrice = Number(ethers.formatUnits(tokenPriceRaw, 18));
+                        cpaUsdValue = cpaAmount * tokenPrice;
+                    }
+                } catch (e) {
+                    console.log('خطا در دریافت قیمت توکن:', e);
+                }
+                
+                // نمایش موجودی CPA (کوتاه شده)
+                const shortCpaAmount = formatLargeNumber(cpaAmount);
+                if (window.smartUpdate) {
+                    window.smartUpdate('cpa-balance', shortCpaAmount);
+                } else if (window.updateValueSmoothly) {
+                    window.updateValueSmoothly('cpa-balance', shortCpaAmount);
+                } else {
+                    const el = document.getElementById('cpa-balance');
+                    if (el) {
+                        el.textContent = shortCpaAmount;
+                        el.title = cpaAmount.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' CPA';
+                    }
+                }
+                
+                // نمایش معادل دلاری
+                const usdEl = document.getElementById('cpa-usd-value');
+                if (usdEl) {
+                    usdEl.textContent = `≈ $${formatLargeNumber(cpaUsdValue)}`;
+                }
 
                 // دریافت موجودی DAI
                 try {
-                    if (typeof window.DAI_ADDRESS !== 'undefined' && typeof window.DAI_ABI !== 'undefined') {
-                        const daiContract = new ethers.Contract(window.DAI_ADDRESS, window.DAI_ABI, contractConfig.signer);
-                        const daiBalance = await daiContract.balanceOf(currentWalletAddress);
-                        document.getElementById('dai-balance').textContent = ethers.formatUnits(daiBalance, 18);
+                    if ((typeof window.USDC_ADDRESS !== 'undefined' || typeof window.DAI_ADDRESS !== 'undefined') && typeof window.DAI_ABI !== 'undefined') {
+                        const usdcContract = new ethers.Contract(window.USDC_ADDRESS || window.DAI_ADDRESS, window.DAI_ABI, contractConfig.signer);
+                        const usdcBalance = await usdcContract.balanceOf(currentWalletAddress);
+                        if (window.smartUpdate) {
+                            window.smartUpdate('dai-balance', ethers.formatUnits(usdcBalance, 6));
+                        } else if (window.updateValueSmoothly) {
+                            window.updateValueSmoothly('dai-balance', ethers.formatUnits(usdcBalance, 6));
+                        } else {
+                            const el = document.getElementById('dai-balance');
+                            const newValue = ethers.formatUnits(usdcBalance, 6);
+                            if (el && el.textContent !== newValue) {
+                                el.textContent = newValue;
+                            }
+                        }
                     } else {
                         document.getElementById('dai-balance').textContent = 'DAI در دسترس نیست';
                     }
@@ -371,7 +448,17 @@
                 // دریافت موجودی MATIC
                 try {
                     const maticBalance = await contractConfig.signer.getBalance(currentWalletAddress);
-                    document.getElementById('matic-balance').textContent = ethers.formatEther(maticBalance);
+                    if (window.smartUpdate) {
+                        window.smartUpdate('matic-balance', ethers.formatEther(maticBalance));
+                    } else if (window.updateValueSmoothly) {
+                        window.updateValueSmoothly('matic-balance', ethers.formatEther(maticBalance));
+                    } else {
+                        const el = document.getElementById('matic-balance');
+                        const newValue = ethers.formatEther(maticBalance);
+                        if (el && el.textContent !== newValue) {
+                            el.textContent = newValue;
+                        }
+                    }
                 } catch (error) {
                     document.getElementById('matic-balance').textContent = 'خطا در بارگذاری';
                 }
@@ -508,5 +595,8 @@
             }, 1000);
         });
     </script>
+    
+    <!-- Floating Token Growth Card - کارت شناور رشد توکن -->
+    <script src="js/floating-token-card.js"></script>
 </body>
 </html> 

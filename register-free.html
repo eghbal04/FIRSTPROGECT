@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ثبت‌نام رزرو</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body {
+      background: #181c2a !important;
+    }
+    .register-form {
+      background: linear-gradient(135deg, #232946 80%, #181c2a 100%) !important;
+      color: #fff !important;
+      border-radius: 22px;
+      box-shadow: 0 8px 32px #00000033, 0 1.5px 6px #00ff8840;
+      padding: 36px 28px 28px 28px;
+    }
+    .register-form label,
+    .register-form-title {
+      color: #a786ff !important;
+    }
+    .register-form input,
+    .register-form-input {
+      background: #232946 !important;
+      color: #fff !important;
+      border: 1.5px solid #444;
+    }
+    .register-form input:focus {
+      border-color: #00ff88;
+      background: #232946;
+      color: #fff;
+    }
+    .info-box {
+      background: rgba(28,28,40,0.97) !important;
+      color: #fff !important;
+      border: 1px solid #444;
+      box-shadow: 0 2px 8px #00ff8840;
+    }
+    .register-btn, .buy-btn {
+      background: linear-gradient(90deg,#00ff88,#a786ff) !important;
+      color: #232946 !important;
+      font-weight: bold;
+      border-radius: 10px;
+      font-size: 1.13rem;
+      box-shadow: 0 2px 8px #a786ff22;
+    }
+    .register-btn:active, .buy-btn:active {
+      background: linear-gradient(90deg,#a786ff,#00ff88) !important;
+    }
+    .register-form-status {
+      color: #fff !important;
+    }
+  </style>
+</head>
+<body>
+  <script src="js/navbar.js"></script>
+  <main style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--ios-background);">
+    <form class="register-form" autocomplete="off" style="max-width:430px;width:100%;margin:0 auto;">
+      <h2 class="register-form-title" style="text-align:center;margin-bottom:18px;">فرم ثبت‌نام رزرو</h2>
+      <div class="register-form-status info" id="connection-status"></div>
+      <div class="register-form-status warning" id="register-suggestion" style="display:none;"></div>
+      <div class="form-group">
+        <label for="index-search">ایندکس (Index)</label>
+                 <div style="font-size:0.85rem;color:#a786ff;margin-bottom:8px;background:rgba(167,134,255,0.1);padding:8px;border-radius:6px;border:1px solid rgba(167,134,255,0.3);">
+           ⚠️ <strong>محدودیت:</strong> فقط می‌توانید برای ایندکس‌های موجود در خط رفرال خود ثبت‌نام رزرو کنید.
+         </div>
+        <input type="text" id="index-search" class="register-form-input" placeholder="مثلاً 123" autocomplete="off" value="refferer ID : CPA00000" style="width:100%;min-width:0;">
+      </div>
+      <div class="form-group">
+        <label for="referrer-address">آدرس معرف (والد)</label>
+        <div style="font-size:0.8rem;color:#718096;margin-bottom:6px;background:rgba(113,128,150,0.1);padding:6px;border-radius:4px;">
+          🔗 این فیلد به صورت خودکار بر اساس ایندکس انتخاب شده پر می‌شود. معرف باید فعال باشد.
+        </div>
+        <input type="text" id="referrer-address" class="register-form-input" placeholder="0x..." autocomplete="off" value="root">
+      </div>
+      <div class="form-group">
+        <label for="new-user-address">آدرس کاربر جدید</label>
+        <div style="font-size:0.8rem;color:#718096;margin-bottom:6px;background:rgba(113,128,150,0.1);padding:6px;border-radius:4px;">
+          👤 آدرس کیف پول کاربری که می‌خواهید ثبت‌نام رزرو کنید. این آدرس نباید قبلاً ثبت‌نام شده باشد.
+        </div>
+        <input type="text" id="new-user-address" class="register-form-input" placeholder="0x..." autocomplete="off">
+      </div>
+      
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          const addressInput = document.getElementById('new-user-address');
+          
+          // وقتی کاربر روی اینپوت کلیک کند
+          addressInput.addEventListener('click', async function() {
+            try {
+              // خواندن محتوای کلیپبورد
+              const clipboardText = await navigator.clipboard.readText();
+              
+              // بررسی اینکه آیا متن کپی شده شبیه آدرس اتریوم است
+              if (clipboardText.match(/^0x[a-fA-F0-9]{40}$/)) {
+                addressInput.value = clipboardText;
+                
+                // نمایش پیام موفقیت آمیز (اختیاری)
+                alert('آدرس از کلیپبورد با موفقیت وارد شد!');
+              }
+            } catch (err) {
+              console.error('خطا در دسترسی به کلیپبورد:', err);
+              // در صورت نیاز می‌توانید یک پیام خطا به کاربر نمایش دهید
+            }
+          });
+        });
+      </script>
+      <div class="info-box" id="register-info" style="background:rgba(28,28,40,0.97);color:#fff;font-weight:bold;font-size:1.08rem;box-shadow:0 2px 8px #a786ff22;margin-bottom:18px;">
+        <div style="margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(167,134,255,0.3);">
+          <div style="color:#a786ff;font-size:0.9rem;margin-bottom:4px;">📊 اطلاعات ثبت‌نام رزرو:</div>
+        </div>
+        <div style="margin-bottom:8px;">🎯 ایندکس رفرر: <b id="parent-index">...</b></div>
+        <div style="margin-bottom:8px;">📍 ایندکس جایگاه جدید: <b id="empty-index">...</b></div>
+        <div style="margin-bottom:8px;">💰 هزینه ثبت‌نام رزرو:<br><b id="register-cost" style="display:inline-block;margin-top:4px;font-size:1.1rem;color:#00ff88;">...</b></div>
+        
+        <div style="margin-top:12px;padding-top:8px;border-top:1px solid rgba(167,134,255,0.3);">
+          <div style="color:#a786ff;font-size:0.9rem;margin-bottom:8px;">💳 موجودی کیف پول:</div>
+          <div style="display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center;">
+          <span style="display:flex;align-items:center;gap:6px;">
+            <img src="matic.svg" alt="MATIC" style="width:18px;height:18px;vertical-align:middle;"> 
+            <span>موجودی متیک: <b id="matic-balance">...</b></span>
+          </span>
+          <span style="display:flex;align-items:center;gap:6px;">
+            <img src="cpa.jpg" alt="CPA" style="width:18px;height:18px;vertical-align:middle;border-radius:50%;"> 
+            <span>موجودی CPA: <b id="cpa-balance">...</b></span>
+          </span>
+          </div>
+          <div style="font-size:0.8rem;color:#718096;margin-top:8px;text-align:center;background:rgba(113,128,150,0.1);padding:6px;border-radius:4px;">
+            💡 برای ثبت‌نام رزرو نیاز به معادل $23 توکن CPA دارید
+          </div>
+        </div>
+      </div>
+      <div class="avatar-row" style="margin-bottom:0.5em;">
+        <span class="avatar-choice selected" data-avatar="man">👨‍💼</span>
+        <span class="avatar-choice" data-avatar="woman">👩‍💼</span>
+        <span class="avatar-choice" data-avatar="student-man">👨‍🎓</span>
+        <span class="avatar-choice" data-avatar="student-woman">👩‍🎓</span>
+      </div>
+                             <button class="register-btn buy-btn" id="register-btn" type="button" style="width:100%;margin-top:18px;">ثبت‌نام رزرو</button>
+                       <div class="register-form-status" id="status-message"></div>
+                       
+                       <div style="margin-top:20px;padding:12px;background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3);border-radius:8px;text-align:center;font-size:0.9rem;color:#ffc107;">
+                           ⚠️ برای ثبت‌نام نیاز به موجودی کافی CPA و MATIC دارید
+                       </div>
+                   </form>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
+  <script src="js/config.js"></script>
+  <script>
+    let selectedAvatar = 'man';
+    let isConnected = false;
+    // تعریف متغیرهای ورودی قبل از هر استفاده
+    const indexInput = document.getElementById('index-search');
+    const refInput = document.getElementById('referrer-address');
+     const newUserInput = document.getElementById('new-user-address');
+    const defaultGuide = 'refferer ID : CPA00000';
+    
+                                                // تابع بررسی اینکه آیا ایندکس هدف در زیرمجموعه کاربر جاری قرار دارد
+          function isIndexInUserSubtree(targetIndex, currentUserIndex) {
+            console.log(`🔍 بررسی: ایندکس هدف=${targetIndex}, کاربر جاری=${currentUserIndex}`);
+            
+            if (targetIndex === currentUserIndex) {
+              console.log(`❌ خودش نمی‌تواند زیرمجموعه خودش باشد`);
+              return false;
+            }
+            
+            // بررسی اینکه آیا ایندکس هدف در زیرمجموعه کاربر جاری قرار دارد
+            let checkIndex = targetIndex;
+            while (checkIndex > currentUserIndex) {
+              checkIndex = Math.floor(checkIndex / 2);
+              console.log(`🔍 بررسی مسیر: ${checkIndex}`);
+              if (checkIndex === currentUserIndex) {
+                console.log(`✅ در زیرمجموعه قرار دارد`);
+                return true;
+              }
+            }
+            
+            // بررسی اضافی: اگر ایندکس هدف کمتر از کاربر جاری باشد، در زیرمجموعه نیست
+            if (targetIndex < currentUserIndex) {
+              console.log(`❌ ایندکس هدف کمتر از کاربر جاری است`);
+              return false;
+            }
+            
+            console.log(`❌ در زیرمجموعه قرار ندارد`);
+            return false;
+                    }
+      
+
+      
+     // انتخاب آواتار
+    document.querySelectorAll('.avatar-choice').forEach(el => {
+      el.onclick = function() {
+        document.querySelectorAll('.avatar-choice').forEach(e2 => e2.classList.remove('selected'));
+        this.classList.add('selected');
+        selectedAvatar = this.getAttribute('data-avatar');
+      };
+    });
+
+    // مقداردهی اولیه اطلاعات
+    async function loadRegisterInfo() {
+      const status = document.getElementById('status-message');
+      const connStatus = document.getElementById('connection-status');
+      status.textContent = '';
+      connStatus.textContent = 'در حال اتصال به کیف پول...';
+      isConnected = false;
+      let myAddress = null;
+      let contract = null;
+      let connection = null;
+      try {
+                 connection = await window.connectWallet();
+         contract = connection.contract;
+         myAddress = connection.address;
+         window.currentUserAddress = myAddress; // ذخیره آدرس برای استفاده در توابع دیگر
+         isConnected = true;
+        connStatus.textContent = '';
+        document.getElementById('register-info').style.display = '';
+        document.getElementById('register-btn').disabled = false;
+        document.querySelectorAll('input').forEach(i=>i.disabled=false);
+        // مقداردهی referrer (والد) و parent-index فقط بعد از مقداردهی user
+        const refInput = document.getElementById('referrer-address');
+        let user;
+        let parentIndex = '...';
+        try {
+          user = await contract.users(myAddress);
+          console.log(`🔍 وضعیت کاربر:`, user);
+          // اگر کاربر فعال نیست، پیام پیشنهاد ثبت‌نام را نمایش بده
+          const suggestionDiv = document.getElementById('register-suggestion');
+          if (user && !user.activated) {
+            console.log(`⚠️ کاربر ثبت‌نام شده اما فعال نیست`);
+            suggestionDiv.style.display = '';
+            suggestionDiv.textContent = 'شما هنوز ثبت‌نام نکرده‌اید. لطفاً ثبت‌نام رزرو کنید.';
+          } else if (!user) {
+            console.log(`⚠️ کاربر اصلاً ثبت‌نام نشده است`);
+            suggestionDiv.style.display = '';
+            suggestionDiv.textContent = 'شما هنوز ثبت‌نام نکرده‌اید. لطفاً ثبت‌نام رزرو کنید.';
+          } else {
+            console.log(`✅ کاربر فعال است: ایندکس=${user.index}`);
+            suggestionDiv.style.display = 'none';
+          }
+          // اگر کیف پول فعال است و مقدار فعلی روت یا خالی است، مقدار را به آدرس کیف پول متصل تغییر بده
+          if ((!refInput.value || refInput.value === 'root') && user.activated) {
+            refInput.value = myAddress;
+          } else if (!user.activated && (!refInput.value || refInput.value === myAddress)) {
+            refInput.value = 'root';
+          }
+          // مقداردهی parent-index
+          parentIndex = user.index ? user.index.toString() : '...';
+          // مقداردهی پیش‌فرض فیلد ایندکس فقط اگر مقدار فعلی راهنما یا خالی است
+          const indexInput = document.getElementById('index-search');
+          if ((!indexInput.value || indexInput.value === defaultGuide) && user.activated && user.index) {
+            // فرمت ایندکس
+            let cpaId = 'CPA' + user.index.toString().padStart(5, '0');
+            indexInput.value = cpaId;
+            indexInput.style.background = '';
+            indexInput.style.color = '';
+            indexInput.style.opacity = '';
+          }
+        } catch (e) {
+          // اگر خطا داشتیم، مقدار پیش‌فرض روت و راهنما را نگه دار
+          refInput.value = 'root';
+          parentIndex = '...';
+        }
+        document.getElementById('parent-index').textContent = parentIndex;
+        
+        
+        
+        // مقداردهی empty-index (پیشنهادی)
+        let emptyIndex = '...';
+        if (parentIndex !== '...') {
+          let left = await contract.getLeftAddress(parentIndex);
+          let right = await contract.getRightAddress(parentIndex);
+          if (left === '0x0000000000000000000000000000000000000000') {
+            emptyIndex = (BigInt(parentIndex) * 2n).toString();
+          } else if (right === '0x0000000000000000000000000000000000000000') {
+            emptyIndex = (BigInt(parentIndex) * 2n + 1n).toString();
+          } else {
+            emptyIndex = 'پر شده';
+          }
+        }
+        document.getElementById('empty-index').textContent = emptyIndex;
+        
+        // هزینه ثبت‌نام رزرو (معادل $23)
+        let regCost = 'معادل $23';
+        try {
+          // دریافت قیمت توکن برای محاسبه دقیق
+          if (typeof contract.getTokenPrice === 'function') {
+            const tokenPrice = await contract.getTokenPrice();
+            // getTokenPrice خروجی با 18 decimal داره، باید formatUnits استفاده کنیم
+            const tokenPriceNum = Number(ethers.formatUnits(tokenPrice, 18));
+            const requiredAmount = (23 / tokenPriceNum);
+            regCost = `${requiredAmount.toFixed(2)} CPA`;
+          }
+        } catch (e) {
+          console.log('خطا در دریافت قیمت توکن:', e);
+          regCost = '23 CPA'; // مقدار پیش‌فرض اگر getTokenPrice کار نکرد
+        }
+        document.getElementById('register-cost').textContent = regCost;
+        
+        // موجودی متیک
+        let maticBalance = '...';
+        if (isConnected && contract && myAddress) {
+          try {
+            let bal = await connection.provider.getBalance(myAddress);
+            maticBalance = bal ? (typeof ethers !== 'undefined' ? Number(ethers.formatEther(bal)).toFixed(2) : (Number(bal)/1e18).toFixed(2)) : '0.00';
+          } catch (e) {
+            maticBalance = '0.00';
+          }
+        }
+        document.getElementById('matic-balance').textContent = maticBalance;
+        // موجودی CPA
+        let cpaBalance = '...';
+        if (isConnected && contract && myAddress && typeof contract.balanceOf === 'function') {
+          try {
+            let cpa = await contract.balanceOf(myAddress);
+            cpaBalance = cpa ? (typeof ethers !== 'undefined' ? Number(ethers.formatEther(cpa)).toFixed(2) : (Number(cpa)/1e18).toFixed(2)) : '0.00';
+            
+            // بررسی کفایت موجودی CPA برای ثبت‌نام رزرو
+            const cpaBalanceElement = document.getElementById('cpa-balance');
+            try {
+              let tokenPriceNum = 1; // قیمت پیش‌فرض 1 دلار
+              if (typeof contract.getTokenPrice === 'function') {
+                const tokenPrice = await contract.getTokenPrice();
+                tokenPriceNum = Number(ethers.formatUnits(tokenPrice, 18));
+              }
+              const requiredCPA = (23 / tokenPriceNum).toFixed(2);
+              
+              // رنگ موجودی CPA
+              if (parseFloat(cpaBalance) >= parseFloat(requiredCPA)) {
+                cpaBalanceElement.style.color = '#00ff88'; // سبز: کافی است
+              } else {
+                cpaBalanceElement.style.color = '#ff453a'; // قرمز: کافی نیست
+              }
+              
+              // رنگ هزینه ثبت‌نام بر اساس کفایت موجودی
+              const registerCostElement = document.getElementById('register-cost');
+              if (registerCostElement) {
+                if (parseFloat(cpaBalance) >= parseFloat(requiredCPA)) {
+                  registerCostElement.style.color = '#00ff88'; // سبز: موجودی کافی است
+                } else {
+                  registerCostElement.style.color = '#ff453a'; // قرمز: موجودی کافی نیست
+                }
+              }
+            } catch (e) {
+              console.log('خطا در بررسی کفایت موجودی:', e);
+            }
+          } catch (e) {
+            cpaBalance = '0.00';
+          }
+        }
+        document.getElementById('cpa-balance').textContent = cpaBalance;
+      } catch (e) {
+        isConnected = false;
+        connStatus.textContent = '❌ اتصال به کیف پول برقرار نشد: ' + (e.message || e);
+        document.getElementById('register-info').style.display = 'none';
+        document.getElementById('register-btn').disabled = true;
+        document.querySelectorAll('input').forEach(i=>i.disabled=true);
+      }
+    }
+         window.addEventListener('DOMContentLoaded', loadRegisterInfo);
+     
+     // گوش دادن به تغییرات کیف پول
+     if (window.ethereum) {
+       window.ethereum.on('accountsChanged', async function (accounts) {
+         console.log('🔄 کیف پول تغییر کرد:', accounts);
+         if (accounts.length > 0) {
+           window.currentUserAddress = accounts[0];
+           await loadRegisterInfo(); // بارگذاری مجدد اطلاعات
+         }
+       });
+     }
+
+         
+
+    // --- Two-way mapping: index <-> address ---
+    // indexInput و refInput فقط یکبار تعریف می‌شوند
+         // وقتی ایندکس تغییر می‌کند، آدرس را به‌روز کن و بررسی خط رفرال
+    indexInput.addEventListener('change', async function() {
+       await checkIndexReferralLine();
+     });
+     
+     // اضافه کردن event listener برای input و paste
+     indexInput.addEventListener('input', async function() {
+       await checkIndexReferralLine();
+     });
+     
+     indexInput.addEventListener('paste', async function() {
+       setTimeout(async () => {
+         await checkIndexReferralLine();
+       }, 100);
+     });
+     
+
+     
+           // تابع بررسی خط رفرال برای ایندکس
+      async function checkIndexReferralLine() {
+        const index = indexInput.value.replace(/[^0-9]/g, '');
+        if (!index) return;
+        
+        try {
+          if (!window.contractConfig || !window.contractConfig.contract) await window.connectWallet();
+          const contract = window.contractConfig.contract;
+          const status = document.getElementById('status-message');
+          
+          // مرحله 1: بررسی وجود ایندکس در شبکه
+          console.log(`🔍 بررسی وجود ایندکس ${index} در شبکه...`);
+          let addr = null;
+          try {
+            addr = await contract.indexToAddress(index);
+            console.log(`📍 آدرس ایندکس ${index}:`, addr);
+          } catch (e) {
+            console.log(`❌ خطا در دریافت آدرس ایندکس ${index}:`, e);
+            status.style.color = '#d32f2f';
+            status.textContent = 'ایندکس وارد شده در شبکه وجود ندارد.';
+            return;
+          }
+          
+          // بررسی اینکه آیا آدرس خالی است (ایندکس وجود ندارد)
+          if (!addr || addr === '0x0000000000000000000000000000000000000000') {
+            status.style.color = '#d32f2f';
+            status.textContent = 'ایندکس وارد شده در شبکه وجود ندارد.';
+            return;
+          }
+          
+          // مرحله 2: بررسی اینکه آیا کاربر در این ایندکس فعال است
+          try {
+            const userAtAddress = await contract.users(addr);
+            console.log(`👤 اطلاعات کاربر در ایندکس ${index}:`, userAtAddress);
+            
+            if (!userAtAddress || !userAtAddress.activated) {
+              status.style.color = '#d32f2f';
+              status.textContent = 'کاربر در این ایندکس فعال نیست.';
+              return;
+            }
+          } catch (e) {
+            console.log(`❌ خطا در بررسی وضعیت کاربر:`, e);
+            status.style.color = '#d32f2f';
+            status.textContent = 'خطا در بررسی وضعیت کاربر.';
+            return;
+          }
+          
+          // مرحله 3: بررسی صلاحیت کاربر جاری
+          let myAddress = null, currentUser = null;
+          try {
+            if (window.currentUserAddress) {
+              myAddress = window.currentUserAddress;
+              currentUser = await contract.users(myAddress);
+            } else {
+              myAddress = contract.signer ? await contract.signer.getAddress() : null;
+              if (myAddress) {
+                currentUser = await contract.users(myAddress);
+                window.currentUserAddress = myAddress;
+              }
+            }
+          } catch (e) {
+            console.log(`خطا در دریافت اطلاعات کاربر:`, e);
+          }
+          
+          console.log(`🔍 بررسی کاربر جاری:`, currentUser);
+          if (currentUser && currentUser.activated && currentUser.index) {
+            const currentUserIndex = parseInt(currentUser.index);
+            const targetIndex = parseInt(index);
+            console.log(`🔍 بررسی صلاحیت: کاربر جاری=${currentUserIndex}, هدف=${targetIndex}`);
+            
+            if (!isIndexInUserSubtree(targetIndex, currentUserIndex)) {
+              status.style.color = '#d32f2f';
+              status.textContent = `شما مجاز به ثبت‌نام رزرو برای این ایندکس نیستید. فقط ایندکس‌های زیرمجموعه شما مجاز هستند.`;
+              return;
+            } else {
+              status.style.color = '#388e3c';
+              status.textContent = 'ایندکس معرف معتبر است و در زیرمجموعه شما قرار دارد.';
+              refInput.value = addr; // تنظیم آدرس معرف
+            }
+          } else {
+            console.log(`⚠️ کاربر فعال نیست یا ایندکس ندارد:`, currentUser);
+            status.style.color = '#d32f2f';
+            status.textContent = `شما باید ابتدا ثبت‌نام کنید تا بتوانید برای دیگران ثبت‌نام رزرو انجام دهید.`;
+            return;
+          }
+          
+        } catch (e) {
+          const status = document.getElementById('status-message');
+          status.style.color = '#d32f2f';
+          status.textContent = 'خطا در بررسی ایندکس: ' + (e.message || e);
+        }
+      }
+         // وقتی آدرس تغییر می‌کند، ایندکس را به‌روز کن و بررسی خط رفرال
+     refInput.addEventListener('change', async function() {
+       await checkReferralLine();
+     });
+     
+     // اضافه کردن event listener برای input و paste
+     refInput.addEventListener('input', async function() {
+       await checkReferralLine();
+     });
+     
+     refInput.addEventListener('paste', async function() {
+       setTimeout(async () => {
+         await checkReferralLine();
+       }, 100);
+     });
+     
+           // تابع بررسی خط رفرال
+      async function checkReferralLine() {
+        const address = refInput.value.trim();
+        if (!/^0x[a-fA-F0-9]{40}$/.test(address)) return;
+        
+        try {
+          if (!window.contractConfig || !window.contractConfig.contract) await window.connectWallet();
+          const contract = window.contractConfig.contract;
+          const status = document.getElementById('status-message');
+          
+          // مرحله 1: بررسی وجود آدرس در شبکه و دریافت اطلاعات کاربر
+          console.log(`🔍 بررسی وجود آدرس ${address} در شبکه...`);
+          let user = null;
+          try {
+            user = await contract.users(address);
+            console.log(`👤 اطلاعات کاربر در آدرس ${address}:`, user);
+          } catch (e) {
+            console.log(`❌ خطا در دریافت اطلاعات کاربر:`, e);
+            status.style.color = '#d32f2f';
+            status.textContent = 'آدرس وارد شده در شبکه وجود ندارد.';
+            return;
+          }
+          
+          // مرحله 2: بررسی اینکه آیا کاربر فعال است
+          if (!user || !user.activated) {
+            status.style.color = '#d32f2f';
+            status.textContent = 'کاربر در این آدرس فعال نیست یا وجود ندارد.';
+            return;
+          }
+          
+          // مرحله 3: بررسی اینکه آیا کاربر ایندکس دارد
+          if (!user.index) {
+            status.style.color = '#d32f2f';
+            status.textContent = 'کاربر در این آدرس ایندکس ندارد.';
+            return;
+          }
+          
+          // مرحله 4: تنظیم ایندکس در فیلد مربوطه
+          let cpaId = 'CPA' + user.index.toString().padStart(5, '0');
+          indexInput.value = cpaId;
+          indexInput.style.background = '';
+          indexInput.style.color = '';
+          indexInput.style.opacity = '';
+          
+          // مرحله 5: بررسی صلاحیت کاربر جاری
+          let myAddress = null, currentUser = null;
+          try {
+            if (window.currentUserAddress) {
+              myAddress = window.currentUserAddress;
+              currentUser = await contract.users(myAddress);
+            } else {
+              myAddress = contract.signer ? await contract.signer.getAddress() : null;
+              if (myAddress) {
+                currentUser = await contract.users(myAddress);
+                window.currentUserAddress = myAddress;
+              }
+            }
+          } catch (e) {
+            console.log(`خطا در دریافت اطلاعات کاربر جاری:`, e);
+          }
+          
+          console.log(`🔍 بررسی کاربر جاری:`, currentUser);
+          if (currentUser && currentUser.activated && currentUser.index) {
+            const currentUserIndex = parseInt(currentUser.index);
+            const targetIndex = parseInt(user.index);
+            console.log(`🔍 بررسی صلاحیت: کاربر جاری=${currentUserIndex}, هدف=${targetIndex}`);
+            
+            if (!isIndexInUserSubtree(targetIndex, currentUserIndex)) {
+              status.style.color = '#d32f2f';
+              status.textContent = `شما مجاز به ثبت‌نام رزرو برای این آدرس نیستید. فقط ایندکس‌های زیرمجموعه شما مجاز هستند.`;
+              return;
+            } else {
+              status.style.color = '#388e3c';
+              status.textContent = 'آدرس معرف معتبر است و در زیرمجموعه شما قرار دارد.';
+            }
+          } else {
+            console.log(`⚠️ کاربر فعال نیست یا ایندکس ندارد:`, currentUser);
+            status.style.color = '#d32f2f';
+            status.textContent = `شما باید ابتدا ثبت‌نام کنید تا بتوانید برای دیگران ثبت‌نام رزرو انجام دهید.`;
+            return;
+          }
+          
+        } catch (e) {
+          const status = document.getElementById('status-message');
+          status.style.color = '#d32f2f';
+          status.textContent = 'خطا در بررسی آدرس: ' + (e.message || e);
+        }
+      }
+     
+
+     
+     // وقتی آدرس کاربر جدید تغییر می‌کند، بررسی کن
+     newUserInput.addEventListener('change', async function() {
+       await checkNewUserAddress();
+     });
+     
+     // اضافه کردن event listener برای input و paste
+     newUserInput.addEventListener('input', async function() {
+       await checkNewUserAddress();
+     });
+     
+     newUserInput.addEventListener('paste', async function() {
+       setTimeout(async () => {
+         await checkNewUserAddress();
+       }, 100);
+     });
+     
+           // تابع بررسی آدرس کاربر جدید
+      async function checkNewUserAddress() {
+        const address = newUserInput.value.trim();
+        const status = document.getElementById('status-message');
+        
+        // اگر آدرس خالی است، پیام را پاک کن
+        if (!address) {
+          status.textContent = '';
+          return;
+        }
+        
+        // بررسی فرمت آدرس
+        if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
+          status.style.color = '#d32f2f';
+          status.textContent = 'آدرس وارد شده معتبر نیست. لطفاً آدرس صحیح را وارد کنید.';
+          return;
+        }
+        
+        try {
+          if (!window.contractConfig || !window.contractConfig.contract) await window.connectWallet();
+          const contract = window.contractConfig.contract;
+          
+          // بررسی اینکه آیا این آدرس قبلاً ثبت‌نام شده است
+          const user = await contract.users(address);
+          if (user && user.activated) {
+            status.style.color = '#d32f2f';
+            status.textContent = 'این آدرس قبلاً ثبت‌نام شده است.';
+            return;
+          }
+          
+          // اگر ثبت‌نام نشده، پیام موفقیت
+          status.style.color = '#388e3c';
+          status.textContent = 'آدرس کاربر جدید معتبر است و می‌تواند ثبت‌نام رزرو شود.';
+          
+          // نمایش ایندکس مربوط به این آدرس (اگر وجود داشته باشد)
+          try {
+            // جستجو در ایندکس‌های موجود برای یافتن این آدرس
+            let foundIndex = null;
+            for (let i = 1; i <= 1000; i++) { // جستجو در 1000 ایندکس اول
+              try {
+                const addrAtIndex = await contract.indexToAddress(i);
+                if (addrAtIndex.toLowerCase() === address.toLowerCase()) {
+                  foundIndex = i;
+                  break;
+                }
+              } catch (e) {
+                // اگر ایندکس وجود نداشته باشد، ادامه بده
+                continue;
+              }
+            }
+            
+            if (foundIndex) {
+              status.textContent += ` (ایندکس: ${foundIndex})`;
+            }
+          } catch (e) {
+            // اگر خطا در جستجوی ایندکس داشتیم، نادیده بگیر
+          }
+        } catch (e) {
+          status.style.color = '#d32f2f';
+          status.textContent = 'خطا در بررسی آدرس: ' + (e.message || e);
+        }
+      }
+      
+
+
+    // ثبت‌نام رزرو کاربر جدید
+    document.getElementById('register-btn').onclick = async function() {
+      const status = document.getElementById('status-message');
+      if (!isConnected) {
+        status.style.color = '#d32f2f';
+        status.textContent = 'لطفاً ابتدا کیف پول خود را متصل کنید.';
+        return;
+      }
+      const referrer = refInput.value.trim();
+      const newUser = document.getElementById('new-user-address').value.trim();
+      const enteredIndexStr = indexInput.value.replace(/[^0-9]/g, '');
+      const enteredIndex = enteredIndexStr ? parseInt(enteredIndexStr) : null;
+      status.style.color = '#1976d2';
+      status.textContent = 'در حال بررسی اطلاعات و اعتبارسنجی...';
+      this.disabled = true;
+      try {
+        if (!/^0x[a-fA-F0-9]{40}$/.test(referrer)) throw new Error('آدرس معرف وارد شده معتبر نیست. لطفاً آدرس صحیح را وارد کنید.');
+        if (!/^0x[a-fA-F0-9]{40}$/.test(newUser)) throw new Error('آدرس کیف پول جدید معتبر نیست. لطفاً آدرس صحیح را وارد کنید.');
+        if (/^0x[a-fA-F0-9]{40}$/.test(referrer) && (!enteredIndexStr || indexInput.value === defaultGuide)) {
+          throw new Error('لطفاً ایندکس معرف را به صورت صحیح وارد کنید.');
+        }
+        if (!window.contractConfig || !window.contractConfig.contract) {
+          await loadRegisterInfo();
+        }
+        const contract = window.contractConfig.contract;
+        if (!contract) throw new Error('اتصال به قرارداد برقرار نشد. لطفاً مجدداً تلاش کنید.');
+                 let myAddress = null, user = null;
+         try {
+           // استفاده از آدرس ذخیره شده
+           if (window.currentUserAddress) {
+             myAddress = window.currentUserAddress;
+             user = await contract.users(myAddress);
+           } else {
+             myAddress = contract.signer ? await contract.signer.getAddress() : null;
+             if (myAddress) {
+               user = await contract.users(myAddress);
+               window.currentUserAddress = myAddress;
+             }
+           }
+         } catch (e) {
+           console.log(`خطا در دریافت اطلاعات کاربر در ثبت‌نام رزرو:`, e);
+         }
+         
+         console.log(`🔍 بررسی کاربر در ثبت‌نام رزرو:`, user);
+                 // بررسی اینکه آیا ایندکس هدف در خط رفرال کاربر جاری قرار دارد
+         if (user && user.activated && user.index && enteredIndex !== null) {
+           const currentUserIndex = parseInt(user.index);
+           const targetIndex = parseInt(enteredIndex);
+           console.log(`🔍 بررسی در ثبت‌نام رزرو: کاربر جاری=${currentUserIndex}, هدف=${targetIndex}`);
+           
+           if (!isIndexInUserSubtree(targetIndex, currentUserIndex)) {
+             throw new Error(`شما فقط مجاز به ثبت‌نام رزرو برای ایندکس‌های زیرمجموعه خود هستید.`);
+           }
+         } else {
+           console.log(`⚠️ کاربر فعال نیست یا ایندکس ندارد در ثبت‌نام رزرو:`, user);
+           throw new Error(`شما باید ابتدا ثبت‌نام کنید تا بتوانید برای دیگران ثبت‌نام رزرو انجام دهید.`);
+        }
+        const addrFromIndex = await contract.indexToAddress(enteredIndex);
+        if (addrFromIndex.toLowerCase() !== referrer.toLowerCase()) {
+          throw new Error('ایندکس وارد شده با آدرس معرف مطابقت ندارد. لطفاً بررسی کنید.');
+        }
+        
+        // بررسی موجودی توکن برای ثبت‌نام رزرو
+        const userBalance = await contract.balanceOf(myAddress);
+        let tokenPriceNum = 1; // قیمت پیش‌فرض 1 دلار
+        try {
+          if (typeof contract.getTokenPrice === 'function') {
+            const tokenPrice = await contract.getTokenPrice();
+            tokenPriceNum = Number(ethers.formatUnits(tokenPrice, 18));
+          }
+        } catch (e) {
+          console.log('خطا در دریافت قیمت توکن، از قیمت پیش‌فرض استفاده می‌شود:', e);
+        }
+        
+        // محاسبه مقدار مورد نیاز (23 دلار / قیمت هر توکن)
+        const requiredAmountFloat = 23 / tokenPriceNum;
+        const requiredAmount = ethers.parseEther(requiredAmountFloat.toString());
+        
+        if (userBalance < requiredAmount) {
+          const requiredFormatted = requiredAmountFloat.toFixed(2);
+          const currentFormatted = Number(ethers.formatEther(userBalance)).toFixed(2);
+          throw new Error(`موجودی CPA شما کافی نیست. مورد نیاز: ${requiredFormatted} CPA، موجودی فعلی: ${currentFormatted} CPA`);
+        }
+        
+        status.textContent = 'در حال ارسال درخواست ثبت‌نام رزرو به شبکه... لطفاً منتظر تأیید تراکنش باشید.';
+        status.style.color = '#1976d2';
+        localStorage.setItem('avatar_' + newUser, selectedAvatar);
+        const tx = await contract.registerFree(referrer, newUser);
+        status.textContent = 'در حال انتظار برای تأیید تراکنش توسط شبکه...';
+        await tx.wait();
+        status.style.color = '#388e3c';
+        status.textContent = 'ثبت‌نام رزرو با موفقیت انجام شد! به خانواده CPA خوش آمدید.';
+        setTimeout(loadRegisterInfo, 1500);
+      } catch (e) {
+        status.style.color = '#d32f2f';
+        let errorMsg = e && (e.reason || (e.revert && e.revert.args && e.revert.args[0]) || e.message || e);
+        if (typeof errorMsg !== 'string') errorMsg = JSON.stringify(errorMsg);
+        if (/already registered|Already registered/i.test(errorMsg)) {
+          status.textContent = 'این آدرس قبلاً ثبت‌نام شده است.';
+        } else if (/not active|inactive|فعال نیست/i.test(errorMsg)) {
+          status.textContent = 'معرف انتخابی فعال نیست. لطفاً معرف فعال وارد کنید.';
+        } else if (/invalid referrer|referrer/i.test(errorMsg)) {
+          status.textContent = 'آدرس معرف معتبر نیست یا وجود ندارد.';
+        } else if (/insufficient|balance|موجودی/i.test(errorMsg)) {
+          // اگر خطای کمبود موجودی از smart contract آمده، همان پیام رو نشون بده
+          if (errorMsg.includes('CPA شما کافی نیست')) {
+            status.textContent = errorMsg;
+          } else {
+            status.textContent = 'موجودی CPA شما برای ثبت‌نام رزرو کافی نیست.';
+          }
+        } else if (/user rejected|reject|لغو شد/i.test(errorMsg)) {
+          status.textContent = 'فرآیند ثبت‌نام رزرو توسط شما لغو شد.';
+        } else if (/execution reverted/i.test(errorMsg)) {
+          const match = errorMsg.match(/reverted: "([^"]+)"/);
+          if (match && match[1]) {
+            status.textContent = 'خطا: ' + match[1];
+          } else {
+            status.textContent = 'تراکنش توسط قرارداد لغو شد. لطفاً ورودی‌ها را بررسی کنید.';
+          }
+        } else {
+          status.textContent = '❌ خطا در ثبت‌نام رزرو: ' + (errorMsg.length > 120 ? errorMsg.slice(0,120)+'...' : errorMsg);
+        }
+      }
+      this.disabled = false;
+    };
+
+    // Clear faded guide on focus for index input
+    indexInput.addEventListener('focus', function() {
+      if (this.value === defaultGuide) {
+        this.value = '';
+        this.style.background = '';
+        this.style.color = '';
+        this.style.opacity = '';
+      }
+    });
+    indexInput.addEventListener('blur', function() {
+      if (this.value.trim() === '') {
+        this.value = defaultGuide;
+        this.style.background = '#f3f3f3';
+        this.style.color = '#888';
+        this.style.opacity = '0.7';
+        refInput.value = 'root';
+      }
+    });
+  </script>
+  
+  <!-- Floating Token Growth Card - کارت شناور رشد توکن -->
+  <script src="js/floating-token-card.js"></script>
+</body>
+</html>

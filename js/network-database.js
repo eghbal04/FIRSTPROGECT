@@ -30,30 +30,33 @@ class NetworkTreeDatabase {
             console.warn('⚠️ دیتابیس هنوز آماده نیست');
             return null;
         }
-
         try {
             const nodeDoc = {
                 ...nodeData,
-                timestamp: new Date(),
+                timestamp: (typeof firebase !== 'undefined' && firebase.firestore && firebase.firestore.FieldValue) ? firebase.firestore.FieldValue.serverTimestamp() : new Date(),
                 date: new Date().toISOString(),
                 userId: 'anonymous',
                 type: 'node'
             };
-
-            // استفاده از localStorage به عنوان جایگزین
-            const nodes = JSON.parse(localStorage.getItem('network_tree_nodes') || '[]');
-            const newNode = {
-                id: Date.now().toString(),
-                ...nodeDoc
-            };
-            nodes.push(newNode);
-            // تبدیل BigInt به رشته هنگام ذخیره‌سازی
-            localStorage.setItem('network_tree_nodes', JSON.stringify(nodes, (key, value) =>
-                typeof value === 'bigint' ? value.toString() : value
-            ));
-            
-            console.log('✅ گره درخت در localStorage ذخیره شد:', newNode.id);
-            return newNode.id;
+            // اگر Firestore فعال است، روی آن ذخیره کن
+            if (typeof db !== 'undefined' && db && typeof isFirebaseInitialized !== 'undefined' && isFirebaseInitialized) {
+                const docRef = await db.collection('network_tree_nodes').add(nodeDoc);
+                console.log('✅ گره درخت در Firestore ذخیره شد:', docRef.id);
+                return docRef.id;
+            } else {
+                // استفاده از localStorage به عنوان جایگزین
+                const nodes = JSON.parse(localStorage.getItem('network_tree_nodes') || '[]');
+                const newNode = {
+                    id: Date.now().toString(),
+                    ...nodeDoc
+                };
+                nodes.push(newNode);
+                localStorage.setItem('network_tree_nodes', JSON.stringify(nodes, (key, value) =>
+                    typeof value === 'bigint' ? value.toString() : value
+                ));
+                console.log('✅ گره درخت در localStorage ذخیره شد:', newNode.id);
+                return newNode.id;
+            }
         } catch (error) {
             console.error('❌ خطا در ذخیره گره درخت:', error);
             return null;
@@ -66,30 +69,32 @@ class NetworkTreeDatabase {
             console.warn('⚠️ دیتابیس هنوز آماده نیست');
             return false;
         }
-
         try {
             const treeDoc = {
                 treeData,
-                timestamp: new Date(),
+                timestamp: (typeof firebase !== 'undefined' && firebase.firestore && firebase.firestore.FieldValue) ? firebase.firestore.FieldValue.serverTimestamp() : new Date(),
                 date: new Date().toISOString(),
                 userId: 'anonymous',
                 type: 'full_tree'
             };
-
-            // استفاده از localStorage به عنوان جایگزین
-            const trees = JSON.parse(localStorage.getItem('network_tree_full') || '[]');
-            const newTree = {
-                id: Date.now().toString(),
-                ...treeDoc
-            };
-            trees.push(newTree);
-            // تبدیل BigInt به رشته هنگام ذخیره‌سازی
-            localStorage.setItem('network_tree_full', JSON.stringify(trees, (key, value) =>
-                typeof value === 'bigint' ? value.toString() : value
-            ));
-            
-            console.log('✅ کل درخت در localStorage ذخیره شد:', newTree.id);
-            return true;
+            if (typeof db !== 'undefined' && db && typeof isFirebaseInitialized !== 'undefined' && isFirebaseInitialized) {
+                const docRef = await db.collection('network_tree_full').add(treeDoc);
+                console.log('✅ کل درخت در Firestore ذخیره شد:', docRef.id);
+                return true;
+            } else {
+                // استفاده از localStorage به عنوان جایگزین
+                const trees = JSON.parse(localStorage.getItem('network_tree_full') || '[]');
+                const newTree = {
+                    id: Date.now().toString(),
+                    ...treeDoc
+                };
+                trees.push(newTree);
+                localStorage.setItem('network_tree_full', JSON.stringify(trees, (key, value) =>
+                    typeof value === 'bigint' ? value.toString() : value
+                ));
+                console.log('✅ کل درخت در localStorage ذخیره شد:', newTree.id);
+                return true;
+            }
         } catch (error) {
             console.error('❌ خطا در ذخیره کل درخت:', error);
             return false;
@@ -102,14 +107,23 @@ class NetworkTreeDatabase {
             console.warn('⚠️ دیتابیس هنوز آماده نیست');
             return [];
         }
-
         try {
-            // استفاده از localStorage
-            const nodes = JSON.parse(localStorage.getItem('network_tree_nodes') || '[]');
-            const limitedNodes = nodes.slice(0, limit);
-            
-            console.log(`✅ ${limitedNodes.length} گره از localStorage بازیابی شد`);
-            return limitedNodes;
+            if (typeof db !== 'undefined' && db && typeof isFirebaseInitialized !== 'undefined' && isFirebaseInitialized) {
+                const snapshot = await db.collection('network_tree_nodes').orderBy('timestamp', 'desc').limit(limit).get();
+                const nodes = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    nodes.push({ id: doc.id, ...data });
+                });
+                console.log(`✅ ${nodes.length} گره از Firestore بازیابی شد`);
+                return nodes;
+            } else {
+                // استفاده از localStorage
+                const nodes = JSON.parse(localStorage.getItem('network_tree_nodes') || '[]');
+                const limitedNodes = nodes.slice(0, limit);
+                console.log(`✅ ${limitedNodes.length} گره از localStorage بازیابی شد`);
+                return limitedNodes;
+            }
         } catch (error) {
             console.error('❌ خطا در دریافت گره‌ها:', error);
             return [];
@@ -122,18 +136,29 @@ class NetworkTreeDatabase {
             console.warn('⚠️ دیتابیس هنوز آماده نیست');
             return null;
         }
-
         try {
-            // استفاده از localStorage
-            const trees = JSON.parse(localStorage.getItem('network_tree_full') || '[]');
-            
-            if (trees.length > 0) {
-                const latestTree = trees[trees.length - 1];
-                console.log('✅ آخرین درخت کامل از localStorage بازیابی شد');
-                return latestTree;
+            if (typeof db !== 'undefined' && db && typeof isFirebaseInitialized !== 'undefined' && isFirebaseInitialized) {
+                const snapshot = await db.collection('network_tree_full').orderBy('timestamp', 'desc').limit(1).get();
+                if (!snapshot.empty) {
+                    const doc = snapshot.docs[0];
+                    const data = doc.data();
+                    console.log('✅ آخرین درخت کامل از Firestore بازیابی شد');
+                    return { id: doc.id, ...data };
+                } else {
+                    console.log('ℹ️ هیچ درخت کاملی در Firestore یافت نشد');
+                    return null;
+                }
             } else {
-                console.log('ℹ️ هیچ درخت کاملی در localStorage یافت نشد');
-                return null;
+                // استفاده از localStorage
+                const trees = JSON.parse(localStorage.getItem('network_tree_full') || '[]');
+                if (trees.length > 0) {
+                    const latestTree = trees[trees.length - 1];
+                    console.log('✅ آخرین درخت کامل از localStorage بازیابی شد');
+                    return latestTree;
+                } else {
+                    console.log('ℹ️ هیچ درخت کاملی در localStorage یافت نشد');
+                    return null;
+                }
             }
         } catch (error) {
             console.error('❌ خطا در دریافت آخرین درخت:', error);
@@ -800,4 +825,4 @@ networkTreeDB.init().then(() => {
     console.log('✅ دیتابیس درخت شبکه آماده است');
 }).catch(error => {
     console.error('❌ خطا در راه‌اندازی دیتابیس:', error);
-}); 
+});

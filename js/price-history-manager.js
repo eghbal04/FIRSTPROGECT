@@ -103,8 +103,17 @@ class PriceHistoryManager {
         // Save to localStorage as backup
         this.saveHistory();
         
-        // حذف ذخیره در Firebase
-        // فقط نمایش قیمت فعلی
+        // Save to Firebase if available
+        if (this.firebaseEnabled && window.firebasePriceHistory && window.firebasePriceHistory.save) {
+            try {
+                await window.firebasePriceHistory.save(price, null); // Save token price only
+                console.log('✅ قیمت توکن در Firebase ذخیره شد:', price);
+            } catch (error) {
+                console.warn('⚠️ خطا در ذخیره قیمت توکن در Firebase:', error);
+            }
+        }
+        
+        // Update current price display
         const priceDisplay = document.getElementById('current-price-display');
         if (priceDisplay) {
             priceDisplay.textContent = this.formatPrice(price);
@@ -130,8 +139,17 @@ class PriceHistoryManager {
         // Save to localStorage as backup
         this.saveHistory();
         
-        // حذف ذخیره در Firebase
-        // فقط نمایش قیمت فعلی
+        // Save to Firebase if available
+        if (this.firebaseEnabled && window.firebasePriceHistory && window.firebasePriceHistory.save) {
+            try {
+                await window.firebasePriceHistory.save(null, price); // Save point price only
+                console.log('✅ قیمت پوینت در Firebase ذخیره شد:', price);
+            } catch (error) {
+                console.warn('⚠️ خطا در ذخیره قیمت پوینت در Firebase:', error);
+            }
+        }
+        
+        // Update current point display
         const pointDisplay = document.getElementById('current-point-display');
         if (pointDisplay) {
             pointDisplay.textContent = this.formatPrice(price);

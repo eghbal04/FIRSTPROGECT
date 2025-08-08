@@ -55,12 +55,12 @@ async function loadUserProfile() {
             lvlBalance = await contract.balanceOf(address);
             lvlBalance = ethers.formatUnits(lvlBalance, 18);
         }
-        // گرفتن DAI (در صورت وجود DAI_ADDRESS و ABI)
+        // گرفتن DAI (نمایش به عنوان USDC)
         try {
             if (typeof window.DAI_ADDRESS !== 'undefined' && typeof window.DAI_ABI !== 'undefined') {
                 const daiContract = new ethers.Contract(window.DAI_ADDRESS, window.DAI_ABI, provider);
                 const daiRaw = await daiContract.balanceOf(address);
-                daiBalance = (Number(daiRaw) / 1e18).toFixed(2);
+                daiBalance = (Number(daiRaw) / 1e18).toFixed(2); // DAI has 18 decimals
             }
         } catch (e) { daiBalance = '0'; }
         // ساخت پروفایل کامل
@@ -112,7 +112,7 @@ function updateProfileUI(profile) {
     if (referrerEl) referrerEl.textContent = referrerText;
 
     const daiEl = document.getElementById('profile-dai');
-    if (daiEl) daiEl.textContent = profile.daiBalance ? formatNumber(profile.daiBalance, 2) + ' DAI' : '0 DAI';
+            if (daiEl) daiEl.textContent = profile.daiBalance ? formatNumber(profile.daiBalance, 2) + ' DAI' : '0 DAI';
 
     const capEl = document.getElementById('profile-income-cap');
     if (capEl) capEl.textContent = profile.userStruct.binaryPointCap || '۰';
@@ -259,7 +259,7 @@ function updateProfileUI(profile) {
     if (maticEl) maticEl.textContent = profile.maticBalance ? (Number(profile.maticBalance).toFixed(2) + ' MATIC') : '0 MATIC';
     // موجودی CPA
     const cpaEl = document.getElementById('profile-lvl');
-    if (cpaEl) cpaEl.textContent = profile.lvlBalance ? profile.lvlBalance + ' CPA' : '0 CPA';
+    if (cpaEl) cpaEl.textContent = profile.lvlBalance ? profile.lvlBalance : '0'; // حذف پسوند CPA
     // نمایش ارزش دلاری CPA و POL
     const maticUsdEl = document.getElementById('profile-matic-usd');
     if (maticUsdEl) maticUsdEl.textContent = profile.polValueUSD ? formatNumber(profile.polValueUSD, 2) + ' $' : '0 $';

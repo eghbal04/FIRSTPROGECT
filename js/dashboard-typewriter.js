@@ -156,16 +156,14 @@ window.updateDashboardTerminalInfo = async function() {
     if (window.contractConfig && window.contractConfig.contract) {
       const contract = window.contractConfig.contract;
       wallets = (await contract.wallets()).toString();
-      totalSupply = ethers.formatUnits(await contract.totalSupply(), 18) + ' CPA';
-      pointValue = parseFloat(ethers.formatUnits(await contract.getPointValue(), 18)).toFixed(2) + ' CPA';
+      totalSupply = ethers.formatUnits(await contract.totalSupply(), 18); // حذف پسوند CPA
+      pointValue = parseFloat(ethers.formatUnits(await contract.getPointValue(), 18)).toFixed(2); // حذف پسوند CPA
       tokenPrice = ethers.formatUnits(await contract.getTokenPrice(), 18);
-      contractTokenBalance = ethers.formatUnits(await contract.balanceOf(contract.target), 18) + ' CPA';
-      cashback = ethers.formatUnits(await (contract.cashBack ? contract.cashBack() : contract.cashback()), 18) + ' CPA';
+      contractTokenBalance = ethers.formatUnits(await contract.balanceOf(contract.target), 18); // حذف پسوند CPA
+      cashback = ethers.formatUnits(await (contract.cashBack ? contract.cashBack() : contract.cashback()), 18); // حذف پسوند CPA
       if (typeof window.DAI_ADDRESS !== 'undefined' && typeof window.DAI_ABI !== 'undefined') {
-        const daiAddress = window.DAI_ADDRESS;
-        const daiAbi = window.DAI_ABI;
-        const daiContract = new ethers.Contract(daiAddress, daiAbi, contract.provider);
-        daiBalance = ethers.formatUnits(await daiContract.balanceOf(contract.target), 18) + ' DAI';
+        const daiContract = new ethers.Contract(window.DAI_ADDRESS, window.DAI_ABI, contract.provider);
+        daiBalance = ethers.formatUnits(await daiContract.balanceOf(contract.target), 18); // حذف پسوند DAI
       }
     }
   } catch(e){}
@@ -175,7 +173,7 @@ window.updateDashboardTerminalInfo = async function() {
   lines.push(`Token Price: ${tokenPrice}`);
   lines.push(`Contract Token Balance: ${contractTokenBalance}`);
   lines.push(`Help Fund: ${cashback}`);
-  lines.push(`Contract DAI Balance: ${daiBalance}`);
+              lines.push(`Contract USDC Balance: ${daiBalance}`);
   lines.push('');
   // --- USER PROFILE ---
   let profile = null;
@@ -193,7 +191,7 @@ window.updateDashboardTerminalInfo = async function() {
     lines.push(`  MATIC: ${profile.maticBalance}`);
     lines.push(`  CPA: ${profile.lvlBalance}`);
     lines.push(`  POL: ${profile.polBalance}`);
-    lines.push(`  DAI: ${profile.daiBalance}`);
+                lines.push(`  USDC: ${profile.daiBalance}`);
     lines.push(`  CPA Value (USD): ${profile.lvlValueUSD}`);
     lines.push(`  POL Value (USD): ${profile.polValueUSD}`);
     lines.push('');
