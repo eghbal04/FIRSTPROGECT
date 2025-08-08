@@ -90,6 +90,26 @@ function updateProfileUI(profile) {
         return Number(val).toLocaleString('en-US', { maximumFractionDigits: decimals });
     };
 
+    // قالب‌بندی فشرده اعداد: k, m, b, t, q, e
+    const formatCompact = (value, smallDecimals = 4, compactDecimals = 2) => {
+        const num = Number(value);
+        if (!isFinite(num)) return '0';
+        const abs = Math.abs(num);
+        if (abs < 1) return num.toFixed(smallDecimals);
+        const units = [
+            { v: 1e18, s: 'e' },
+            { v: 1e15, s: 'q' },
+            { v: 1e12, s: 't' },
+            { v: 1e9,  s: 'b' },
+            { v: 1e6,  s: 'm' },
+            { v: 1e3,  s: 'k' }
+        ];
+        for (const u of units) {
+            if (abs >= u.v) return (num / u.v).toFixed(compactDecimals) + u.s;
+        }
+        return num.toFixed(compactDecimals);
+    };
+
     const shorten = (address) => {
         if (!address) return '---';
         return address.substring(0, 6) + '...' + address.substring(address.length - 4);
@@ -112,7 +132,7 @@ function updateProfileUI(profile) {
     if (referrerEl) referrerEl.textContent = referrerText;
 
     const daiEl = document.getElementById('profile-dai');
-            if (daiEl) daiEl.textContent = profile.daiBalance ? formatNumber(profile.daiBalance, 2) + ' DAI' : '0 DAI';
+    if (daiEl) daiEl.textContent = profile.daiBalance ? (formatCompact(Number(profile.daiBalance), 2, 2) + ' DAI') : '0 DAI';
 
     const capEl = document.getElementById('profile-income-cap');
     if (capEl) capEl.textContent = profile.userStruct.binaryPointCap || '۰';
@@ -256,15 +276,15 @@ function updateProfileUI(profile) {
 
     // موجودی متیک
     const maticEl = document.getElementById('profile-matic');
-    if (maticEl) maticEl.textContent = profile.maticBalance ? (Number(profile.maticBalance).toFixed(2) + ' MATIC') : '0 MATIC';
+    if (maticEl) maticEl.textContent = profile.maticBalance ? (formatCompact(Number(profile.maticBalance), 4, 2) + ' MATIC') : '0 MATIC';
     // موجودی CPA
     const cpaEl = document.getElementById('profile-lvl');
-    if (cpaEl) cpaEl.textContent = profile.lvlBalance ? profile.lvlBalance : '0'; // حذف پسوند CPA
+    if (cpaEl) cpaEl.textContent = profile.lvlBalance ? formatCompact(Number(profile.lvlBalance), 4, 2) : '0';
     // نمایش ارزش دلاری CPA و POL
     const maticUsdEl = document.getElementById('profile-matic-usd');
-    if (maticUsdEl) maticUsdEl.textContent = profile.polValueUSD ? formatNumber(profile.polValueUSD, 2) + ' $' : '0 $';
+    if (maticUsdEl) maticUsdEl.textContent = profile.polValueUSD ? formatCompact(Number(profile.polValueUSD), 2, 2) + ' $' : '0 $';
     const cpaUsdEl = document.getElementById('profile-lvl-usd');
-    if (cpaUsdEl) cpaUsdEl.textContent = profile.lvlValueUSD ? formatNumber(profile.lvlValueUSD, 2) + ' $' : '0 $';
+    if (cpaUsdEl) cpaUsdEl.textContent = profile.lvlValueUSD ? formatCompact(Number(profile.lvlValueUSD), 2, 2) + ' $' : '0 $';
     // تعداد پوینت
     const pointsEl = document.getElementById('profile-total-points');
     if (pointsEl) pointsEl.textContent = profile.userStruct.binaryPoints ? formatNumber(profile.userStruct.binaryPoints, 0) : '۰';

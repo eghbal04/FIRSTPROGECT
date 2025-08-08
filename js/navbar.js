@@ -175,9 +175,10 @@
     .cpa-navbar-hamburger {
       display: flex !important;
       position: fixed;
-      top: 16px;
-      right: 16px;
-      left: auto;
+      bottom: 16px;
+      left: 16px;
+      right: auto;
+      top: auto;
       transform: none;
       margin: 0;
       background: rgba(24,28,42,0.7);
@@ -276,8 +277,10 @@
     @media (min-width: 700px) {
       .cpa-navbar-links { display: flex !important; }
       .cpa-navbar-hamburger {
-        top: 20px;
-        right: 20px;
+        bottom: 20px;
+        left: 20px;
+        top: auto;
+        right: auto;
         font-size: 1.8rem;
         padding: 0.6rem;
       }
@@ -294,7 +297,7 @@
         <span class="pill" id="nav-cpa">CPA: --</span>
         <span class="pill" id="nav-dai">DAI: --</span>
       </div>
-      <button class="cpa-navbar-hamburger" id="navbar-hamburger" aria-label="باز کردن منو">☰</button>
+      <button class="cpa-navbar-hamburger" id="navbar-hamburger" aria-label="باز کردن منو" style="position:fixed;bottom:16px;left:16px;right:auto;top:auto;z-index:10002">☰</button>
     </div>
     <div class="cpa-navbar-mobile-menu" id="navbar-mobile-menu" style="display:none;">
       <button class="cpa-navbar-mobile-close" id="navbar-mobile-close" aria-label="بستن منو">✕</button>
@@ -321,6 +324,22 @@
   document.addEventListener('DOMContentLoaded', function() {
     document.body.insertBefore(navbar, document.body.firstChild);
     document.body.style.marginTop = '64px';
+
+    // Append a final high-priority style to guarantee bottom-left position
+    try {
+      const forcePos = document.createElement('style');
+      forcePos.setAttribute('data-id','force-hamburger-bottom-left');
+      forcePos.textContent = `#navbar-hamburger{position:fixed!important;bottom:calc(16px + env(safe-area-inset-bottom,0px))!important;left:16px!important;top:auto!important;right:auto!important;z-index:10002!important;}`;
+      document.head.appendChild(forcePos);
+    } catch(_) {}
+
+    // Move the hamburger button to body so it's not constrained by navbar layout
+    try {
+      const btn = document.getElementById('navbar-hamburger');
+      if (btn && btn.parentElement !== document.body) {
+        document.body.appendChild(btn);
+      }
+    } catch(_) {}
   });
 
   // Hamburger dropdown logic + Swap/Transfer handlers
@@ -329,11 +348,66 @@
     const mobileMenu = document.getElementById('navbar-mobile-menu');
     const closeBtn = document.getElementById('navbar-mobile-close');
     let menuOpen = false;
+    // Force bottom-left position inline to avoid any CSS override issues
+    function forceHamburgerBottomLeft(){
+      const el = document.getElementById('navbar-hamburger');
+      if (!el) return;
+      try {
+        el.style.setProperty('position','fixed','important');
+        el.style.setProperty('bottom','calc(16px + env(safe-area-inset-bottom, 0px))','important');
+        el.style.setProperty('left','16px','important');
+        el.style.setProperty('top','auto','important');
+        el.style.setProperty('right','auto','important');
+        el.style.setProperty('z-index','10002','important');
+      } catch(_) {
+        el.style.position = 'fixed';
+        el.style.bottom = '16px';
+        el.style.left = '16px';
+        el.style.top = 'auto';
+        el.style.right = 'auto';
+        el.style.zIndex = '10002';
+      }
+    }
+    forceHamburgerBottomLeft();
+    setTimeout(forceHamburgerBottomLeft, 0);
+    setTimeout(forceHamburgerBottomLeft, 250);
+    setTimeout(forceHamburgerBottomLeft, 1000);
+    setTimeout(forceHamburgerBottomLeft, 2000);
+    window.addEventListener('resize', forceHamburgerBottomLeft);
     function openMenu(){ if (mobileMenu){ mobileMenu.style.display='flex'; menuOpen=true; } }
     function closeMenu(){ if (mobileMenu){ mobileMenu.style.display='none'; menuOpen=false; } }
     if (hamburger) hamburger.addEventListener('click', function(e){ e.stopPropagation(); menuOpen?closeMenu():openMenu(); });
     if (closeBtn) closeBtn.addEventListener('click', function(){ closeMenu(); });
     document.addEventListener('click', function(e){ if (menuOpen && mobileMenu && !mobileMenu.contains(e.target) && e.target!==hamburger) closeMenu(); });
+
+    // Create a dedicated floating button at bottom-left and hide the original if needed
+    try {
+      if (!document.getElementById('navbar-fab')){
+        const fab = document.createElement('button');
+        fab.id = 'navbar-fab';
+        fab.setAttribute('aria-label','باز کردن منو');
+        fab.textContent = '☰';
+        fab.style.position = 'fixed';
+        fab.style.bottom = 'calc(16px + env(safe-area-inset-bottom, 0px))';
+        fab.style.left = '16px';
+        fab.style.zIndex = '10003';
+        fab.style.background = 'rgba(24,28,42,0.8)';
+        fab.style.color = '#00ff88';
+        fab.style.border = 'none';
+        fab.style.borderRadius = '10px';
+        fab.style.padding = '10px 12px';
+        fab.style.fontSize = '1.6rem';
+        fab.style.boxShadow = '0 2px 8px rgba(0,255,136,0.25)';
+        fab.style.cursor = 'pointer';
+        fab.style.transition = 'transform .15s ease, background .2s ease';
+        fab.onmouseenter = ()=>{ fab.style.background = 'rgba(0,255,136,0.2)'; };
+        fab.onmouseleave = ()=>{ fab.style.background = 'rgba(24,28,42,0.8)'; };
+        fab.onclick = (ev)=>{ ev.stopPropagation(); if (hamburger) hamburger.click(); else { if (menuOpen) closeMenu(); else openMenu(); } };
+        document.body.appendChild(fab);
+        // Optional: hide the original hamburger to avoid duplicate
+        if (hamburger) hamburger.style.display = 'none';
+      }
+    } catch(_){}
 
     function goTo(section){
       const isIndex = window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname === '';

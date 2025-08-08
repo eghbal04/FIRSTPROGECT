@@ -3,7 +3,7 @@ const deepseek_api ='sk-6074908ce7954bd89d494d57651392a8';
 window.deepseek_api = deepseek_api;
 
 
-// تنظیمات قرارداد LevelUp
+// تنظیمات قرارداد cpa
 
 const CPA_ADDRESS = '0x0f5Da8FB0b32b223fFda6b7905cD1393924bdF0F';
 window.CPA_ADDRESS = CPA_ADDRESS;

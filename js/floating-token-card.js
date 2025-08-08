@@ -43,11 +43,11 @@ class FloatingTokenGrowthCard {
         position: fixed;
         bottom: 20px;
         right: 20px;
-        width: 120px;
-        height: 120px;
+        width: 88px;
+        height: 88px;
         background: linear-gradient(135deg, #00ff88, #00cc6a);
         border-radius: 50%;
-        box-shadow: 0 8px 32px rgba(0, 255, 136, 0.3);
+        box-shadow: 0 6px 24px rgba(0, 255, 136, 0.25);
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -55,12 +55,12 @@ class FloatingTokenGrowthCard {
         z-index: 1000;
         cursor: pointer;
         transition: all 0.3s ease;
-        border: 3px solid rgba(255, 255, 255, 0.2);
+        border: 2px solid rgba(255, 255, 255, 0.2);
         backdrop-filter: blur(10px);
       ">
         <div style="
           color: #1a1f2e;
-          font-size: 0.9rem;
+          font-size: 0.8rem;
           font-weight: bold;
           text-align: center;
           margin-bottom: 5px;
@@ -68,14 +68,14 @@ class FloatingTokenGrowthCard {
         ">رشد توکن</div>
         <div id="token-growth-percentage" style="
           color: #1a1f2e;
-          font-size: 1.4rem;
+          font-size: 1.1rem;
           font-weight: bold;
           font-family: monospace;
           text-align: center;
         ">--%</div>
         <div id="token-growth-status" style="
           color: #1a1f2e;
-          font-size: 0.7rem;
+          font-size: 0.6rem;
           font-weight: bold;
           text-align: center;
           margin-top: 2px;
@@ -122,8 +122,8 @@ class FloatingTokenGrowthCard {
   
   expand() {
     this.isExpanded = true;
-    this.card.style.width = '200px';
-    this.card.style.height = '200px';
+    this.card.style.width = '160px';
+    this.card.style.height = '160px';
     this.card.style.borderRadius = '20px';
     this.card.style.background = 'linear-gradient(135deg, #00ff88, #00cc6a, #00ff88)';
     this.card.style.backgroundSize = '200% 200%';
@@ -138,8 +138,8 @@ class FloatingTokenGrowthCard {
   
   collapse() {
     this.isExpanded = false;
-    this.card.style.width = '120px';
-    this.card.style.height = '120px';
+    this.card.style.width = '88px';
+    this.card.style.height = '88px';
     this.card.style.borderRadius = '50%';
     this.card.style.background = 'linear-gradient(135deg, #00ff88, #00cc6a)';
     this.card.style.animation = 'none';
@@ -376,8 +376,8 @@ function addFloatingCardStyles() {
       #floating-token-growth-card {
         bottom: 10px;
         right: 10px;
-        width: 80px;
-        height: 80px;
+        width: 70px;
+        height: 70px;
       }
       
       #floating-token-growth-card div:first-child {
@@ -385,27 +385,22 @@ function addFloatingCardStyles() {
         margin-bottom: 2px !important;
       }
       
-      #token-growth-percentage {
-        font-size: 1rem !important;
-      }
+      #token-growth-percentage { font-size: 0.95rem !important; }
       
       #token-growth-status {
         font-size: 0.6rem !important;
         margin-top: 1px !important;
       }
       
-      #floating-token-growth-card.expanded {
-        width: 140px;
-        height: 140px;
-      }
+      #floating-token-growth-card.expanded { width: 128px; height: 128px; }
     }
     
     @media (max-width: 480px) {
       #floating-token-growth-card {
         bottom: 8px;
         right: 8px;
-        width: 70px;
-        height: 70px;
+        width: 62px;
+        height: 62px;
       }
       
       #floating-token-growth-card div:first-child {
@@ -413,19 +408,14 @@ function addFloatingCardStyles() {
         margin-bottom: 1px !important;
       }
       
-      #token-growth-percentage {
-        font-size: 0.9rem !important;
-      }
+      #token-growth-percentage { font-size: 0.85rem !important; }
       
       #token-growth-status {
         font-size: 0.5rem !important;
         margin-top: 1px !important;
       }
       
-      #floating-token-growth-card.expanded {
-        width: 120px;
-        height: 120px;
-      }
+      #floating-token-growth-card.expanded { width: 112px; height: 112px; }
     }
   `;
   document.head.appendChild(style);

@@ -141,15 +141,24 @@
             const maticBalance = await provider.getBalance(address);
             const cpaBalance = await contract.balanceOf(address);
             
-            // تابع کوتاه کردن اعداد بزرگ
-            function formatLargeNumber(num) {
-                if (num >= 1000000) {
-                    return (num / 1000000).toFixed(1) + 'M';
-                } else if (num >= 1000) {
-                    return (num / 1000).toFixed(1) + 'K';
-                } else {
-                    return num.toFixed(2);
+            // قالب‌بندی فشرده اعداد: k, m, b, t, q, e
+            function formatCompact(value, smallDecimals = 4, compactDecimals = 2) {
+                const num = Number(value);
+                if (!isFinite(num)) return '0';
+                const abs = Math.abs(num);
+                if (abs < 1) return num.toFixed(smallDecimals);
+                const units = [
+                    { v: 1e18, s: 'e' }, // quintillion
+                    { v: 1e15, s: 'q' }, // quadrillion
+                    { v: 1e12, s: 't' }, // trillion
+                    { v: 1e9,  s: 'b' }, // billion
+                    { v: 1e6,  s: 'm' }, // million
+                    { v: 1e3,  s: 'k' }  // thousand
+                ];
+                for (const u of units) {
+                    if (abs >= u.v) return (num / u.v).toFixed(compactDecimals) + u.s;
                 }
+                return num.toFixed(compactDecimals);
             }
             
             // محاسبه معادل دلاری CPA
@@ -203,16 +212,16 @@
                 <div class="balance-box">
                     <div class="balance-item">
                         <div class="balance-label">CPA</div>
-                        <span class="balance-value" title="${Number.parseFloat(ethers.formatUnits(cpaBalance.toString(), 18)).toLocaleString('en-US', {maximumFractionDigits: 4})}">${formatLargeNumber(Number.parseFloat(ethers.formatUnits(cpaBalance.toString(), 18)))}</span>
-                        <div style="font-size:0.8rem;color:#a786ff;margin-top:2px;">≈ $${formatLargeNumber(cpaUsdValue)}</div>
+                        <span class="balance-value" title="${Number.parseFloat(ethers.formatUnits(cpaBalance.toString(), 18)).toLocaleString('en-US', {maximumFractionDigits: 4})}">${formatCompact(Number.parseFloat(ethers.formatUnits(cpaBalance.toString(), 18)))}</span>
+                        <div style="font-size:0.8rem;color:#a786ff;margin-top:2px;">≈ $${formatCompact(cpaUsdValue, 2, 2)}</div>
                     </div>
                     <div class="balance-item">
                         <div class="balance-label">MATIC</div>
-                        <span class="balance-value" title="${Number.parseFloat(ethers.formatEther(maticBalance.toString())).toLocaleString('en-US', {maximumFractionDigits: 4})}">${formatLargeNumber(Number.parseFloat(ethers.formatEther(maticBalance.toString())))}</span>
+                        <span class="balance-value" title="${Number.parseFloat(ethers.formatEther(maticBalance.toString())).toLocaleString('en-US', {maximumFractionDigits: 4})}">${formatCompact(Number.parseFloat(ethers.formatEther(maticBalance.toString())), 4, 2)}</span>
                     </div>
                     <div class="balance-item">
                         <div class="balance-label">DAI</div>
-                        <span class="balance-value" title="${Number.parseFloat(daiBalance.toString()).toLocaleString('en-US', {maximumFractionDigits: 4})}">${formatLargeNumber(Number.parseFloat(daiBalance.toString()))}</span>
+                        <span class="balance-value" title="${Number.parseFloat(daiBalance.toString()).toLocaleString('en-US', {maximumFractionDigits: 4})}">${formatCompact(Number.parseFloat(daiBalance.toString()), 2, 2)}</span>
                     </div>
                 </div>
                 <div style="display:flex;gap:1.2rem;justify-content:center;margin-bottom:1.5rem;">

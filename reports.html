@@ -32,7 +32,26 @@
             font-size: 2.1em;
             text-shadow: 0 2px 8px #00ff8822;
         }
+        #reports-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 14px; }
+        .summary-card { background: linear-gradient(135deg,#232946,#1b2036); border:1px solid rgba(167,134,255,0.25); border-radius: 12px; padding: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.25); }
+        .summary-card .label { color:#a786ff; font-size: 0.9rem; }
+        .summary-card .value { color:#fff; font-weight:800; font-size:1.1rem; margin-top:4px; }
+        #reports-controls { display:flex; align-items:center; gap:10px; justify-content:center; margin-bottom:12px; flex-wrap: wrap; }
+        .chip { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; border:1px solid rgba(167,134,255,0.35); color:#a786ff; }
+        #reports-table { width:100%; border-collapse: collapse; }
+        #reports-table th, #reports-table td { padding:10px; border-bottom:1px solid #2d3250; text-align:right; }
+        #reports-table th { color:#a786ff; font-weight:700; position:sticky; top:0; background:#232946; }
+        .type-badge { display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border-radius:8px; font-size:0.85rem; color:#232946; background:#00ff88; }
+        .type-badge.warn { background:#ffd166; }
+        .type-badge.info { background:#73c0ff; }
+        .type-badge.error { background:#ff6b6b; color:#fff; }
         #reports-list { min-height: 120px; }
+        /* تایپ‌نویس: کرسر چشمک‌زن */
+        .type-cursor { display:inline-block; width: 8px; margin-right:2px; background:#00ff88; animation: blink 1s steps(1) infinite; vertical-align:baseline; }
+        @keyframes blink { 50% { opacity: 0; } }
+        /* نوار پیشرفت گزارشات */
+        #reports-progress { position: relative; width: 100%; height: 1px; background: rgba(167,134,255,0.25); border-radius: 999px; overflow: hidden; }
+        #reports-progress .bar { position:absolute; top:0; right:0; height:100%; width:0%; background: linear-gradient(90deg,#00ff88,#a786ff); transition: width .2s ease; border-radius: 999px; }
         .report-sentence {
             padding: 14px 0;
             font-size: 1.13em;
@@ -169,15 +188,11 @@
 <body>
     <script src="js/navbar.js"></script>
     <div class="container">
+        <div id="reports-progress" style="margin-bottom:8px;"><div class="bar"></div></div>
         <h1>گزارشات فعالیت شما</h1>
-        <button id="connect-wallet-btn">اتصال کیف پول</button>
-        <div style="display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:18px;">
-            <input type="date" id="report-date-from" style="padding:7px 10px;font-size:1em;border-radius:6px;border:1px solid #1976d2;" />
-            <span style="color:#a786ff;">تا</span>
-            <input type="date" id="report-date-to" style="padding:7px 10px;font-size:1em;border-radius:6px;border:1px solid #1976d2;" />
-            <button id="filter-date-btn" style="padding:7px 18px;font-size:1em;border-radius:6px;border:1px solid #1976d2;background:#1976d2;color:#fff;cursor:pointer;">فیلتر تاریخ</button>
+        <div id="reports-controls">
             <button id="category-btn" style="padding:7px 18px;font-size:1em;border-radius:6px;border:1px solid #1976d2;background:#1976d2;color:#fff;cursor:pointer;">دسته‌بندی</button>
-            <select id="event-type-select" style="padding:7px 18px;font-size:1em;border-radius:6px;border:1px solid #ddd;max-width:220px;">
+            <select id="event-type-select" style="padding:7px 18px;font-size:1em;border-radius:6px;border:1px solid #ddd;max-width:240px;">
                 <option value="all">همه دسته‌ها</option>
                 <option value="registration">ثبت‌نام و فعال‌سازی</option>
                 <option value="referral_registration">معرفی و ثبت‌نام</option>
@@ -208,140 +223,58 @@
     <script src="js/web3-interactions.js"></script>
     <script src="js/reports.js"></script>
     <script>
-        // --- رفع خطا: تعریف توابع کمکی برای نمایش دسته و توضیح ایونت ---
-        window.getEventTypeLabel = function(type) {
-            const labels = {
-                registration: '🎯 ثبت‌نام و فعال‌سازی',
-                referral_registration: '👥 معرفی و ثبت‌نام',
-                purchase: '🛒 خرید اضافی', 
-                tokensbought: '💰 خرید توکن (DAI→CPA)', 
-                tokenssold: '💸 فروش توکن (CPA→DAI)',
-                reward_transfer: '🎁 دریافت از قرارداد',
-                payment_transfer: '💳 پرداخت به قرارداد',
-                incoming_transfer: '📥 انتقال CPA ورودی',
-                outgoing_transfer: '📤 انتقال CPA خروجی',
-                dai_incoming_transfer: '💵📥 انتقال DAI ورودی',
-                dai_outgoing_transfer: '💵📤 انتقال DAI خروجی',
-                dai_approval: '💵✅ تأییدیه DAI',
-                binarypoints: '⭐ امتیاز باینری', 
-                binaryreward: '🏆 پاداش باینری', 
-                tree: '🌳 ساختار شبکه',
-                indextransfer: '🔄 انتقال ایندکس', 
-                monthlyreward: '📅 پاداش ماهانه',
-                approval: '✅ تأییدیه انتقال',
-                binarypool: '🏊 استخر باینری',
-                monthlyfail: '❌ خطاهای پاداش'
-            };
-            return labels[type] || type;
+      // نمایش برچسب فارسی برای هر دسته
+      window.getEventTypeLabel = function(type) {
+        const labels = {
+          registration: '🎯 ثبت‌نام و فعال‌سازی',
+          referral_registration: '👥 معرفی و ثبت‌نام',
+          purchase: '🛒 خرید اضافی',
+          tokensbought: '💰 خرید توکن (DAI→CPA)',
+          tokenssold: '💸 فروش توکن (CPA→DAI)',
+          reward_transfer: '🎁 دریافت از قرارداد',
+          payment_transfer: '💳 پرداخت به قرارداد',
+          incoming_transfer: '📥 انتقال CPA ورودی',
+          outgoing_transfer: '📤 انتقال CPA خروجی',
+          dai_incoming_transfer: '💵📥 انتقال DAI ورودی',
+          dai_outgoing_transfer: '💵📤 انتقال DAI خروجی',
+          dai_approval: '💵✅ تأییدیه DAI',
+          binarypoints: '⭐ امتیاز باینری',
+          binaryreward: '🏆 پاداش باینری',
+          tree: '🌳 ساختار شبکه',
+          indextransfer: '🔄 انتقال ایندکس',
+          monthlyreward: '📅 پاداش ماهانه',
+          approval: '✅ تأییدیه انتقال',
+          binarypool: '🏊 استخر باینری',
+          monthlyfail: '❌ خطاهای پاداش'
         };
-        window.getEventDescription = function(type, details) {
-            // اگر details رشته است، همان را برگردان
-            if (typeof details === 'string') return details;
-            // اگر details شیء است، مقادیر مهم را نمایش بده
-            if (typeof details === 'object' && details !== null) {
-                return Object.values(details).join(' | ');
+        return labels[type] || type;
+      };
+
+      // پیش‌فرض: همه تاریخچه را بخوان
+      window.REPORTS_SHOW_ALL = true;
+
+      // شروع استریم پس از بارگذاری و وجود اتصال ولت
+      window.addEventListener('DOMContentLoaded', async function() {
+        try {
+          if (typeof window.ethereum !== 'undefined') {
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            if (accounts && accounts.length > 0 && typeof window.startReportsStream === 'function') {
+              window.startReportsStream();
             }
-            return '';
-        };
-        // تلاش برای بارگذاری گزارشات هنگام لود صفحه
-        async function tryLoadReports() {
-            if (window.loadReports) window.loadReports();
-        }
-        document.getElementById('connect-wallet-btn').onclick = async function() {
-            if (typeof window.ethereum !== 'undefined') {
-                try {
-                    await window.ethereum.request({ method: 'eth_requestAccounts' });
-                    this.style.display = 'none';
-                    tryLoadReports();
-                } catch (e) {
-                    alert('اتصال به کیف پول لغو شد.');
-                }
-            } else {
-                alert('لطفاً افزونه MetaMask یا کیف پول Web3 را نصب کنید.');
-            }
-        };
-        // دکمه دسته‌بندی، روی select فوکوس می‌کند
-        document.getElementById('category-btn').onclick = function() {
-            document.getElementById('event-type-select').focus();
-        };
-        // تابع فیلتر تاریخ روی گزارشات
-        let allReportsCache = [];
-        function filterReportsByDate(reports, from, to) {
-            if (!from && !to) return reports;
-            const fromTime = from ? new Date(from).getTime() : 0;
-            const toTime = to ? new Date(to).getTime() + 24*3600*1000 : Infinity;
-            return reports.filter(r => r.timestamp >= fromTime && r.timestamp < toTime);
-        }
-        // اگر کیف پول قبلاً متصل است، دکمه را مخفی کن و گزارشات را لود کن
-        window.addEventListener('DOMContentLoaded', async function() {
-            if (typeof window.ethereum !== 'undefined') {
-                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-                if (accounts && accounts.length > 0) {
-                    document.getElementById('connect-wallet-btn').style.display = 'none';
-                    tryLoadReports();
-                }
-            }
-        });
-        window.loadReports = async function(address) {
-            const reportsContainer = document.getElementById('reports-list');
-            reportsContainer.innerHTML = '<div class="loading">در حال بارگذاری گزارشات...</div>';
-            const reports = await window.fetchReports(address);
-            allReportsCache = reports;
-            renderFilteredReports();
-            // لیسنر فیلتر تاریخ
-            document.getElementById('filter-date-btn').onclick = function() {
-                renderFilteredReports();
-            };
-        };
-        function renderFilteredReports() {
-            const reportsContainer = document.getElementById('reports-list');
-            const from = document.getElementById('report-date-from').value;
-            const to = document.getElementById('report-date-to').value;
-            let filtered = allReportsCache;
-            if (from || to) {
-                filtered = filterReportsByDate(allReportsCache, from, to);
-            }
-            reportsContainer.innerHTML = '';
-            if (filtered.length === 0) {
-                reportsContainer.innerHTML = '<div class="no-reports">گزارشی پیدا نشد.</div>';
-                return;
-            }
-            // دسته‌بندی بر اساس type
-            const eventGroups = {};
-            filtered.forEach(report => {
-                const eventType = report.type;
-                if (!eventGroups[eventType]) {
-                    eventGroups[eventType] = [];
-                }
-                eventGroups[eventType].push(report);
-            });
-            // نمایش هر گروه
-            for (const eventType in eventGroups) {
-                const reports = eventGroups[eventType];
-                if (reports.length > 0) {
-                    const groupElement = document.createElement('div');
-                    groupElement.classList.add('event-group');
-                    const h3 = document.createElement('h3');
-                    h3.textContent = window.getEventTypeLabel ? window.getEventTypeLabel(eventType) : eventType;
-                    groupElement.appendChild(h3);
-                    // نمایش هر گزارش با getReportSentence
-                    reports.forEach(report => {
-                        const sentenceDiv = document.createElement('div');
-                        sentenceDiv.classList.add('report-sentence');
-                        // پشتیبانی از async بودن getReportSentence
-                        if (window.getReportSentence) {
-                            window.getReportSentence(report).then(sentence => {
-                                sentenceDiv.innerHTML = sentence;
-                            });
-                        } else {
-                            sentenceDiv.textContent = report.title || '-';
-                        }
-                        groupElement.appendChild(sentenceDiv);
-                    });
-                    reportsContainer.appendChild(groupElement);
-                }
-            }
-        }
+          }
+        } catch(e) {}
+      });
+
+      // دکمه دسته‌بندی فقط روی select فوکوس می‌کند
+      document.getElementById('category-btn').onclick = function() {
+        document.getElementById('event-type-select').focus();
+      };
+
+      // تغییر دسته باعث شروع مجدد استریم با فیلتر جدید می‌شود
+      document.getElementById('event-type-select').onchange = function(){
+        window.REPORT_TYPE_FILTER = this.value;
+        if (typeof window.startReportsStream === 'function') window.startReportsStream();
+      };
     </script>
     
     <!-- Floating Token Growth Card - کارت شناور رشد توکن -->
