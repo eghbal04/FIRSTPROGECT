@@ -306,6 +306,7 @@
         <a href="register.html" class="cpa-navbar-link">ثبت‌نام</a>
         <a href="register-free.html" class="cpa-navbar-link">رزرو</a>
         <a href="reports.html" class="cpa-navbar-link">گزارش</a>
+         <a href="professional-tree.html" class="cpa-navbar-link">همکاران</a>
         <a href="profile.html" class="cpa-navbar-link">پروفایل</a>
         <a href="products.html" class="cpa-navbar-link">محصولات</a>
         <a href="utility.html" class="cpa-navbar-link">ابزارها</a>
