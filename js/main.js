@@ -285,7 +285,7 @@ async function fetchUserProfile() {
         if (signer && typeof window.DAI_ADDRESS !== 'undefined' && typeof window.DAI_ABI !== 'undefined') {
           const daiContract = new ethers.Contract(window.DAI_ADDRESS, window.DAI_ABI, signer);
           const daiRaw = await daiContract.balanceOf(address);
-          daiBalance = ethers.formatUnits(daiRaw, 18); // DAI has 18 decimals (display as USDC)
+          daiBalance = ethers.formatUnits(daiRaw, 18); // DAI has 18 decimals
         }
         // دریافت اطلاعات کاربر
         const userData = await contract.users(address);
@@ -3042,13 +3042,17 @@ async function updateTransferBalances(contract, address, provider) {
           daiBalance = 'خطا';
         }
         
-        // به‌روزرسانی نمایش
+        // به‌روزرسانی نمایش + ذخیره مقدار خام برای استفاده دکمه «حداکثر»
         polyBalanceDiv.textContent = polyBalance;
+        polyBalanceDiv.dataset.value = (isNaN(Number(polyBalance)) ? '0' : String(polyBalance));
         cpaBalanceDiv.textContent = cpaBalance;
         if (cpaFullAmount > 0) {
             cpaBalanceDiv.title = cpaFullAmount.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' CPA';
         }
+        // مقدار کامل CPA را در data ذخیره کن تا از نمایش کوتاه‌شده (K/M) مستقل باشیم
+        cpaBalanceDiv.dataset.value = String(cpaFullAmount);
         daiBalanceDiv.textContent = daiBalance;
+        daiBalanceDiv.dataset.value = (isNaN(Number(daiBalance)) ? '0' : String(daiBalance));
         
         // نمایش معادل دلاری CPA
         const cpaUsdDiv = document.getElementById('transfer-cpa-usd');

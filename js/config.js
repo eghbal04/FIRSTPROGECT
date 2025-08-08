@@ -8,13 +8,11 @@ window.deepseek_api = deepseek_api;
 const CPA_ADDRESS = '0x0f5Da8FB0b32b223fFda6b7905cD1393924bdF0F';
 window.CPA_ADDRESS = CPA_ADDRESS;
 
-// برای تست از DAI استفاده می‌کنیم ولی نام‌ها USDC هستند
-const DAI_ADDRESS_FOR_TEST = '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063'; // Polygon DAI (for testing)
-const USDC_ADDRESS_REAL = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174'; // Real USDC address
+// آدرس DAI (Polygon)
+const DAI_ADDRESS = '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063'; // Polygon DAI
 
-// استفاده از DAI برای تست
-window.USDC_ADDRESS = DAI_ADDRESS_FOR_TEST;
-window.DAI_ADDRESS = DAI_ADDRESS_FOR_TEST;
+// استفاده از DAI
+window.DAI_ADDRESS = DAI_ADDRESS;
 const DAI_ABI = [
 	{
 		"inputs": [
@@ -2417,6 +2415,7 @@ const CPA_ABI =[
 		"type": "function"
 	}
 ];
+window.CPA_ABI = CPA_ABI;
 
 // مدیریت درخواست‌های همزمان
 let isInitializing = false;
@@ -3247,9 +3246,9 @@ window.getUserProfile = async function() {
 			// دریافت موجودی DAI
 			let daiBalance = '0';
 			try {
-					  const daiContract = new ethers.Contract(DAI_ADDRESS_FOR_TEST, DAI_ABI, provider);
+					  const daiContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, provider);
 	  const daiRaw = await daiContract.balanceOf(address);
-	  daiBalance = (Number(daiRaw) / 1e18).toFixed(2); // DAI has 18 decimals (display as USDC)
+      daiBalance = (Number(daiRaw) / 1e18).toFixed(2); // DAI has 18 decimals
 			} catch (e) {
 				daiBalance = '0';
 			}
@@ -4213,9 +4212,9 @@ window.updateDashboardStats = async function() {
 	  safeUpdate('dashboard-cashback-value', 'N/A');
 	}
 
-	// USDC CONTRACT BALANCE - Using contract's getContractdaiBalance function
+// DAI CONTRACT BALANCE - Using contract's getContractDAIBalance function
 	try {
-	  console.log('💵 Fetching USDC contract balance...');
+  console.log('💵 Fetching DAI contract balance...');
 	  let daiBalance;
 	  
 	  // Try different possible function names (corrected function name)
@@ -4225,18 +4224,18 @@ window.updateDashboardStats = async function() {
 		daiBalance = await contract.getContractDAIBalance();
 	  } else {
 		// Fallback to direct DAI contract call (for testing)
-		if (typeof DAI_ADDRESS_FOR_TEST !== 'undefined' && typeof DAI_ABI !== 'undefined') {
-		  const daiContract = new ethers.Contract(DAI_ADDRESS_FOR_TEST, DAI_ABI, contract.provider);
+		if (typeof DAI_ADDRESS !== 'undefined' && typeof DAI_ABI !== 'undefined') {
+		  const daiContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, contract.provider);
 		  daiBalance = await daiContract.balanceOf(contract.target);
 		} else {
 		  daiBalance = 0n;
 		}
 	  }
 	  
-	  // DAI has 18 decimals (but display as USDC)
-	  const formattedUsdc = parseFloat(ethers.formatUnits(daiBalance, 18)).toLocaleString('en-US', {maximumFractionDigits: 2});
-	  safeUpdate('dashboard-dai-balance', formattedUsdc); // حذف پسوند DAI
-	  console.log('✅ DAI contract balance updated:', formattedUsdc);
+  // DAI has 18 decimals
+  const formattedDai = parseFloat(ethers.formatUnits(daiBalance, 18)).toLocaleString('en-US', {maximumFractionDigits: 2});
+  safeUpdate('dashboard-dai-balance', formattedDai);
+  console.log('✅ DAI contract balance updated:', formattedDai);
 
 	} catch (e) {
 	  console.error('❌ Error fetching DAI balance:', e);
@@ -4395,7 +4394,7 @@ async function updatePriceChart() {
 }
 
 // Returns the DAI balance of the main contract (CPA_ADDRESS) as a string in DAI units (18 decimals)
-async function getContractUSDCBalance() {
+async function getContractDAIBalance() {
   if (typeof ethers === 'undefined') throw new Error('ethers.js not loaded');
   const provider = (window.contractConfig && window.contractConfig.contract && window.contractConfig.contract.provider)
 	? window.contractConfig.contract.provider
@@ -4403,15 +4402,13 @@ async function getContractUSDCBalance() {
 	  ? window.contractConfig.provider
 	  : (window.ethereum ? new ethers.BrowserProvider(window.ethereum) : null);
   if (!provider) throw new Error('No provider');
-  const daiContract = new ethers.Contract(DAI_ADDRESS_FOR_TEST, DAI_ABI, provider);
+  const daiContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, provider);
   const balanceRaw = await daiContract.balanceOf(CPA_ADDRESS);
-  return ethers.formatUnits(balanceRaw, 18); // DAI has 18 decimals (but display as USDC)
+  return ethers.formatUnits(balanceRaw, 18); // DAI has 18 decimals
 }
 
-// Backward compatibility
-async function getContractDAIBalance() {
-  return await getContractUSDCBalance();
-}
+// Backward compatibility (keep name on window if referenced elsewhere)
+window.getContractDAIBalance = getContractDAIBalance;
 
 // ... existing code ...
 // Returns the raw totalClaimablePoints value (BigInt)
@@ -4475,8 +4472,8 @@ async function updateContractStats() {
 	const contract = new ethers.Contract(CPA_ADDRESS, CPA_ABI, provider);
 	// Total Points (integer, no decimals)
 	window.contractStats.totalPoints = (await contract.totalClaimablePoints()).toString();
-	// USDC Balance (calls helper)
-	window.contractStats.daiBalance = await getContractUSDCBalance();
+  // DAI Balance (calls helper)
+  window.contractStats.daiBalance = await getContractDAIBalance();
 	// Token Balance (calls helper)
 	window.contractStats.tokenBalance = await getContractTokenBalance();
 	// Wallets count
@@ -5010,7 +5007,7 @@ window.tokenAddress = CPA_ADDRESS;
 window.tokenAbi = CPA_ABI;
 
 // ... existing code ...
-window.DAI_ADDRESS = DAI_ADDRESS_FOR_TEST;
+window.DAI_ADDRESS = DAI_ADDRESS;
 window.DAI_ABI = DAI_ABI;
 window.CPA_ADDRESS = CPA_ADDRESS;
 window.CONTRACT_ABI = CPA_ABI;

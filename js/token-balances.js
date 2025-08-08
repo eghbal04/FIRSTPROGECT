@@ -80,7 +80,7 @@ window.TokenBalances = {
                 if (cpaBalance) balances.cpa = Number(cpaBalance).toFixed(2);
             }
 
-                    // DAI Balance (display as USDC)
+                    // DAI Balance
         const daiBalance = await this.getTokenBalance(
             address,
             window.DAI_ADDRESS,

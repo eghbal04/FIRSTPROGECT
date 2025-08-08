@@ -55,7 +55,7 @@ async function loadUserProfile() {
             lvlBalance = await contract.balanceOf(address);
             lvlBalance = ethers.formatUnits(lvlBalance, 18);
         }
-        // گرفتن DAI (نمایش به عنوان USDC)
+        // گرفتن DAI
         try {
             if (typeof window.DAI_ADDRESS !== 'undefined' && typeof window.DAI_ABI !== 'undefined') {
                 const daiContract = new ethers.Contract(window.DAI_ADDRESS, window.DAI_ABI, provider);

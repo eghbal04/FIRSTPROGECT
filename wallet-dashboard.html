@@ -423,16 +423,16 @@
 
                 // دریافت موجودی DAI
                 try {
-                    if ((typeof window.USDC_ADDRESS !== 'undefined' || typeof window.DAI_ADDRESS !== 'undefined') && typeof window.DAI_ABI !== 'undefined') {
-                        const usdcContract = new ethers.Contract(window.USDC_ADDRESS || window.DAI_ADDRESS, window.DAI_ABI, contractConfig.signer);
-                        const usdcBalance = await usdcContract.balanceOf(currentWalletAddress);
+                    if ((typeof window.DAI_ADDRESS !== 'undefined') && typeof window.DAI_ABI !== 'undefined') {
+                        const daiContract = new ethers.Contract(window.DAI_ADDRESS, window.DAI_ABI, contractConfig.signer);
+                        const daiBalance = await daiContract.balanceOf(currentWalletAddress);
                         if (window.smartUpdate) {
-                            window.smartUpdate('dai-balance', ethers.formatUnits(usdcBalance, 6));
+                            window.smartUpdate('dai-balance', ethers.formatUnits(daiBalance, 18));
                         } else if (window.updateValueSmoothly) {
-                            window.updateValueSmoothly('dai-balance', ethers.formatUnits(usdcBalance, 6));
+                            window.updateValueSmoothly('dai-balance', ethers.formatUnits(daiBalance, 18));
                         } else {
                             const el = document.getElementById('dai-balance');
-                            const newValue = ethers.formatUnits(usdcBalance, 6);
+                            const newValue = ethers.formatUnits(daiBalance, 18);
                             if (el && el.textContent !== newValue) {
                                 el.textContent = newValue;
                             }
@@ -598,5 +598,6 @@
     
     <!-- Floating Token Growth Card - کارت شناور رشد توکن -->
     <script src="js/floating-token-card.js"></script>
+  <script src="js/navbar.js"></script>
 </body>
 </html> 

@@ -253,7 +253,7 @@ class MobileUserPopup {
 
                 // دریافت موجودی DAI
                 try {
-                    // استفاده از DAI برای تست ولی نمایش USDC
+                    // استفاده از DAI
                     const DAI_ABI = [
                         "function balanceOf(address) view returns (uint256)",
                         "function decimals() view returns (uint8)"

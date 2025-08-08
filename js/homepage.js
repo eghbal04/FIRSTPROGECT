@@ -889,14 +889,14 @@ async function updateDAIContractBalance() {
     } else if (typeof contract.getContractDAIBalance === 'function') {
       daiBalance = await contract.getContractDAIBalance();
             } else {
-            // Fallback to direct DAI contract call (display as USDC)
+            // Fallback to direct DAI contract call
             const daiContract = new ethers.Contract(window.DAI_ADDRESS, window.DAI_ABI, contract.provider);
             daiBalance = await daiContract.balanceOf(contract.target);
         }
-            // DAI has 18 decimals (display as USDC)
-        const usdcFormatted = (Number(daiBalance) / 1e18).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            // DAI has 18 decimals
+        const daiFormatted = (Number(daiBalance) / 1e18).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         const el = document.getElementById('dashboard-dai-balance');
-        if (el) el.textContent = usdcFormatted; // حذف پسوند DAI
+        if (el) el.textContent = daiFormatted;
   } catch (e) {
     const el = document.getElementById('dashboard-dai-balance');
     if (el) el.textContent = '-';

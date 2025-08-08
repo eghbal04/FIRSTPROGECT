@@ -232,7 +232,7 @@ class CentralDashboardUpdater {
                     daiBalance = await contract.getContractDAIBalance();
                     this.log('✅ DAI balance دریافت شد از getContractDAIBalance');
                 } else {
-                    // Fallback به DAI contract مستقیم (برای تست ولی نمایش USDC)
+                    // Fallback به DAI contract مستقیم
                     if (window.DAI_ADDRESS && window.DAI_ABI) {
                         const daiContract = new ethers.Contract(window.DAI_ADDRESS, window.DAI_ABI, contract.provider);
                         daiBalance = await daiContract.balanceOf(contract.target || window.CPA_ADDRESS);

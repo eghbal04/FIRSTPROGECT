@@ -46,13 +46,21 @@
       margin: 0;
       padding-right: 1rem;
     }
-    .about-stats {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1.2rem;
-      justify-content: center;
-      margin-top: 2rem;
+    /* Cards grid for key info blocks */
+    .about-cards {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      margin-top: 1.2rem;
     }
+    .about-card {
+      background: rgba(24,28,42,0.6);
+      border: 1px solid rgba(167,134,255,0.25);
+      border-radius: 14px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      padding: 1rem;
+    }
+    .about-stats { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-top: 1.6rem; }
     .about-stat {
       background: rgba(0,255,136,0.07);
       border-radius: 12px;
@@ -92,15 +100,16 @@
       font-size: 1.2rem;
       color: #00ff88;
     }
-    @media (max-width: 700px) {
-      .about-section { padding: 1.2rem 0.5rem; }
-      .about-stats { flex-direction: column; align-items: center; }
+    @media (max-width: 860px) {
+      .about-section { padding: 1.1rem 0.8rem; max-width: 96vw; }
+      .about-section h2 { font-size: 1.35rem; }
     }
   </style>
 </head>
 <body>
   <script src="js/config.js"></script>
   <script src="js/navbar.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       // Update contract address from config
@@ -161,6 +170,76 @@
         ما باور داریم آینده اقتصاد و آموزش، متعلق به ساختارهای غیرمتمرکز و مردم‌محور است؛ جایی که شفافیت، اعتماد و همکاری جایگزین واسطه‌گری و انحصار می‌شود. CPA فقط یک پلتفرم نیست؛ یک جنبش برای رشد جمعی، آزادی مالی و فرصت برابر برای همه است.<br><br>
         به ما بپیوندید و سهم خود را از آینده‌ای شفاف، آزاد و پرامید بسازید.
       </p>
+
+      <!-- اطلاعات عمومی و شفاف برای عموم -->
+      <div class="about-cards">
+      <div class="about-card">
+        <h3>اطلاعات کلیدی شبکه و قرارداد</h3>
+        <ul>
+          <li>شبکه: Polygon Mainnet (ChainId: 137)</li>
+          <li>توکن مرجع استیبل (۱۸ اعشار): <b>DAI</b> — آدرس: <span id="dai-address" style="color:#00ff88;font-family:monospace;cursor:pointer;" title="کلیک برای کپی">در حال بارگذاری...</span> <button id="copy-dai-btn" style="background:none;border:none;color:#00ff88;cursor:pointer;font-size:0.9rem;margin-right:5px;" title="کپی آدرس DAI">📋</button></li>
+          <li>قرارداد CPA (نمایش در بالا): <small style="opacity:.8">برای کپی روی آدرس کلیک کنید</small></li>
+          <li>مشاهده قرارداد در Polygonscan: <a id="polygonscan-link" href="#" target="_blank" rel="noopener" style="color:#a786ff;">در حال آماده‌سازی...</a></li>
+        </ul>
+      </div>
+      <div class="about-card">
+        <h3>قوانین خرید/فروش و کارمزد (خلاصه عمومی)</h3>
+        <ul>
+          <li>حداقل خرید: ۱ DAI — حداقل فروش: ۱ CPA</li>
+          <li>سقف خرید پویا: اگر موجودی DAI قرارداد ≤ ۱۰۰هزار → سقف ۱,۰۰۰ DAI؛ در غیر این‌صورت ۱٪ از موجودی DAI قرارداد</li>
+          <li>سقف خرید فعلی: <b id="about-max-buy">—</b></li>
+          <li>سقف فروش: حداکثر ۵۰٪ از موجودی CPA کاربر</li>
+          <li>سقف فروش شما (در صورت اتصال): <b id="about-sell-cap">—</b></li>
+          <li>کارمزد پویا: ۰.۵٪ توسعه‌دهنده + ۱٪/۱.۵٪/۲٪ پشتوانه (بسته به موجودی DAI قرارداد)</li>
+          <li>کارمزد پشتوانه فعلی: <b id="about-fee-backing">—</b></li>
+          <li>کارمزد کل فعلی خرید/فروش: <b id="about-fee-total">—</b></li>
+          <li>قیمت پویا: بر اساس موجودی DAI قرارداد و عرضه کل محاسبه می‌شود</li>
+        </ul>
+      </div>
+
+      <div class="about-features">
+        <h3>ثبت‌نام، پاداش‌ها و کش‌بک</h3>
+        <ul>
+          <li>ثبت‌نام و فعال‌سازی از طریق قرارداد؛ ساختار شبکه به‌صورت درخت دودویی</li>
+          <li>Claim باینری با کول‌داون ۱۲ ساعته و بر اساس امتیازهای کسب‌شده</li>
+          <li>کش‌بک ماهانه تا ۳٪ از مبلغ واریزی به‌ازای هر ۳۰ روز (با شرایط قرارداد)</li>
+        </ul>
+      </div>
+
+      <div class="about-features">
+        <h3>تبدیل/سواپ و شفافیت قبل از تراکنش</h3>
+        <ul>
+          <li>در بخش تبدیل، کارمزدها و مقدار خالص دریافتی قبل از ارسال تراکنش نمایش داده می‌شود</li>
+          <li>در خرید با DAI، ابتدا اجازه (approve) برای قرارداد اخذ می‌شود</li>
+        </ul>
+      </div>
+
+      <div class="about-features">
+        <h3>انتقال مالکیت اندیس (Index)</h3>
+        <ul>
+          <li>فقط برای کاربرانی که اندیس دارند؛ آدرس جدید باید معتبر و فاقد اندیس قبلی باشد</li>
+          <li>عملیات غیرقابل بازگشت است؛ در UI با مودال تایید دو مرحله‌ای انجام می‌شود</li>
+        </ul>
+      </div>
+
+      <div class="about-features">
+        <h3>امنیت و کیف‌پول</h3>
+        <ul>
+          <li>اتصال امن با MetaMask و WalletConnect</li>
+          <li>استفاده از ReentrancyGuard در قرارداد برای جلوگیری از حملات بازدررو (reentrancy)</li>
+        </ul>
+      </div>
+
+      <div class="about-card">
+        <h3>سوالات متداول</h3>
+        <ul>
+          <li><b>چطور توکن CPA بخرم؟</b> به بخش تبدیل (Swap) بروید، حالت DAI→CPA را انتخاب کنید، مقدار DAI را وارد کنید، اگر لازم بود مجوز (Approve) را تایید کنید و تراکنش خرید را ارسال کنید.</li>
+          <li><b>حداقل و سقف خرید/فروش چیست؟</b> حداقل خرید ۱ DAI، حداقل فروش ۱ CPA؛ سقف خرید پویاست (۱,۰۰۰ DAI یا ۱٪ موجودی DAI قرارداد) و سقف فروش ۵۰٪ موجودی CPA کاربر است.</li>
+          <li><b>کارمزدها چقدر است؟</b> ۰.۵٪ برای توسعه‌دهنده + ۱٪/۱.۵٪/۲٪ برای پشتوانه (بسته به موجودی DAI قرارداد). در پیش‌نمایش سواپ، مقدار دقیق قبل از تراکنش نشان داده می‌شود.</li>
+          <li><b>آیا دارایی من امن است؟</b> کنترل دارایی همیشه در کیف‌پول شماست، قرارداد از ReentrancyGuard استفاده می‌کند و هیچ امانی نزد ما نگه‌داری نمی‌شود.</li>
+        </ul>
+      </div>
+      </div>
       <div class="about-features">
         <h3>خدمات ما:</h3>
         <ul>
@@ -169,7 +248,7 @@
           <li>امکان فعالیت به عنوان ایجنت یا IB در بروکرها و صرافی‌های معتبر بین‌المللی</li>
           <li>امکان بازاریابی شبکه‌ای و کسب درآمد از معرفی افراد جدید به اکوسیستم</li>
           <li>بهره‌مندی از سهام‌های معرفی افراد (Referral Shares) و دریافت پاداش‌های شبکه</li>
-          <li>سرمایه‌گذاری در صندوق CPA و توکن افزایشی آن، با سود تضمینی و شفاف</li>
+          <li>سرمایه‌گذاری در صندوق CPA و توکن افزایشی آن (بدون تضمین سود؛ همراه با ریسک بازار)</li>
           <li>آموزش‌های جامع و پکیج‌های تخصصی فارکس، ارز دیجیتال، بلاکچین و هوش مصنوعی</li>
           <li>دوره‌های ویدیویی، کلاس‌های آنلاین، وبینار و کوچینگ خصوصی برای همه سطوح</li>
           <li>امکان فروش پکیج‌های آموزشی، کتاب، فایل PDF، و حتی محصولات فیزیکی (مثلاً سخت‌افزار کیف پول، کتاب، تیشرت، لوازم جانبی ترید و ...)</li>
@@ -191,31 +270,38 @@
           <li>در دنیایی که بسیاری به دنبال جذب سرمایه مردم و ارائه وعده‌های توخالی هستند، ما در CPA تنها زمانی سود می‌بریم که شما واقعاً سود کنید و در زیان، شریک و همراه شما خواهیم بود.</li>
         </ul>
       </div>
+      <div class="about-features">
+        <h3>راهنمای نمایش مقادیر فشرده (Compact)</h3>
+        <ul>
+          <li><b>k</b>: هزار (1,000). مثال: 12.3k یعنی 12,300</li>
+          <li><b>m</b>: میلیون (1,000,000). مثال: 2.5m یعنی 2,500,000</li>
+          <li><b>b</b>: میلیارد (1,000,000,000). مثال: 3.2b یعنی 3,200,000,000</li>
+          <li><b>t</b>: تریلیون (1,000,000,000,000)</li>
+          <li><b>q</b>: کوادریلیون (1e15)</li>
+          <li><b>e</b>: کوینتیلیون (1e18)</li>
+          <li>برای مقادیر کمتر از 1، عدد با اعشار دقیق نمایش داده می‌شود (مثلاً 0.0456).</li>
+        </ul>
+      </div>
       <div class="about-stats">
         <div class="about-stat">
           <div class="icon">👛</div>
-          <div class="number">-</div>
-          <div class="label">تعداد ولت‌های متصل</div>
-        </div>
-        <div class="about-stat">
-          <div class="icon">🚀</div>
-          <div class="number">1000+</div>
-          <div class="label">کاربر فعال</div>
+          <div class="number" id="about-wallets-count">—</div>
+          <div class="label">تعداد ولت‌های ثبت‌شده</div>
         </div>
         <div class="about-stat">
           <div class="icon">💰</div>
-          <div class="number">$500K+</div>
-          <div class="label">حجم معاملات</div>
+          <div class="number" id="about-dai-balance">—</div>
+          <div class="label">موجودی DAI قرارداد (TVL)</div>
         </div>
         <div class="about-stat">
-          <div class="icon">⭐</div>
-          <div class="number">4.9</div>
-          <div class="label">امتیاز کاربران</div>
+          <div class="icon">💱</div>
+          <div class="number" id="about-price-1dai">—</div>
+          <div class="label">۱ DAI = ? CPA</div>
         </div>
         <div class="about-stat">
-          <div class="icon">🔒</div>
-          <div class="number">100%</div>
-          <div class="label">امنیت تضمینی</div>
+          <div class="icon">💱</div>
+          <div class="number" id="about-price-1cpa">—</div>
+          <div class="label">۱ CPA = ? DAI</div>
         </div>
       </div>
       <div class="about-contact">
@@ -241,5 +327,107 @@
   
   <!-- Floating Token Growth Card - کارت شناور رشد توکن -->
   <script src="js/floating-token-card.js"></script>
+  <script>
+    // درج آدرس DAI و امکان کپی
+    (function(){
+      function setDaiAddress(){
+        var el = document.getElementById('dai-address');
+        var btn = document.getElementById('copy-dai-btn');
+        var ps = document.getElementById('polygonscan-link');
+        if (!el || !btn) return;
+        if (typeof window.DAI_ADDRESS !== 'undefined') {
+          el.textContent = window.DAI_ADDRESS;
+          function copy(text){
+            navigator.clipboard.writeText(text).then(function(){
+              var old = btn.textContent; btn.textContent = '✅'; setTimeout(function(){ btn.textContent = old; }, 1500);
+            }).catch(function(){ var old = btn.textContent; btn.textContent = '❌'; setTimeout(function(){ btn.textContent = old; }, 1500); });
+          }
+          btn.addEventListener('click', function(){ copy(window.DAI_ADDRESS); });
+          el.addEventListener('click', function(){ copy(window.DAI_ADDRESS); });
+          if (ps && typeof window.CPA_ADDRESS !== 'undefined') {
+            ps.href = 'https://polygonscan.com/address/' + window.CPA_ADDRESS;
+            ps.textContent = 'مشاهده قرارداد';
+          }
+        } else {
+          el.textContent = 'در دسترس نیست';
+        }
+      }
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setDaiAddress); else setDaiAddress();
+    })();
+    // آمار زنده درباره ما
+    (function(){
+      async function getProvider(){
+        try {
+          if (window.contractConfig?.contract?.provider) return window.contractConfig.contract.provider;
+          if (window.contractConfig?.provider) return window.contractConfig.provider;
+          if (window.ethereum) return new ethers.BrowserProvider(window.ethereum);
+        } catch(e) {}
+        return null;
+      }
+      function setText(id, txt){ var el=document.getElementById(id); if(el) el.textContent = txt; }
+      function fmt(num, frac=2){ try { return Number(num).toLocaleString('en-US',{maximumFractionDigits:frac}); } catch(e){ return String(num); } }
+      async function updateAboutStats(){
+        try {
+          const provider = await getProvider();
+          const cpaAbi = (typeof window.CPA_ABI !== 'undefined' && window.CPA_ABI)
+                       || (typeof window.CONTRACT_ABI !== 'undefined' && window.CONTRACT_ABI)
+                       || (typeof CPA_ABI !== 'undefined' ? CPA_ABI : null);
+          const daiAbi = (typeof window.DAI_ABI !== 'undefined' && window.DAI_ABI)
+                       || (typeof DAI_ABI !== 'undefined' ? DAI_ABI : null);
+          if (!provider || !window.CPA_ADDRESS || !window.DAI_ADDRESS || !cpaAbi || !daiAbi) { return; }
+          const cpa = new ethers.Contract(window.CPA_ADDRESS, cpaAbi, provider);
+          const dai = new ethers.Contract(window.DAI_ADDRESS, daiAbi, provider);
+          // wallets
+          try {
+            const w = await cpa.wallets();
+            setText('about-wallets-count', fmt(w.toString(),0));
+          } catch(e) {}
+          // DAI TVL (contract DAI balance)
+          try {
+            const balRaw = await dai.balanceOf(window.CPA_ADDRESS);
+            const bal = ethers.formatUnits(balRaw, 18);
+            setText('about-dai-balance', fmt(bal,2) + ' DAI');
+          } catch(e) {}
+          // Price
+          try {
+            const pRaw = await cpa.getTokenPrice();
+            const price = Number(ethers.formatUnits(pRaw, 18));
+            if (price>0) {
+              setText('about-price-1dai', fmt(price,6) + ' CPA');
+              setText('about-price-1cpa', fmt(1/price,6) + ' DAI');
+            }
+          } catch(e) {}
+
+          // Dynamic limits and fees (from contract state)
+          try {
+            // TVL used already above: bal (DAI in contract)
+            const balRaw = await dai.balanceOf(window.CPA_ADDRESS);
+            const balNum = Number(ethers.formatUnits(balRaw, 18));
+            // max buy rule
+            const maxBuy = balNum <= 100000 ? 1000 : (balNum * 0.01);
+            setText('about-max-buy', fmt(maxBuy,2) + ' DAI');
+            // fees
+            const deployerPct = 0.5;
+            const backingPct = balNum <= 200000 ? 1 : (balNum <= 500000 ? 1.5 : 2);
+            const totalPct = deployerPct + backingPct;
+            setText('about-fee-backing', backingPct.toFixed(1) + '%');
+            setText('about-fee-total', totalPct.toFixed(1) + '%');
+          } catch(e) {}
+          // sell cap for connected user (50% of user CPA balance)
+          try {
+            if (window.contractConfig?.address) {
+              const addr = window.contractConfig.address;
+              const userBalRaw = await cpa.balanceOf(addr);
+              const userBal = Number(ethers.formatUnits(userBalRaw, 18));
+              const cap = userBal * 0.5;
+              setText('about-sell-cap', fmt(cap,6) + ' CPA');
+            }
+          } catch(e) {}
+        } catch(e) {}
+      }
+      if (document.readyState==='loading') document.addEventListener('DOMContentLoaded', updateAboutStats); else updateAboutStats();
+      setInterval(updateAboutStats, 60000);
+    })();
+  </script>
 </body>
 </html> 

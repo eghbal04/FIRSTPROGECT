@@ -6,20 +6,20 @@ console.log('🔍 آدرس‌های استفاده شده در پروژه:');
 
 console.log('\n📍 آدرس‌های اصلی:');
 console.log('- DAI واقعی (Polygon):', '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063');
-console.log('- USDC واقعی (Polygon):', '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174');
 
 console.log('\n⚙️ تنظیمات فعلی پروژه:');
 console.log('- window.DAI_ADDRESS:', window.DAI_ADDRESS);
-console.log('- window.USDC_ADDRESS:', window.USDC_ADDRESS);
+console.log('- DAI (Polygon):', '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063');
+console.log('- window.DAI_ADDRESS:', window.DAI_ADDRESS);
 
 console.log('\n📊 مشخصات:');
 console.log('- قرارداد استفاده شده: DAI (برای تست)');
 console.log('- دسیمال: 18 (DAI decimals)');
-console.log('- نمایش در UI: USDC');
+console.log('- نمایش در UI: DAI');
 
 console.log('\n🎯 خلاصه:');
 console.log('✅ از آدرس DAI استفاده می‌کنیم');
-console.log('✅ اما در UI نام USDC نمایش داده می‌شود');
+console.log('✅ در UI نیز DAI نمایش داده می‌شود');
 console.log('✅ دسیمال 18 (DAI) استفاده می‌شود');
 
 // Test function
@@ -39,7 +39,7 @@ async function testCurrentBalance() {
         console.log('- آدرس استفاده شده:', window.DAI_ADDRESS);
         console.log('- موجودی خام:', balance.toString());
         console.log('- موجودی فرمت شده:', formatted, 'DAI');
-        console.log('- نمایش در UI:', formatted, 'USDC');
+        console.log('- نمایش در UI:', formatted, 'DAI');
         
     } catch (error) {
         console.error('❌ خطا در تست:', error.message);

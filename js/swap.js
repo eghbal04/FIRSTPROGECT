@@ -12,6 +12,27 @@ class SwapManager {
         
         // مقداردهی اولیه حذف شد - حالا در index.html انجام می‌شود
     }
+    // Helper: خواندن موجودی DAI قرارداد به صورت عددی (با اعشار)
+    async getContractDaiBalanceNum() {
+        const contract = window.contractConfig?.contract;
+        const daiAddress = window.DAI_ADDRESS;
+        const daiAbi = window.DAI_ABI;
+        if (!contract || !daiAddress || !daiAbi) {
+            throw new Error('تنظیمات قرارداد ناقص است');
+        }
+        const daiContract = new ethers.Contract(daiAddress, daiAbi, window.contractConfig.signer);
+        const daiBalance = await daiContract.balanceOf(contract.target);
+        return parseFloat(ethers.formatUnits(daiBalance, 18));
+    }
+
+    // Helper: تعیین تیِر کارمزد پشتیبانی بر اساس موجودی DAI قرارداد
+    getBackingFeePct(daiContractBalanceNum) {
+        // بازه‌ها بر اساس منطق قرارداد: <=200k: 1% ، <=500k: 1.5% ، بیشتر: 2%
+        if (daiContractBalanceNum <= 200000) return 0.01;
+        if (daiContractBalanceNum <= 500000) return 0.015;
+        return 0.02;
+    }
+
 
     async initializeSwap() {
         try {
@@ -198,51 +219,49 @@ class SwapManager {
                 throw new Error('تنظیمات قرارداد ناقص است');
             }
             
-            const daiContract = new ethers.Contract(daiAddress, daiAbi, window.contractConfig.signer);
-            const daiBalance = await daiContract.balanceOf(contract.target);
-            const daiBalanceNum = parseFloat(ethers.formatUnits(daiBalance, 18));
+            const daiBalanceNum = await this.getContractDaiBalanceNum();
             
             console.log('📊 موجودی DAI قرارداد:', daiBalanceNum);
             
             if (direction.value === 'dai-to-cpa') {
-                // Buy limits
+                // Buy limits (طبق قرارداد)
                 let maxBuy;
                 if (daiBalanceNum <= 100000) {
                     maxBuy = 1000;
                 } else {
                     maxBuy = daiBalanceNum * 0.01;
                 }
+                const deployerPct = 0.005; // 0.5%
+                const backingPct = this.getBackingFeePct(daiBalanceNum);
+                const totalFeePct = deployerPct + backingPct;
+                const userSharePct = 1 - totalFeePct;
                 html += `<div style="background:#e8f5e8;padding:12px;border-radius:8px;border-left:4px solid #4caf50;margin-bottom:10px;">
                     <h4 style="margin:0 0 8px 0;color:#2e7d32;">🛒 خرید CPA با DAI</h4>
                     <p style="margin:5px 0;color:#555;"><strong>حداقل خرید:</strong> ۱ DAI</p>
                     <p style="margin:5px 0;color:#555;"><strong>سقف خرید فعلی:</strong> ${maxBuy.toLocaleString('en-US', {maximumFractionDigits:2})} DAI</p>
-                    <p style="margin:5px 0;color:#555;"><strong>کارمزد خرید:</strong> ۲٪ کل</p>
+                    <p style="margin:5px 0;color:#555;"><strong>کارمزد خرید:</strong> ${(totalFeePct*100).toFixed(1)}٪ کل</p>
                     <ul style="margin:5px 0;padding-left:20px;color:#555;">
                         <li>0.5٪ برای توسعه‌دهنده</li>
-                        <li>1.5٪ برای پشتوانه قرارداد</li>
+                        <li>${(backingPct*100).toFixed(1)}٪ برای پشتوانه قرارداد</li>
                     </ul>
-                    <p style="margin:5px 0;color:#2e7d32;"><strong>سهم شما: ۹۸٪ از مبلغ خرید به توکن تبدیل می‌شود</strong></p>
+                    <p style="margin:5px 0;color:#2e7d32;"><strong>سهم شما: ${(userSharePct*100).toFixed(1)}٪ از مبلغ خرید به توکن تبدیل می‌شود</strong></p>
                 </div>`;
             } else if (direction.value === 'cpa-to-dai') {
-                // Sell limits
-                const totalSupply = await contract.totalSupply();
-                const totalSupplyNum = parseFloat(ethers.formatUnits(totalSupply, 18));
-                let maxSell;
-                if (daiBalanceNum >= 500) {
-                    maxSell = totalSupplyNum * 0.01;
-                } else {
-                    maxSell = totalSupplyNum * 0.5;
-                }
+                // محدودیت فروش: نمایش 50% موجودی کاربر
+                const deployerPct = 0.005; // 0.5%
+                const backingPct = this.getBackingFeePct(daiBalanceNum);
+                const totalFeePct = deployerPct + backingPct;
+                const userSharePct = 1 - totalFeePct;
                 html += `<div style="background:#fff3e0;padding:12px;border-radius:8px;border-left:4px solid #ff9800;margin-bottom:10px;">
                     <h4 style="margin:0 0 8px 0;color:#e65100;">💰 فروش CPA و دریافت DAI</h4>
                     <p style="margin:5px 0;color:#555;"><strong>حداقل فروش:</strong> ۱ توکن CPA</p>
-                    <p style="margin:5px 0;color:#555;"><strong>سقف فروش فعلی:</strong> ${maxSell.toLocaleString('en-US', {maximumFractionDigits:2})} توکن</p>
-                    <p style="margin:5px 0;color:#555;"><strong>کارمزد فروش:</strong> ۲٪ کل</p>
+                    <p style="margin:5px 0;color:#555;"><strong>سقف فروش:</strong> تا ۵۰٪ موجودی شما</p>
+                    <p style="margin:5px 0;color:#555;"><strong>کارمزد فروش:</strong> ${(totalFeePct*100).toFixed(1)}٪ کل (از توکن)</p>
                     <ul style="margin:5px 0;padding-left:20px;color:#555;">
                         <li>0.5٪ برای توسعه‌دهنده</li>
-                        <li>1.5٪ برای پشتوانه قرارداد</li>
+                        <li>${(backingPct*100).toFixed(1)}٪ برای پشتوانه قرارداد</li>
                     </ul>
-                    <p style="margin:5px 0;color:#e65100;"><strong>سهم شما: ۹۸٪ از مقدار فروش به DAI تبدیل می‌شود</strong></p>
+                    <p style="margin:5px 0;color:#e65100;"><strong>سهم شما: ${(userSharePct*100).toFixed(1)}٪ از توکن به DAI تبدیل می‌شود</strong></p>
                 </div>`;
             }
             
@@ -506,27 +525,37 @@ class SwapManager {
         
         if (direction.value === 'dai-to-cpa') {
             result = value / Number(this.tokenPrice);
-            const fees = value * 0.02; // 2% fees
+            // کارمزد پویا بر اساس موجودی DAI قرارداد
+            const daiBalanceNum = await this.getContractDaiBalanceNum();
+            const deployerPct = 0.005;
+            const backingPct = this.getBackingFeePct(daiBalanceNum);
+            const totalFeePct = deployerPct + backingPct;
+            const fees = value * totalFeePct;
             const netAmount = value - fees;
             const netTokens = netAmount / Number(this.tokenPrice);
             
             previewHtml = `<div style="background:#e8f5e8;padding:12px;border-radius:6px;margin:10px 0;">
                 <h4 style="margin:0 0 8px 0;color:#2e7d32;">📊 پیش‌نمایش خرید</h4>
                 <p style="margin:5px 0;color:#555;"><strong>مبلغ ورودی:</strong> ${value.toFixed(2)} DAI</p>
-                <p style="margin:5px 0;color:#555;"><strong>کارمزد (۲٪):</strong> ${fees.toFixed(2)} DAI</p>
+                <p style="margin:5px 0;color:#555;"><strong>کارمزد (${(totalFeePct*100).toFixed(1)}٪):</strong> ${fees.toFixed(2)} DAI</p>
                 <p style="margin:5px 0;color:#555;"><strong>مبلغ خالص:</strong> ${netAmount.toFixed(2)} DAI</p>
                 <p style="margin:5px 0;color:#2e7d32;"><strong>توکن دریافتی:</strong> ${netTokens.toFixed(6)} CPA</p>
             </div>`;
         } else if (direction.value === 'cpa-to-dai') {
             result = value * Number(this.tokenPrice);
-            const fees = result * 0.02; // 2% fees
+            // کارمزد پویا بر اساس موجودی DAI قرارداد
+            const daiBalanceNum = await this.getContractDaiBalanceNum();
+            const deployerPct = 0.005;
+            const backingPct = this.getBackingFeePct(daiBalanceNum);
+            const totalFeePct = deployerPct + backingPct;
+            const fees = result * totalFeePct;
             const netDai = result - fees;
             
             previewHtml = `<div style="background:#fff3e0;padding:12px;border-radius:6px;margin:10px 0;">
                 <h4 style="margin:0 0 8px 0;color:#e65100;">📊 پیش‌نمایش فروش</h4>
                 <p style="margin:5px 0;color:#555;"><strong>توکن ورودی:</strong> ${value.toFixed(6)} CPA</p>
                 <p style="margin:5px 0;color:#555;"><strong>ارزش کل:</strong> ${result.toFixed(6)} DAI</p>
-                <p style="margin:5px 0;color:#555;"><strong>کارمزد (۲٪):</strong> ${fees.toFixed(6)} DAI</p>
+                <p style="margin:5px 0;color:#555;"><strong>کارمزد (${(totalFeePct*100).toFixed(1)}٪):</strong> ${fees.toFixed(6)} DAI</p>
                 <p style="margin:5px 0;color:#e65100;"><strong>DAI دریافتی:</strong> ${netDai.toFixed(6)} DAI</p>
             </div>`;
         }
@@ -563,6 +592,10 @@ class SwapManager {
         }
         
         try {
+            const floorToDecimals = (val, decimals) => {
+                const m = Math.pow(10, decimals);
+                return Math.floor(Number(val) * m) / m;
+            };
             if (direction.value === 'dai-to-cpa') {
                 // محاسبه سقف خرید هوشمند
                 const contract = window.contractConfig.contract;
@@ -586,7 +619,9 @@ class SwapManager {
                 }
                 
                 // انتخاب کمترین مقدار بین موجودی کاربر و سقف مجاز
-                const maxAmount = Math.min(this.userBalances.dai, maxBuy);
+                let maxAmount = Math.min(this.userBalances.dai, maxBuy);
+                // گرد کردن به پایین برای جلوگیری از خطاهای کسری
+                maxAmount = floorToDecimals(maxAmount, 2);
                 amount.value = maxAmount.toFixed(2);
                 
                 console.log('✅ حداکثر خرید هوشمند:', {
@@ -621,7 +656,9 @@ class SwapManager {
                 }
                 
                 // انتخاب کمترین مقدار بین موجودی کاربر و سقف مجاز
-                const maxAmount = Math.min(this.userBalances.cpa, maxSell);
+                let maxAmount = Math.min(this.userBalances.cpa, maxSell);
+                // گرد کردن به پایین
+                maxAmount = floorToDecimals(maxAmount, 6);
                 amount.value = maxAmount.toFixed(6);
                 
                 console.log('✅ حداکثر فروش هوشمند:', {
@@ -768,6 +805,20 @@ class SwapManager {
             }
             if (direction.value === 'cpa-to-dai' && value > this.userBalances.cpa) {
                 throw new Error(`موجودی CPA کافی نیست. موجودی شما: ${this.userBalances.cpa.toFixed(6)} CPA`);
+            }
+
+            // اعتبارسنجی مطابق قرارداد
+            if (direction.value === 'dai-to-cpa') {
+                if (value < 1) throw new Error('حداقل خرید 1 DAI است');
+                // سقف خرید پویا
+                const daiContractBalance = await this.getContractDaiBalanceNum();
+                const maxBuy = (daiContractBalance <= 100000) ? 1000 : (daiContractBalance * 0.01);
+                if (value > maxBuy) throw new Error(`مقدار از سقف خرید بیشتر است (حداکثر مجاز: ${maxBuy.toFixed(2)} DAI)`);
+            } else if (direction.value === 'cpa-to-dai') {
+                if (value < 1) throw new Error('حداقل فروش 1 CPA است');
+                // محدودیت فروش: حداکثر 50% موجودی کاربر (مطابق قرارداد)
+                const maxSell = this.userBalances.cpa * 0.5;
+                if (value > maxSell) throw new Error(`مقدار از سقف فروش بیشتر است (حداکثر مجاز: ${maxSell.toFixed(6)} CPA)`);
             }
 
             // انجام عملیات سواپ

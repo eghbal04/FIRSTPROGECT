@@ -679,7 +679,6 @@
     <script src="js/smooth-value-updater.js"></script>
     <script src="js/smart-dashboard-updater.js"></script>
     <script src="js/central-dashboard-updater.js"></script>
-    <script src="js/usdc-balance-debugger.js"></script>
     <script src="js/test-address-config.js"></script>
     <script src="js/final-test-config.js"></script>
     <script src="js/dashboard-loading-manager.js"></script>
@@ -1290,26 +1289,34 @@
           // دریافت موجودی بر اساس توکن انتخاب شده
           if (selectedToken === 'dai') {
             const daiBalanceEl = document.getElementById('transfer-dai-balance');
-            if (daiBalanceEl && daiBalanceEl.textContent !== '-' && daiBalanceEl.textContent !== 'خطا' && daiBalanceEl.textContent !== 'متصل نیست') {
-              maxAmount = parseFloat(daiBalanceEl.textContent).toString();
+            if (daiBalanceEl) {
+              const raw = parseFloat(daiBalanceEl.dataset.value || daiBalanceEl.textContent);
+              if (!isNaN(raw) && raw > 0) maxAmount = raw.toString();
             }
           } else if (selectedToken === 'pol') {
             const polBalanceEl = document.getElementById('transfer-poly-balance');
-            if (polBalanceEl && polBalanceEl.textContent !== '-' && polBalanceEl.textContent !== 'خطا' && polBalanceEl.textContent !== 'متصل نیست') {
-              // برای POL، 0.01 کمتر از موجودی (برای کارمزد شبکه)
-              const polBalance = parseFloat(polBalanceEl.textContent);
-              maxAmount = Math.max(0, polBalance - 0.01).toString();
+            if (polBalanceEl) {
+              const raw = parseFloat(polBalanceEl.dataset.value || polBalanceEl.textContent);
+              if (!isNaN(raw)) {
+                maxAmount = Math.max(0, raw - 0.01).toString();
+              }
             }
           } else if (selectedToken === 'cpa') {
             const cpaBalanceEl = document.getElementById('transfer-cpa-balance');
-            if (cpaBalanceEl && cpaBalanceEl.textContent !== '-' && cpaBalanceEl.textContent !== 'خطا' && cpaBalanceEl.textContent !== 'متصل نیست') {
-              maxAmount = parseFloat(cpaBalanceEl.textContent).toString();
+            if (cpaBalanceEl) {
+              const raw = parseFloat(cpaBalanceEl.dataset.value || cpaBalanceEl.textContent);
+              if (!isNaN(raw) && raw > 0) maxAmount = raw.toString();
             }
           }
           
           // تنظیم مقدار در فیلد ورودی
           if (parseFloat(maxAmount) > 0) {
-            transferAmountInput.value = maxAmount;
+            const decimals = (transferTokenSelect.value === 'cpa') ? 6 : 18;
+            // برای DAI و POL بهتر است 2 یا 4 رقم استفاده کنیم؛ برای CPA تا 6 رقم
+            const floorToDecimals = (val, d) => { const m = Math.pow(10, d); return Math.floor(Number(val) * m) / m; };
+            const d = (transferTokenSelect.value === 'cpa') ? 6 : 4;
+            const floored = floorToDecimals(maxAmount, d);
+            transferAmountInput.value = floored.toFixed(d);
             // تغییر متن دکمه به صورت موقت
             const originalText = maxAmountBtn.textContent;
             maxAmountBtn.textContent = '✓ تنظیم شد';
