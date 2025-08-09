@@ -334,28 +334,83 @@
       </div>
 
       <!-- Welcome Popup Modal -->
-      <div id="welcome-modal" style="display:none;position:fixed;z-index:200000;top:0;left:0;width:100vw;height:100vh;background:rgba(24,28,42,0.95);align-items:center;justify-content:center;backdrop-filter:blur(5px);">
-        <div id="welcome-modal-content" style="background:linear-gradient(135deg,#232946,#181c2a);border-radius:20px;max-width:95vw;width:650px;max-height:95vh;padding:2.5em 2em 2em 2em;box-shadow:0 12px 48px rgba(0,0,0,0.3);position:relative;color:#fff;font-size:1.1em;line-height:1.8;overflow-y:auto;border:2px solid #a786ff33;">
-          <button id="welcome-modal-close" style="position:absolute;top:1em;left:1em;background:none;border:none;color:#a786ff;font-size:1.8em;cursor:pointer;transition:color 0.2s;">✖</button>
+      <div id="welcome-modal" style="display:flex;position:fixed;z-index:200000;top:0;left:0;width:100vw;height:100vh;background:rgba(24,28,42,0.95);align-items:center;justify-content:center;backdrop-filter:blur(5px);">
+        <div id="welcome-modal-content" style="background:linear-gradient(135deg,#232946,#181c2a);border-radius:20px;max-width:95vw;width:650px;max-height:calc(100vh - 0.6in);margin:0.3in auto; padding:2.5em 2em 2em 2em;box-shadow:0 12px 48px rgba(0,0,0,0.3);position:relative;color:#fff;font-size:1.1em;line-height:1.8;overflow-y:auto;-webkit-overflow-scrolling:touch;border:2px solid #a786ff33;">
           
           <div style="text-align:center;margin-bottom:2em;">
-            <h2 style="color:#00ff88;font-size:1.8em;font-weight:bold;margin:0;text-shadow:0 2px 8px rgba(0,255,136,0.3);">🌟 خوش آمدید به آکادمی سود مستمر 🌟</h2>
+            <h2 style="color:#00ff88;font-size:1.3em;font-weight:bold;margin:0;text-shadow:0 2px 8px rgba(0,255,136,0.3);">🌟 خوش آمدید به آکادمی سود مستمر 🌟</h2>
             <div style="width:80px;height:3px;background:linear-gradient(90deg,#00ff88,#a786ff);margin:1em auto;border-radius:3px;"></div>
           </div>
           
           <div style="text-align:justify;direction:rtl;">
-            <div id="welcome-typewriter-content" style="min-height:400px;line-height:1.8;font-size:1.05em;">
-              <!-- محتوا با تایپ‌رایتر پر می‌شود -->
-            </div>
-          </div>
+            <div id="welcome-typewriter-content" style="line-height:1.8;font-size:1.05em;max-height:calc(1.8em * 15);overflow-y:auto;-webkit-overflow-scrolling:touch;">
+               <div style="background:rgba(0,255,136,0.08);padding:1.2em;border-radius:12px;border-right:4px solid #00ff88;margin-bottom:1em;">
+                 <p style="margin:0;color:#e0e6f7;font-weight:500;">⚠️ <strong>اطلاعیه مهم:</strong> سرمایه‌گذاری بدون دانش و مدیریت ریسک می‌تواند منجر به زیان شود. سیستم بر پایه قراردادهای هوشمند غیرمتمرکز و شفاف روی اتریوم و پالیگان است.</p>
+               </div>
+               <p style="margin-top:0;">این پلتفرم بر <strong>غیرمتمرکز بودن</strong>، <strong>شفافیت</strong> و <strong>آموزش مستمر</strong> تکیه دارد. بازگشت‌های ماهانه، پورسانت‌ها و تمامی محاسبات طبق منطق قرارداد اجرا می‌شود. لطفاً با دید بلندمدت و سرمایه مازاد وارد شوید.</p>
+             </div>
+           </div>
           
-          <div style="text-align:center;margin-top:2em;">
-            <button id="welcome-understand-btn" style="background:linear-gradient(90deg,#00ff88,#a786ff);color:#181c2a;border:none;border-radius:12px;padding:1em 2.5em;font-size:1.1em;font-weight:bold;cursor:pointer;box-shadow:0 4px 16px rgba(0,255,136,0.3);transition:all 0.3s;">
-              متوجه شدم، ادامه دهید 🚀
-            </button>
-          </div>
+          <div id="welcome-footer" style="position:sticky;bottom:0;left:0;right:0;text-align:center;margin-top:1.2em;padding-top:0.8em;background:linear-gradient(180deg,rgba(35,41,70,0),rgba(35,41,70,0.92));backdrop-filter:blur(4px);">
+            <button id="welcome-understand-btn" style="background:linear-gradient(90deg,#00ff88,#a786ff);color:#181c2a;border:none;border-radius:12px;padding:1em 2.5em;font-size:1.05em;font-weight:bold;cursor:pointer;box-shadow:0 4px 16px rgba(0,255,136,0.3);transition:all 0.3s;">
+               متوجه شدم، ادامه دهید 🚀
+             </button>
+           </div>
         </div>
       </div>
+
+      <!-- Responsive styles for welcome modal -->
+      <style id="welcome-modal-mobile">
+        @media (max-width: 600px) {
+          #welcome-modal-content {
+            width: 92vw !important;
+            max-height: calc(100vh - 0.6in) !important;
+            margin: 0.3in auto !important;
+            padding: 1.2em 1em 1em 1em !important;
+            border-radius: 14px !important;
+            font-size: 0.95em !important;
+            line-height: 1.7 !important;
+            -webkit-overflow-scrolling: touch !important;
+          }
+          #welcome-typewriter-content {
+            font-size: 1em !important;
+            line-height: 1.7 !important;
+            max-height: calc(1.7em * 15) !important;
+            overflow-y: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+          }
+          #welcome-modal h2 {
+            font-size: 1.05em !important;
+          }
+          #welcome-footer {
+            padding-top: 0.6em !important;
+            background: linear-gradient(180deg,rgba(35,41,70,0),rgba(35,41,70,0.96)) !important;
+          }
+          #welcome-understand-btn {
+            width: 100% !important;
+            padding: 0.85em 1.2em !important;
+            font-size: 1em !important;
+            border-radius: 10px !important;
+          }
+        }
+        @media (max-width: 360px) {
+          #welcome-modal-content {
+            width: 94vw !important;
+            max-height: calc(100vh - 0.6in) !important;
+            margin: 0.3in auto !important;
+            padding: 0.9em !important;
+            font-size: 0.9em !important;
+          }
+          #welcome-typewriter-content {
+            max-height: calc(1.7em * 15) !important;
+            overflow-y: auto !important;
+          }
+          #welcome-understand-btn {
+            font-size: 0.95em !important;
+            padding: 0.75em 1em !important;
+          }
+        }
+      </style>
 
       <script>
       document.addEventListener('DOMContentLoaded', function() {
@@ -389,8 +444,8 @@
             // Do not persist seen flag; always show on next visit
           }
           
-          closeBtn.onclick = closeModal;
-          understandBtn.onclick = closeModal;
+          if (closeBtn) closeBtn.onclick = closeModal;
+          if (understandBtn) understandBtn.onclick = closeModal;
           
           // بستن با کلیک روی بک‌گراند
           modal.onclick = function(e) {
@@ -403,62 +458,58 @@
           const container = document.getElementById('welcome-typewriter-content');
           if (!container) return;
           
-          const welcomeText = \`<div style="background:rgba(0,255,136,0.08);padding:1.5em;border-radius:12px;border-right:4px solid #00ff88;margin-bottom:1.5em;">
+          const welcomeText = `<div style="background:rgba(0,255,136,0.08);padding:1.2em 1.4em;border-radius:12px;border-right:4px solid #00ff88;margin-bottom:1.2em;">
   <p style="margin:0;color:#e0e6f7;font-weight:500;">
-    ⚠️ <strong>اطلاعیه مهم:</strong> سرمایه‌گذاری در این پلتفرم به خودی خود باعث ثروتمند شدن شما نخواهد شد. تنها <strong>تلاش‌ها و طرز فکر صحیح شماست</strong> که می‌تواند منجر به موفقیت مالی گردد.
+    ⚠️ <strong>اطلاعیه مهم:</strong> ورود به هر بازار مالی مستلزم <strong>دانش، انضباط و مدیریت ریسک</strong> است. صرفِ استفاده از این پلتفرم به‌تنهایی باعث ثروتمند شدن شما نخواهد شد؛ <strong>بینش و استمرار شما</strong> نتیجه را می‌سازد.
   </p>
 </div>
 
-<div style="margin-bottom:1.5em;">
-  <h3 style="color:#a786ff;font-size:1.3em;margin-bottom:1em;">💎 ویژگی‌های منحصر به فرد ما:</h3>
-  <ul style="list-style:none;padding:0;">
-    <li style="margin-bottom:0.8em;padding-right:1.5em;position:relative;">
-      <span style="position:absolute;right:0;color:#00ff88;">🔹</span>
-      توکن CPA به صورت تدریجی و پایدار رشد می‌کند
-    </li>
-    <li style="margin-bottom:0.8em;padding-right:1.5em;position:relative;">
-      <span style="position:absolute;right:0;color:#00ff88;">🔹</span>
-      حداکثر ضرر منطقی کمتر از ۴ درصد (که باید به عنوان کارمزد در نظر گرفته شود)
-    </li>
-    <li style="margin-bottom:0.8em;padding-right:1.5em;position:relative;">
-      <span style="position:absolute;right:0;color:#00ff88;">🔹</span>
-      سیستم کاملاً غیرمتمرکز بدون مدیر یا صاحب خاص
-    </li>
-  </ul>
-</div>
+<h3 style="color:#a786ff;font-size:1.25em;margin:0 0 0.8em 0;">دربارهٔ سامانه</h3>
+<p style="margin-top:0;">
+  این اکوسیستم بر پایهٔ <strong>قراردادهای هوشمند غیرمتمرکز</strong> بنا شده و بدون هرگونه مدیر متمرکز، مطابق منطق از پیش‌تعریف‌شده اجرا می‌شود. زیرساخت ما از شبکه‌های <strong>اتریوم</strong> و <strong>پالیگان</strong> و همچنین ارز پایدارِ غیرمتمرکز <strong>DAI</strong> بهره می‌برد؛ تا <strong>شفافیت، امنیت و دسترسی جهانی</strong> فراهم گردد.
+ </p>
 
-<div style="margin-bottom:1.5em;">
-  <h3 style="color:#a786ff;font-size:1.3em;margin-bottom:1em;">🛡️ پشتوانه‌های قدرتمند:</h3>
-  <ul style="list-style:none;padding:0;">
-    <li style="margin-bottom:0.8em;padding-right:1.5em;position:relative;">
-      <span style="position:absolute;right:0;color:#00ff88;">🔸</span>
-      بلاکچین <strong>اتریوم و پالیگان</strong> - قدرتمندترین شبکه‌های غیرمتمرکز
-    </li>
-    <li style="margin-bottom:0.8em;padding-right:1.5em;position:relative;">
-      <span style="position:absolute;right:0;color:#00ff88;">🔸</span>
-      توکن <strong>DAI</strong> - ارز پایدار کاملاً غیرمتمرکز
-    </li>
-    <li style="margin-bottom:0.8em;padding-right:1.5em;position:relative;">
-      <span style="position:absolute;right:0;color:#00ff88;">🔸</span>
-      عدم وابستگی به هیچ نهاد مرکزی یا دولتی
-    </li>
-  </ul>
-</div>
+<h3 style="color:#a786ff;font-size:1.25em;margin:1.1em 0 0.6em 0;">اصول و مزایا</h3>
+<ul style="list-style:none;padding:0;margin:0;">
+  <li style="margin-bottom:0.65em;padding-right:1.5em;position:relative;">
+    <span style="position:absolute;right:0;color:#00ff88;">🔹</span>
+    <strong>رشد تدریجی توکن CPA</strong> با هدف پایداری رفتاری و کاهش نوسانات هیجانی
+  </li>
+  <li style="margin-bottom:0.65em;padding-right:1.5em;position:relative;">
+    <span style="position:absolute;right:0;color:#00ff88;">🔹</span>
+    <strong>ریسک منطقی مدیریت‌شده</strong>؛ افت‌های معمول در منطق سیستم محدود و هزینه‌های شبکه/کارمزد باید در محاسبات لحاظ شود
+  </li>
+  <li style="margin-bottom:0.65em;padding-right:1.5em;position:relative;">
+    <span style="position:absolute;right:0;color:#00ff88;">🔹</span>
+    <strong>شفافیت کامل</strong>؛ همهٔ تراکنش‌ها و محاسبات بر بستر زنجیره قابل رهگیری است
+  </li>
+</ul>
 
-<div style="background:rgba(167,134,255,0.08);padding:1.5em;border-radius:12px;border-right:4px solid #a786ff;margin-bottom:1.5em;">
-  <h3 style="color:#a786ff;font-size:1.25em;margin-bottom:1em;">💰 مزایای عضویت:</h3>
-  <p style="margin-bottom:1em;">
-    🎁 <strong>درآمد ماهانه تضمینی:</strong> حتی بدون هیچ فعالیتی، ۳٪ از مبلغ ورودی‌تان را ماهانه از قرارداد دریافت می‌کنید.
-  </p>
-  <p style="margin:0;">
-    📈 <strong>پورسانت بازاریابی:</strong> با دریافت پورسانت‌های بازاریابی، مبلغ برگشتی کسر شده و درآمد اضافی کسب می‌کنید.
-  </p>
-</div>
+<h3 style="color:#a786ff;font-size:1.25em;margin:1.1em 0 0.6em 0;">سازوکار بازدهی</h3>
+<p style="margin-top:0;">
+  در حالت عدم فعالیت، <strong>بازگشت ماهانهٔ ۳٪</strong> از مبلغ ورود طبق منطق قرارداد قابل دریافت است. با دریافت هرگونه پورسانت بازاریابی، مبالغ بازگشتی از سهم درآمدی کسر و <strong>تسویه منصفانه</strong> انجام می‌شود. موفقیت در بازاریابی، تابع <strong>کیفیت معرفی، آموزش و پشتیبانی شبکه</strong> است.
+</p>
 
-<div style="text-align:center;color:#a786ff;font-style:italic;margin-top:2em;">
-  "سرمایه‌ات در حساب خودت، سود مشترک" 🤝
-</div>\`;
+<h3 style="color:#a786ff;font-size:1.25em;margin:1.1em 0 0.6em 0;">توصیهٔ مسئولانه</h3>
+<ul style="list-style:none;padding:0;margin:0;">
+  <li style="margin-bottom:0.65em;padding-right:1.5em;position:relative;">
+    <span style="position:absolute;right:0;color:#00ff88;">✅</span>
+    با <strong>سرمایهٔ مازاد</strong> و پس از مطالعهٔ مستندات وارد شوید
+  </li>
+  <li style="margin-bottom:0.65em;padding-right:1.5em;position:relative;">
+    <span style="position:absolute;right:0;color:#00ff88;">✅</span>
+    <strong>مدیریت ریسک</strong>، تنوع‌سازی و دید بلندمدت را در اولویت بگذارید
+  </li>
+  <li style="margin-bottom:0.65em;padding-right:1.5em;position:relative;">
+    <span style="position:absolute;right:0;color:#00ff88;">✅</span>
+    در صورت ابهام، از تیم ما <strong>راهنمایی شفاف</strong> بخواهید
+  </li>
+</ul>
 
+<div style="margin-top:1.2em;background:rgba(167,134,255,0.08);padding:1em;border-radius:10px;border-right:4px solid #a786ff;">
+  <p style="margin:0;">هدف ما <strong>همراهی آگاهانه</strong> با شماست؛ تا با اتکا به فناوری غیرمتمرکز، آموزشی منظم و تصمیم‌های سنجیده، مسیری <strong>شفاف و پایدار</strong> را تجربه کنید.</p>
+</div>`;
+          
           let i = 0;
           const speed = 15; // سرعت تایپ‌رایتر (میلی‌ثانیه)
           
@@ -472,17 +523,18 @@
                 if (tagEnd !== -1) {
                   container.innerHTML += welcomeText.substring(i, tagEnd + 1);
                   i = tagEnd + 1;
+                  // auto-scroll as content grows
+                  container.scrollTop = container.scrollHeight;
                   setTimeout(typeWriter, 5); // تگ‌ها سریع اضافه شوند
                   return;
                 }
               }
               
-              // کاراکترهای عادی
               container.innerHTML += char;
               i++;
-              
-              // مکث بیشتر برای نقطه‌گذاری
-              const delay = (char === '.' || char === '!' || char === '؟') ? speed * 3 : speed;
+              // auto-scroll as content grows
+              container.scrollTop = container.scrollHeight;
+              const delay = (char === '.' || char === '!' || char === '؟' || char === '،') ? speed * 3 : speed;
               setTimeout(typeWriter, delay);
             }
           }

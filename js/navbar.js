@@ -720,54 +720,115 @@
     if (swapLinkMobile) swapLinkMobile.onclick = function(e){ e.preventDefault(); closeMenu(); goTo('main-swap'); };
     if (transferLinkMobile) transferLinkMobile.onclick = function(e){ e.preventDefault(); closeMenu(); goTo('main-transfer'); };
 
-    // User info fetch
-    (async function updateUserbar(){
+    // --- Fast, resilient userbar balances ---
+    (function(){
+      const maticEl = document.getElementById('nav-matic');
+      const cpaEl = document.getElementById('nav-cpa');
+      const daiEl = document.getElementById('nav-dai');
+
+      // Prefill from cache (≤ 2 دقیقه)
       try {
-        if (typeof window.ethers === 'undefined') return;
-        const provider = (window.contractConfig && window.contractConfig.provider) || (window.ethereum ? new ethers.BrowserProvider(window.ethereum) : null);
-        if (!provider) return;
-        const accounts = window.ethereum ? await window.ethereum.request({ method: 'eth_accounts' }) : [];
-        const addr = (accounts && accounts[0]) ? accounts[0] : (window.contractConfig && window.contractConfig.userAddress);
-        const addrEl = document.getElementById('nav-addr');
-        if (addrEl) addrEl.textContent = addr ? (addr.slice(0,6)+'...'+addr.slice(-4)) : 'Wallet: —';
-
-        const maticEl = document.getElementById('nav-matic');
-        const cpaEl = document.getElementById('nav-cpa');
-        const daiEl = document.getElementById('nav-dai');
-        if (!addr || !provider) return;
-        const balWei = await provider.getBalance(addr);
-        function formatCompact(num, smallDecimals=4, compactDecimals=2){
-          if (!isFinite(num)) return '--';
-          const abs = Math.abs(num);
-          if (abs < 1) return num.toFixed(smallDecimals);
-          const units = [
-            { v: 1e18, s: 'e' }, // quintillion
-            { v: 1e15, s: 'q' }, // quadrillion
-            { v: 1e12, s: 't' },
-            { v: 1e9,  s: 'b' },
-            { v: 1e6,  s: 'm' },
-            { v: 1e3,  s: 'k' }
-          ];
-          for (const u of units) if (abs >= u.v) return (num / u.v).toFixed(compactDecimals) + u.s;
-          return num.toFixed(compactDecimals);
+        const cached = JSON.parse(localStorage.getItem('cpa_nav_balances')||'null');
+        if (cached && (Date.now() - (cached.ts||0) < 2*60*1000)) {
+          if (maticEl && cached.pol != null) maticEl.textContent = 'POL: ' + cached.pol;
+          if (cpaEl && cached.cpa != null) cpaEl.textContent = 'CPA: ' + cached.cpa;
+          if (daiEl && cached.dai != null) daiEl.textContent = 'DAI: ' + cached.dai;
+        } else {
+          // Optics for loading state
+          if (maticEl) maticEl.textContent = 'POL: …';
+          if (cpaEl) cpaEl.textContent = 'CPA: …';
+          if (daiEl) daiEl.textContent = 'DAI: …';
         }
-        if (maticEl) maticEl.textContent = 'POL: ' + formatCompact(Number(ethers.formatEther(balWei)), 4, 2);
+      } catch {}
 
-        if (window.CPA_ADDRESS && window.CPA_ABI) {
-          const cpa = new ethers.Contract(window.CPA_ADDRESS, window.CPA_ABI, provider);
-          const cpaBal = await cpa.balanceOf(addr);
-          if (cpaEl) cpaEl.textContent = 'CPA: ' + formatCompact(Number(ethers.formatUnits(cpaBal, 18)), 4, 2);
-        }
-        if (window.DAI_ADDRESS && window.DAI_ABI) {
-          const dai = new ethers.Contract(window.DAI_ADDRESS, window.DAI_ABI, provider);
-          const daiBal = await dai.balanceOf(addr);
-          if (daiEl) daiEl.textContent = 'DAI: ' + formatCompact(Number(ethers.formatUnits(daiBal, 18)), 2, 2);
-        }
+      function formatCompact(num, smallDecimals=4, compactDecimals=2){
+        if (!isFinite(num)) return '--';
+        const abs = Math.abs(num);
+        if (abs < 1) return num.toFixed(smallDecimals);
+        const units = [
+          { v: 1e18, s: 'e' }, { v: 1e15, s: 'q' }, { v: 1e12, s: 't' },
+          { v: 1e9, s: 'b' }, { v: 1e6, s: 'm' }, { v: 1e3, s: 'k' }
+        ];
+        for (const u of units) if (abs >= u.v) return (num / u.v).toFixed(compactDecimals) + u.s;
+        return num.toFixed(compactDecimals);
+      }
 
-        // refresh periodically
-        setTimeout(updateUserbar, 20000);
-      } catch (e) {
-        console.warn('navbar userbar update failed:', e);
+      function withTimeout(promise, ms=3500) {
+        return Promise.race([
+          promise,
+          new Promise((_, reject)=>setTimeout(()=>reject(new Error('timeout')), ms))
+        ]);
+      }
+
+      async function getAddressFast(provider){
+        try {
+          if (window.contractConfig && window.contractConfig.address) return window.contractConfig.address;
+          if (window.ethereum && typeof window.ethereum.request === 'function') {
+            const acc = await withTimeout(window.ethereum.request({ method: 'eth_accounts' }), 1500);
+            if (acc && acc[0]) return acc[0];
+          }
+        } catch {}
+        return null;
+      }
+
+      async function updateUserbar(){
+        try {
+          if (typeof window.ethers === 'undefined') return schedule(3000);
+          const baseProvider = (window.contractConfig && window.contractConfig.provider) || (window.ethereum ? new ethers.BrowserProvider(window.ethereum) : null);
+          if (!baseProvider) return schedule(3000);
+          const address = await getAddressFast(baseProvider);
+          if (!address) return schedule(3000);
+
+          const retry = (fn) => (typeof window.retryRpcOperation === 'function') ? window.retryRpcOperation(fn, 2) : fn();
+
+          // Build calls
+          const calls = [];
+          calls.push(retry(()=>withTimeout(baseProvider.getBalance(address), 3000)));
+          if (window.CPA_ADDRESS && window.CPA_ABI) {
+            const cpa = new ethers.Contract(window.CPA_ADDRESS, window.CPA_ABI, baseProvider);
+            calls.push(retry(()=>withTimeout(cpa.balanceOf(address), 3000)));
+          } else {
+            calls.push(Promise.resolve(null));
+          }
+          if (window.DAI_ADDRESS && window.DAI_ABI) {
+            const dai = new ethers.Contract(window.DAI_ADDRESS, window.DAI_ABI, baseProvider);
+            calls.push(retry(()=>withTimeout(dai.balanceOf(address), 3000)));
+          } else {
+            calls.push(Promise.resolve(null));
+          }
+
+          const [polWei, cpaBal, daiBal] = await Promise.all(calls);
+          if (polWei && maticEl) maticEl.textContent = 'POL: ' + formatCompact(Number(ethers.formatEther(polWei)), 4, 2);
+          if (cpaBal != null && cpaEl) cpaEl.textContent = 'CPA: ' + formatCompact(Number(ethers.formatUnits(cpaBal, 18)), 4, 2);
+          if (daiBal != null && daiEl) daiEl.textContent = 'DAI: ' + formatCompact(Number(ethers.formatUnits(daiBal, 18)), 2, 2);
+
+          // Cache
+          try {
+            const cache = {
+              ts: Date.now(),
+              pol: polWei ? maticEl.textContent.replace('POL: ','') : null,
+              cpa: cpaBal!=null ? cpaEl.textContent.replace('CPA: ','') : null,
+              dai: daiBal!=null ? daiEl.textContent.replace('DAI: ','') : null
+            };
+            localStorage.setItem('cpa_nav_balances', JSON.stringify(cache));
+          } catch {}
+
+          schedule(10000); // refresh every 10s after success
+        } catch (e) {
+          // Keep previous values; retry soon
+          schedule(4000);
+        }
+      }
+
+      function schedule(ms){ setTimeout(updateUserbar, ms); }
+
+      // Kick off quickly
+      setTimeout(updateUserbar, 200);
+
+      // React to wallet events
+      if (window.ethereum && typeof window.ethereum.on === 'function') {
+        window.ethereum.on('accountsChanged', ()=>updateUserbar());
+        window.ethereum.on('chainChanged', ()=>setTimeout(updateUserbar, 300));
       }
     })();
   });

@@ -157,6 +157,82 @@
         contractAddressElement.textContent = 'خطا در بارگذاری آدرس قرارداد';
         contractAddressElement.style.color = '#ff4757';
       }
+
+      // === Populate dynamic About data ===
+      (async function populateAboutData(){
+        try {
+          // DAI address
+          const daiEl = document.getElementById('dai-address');
+          const copyDaiBtn = document.getElementById('copy-dai-btn');
+          if (daiEl && window.DAI_ADDRESS) {
+            daiEl.textContent = window.DAI_ADDRESS;
+            const copyDai = () => navigator.clipboard.writeText(window.DAI_ADDRESS).then(()=>{
+              if (copyDaiBtn) copyDaiBtn.textContent = '✅'; setTimeout(()=>copyDaiBtn.textContent='📋', 1500); }
+            ).catch(()=>{ if (copyDaiBtn) { copyDaiBtn.textContent = '❌'; setTimeout(()=>copyDaiBtn.textContent='📋', 1500); }});
+            if (copyDaiBtn) copyDaiBtn.addEventListener('click', copyDai);
+            daiEl.addEventListener('click', copyDai);
+          }
+
+          // Polygonscan link
+          const scanLink = document.getElementById('polygonscan-link');
+          if (scanLink && window.CPA_ADDRESS) {
+            scanLink.href = 'https://polygonscan.com/address/' + window.CPA_ADDRESS;
+            scanLink.textContent = 'مشاهده در Polygonscan';
+          }
+
+          // Contract DAI balance (for caps/fees)
+          let daiBalanceNum = 0;
+          if (typeof window.getContractDAIBalance === 'function') {
+            try {
+              const balStr = await window.getContractDAIBalance();
+              const parsed = parseFloat(balStr);
+              if (!Number.isNaN(parsed)) daiBalanceNum = parsed;
+            } catch (e) {
+              console.warn('About: getContractDAIBalance failed', e);
+            }
+          }
+
+          // Max buy cap
+          const maxBuyEl = document.getElementById('about-max-buy');
+          if (maxBuyEl) {
+            const cap = daiBalanceNum <= 100000 ? 1000 : Math.floor(daiBalanceNum * 0.01);
+            maxBuyEl.textContent = cap.toLocaleString('fa-IR') + ' DAI';
+          }
+
+          // Fees (heuristic tiers based on DAI balance)
+          const feeBackingEl = document.getElementById('about-fee-backing');
+          const feeTotalEl = document.getElementById('about-fee-total');
+          if (feeBackingEl || feeTotalEl) {
+            let backing;
+            if (daiBalanceNum <= 50000) backing = 2.0;
+            else if (daiBalanceNum <= 200000) backing = 1.5;
+            else backing = 1.0;
+            const dev = 0.5;
+            if (feeBackingEl) feeBackingEl.textContent = backing.toFixed(1) + '٪';
+            if (feeTotalEl) feeTotalEl.textContent = (backing + dev).toFixed(1) + '٪';
+          }
+
+          // Sell cap for connected user (50% of CPA balance)
+          const sellCapEl = document.getElementById('about-sell-cap');
+          if (sellCapEl && window.contractConfig && typeof window.contractConfig.initializeWeb3 === 'function') {
+            try {
+              const conn = await window.contractConfig.initializeWeb3();
+              const { contract, address } = conn || {};
+              if (contract && address && window.ethers && typeof contract.balanceOf === 'function') {
+                const bal = await contract.balanceOf(address);
+                const cpa = parseFloat(window.ethers.formatUnits(bal, 18));
+                const capCpa = cpa * 0.5;
+                sellCapEl.textContent = capCpa.toLocaleString('fa-IR', { maximumFractionDigits: 4 }) + ' CPA';
+              }
+            } catch (e) {
+              // leave as default —
+              console.warn('About: sell-cap fetch skipped', e?.message || e);
+            }
+          }
+        } catch (e) {
+          console.warn('About: populate error', e);
+        }
+      })();
     });
   </script>
   <section class="about-section">

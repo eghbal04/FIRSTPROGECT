@@ -6,6 +6,164 @@
   <title>انتقال مالکیت موقعیت</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/transfer-ownership.css?v=20250808-1">
+  
+  <!-- Theme override to match main site -->
+  <style id="transfer-theme-override">
+    body.transfer-ownership-page {
+      background: linear-gradient(135deg, #232946 0%, #181c2a 100%);
+      color: #e0e6f7;
+      font-family: 'Vazirmatn', 'Noto Sans Arabic', Tahoma, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+    }
+    .transfer-ownership-container {
+      max-width: 900px;
+      width: 100%;
+      margin: 4.5rem auto 2rem auto;
+      background: rgba(35,41,70,0.96);
+      border: 2px solid #a786ff33;
+      border-radius: 18px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.35);
+      padding: 2rem 1.4rem;
+      backdrop-filter: blur(10px) saturate(130%);
+    }
+    .page-title {
+      color: #00ff88;
+      font-weight: 800;
+      letter-spacing: .3px;
+      text-shadow: 0 2px 8px rgba(0,255,136,0.25);
+      text-align: center;
+      margin: 0 0 .35rem 0;
+    }
+    .subtext {
+      color: #b8c1ec;
+      text-align: center;
+      margin-bottom: 1.3rem;
+    }
+
+    /* Cards */
+    .card {
+      background: rgba(24,28,42,0.6);
+      border: 1px solid rgba(167,134,255,0.25);
+      border-radius: 14px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      padding: 1rem 1.1rem;
+      margin-bottom: 1rem;
+      color: #e0e6f7;
+    }
+    .warning-card { background: rgba(255,68,68,0.06); border-color: rgba(255,68,68,0.25); }
+    .tips-card { background: rgba(0,255,136,0.06); border-color: rgba(0,255,136,0.25); }
+
+    /* Inputs */
+    .form-group label { color: #a786ff; font-weight: 700; }
+    .text-input {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(167,134,255,0.35);
+      color: #ffffff;
+      border-radius: 12px;
+      padding: .75rem .9rem;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .text-input::placeholder { color: #b8c1ec99; }
+    .text-input:focus {
+      border-color: #00ff88;
+      box-shadow: 0 0 0 3px rgba(0,255,136,0.15);
+    }
+    .input-row { display: flex; gap: .5rem; align-items: center; }
+    .btn-icon {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(167,134,255,0.35);
+      color: #a786ff;
+      border-radius: 10px;
+      padding: .6rem .7rem;
+      cursor: pointer;
+      transition: background .2s, color .2s, transform .1s;
+    }
+    .btn-icon:hover { background: rgba(167,134,255,0.12); color: #fff; }
+    .btn-icon:active { transform: translateY(1px); }
+
+    /* Buttons */
+    .btn-primary {
+      background: linear-gradient(90deg, #00ff88, #a786ff);
+      color: #181c2a;
+      border: none;
+      border-radius: 12px;
+      padding: .9rem 1.4rem;
+      font-weight: 800;
+      letter-spacing: .3px;
+      box-shadow: 0 4px 16px rgba(0,255,136,0.25);
+      cursor: pointer;
+      transition: transform .1s, box-shadow .2s, opacity .2s;
+      width: 100%;
+      margin-top: .6rem;
+    }
+    .btn-primary:hover { box-shadow: 0 6px 18px rgba(0,255,136,0.35); }
+    .btn-primary:disabled { opacity: .6; cursor: not-allowed; }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid rgba(167,134,255,0.45);
+      color: #e0e6f7;
+      border-radius: 10px;
+      padding: .7rem 1.2rem;
+      cursor: pointer;
+      transition: background .2s, color .2s;
+    }
+    .btn-outline:hover { background: rgba(167,134,255,0.12); color: #fff; }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #ff4444, #cc3333);
+      border: none;
+      color: #fff;
+      border-radius: 10px;
+      padding: .8rem 1.2rem;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(255,68,68,0.25);
+      transition: transform .1s, box-shadow .2s;
+    }
+    .btn-danger:hover { box-shadow: 0 6px 16px rgba(255,68,68,0.35); }
+
+    .hint { color: #b8c1ec; margin-top: .35rem; }
+    .hint.valid { color: #00ff88; }
+    .hint.error { color: #ff6b6b; }
+
+    .status { margin-top: .8rem; min-height: 1.2rem; }
+    .status.success { color: #00ff88; }
+    .status.error { color: #ff6b6b; }
+    .status.loading { color: #a786ff; }
+
+    /* Modal */
+    .modal-overlay { 
+      position: fixed; inset: 0; 
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      display: none; align-items: center; justify-content: center;
+      z-index: 10000;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: linear-gradient(135deg,#232946,#181c2a);
+      border: 2px solid #a786ff33;
+      border-radius: 16px;
+      color: #fff;
+      width: min(560px, 92vw);
+      padding: 1.2rem 1rem;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.35);
+    }
+    .modal h3 { color: #00ff88; margin-top: 0; }
+    .modal-warning { color: #ffb84d; font-weight: 700; }
+    .modal-actions { display: flex; gap: .6rem; justify-content: flex-end; margin-top: .8rem; }
+
+    /* Responsive */
+    @media (max-width: 680px) {
+      .transfer-ownership-container { padding: 1.2rem .9rem; margin-top: 5.2rem; }
+      .input-row { gap: .4rem; }
+      .btn-primary { padding: .85rem 1.1rem; }
+      .card { padding: .85rem .9rem; }
+    }
+  </style>
 </head>
 <body class="transfer-ownership-page">
   <div class="transfer-ownership-container">
