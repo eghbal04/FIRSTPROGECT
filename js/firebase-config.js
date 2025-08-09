@@ -18,8 +18,16 @@ function initializeFirebase() {
     if (typeof firebase !== 'undefined') {
       firebase.initializeApp(firebaseConfig);
       db = firebase.firestore();
-      isFirebaseInitialized = true;
-      console.log('✅ Firebase راه‌اندازی شد');
+      
+      // Test the connection
+      db.collection('test').limit(1).get().then(() => {
+        isFirebaseInitialized = true;
+        console.log('✅ Firebase راه‌اندازی شد و اتصال تأیید شد');
+      }).catch((error) => {
+        console.warn('⚠️ Firebase راه‌اندازی شد اما اتصال ناموفق:', error);
+        isFirebaseInitialized = false;
+      });
+      
       return true;
     } else {
       console.warn('⚠️ Firebase SDK بارگذاری نشده است');
@@ -27,6 +35,7 @@ function initializeFirebase() {
     }
   } catch (error) {
     console.error('❌ خطا در راه‌اندازی Firebase:', error);
+    isFirebaseInitialized = false;
     return false;
   }
 }
@@ -255,11 +264,32 @@ async function savePriceHistory(tokenPrice, pointPrice, options = {}) {
             userId: 'anonymous' // می‌توانید بعداً سیستم کاربری اضافه کنید
         };
 
-        await db.collection('price_history').add(priceData);
+        // Add timeout to Firebase operations
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Firebase operation timeout')), 10000)
+        );
+        
+        await Promise.race([
+            db.collection('price_history').add(priceData),
+            timeoutPromise
+        ]);
+        
         console.log('✅ تاریخچه قیمت در Firebase ذخیره شد:', priceData);
         return true;
     } catch (error) {
         console.error('❌ خطا در ذخیره تاریخچه قیمت:', error);
+        
+        // Mark Firebase as disabled if CORS or persistent errors occur
+        if (error.message && (
+            error.message.includes('CORS') || 
+            error.message.includes('Access-Control-Allow-Origin') ||
+            error.message.includes('Network Error') ||
+            error.message.includes('timeout')
+        )) {
+            console.warn('⚠️ Firebase غیرفعال شد به دلیل مشکل شبکه');
+            isFirebaseInitialized = false;
+        }
+        
         return false;
     }
 }
@@ -272,10 +302,18 @@ async function getPriceHistory(limit = 100) {
     }
 
     try {
-        const snapshot = await db.collection('price_history')
-            .orderBy('timestamp', 'desc')
-            .limit(limit)
-            .get();
+        // Add timeout to Firebase operations
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Firebase operation timeout')), 10000)
+        );
+        
+        const snapshot = await Promise.race([
+            db.collection('price_history')
+                .orderBy('timestamp', 'desc')
+                .limit(limit)
+                .get(),
+            timeoutPromise
+        ]);
 
         const history = [];
         snapshot.forEach(doc => {
@@ -293,6 +331,18 @@ async function getPriceHistory(limit = 100) {
         return history;
     } catch (error) {
         console.error('❌ خطا در بازیابی تاریخچه قیمت:', error);
+        
+        // Mark Firebase as disabled if CORS or persistent errors occur
+        if (error.message && (
+            error.message.includes('CORS') || 
+            error.message.includes('Access-Control-Allow-Origin') ||
+            error.message.includes('Network Error') ||
+            error.message.includes('timeout')
+        )) {
+            console.warn('⚠️ Firebase غیرفعال شد به دلیل مشکل شبکه');
+            isFirebaseInitialized = false;
+        }
+        
         return [];
     }
 }

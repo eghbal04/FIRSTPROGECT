@@ -37,21 +37,17 @@ class FloatingTokenGrowthCard {
       return;
     }
     
-    // محل هدف: ترجیحاً داخل Swap
-    const swapContainer = document.querySelector('#main-swap .swap-container') || document.getElementById('main-swap');
-    const inSwap = !!swapContainer;
-    const positionStyle = inSwap
-      ? 'position: absolute; bottom: 10px; right: 10px;'
-      : 'position: fixed; bottom: 20px; right: 20px;';
-
-    // ایجاد HTML کارت
+    // ایجاد HTML کارت - همیشه شناور در گوشه پایین راست
     const cardHTML = `
       <div id="floating-token-growth-card" style="
-        ${positionStyle}
-        width: 80px;
-        height: 80px;
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 10000;
+        width: 120px;
+        height: 75px;
         background: linear-gradient(135deg, #00ff88, #00cc6a);
-        border-radius: 50%;
+        border-radius: 40px;
         box-shadow: 0 8px 32px rgba(0, 255, 136, 0.3);
         display: flex;
         flex-direction: column;
@@ -65,40 +61,32 @@ class FloatingTokenGrowthCard {
       ">
         <div style="
           color: #1a1f2e;
-          font-size: 0.9rem;
+          font-size: 0.8rem;
           font-weight: bold;
           text-align: center;
-          margin-bottom: 5px;
+          margin-bottom: 3px;
           font-family: monospace;
         ">رشد</div>
         <div id="token-growth-percentage" style="
           color: #1a1f2e;
-          font-size: 1.1rem;
+          font-size: 1.3rem;
           font-weight: bold;
           font-family: monospace;
           text-align: center;
+          line-height: 1;
         ">--%</div>
         <div id="token-growth-status" style="
           color: #1a1f2e;
-          font-size: 0.6rem;
+          font-size: 0.7rem;
           font-weight: bold;
           text-align: center;
-          margin-top: 2px;
+          margin-top: 3px;
         ">در حال بارگذاری...</div>
       </div>
     `;
     
-    // اضافه کردن کارت
-    if (inSwap) {
-      // اطمینان از relative بودن والد
-      const currentPos = window.getComputedStyle(swapContainer).position;
-      if (!currentPos || currentPos === 'static') {
-        swapContainer.style.position = 'relative';
-      }
-      swapContainer.insertAdjacentHTML('beforeend', cardHTML);
-    } else {
-      document.body.insertAdjacentHTML('beforeend', cardHTML);
-    }
+    // اضافه کردن کارت به body برای شناور بودن در همه صفحات
+    document.body.insertAdjacentHTML('beforeend', cardHTML);
     
     // دریافت عناصر
     this.card = document.getElementById('floating-token-growth-card');
@@ -136,25 +124,31 @@ class FloatingTokenGrowthCard {
   
   expand() {
     this.isExpanded = true;
-    this.card.style.width = '134px';
-    this.card.style.height = '134px';
-    this.card.style.borderRadius = '20px';
+    this.card.style.width = '180px';
+    this.card.style.height = '100px';
+    this.card.style.borderRadius = '50px';
     this.card.style.background = 'linear-gradient(135deg, #00ff88, #00cc6a, #00ff88)';
     this.card.style.backgroundSize = '200% 200%';
     this.card.style.animation = 'gradientShift 2s ease infinite';
     
-    // اضافه کردن اطلاعات جزئی‌تر با فرمت علمی
+    // نمایش اطلاعات بیشتر
     this.statusElement.innerHTML = `
-      <div style="margin-bottom: 8px;">قیمت فعلی: <span id="current-token-price">--</span></div>
-      <div>قیمت اولیه: <span id="initial-token-price">1e-15</span></div>
+      <div style="display:flex; gap:8px; align-items:center; justify-content:center;">
+        <span style="opacity:.85">قیمت فعلی:</span>
+        <span id="current-token-price" style="font-weight:700">--</span>
+      </div>
+      <div style="display:flex; gap:8px; align-items:center; justify-content:center; margin-top:4px;">
+        <span style="opacity:.85">قیمت اولیه:</span>
+        <span id="initial-token-price" style="font-weight:700">1e-15</span>
+      </div>
     `;
   }
   
   collapse() {
     this.isExpanded = false;
-    this.card.style.width = '80px';
-    this.card.style.height = '80px';
-    this.card.style.borderRadius = '50%';
+    this.card.style.width = '120px';
+    this.card.style.height = '75px';
+    this.card.style.borderRadius = '40px';
     this.card.style.background = 'linear-gradient(135deg, #00ff88, #00cc6a)';
     this.card.style.animation = 'none';
     
@@ -211,7 +205,9 @@ class FloatingTokenGrowthCard {
       // اولویت سوم: تلاش برای دریافت از contract.getTokenPrice (کندتر)
       if (window.contractConfig && window.contractConfig.contract && typeof window.contractConfig.contract.getTokenPrice === 'function') {
         try {
-          const tokenPriceRaw = await window.contractConfig.contract.getTokenPrice();
+          const tokenPriceRaw = typeof window.retryRpcOperation === 'function' 
+            ? await window.retryRpcOperation(() => window.contractConfig.contract.getTokenPrice(), 2)
+            : await window.contractConfig.contract.getTokenPrice();
           
           if (tokenPriceRaw) {
             // تبدیل از Wei به Ether (18 decimal)
@@ -388,38 +384,41 @@ function addFloatingCardStyles() {
     
     @media (max-width: 768px) {
       #floating-token-growth-card {
-        bottom: 10px;
-        right: 10px;
-        width: 54px; /* 80 * 0.67 ≈ 54 */
-        height: 54px;
+        bottom: 15px !important;
+        right: 15px !important;
+        width: 95px !important; /* بیضی کوچکتر برای موبایل */
+        height: 60px !important;
+        border-radius: 30px !important;
       }
       
       #floating-token-growth-card div:first-child {
-        font-size: 0.7rem !important;
+        font-size: 0.65rem !important;
         margin-bottom: 2px !important;
       }
       
       #token-growth-percentage {
-        font-size: 1rem !important;
+        font-size: 1.1rem !important;
       }
       
       #token-growth-status {
-        font-size: 0.6rem !important;
-        margin-top: 1px !important;
+        font-size: 0.55rem !important;
+        margin-top: 2px !important;
       }
       
       #floating-token-growth-card.expanded {
-        width: 94px; /* 140 * 0.67 ≈ 94 */
-        height: 94px;
+        width: 110px !important;
+        height: 70px !important;
+        border-radius: 35px !important;
       }
     }
     
     @media (max-width: 480px) {
       #floating-token-growth-card {
-        bottom: 8px;
-        right: 8px;
-        width: 47px; /* 70 * 0.67 ≈ 47 */
-        height: 47px;
+        bottom: 12px !important;
+        right: 12px !important;
+        width: 85px !important; /* بیضی برای موبایل کوچک */
+        height: 50px !important;
+        border-radius: 25px !important;
       }
       
       #floating-token-growth-card div:first-child {
@@ -428,7 +427,7 @@ function addFloatingCardStyles() {
       }
       
       #token-growth-percentage {
-        font-size: 0.9rem !important;
+        font-size: 1rem !important;
       }
       
       #token-growth-status {
@@ -437,8 +436,9 @@ function addFloatingCardStyles() {
       }
       
       #floating-token-growth-card.expanded {
-        width: 80px;
-        height: 80px;
+        width: 100px !important;
+        height: 60px !important;
+        border-radius: 30px !important;
       }
     }
   `;
@@ -466,13 +466,109 @@ function initializeFloatingTokenCard() {
 }
 
 // راه‌اندازی خودکار وقتی DOM بارگذاری شد
+function startFloatingCard() {
+  try {
+    console.log('🎯 Initializing floating token card...');
+    initializeFloatingTokenCard();
+    console.log('✅ Floating token card initialized successfully');
+  } catch (error) {
+    console.error('❌ Error initializing floating token card:', error);
+  }
+}
+
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeFloatingTokenCard);
+  document.addEventListener('DOMContentLoaded', startFloatingCard);
 } else {
   // اگر DOM قبلاً بارگذاری شده
-  initializeFloatingTokenCard();
+  setTimeout(startFloatingCard, 100); // کمی تأخیر برای اطمینان از بارگذاری کامل
 }
 
 // Export برای استفاده در فایل‌های دیگر
 window.FloatingTokenGrowthCard = FloatingTokenGrowthCard;
 window.initializeFloatingTokenCard = initializeFloatingTokenCard;
+
+// تابع کمکی برای debug و راه‌اندازی مجدد
+window.debugFloatingCard = function() {
+  console.log('🔍 Debug floating card:');
+  
+  const existingCard = document.getElementById('floating-token-growth-card');
+  if (existingCard) {
+    console.log('✅ Card element found:', existingCard);
+    console.log('Card styles:', window.getComputedStyle(existingCard));
+  } else {
+    console.log('❌ Card element NOT found');
+  }
+  
+  if (window.floatingTokenGrowthCard) {
+    console.log('✅ Card instance found:', window.floatingTokenGrowthCard);
+  } else {
+    console.log('❌ Card instance NOT found');
+  }
+};
+
+// تابع برای راه‌اندازی مجدد کارت
+window.restartFloatingCard = function() {
+  console.log('🔄 Restarting floating card...');
+  
+  // حذف کارت موجود
+  const existingCard = document.getElementById('floating-token-growth-card');
+  if (existingCard) {
+    existingCard.remove();
+    console.log('🗑️ Removed existing card');
+  }
+  
+  // حذف instance موجود
+  if (window.floatingTokenGrowthCard) {
+    if (typeof window.floatingTokenGrowthCard.destroy === 'function') {
+      window.floatingTokenGrowthCard.destroy();
+    }
+    window.floatingTokenGrowthCard = null;
+  }
+  
+  // راه‌اندازی مجدد
+  setTimeout(() => {
+    startFloatingCard();
+    console.log('✅ Card restarted');
+  }, 500);
+};
+
+// تابع سریع برای نمایش فوری کارت
+window.showFloatingCardNow = function() {
+  console.log('⚡ Showing floating card immediately...');
+  
+  // حذف کارت موجود اگر وجود دارد
+  const existingCard = document.getElementById('floating-token-growth-card');
+  if (existingCard) {
+    existingCard.remove();
+  }
+  
+  // راه‌اندازی فوری
+  if (!window.floatingTokenGrowthCard) {
+    window.floatingTokenGrowthCard = new FloatingTokenGrowthCard();
+  }
+  
+  console.log('✅ Card should be visible now');
+};
+
+// تابع به‌روزرسانی کارت به شکل بیضی
+window.updateCardToOval = function() {
+  console.log('🔄 Updating card to oval shape...');
+  
+  const card = document.getElementById('floating-token-growth-card');
+  if (card) {
+    card.style.width = '120px';
+    card.style.height = '75px';
+    card.style.borderRadius = '40px';
+    
+    const percentage = document.getElementById('token-growth-percentage');
+    if (percentage) {
+      percentage.style.fontSize = '1.3rem';
+      percentage.style.lineHeight = '1';
+    }
+    
+    console.log('✅ Card updated to oval shape');
+  } else {
+    console.log('❌ Card not found, creating new one...');
+    window.showFloatingCardNow();
+  }
+};

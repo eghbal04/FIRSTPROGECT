@@ -78,9 +78,28 @@ window.fetchReports = async function(address) {
     contractWithProvider.provider = provider; // تضمین provider معتبر برای safeQueryEvents
     const reports = [];
     const currentBlock = await provider.getBlockNumber();
-    // شروع از بلاک 50,000,000 (حدود 6 ماه پیش) برای سرعت بیشتر
-    const fromBlock = Math.max(0, currentBlock - 50000000);
-    console.log('📊 Searching from block:', fromBlock, 'to block:', currentBlock);
+    
+    // تشخیص بازه زمانی از انتخابگر (اگر موجود باشد)
+    let blockRange = 200000; // پیش‌فرض: 2 هفته
+    const timeRangeSelect = document.getElementById('time-range-select');
+    if (timeRangeSelect) {
+        const range = timeRangeSelect.value;
+        switch(range) {
+            case 'week': blockRange = 100000; break; // هفته اخیر
+            case 'month': blockRange = 430000; break; // ماه اخیر
+            case 'year': blockRange = 5200000; break; // سال اخیر
+            default: blockRange = 200000; // پیش‌فرض
+        }
+    }
+    
+    const fromBlock = Math.max(0, currentBlock - blockRange);
+    console.log('📊 Searching from block:', fromBlock, 'to block:', currentBlock, `(${timeRangeSelect?.value || 'default'} range)`);
+    
+    // نمایش پیشرفت جستجو
+    if (typeof setReportsProgress === 'function') {
+        setReportsProgress(20);
+    }
+    
     // Helper: اضافه کردن ایونت به reports
     async function pushReport(type, title, amount, event, addr, provider) {
         let ts = null;
@@ -93,7 +112,7 @@ window.fetchReports = async function(address) {
         // مقدار پیش‌فرض برای title و amount اگر خالی یا undefined بود
         const safeTitle = (typeof title !== 'undefined' && title !== null && title !== '') ? title : '---';
         const safeAmount = (typeof amount !== 'undefined' && amount !== null && amount !== '') ? amount : '---';
-        reports.push({
+        const report = {
             type,
             title: safeTitle,
             amount: safeAmount,
@@ -102,7 +121,28 @@ window.fetchReports = async function(address) {
             blockNumber: event.blockNumber,
             address: addr,
             logIndex: event.logIndex
-        });
+        };
+        reports.push(report);
+        
+        // فوری تایپ کردن این ایونت (اگر کانتینر موجود باشد)
+        const reportsContainer = document.getElementById('reports-list');
+        if (reportsContainer && !reportsContainer.querySelector('.loading')) {
+            const sentenceDiv = document.createElement('div');
+            sentenceDiv.classList.add('report-sentence');
+            reportsContainer.appendChild(sentenceDiv);
+            
+            // تایپ فوری
+            try {
+                const sentence = window.getReportSentence ? await window.getReportSentence(report) : report.title || '';
+                if (window.typeSentence) {
+                    window.typeSentence(sentenceDiv, sentence, 6);
+                } else {
+                    sentenceDiv.textContent = sentence;
+                }
+            } catch (e) {
+                sentenceDiv.textContent = report.title || '';
+            }
+        }
     }
     // تست مستقیم برای Activated events
     console.log('🔍 Testing Activated events filter...');

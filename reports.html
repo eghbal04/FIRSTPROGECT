@@ -80,26 +80,8 @@
             border-top: 1px solid #2d3250;
             margin: 0;
         }
-        #connect-wallet-btn {
-            display: block;
-            margin: 0 auto 24px auto;
-            padding: 12px 32px;
-            font-size: 1.13em;
-            background: linear-gradient(90deg,#00ff88,#a786ff);
-            color: #181c2a;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.2s, box-shadow 0.2s;
-            font-family: inherit;
-            font-weight: bold;
-            box-shadow: 0 2px 8px #00ff8822;
-        }
-        #connect-wallet-btn:hover {
-            background: linear-gradient(90deg,#a786ff,#00ff88);
-            box-shadow: 0 4px 16px #00ff8844;
-        }
-        #event-type-select, #report-date-from, #report-date-to {
+        /* کنترل‌ها */
+        #event-type-select, #report-search, #time-range-select {
             background: #181c2a;
             color: #e0e6f7;
             border: 1.5px solid #a786ff;
@@ -110,22 +92,15 @@
             box-shadow: 0 2px 8px #a786ff22;
             min-width: 120px;
         }
-        #category-btn, #filter-date-btn {
-            background: linear-gradient(90deg,#00ff88,#a786ff);
-            color: #181c2a;
-            border: none;
-            border-radius: 8px;
-            padding: 8px 18px;
-            font-size: 1.08em;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 2px 8px #00ff8822;
-            transition: background 0.2s, box-shadow 0.2s;
-            margin-bottom: 8px;
+        .controls-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
         }
-        #category-btn:hover, #filter-date-btn:hover {
-            background: linear-gradient(90deg,#a786ff,#00ff88);
-            box-shadow: 0 4px 16px #00ff8844;
+        .controls-row > * {
+            flex: 1;
+            min-width: 140px;
         }
         .event-group h3 {
             color: #a786ff;
@@ -150,7 +125,7 @@
             #reports-list { font-size: 0.98em; }
             .event-group { padding: 6px 2vw 2px 2vw; }
             .report-sentence { font-size: 1em; padding: 10px 0; }
-            #event-type-select, #report-date-from, #report-date-to, #category-btn, #filter-date-btn {
+            #event-type-select, #report-search {
                 font-size: 1em;
                 min-width: 90px;
                 padding: 7px 6px;
@@ -170,14 +145,19 @@
     <script src="js/navbar.js"></script>
     <div class="container">
         <h1>گزارشات فعالیت شما</h1>
-        <button id="connect-wallet-btn">اتصال کیف پول</button>
-        <div style="display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:18px;">
-            <input type="date" id="report-date-from" style="padding:7px 10px;font-size:1em;border-radius:6px;border:1px solid #1976d2;" />
-            <span style="color:#a786ff;">تا</span>
-            <input type="date" id="report-date-to" style="padding:7px 10px;font-size:1em;border-radius:6px;border:1px solid #1976d2;" />
-            <button id="filter-date-btn" style="padding:7px 18px;font-size:1em;border-radius:6px;border:1px solid #1976d2;background:#1976d2;color:#fff;cursor:pointer;">فیلتر تاریخ</button>
-            <button id="category-btn" style="padding:7px 18px;font-size:1em;border-radius:6px;border:1px solid #1976d2;background:#1976d2;color:#fff;cursor:pointer;">دسته‌بندی</button>
-            <select id="event-type-select" style="padding:7px 18px;font-size:1em;border-radius:6px;border:1px solid #ddd;max-width:220px;">
+        <div id="reports-progress" style="display:none;height:6px;background:rgba(255,255,255,0.12);border-radius:999px;overflow:hidden;margin:-8px 0 16px 0;">
+          <div id="reports-progress-inner" style="height:100%;width:0%;background:linear-gradient(90deg,#00ff88,#a786ff);box-shadow:0 0 12px rgba(0,255,136,0.35) inset;transition:width 300ms ease;"></div>
+        </div>
+        <div class="controls-row">
+            <select id="time-range-select">
+                <option value="week">هفته اخیر</option>
+                <option value="month">ماه اخیر</option>
+                <option value="year">سال اخیر</option>
+            </select>
+            
+            <input id="report-search" type="text" placeholder="جستجو در رویدادها..." />
+            
+            <select id="event-type-select">
                 <option value="all">همه دسته‌ها</option>
                 <option value="registration">ثبت‌نام و فعال‌سازی</option>
                 <option value="referral_registration">معرفی و ثبت‌نام</option>
@@ -244,26 +224,15 @@
             return '';
         };
         // تلاش برای بارگذاری گزارشات هنگام لود صفحه
+        // Progress helpers
+        function showReportsProgress(){ const b=document.getElementById('reports-progress'); if(b) b.style.display='block'; }
+        function setReportsProgress(p){ const i=document.getElementById('reports-progress-inner'); if(i) i.style.width=Math.max(0,Math.min(100,p))+'%'; }
+        function hideReportsProgress(){ const b=document.getElementById('reports-progress'); if(!b) return; setTimeout(()=>{ b.style.display='none'; setReportsProgress(0); }, 400); }
+
         async function tryLoadReports() {
             if (window.loadReports) window.loadReports();
         }
-        document.getElementById('connect-wallet-btn').onclick = async function() {
-            if (typeof window.ethereum !== 'undefined') {
-                try {
-                    await window.ethereum.request({ method: 'eth_requestAccounts' });
-                    this.style.display = 'none';
-                    tryLoadReports();
-                } catch (e) {
-                    alert('اتصال به کیف پول لغو شد.');
-                }
-            } else {
-                alert('لطفاً افزونه MetaMask یا کیف پول Web3 را نصب کنید.');
-            }
-        };
-        // دکمه دسته‌بندی، روی select فوکوس می‌کند
-        document.getElementById('category-btn').onclick = function() {
-            document.getElementById('event-type-select').focus();
-        };
+        // دسته‌بندی: دکمه حذف شده است؛ فقط از select استفاده می‌شود
         // تابع فیلتر تاریخ روی گزارشات
         let allReportsCache = [];
         function filterReportsByDate(reports, from, to) {
@@ -272,75 +241,122 @@
             const toTime = to ? new Date(to).getTime() + 24*3600*1000 : Infinity;
             return reports.filter(r => r.timestamp >= fromTime && r.timestamp < toTime);
         }
-        // اگر کیف پول قبلاً متصل است، دکمه را مخفی کن و گزارشات را لود کن
-        window.addEventListener('DOMContentLoaded', async function() {
-            if (typeof window.ethereum !== 'undefined') {
-                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-                if (accounts && accounts.length > 0) {
-                    document.getElementById('connect-wallet-btn').style.display = 'none';
-                    tryLoadReports();
-                }
+        // لود خودکار بعد از آماده شدن
+        window.addEventListener('DOMContentLoaded', function() {
+            tryLoadReports();
+            
+            // اضافه کردن event listener برای تغییر بازه زمانی
+            const timeRangeSelect = document.getElementById('time-range-select');
+            if (timeRangeSelect) {
+                timeRangeSelect.addEventListener('change', function() {
+                    console.log('🔄 Time range changed to:', this.value);
+                    if (window.loadReports) window.loadReports();
+                });
             }
         });
         window.loadReports = async function(address) {
             const reportsContainer = document.getElementById('reports-list');
-            reportsContainer.innerHTML = '<div class="loading">در حال بارگذاری گزارشات...</div>';
-            const reports = await window.fetchReports(address);
-            allReportsCache = reports;
-            renderFilteredReports();
-            // لیسنر فیلتر تاریخ
-            document.getElementById('filter-date-btn').onclick = function() {
-                renderFilteredReports();
-            };
-        };
-        function renderFilteredReports() {
-            const reportsContainer = document.getElementById('reports-list');
-            const from = document.getElementById('report-date-from').value;
-            const to = document.getElementById('report-date-to').value;
-            let filtered = allReportsCache;
-            if (from || to) {
-                filtered = filterReportsByDate(allReportsCache, from, to);
+            showReportsProgress(); setReportsProgress(10);
+            
+            // پاک کردن کانتینر و آماده کردن برای تایپ فوری
+            reportsContainer.innerHTML = '';
+            
+            // اضافه کردن توابع مورد نیاز به window
+            window.typeSentence = typeSentence;
+            
+            try {
+                const reports = await window.fetchReports(address);
+                setReportsProgress(70);
+                
+                if (!reports || reports.length === 0) {
+                    const timeRange = document.getElementById('time-range-select')?.value || 'week';
+                    const rangeText = {
+                        'week': 'هفته اخیر',
+                        'month': 'ماه اخیر', 
+                        'year': 'سال اخیر'
+                    }[timeRange] || 'بازه انتخابی';
+                    reportsContainer.innerHTML = `<div class="no-reports">هیچ ایونتی در ${rangeText} یافت نشد.</div>`;
+                    setReportsProgress(100); hideReportsProgress();
+                    return;
+                }
+                
+                // اگر قبلاً ایونت‌هایی تایپ شده‌اند، نیازی به رندر مجدد نیست
+                allReportsCache = reports;
+                setReportsProgress(100); hideReportsProgress();
+            } catch (error) {
+                console.error('خطا در بارگذاری گزارشات:', error);
+                reportsContainer.innerHTML = '<div class="error-message">خطا در بارگذاری گزارشات. لطفا دوباره تلاش کنید.</div>';
+                hideReportsProgress();
             }
+        };
+        let _renderToken = 0;
+        function typeSentence(el, text, speed = 8) {
+            return new Promise(resolve => {
+                let i = 0;
+                el.innerHTML = '';
+                const timer = setInterval(() => {
+                    if (i < text.length) {
+                        el.innerHTML += text.charAt(i++);
+                    } else {
+                        clearInterval(timer);
+                        resolve();
+                    }
+                }, speed);
+            });
+        }
+        async function renderFilteredReports() {
+            const myToken = ++_renderToken;
+            const reportsContainer = document.getElementById('reports-list');
+            const search = (document.getElementById('report-search').value || '').toLowerCase();
+            const selectedType = document.getElementById('event-type-select').value;
+            let filtered = allReportsCache.filter(r => {
+                const inType = (selectedType === 'all') || (r.type === selectedType);
+                if (!inType) return false;
+                const text = `${r.type} ${r.title || ''} ${JSON.stringify(r.details || '')}`.toLowerCase();
+                return !search || text.includes(search);
+            });
+            // مرتب‌سازی زمانی (قدیمی به جدید)
+            filtered.sort((a,b) => (a.timestamp||0) - (b.timestamp||0));
             reportsContainer.innerHTML = '';
             if (filtered.length === 0) {
                 reportsContainer.innerHTML = '<div class="no-reports">گزارشی پیدا نشد.</div>';
                 return;
             }
-            // دسته‌بندی بر اساس type
-            const eventGroups = {};
-            filtered.forEach(report => {
-                const eventType = report.type;
-                if (!eventGroups[eventType]) {
-                    eventGroups[eventType] = [];
-                }
-                eventGroups[eventType].push(report);
-            });
-            // نمایش هر گروه
-            for (const eventType in eventGroups) {
-                const reports = eventGroups[eventType];
-                if (reports.length > 0) {
-                    const groupElement = document.createElement('div');
-                    groupElement.classList.add('event-group');
-                    const h3 = document.createElement('h3');
-                    h3.textContent = window.getEventTypeLabel ? window.getEventTypeLabel(eventType) : eventType;
-                    groupElement.appendChild(h3);
-                    // نمایش هر گزارش با getReportSentence
-                    reports.forEach(report => {
-                        const sentenceDiv = document.createElement('div');
-                        sentenceDiv.classList.add('report-sentence');
-                        // پشتیبانی از async بودن getReportSentence
-                        if (window.getReportSentence) {
-                            window.getReportSentence(report).then(sentence => {
-                                sentenceDiv.innerHTML = sentence;
-                            });
-                        } else {
-                            sentenceDiv.textContent = report.title || '-';
+            showReportsProgress(); setReportsProgress(75);
+            const total = filtered.length;
+            for (let idx = 0; idx < total; idx++) {
+                if (myToken !== _renderToken) return; // لغو در صورت رندر جدید
+                const report = filtered[idx];
+                const sentenceDiv = document.createElement('div');
+                sentenceDiv.classList.add('report-sentence');
+                reportsContainer.appendChild(sentenceDiv);
+                // پیش‌نمایش سریع برای شروع تایپ فوری
+                const label = (window.getEventTypeLabel ? window.getEventTypeLabel(report.type) : report.type) || '';
+                const preview = `${label} ...`;
+                await typeSentence(sentenceDiv, preview, 6);
+
+                // همزمان متن کامل را بگیر و وقتی آماده شد، بدون بلاک کردن ادامه، جایگزین کن
+                if (window.getReportSentence) {
+                    window.getReportSentence(report).then(full => {
+                        // اگر در میانه رندر جدید نیستیم و این آیتم هنوز وجود دارد
+                        if (sentenceDiv && sentenceDiv.isConnected && myToken === _renderToken) {
+                            sentenceDiv.textContent = '';
+                            // تایپ نهایی سریع‌تر
+                            typeSentence(sentenceDiv, full || preview, 6);
                         }
-                        groupElement.appendChild(sentenceDiv);
-                    });
-                    reportsContainer.appendChild(groupElement);
+                    }).catch(()=>{});
+                } else if (report.title) {
+                    // جایگزینی سریع عنوان در صورت نبود تابع جزئیات
+                    const finalText = report.title;
+                    sentenceDiv.textContent = '';
+                    await typeSentence(sentenceDiv, finalText, 6);
                 }
+                setReportsProgress(75 + Math.floor(25 * ((idx + 1) / total)));
             }
+            hideReportsProgress();
+            // جستجو و دسته‌بندی زنده
+            document.getElementById('report-search').oninput = renderFilteredReports;
+            document.getElementById('event-type-select').onchange = renderFilteredReports;
         }
     </script>
     

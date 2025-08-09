@@ -2,22 +2,83 @@
 (function() {
   const style = document.createElement('style');
   style.textContent = `
+    /* Modern Navbar Styles */
     .cpa-navbar {
       width: 100vw;
       color: #fff;
       position: fixed;
       top: 0; left: 0; z-index: 10000;
-      font-family: 'Montserrat', 'Noto Sans Arabic', sans-serif;
-      backdrop-filter: blur(18px) saturate(180%);
-      -webkit-backdrop-filter: blur(18px) saturate(180%);
-      background: linear-gradient(135deg, rgba(24,28,42,0.9), rgba(35,41,70,0.9));
-      border-bottom: 1px solid rgba(167,134,255,0.18);
-      box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+      font-family: 'Vazirmatn', 'Inter', 'SF Pro Display', sans-serif;
+      backdrop-filter: blur(24px) saturate(200%);
+      -webkit-backdrop-filter: blur(24px) saturate(200%);
+      background: linear-gradient(135deg, 
+        rgba(15,15,23,0.95) 0%, 
+        rgba(24,28,42,0.95) 50%, 
+        rgba(35,41,70,0.95) 100%);
+      border-bottom: 1px solid rgba(0,255,136,0.15);
+      box-shadow: 
+        0 8px 32px rgba(0,0,0,0.4),
+        0 1px 0 rgba(255,255,255,0.1) inset;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .cpa-navbar-container { max-width: 1280px; margin: 0 auto; padding: 0.4rem 1rem; display: grid; grid-template-columns: 1fr; justify-items: center; align-items: center; min-height: 56px; }
-    .cpa-userbar { display:flex; align-items:center; gap: 0.6rem; padding: 0.2rem 0.5rem; background: rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius: 10px; margin: 0 auto; }
-    .cpa-userbar .pill { background: rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.12); padding: 0.15rem 0.6rem; border-radius: 999px; font-size: 1.12rem; font-weight: 500; letter-spacing: 0.35px; color: #e6e8ff; font-style: italic; text-transform: uppercase; }
-    .cpa-userbar .addr { display:none; }
+    .cpa-navbar-container { 
+      max-width: 1400px; 
+      margin: 0 auto; 
+      padding: 0.8rem 1.5rem; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      min-height: 72px; 
+    }
+    
+    /* Modern Balance Cards */
+    .cpa-userbar { 
+      display: flex; 
+      align-items: center; 
+      gap: 0.8rem; 
+      padding: 0.6rem 1rem; 
+      background: linear-gradient(135deg, 
+        rgba(0,255,136,0.08) 0%, 
+        rgba(167,134,255,0.08) 100%);
+      border: 1px solid rgba(0,255,136,0.2);
+      border-radius: 16px; 
+      backdrop-filter: blur(12px);
+      box-shadow: 
+        0 4px 16px rgba(0,255,136,0.1),
+        0 1px 0 rgba(255,255,255,0.1) inset;
+    }
+    .cpa-userbar .pill { 
+      background: linear-gradient(135deg, 
+        rgba(0,255,136,0.1) 0%, 
+        rgba(167,134,255,0.1) 100%);
+      border: 1px solid rgba(255,255,255,0.15); 
+      padding: 0.4rem 0.8rem; 
+      border-radius: 12px; 
+      font-size: 0.9rem; 
+      font-weight: 600; 
+      letter-spacing: 0.5px; 
+      color: #ffffff; 
+      backdrop-filter: blur(8px);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .cpa-userbar .pill::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+    .cpa-userbar .pill:hover::before {
+      left: 100%;
+    }
+    .cpa-userbar .pill:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,255,136,0.2);
+    }
+    .cpa-userbar .addr { display: none; }
     .cpa-navbar-logo {
       display: flex;
       align-items: center;
@@ -172,104 +233,276 @@
       background: rgba(0,255,136,0.13);
       color: #00ff88;
     }
+    /* Modern Hamburger Button - Fixed Bottom Left */
     .cpa-navbar-hamburger {
       display: flex !important;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 3px;
       position: fixed !important;
-      bottom: 16px !important;
-      left: 16px !important;
-      right: auto !important;
+      bottom: 20px !important;
+      left: 20px !important;
       top: auto !important;
-      transform: none !important;
-      margin: 0;
-      background: rgba(24,28,42,0.75);
-      box-shadow: 0 4px 14px rgba(0,0,0,0.35), 0 0 0 1px rgba(0,255,136,0.25);
-      z-index: 10002;
-      border: none;
-      color: #00ff88;
-      font-size: 1.5rem;
-      padding: 0.6rem 0.7rem;
-      border-radius: 12px;
+      right: auto !important;
+      background: linear-gradient(135deg, 
+        rgba(0,255,136,0.12) 0%, 
+        rgba(167,134,255,0.12) 100%);
+      border: 1px solid rgba(0,255,136,0.3);
+      color: #ffffff;
+      font-size: 0;
+      padding: 0;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      backdrop-filter: blur(12px);
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 
+        0 8px 24px rgba(0,255,136,0.2),
+        0 1px 0 rgba(255,255,255,0.1) inset;
+      z-index: 10002;
+      overflow: hidden;
+      margin: 0;
+      transform: none;
     }
+    
+    .cpa-navbar-hamburger::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+      transition: left 0.4s ease;
+    }
+    
+    .cpa-navbar-hamburger:hover::before {
+      left: 100%;
+    }
+    
     .cpa-navbar-hamburger:hover {
-      background: rgba(0,255,136,0.22);
-      color: #fff;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.4), 0 0 0 1px rgba(0,255,136,0.35);
+      transform: translateY(-2px);
+      border-color: rgba(0,255,136,0.5);
+      box-shadow: 
+        0 8px 24px rgba(0,255,136,0.25),
+        0 1px 0 rgba(255,255,255,0.15) inset;
     }
+    
+    /* Hamburger Lines */
+    .cpa-navbar-hamburger span {
+      width: 20px;
+      height: 2px;
+      background: currentColor;
+      border-radius: 1px;
+      transition: all 0.3s ease;
+      display: block;
+    }
+    
+    /* Active State Animation */
+    .cpa-navbar-hamburger.active span:first-child {
+      transform: rotate(45deg) translate(5px, 5px);
+    }
+    .cpa-navbar-hamburger.active span:last-child {
+      transform: rotate(-45deg) translate(7px, -6px);
+    }
+    .cpa-navbar-hamburger.active span:nth-child(2) {
+      opacity: 0;
+    }
+    /* Modern Sidebar Menu */
     .cpa-navbar-mobile-menu {
-      /* Left-side sidebar (off-canvas) */
+      display: none;
+      flex-direction: column;
       position: fixed;
       top: 0;
       left: 0;
       right: auto;
-      height: 100vh;
-      width: 57vw;
-      max-width: 240px;
-      background: rgba(35,41,70,0.96);
-      box-shadow: 12px 0 32px rgba(0,0,0,0.4);
+      width: 320px;
+      max-width: 85vw;
+      min-height: 100vh;
+      background: linear-gradient(180deg, 
+        rgba(15,15,23,0.98) 0%, 
+        rgba(24,28,42,0.98) 50%, 
+        rgba(35,41,70,0.98) 100%);
+      box-shadow: 
+        4px 0 24px rgba(0,0,0,0.4),
+        0 0 0 1px rgba(0,255,136,0.1) inset;
       z-index: 10001;
-      padding: 5.5rem 1rem 1.6rem 1rem;
+      padding: 2rem 1.5rem;
+      border-radius: 0 24px 24px 0;
+      animation: slideInLeft 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       overflow-y: auto;
-      display: flex;
-      flex-direction: column;
+      max-height: 100vh;
       align-items: stretch;
       direction: rtl;
-      text-align: right;
-      backdrop-filter: blur(18px) saturate(180%);
-      -webkit-backdrop-filter: blur(18px) saturate(180%);
+      backdrop-filter: blur(24px) saturate(200%);
+      -webkit-backdrop-filter: blur(24px) saturate(200%);
       transform: translateX(-100%);
-      transition: transform 0.28s ease-in-out;
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .cpa-navbar-mobile-section { display: flex; flex-direction: column; gap: 0.3rem; }
-    .cpa-navbar-group { display: flex; flex-direction: column; gap: 0.2rem; padding: 0.2rem 0; }
-    .cpa-navbar-group + .cpa-navbar-group { border-top: 1px dashed rgba(255,255,255,0.12); margin-top: 0.25rem; padding-top: 0.4rem; }
-    .cpa-navbar-group-title { font-size: 0.8rem; color: #aab2ff; font-weight: 700; opacity: 0.9; padding: 0 0.2rem 0.1rem; }
-    .cpa-navbar-mobile-menu.open { transform: translateX(0); }
-
-    /* Dark overlay behind the sidebar */
+    
+    .cpa-navbar-mobile-menu.open {
+      transform: translateX(0);
+    }
+    
+    @keyframes slideInLeft {
+      from { transform: translateX(-100%); }
+      to { transform: translateX(0); }
+    }
+    
+    /* Modern Overlay */
     .cpa-navbar-overlay {
+      display: none;
       position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.45);
-      backdrop-filter: blur(2px);
-      -webkit-backdrop-filter: blur(2px);
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
       z-index: 10000;
+      transition: all 0.3s ease;
       opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.28s ease-in-out;
     }
-    .cpa-navbar-overlay.open { opacity: 1; pointer-events: auto; }
+    
+    .cpa-navbar-overlay.open {
+      display: block;
+      opacity: 1;
+    }
+    
+    /* Sidebar Header & Logo */
+    .cpa-navbar-mobile-header {
+      padding: 1rem 0 2rem 0;
+      border-bottom: 1px solid rgba(167,134,255,0.15);
+      margin-bottom: 1rem;
+    }
+    
+    .cpa-navbar-logo-sidebar {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0 1.2rem;
+    }
+    
+    .cpa-navbar-logo-sidebar .logo-circle {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #00ff88, #a786ff);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1rem;
+      color: #1a1f2e;
+      box-shadow: 
+        0 4px 16px rgba(0,255,136,0.3),
+        0 1px 0 rgba(255,255,255,0.2) inset;
+    }
+    
+    .cpa-navbar-logo-sidebar span {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #ffffff;
+      text-shadow: 0 2px 8px rgba(0,255,136,0.3);
+    }
+    
+    /* Link Icons */
+    .cpa-navbar-mobile-menu .link-icon {
+      font-size: 1.1rem;
+      margin-left: 0.5rem;
+      transition: transform 0.3s ease;
+    }
+    
+    .cpa-navbar-mobile-menu .cpa-navbar-link:hover .link-icon {
+      transform: scale(1.1);
+    }
+    /* Modern Sidebar Links */
     .cpa-navbar-mobile-menu .cpa-navbar-link {
-      font-size: 0.95rem;
-      padding: 0.55rem 0.6rem;
-      color: #fff;
+      font-size: 1rem;
+      font-weight: 500;
+      padding: 0.8rem 1.2rem;
+      color: #e0e6f7;
       border-radius: 12px;
-      margin: 0.1rem 0;
+      margin: 0.25rem 0;
       text-align: right;
-      flex-direction: row-reverse;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
       justify-content: flex-start;
-      border: none;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.12);
-      width: 100%;
-      height: auto;
-      min-width: 0;
-      flex: 0 0 auto;
-      line-height: 1.25;
-      transition: background 0.2s, color 0.2s;
+      gap: 0.8rem;
+      border: 1px solid transparent;
+      background: linear-gradient(135deg, 
+        rgba(255,255,255,0.03) 0%, 
+        rgba(0,255,136,0.02) 100%);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
     }
+    
+    .cpa-navbar-mobile-menu .cpa-navbar-link::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(0,255,136,0.1), transparent);
+      transition: left 0.4s ease;
+    }
+    
+    .cpa-navbar-mobile-menu .cpa-navbar-link:hover::before {
+      left: 100%;
+    }
+    
     .cpa-navbar-mobile-menu .cpa-navbar-link:hover {
-      background: rgba(0,255,136,0.13);
+      background: linear-gradient(135deg, 
+        rgba(0,255,136,0.1) 0%, 
+        rgba(167,134,255,0.1) 100%);
+      border-color: rgba(0,255,136,0.3);
       color: #00ff88;
-      border-color: rgba(0,255,136,0.35);
+      transform: translateX(4px);
+      box-shadow: 
+        0 4px 16px rgba(0,255,136,0.15),
+        0 1px 0 rgba(255,255,255,0.1) inset;
     }
-    /* section title removed */
-    /* close button removed */
+    /* Modern Section Titles */
+    .cpa-navbar-mobile-menu .cpa-navbar-section-title {
+      font-size: 0.8rem;
+      color: #a786ff;
+      font-weight: 700;
+      margin: 1.5rem 0 0.8rem 0;
+      letter-spacing: 1px;
+      text-align: right;
+      text-transform: uppercase;
+      padding: 0.5rem 1.2rem;
+      border-bottom: 1px solid rgba(167,134,255,0.2);
+      background: linear-gradient(135deg, 
+        rgba(167,134,255,0.05) 0%, 
+        rgba(0,255,136,0.05) 100%);
+      border-radius: 8px;
+      position: relative;
+    }
+    
+    .cpa-navbar-mobile-menu .cpa-navbar-section-title::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 50%;
+      width: 3px; height: 60%;
+      background: linear-gradient(180deg, #a786ff, #00ff88);
+      border-radius: 2px;
+      transform: translateY(-50%);
+    }
+    .cpa-navbar-mobile-close {
+      position: absolute;
+      top: 18px;
+      left: 18px;
+      font-size: 2.2rem;
+      color: #fff;
+      background: none;
+      border: none;
+      z-index: 10003;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
     .cpa-navbar-mobile-close:hover {
       color: #00ff88;
     }
-    /* keep for legacy; not used by sidebar */
     @keyframes slideDownNav {
       from { transform: translateY(-40px); opacity: 0; }
       to { transform: translateY(0); opacity: 1; }
@@ -284,16 +517,63 @@
         -webkit-backdrop-filter: blur(18px) saturate(180%);
       }
     }
-    @media (min-width: 700px) {
-      .cpa-navbar-links { display: flex !important; }
+    /* Responsive Design */
+    @media (max-width: 480px) {
+      .cpa-navbar-container {
+        padding: 0.6rem 1rem;
+        min-height: 64px;
+      }
+      
+      .cpa-userbar {
+        gap: 0.5rem;
+        padding: 0.4rem 0.8rem;
+      }
+      
+      .cpa-userbar .pill {
+        font-size: 0.8rem;
+        padding: 0.3rem 0.6rem;
+      }
+      
+      .cpa-navbar-mobile-menu {
+        width: 280px;
+        padding: 1.5rem 1rem;
+      }
+      
+      .cpa-navbar-logo-sidebar .logo-circle {
+        width: 40px;
+        height: 40px;
+        font-size: 0.9rem;
+      }
+      
+      .cpa-navbar-logo-sidebar span {
+        font-size: 1.1rem;
+      }
+      
+      /* Hamburger button for mobile */
       .cpa-navbar-hamburger {
-        bottom: 20px !important;
-        left: 20px !important;
-        right: auto !important;
-        top: auto !important;
-        transform: none !important;
-        font-size: 1.8rem;
-        padding: 0.7rem 0.8rem;
+        bottom: 16px !important;
+        left: 16px !important;
+        width: 52px !important;
+        height: 52px !important;
+      }
+    }
+    
+    @media (max-width: 320px) {
+      .cpa-navbar-mobile-menu {
+        width: 260px;
+      }
+      
+      .cpa-userbar .pill {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+      }
+      
+      /* Smaller hamburger for very small screens */
+      .cpa-navbar-hamburger {
+        bottom: 12px !important;
+        left: 12px !important;
+        width: 48px !important;
+        height: 48px !important;
       }
     }
   `;
@@ -308,58 +588,74 @@
         <span class="pill" id="nav-cpa">CPA: --</span>
         <span class="pill" id="nav-dai">DAI: --</span>
       </div>
-      <button class="cpa-navbar-hamburger" id="navbar-hamburger" aria-label="باز کردن منو">☰</button>
-    </div>
-    <div class="cpa-navbar-mobile-menu" id="navbar-mobile-menu">
-      <div class="cpa-navbar-mobile-section">
-        <div class="cpa-navbar-group">
-          <div class="cpa-navbar-group-title">اصلی</div>
-          <a href="index.html#main-dashboard" class="cpa-navbar-link">خانه</a>
-        </div>
-
-        <div class="cpa-navbar-group">
-          <div class="cpa-navbar-group-title">معاملات</div>
-          <a href="#" class="cpa-navbar-link" id="navbar-swap-link-mobile">تبدیل</a>
-          <a href="#" class="cpa-navbar-link" id="navbar-transfer-link-mobile">ترانسفر</a>
-        </div>
-
-        <div class="cpa-navbar-group">
-          <div class="cpa-navbar-group-title">حساب</div>
-          <a href="profile.html" class="cpa-navbar-link">پروفایل</a>
-          <a href="reports.html" class="cpa-navbar-link">گزارش</a>
-        </div>
-
-        <div class="cpa-navbar-group">
-          <div class="cpa-navbar-group-title">ثبت‌نام</div>
-          <a href="register.html" class="cpa-navbar-link">ثبت‌نام</a>
-          <a href="register-free.html" class="cpa-navbar-link">رزرو</a>
-        </div>
-
-        <div class="cpa-navbar-group">
-          <div class="cpa-navbar-group-title">محصولات و ابزار</div>
-          <a href="products.html" class="cpa-navbar-link">محصولات</a>
-          <a href="utility.html" class="cpa-navbar-link">ابزارها</a>
-        </div>
-
-        <div class="cpa-navbar-group">
-          <div class="cpa-navbar-group-title">آموزش و اخبار</div>
-          <a href="learning.html" class="cpa-navbar-link">آموزش</a>
-          <a href="news.html" class="cpa-navbar-link">اخبار</a>
-        </div>
-
-        <div class="cpa-navbar-group">
-          <div class="cpa-navbar-group-title">اطلاعات</div>
-          <a href="about.html" class="cpa-navbar-link">درباره‌ما</a>
-          <a href="transfer-ownership.html" class="cpa-navbar-link">انتقال مالکیت</a>
-        </div>
-      </div>
+      <button class="cpa-navbar-hamburger" id="navbar-hamburger" aria-label="باز کردن منو">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
     </div>
     <div class="cpa-navbar-overlay" id="navbar-overlay"></div>
+    <div class="cpa-navbar-mobile-menu" id="navbar-mobile-menu" style="display:none;">
+      <div class="cpa-navbar-mobile-header">
+        <div class="cpa-navbar-logo-sidebar">
+          <div class="logo-circle">CPA</div>
+          <span>CPA Forex</span>
+        </div>
+      </div>
+      <div class="cpa-navbar-mobile-section">
+        <div class="cpa-navbar-section-title">دسترسی سریع</div>
+        <a href="index.html#main-dashboard" class="cpa-navbar-link">
+          <span class="link-icon">🏠</span>خانه
+        </a>
+        <a href="#" class="cpa-navbar-link" id="navbar-swap-link-mobile">
+          <span class="link-icon">🔄</span>تبدیل
+        </a>
+        <a href="#" class="cpa-navbar-link" id="navbar-transfer-link-mobile">
+          <span class="link-icon">💸</span>ترانسفر
+        </a>
+        <a href="register.html" class="cpa-navbar-link">
+          <span class="link-icon">📝</span>ثبت‌نام
+        </a>
+        <a href="register-free.html" class="cpa-navbar-link">
+          <span class="link-icon">🎫</span>رزرو
+        </a>
+      </div>
+      <div class="cpa-navbar-mobile-section">
+        <div class="cpa-navbar-section-title">ابزارها</div>
+        <a href="reports.html" class="cpa-navbar-link">
+          <span class="link-icon">📊</span>گزارش
+        </a>
+        <a href="profile.html" class="cpa-navbar-link">
+          <span class="link-icon">👤</span>پروفایل
+        </a>
+        <a href="products.html" class="cpa-navbar-link">
+          <span class="link-icon">🛍️</span>محصولات
+        </a>
+        <a href="utility.html" class="cpa-navbar-link">
+          <span class="link-icon">🛠️</span>ابزارها
+        </a>
+      </div>
+      <div class="cpa-navbar-mobile-section">
+        <div class="cpa-navbar-section-title">اطلاعات</div>
+        <a href="learning.html" class="cpa-navbar-link">
+          <span class="link-icon">📚</span>آموزش
+        </a>
+        <a href="news.html" class="cpa-navbar-link">
+          <span class="link-icon">📰</span>اخبار
+        </a>
+        <a href="about.html" class="cpa-navbar-link">
+          <span class="link-icon">ℹ️</span>درباره‌ما
+        </a>
+        <a href="transfer-ownership.html" class="cpa-navbar-link">
+          <span class="link-icon">🔑</span>انتقال مالکیت
+        </a>
+      </div>
+    </div>
   `;
   // Insert at the top of the body
   document.addEventListener('DOMContentLoaded', function() {
     document.body.insertBefore(navbar, document.body.firstChild);
-    document.body.style.marginTop = '64px';
+    document.body.style.marginTop = '84px';
   });
 
   // Hamburger dropdown logic + Swap/Transfer handlers
@@ -367,25 +663,50 @@
     const hamburger = document.getElementById('navbar-hamburger');
     const mobileMenu = document.getElementById('navbar-mobile-menu');
     const overlay = document.getElementById('navbar-overlay');
+    const closeBtn = document.getElementById('navbar-mobile-close');
     let menuOpen = false;
-    function openMenu(){
-      if (!mobileMenu) return;
-      mobileMenu.classList.add('open');
-      if (overlay) overlay.classList.add('open');
-      document.body.style.overflow = 'hidden';
-      menuOpen = true;
+    
+    function openMenu() {
+      if (mobileMenu && overlay) {
+        mobileMenu.style.display = 'flex';
+        overlay.style.display = 'block';
+        setTimeout(() => {
+          mobileMenu.classList.add('open');
+          overlay.classList.add('open');
+          hamburger.classList.add('active');
+        }, 10);
+        menuOpen = true;
+        document.body.style.overflow = 'hidden';
+      }
     }
-    function closeMenu(){
-      if (!mobileMenu) return;
-      mobileMenu.classList.remove('open');
-      if (overlay) overlay.classList.remove('open');
-      document.body.style.overflow = '';
-      menuOpen = false;
+    
+    function closeMenu() {
+      if (mobileMenu && overlay) {
+        mobileMenu.classList.remove('open');
+        overlay.classList.remove('open');
+        hamburger.classList.remove('active');
+        setTimeout(() => {
+          mobileMenu.style.display = 'none';
+          overlay.style.display = 'none';
+        }, 400);
+        menuOpen = false;
+        document.body.style.overflow = '';
+      }
     }
-    if (hamburger) hamburger.addEventListener('click', function(e){ e.stopPropagation(); menuOpen?closeMenu():openMenu(); });
-    // Close via overlay or outside click
-    if (overlay) overlay.addEventListener('click', function(){ closeMenu(); });
-    document.addEventListener('click', function(e){ if (menuOpen && mobileMenu && !mobileMenu.contains(e.target) && e.target!==hamburger) closeMenu(); });
+    
+    if (hamburger) hamburger.addEventListener('click', function(e) {
+      e.stopPropagation();
+      menuOpen ? closeMenu() : openMenu();
+    });
+    
+    if (closeBtn) closeBtn.addEventListener('click', closeMenu);
+    if (overlay) overlay.addEventListener('click', closeMenu);
+    
+    document.addEventListener('click', function(e) {
+      if (menuOpen && mobileMenu && !mobileMenu.contains(e.target) && e.target !== hamburger) {
+        closeMenu();
+      }
+    });
 
     function goTo(section){
       const isIndex = window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname === '';

@@ -277,21 +277,25 @@ const updateElement = (id, value) => {
 // تابع fetchUserProfile که در main.js فراخوانی می‌شود
 async function fetchUserProfile() {
     try {
-        const { contract, address } = await connectWallet();
+        const connectionResult = await connectWallet();
+        if (!connectionResult || !connectionResult.contract || !connectionResult.address) {
+            throw new Error('اتصال کیف پول در دسترس نیست');
+        }
+        const { contract, address } = connectionResult;
         // دریافت موجودی‌ها
         const provider = contract.provider;
         const signer = contract.signer || (provider && provider.getSigner ? await provider.getSigner() : null);
         let daiBalance = '0';
         if (signer && typeof window.DAI_ADDRESS !== 'undefined' && typeof window.DAI_ABI !== 'undefined') {
           const daiContract = new ethers.Contract(window.DAI_ADDRESS, window.DAI_ABI, signer);
-          const daiRaw = await daiContract.balanceOf(address);
+          const daiRaw = await window.retryRpcOperation(() => daiContract.balanceOf(address), 2);
           daiBalance = ethers.formatUnits(daiRaw, 18); // DAI has 18 decimals
         }
         // دریافت اطلاعات کاربر
-        const userData = await contract.users(address);
+        const userData = await window.retryRpcOperation(() => contract.users(address), 2);
         // دریافت قیمت LVL/MATIC و MATIC/USD
         const [tokenPriceMatic, maticPriceUSD] = await Promise.all([
-            contract.getTokenPrice(),
+            window.retryRpcOperation(() => contract.getTokenPrice(), 2),
             window.fetchPolUsdPrice()
         ]);
         const formattedMaticBalance = ethers.formatEther(maticBalance);
@@ -335,7 +339,11 @@ async function connectWallet() {
             const accounts = await window.ethereum.request({ method: 'eth_accounts' });
             if (accounts && accounts.length > 0) {
                 try {
-                    await initializeWeb3();
+                    if (window.contractConfig && typeof window.contractConfig.initializeWeb3 === 'function') {
+                        await window.contractConfig.initializeWeb3();
+                    } else {
+                        throw new Error('initializeWeb3 function not available');
+                    }
                     return window.contractConfig;
                 } catch (error) {
                     throw new Error('خطا در راه‌اندازی Web3');
@@ -363,10 +371,14 @@ async function updateNavbarBasedOnUserStatus() {
             return;
         }
 
-        const { contract, address } = await connectWallet();
+        const connectionResult = await connectWallet();
+        if (!connectionResult || !connectionResult.contract || !connectionResult.address) {
+            throw new Error('اتصال کیف پول در دسترس نیست');
+        }
+        const { contract, address } = connectionResult;
         
         try {
-            const userData = await contract.users(address);
+            const userData = await window.retryRpcOperation(() => contract.users(address), 2);
             
             if (userData.activated) {
                 // کاربر فعال است
@@ -1531,12 +1543,15 @@ async function showUserBalanceBox() {
     const box = document.getElementById('user-balance-box');
     if (!box) return;
     try {
-        const { contract, address } = await connectWallet();
-        if (!contract || !address) throw new Error('No wallet');
-        // دریافت موجودی و قیمت
+        const connectionResult = await connectWallet();
+        if (!connectionResult || !connectionResult.contract || !connectionResult.address) {
+            throw new Error('اتصال کیف پول در دسترس نیست');
+        }
+        const { contract, address } = connectionResult;
+        // دریافت موجودی و قیمت با retry mechanism
         const [lvlBalance, tokenPrice] = await Promise.all([
-            contract.balanceOf(address),
-            contract.getTokenPrice()
+            window.retryRpcOperation(() => contract.balanceOf(address), 2),
+            window.retryRpcOperation(() => contract.getTokenPrice(), 2)
         ]);
         const lvl = ethers.formatUnits(lvlBalance, 18);
         const tokenPriceFormatted = ethers.formatUnits(tokenPrice, 18);
@@ -3398,181 +3413,9 @@ window.getTotalBinaryPoints = async function() {
     }
 };
 
-// دستور پاک کردن کامل دیتابیس و Firebase - این دستور بعد از اجرا خودش را پاک می‌کند
-window.clearAllDatabaseData = async function() {
-    console.log('🗑️ شروع پاک کردن کامل دیتابیس و Firebase...');
-    
-    try {
-        // پاک کردن Firebase
-        console.log('🔥 پاک کردن Firebase...');
-        
-        // پاک کردن Firebase Price History
-        if (window.firebasePriceHistory && window.firebasePriceHistory.cleanup) {
-            try {
-                await window.firebasePriceHistory.cleanup(0); // پاک کردن تمام رکوردها
-                console.log('✅ Firebase Price History پاک شد');
-            } catch (error) {
-                console.error('❌ خطا در پاک کردن Firebase Price History:', error);
-            }
-        }
-        
-        // پاک کردن Firebase Network Database
-        if (window.firebaseNetworkDB && window.firebaseNetworkDB.cleanup) {
-            try {
-                await window.firebaseNetworkDB.cleanup(0); // پاک کردن تمام رکوردها
-                console.log('✅ Firebase Network Database پاک شد');
-            } catch (error) {
-                console.error('❌ خطا در پاک کردن Firebase Network Database:', error);
-            }
-        }
-        
-        // پاک کردن مستقیم Firebase Collections
-        if (typeof firebase !== 'undefined' && firebase.firestore) {
-            try {
-                const db = firebase.firestore();
-                
-                // پاک کردن collection price_history
-                const priceHistorySnapshot = await db.collection('price_history').get();
-                const priceHistoryBatch = db.batch();
-                priceHistorySnapshot.docs.forEach(doc => {
-                    priceHistoryBatch.delete(doc.ref);
-                });
-                await priceHistoryBatch.commit();
-                console.log(`✅ ${priceHistorySnapshot.docs.length} رکورد از price_history پاک شد`);
-                
-                // پاک کردن collection network_trees
-                const networkTreesSnapshot = await db.collection('network_trees').get();
-                const networkTreesBatch = db.batch();
-                networkTreesSnapshot.docs.forEach(doc => {
-                    networkTreesBatch.delete(doc.ref);
-                });
-                await networkTreesBatch.commit();
-                console.log(`✅ ${networkTreesSnapshot.docs.length} رکورد از network_trees پاک شد`);
-                
-                // پاک کردن collection network_nodes
-                const networkNodesSnapshot = await db.collection('network_nodes').get();
-                const networkNodesBatch = db.batch();
-                networkNodesSnapshot.docs.forEach(doc => {
-                    networkNodesBatch.delete(doc.ref);
-                });
-                await networkNodesBatch.commit();
-                console.log(`✅ ${networkNodesSnapshot.docs.length} رکورد از network_nodes پاک شد`);
-                
-            } catch (error) {
-                console.error('❌ خطا در پاک کردن Firebase Collections:', error);
-            }
-        }
-        
-        // پاک کردن localStorage
-        console.log('💾 پاک کردن localStorage...');
-        const localStorageKeys = [
-            'network_tree_nodes',
-            'network_tree_full',
-            'tokenPriceHistory',
-            'pointPriceHistory',
-            'cpa_products',
-            'activeTab',
-            'walletAddress',
-            'walletData',
-            'floatingAIChatHistory',
-            'extractedNetworkTree'
-        ];
-        
-        localStorageKeys.forEach(key => {
-            localStorage.removeItem(key);
-            console.log(`✅ ${key} از localStorage پاک شد`);
-        });
-        
-        // پاک کردن sessionStorage
-        console.log('💾 پاک کردن sessionStorage...');
-        const sessionStorageKeys = Object.keys(sessionStorage);
-        sessionStorageKeys.forEach(key => {
-            if (key.startsWith('userProfile_') || key.startsWith('ai_')) {
-                sessionStorage.removeItem(key);
-                console.log(`✅ ${key} از sessionStorage پاک شد`);
-            }
-        });
-        
-        // پاک کردن کش‌های مختلف
-        console.log('🧹 پاک کردن کش‌ها...');
-        if (window.clearConnectionCache) {
-            window.clearConnectionCache();
-            console.log('✅ کش اتصال پاک شد');
-        }
-        
-        if (window.clearUserProfileCache) {
-            window.clearUserProfileCache();
-            console.log('✅ کش پروفایل کاربر پاک شد');
-        }
-        
-        if (window.clearNetworkTreeInterval) {
-            window.clearNetworkTreeInterval();
-            console.log('✅ interval درخت شبکه پاک شد');
-        }
-        
-        // پاک کردن تاریخچه قیمت‌ها
-        if (window.clearAllPriceHistory) {
-            await window.clearAllPriceHistory();
-            console.log('✅ تاریخچه قیمت‌ها پاک شد');
-        }
-        
-        // پاک کردن دیتابیس شبکه
-        if (window.clearNetworkDatabase) {
-            window.clearNetworkDatabase();
-            console.log('✅ دیتابیس شبکه پاک شد');
-        }
-        
-        // ریست کردن dashboard
-        if (window.resetDashboard) {
-            window.resetDashboard();
-            console.log('✅ داشبورد ریست شد');
-        }
-        
-        // پاک کردن متغیرهای سراسری
-        if (typeof connectionCache !== 'undefined') {
-            connectionCache = null;
-        }
-        if (typeof globalConnectionPromise !== 'undefined') {
-            globalConnectionPromise = null;
-        }
-        if (typeof pendingAccountRequest !== 'undefined') {
-            pendingAccountRequest = null;
-        }
-        
-        // پاک کردن contractConfig
-        if (window.contractConfig) {
-            window.contractConfig.provider = null;
-            window.contractConfig.signer = null;
-            window.contractConfig.contract = null;
-            window.contractConfig.address = null;
-        }
-        
-        console.log('✅ پاک کردن کامل دیتابیس و Firebase تمام شد');
-        console.log('🔄 صفحه در حال رفرش...');
-        
-        // رفرش صفحه بعد از 3 ثانیه
-        setTimeout(() => {
-            location.reload();
-        }, 3000);
-        
-        // حذف این تابع از window
-        setTimeout(() => {
-            delete window.clearAllDatabaseData;
-            console.log('🗑️ دستور پاک کردن دیتابیس حذف شد');
-        }, 4000);
-        
-        return true;
-        
-    } catch (error) {
-        console.error('❌ خطا در پاک کردن دیتابیس:', error);
-        return false;
-    }
-};
 
-// تابع ثبت‌نام رزرو - همان فرم register.html ولی با registerFree
-window.openReserveRegistration = function() {
-    window.open('register-free.html', '_blank');
-};
+
+
 
 // تابع بررسی اعتبار آدرس اتریوم
 function isValidEthereumAddress(address) {
@@ -3583,7 +3426,5 @@ function isValidEthereumAddress(address) {
 
 
 
-// نمایش دستور در کنسول
-console.log('💡 دستور پاک کردن کامل دیتابیس و Firebase آماده است: window.clearAllDatabaseData()');
-console.log('🎯 باز کردن صفحه ثبت‌نام رزرو: window.openReserveRegistration()');
+
 

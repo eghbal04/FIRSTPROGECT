@@ -51,7 +51,19 @@ class PriceHistoryManager {
             
             if (firebaseHistory && Array.isArray(firebaseHistory) && firebaseHistory.length > 0) {
                 firebaseHistory.forEach(record => {
-                    const timestamp = record.timestamp.getTime ? record.timestamp.getTime() : new Date(record.timestamp).getTime();
+                    let timestamp;
+                    try {
+                        if (record.timestamp && typeof record.timestamp.getTime === 'function') {
+                            timestamp = record.timestamp.getTime();
+                        } else if (record.timestamp) {
+                            timestamp = new Date(record.timestamp).getTime();
+                        } else {
+                            timestamp = Date.now(); // fallback to current time
+                        }
+                    } catch (error) {
+                        console.warn('⚠️ Invalid timestamp in Firebase record:', record.timestamp, error);
+                        timestamp = Date.now(); // fallback to current time
+                    }
                     
                     if (record.tokenPrice !== undefined && record.tokenPrice !== null) {
                         this.tokenHistory.push({

@@ -2433,7 +2433,7 @@ let connectionState = {
 	connectionTimeout: null
 };
 
-// Add request deduplication for eth_requestAccounts
+// Add request deduplication for eth_requestAccountsاصل
 let pendingAccountRequest = null;
 
 async function requestAccountsWithDeduplication() {
@@ -2616,6 +2616,36 @@ function debounce(key, func, delay = 1000) {
 		debounceTimers.set(key, timer);
 	});
 }
+
+// RPC retry mechanism for handling "missing revert data" errors
+window.retryRpcOperation = async function(operation, maxRetries = 3, delay = 1000) {
+	for (let i = 0; i < maxRetries; i++) {
+		try {
+			return await operation();
+		} catch (error) {
+			console.warn(`RPC operation failed (attempt ${i + 1}/${maxRetries}):`, error);
+			
+			// Check if it's a retryable error
+			if (error.message && (
+				error.message.includes('missing revert data') ||
+				error.message.includes('Network Error') ||
+				error.message.includes('could not coalesce error') ||
+				error.code === -32000 ||
+				error.code === -32603
+			)) {
+				if (i < maxRetries - 1) {
+					console.log(`Retrying in ${delay}ms...`);
+					await new Promise(resolve => setTimeout(resolve, delay));
+					delay *= 1.5; // Exponential backoff
+					continue;
+				}
+			}
+			
+			// If not retryable or max retries reached, throw the error
+			throw error;
+		}
+	}
+};
 
 // تابع مرکزی اتصال کیف پول
 window.connectWallet = async function() {
@@ -3196,10 +3226,25 @@ window.getUserProfile = async function() {
 			// دریافت اطلاعات کاربر با مدیریت خطا
 			let user;
 			try {
-				user = await contract.users(address);
+				user = await window.retryRpcOperation(() => contract.users(address), 2);
 			} catch (error) {
 				console.error('Profile: Error fetching user data:', error);
-				throw new Error('User data not available');
+				
+				// Return default user data instead of throwing error
+				user = {
+					activated: false,
+					index: 0n,
+					referrer: '0x0000000000000000000000000000000000000000',
+					activationTime: 0n,
+					lastClaimTime: 0n,
+					lastClaimLevel: 0n,
+					lastCashbackClaim: 0n,
+					totalCommission: 0n,
+					leftChild: '0x0000000000000000000000000000000000000000',
+					rightChild: '0x0000000000000000000000000000000000000000',
+					level: 0n
+				};
+				console.warn('Using default user data due to contract error');
 			}
 			
 			// دریافت موجودی‌ها با مدیریت خطا
@@ -3217,17 +3262,22 @@ window.getUserProfile = async function() {
 				]);
 			} catch (error) {
 				console.error('Profile: Error fetching balances:', error);
-				throw new Error('Balance data not available');
+				// Set default balances instead of throwing error
+				polBalance = 0n;
+				lvlBalance = 0n;
+				console.warn('Using default balance values due to RPC error');
 			}
 			
 			// دریافت قیمت‌ها برای محاسبه ارزش دلاری
 			let lvlPriceMatic = 0n;
 			let polPriceUSD = 0;
 			try {
-				lvlPriceMatic = await contract.getTokenPrice();
+				lvlPriceMatic = await window.retryRpcOperation(() => contract.getTokenPrice(), 2);
 			} catch (error) {
 				console.error('Profile: Error fetching prices:', error);
-				throw new Error('Price data not available');
+				// Set default price instead of throwing error
+				lvlPriceMatic = 0n;
+				console.warn('Using default price values due to RPC error');
 			}
 			
 			// محاسبه ارزش دلاری

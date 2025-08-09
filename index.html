@@ -332,8 +332,165 @@
           <button id="cpa-expand-btn" style="background:linear-gradient(90deg,#00ff88,#a786ff);color:#181c2a;font-weight:bold;border:none;border-radius:8px;padding:0.7rem 2.2rem;font-size:1rem;cursor:pointer;box-shadow:0 2px 12px rgba(0,255,136,0.10);transition:background 0.2s,box-shadow 0.2s;">نمایش بیشتر</button>
         </div>
       </div>
+
+      <!-- Welcome Popup Modal -->
+      <div id="welcome-modal" style="display:none;position:fixed;z-index:200000;top:0;left:0;width:100vw;height:100vh;background:rgba(24,28,42,0.95);align-items:center;justify-content:center;backdrop-filter:blur(5px);">
+        <div id="welcome-modal-content" style="background:linear-gradient(135deg,#232946,#181c2a);border-radius:20px;max-width:95vw;width:650px;max-height:95vh;padding:2.5em 2em 2em 2em;box-shadow:0 12px 48px rgba(0,0,0,0.3);position:relative;color:#fff;font-size:1.1em;line-height:1.8;overflow-y:auto;border:2px solid #a786ff33;">
+          <button id="welcome-modal-close" style="position:absolute;top:1em;left:1em;background:none;border:none;color:#a786ff;font-size:1.8em;cursor:pointer;transition:color 0.2s;">✖</button>
+          
+          <div style="text-align:center;margin-bottom:2em;">
+            <h2 style="color:#00ff88;font-size:1.8em;font-weight:bold;margin:0;text-shadow:0 2px 8px rgba(0,255,136,0.3);">🌟 خوش آمدید به آکادمی سود مستمر 🌟</h2>
+            <div style="width:80px;height:3px;background:linear-gradient(90deg,#00ff88,#a786ff);margin:1em auto;border-radius:3px;"></div>
+          </div>
+          
+          <div style="text-align:justify;direction:rtl;">
+            <div id="welcome-typewriter-content" style="min-height:400px;line-height:1.8;font-size:1.05em;">
+              <!-- محتوا با تایپ‌رایتر پر می‌شود -->
+            </div>
+          </div>
+          
+          <div style="text-align:center;margin-top:2em;">
+            <button id="welcome-understand-btn" style="background:linear-gradient(90deg,#00ff88,#a786ff);color:#181c2a;border:none;border-radius:12px;padding:1em 2.5em;font-size:1.1em;font-weight:bold;cursor:pointer;box-shadow:0 4px 16px rgba(0,255,136,0.3);transition:all 0.3s;">
+              متوجه شدم، ادامه دهید 🚀
+            </button>
+          </div>
+        </div>
+      </div>
+
       <script>
       document.addEventListener('DOMContentLoaded', function() {
+        // نمایش پاپ آپ خوشامدگویی
+        function showWelcomeModal() {
+          console.log('🔄 showWelcomeModal called');
+          const modal = document.getElementById('welcome-modal');
+          const closeBtn = document.getElementById('welcome-modal-close');
+          const understandBtn = document.getElementById('welcome-understand-btn');
+          console.log('Modal element found:', !!modal);
+          
+          // Always show the welcome modal on each visit
+          
+          // نمایش مودال بعد از 1.5 ثانیه
+          console.log('⏱️ Setting timeout for modal display');
+          setTimeout(() => {
+            console.log('⚡ Timeout reached, showing modal');
+            if (modal) {
+              modal.style.display = 'flex';
+              document.body.style.overflow = 'hidden';
+              console.log('✅ Modal display set to flex');
+              startWelcomeTypewriter();
+            } else {
+              console.error('❌ Modal element not found!');
+            }
+          }, 1500);
+          
+          function closeModal() {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+            // Do not persist seen flag; always show on next visit
+          }
+          
+          closeBtn.onclick = closeModal;
+          understandBtn.onclick = closeModal;
+          
+          // بستن با کلیک روی بک‌گراند
+          modal.onclick = function(e) {
+            if (e.target === modal) closeModal();
+          };
+        }
+
+        // تایپ‌رایتر پاپ آپ خوشامدگویی
+        function startWelcomeTypewriter() {
+          const container = document.getElementById('welcome-typewriter-content');
+          if (!container) return;
+          
+          const welcomeText = \`<div style="background:rgba(0,255,136,0.08);padding:1.5em;border-radius:12px;border-right:4px solid #00ff88;margin-bottom:1.5em;">
+  <p style="margin:0;color:#e0e6f7;font-weight:500;">
+    ⚠️ <strong>اطلاعیه مهم:</strong> سرمایه‌گذاری در این پلتفرم به خودی خود باعث ثروتمند شدن شما نخواهد شد. تنها <strong>تلاش‌ها و طرز فکر صحیح شماست</strong> که می‌تواند منجر به موفقیت مالی گردد.
+  </p>
+</div>
+
+<div style="margin-bottom:1.5em;">
+  <h3 style="color:#a786ff;font-size:1.3em;margin-bottom:1em;">💎 ویژگی‌های منحصر به فرد ما:</h3>
+  <ul style="list-style:none;padding:0;">
+    <li style="margin-bottom:0.8em;padding-right:1.5em;position:relative;">
+      <span style="position:absolute;right:0;color:#00ff88;">🔹</span>
+      توکن CPA به صورت تدریجی و پایدار رشد می‌کند
+    </li>
+    <li style="margin-bottom:0.8em;padding-right:1.5em;position:relative;">
+      <span style="position:absolute;right:0;color:#00ff88;">🔹</span>
+      حداکثر ضرر منطقی کمتر از ۴ درصد (که باید به عنوان کارمزد در نظر گرفته شود)
+    </li>
+    <li style="margin-bottom:0.8em;padding-right:1.5em;position:relative;">
+      <span style="position:absolute;right:0;color:#00ff88;">🔹</span>
+      سیستم کاملاً غیرمتمرکز بدون مدیر یا صاحب خاص
+    </li>
+  </ul>
+</div>
+
+<div style="margin-bottom:1.5em;">
+  <h3 style="color:#a786ff;font-size:1.3em;margin-bottom:1em;">🛡️ پشتوانه‌های قدرتمند:</h3>
+  <ul style="list-style:none;padding:0;">
+    <li style="margin-bottom:0.8em;padding-right:1.5em;position:relative;">
+      <span style="position:absolute;right:0;color:#00ff88;">🔸</span>
+      بلاکچین <strong>اتریوم و پالیگان</strong> - قدرتمندترین شبکه‌های غیرمتمرکز
+    </li>
+    <li style="margin-bottom:0.8em;padding-right:1.5em;position:relative;">
+      <span style="position:absolute;right:0;color:#00ff88;">🔸</span>
+      توکن <strong>DAI</strong> - ارز پایدار کاملاً غیرمتمرکز
+    </li>
+    <li style="margin-bottom:0.8em;padding-right:1.5em;position:relative;">
+      <span style="position:absolute;right:0;color:#00ff88;">🔸</span>
+      عدم وابستگی به هیچ نهاد مرکزی یا دولتی
+    </li>
+  </ul>
+</div>
+
+<div style="background:rgba(167,134,255,0.08);padding:1.5em;border-radius:12px;border-right:4px solid #a786ff;margin-bottom:1.5em;">
+  <h3 style="color:#a786ff;font-size:1.25em;margin-bottom:1em;">💰 مزایای عضویت:</h3>
+  <p style="margin-bottom:1em;">
+    🎁 <strong>درآمد ماهانه تضمینی:</strong> حتی بدون هیچ فعالیتی، ۳٪ از مبلغ ورودی‌تان را ماهانه از قرارداد دریافت می‌کنید.
+  </p>
+  <p style="margin:0;">
+    📈 <strong>پورسانت بازاریابی:</strong> با دریافت پورسانت‌های بازاریابی، مبلغ برگشتی کسر شده و درآمد اضافی کسب می‌کنید.
+  </p>
+</div>
+
+<div style="text-align:center;color:#a786ff;font-style:italic;margin-top:2em;">
+  "سرمایه‌ات در حساب خودت، سود مشترک" 🤝
+</div>\`;
+
+          let i = 0;
+          const speed = 15; // سرعت تایپ‌رایتر (میلی‌ثانیه)
+          
+          function typeWriter() {
+            if (i < welcomeText.length) {
+              let char = welcomeText.charAt(i);
+              
+              // اگر کاراکتر < باشد، کل تگ HTML را یکجا اضافه کن
+              if (char === '<') {
+                let tagEnd = welcomeText.indexOf('>', i);
+                if (tagEnd !== -1) {
+                  container.innerHTML += welcomeText.substring(i, tagEnd + 1);
+                  i = tagEnd + 1;
+                  setTimeout(typeWriter, 5); // تگ‌ها سریع اضافه شوند
+                  return;
+                }
+              }
+              
+              // کاراکترهای عادی
+              container.innerHTML += char;
+              i++;
+              
+              // مکث بیشتر برای نقطه‌گذاری
+              const delay = (char === '.' || char === '!' || char === '؟') ? speed * 3 : speed;
+              setTimeout(typeWriter, delay);
+            }
+          }
+          
+          typeWriter();
+        }
+        
+        showWelcomeModal();
         const text = `آکادمی سود مستمر (CPA) یک اکوسیستم نوآورانه و مردم‌محور است که با هدف ارائه خدمات مالی، آموزشی و معاملاتی کاملاً غیرمتمرکز و شفاف، بنیان نهاده شده است. در این مجموعه، سرمایه شما همیشه در اختیار خودتان باقی می‌ماند؛ چه در حساب شخصی‌تان در صرافی، چه در بروکر، و چه در کیف پول هوشمند متصل به قرارداد غیرمتمرکز.\n\nخدمات ما:\n• ارائه سیگنال‌های تخصصی و ربات‌های اتوترید برای بازارهای مالی\n• امکان فعالیت به عنوان ایجنت برای افراد و IB در بروکرها\n• امکان بازاریابی شبکه‌ای برای دوستانی که می‌خواهند این مجموعه را ارتقا دهند\n• شما می‌توانید از سهام‌های معرفی افراد (Referral Shares) بهره‌مند شوید.\n• همچنین می‌توانید با سرمایه‌گذاری در صندوق CPA و توکن افزایشی آن، به صورت تضمینی به سود برسید.\n• آموزش‌های جامع فارکس و ارز دیجیتال\n• پشتیبانی از صندوق غیرمتمرکز CPA و توکن CPA\n• خدمات کپی‌ترید: اگر ربات CPA سود کند، شما هم سود می‌کنید و اگر ضرر کند، شما نیز ضرر می‌کنید؛ هیچ سودی از حساب شما در زمان ضرر برداشت نمی‌شود و تا جبران ضرر، CPA سهمی دریافت نمی‌کند.\n• شعار ما: سرمایه‌ات در حساب خودت، سودت واقعی و شفاف\n\nصداقت، شفافیت و خدمات صددرصدی، اصول بنیادین ماست. هیچ‌گاه سرمایه شما به حساب CPA منتقل نمی‌شود؛ بلکه شما همواره کنترل کامل دارایی خود را دارید و تنها در سود واقعی شریک هستیم. در دنیایی که بسیاری به دنبال جذب سرمایه مردم و ارائه وعده‌های توخالی هستند، ما در CPA تنها زمانی سود می‌بریم که شما واقعاً سود کنید و در زیان، شریک و همراه شما خواهیم بود.\n\nCPA؛ انتخابی برای آینده‌ای مطمئن، شفاف و مردم‌محور.`;
         const container = document.getElementById('cpa-typewriter');
         let i = 0;
@@ -635,6 +792,11 @@
       <div class="network-container" style="max-width: 1200px; margin: 0 auto; padding: 1rem;">
         <!-- Network Stats -->
         <div id="network-stats" class="network-user-info-container"></div>
+        
+        <!-- Network Progress Bar -->
+        <div id="network-progress" style="display:none;height:8px;background:rgba(255,255,255,0.12);border-radius:999px;overflow:hidden;margin:16px 0;">
+            <div id="network-progress-inner" style="height:100%;width:0%;background:linear-gradient(90deg,#00ff88,#a786ff);box-shadow:0 0 12px rgba(0,255,136,0.35) inset;transition:width 300ms ease;"></div>
+        </div>
         
         <!-- Network Members List -->
         <div id="network-tree">

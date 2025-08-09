@@ -83,13 +83,30 @@ class PointChart {
         // Get all available data first
         const allPointData = window.priceHistoryManager.pointHistory
             .filter(entry => {
-                const entryTime = entry.time ? entry.time.getTime() : entry.timestamp;
-                return entryTime <= endTime; // Only data up to now
+                let entryTime;
+                try {
+                    if (entry.time && typeof entry.time.getTime === 'function') {
+                        entryTime = entry.time.getTime();
+                    } else if (entry.timestamp) {
+                        entryTime = typeof entry.timestamp === 'number' ? entry.timestamp : new Date(entry.timestamp).getTime();
+                    } else {
+                        return false; // skip invalid entries
+                    }
+                    return entryTime <= endTime; // Only data up to now
+                } catch (error) {
+                    console.warn('⚠️ Invalid entry in point history:', entry, error);
+                    return false; // skip invalid entries
+                }
             })
             .sort((a, b) => {
-                const timeA = a.time ? a.time.getTime() : a.timestamp;
-                const timeB = b.time ? b.time.getTime() : b.timestamp;
-                return timeA - timeB;
+                try {
+                    const timeA = a.time && typeof a.time.getTime === 'function' ? a.time.getTime() : (typeof a.timestamp === 'number' ? a.timestamp : new Date(a.timestamp).getTime());
+                    const timeB = b.time && typeof b.time.getTime === 'function' ? b.time.getTime() : (typeof b.timestamp === 'number' ? b.timestamp : new Date(b.timestamp).getTime());
+                    return timeA - timeB;
+                } catch (error) {
+                    console.warn('⚠️ Error sorting point history entries:', error);
+                    return 0;
+                }
             });
         
         console.log(`📈 یافت شد ${allPointData.length} رکورد واقعی پوینت`);
@@ -195,22 +212,39 @@ class PointChart {
         
         // Sort history by time to ensure proper order
         const sortedHistory = [...history].sort((a, b) => {
-            const timeA = a.time ? a.time.getTime() : a.timestamp;
-            const timeB = b.time ? b.time.getTime() : b.timestamp;
-            return timeA - timeB;
+            try {
+                const timeA = a.time && typeof a.time.getTime === 'function' ? a.time.getTime() : (typeof a.timestamp === 'number' ? a.timestamp : new Date(a.timestamp).getTime());
+                const timeB = b.time && typeof b.time.getTime === 'function' ? b.time.getTime() : (typeof b.timestamp === 'number' ? b.timestamp : new Date(b.timestamp).getTime());
+                return timeA - timeB;
+            } catch (error) {
+                console.warn('⚠️ Error sorting point history entries:', error);
+                return 0;
+            }
         });
         
         // Find the LAST price before or at the target time (maintain continuity)
         let lastValidPrice = null;
         
         for (const entry of sortedHistory) {
-            const entryTime = entry.time ? entry.time.getTime() : entry.timestamp;
-            
-            if (entryTime <= targetTime.getTime()) {
-                lastValidPrice = entry.price;
-            } else {
-                // We've gone past the target time, use last valid price
-                break;
+            try {
+                let entryTime;
+                if (entry.time && typeof entry.time.getTime === 'function') {
+                    entryTime = entry.time.getTime();
+                } else if (entry.timestamp) {
+                    entryTime = typeof entry.timestamp === 'number' ? entry.timestamp : new Date(entry.timestamp).getTime();
+                } else {
+                    continue; // skip invalid entries
+                }
+                
+                if (entryTime <= targetTime.getTime()) {
+                    lastValidPrice = entry.price;
+                } else {
+                    // We've gone past the target time, use last valid price
+                    break;
+                }
+            } catch (error) {
+                console.warn('⚠️ Error processing point history entry:', entry, error);
+                continue; // skip invalid entries
             }
         }
         

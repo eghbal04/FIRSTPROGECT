@@ -352,23 +352,7 @@ window.saveCurrentNetworkTree = async () => {
     }
 };
 
-// تابع پاک کردن کامل دیتابیس
-window.clearNetworkDatabase = function() {
-    try {
-        console.log('🗑️ پاک کردن کامل دیتابیس درخت شبکه...');
-        
-        // پاک کردن localStorage
-        localStorage.removeItem('network_tree_nodes');
-        localStorage.removeItem('network_tree_full');
-        
-        console.log('✅ دیتابیس درخت شبکه پاک شد');
-        return true;
-        
-    } catch (error) {
-        console.error('❌ خطا در پاک کردن دیتابیس:', error);
-        return false;
-    }
-};
+
 
 // تابع بررسی وضعیت ذخیره گره‌ها
 window.checkNetworkDatabaseStatus = async function() {
@@ -818,7 +802,6 @@ console.log('🌳 دیتابیس درخت شبکه بارگذاری شد');
 // console.log('- window.saveCurrentNetworkTree() - ذخیره درخت فعلی');
 // console.log('- window.checkNetworkDatabaseStatus() - بررسی وضعیت دیتابیس');
 // console.log('- window.testSaveSampleNodes() - تست ذخیره گره‌های نمونه');
-// console.log('- window.clearNetworkDatabase() - پاک کردن کامل دیتابیس');
 
 // تست اولیه دیتابیس
 networkTreeDB.init().then(() => {

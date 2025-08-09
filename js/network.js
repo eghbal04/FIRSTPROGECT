@@ -5,6 +5,45 @@ let lastRenderedIndex = null;
 let isRenderingTree = false;
 let lastRenderedTime = 0;
 
+// متغیرهای پروگرس بار شبکه
+let totalNodesToLoad = 0;
+let nodesLoaded = 0;
+
+// توابع مدیریت پروگرس بار شبکه
+function showNetworkProgress() {
+    const progressBar = document.getElementById('network-progress');
+    if (progressBar) {
+        progressBar.style.display = 'block';
+        setNetworkProgress(0);
+    }
+}
+
+function setNetworkProgress(percentage) {
+    const progressInner = document.getElementById('network-progress-inner');
+    if (progressInner) {
+        progressInner.style.width = Math.min(100, Math.max(0, percentage)) + '%';
+    }
+}
+
+function hideNetworkProgress() {
+    const progressBar = document.getElementById('network-progress');
+    if (progressBar) {
+        setTimeout(() => {
+            progressBar.style.display = 'none';
+            setNetworkProgress(0);
+        }, 500);
+    }
+}
+
+function updateNodeProgress() {
+    nodesLoaded++;
+    if (totalNodesToLoad > 0) {
+        const percentage = (nodesLoaded / totalNodesToLoad) * 100;
+        setNetworkProgress(percentage);
+        console.log(`📊 Network progress: ${nodesLoaded}/${totalNodesToLoad} nodes loaded (${percentage.toFixed(1)}%)`);
+    }
+}
+
 // تابع fallback برای generateCPAId اگر موجود نباشد
 if (!window.generateCPAId) {
     window.generateCPAId = function(index) {
@@ -413,6 +452,8 @@ async function showUserPopup(address, user) {
 
 // تابع جدید: رندر عمودی ساده با حفظ رفتارها
 async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = false) {
+    // به روزرسانی پروگرس هر گره
+    updateNodeProgress();
     console.log(`🔄 renderVerticalNodeLazy called with index: ${index}, level: ${level}`);
     try {
         console.log('🔄 Getting contract connection...');
@@ -815,6 +856,13 @@ window.renderSimpleBinaryTree = async function() {
         return;
     }
     console.log('✅ Network tree container found');
+    
+    // آماده‌سازی پروگرس بار
+    showNetworkProgress();
+    totalNodesToLoad = 50; // تخمین تعداد گره‌های ممکن
+    nodesLoaded = 0;
+    setNetworkProgress(5);
+    
     container.innerHTML = '';
     container.style.overflow = 'auto';
     container.style.whiteSpace = 'normal';
@@ -822,21 +870,30 @@ window.renderSimpleBinaryTree = async function() {
     container.style.display = 'block';
     try {
         console.log('🔄 Connecting to wallet...');
+        setNetworkProgress(10);
         const { contract, address } = await window.connectWallet();
         if (!contract || !address) {
             throw new Error('اتصال کیف پول در دسترس نیست');
         }
         console.log('✅ Wallet connected, address:', address);
+        setNetworkProgress(20);
         console.log('🔄 Getting user data...');
         const user = await contract.users(address);
         if (!user || !user.index) {
             throw new Error('کاربر پیدا نشد یا ثبت‌نام نشده است');
         }
         console.log('✅ User data retrieved, index:', user.index);
+        setNetworkProgress(30);
         // در window.renderSimpleBinaryTree مقدار autoExpand فقط برای ریشه true باشد:
         console.log('🔄 Rendering vertical node...');
         await renderVerticalNodeLazy(BigInt(user.index), container, 0, true);
         console.log('✅ Vertical node rendered successfully');
+        setNetworkProgress(100);
+        
+        // مخفی کردن پروگرس بار بعد از تکمیل
+        setTimeout(() => {
+            hideNetworkProgress();
+        }, 1000);
         
         // ذخیره درخت در دیتابیس بعد از رندر
         if (window.saveCurrentNetworkTree) {
@@ -850,6 +907,7 @@ window.renderSimpleBinaryTree = async function() {
         }
     } catch (error) {
         console.error('❌ Error rendering binary tree:', error);
+        hideNetworkProgress();
         container.innerHTML = `<div style="color:#ff4444;text-align:center;padding:2rem;">❌ خطا در بارگذاری درخت شبکه<br><small style="color:#ccc;">${error.message}</small></div>`;
     }
 };
@@ -970,7 +1028,9 @@ window.initializeNetworkTab = async function() {
     
     console.log('✅ Network tree container found');
     
-    // نمایش وضعیت بارگذاری
+    // نمایش پروگرس بار و وضعیت بارگذاری
+    showNetworkProgress();
+    setNetworkProgress(5);
     container.innerHTML = '<div style="color:#00ccff;text-align:center;padding:2rem;">🔄 در حال بارگذاری درخت شبکه...</div>';
     
     // تست ساده برای بررسی اتصال
@@ -982,6 +1042,7 @@ window.initializeNetworkTab = async function() {
         console.log('Address:', address);
     } catch (error) {
         console.error('❌ Wallet connection test failed:', error);
+        hideNetworkProgress();
         container.innerHTML = `<div style="color:#ff4444;text-align:center;padding:2rem;">❌ خطا در اتصال کیف پول<br><small style="color:#ccc;">${error.message}</small></div>`;
         return;
     }
@@ -1007,6 +1068,7 @@ window.initializeNetworkTab = async function() {
                 console.log(`🔄 Retrying in 2 seconds... (${retryCount}/${maxRetries})`);
                 setTimeout(tryRender, 2000);
             } else {
+                hideNetworkProgress();
                 container.innerHTML = `
                     <div style="color:#ff4444;text-align:center;padding:2rem;">
                         ❌ خطا در بارگذاری درخت شبکه<br>
