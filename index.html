@@ -2101,6 +2101,110 @@
     margin-top: 0.3rem !important;
   }
 }
+
+/* جلوگیری از بیرون زدن اعداد طولانی از داخل کارت‌ها (در همه اندازه‌ها) */
+div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] > div[style*="font-size:0.9rem;font-family:monospace;font-weight:bold;"] {
+  word-break: break-all !important;
+  overflow-wrap: anywhere !important;
+  white-space: normal !important;
+  max-width: 100% !important;
+}
+
+/* چیدمان واکنش‌گرا برای کارت‌های متریک داشبورد در تبلت و دسکتاپ */
+@media (min-width: 769px) and (max-width: 1023px) {
+  /* ظرف کارت‌ها → 2 ستون در هر سطر */
+  div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.8rem !important;
+    justify-content: center !important;
+  }
+  /* خود کارت‌ها داخل ظرف بالا */
+  div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] > div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    flex: none !important;
+    box-sizing: border-box !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  /* ظرف کارت‌ها → 3 ستون در هر سطر */
+  div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 1rem !important;
+    justify-content: center !important;
+  }
+  /* خود کارت‌ها داخل ظرف بالا */
+  div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] > div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    flex: none !important;
+    box-sizing: border-box !important;
+  }
+}
+
+/* حالت عرض پویا برای کارت‌های متریک داشبورد در تبلت/دسکتاپ
+   این بلوک قوانین گرید را در بالا override می‌کند تا کارت‌ها به اندازهٔ محتوا عریض شوند */
+@media (min-width: 769px) {
+  /* ظرف کارت‌ها: فلکس و قابل پیچش */
+  div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.8rem !important;
+    justify-content: center !important;
+    align-items: stretch !important;
+  }
+  /* خود کارت‌ها: عرض بر اساس محتوا */
+  div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] > div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: auto !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+  }
+  /* مقدارها: یک‌خطی بمانند تا کارت عریض شود */
+  div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] > div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] > div[style*="font-size:0.9rem;font-family:monospace;font-weight:bold;"] {
+    white-space: nowrap !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+  }
+}
+
+/* حالت عرض پویا برای کارت‌های متریک داشبورد در موبایل */
+@media (max-width: 768px) {
+  /* ظرف کارت‌ها: فلکس، پیچش فعال، چینش ردیفی، اسکرول افقی در صورت نیاز */
+  div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    justify-content: flex-start !important;
+    align-items: stretch !important;
+    gap: 0.6rem !important;
+    width: 100% !important;
+    padding: 0 0.5rem !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  /* کارت‌ها: عرض بر اساس محتوا، جلوگیری از کشیده شدن به 100% */
+  div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] > div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: max-content !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+  }
+  /* مقدارها: یک‌خطی برای افزایش عرض کارت */
+  div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] > div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] > div[style*="font-size:0.9rem;font-family:monospace;font-weight:bold;"] {
+    white-space: nowrap !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+  }
+}
 </style>
 
 <script>

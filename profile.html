@@ -49,19 +49,30 @@
             margin: 18px 0 28px 0;
             box-shadow: 0 2px 8px #a786ff11;
             padding: 18px 14px 10px 14px;
+            /* چیدمان پویا: عرض کارت‌ها بر اساس محتوا */
             display: flex;
             flex-wrap: wrap;
-            gap: 18px;
-            justify-content: space-between;
+            gap: 14px;
+            align-items: stretch;
+            justify-content: flex-start;
         }
         .balance-item {
-            flex: 1 1 120px;
-            min-width: 120px;
-            margin: 0 8px;
+            /* کارت به اندازهٔ محتوا عریض می‌شود */
+            flex: 0 0 auto;
+            min-width: auto;
+            margin: 0;
+            box-sizing: border-box;
             text-align: center;
         }
         .balance-label { color: #00ff88; font-weight: bold; font-size: 1.08em; }
-        .balance-value { color: #fff; font-size: 1.18em; font-family: monospace; margin-top: 4px; display: block; }
+        .balance-value { color: #fff; font-size: 1.18em; font-family: monospace; margin-top: 4px; display: block; white-space: nowrap; }
+        /* در تبلت/دسکتاپ صرفاً فاصله‌ها را کمی بیشتر کن */
+        @media (min-width: 769px) and (max-width: 1023px) {
+            .balance-box { gap: 16px; }
+        }
+        @media (min-width: 1024px) {
+            .balance-box { gap: 18px; }
+        }
         /* دکمه اتصال کیف پول حذف شد */
         .loading, .error-message {
             text-align: center;
