@@ -1,0 +1,26 @@
+/* Learning page professional layout */
+.learning-shell { max-width: 1200px; margin: 0 auto; padding: 16px; }
+.learning-tabs {
+  display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+  background: rgba(35,41,70,0.6); border:1px solid rgba(167,134,255,0.18);
+  border-radius: 12px; padding:8px; margin-bottom: 12px;
+}
+.learning-tab-btn {
+  background: rgba(255,255,255,0.06); color:#e7ebff; border:1px solid rgba(167,134,255,0.25);
+  padding: 10px 14px; border-radius: 10px; cursor: pointer; font-weight: 800;
+}
+.learning-tab-btn.active { background: linear-gradient(135deg,#00ff88,#00cc66); color:#181c2a; border-color: transparent; }
+.learning-panels { display: grid; gap: 14px; }
+.panel-card {
+  background: linear-gradient(135deg,#1a1f2e,#232946);
+  border:1px solid rgba(167,134,255,0.18); border-radius: 12px; padding: 14px;
+}
+.panel-title { margin:0 0 10px 0; color:#00ff88; text-align: center; font-size: 1.1rem; }
+.live-grid { display:grid; grid-template-columns: 1fr; gap: 12px; }
+@media(min-width: 900px){ .live-grid { grid-template-columns: 1fr 1fr; } }
+.status-pill { display:inline-block; padding:4px 10px; border-radius:999px; font-size:0.85rem; border:1px solid rgba(167,134,255,0.25); color:#a6b0ff; }
+.btn-primary { background: linear-gradient(135deg,#00ff88,#00cc66); color:#181c2a; border:none; border-radius:10px; padding:10px 14px; font-weight:800; cursor:pointer; }
+.btn-secondary { background: rgba(167,134,255,0.12); color:#a786ff; border:1px solid rgba(167,134,255,0.25); border-radius:10px; padding:10px 14px; font-weight:800; cursor:pointer; }
+.btn-row { display:flex; gap:8px; justify-content:center; align-items:center; flex-wrap: wrap; margin-top: 8px; }
+.muted-note { color:#a6b0ff; font-size:0.9rem; text-align:center; }
+

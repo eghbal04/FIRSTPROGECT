@@ -155,25 +155,6 @@
     const refInput = document.getElementById('referrer-address');
      const newUserInput = document.getElementById('new-user-address');
     const defaultGuide = 'refferer ID : CPA00000';
-    // قالب‌بندی فشرده اعداد: k, m, b, t, q, e
-    function formatCompact(value, smallDecimals = 4, compactDecimals = 2) {
-      const num = Number(value);
-      if (!isFinite(num)) return '0';
-      const abs = Math.abs(num);
-      if (abs < 1) return num.toFixed(smallDecimals);
-      const units = [
-        { v: 1e18, s: 'e' },
-        { v: 1e15, s: 'q' },
-        { v: 1e12, s: 't' },
-        { v: 1e9,  s: 'b' },
-        { v: 1e6,  s: 'm' },
-        { v: 1e3,  s: 'k' }
-      ];
-      for (const u of units) {
-        if (abs >= u.v) return (num / u.v).toFixed(compactDecimals) + u.s;
-      }
-      return num.toFixed(compactDecimals);
-    }
     
                                                 // تابع بررسی اینکه آیا ایندکس هدف در زیرمجموعه کاربر جاری قرار دارد
           function isIndexInUserSubtree(targetIndex, currentUserIndex) {
@@ -326,7 +307,7 @@
             maticBalance = '0.00';
           }
         }
-        document.getElementById('matic-balance').textContent = formatCompact(Number(maticBalance), 4, 2);
+        document.getElementById('matic-balance').textContent = maticBalance;
         // موجودی CPA
         let cpaBalance = '...';
         if (isConnected && contract && myAddress && typeof contract.balanceOf === 'function') {
@@ -367,7 +348,7 @@
             cpaBalance = '0.00';
           }
         }
-        document.getElementById('cpa-balance').textContent = formatCompact(Number(cpaBalance), 4, 2);
+        document.getElementById('cpa-balance').textContent = cpaBalance;
       } catch (e) {
         isConnected = false;
         connStatus.textContent = '❌ اتصال به کیف پول برقرار نشد: ' + (e.message || e);

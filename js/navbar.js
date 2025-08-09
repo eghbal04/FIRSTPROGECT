@@ -174,92 +174,102 @@
     }
     .cpa-navbar-hamburger {
       display: flex !important;
-      position: fixed;
-      bottom: 16px;
-      left: 16px;
-      right: auto;
-      top: auto;
-      transform: none;
+      position: fixed !important;
+      bottom: 16px !important;
+      left: 16px !important;
+      right: auto !important;
+      top: auto !important;
+      transform: none !important;
       margin: 0;
-      background: rgba(24,28,42,0.7);
-      box-shadow: 0 2px 8px #00ff8840;
+      background: rgba(24,28,42,0.75);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.35), 0 0 0 1px rgba(0,255,136,0.25);
       z-index: 10002;
       border: none;
       color: #00ff88;
       font-size: 1.5rem;
-      padding: 0.5rem;
-      border-radius: 8px;
+      padding: 0.6rem 0.7rem;
+      border-radius: 12px;
       cursor: pointer;
       transition: all 0.2s;
     }
     .cpa-navbar-hamburger:hover {
-      background: rgba(0,255,136,0.2);
+      background: rgba(0,255,136,0.22);
       color: #fff;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.4), 0 0 0 1px rgba(0,255,136,0.35);
     }
     .cpa-navbar-mobile-menu {
-      display: none;
-      flex-direction: column;
+      /* Left-side sidebar (off-canvas) */
       position: fixed;
       top: 0;
-      right: 0;
-      left: auto;
-      width: 100vw;
-      min-height: 100vh;
-      background: rgba(35,41,70,0.95);
-      box-shadow: 0 8px 32px #00000033;
+      left: 0;
+      right: auto;
+      height: 100vh;
+      width: 57vw;
+      max-width: 240px;
+      background: rgba(35,41,70,0.96);
+      box-shadow: 12px 0 32px rgba(0,0,0,0.4);
       z-index: 10001;
-      padding: 5.5rem 0.7rem 2.2rem 0.7rem;
-      border-radius: 0 0 18px 18px;
-      animation: slideDownNav 0.3s;
+      padding: 5.5rem 1rem 1.6rem 1rem;
       overflow-y: auto;
-      max-height: 100vh;
-      align-items: center;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
       direction: rtl;
-      text-align: center;
+      text-align: right;
       backdrop-filter: blur(18px) saturate(180%);
       -webkit-backdrop-filter: blur(18px) saturate(180%);
+      transform: translateX(-100%);
+      transition: transform 0.28s ease-in-out;
     }
+    .cpa-navbar-mobile-section { display: flex; flex-direction: column; gap: 0.3rem; }
+    .cpa-navbar-group { display: flex; flex-direction: column; gap: 0.2rem; padding: 0.2rem 0; }
+    .cpa-navbar-group + .cpa-navbar-group { border-top: 1px dashed rgba(255,255,255,0.12); margin-top: 0.25rem; padding-top: 0.4rem; }
+    .cpa-navbar-group-title { font-size: 0.8rem; color: #aab2ff; font-weight: 700; opacity: 0.9; padding: 0 0.2rem 0.1rem; }
+    .cpa-navbar-mobile-menu.open { transform: translateX(0); }
+
+    /* Dark overlay behind the sidebar */
+    .cpa-navbar-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+      z-index: 10000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.28s ease-in-out;
+    }
+    .cpa-navbar-overlay.open { opacity: 1; pointer-events: auto; }
     .cpa-navbar-mobile-menu .cpa-navbar-link {
-      font-size: 1.18rem;
-      padding: 1.1rem 0.7rem;
+      font-size: 0.95rem;
+      padding: 0.55rem 0.6rem;
       color: #fff;
       border-radius: 12px;
-      margin: 0.2rem 0;
-      text-align: center;
+      margin: 0.1rem 0;
+      text-align: right;
       flex-direction: row-reverse;
-      justify-content: center;
+      justify-content: flex-start;
       border: none;
-      background: none;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
       width: 100%;
+      height: auto;
+      min-width: 0;
+      flex: 0 0 auto;
+      line-height: 1.25;
       transition: background 0.2s, color 0.2s;
     }
     .cpa-navbar-mobile-menu .cpa-navbar-link:hover {
       background: rgba(0,255,136,0.13);
       color: #00ff88;
+      border-color: rgba(0,255,136,0.35);
     }
-    .cpa-navbar-mobile-menu .cpa-navbar-section-title {
-      font-size: 1.05rem;
-      color: #a786ff;
-      font-weight: bold;
-      margin: 1.2rem 0 0.2rem 0;
-      letter-spacing: 0.5px;
-      text-align: center;
-    }
-    .cpa-navbar-mobile-close {
-      position: absolute;
-      top: 18px;
-      left: 18px;
-      font-size: 2.2rem;
-      color: #fff;
-      background: none;
-      border: none;
-      z-index: 10003;
-      cursor: pointer;
-      transition: color 0.2s;
-    }
+    /* section title removed */
+    /* close button removed */
     .cpa-navbar-mobile-close:hover {
       color: #00ff88;
     }
+    /* keep for legacy; not used by sidebar */
     @keyframes slideDownNav {
       from { transform: translateY(-40px); opacity: 0; }
       to { transform: translateY(0); opacity: 1; }
@@ -277,12 +287,13 @@
     @media (min-width: 700px) {
       .cpa-navbar-links { display: flex !important; }
       .cpa-navbar-hamburger {
-        bottom: 20px;
-        left: 20px;
-        top: auto;
-        right: auto;
+        bottom: 20px !important;
+        left: 20px !important;
+        right: auto !important;
+        top: auto !important;
+        transform: none !important;
         font-size: 1.8rem;
-        padding: 0.6rem;
+        padding: 0.7rem 0.8rem;
       }
     }
   `;
@@ -297,117 +308,84 @@
         <span class="pill" id="nav-cpa">CPA: --</span>
         <span class="pill" id="nav-dai">DAI: --</span>
       </div>
-      <button class="cpa-navbar-hamburger" id="navbar-hamburger" aria-label="باز کردن منو" style="position:fixed;bottom:16px;left:16px;right:auto;top:auto;z-index:10002">☰</button>
+      <button class="cpa-navbar-hamburger" id="navbar-hamburger" aria-label="باز کردن منو">☰</button>
     </div>
-    <div class="cpa-navbar-mobile-menu" id="navbar-mobile-menu" style="display:none;">
-      <button class="cpa-navbar-mobile-close" id="navbar-mobile-close" aria-label="بستن منو">✕</button>
+    <div class="cpa-navbar-mobile-menu" id="navbar-mobile-menu">
       <div class="cpa-navbar-mobile-section">
-        <div class="cpa-navbar-section-title">ناوبری</div>
-        <a href="index.html#main-dashboard" class="cpa-navbar-link">خانه</a>
-        <a href="#" class="cpa-navbar-link" id="navbar-swap-link-mobile">تبدیل</a>
-        <a href="#" class="cpa-navbar-link" id="navbar-transfer-link-mobile">ترانسفر</a>
-        <a href="register.html" class="cpa-navbar-link">ثبت‌نام</a>
-        <a href="register-free.html" class="cpa-navbar-link">رزرو</a>
-        <a href="reports.html" class="cpa-navbar-link">گزارش</a>
-         <a href="professional-tree.html" class="cpa-navbar-link">همکاران</a>
-        <a href="profile.html" class="cpa-navbar-link">پروفایل</a>
-        <a href="products.html" class="cpa-navbar-link">محصولات</a>
-        <a href="utility.html" class="cpa-navbar-link">ابزارها</a>
-        <a href="learning.html" class="cpa-navbar-link">آموزش</a>
-        <a href="news.html" class="cpa-navbar-link">اخبار</a>
-        <a href="about.html" class="cpa-navbar-link">درباره‌ما</a>
-        <a href="transfer-ownership.html" class="cpa-navbar-link">انتقال مالکیت</a>
+        <div class="cpa-navbar-group">
+          <div class="cpa-navbar-group-title">اصلی</div>
+          <a href="index.html#main-dashboard" class="cpa-navbar-link">خانه</a>
+        </div>
+
+        <div class="cpa-navbar-group">
+          <div class="cpa-navbar-group-title">معاملات</div>
+          <a href="#" class="cpa-navbar-link" id="navbar-swap-link-mobile">تبدیل</a>
+          <a href="#" class="cpa-navbar-link" id="navbar-transfer-link-mobile">ترانسفر</a>
+        </div>
+
+        <div class="cpa-navbar-group">
+          <div class="cpa-navbar-group-title">حساب</div>
+          <a href="profile.html" class="cpa-navbar-link">پروفایل</a>
+          <a href="reports.html" class="cpa-navbar-link">گزارش</a>
+        </div>
+
+        <div class="cpa-navbar-group">
+          <div class="cpa-navbar-group-title">ثبت‌نام</div>
+          <a href="register.html" class="cpa-navbar-link">ثبت‌نام</a>
+          <a href="register-free.html" class="cpa-navbar-link">رزرو</a>
+        </div>
+
+        <div class="cpa-navbar-group">
+          <div class="cpa-navbar-group-title">محصولات و ابزار</div>
+          <a href="products.html" class="cpa-navbar-link">محصولات</a>
+          <a href="utility.html" class="cpa-navbar-link">ابزارها</a>
+        </div>
+
+        <div class="cpa-navbar-group">
+          <div class="cpa-navbar-group-title">آموزش و اخبار</div>
+          <a href="learning.html" class="cpa-navbar-link">آموزش</a>
+          <a href="news.html" class="cpa-navbar-link">اخبار</a>
+        </div>
+
+        <div class="cpa-navbar-group">
+          <div class="cpa-navbar-group-title">اطلاعات</div>
+          <a href="about.html" class="cpa-navbar-link">درباره‌ما</a>
+          <a href="transfer-ownership.html" class="cpa-navbar-link">انتقال مالکیت</a>
+        </div>
       </div>
     </div>
+    <div class="cpa-navbar-overlay" id="navbar-overlay"></div>
   `;
   // Insert at the top of the body
   document.addEventListener('DOMContentLoaded', function() {
     document.body.insertBefore(navbar, document.body.firstChild);
     document.body.style.marginTop = '64px';
-
-    // Append a final high-priority style to guarantee bottom-left position
-    try {
-      const forcePos = document.createElement('style');
-      forcePos.setAttribute('data-id','force-hamburger-bottom-left');
-      forcePos.textContent = `#navbar-hamburger{position:fixed!important;bottom:calc(16px + env(safe-area-inset-bottom,0px))!important;left:16px!important;top:auto!important;right:auto!important;z-index:10002!important;}`;
-      document.head.appendChild(forcePos);
-    } catch(_) {}
-
-    // Move the hamburger button to body so it's not constrained by navbar layout
-    try {
-      const btn = document.getElementById('navbar-hamburger');
-      if (btn && btn.parentElement !== document.body) {
-        document.body.appendChild(btn);
-      }
-    } catch(_) {}
   });
 
   // Hamburger dropdown logic + Swap/Transfer handlers
   document.addEventListener('DOMContentLoaded', function(){
     const hamburger = document.getElementById('navbar-hamburger');
     const mobileMenu = document.getElementById('navbar-mobile-menu');
-    const closeBtn = document.getElementById('navbar-mobile-close');
+    const overlay = document.getElementById('navbar-overlay');
     let menuOpen = false;
-    // Force bottom-left position inline to avoid any CSS override issues
-    function forceHamburgerBottomLeft(){
-      const el = document.getElementById('navbar-hamburger');
-      if (!el) return;
-      try {
-        el.style.setProperty('position','fixed','important');
-        el.style.setProperty('bottom','calc(16px + env(safe-area-inset-bottom, 0px))','important');
-        el.style.setProperty('left','16px','important');
-        el.style.setProperty('top','auto','important');
-        el.style.setProperty('right','auto','important');
-        el.style.setProperty('z-index','10002','important');
-      } catch(_) {
-        el.style.position = 'fixed';
-        el.style.bottom = '16px';
-        el.style.left = '16px';
-        el.style.top = 'auto';
-        el.style.right = 'auto';
-        el.style.zIndex = '10002';
-      }
+    function openMenu(){
+      if (!mobileMenu) return;
+      mobileMenu.classList.add('open');
+      if (overlay) overlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      menuOpen = true;
     }
-    forceHamburgerBottomLeft();
-    setTimeout(forceHamburgerBottomLeft, 0);
-    setTimeout(forceHamburgerBottomLeft, 250);
-    setTimeout(forceHamburgerBottomLeft, 1000);
-    setTimeout(forceHamburgerBottomLeft, 2000);
-    window.addEventListener('resize', forceHamburgerBottomLeft);
-    function openMenu(){ if (mobileMenu){ mobileMenu.style.display='flex'; menuOpen=true; } }
-    function closeMenu(){ if (mobileMenu){ mobileMenu.style.display='none'; menuOpen=false; } }
+    function closeMenu(){
+      if (!mobileMenu) return;
+      mobileMenu.classList.remove('open');
+      if (overlay) overlay.classList.remove('open');
+      document.body.style.overflow = '';
+      menuOpen = false;
+    }
     if (hamburger) hamburger.addEventListener('click', function(e){ e.stopPropagation(); menuOpen?closeMenu():openMenu(); });
-    if (closeBtn) closeBtn.addEventListener('click', function(){ closeMenu(); });
+    // Close via overlay or outside click
+    if (overlay) overlay.addEventListener('click', function(){ closeMenu(); });
     document.addEventListener('click', function(e){ if (menuOpen && mobileMenu && !mobileMenu.contains(e.target) && e.target!==hamburger) closeMenu(); });
-
-    // Create a dedicated floating button at bottom-left and hide the original if needed
-    try {
-      if (!document.getElementById('navbar-fab')){
-        const fab = document.createElement('button');
-        fab.id = 'navbar-fab';
-        fab.setAttribute('aria-label','باز کردن منو');
-        fab.textContent = '☰';
-        fab.style.position = 'fixed';
-        fab.style.bottom = 'calc(16px + env(safe-area-inset-bottom, 0px))';
-        fab.style.left = '16px';
-        fab.style.zIndex = '10003';
-        fab.style.background = 'rgba(24,28,42,0.8)';
-        fab.style.color = '#00ff88';
-        fab.style.border = 'none';
-        fab.style.borderRadius = '10px';
-        fab.style.padding = '10px 12px';
-        fab.style.fontSize = '1.6rem';
-        fab.style.boxShadow = '0 2px 8px rgba(0,255,136,0.25)';
-        fab.style.cursor = 'pointer';
-        fab.style.transition = 'transform .15s ease, background .2s ease';
-        fab.onmouseenter = ()=>{ fab.style.background = 'rgba(0,255,136,0.2)'; };
-        fab.onmouseleave = ()=>{ fab.style.background = 'rgba(24,28,42,0.8)'; };
-        fab.onclick = (ev)=>{ ev.stopPropagation(); if (hamburger) hamburger.click(); else { if (menuOpen) closeMenu(); else openMenu(); } };
-        document.body.appendChild(fab);
-        // Optional: hide the original hamburger to avoid duplicate
-        if (hamburger) hamburger.style.display = 'none';
-      }
-    } catch(_){}
 
     function goTo(section){
       const isIndex = window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname === '';

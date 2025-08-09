@@ -577,8 +577,10 @@ class SwapManager {
             amount.max = this.userBalances.dai;
             console.log('✅ حداکثر مقدار DAI تنظیم شد:', this.userBalances.dai);
         } else if (direction.value === 'cpa-to-dai') {
-            amount.max = this.userBalances.cpa;
-            console.log('✅ حداکثر مقدار CPA تنظیم شد:', this.userBalances.cpa);
+            // برای جلوگیری از رد شدن توسط قرارداد، حداکثر ورودی را 50% موجودی تنظیم کن
+            const halfCpa = Math.floor(this.userBalances.cpa * 0.5 * 1e6) / 1e6;
+            amount.max = halfCpa;
+            console.log('✅ حداکثر مقدار CPA (نصف موجودی) تنظیم شد:', halfCpa);
         }
     }
 
@@ -631,40 +633,13 @@ class SwapManager {
                 });
                 
             } else if (direction.value === 'cpa-to-dai') {
-                // محاسبه سقف فروش هوشمند
-                const contract = window.contractConfig.contract;
-                const daiAddress = window.DAI_ADDRESS;
-                const daiAbi = window.DAI_ABI;
-                
-                if (!contract || !daiAddress || !daiAbi) {
-                    throw new Error('تنظیمات قرارداد ناقص است');
-                }
-                
-                const daiContract = new ethers.Contract(daiAddress, daiAbi, window.contractConfig.signer);
-                const daiBalance = await daiContract.balanceOf(contract.target);
-                const daiBalanceNum = parseFloat(ethers.formatUnits(daiBalance, 18));
-                
-                const totalSupply = await contract.totalSupply();
-                const totalSupplyNum = parseFloat(ethers.formatUnits(totalSupply, 18));
-                
-                // محاسبه سقف فروش بر اساس موجودی DAI قرارداد
-                let maxSell;
-                if (daiBalanceNum >= 500) {
-                    maxSell = totalSupplyNum * 0.01;
-                } else {
-                    maxSell = totalSupplyNum * 0.5;
-                }
-                
-                // انتخاب کمترین مقدار بین موجودی کاربر و سقف مجاز
-                let maxAmount = Math.min(this.userBalances.cpa, maxSell);
-                // گرد کردن به پایین
-                maxAmount = floorToDecimals(maxAmount, 6);
-                amount.value = maxAmount.toFixed(6);
-                
-                console.log('✅ حداکثر فروش هوشمند:', {
+                // برای فروش، همیشه نصف موجودی کاربر را به صورت گرد شده به پایین وارد کن
+                let half = this.userBalances.cpa * 0.5;
+                half = floorToDecimals(half, 6);
+                amount.value = half.toFixed(6);
+                console.log('✅ مقدار فروش روی نصف موجودی تنظیم شد:', {
                     userBalance: this.userBalances.cpa.toFixed(6),
-                    sellLimit: maxSell.toFixed(6),
-                    finalAmount: maxAmount.toFixed(6)
+                    half: half.toFixed(6)
                 });
             }
             

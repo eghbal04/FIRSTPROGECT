@@ -735,29 +735,10 @@ async function displayUserBalances() {
             provider.getBalance(address)
         ]);
         
-        // فرمت فشرده موجودی‌ها
-        const compact = (value, smallDecimals = 4, compactDecimals = 2) => {
-            const num = Number(value);
-            if (!isFinite(num)) return '0';
-            const abs = Math.abs(num);
-            if (abs < 1) return num.toFixed(smallDecimals);
-            const units = [
-                { v: 1e18, s: 'e' },
-                { v: 1e15, s: 'q' },
-                { v: 1e12, s: 't' },
-                { v: 1e9,  s: 'b' },
-                { v: 1e6,  s: 'm' },
-                { v: 1e3,  s: 'k' }
-            ];
-            for (const u of units) {
-                if (abs >= u.v) return (num / u.v).toFixed(compactDecimals) + u.s;
-            }
-            return num.toFixed(compactDecimals);
-        };
-
-        const cpaFormatted = compact(parseFloat(ethers.formatUnits(cpaBalance, 18)), 4, 2);
-        const usdcFormatted = compact(parseFloat(ethers.formatUnits(usdcBalance, 6)), 2, 2);
-        const maticFormatted = compact(parseFloat(ethers.formatEther(maticBalance)), 4, 2);
+        // فرمت کردن موجودی‌ها
+        const cpaFormatted = parseFloat(ethers.formatUnits(cpaBalance, 18)).toFixed(4);
+        const usdcFormatted = parseFloat(ethers.formatUnits(usdcBalance, 6)).toFixed(2);
+        const maticFormatted = parseFloat(ethers.formatEther(maticBalance)).toFixed(4);
         
         // به‌روزرسانی المنت‌های موجودی
         const balanceElements = {

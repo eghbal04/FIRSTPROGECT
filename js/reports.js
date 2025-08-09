@@ -9,31 +9,6 @@ function ultraShortAddress(address) {
     if (!address) return '-';
     return `${address.slice(0, 4)}...${address.slice(-3)}`;
 }
-// قالب‌بندی فشرده اعداد: k, m, b, t, q, e
-function formatCompact(num, smallDecimals = 4, compactDecimals = 2) {
-    const n = Number(num);
-    if (!isFinite(n)) return '0';
-    const abs = Math.abs(n);
-    if (abs < 1) return n.toFixed(smallDecimals);
-    const units = [
-        { v: 1e18, s: 'e' },
-        { v: 1e15, s: 'q' },
-        { v: 1e12, s: 't' },
-        { v: 1e9,  s: 'b' },
-        { v: 1e6,  s: 'm' },
-        { v: 1e3,  s: 'k' }
-    ];
-    for (const u of units) if (abs >= u.v) return (n / u.v).toFixed(compactDecimals) + u.s;
-    return n.toFixed(compactDecimals);
-}
-function formatCompactUnits(value, decimals, unit, smallDecimals = 4, compactDecimals = 2) {
-    try {
-        const formatted = ethers.formatUnits(value, decimals);
-        return `${formatCompact(parseFloat(formatted), smallDecimals, compactDecimals)} ${unit}`;
-    } catch {
-        return `0 ${unit}`;
-    }
-}
 // ابزار جدید: گرفتن ایندکس کاربر از آدرس (در شبکه)
 async function getIndexByAddress(address, contract) {
     try {
@@ -103,14 +78,8 @@ window.fetchReports = async function(address) {
     contractWithProvider.provider = provider; // تضمین provider معتبر برای safeQueryEvents
     const reports = [];
     const currentBlock = await provider.getBlockNumber();
-    // اگر کاربر "نمایش همه" را خواست، از بلاک صفر شروع کن
-    let fromBlock;
-    if (window.REPORTS_SHOW_ALL) {
-        fromBlock = 0;
-    } else {
-        const DEFAULT_WINDOW_BLOCKS = 2000000;
-        fromBlock = Math.max(0, currentBlock - DEFAULT_WINDOW_BLOCKS);
-    }
+    // شروع از بلاک 50,000,000 (حدود 6 ماه پیش) برای سرعت بیشتر
+    const fromBlock = Math.max(0, currentBlock - 50000000);
     console.log('📊 Searching from block:', fromBlock, 'to block:', currentBlock);
     // Helper: اضافه کردن ایونت به reports
     async function pushReport(type, title, amount, event, addr, provider) {
@@ -171,7 +140,7 @@ window.fetchReports = async function(address) {
         console.log('📊 Activated event user:', e.args.user, 'amount:', e.args.amountCPA?.toString());
         if (e.args.user && e.args.user.toLowerCase() === userAddress.toLowerCase()) {
             activatedCount++;
-            await pushReport('registration', 'ثبت‌نام و فعال‌سازی', formatCompactUnits(e.args.amountCPA, 18, 'CPA'), e, e.args.user, provider);
+            await pushReport('registration', 'ثبت‌نام و فعال‌سازی', formatNumber(e.args.amountCPA, 18) + ' CPA', e, e.args.user, provider);
         }
     }
     console.log('📊 Activated events for user:', activatedCount);
@@ -226,7 +195,7 @@ window.fetchReports = async function(address) {
                 await pushReport(
                     'referral_registration', 
                     'معرفی و ثبت‌نام', 
-                    `${formatCompactUnits(relatedPurchaseKind.args.amountCPA, 18, 'CPA')} (${shortenAddress(treeEvent.args.user)})`, 
+                    `${formatNumber(relatedPurchaseKind.args.amountCPA, 18)} CPA (${shortenAddress(treeEvent.args.user)})`, 
                     relatedPurchaseKind, 
                     treeEvent.args.user, 
                     provider
@@ -316,21 +285,21 @@ window.fetchReports = async function(address) {
     // برای کاربر خودش
     for (const e of eventsPurchaseKindAll) {
         if (e.args.user && e.args.user.toLowerCase() === userAddress.toLowerCase())
-            await pushReport('purchase', 'خرید اضافی', formatCompactUnits(e.args.amountCPA, 18, 'CPA'), e, e.args.user, provider);
+            await pushReport('purchase', 'خرید اضافی', formatNumber(e.args.amountCPA, 18) + ' CPA', e, e.args.user, provider);
     }
     // TokensBought
     const eventsTokensBought = await window.safeQueryEvents(contractWithProvider, contractWithProvider.filters.TokensBought(), fromBlock, currentBlock);
     console.log('TokensBought events:', eventsTokensBought.length);
     for (const e of eventsTokensBought) {
         if (e.args.buyer && e.args.buyer.toLowerCase() === userAddress.toLowerCase())
-            await pushReport('tokensbought', 'خرید توکن', `${formatCompactUnits(e.args.daiAmount, 18, 'DAI', 2, 2)} → ${formatCompactUnits(e.args.tokenAmount, 18, 'CPA')}`, e, e.args.buyer, provider);
+            await pushReport('tokensbought', 'خرید توکن', `${formatNumber(e.args.daiAmount, 18)} DAI → ${formatNumber(e.args.tokenAmount, 18)} CPA`, e, e.args.buyer, provider);
     }
     // TokensSold
     const eventsTokensSold = await window.safeQueryEvents(contractWithProvider, contractWithProvider.filters.TokensSold(), fromBlock, currentBlock);
     console.log('TokensSold events:', eventsTokensSold.length);
     for (const e of eventsTokensSold) {
         if (e.args.seller && e.args.seller.toLowerCase() === userAddress.toLowerCase())
-            await pushReport('tokenssold', 'فروش توکن', `${formatCompactUnits(e.args.tokenAmount, 18, 'CPA')} → ${formatCompactUnits(e.args.daiAmount, 18, 'DAI', 2, 2)}`, e, e.args.seller, provider);
+            await pushReport('tokenssold', 'فروش توکن', `${formatNumber(e.args.tokenAmount, 18)} CPA → ${formatNumber(e.args.daiAmount, 18)} DAI`, e, e.args.seller, provider);
     }
     // BinaryPointsUpdated
     const eventsBinaryPoints = await window.safeQueryEvents(contractWithProvider, contractWithProvider.filters.BinaryPointsUpdated(), fromBlock, currentBlock);
@@ -344,13 +313,13 @@ window.fetchReports = async function(address) {
     console.log('BinaryRewardDistributed events:', eventsBinaryReward.length);
     for (const e of eventsBinaryReward) {
         if (e.args.claimer && e.args.claimer.toLowerCase() === userAddress.toLowerCase())
-            await pushReport('binaryreward', 'دریافت پاداش باینری', `${formatCompactUnits(e.args.claimerReward, 18, 'CPA')}`, e, e.args.claimer, provider);
+            await pushReport('binaryreward', 'دریافت پاداش باینری', `${formatNumber(e.args.claimerReward, 18)} CPA`, e, e.args.claimer, provider);
     }
     // BinaryPoolUpdated (عمومی)
     const eventsBinaryPool = await window.safeQueryEvents(contractWithProvider, contractWithProvider.filters.BinaryPoolUpdated(), fromBlock, currentBlock);
     console.log('BinaryPoolUpdated events:', eventsBinaryPool.length);
     for (const e of eventsBinaryPool) {
-        await pushReport('binarypool', 'به‌روزرسانی استخر باینری', `${formatCompactUnits(e.args.addedAmount, 18, 'CPA')} (سایز جدید: ${formatCompactUnits(e.args.newPoolSize, 18, 'CPA')})`, e, null, provider);
+        await pushReport('binarypool', 'به‌روزرسانی استخر باینری', `${formatNumber(e.args.addedAmount, 18)} CPA (سایز جدید: ${formatNumber(e.args.newPoolSize, 18)})`, e, null, provider);
     }
     // TreeStructureUpdated
     const eventsTree = await window.safeQueryEvents(contractWithProvider, contractWithProvider.filters.TreeStructureUpdated(), fromBlock, currentBlock);
@@ -399,7 +368,7 @@ window.fetchReports = async function(address) {
             await pushReport(
                 transferType,
                 transferTitle,
-                `${formatCompactUnits(amount, 18, 'CPA')}`,
+                `${formatNumber(amount, 18)} CPA`,
                 e,
                 {from: fromAddr, to: toAddr},
                 provider
@@ -411,7 +380,7 @@ window.fetchReports = async function(address) {
     for (const e of eventsApproval) {
         if ((e.args.owner && e.args.owner.toLowerCase() === userAddress.toLowerCase()) ||
             (e.args.spender && e.args.spender.toLowerCase() === userAddress.toLowerCase())) {
-            await pushReport('approval', 'تأییدیه انتقال', `${formatCompactUnits(e.args.value, 18, 'CPA')}`, e, e.args.owner === userAddress ? e.args.spender : e.args.owner, provider);
+            await pushReport('approval', 'تأییدیه انتقال', `${formatNumber(e.args.value, 18)} CPA`, e, e.args.owner === userAddress ? e.args.spender : e.args.owner, provider);
         }
     }
     // IndexTransferred
@@ -426,7 +395,7 @@ window.fetchReports = async function(address) {
     const eventsMonthlyReward = await window.safeQueryEvents(contractWithProvider, contractWithProvider.filters.MonthlyRewardClaimed(), fromBlock, currentBlock);
     for (const e of eventsMonthlyReward) {
         if (e.args.user && e.args.user.toLowerCase() === userAddress.toLowerCase())
-            await pushReport('monthlyreward', 'دریافت پاداش ماهانه', `${formatCompactUnits(e.args.reward, 18, 'CPA')} (${e.args.monthsPassed} ماه)`, e, e.args.user, provider);
+            await pushReport('monthlyreward', 'دریافت پاداش ماهانه', `${formatNumber(e.args.reward, 18)} CPA (${e.args.monthsPassed} ماه)`, e, e.args.user, provider);
     }
     // MonthlyRewardFailed
     const eventsMonthlyFail = await window.safeQueryEvents(contractWithProvider, contractWithProvider.filters.MonthlyRewardFailed(), fromBlock, currentBlock);
@@ -487,7 +456,7 @@ window.fetchReports = async function(address) {
                 await pushReport(
                     transferType,
                     transferTitle,
-                    `${formatCompactUnits(amount, 18, 'DAI', 2, 2)}`,
+                    `${formatNumber(amount, 18)} DAI`,
                     e,
                     {from: fromAddr, to: toAddr},
                     provider
@@ -501,7 +470,7 @@ window.fetchReports = async function(address) {
         for (const e of eventsDAIApproval) {
             if ((e.args.owner && e.args.owner.toLowerCase() === userAddress.toLowerCase()) ||
                 (e.args.spender && e.args.spender.toLowerCase() === userAddress.toLowerCase())) {
-                await pushReport('dai_approval', 'تأییدیه DAI', `${formatCompactUnits(e.args.value, 18, 'DAI', 2, 2)}`, e, e.args.owner === userAddress ? e.args.spender : e.args.owner, provider);
+                await pushReport('dai_approval', 'تأییدیه DAI', `${formatNumber(e.args.value, 18)} DAI`, e, e.args.owner === userAddress ? e.args.spender : e.args.owner, provider);
             }
         }
         
@@ -514,11 +483,81 @@ window.fetchReports = async function(address) {
     return reports;
 };
 
-// نمایش گزارشات دسته‌بندی شده (دیگر استفاده نمی‌شود؛ استریم جایگزین است)
-window.loadReports = async function() {
-  if (typeof window.startReportsStream === 'function') {
-    await window.startReportsStream();
-  }
+// نمایش گزارشات دسته‌بندی شده
+window.loadReports = async function(address) {
+    const reportsContainer = document.getElementById('reports-list');
+    reportsContainer.innerHTML = '<div class="loading">در حال بارگذاری گزارشات...</div>';
+    const reports = await window.fetchReports(address);
+    if (!reports || reports.length === 0) {
+        reportsContainer.innerHTML = '<div class="no-reports">هیچ گزارشی برای شما یافت نشد.</div>';
+        return;
+    }
+    // دسته‌بندی
+    const grouped = {};
+    reports.forEach(r => { if (!grouped[r.type]) grouped[r.type] = []; grouped[r.type].push(r); });
+    const typeOrder = [
+        'registration','referral_registration','purchase','tokensbought','tokenssold','reward_transfer','payment_transfer','incoming_transfer','outgoing_transfer','dai_incoming_transfer','dai_outgoing_transfer','dai_approval','binarypoints','binaryreward','tree','indextransfer','monthlyreward','approval','binarypool','monthlyfail'
+    ];
+    const typeTitles = {
+        registration: '🎯 ثبت‌نام و فعال‌سازی',
+        referral_registration: '👥 معرفی و ثبت‌نام',
+        purchase: '🛒 خرید اضافی', 
+        tokensbought: '💰 خرید توکن (DAI→CPA)', 
+        tokenssold: '💸 فروش توکن (CPA→DAI)',
+        reward_transfer: '🎁 دریافت از قرارداد',
+        payment_transfer: '💳 پرداخت به قرارداد',
+        incoming_transfer: '📥 انتقال CPA ورودی',
+        outgoing_transfer: '📤 انتقال CPA خروجی',
+        dai_incoming_transfer: '💵📥 انتقال DAI ورودی',
+        dai_outgoing_transfer: '💵📤 انتقال DAI خروجی',
+        dai_approval: '💵✅ تأییدیه DAI',
+        binarypoints: '⭐ امتیاز باینری', 
+        binaryreward: '🏆 پاداش باینری', 
+        tree: '🌳 ساختار شبکه',
+        indextransfer: '🔄 انتقال ایندکس', 
+        monthlyreward: '📅 پاداش ماهانه',
+        approval: '✅ تأییدیه CPA انتقال',
+        binarypool: '🏊 استخر باینری',
+        monthlyfail: '❌ خطاهای پاداش'
+    };
+    // تابع نمایش بر اساس دسته انتخابی
+    async function renderReportsByType(selectedType) {
+        reportsContainer.innerHTML = '';
+        let typesToShow = typeOrder;
+        if (selectedType && selectedType !== 'all') typesToShow = [selectedType];
+        for (const type of typesToShow) {
+            if (grouped[type] && grouped[type].length > 0) {
+                const h = document.createElement('h3');
+                h.textContent = typeTitles[type] || type;
+                h.style.marginTop = '32px';
+                h.style.color = '#1976d2';
+                h.style.fontWeight = 'bold';
+                h.style.fontSize = '1.15em';
+                reportsContainer.appendChild(h);
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'event-group';
+                groupDiv.dataset.type = type;
+                reportsContainer.appendChild(groupDiv);
+                for (const report of grouped[type]) {
+                    const div = document.createElement('div');
+                    div.className = 'report-sentence';
+                    // جمله را به صورت async بساز
+                    const sentence = await getReportSentence(report);
+                    div.innerHTML = sentence;
+                    groupDiv.appendChild(div);
+                }
+            }
+        }
+    }
+    // مقدار اولیه (همه دسته‌ها)
+    await renderReportsByType('all');
+    // لیسنر برای select
+    const select = document.getElementById('event-type-select');
+    if (select) {
+        select.onchange = function() {
+            renderReportsByType(this.value);
+        };
+    }
 };
 
 // جمله فارسی برای هر ایونت
@@ -623,71 +662,3 @@ async function getReportSentence(report) {
             return `${time} گزارش بدون عنوان`;
     }
 } // پایان تابع getReportSentence
-
-// استریم تایپ‌نویس از اول تا آخر رویدادها
-(function(){
-  function stripTags(html){
-    try { const tmp = document.createElement('div'); tmp.innerHTML = html; return tmp.textContent || tmp.innerText || ''; } catch { return String(html||''); }
-  }
-  async function typeWrite(el, text, speed, token){
-    el.textContent = '';
-    const s = typeof speed === 'number' ? speed : 12;
-    // ایجاد کرسر اولیه
-    let cursor = document.createElement('span');
-    cursor.className = 'type-cursor';
-    el.appendChild(cursor);
-    for (let i=0;i<text.length;i++){
-      if (token && window._typewriterToken !== token) return;
-      // درج کاراکتر قبل از کرسر
-      cursor.remove();
-      el.appendChild(document.createTextNode(text[i]));
-      el.appendChild(cursor);
-      // micro delay
-      // eslint-disable-next-line no-await-in-loop
-      await new Promise(r=>setTimeout(r, s));
-    }
-    // کرسر باقی می‌ماند و چشمک می‌زند
-  }
-  window.startReportsStream = async function(){
-    try {
-      const container = document.getElementById('reports-list');
-      if (!container) return;
-      container.innerHTML = '<div class="loading">در حال جستجو و نمایش گزارشات...</div>';
-      const reports = await window.fetchReports();
-      let filtered = reports || [];
-      if (window.REPORT_TYPE_FILTER && window.REPORT_TYPE_FILTER !== 'all') {
-        filtered = filtered.filter(r => r.type === window.REPORT_TYPE_FILTER);
-      }
-      // قدیمی به جدید برای روخوانی تاریخی
-      filtered.sort((a,b)=> (a.timestamp||0) - (b.timestamp||0));
-      container.innerHTML = '';
-      // اتصال نوار پیشرفت گزارشات
-      const progressBar = document.querySelector('#reports-progress .bar');
-      const setProgress = (done, total) => {
-        try {
-          const pct = total > 0 ? Math.min(100, Math.round((done/total)*100)) : 0;
-          if (progressBar) progressBar.style.width = pct + '%';
-        } catch(_) {}
-      };
-      const token = Date.now();
-      window._typewriterToken = token;
-      setProgress(0, filtered.length);
-      let processed = 0;
-      for (const report of filtered){
-        if (window._typewriterToken !== token) return; // متوقف شده
-        const div = document.createElement('div');
-        div.className = 'report-sentence';
-        container.appendChild(div);
-        const sentence = await getReportSentence(report);
-        const plain = stripTags(sentence) + '\n';
-        // eslint-disable-next-line no-await-in-loop
-        await typeWrite(div, plain, 12, token);
-        div.scrollIntoView({behavior:'smooth', block:'end'});
-        processed += 1; setProgress(processed, filtered.length);
-      }
-    } catch (e){
-      const container = document.getElementById('reports-list');
-      if (container) container.innerHTML = `<div class="error-message">${e && e.message ? e.message : e}</div>`;
-    }
-  };
-})();

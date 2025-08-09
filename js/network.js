@@ -574,14 +574,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                 // کاهش فاصله افقی برای سطوح عمیق‌تر
                 const childMarginMultiplier = (level + 1) <= 3 ? 3 : ((level + 1) <= 5 ? 2 : 1);
                 leftChildDiv.style.marginRight = ((level + 1) * childMarginMultiplier) + 'em';
-                // به‌روزرسانی پیشرفت قبل/بعد از رندر
-                if (typeof window.setNetworkProgressUI === 'function') {
-                    try { window._netDone = (window._netDone||0); window._netTotal = (window._netTotal||0) + 1; window.setNetworkProgressUI(window._netDone, window._netTotal); } catch(e){}
-                }
                 await renderVerticalNodeLazy(BigInt(leftUser.index), leftChildDiv, level + 1, false);
-                if (typeof window.setNetworkProgressUI === 'function') {
-                    try { window._netDone = (window._netDone||0) + 1; window.setNetworkProgressUI(window._netDone, window._netTotal||0); } catch(e){}
-                }
                 childrenDiv.appendChild(leftChildDiv);
             }
             // راست
@@ -591,13 +584,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                 // کاهش فاصله افقی برای سطوح عمیق‌تر
                 const childMarginMultiplier = (level + 1) <= 3 ? 3 : ((level + 1) <= 5 ? 2 : 1);
                 rightChildDiv.style.marginRight = ((level + 1) * childMarginMultiplier) + 'em';
-                if (typeof window.setNetworkProgressUI === 'function') {
-                    try { window._netDone = (window._netDone||0); window._netTotal = (window._netTotal||0) + 1; window.setNetworkProgressUI(window._netDone, window._netTotal); } catch(e){}
-                }
                 await renderVerticalNodeLazy(BigInt(rightUser.index), rightChildDiv, level + 1, false);
-                if (typeof window.setNetworkProgressUI === 'function') {
-                    try { window._netDone = (window._netDone||0) + 1; window.setNetworkProgressUI(window._netDone, window._netTotal||0); } catch(e){}
-                }
                 childrenDiv.appendChild(rightChildDiv);
             }
         }
@@ -983,8 +970,8 @@ window.initializeNetworkTab = async function() {
     
     console.log('✅ Network tree container found');
     
-    // نمایش وضعیت بارگذاری: فقط نوار بالای صفحه (داخل HTML) باقی بماند
-    container.innerHTML = '';
+    // نمایش وضعیت بارگذاری
+    container.innerHTML = '<div style="color:#00ccff;text-align:center;padding:2rem;">🔄 در حال بارگذاری درخت شبکه...</div>';
     
     // تست ساده برای بررسی اتصال
     try {
@@ -1007,13 +994,7 @@ window.initializeNetworkTab = async function() {
         try {
             if (typeof window.renderSimpleBinaryTree === 'function') {
                 console.log(`🔄 Attempt ${retryCount + 1} to render network tree...`);
-                // ریست شمارنده‌های پیشرفت
-                window._netDone = 0; window._netTotal = 0;
                 await window.renderSimpleBinaryTree();
-                // پس از پایان رندر، اگر هنوز نودهایی باقی است، درصد کامل نشود
-                if (typeof window.setNetworkProgressUI === 'function') {
-                    try { window.setNetworkProgressUI(window._netDone||0, (window._netTotal||0) + 1); } catch(e){}
-                }
             } else {
                 console.error('❌ renderSimpleBinaryTree function not found');
                 container.innerHTML = '<div style="color:#ff4444;text-align:center;padding:2rem;">❌ تابع رندر شبکه پیدا نشد</div>';

@@ -87,7 +87,7 @@ const NEWS_APIS = {
     }
 };
 
-// اخبار محلی پلتفرم cpa (واقعی و مفید)
+// اخبار محلی پلتفرم LevelUp (واقعی و مفید)
 const localNews = [
     {
         id: 'platform-3',
@@ -97,7 +97,7 @@ const localNews = [
         image: 'https://via.placeholder.com/300x200/232946/00ccff?text=Token+Swap',
         category: 'trading',
         date: new Date('2025-01-13'),
-        source: 'cpa Team',
+        source: 'LevelUp Team',
         tags: ['خرید', 'فروش', 'سواپ', 'LVL']
     }
 ];

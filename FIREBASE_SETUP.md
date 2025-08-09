@@ -6,7 +6,7 @@
 
 1. به [console.firebase.google.com](https://console.firebase.google.com) بروید
 2. روی **"Create a project"** کلیک کنید
-3. نام پروژه را وارد کنید (مثلاً: `cpa-price-history`)
+3. نام پروژه را وارد کنید (مثلاً: `levelup-price-history`)
 4. Google Analytics را غیرفعال کنید (اختیاری)
 5. روی **"Create project"** کلیک کنید
 

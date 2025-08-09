@@ -37,17 +37,22 @@ class FloatingTokenGrowthCard {
       return;
     }
     
+    // محل هدف: ترجیحاً داخل Swap
+    const swapContainer = document.querySelector('#main-swap .swap-container') || document.getElementById('main-swap');
+    const inSwap = !!swapContainer;
+    const positionStyle = inSwap
+      ? 'position: absolute; bottom: 10px; right: 10px;'
+      : 'position: fixed; bottom: 20px; right: 20px;';
+
     // ایجاد HTML کارت
     const cardHTML = `
       <div id="floating-token-growth-card" style="
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        width: 88px;
-        height: 88px;
+        ${positionStyle}
+        width: 80px;
+        height: 80px;
         background: linear-gradient(135deg, #00ff88, #00cc6a);
         border-radius: 50%;
-        box-shadow: 0 6px 24px rgba(0, 255, 136, 0.25);
+        box-shadow: 0 8px 32px rgba(0, 255, 136, 0.3);
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -55,17 +60,17 @@ class FloatingTokenGrowthCard {
         z-index: 1000;
         cursor: pointer;
         transition: all 0.3s ease;
-        border: 2px solid rgba(255, 255, 255, 0.2);
+        border: 3px solid rgba(255, 255, 255, 0.2);
         backdrop-filter: blur(10px);
       ">
         <div style="
           color: #1a1f2e;
-          font-size: 0.8rem;
+          font-size: 0.9rem;
           font-weight: bold;
           text-align: center;
           margin-bottom: 5px;
           font-family: monospace;
-        ">رشد توکن</div>
+        ">رشد</div>
         <div id="token-growth-percentage" style="
           color: #1a1f2e;
           font-size: 1.1rem;
@@ -83,8 +88,17 @@ class FloatingTokenGrowthCard {
       </div>
     `;
     
-    // اضافه کردن کارت به body
-    document.body.insertAdjacentHTML('beforeend', cardHTML);
+    // اضافه کردن کارت
+    if (inSwap) {
+      // اطمینان از relative بودن والد
+      const currentPos = window.getComputedStyle(swapContainer).position;
+      if (!currentPos || currentPos === 'static') {
+        swapContainer.style.position = 'relative';
+      }
+      swapContainer.insertAdjacentHTML('beforeend', cardHTML);
+    } else {
+      document.body.insertAdjacentHTML('beforeend', cardHTML);
+    }
     
     // دریافت عناصر
     this.card = document.getElementById('floating-token-growth-card');
@@ -122,8 +136,8 @@ class FloatingTokenGrowthCard {
   
   expand() {
     this.isExpanded = true;
-    this.card.style.width = '160px';
-    this.card.style.height = '160px';
+    this.card.style.width = '134px';
+    this.card.style.height = '134px';
     this.card.style.borderRadius = '20px';
     this.card.style.background = 'linear-gradient(135deg, #00ff88, #00cc6a, #00ff88)';
     this.card.style.backgroundSize = '200% 200%';
@@ -138,8 +152,8 @@ class FloatingTokenGrowthCard {
   
   collapse() {
     this.isExpanded = false;
-    this.card.style.width = '88px';
-    this.card.style.height = '88px';
+    this.card.style.width = '80px';
+    this.card.style.height = '80px';
     this.card.style.borderRadius = '50%';
     this.card.style.background = 'linear-gradient(135deg, #00ff88, #00cc6a)';
     this.card.style.animation = 'none';
@@ -376,8 +390,8 @@ function addFloatingCardStyles() {
       #floating-token-growth-card {
         bottom: 10px;
         right: 10px;
-        width: 70px;
-        height: 70px;
+        width: 54px; /* 80 * 0.67 ≈ 54 */
+        height: 54px;
       }
       
       #floating-token-growth-card div:first-child {
@@ -385,22 +399,27 @@ function addFloatingCardStyles() {
         margin-bottom: 2px !important;
       }
       
-      #token-growth-percentage { font-size: 0.95rem !important; }
+      #token-growth-percentage {
+        font-size: 1rem !important;
+      }
       
       #token-growth-status {
         font-size: 0.6rem !important;
         margin-top: 1px !important;
       }
       
-      #floating-token-growth-card.expanded { width: 128px; height: 128px; }
+      #floating-token-growth-card.expanded {
+        width: 94px; /* 140 * 0.67 ≈ 94 */
+        height: 94px;
+      }
     }
     
     @media (max-width: 480px) {
       #floating-token-growth-card {
         bottom: 8px;
         right: 8px;
-        width: 62px;
-        height: 62px;
+        width: 47px; /* 70 * 0.67 ≈ 47 */
+        height: 47px;
       }
       
       #floating-token-growth-card div:first-child {
@@ -408,14 +427,19 @@ function addFloatingCardStyles() {
         margin-bottom: 1px !important;
       }
       
-      #token-growth-percentage { font-size: 0.85rem !important; }
+      #token-growth-percentage {
+        font-size: 0.9rem !important;
+      }
       
       #token-growth-status {
         font-size: 0.5rem !important;
         margin-top: 1px !important;
       }
       
-      #floating-token-growth-card.expanded { width: 112px; height: 112px; }
+      #floating-token-growth-card.expanded {
+        width: 80px;
+        height: 80px;
+      }
     }
   `;
   document.head.appendChild(style);

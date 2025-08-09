@@ -62,25 +62,7 @@
         }
         .balance-label { color: #00ff88; font-weight: bold; font-size: 1.08em; }
         .balance-value { color: #fff; font-size: 1.18em; font-family: monospace; margin-top: 4px; display: block; }
-        #connect-wallet-btn {
-            display: block;
-            margin: 0 auto 24px auto;
-            padding: 12px 32px;
-            font-size: 1.13em;
-            background: linear-gradient(90deg,#00ff88,#a786ff);
-            color: #181c2a;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.2s, box-shadow 0.2s;
-            font-family: inherit;
-            font-weight: bold;
-            box-shadow: 0 2px 8px #00ff8822;
-        }
-        #connect-wallet-btn:hover {
-            background: linear-gradient(90deg,#a786ff,#00ff88);
-            box-shadow: 0 4px 16px #00ff8844;
-        }
+        /* دکمه اتصال کیف پول حذف شد */
         .loading, .error-message {
             text-align: center;
             margin: 24px 0;
@@ -101,7 +83,10 @@
     <script src="js/navbar.js"></script>
     <div class="container">
         <h1>پروفایل کاربر</h1>
-        <button id="connect-wallet-btn">اتصال کیف پول</button>
+        <div id="profile-progress" style="display:none;height:6px;background:rgba(255,255,255,0.12);border-radius:999px;overflow:hidden;margin:-8px 0 16px 0;">
+          <div id="profile-progress-inner" style="height:100%;width:0%;background:linear-gradient(90deg,#00ff88,#a786ff);box-shadow:0 0 12px rgba(0,255,136,0.35) inset;transition:width 300ms ease;">
+          </div>
+        </div>
         <div id="profile-content">
             <div class="loading">در حال دریافت اطلاعات...</div>
         </div>
@@ -116,6 +101,68 @@
     <script src="js/config.js"></script>
     <script src="js/profile.js"></script>
     <script>
+    function showProfileProgress() {
+        const bar = document.getElementById('profile-progress');
+        if (bar) bar.style.display = 'block';
+    }
+    function setProfileProgress(pct) {
+        const inner = document.getElementById('profile-progress-inner');
+        if (inner) inner.style.width = Math.max(0, Math.min(100, pct)) + '%';
+    }
+    function hideProfileProgress() {
+        const bar = document.getElementById('profile-progress');
+        if (!bar) return;
+        setTimeout(() => { bar.style.display = 'none'; setProfileProgress(0); }, 400);
+    }
+
+    // شمارش معکوس دکمه‌ها
+    function formatHMS(totalSeconds) {
+        const s = Math.max(0, Math.floor(totalSeconds));
+        const hh = String(Math.floor(s / 3600)).padStart(2,'0');
+        const mm = String(Math.floor((s % 3600) / 60)).padStart(2,'0');
+        const ss = String(s % 60).padStart(2,'0');
+        return `${hh}:${mm}:${ss}`;
+    }
+    function startCountdownButton(btn, secondsRemaining, storageKey) {
+        if (!btn) return;
+        // ایجاد/یافتن span شمارش معکوس
+        let span = btn.querySelector('.btn-countdown');
+        if (!span) {
+            span = document.createElement('span');
+            span.className = 'btn-countdown';
+            span.style.marginInlineStart = '8px';
+            span.style.fontSize = '0.85em';
+            span.style.opacity = '0.9';
+            btn.appendChild(span);
+        }
+        // پاکسازی تایمر قبلی در صورت وجود
+        const prevId = btn.getAttribute('data-timer-id');
+        if (prevId) {
+            clearInterval(Number(prevId));
+            btn.removeAttribute('data-timer-id');
+        }
+        const endAt = Date.now() + Math.max(0, secondsRemaining) * 1000;
+        function tick() {
+            const remain = Math.ceil((endAt - Date.now()) / 1000);
+            if (remain > 0) {
+                btn.disabled = true;
+                btn.style.opacity = '0.6';
+                btn.style.cursor = 'not-allowed';
+                span.textContent = `(${formatHMS(remain)})`;
+            } else {
+                btn.disabled = false;
+                btn.style.opacity = '';
+                btn.style.cursor = '';
+                span.textContent = '';
+                const id = btn.getAttribute('data-timer-id');
+                if (id) clearInterval(Number(id));
+                btn.removeAttribute('data-timer-id');
+            }
+        }
+        tick();
+        const id = setInterval(tick, 1000);
+        btn.setAttribute('data-timer-id', String(id));
+    }
     function formatDateTime(ts) {
         if (!ts || ts == 0) return '-';
         // تبدیل به رشته و سپس عدد برای جلوگیری از خطای BigInt
@@ -129,36 +176,32 @@
         return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
     }
     async function loadProfile() {
+        showProfileProgress();
+        setProfileProgress(10);
         const content = document.getElementById('profile-content');
         content.innerHTML = '<div class="loading">در حال دریافت اطلاعات...</div>';
         try {
             if (!window.connectWallet) throw new Error('اتصال کیف پول فعال نیست');
             const { contract, address, provider } = await window.connectWallet();
+            setProfileProgress(40);
             if (!contract || !address) throw new Error('اتصال کیف پول برقرار نشد');
             // اطلاعات struct User
             const user = await contract.users(address);
+            setProfileProgress(60);
             // موجودی‌ها
             const maticBalance = await provider.getBalance(address);
             const cpaBalance = await contract.balanceOf(address);
+            setProfileProgress(75);
             
-            // قالب‌بندی فشرده اعداد: k, m, b, t, q, e
-            function formatCompact(value, smallDecimals = 4, compactDecimals = 2) {
-                const num = Number(value);
-                if (!isFinite(num)) return '0';
-                const abs = Math.abs(num);
-                if (abs < 1) return num.toFixed(smallDecimals);
-                const units = [
-                    { v: 1e18, s: 'e' }, // quintillion
-                    { v: 1e15, s: 'q' }, // quadrillion
-                    { v: 1e12, s: 't' }, // trillion
-                    { v: 1e9,  s: 'b' }, // billion
-                    { v: 1e6,  s: 'm' }, // million
-                    { v: 1e3,  s: 'k' }  // thousand
-                ];
-                for (const u of units) {
-                    if (abs >= u.v) return (num / u.v).toFixed(compactDecimals) + u.s;
+            // تابع کوتاه کردن اعداد بزرگ
+            function formatLargeNumber(num) {
+                if (num >= 1000000) {
+                    return (num / 1000000).toFixed(1) + 'M';
+                } else if (num >= 1000) {
+                    return (num / 1000).toFixed(1) + 'K';
+                } else {
+                    return num.toFixed(2);
                 }
-                return num.toFixed(compactDecimals);
             }
             
             // محاسبه معادل دلاری CPA
@@ -212,16 +255,16 @@
                 <div class="balance-box">
                     <div class="balance-item">
                         <div class="balance-label">CPA</div>
-                        <span class="balance-value" title="${Number.parseFloat(ethers.formatUnits(cpaBalance.toString(), 18)).toLocaleString('en-US', {maximumFractionDigits: 4})}">${formatCompact(Number.parseFloat(ethers.formatUnits(cpaBalance.toString(), 18)))}</span>
-                        <div style="font-size:0.8rem;color:#a786ff;margin-top:2px;">≈ $${formatCompact(cpaUsdValue, 2, 2)}</div>
+                        <span class="balance-value" title="${Number.parseFloat(ethers.formatUnits(cpaBalance.toString(), 18)).toLocaleString('en-US', {maximumFractionDigits: 4})}">${formatLargeNumber(Number.parseFloat(ethers.formatUnits(cpaBalance.toString(), 18)))}</span>
+                        <div style="font-size:0.8rem;color:#a786ff;margin-top:2px;">≈ $${formatLargeNumber(cpaUsdValue)}</div>
                     </div>
                     <div class="balance-item">
                         <div class="balance-label">MATIC</div>
-                        <span class="balance-value" title="${Number.parseFloat(ethers.formatEther(maticBalance.toString())).toLocaleString('en-US', {maximumFractionDigits: 4})}">${formatCompact(Number.parseFloat(ethers.formatEther(maticBalance.toString())), 4, 2)}</span>
+                        <span class="balance-value" title="${Number.parseFloat(ethers.formatEther(maticBalance.toString())).toLocaleString('en-US', {maximumFractionDigits: 4})}">${formatLargeNumber(Number.parseFloat(ethers.formatEther(maticBalance.toString())))}</span>
                     </div>
                     <div class="balance-item">
                         <div class="balance-label">DAI</div>
-                        <span class="balance-value" title="${Number.parseFloat(daiBalance.toString()).toLocaleString('en-US', {maximumFractionDigits: 4})}">${formatCompact(Number.parseFloat(daiBalance.toString()), 2, 2)}</span>
+                        <span class="balance-value" title="${Number.parseFloat(daiBalance.toString()).toLocaleString('en-US', {maximumFractionDigits: 4})}">${formatLargeNumber(Number.parseFloat(daiBalance.toString()))}</span>
                     </div>
                 </div>
                 <div style="display:flex;gap:1.2rem;justify-content:center;margin-bottom:1.5rem;">
@@ -378,6 +421,8 @@
                 }
               }
             }, 100);
+            setProfileProgress(100);
+            hideProfileProgress();
             
             // راه‌اندازی دکمه کپی لینک رفرال
             if (typeof setupReferralCopy === 'function') {
@@ -392,19 +437,15 @@
             }
         } catch (e) {
             content.innerHTML = `<div class="error-message">خطا: ${e.message || e}</div>`;
+            setProfileProgress(100);
+            hideProfileProgress();
         }
     }
-    document.getElementById('connect-wallet-btn').onclick = async function() {
-        await loadProfile();
-        this.style.display = 'none';
-    };
     window.addEventListener('DOMContentLoaded', async function() {
-        if (typeof window.ethereum !== 'undefined') {
-            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-            if (accounts && accounts.length > 0) {
-                document.getElementById('connect-wallet-btn').style.display = 'none';
-                await loadProfile();
-            }
+        try {
+            await loadProfile();
+        } catch (e) {
+            // در صورت عدم اتصال، پروفایل بعد از اتصال خودکار بارگذاری می‌شود
         }
     });
     </script>
