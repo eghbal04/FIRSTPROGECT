@@ -1,4 +1,5 @@
 // نمایش درخت باینری با lazy load: هر گره با کلیک expand می‌شود و فقط فرزندان همان گره نمایش داده می‌شوند
+window.NETWORK_RENDER_VERSION = 'v-layout-rows-rtl-1';
 
 // متغیرهای سراسری برای مدیریت رندر درخت
 let lastRenderedIndex = null;
@@ -86,7 +87,8 @@ function shortAddress(addr) {
     return addr.slice(0, 4) + '...' + addr.slice(-3);
 }
 
-async function showUserPopup(address, user) {
+// Alias عمومی برای استفاده از سایر فایل‌ها
+window.networkShowUserPopup = async function(address, user) {
     console.log('🚀 showUserPopup called with:', { address, user });
     
     // تابع کوتاه‌کننده آدرس
@@ -107,71 +109,35 @@ async function showUserPopup(address, user) {
     const walletAddress = address || '-';
     const isActive = user && user.activated ? true : false;
     
-    // تابع محاسبه تعداد ولت‌های سمت راست و چپ
+    // تابع محاسبه تعداد ولت‌های سمت راست و چپ (فعال‌ها در زیرشاخه)
     async function calculateWalletCounts(userIndex, contract) {
         try {
-            console.log(`🔍 محاسبه تعداد ولت‌ها برای ایندکس ${userIndex}...`);
-            
             let leftCount = 0;
             let rightCount = 0;
-            
-            // بررسی فرزندان مستقیم
             const leftChildIndex = BigInt(userIndex) * 2n;
             const rightChildIndex = BigInt(userIndex) * 2n + 1n;
-            
-            console.log(`📊 فرزند چپ: ${leftChildIndex}, فرزند راست: ${rightChildIndex}`);
-            
-            // بررسی فرزند چپ
+            // چپ
             try {
-                console.log(`🔍 بررسی فرزند چپ: ${leftChildIndex}`);
                 const leftAddress = await contract.indexToAddress(leftChildIndex);
-                console.log(`📍 آدرس فرزند چپ: ${leftAddress}`);
                 if (leftAddress && leftAddress !== '0x0000000000000000000000000000000000000000') {
                     const leftUser = await contract.users(leftAddress);
-                    console.log(`👤 اطلاعات فرزند چپ:`, leftUser);
                     if (leftUser && leftUser.activated) {
-                        leftCount = 1;
-                        console.log(`✅ فرزند چپ فعال است، شروع محاسبه زیرمجموعه...`);
-                        // محاسبه بازگشتی برای فرزندان فرزند چپ
-                        leftCount += await calculateSubtreeCount(leftChildIndex, contract, 'left');
-                    } else {
-                        console.log(`❌ فرزند چپ فعال نیست`);
+                        leftCount = 1 + await calculateSubtreeCount(leftChildIndex, contract, 'left');
                     }
-                } else {
-                    console.log(`❌ آدرس فرزند چپ خالی است`);
                 }
-            } catch (e) {
-                console.log(`خطا در بررسی فرزند چپ:`, e);
-            }
-            
-            // بررسی فرزند راست
+            } catch {}
+            // راست
             try {
-                console.log(`🔍 بررسی فرزند راست: ${rightChildIndex}`);
                 const rightAddress = await contract.indexToAddress(rightChildIndex);
-                console.log(`📍 آدرس فرزند راست: ${rightAddress}`);
                 if (rightAddress && rightAddress !== '0x0000000000000000000000000000000000000000') {
                     const rightUser = await contract.users(rightAddress);
-                    console.log(`👤 اطلاعات فرزند راست:`, rightUser);
                     if (rightUser && rightUser.activated) {
-                        rightCount = 1;
-                        console.log(`✅ فرزند راست فعال است، شروع محاسبه زیرمجموعه...`);
-                        // محاسبه بازگشتی برای فرزندان فرزند راست
-                        rightCount += await calculateSubtreeCount(rightChildIndex, contract, 'right');
-                    } else {
-                        console.log(`❌ فرزند راست فعال نیست`);
+                        rightCount = 1 + await calculateSubtreeCount(rightChildIndex, contract, 'right');
                     }
-                } else {
-                    console.log(`❌ آدرس فرزند راست خالی است`);
                 }
-            } catch (e) {
-                console.log(`خطا در بررسی فرزند راست:`, e);
-            }
-            
-            console.log(`✅ تعداد ولت‌ها: چپ=${leftCount}, راست=${rightCount}`);
+            } catch {}
             return { leftCount, rightCount };
-            
         } catch (error) {
-            console.error(`خطا در محاسبه تعداد ولت‌ها:`, error);
             return { leftCount: 0, rightCount: 0 };
         }
     }
@@ -218,15 +184,11 @@ async function showUserPopup(address, user) {
     let walletCounts = { leftCount: '⏳', rightCount: '⏳' };
     if (window.contractConfig && window.contractConfig.contract && user.index) {
         try {
-            console.log('🔍 شروع محاسبه تعداد ولت‌ها برای کاربر:', user.index);
             walletCounts = await calculateWalletCounts(user.index, window.contractConfig.contract);
-            console.log('✅ محاسبه تعداد ولت‌ها تکمیل شد:', walletCounts);
         } catch (error) {
-            console.error('خطا در محاسبه تعداد ولت‌ها:', error);
             walletCounts = { leftCount: 'خطا', rightCount: 'خطا' };
         }
     } else {
-        console.log('⚠️ contract یا user.index موجود نیست');
         walletCounts = { leftCount: 'نامشخص', rightCount: 'نامشخص' };
     }
 
@@ -240,8 +202,8 @@ async function showUserPopup(address, user) {
       {icon:'💰', label:'سپرده کل', val:user.depositedAmount ? Math.floor(Number(user.depositedAmount) / 1e18) : 0},
       {icon:'⬅️', label:'امتیاز چپ', val:user.leftPoints},
       {icon:'➡️', label:'امتیاز راست', val:user.rightPoints},
-      {icon:'👥⬅️', label:'تعداد ولت چپ', val:`${walletCounts.leftCount} (تست)`},
-      {icon:'👥➡️', label:'تعداد ولت راست', val:`${walletCounts.rightCount} (تست)`}
+      {icon:'👥⬅️', label:'تعداد ولت چپ', val: (walletCounts && walletCounts.leftCount !== undefined) ? walletCounts.leftCount : '-'},
+      {icon:'👥➡️', label:'تعداد ولت راست', val: (walletCounts && walletCounts.rightCount !== undefined) ? walletCounts.rightCount : '-'}
     ];
 
     const popupEl = document.createElement('div');
@@ -369,23 +331,32 @@ async function showUserPopup(address, user) {
 
     // دریافت موجودی‌های زنده
     if (walletAddress !== '-') {
-        window.TokenBalances.getAllBalances(walletAddress).then(balances => {
-            const { cpa, dai, matic } = balances;
-            
-            // به‌روزرسانی موجودی CPA
-            document.querySelector('#cpa-balance .balance-value').textContent = cpa;
-            
-            // به‌روزرسانی موجودی MATIC
-            document.querySelector('#matic-balance .balance-value').textContent = matic;
-            
-            // به‌روزرسانی موجودی DAI
-            document.querySelector('#dai-balance .balance-value').textContent = dai;
-        }).catch(error => {
-            console.warn('Error fetching balances:', error);
-            document.querySelector('#cpa-balance .balance-value').textContent = '❌';
-            document.querySelector('#matic-balance .balance-value').textContent = '❌';
-            document.querySelector('#dai-balance .balance-value').textContent = '❌';
-        });
+        (async () => {
+            try {
+                const { contract, provider } = await window.connectWallet();
+                let cpa = '-', dai = '-', matic = '-';
+                if (contract && typeof contract.balanceOf === 'function') {
+                    try { const c = await contract.balanceOf(walletAddress); cpa = Number(ethers.formatEther(c)).toFixed(4); } catch {}
+                }
+                try {
+                    const DAI_ADDRESS = window.DAI_ADDRESS || '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063';
+                    const Dai = new ethers.Contract(DAI_ADDRESS, window.DAI_ABI, provider);
+                    const d = await Dai.balanceOf(walletAddress);
+                    dai = Number(ethers.formatUnits(d, 18)).toFixed(2);
+                } catch {}
+                if (provider) {
+                    try { const m = await provider.getBalance(walletAddress); matic = Number(ethers.formatEther(m)).toFixed(4); } catch {}
+                }
+                document.querySelector('#cpa-balance .balance-value').textContent = cpa;
+                document.querySelector('#matic-balance .balance-value').textContent = matic;
+                document.querySelector('#dai-balance .balance-value').textContent = dai;
+            } catch (error) {
+                console.warn('Error fetching balances (fallback):', error);
+                document.querySelector('#cpa-balance .balance-value').textContent = '❌';
+                document.querySelector('#matic-balance .balance-value').textContent = '❌';
+                document.querySelector('#dai-balance .balance-value').textContent = '❌';
+            }
+        })();
     } else {
         document.querySelector('#cpa-balance .balance-value').textContent = '-';
         document.querySelector('#matic-balance .balance-value').textContent = '-';
@@ -448,10 +419,12 @@ async function showUserPopup(address, user) {
             }
         });
     })();
-}
+};
 
 // تابع جدید: رندر عمودی ساده با حفظ رفتارها
 async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = false) {
+    // نسخه رندر برای دیباگ
+    try { console.debug('renderVerticalNodeLazy', window.NETWORK_RENDER_VERSION, 'index:', String(index), 'level:', level); } catch {}
     // به روزرسانی پروگرس هر گره
     updateNodeProgress();
     console.log(`🔄 renderVerticalNodeLazy called with index: ${index}, level: ${level}`);
@@ -497,27 +470,24 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         }
         // ساخت گره عمودی (همانند قبل)
         let nodeDiv = document.createElement('div');
-        nodeDiv.style.display = 'flex';
+        nodeDiv.style.display = 'inline-flex';
         nodeDiv.style.alignItems = 'center';
         nodeDiv.style.justifyContent = 'flex-start';
         nodeDiv.style.flexWrap = 'nowrap';
-        // کاهش فاصله افقی برای سطوح عمیق‌تر
-        const marginMultiplier = level <= 3 ? 3 : (level <= 5 ? 2 : 1);
-        nodeDiv.style.marginRight = (level * marginMultiplier) + 'em';
-        nodeDiv.style.marginBottom = '1.2em'; // افزایش فاصله عمودی
+        // فاصله‌های پایه (سطح‌ها نزدیک‌تر و بدون عقب‌نشینی ثابت)
+        nodeDiv.style.marginRight = '0px';
+        nodeDiv.style.marginBottom = '0.9em';
         nodeDiv.style.position = 'relative';
         nodeDiv.style.background = getNodeColorByLevel(level, true);
         nodeDiv.style.borderRadius = '12px';
-        // اندازه فیکس برای گره‌ها
         const cpaId = window.generateCPAId ? window.generateCPAId(user.index) : user.index;
-        
-        nodeDiv.style.padding = '0.8em 1.5em';
-        nodeDiv.style.width = '200px'; // عرض فیکس
-        nodeDiv.style.minWidth = '200px';
-        nodeDiv.style.maxWidth = '200px';
-        nodeDiv.style.height = '50px'; // ارتفاع فیکس
-        nodeDiv.style.minHeight = '50px';
-        nodeDiv.style.maxHeight = '50px';
+        nodeDiv.style.padding = '0.6em 1.2em';
+        nodeDiv.style.width = 'auto';
+        nodeDiv.style.minWidth = 'unset';
+        nodeDiv.style.maxWidth = 'none';
+        nodeDiv.style.height = 'auto';
+        nodeDiv.style.minHeight = 'unset';
+        nodeDiv.style.maxHeight = 'none';
         nodeDiv.style.color = '#00ff88';
         nodeDiv.style.fontFamily = 'monospace';
         nodeDiv.style.fontSize = '1.08em';
@@ -525,46 +495,48 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         nodeDiv.style.cursor = 'pointer';
         nodeDiv.style.transition = 'background 0.2s, box-shadow 0.2s';
         nodeDiv.style.whiteSpace = 'nowrap';
-        nodeDiv.style.overflow = 'hidden';
-        nodeDiv.style.textOverflow = 'ellipsis';
         nodeDiv.onmouseover = function() { this.style.background = '#232946'; this.style.boxShadow = '0 6px 24px #00ff8840'; };
         nodeDiv.onmouseout = function() { this.style.background = getNodeColorByLevel(level, true); this.style.boxShadow = '0 4px 16px rgba(0,255,136,0.10)'; };
+        nodeDiv.innerHTML = `
+            <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 1.1em; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-weight: bold;">${cpaId}</span>
+        `;
         
         // دکمه expand/collapse اگر دایرکت دارد یا جای خالی دارد
         let expandBtn = null;
         let childrenDiv = null;
         if (hasDirects || !leftActive || !rightActive) {
             expandBtn = document.createElement('button');
-            expandBtn.textContent = autoExpand ? '▼' : '▶';
-            expandBtn.style.marginLeft = '0.5em';
+            expandBtn.textContent = autoExpand ? '▾' : '▸';
+            expandBtn.style.padding = '0';
             expandBtn.style.background = 'transparent';
             expandBtn.style.border = 'none';
+            expandBtn.style.outline = 'none';
             expandBtn.style.color = '#a786ff';
-            expandBtn.style.fontSize = '1.2em';
+            expandBtn.style.fontSize = '1.1em';
+            expandBtn.style.lineHeight = '1';
             expandBtn.style.cursor = 'pointer';
             expandBtn.style.verticalAlign = 'middle';
-            expandBtn.style.fontWeight = 'bold';
+            expandBtn.style.fontWeight = '700';
+            expandBtn.style.marginInlineEnd = '0.4em';
             expandBtn.setAttribute('aria-label', 'Expand/Collapse');
+            nodeDiv.prepend(expandBtn);
         }
-        // حذف ساخت علامت سوال کنار گره
-        nodeDiv.innerHTML = `
-            <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 1.1em; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-weight: bold;">${cpaId}</span>
-        `;
-        if (expandBtn) nodeDiv.prepend(expandBtn);
         nodeDiv.addEventListener('click', function(e) {
             if (e.target.classList.contains('register-question-mark')) return;
             if (expandBtn && e.target === expandBtn) {
                 if (childrenDiv.style.display === 'none') {
                     childrenDiv.style.display = 'block';
-                    expandBtn.textContent = '▼';
+                    expandBtn.textContent = '▾';
                 } else {
                     childrenDiv.style.display = 'none';
-                    expandBtn.textContent = '▶';
+                    expandBtn.textContent = '▸';
                 }
                 e.stopPropagation();
                 return;
             }
-            showUserPopup(address, user);
+            if (typeof window.networkShowUserPopup === 'function') {
+                window.networkShowUserPopup(address, user);
+            }
         });
         container.appendChild(nodeDiv);
         
@@ -600,34 +572,57 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
             }
         }
         
+        // ابزار کمکی: تنظیم عقب‌نشینی پویا بر اساس نصف عرض گره فرزند
+        function setDynamicIndent(wrapperDiv) {
+            if (!wrapperDiv) return;
+            const apply = () => {
+                const childEl = wrapperDiv.firstElementChild;
+                if (childEl && typeof childEl.getBoundingClientRect === 'function') {
+                    const w = childEl.getBoundingClientRect().width || 160;
+                    wrapperDiv.style.marginRight = Math.round(w / 2) + 'px';
+                }
+            };
+            // تا بعد از layout صبر کن
+            if (typeof requestAnimationFrame === 'function') {
+                requestAnimationFrame(() => requestAnimationFrame(apply));
+            } else {
+                setTimeout(apply, 0);
+            }
+        }
+
         // div فرزندان (در ابتدا بسته یا باز بر اساس autoExpand)
         if (expandBtn) {
             childrenDiv = document.createElement('div');
             childrenDiv.style.display = autoExpand ? 'block' : 'none';
             childrenDiv.style.transition = 'all 0.3s';
-            childrenDiv.style.flexDirection = 'column'; // عمودی
-            childrenDiv.style.gap = '0.8em'; // افزایش فاصله بین فرزندان
+            // فرزندان زیرِ هم در دو سطر مجزا
             container.appendChild(childrenDiv);
-            // چپ
+            // چپ: سطر دوم، با عقب‌نشینی نصف عرض خودش
             if (leftActive) {
-                let leftChildDiv = document.createElement('div');
-                leftChildDiv.style.display = 'block';
-                // کاهش فاصله افقی برای سطوح عمیق‌تر
-                const childMarginMultiplier = (level + 1) <= 3 ? 3 : ((level + 1) <= 5 ? 2 : 1);
-                leftChildDiv.style.marginRight = ((level + 1) * childMarginMultiplier) + 'em';
-                await renderVerticalNodeLazy(BigInt(leftUser.index), leftChildDiv, level + 1, false);
-                childrenDiv.appendChild(leftChildDiv);
+                let leftRow = document.createElement('div');
+                leftRow.className = 'child-node-row left-row';
+                leftRow.style.display = 'block';
+                childrenDiv.appendChild(leftRow);
+                await renderVerticalNodeLazy(BigInt(leftUser.index), leftRow, level + 1, false);
+                // عقب‌نشینی نصف عرض خودش (پس از layout)
+                setDynamicIndent(leftRow);
             }
-            // راست
+            // راست: سطر سوم، دقیقاً زیر چپ با همان عقب‌نشینی افقی
             if (rightActive) {
-                let rightChildDiv = document.createElement('div');
-                rightChildDiv.style.display = 'block';
-                // کاهش فاصله افقی برای سطوح عمیق‌تر
-                const childMarginMultiplier = (level + 1) <= 3 ? 3 : ((level + 1) <= 5 ? 2 : 1);
-                rightChildDiv.style.marginRight = ((level + 1) * childMarginMultiplier) + 'em';
-                await renderVerticalNodeLazy(BigInt(rightUser.index), rightChildDiv, level + 1, false);
-                childrenDiv.appendChild(rightChildDiv);
+                let rightRow = document.createElement('div');
+                rightRow.className = 'child-node-row right-row';
+                rightRow.style.display = 'block';
+                childrenDiv.appendChild(rightRow);
+                await renderVerticalNodeLazy(BigInt(rightUser.index), rightRow, level + 1, false);
+                // هم‌تراز با چپ (در صورت وجود)
+                const leftRowRef = childrenDiv.querySelector('.left-row');
+                if (leftRowRef) {
+                    rightRow.style.marginRight = leftRowRef.style.marginRight || '0px';
+                } else {
+                    setDynamicIndent(rightRow);
+                }
             }
+            // دیگر نیازی به مرکزچین کردن ردیف مشترک نیست
         }
         // اگر جایگاه خالی وجود دارد، فقط یک دکمه کوچک "نیو" نمایش بده
         if (!leftActive || !rightActive) {
@@ -788,34 +783,35 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
 }
 // تابع رندر گره خالی (علامت سؤال) به صورت عمودی
 function renderEmptyNodeVertical(index, container, level) {
-    // اندازه فیکس برای گره خالی
+    // بازگشت به گره خالی مستطیلی ساده
     const emptyNode = document.createElement('div');
     emptyNode.className = 'empty-node';
     emptyNode.setAttribute('data-index', index);
-    emptyNode.style.display = 'block';
+    emptyNode.style.display = 'inline-flex';
+    emptyNode.style.alignItems = 'center';
+    emptyNode.style.justifyContent = 'center';
     // کاهش فاصله افقی برای سطوح عمیق‌تر
     const marginMultiplier = level <= 3 ? 3 : (level <= 5 ? 2 : 1);
     emptyNode.style.marginRight = (level * marginMultiplier) + 'em';
-    emptyNode.style.marginBottom = '1.2em'; // افزایش فاصله عمودی
+    emptyNode.style.marginBottom = '1.2em';
     emptyNode.style.background = getNodeColorByLevel(level, false);
     emptyNode.style.borderRadius = '8px';
-    emptyNode.style.padding = '0.6em 1.2em';
-    emptyNode.style.width = '180px'; // عرض فیکس برای گره خالی
-    emptyNode.style.minWidth = '180px';
-    emptyNode.style.maxWidth = '180px';
-    emptyNode.style.height = '45px'; // ارتفاع فیکس برای گره خالی
-    emptyNode.style.minHeight = '45px';
-    emptyNode.style.maxHeight = '45px';
+    emptyNode.style.padding = '0.5em 1.0em';
+    emptyNode.style.width = 'auto';
+    emptyNode.style.minWidth = 'unset';
+    emptyNode.style.maxWidth = 'none';
+    emptyNode.style.height = 'auto';
+    emptyNode.style.minHeight = 'unset';
+    emptyNode.style.maxHeight = 'none';
     emptyNode.style.color = '#888';
     emptyNode.style.fontFamily = 'monospace';
     emptyNode.style.fontSize = '1em';
-    emptyNode.style.cursor = 'pointer';
     emptyNode.style.opacity = '0.7';
     emptyNode.style.whiteSpace = 'nowrap';
     emptyNode.style.overflow = 'hidden';
     emptyNode.style.textOverflow = 'ellipsis';
     emptyNode.innerHTML = `
-        <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 1em; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-weight: bold;">${index}</span>
+        <span style="white-space: nowrap; font-size: 1em; display: flex; align-items: center; justify-content: center; font-weight: bold;">${index}</span>
     `;
     emptyNode.title = 'ثبت‌نام زیرمجموعه جدید';
     emptyNode.onmouseover = function() { this.style.opacity = '1'; };

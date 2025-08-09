@@ -607,11 +607,14 @@
         <a href="index.html#main-dashboard" class="cpa-navbar-link">
           <span class="link-icon">🏠</span>خانه
         </a>
-        <a href="#" class="cpa-navbar-link" id="navbar-swap-link-mobile">
+        <a href="index.html#main-swap" class="cpa-navbar-link" id="navbar-swap-link-mobile">
           <span class="link-icon">🔄</span>تبدیل
         </a>
-        <a href="#" class="cpa-navbar-link" id="navbar-transfer-link-mobile">
+        <a href="index.html#main-transfer" class="cpa-navbar-link" id="navbar-transfer-link-mobile">
           <span class="link-icon">💸</span>ترانسفر
+        </a>
+        <a href="professional-tree.html" class="cpa-navbar-link" id="navbar-network-link-mobile">
+          <span class="link-icon">🌐</span>همکاران
         </a>
         <a href="register.html" class="cpa-navbar-link">
           <span class="link-icon">📝</span>ثبت‌نام
@@ -717,8 +720,10 @@
     }
     const swapLinkMobile = document.getElementById('navbar-swap-link-mobile');
     const transferLinkMobile = document.getElementById('navbar-transfer-link-mobile');
+    const networkLinkMobile = document.getElementById('navbar-network-link-mobile');
     if (swapLinkMobile) swapLinkMobile.onclick = function(e){ e.preventDefault(); closeMenu(); goTo('main-swap'); };
     if (transferLinkMobile) transferLinkMobile.onclick = function(e){ e.preventDefault(); closeMenu(); goTo('main-transfer'); };
+    if (networkLinkMobile) networkLinkMobile.onclick = function(e){ e.preventDefault(); closeMenu(); window.location.href = 'professional-tree.html'; };
 
     // --- Fast, resilient userbar balances ---
     (function(){
@@ -848,7 +853,6 @@
         const el = document.getElementById(id);
         if (el) el.style.display = (id === sectionId) ? '' : 'none';
       });
-      // اسکرول نرم به بخش انتخاب شده
       const target = document.getElementById(sectionId);
       if (target) {
         setTimeout(() => {
@@ -864,7 +868,6 @@
       const hash = window.location.hash;
       if (hash === '#main-swap' || hash === '#main-transfer') {
         if (typeof showMainSection === 'function') showMainSection(hash.replace('#',''));
-        // اسکرول نرم
         const target = document.getElementById(hash.replace('#',''));
         if (target) setTimeout(() => target.scrollIntoView({behavior:'smooth',block:'start'}), 100);
       }

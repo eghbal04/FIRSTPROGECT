@@ -1,5 +1,7 @@
-// مدیریت رویدادهای درخت
+// مدیریت رویدادهای درخت - فقط به پاپ‌آپ شبکه دلیگیت کن
 window.showUserPopup = function(address, user) {
-    // استفاده از پاپ‌آپ موبایل جدید
-    window.mobileUserPopup.show(address, user);
+  if (typeof window.networkShowUserPopup === 'function') {
+    return window.networkShowUserPopup(address, user);
+  }
+  // اگر هنوز لود نشده، از خطا جلوگیری کن
 };

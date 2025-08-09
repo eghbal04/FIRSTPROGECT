@@ -2305,72 +2305,11 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
 }
 
 function showUserPopup(address, user) {
-    // تابع کوتاه‌کننده آدرس
-    function shortAddress(addr) {
-        if (!addr) return '-';
-        return addr.slice(0, 3) + '...' + addr.slice(-2);
-    }
-    // اطلاعات struct را در دو ستون آماده کن
-    const leftColumn = [
-        `Address:   ${shortAddress(address)}`,
-        `Index:     ${user.index}`,
-        `ایندکس:    ${window.generateCPAId ? window.generateCPAId(user.index) : user.index}`,
-        `Activated: ${user.activated ? 'Yes' : 'No'}`
-    ];
-    
-    const rightColumn = [
-        `BinaryPoints: ${user.binaryPoints}`,
-        `Cap:      ${user.binaryPointCap}`,
-        `Left:     ${user.leftPoints}`,
-        `Right:    ${user.rightPoints}`,
-        `Refclimed:${user.refclimed ? Math.floor(Number(user.refclimed) / 1e18) : '0'}`
-    ];
-    let html = `
-      <div style="direction:ltr;font-family:monospace;background:#181c2a;color:#00ff88;padding:0.2rem;min-width:400px;max-width:95vw;position:relative;">
-        <div id="user-popup-two-columns" style="
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 0.2rem;
-          background:#181c2a;
-          padding:0.2rem;
-          color:#00ff88;
-          font-size:1.05rem;
-          line-height:2;
-          font-family:monospace;
-          min-width:350px;
-          margin-bottom:0.5rem;
-        ">
-          <div id="user-popup-left-column" style="
-            background:#181c2a;
-            padding:0.2rem;
-          "></div>
-          <div id="user-popup-right-column" style="
-            background:#181c2a;
-            padding:0.2rem;
-          "></div>
-        </div>
-        <button id="close-user-popup" style="position:absolute;top:10px;right:10px;font-size:1.3rem;background:none;border:none;color:#fff;cursor:pointer;">×</button>
-      </div>
-    `;
-    let popup = document.createElement('div');
-    popup.id = 'user-popup';
-    popup.style.position = 'fixed';
-    popup.style.top = '50%';
-    popup.style.left = '50%';
-    popup.style.transform = 'translate(-50%,-50%)';
-    popup.style.zIndex = 9999;
-    popup.innerHTML = html;
-    document.body.appendChild(popup);
-    document.getElementById('close-user-popup').onclick = () => popup.remove();
-
-  
-    const leftColumnEl = document.getElementById('user-popup-left-column');
-    const rightColumnEl = document.getElementById('user-popup-right-column');
-    
-    if (leftColumnEl && rightColumnEl) {
-        leftColumnEl.textContent = leftColumn.join('\n');
-        rightColumnEl.textContent = rightColumn.join('\n');
-    }
+  // Delegate to the network popup to avoid duplicate implementations
+  if (typeof window.networkShowUserPopup === 'function') {
+    return window.networkShowUserPopup(address, user);
+  }
+  // No-op fallback
 }
 
 document.addEventListener('DOMContentLoaded', async function() {
