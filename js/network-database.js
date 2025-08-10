@@ -14,10 +14,26 @@ class NetworkTreeDatabase {
             
             // بررسی اینکه Firebase در دسترس است
             if (typeof window.firebasePriceHistory !== 'undefined') {
-                this.isInitialized = true;
-                console.log('✅ دیتابیس درخت شبکه آماده است');
+                console.log('✅ Firebase در دسترس است');
             } else {
-                console.warn('⚠️ Firebase در دسترس نیست، دیتابیس غیرفعال خواهد بود');
+                console.warn('ℹ️ Firebase در دسترس نیست، از localStorage برای کش استفاده می‌شود');
+            }
+            // حتی بدون Firebase هم حالت local را فعال نگه می‌داریم
+            this.isInitialized = true;
+
+            // تلاش برای فعال‌سازی Persistent Storage تا مرورگر کش را پاک نکند
+            if (navigator.storage && navigator.storage.persist) {
+                try {
+                    const persisted = await navigator.storage.persisted();
+                    if (!persisted) {
+                        const granted = await navigator.storage.persist();
+                        console.log(granted ? '✅ Persistent Storage فعال شد' : 'ℹ️ امکان فعال‌سازی Persistent Storage فراهم نشد');
+                    } else {
+                        console.log('✅ Persistent Storage از قبل فعال است');
+                    }
+                } catch (e) {
+                    console.warn('⚠️ خطا در درخواست Persistent Storage:', e);
+                }
             }
         } catch (error) {
             console.error('❌ خطا در راه‌اندازی دیتابیس درخت شبکه:', error);
@@ -46,19 +62,105 @@ class NetworkTreeDatabase {
             } else {
                 // استفاده از localStorage به عنوان جایگزین
                 const nodes = JSON.parse(localStorage.getItem('network_tree_nodes') || '[]');
-                const newNode = {
-                    id: Date.now().toString(),
-                    ...nodeDoc
-                };
+                const newNode = { id: Date.now().toString(), ...nodeDoc };
                 nodes.push(newNode);
-                localStorage.setItem('network_tree_nodes', JSON.stringify(nodes, (key, value) =>
-                    typeof value === 'bigint' ? value.toString() : value
-                ));
+                localStorage.setItem('network_tree_nodes', JSON.stringify(nodes, (key, value) => typeof value === 'bigint' ? value.toString() : value));
+
+                // همچنین یک Map ایندکس→گره برای بازیابی سریع نگه داریم
+                const indexMap = JSON.parse(localStorage.getItem('network_tree_index_map') || '{}');
+                if (nodeData && nodeData.index != null) {
+                    const key = String(nodeData.index);
+                    indexMap[key] = newNode;
+                    localStorage.setItem('network_tree_index_map', JSON.stringify(indexMap));
+                }
                 console.log('✅ گره درخت در localStorage ذخیره شد:', newNode.id);
                 return newNode.id;
             }
         } catch (error) {
             console.error('❌ خطا در ذخیره گره درخت:', error);
+            return null;
+        }
+    }
+
+    // ذخیره یا به‌روزرسانی گره بر اساس ایندکس (با پشتیبان‌گیری در localStorage)
+    async saveOrUpdateNode(nodeData) {
+        try {
+            const indexKey = nodeData && nodeData.index != null ? String(nodeData.index) : null;
+            if (!indexKey) return this.saveNode(nodeData);
+
+            // لایه IndexedDB (اگر در دسترس باشد)
+            if (typeof indexedDB !== 'undefined') {
+                try {
+                    const db = await new Promise((resolve, reject) => {
+                        const req = indexedDB.open('cpa-network-cache', 1);
+                        req.onupgradeneeded = function() {
+                            const dbi = req.result;
+                            if (!dbi.objectStoreNames.contains('nodeIndex')) dbi.createObjectStore('nodeIndex', { keyPath: 'index' });
+                            if (!dbi.objectStoreNames.contains('nodeLog')) dbi.createObjectStore('nodeLog', { keyPath: 'id', autoIncrement: true });
+                        };
+                        req.onsuccess = () => resolve(req.result);
+                        req.onerror = () => reject(req.error);
+                    });
+                    await new Promise((resolve, reject) => {
+                        const tx = db.transaction(['nodeIndex','nodeLog'], 'readwrite');
+                        const indexStore = tx.objectStore('nodeIndex');
+                        const logStore = tx.objectStore('nodeLog');
+                        const record = { ...nodeData, index: indexKey, timestamp: new Date().toISOString() };
+                        indexStore.put(record);
+                        logStore.put({ ...record });
+                        tx.oncomplete = () => resolve(true);
+                        tx.onerror = () => reject(tx.error);
+                    });
+                } catch (e) {
+                    console.warn('⚠️ IndexedDB در دسترس نیست/خطا رخ داد، فقط localStorage استفاده می‌شود:', e);
+                }
+            }
+
+            // لایه localStorage (پشتیبان)
+            const indexMap = JSON.parse(localStorage.getItem('network_tree_index_map') || '{}');
+            const existing = indexMap[indexKey] || null;
+            const merged = { ...(existing || {}), ...nodeData, lastUpdated: Date.now() };
+            indexMap[indexKey] = merged;
+            localStorage.setItem('network_tree_index_map', JSON.stringify(indexMap));
+            const nodes = JSON.parse(localStorage.getItem('network_tree_nodes') || '[]');
+            nodes.push({ id: Date.now().toString(), ...merged });
+            localStorage.setItem('network_tree_nodes', JSON.stringify(nodes));
+            return merged.id || null;
+        } catch (e) {
+            console.warn('⚠️ خطا در saveOrUpdateNode:', e);
+            return null;
+        }
+    }
+
+    // دریافت گره کش‌شده بر اساس ایندکس
+    async getCachedNodeByIndex(index) {
+        try {
+            const indexKey = String(index);
+            // ابتدا IndexedDB
+            if (typeof indexedDB !== 'undefined') {
+                try {
+                    const db = await new Promise((resolve, reject) => {
+                        const req = indexedDB.open('cpa-network-cache', 1);
+                        req.onsuccess = () => resolve(req.result);
+                        req.onerror = () => reject(req.error);
+                    });
+                    const rec = await new Promise((resolve, reject) => {
+                        const tx = db.transaction(['nodeIndex'], 'readonly');
+                        const store = tx.objectStore('nodeIndex');
+                        const r = store.get(indexKey);
+                        r.onsuccess = () => resolve(r.result || null);
+                        r.onerror = () => reject(r.error);
+                    });
+                    if (rec) return rec;
+                } catch (e) {
+                    console.warn('⚠️ خطا در خواندن از IndexedDB، fallback به localStorage:', e);
+                }
+            }
+            // سپس localStorage
+            const indexMap = JSON.parse(localStorage.getItem('network_tree_index_map') || '{}');
+            return indexMap[indexKey] || null;
+        } catch (e) {
+            console.warn('⚠️ خطا در getCachedNodeByIndex:', e);
             return null;
         }
     }
@@ -282,6 +384,8 @@ window.getLatestNetworkTree = () => networkTreeDB.getLatestTree();
 window.getNetworkStats = () => networkTreeDB.getStats();
 window.exportNetworkData = (format) => networkTreeDB.exportData(format);
 window.cleanupNetworkData = (days) => networkTreeDB.cleanupOldData(days);
+window.saveOrUpdateNetworkNode = (nodeData) => networkTreeDB.saveOrUpdateNode(nodeData);
+window.getCachedNetworkNodeByIndex = (index) => networkTreeDB.getCachedNodeByIndex(index);
 
 // تابع ذخیره درخت فعلی
 window.saveCurrentNetworkTree = async function() {

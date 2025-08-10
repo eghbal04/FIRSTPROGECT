@@ -5,6 +5,7 @@ window.NETWORK_RENDER_VERSION = 'v-layout-rows-rtl-1';
 let lastRenderedIndex = null;
 let isRenderingTree = false;
 let lastRenderedTime = 0;
+let _networkPopupOpening = false;
 
 // متغیرهای پروگرس بار شبکه
 let totalNodesToLoad = 0;
@@ -89,6 +90,9 @@ function shortAddress(addr) {
 
 // Alias عمومی برای استفاده از سایر فایل‌ها
 window.networkShowUserPopup = async function(address, user) {
+    if (_networkPopupOpening) return;
+    _networkPopupOpening = true;
+    setTimeout(()=>{ _networkPopupOpening = false; }, 400);
     console.log('🚀 showUserPopup called with:', { address, user });
     
     // تابع کوتاه‌کننده آدرس
@@ -98,7 +102,7 @@ window.networkShowUserPopup = async function(address, user) {
     }
     
     // حذف popup قبلی اگر وجود دارد
-    let existingPopup = document.getElementById('user-popup');
+    let existingPopup = document.getElementById('network-user-popup');
     if (existingPopup) {
         existingPopup.remove();
     }
@@ -180,74 +184,71 @@ window.networkShowUserPopup = async function(address, user) {
         return await countRecursive(parentIndex);
     }
 
-    // محاسبه تعداد ولت‌ها
+    // محاسبه تعداد ولت‌ها (غیرمسدودکننده: ابتدا placeholder سپس بعد از رندر محاسبه می‌شود)
     let walletCounts = { leftCount: '⏳', rightCount: '⏳' };
-    if (window.contractConfig && window.contractConfig.contract && user.index) {
-        try {
-            walletCounts = await calculateWalletCounts(user.index, window.contractConfig.contract);
-        } catch (error) {
-            walletCounts = { leftCount: 'خطا', rightCount: 'خطا' };
-        }
-    } else {
-        walletCounts = { leftCount: 'نامشخص', rightCount: 'نامشخص' };
-    }
 
     // لیست struct
     const infoList = [
-      {icon:'🎯', label:'امتیاز باینری', val:user.binaryPoints},
-      {icon:'🏆', label:'سقف باینری', val:user.binaryPointCap},
-      {icon:'💎', label:'پاداش کل باینری', val:user.totalMonthlyRewarded},
-      {icon:'✅', label:'امتیاز دریافت‌شده', val:user.binaryPointsClaimed},
-      {icon:'🤝', label:'درآمد رفرال', val:user.refclimed ? Math.floor(Number(user.refclimed) / 1e18) : 0},
-      {icon:'💰', label:'سپرده کل', val:user.depositedAmount ? Math.floor(Number(user.depositedAmount) / 1e18) : 0},
-      {icon:'⬅️', label:'امتیاز چپ', val:user.leftPoints},
-      {icon:'➡️', label:'امتیاز راست', val:user.rightPoints},
-      {icon:'👥⬅️', label:'تعداد ولت چپ', val: (walletCounts && walletCounts.leftCount !== undefined) ? walletCounts.leftCount : '-'},
-      {icon:'👥➡️', label:'تعداد ولت راست', val: (walletCounts && walletCounts.rightCount !== undefined) ? walletCounts.rightCount : '-'}
+      {icon:'🎯', label:'امتیاز باینری', val: (user && user.binaryPoints !== undefined) ? user.binaryPoints : '-'},
+      {icon:'🏆', label:'سقف باینری', val: (user && user.binaryPointCap !== undefined) ? user.binaryPointCap : '-'},
+      {icon:'💎', label:'پاداش کل باینری', val: (user && user.totalMonthlyRewarded !== undefined) ? user.totalMonthlyRewarded : '-'},
+      {icon:'✅', label:'امتیاز دریافت‌شده', val: (user && user.binaryPointsClaimed !== undefined) ? user.binaryPointsClaimed : '-'},
+      {icon:'🤝', label:'درآمد رفرال', val: (user && user.refclimed) ? Math.floor(Number(user.refclimed) / 1e18) : '-'},
+      {icon:'💰', label:'سپرده کل', val: (user && user.depositedAmount) ? Math.floor(Number(user.depositedAmount) / 1e18) : '-'},
+      {icon:'⬅️', label:'امتیاز چپ', val: (user && user.leftPoints !== undefined) ? user.leftPoints : '-'},
+      {icon:'➡️', label:'امتیاز راست', val: (user && user.rightPoints !== undefined) ? user.rightPoints : '-'},
+      {icon:'👥⬅️', label:'تعداد ولت چپ', key:'left-wallet-count', val:(walletCounts && walletCounts.leftCount !== undefined) ? walletCounts.leftCount : '-'},
+      {icon:'👥➡️', label:'تعداد ولت راست', key:'right-wallet-count', val:(walletCounts && walletCounts.rightCount !== undefined) ? walletCounts.rightCount : '-'}
     ];
 
     const popupEl = document.createElement('div');
-    popupEl.id = 'user-popup';
+    popupEl.id = 'network-user-popup';
     popupEl.style = `
-      position: fixed;z-index: 9999;top: 64px;left: 0;right: 0;width: 100vw;min-width: 100vw;max-width: 100vw;background: rgba(24,28,42,0.97);display: flex;align-items: flex-start;justify-content: center;padding: 0.5rem 0.5vw 0.5rem 0.5vw;box-sizing: border-box;font-family: 'Montserrat', 'Noto Sans Arabic', monospace;font-size: 0.93rem;`;
+      position: fixed; z-index: 10005; top: 64px; left: 0; right: 0;
+      width: 100vw; min-width: 100vw; max-width: 100vw;
+      background: rgba(24,28,42,0.97);
+      display: flex; align-items: flex-start; justify-content: center;
+      padding: 0.5rem 0.5vw 0.5rem 0.5vw; box-sizing: border-box;
+      font-family: 'Montserrat', 'Noto Sans Arabic', monospace; font-size: 0.93rem;
+      transform: none !important; bottom: auto !important;`;
     
     // نمایش loading برای موجودی‌ها
     const balanceSpinner = '<div style="display:inline-block;width:12px;height:12px;border:2px solid #00ff88;border-radius:50%;border-top-color:transparent;animation:spin 1s linear infinite;margin-right:5px;"></div>';
     
     popupEl.innerHTML = `
       <div class="user-info-card">
-        <button class="close-btn" id="close-user-popup">×</button>
+        
         <div class="user-info-btn-row">
             <button class="user-info-btn cpa-id-btn" title="کپی CPA ID" id="copy-cpa-id">🆔 <span>${cpaId}</span></button>
           <button class="user-info-btn wallet-address-btn" title="کپی آدرس ولت" id="copy-wallet-address">🔗 <span>${walletAddress ? shortAddress(walletAddress) : '-'}</span></button>
           <button class="user-info-btn status-btn">${isActive ? '✅ فعال' : '❌ غیرفعال'}</button>
         </div>
         <ul class="user-info-list">
-          ${infoList.map(i=>`<li><span>${i.icon}</span> <b>${i.label}:</b> ${i.val !== undefined && i.val !== null && i.val !== '' ? i.val : '-'}</li>`).join('')}
+          ${infoList.map(i=>`<li ${i.key ? `data-key="${i.key}"` : ''}><span>${i.icon}</span> <b>${i.label}:</b> <span class="value">${i.val !== undefined && i.val !== null && i.val !== '' ? i.val : '-'}</span></li>`).join('')}
         </ul>
         
-        <div class="token-balances-container">
-          <h3 class="balance-title">موجودی‌های زنده</h3>
-          <div class="balance-grid">
-            <div class="balance-item" id="cpa-balance" title="برای کپی کلیک کنید">
-              <div class="balance-icon">🟢</div>
-              <div class="balance-info">
-                <span class="balance-label">CPA</span>
-                <span class="balance-value copy-value" data-token="CPA">⏳</span>
+        <div class="token-balances-container" style="margin-top:8px;">
+          <h3 class="balance-title" style="font-size:0.95rem;margin:0 0 6px 0;">موجودی‌های زنده</h3>
+          <div class="balance-grid" style="display:flex;flex-wrap:wrap;gap:6px;align-items:stretch;">
+            <div class="balance-item" id="cpa-balance" title="برای کپی کلیک کنید" style="display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border:1px solid rgba(0,255,136,0.25);border-radius:8px;background:rgba(0,255,136,0.06);width:auto;max-width:100%;white-space:nowrap;">
+              <div class="balance-icon" style="font-size:1rem;line-height:1">🟢</div>
+              <div class="balance-info" style="display:inline-flex;gap:6px;align-items:center;">
+                <span class="balance-label" style="font-size:0.85rem;color:#a6ffd6;">CPA</span>
+                <span class="balance-value copy-value" data-token="CPA" style="font-family:monospace;font-weight:bold;color:#fff;">⏳</span>
               </div>
             </div>
-            <div class="balance-item" id="matic-balance" title="برای کپی کلیک کنید">
-              <div class="balance-icon">🟣</div>
-              <div class="balance-info">
-                <span class="balance-label">MATIC</span>
-                <span class="balance-value copy-value" data-token="MATIC">⏳</span>
+            <div class="balance-item" id="matic-balance" title="برای کپی کلیک کنید" style="display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border:1px solid rgba(167,134,255,0.25);border-radius:8px;background:rgba(167,134,255,0.06);width:auto;max-width:100%;white-space:nowrap;">
+              <div class="balance-icon" style="font-size:1rem;line-height:1">🟣</div>
+              <div class="balance-info" style="display:inline-flex;gap:6px;align-items:center;">
+                <span class="balance-label" style="font-size:0.85rem;color:#ccbaff;">MATIC</span>
+                <span class="balance-value copy-value" data-token="MATIC" style="font-family:monospace;font-weight:bold;color:#fff;">⏳</span>
               </div>
             </div>
-            <div class="balance-item" id="dai-balance" title="برای کپی کلیک کنید">
-              <div class="balance-icon">💵</div>
-              <div class="balance-info">
-                <span class="balance-label">DAI</span>
-                <span class="balance-value copy-value" data-token="DAI">⏳</span>
+            <div class="balance-item" id="dai-balance" title="برای کپی کلیک کنید" style="display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border:1px solid rgba(255,230,0,0.25);border-radius:8px;background:rgba(255,230,0,0.06);width:auto;max-width:100%;white-space:nowrap;">
+              <div class="balance-icon" style="font-size:1rem;line-height:1">💵</div>
+              <div class="balance-info" style="display:inline-flex;gap:6px;align-items:center;">
+                <span class="balance-label" style="font-size:0.85rem;color:#fff0a6;">DAI</span>
+                <span class="balance-value copy-value" data-token="DAI" style="font-family:monospace;font-weight:bold;color:#fff;">⏳</span>
               </div>
             </div>
           </div>
@@ -264,7 +265,10 @@ window.networkShowUserPopup = async function(address, user) {
       </div>
     `;
     document.body.appendChild(popupEl);
-    document.getElementById('close-user-popup').onclick = () => popupEl.remove();
+    // بستن با کلیک خارج از کارت
+    popupEl.addEventListener('click', function(e){ if (e.target === popupEl) popupEl.remove(); });
+    const cardEl = popupEl.querySelector('.user-info-card');
+    if (cardEl) { cardEl.addEventListener('click', function(e){ e.stopPropagation(); }); }
     
     // قابلیت کپی
     function showCopyMsg() {
@@ -329,6 +333,33 @@ window.networkShowUserPopup = async function(address, user) {
         });
     });
 
+    // به‌روزرسانی غیرمسدودکننده تعداد ولت‌های چپ/راست پس از رندر اولیه
+    setTimeout(() => {
+      (async () => {
+        try {
+          if (user && user.index && window.contractConfig && window.contractConfig.contract) {
+            const counts = await calculateWalletCounts(user.index, window.contractConfig.contract);
+            const leftLi = document.querySelector('.user-info-list li[data-key="left-wallet-count"] .value');
+            const rightLi = document.querySelector('.user-info-list li[data-key="right-wallet-count"] .value');
+            if (leftLi) leftLi.textContent = counts.leftCount;
+            if (rightLi) rightLi.textContent = counts.rightCount;
+            // اگر صفر باشد، آیتم مخفی شود تا فضا نگیرد
+            const leftWrap = document.querySelector('.user-info-list li[data-key="left-wallet-count"]');
+            const rightWrap = document.querySelector('.user-info-list li[data-key="right-wallet-count"]');
+            const hideIfZero = (el) => { if (el && (el.textContent === '0' || el.textContent === '-' || el.textContent === '❌')) el.closest('li').style.display = 'none'; };
+            hideIfZero(leftLi);
+            hideIfZero(rightLi);
+          }
+        } catch (e) {
+          // در صورت خطا، آیتم‌ها را مخفی کن تا UI سبک بماند
+          const leftWrap = document.querySelector('.user-info-list li[data-key="left-wallet-count"]');
+          const rightWrap = document.querySelector('.user-info-list li[data-key="right-wallet-count"]');
+          if (leftWrap) leftWrap.style.display = 'none';
+          if (rightWrap) rightWrap.style.display = 'none';
+        }
+      })();
+    }, 0);
+
     // دریافت موجودی‌های زنده
     if (walletAddress !== '-') {
         (async () => {
@@ -347,14 +378,33 @@ window.networkShowUserPopup = async function(address, user) {
                 if (provider) {
                     try { const m = await provider.getBalance(walletAddress); matic = Number(ethers.formatEther(m)).toFixed(4); } catch {}
                 }
-                document.querySelector('#cpa-balance .balance-value').textContent = cpa;
-                document.querySelector('#matic-balance .balance-value').textContent = matic;
-                document.querySelector('#dai-balance .balance-value').textContent = dai;
+                const cpaWrapA = document.getElementById('cpa-balance');
+                const maticWrapA = document.getElementById('matic-balance');
+                const daiWrapA = document.getElementById('dai-balance');
+                const cpaElA = document.querySelector('#cpa-balance .balance-value');
+                const maticElA = document.querySelector('#matic-balance .balance-value');
+                const daiElA = document.querySelector('#dai-balance .balance-value');
+                if (cpaElA) cpaElA.textContent = cpa;
+                if (maticElA) maticElA.textContent = matic;
+                if (daiElA) daiElA.textContent = dai;
+                const isEmptyA = (val) => !val || val === '-' || val === '❌' || Number(val) === 0;
+                if (cpaWrapA) cpaWrapA.style.display = isEmptyA(cpa) ? 'none' : 'inline-flex';
+                if (maticWrapA) maticWrapA.style.display = isEmptyA(matic) ? 'none' : 'inline-flex';
+                if (daiWrapA) daiWrapA.style.display = isEmptyA(dai) ? 'none' : 'inline-flex';
             } catch (error) {
                 console.warn('Error fetching balances (fallback):', error);
-                document.querySelector('#cpa-balance .balance-value').textContent = '❌';
-                document.querySelector('#matic-balance .balance-value').textContent = '❌';
-                document.querySelector('#dai-balance .balance-value').textContent = '❌';
+                const cpaWrapB = document.getElementById('cpa-balance');
+                const maticWrapB = document.getElementById('matic-balance');
+                const daiWrapB = document.getElementById('dai-balance');
+                const cpaElB = document.querySelector('#cpa-balance .balance-value');
+                const maticElB = document.querySelector('#matic-balance .balance-value');
+                const daiElB = document.querySelector('#dai-balance .balance-value');
+                if (cpaElB) cpaElB.textContent = '❌';
+                if (maticElB) maticElB.textContent = '❌';
+                if (daiElB) daiElB.textContent = '❌';
+                if (cpaWrapB) cpaWrapB.style.display = 'none';
+                if (maticWrapB) maticWrapB.style.display = 'none';
+                if (daiWrapB) daiWrapB.style.display = 'none';
             }
         })();
     } else {
@@ -404,21 +454,23 @@ window.networkShowUserPopup = async function(address, user) {
         return {cpa, dai, matic};
     }
 
-    (async function() {
-        const {cpa, dai, matic} = await getLiveBalances(address);
-        // به‌روزرسانی موجودی‌ها در لیست
-        const listItems = document.querySelectorAll('.user-info-list li');
-        listItems.forEach(item => {
-            const text = item.textContent;
-            if (text.includes('🟢 CPA:')) {
-                item.innerHTML = item.innerHTML.replace(/🟢 <b>CPA:<\/b> [^<]*/, `🟢 <b>CPA:</b> ${cpa}`);
-            } else if (text.includes('🟣 MATIC:')) {
-                item.innerHTML = item.innerHTML.replace(/🟣 <b>MATIC:<\/b> [^<]*/, `🟣 <b>MATIC:</b> ${matic}`);
-            } else if (text.includes('💵 DAI:')) {
-                item.innerHTML = item.innerHTML.replace(/💵 <b>DAI:<\/b> [^<]*/, `💵 <b>DAI:</b> ${dai}`);
-            }
-        });
-    })();
+    // به‌روزرسانی غیرمسدودکننده بعد از رندر
+    setTimeout(() => {
+      (async function() {
+          const {cpa, dai, matic} = await getLiveBalances(address);
+          const listItems = document.querySelectorAll('.user-info-list li');
+          listItems.forEach(item => {
+              const text = item.textContent;
+              if (text.includes('🟢 CPA:')) {
+                  item.innerHTML = item.innerHTML.replace(/🟢 <b>CPA:<\/b> [^<]*/, `🟢 <b>CPA:</b> ${cpa}`);
+              } else if (text.includes('🟣 MATIC:')) {
+                  item.innerHTML = item.innerHTML.replace(/🟣 <b>MATIC:<\/b> [^<]*/, `🟣 <b>MATIC:</b> ${matic}`);
+              } else if (text.includes('💵 DAI:')) {
+                  item.innerHTML = item.innerHTML.replace(/💵 <b>DAI:<\/b> [^<]*/, `💵 <b>DAI:</b> ${dai}`);
+              }
+          });
+      })();
+    }, 0);
 };
 
 // تابع جدید: رندر عمودی ساده با حفظ رفتارها
@@ -434,8 +486,16 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         if (!contract) throw new Error('No contract connection available');
         console.log('✅ Contract connection obtained');
         
-        console.log(`🔄 Getting address for index: ${index}`);
-        let address = await contract.indexToAddress(index);
+        // سعی کن از کش بخوانی تا سریع‌تر شود
+        let cachedNode = null;
+        if (window.getCachedNetworkNodeByIndex) {
+            try { cachedNode = window.getCachedNetworkNodeByIndex(index); } catch {}
+        }
+        let address = cachedNode && cachedNode.address ? cachedNode.address : null;
+        if (!address) {
+            console.log(`🔄 Getting address for index: ${index}`);
+            address = await contract.indexToAddress(index);
+        }
         console.log('✅ Address obtained:', address);
         
         if (!address || address === '0x0000000000000000000000000000000000000000') {
@@ -445,7 +505,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         }
         
         console.log('🔄 Getting user data for address:', address);
-        let user = await contract.users(address);
+        let user = cachedNode && cachedNode.userData ? cachedNode.userData : await contract.users(address);
         console.log('✅ User data obtained:', user);
         
         if (!user) {
@@ -540,8 +600,8 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         });
         container.appendChild(nodeDiv);
         
-        // ذخیره گره در دیتابیس
-        if (window.saveNetworkNode) {
+        // ذخیره/به‌روزرسانی گره در کش محلی برای لود‌های بعدی
+        if (window.saveOrUpdateNetworkNode || window.saveNetworkNode) {
             try {
                 const nodeData = {
                     index: index.toString(),
@@ -566,7 +626,11 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                         rightPoints: user.rightPoints
                     }
                 };
-                await window.saveNetworkNode(nodeData);
+                if (window.saveOrUpdateNetworkNode) {
+                    await window.saveOrUpdateNetworkNode(nodeData);
+                } else {
+                    await window.saveNetworkNode(nodeData);
+                }
             } catch (error) {
                 console.warn('⚠️ خطا در ذخیره گره در دیتابیس:', error);
             }
