@@ -27,10 +27,10 @@ class SwapManager {
 
     // Helper: تعیین تیِر کارمزد پشتیبانی بر اساس موجودی DAI قرارداد
     getBackingFeePct(daiContractBalanceNum) {
-        // بازه‌ها بر اساس منطق قرارداد: <=200k: 1% ، <=500k: 1.5% ، بیشتر: 2%
-        if (daiContractBalanceNum <= 200000) return 0.01;
-        if (daiContractBalanceNum <= 500000) return 0.015;
-        return 0.02;
+        // بازه‌ها بر اساس منطق قرارداد: <=200k: 2% ، <=500k: 2.5% ، بیشتر: 3%
+        if (daiContractBalanceNum <= 200000) return 0.02;
+        if (daiContractBalanceNum <= 500000) return 0.025;
+        return 0.03;
     }
 
 
@@ -231,34 +231,26 @@ class SwapManager {
                 } else {
                     maxBuy = daiBalanceNum * 0.01;
                 }
-                const deployerPct = 0.005; // 0.5%
                 const backingPct = this.getBackingFeePct(daiBalanceNum);
-                const totalFeePct = deployerPct + backingPct;
-                const userSharePct = 1 - totalFeePct;
+                const userSharePct = 1 - backingPct;
                 html += `<div style="background:#e8f5e8;padding:12px;border-radius:8px;border-left:4px solid #4caf50;margin-bottom:10px;">
                     <h4 style="margin:0 0 8px 0;color:#2e7d32;">🛒 خرید IAM با DAI</h4>
-                    <p style="margin:5px 0;color:#555;"><strong>حداقل خرید:</strong> ۱ DAI</p>
+                    <p style="margin:5px 0;color:#555;"><strong>حداقل خرید:</strong> بیش از ۱ DAI</p>
                     <p style="margin:5px 0;color:#555;"><strong>سقف خرید فعلی:</strong> ${maxBuy.toLocaleString('en-US', {maximumFractionDigits:2})} DAI</p>
-                    <p style="margin:5px 0;color:#555;"><strong>کارمزد خرید:</strong> ${(totalFeePct*100).toFixed(1)}٪ کل</p>
+                    <p style="margin:5px 0;color:#555;"><strong>کارمزد خرید:</strong> ${(backingPct*100).toFixed(1)}٪</p>
                     <ul style="margin:5px 0;padding-left:20px;color:#555;">
-                        <li>0.5٪ برای توسعه‌دهنده</li>
                         <li>${(backingPct*100).toFixed(1)}٪ برای پشتوانه قرارداد</li>
                     </ul>
                     <p style="margin:5px 0;color:#2e7d32;"><strong>سهم شما: ${(userSharePct*100).toFixed(1)}٪ از مبلغ خرید به توکن تبدیل می‌شود</strong></p>
                 </div>`;
             } else if (direction.value === 'IAM-to-dai') {
-                // محدودیت فروش: نمایش 50% موجودی کاربر
-                const deployerPct = 0.005; // 0.5%
                 const backingPct = this.getBackingFeePct(daiBalanceNum);
-                const totalFeePct = deployerPct + backingPct;
-                const userSharePct = 1 - totalFeePct;
+                const userSharePct = 1 - backingPct;
                 html += `<div style="background:#fff3e0;padding:12px;border-radius:8px;border-left:4px solid #ff9800;margin-bottom:10px;">
                     <h4 style="margin:0 0 8px 0;color:#e65100;">💰 فروش IAM و دریافت DAI</h4>
-                    <p style="margin:5px 0;color:#555;"><strong>حداقل فروش:</strong> ۱ توکن IAM</p>
-                    <p style="margin:5px 0;color:#555;"><strong>سقف فروش:</strong> تا ۵۰٪ موجودی شما</p>
-                    <p style="margin:5px 0;color:#555;"><strong>کارمزد فروش:</strong> ${(totalFeePct*100).toFixed(1)}٪ کل (از توکن)</p>
+                    <p style="margin:5px 0;color:#555;"><strong>حداقل فروش:</strong> بیش از ۱ توکن IAM</p>
+                    <p style="margin:5px 0;color:#555;"><strong>کارمزد فروش:</strong> ${(backingPct*100).toFixed(1)}٪ (از توکن)</p>
                     <ul style="margin:5px 0;padding-left:20px;color:#555;">
-                        <li>0.5٪ برای توسعه‌دهنده</li>
                         <li>${(backingPct*100).toFixed(1)}٪ برای پشتوانه قرارداد</li>
                     </ul>
                     <p style="margin:5px 0;color:#e65100;"><strong>سهم شما: ${(userSharePct*100).toFixed(1)}٪ از توکن به DAI تبدیل می‌شود</strong></p>
@@ -488,8 +480,8 @@ class SwapManager {
             const price = Number(this.tokenPrice);
             rateEl.innerHTML = `<div style="background:#f3e5f5;padding:10px;border-radius:6px;text-align:center;margin:10px 0;">
                 <strong>💱 نرخ تبدیل فعلی:</strong><br>
-                ۱ DAI = ${price.toFixed(6)} IAM<br>
-                ۱ IAM = ${(1/price).toFixed(6)} DAI
+                ۱ DAI = ${(1/price).toFixed(6)} IAM<br>
+                ۱ IAM = ${price.toFixed(6)} DAI
             </div>`;
             console.log('✅ نرخ تبدیل به‌روزرسانی شد:', price);
         } else {
@@ -525,38 +517,34 @@ class SwapManager {
         
         if (direction.value === 'dai-to-IAM') {
             result = value / Number(this.tokenPrice);
-            // کارمزد پویا بر اساس موجودی DAI قرارداد
+            // کارمزد پویا بر اساس موجودی DAI قرارداد (بدون کارمزد توسعه‌دهنده)
             const daiBalanceNum = await this.getContractDaiBalanceNum();
-            const deployerPct = 0.005;
             const backingPct = this.getBackingFeePct(daiBalanceNum);
-            const totalFeePct = deployerPct + backingPct;
-            const fees = value * totalFeePct;
+            const fees = value * backingPct;
             const netAmount = value - fees;
             const netTokens = netAmount / Number(this.tokenPrice);
             
-            previewHtml = `<div style="background:#e8f5e8;padding:12px;border-radius:6px;margin:10px 0;">
-                <h4 style="margin:0 0 8px 0;color:#2e7d32;">📊 پیش‌نمایش خرید</h4>
-                <p style="margin:5px 0;color:#555;"><strong>مبلغ ورودی:</strong> ${value.toFixed(2)} DAI</p>
-                <p style="margin:5px 0;color:#555;"><strong>کارمزد (${(totalFeePct*100).toFixed(1)}٪):</strong> ${fees.toFixed(2)} DAI</p>
-                <p style="margin:5px 0;color:#555;"><strong>مبلغ خالص:</strong> ${netAmount.toFixed(2)} DAI</p>
-                <p style="margin:5px 0;color:#2e7d32;"><strong>توکن دریافتی:</strong> ${netTokens.toFixed(6)} IAM</p>
+            previewHtml = `<div style=\"background:#e8f5e8;padding:12px;border-radius:6px;margin:10px 0;\">
+                <h4 style=\"margin:0 0 8px 0;color:#2e7d32;\">📊 پیش‌نمایش خرید</h4>
+                <p style=\"margin:5px 0;color:#555;\"><strong>مبلغ ورودی:</strong> ${value.toFixed(2)} DAI</p>
+                <p style=\"margin:5px 0;color:#555;\"><strong>کارمزد (${(backingPct*100).toFixed(1)}٪):</strong> ${fees.toFixed(2)} DAI</p>
+                <p style=\"margin:5px 0;color:#555;\"><strong>مبلغ خالص:</strong> ${netAmount.toFixed(2)} DAI</p>
+                <p style=\"margin:5px 0;color:#2e7d32;\"><strong>توکن دریافتی:</strong> ${netTokens.toFixed(6)} IAM</p>
             </div>`;
         } else if (direction.value === 'IAM-to-dai') {
             result = value * Number(this.tokenPrice);
-            // کارمزد پویا بر اساس موجودی DAI قرارداد
+            // کارمزد پویا بر اساس موجودی DAI قرارداد (بدون کارمزد توسعه‌دهنده)
             const daiBalanceNum = await this.getContractDaiBalanceNum();
-            const deployerPct = 0.005;
             const backingPct = this.getBackingFeePct(daiBalanceNum);
-            const totalFeePct = deployerPct + backingPct;
-            const fees = result * totalFeePct;
+            const fees = result * backingPct;
             const netDai = result - fees;
             
-            previewHtml = `<div style="background:#fff3e0;padding:12px;border-radius:6px;margin:10px 0;">
-                <h4 style="margin:0 0 8px 0;color:#e65100;">📊 پیش‌نمایش فروش</h4>
-                <p style="margin:5px 0;color:#555;"><strong>توکن ورودی:</strong> ${value.toFixed(6)} IAM</p>
-                <p style="margin:5px 0;color:#555;"><strong>ارزش کل:</strong> ${result.toFixed(6)} DAI</p>
-                <p style="margin:5px 0;color:#555;"><strong>کارمزد (${(totalFeePct*100).toFixed(1)}٪):</strong> ${fees.toFixed(6)} DAI</p>
-                <p style="margin:5px 0;color:#e65100;"><strong>DAI دریافتی:</strong> ${netDai.toFixed(6)} DAI</p>
+            previewHtml = `<div style=\"background:#fff3e0;padding:12px;border-radius:6px;margin:10px 0;\">
+                <h4 style=\"margin:0 0 8px 0;color:#e65100;\">📊 پیش‌نمایش فروش</h4>
+                <p style=\"margin:5px 0;color:#555;\"><strong>توکن ورودی:</strong> ${value.toFixed(6)} IAM</p>
+                <p style=\"margin:5px 0;color:#555;\"><strong>ارزش کل:</strong> ${result.toFixed(6)} DAI</p>
+                <p style=\"margin:5px 0;color:#555;\"><strong>کارمزد (${(backingPct*100).toFixed(1)}٪):</strong> ${fees.toFixed(6)} DAI</p>
+                <p style=\"margin:5px 0;color:#e65100;\"><strong>DAI دریافتی:</strong> ${netDai.toFixed(6)} DAI</p>
             </div>`;
         }
         
@@ -577,10 +565,23 @@ class SwapManager {
             amount.max = this.userBalances.dai;
             console.log('✅ حداکثر مقدار DAI تنظیم شد:', this.userBalances.dai);
         } else if (direction.value === 'IAM-to-dai') {
-            // برای جلوگیری از رد شدن توسط قرارداد، حداکثر ورودی را 50% موجودی تنظیم کن
-            const halfIAM = Math.floor(this.userBalances.IAM * 0.5 * 1e6) / 1e6;
-            amount.max = halfIAM;
-            console.log('✅ حداکثر مقدار IAM (نصف موجودی) تنظیم شد:', halfIAM);
+            // حداکثر فروش بر اساس نقدینگی استخر و کارمزد پویا
+            amount.max = '';
+            (async () => {
+                try {
+                    const daiContractBalance = await this.getContractDaiBalanceNum();
+                    const price = Number(this.tokenPrice) || 0;
+                    if (!price) return;
+                    const backingPct = this.getBackingFeePct(daiContractBalance);
+                    const maxByLiquidity = (daiContractBalance / price) / (1 - backingPct);
+                    const finalMax = Math.min(this.userBalances.IAM, maxByLiquidity);
+                    const floored = Math.floor(finalMax * 1e6) / 1e6;
+                    amount.max = floored;
+                    console.log('✅ حداکثر مقدار IAM بر اساس نقدینگی تنظیم شد:', floored);
+                } catch (e) {
+                    console.warn('⚠️ خطا در محاسبه حداکثر فروش:', e);
+                }
+            })();
         }
     }
 
@@ -633,14 +634,23 @@ class SwapManager {
                 });
                 
             } else if (direction.value === 'IAM-to-dai') {
-                // برای فروش، همیشه نصف موجودی کاربر را به صورت گرد شده به پایین وارد کن
-                let half = this.userBalances.IAM * 0.5;
-                half = floorToDecimals(half, 6);
-                amount.value = half.toFixed(6);
-                console.log('✅ مقدار فروش روی نصف موجودی تنظیم شد:', {
-                    userBalance: this.userBalances.IAM.toFixed(6),
-                    half: half.toFixed(6)
-                });
+                // تنظیم مقدار فروش بر اساس نقدینگی و کارمزد پویا
+                const daiContractBalance = await this.getContractDaiBalanceNum();
+                const price = Number(this.tokenPrice) || 0;
+                if (!price) {
+                    amount.value = floorToDecimals(this.userBalances.IAM, 6).toFixed(6);
+                } else {
+                    const backingPct = this.getBackingFeePct(daiContractBalance);
+                    const maxByLiquidity = (daiContractBalance / price) / (1 - backingPct);
+                    let maxIAM = Math.min(this.userBalances.IAM, maxByLiquidity);
+                    maxIAM = floorToDecimals(maxIAM, 6);
+                    amount.value = maxIAM.toFixed(6);
+                    console.log('✅ مقدار فروش بر اساس نقدینگی تنظیم شد:', {
+                        userBalance: this.userBalances.IAM.toFixed(6),
+                        maxByLiquidity: maxByLiquidity.toFixed(6),
+                        final: maxIAM.toFixed(6)
+                    });
+                }
             }
             
             await this.updateSwapPreview();
@@ -784,16 +794,22 @@ class SwapManager {
 
             // اعتبارسنجی مطابق قرارداد
             if (direction.value === 'dai-to-IAM') {
-                if (value < 1) throw new Error('حداقل خرید 1 DAI است');
+                if (value <= 1) throw new Error('حداقل خرید بیش از 1 DAI است');
                 // سقف خرید پویا
                 const daiContractBalance = await this.getContractDaiBalanceNum();
                 const maxBuy = (daiContractBalance <= 100000) ? 1000 : (daiContractBalance * 0.01);
                 if (value > maxBuy) throw new Error(`مقدار از سقف خرید بیشتر است (حداکثر مجاز: ${maxBuy.toFixed(2)} DAI)`);
             } else if (direction.value === 'IAM-to-dai') {
-                if (value < 1) throw new Error('حداقل فروش 1 IAM است');
-                // محدودیت فروش: حداکثر 50% موجودی کاربر (مطابق قرارداد)
-                const maxSell = this.userBalances.IAM * 0.5;
-                if (value > maxSell) throw new Error(`مقدار از سقف فروش بیشتر است (حداکثر مجاز: ${maxSell.toFixed(6)} IAM)`);
+                if (value <= 1) throw new Error('حداقل فروش بیش از 1 IAM است');
+                // بررسی نقدینگی استخر DAI مطابق قرارداد
+                const daiContractBalance = await this.getContractDaiBalanceNum();
+                const price = Number(this.tokenPrice);
+                const backingPct = this.getBackingFeePct(daiContractBalance);
+                const netDai = value * price * (1 - backingPct);
+                if (netDai > daiContractBalance) {
+                    const maxIAMByLiquidity = (daiContractBalance / price) / (1 - backingPct);
+                    throw new Error(`نقدینگی DAI کافی نیست. حداکثر فروش مجاز ≈ ${maxIAMByLiquidity.toFixed(6)} IAM`);
+                }
             }
 
             // انجام عملیات سواپ

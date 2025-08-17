@@ -350,7 +350,7 @@ window._fetchReportsFresh = async function(address) {
                 const userAddressAtIndex = await contract.indexToAddress(i);
                 if (userAddressAtIndex && userAddressAtIndex !== '0x0000000000000000000000000000000000000000') {
                     const userInfo = await contract.users(userAddressAtIndex);
-                    if (userInfo.activated) {
+                    if (userInfo && userInfo.index && BigInt(userInfo.index) > 0n) {
                         console.log(`📊 User at index ${i}:`, userAddressAtIndex, 'activated:', userInfo.activated);
                         
                         // بررسی اینکه آیا این کاربر در زیرمجموعه شماست

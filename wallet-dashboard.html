@@ -32,6 +32,27 @@
     <script src="js/walletconnect-v1.8.0.js"></script>
 </head>
 <body>
+    <!-- User Status Bar (appears under navbar when user is active) -->
+    <div id="user-status-bar" style="display:none; max-width:1200px; margin:0.75rem auto 0.5rem auto; padding:0.75rem 1rem; border-radius:16px; border:1px solid rgba(0,255,136,0.25); background:linear-gradient(135deg, rgba(0,255,136,0.08), rgba(167,134,255,0.08)); box-shadow:0 6px 18px rgba(0,0,0,0.25), 0 1px 0 rgba(255,255,255,0.06) inset; backdrop-filter:blur(10px);">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:0.75rem; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                <span id="status-active" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.35rem 0.7rem; border-radius:12px; font-weight:700; color:#0f2d1f; background:linear-gradient(135deg,#00ff88,#00d178); border:1px solid rgba(0,255,136,0.4); box-shadow:0 2px 8px rgba(0,255,136,0.25);">
+                    ✅ فعال
+                </span>
+                <span id="status-id" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.35rem 0.7rem; border-radius:12px; color:#ffffff; background:linear-gradient(135deg, rgba(0,255,136,0.12), rgba(167,134,255,0.12)); border:1px solid rgba(255,255,255,0.18); font-weight:700;">
+                    🆔 IAM--
+                </span>
+                <span id="status-address" title="" style="display:inline-flex; align-items:center; gap:0.4rem; padding:0.35rem 0.7rem; border-radius:12px; color:#ffffff; background:linear-gradient(135deg, rgba(167,134,255,0.12), rgba(0,255,136,0.12)); border:1px solid rgba(255,255,255,0.18); font-family: 'Fira Mono', monospace;">
+                    📍 0x...
+                </span>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+                <button onclick="copyFullAddress()" style="background:#00ff88; color:#232946; border:none; padding:0.45rem 0.8rem; border-radius:10px; cursor:pointer; font-weight:700;">
+                    📋 کپی
+                </button>
+            </div>
+        </div>
+    </div>
     <div id="access-denied" style="display:none; text-align:center; padding:3rem; color:#ff6b6b;">
         <h2>🔒 دسترسی محدود</h2>
         <p>این صفحه فقط برای صاحب ولت قابل دسترسی است.</p>
@@ -246,6 +267,49 @@
         let currentWalletAddress = null;
         let contractConfig = null;
 
+        // Helper: کوتاه کردن آدرس
+        function shortenAddress(addr) {
+            if (!addr || typeof addr !== 'string') return '-';
+            return addr.slice(0, 6) + '...' + addr.slice(-4);
+        }
+        // Helper: کپی آدرس کامل ولت
+        function copyFullAddress(){
+            if (!currentWalletAddress) return;
+            navigator.clipboard.writeText(currentWalletAddress).then(()=>{
+                const btns = document.querySelectorAll('#user-status-bar button');
+                btns.forEach(b=>{ const t=b.textContent; b.textContent='✅ کپی شد'; setTimeout(()=>b.textContent=t, 1500); });
+            }).catch(()=>{});
+        }
+
+        // Helper: بروزرسانی نوار وضعیت کاربر (زیر ناوبار)
+        function updateUserStatusBar(userData) {
+            try {
+                const bar = document.getElementById('user-status-bar');
+                if (!bar) return;
+                const active = !!(userData && (userData.isActive || userData.activated));
+                if (!active) {
+                    bar.style.display = 'none';
+                    return;
+                }
+                const idEl = document.getElementById('status-id');
+                const addrEl = document.getElementById('status-address');
+                const actEl = document.getElementById('status-active');
+                if (idEl && userData.index != null) {
+                    idEl.textContent = '🆔 ' + `IAM${userData.index.toString()}`;
+                }
+                if (addrEl && currentWalletAddress) {
+                    addrEl.textContent = '📍 ' + shortenAddress(currentWalletAddress);
+                    addrEl.title = currentWalletAddress;
+                }
+                if (actEl) {
+                    actEl.textContent = '✅ فعال';
+                }
+                bar.style.display = 'block';
+            } catch (e) {
+                // silently ignore
+            }
+        }
+
         // تابع کپی کردن متن
         function copyToClipboard(elementId) {
             const element = document.getElementById(elementId);
@@ -368,6 +432,9 @@
                         }
                     });
                 }
+
+                // بروزرسانی نوار وضعیت کاربر (اگر فعال باشد)
+                updateUserStatusBar(userData);
 
                 // بروزرسانی موجودی توکن‌ها با انتقال نرم
                 const IAMBalance = await contract.balanceOf(currentWalletAddress);

@@ -1,205 +1,0 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CPA Messenger - پیام‌رسان غیرمتمرکز</title>
-    <link rel="stylesheet" href="css/modern-theme.css">
-    <link rel="stylesheet" href="css/messenger.css">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
-</head>
-<body>
-    <!-- ناوبار -->
-    <nav class="messenger-navbar">
-        <div class="navbar-content">
-            <div class="navbar-logo">
-                <span class="logo-icon">💬</span>
-                <span class="logo-text">CPA Messenger</span>
-            </div>
-            
-            <div class="navbar-info">
-                <div class="user-info" id="user-info" style="display: none;">
-                    <span class="user-address" id="user-address">در حال اتصال...</span>
-                    <span class="user-balance" id="user-balance">موجودی: -</span>
-                </div>
-                
-                <button class="connect-btn" id="connect-btn">
-                    🔗 اتصال کیف پول
-                </button>
-            </div>
-        </div>
-    </nav>
-
-    <!-- کانتینر اصلی -->
-    <div class="messenger-container">
-        <!-- ساید‌بار چت‌ها -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h3>چت‌ها</h3>
-                <button class="new-chat-btn" id="new-chat-btn">➕ چت جدید</button>
-            </div>
-            
-            <div class="search-box">
-                <input type="text" placeholder="جستجو در چت‌ها..." id="chat-search">
-            </div>
-            
-            <div class="chats-list" id="chats-list">
-                <!-- لیست چت‌ها اینجا لود می‌شود -->
-            </div>
-        </div>
-
-        <!-- صفحه چت اصلی -->
-        <div class="chat-area">
-            <div class="welcome-screen" id="welcome-screen">
-                <div class="welcome-content">
-                    <div class="welcome-icon">💬</div>
-                    <h2>به CPA Messenger خوش آمدید</h2>
-                    <p>پیام‌رسان غیرمتمرکز بر بستر بلاکچین پالیگان</p>
-                    <ul class="features-list">
-                        <li>🔐 رمزنگاری کامل End-to-End</li>
-                        <li>🌐 ذخیره‌سازی غیرمتمرکز</li>
-                        <li>💰 پرداخت با توکن CPA</li>
-                        <li>🛡️ امنیت بالا و حریم خصوصی</li>
-                    </ul>
-                    <button class="start-btn" id="start-messaging">شروع پیام‌رسانی</button>
-                </div>
-            </div>
-
-            <div class="chat-window" id="chat-window" style="display: none;">
-                <!-- هدر چت -->
-                <div class="chat-header" id="chat-header">
-                    <div class="chat-info">
-                        <div class="contact-avatar" id="contact-avatar">👤</div>
-                        <div class="contact-details">
-                            <div class="contact-name" id="contact-name">انتخاب مخاطب</div>
-                            <div class="contact-address" id="contact-address">-</div>
-                        </div>
-                    </div>
-                    <div class="chat-actions">
-                        <button class="action-btn" id="chat-settings" title="تنظیمات چت">⚙️</button>
-                        <button class="action-btn" id="chat-info" title="اطلاعات چت">ℹ️</button>
-                    </div>
-                </div>
-
-                <!-- پیام‌ها -->
-                <div class="messages-container" id="messages-container">
-                    <!-- پیام‌ها اینجا نمایش داده می‌شوند -->
-                </div>
-
-                <!-- بخش ارسال پیام -->
-                <div class="message-input-area">
-                    <div class="input-container">
-                        <input type="text" 
-                               placeholder="پیام خود را بنویسید..." 
-                               id="message-input" 
-                               maxlength="500">
-                        <button class="attach-btn" id="attach-btn" title="پیوست">📎</button>
-                        <button class="emoji-btn" id="emoji-btn" title="ایموجی">😊</button>
-                        <button class="send-btn" id="send-btn" title="ارسال">📤</button>
-                    </div>
-                    
-                    <div class="message-cost" id="message-cost">
-                        هزینه ارسال: <span class="cost-amount">0.1</span> CPA
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- مودال چت جدید -->
-    <div class="modal" id="new-chat-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>چت جدید</h3>
-                <button class="modal-close" id="modal-close">✕</button>
-            </div>
-            
-            <div class="modal-body">
-                <div class="form-group">
-                    <label>آدرس مخاطب:</label>
-                    <input type="text" 
-                           id="contact-address-input" 
-                           placeholder="0x..." 
-                           style="direction: ltr;">
-                    <small>آدرس کیف پول مخاطب را وارد کنید</small>
-                </div>
-                
-                <div class="form-group">
-                    <label>نام مستعار (اختیاری):</label>
-                    <input type="text" 
-                           id="contact-name-input" 
-                           placeholder="نام برای نمایش...">
-                </div>
-                
-                <div class="form-group">
-                    <label>پیام اول:</label>
-                    <textarea id="first-message" 
-                              placeholder="سلام! چطوری؟" 
-                              rows="3"></textarea>
-                </div>
-            </div>
-            
-            <div class="modal-footer">
-                <button class="btn btn-primary" id="start-chat-btn">شروع چت</button>
-                <button class="btn btn-secondary" id="cancel-chat-btn">انصراف</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- مودال تنظیمات -->
-    <div class="modal" id="settings-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>تنظیمات پیام‌رسان</h3>
-                <button class="modal-close" onclick="closeModal('settings-modal')">✕</button>
-            </div>
-            
-            <div class="modal-body">
-                <div class="setting-item">
-                    <label>
-                        <input type="checkbox" id="encryption-enabled" checked disabled>
-                        رمزنگاری End-to-End (همیشه فعال)
-                    </label>
-                </div>
-                
-                <div class="setting-item">
-                    <label>
-                        <input type="checkbox" id="auto-backup">
-                        پشتیبان‌گیری خودکار در IPFS
-                    </label>
-                </div>
-                
-                <div class="setting-item">
-                    <label>هزینه ارسال پیام:</label>
-                    <select id="message-fee">
-                        <option value="0.1">0.1 CPA (عادی)</option>
-                        <option value="0.5">0.5 CPA (اولویت)</option>
-                        <option value="1.0">1.0 CPA (فوری)</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="modal-footer">
-                <button class="btn btn-primary" onclick="saveSettings()">ذخیره</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- اسکریپت‌ها -->
-    <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
-    <script src="js/config.js"></script>
-    <script src="js/auto-wallet-connect.js"></script>
-    <script src="js/messenger-crypto.js"></script>
-    <script src="js/messenger.js"></script>
-    
-    <script>
-        // مقداردهی اولیه
-        document.addEventListener('DOMContentLoaded', function() {
-            if (window.CPAMessenger) {
-                window.messenger = new CPAMessenger();
-                window.messenger.init();
-            }
-        });
-    </script>
-</body>
-</html>

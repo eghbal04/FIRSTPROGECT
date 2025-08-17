@@ -1,163 +1,0 @@
-<!DOCTYPE html>
-<html lang="fa">
-<head>
-    <meta charset="UTF-8">
-    <title>کلاس آنلاین | CONTINUOUS PROFIT ACADEMY</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/floating-ai-assistant.css">
-    <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
-</head>
-<body>
-
-
-  <div id="auth-loading" style="color:#00ccff;text-align:center;margin-top:80px;font-size:1.2rem;font-weight:bold;">در حال احراز هویت...</div>
-  <script src="js/config.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', async function() {
-      try {
-        if (window.clearUserProfileCache) window.clearUserProfileCache();
-        if (window.getUserProfile) {
-          const profile = await window.getUserProfile();
-          if (!profile.activated) {
-            document.body.innerHTML = '<div style="color:red;text-align:center;margin-top:80px;font-size:1.3rem;font-weight:bold;">شما کاربر فعال نیستید، در حال انتقال به ثبت‌نام...</div>';
-            setTimeout(function() {
-              window.location.href = "index.html#main-register";
-            }, 2000);
-            return;
-          }
-        }
-        // اگر فعال بود، لودینگ را حذف کن
-        var loading = document.getElementById('auth-loading');
-        if (loading) loading.remove();
-      } catch (e) {
-        document.body.innerHTML = '<div style="color:red;text-align:center;margin-top:80px;font-size:1.3rem;font-weight:bold;">خطا در احراز هویت یا اتصال کیف پول. لطفاً کیف پول خود را بررسی کنید.</div>';
-        setTimeout(function() {
-          window.location.href = "index.html#main-register";
-        }, 3000);
-      }
-    });
-  </script>
-    <div class="learning-main">
-      <div class="learning-intro">
-        <h2>👨‍🏫 خوش آمدید به کلاس آنلاین آکادمی سود مستمر (IAM)</h2>
-        <p>
-          شما وارد بخش <b>کلاس آنلاین</b> آکادمی سود مستمر شده‌اید.<br>
-          در این بخش می‌توانید به صورت زنده در کلاس‌های آموزشی تخصصی بازارهای مالی، ارز دیجیتال و سرمایه‌گذاری شرکت کنید.<br>
-          <b>امکانات این بخش:</b>
-          <ul style="text-align:right; margin: 1rem auto 1.5rem auto; max-width: 400px; direction: rtl;">
-            <li>شرکت در جلسات آنلاین با اساتید حرفه‌ای</li>
-            <li>پرسش و پاسخ زنده و تعامل با استاد</li>
-            <li>دریافت لینک دعوت و اشتراک‌گذاری با دوستان</li>
-            <li>نمایش تعداد حاضرین و وضعیت جلسه</li>
-            <li>دسترسی آسان از موبایل و دسکتاپ</li>
-          </ul>
-          <span style="color:#a786ff;">برای ورود به کلاس، منتظر شروع جلسه باشید و سپس روی دکمه ورود کلیک کنید.</span>
-        </p>
-      </div>
-      <h1>کلاس آنلاین آکادمی سود مستمر</h1>
-      <div id="status" class="learning-status">منتظر شروع جلسه آنلاین...</div>
-      <div class="learning-btn-row">
-        <button id="start-btn" class="learning-btn"><span class="sf-video"></span> ورود به کلاس آنلاین</button>
-        <button id="share-btn" class="learning-btn secondary"><span class="sf-copy"></span> کپی لینک دعوت</button>
-      </div>
-      <div id="copied-msg" class="learning-copied">لینک کپی شد!</div>
-      <div id="jitsi-container" class="learning-jitsi"></div>
-    </div>
-    <script src="https://meet.jit.si/external_api.js"></script>
-    <script>
-        // زمان شروع جلسه (همسان با index.html)
-        const sessionStart = new Date("2025-07-01T16:30:00+03:30");
-        const roomName = "IAM_Academy_Class_2024";
-        const sessionUrl = window.location.origin + window.location.pathname + "#join";
-        const statusDiv = document.getElementById('status');
-        const startBtn = document.getElementById('start-btn');
-        const shareBtn = document.getElementById('share-btn');
-        const copiedMsg = document.getElementById('copied-msg');
-        let jitsiApi = null;
-
-        function updateJoinButton() {
-            const now = new Date();
-            if (now < sessionStart) {
-                startBtn.textContent = "ورود به کلاس آنلاین";
-                startBtn.disabled = true;
-                startBtn.title = "جلسه هنوز شروع نشده است";
-                statusDiv.textContent = "منتظر شروع جلسه آنلاین...";
-            } else {
-                startBtn.textContent = "ورود به کلاس آنلاین";
-                startBtn.disabled = false;
-                startBtn.title = "";
-                statusDiv.textContent = "برای ورود به جلسه روی دکمه کلیک کنید";
-            }
-        }
-        setInterval(updateJoinButton, 1000);
-        updateJoinButton();
-
-        // اگر کاربر با #join وارد شده باشد، جلسه را مستقیم باز کن
-        if (window.location.hash === "#join") {
-            startSession();
-        }
-
-        startBtn.onclick = function() {
-            if (new Date() >= sessionStart) {
-                startSession();
-            }
-        };
-
-        function startSession() {
-            startBtn.textContent = 'جلسه در حال برگزاری است';
-            startBtn.disabled = true;
-            shareBtn.style.display = 'none';
-            statusDiv.textContent = "جلسه آنلاین در حال برگزاری است";
-            document.getElementById('jitsi-container').style.display = 'block';
-            jitsiApi = new JitsiMeetExternalAPI("meet.jit.si", {
-                roomName: roomName,
-                width: "100%",
-                height: 600,
-                parentNode: document.getElementById('jitsi-container'),
-                lang: "fa",
-                configOverwrite: { startWithAudioMuted: false, startWithVideoMuted: false },
-                interfaceConfigOverwrite: { DEFAULT_REMOTE_DISPLAY_NAME: "مهمان", SHOW_JITSI_WATERMARK: false }
-            });
-            // شمارنده افراد حاضر (اختیاری)
-            jitsiApi.addEventListener('participantJoined', updateCount);
-            jitsiApi.addEventListener('participantLeft', updateCount);
-            updateCount();
-        }
-
-        function updateCount() {
-            if (!jitsiApi) return;
-            setTimeout(() => {
-                jitsiApi.getParticipantsInfo().then(list => {
-                    statusDiv.textContent = `جلسه آنلاین در حال برگزاری است | تعداد حاضرین: ${list.length}`;
-                });
-            }, 1000);
-        }
-
-        shareBtn.onclick = function() {
-            navigator.clipboard.writeText(sessionUrl).then(() => {
-                copiedMsg.style.display = 'inline';
-                setTimeout(() => copiedMsg.style.display = 'none', 2000);
-            });
-        };
-    </script>
-    <!-- Floating AI Assistant CSS -->
-    <!-- <link rel="stylesheet" href="css/floating-ai-assistant.css"> -->
-    <!-- Floating AI Assistant JS -->
-    <!-- <script src="js/floating-ai-assistant.js"></script> -->
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        setTimeout(() => {
-          if (typeof FloatingAIAssistant !== 'undefined' && !window.floatingAI) {
-            window.floatingAI = new FloatingAIAssistant();
-            window.floatingAI.switchToIdleState();
-          }
-        }, 500);
-      });
-    </script>
-    <script src="js/main.js"></script>
-    <script src="js/navbar.js"></script>
-    
-    <!-- Floating Token Growth Card - کارت شناور رشد توکن -->
-    <script src="js/floating-token-card.js"></script>
-</body>
-</html> 

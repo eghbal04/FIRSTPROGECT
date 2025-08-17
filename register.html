@@ -226,7 +226,7 @@
           console.log(`🔍 وضعیت کاربر:`, user);
           // اگر کاربر فعال نیست، پیام پیشنهاد ثبت‌نام را نمایش بده
           const suggestionDiv = document.getElementById('register-suggestion');
-          if (user && !user.activated) {
+          if (user && !(user.index && BigInt(user.index) > 0n)) {
             console.log(`⚠️ کاربر ثبت‌نام شده اما فعال نیست`);
             suggestionDiv.style.display = '';
             suggestionDiv.textContent = 'شما هنوز ثبت‌نام نکرده‌اید. لطفاً ثبت‌نام کنید.';
@@ -239,16 +239,16 @@
             suggestionDiv.style.display = 'none';
           }
           // اگر کیف پول فعال است و مقدار فعلی روت یا خالی است، مقدار را به آدرس کیف پول متصل تغییر بده
-          if ((!refInput.value || refInput.value === 'root') && user.activated) {
+          if ((!refInput.value || refInput.value === 'root') && (user.index && BigInt(user.index) > 0n)) {
             refInput.value = myAddress;
-          } else if (!user.activated && (!refInput.value || refInput.value === myAddress)) {
+          } else if (!(user.index && BigInt(user.index) > 0n) && (!refInput.value || refInput.value === myAddress)) {
             refInput.value = 'root';
           }
           // مقداردهی parent-index
           parentIndex = user.index ? user.index.toString() : '...';
           // مقداردهی پیش‌فرض فیلد ایندکس فقط اگر مقدار فعلی راهنما یا خالی است
           const indexInput = document.getElementById('index-search');
-          if ((!indexInput.value || indexInput.value === defaultGuide) && user.activated && user.index) {
+          if ((!indexInput.value || indexInput.value === defaultGuide) && (user.index && BigInt(user.index) > 0n) && user.index) {
             // فرمت ایندکس
             let IAMId = 'IAM' + user.index.toString().padStart(5, '0');
             indexInput.value = IAMId;
@@ -445,7 +445,7 @@
           }
           
           console.log(`🔍 بررسی کاربر جاری:`, currentUser);
-          if (currentUser && currentUser.activated && currentUser.index) {
+          if (currentUser && (currentUser.index && BigInt(currentUser.index) > 0n) && currentUser.index) {
             const currentUserIndex = parseInt(currentUser.index);
             const targetIndex = parseInt(index);
             console.log(`🔍 بررسی صلاحیت: کاربر جاری=${currentUserIndex}, هدف=${targetIndex}`);
@@ -512,7 +512,7 @@
           }
           
           // مرحله 2: بررسی اینکه آیا کاربر فعال است
-          if (!user || !user.activated) {
+          if (!user || !(user.index && BigInt(user.index) > 0n)) {
             status.style.color = '#d32f2f';
             status.textContent = 'کاربر در این آدرس فعال نیست یا وجود ندارد.';
             return;
@@ -550,7 +550,7 @@
           }
           
           console.log(`🔍 بررسی کاربر جاری:`, currentUser);
-          if (currentUser && currentUser.activated && currentUser.index) {
+          if (currentUser && (currentUser.index && BigInt(currentUser.index) > 0n) && currentUser.index) {
             const currentUserIndex = parseInt(currentUser.index);
             const targetIndex = parseInt(user.index);
             console.log(`🔍 بررسی صلاحیت: کاربر جاری=${currentUserIndex}, هدف=${targetIndex}`);
@@ -619,7 +619,7 @@
           
           // بررسی اینکه آیا این آدرس قبلاً ثبت‌نام شده است
           const user = await contract.users(address);
-          if (user && user.activated) {
+          if (user && (user.index && BigInt(user.index) > 0n)) {
             status.style.color = '#d32f2f';
             status.textContent = 'این آدرس قبلاً ثبت‌نام شده است.';
             return;
@@ -705,7 +705,7 @@
          
          console.log(`🔍 بررسی کاربر در ثبت‌نام:`, user);
                  // بررسی اینکه آیا ایندکس هدف در خط رفرال کاربر جاری قرار دارد
-         if (user && user.activated && user.index && enteredIndex !== null) {
+         if (user && (user.index && BigInt(user.index) > 0n) && user.index && enteredIndex !== null) {
            const currentUserIndex = parseInt(user.index);
            const targetIndex = parseInt(enteredIndex);
            console.log(`🔍 بررسی در ثبت‌نام: کاربر جاری=${currentUserIndex}, هدف=${targetIndex}`);

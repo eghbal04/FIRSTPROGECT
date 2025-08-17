@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>CONTINUOUS PROFIT ACADEMY</title>
+    <title>IAMPHOENIX</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
@@ -28,6 +28,7 @@
       <!-- بارگذاری WalletConnect UMD به صورت لوکال -->
   <script src="js/walletconnect-v1.8.0.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+  <script src="js/auth-redirect.js"></script>
   
   <!-- بارگذاری دانش پایه قرارداد -->
   <!-- <script src="js/contract-knowledge-base.js"></script> -->
@@ -138,6 +139,205 @@
   
   
   <div id="main-dashboard" class="page-section" style="position:relative;overflow:visible;">
+    <!-- User Status Bar (shown above dashboard cards for active users) -->
+    <div id="index-user-status-bar" style="display:none;max-width:1200px;margin:0.75rem auto 0.5rem auto;padding:0.75rem 1rem;border-radius:16px;border:1px solid rgba(0,255,136,0.25);background:linear-gradient(135deg, rgba(0,255,136,0.08), rgba(167,134,255,0.08));box-shadow:0 6px 18px rgba(0,0,0,0.25), 0 1px 0 rgba(255,255,255,0.06) inset;backdrop-filter:blur(10px);">
+      <div style="display:flex;align-items:center;justify-content:center;gap:0.75rem;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+          <span id="index-status-active" style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.35rem 0.7rem;border-radius:12px;font-weight:700;color:#0f2d1f;background:linear-gradient(135deg,#00ff88,#00d178);border:1px solid rgba(0,255,136,0.4);box-shadow:0 2px 8px rgba(0,255,136,0.25);">✅ فعال</span>
+          <span id="index-status-id" style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.35rem 0.7rem;border-radius:12px;color:#ffffff;background:linear-gradient(135deg, rgba(0,255,136,0.12), rgba(167,134,255,0.12));border:1px solid rgba(255,255,255,0.18);font-weight:700;">🆔 IAM--</span>
+          <span id="index-status-address" title="" style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.35rem 0.7rem;border-radius:12px;color:#ffffff;background:linear-gradient(135deg, rgba(167,134,255,0.12), rgba(0,255,136,0.12));border:1px solid rgba(255,255,255,0.18);font-family:'Fira Mono', monospace;">📍 0x...</span>
+        </div>
+      </div>
+    </div>
+    <script>
+      (function(){
+        function shortenAddress(addr){ if(!addr||typeof addr!=='string') return '-'; return addr.slice(0,6)+'...'+addr.slice(-4); }
+        function formatIAMId(indexVal){
+          try {
+            let s = (typeof indexVal === 'bigint') ? indexVal.toString() : (indexVal && indexVal.toString ? indexVal.toString() : String(indexVal||''));
+            // ensure only digits
+            s = s.replace(/\D+/g,'');
+            if (!s) return 'IAM-----';
+            return 'IAM' + s.padStart(5,'0');
+          } catch { return 'IAM-----'; }
+        }
+        function showBar(address, userData){
+          const bar = document.getElementById('index-user-status-bar'); if(!bar) return;
+          if (!address) { bar.style.display='none'; return; }
+          // Derive active state robustly
+          let active = false;
+          let hasIndex = false;
+          if (userData && userData.index != null) {
+            try {
+              const idxStr = (typeof userData.index === 'bigint') ? userData.index.toString() : (userData.index.toString ? userData.index.toString() : String(userData.index));
+              hasIndex = idxStr !== '0';
+            } catch(_) {}
+          }
+          if (userData) {
+            if (userData.isActive === true || userData.activated === true) active = true;
+            else if (userData.isActive === false || userData.activated === false) active = false;
+          }
+          // Consider registered index as active indicator if flags are missing
+          if (!active && hasIndex) active = true;
+          const idEl = document.getElementById('index-status-id');
+          const addrEl = document.getElementById('index-status-address');
+          const statusEl = document.getElementById('index-status-active');
+          if (idEl) {
+            if (hasIndex) { idEl.textContent = '🆔 ' + formatIAMId(userData.index); }
+            else { idEl.textContent = '🆔 IAM--'; }
+          }
+          if (addrEl) { addrEl.textContent = '📍 ' + shortenAddress(address); addrEl.title = address; }
+          if (statusEl) {
+            if (active) {
+              statusEl.textContent = '✅ فعال';
+              statusEl.style.background = 'linear-gradient(135deg,#00ff88,#00d178)';
+              statusEl.style.color = '#0f2d1f';
+              statusEl.style.border = '1px solid rgba(0,255,136,0.4)';
+              statusEl.style.boxShadow = '0 2px 8px rgba(0,255,136,0.25)';
+            } else {
+              statusEl.textContent = '⛔ غیرفعال';
+              statusEl.style.background = 'linear-gradient(135deg,#ff6b6b,#c82333)';
+              statusEl.style.color = '#ffffff';
+              statusEl.style.border = '1px solid rgba(255,68,68,0.4)';
+              statusEl.style.boxShadow = '0 2px 8px rgba(255,68,68,0.25)';
+            }
+          }
+          const copyBtn = document.getElementById('index-status-copy');
+          if(copyBtn){ copyBtn.onclick = function(){ if(!address) return; navigator.clipboard.writeText(address).then(()=>{ const t=copyBtn.textContent; copyBtn.textContent='✅ کپی شد'; setTimeout(()=>copyBtn.textContent=t,1500); }); } }
+          bar.style.display='block';
+        }
+        function schedule(ms, fn){ setTimeout(fn, ms); }
+        async function tryUpdate(){
+          try{
+            if(typeof window.ethers === 'undefined'){ return schedule(2000, tryUpdate); }
+            // Prefer existing connected contract (with correct ABI)
+            let address = null;
+            let userData = null;
+            if (window.contractConfig && window.contractConfig.contract) {
+              try {
+                address = window.contractConfig.address;
+                const contract = window.contractConfig.contract;
+                if (!address && window.contractConfig.signer && window.contractConfig.signer.getAddress) {
+                  address = await window.contractConfig.signer.getAddress();
+                }
+                if (!address) { return schedule(3000, tryUpdate); }
+                // Try primary users(address)
+                try {
+                  userData = await Promise.race([
+                    contract.users(address),
+                    new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),3000))
+                  ]);
+                } catch(e) {
+                  userData = null;
+                }
+                // Fallbacks to derive index and activation
+                let idxVal = null;
+                try {
+                  if (!userData || userData.index == null || (userData.index.toString && userData.index.toString() === '0')) {
+                    if (typeof contract.getUserIndex === 'function') {
+                      const idxRaw = await Promise.race([
+                        contract.getUserIndex(address),
+                        new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),3000))
+                      ]);
+                      idxVal = (typeof idxRaw === 'bigint') ? idxRaw : (idxRaw && idxRaw.toString ? BigInt(idxRaw.toString()) : null);
+                    }
+                  } else { idxVal = userData.index; }
+                } catch(_) {}
+                let act = null;
+                try {
+                  if (!userData || (userData.isActive == null && userData.activated == null)) {
+                    if (typeof contract.getUserTree === 'function') {
+                      const tree = await Promise.race([
+                        contract.getUserTree(address),
+                        new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),3000))
+                      ]);
+                      if (Array.isArray(tree) && tree.length >= 3) act = !!tree[2];
+                    }
+                  } else { act = !!(userData.isActive || userData.activated); }
+                } catch(_) {}
+                if (idxVal != null || act != null) {
+                  userData = userData || {};
+                  if (idxVal != null) userData.index = idxVal;
+                  if (act != null) { userData.isActive = act; userData.activated = act; }
+                }
+              } catch(e) {
+                // fallback to provider+IAM globals
+              }
+            }
+
+            if (!userData) {
+              const provider = (window.ethereum ? new ethers.BrowserProvider(window.ethereum) : null);
+              if(!provider){ return schedule(2000, tryUpdate); }
+              if(!address && window.ethereum && typeof window.ethereum.request==='function'){
+                try{ const acc = await Promise.race([window.ethereum.request({method:'eth_accounts'}), new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),1500))]); if(acc && acc[0]) address = acc[0]; }catch(_e){}
+              }
+              if(!address){ return schedule(4000, tryUpdate); }
+              if(!(window.IAM_ADDRESS && window.IAM_ABI)){
+                // Show bar with address even if contract globals not ready
+                showBar(address, null);
+                return schedule(2000, tryUpdate);
+              }
+              try {
+                const fallbackContract = new ethers.Contract(window.IAM_ADDRESS, window.IAM_ABI, provider);
+                // Try users(address)
+                try {
+                  userData = await Promise.race([
+                    fallbackContract.users(address),
+                    new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),3000))
+                  ]);
+                } catch(_) { userData = null; }
+                // Fill missing index
+                let idxVal = null;
+                try {
+                  if (!userData || userData.index == null || (userData.index.toString && userData.index.toString() === '0')) {
+                    if (typeof fallbackContract.getUserIndex === 'function') {
+                      const idxRaw = await Promise.race([
+                        fallbackContract.getUserIndex(address),
+                        new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),3000))
+                      ]);
+                      idxVal = (typeof idxRaw === 'bigint') ? idxRaw : (idxRaw && idxRaw.toString ? BigInt(idxRaw.toString()) : null);
+                    }
+                  } else { idxVal = userData.index; }
+                } catch(_) {}
+                // Fill missing activation
+                let act = null;
+                try {
+                  if (!userData || (userData.isActive == null && userData.activated == null)) {
+                    if (typeof fallbackContract.getUserTree === 'function') {
+                      const tree = await Promise.race([
+                        fallbackContract.getUserTree(address),
+                        new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),3000))
+                      ]);
+                      if (Array.isArray(tree) && tree.length >= 3) act = !!tree[2];
+                    }
+                  } else { act = !!(userData.isActive || userData.activated); }
+                } catch(_) {}
+                if (idxVal != null || act != null) {
+                  userData = userData || {};
+                  if (idxVal != null) userData.index = idxVal;
+                  if (act != null) { userData.isActive = act; userData.activated = act; }
+                }
+                if (!userData) return schedule(4000, tryUpdate);
+              } catch(e) {
+                return schedule(4000, tryUpdate);
+              }
+            }
+
+            showBar(address, userData);
+            schedule(10000, tryUpdate);
+          }catch(e){ schedule(4000, tryUpdate); }
+        }
+        // expose for external triggers (e.g., after connect)
+        window.indexStatusTryUpdate = tryUpdate;
+        document.addEventListener('DOMContentLoaded', function(){
+          schedule(1000, tryUpdate);
+          if (window.ethereum && typeof window.ethereum.on === 'function') {
+            try { window.ethereum.on('accountsChanged', () => setTimeout(tryUpdate, 500)); } catch(_){ }
+            try { window.ethereum.on('chainChanged', () => setTimeout(tryUpdate, 800)); } catch(_){ }
+          }
+        });
+      })();
+    </script>
     <div class="dashboard-cards" style="display:flex;justify-content:center;flex-wrap:wrap;gap:1rem;max-width:1400px;margin:0 auto;">
       <!-- AI Assistant will be inserted here by JavaScript -->
 
@@ -146,7 +346,7 @@
         <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#00ff88,#a786ff,#00ff88);animation:shimmer 2s linear infinite;"></div>
         
         <div style="text-align:center;margin-bottom:1.5rem;">
-          <h3 style="color:#00ff88;font-size:1.2rem;font-weight:bold;margin:0;font-family:monospace;">CONTINUOUS PROFIT ACADEMY</h3>
+          <h3 style="color:#00ff88;font-size:1.2rem;font-weight:bold;margin:0;font-family:monospace;">IAMPHOENIX</h3>
         </div>
         
         <!-- User Info Section -->
@@ -722,41 +922,45 @@
         
         const text = `آکادمی سود مستمر (IAM) یک اکوسیستم نوآورانه و مردم‌محور است که با هدف ارائه خدمات مالی، آموزشی و معاملاتی کاملاً غیرمتمرکز و شفاف، بنیان نهاده شده است. در این مجموعه، سرمایه شما همیشه در اختیار خودتان باقی می‌ماند؛ چه در حساب شخصی‌تان در صرافی، چه در بروکر، و چه در کیف پول هوشمند متصل به قرارداد غیرمتمرکز.\n\nخدمات ما:\n• ارائه سیگنال‌های تخصصی و ربات‌های اتوترید برای بازارهای مالی\n• امکان فعالیت به عنوان ایجنت برای افراد و IB در بروکرها\n• امکان بازاریابی شبکه‌ای برای دوستانی که می‌خواهند این مجموعه را ارتقا دهند\n• شما می‌توانید از سهام‌های معرفی افراد (Referral Shares) بهره‌مند شوید.\n• همچنین می‌توانید با سرمایه‌گذاری در صندوق IAM و توکن افزایشی آن، به صورت تضمینی به سود برسید.\n• آموزش‌های جامع فارکس و ارز دیجیتال\n• پشتیبانی از صندوق غیرمتمرکز IAM و توکن IAM\n• خدمات کپی‌ترید: اگر ربات IAM سود کند، شما هم سود می‌کنید و اگر ضرر کند، شما نیز ضرر می‌کنید؛ هیچ سودی از حساب شما در زمان ضرر برداشت نمی‌شود و تا جبران ضرر، IAM سهمی دریافت نمی‌کند.\n• شعار ما: سرمایه‌ات در حساب خودت، سودت واقعی و شفاف\n\nصداقت، شفافیت و خدمات صددرصدی، اصول بنیادین ماست. هیچ‌گاه سرمایه شما به حساب IAM منتقل نمی‌شود؛ بلکه شما همواره کنترل کامل دارایی خود را دارید و تنها در سود واقعی شریک هستیم. در دنیایی که بسیاری به دنبال جذب سرمایه مردم و ارائه وعده‌های توخالی هستند، ما در IAM تنها زمانی سود می‌بریم که شما واقعاً سود کنید و در زیان، شریک و همراه شما خواهیم بود.\n\nIAM؛ انتخابی برای آینده‌ای مطمئن، شفاف و مردم‌محور.`;
         const container = document.getElementById('IAM-typewriter');
-        let i = 0;
-        let speed = 40; // ms per character (slower)
-        function typeWriter() {
-          if (i < text.length) {
-            let char = text.charAt(i);
-            if (char === '\\n' || char === '\n') {
-              container.innerHTML += '<br>';
-              i++;
-              setTimeout(typeWriter, 350); // longer pause for line breaks
-            } else {
-              container.innerHTML += char;
-              i++;
-              setTimeout(typeWriter, speed);
+        if (container) {
+          let i = 0;
+          const speed = 40; // ms per character (slower)
+          function typeWriter() {
+            if (i < text.length) {
+              const char = text.charAt(i);
+              if (char === '\\n' || char === '\n') {
+                container.innerHTML += '<br>';
+                i++;
+                setTimeout(typeWriter, 350);
+              } else {
+                container.innerHTML += char;
+                i++;
+                setTimeout(typeWriter, speed);
+              }
             }
           }
+          typeWriter();
         }
-        typeWriter();
 
         // Expand/collapse logic
         const wrapper = document.getElementById('IAM-typewriter-wrapper');
         const fade = document.getElementById('IAM-fade');
         const btn = document.getElementById('IAM-expand-btn');
-        let expanded = false;
-        btn.addEventListener('click', function() {
-          expanded = !expanded;
-          if (expanded) {
-            wrapper.style.maxHeight = '2000px';
-            fade.style.opacity = '0';
-            btn.textContent = 'نمایش کمتر';
-          } else {
-            wrapper.style.maxHeight = '2.1em';
-            fade.style.opacity = '1';
-            btn.textContent = 'نمایش بیشتر';
-          }
-        });
+        if (wrapper && fade && btn) {
+          let expanded = false;
+          btn.addEventListener('click', function() {
+            expanded = !expanded;
+            if (expanded) {
+              wrapper.style.maxHeight = '2000px';
+              fade.style.opacity = '0';
+              btn.textContent = 'نمایش کمتر';
+            } else {
+              wrapper.style.maxHeight = '2.1em';
+              fade.style.opacity = '1';
+              btn.textContent = 'نمایش بیشتر';
+            }
+          });
+        }
       });
       </script>
 
@@ -772,7 +976,7 @@
       <div class="swap-container" style="max-width:600px;margin:0 auto;padding:1.5rem;">
         
         <!-- Swap Rules and Information -->
-        <div style="background:linear-gradient(135deg,#232946,#181c2a);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;border:2px solid #00ff88;">
+        <div class="swap-rules" style="background:linear-gradient(135deg,#232946,#181c2a);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;border:2px solid #00ff88;">
           <h3 style="color:#00ff88;margin-bottom:1rem;font-size:1.2rem;">📋 قوانین و راهنمای تبدیل</h3>
           
           <div style="margin-bottom:1rem;">
@@ -780,8 +984,8 @@
             <ul style="color:#b8c1ec;line-height:1.6;margin:0;padding-right:1rem;">
               <li>✅ <strong style="color:#00ff88;">DAI → IAM:</strong> خرید توکن IAM با DAI (نرخ متغیر)</li>
               <li>✅ <strong style="color:#00ff88;">IAM → DAI:</strong> فروش توکن IAM و دریافت DAI</li>
-              <li>✅ کارمزد تبدیل: 2% از مبلغ تبدیل</li>
-              <li>✅ حداقل مقدار تبدیل: 1 DAI یا 1 IAM</li>
+              <li>✅ کارمزد تبدیل: پویا (۲٪، ۲.۵٪ یا ۳٪ بر اساس موجودی DAI قرارداد)</li>
+              <li>✅ حداقل مقدار تبدیل: بیش از 1 DAI یا بیش از 1 IAM</li>
             </ul>
           </div>
           
@@ -828,7 +1032,7 @@
           
           <div class="swap-row" id="swap-usd-converter-row" style="display:none;">
             <label for="swapUsdAmount">💰 معادل دلاری:</label>
-            <div style="display:flex;gap:0.5rem;align-items:center;">
+            <div class="usd-converter-container" style="display:flex;gap:0.5rem;align-items:center;">
               <span style="color:#00ff88;font-weight:bold;">$</span>
               <input type="number" id="swapUsdAmount" placeholder="5.00" min="0" step="0.01" style="flex:1;">
               <button type="button" id="swapUsdToTokenBtn" style="
@@ -855,9 +1059,9 @@
         </form>
         
         <!-- Balance Check -->
-        <div style="background:rgba(0,255,136,0.1);border-radius:8px;padding:1rem;margin-top:1.5rem;">
+        <div class="swap-balance-check" style="background:rgba(0,255,136,0.1);border-radius:8px;padding:1rem;margin-top:1.5rem;">
           <h4 style="color:#00ff88;margin-bottom:0.8rem;">💰 موجودی فعلی شما:</h4>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="swap-balance-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
             <div style="text-align:center;">
               <div style="color:#00ff88;font-weight:bold;">DAI</div>
               <div id="daiBalance" style="color:#b8c1ec;font-family:monospace;">-</div>
@@ -882,10 +1086,10 @@
       <p style="margin:0 0 0.5rem 0;">انتقال توکن به کیف پول دیگر</p>
     </div>
     <div class="expand-content" style="padding:0;">
-      <div class="transfer-container" style="max-width:600px;margin:0 auto;padding:1.5rem;">
+      <div class="transfer-container" style="max-width:600px;margin:0;padding:1.5rem;">
         
         <!-- Transfer Rules and Information -->
-        <div style="background:linear-gradient(135deg,#232946,#181c2a);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;border:2px solid #a786ff;">
+        <div class="transfer-rules" style="background:linear-gradient(135deg,#232946,#181c2a);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;border:2px solid #a786ff;">
           <h3 style="color:#00ff88;margin-bottom:1rem;font-size:1.2rem;">📋 قوانین و راهنمای انتقال</h3>
           
           <div style="margin-bottom:1rem;">
@@ -935,7 +1139,7 @@
           </div>
           <div class="transfer-row" style="margin-bottom:0.5rem;">
             <label for="searchIndex">جستجو با ایندکس:</label>
-            <div style="display:flex;gap:0.5rem;align-items:center;">
+            <div class="search-index-container" style="display:flex;gap:0.5rem;align-items:center;">
               <input type="number" id="searchIndex" placeholder="ایندکس کاربر" min="0" style="width:120px;direction:ltr;">
               <button type="button" id="searchIndexBtn" class="transfer-btn" style="padding:0.5rem 1.2rem;font-size:1rem;min-width:80px;">جستجو</button>
             </div>
@@ -962,7 +1166,7 @@
           </div>
           <div class="transfer-row" id="usd-converter-row" style="display:none;">
             <label for="transferUsdAmount">💰 معادل دلاری (فقط برای IAM):</label>
-            <div style="display:flex;gap:0.5rem;align-items:center;">
+            <div class="usd-converter-container" style="display:flex;gap:0.5rem;align-items:center;">
               <span style="color:#00ff88;font-weight:bold;">$</span>
               <input type="number" id="transferUsdAmount" placeholder="5.00" min="0" step="0.01" style="flex:1;">
               <button type="button" id="usdToIAMBtn" style="
@@ -992,7 +1196,7 @@
           <!-- Balance Check -->
           <div style="background:rgba(167,134,255,0.1);border-radius:8px;padding:1rem;margin-bottom:1rem;" class="balance-check">
             <h4 style="color:#a786ff;margin-bottom:0.8rem;">💰 موجودی فعلی شما:</h4>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;">
+            <div class="balance-check-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;">
               <div style="text-align:center;">
                 <div style="color:#00ff88;font-weight:bold;">DAI</div>
                 <div id="transfer-dai-balance" style="color:#b8c1ec;font-family:monospace;">-</div>
@@ -1019,17 +1223,7 @@
   
 
 
-  <!-- نمایش وضعیت اتصال -->
-  <div id="connection-status" style="
-    display: none;
-    margin: 0 1rem 1rem 1rem;
-    padding: 1rem;
-    border-radius: 12px;
-    font-family: 'Nazanin', 'B Nazanin', 'BNazanin', Tahoma, Arial, sans-serif;
-    font-size: 0.9rem;
-    font-weight: 600;
-    text-align: center;
-  "></div>
+
 
     
     <script src="js/smooth-value-updater.js"></script>
@@ -1169,6 +1363,458 @@
       cursor: not-allowed;
       transform: none;
     }
+    
+    /* Responsive Design for Transfer Section */
+    @media (max-width: 768px) {
+      #main-transfer {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        padding: 0.5rem !important;
+      }
+      
+
+      
+      .transfer-container {
+        max-width: 100% !important;
+        padding: 0.8rem !important;
+        margin: 0 !important;
+        width: 100% !important;
+      }
+      
+      .transfer-form {
+        padding: 0.8rem !important;
+        border-radius: 8px !important;
+      }
+      
+      .transfer-row {
+        margin-bottom: 0.8rem !important;
+      }
+      
+      .transfer-row label {
+        font-size: 0.9rem !important;
+        margin-bottom: 0.3rem !important;
+      }
+      
+      .transfer-row input,
+      .transfer-row select {
+        padding: 0.6rem !important;
+        font-size: 0.9rem !important;
+        border-radius: 6px !important;
+      }
+      
+      .transfer-btn {
+        padding: 0.7rem 1.2rem !important;
+        font-size: 0.9rem !important;
+        border-radius: 6px !important;
+      }
+      
+      /* Balance grid responsive */
+      .balance-check {
+        padding: 0.8rem !important;
+        border-radius: 6px !important;
+      }
+      
+      .balance-check .balance-check-grid {
+        grid-template-columns: 1fr !important;
+        gap: 0.6rem !important;
+      }
+      
+      .balance-check h4 {
+        font-size: 1rem !important;
+        margin-bottom: 0.6rem !important;
+      }
+      
+      /* Search index row responsive */
+      .search-index-container {
+        flex-direction: column !important;
+        gap: 0.4rem !important;
+      }
+      
+      .search-index-container input {
+        width: 100% !important;
+        min-width: auto !important;
+      }
+      
+      .search-index-container button {
+        width: 100% !important;
+        min-width: auto !important;
+        padding: 0.5rem !important;
+      }
+      
+      /* USD converter row responsive */
+      .usd-converter-container {
+        flex-direction: column !important;
+        gap: 0.4rem !important;
+      }
+      
+      .usd-converter-container input {
+        width: 100% !important;
+      }
+      
+      .usd-converter-container button {
+        width: 100% !important;
+        padding: 0.5rem !important;
+      }
+      
+      /* Rules section responsive */
+      .transfer-rules {
+        padding: 0.8rem !important;
+        border-radius: 8px !important;
+        margin-bottom: 1rem !important;
+      }
+      
+      .transfer-rules h3 {
+        font-size: 1.1rem !important;
+        margin-bottom: 0.8rem !important;
+      }
+      
+      .transfer-rules h4 {
+        font-size: 0.95rem !important;
+        margin-bottom: 0.4rem !important;
+      }
+      
+      .transfer-rules ul {
+        font-size: 0.8rem !important;
+        line-height: 1.4 !important;
+        padding-right: 0.8rem !important;
+      }
+      
+      .transfer-rules li {
+        margin-bottom: 0.3rem !important;
+      }
+      
+      /* Small text responsive */
+      .transfer-row small {
+        font-size: 0.75rem !important;
+        margin-top: 0.2rem !important;
+      }
+      
+      /* Max amount button responsive */
+      #maxAmountBtn {
+        padding: 0.4rem 0.8rem !important;
+        font-size: 0.8rem !important;
+        margin-top: 0.4rem !important;
+        width: 100% !important;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      #main-transfer {
+        padding: 0.3rem !important;
+      }
+      
+
+      
+      .transfer-container {
+        padding: 0.6rem !important;
+        margin: 0 !important;
+        width: 100% !important;
+      }
+      
+      .transfer-form {
+        padding: 0.6rem !important;
+      }
+      
+      .transfer-row {
+        margin-bottom: 0.6rem !important;
+      }
+      
+      .transfer-row label {
+        font-size: 0.85rem !important;
+      }
+      
+      .transfer-row input,
+      .transfer-row select {
+        padding: 0.5rem !important;
+        font-size: 0.85rem !important;
+      }
+      
+      .transfer-btn {
+        padding: 0.6rem 1rem !important;
+        font-size: 0.85rem !important;
+      }
+      
+      .balance-check {
+        padding: 0.6rem !important;
+      }
+      
+      .transfer-rules {
+        padding: 0.6rem !important;
+      }
+      
+      .transfer-rules h3 {
+        font-size: 1rem !important;
+      }
+      
+      .transfer-rules h4 {
+        font-size: 0.9rem !important;
+      }
+      
+      .transfer-rules ul {
+        font-size: 0.75rem !important;
+      }
+    }
+    
+    @media (min-width: 769px) and (max-width: 1024px) {
+
+      
+      .transfer-container {
+        max-width: 90% !important;
+        padding: 1.2rem !important;
+        margin: 0 auto !important;
+      }
+      
+      .transfer-form {
+        padding: 1.2rem !important;
+      }
+      
+      .balance-check .balance-check-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 1rem !important;
+      }
+    }
+    
+    @media (min-width: 1025px) {
+
+      
+      .transfer-container {
+        max-width: 700px !important;
+        padding: 1.5rem !important;
+        margin: 0 auto !important;
+      }
+      
+      .transfer-form {
+        padding: 1.5rem !important;
+      }
+      
+      .transfer-row {
+        margin-bottom: 1.5rem !important;
+      }
+      
+      .balance-check .balance-check-grid {
+        grid-template-columns: 1fr 1fr 1fr !important;
+        gap: 1rem !important;
+      }
+    }
+    
+    /* Responsive Design for Swap Section */
+    @media (max-width: 768px) {
+      #main-swap {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        padding: 0.5rem !important;
+      }
+      
+      .swap-container {
+        max-width: 100% !important;
+        padding: 0.8rem !important;
+        margin: 0 !important;
+        width: 100% !important;
+      }
+      
+      .swap-form {
+        padding: 0.8rem !important;
+        border-radius: 8px !important;
+      }
+      
+      .swap-row {
+        margin-bottom: 0.8rem !important;
+      }
+      
+      .swap-row label {
+        font-size: 0.9rem !important;
+        margin-bottom: 0.3rem !important;
+      }
+      
+      .swap-row input,
+      .swap-row select {
+        padding: 0.6rem !important;
+        font-size: 0.9rem !important;
+        border-radius: 6px !important;
+      }
+      
+      .swap-btn {
+        padding: 0.7rem 1.2rem !important;
+        font-size: 0.9rem !important;
+        border-radius: 6px !important;
+      }
+      
+      /* Swap rules responsive */
+      .swap-rules {
+        padding: 0.8rem !important;
+        border-radius: 8px !important;
+        margin-bottom: 1rem !important;
+      }
+      
+      .swap-rules h3 {
+        font-size: 1.1rem !important;
+        margin-bottom: 0.8rem !important;
+      }
+      
+      .swap-rules h4 {
+        font-size: 0.95rem !important;
+        margin-bottom: 0.4rem !important;
+      }
+      
+      .swap-rules ul {
+        font-size: 0.8rem !important;
+        line-height: 1.4 !important;
+        padding-right: 0.8rem !important;
+      }
+      
+      .swap-rules li {
+        margin-bottom: 0.3rem !important;
+      }
+      
+      /* Amount input group responsive */
+      .amount-input-group {
+        flex-direction: column !important;
+        gap: 0.4rem !important;
+      }
+      
+      .amount-input-group input {
+        width: 100% !important;
+      }
+      
+      .amount-input-group .max-btn {
+        width: 100% !important;
+        padding: 0.5rem !important;
+      }
+      
+      /* USD converter responsive */
+      .swap-row .usd-converter-container {
+        flex-direction: column !important;
+        gap: 0.4rem !important;
+      }
+      
+      .swap-row .usd-converter-container input {
+        width: 100% !important;
+      }
+      
+      .swap-row .usd-converter-container button {
+        width: 100% !important;
+        padding: 0.5rem !important;
+      }
+      
+      /* Balance check responsive */
+      .swap-balance-check {
+        padding: 0.8rem !important;
+        border-radius: 6px !important;
+      }
+      
+      .swap-balance-check .swap-balance-grid {
+        grid-template-columns: 1fr !important;
+        gap: 0.6rem !important;
+      }
+      
+      .swap-balance-check h4 {
+        font-size: 1rem !important;
+        margin-bottom: 0.6rem !important;
+      }
+      
+      /* Small text responsive */
+      .swap-row small {
+        font-size: 0.75rem !important;
+        margin-top: 0.2rem !important;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      #main-swap {
+        padding: 0.3rem !important;
+      }
+      
+      .swap-container {
+        padding: 0.6rem !important;
+      }
+      
+      .swap-form {
+        padding: 0.6rem !important;
+      }
+      
+      .swap-row {
+        margin-bottom: 0.6rem !important;
+      }
+      
+      .swap-row label {
+        font-size: 0.85rem !important;
+      }
+      
+      .swap-row input,
+      .swap-row select {
+        padding: 0.5rem !important;
+        font-size: 0.85rem !important;
+      }
+      
+      .swap-btn {
+        padding: 0.6rem 1rem !important;
+        font-size: 0.85rem !important;
+      }
+      
+      .swap-balance-check {
+        padding: 0.6rem !important;
+      }
+      
+      .swap-rules {
+        padding: 0.6rem !important;
+      }
+      
+      .swap-rules h3 {
+        font-size: 1rem !important;
+      }
+      
+      .swap-rules h4 {
+        font-size: 0.9rem !important;
+      }
+      
+      .swap-rules ul {
+        font-size: 0.75rem !important;
+      }
+    }
+    
+    @media (min-width: 769px) and (max-width: 1024px) {
+      .swap-container {
+        max-width: 90% !important;
+        padding: 1.2rem !important;
+        margin: 0 auto !important;
+      }
+      
+      .swap-form {
+        padding: 1.2rem !important;
+      }
+      
+      .swap-balance-check .swap-balance-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 1rem !important;
+      }
+    }
+    
+    @media (min-width: 1025px) {
+      .swap-container {
+        max-width: 700px !important;
+        padding: 1.5rem !important;
+        margin: 0 auto !important;
+      }
+      
+      .swap-form {
+        padding: 1.5rem !important;
+      }
+      
+      .swap-row {
+        margin-bottom: 1.5rem !important;
+      }
+      
+      .swap-balance-check .swap-balance-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 1rem !important;
+      }
+    }
   </style>
   
   <!-- تعریف متغیرهای مورد نیاز برای سواپ -->
@@ -1255,10 +1901,14 @@
   <!-- Charts removed -->
   
   <script>
+    // Safe, no-op placeholder to avoid unhandled users(address) calls
     (async () => {
-      const { contract, address } = await window.connectWallet();
-      const user = await contract.users(address);
-  
+      try {
+        await window.connectWallet();
+        // Intentionally skip direct contract.users(address) call to avoid provider decode issues
+      } catch (e) {
+        // ignore
+      }
     })();
   </script>
 
@@ -1425,7 +2075,7 @@
   (async function() {
     if (window.getUserProfile) {
       const profile = await window.getUserProfile();
-      if (!profile.activated) {
+      if (!(profile.index && BigInt(profile.index) > 0n)) {
         // قفل کردن فقط بخش ریپورت
         const reportsSection = document.getElementById('main-reports');
         if (reportsSection) {
@@ -1984,6 +2634,8 @@
               console.warn('⚠️ خطا در رفرش SwapManager:', error);
             }
           }
+          // به‌روزرسانی نوار وضعیت داشبورد ایندکس
+          try { if (typeof window.indexStatusTryUpdate === 'function') window.indexStatusTryUpdate(); } catch(_) {}
         }, 1000);
         
         return result;

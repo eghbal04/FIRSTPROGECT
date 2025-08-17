@@ -171,8 +171,8 @@ function updateProfileUI(profile) {
 
     const statusElement = document.getElementById('profileStatus');
     if (statusElement) {
-        // وضعیت ثبت‌نام را فقط بر اساس userStruct.activated نمایش بده
-        if (profile.userStruct && profile.userStruct.activated) {
+        // وضعیت ثبت‌نام بر اساس index > 0
+        if (profile.userStruct && profile.userStruct.index && BigInt(profile.userStruct.index) > 0n) {
             statusElement.textContent = 'کاربر ثبت‌نام شده';
             statusElement.className = 'profile-status success';
         } else {

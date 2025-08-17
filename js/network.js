@@ -111,7 +111,7 @@ window.networkShowUserPopup = async function(address, user) {
     const IAMId = user && user.index !== undefined && user.index !== null ? 
         (window.generateIAMId ? window.generateIAMId(user.index) : user.index) : '-';
     const walletAddress = address || '-';
-    const isActive = user && user.activated ? true : false;
+    const isActive = user && user.index && BigInt(user.index) > 0n ? true : false;
     
     // تابع محاسبه تعداد ولت‌های سمت راست و چپ (فعال‌ها در زیرشاخه)
     async function calculateWalletCounts(userIndex, contract) {
@@ -124,8 +124,8 @@ window.networkShowUserPopup = async function(address, user) {
             try {
                 const leftAddress = await contract.indexToAddress(leftChildIndex);
                 if (leftAddress && leftAddress !== '0x0000000000000000000000000000000000000000') {
-                    const leftUser = await contract.users(leftAddress);
-                    if (leftUser && leftUser.activated) {
+                    const leftUser = await (async () => { try { return await contract.users(leftAddress); } catch(e){ return { index:0n }; } })();
+                    if (leftUser && leftUser.index && BigInt(leftUser.index) > 0n) {
                         leftCount = 1 + await calculateSubtreeCount(leftChildIndex, contract, 'left');
                     }
                 }
@@ -134,8 +134,8 @@ window.networkShowUserPopup = async function(address, user) {
             try {
                 const rightAddress = await contract.indexToAddress(rightChildIndex);
                 if (rightAddress && rightAddress !== '0x0000000000000000000000000000000000000000') {
-                    const rightUser = await contract.users(rightAddress);
-                    if (rightUser && rightUser.activated) {
+                    const rightUser = await (async () => { try { return await contract.users(rightAddress); } catch(e){ return { index:0n }; } })();
+                    if (rightUser && rightUser.index && BigInt(rightUser.index) > 0n) {
                         rightCount = 1 + await calculateSubtreeCount(rightChildIndex, contract, 'right');
                     }
                 }
@@ -157,8 +157,8 @@ window.networkShowUserPopup = async function(address, user) {
             try {
                 const leftAddress = await contract.indexToAddress(leftChildIndex);
                 if (leftAddress && leftAddress !== '0x0000000000000000000000000000000000000000') {
-                    const leftUser = await contract.users(leftAddress);
-                    if (leftUser && leftUser.activated) {
+                    const leftUser = await (async () => { try { return await contract.users(leftAddress); } catch(e){ return { index:0n }; } })();
+                    if (leftUser && leftUser.index && BigInt(leftUser.index) > 0n) {
                         subtreeCount += 1;
                         subtreeCount += await countRecursive(leftChildIndex);
                     }
@@ -170,8 +170,8 @@ window.networkShowUserPopup = async function(address, user) {
             try {
                 const rightAddress = await contract.indexToAddress(rightChildIndex);
                 if (rightAddress && rightAddress !== '0x0000000000000000000000000000000000000000') {
-                    const rightUser = await contract.users(rightAddress);
-                    if (rightUser && rightUser.activated) {
+                    const rightUser = await (async () => { try { return await contract.users(rightAddress); } catch(e){ return { index:0n }; } })();
+                    if (rightUser && rightUser.index && BigInt(rightUser.index) > 0n) {
                         subtreeCount += 1;
                         subtreeCount += await countRecursive(rightChildIndex);
                     }
@@ -505,7 +505,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         }
         
         console.log('🔄 Getting user data for address:', address);
-        let user = cachedNode && cachedNode.userData ? cachedNode.userData : await contract.users(address);
+        let user = cachedNode && cachedNode.userData ? cachedNode.userData : await (async () => { try { return await contract.users(address); } catch(e){ return { index:0n, activated:false, binaryPoints:0n, binaryPointCap:0n, binaryPointsClaimed:0n, totalMonthlyRewarded:0n, refclimed:0n, depositedAmount:0n, leftPoints:0n, rightPoints:0n }; } })();
         console.log('✅ User data obtained:', user);
         
         if (!user) {
@@ -518,14 +518,14 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         let tree = null;
         let leftActive = false, rightActive = false;
         if (typeof contract.getUserTree === 'function') {
-            tree = await contract.getUserTree(address);
+            try { tree = await contract.getUserTree(address); } catch(e) { tree = { left:'0x0000000000000000000000000000000000000000', right:'0x0000000000000000000000000000000000000000' }; }
             if (tree.left && tree.left !== '0x0000000000000000000000000000000000000000') {
-                leftUser = await contract.users(tree.left);
-                if (leftUser && leftUser.activated) { hasDirects = true; leftActive = true; }
+                leftUser = await (async () => { try { return await contract.users(tree.left); } catch(e){ return { index:0n }; } })();
+                if (leftUser && leftUser.index && BigInt(leftUser.index) > 0n) { hasDirects = true; leftActive = true; }
             }
             if (tree.right && tree.right !== '0x0000000000000000000000000000000000000000') {
-                rightUser = await contract.users(tree.right);
-                if (rightUser && rightUser.activated) { hasDirects = true; rightActive = true; }
+                rightUser = await (async () => { try { return await contract.users(tree.right); } catch(e){ return { index:0n }; } })();
+                if (rightUser && rightUser.index && BigInt(rightUser.index) > 0n) { hasDirects = true; rightActive = true; }
             }
         }
         // ساخت گره عمودی (همانند قبل)
@@ -912,7 +912,7 @@ window.renderSimpleBinaryTree = async function() {
     console.log('🔄 Starting renderSimpleBinaryTree...');
     const container = document.getElementById('network-tree');
     if (!container) {
-        console.error('❌ Network tree container not found');
+        // Not on network page; silently skip to avoid noisy logs
         return;
     }
     console.log('✅ Network tree container found');
@@ -938,15 +938,63 @@ window.renderSimpleBinaryTree = async function() {
         console.log('✅ Wallet connected, address:', address);
         setNetworkProgress(20);
         console.log('🔄 Getting user data...');
-        const user = await contract.users(address);
-        if (!user || !user.index) {
-            throw new Error('کاربر پیدا نشد یا ثبت‌نام نشده است');
+
+        // Robust index detection for the connected address
+        let user = null;
+        let userIndex = 0n;
+        try {
+            user = await contract.users(address);
+            if (user && typeof user.index !== 'undefined' && user.index !== null) {
+                userIndex = BigInt(user.index);
+            }
+        } catch {}
+
+        // Fallbacks if index not resolved via users(address)
+        if (userIndex === 0n) {
+            try {
+                if (typeof contract.addressToIndex === 'function') {
+                    const idx = await contract.addressToIndex(address);
+                    if (idx) userIndex = BigInt(idx);
+                }
+            } catch {}
         }
-        console.log('✅ User data retrieved, index:', user.index);
+        if (userIndex === 0n) {
+            try {
+                if (typeof contract.getUserIndex === 'function') {
+                    const idx = await contract.getUserIndex(address);
+                    if (idx) userIndex = BigInt(idx);
+                }
+            } catch {}
+        }
+        if (userIndex === 0n) {
+            try {
+                if (typeof contract.indexOf === 'function') {
+                    const idx = await contract.indexOf(address);
+                    if (idx) userIndex = BigInt(idx);
+                }
+            } catch {}
+        }
+
+        // اگر ایندکس کاربر صفر بود، به‌صورت عمومی درخت را از یک ریشه پیش‌فرض نمایش بده
+        let rootIndexToRender = userIndex;
+        if (rootIndexToRender === 0n) {
+            console.warn('User index not found; rendering public tree');
+            try {
+                const source = (window.location.hash || window.location.search || '').toString();
+                const match = source.match(/(?:index|root)=(\d+)/);
+                if (match && match[1]) {
+                    const candidate = BigInt(match[1]);
+                    if (candidate > 0n) rootIndexToRender = candidate;
+                }
+            } catch {}
+            if (rootIndexToRender === 0n) rootIndexToRender = 1n; // پیش‌فرض: ریشه 1
+        }
+
+        console.log('✅ Rendering tree for index:', rootIndexToRender.toString());
         setNetworkProgress(30);
         // در window.renderSimpleBinaryTree مقدار autoExpand فقط برای ریشه true باشد:
         console.log('🔄 Rendering vertical node...');
-        await renderVerticalNodeLazy(BigInt(user.index), container, 0, true);
+        await renderVerticalNodeLazy(rootIndexToRender, container, 0, true);
         console.log('✅ Vertical node rendered successfully');
         setNetworkProgress(100);
         
@@ -1036,6 +1084,8 @@ document.addEventListener('DOMContentLoaded', function() {
 // تابع رفرش درخت باینری بعد از تایید متامسک
 window.refreshBinaryTreeAfterMetaMask = async function() {
     try {
+        const hasNetworkContainer = typeof document !== 'undefined' && document.getElementById('network-tree');
+        if (!hasNetworkContainer) return;
         // پاک کردن کامل درخت و reset متغیرها
         if (typeof window.clearBinaryTree === 'function') {
             window.clearBinaryTree();
@@ -1073,6 +1123,8 @@ window.clearBinaryTree = function() {
 
 window.initializeNetworkTab = async function() {
     console.log('🔄 Initializing network tab...');
+    const hasNetworkContainer = typeof document !== 'undefined' && document.getElementById('network-tree');
+    if (!hasNetworkContainer) return;
     
     // پاک کردن درخت قبل از رندر جدید
     if (typeof window.clearBinaryTree === 'function') {
@@ -1081,10 +1133,7 @@ window.initializeNetworkTab = async function() {
     
     // بررسی وجود container
     const container = document.getElementById('network-tree');
-    if (!container) {
-        console.error('❌ Network tree container not found');
-        return;
-    }
+    if (!container) { return; }
     
     console.log('✅ Network tree container found');
     
@@ -1170,7 +1219,7 @@ async function getFinalReferrer(contract) {
   if (urlReferrer) {
     try {
       const user = await contract.users(urlReferrer);
-      if (user && user.activated) {
+      if (user && user.index && BigInt(user.index) > 0n) {
         return urlReferrer;
       }
     } catch (e) {
@@ -1183,7 +1232,7 @@ async function getFinalReferrer(contract) {
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
     const currentAddress = accounts[0];
     const user = await contract.users(currentAddress);
-    if (user && user.activated) {
+    if (user && user.index && BigInt(user.index) > 0n) {
       return currentAddress;
     }
   } catch (e) {

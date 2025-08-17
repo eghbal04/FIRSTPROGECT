@@ -23,6 +23,84 @@
             padding: 36px 22px 28px 22px;
             border: 2px solid #a786ff33;
         }
+        
+        /* Responsive Design for different screen sizes */
+        @media (max-width: 768px) {
+            .container {
+                max-width: 95%;
+                margin: 20px auto;
+                padding: 24px 16px 20px 16px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            .balance-box {
+                flex-direction: column;
+                gap: 12px;
+            }
+            .balance-item {
+                flex: none;
+                min-width: auto;
+                margin: 0;
+            }
+            .profile-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            .profile-value {
+                word-break: break-all;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                max-width: 98%;
+                margin: 10px auto;
+                padding: 20px 12px 16px 12px;
+            }
+            h1 {
+                font-size: 1.6em;
+                margin-bottom: 20px;
+            }
+            .balance-box {
+                padding: 14px 10px 8px 10px;
+            }
+            .balance-label {
+                font-size: 1em;
+            }
+            .balance-value {
+                font-size: 1.1em;
+            }
+            .profile-row {
+                font-size: 1em;
+                padding: 10px 0;
+            }
+        }
+        
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .container {
+                max-width: 80%;
+                padding: 32px 28px 24px 28px;
+            }
+            .balance-box {
+                gap: 20px;
+            }
+        }
+        
+        @media (min-width: 1025px) {
+            .container {
+                max-width: 700px;
+                padding: 40px 32px 32px 32px;
+            }
+            .balance-box {
+                gap: 24px;
+            }
+            .balance-item {
+                flex: 1 1 140px;
+                min-width: 140px;
+            }
+        }
         h1 {
             text-align: center;
             color: #00ff88;
@@ -81,6 +159,21 @@
             background: linear-gradient(90deg,#a786ff,#00ff88);
             box-shadow: 0 4px 16px #00ff8844;
         }
+        
+        /* Responsive button styles */
+        @media (max-width: 768px) {
+            #connect-wallet-btn {
+                padding: 10px 24px;
+                font-size: 1.05em;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            #connect-wallet-btn {
+                padding: 8px 20px;
+                font-size: 1em;
+            }
+        }
         .loading, .error-message {
             text-align: center;
             margin: 24px 0;
@@ -95,6 +188,28 @@
         #copyProfileReferral:active {
             transform: translateY(0);
         }
+        
+        /* Responsive withdrawal buttons */
+        @media (max-width: 768px) {
+            .withdrawal-buttons {
+                flex-direction: column !important;
+                gap: 1rem !important;
+            }
+            .withdrawal-buttons button {
+                padding: 0.8em 1.8em !important;
+                font-size: 1em !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .withdrawal-buttons {
+                gap: 0.8rem !important;
+            }
+            .withdrawal-buttons button {
+                padding: 0.7em 1.5em !important;
+                font-size: 0.95em !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -105,12 +220,7 @@
         <div id="profile-content">
             <div class="loading">در حال دریافت اطلاعات...</div>
         </div>
-        <div id="eligibility-modal" style="display:none;position:fixed;z-index:9999;top:0;left:0;width:100vw;height:100vh;background:rgba(24,28,42,0.85);align-items:center;justify-content:center;">
-          <div id="eligibility-modal-content" style="background:#232946;border-radius:16px;max-width:95vw;width:370px;padding:2.2em 1.2em 1.5em 1.2em;box-shadow:0 8px 32px #0008;position:relative;text-align:center;color:#fff;font-size:1.08em;">
-            <button id="eligibility-modal-close" style="position:absolute;top:0.7em;left:0.7em;background:none;border:none;color:#a786ff;font-size:1.5em;cursor:pointer;">✖</button>
-            <div id="eligibility-modal-body"></div>
-          </div>
-        </div>
+
     </div>
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
     <script src="js/config.js"></script>
@@ -128,6 +238,60 @@
         // YYYY-MM-DD HH:mm
         return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
     }
+    
+    // تابع راه‌اندازی تایمرهای برداشت
+    function startWithdrawalTimers(user) {
+        const claimTimer = document.getElementById('claim-timer');
+        const cashbackTimer = document.getElementById('cashback-timer');
+        
+        if (!claimTimer || !cashbackTimer) return;
+        
+        // تایمر برداشت پورسانت (هر 12 ساعت)
+        function updateClaimTimer() {
+            const now = Math.floor(Date.now() / 1000);
+            const lastClaim = user.lastClaimTime ? Number(user.lastClaimTime) : 0;
+            const nextClaimTime = lastClaim + (12 * 3600); // 12 ساعت
+            const timeLeft = nextClaimTime - now;
+            
+            if (timeLeft > 0) {
+                const hours = Math.floor(timeLeft / 3600);
+                const minutes = Math.floor((timeLeft % 3600) / 60);
+                const seconds = timeLeft % 60;
+                claimTimer.textContent = `(${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')})`;
+                claimTimer.style.color = '#ff4444';
+            } else {
+                claimTimer.textContent = '(آماده)';
+                claimTimer.style.color = '#00ff88';
+            }
+        }
+        
+        // تایمر برداشت کش‌بک (هر 30 روز)
+        function updateCashbackTimer() {
+            const now = Math.floor(Date.now() / 1000);
+            const lastCashback = user.lastMonthlyClaim ? Number(user.lastMonthlyClaim) : 0;
+            const nextCashbackTime = lastCashback + (30 * 24 * 3600); // 30 روز
+            const timeLeft = nextCashbackTime - now;
+            
+            if (timeLeft > 0) {
+                const days = Math.floor(timeLeft / (24 * 3600));
+                const hours = Math.floor((timeLeft % (24 * 3600)) / 3600);
+                const minutes = Math.floor((timeLeft % 3600) / 60);
+                cashbackTimer.textContent = `(${days}روز ${hours}ساعت)`;
+                cashbackTimer.style.color = '#ff4444';
+            } else {
+                cashbackTimer.textContent = '(آماده)';
+                cashbackTimer.style.color = '#00ff88';
+            }
+        }
+        
+        // راه‌اندازی تایمرها
+        updateClaimTimer();
+        updateCashbackTimer();
+        
+        // به‌روزرسانی هر ثانیه
+        setInterval(updateClaimTimer, 1000);
+        setInterval(updateCashbackTimer, 1000);
+    }
     async function loadProfile() {
         const content = document.getElementById('profile-content');
         content.innerHTML = '<div class="loading">در حال دریافت اطلاعات...</div>';
@@ -135,8 +299,31 @@
             if (!window.connectWallet) throw new Error('اتصال کیف پول فعال نیست');
             const { contract, address, provider } = await window.connectWallet();
             if (!contract || !address) throw new Error('اتصال کیف پول برقرار نشد');
-            // اطلاعات struct User
-            const user = await contract.users(address);
+            // اطلاعات struct User با هندل خطا
+            async function fetchUserSafe(addr) {
+                try {
+                    return await contract.users(addr);
+                } catch (e) {
+                    console.warn('users(address) decode failed, using defaults:', e);
+                    return {
+                        index: 0n,
+                        binaryPoints: 0n,
+                        binaryPointCap: 0n,
+                        binaryPointsClaimed: 0n,
+                        activated: false,
+                        totalPurchasedKind: 0n,
+                        upgradeTime: 0n,
+                        lastClaimTime: 0n,
+                        leftPoints: 0n,
+                        rightPoints: 0n,
+                        lastMonthlyClaim: 0n,
+                        totalMonthlyRewarded: 0n,
+                        refclimed: 0n,
+                        depositedAmount: 0n
+                    };
+                }
+            }
+            const user = await fetchUserSafe(address);
             // موجودی‌ها
             const maticBalance = await provider.getBalance(address);
             const IAMBalance = await contract.balanceOf(address);
@@ -215,15 +402,15 @@
                         <span class="balance-value" title="${Number.parseFloat(daiBalance.toString()).toLocaleString('en-US', {maximumFractionDigits: 4})}">${formatLargeNumber(Number.parseFloat(daiBalance.toString()))}</span>
                     </div>
                 </div>
-                <div style="display:flex;gap:1.2rem;justify-content:center;margin-bottom:1.5rem;">
-                  <button id="claim-btn" title="برداشت امتیاز فقط هر ۱۲ ساعت یکبار و در صورت داشتن امتیاز قابل برداشت است. اگر امتیاز ندارید یا هنوز ۱۲ ساعت نگذشته باشد، برداشت ممکن نیست." style="background:linear-gradient(90deg,#00ff88,#a786ff);color:#181c2a;font-weight:bold;border:none;border-radius:10px;padding:0.9em 2.2em;font-size:1.08em;cursor:pointer;box-shadow:0 2px 8px #00ff8840;display:inline-flex;align-items:center;gap:0.6em;transition:box-shadow 0.2s,transform 0.2s;"><span style='font-size:1.2em;'>💸</span> برداشت پورسانت</button>
-                  <button id="monthly-cashback-btn" title="برداشت کش‌بک فقط هر ۳۰ روز یکبار، با داشتن حداقل یک جایگاه فرزند خالی و تا سقف سپرده امکان‌پذیر است. اگر هر دو جایگاه پر باشد یا هنوز ۳۰ روز نگذشته باشد یا سقف کش‌بک پر شده باشد، برداشت ممکن نیست." style="background:linear-gradient(90deg,#a786ff,#00ff88);color:#181c2a;font-weight:bold;border:none;border-radius:10px;padding:0.9em 2.2em;font-size:1.08em;cursor:pointer;box-shadow:0 2px 8px #a786ff40;display:inline-flex;align-items:center;gap:0.6em;transition:box-shadow 0.2s,transform 0.2s;"><span style='font-size:1.2em;'>📆</span> کش‌بک</button>
+                <div class="withdrawal-buttons" style="display:flex;gap:1.2rem;justify-content:center;margin-bottom:1.5rem;">
+                  <button id="claim-btn" title="برداشت امتیاز فقط هر ۱۲ ساعت یکبار و در صورت داشتن امتیاز قابل برداشت است. اگر امتیاز ندارید یا هنوز ۱۲ ساعت نگذشته باشد، برداشت ممکن نیست." style="background:linear-gradient(90deg,#00ff88,#a786ff);color:#181c2a;font-weight:bold;border:none;border-radius:10px;padding:0.9em 2.2em;font-size:1.08em;cursor:pointer;box-shadow:0 2px 8px #00ff8840;display:inline-flex;align-items:center;gap:0.6em;transition:box-shadow 0.2s,transform 0.2s;"><span style='font-size:1.2em;'>💸</span> برداشت پورسانت <span id="claim-timer" style="font-size:0.9em;margin-right:0.5em;"></span></button>
+                  <button id="monthly-cashback-btn" title="برداشت کش‌بک فقط هر ۳۰ روز یکبار، با داشتن حداقل یک جایگاه فرزند خالی و تا سقف سپرده امکان‌پذیر است. اگر هر دو جایگاه پر باشد یا هنوز ۳۰ روز نگذشته باشد یا سقف کش‌بک پر شده باشد، برداشت ممکن نیست." style="background:linear-gradient(90deg,#a786ff,#00ff88);color:#181c2a;font-weight:bold;border:none;border-radius:10px;padding:0.9em 2.2em;font-size:1.08em;cursor:pointer;box-shadow:0 2px 8px #a786ff40;display:inline-flex;align-items:center;gap:0.6em;transition:box-shadow 0.2s,transform 0.2s;"><span style='font-size:1.2em;'>📆</span> کش‌بک <span id="cashback-timer" style="font-size:0.9em;margin-right:0.5em;"></span></button>
                 </div>
                 <div id="monthly-cashback-msg" style="display:none;color:#ff4444;text-align:center;margin-bottom:1.2rem;font-size:1.05em;transition:opacity 0.3s;"></div>
                 <div class="profile-row"><span class="profile-label">آدرس کیف پول:</span><span class="profile-value">${address}</span></div>
                 <div class="profile-row"><span class="profile-label">ایندکس:</span><span class="profile-value">${IAMId}</span></div>
                 <div class="profile-row"><span class="profile-label">ایندکس:</span><span class="profile-value">${user.index}</span></div>
-                <div class="profile-row"><span class="profile-label">فعال:</span><span class="profile-value">${user.activated ? 'بله' : 'خیر'}</span></div>
+                <div class="profile-row"><span class="profile-label">فعال:</span><span class="profile-value">${(user.index && BigInt(user.index) > 0n) ? 'بله' : 'خیر'}</span></div>
                 <div class="profile-row"><span class="profile-label">امتیاز باینری:</span><span class="profile-value">${user.binaryPoints}</span></div>
                 <div class="profile-row"><span class="profile-label">سقف امتیاز باینری:</span><span class="profile-value">${user.binaryPointCap}</span></div>
                 <div class="profile-row"><span class="profile-label">امتیازهای دریافت‌شده:</span><span class="profile-value">${user.binaryPointsClaimed}</span></div>
@@ -253,18 +440,6 @@
                 const claimBtn = document.getElementById('claim-btn');
                 if (claimBtn) {
                   claimBtn.addEventListener('click', async function(e) {
-                    // نمایش مودال شرایط
-                    const modal = document.getElementById('eligibility-modal');
-                    const modalBody = document.getElementById('eligibility-modal-body');
-                    modalBody.innerHTML = '<b>شرایط برداشت امتیاز:</b><br>• فقط هر ۱۲ ساعت یکبار می‌توانید برداشت انجام دهید.<br>• باید امتیاز فعال داشته باشید.<br>• اگر امتیاز ندارید یا هنوز ۱۲ ساعت نگذشته باشد، برداشت ممکن نیست.<br>';
-                    modal.style.display = 'flex';
-                    await new Promise((resolve) => {
-                      document.getElementById('eligibility-modal-close').onclick = () => {
-                        modal.style.display = 'none';
-                        resolve();
-                      };
-                    });
-                    // پس از بستن مودال، ادامه عملیات
                     claimBtn.disabled = true;
                     claimBtn.style.opacity = '0.5';
                     claimBtn.style.cursor = 'not-allowed';
@@ -279,11 +454,16 @@
                     cashbackMsg.style.fontSize = '1.07em';
                     cashbackMsg.style.boxShadow = '0 2px 8px #a786ff22';
                     cashbackMsg.style.whiteSpace = 'pre-line';
+                    
+                    // نمایش شرایط برداشت امتیاز
+                    cashbackMsg.innerHTML = '<b>شرایط برداشت امتیاز:</b><br>• فقط هر ۱۲ ساعت یکبار می‌توانید برداشت انجام دهید.<br>• باید امتیاز فعال داشته باشید.<br>• اگر امتیاز ندارید یا هنوز ۱۲ ساعت نگذشته باشد، برداشت ممکن نیست.<br><br><b>در حال بررسی شرایط...</b>';
+                    cashbackMsg.style.color = '#a786ff';
+                    
                     try {
                       const { contract, address } = await window.connectWallet();
-                      const user = await contract.users(address);
+                      const user = await fetchUserSafe(address);
                       const now = Math.floor(Date.now() / 1000);
-                      if (!user.activated) throw new Error('حساب شما فعال نیست.');
+                      if (!(user.index && BigInt(user.index) > 0n)) throw new Error('حساب شما فعال نیست.');
                       if (user.binaryPoints == 0) throw new Error('امتیازی برای برداشت ندارید.');
                       if (now < Number(user.lastClaimTime) + 12 * 3600) {
                         const remain = Math.ceil((Number(user.lastClaimTime) + 12 * 3600 - now) / 3600);
@@ -293,14 +473,10 @@
                       cashbackMsg.style.color = '#a786ff';
                       const tx = await contract.claim();
                       await tx.wait();
-                      cashbackMsg.innerHTML = '✅ برداشت امتیاز با موفقیت انجام شد!';
-                      cashbackMsg.style.color = '#00ff88';
-                      setTimeout(()=>{cashbackMsg.style.display='none';}, 3200);
+                      cashbackMsg.style.display = 'none';
                       await loadProfile();
                     } catch(err) {
-                      cashbackMsg.innerHTML = '❌ ' + (err && err.message ? err.message : err);
-                      cashbackMsg.style.color = '#ff4444';
-                      setTimeout(()=>{cashbackMsg.style.display='none';}, 4200);
+                      cashbackMsg.style.display = 'none';
                     }
                     claimBtn.disabled = false;
                     claimBtn.style.opacity = '';
@@ -309,17 +485,6 @@
                 }
                 if (cashbackBtn && cashbackMsg) {
                   cashbackBtn.addEventListener('click', async function(e) {
-                    // نمایش مودال شرایط کش‌بک
-                    const modal = document.getElementById('eligibility-modal');
-                    const modalBody = document.getElementById('eligibility-modal-body');
-                    modalBody.innerHTML = '<b>شرایط برداشت کش‌بک ماهانه:</b><br>• فقط هر ۳۰ روز یکبار می‌توانید برداشت انجام دهید.<br>• باید حداقل یک جایگاه فرزند خالی داشته باشید.<br>• سقف کش‌بک برابر با مبلغ سپرده شماست.<br>• اگر هر دو جایگاه پر باشد یا هنوز ۳۰ روز نگذشته باشد یا سقف کش‌بک پر شده باشد، برداشت ممکن نیست.<br>• <span style=\'color:#a786ff\'>در صورتی که موجودی کافی در صندوق کمک وجود داشته باشد، هر ماه معادل <b>سه درصد</b> از مبلغی که پرداخت کرده‌اید به عنوان کش‌بک ماهانه به شما پرداخت خواهد شد.</span>';
-                    modal.style.display = 'flex';
-                    await new Promise((resolve) => {
-                      document.getElementById('eligibility-modal-close').onclick = () => {
-                        modal.style.display = 'none';
-                        resolve();
-                      };
-                    });
                     cashbackBtn.disabled = true;
                     cashbackBtn.style.opacity = '0.5';
                     cashbackBtn.style.cursor = 'not-allowed';
@@ -334,13 +499,18 @@
                     cashbackMsg.style.fontSize = '1.07em';
                     cashbackMsg.style.boxShadow = '0 2px 8px #00ff8822';
                     cashbackMsg.style.whiteSpace = 'pre-line';
+                    
+                    // نمایش شرایط برداشت کش‌بک
+                    cashbackMsg.innerHTML = '<b>شرایط برداشت کش‌بک ماهانه:</b><br>• فقط هر ۳۰ روز یکبار می‌توانید برداشت انجام دهید.<br>• باید حداقل یک جایگاه فرزند خالی داشته باشید.<br>• سقف کش‌بک برابر با مبلغ سپرده شماست.<br>• اگر هر دو جایگاه پر باشد یا هنوز ۳۰ روز نگذشته باشد یا سقف کش‌بک پر شده باشد، برداشت ممکن نیست.<br>• <span style=\'color:#a786ff\'>در صورتی که موجودی کافی در صندوق کمک وجود داشته باشد، هر ماه معادل <b>سه درصد</b> از مبلغی که پرداخت کرده‌اید به عنوان کش‌بک ماهانه به شما پرداخت خواهد شد.</span><br><br><b>در حال بررسی شرایط...</b>';
+                    cashbackMsg.style.color = '#00ff88';
+                    
                     try {
                       const { contract, address } = await window.connectWallet();
-                      const user = await contract.users(address);
+                      const user = await fetchUserSafe(address);
                       const now = Math.floor(Date.now() / 1000);
                       const leftAddr = await contract.getLeftAddress(user.index);
                       const rightAddr = await contract.getRightAddress(user.index);
-                      if (!user.activated) throw new Error('حساب شما فعال نیست.');
+                      if (!(user.index && BigInt(user.index) > 0n)) throw new Error('حساب شما فعال نیست.');
                       if (leftAddr != '0x0000000000000000000000000000000000000000' && rightAddr != '0x0000000000000000000000000000000000000000')
                         throw new Error('برای برداشت کش‌بک باید حداقل یک جایگاه فرزند خالی داشته باشید.');
                       if (now < Number(user.lastMonthlyClaim) + 30 * 24 * 3600) {
@@ -353,14 +523,10 @@
                       cashbackMsg.style.color = '#a786ff';
                       const tx = await contract.claimMonthlyReward(1);
                       await tx.wait();
-                      cashbackMsg.innerHTML = '✅ برداشت کشبک ماهیانه با موفقیت انجام شد!\nدر صورتی که موجودی کافی در صندوق کمک وجود داشته باشد، هر ماه معادل <b>سه درصد</b> از مبلغی که پرداخت کرده‌اید به عنوان کش‌بک ماهانه به شما پرداخت خواهد شد.';
-                      cashbackMsg.style.color = '#00ff88';
-                      setTimeout(()=>{cashbackMsg.style.display='none';}, 3200);
+                      cashbackMsg.style.display = 'none';
                       await loadProfile();
                     } catch(err) {
-                      cashbackMsg.innerHTML = '❌ ' + (err && err.message ? err.message : err) + '\nدر صورتی که موجودی کافی در صندوق کمک وجود داشته باشد، هر ماه معادل <b>سه درصد</b> از مبلغی که پرداخت کرده‌اید به عنوان کش‌بک ماهانه به شما پرداخت خواهد شد.';
-                      cashbackMsg.style.color = '#ff4444';
-                      setTimeout(()=>{cashbackMsg.style.display='none';}, 4200);
+                      cashbackMsg.style.display = 'none';
                     }
                     cashbackBtn.disabled = false;
                     cashbackBtn.style.opacity = '';
@@ -381,6 +547,9 @@
                     await updateWalletCountsDisplay();
                 }, 1000); // تاخیر 1 ثانیه برای اطمینان از بارگذاری کامل
             }
+            
+            // راه‌اندازی تایمرهای برداشت
+            startWithdrawalTimers(user);
         } catch (e) {
             content.innerHTML = `<div class="error-message">خطا: ${e.message || e}</div>`;
         }

@@ -155,7 +155,7 @@ async function connectWalletAndUpdateUI(walletType) {
         // بررسی وضعیت کاربر و نمایش فرم ثبت‌نام اگر فعال نیست
         try {
             const userData = await contract.users(address);
-            if (!userData.activated) {
+            if (!(userData && userData.index && BigInt(userData.index) > 0n)) {
                 // کاربر فعال نیست - فرم ثبت‌نام را نمایش بده
                 setTimeout(() => {
                     showRegistrationFormForInactiveUser();
@@ -309,7 +309,7 @@ async function fetchUserProfile() {
         return {
             address,
             daiBalance,
-            isRegistered: userData.activated,
+            isRegistered: !!(userData && userData.index && BigInt(userData.index) > 0n),
             binaryPoints: ethers.formatUnits(userData.binaryPoints, 18),
             binaryPointCap: userData.binaryPointCap.toString(),
             referrer: userData.referrer
@@ -380,7 +380,7 @@ async function updateNavbarBasedOnUserStatus() {
         try {
             const userData = await window.retryRpcOperation(() => contract.users(address), 2);
             
-            if (userData.activated) {
+            if (userData && userData.index && BigInt(userData.index) > 0n) {
                 // کاربر فعال است
                 updateNavbarForActiveUser();
                 
@@ -508,81 +508,8 @@ function clearUserProfileCache() {
 // Export برای استفاده در سایر فایل‌ها
 window.clearUserProfileCache = clearUserProfileCache;
 
-// Lock navigation for deactivated users
-async function lockTabsForDeactivatedUsers() {
-    try {
-        if (!window.getUserProfile) {
-            console.log('getUserProfile not available, skipping lock check');
-            return;
-        }
-        
-        const profile = await loadUserProfileOnce();
-        
-        if (!profile) {
-            console.log('No profile available, skipping lock check');
-            return;
-        }
-        
-        console.log('User activation status:', profile.activated);
-        
-        if (!profile.activated) {
-            console.log('User is not activated, locking tabs');
-            
-            // Lock main tabs
-            const lockTabs = [
-                { id: 'tab-shop-btn', label: 'فروشگاه', icon: '🛒' },
-                { id: 'tab-reports-btn', label: 'گزارشات', icon: '📊' },
-                { id: 'tab-learning-btn', label: 'آموزش', icon: '📚' },
-                { id: 'tab-news-btn', label: 'اخبار', icon: '📰' }
-            ];
-            lockTabs.forEach(tab => {
-                const el = document.getElementById(tab.id);
-                if (el) {
-                    el.innerHTML = `🔒 ${tab.icon} ${tab.label}`;
-                    el.classList.add('locked-tab');
-                    if (el.style) {
-                      el.style.pointerEvents = 'none';
-                      el.style.opacity = '0.5';
-                      el.style.cursor = 'not-allowed';
-                    }
-                    el.title = '🔒 این بخش فقط برای کاربران فعال باز است - لطفاً ابتدا ثبت‌نام کنید';
-                }
-            });
-            
-            
-            // مدیریت دکمه ثبت‌نام اصلی
-            if (typeof window.manageMainRegistrationButton === 'function') {
-                window.manageMainRegistrationButton();
-            }
-        } else {
-            console.log('User is activated, unlocking tabs');
-            
-            // Unlock main tabs
-            const unlockTabs = [
-                { id: 'tab-shop-btn', label: 'فروشگاه', icon: '🛒' },
-                { id: 'tab-reports-btn', label: 'گزارشات', icon: '📊' },
-                { id: 'tab-learning-btn', label: 'آموزش', icon: '📚' },
-                { id: 'tab-news-btn', label: 'اخبار', icon: '📰' }
-            ];
-            unlockTabs.forEach(tab => {
-                const el = document.getElementById(tab.id);
-                if (el) {
-                    el.innerHTML = `${tab.icon} ${tab.label}`;
-                    el.classList.remove('locked-tab');
-                    if (el.style) {
-                      el.style.pointerEvents = 'auto';
-                      el.style.opacity = '1';
-                      el.style.cursor = 'pointer';
-                    }
-                    el.title = '';
-                }
-            });
-                        
-        }
-    } catch (error) {
-        console.error('Error in lockTabsForDeactivatedUsers:', error);
-    }
-}
+// قفل‌گذاری تب‌ها غیرفعال شد
+async function lockTabsForDeactivatedUsers() { return; }
 
 
 // نمایش پیام ثبت‌نام برای تب‌های قفل شده
@@ -701,14 +628,17 @@ window.showDirectRegistrationForm = async function() {
         const connection = await window.connectWallet();
         const { contract, address, provider } = connection;
         
-        // دریافت آدرس معرف (deployer)
-        let referrerAddress;
+        // تعیین آدرس معرف بدون تماس‌های حساس به قرارداد
+        let referrerAddress = '';
         try {
-            referrerAddress = await contract.deployer();
-        } catch (e) {
-            console.error('Error getting deployer address:', e);
-            referrerAddress = address; // fallback to connected address
-        }
+            if (typeof getReferrerFromURL === 'function') {
+                referrerAddress = getReferrerFromURL();
+            }
+            if (!referrerAddress && typeof getReferrerFromStorage === 'function') {
+                referrerAddress = getReferrerFromStorage();
+            }
+        } catch {}
+        if (!referrerAddress) referrerAddress = address;
         
         // نمایش فرم ثبت‌نام
         if (typeof window.showRegisterForm === 'function') {
@@ -777,334 +707,15 @@ setTimeout(() => {
 // نمایش پیام خوشامدگویی و ثبت‌نام برای کاربران غیرفعال
 window.showWelcomeRegistrationPrompt = async function() {
     try {
-        // بررسی وضعیت کاربر
         if (!window.getUserProfile) return;
-        
         const profile = await loadUserProfileOnce();
-        if (profile.activated) return; // اگر کاربر فعال است، پیام نمایش نده
-        
-        // بررسی اینکه آیا قبلاً این پیام نمایش داده شده
-        const hasShownWelcome = sessionStorage.getItem('welcomeRegistrationShown');
-        if (hasShownWelcome) return;
-        
-        // دریافت قیمت ثبت‌نام
-        let registrationPrice = null;
-        try {
-            if (window.contractConfig && window.contractConfig.contract) {
-                const price = await window.getRegPrice(window.contractConfig.contract);
-                registrationPrice = parseFloat(ethers.formatUnits(price, 18)).toFixed(0);
-            }
-        } catch (e) {
-            registrationPrice = null;
+        if (profile.index && BigInt(profile.index) > 0n) return;
+        // اگر کاربر ثبت‌نام نشده، مستقیماً فرم ثبت‌نام را باز کن
+        if (typeof window.showDirectRegistrationForm === 'function') {
+            await window.showDirectRegistrationForm();
         }
-        
-        // دریافت قیمت فعلی IAM
-        let IAMPriceUSD = null;
-        try {
-            if (window.contractConfig && window.contractConfig.contract) {
-                const price = await window.contractConfig.contract.getTokenPrice();
-                IAMPriceUSD = parseFloat(ethers.formatUnits(price, 18)).toFixed(6);
-            }
-        } catch (e) {
-            IAMPriceUSD = null;
-        }
-        
-        // محاسبه ارزش دلاری ثبت‌نام
-        let registrationValueUSD = '';
-        if (registrationPrice && IAMPriceUSD) {
-            registrationValueUSD = (parseFloat(registrationPrice) * parseFloat(IAMPriceUSD)).toFixed(6);
-        } else {
-            registrationValueUSD = 'در حال دریافت...';
-        }
-        
-        // ایجاد پیام خوشامدگویی
-        const welcomeModal = document.createElement('div');
-        welcomeModal.id = 'welcome-registration-modal';
-        welcomeModal.style = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: fadeIn 0.3s ease;
-        `;
-        
-        welcomeModal.innerHTML = `
-            <div style="
-                background: linear-gradient(135deg, #232946, #181c2a);
-                border: 2px solid #a786ff;
-                border-radius: 24px;
-                padding: 2.5rem;
-                max-width: 500px;
-                width: 90%;
-                text-align: center;
-                box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-                position: relative;
-            ">
-                <!-- دکمه بستن -->
-                <button onclick="closeWelcomeModal()" style="
-                    position: absolute;
-                    top: 1rem;
-                    right: 1rem;
-                    background: none;
-                    border: none;
-                    color: #a786ff;
-                    font-size: 1.5rem;
-                    cursor: pointer;
-                    padding: 0.5rem;
-                    border-radius: 50%;
-                    width: 40px;
-                    height: 40px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    transition: all 0.3s;
-                " onmouseover="this.style.background='rgba(167,134,255,0.1)'" onmouseout="this.style.background='none'">×</button>
-                
-                <!-- آیکون خوشامدگویی -->
-                <div style="font-size: 4rem; margin-bottom: 1rem;">🎉</div>
-                
-                <!-- عنوان -->
-                <h2 style="
-                    color: #00ff88;
-                    margin-bottom: 1rem;
-                    font-size: 1.8rem;
-                    font-weight: bold;
-                ">به IAM خوش آمدید!</h2>
-                
-                <!-- توضیحات -->
-                <p style="
-                    color: #b8c1ec;
-                    margin-bottom: 1.5rem;
-                    line-height: 1.6;
-                    font-size: 1.1rem;
-                ">
-                    برای استفاده از تمام امکانات IAM و دسترسی به خدمات پیشرفته، 
-                    لطفاً ثبت‌نام کنید.
-                </p>
-                
-                <!-- کارت اطلاعات ثبت‌نام -->
-                <div style="
-                    background: rgba(167, 134, 255, 0.1);
-                    border: 1px solid rgba(167, 134, 255, 0.3);
-                    border-radius: 16px;
-                    padding: 1.5rem;
-                    margin: 1.5rem 0;
-                    backdrop-filter: blur(10px);
-                ">
-                    <h3 style="
-                        color: #a786ff;
-                        margin-bottom: 1rem;
-                        font-size: 1.3rem;
-                        font-weight: bold;
-                    ">💎 هزینه ثبت‌نام</h3>
-                    
-                    <div style="
-                        display: grid;
-                        grid-template-columns: 1fr 1fr;
-                        gap: 1rem;
-                        margin-bottom: 1rem;
-                    ">
-                        <div style="text-align: center;">
-                            <div style="
-                                color: #00ff88;
-                                font-size: 1.5rem;
-                                font-weight: bold;
-                                margin-bottom: 0.3rem;
-                            ">${registrationPrice} IAM</div>
-                            <div style="
-                                color: #b8c1ec;
-                                font-size: 0.9rem;
-                            ">مبلغ ثبت‌نام</div>
-                        </div>
-                        <div style="text-align: center;">
-                            <div style="
-                                color: #00ccff;
-                                font-size: 1.5rem;
-                                font-weight: bold;
-                                margin-bottom: 0.3rem;
-                            ">$${registrationValueUSD}</div>
-                            <div style="
-                                color: #b8c1ec;
-                                font-size: 0.9rem;
-                            ">ارزش دلاری</div>
-                        </div>
-                    </div>
-                    
-                    <div style="
-                        color: #a786ff;
-                        font-size: 0.9rem;
-                        line-height: 1.4;
-                    ">
-                        💡 قیمت فعلی IAM: $${IAMPriceUSD ? IAMPriceUSD : 'در حال دریافت...'} DAI
-                    </div>
-                </div>
-                
-                <!-- کارت مزایا -->
-                <div style="
-                    background: rgba(0, 255, 136, 0.1);
-                    border: 1px solid rgba(0, 255, 136, 0.3);
-                    border-radius: 16px;
-                    padding: 1.5rem;
-                    margin: 1.5rem 0;
-                    backdrop-filter: blur(10px);
-                ">
-                    <h3 style="
-                        color: #00ff88;
-                        margin-bottom: 1rem;
-                        font-size: 1.3rem;
-                        font-weight: bold;
-                    ">🚀 مزایای ثبت‌نام</h3>
-                    
-                    <div style="
-                        display: grid;
-                        grid-template-columns: 1fr 1fr;
-                        gap: 0.8rem;
-                        text-align: right;
-                    ">
-                        <div style="
-                            color: #b8c1ec;
-                            font-size: 0.9rem;
-                            display: flex;
-                            align-items: center;
-                            gap: 0.5rem;
-                        ">
-                            <span style="color: #00ff88;">✅</span>
-                            دسترسی به فروشگاه
-                        </div>
-                        <div style="
-                            color: #b8c1ec;
-                            font-size: 0.9rem;
-                            display: flex;
-                            align-items: center;
-                            gap: 0.5rem;
-                        ">
-                            <span style="color: #00ff88;">✅</span>
-                            سیگنال‌های معاملاتی
-                        </div>
-                        <div style="
-                            color: #b8c1ec;
-                            font-size: 0.9rem;
-                            display: flex;
-                            align-items: center;
-                            gap: 0.5rem;
-                        ">
-                            <span style="color: #00ff88;">✅</span>
-                            ربات‌های معاملاتی
-                        </div>
-                        <div style="
-                            color: #b8c1ec;
-                            font-size: 0.9rem;
-                            display: flex;
-                            align-items: center;
-                            gap: 0.5rem;
-                        ">
-                            <span style="color: #00ff88;">✅</span>
-                            آموزش‌های پیشرفته
-                        </div>
-                        <div style="
-                            color: #b8c1ec;
-                            font-size: 0.9rem;
-                            display: flex;
-                            align-items: center;
-                            gap: 0.5rem;
-                        ">
-                            <span style="color: #00ff88;">✅</span>
-                            گزارشات تفصیلی
-                        </div>
-                        <div style="
-                            color: #b8c1ec;
-                            font-size: 0.9rem;
-                            display: flex;
-                            align-items: center;
-                            gap: 0.5rem;
-                        ">
-                            <span style="color: #00ff88;">✅</span>
-                            پشتیبانی ویژه
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- دکمه‌های عملیات -->
-                <div style="
-                    display: flex;
-                    gap: 1rem;
-                    justify-content: center;
-                    margin-top: 2rem;
-                ">
-                    <button onclick="registerNow()" style="
-                        background: linear-gradient(135deg, #00ff88, #00cc66);
-                        color: #181c2a;
-                        border: none;
-                        padding: 1rem 2rem;
-                        border-radius: 12px;
-                        font-size: 1.1rem;
-                        font-weight: bold;
-                        cursor: pointer;
-                        transition: all 0.3s;
-                        flex: 1;
-                        max-width: 200px;
-                    " onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 20px rgba(0,255,136,0.3)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='none'">
-                        🚀 ثبت‌نام کنید
-                    </button>
-                    
-                    <button onclick="closeWelcomeModal()" style="
-                        background: rgba(255, 255, 255, 0.1);
-                        color: #b8c1ec;
-                        border: 1px solid rgba(255, 255, 255, 0.3);
-                        padding: 1rem 2rem;
-                        border-radius: 12px;
-                        font-size: 1.1rem;
-                        cursor: pointer;
-                        transition: all 0.3s;
-                        flex: 1;
-                        max-width: 200px;
-                    " onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
-                        بعداً
-                    </button>
-                </div>
-                
-                <!-- پیام اضافی -->
-                <p style="
-                    color: #888;
-                    font-size: 0.9rem;
-                    margin-top: 1.5rem;
-                    line-height: 1.4;
-                ">
-                    💡 می‌توانید با معرفی دوستان خود، 
-                    <span style="color: #a786ff;">کمیسیون دریافت کنید</span> و 
-                    <span style="color: #00ff88;">درآمد کسب کنید</span>!
-                </p>
-                
-                <!-- دکمه اطلاعات رفرال -->
-                <button onclick="showReferralInfo()" style="
-                    background: none;
-                    border: 1px solid #a786ff;
-                    color: #a786ff;
-                    padding: 0.5rem 1rem;
-                    border-radius: 8px;
-                    font-size: 0.9rem;
-                    cursor: pointer;
-                    transition: all 0.3s;
-                    margin-top: 1rem;
-                " onmouseover="this.style.background='rgba(167,134,255,0.1)'" onmouseout="this.style.background='none'">
-                    🤝 اطلاعات رفرال و کمیسیون
-                </button>
-            </div>
-        `;
-        
-        document.body.appendChild(welcomeModal);
-        
-        // ذخیره اینکه پیام نمایش داده شده
-        sessionStorage.setItem('welcomeRegistrationShown', 'true');
-        
-    } catch (error) {
-        console.error('Error showing welcome registration prompt:', error);
+    } catch (e) {
+        console.warn('Welcome prompt failed:', e);
     }
 };
 
@@ -1144,7 +755,7 @@ window.manageMainRegistrationButton = async function() {
             return;
         }
         
-        if (!profile.activated) {
+        if (!(profile.index && BigInt(profile.index) > 0n)) {
             // کاربر ثبت‌نام نکرده - نمایش دکمه
             registrationButton.style.display = 'block';
             
@@ -1506,7 +1117,7 @@ if (document.getElementById('session-timer')) {
 (async function() {
     if (window.getUserProfile) {
         const profile = await loadUserProfileOnce();
-        if (profile && profile.activated) {
+        if (profile && profile.index && BigInt(profile.index) > 0n) {
             var sessionBox = document.getElementById('session-timer-box');
             if (sessionBox) sessionBox.style.display = 'block';
         }
@@ -2320,7 +1931,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     try {
         if (window.getUserProfile) {
             const profile = await loadUserProfileOnce();
-            if (!profile.activated) {
+            if (!(profile.index && BigInt(profile.index) > 0n)) {
                 // اگر کاربر فعال نیست، فرم ثبت‌نام را نمایش بده
                 setTimeout(() => {
                     showRegistrationFormForInactiveUser();
@@ -2335,68 +1946,21 @@ document.addEventListener('DOMContentLoaded', async function() {
 // تابع جدید برای نمایش فرم ثبت‌نام برای کاربران غیرفعال
 window.showRegistrationFormForInactiveUser = async function() {
     try {
-        // بررسی اینکه آیا قبلاً فرم نمایش داده شده
-        const existingForm = document.getElementById('register-form-modal');
-        if (existingForm) return;
-        
-        // بررسی اتصال کیف پول
-        if (!window.contractConfig || !window.contractConfig.contract) {
-            console.log('Wallet not connected, cannot show registration form');
-            return;
-        }
-        
-        const { contract, address } = window.contractConfig;
-        
-        // دریافت آدرس معرف
+        const connection = await window.connectWallet();
+        if (!connection) return;
+        const { contract, address, provider } = connection;
+        // تعیین معرف مشابه showDirectRegistrationForm
         let referrerAddress = '';
         try {
-            // ابتدا بررسی کنیم که آیا کاربر متصل فعال است و ایندکس دارد
-            const connectedUserData = await contract.users(address);
-            if (connectedUserData.activated) {
-                // اگر کاربر فعال است، از آدرس خودش به عنوان معرف استفاده کن
-                referrerAddress = address;
-            } else {
-                // اگر کاربر فعال نیست، از روش‌های قبلی استفاده کن
-                // ابتدا از URL بگیر
-                if (typeof getReferrerFromURL === 'function') {
-                    referrerAddress = getReferrerFromURL();
-                }
-                
-                // اگر در URL نبود، از localStorage بگیر
-                if (!referrerAddress && typeof getReferrerFromStorage === 'function') {
-                    referrerAddress = getReferrerFromStorage();
-                }
-                
-                // اگر هنوز نبود، از deployer استفاده کن
-                if (!referrerAddress) {
-                    referrerAddress = await contract.deployer();
-                }
-            }
-        } catch (e) {
-            // در صورت خطا، از deployer استفاده کن
-            referrerAddress = await contract.deployer();
-        }
-        
-        // نمایش فرم ثبت‌نام
+            if (typeof getReferrerFromURL === 'function') referrerAddress = getReferrerFromURL();
+            if (!referrerAddress && typeof getReferrerFromStorage === 'function') referrerAddress = getReferrerFromStorage();
+        } catch {}
+        if (!referrerAddress) referrerAddress = address;
         if (typeof window.showRegisterForm === 'function') {
-            window.showRegisterForm(referrerAddress, address, address, window.contractConfig.provider, contract);
-        } else {
-            // اگر تابع showRegisterForm موجود نبود، از تابع اصلی استفاده کن
-            if (typeof window.loadRegisterData === 'function') {
-                // نمایش تب ثبت‌نام
-                if (typeof window.showTab === 'function') {
-                    window.showTab('register');
-                }
-                
-                // لود کردن داده‌های ثبت‌نام
-                await window.loadRegisterData(contract, address, window.tokenPriceUSDFormatted);
-            }
+            window.showRegisterForm(referrerAddress, '', address, provider, contract);
         }
-        
-        console.log('✅ Registration form shown for inactive user');
-        
-    } catch (error) {
-        console.error('Error showing registration form for inactive user:', error);
+    } catch (e) {
+        console.warn('showRegistrationFormForInactiveUser failed:', e);
     }
 };
 
@@ -3139,12 +2703,15 @@ window.stopTransferBalanceAutoRefresh = function() {
     }
 };
 
-// تابع تولید ID بر اساس ایندکس کاربر
+// تابع تولید ID بر اساس ایندکس کاربر (فرمت: IAM00000 + index)
 function generateIAMId(index) {
-    if (!index || index === 0) return '0';
-    
-    // نمایش دقیق همان مقدار کنترکت بدون هیچ تغییری
-    return index.toString();
+    try {
+        const asBigInt = (typeof index === 'bigint') ? index : BigInt(index ?? 0);
+        const padded = asBigInt.toString().padStart(5, '0');
+        return 'IAM' + padded;
+    } catch (e) {
+        return 'IAM00000';
+    }
 }
 
 // تعریف تابع generateIAMId در window برای استفاده در فایل‌های دیگر

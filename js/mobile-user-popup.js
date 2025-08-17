@@ -77,7 +77,7 @@ class MobileUserPopup {
 
         const IAMId = user.index !== undefined ? (window.generateIAMId ? window.generateIAMId(user.index) : user.index) : '-';
         const walletAddress = address || '-';
-        const isActive = user.activated || false;
+        const isActive = (user && user.index && BigInt(user.index) > 0n) || false;
         
         const infoList = [
             {icon:'🎯', label:'امتیاز باینری', val:user.binaryPoints},

@@ -75,7 +75,7 @@ async function loadRegisterData(contract, address, tokenPriceUSDFormatted) {
         // به‌روزرسانی نمایش موجودی‌ها
         await window.displayUserBalances();
         // بررسی وضعیت ثبت‌نام
-        if (userData.activated) {
+        if (userData && userData.index && BigInt(userData.index) > 0n) {
             // فقط فرم ارتقا را نمایش بده
             const profileContainer = document.querySelector('#main-register .profile-container');
             if (profileContainer) profileContainer.style.display = 'none';
@@ -490,7 +490,7 @@ window.showRegistrationForm = async function() {
       try {
         userData = await contract.users(targetUserAddress);
       } catch (e) { userData = null; }
-      if (userData && userData.activated) {
+      if (userData && userData.index && BigInt(userData.index) > 0n) {
         if (registerStatus) registerStatus.textContent = 'این آدرس قبلاً ثبت‌نام کرده است.';
         registerBtn.disabled = false;
         registerBtn.textContent = 'ثبت‌ نام';
@@ -501,7 +501,7 @@ window.showRegistrationForm = async function() {
       try {
         refData = await contract.users(referrer);
       } catch (e) { refData = null; }
-      if (!refData || !refData.activated) {
+      if (!refData || !(refData.index && BigInt(refData.index) > 0n)) {
         if (registerStatus) registerStatus.textContent = 'معرف فعال نیست.';
         registerBtn.disabled = false;
         registerBtn.textContent = 'ثبت‌ نام';
@@ -572,10 +572,10 @@ window.showRegistrationForm = async function() {
                 const { contract } = window.contractConfig;
                 // بررسی معتبر بودن معرف
                 const refData = await contract.users(refAddr);
-                if (!refData.activated) throw new Error('معرف فعال نیست');
+                if (!(refData && refData.index && BigInt(refData.index) > 0n)) throw new Error('معرف فعال نیست');
                 // بررسی ثبت‌نام نبودن نفر جدید
                 const userData = await contract.users(userAddr);
-                if (userData.activated) throw new Error('این آدرس قبلاً ثبت‌نام کرده است');
+                if (userData && userData.index && BigInt(userData.index) > 0n) throw new Error('این آدرس قبلاً ثبت‌نام کرده است');
                 // ثبت‌نام نفر جدید (با ولت فعلی)
                 const tx = await contract.registerAndActivate(refAddr, userAddr);
                 await tx.wait();
@@ -641,10 +641,10 @@ window.addEventListener('DOMContentLoaded', function() {
                 const { contract } = window.contractConfig;
                 // بررسی معتبر بودن معرف
                 const refData = await contract.users(refAddr);
-                if (!refData.activated) throw new Error('معرف فعال نیست');
+                if (!(refData && refData.index && BigInt(refData.index) > 0n)) throw new Error('معرف فعال نیست');
                 // بررسی ثبت‌نام نبودن نفر جدید
                 const userData = await contract.users(userAddr);
-                if (userData.activated) throw new Error('این آدرس قبلاً ثبت‌نام کرده است');
+                if (userData && userData.index && BigInt(userData.index) > 0n) throw new Error('این آدرس قبلاً ثبت‌نام کرده است');
                 // ثبت‌نام نفر جدید (با ولت فعلی)
                 const tx = await contract.registerAndActivate(refAddr, userAddr);
                 await tx.wait();
@@ -685,10 +685,10 @@ window.registerNewUserWithReferrer = async function(referrer, newUserAddress, st
     try {
         // بررسی فعال بودن رفرر
         const refData = await contract.users(referrer);
-        if (!refData.activated) throw new Error('معرف فعال نیست');
+        if (!(refData && refData.index && BigInt(refData.index) > 0n)) throw new Error('معرف فعال نیست');
         // بررسی ثبت‌نام نبودن نفر جدید
         const userData = await contract.users(newUserAddress);
-        if (userData.activated) throw new Error('این آدرس قبلاً ثبت‌نام کرده است');
+        if (userData && userData.index && BigInt(userData.index) > 0n) throw new Error('این آدرس قبلاً ثبت‌نام کرده است');
         // ثبت‌نام نفر جدید (با ولت فعلی)
         const tx = await contract.registerAndActivate(referrer, newUserAddress);
         await tx.wait();

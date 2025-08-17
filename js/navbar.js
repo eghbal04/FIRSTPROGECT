@@ -576,6 +576,7 @@
         height: 48px !important;
       }
     }
+    
   `;
   document.head.appendChild(style);
 
@@ -631,21 +632,12 @@
         <a href="profile.html" class="IAM-navbar-link">
           <span class="link-icon">👤</span>پروفایل
         </a>
-        <a href="products.html" class="IAM-navbar-link">
-          <span class="link-icon">🛍️</span>محصولات
-        </a>
         <a href="utility.html" class="IAM-navbar-link">
           <span class="link-icon">🛠️</span>ابزارها
         </a>
       </div>
       <div class="IAM-navbar-mobile-section">
         <div class="IAM-navbar-section-title">اطلاعات</div>
-        <a href="learning.html" class="IAM-navbar-link">
-          <span class="link-icon">📚</span>آموزش
-        </a>
-        <a href="news.html" class="IAM-navbar-link">
-          <span class="link-icon">📰</span>اخبار
-        </a>
         <a href="about.html" class="IAM-navbar-link">
           <span class="link-icon">ℹ️</span>درباره‌ما
         </a>
@@ -659,6 +651,7 @@
   document.addEventListener('DOMContentLoaded', function() {
     document.body.insertBefore(navbar, document.body.firstChild);
     document.body.style.marginTop = '84px';
+
   });
 
   // Hamburger dropdown logic + Swap/Transfer handlers
@@ -757,6 +750,8 @@
         for (const u of units) if (abs >= u.v) return (num / u.v).toFixed(compactDecimals) + u.s;
         return num.toFixed(compactDecimals);
       }
+
+      function shortenAddress(addr){ if (!addr) return '--'; return addr.slice(0,6) + '...' + addr.slice(-4); }
 
       function withTimeout(promise, ms=3500) {
         return Promise.race([

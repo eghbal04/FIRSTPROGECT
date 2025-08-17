@@ -104,13 +104,9 @@ window.showDirectRegistrationForm = async function() {
     try {
       // ابتدا بررسی کنیم که آیا کاربر متصل فعال است و ایندکس دارد
       const connectedUserData = await contract.users(address);
-      if (connectedUserData.activated) {
-        // اگر کاربر فعال است، از آدرس خودش به عنوان معرف استفاده کن
-        referrerAddress = address;
-      } else {
-        // اگر کاربر فعال نیست، از deployer استفاده کن
-        referrerAddress = await contract.deployer();
-      }
+      const isActive = connectedUserData && connectedUserData.index && BigInt(connectedUserData.index) > 0n;
+      // اگر کاربر ایندکس دارد، فعال محسوب می‌شود
+      referrerAddress = isActive ? address : await contract.deployer();
     } catch (e) {
       console.error('Error getting referrer address:', e);
       referrerAddress = address; // fallback to connected address
@@ -146,24 +142,7 @@ window.showTab = async function(tab) {
   // ذخیره تب فعال در localStorage
   localStorage.setItem('currentActiveTab', tab);
   
-  // Check if user is activated for restricted tabs
-  const restrictedTabs = ['shop', 'reports', 'learning', 'news'];
-  if (restrictedTabs.includes(tab)) {
-    try {
-      if (window.getUserProfile) {
-        const profile = await window.getUserProfile();
-        if (!profile.activated) {
-          // Show registration prompt for locked tabs
-          showRegistrationPrompt();
-          return;
-        }
-      }
-    } catch (error) {
-      console.warn('Could not check user status:', error);
-      showRegistrationPrompt();
-      return;
-    }
-  }
+  // احراز هویت تب‌ها غیرفعال شد
 
   const tabs = ['network','profile','reports','swap','transfer','register','news','shop','learning','about'];
   tabs.forEach(function(name) {
@@ -199,11 +178,15 @@ window.showTab = async function(tab) {
   try {
     switch(tab) {
       case 'network':
-        if (typeof window.initializeNetworkTab === 'function') {
-          await window.initializeNetworkTab();
-        } else {
-          if (typeof updateNetworkStats === 'function') await updateNetworkStats();
-          if (typeof renderNetworkTree === 'function') await renderNetworkTree();
+        {
+          const hasNetworkContainer = typeof document !== 'undefined' && document.getElementById('network-tree');
+          if (!hasNetworkContainer) break;
+          if (typeof window.initializeNetworkTab === 'function') {
+            await window.initializeNetworkTab();
+          } else {
+            if (typeof updateNetworkStats === 'function') await updateNetworkStats();
+            if (typeof renderNetworkTree === 'function') await renderNetworkTree();
+          }
         }
         break;
       case 'profile':
@@ -246,43 +229,9 @@ window.checkUserAccessOnLoad = async function() {
   // اولویت: URL parameter > localStorage > default
   const currentTab = urlTab || savedTab || 'network';
   
-  const restrictedTabs = ['shop', 'reports', 'learning', 'news'];
-  if (restrictedTabs.includes(currentTab)) {
-    try {
-      if (window.getUserProfile) {
-        const profile = await window.getUserProfile();
-        if (!profile.activated) {
-          // Redirect to network tab and show prompt
-          if (typeof window.showTab === 'function') {
-            window.showTab('network');
-          }
-          setTimeout(() => {
-            showRegistrationPrompt();
-          }, 1000);
-        } else {
-          // کاربر فعال است، تب ذخیره شده را نمایش بده
-          if (typeof window.showTab === 'function') {
-            window.showTab(currentTab);
-          }
-        }
-      } else {
-        // اگر getUserProfile موجود نیست، تب ذخیره شده را نمایش بده
-        if (typeof window.showTab === 'function') {
-          window.showTab(currentTab);
-        }
-      }
-    } catch (error) {
-      console.warn('Could not check user status on load:', error);
-      // در صورت خطا، تب ذخیره شده را نمایش بده
-      if (typeof window.showTab === 'function') {
-        window.showTab(currentTab);
-      }
-    }
-  } else {
-    // تب محدود نیست، مستقیماً نمایش بده
-    if (typeof window.showTab === 'function') {
-      window.showTab(currentTab);
-    }
+  // احراز هویت تب‌ها غیرفعال شد؛ تب ذخیره‌شده یا پیش‌فرض را نمایش بده
+  if (typeof window.showTab === 'function') {
+    window.showTab(currentTab);
   }
 };
 

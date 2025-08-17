@@ -1166,53 +1166,6 @@ const DAI_ABI = [
 ];
 const IAM_ABI =[
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "spender",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "value",
-				"type": "uint256"
-			}
-		],
-		"name": "approve",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "amountIAM",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "payout",
-				"type": "uint256"
-			},
-			{
-				"internalType": "address",
-				"name": "seller",
-				"type": "address"
-			}
-		],
-		"name": "purchase",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
 		"inputs": [],
 		"stateMutability": "nonpayable",
 		"type": "constructor"
@@ -1304,11 +1257,6 @@ const IAM_ABI =[
 		"type": "error"
 	},
 	{
-		"inputs": [],
-		"name": "ReentrancyGuardReentrantCall",
-		"type": "error"
-	},
-	{
 		"anonymous": false,
 		"inputs": [
 			{
@@ -1395,12 +1343,6 @@ const IAM_ABI =[
 			{
 				"indexed": false,
 				"internalType": "uint256",
-				"name": "addedAmount",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
 				"name": "timestamp",
 				"type": "uint256"
 			}
@@ -1438,39 +1380,6 @@ const IAM_ABI =[
 		],
 		"name": "BinaryRewardDistributed",
 		"type": "event"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "daiAmount",
-				"type": "uint256"
-			}
-		],
-		"name": "buyTokens",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "claim",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "minReward",
-				"type": "uint256"
-			}
-		],
-		"name": "claimMonthlyReward",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
 	},
 	{
 		"anonymous": false,
@@ -1579,55 +1488,6 @@ const IAM_ABI =[
 		"type": "event"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "referrer",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "newUser",
-				"type": "address"
-			}
-		],
-		"name": "registerAndActivate",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "referrer",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "newUser",
-				"type": "address"
-			}
-		],
-		"name": "registerFree",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "tokenAmount",
-				"type": "uint256"
-			}
-		],
-		"name": "sellTokens",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
 		"anonymous": false,
 		"inputs": [
 			{
@@ -1678,30 +1538,6 @@ const IAM_ABI =[
 		"type": "event"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "to",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "value",
-				"type": "uint256"
-			}
-		],
-		"name": "transfer",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
 		"anonymous": false,
 		"inputs": [
 			{
@@ -1725,48 +1561,6 @@ const IAM_ABI =[
 		],
 		"name": "Transfer",
 		"type": "event"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "from",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "to",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "value",
-				"type": "uint256"
-			}
-		],
-		"name": "transferFrom",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "newOwner",
-				"type": "address"
-			}
-		],
-		"name": "transferIndexOwnership",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
 	},
 	{
 		"anonymous": false,
@@ -1806,6 +1600,63 @@ const IAM_ABI =[
 		"type": "event"
 	},
 	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "voter",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "target",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "bool",
+				"name": "isLike",
+				"type": "bool"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			}
+		],
+		"name": "VoteSubmitted",
+		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "MAX_BINARY_POINT_CAP",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "REFERRAL_FEE_PERCENT",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
 		"inputs": [
 			{
 				"internalType": "address",
@@ -1833,11 +1684,61 @@ const IAM_ABI =[
 		"inputs": [
 			{
 				"internalType": "address",
+				"name": "spender",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "approve",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
 				"name": "account",
 				"type": "address"
 			}
 		],
 		"name": "balanceOf",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "daiAmount",
+				"type": "uint256"
+			}
+		],
+		"name": "buyTokens",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "cashBack",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -1863,15 +1764,22 @@ const IAM_ABI =[
 	},
 	{
 		"inputs": [],
-		"name": "cashBack",
-		"outputs": [
+		"name": "claim",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
 			{
 				"internalType": "uint256",
-				"name": "",
+				"name": "minReward",
 				"type": "uint256"
 			}
 		],
-		"stateMutability": "view",
+		"name": "claimMonthlyReward",
+		"outputs": [],
+		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -1914,13 +1822,19 @@ const IAM_ABI =[
 		"type": "function"
 	},
 	{
-		"inputs": [],
-		"name": "deployer",
-		"outputs": [
+		"inputs": [
 			{
 				"internalType": "address",
 				"name": "",
 				"type": "address"
+			}
+		],
+		"name": "dislikeCount",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",
@@ -1966,7 +1880,7 @@ const IAM_ABI =[
 	},
 	{
 		"inputs": [],
-		"name": "getContractdaiBalance",
+		"name": "getContractTokenBalance",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -1979,7 +1893,7 @@ const IAM_ABI =[
 	},
 	{
 		"inputs": [],
-		"name": "getContractTokenBalance",
+		"name": "getContractdaiBalance",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -2164,11 +2078,6 @@ const IAM_ABI =[
 				"type": "address"
 			},
 			{
-				"internalType": "bool",
-				"name": "activated",
-				"type": "bool"
-			},
-			{
 				"internalType": "uint256",
 				"name": "binaryPoints",
 				"type": "uint256"
@@ -2205,6 +2114,35 @@ const IAM_ABI =[
 	{
 		"inputs": [
 			{
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			}
+		],
+		"name": "getVoteStatus",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "totalLikes",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "totalDislikes",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint8",
+				"name": "userVoteStatus",
+				"type": "uint8"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
 				"internalType": "uint256",
 				"name": "",
 				"type": "uint256"
@@ -2222,8 +2160,14 @@ const IAM_ABI =[
 		"type": "function"
 	},
 	{
-		"inputs": [],
-		"name": "MAX_BINARY_POINT_CAP",
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "likeCount",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -2248,16 +2192,75 @@ const IAM_ABI =[
 		"type": "function"
 	},
 	{
-		"inputs": [],
-		"name": "REFERRAL_FEE_PERCENT",
-		"outputs": [
+		"inputs": [
 			{
 				"internalType": "uint256",
-				"name": "",
+				"name": "amountIAM",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "payout",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "seller",
+				"type": "address"
+			}
+		],
+		"name": "purchase",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "referrer",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "newUser",
+				"type": "address"
+			}
+		],
+		"name": "registerAndActivate",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "referrer",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "newUser",
+				"type": "address"
+			}
+		],
+		"name": "registerFree",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "tokenAmount",
 				"type": "uint256"
 			}
 		],
-		"stateMutability": "view",
+		"name": "sellTokens",
+		"outputs": [],
+		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -2316,6 +2319,96 @@ const IAM_ABI =[
 		"inputs": [
 			{
 				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "transfer",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "transferFrom",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "newOwner",
+				"type": "address"
+			}
+		],
+		"name": "transferIndexOwnership",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "userVotes",
+		"outputs": [
+			{
+				"internalType": "uint8",
+				"name": "",
+				"type": "uint8"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
 				"name": "",
 				"type": "address"
 			}
@@ -2341,11 +2434,6 @@ const IAM_ABI =[
 				"internalType": "uint256",
 				"name": "binaryPointsClaimed",
 				"type": "uint256"
-			},
-			{
-				"internalType": "bool",
-				"name": "activated",
-				"type": "bool"
 			},
 			{
 				"internalType": "uint256",
@@ -2394,6 +2482,24 @@ const IAM_ABI =[
 			}
 		],
 		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "target",
+				"type": "address"
+			},
+			{
+				"internalType": "bool",
+				"name": "isLike",
+				"type": "bool"
+			}
+		],
+		"name": "voteUser",
+		"outputs": [],
+		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -2750,11 +2856,14 @@ window.refreshNetworkAfterConnection = async function(connection) {
 			await window.loadNetworkStats(connection.contract);
 		}
 		
-		// رفرش درخت شبکه
-		if (typeof window.renderSimpleBinaryTree === 'function') {
-			await window.renderSimpleBinaryTree();
-		} else if (typeof window.renderNetworkTree === 'function') {
-			await window.renderNetworkTree();
+		// رفرش درخت شبکه — فقط اگر کانتینر روی صفحه حاضر باشد
+		const hasNetworkContainer = typeof document !== 'undefined' && document.getElementById('network-tree');
+		if (hasNetworkContainer) {
+			if (typeof window.renderSimpleBinaryTree === 'function') {
+				await window.renderSimpleBinaryTree();
+			} else if (typeof window.renderNetworkTree === 'function') {
+				await window.renderNetworkTree();
+			}
 		}
 		
 		// رفرش پروفایل کاربر
@@ -3218,28 +3327,30 @@ window.getUserProfile = async function() {
 				}
 			}
 			
-			// دریافت اطلاعات کاربر با مدیریت خطا
-			let user;
+			// دریافت اطلاعات کاربر: احراز غیرفعال شده؛ مستقیماً از داده‌های پیش‌فرض استفاده کن
+			let user = {
+				activated: false,
+				index: 0n,
+				referrer: '0x0000000000000000000000000000000000000000',
+				activationTime: 0n,
+				lastClaimTime: 0n,
+				lastClaimLevel: 0n,
+				lastCashbackClaim: 0n,
+				totalCommission: 0n,
+				leftChild: '0x0000000000000000000000000000000000000000',
+				rightChild: '0x0000000000000000000000000000000000000000',
+				level: 0n
+			};
+
+			// تلاش برای دریافت واقعی user از قرارداد (index واقعی)
 			try {
-				user = await window.retryRpcOperation(() => contract.users(address), 2);
+				const idx = await window.getIndexByAddress(contract, address);
+				if (idx && idx > 0n) {
+					user.index = idx;
+					user.activated = true;
+				}
 			} catch (error) {
-				console.error('Profile: Error fetching user data:', error);
-				
-				// Return default user data instead of throwing error
-				user = {
-					activated: false,
-					index: 0n,
-					referrer: '0x0000000000000000000000000000000000000000',
-					activationTime: 0n,
-					lastClaimTime: 0n,
-					lastClaimLevel: 0n,
-					lastCashbackClaim: 0n,
-					totalCommission: 0n,
-					leftChild: '0x0000000000000000000000000000000000000000',
-					rightChild: '0x0000000000000000000000000000000000000000',
-					level: 0n
-				};
-				console.warn('Using default user data due to contract error');
+				console.warn('Profile: getIndexByAddress failed, keeping default index 0n', error?.message || error);
 			}
 			
 			// دریافت موجودی‌ها با مدیریت خطا
@@ -3348,10 +3459,11 @@ window.getUserProfile = async function() {
 				}
 			}
 			
+			const isActive = (user && typeof user.index !== 'undefined' && user.index !== null) ? (BigInt(user.index) > 0n) : false;
 			const profile = {
 				address: address,
 				referrer: referrer,
-				activated: user.activated || false,
+				activated: isActive,
 				binaryPoints: user.binaryPoints ? user.binaryPoints.toString() : '0',
 				binaryPointCap: user.binaryPointCap ? user.binaryPointCap.toString() : '0',
 				binaryPointsClaimed: user.binaryPointsClaimed ? user.binaryPointsClaimed.toString() : '0',
@@ -3363,7 +3475,7 @@ window.getUserProfile = async function() {
 				polValueUSD: safeFormat(polValueUSD, 8),
 				lvlValueUSD: safeFormat(lvlValueUSD, 8),
 				daiBalance: daiBalance,
-				registered: user.activated || false,
+				registered: isActive,
 				index: user.index ? user.index.toString() : '0',
 				refclimed: user.refclimed ? user.refclimed.toString() : '0',
 				leftPoints: user.leftPoints ? user.leftPoints.toString() : '0',
@@ -4656,6 +4768,7 @@ window.displayIAMIdInCorner = function(index) {
 	if (!index || index === 0) return;
 	
 	const IAMId = window.generateIAMId(index);
+	const isActive = (typeof index !== 'undefined' && index !== null && BigInt(index) > 0n);
 	
 	// ایجاد عنصر ID
 	const idElement = document.createElement('div');
@@ -4735,8 +4848,8 @@ window.updateIAMIdDisplay = function(index) {
 		// به‌روزرسانی وضعیت
 		const dashboardUserStatus = document.getElementById('dashboard-user-status');
 		if (dashboardUserStatus) {
-			dashboardUserStatus.textContent = 'فعال';
-			dashboardUserStatus.style.color = '#00ff88';
+			dashboardUserStatus.textContent = isActive ? 'فعال' : 'غیرفعال';
+			dashboardUserStatus.style.color = isActive ? '#00ff88' : '#ffa000';
 		}
 	}
 	
@@ -4748,6 +4861,31 @@ window.updateIAMIdDisplay = function(index) {
 	
 	// نمایش در گوشه
 	window.displayIAMIdInCorner(index);
+};
+
+// Helper: دریافت ایندکس از روی آدرس با استفاده از توابع موجود در ABI
+window.getIndexByAddress = async function(contract, address) {
+    try {
+        if (!contract || !address) return 0n;
+        // ترتیب تلاش: addressToIndex → getUserIndex → indexOf → users(address).index
+        if (typeof contract.addressToIndex === 'function') {
+            const idx = await window.retryRpcOperation(() => contract.addressToIndex(address), 2).catch(()=>null);
+            if (idx != null) return BigInt(idx);
+        }
+        if (typeof contract.getUserIndex === 'function') {
+            const idx = await window.retryRpcOperation(() => contract.getUserIndex(address), 2).catch(()=>null);
+            if (idx != null) return BigInt(idx);
+        }
+        if (typeof contract.indexOf === 'function') {
+            const idx = await window.retryRpcOperation(() => contract.indexOf(address), 2).catch(()=>null);
+            if (idx != null) return BigInt(idx);
+        }
+        if (typeof contract.users === 'function') {
+            const u = await window.retryRpcOperation(() => contract.users(address), 2).catch(()=>null);
+            if (u && typeof u.index !== 'undefined' && u.index !== null) return BigInt(u.index);
+        }
+    } catch {}
+    return 0n;
 };
 
 // پیام‌های خطا و راهنمایی برای اتصال متامسک
