@@ -975,23 +975,16 @@ window.renderSimpleBinaryTree = async function() {
             } catch {}
         }
 
-        // اگر ایندکس کاربر صفر بود، به‌صورت عمومی درخت را از یک ریشه پیش‌فرض نمایش بده
+        // اگر ایندکس کاربر صفر بود، درخت را نمایش نده
         let rootIndexToRender = userIndex;
         if (rootIndexToRender === 0n) {
-            console.warn('User index not found; rendering public tree');
-            try {
-                const source = (window.location.hash || window.location.search || '').toString();
-                const match = source.match(/(?:index|root)=(\d+)/);
-                if (match && match[1]) {
-                    const candidate = BigInt(match[1]);
-                    if (candidate > 0n) rootIndexToRender = candidate;
-                }
-            } catch {}
-            if (rootIndexToRender === 0n) rootIndexToRender = 1n; // پیش‌فرض: ریشه 1
+            console.error('User index not found for connected wallet');
+            throw new Error('کیف پول متصل در سیستم ثبت‌نام نشده است.');
         }
 
         console.log('✅ Rendering tree for index:', rootIndexToRender.toString());
         setNetworkProgress(30);
+        
         // در window.renderSimpleBinaryTree مقدار autoExpand فقط برای ریشه true باشد:
         console.log('🔄 Rendering vertical node...');
         await renderVerticalNodeLazy(rootIndexToRender, container, 0, true);
@@ -1016,7 +1009,35 @@ window.renderSimpleBinaryTree = async function() {
     } catch (error) {
         console.error('❌ Error rendering binary tree:', error);
         hideNetworkProgress();
-        container.innerHTML = `<div style="color:#ff4444;text-align:center;padding:2rem;">❌ خطا در بارگذاری درخت شبکه<br><small style="color:#ccc;">${error.message}</small></div>`;
+        
+        let errorMessage = error.message;
+        let actionButton = '';
+        
+        // اگر خطا مربوط به عدم ثبت‌نام باشد، پیام مناسب نمایش بده
+        if (error.message.includes('ثبت‌نام نشده')) {
+            errorMessage = 'کیف پول متصل در سیستم ثبت‌نام نشده است. برای مشاهده درخت شبکه ابتدا ثبت‌نام کنید.';
+            actionButton = `
+                <br><br>
+                <button onclick="window.location.href='register.html'" style="
+                    background: linear-gradient(135deg, #00ff88, #00cc66);
+                    color: #232946;
+                    border: none;
+                    padding: 0.8rem 1.5rem;
+                    border-radius: 8px;
+                    font-weight: bold;
+                    cursor: pointer;
+                    margin-top: 1rem;
+                ">📝 ثبت‌نام کنید</button>
+            `;
+        }
+        
+        container.innerHTML = `
+            <div style="color:#ff4444;text-align:center;padding:2rem;">
+                ❌ خطا در بارگذاری درخت شبکه<br>
+                <small style="color:#ccc;">${errorMessage}</small>
+                ${actionButton}
+            </div>
+        `;
     }
 };
 

@@ -100,7 +100,7 @@ async function loadRegisterData(contract, address, tokenPriceUSDFormatted) {
             // مخفی کردن دکمه ثبت جدید
             const newRegisterBtn = document.getElementById('new-register-btn');
             if (newRegisterBtn) newRegisterBtn.style.display = 'none';
-            await showRegistrationForm();
+            await showRegistrationFormForNewUser();
         }
         registerDataLoaded = true;
         
@@ -234,22 +234,19 @@ function setupUpgradeForm() {
     }
 }
 
-// تابع انجام ثبت‌نام
-async function performRegistration() {
+// تابع انجام ثبت‌نام برای کاربر جدید (کیف پول متصل)
+async function performRegistrationForNewUser() {
     try {
         if (!window.contractConfig || !window.contractConfig.contract) {
             throw new Error('اتصال کیف پول برقرار نیست');
         }
         const { contract, address } = window.contractConfig;
-        // مقدار معرف را از input یا URL یا localStorage بگیر
-        let referrerInput = document.getElementById('referrer-address');
-        let referrerAddress = referrerInput && referrerInput.value ? referrerInput.value.trim() : '';
-        if (!referrerAddress) {
-            referrerAddress = getReferrerFromURL() || getReferrerFromStorage();
-        }
-        if (!referrerAddress) {
-            referrerAddress = await contract.deployer();
-        }
+        
+        // معرف به‌صورت پیش‌فرض: deployer (ایندکس 1)
+        const referrerAddress = await contract.deployer();
+        
+        // کاربر جدید: کیف پول متصل
+        const userAddress = address;
 
         // منطق approve قبل از ثبت‌نام:
         const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, window.contractConfig.signer);
@@ -258,9 +255,87 @@ async function performRegistration() {
           const approveTx = await usdcContract.approve(CONTRACT_ADDRESS, regprice);
           await approveTx.wait();
         }
-        const tx = await contract.registerAndActivate(referrerAddress, address);
+        
+        const tx = await contract.registerAndActivate(referrerAddress, userAddress);
         await tx.wait();
         showRegisterSuccess("ثبت‌نام با موفقیت انجام شد!");
+        
+        // مخفی کردن دکمه ثبت‌نام اصلی
+        if (typeof window.hideMainRegistrationButton === 'function') {
+            window.hideMainRegistrationButton();
+        }
+        
+        registerDataLoaded = false;
+        setTimeout(() => {
+            loadRegisterData(contract, address, tokenPriceUSDFormatted);
+        }, 2000);
+    } catch (error) {
+        showRegisterError(error.message || 'خطا در ثبت‌نام.');
+    }
+}
+
+// تابع انجام ثبت‌نام
+async function performRegistration() {
+    try {
+        if (!window.contractConfig || !window.contractConfig.contract) {
+            throw new Error('اتصال کیف پول برقرار نیست');
+        }
+        const { contract, address } = window.contractConfig;
+        
+        // بررسی وضعیت کاربر فعلی
+        const currentUserData = await contract.users(address);
+        
+        if (currentUserData && currentUserData.index && BigInt(currentUserData.index) > 0n) {
+            // کاربر ثبت‌نام شده است - فقط می‌تواند زیرمجموعه ثبت‌نام کند
+            const userAddressInput = document.getElementById('register-user-address') || document.getElementById('new-user-address');
+            const userAddress = userAddressInput ? userAddressInput.value.trim() : '';
+            
+            if (!userAddress || !/^0x[a-fA-F0-9]{40}$/.test(userAddress)) {
+                throw new Error('آدرس کاربر جدید معتبر نیست');
+            }
+            
+            // معرف: آدرس کاربر فعلی
+            const referrerAddress = address;
+            
+            // بررسی ثبت‌نام نبودن کاربر جدید
+            const newUserData = await contract.users(userAddress);
+            if (newUserData && newUserData.index && BigInt(newUserData.index) > 0n) {
+                throw new Error('این آدرس قبلاً ثبت‌نام کرده است');
+            }
+            
+            // منطق approve قبل از ثبت‌نام:
+            const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, window.contractConfig.signer);
+            const allowance = await usdcContract.allowance(address, CONTRACT_ADDRESS);
+            if (allowance < regprice) {
+              const approveTx = await usdcContract.approve(CONTRACT_ADDRESS, regprice);
+              await approveTx.wait();
+            }
+            
+            const tx = await contract.registerAndActivate(referrerAddress, userAddress);
+            await tx.wait();
+            showRegisterSuccess("ثبت‌نام زیرمجموعه با موفقیت انجام شد!");
+        } else {
+            // کاربر ثبت‌نام نشده است - حالت عادی
+            let referrerInput = document.getElementById('referrer-address');
+            let referrerAddress = referrerInput && referrerInput.value ? referrerInput.value.trim() : '';
+            if (!referrerAddress) {
+                referrerAddress = getReferrerFromURL() || getReferrerFromStorage();
+            }
+            if (!referrerAddress) {
+                referrerAddress = await contract.deployer();
+            }
+
+            // منطق approve قبل از ثبت‌نام:
+            const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, window.contractConfig.signer);
+            const allowance = await usdcContract.allowance(address, CONTRACT_ADDRESS);
+            if (allowance < regprice) {
+              const approveTx = await usdcContract.approve(CONTRACT_ADDRESS, regprice);
+              await approveTx.wait();
+            }
+            const tx = await contract.registerAndActivate(referrerAddress, address);
+            await tx.wait();
+            showRegisterSuccess("ثبت‌نام با موفقیت انجام شد!");
+        }
         
         // مخفی کردن دکمه ثبت‌نام اصلی
         if (typeof window.hideMainRegistrationButton === 'function') {
@@ -393,6 +468,87 @@ function displayRegistrationInfo(registrationPrice, regprice, tokenPriceUSD, tok
     }
 }
 
+// تابع نمایش فرم ثبت‌نام برای کاربر جدید (کیف پول متصل)
+window.showRegistrationFormForNewUser = async function() {
+    const registrationForm = document.getElementById('registration-form');
+    if (!registrationForm) return;
+    registrationForm.style.display = 'block';
+
+    // دریافت و نمایش مقدار توکن مورد نیاز برای ثبت‌نام
+    await window.displayUserBalances();
+
+    // تنظیم معرف به‌صورت پیش‌فرض: ایندکس 1 (deployer)
+    let referrer = await window.contractConfig.contract.deployer();
+    
+    // تنظیم آدرس کاربر جدید به کیف پول متصل
+    const userAddress = window.contractConfig.address;
+    
+    // پر کردن فیلدهای فرم
+    const referrerInput = document.getElementById('referrer-address');
+    const userAddressInput = document.getElementById('register-user-address') || document.getElementById('new-user-address');
+    
+    if (referrerInput) {
+        referrerInput.value = referrer;
+        referrerInput.readOnly = true; // غیرفعال کردن تغییر معرف
+    }
+    
+    if (userAddressInput) {
+        userAddressInput.value = userAddress;
+        userAddressInput.readOnly = true; // غیرفعال کردن تغییر آدرس کاربر
+    }
+    
+    // نمایش پیام راهنما
+    const statusElement = document.getElementById('register-status');
+    if (statusElement) {
+        statusElement.innerHTML = `
+            <div style="background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3); border-radius: 8px; padding: 12px; margin: 10px 0;">
+                <strong style="color: #00ff88;">📝 ثبت‌نام خودکار:</strong><br>
+                • معرف: <span style="color: #a786ff;">${referrer}</span><br>
+                • کاربر جدید: <span style="color: #a786ff;">${userAddress}</span><br>
+                • فقط روی دکمه "ثبت‌نام" کلیک کنید
+            </div>
+        `;
+        statusElement.className = 'profile-status info';
+    }
+
+    // تنظیم دکمه ثبت‌نام
+    const registerBtn = document.getElementById('register-btn');
+    if (registerBtn) {
+        registerBtn.onclick = async () => {
+            const oldText = registerBtn.textContent;
+            registerBtn.disabled = true;
+            registerBtn.innerHTML = '<span class="spinner" style="display:inline-block;width:18px;height:18px;border:2px solid #fff;border-top:2px solid #00ff88;border-radius:50%;margin-left:8px;vertical-align:middle;animation:spin 0.8s linear infinite;"></span> در حال ثبت‌نام...';
+            
+            try {
+                await performRegistrationForNewUser();
+                if (statusElement) {
+                    statusElement.textContent = '✅ ثبت‌نام با موفقیت انجام شد!';
+                    statusElement.className = 'profile-status success';
+                }
+                registerBtn.style.display = 'none';
+            } catch (error) {
+                let msg = error && error.message ? error.message : error;
+                if (error.code === 4001 || msg.includes('user denied')) {
+                    msg = '❌ تراکنش توسط کاربر لغو شد.';
+                } else if (error.code === -32002 || msg.includes('Already processing')) {
+                    msg = '⏳ متامسک در حال پردازش درخواست قبلی است. لطفاً چند لحظه صبر کنید.';
+                } else if (error.code === 'NETWORK_ERROR' || msg.includes('network')) {
+                    msg = '❌ خطای شبکه! اتصال اینترنت یا شبکه بلاکچین را بررسی کنید.';
+                } else if (msg.includes('insufficient funds')) {
+                    msg = '❌ موجودی کافی نیست! موجودی IAM یا MATIC خود را بررسی کنید.';
+                }
+                
+                if (statusElement) {
+                    statusElement.textContent = msg;
+                    statusElement.className = 'profile-status error';
+                }
+                registerBtn.disabled = false;
+                registerBtn.textContent = oldText;
+            }
+        };
+    }
+};
+
 // تابع نمایش فرم ثبت‌نام
 window.showRegistrationForm = async function() {
     const registrationForm = document.getElementById('registration-form');
@@ -405,37 +561,78 @@ window.showRegistrationForm = async function() {
     // نمایش موجودی‌های کاربر
     await window.displayUserBalances();
 
-    // مقداردهی آدرس معرف: اولویت با لینک رفرال
-    let referrer = getReferrerFromURL();
-    const refInputGroup = document.getElementById('register-ref-input-group');
-    const refSummary = document.getElementById('register-ref-summary');
-    const walletAddressSpan = document.getElementById('register-wallet-address');
-    const referrerAddressSpan = document.getElementById('register-referrer-address');
-    let isReferralMode = false;
-    if (!referrer) {
-        // اگر در URL نبود، از userData یا deployer استفاده کن
-        const { contract } = window.contractConfig;
-        const userData = await contract.users(window.contractConfig.address);
-        referrer = userData.referrer || (await contract.deployer());
-    } else {
-        // اگر رفرر در URL بود، حالت رفرال فعال شود
-        isReferralMode = true;
-    }
-    const referrerInput = document.getElementById('referrer-address');
-    if (referrerInput) referrerInput.value = referrer || '';
-
-    // اگر حالت رفرال است، ورودی را مخفی و خلاصه را نمایش بده
-    if (isReferralMode) {
+    // برای کاربران ثبت‌نام شده: فقط امکان ثبت‌نام زیرمجموعه‌های خودشان
+    const { contract, address } = window.contractConfig;
+    const currentUserData = await contract.users(address);
+    
+    if (currentUserData && currentUserData.index && BigInt(currentUserData.index) > 0n) {
+        // کاربر ثبت‌نام شده است - فقط می‌تواند زیرمجموعه ثبت‌نام کند
+        const refInputGroup = document.getElementById('register-ref-input-group');
+        const refSummary = document.getElementById('register-ref-summary');
+        const walletAddressSpan = document.getElementById('register-wallet-address');
+        const referrerAddressSpan = document.getElementById('register-referrer-address');
+        
+        // معرف به‌صورت پیش‌فرض: آدرس کاربر فعلی
+        const referrer = address;
+        const referrerInput = document.getElementById('referrer-address');
+        if (referrerInput) {
+            referrerInput.value = referrer;
+            referrerInput.readOnly = true; // غیرفعال کردن تغییر معرف
+        }
+        
+        // نمایش پیام راهنما
+        const statusElement = document.getElementById('register-status');
+        if (statusElement) {
+            statusElement.innerHTML = `
+                <div style="background: rgba(167,134,255,0.1); border: 1px solid rgba(167,134,255,0.3); border-radius: 8px; padding: 12px; margin: 10px 0;">
+                    <strong style="color: #a786ff;">👥 ثبت‌نام زیرمجموعه:</strong><br>
+                    • معرف: <span style="color: #a786ff;">${referrer}</span> (شما)<br>
+                    • آدرس کاربر جدید را وارد کنید<br>
+                    • فقط می‌توانید برای زیرمجموعه‌های خود ثبت‌نام کنید
+                </div>
+            `;
+            statusElement.className = 'profile-status info';
+        }
+        
+        // مخفی کردن فیلد معرف و نمایش خلاصه
         if (refInputGroup) refInputGroup.style.display = 'none';
         if (refSummary) {
             refSummary.style.display = 'block';
-            if (walletAddressSpan) walletAddressSpan.textContent = window.contractConfig.address;
+            if (walletAddressSpan) walletAddressSpan.textContent = address;
             if (referrerAddressSpan) referrerAddressSpan.textContent = referrer;
         }
     } else {
-        if (refInputGroup) refInputGroup.style.display = 'block';
-        if (refSummary) refSummary.style.display = 'none';
-    }
+        // کاربر ثبت‌نام نشده است - حالت عادی
+        let referrer = getReferrerFromURL();
+        const refInputGroup = document.getElementById('register-ref-input-group');
+        const refSummary = document.getElementById('register-ref-summary');
+        const walletAddressSpan = document.getElementById('register-wallet-address');
+        const referrerAddressSpan = document.getElementById('register-referrer-address');
+        let isReferralMode = false;
+        if (!referrer) {
+            // اگر در URL نبود، از userData یا deployer استفاده کن
+            const userData = await contract.users(window.contractConfig.address);
+            referrer = userData.referrer || (await contract.deployer());
+        } else {
+            // اگر رفرر در URL بود، حالت رفرال فعال شود
+            isReferralMode = true;
+        }
+        const referrerInput = document.getElementById('referrer-address');
+        if (referrerInput) referrerInput.value = referrer || '';
+
+        // اگر حالت رفرال است، ورودی را مخفی و خلاصه را نمایش بده
+        if (isReferralMode) {
+            if (refInputGroup) refInputGroup.style.display = 'none';
+            if (refSummary) {
+                refSummary.style.display = 'block';
+                if (walletAddressSpan) walletAddressSpan.textContent = window.contractConfig.address;
+                if (referrerAddressSpan) referrerAddressSpan.textContent = referrer;
+            }
+                 } else {
+             if (refInputGroup) refInputGroup.style.display = 'block';
+             if (refSummary) refSummary.style.display = 'none';
+         }
+     }
 
 
     // نمایش موجودی‌های کاربر
