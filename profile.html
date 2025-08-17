@@ -402,11 +402,42 @@
                         <span class="balance-value" title="${Number.parseFloat(daiBalance.toString()).toLocaleString('en-US', {maximumFractionDigits: 4})}">${formatLargeNumber(Number.parseFloat(daiBalance.toString()))}</span>
                     </div>
                 </div>
-                <div class="withdrawal-buttons" style="display:flex;gap:1.2rem;justify-content:center;margin-bottom:1.5rem;">
+                <div class="withdrawal-buttons" style="display:flex;gap:1.2rem;justify-content:center;margin-bottom:1.5rem;flex-wrap:wrap;">
                   <button id="claim-btn" title="برداشت امتیاز فقط هر ۱۲ ساعت یکبار و در صورت داشتن امتیاز قابل برداشت است. اگر امتیاز ندارید یا هنوز ۱۲ ساعت نگذشته باشد، برداشت ممکن نیست." style="background:linear-gradient(90deg,#00ff88,#a786ff);color:#181c2a;font-weight:bold;border:none;border-radius:10px;padding:0.9em 2.2em;font-size:1.08em;cursor:pointer;box-shadow:0 2px 8px #00ff8840;display:inline-flex;align-items:center;gap:0.6em;transition:box-shadow 0.2s,transform 0.2s;"><span style='font-size:1.2em;'>💸</span> برداشت پورسانت <span id="claim-timer" style="font-size:0.9em;margin-right:0.5em;"></span></button>
                   <button id="monthly-cashback-btn" title="برداشت کش‌بک فقط هر ۳۰ روز یکبار، با داشتن حداقل یک جایگاه فرزند خالی و تا سقف سپرده امکان‌پذیر است. اگر هر دو جایگاه پر باشد یا هنوز ۳۰ روز نگذشته باشد یا سقف کش‌بک پر شده باشد، برداشت ممکن نیست." style="background:linear-gradient(90deg,#a786ff,#00ff88);color:#181c2a;font-weight:bold;border:none;border-radius:10px;padding:0.9em 2.2em;font-size:1.08em;cursor:pointer;box-shadow:0 2px 8px #a786ff40;display:inline-flex;align-items:center;gap:0.6em;transition:box-shadow 0.2s,transform 0.2s;"><span style='font-size:1.2em;'>📆</span> کش‌بک <span id="cashback-timer" style="font-size:0.9em;margin-right:0.5em;"></span></button>
+                  <button id="upgrade-cap-btn" title="ارتقاع سقف امتیاز باینری با استفاده از توکن‌های IAM. هر چه بیشتر ارتقاع دهید، سقف امتیاز شما بیشتر می‌شود." style="background:linear-gradient(90deg,#ff6b35,#ff8e53);color:#181c2a;font-weight:bold;border:none;border-radius:10px;padding:0.9em 2.2em;font-size:1.08em;cursor:pointer;box-shadow:0 2px 8px #ff6b3540;display:inline-flex;align-items:center;gap:0.6em;transition:box-shadow 0.2s,transform 0.2s;"><span style='font-size:1.2em;'>📈</span> ارتقاع سقف</button>
                 </div>
                 <div id="monthly-cashback-msg" style="display:none;color:#ff4444;text-align:center;margin-bottom:1.2rem;font-size:1.05em;transition:opacity 0.3s;"></div>
+                
+                                 <!-- مودال ارتقاع سقف -->
+                 <div id="upgrade-cap-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:1000;backdrop-filter:blur(5px);">
+                     <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(35,41,70,0.98);border-radius:18px;padding:2rem;max-width:600px;width:90%;border:2px solid #ff6b3533;box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+                         <div style="text-align:center;margin-bottom:1.5rem;">
+                             <h3 style="color:#ff6b35;margin:0;font-size:1.5em;">📈 ارتقاع سقف امتیاز باینری</h3>
+                             <p style="color:#ccc;margin:0.5rem 0;font-size:0.9em;">هر 4 هفته می‌توانید حداکثر 2 پوینت خریداری کنید</p>
+                         </div>
+                         
+                         <div style="margin-bottom:1.5rem;">
+                             <label style="display:block;color:#a786ff;margin-bottom:0.5rem;font-weight:bold;">مقدار IAM برای ارتقاع:</label>
+                             <input type="number" id="upgrade-cap-amount" placeholder="مقدار IAM را وارد کنید" style="width:100%;padding:0.8rem;border:2px solid #ff6b3333;border-radius:8px;background:rgba(255,107,51,0.1);color:#fff;font-size:1rem;box-sizing:border-box;">
+                             <div style="margin-top:0.5rem;font-size:0.9em;color:#ccc;">
+                                 <span>موجودی فعلی: </span>
+                                 <span id="upgrade-cap-balance" style="color:#00ff88;font-weight:bold;">در حال بارگذاری...</span>
+                             </div>
+                             <div style="margin-top:0.5rem;font-size:0.9em;color:#ccc;">
+                                 <span>سقف فعلی: </span>
+                                 <span id="upgrade-cap-current" style="color:#a786ff;font-weight:bold;">در حال بارگذاری...</span>
+                             </div>
+                         </div>
+                         
+                         <div style="display:flex;gap:1rem;justify-content:center;">
+                             <button id="upgrade-cap-confirm" style="background:linear-gradient(90deg,#ff6b35,#ff8e53);color:#181c2a;border:none;border-radius:8px;padding:0.8rem 1.5rem;font-weight:bold;cursor:pointer;transition:all 0.2s;">تایید ارتقاع</button>
+                             <button id="upgrade-cap-cancel" style="background:rgba(255,255,255,0.1);color:#ccc;border:1px solid #666;border-radius:8px;padding:0.8rem 1.5rem;cursor:pointer;transition:all 0.2s;">لغو</button>
+                         </div>
+                         
+                         <div id="upgrade-cap-status" style="margin-top:1rem;text-align:center;font-size:0.9em;min-height:1.5em;"></div>
+                     </div>
+                 </div>
                 <div class="profile-row"><span class="profile-label">آدرس کیف پول:</span><span class="profile-value">${address}</span></div>
                 <div class="profile-row"><span class="profile-label">ایندکس:</span><span class="profile-value">${IAMId}</span></div>
                 <div class="profile-row"><span class="profile-label">ایندکس:</span><span class="profile-value">${user.index}</span></div>
@@ -550,6 +581,9 @@
             
             // راه‌اندازی تایمرهای برداشت
             startWithdrawalTimers(user);
+            
+                         // راه‌اندازی دکمه ارتقاع سقف
+             setupUpgradeCapButton(user, contract, address);
         } catch (e) {
             content.innerHTML = `<div class="error-message">خطا: ${e.message || e}</div>`;
         }

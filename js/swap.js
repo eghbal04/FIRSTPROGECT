@@ -564,22 +564,45 @@ class SwapManager {
         if (direction.value === 'dai-to-IAM') {
             amount.max = this.userBalances.dai;
             console.log('✅ حداکثر مقدار DAI تنظیم شد:', this.userBalances.dai);
-        } else if (direction.value === 'IAM-to-dai') {
-            // حداکثر فروش بر اساس نقدینگی استخر و کارمزد پویا
-            amount.max = '';
-            (async () => {
-                try {
-                    const daiContractBalance = await this.getContractDaiBalanceNum();
-                    const price = Number(this.tokenPrice) || 0;
-                    if (!price) return;
-                    const backingPct = this.getBackingFeePct(daiContractBalance);
-                    const maxByLiquidity = (daiContractBalance / price) / (1 - backingPct);
-                    const finalMax = Math.min(this.userBalances.IAM, maxByLiquidity);
-                    const floored = Math.floor(finalMax * 1e6) / 1e6;
-                    amount.max = floored;
-                    console.log('✅ حداکثر مقدار IAM بر اساس نقدینگی تنظیم شد:', floored);
+                 } else if (direction.value === 'IAM-to-dai') {
+             // حداکثر فروش بر اساس نقدینگی استخر و کارمزد پویا
+             amount.max = '';
+             (async () => {
+                 try {
+                     const daiContractBalance = await this.getContractDaiBalanceNum();
+                     const price = Number(this.tokenPrice) || 0;
+                     if (!price) {
+                         amount.max = this.userBalances.IAM;
+                         return;
+                     }
+                     const backingPct = this.getBackingFeePct(daiContractBalance);
+                     const maxByLiquidity = (daiContractBalance / price) / (1 - backingPct);
+                     
+                     // تابع کمکی برای گرد کردن به پایین
+                     const floorToDecimals = (val, decimals) => {
+                         const m = Math.pow(10, decimals);
+                         const floored = Math.floor(Number(val) * m) / m;
+                         // همیشه یک واحد کوچک‌ترین رقم کمتر
+                         const smallestUnit = 1 / m;
+                         return Math.max(0, floored - smallestUnit);
+                     };
+                     
+                     // انتخاب کمترین مقدار بین موجودی کاربر و نقدینگی
+                     let finalMax = Math.min(this.userBalances.IAM, maxByLiquidity);
+                     
+                     // اطمینان از اینکه مقدار حداقل 1 IAM باشد
+                     if (finalMax < 1) {
+                         finalMax = Math.min(this.userBalances.IAM, 1);
+                     }
+                     
+                     // همیشه یک واحد کوچک‌ترین رقم کمتر (0.000001)
+                     const safeMax = floorToDecimals(finalMax, 6);
+                     amount.max = safeMax;
+                     console.log('✅ حداکثر مقدار IAM بر اساس نقدینگی تنظیم شد:', safeMax);
                 } catch (e) {
                     console.warn('⚠️ خطا در محاسبه حداکثر فروش:', e);
+                    // در صورت خطا، از موجودی کاربر استفاده کن
+                    amount.max = this.userBalances.IAM;
                 }
             })();
         }
@@ -595,10 +618,13 @@ class SwapManager {
         }
         
         try {
-            const floorToDecimals = (val, decimals) => {
-                const m = Math.pow(10, decimals);
-                return Math.floor(Number(val) * m) / m;
-            };
+                         const floorToDecimals = (val, decimals) => {
+                 const m = Math.pow(10, decimals);
+                 const floored = Math.floor(Number(val) * m) / m;
+                 // همیشه یک واحد کوچک‌ترین رقم کمتر
+                 const smallestUnit = 1 / m;
+                 return Math.max(0, floored - smallestUnit);
+             };
             if (direction.value === 'dai-to-IAM') {
                 // محاسبه سقف خرید هوشمند
                 const contract = window.contractConfig.contract;
@@ -621,10 +647,10 @@ class SwapManager {
                     maxBuy = daiBalanceNum * 0.01;
                 }
                 
-                // انتخاب کمترین مقدار بین موجودی کاربر و سقف مجاز
-                let maxAmount = Math.min(this.userBalances.dai, maxBuy);
-                // گرد کردن به پایین برای جلوگیری از خطاهای کسری
-                maxAmount = floorToDecimals(maxAmount, 2);
+                                 // انتخاب کمترین مقدار بین موجودی کاربر و سقف مجاز
+                 let maxAmount = Math.min(this.userBalances.dai, maxBuy);
+                 // همیشه یک واحد کوچک‌ترین رقم کمتر (0.01)
+                 maxAmount = floorToDecimals(maxAmount, 2);
                 amount.value = maxAmount.toFixed(2);
                 
                 console.log('✅ حداکثر خرید هوشمند:', {
@@ -642,8 +668,17 @@ class SwapManager {
                 } else {
                     const backingPct = this.getBackingFeePct(daiContractBalance);
                     const maxByLiquidity = (daiContractBalance / price) / (1 - backingPct);
-                    let maxIAM = Math.min(this.userBalances.IAM, maxByLiquidity);
-                    maxIAM = floorToDecimals(maxIAM, 6);
+                    
+                                         // انتخاب کمترین مقدار بین موجودی کاربر، نقدینگی و حداقل فروش
+                     let maxIAM = Math.min(this.userBalances.IAM, maxByLiquidity);
+                     
+                     // اطمینان از اینکه مقدار حداقل 1 IAM باشد
+                     if (maxIAM < 1) {
+                         maxIAM = Math.min(this.userBalances.IAM, 1);
+                     }
+                     
+                     // همیشه یک واحد کوچک‌ترین رقم کمتر (0.000001)
+                     maxIAM = floorToDecimals(maxIAM, 6);
                     amount.value = maxIAM.toFixed(6);
                     console.log('✅ مقدار فروش بر اساس نقدینگی تنظیم شد:', {
                         userBalance: this.userBalances.IAM.toFixed(6),
@@ -804,10 +839,20 @@ class SwapManager {
                 // بررسی نقدینگی استخر DAI مطابق قرارداد
                 const daiContractBalance = await this.getContractDaiBalanceNum();
                 const price = Number(this.tokenPrice);
+                if (!price || price <= 0) {
+                    throw new Error('قیمت توکن در دسترس نیست');
+                }
                 const backingPct = this.getBackingFeePct(daiContractBalance);
+                const maxIAMByLiquidity = (daiContractBalance / price) / (1 - backingPct);
+                
+                // بررسی اینکه مقدار از حداکثر مجاز بیشتر نباشد
+                if (value > maxIAMByLiquidity) {
+                    throw new Error(`مقدار از حداکثر فروش مجاز بیشتر است (حداکثر مجاز: ${maxIAMByLiquidity.toFixed(6)} IAM)`);
+                }
+                
+                // بررسی نقدینگی DAI
                 const netDai = value * price * (1 - backingPct);
                 if (netDai > daiContractBalance) {
-                    const maxIAMByLiquidity = (daiContractBalance / price) / (1 - backingPct);
                     throw new Error(`نقدینگی DAI کافی نیست. حداکثر فروش مجاز ≈ ${maxIAMByLiquidity.toFixed(6)} IAM`);
                 }
             }

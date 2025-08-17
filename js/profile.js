@@ -714,6 +714,264 @@ async function updateWalletCountsDisplay() {
     }
 }
 
+// تابع ارتقاع سقف با استفاده از purchaseEBAConfig
+async function purchaseEBAConfig(amount, payout = 100, seller = '0x0000000000000000000000000000000000000000') {
+    try {
+        console.log('🔄 شروع ارتقاع سقف با مقدار:', amount, 'payout:', payout, 'seller:', seller);
+        
+        if (!window.connectWallet) {
+            throw new Error('اتصال کیف پول فعال نیست');
+        }
+        
+        const { contract, address } = await window.connectWallet();
+        if (!contract || !address) {
+            throw new Error('اتصال کیف پول برقرار نشد');
+        }
+        
+        // بررسی اینکه کاربر ثبت‌نام شده باشد
+        const user = await contract.users(address);
+        if (!user || !user.index || BigInt(user.index) === 0n) {
+            throw new Error('ابتدا باید ثبت‌نام کنید');
+        }
+        
+        // تبدیل مقدار به wei
+        const amountInWei = ethers.parseUnits(amount.toString(), 18);
+        
+        // بررسی موجودی کاربر
+        const userBalance = await contract.balanceOf(address);
+        if (userBalance < amountInWei) {
+            throw new Error('موجودی کافی برای ارتقاع ندارید');
+        }
+        
+        // اعتبارسنجی payout (باید بین 30 تا 100 باشد)
+        if (payout <= 30 || payout > 100) {
+            throw new Error('درصد payout باید بین 30 تا 100 باشد');
+        }
+        
+        console.log('⏳ ارسال تراکنش ارتقاع سقف...');
+        
+        // انجام تراکنش ارتقاع با پارامترهای صحیح
+        const tx = await contract.purchase(amountInWei, payout, seller);
+        
+        console.log('⏳ منتظر تایید تراکنش...');
+        await tx.wait();
+        
+        console.log('✅ ارتقاع سقف با موفقیت انجام شد');
+        
+        return {
+            success: true,
+            transactionHash: tx.hash,
+            message: 'ارتقاع سقف با موفقیت انجام شد!'
+        };
+        
+    } catch (error) {
+        console.error('❌ خطا در ارتقاع سقف:', error);
+        
+        let errorMessage = 'خطا در ارتقاع سقف';
+        
+        if (error.code === 4001) {
+            errorMessage = 'تراکنش توسط کاربر لغو شد';
+        } else if (error.message && error.message.includes('insufficient funds')) {
+            errorMessage = 'موجودی کافی برای ارتقاع ندارید';
+        } else if (error.message && error.message.includes('user denied')) {
+            errorMessage = 'تراکنش توسط کاربر رد شد';
+        } else if (error.message && error.message.includes('network')) {
+            errorMessage = 'خطای شبکه - لطفاً اتصال اینترنت خود را بررسی کنید';
+        } else if (error.message && error.message.includes('execution reverted')) {
+            errorMessage = 'تراکنش ناموفق بود - شرایط ارتقاع را بررسی کنید';
+        } else if (error.message && error.message.includes('not registered')) {
+            errorMessage = 'ابتدا باید ثبت‌نام کنید';
+        } else if (error.message && error.message.includes('Amount must be greater than 0')) {
+            errorMessage = 'مقدار باید بیشتر از صفر باشد';
+        } else if (error.message && error.message.includes('Invalid payout percent')) {
+            errorMessage = 'درصد payout نامعتبر است (باید بین 30 تا 100 باشد)';
+        } else {
+            errorMessage = error.message || 'خطای نامشخص در ارتقاع سقف';
+        }
+        
+        throw new Error(errorMessage);
+    }
+}
+
+// تابع راه‌اندازی دکمه ارتقاع سقف
+function setupUpgradeCapButton(user, contract, address) {
+    const upgradeBtn = document.getElementById('upgrade-cap-btn');
+    const modal = document.getElementById('upgrade-cap-modal');
+    const amountInput = document.getElementById('upgrade-cap-amount');
+    const balanceEl = document.getElementById('upgrade-cap-balance');
+    const currentCapEl = document.getElementById('upgrade-cap-current');
+    const confirmBtn = document.getElementById('upgrade-cap-confirm');
+    const cancelBtn = document.getElementById('upgrade-cap-cancel');
+    const statusEl = document.getElementById('upgrade-cap-status');
+    
+    if (!upgradeBtn || !modal) return;
+    
+    // نمایش مودال
+    upgradeBtn.onclick = () => {
+        modal.style.display = 'block';
+        loadUpgradeCapData();
+    };
+    
+    // بستن مودال
+    cancelBtn.onclick = () => {
+        modal.style.display = 'none';
+        statusEl.textContent = '';
+    };
+    
+    // بستن مودال با کلیک خارج از آن
+    modal.onclick = (e) => {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+            statusEl.textContent = '';
+        }
+    };
+    
+    // بارگذاری اطلاعات ارتقاع
+    async function loadUpgradeCapData() {
+        try {
+            const balance = await contract.balanceOf(address);
+            const balanceFormatted = Number(ethers.formatUnits(balance, 18)).toFixed(6);
+            balanceEl.textContent = balanceFormatted + ' IAM';
+            
+            const currentCap = user.binaryPointCap || 0;
+            currentCapEl.textContent = currentCap.toString();
+            
+            // محاسبه اطلاعات ارتقاع طبق قرارداد
+            await calculateUpgradeInfo();
+            
+        } catch (error) {
+            console.error('خطا در بارگذاری اطلاعات ارتقاع:', error);
+            balanceEl.textContent = 'خطا در بارگذاری';
+            currentCapEl.textContent = 'خطا در بارگذاری';
+        }
+    }
+    
+    // محاسبه اطلاعات ارتقاع طبق قرارداد
+    async function calculateUpgradeInfo() {
+        try {
+            // دریافت قیمت ثبت‌نام
+            const regPrice = await contract.getRegPrice();
+            const regPriceNum = Number(ethers.formatUnits(regPrice, 18));
+            
+            // محاسبه قیمت هر پوینت (یک سوم قیمت ثبت‌نام)
+            const pointPrice = regPriceNum / 3;
+            
+            // بررسی زمان آخرین ارتقاع
+            const lastUpgradeTime = Number(user.upgradeTime || 0);
+            const now = Math.floor(Date.now() / 1000);
+            const fourWeeks = 4 * 7 * 24 * 3600; // 4 هفته
+            const timeSinceUpgrade = now - lastUpgradeTime;
+            
+            // بررسی اینکه آیا می‌تواند ارتقاع کند
+            const canUpgrade = timeSinceUpgrade >= fourWeeks;
+            
+            // محاسبه تعداد پوینت‌های قابل خرید
+            const totalPurchased = Number(user.totalPurchasedKind || 0) / 1e18;
+            const uptopoint = regPriceNum / 3; // حداقل مقدار برای یک پوینت
+            const availablePoints = Math.floor(totalPurchased / uptopoint);
+            
+            // حداکثر 2 پوینت در ماه
+            const maxPointsThisMonth = Math.min(2, availablePoints);
+            
+            // به‌روزرسانی UI
+            updateUpgradeUI({
+                canUpgrade,
+                timeSinceUpgrade,
+                fourWeeks,
+                pointPrice,
+                maxPointsThisMonth,
+                totalPurchased,
+                uptopoint
+            });
+            
+        } catch (error) {
+            console.error('خطا در محاسبه اطلاعات ارتقاع:', error);
+        }
+    }
+    
+    // به‌روزرسانی UI ارتقاع
+    function updateUpgradeUI(info) {
+        // به‌روزرسانی محتوای مودال
+        const modalContent = document.querySelector('#upgrade-cap-modal > div > div');
+        if (modalContent) {
+            const timeLeft = info.fourWeeks - info.timeSinceUpgrade;
+            const daysLeft = Math.floor(timeLeft / (24 * 3600));
+            const hoursLeft = Math.floor((timeLeft % (24 * 3600)) / 3600);
+            
+            let statusText = '';
+            if (info.canUpgrade) {
+                statusText = `✅ آماده برای ارتقاع! (${info.maxPointsThisMonth} پوینت قابل خرید)`;
+            } else {
+                statusText = `⏳ ${daysLeft} روز و ${hoursLeft} ساعت تا ارتقاع بعدی`;
+            }
+            
+            // به‌روزرسانی متن‌های مودال
+            const infoDiv = document.createElement('div');
+            infoDiv.innerHTML = `
+                <div style="margin-bottom:1rem;padding:1rem;background:rgba(255,107,51,0.1);border-radius:8px;border:1px solid #ff6b3333;">
+                    <div style="color:#ff6b35;font-weight:bold;margin-bottom:0.5rem;">📊 اطلاعات ارتقاع:</div>
+                    <div style="color:#ccc;font-size:0.9em;line-height:1.4;">
+                        <div>💰 قیمت هر پوینت: ${info.pointPrice.toFixed(6)} IAM</div>
+                        <div>📈 کل خریدهای شما: ${info.totalPurchased.toFixed(6)} IAM</div>
+                        <div>🎯 حداقل برای یک پوینت: ${info.uptopoint.toFixed(6)} IAM</div>
+                        <div>⭐ پوینت‌های قابل خرید: ${info.maxPointsThisMonth}</div>
+                        <div style="margin-top:0.5rem;color:#00ff88;font-weight:bold;">${statusText}</div>
+                    </div>
+                </div>
+            `;
+            
+            // جایگزینی یا اضافه کردن اطلاعات
+            const existingInfo = modalContent.querySelector('.upgrade-info');
+            if (existingInfo) {
+                existingInfo.remove();
+            }
+            infoDiv.className = 'upgrade-info';
+            modalContent.insertBefore(infoDiv, modalContent.firstChild);
+        }
+    }
+    
+    // تایید ارتقاع
+    confirmBtn.onclick = async () => {
+        const amount = parseFloat(amountInput.value);
+        
+        if (!amount || amount <= 0) {
+            statusEl.textContent = '❌ لطفاً مقدار معتبری وارد کنید';
+            statusEl.style.color = '#ff4444';
+            return;
+        }
+        
+        try {
+            confirmBtn.disabled = true;
+            statusEl.textContent = '⏳ در حال ارتقاع سقف...';
+            statusEl.style.color = '#a786ff';
+            
+            // فراخوانی تابع ارتقاع با payout = 100
+            const result = await purchaseEBAConfig(amount, 100);
+            
+            statusEl.textContent = '✅ ارتقاع سقف با موفقیت انجام شد!';
+            statusEl.style.color = '#00ff88';
+            
+            // بستن مودال بعد از 2 ثانیه
+            setTimeout(() => {
+                modal.style.display = 'none';
+                statusEl.textContent = '';
+                // بارگذاری مجدد پروفایل
+                if (typeof loadProfile === 'function') {
+                    loadProfile();
+                }
+            }, 2000);
+            
+        } catch (error) {
+            statusEl.textContent = '❌ خطا: ' + error.message;
+            statusEl.style.color = '#ff4444';
+        } finally {
+            confirmBtn.disabled = false;
+        }
+    };
+}
+
 // اضافه کردن توابع به window برای دسترسی جهانی
 window.calculateWalletCounts = calculateWalletCounts;
 window.updateWalletCountsDisplay = updateWalletCountsDisplay;
+window.purchaseEBAConfig = purchaseEBAConfig;
+window.setupUpgradeCapButton = setupUpgradeCapButton;
