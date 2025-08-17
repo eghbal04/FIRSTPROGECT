@@ -75,7 +75,7 @@ class MobileUserPopup {
     show(address, user) {
         if (!user) return;
 
-        const cpaId = user.index !== undefined ? (window.generateCPAId ? window.generateCPAId(user.index) : user.index) : '-';
+        const IAMId = user.index !== undefined ? (window.generateIAMId ? window.generateIAMId(user.index) : user.index) : '-';
         const walletAddress = address || '-';
         const isActive = user.activated || false;
         
@@ -99,7 +99,7 @@ class MobileUserPopup {
                     <div class="user-primary-info">
                         <div class="user-id">
                             <span class="label">شناسه کاربر</span>
-                            <span class="value" onclick="navigator.clipboard.writeText('${cpaId}')">${cpaId}</span>
+                            <span class="value" onclick="navigator.clipboard.writeText('${IAMId}')">${IAMId}</span>
                         </div>
                         <div class="user-status ${isActive ? 'active' : 'inactive'}">
                             ${isActive ? '✅ فعال' : '❌ غیرفعال'}
@@ -127,8 +127,8 @@ class MobileUserPopup {
                     <div class="balance-grid">
                         <div class="balance-item">
                             <span>🟢</span>
-                            <span>CPA</span>
-                            <span class="balance-value" id="cpa-balance">-</span>
+                            <span>IAM</span>
+                            <span class="balance-value" id="IAM-balance">-</span>
                         </div>
                         <div class="balance-item">
                             <span>🟣</span>
@@ -176,7 +176,7 @@ class MobileUserPopup {
         if (!address || address === '-') return;
 
         // نمایش وضعیت در حال بارگذاری
-        document.getElementById('cpa-balance').textContent = '⏳';
+        document.getElementById('IAM-balance').textContent = '⏳';
         document.getElementById('matic-balance').textContent = '⏳';
         document.getElementById('dai-balance').textContent = '⏳';
 
@@ -234,21 +234,21 @@ class MobileUserPopup {
                     console.warn('خطا در دریافت موجودی MATIC:', e);
                 }
 
-                // دریافت موجودی CPA
+                // دریافت موجودی IAM
                 try {
-                    const cpaAddress = window.CONTRACT_ADDRESS;
-                    const cpaAbi = window.CONTRACT_ABI;
-                    if (cpaAddress && cpaAbi) {
-                        const cpaContract = new ethers.Contract(cpaAddress, cpaAbi, provider);
-                        const cpaRaw = await cpaContract.balanceOf(address);
-                        const cpa = Number(ethers.utils.formatEther(cpaRaw)).toFixed(2);
-                        document.getElementById('cpa-balance').textContent = cpa;
+                    const IAMAddress = window.CONTRACT_ADDRESS;
+                    const IAMAbi = window.CONTRACT_ABI;
+                    if (IAMAddress && IAMAbi) {
+                        const IAMContract = new ethers.Contract(IAMAddress, IAMAbi, provider);
+                        const IAMRaw = await IAMContract.balanceOf(address);
+                        const IAM = Number(ethers.utils.formatEther(IAMRaw)).toFixed(2);
+                        document.getElementById('IAM-balance').textContent = IAM;
                     } else {
                         throw new Error('Contract info not found');
                     }
                 } catch(e) {
-                    document.getElementById('cpa-balance').textContent = '❌';
-                    console.warn('خطا در دریافت موجودی CPA:', e);
+                    document.getElementById('IAM-balance').textContent = '❌';
+                    console.warn('خطا در دریافت موجودی IAM:', e);
                 }
 
                 // دریافت موجودی DAI
@@ -269,14 +269,14 @@ class MobileUserPopup {
 
             } catch(err) {
                 console.error('خطا در اتصال به کیف پول:', err);
-                document.getElementById('cpa-balance').textContent = '🔒';
+                document.getElementById('IAM-balance').textContent = '🔒';
                 document.getElementById('matic-balance').textContent = '🔒';
                 document.getElementById('dai-balance').textContent = '🔒';
             }
 
         } catch(e) {
             console.error('خطا در دریافت موجودی‌ها:', e);
-            document.getElementById('cpa-balance').textContent = '❌';
+            document.getElementById('IAM-balance').textContent = '❌';
             document.getElementById('matic-balance').textContent = '❌';
             document.getElementById('dai-balance').textContent = '❌';
         }

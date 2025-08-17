@@ -65,7 +65,7 @@
                  <div style="font-size:0.85rem;color:#a786ff;margin-bottom:8px;background:rgba(167,134,255,0.1);padding:8px;border-radius:6px;border:1px solid rgba(167,134,255,0.3);">
            ⚠️ <strong>محدودیت:</strong> فقط می‌توانید برای ایندکس‌های موجود در خط رفرال خود ثبت‌نام رزرو کنید.
          </div>
-        <input type="text" id="index-search" class="register-form-input" placeholder="مثلاً 123" autocomplete="off" value="refferer ID : CPA00000" style="width:100%;min-width:0;">
+        <input type="text" id="index-search" class="register-form-input" placeholder="مثلاً 123" autocomplete="off" value="refferer ID : IAM00000" style="width:100%;min-width:0;">
       </div>
       <div class="form-group">
         <label for="referrer-address">آدرس معرف (والد)</label>
@@ -122,12 +122,12 @@
             <span>موجودی متیک: <b id="matic-balance">...</b></span>
           </span>
           <span style="display:flex;align-items:center;gap:6px;">
-            <img src="cpa.jpg" alt="CPA" style="width:18px;height:18px;vertical-align:middle;border-radius:50%;"> 
-            <span>موجودی CPA: <b id="cpa-balance">...</b></span>
+            <img src="IAM.jpg" alt="IAM" style="width:18px;height:18px;vertical-align:middle;border-radius:50%;"> 
+            <span>موجودی IAM: <b id="IAM-balance">...</b></span>
           </span>
           </div>
           <div style="font-size:0.8rem;color:#718096;margin-top:8px;text-align:center;background:rgba(113,128,150,0.1);padding:6px;border-radius:4px;">
-            💡 برای ثبت‌نام رزرو نیاز به معادل $23 توکن CPA دارید
+            💡 برای ثبت‌نام رزرو نیاز به معادل $23 توکن IAM دارید
           </div>
         </div>
       </div>
@@ -141,7 +141,7 @@
                        <div class="register-form-status" id="status-message"></div>
                        
                        <div style="margin-top:20px;padding:12px;background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3);border-radius:8px;text-align:center;font-size:0.9rem;color:#ffc107;">
-                           ⚠️ برای ثبت‌نام نیاز به موجودی کافی CPA و MATIC دارید
+                           ⚠️ برای ثبت‌نام نیاز به موجودی کافی IAM و MATIC دارید
                        </div>
                    </form>
   </main>
@@ -154,7 +154,7 @@
     const indexInput = document.getElementById('index-search');
     const refInput = document.getElementById('referrer-address');
      const newUserInput = document.getElementById('new-user-address');
-    const defaultGuide = 'refferer ID : CPA00000';
+    const defaultGuide = 'refferer ID : IAM00000';
     
                                                 // تابع بررسی اینکه آیا ایندکس هدف در زیرمجموعه کاربر جاری قرار دارد
           function isIndexInUserSubtree(targetIndex, currentUserIndex) {
@@ -250,8 +250,8 @@
           const indexInput = document.getElementById('index-search');
           if ((!indexInput.value || indexInput.value === defaultGuide) && user.activated && user.index) {
             // فرمت ایندکس
-            let cpaId = 'CPA' + user.index.toString().padStart(5, '0');
-            indexInput.value = cpaId;
+            let IAMId = 'IAM' + user.index.toString().padStart(5, '0');
+            indexInput.value = IAMId;
             indexInput.style.background = '';
             indexInput.style.color = '';
             indexInput.style.opacity = '';
@@ -289,11 +289,11 @@
             // getTokenPrice خروجی با 18 decimal داره، باید formatUnits استفاده کنیم
             const tokenPriceNum = Number(ethers.formatUnits(tokenPrice, 18));
             const requiredAmount = (23 / tokenPriceNum);
-            regCost = `${requiredAmount.toFixed(2)} CPA`;
+            regCost = `${requiredAmount.toFixed(2)} IAM`;
           }
         } catch (e) {
           console.log('خطا در دریافت قیمت توکن:', e);
-          regCost = '23 CPA'; // مقدار پیش‌فرض اگر getTokenPrice کار نکرد
+          regCost = '23 IAM'; // مقدار پیش‌فرض اگر getTokenPrice کار نکرد
         }
         document.getElementById('register-cost').textContent = regCost;
         
@@ -308,34 +308,34 @@
           }
         }
         document.getElementById('matic-balance').textContent = maticBalance;
-        // موجودی CPA
-        let cpaBalance = '...';
+        // موجودی IAM
+        let IAMBalance = '...';
         if (isConnected && contract && myAddress && typeof contract.balanceOf === 'function') {
           try {
-            let cpa = await contract.balanceOf(myAddress);
-            cpaBalance = cpa ? (typeof ethers !== 'undefined' ? Number(ethers.formatEther(cpa)).toFixed(2) : (Number(cpa)/1e18).toFixed(2)) : '0.00';
+            let IAM = await contract.balanceOf(myAddress);
+            IAMBalance = IAM ? (typeof ethers !== 'undefined' ? Number(ethers.formatEther(IAM)).toFixed(2) : (Number(IAM)/1e18).toFixed(2)) : '0.00';
             
-            // بررسی کفایت موجودی CPA برای ثبت‌نام رزرو
-            const cpaBalanceElement = document.getElementById('cpa-balance');
+            // بررسی کفایت موجودی IAM برای ثبت‌نام رزرو
+            const IAMBalanceElement = document.getElementById('IAM-balance');
             try {
               let tokenPriceNum = 1; // قیمت پیش‌فرض 1 دلار
               if (typeof contract.getTokenPrice === 'function') {
                 const tokenPrice = await contract.getTokenPrice();
                 tokenPriceNum = Number(ethers.formatUnits(tokenPrice, 18));
               }
-              const requiredCPA = (23 / tokenPriceNum).toFixed(2);
+              const requiredIAM = (23 / tokenPriceNum).toFixed(2); // مقدار مورد نیاز IAM
               
-              // رنگ موجودی CPA
-              if (parseFloat(cpaBalance) >= parseFloat(requiredCPA)) {
-                cpaBalanceElement.style.color = '#00ff88'; // سبز: کافی است
+              // رنگ موجودی IAM
+              if (parseFloat(IAMBalance) >= parseFloat(requiredIAM)) {
+                IAMBalanceElement.style.color = '#00ff88'; // سبز: کافی است
               } else {
-                cpaBalanceElement.style.color = '#ff453a'; // قرمز: کافی نیست
+                IAMBalanceElement.style.color = '#ff453a'; // قرمز: کافی نیست
               }
               
               // رنگ هزینه ثبت‌نام بر اساس کفایت موجودی
               const registerCostElement = document.getElementById('register-cost');
               if (registerCostElement) {
-                if (parseFloat(cpaBalance) >= parseFloat(requiredCPA)) {
+                if (parseFloat(IAMBalance) >= parseFloat(requiredIAM)) {
                   registerCostElement.style.color = '#00ff88'; // سبز: موجودی کافی است
                 } else {
                   registerCostElement.style.color = '#ff453a'; // قرمز: موجودی کافی نیست
@@ -345,10 +345,10 @@
               console.log('خطا در بررسی کفایت موجودی:', e);
             }
           } catch (e) {
-            cpaBalance = '0.00';
+            IAMBalance = '0.00';
           }
         }
-        document.getElementById('cpa-balance').textContent = cpaBalance;
+        document.getElementById('IAM-balance').textContent = IAMBalance;
       } catch (e) {
         isConnected = false;
         connStatus.textContent = '❌ اتصال به کیف پول برقرار نشد: ' + (e.message || e);
@@ -538,8 +538,8 @@
           }
           
           // مرحله 4: تنظیم ایندکس در فیلد مربوطه
-          let cpaId = 'CPA' + user.index.toString().padStart(5, '0');
-          indexInput.value = cpaId;
+          let IAMId = 'IAM' + user.index.toString().padStart(5, '0');
+          indexInput.value = IAMId;
           indexInput.style.background = '';
           indexInput.style.color = '';
           indexInput.style.opacity = '';
@@ -753,7 +753,7 @@
         if (userBalance < requiredAmount) {
           const requiredFormatted = requiredAmountFloat.toFixed(2);
           const currentFormatted = Number(ethers.formatEther(userBalance)).toFixed(2);
-          throw new Error(`موجودی CPA شما کافی نیست. مورد نیاز: ${requiredFormatted} CPA، موجودی فعلی: ${currentFormatted} CPA`);
+          throw new Error(`موجودی IAM شما کافی نیست. مورد نیاز: ${requiredFormatted} IAM، موجودی فعلی: ${currentFormatted} IAM`);
         }
         
         status.textContent = 'در حال ارسال درخواست ثبت‌نام رزرو به شبکه... لطفاً منتظر تأیید تراکنش باشید.';
@@ -763,7 +763,7 @@
         status.textContent = 'در حال انتظار برای تأیید تراکنش توسط شبکه...';
         await tx.wait();
         status.style.color = '#388e3c';
-        status.textContent = 'ثبت‌نام رزرو با موفقیت انجام شد! به خانواده CPA خوش آمدید.';
+        status.textContent = 'ثبت‌نام رزرو با موفقیت انجام شد! به خانواده IAM خوش آمدید.';
         setTimeout(loadRegisterInfo, 1500);
       } catch (e) {
         status.style.color = '#d32f2f';
@@ -777,10 +777,10 @@
           status.textContent = 'آدرس معرف معتبر نیست یا وجود ندارد.';
         } else if (/insufficient|balance|موجودی/i.test(errorMsg)) {
           // اگر خطای کمبود موجودی از smart contract آمده، همان پیام رو نشون بده
-          if (errorMsg.includes('CPA شما کافی نیست')) {
+          if (errorMsg.includes('IAM شما کافی نیست')) {
             status.textContent = errorMsg;
           } else {
-            status.textContent = 'موجودی CPA شما برای ثبت‌نام رزرو کافی نیست.';
+            status.textContent = 'موجودی IAM شما برای ثبت‌نام رزرو کافی نیست.';
           }
         } else if (/user rejected|reject|لغو شد/i.test(errorMsg)) {
           status.textContent = 'فرآیند ثبت‌نام رزرو توسط شما لغو شد.';

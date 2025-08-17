@@ -221,7 +221,7 @@ async function loadDashboardData() {
             
             // نمایش حالت خالی بدون مقادیر پیش‌فرض
             const emptyData = {
-                prices: { cpaPriceUSD: null, cpaPriceMatic: null },
+                prices: { IAMPriceUSD: null, IAMPriceMatic: null },
                 stats: {
                     totalSupply: null,
                     circulatingSupply: null,
@@ -234,7 +234,7 @@ async function loadDashboardData() {
                 },
                 additionalStats: { wallets: null, helpFund: null },
                 tradingVolume: null,
-                priceChanges: { cpaPriceChange: null, maticPriceChange: null, volumeChange: null }
+                priceChanges: { IAMPriceChange: null, maticPriceChange: null, volumeChange: null }
             };
             
             await updateDashboardUI(emptyData.prices, emptyData.stats, emptyData.additionalStats, emptyData.tradingVolume, emptyData.priceChanges);
@@ -256,14 +256,14 @@ async function calculatePriceChanges() {
         
         // اگر داده‌ای برای محاسبه تغییرات موجود نیست، null برگردان
         return {
-            cpaPriceChange: null,
+            IAMPriceChange: null,
             maticPriceChange: null,
             volumeChange: null
         };
     } catch (error) {
         console.error('Dashboard: Error calculating price changes:', error);
         return {
-            cpaPriceChange: null,
+            IAMPriceChange: null,
             maticPriceChange: null,
             volumeChange: null
         };
@@ -316,16 +316,16 @@ async function updateDashboardUI(prices, stats, additionalStats, tradingVolume, 
     };
     
     // به‌روزرسانی قیمت‌ها با 18 رقم اعشار
-    if (prices.cpaPriceUSD && prices.cpaPriceUSD !== null) {
+    if (prices.IAMPriceUSD && prices.IAMPriceUSD !== null) {
         const element = document.getElementById('token-price');
         if (element) {
-            element.textContent = prices.cpaPriceUSD;
+            element.textContent = prices.IAMPriceUSD;
         }
     } else {
         updateElement('token-price', null, '', '', false, 6);
     }
     // نمایش قیمت توکن به POL با نماد علمی
-    updateElementExponential('token-price-matic', prices.cpaPriceMatic, ' POL');
+    updateElementExponential('token-price-matic', prices.IAMPriceMatic, ' POL');
     
     // مقداردهی توکن‌های در گردش و کل پوینت‌ها مستقیماً از توابع قرارداد
     try {
@@ -341,7 +341,7 @@ async function updateDashboardUI(prices, stats, additionalStats, tradingVolume, 
             // updateElement('total-points', parseInt(ethers.formatUnits(points, 0)), '', ' POINT', true);
             // pointValue از قرارداد
             let pointValue = await contract.getPointValue();
-            updateElement('point-value', parseFloat(ethers.formatUnits(pointValue, 18)), '', '', false, 2); // حذف پسوند CPA
+            updateElement('point-value', parseFloat(ethers.formatUnits(pointValue, 18)), '', '', false, 2); // حذف پسوند IAM
         } else {
             // اگر قرارداد در دسترس نیست، از stats استفاده کن
             if (stats.totalClaimableBinaryPoints) {
@@ -354,9 +354,9 @@ async function updateDashboardUI(prices, stats, additionalStats, tradingVolume, 
             }
             
             if (stats.pointValue) {
-                updateElement('point-value', stats.pointValue, '', ' CPA', false, 2);
+                updateElement('point-value', stats.pointValue, '', ' IAM', false, 2);
             } else {
-                updateElement('point-value', 0, '', ' CPA', false, 2);
+                updateElement('point-value', 0, '', ' IAM', false, 2);
             }
         }
     } catch (e) {
@@ -372,9 +372,9 @@ async function updateDashboardUI(prices, stats, additionalStats, tradingVolume, 
         }
         
         if (stats.pointValue) {
-            updateElement('point-value', stats.pointValue, '', ' CPA', false, 2);
+            updateElement('point-value', stats.pointValue, '', ' IAM', false, 2);
         } else {
-            updateElement('point-value', 0, '', ' CPA', false, 2);
+            updateElement('point-value', 0, '', ' IAM', false, 2);
         }
     }
     
@@ -396,8 +396,8 @@ async function updateDashboardUI(prices, stats, additionalStats, tradingVolume, 
     updateElement('trading-volume', isNaN(tradingVolumeNum) ? null : tradingVolumeNum, '', ' POL', false, 6);
     
     // contract token balance
-    let contractTokenBalanceCPA = parseFloat(stats.contractTokenBalance);
-    updateElement('contract-token-balance', contractTokenBalanceCPA, '', '', false, 4); // حذف پسوند CPA
+    let contractTokenBalanceIAM = parseFloat(stats.contractTokenBalance);
+    updateElement('contract-token-balance', contractTokenBalanceIAM, '', '', false, 4); // حذف پسوند IAM
     let rewardPoolPOL = parseFloat(stats.rewardPool);
     updateElement('reward-pool', rewardPoolPOL, '', ' POL', false, 4);
 }
@@ -672,8 +672,8 @@ async function handleWalletConnectSuccess(walletConnectProvider) {
         const provider = new ethers.BrowserProvider(walletConnectProvider);
         const signer = await provider.getSigner();
         const contract = new ethers.Contract(
-            window.contractConfig.CPA_ADDRESS,
-            window.contractConfig.CPA_ABI,
+            window.contractConfig.IAM_ADDRESS,
+            window.contractConfig.IAM_ABI,
             signer
         );
         

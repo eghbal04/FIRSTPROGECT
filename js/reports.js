@@ -1,4 +1,4 @@
-// reports.js - گزارشات کامل و دسته‌بندی شده بر اساس ABI قرارداد CPA
+// reports.js - گزارشات کامل و دسته‌بندی شده بر اساس ABI قرارداد IAM
 
 // ابزارهای کمکی
 function shortenAddress(address) {
@@ -29,7 +29,7 @@ async function displayAddress(addr, contract, contractAddress) {
     if (!addr) return '-';
     if (addr.toLowerCase() === contractAddress.toLowerCase()) return 'قرارداد';
     const idx = await getIndexByAddress(addr, contract);
-    if (idx) return `CPA${idx.toString().padStart(5, '0')}`;
+    if (idx) return `IAM${idx.toString().padStart(5, '0')}`;
     return shortenAddress(addr);
 }
 function formatDate(timestamp) {
@@ -60,7 +60,7 @@ window.fetchReports = async function(address) {
         if (typeof indexedDB !== 'undefined') {
             try {
                 const db = await new Promise((resolve, reject) => {
-                    const req = indexedDB.open('cpa-reports-cache', 1);
+                    const req = indexedDB.open('IAM-reports-cache', 1);
                     req.onupgradeneeded = function() {
                         const dbi = req.result;
                         if (!dbi.objectStoreNames.contains('reports')) dbi.createObjectStore('reports', { keyPath: 'key' });
@@ -112,7 +112,7 @@ window._saveReportsCache = async function(reports) {
         if (typeof indexedDB !== 'undefined') {
             try {
                 const db = await new Promise((resolve, reject) => {
-                    const req = indexedDB.open('cpa-reports-cache', 1);
+                    const req = indexedDB.open('IAM-reports-cache', 1);
                     req.onupgradeneeded = function() {
                         const dbi = req.result;
                         if (!dbi.objectStoreNames.contains('reports')) dbi.createObjectStore('reports', { keyPath: 'key' });
@@ -260,10 +260,10 @@ window._fetchReportsFresh = async function(address) {
     console.log('📊 User address:', userAddress);
     let activatedCount = 0;
     for (const e of eventsActivated) {
-        console.log('📊 Activated event user:', e.args.user, 'amount:', e.args.amountCPA?.toString());
+        console.log('📊 Activated event user:', e.args.user, 'amount:', e.args.amountIAM?.toString());
         if (e.args.user && e.args.user.toLowerCase() === userAddress.toLowerCase()) {
             activatedCount++;
-            await pushReport('registration', 'ثبت‌نام و فعال‌سازی', formatNumber(e.args.amountCPA, 18) + ' CPA', e, e.args.user, provider);
+            await pushReport('registration', 'ثبت‌نام و فعال‌سازی', formatNumber(e.args.amountIAM, 18) + ' IAM', e, e.args.user, provider);
         }
     }
     console.log('📊 Activated events for user:', activatedCount);
@@ -314,11 +314,11 @@ window._fetchReportsFresh = async function(address) {
             
             if (relatedPurchaseKind) {
                 referralCount++;
-                console.log('✅ Found related PurchaseKind event for referral! Amount:', relatedPurchaseKind.args.amountCPA.toString());
+                console.log('✅ Found related PurchaseKind event for referral! Amount:', relatedPurchaseKind.args.amountIAM.toString());
                 await pushReport(
                     'referral_registration', 
                     'معرفی و ثبت‌نام', 
-                    `${formatNumber(relatedPurchaseKind.args.amountCPA, 18)} CPA (${shortenAddress(treeEvent.args.user)})`, 
+                    `${formatNumber(relatedPurchaseKind.args.amountIAM, 18)} IAM (${shortenAddress(treeEvent.args.user)})`, 
                     relatedPurchaseKind, 
                     treeEvent.args.user, 
                     provider
@@ -408,21 +408,21 @@ window._fetchReportsFresh = async function(address) {
     // برای کاربر خودش
     for (const e of eventsPurchaseKindAll) {
         if (e.args.user && e.args.user.toLowerCase() === userAddress.toLowerCase())
-            await pushReport('purchase', 'خرید اضافی', formatNumber(e.args.amountCPA, 18) + ' CPA', e, e.args.user, provider);
+            await pushReport('purchase', 'خرید اضافی', formatNumber(e.args.amountIAM, 18) + ' IAM', e, e.args.user, provider);
     }
     // TokensBought
     const eventsTokensBought = await window.safeQueryEvents(contractWithProvider, contractWithProvider.filters.TokensBought(), fromBlock, currentBlock);
     console.log('TokensBought events:', eventsTokensBought.length);
     for (const e of eventsTokensBought) {
         if (e.args.buyer && e.args.buyer.toLowerCase() === userAddress.toLowerCase())
-            await pushReport('tokensbought', 'خرید توکن', `${formatNumber(e.args.daiAmount, 18)} DAI → ${formatNumber(e.args.tokenAmount, 18)} CPA`, e, e.args.buyer, provider);
+            await pushReport('tokensbought', 'خرید توکن', `${formatNumber(e.args.daiAmount, 18)} DAI → ${formatNumber(e.args.tokenAmount, 18)} IAM`, e, e.args.buyer, provider);
     }
     // TokensSold
     const eventsTokensSold = await window.safeQueryEvents(contractWithProvider, contractWithProvider.filters.TokensSold(), fromBlock, currentBlock);
     console.log('TokensSold events:', eventsTokensSold.length);
     for (const e of eventsTokensSold) {
         if (e.args.seller && e.args.seller.toLowerCase() === userAddress.toLowerCase())
-            await pushReport('tokenssold', 'فروش توکن', `${formatNumber(e.args.tokenAmount, 18)} CPA → ${formatNumber(e.args.daiAmount, 18)} DAI`, e, e.args.seller, provider);
+            await pushReport('tokenssold', 'فروش توکن', `${formatNumber(e.args.tokenAmount, 18)} IAM → ${formatNumber(e.args.daiAmount, 18)} DAI`, e, e.args.seller, provider);
     }
     // BinaryPointsUpdated
     const eventsBinaryPoints = await window.safeQueryEvents(contractWithProvider, contractWithProvider.filters.BinaryPointsUpdated(), fromBlock, currentBlock);
@@ -436,13 +436,13 @@ window._fetchReportsFresh = async function(address) {
     console.log('BinaryRewardDistributed events:', eventsBinaryReward.length);
     for (const e of eventsBinaryReward) {
         if (e.args.claimer && e.args.claimer.toLowerCase() === userAddress.toLowerCase())
-            await pushReport('binaryreward', 'دریافت پاداش باینری', `${formatNumber(e.args.claimerReward, 18)} CPA`, e, e.args.claimer, provider);
+            await pushReport('binaryreward', 'دریافت پاداش باینری', `${formatNumber(e.args.claimerReward, 18)} IAM`, e, e.args.claimer, provider);
     }
     // BinaryPoolUpdated (عمومی)
     const eventsBinaryPool = await window.safeQueryEvents(contractWithProvider, contractWithProvider.filters.BinaryPoolUpdated(), fromBlock, currentBlock);
     console.log('BinaryPoolUpdated events:', eventsBinaryPool.length);
     for (const e of eventsBinaryPool) {
-        await pushReport('binarypool', 'به‌روزرسانی استخر باینری', `${formatNumber(e.args.addedAmount, 18)} CPA (سایز جدید: ${formatNumber(e.args.newPoolSize, 18)})`, e, null, provider);
+        await pushReport('binarypool', 'به‌روزرسانی استخر باینری', `${formatNumber(e.args.addedAmount, 18)} IAM (سایز جدید: ${formatNumber(e.args.newPoolSize, 18)})`, e, null, provider);
     }
     // TreeStructureUpdated
     const eventsTree = await window.safeQueryEvents(contractWithProvider, contractWithProvider.filters.TreeStructureUpdated(), fromBlock, currentBlock);
@@ -491,7 +491,7 @@ window._fetchReportsFresh = async function(address) {
             await pushReport(
                 transferType,
                 transferTitle,
-                `${formatNumber(amount, 18)} CPA`,
+                `${formatNumber(amount, 18)} IAM`,
                 e,
                 {from: fromAddr, to: toAddr},
                 provider
@@ -503,7 +503,7 @@ window._fetchReportsFresh = async function(address) {
     for (const e of eventsApproval) {
         if ((e.args.owner && e.args.owner.toLowerCase() === userAddress.toLowerCase()) ||
             (e.args.spender && e.args.spender.toLowerCase() === userAddress.toLowerCase())) {
-            await pushReport('approval', 'تأییدیه انتقال', `${formatNumber(e.args.value, 18)} CPA`, e, e.args.owner === userAddress ? e.args.spender : e.args.owner, provider);
+            await pushReport('approval', 'تأییدیه انتقال', `${formatNumber(e.args.value, 18)} IAM`, e, e.args.owner === userAddress ? e.args.spender : e.args.owner, provider);
         }
     }
     // IndexTransferred
@@ -518,7 +518,7 @@ window._fetchReportsFresh = async function(address) {
     const eventsMonthlyReward = await window.safeQueryEvents(contractWithProvider, contractWithProvider.filters.MonthlyRewardClaimed(), fromBlock, currentBlock);
     for (const e of eventsMonthlyReward) {
         if (e.args.user && e.args.user.toLowerCase() === userAddress.toLowerCase())
-            await pushReport('monthlyreward', 'دریافت پاداش ماهانه', `${formatNumber(e.args.reward, 18)} CPA (${e.args.monthsPassed} ماه)`, e, e.args.user, provider);
+            await pushReport('monthlyreward', 'دریافت پاداش ماهانه', `${formatNumber(e.args.reward, 18)} IAM (${e.args.monthsPassed} ماه)`, e, e.args.user, provider);
     }
     // MonthlyRewardFailed
     const eventsMonthlyFail = await window.safeQueryEvents(contractWithProvider, contractWithProvider.filters.MonthlyRewardFailed(), fromBlock, currentBlock);
@@ -625,12 +625,12 @@ window.loadReports = async function(address) {
         registration: '🎯 ثبت‌نام و فعال‌سازی',
         referral_registration: '👥 معرفی و ثبت‌نام',
         purchase: '🛒 خرید اضافی', 
-        tokensbought: '💰 خرید توکن (DAI→CPA)', 
-        tokenssold: '💸 فروش توکن (CPA→DAI)',
+        tokensbought: '💰 خرید توکن (DAI→IAM)', 
+        tokenssold: '💸 فروش توکن (IAM→DAI)',
         reward_transfer: '🎁 دریافت از قرارداد',
         payment_transfer: '💳 پرداخت به قرارداد',
-        incoming_transfer: '📥 انتقال CPA ورودی',
-        outgoing_transfer: '📤 انتقال CPA خروجی',
+        incoming_transfer: '📥 انتقال IAM ورودی',
+        outgoing_transfer: '📤 انتقال IAM خروجی',
         dai_incoming_transfer: '💵📥 انتقال DAI ورودی',
         dai_outgoing_transfer: '💵📤 انتقال DAI خروجی',
         dai_approval: '💵✅ تأییدیه DAI',
@@ -639,7 +639,7 @@ window.loadReports = async function(address) {
         tree: '🌳 ساختار شبکه',
         indextransfer: '🔄 انتقال ایندکس', 
         monthlyreward: '📅 پاداش ماهانه',
-        approval: '✅ تأییدیه CPA انتقال',
+        approval: '✅ تأییدیه IAM انتقال',
         binarypool: '🏊 استخر باینری',
         monthlyfail: '❌ خطاهای پاداش'
     };
@@ -693,13 +693,13 @@ async function getReportSentence(report) {
         let toPromise = '';
         if (report.address && typeof report.address === 'object') {
             if (window.contractConfig && window.contractConfig.contract) {
-                fromPromise = displayAddress(report.address.from, window.contractConfig.contract, window.contractConfig.CPA_ADDRESS).then(addr => {
-                    if (addr.startsWith('CPA')) return addr;
+                fromPromise = displayAddress(report.address.from, window.contractConfig.contract, window.contractConfig.IAM_ADDRESS).then(addr => {
+                    if (addr.startsWith('IAM')) return addr;
                     if (addr === 'قرارداد') return addr;
                     return ultraShortAddress(report.address.from);
                 });
-                toPromise = displayAddress(report.address.to, window.contractConfig.contract, window.contractConfig.CPA_ADDRESS).then(addr => {
-                    if (addr.startsWith('CPA')) return addr;
+                toPromise = displayAddress(report.address.to, window.contractConfig.contract, window.contractConfig.IAM_ADDRESS).then(addr => {
+                    if (addr.startsWith('IAM')) return addr;
                     if (addr === 'قرارداد') return addr;
                     return ultraShortAddress(report.address.to);
                 });
@@ -734,30 +734,30 @@ async function getReportSentence(report) {
             return `${time} 💳 شما ${amount} به قرارداد پرداخت کردید (ثبت‌نام/خرید).`;
         case 'incoming_transfer':
             return Promise.all([
-                displayAddress(report.address.from, window.contractConfig.contract, window.contractConfig.CPA_ADDRESS)
+                displayAddress(report.address.from, window.contractConfig.contract, window.contractConfig.IAM_ADDRESS)
             ]).then(([fromAddr]) => 
                 `${time} 📥 شما ${amount} از <span class='wallet-address'>${fromAddr}</span> دریافت کردید.`
             );
         case 'outgoing_transfer':
             return Promise.all([
-                displayAddress(report.address.to, window.contractConfig.contract, window.contractConfig.CPA_ADDRESS)
+                displayAddress(report.address.to, window.contractConfig.contract, window.contractConfig.IAM_ADDRESS)
             ]).then(([toAddr]) => 
                 `${time} 📤 شما ${amount} به <span class='wallet-address'>${toAddr}</span> انتقال دادید.`
             );
         case 'dai_incoming_transfer':
             return Promise.all([
-                displayAddress(report.address.from, window.contractConfig.contract, window.contractConfig.CPA_ADDRESS)
+                displayAddress(report.address.from, window.contractConfig.contract, window.contractConfig.IAM_ADDRESS)
             ]).then(([fromAddr]) => 
                 `${time} 💵📥 شما ${amount} از <span class='wallet-address'>${fromAddr}</span> دریافت کردید.`
             );
         case 'dai_outgoing_transfer':
             return Promise.all([
-                displayAddress(report.address.to, window.contractConfig.contract, window.contractConfig.CPA_ADDRESS)
+                displayAddress(report.address.to, window.contractConfig.contract, window.contractConfig.IAM_ADDRESS)
             ]).then(([toAddr]) => 
                 `${time} 💵📤 شما ${amount} به <span class='wallet-address'>${toAddr}</span> انتقال دادید.`
             );
         case 'dai_approval':
-            return displayAddress(report.address, window.contractConfig.contract, window.contractConfig.CPA_ADDRESS).then(addr => 
+            return displayAddress(report.address, window.contractConfig.contract, window.contractConfig.IAM_ADDRESS).then(addr => 
                 `${time} 💵✅ شما مجوز انتقال ${amount} صادر کردید برای: <span class='wallet-address'>${addr}</span>`
             );
         case 'binarypoints':
@@ -769,7 +769,7 @@ async function getReportSentence(report) {
         case 'tree':
             return `${time} 🌳 یک کاربر جدید در سمت ${amount} شما ثبت شد.`;
         case 'approval':
-            return displayAddress(report.address, window.contractConfig.contract, window.contractConfig.CPA_ADDRESS).then(addr => 
+            return displayAddress(report.address, window.contractConfig.contract, window.contractConfig.IAM_ADDRESS).then(addr => 
                 `${time} ✅ شما مجوز انتقال ${amount} صادر کردید برای: <span class='wallet-address'>${addr}</span>`
             );
         case 'indextransfer':

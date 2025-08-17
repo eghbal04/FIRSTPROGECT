@@ -16,7 +16,7 @@ window.dashboardTerminalLines = {
     const lines = [
       'CONTINUOUS PROFIT ACADEMY',
       '',
-      '🚀 Welcome to CPA!',
+      '🚀 Welcome to IAM!',
       '📊 Loading blockchain data...',
       '',
       'SYSTEM STATUS',
@@ -156,11 +156,11 @@ window.updateDashboardTerminalInfo = async function() {
     if (window.contractConfig && window.contractConfig.contract) {
       const contract = window.contractConfig.contract;
       wallets = (await contract.wallets()).toString();
-      totalSupply = ethers.formatUnits(await contract.totalSupply(), 18); // حذف پسوند CPA
-      pointValue = parseFloat(ethers.formatUnits(await contract.getPointValue(), 18)).toFixed(2); // حذف پسوند CPA
+      totalSupply = ethers.formatUnits(await contract.totalSupply(), 18); // حذف پسوند IAM
+      pointValue = parseFloat(ethers.formatUnits(await contract.getPointValue(), 18)).toFixed(2); // حذف پسوند IAM
       tokenPrice = ethers.formatUnits(await contract.getTokenPrice(), 18);
-      contractTokenBalance = ethers.formatUnits(await contract.balanceOf(contract.target), 18); // حذف پسوند CPA
-      cashback = ethers.formatUnits(await (contract.cashBack ? contract.cashBack() : contract.cashback()), 18); // حذف پسوند CPA
+      contractTokenBalance = ethers.formatUnits(await contract.balanceOf(contract.target), 18); // حذف پسوند IAM
+      cashback = ethers.formatUnits(await (contract.cashBack ? contract.cashBack() : contract.cashback()), 18); // حذف پسوند IAM
       if (typeof window.DAI_ADDRESS !== 'undefined' && typeof window.DAI_ABI !== 'undefined') {
         const daiContract = new ethers.Contract(window.DAI_ADDRESS, window.DAI_ABI, contract.provider);
         daiBalance = ethers.formatUnits(await daiContract.balanceOf(contract.target), 18); // حذف پسوند DAI
@@ -189,10 +189,10 @@ window.updateDashboardTerminalInfo = async function() {
     lines.push('');
     lines.push('Balances:');
     lines.push(`  MATIC: ${profile.maticBalance}`);
-    lines.push(`  CPA: ${profile.lvlBalance}`);
+    lines.push(`  IAM: ${profile.lvlBalance}`);
     lines.push(`  POL: ${profile.polBalance}`);
                 lines.push(`  DAI: ${profile.daiBalance}`);
-    lines.push(`  CPA Value (USD): ${profile.lvlValueUSD}`);
+    lines.push(`  IAM Value (USD): ${profile.lvlValueUSD}`);
     lines.push(`  POL Value (USD): ${profile.polValueUSD}`);
     lines.push('');
     lines.push('Points & Rewards:');
@@ -207,7 +207,7 @@ window.updateDashboardTerminalInfo = async function() {
     lines.push(`  Referrer Reward: ${profile.refclimed ? Math.floor(Number(profile.refclimed) / 1e18) : '0'}`);
     lines.push('');
     lines.push('Purchases & Deposits:');
-    lines.push(`  Total CPA Purchased: ${profile.totalPurchasedKind}`);
+    lines.push(`  Total IAM Purchased: ${profile.totalPurchasedKind}`);
     lines.push(`  Total Deposited: ${profile.depositedAmount}`);
     lines.push('');
   }

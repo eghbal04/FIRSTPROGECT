@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>درباره ما | CPA - CONTINUOUS PROFIT ACADEMY</title>
+  <title>درباره ما | IAM - CONTINUOUS PROFIT ACADEMY</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
@@ -116,8 +116,8 @@
       const contractAddressElement = document.getElementById('contract-address');
       const copyAddressBtn = document.getElementById('copy-address-btn');
       
-      if (contractAddressElement && typeof CPA_ADDRESS !== 'undefined') {
-        contractAddressElement.textContent = CPA_ADDRESS;
+      if (contractAddressElement && typeof IAM_ADDRESS !== 'undefined') {
+        contractAddressElement.textContent = IAM_ADDRESS;
         
         // Add copy functionality
         function copyToClipboard(text) {
@@ -144,13 +144,13 @@
         // Add click event to copy button
         if (copyAddressBtn) {
           copyAddressBtn.addEventListener('click', function() {
-            copyToClipboard(CPA_ADDRESS);
+            copyToClipboard(IAM_ADDRESS);
           });
         }
         
         // Add click event to address span
         contractAddressElement.addEventListener('click', function() {
-          copyToClipboard(CPA_ADDRESS);
+          copyToClipboard(IAM_ADDRESS);
         });
         
       } else if (contractAddressElement) {
@@ -175,8 +175,8 @@
 
           // Polygonscan link
           const scanLink = document.getElementById('polygonscan-link');
-          if (scanLink && window.CPA_ADDRESS) {
-            scanLink.href = 'https://polygonscan.com/address/' + window.CPA_ADDRESS;
+          if (scanLink && window.IAM_ADDRESS) {
+            scanLink.href = 'https://polygonscan.com/address/' + window.IAM_ADDRESS;
             scanLink.textContent = 'مشاهده در Polygonscan';
           }
 
@@ -212,7 +212,7 @@
             if (feeTotalEl) feeTotalEl.textContent = (backing + dev).toFixed(1) + '٪';
           }
 
-          // Sell cap for connected user (50% of CPA balance)
+          // Sell cap for connected user (50% of IAM balance)
           const sellCapEl = document.getElementById('about-sell-cap');
           if (sellCapEl && window.contractConfig && typeof window.contractConfig.initializeWeb3 === 'function') {
             try {
@@ -220,9 +220,9 @@
               const { contract, address } = conn || {};
               if (contract && address && window.ethers && typeof contract.balanceOf === 'function') {
                 const bal = await contract.balanceOf(address);
-                const cpa = parseFloat(window.ethers.formatUnits(bal, 18));
-                const capCpa = cpa * 0.5;
-                sellCapEl.textContent = capCpa.toLocaleString('fa-IR', { maximumFractionDigits: 4 }) + ' CPA';
+                const IAM = parseFloat(window.ethers.formatUnits(bal, 18));
+                const capIAM = IAM * 0.5;
+                sellCapEl.textContent = capIAM.toLocaleString('fa-IR', { maximumFractionDigits: 4 }) + ' IAM';
               }
             } catch (e) {
               // leave as default —
@@ -236,14 +236,14 @@
     });
   </script>
   <section class="about-section">
-    <h2>درباره آکادمی سود مستمر (CPA)</h2>
+    <h2>درباره آکادمی سود مستمر (IAM)</h2>
     <div class="about-content">
       <p style="font-family: 'Fira Mono', monospace; direction: rtl; text-align: justify; font-size: 1.08rem; line-height: 2.1; color: #fff; background: rgba(0,255,136,0.04); border-radius: 12px; padding: 1.2rem 1rem; margin-bottom: 1.5rem;">
-        آکادمی سود مستمر (CPA) یک اکوسیستم غیرمتمرکز و باز است که بر بستر قراردادهای هوشمند و فناوری بلاکچین بنا شده و هدف آن ایجاد فضایی شفاف، امن و مشارکتی برای رشد و پیشرفت همه افراد است.<br><br>
+        آکادمی سود مستمر (IAM) یک اکوسیستم غیرمتمرکز و باز است که بر بستر قراردادهای هوشمند و فناوری بلاکچین بنا شده و هدف آن ایجاد فضایی شفاف، امن و مشارکتی برای رشد و پیشرفت همه افراد است.<br><br>
         در این پلتفرم، هیچ مرزی برای خلاقیت و پیشرفت وجود ندارد؛ هر فردی، از هر نقطه جهان، می‌تواند خدمات، محصولات یا دانش خود را ارائه کند و به جامعه بزرگ ما بپیوندد. ساختار غیرمتمرکز ما به گونه‌ای طراحی شده که هیچ نهاد یا فردی کنترل مطلق ندارد و همه اعضا در تصمیم‌گیری‌ها و سودآوری سهیم‌اند.<br><br>
         قرارداد هوشمند ما (آدرس: <span id="contract-address" style='color:#00ff88;font-family:monospace;cursor:pointer;' title='کلیک برای کپی کردن آدرس'>در حال بارگذاری...</span> <button id="copy-address-btn" style='background:none;border:none;color:#00ff88;cursor:pointer;font-size:0.9rem;margin-right:5px;' title='کپی کردن آدرس'>📋</button>) با معماری ABI باز و شفاف، امکان تعامل مستقیم، خرید و فروش توکن، ثبت‌نام، مشارکت در شبکه و دریافت پاداش را بدون واسطه و با امنیت کامل فراهم می‌کند. هر تراکنش، هر رشد و هر موفقیت، به صورت شفاف و قابل رهگیری در بلاکچین ثبت می‌شود.<br><br>
         فرصت‌های رشد در این فضا بی‌نهایت است: می‌توانید به عنوان کاربر، فروشنده، مربی، توسعه‌دهنده یا حتی سرمایه‌گذار وارد شوید و از مزایای شبکه بهره‌مند شوید. هر کسی می‌تواند خدمات یا محصولات خود را در مارکت‌پلیس ما عرضه کند و با جامعه‌ای پویا و مشتاق، ارتباط مستقیم برقرار نماید.<br><br>
-        ما باور داریم آینده اقتصاد و آموزش، متعلق به ساختارهای غیرمتمرکز و مردم‌محور است؛ جایی که شفافیت، اعتماد و همکاری جایگزین واسطه‌گری و انحصار می‌شود. CPA فقط یک پلتفرم نیست؛ یک جنبش برای رشد جمعی، آزادی مالی و فرصت برابر برای همه است.<br><br>
+        ما باور داریم آینده اقتصاد و آموزش، متعلق به ساختارهای غیرمتمرکز و مردم‌محور است؛ جایی که شفافیت، اعتماد و همکاری جایگزین واسطه‌گری و انحصار می‌شود. IAM فقط یک پلتفرم نیست؛ یک جنبش برای رشد جمعی، آزادی مالی و فرصت برابر برای همه است.<br><br>
         به ما بپیوندید و سهم خود را از آینده‌ای شفاف، آزاد و پرامید بسازید.
       </p>
 
@@ -254,17 +254,17 @@
         <ul>
           <li>شبکه: Polygon Mainnet (ChainId: 137)</li>
           <li>توکن مرجع استیبل (۱۸ اعشار): <b>DAI</b> — آدرس: <span id="dai-address" style="color:#00ff88;font-family:monospace;cursor:pointer;" title="کلیک برای کپی">در حال بارگذاری...</span> <button id="copy-dai-btn" style="background:none;border:none;color:#00ff88;cursor:pointer;font-size:0.9rem;margin-right:5px;" title="کپی آدرس DAI">📋</button></li>
-          <li>قرارداد CPA (نمایش در بالا): <small style="opacity:.8">برای کپی روی آدرس کلیک کنید</small></li>
+          <li>قرارداد IAM (نمایش در بالا): <small style="opacity:.8">برای کپی روی آدرس کلیک کنید</small></li>
           <li>مشاهده قرارداد در Polygonscan: <a id="polygonscan-link" href="#" target="_blank" rel="noopener" style="color:#a786ff;">در حال آماده‌سازی...</a></li>
         </ul>
       </div>
       <div class="about-card">
         <h3>قوانین خرید/فروش و کارمزد (خلاصه عمومی)</h3>
         <ul>
-          <li>حداقل خرید: ۱ DAI — حداقل فروش: ۱ CPA</li>
+          <li>حداقل خرید: ۱ DAI — حداقل فروش: ۱ IAM</li>
           <li>سقف خرید پویا: اگر موجودی DAI قرارداد ≤ ۱۰۰هزار → سقف ۱,۰۰۰ DAI؛ در غیر این‌صورت ۱٪ از موجودی DAI قرارداد</li>
           <li>سقف خرید فعلی: <b id="about-max-buy">—</b></li>
-          <li>سقف فروش: حداکثر ۵۰٪ از موجودی CPA کاربر</li>
+          <li>سقف فروش: حداکثر ۵۰٪ از موجودی IAM کاربر</li>
           <li>سقف فروش شما (در صورت اتصال): <b id="about-sell-cap">—</b></li>
           <li>کارمزد پویا: ۰.۵٪ توسعه‌دهنده + ۱٪/۱.۵٪/۲٪ پشتوانه (بسته به موجودی DAI قرارداد)</li>
           <li>کارمزد پشتوانه فعلی: <b id="about-fee-backing">—</b></li>
@@ -309,8 +309,8 @@
       <div class="about-card">
         <h3>سوالات متداول</h3>
         <ul>
-          <li><b>چطور توکن CPA بخرم؟</b> به بخش تبدیل (Swap) بروید، حالت DAI→CPA را انتخاب کنید، مقدار DAI را وارد کنید، اگر لازم بود مجوز (Approve) را تایید کنید و تراکنش خرید را ارسال کنید.</li>
-          <li><b>حداقل و سقف خرید/فروش چیست؟</b> حداقل خرید ۱ DAI، حداقل فروش ۱ CPA؛ سقف خرید پویاست (۱,۰۰۰ DAI یا ۱٪ موجودی DAI قرارداد) و سقف فروش ۵۰٪ موجودی CPA کاربر است.</li>
+          <li><b>چطور توکن IAM بخرم؟</b> به بخش تبدیل (Swap) بروید، حالت DAI→IAM را انتخاب کنید، مقدار DAI را وارد کنید، اگر لازم بود مجوز (Approve) را تایید کنید و تراکنش خرید را ارسال کنید.</li>
+          <li><b>حداقل و سقف خرید/فروش چیست؟</b> حداقل خرید ۱ DAI، حداقل فروش ۱ IAM؛ سقف خرید پویاست (۱,۰۰۰ DAI یا ۱٪ موجودی DAI قرارداد) و سقف فروش ۵۰٪ موجودی IAM کاربر است.</li>
           <li><b>کارمزدها چقدر است؟</b> ۰.۵٪ برای توسعه‌دهنده + ۱٪/۱.۵٪/۲٪ برای پشتوانه (بسته به موجودی DAI قرارداد). در پیش‌نمایش سواپ، مقدار دقیق قبل از تراکنش نشان داده می‌شود.</li>
           <li><b>آیا دارایی من امن است؟</b> کنترل دارایی همیشه در کیف‌پول شماست، قرارداد از ReentrancyGuard استفاده می‌کند و هیچ امانی نزد ما نگه‌داری نمی‌شود.</li>
         </ul>
@@ -324,12 +324,12 @@
           <li>امکان فعالیت به عنوان ایجنت یا IB در بروکرها و صرافی‌های معتبر بین‌المللی</li>
           <li>امکان بازاریابی شبکه‌ای و کسب درآمد از معرفی افراد جدید به اکوسیستم</li>
           <li>بهره‌مندی از سهام‌های معرفی افراد (Referral Shares) و دریافت پاداش‌های شبکه</li>
-          <li>سرمایه‌گذاری در صندوق CPA و توکن افزایشی آن (بدون تضمین سود؛ همراه با ریسک بازار)</li>
+          <li>سرمایه‌گذاری در صندوق IAM و توکن افزایشی آن (بدون تضمین سود؛ همراه با ریسک بازار)</li>
           <li>آموزش‌های جامع و پکیج‌های تخصصی فارکس، ارز دیجیتال، بلاکچین و هوش مصنوعی</li>
           <li>دوره‌های ویدیویی، کلاس‌های آنلاین، وبینار و کوچینگ خصوصی برای همه سطوح</li>
           <li>امکان فروش پکیج‌های آموزشی، کتاب، فایل PDF، و حتی محصولات فیزیکی (مثلاً سخت‌افزار کیف پول، کتاب، تیشرت، لوازم جانبی ترید و ...)</li>
           <li>راه‌اندازی فروشگاه شخصی برای هر کاربر جهت ارائه خدمات مشاوره، سیگنال، طراحی سایت، تولید محتوا، NFT و ...</li>
-          <li>خدمات کپی‌ترید: اگر ربات CPA یا هر معامله‌گر سود کند، شما هم سود می‌کنید و اگر ضرر کند، شما نیز ضرر می‌کنید؛ هیچ سودی از حساب شما در زمان ضرر برداشت نمی‌شود و تا جبران ضرر، CPA سهمی دریافت نمی‌کند.</li>
+          <li>خدمات کپی‌ترید: اگر ربات IAM یا هر معامله‌گر سود کند، شما هم سود می‌کنید و اگر ضرر کند، شما نیز ضرر می‌کنید؛ هیچ سودی از حساب شما در زمان ضرر برداشت نمی‌شود و تا جبران ضرر، IAM سهمی دریافت نمی‌کند.</li>
           <li>پوشش اخبار روز بازارهای مالی، ارزهای دیجیتال، پروژه‌های NFT و تحلیل‌های به‌روز از دنیای کریپتو و بلاکچین</li>
           <li>امکان ارائه خدمات تخصصی توسط کاربران: مثل طراحی ربات، آموزش خصوصی، تحلیل بازار، مشاوره سرمایه‌گذاری، فروش NFT، طراحی گرافیک، ترجمه و ...</li>
           <li>امکان فروش محصولات فیزیکی و دیجیتال توسط هر کاربر در مارکت‌پلیس (مثلاً کیف پول سخت‌افزاری، کتاب، دوره آموزشی، اکسسوری ترید، نرم‌افزار، NFT و ...)</li>
@@ -342,8 +342,8 @@
         <h3>اصول بنیادین ما:</h3>
         <ul>
           <li>صداقت، شفافیت و خدمات صددرصدی</li>
-          <li>هیچ‌گاه سرمایه شما به حساب CPA منتقل نمی‌شود؛ بلکه شما همواره کنترل کامل دارایی خود را دارید و تنها در سود واقعی شریک هستیم.</li>
-          <li>در دنیایی که بسیاری به دنبال جذب سرمایه مردم و ارائه وعده‌های توخالی هستند، ما در CPA تنها زمانی سود می‌بریم که شما واقعاً سود کنید و در زیان، شریک و همراه شما خواهیم بود.</li>
+          <li>هیچ‌گاه سرمایه شما به حساب IAM منتقل نمی‌شود؛ بلکه شما همواره کنترل کامل دارایی خود را دارید و تنها در سود واقعی شریک هستیم.</li>
+          <li>در دنیایی که بسیاری به دنبال جذب سرمایه مردم و ارائه وعده‌های توخالی هستند، ما در IAM تنها زمانی سود می‌بریم که شما واقعاً سود کنید و در زیان، شریک و همراه شما خواهیم بود.</li>
         </ul>
       </div>
       <div class="about-features">
@@ -372,12 +372,12 @@
         <div class="about-stat">
           <div class="icon">💱</div>
           <div class="number" id="about-price-1dai">—</div>
-          <div class="label">۱ DAI = ? CPA</div>
+          <div class="label">۱ DAI = ? IAM</div>
         </div>
         <div class="about-stat">
           <div class="icon">💱</div>
-          <div class="number" id="about-price-1cpa">—</div>
-          <div class="label">۱ CPA = ? DAI</div>
+          <div class="number" id="about-price-1IAM">—</div>
+          <div class="label">۱ IAM = ? DAI</div>
         </div>
       </div>
       <div class="about-contact">
@@ -386,15 +386,15 @@
         <div class="contact-info">
           <div class="contact-item">
             <span class="icon">📧</span>
-            <span class="text">support@cpaforex.com</span>
+            <span class="text">support@IAMPHOENIX.com</span>
           </div>
           <div class="contact-item">
             <span class="icon">📱</span>
-            <span class="text">@cpaforex_support</span>
+            <span class="text">@IAMPHOENIX_support</span>
           </div>
           <div class="contact-item">
             <span class="icon">🌐</span>
-            <span class="text">www.cpaforex.com</span>
+            <span class="text">www.IAMPHOENIX.com</span>
           </div>
         </div>
       </div>
@@ -420,8 +420,8 @@
           }
           btn.addEventListener('click', function(){ copy(window.DAI_ADDRESS); });
           el.addEventListener('click', function(){ copy(window.DAI_ADDRESS); });
-          if (ps && typeof window.CPA_ADDRESS !== 'undefined') {
-            ps.href = 'https://polygonscan.com/address/' + window.CPA_ADDRESS;
+          if (ps && typeof window.IAM_ADDRESS !== 'undefined') {
+            ps.href = 'https://polygonscan.com/address/' + window.IAM_ADDRESS;
             ps.textContent = 'مشاهده قرارداد';
           }
         } else {
@@ -445,39 +445,39 @@
       async function updateAboutStats(){
         try {
           const provider = await getProvider();
-          const cpaAbi = (typeof window.CPA_ABI !== 'undefined' && window.CPA_ABI)
+          const IAMAbi = (typeof window.IAM_ABI !== 'undefined' && window.IAM_ABI)
                        || (typeof window.CONTRACT_ABI !== 'undefined' && window.CONTRACT_ABI)
-                       || (typeof CPA_ABI !== 'undefined' ? CPA_ABI : null);
+                       || (typeof IAM_ABI !== 'undefined' ? IAM_ABI : null);
           const daiAbi = (typeof window.DAI_ABI !== 'undefined' && window.DAI_ABI)
                        || (typeof DAI_ABI !== 'undefined' ? DAI_ABI : null);
-          if (!provider || !window.CPA_ADDRESS || !window.DAI_ADDRESS || !cpaAbi || !daiAbi) { return; }
-          const cpa = new ethers.Contract(window.CPA_ADDRESS, cpaAbi, provider);
+          if (!provider || !window.IAM_ADDRESS || !window.DAI_ADDRESS || !IAMAbi || !daiAbi) { return; }
+          const IAM = new ethers.Contract(window.IAM_ADDRESS, IAMAbi, provider);
           const dai = new ethers.Contract(window.DAI_ADDRESS, daiAbi, provider);
           // wallets
           try {
-            const w = await cpa.wallets();
+            const w = await IAM.wallets();
             setText('about-wallets-count', fmt(w.toString(),0));
           } catch(e) {}
           // DAI TVL (contract DAI balance)
           try {
-            const balRaw = await dai.balanceOf(window.CPA_ADDRESS);
+            const balRaw = await dai.balanceOf(window.IAM_ADDRESS);
             const bal = ethers.formatUnits(balRaw, 18);
             setText('about-dai-balance', fmt(bal,2) + ' DAI');
           } catch(e) {}
           // Price
           try {
-            const pRaw = await cpa.getTokenPrice();
+            const pRaw = await IAM.getTokenPrice();
             const price = Number(ethers.formatUnits(pRaw, 18));
             if (price>0) {
-              setText('about-price-1dai', fmt(price,6) + ' CPA');
-              setText('about-price-1cpa', fmt(1/price,6) + ' DAI');
+              setText('about-price-1dai', fmt(price,6) + ' IAM');
+              setText('about-price-1IAM', fmt(1/price,6) + ' DAI');
             }
           } catch(e) {}
 
           // Dynamic limits and fees (from contract state)
           try {
             // TVL used already above: bal (DAI in contract)
-            const balRaw = await dai.balanceOf(window.CPA_ADDRESS);
+            const balRaw = await dai.balanceOf(window.IAM_ADDRESS);
             const balNum = Number(ethers.formatUnits(balRaw, 18));
             // max buy rule
             const maxBuy = balNum <= 100000 ? 1000 : (balNum * 0.01);
@@ -489,14 +489,14 @@
             setText('about-fee-backing', backingPct.toFixed(1) + '%');
             setText('about-fee-total', totalPct.toFixed(1) + '%');
           } catch(e) {}
-          // sell cap for connected user (50% of user CPA balance)
+          // sell cap for connected user (50% of user IAM balance)
           try {
             if (window.contractConfig?.address) {
               const addr = window.contractConfig.address;
-              const userBalRaw = await cpa.balanceOf(addr);
+              const userBalRaw = await IAM.balanceOf(addr);
               const userBal = Number(ethers.formatUnits(userBalRaw, 18));
               const cap = userBal * 0.5;
-              setText('about-sell-cap', fmt(cap,6) + ' CPA');
+              setText('about-sell-cap', fmt(cap,6) + ' IAM');
             }
           } catch(e) {}
         } catch(e) {}

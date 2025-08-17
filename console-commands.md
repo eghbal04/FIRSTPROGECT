@@ -49,7 +49,7 @@ window.centralDashboardUpdater.checkAndUpdateValues()
 [Central Updater] ❌ dashboardUpdateInterval حذف شد
 [Central Updater] ✅ تمام interval های قدیمی حذف شدند
 [Central Updater] ✅ سیستم مرکزی راه‌اندازی شد - هر 5 ثانیه
-[Central Updater] 🔄 circulating-supply: undefined → 1,234,567 CPA
+[Central Updater] 🔄 circulating-supply: undefined → 1,234,567 IAM
 [Central Updater] 🔄 total-points: undefined → 89,123
 [Central Updater] 🔄 dashboard-token-price: undefined → 0.000123
 [Central Updater] 🔄 3 مقدار بروزرسانی شد

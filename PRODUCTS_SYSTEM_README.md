@@ -1,8 +1,8 @@
-# سیستم محصولات و فروشندگان CPA Forex
+# Products System - imphoenix
 
 ## بررسی کلی
 
-این سیستم امکان فروش محصولات و خدمات را از طریق قرارداد هوشمند CPA Forex فراهم می‌کند. هر فروشنده می‌تواند محصولات خود را ثبت کند و خریداران می‌توانند با استفاده از توکن CPA خریداری کنند.
+این سیستم امکان فروش محصولات و خدمات را از طریق قرارداد هوشمند IAM Forex فراهم می‌کند. هر فروشنده می‌تواند محصولات خود را ثبت کند و خریداران می‌توانند با استفاده از توکن IAM خریداری کنند.
 
 ## ساختار فایل‌ها
 
@@ -31,7 +31,7 @@
 - آمار فروش
 
 ### 3. سیستم خرید
-- خرید با توکن CPA
+- خرید با توکن IAM
 - توزیع خودکار درآمد
 - ثبت تراکنش‌ها
 - تأیید کیف پول
@@ -45,17 +45,17 @@
 ## تابع Purchase قرارداد
 
 ```solidity
-function purchase(uint256 amountCPA, uint256 payout, address seller) external nonReentrant {
+function purchase(uint256 amountIAM, uint256 payout, address seller) external nonReentrant {
     require(users[msg.sender].activated, "not registered");
-    require(amountCPA > 0, "Amount must be greater than 0");
+    require(amountIAM > 0, "Amount must be greater than 0");
     require(payout <= 100 && payout > 0, "Invalid payout percent");
 
     uint256 regprice = regPrice();
     
-    _burn(msg.sender, amountCPA);
+    _burn(msg.sender, amountIAM);
     uint256 uptopoint = regprice / 3;
-    uint256 tokensForBinary = (amountCPA * payout) / 100;
-    uint256 tokensForSeller = amountCPA - tokensForBinary;
+    uint256 tokensForBinary = (amountIAM * payout) / 100;
+    uint256 tokensForSeller = amountIAM - tokensForBinary;
 
     _mint(address(this), tokensForBinary);
     _mint(seller, tokensForSeller);
@@ -65,7 +65,7 @@ function purchase(uint256 amountCPA, uint256 payout, address seller) external no
 ```
 
 ### پارامترهای تابع Purchase
-- `amountCPA`: مقدار توکن CPA برای خرید
+- `amountIAM`: مقدار توکن IAM برای خرید
 - `payout`: درصد سهم تبلیغات (1-100)
 - `seller`: آدرس فروشنده
 
@@ -78,7 +78,7 @@ function purchase(uint256 amountCPA, uint256 payout, address seller) external no
 ### برای خریداران
 1. به صفحه `products.html` بروید
 2. محصول مورد نظر را انتخاب کنید
-3. مقدار CPA را وارد کنید
+3. مقدار IAM را وارد کنید
 4. کیف پول را متصل کنید
 5. خرید را تأیید کنید
 
@@ -96,10 +96,10 @@ function purchase(uint256 amountCPA, uint256 payout, address seller) external no
 ## ذخیره‌سازی داده‌ها
 
 ### LocalStorage
-- `cpa_products`: لیست محصولات
-- `cpa_sellers`: لیست فروشندگان
-- `cpa_subadmins`: لیست ساب ادمین‌ها
-- `cpa_transactions`: تاریخچه تراکنش‌ها
+- `IAM_products`: لیست محصولات
+- `IAM_sellers`: لیست فروشندگان
+- `IAM_subadmins`: لیست ساب ادمین‌ها
+- `IAM_transactions`: تاریخچه تراکنش‌ها
 
 ### ساختار داده محصول
 ```javascript
@@ -141,7 +141,7 @@ async function checkAdminAccess() {
 
 ### بررسی کیف پول
 - اتصال کیف پول الزامی است
-- بررسی موجودی CPA
+- بررسی موجودی IAM
 - تأیید تراکنش
 
 ## توسعه و سفارشی‌سازی
@@ -166,7 +166,7 @@ async function checkAdminAccess() {
 
 ### مشکلات رایج
 1. **کیف پول متصل نیست**: ابتدا کیف پول را متصل کنید
-2. **موجودی ناکافی**: CPA کافی در کیف پول داشته باشید
+2. **موجودی ناکافی**: IAM کافی در کیف پول داشته باشید
 3. **خطای قرارداد**: شبکه و آدرس قرارداد را بررسی کنید
 4. **دسترسی ادمین**: ایندکس کاربر باید 1، 2 یا 3 باشد
 

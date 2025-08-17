@@ -45,23 +45,23 @@ async function loadProducts() {
         const deployerAddress = await contract.deployer();
         // Wallet connected, loading shop products...
         
-        // دریافت موجودی CPA کاربر
-        const cpaBalance = await contract.balanceOf(address);
-        const cpaPrice = await contract.getTokenPrice();
+        // دریافت موجودی IAM کاربر
+        const IAMBalance = await contract.balanceOf(address);
+        const IAMPrice = await contract.getTokenPrice();
         
         // دریافت باقیمانده خرید کاربر
         const user = await contract.users(address);
         const totalPurchasedKind = user.totalPurchasedKind || 0n;
         const purchasedKindFormatted = parseFloat(ethers.formatUnits(totalPurchasedKind, 18));
         
-        // محاسبه ارزش دلاری موجودی CPA
-        const cpaValueUSD = (parseFloat(ethers.formatEther(cpaBalance)) * parseFloat(ethers.formatUnits(cpaPrice, 18))).toFixed(2);
+        // محاسبه ارزش دلاری موجودی IAM
+        const IAMValueUSD = (parseFloat(ethers.formatEther(IAMBalance)) * parseFloat(ethers.formatUnits(IAMPrice, 18))).toFixed(2);
         
-        // تبدیل موجودی CPA به عدد
-        const userCPABalance = parseFloat(ethers.formatEther(cpaBalance));
+        // تبدیل موجودی IAM به عدد
+        const userIAMBalance = parseFloat(ethers.formatEther(IAMBalance));
         
-        // نمایش محصولات با موجودی واقعی CPA و باقیمانده خرید
-        displayProducts(products, cpaValueUSD, userCPABalance, purchasedKindFormatted);
+        // نمایش محصولات با موجودی واقعی IAM و باقیمانده خرید
+        displayProducts(products, IAMValueUSD, userIAMBalance, purchasedKindFormatted);
         
         // اگر کاربر deployer است، گزینه‌های مدیریتی را نمایش بده
         if (address.toLowerCase() === deployerAddress.toLowerCase()) {
@@ -78,7 +78,7 @@ async function loadProducts() {
 }
 
 // تابع نمایش محصولات
-    function displayProducts(products, userBalanceUSD, userCPABalance, purchasedKind) {
+    function displayProducts(products, userBalanceUSD, userIAMBalance, purchasedKind) {
     const productsList = document.getElementById('products-list');
     if (!productsList) {
         console.error('Products list container not found');
@@ -94,9 +94,9 @@ async function loadProducts() {
     balanceDisplay.innerHTML = `
         <h4 class="shop-balance-title">موجودی شما</h4>
         <div class="shop-balance-usd">$${userBalanceUSD}</div>
-        <div class="shop-balance-lvl">(~${userCPABalance.toFixed(2)} CPA)</div>
+        <div class="shop-balance-lvl">(~${userIAMBalance.toFixed(2)} IAM)</div>
         <div class="shop-balance-purchased" style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #a786ff33; color: #a786ff; font-size: 0.9rem;">
-            باقیمانده خریدهای قبلی: ${purchasedKind.toFixed(5)} CPA
+            باقیمانده خریدهای قبلی: ${purchasedKind.toFixed(5)} IAM
         </div>
     `;
     productsList.appendChild(balanceDisplay);
@@ -106,11 +106,11 @@ async function loadProducts() {
         const productCard = document.createElement('div');
         productCard.className = 'product-card';
         
-        // محاسبه قیمت در CPA (تقریبی - 1 USD = 1 CPA برای سادگی)
-        const priceInCPA = product.price; // فعلاً همان قیمت USD را استفاده می‌کنیم
+        // محاسبه قیمت در IAM (تقریبی - 1 USD = 1 IAM برای سادگی)
+        const priceInIAM = product.price; // فعلاً همان قیمت USD را استفاده می‌کنیم
         
         // بررسی اینکه آیا کاربر موجودی کافی دارد
-        const hasSufficientBalance = userCPABalance >= priceInCPA;
+        const hasSufficientBalance = userIAMBalance >= priceInIAM;
         
         // نمایش درصد سود ثابت (غیرقابل انتخاب)
         const percentDisplay = `<span style='font-size:0.95em; color:#a786ff;'>حاشیه سود: ${product.percent}%</span>`;
@@ -121,7 +121,7 @@ async function loadProducts() {
                 <p class="product-desc">${product.description}</p>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <span class="product-price">${priceInCPA} CPA</span>
+                        <span class="product-price">${priceInIAM} IAM</span>
                         <br>
                         <span class="product-price-usd">(~$${product.price})</span>
                         ${!hasSufficientBalance ? `<br><span class="product-insufficient">موجودی ناکافی</span>` : ''}
@@ -130,7 +130,7 @@ async function loadProducts() {
                     </div>
                     <button class="buy-btn ${hasSufficientBalance ? 'enabled' : 'disabled'}" 
                             data-product-id="${product.id}" 
-                            data-price="${priceInCPA}"
+                            data-price="${priceInIAM}"
                             ${!hasSufficientBalance ? 'disabled' : ''}>
                         ${hasSufficientBalance ? 'خرید محصول' : 'موجودی ناکافی'}
                     </button>
@@ -173,15 +173,15 @@ async function purchaseProduct(productId, price, percent, button) {
 
         // بررسی موجودی کاربر
         const profile = await fetchUserProfile();
-        const userBalance = parseFloat(profile.cpaBalance);
+        const userBalance = parseFloat(profile.IAMBalance);
         
         if (userBalance < price) {
-            showShopError("موجودی شما کافی نیست. موجودی: " + userBalance + " CPA");
+            showShopError("موجودی شما کافی نیست. موجودی: " + userBalance + " IAM");
             return;
         }
 
         // تأیید خرید
-        const confirmed = confirm(`آیا از خرید این محصول به قیمت ${price} CPA با ${percent}% ورود به باینری اطمینان دارید؟`);
+        const confirmed = confirm(`آیا از خرید این محصول به قیمت ${price} IAM با ${percent}% ورود به باینری اطمینان دارید؟`);
         if (!confirmed) return;
 
         // غیرفعال کردن دکمه
@@ -381,7 +381,7 @@ async function fetchUserProfile() {
         }
 
         // دریافت موجودی‌ها به صورت موازی
-        const [maticBalance, cpaBalance] = await Promise.all([
+        const [maticBalance, IAMBalance] = await Promise.all([
             provider.getBalance(address),
             contract.balanceOf(address)
         ]);
@@ -389,7 +389,7 @@ async function fetchUserProfile() {
         return {
             address,
             maticBalance: ethers.formatEther(maticBalance), // POL
-            cpaBalance: ethers.formatEther(cpaBalance)
+            IAMBalance: ethers.formatEther(IAMBalance)
         };
     } catch (error) {
         console.error("Error fetching user profile:", error);
@@ -458,7 +458,7 @@ function showAddProductForm() {
             <h5 style="color:#00ccff;">افزودن محصول جدید</h5>
             <input type="text" id="new-product-name" placeholder="نام محصول" required style="margin:0.5rem;width:90%;"><br>
             <input type="text" id="new-product-desc" placeholder="توضیحات محصول" required style="margin:0.5rem;width:90%;"><br>
-            <input type="number" id="new-product-price" placeholder="قیمت (CPA)" required min="1" style="margin:0.5rem;width:90%;"><br>
+            <input type="number" id="new-product-price" placeholder="قیمت (IAM)" required min="1" style="margin:0.5rem;width:90%;"><br>
             <input type="text" id="new-product-icon" placeholder="ایموجی یا آیکون" maxlength="2" style="margin:0.5rem;width:90%;"><br>
             <input type="color" id="new-product-color" value="#00ccff" style="margin:0.5rem;"><br>
             <input type="number" id="new-product-percent" placeholder="درصد سود (مثلاً 30)" required min="1" max="100" style="margin:0.5rem;width:90%;"><br>
@@ -672,7 +672,7 @@ function showOrdersList() {
                     </div>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;font-size:0.9rem;">
                         <div><strong>محصول:</strong> ${order.productName}</div>
-                        <div><strong>قیمت:</strong> ${order.price} CPA</div>
+                        <div><strong>قیمت:</strong> ${order.price} IAM</div>
                         <div><strong>درصد سود:</strong> ${order.percent}%</div>
                         <div><strong>مشتری:</strong> ${shortAddress}</div>
                         <div><strong>تاریخ:</strong> ${order.timestamp}</div>
@@ -718,7 +718,7 @@ function viewOrderDetails(orderId) {
 سفارش #${order.id}
 
 محصول: ${order.productName}
-        قیمت: ${order.price} CPA
+        قیمت: ${order.price} IAM
 درصد سود: ${order.percent}%
 آدرس مشتری: ${order.customerAddress}
 هش تراکنش: ${order.transactionHash}
@@ -736,7 +736,7 @@ function copyOrderInfo(orderId) {
         return;
     }
     
-            const orderInfo = `سفارش #${order.id} - ${order.productName} - ${order.price} CPA - ${order.customerAddress} - ${order.transactionHash}`;
+            const orderInfo = `سفارش #${order.id} - ${order.productName} - ${order.price} IAM - ${order.customerAddress} - ${order.transactionHash}`;
     copyToClipboard(orderInfo);
     showShopSuccess('اطلاعات سفارش کپی شد!');
 }
@@ -763,7 +763,7 @@ function exportOrdersToCSV() {
     }
     
     const csvContent = [
-        ['ID', 'Product Name', 'Price (CPA)', 'Percent', 'Customer Address', 'Transaction Hash', 'Timestamp', 'Status'],
+        ['ID', 'Product Name', 'Price (IAM)', 'Percent', 'Customer Address', 'Transaction Hash', 'Timestamp', 'Status'],
         ...orders.map(order => [
             order.id,
             order.productName,

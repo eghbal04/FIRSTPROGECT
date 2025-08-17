@@ -1,12 +1,7 @@
-const deepseek_api ='sk-6074908ce7954bd89d494d57651392a8';
-// Expose config variables globally for reports and other scripts
-window.deepseek_api = deepseek_api;
+// تنظیمات قرارداد IAMPHOENIX
 
-
-// تنظیمات قرارداد LevelUp
-
-const CPA_ADDRESS = '0x0f5Da8FB0b32b223fFda6b7905cD1393924bdF0F';
-window.CPA_ADDRESS = CPA_ADDRESS;
+const IAM_ADDRESS = '0x1C19CEC5A269656602DA62A3289F4bEAbBfa7EFe';
+window.IAM_ADDRESS = IAM_ADDRESS;
 
 // آدرس DAI (Polygon)
 const DAI_ADDRESS = '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063'; // Polygon DAI
@@ -141,7 +136,7 @@ const DAI_ABI = [
 			{
 				"indexed": false,
 				"internalType": "uint256",
-				"name": "amountCPA",
+				"name": "amountIAM",
 				"type": "uint256"
 			}
 		],
@@ -322,7 +317,7 @@ const DAI_ABI = [
 		"inputs": [
 			{
 				"internalType": "uint256",
-				"name": "amountCPA",
+				"name": "amountIAM",
 				"type": "uint256"
 			},
 			{
@@ -348,7 +343,7 @@ const DAI_ABI = [
 			{
 				"indexed": false,
 				"internalType": "uint256",
-				"name": "amountCPA",
+				"name": "amountIAM",
 				"type": "uint256"
 			}
 		],
@@ -1169,7 +1164,7 @@ const DAI_ABI = [
 		"type": "function"
 	}
 ];
-const CPA_ABI =[
+const IAM_ABI =[
 	{
 		"inputs": [
 			{
@@ -1198,7 +1193,7 @@ const CPA_ABI =[
 		"inputs": [
 			{
 				"internalType": "uint256",
-				"name": "amountCPA",
+				"name": "amountIAM",
 				"type": "uint256"
 			},
 			{
@@ -1325,7 +1320,7 @@ const CPA_ABI =[
 			{
 				"indexed": false,
 				"internalType": "uint256",
-				"name": "amountCPA",
+				"name": "amountIAM",
 				"type": "uint256"
 			}
 		],
@@ -1576,7 +1571,7 @@ const CPA_ABI =[
 			{
 				"indexed": false,
 				"internalType": "uint256",
-				"name": "amountCPA",
+				"name": "amountIAM",
 				"type": "uint256"
 			}
 		],
@@ -2415,7 +2410,7 @@ const CPA_ABI =[
 		"type": "function"
 	}
 ];
-window.CPA_ABI = CPA_ABI;
+window.IAM_ABI = IAM_ABI;
 
 // مدیریت درخواست‌های همزمان
 let isInitializing = false;
@@ -2495,7 +2490,7 @@ async function performWeb3Initialization() {
 		}
 
 		// این بخش را اضافه کنید:
-		const contract = new ethers.Contract(CPA_ADDRESS, CPA_ABI, signer);
+		const contract = new ethers.Contract(IAM_ADDRESS, IAM_ABI, signer);
 		const address = await signer.getAddress();
 		const network = await provider.getNetwork();
 
@@ -2584,8 +2579,8 @@ async function initializeWeb3() {
 
 // تنظیمات قرارداد
 window.contractConfig = {
-	CPA_ADDRESS: CPA_ADDRESS,
-	CPA_ABI: CPA_ABI,
+	IAM_ADDRESS: IAM_ADDRESS,
+	IAM_ABI: IAM_ABI,
 	provider: null,
 	signer: null,
 	contract: null,
@@ -3348,8 +3343,8 @@ window.getUserProfile = async function() {
 			
 			// به‌روزرسانی نمایش ID کاربر
 			if (user.index) {
-				if (typeof window.updateCPAIdDisplay === 'function') {
-					window.updateCPAIdDisplay(user.index);
+				if (typeof window.updateIAMIdDisplay === 'function') {
+					window.updateIAMIdDisplay(user.index);
 				}
 			}
 			
@@ -3409,19 +3404,19 @@ window.getPrices = async function() {
 				}
 			} catch (e) {}
 
-			let cpaPriceUSD = null;
+			let IAMPriceUSD = null;
 			if (contract && typeof contract.getTokenPrice === 'function') {
 				try {
 					const price = await contract.getTokenPrice();
-					cpaPriceUSD = window.formatTokenPrice ? window.formatTokenPrice(price) : ethers.formatUnits(price, 18);
+					IAMPriceUSD = window.formatTokenPrice ? window.formatTokenPrice(price) : ethers.formatUnits(price, 18);
 				} catch (e) {
 					console.error('Error getting token price:', e);
 				}
 			}
-			return { cpaPriceUSD };
+			return { IAMPriceUSD };
 		} catch (error) {
 			console.error('Error in getPrices:', error);
-			return { cpaPriceUSD: null };
+			return { IAMPriceUSD: null };
 		}
 	});
 };
@@ -3743,7 +3738,7 @@ window.displayPriceHistoryTable = function() {
 	const lastPointPrices = window.priceHistoryManager.pointHistory.slice(-10);
 	lastPointPrices.forEach((entry, index) => {
 		const date = new Date(entry.timestamp).toLocaleString('fa-IR');
-		console.log(`${index + 1}. ${entry.price} CPA - ${date}`);
+		console.log(`${index + 1}. ${entry.price} IAM - ${date}`);
 	});
 	
 	// نمایش آمار
@@ -3816,7 +3811,7 @@ window.showPriceHistoryStats = function() {
 		const pointTimeSpan = new Date(lastPoint.timestamp) - new Date(firstPoint.timestamp);
 		const pointHours = Math.round(pointTimeSpan / (1000 * 60 * 60));
 		console.log(`💎 Point History: ${pointHours} hours of data`);
-		console.log(`💎 Latest Point Price: ${lastPoint.price} CPA`);
+		console.log(`💎 Latest Point Price: ${lastPoint.price} IAM`);
 	}
 	
 	return {
@@ -4091,10 +4086,10 @@ async function refreshTotalSupply() {
 			const tokenPriceNum = Number(ethers.formatUnits(tokenPrice, 18)); // قیمت با 18 رقم اعشار (DAI)
 
 	const elTotalSupply = document.getElementById('total-supply');
-	if (elTotalSupply) elTotalSupply.innerText = totalSupplyNum.toLocaleString('en-US', {maximumFractionDigits: 4}); // حذف پسوند CPA
+	if (elTotalSupply) elTotalSupply.innerText = totalSupplyNum.toLocaleString('en-US', {maximumFractionDigits: 4}); // حذف پسوند IAM
 	const elContractBalance = document.getElementById('contract-balance');
-	if (elContractBalance) elContractBalance.innerText = contractBalanceNum.toLocaleString('en-US', {maximumFractionDigits: 4}); // حذف پسوند CPA
-	document.getElementById('supply-diff').innerText = (totalSupplyNum - contractBalanceNum).toLocaleString('en-US', {maximumFractionDigits: 4}); // حذف پسوند CPA
+	if (elContractBalance) elContractBalance.innerText = contractBalanceNum.toLocaleString('en-US', {maximumFractionDigits: 4}); // حذف پسوند IAM
+	document.getElementById('supply-diff').innerText = (totalSupplyNum - contractBalanceNum).toLocaleString('en-US', {maximumFractionDigits: 4}); // حذف پسوند IAM
 	document.getElementById('total-supply-value').innerText = (totalSupplyNum * tokenPriceNum).toLocaleString('en-US', {maximumFractionDigits: 2}); // حذف پسوند DAI
   } catch (e) {
 	document.getElementById('total-supply').innerText = 'خطا';
@@ -4198,7 +4193,7 @@ window.updateDashboardStats = async function() {
 	  
 	  const totalSupply = await Promise.race([totalSupplyPromise, timeoutPromise]);
 	  const formattedSupply = parseFloat(ethers.formatUnits(totalSupply, 18)).toLocaleString('en-US', {maximumFractionDigits: 2});
-	  safeUpdate('circulating-supply', formattedSupply); // حذف پسوند CPA
+	  safeUpdate('circulating-supply', formattedSupply); // حذف پسوند IAM
 	  console.log('✅ Total supply updated:', formattedSupply);
 
 	} catch (e) {
@@ -4225,12 +4220,12 @@ window.updateDashboardStats = async function() {
 	  safeUpdate('total-points', 'Error');
 	}
 
-	// CPA BALANCE (contract's own token balance)
+	// IAM BALANCE (contract's own token balance)
 	try {
 	  console.log('🏦 Fetching contract token balance...');
 	  const contractTokenBalance = await contract.balanceOf(contract.target);
 	  const formattedBalance = parseFloat(ethers.formatUnits(contractTokenBalance, 18)).toLocaleString('en-US', {maximumFractionDigits: 2});
-	  safeUpdate('contract-token-balance', formattedBalance); // حذف پسوند CPA
+	  safeUpdate('contract-token-balance', formattedBalance); // حذف پسوند IAM
 	  console.log('✅ Contract token balance updated:', formattedBalance);
 
 	} catch (e) {
@@ -4254,7 +4249,7 @@ window.updateDashboardStats = async function() {
 	  }
 	  
 	  const formattedCashback = parseFloat(ethers.formatUnits(cashback, 18)).toLocaleString('en-US', {maximumFractionDigits: 2});
-	  safeUpdate('dashboard-cashback-value', formattedCashback); // حذف پسوند CPA
+	  safeUpdate('dashboard-cashback-value', formattedCashback); // حذف پسوند IAM
 	  console.log('✅ Cashback updated:', formattedCashback);
 
 	} catch (e) {
@@ -4307,7 +4302,7 @@ window.updateDashboardStats = async function() {
 	  const pointValue = await contract.getPointValue();
 	  const pointValueNum = parseFloat(ethers.formatUnits(pointValue, 18));
 	  const formattedPointValue = pointValueNum.toLocaleString('en-US', {maximumFractionDigits: 6});
-	  safeUpdate('dashboard-point-value', formattedPointValue); // حذف پسوند CPA
+	  safeUpdate('dashboard-point-value', formattedPointValue); // حذف پسوند IAM
 	  console.log('✅ Point value updated:', formattedPointValue);
 	  
 	  // Save point price to history
@@ -4320,7 +4315,7 @@ window.updateDashboardStats = async function() {
 	  safeUpdate('dashboard-point-value', 'Error');
 	}
 
-	// TOKEN PRICE (قیمت توکن CPA)
+	// TOKEN PRICE (قیمت توکن IAM)
 	try {
 	  console.log('💲 Fetching token price...');
 	  const tokenPrice = await contract.getTokenPrice();
@@ -4360,7 +4355,7 @@ window.updateDashboardStats = async function() {
 	  console.log('🎫 Fetching registration price...');
 	  const registrationPrice = await window.getRegPrice(contract);
 	  const formattedRegPrice = parseFloat(ethers.formatUnits(registrationPrice, 18)).toLocaleString('en-US', {maximumFractionDigits: 0});
-	  safeUpdate('dashboard-registration-price', formattedRegPrice); // حذف پسوند CPA
+	  safeUpdate('dashboard-registration-price', formattedRegPrice); // حذف پسوند IAM
 	  console.log('✅ Registration price updated:', formattedRegPrice);
 	} catch (e) {
 	  console.error('❌ Error fetching registration price:', e);
@@ -4432,18 +4427,18 @@ async function updatePriceChart() {
 		// ... سایر المنت‌ها
 
 		const prices = await window.getPrices();
-		if (!prices || !prices.cpaPriceUSD || parseFloat(prices.cpaPriceUSD) <= 0) {
+		if (!prices || !prices.IAMPriceUSD || parseFloat(prices.IAMPriceUSD) <= 0) {
 			if (elChartLvlUsd) elChartLvlUsd.textContent = 'در حال دریافت...';
 			return;
 		}
-		if (elChartLvlUsd) elChartLvlUsd.textContent = prices.cpaPriceUSD;
+		if (elChartLvlUsd) elChartLvlUsd.textContent = prices.IAMPriceUSD;
 		// ... سایر المنت‌ها
 	} catch (e) {
 		if (elChartLvlUsd) elChartLvlUsd.textContent = 'در حال دریافت...';
 	}
 }
 
-// Returns the DAI balance of the main contract (CPA_ADDRESS) as a string in DAI units (18 decimals)
+// Returns the DAI balance of the main contract (IAM_ADDRESS) as a string in DAI units (18 decimals)
 async function getContractDAIBalance() {
   if (typeof ethers === 'undefined') throw new Error('ethers.js not loaded');
   const provider = (window.contractConfig && window.contractConfig.contract && window.contractConfig.contract.provider)
@@ -4453,7 +4448,7 @@ async function getContractDAIBalance() {
 	  : (window.ethereum ? new ethers.BrowserProvider(window.ethereum) : null);
   if (!provider) throw new Error('No provider');
   const daiContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, provider);
-  const balanceRaw = await daiContract.balanceOf(CPA_ADDRESS);
+  const balanceRaw = await daiContract.balanceOf(IAM_ADDRESS);
   return ethers.formatUnits(balanceRaw, 18); // DAI has 18 decimals
 }
 
@@ -4470,7 +4465,7 @@ async function getTotalClaimableBinaryPoints() {
 	  ? window.contractConfig.provider
 	  : (window.ethereum ? new ethers.BrowserProvider(window.ethereum) : null);
   if (!provider) throw new Error('No provider');
-  const contract = new ethers.Contract(CPA_ADDRESS, CPA_ABI, provider);
+  const contract = new ethers.Contract(IAM_ADDRESS, IAM_ABI, provider);
   const pointsRaw = await contract.totalClaimablePoints();
   return pointsRaw; // BigInt or string
 }
@@ -4485,7 +4480,7 @@ async function getTotalClaimableBinaryPointsInteger() {
 
 
 // ... existing code ...
-// Returns the CPA token balance of the contract using balanceOf(CPA_ADDRESS)
+// Returns the IAM token balance of the contract using balanceOf(IAM_ADDRESS)
 async function getContractTokenBalance() {
   if (typeof ethers === 'undefined') throw new Error('ethers.js not loaded');
   const provider = (window.contractConfig && window.contractConfig.contract && window.contractConfig.contract.provider)
@@ -4494,8 +4489,8 @@ async function getContractTokenBalance() {
 	  ? window.contractConfig.provider
 	  : (window.ethereum ? new ethers.BrowserProvider(window.ethereum) : null);
   if (!provider) throw new Error('No provider');
-  const contract = new ethers.Contract(CPA_ADDRESS, CPA_ABI, provider);
-  const tokenRaw = await contract.balanceOf(CPA_ADDRESS);
+  const contract = new ethers.Contract(IAM_ADDRESS, IAM_ABI, provider);
+  const tokenRaw = await contract.balanceOf(IAM_ADDRESS);
   return ethers.formatUnits(tokenRaw, 18); // returns as string, e.g. '123.456789012345678901'
 }
 // ... existing code ...
@@ -4519,7 +4514,7 @@ async function updateContractStats() {
 		? window.contractConfig.provider
 		: (window.ethereum ? new ethers.BrowserProvider(window.ethereum) : null);
 	if (!provider) throw new Error('No provider');
-	const contract = new ethers.Contract(CPA_ADDRESS, CPA_ABI, provider);
+	const contract = new ethers.Contract(IAM_ADDRESS, IAM_ABI, provider);
 	// Total Points (integer, no decimals)
 	window.contractStats.totalPoints = (await contract.totalClaimablePoints()).toString();
   // DAI Balance (calls helper)
@@ -4573,7 +4568,7 @@ async function updateTokenPriceDisplay() {
 	  const pointValueNum = parseFloat(ethers.formatUnits(pointValue, 18));
 	  const pointValueFormatted = pointValueNum < 0.000001 ? pointValueNum.toExponential(6) : pointValueNum.toFixed(2);
 	  const el2 = document.getElementById('point-value');
-	  if (el2) el2.textContent = pointValueFormatted; // حذف پسوند CPA
+	  if (el2) el2.textContent = pointValueFormatted; // حذف پسوند IAM
 	} catch (error) {
 	  // ...
 	}
@@ -4645,7 +4640,7 @@ if (typeof window.showTab === 'function') {
 }
 
 // تابع تولید ID بر اساس ایندکس کاربر
-window.generateCPAId = function(index) {
+window.generateIAMId = function(index) {
 	if (!index || index === 0) return '0';
 	
 	// نمایش دقیق همان مقدار کنترکت بدون هیچ تغییری
@@ -4653,19 +4648,19 @@ window.generateCPAId = function(index) {
 };
 
 // تابع نمایش ID در گوشه بالا سمت راست
-window.displayCPAIdInCorner = function(index) {
+window.displayIAMIdInCorner = function(index) {
 	// حذف ID قبلی اگر وجود دارد
-	const existingId = document.getElementById('cpa-id-corner');
+	const existingId = document.getElementById('IAM-id-corner');
 	if (existingId) existingId.remove();
 	
 	if (!index || index === 0) return;
 	
-	const cpaId = window.generateCPAId(index);
+	const IAMId = window.generateIAMId(index);
 	
 	// ایجاد عنصر ID
 	const idElement = document.createElement('div');
-	idElement.id = 'cpa-id-corner';
-	idElement.textContent = cpaId;
+	idElement.id = 'IAM-id-corner';
+	idElement.textContent = IAMId;
 	idElement.style.cssText = `
 		position: fixed;
 		top: 10px;
@@ -4697,7 +4692,7 @@ window.displayCPAIdInCorner = function(index) {
 	
 	// کلیک برای کپی کردن
 	idElement.onclick = function() {
-		navigator.clipboard.writeText(cpaId);
+		navigator.clipboard.writeText(IAMId);
 		const originalText = this.textContent;
 		this.textContent = 'کپی شد!';
 		this.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
@@ -4711,19 +4706,19 @@ window.displayCPAIdInCorner = function(index) {
 };
 
 // تابع به‌روزرسانی نمایش ID در تمام بخش‌ها
-window.updateCPAIdDisplay = function(index) {
-	const cpaId = window.generateCPAId(index);
+window.updateIAMIdDisplay = function(index) {
+	const IAMId = window.generateIAMId(index);
 	
 	// به‌روزرسانی در پروفایل
 	const profileIndexEl = document.getElementById('profile-index');
 	if (profileIndexEl) {
-		profileIndexEl.textContent = cpaId;
+		profileIndexEl.textContent = IAMId;
 	}
 	
 	// به‌روزرسانی در داشبورد
 	const dashboardIndexEl = document.getElementById('dashboard-user-index');
 	if (dashboardIndexEl) {
-		dashboardIndexEl.textContent = cpaId;
+		dashboardIndexEl.textContent = IAMId;
 	}
 	
 	// نمایش بخش اطلاعات کاربر در داشبورد
@@ -4748,11 +4743,11 @@ window.updateCPAIdDisplay = function(index) {
 	// به‌روزرسانی در شبکه
 	const networkIndexEl = document.getElementById('network-user-index');
 	if (networkIndexEl) {
-		networkIndexEl.textContent = cpaId;
+		networkIndexEl.textContent = IAMId;
 	}
 	
 	// نمایش در گوشه
-	window.displayCPAIdInCorner(index);
+	window.displayIAMIdInCorner(index);
 };
 
 // پیام‌های خطا و راهنمایی برای اتصال متامسک
@@ -5053,11 +5048,11 @@ if (searchIndexBtn) {
 }
 
 // مقداردهی سراسری برای استفاده در products-manager.js و سایر بخش‌ها
-window.tokenAddress = CPA_ADDRESS;
-window.tokenAbi = CPA_ABI;
+window.tokenAddress = IAM_ADDRESS;
+window.tokenAbi = IAM_ABI;
 
 // ... existing code ...
 window.DAI_ADDRESS = DAI_ADDRESS;
 window.DAI_ABI = DAI_ABI;
-window.CPA_ADDRESS = CPA_ADDRESS;
-window.CONTRACT_ABI = CPA_ABI;
+window.IAM_ADDRESS = IAM_ADDRESS;
+window.CONTRACT_ABI = IAM_ABI;

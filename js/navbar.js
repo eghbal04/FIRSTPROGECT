@@ -3,7 +3,7 @@
   const style = document.createElement('style');
   style.textContent = `
     /* Modern Navbar Styles */
-    .cpa-navbar {
+    .IAM-navbar {
       width: 100vw;
       color: #fff;
       position: fixed;
@@ -21,7 +21,7 @@
         0 1px 0 rgba(255,255,255,0.1) inset;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .cpa-navbar-container { 
+    .IAM-navbar-container { 
       max-width: 1400px; 
       margin: 0 auto; 
       padding: 0.8rem 1.5rem; 
@@ -32,7 +32,7 @@
     }
     
     /* Modern Balance Cards */
-    .cpa-userbar { 
+    .IAM-userbar { 
       display: flex; 
       align-items: center; 
       gap: 0.8rem; 
@@ -47,7 +47,7 @@
         0 4px 16px rgba(0,255,136,0.1),
         0 1px 0 rgba(255,255,255,0.1) inset;
     }
-    .cpa-userbar .pill { 
+    .IAM-userbar .pill { 
       background: linear-gradient(135deg, 
         rgba(0,255,136,0.1) 0%, 
         rgba(167,134,255,0.1) 100%);
@@ -63,7 +63,7 @@
       position: relative;
       overflow: hidden;
     }
-    .cpa-userbar .pill::before {
+    .IAM-userbar .pill::before {
       content: '';
       position: absolute;
       top: 0; left: -100%;
@@ -71,15 +71,15 @@
       background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
       transition: left 0.5s;
     }
-    .cpa-userbar .pill:hover::before {
+    .IAM-userbar .pill:hover::before {
       left: 100%;
     }
-    .cpa-userbar .pill:hover {
+    .IAM-userbar .pill:hover {
       transform: translateY(-1px);
       box-shadow: 0 4px 12px rgba(0,255,136,0.2);
     }
-    .cpa-userbar .addr { display: none; }
-    .cpa-navbar-logo {
+    .IAM-userbar .addr { display: none; }
+    .IAM-navbar-logo {
       display: flex;
       align-items: center;
       gap: 0.7rem;
@@ -88,7 +88,7 @@
       color: #00ff88;
       text-decoration: none;
     }
-    .cpa-navbar-logo img {
+    .IAM-navbar-logo img {
       height: 28px; width: 28px;
       border-radius: 50%;
       box-shadow: 0 2px 8px #00ff8840;
@@ -96,8 +96,8 @@
       background: #181c2a;
     }
     /* Navbar links hidden (using hamburger only) */
-    .cpa-navbar-links { display: none !important; }
-    .cpa-navbar-link {
+    .IAM-navbar-links { display: none !important; }
+    .IAM-navbar-link {
       color: #fff;
       text-decoration: none;
       font-size: 0.98rem;
@@ -166,9 +166,9 @@
     .hex-spacer { visibility: hidden; pointer-events: none; }
     .hex-link small { font-size: 0.75rem; color: #b8c1ec; margin-top: 4px; }
     .hex-link:hover { transform: translateY(-4px); background: linear-gradient(135deg,#00ff88,#a786ff); color: #181c2a; box-shadow: 0 12px 24px rgba(0,255,136,0.2); }
-    .cpa-navbar-link:first-child { margin-right: 0.5rem; }
-    .cpa-navbar-link:last-child { margin-left: 0.5rem; }
-    .cpa-navbar-link:not(:last-child)::after {
+    .IAM-navbar-link:first-child { margin-right: 0.5rem; }
+    .IAM-navbar-link:last-child { margin-left: 0.5rem; }
+    .IAM-navbar-link:not(:last-child)::after {
       content: '';
       display: inline-block;
       width: 1px;
@@ -178,15 +178,15 @@
       margin-left: 0.1rem;
       align-self: center;
     }
-    .cpa-navbar-link:hover, .cpa-navbar-link:focus {
+    .IAM-navbar-link:hover, .IAM-navbar-link:focus {
       color: #181c2a;
       background: linear-gradient(90deg, #00ff88 60%, #a786ff 100%);
       box-shadow: 0 2px 12px #00ff8840;
       outline: none;
     }
     /* Dropdown styles */
-    .cpa-navbar-dropdown { position: relative; display: inline-block; }
-    .cpa-navbar-dropdown-content {
+    .IAM-navbar-dropdown { position: relative; display: inline-block; }
+    .IAM-navbar-dropdown-content {
       display: none;
       position: absolute;
       right: 0;
@@ -198,7 +198,7 @@
       padding: 0.5rem 0;
       margin-top: 0.5rem;
     }
-    .cpa-navbar-dropdown-content a {
+    .IAM-navbar-dropdown-content a {
       color: #fff;
       padding: 0.6rem 1.2rem;
       text-decoration: none;
@@ -207,15 +207,15 @@
       border-radius: 6px;
       transition: background 0.2s, color 0.2s;
     }
-    .cpa-navbar-dropdown-content a:hover {
+    .IAM-navbar-dropdown-content a:hover {
       background: rgba(0,255,136,0.13);
       color: #00ff88;
     }
-    .cpa-navbar-dropdown:hover .cpa-navbar-dropdown-content,
-    .cpa-navbar-dropdown:focus-within .cpa-navbar-dropdown-content {
+    .IAM-navbar-dropdown:hover .IAM-navbar-dropdown-content,
+    .IAM-navbar-dropdown:focus-within .IAM-navbar-dropdown-content {
       display: block;
     }
-    .cpa-navbar-dropdown-btn {
+    .IAM-navbar-dropdown-btn {
       background: none;
       border: none;
       color: #fff;
@@ -229,12 +229,12 @@
       align-items: center;
       gap: 0.3rem;
     }
-    .cpa-navbar-dropdown-btn:hover {
+    .IAM-navbar-dropdown-btn:hover {
       background: rgba(0,255,136,0.13);
       color: #00ff88;
     }
     /* Modern Hamburger Button - Fixed Bottom Left */
-    .cpa-navbar-hamburger {
+    .IAM-navbar-hamburger {
       display: flex !important;
       flex-direction: column;
       justify-content: center;
@@ -267,7 +267,7 @@
       transform: none;
     }
     
-    .cpa-navbar-hamburger::before {
+    .IAM-navbar-hamburger::before {
       content: '';
       position: absolute;
       top: 0; left: -100%;
@@ -276,11 +276,11 @@
       transition: left 0.4s ease;
     }
     
-    .cpa-navbar-hamburger:hover::before {
+    .IAM-navbar-hamburger:hover::before {
       left: 100%;
     }
     
-    .cpa-navbar-hamburger:hover {
+    .IAM-navbar-hamburger:hover {
       transform: translateY(-2px);
       border-color: rgba(0,255,136,0.5);
       box-shadow: 
@@ -289,7 +289,7 @@
     }
     
     /* Hamburger Lines */
-    .cpa-navbar-hamburger span {
+    .IAM-navbar-hamburger span {
       width: 20px;
       height: 2px;
       background: currentColor;
@@ -299,17 +299,17 @@
     }
     
     /* Active State Animation */
-    .cpa-navbar-hamburger.active span:first-child {
+    .IAM-navbar-hamburger.active span:first-child {
       transform: rotate(45deg) translate(5px, 5px);
     }
-    .cpa-navbar-hamburger.active span:last-child {
+    .IAM-navbar-hamburger.active span:last-child {
       transform: rotate(-45deg) translate(7px, -6px);
     }
-    .cpa-navbar-hamburger.active span:nth-child(2) {
+    .IAM-navbar-hamburger.active span:nth-child(2) {
       opacity: 0;
     }
     /* Modern Sidebar Menu */
-    .cpa-navbar-mobile-menu {
+    .IAM-navbar-mobile-menu {
       display: none;
       flex-direction: column;
       position: fixed;
@@ -340,7 +340,7 @@
       transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
-    .cpa-navbar-mobile-menu.open {
+    .IAM-navbar-mobile-menu.open {
       transform: translateX(0);
     }
     
@@ -350,7 +350,7 @@
     }
     
     /* Modern Overlay */
-    .cpa-navbar-overlay {
+    .IAM-navbar-overlay {
       display: none;
       position: fixed;
       top: 0; left: 0;
@@ -362,26 +362,26 @@
       opacity: 0;
     }
     
-    .cpa-navbar-overlay.open {
+    .IAM-navbar-overlay.open {
       display: block;
       opacity: 1;
     }
     
     /* Sidebar Header & Logo */
-    .cpa-navbar-mobile-header {
+    .IAM-navbar-mobile-header {
       padding: 1rem 0 2rem 0;
       border-bottom: 1px solid rgba(167,134,255,0.15);
       margin-bottom: 1rem;
     }
     
-    .cpa-navbar-logo-sidebar {
+    .IAM-navbar-logo-sidebar {
       display: flex;
       align-items: center;
       gap: 1rem;
       padding: 0 1.2rem;
     }
     
-    .cpa-navbar-logo-sidebar .logo-circle {
+    .IAM-navbar-logo-sidebar .logo-circle {
       width: 48px;
       height: 48px;
       background: linear-gradient(135deg, #00ff88, #a786ff);
@@ -397,7 +397,7 @@
         0 1px 0 rgba(255,255,255,0.2) inset;
     }
     
-    .cpa-navbar-logo-sidebar span {
+    .IAM-navbar-logo-sidebar span {
       font-size: 1.2rem;
       font-weight: 700;
       color: #ffffff;
@@ -405,17 +405,17 @@
     }
     
     /* Link Icons */
-    .cpa-navbar-mobile-menu .link-icon {
+    .IAM-navbar-mobile-menu .link-icon {
       font-size: 1.1rem;
       margin-left: 0.5rem;
       transition: transform 0.3s ease;
     }
     
-    .cpa-navbar-mobile-menu .cpa-navbar-link:hover .link-icon {
+    .IAM-navbar-mobile-menu .IAM-navbar-link:hover .link-icon {
       transform: scale(1.1);
     }
     /* Modern Sidebar Links */
-    .cpa-navbar-mobile-menu .cpa-navbar-link {
+    .IAM-navbar-mobile-menu .IAM-navbar-link {
       font-size: 1rem;
       font-weight: 500;
       padding: 0.8rem 1.2rem;
@@ -437,7 +437,7 @@
       overflow: hidden;
     }
     
-    .cpa-navbar-mobile-menu .cpa-navbar-link::before {
+    .IAM-navbar-mobile-menu .IAM-navbar-link::before {
       content: '';
       position: absolute;
       top: 0; left: -100%;
@@ -446,11 +446,11 @@
       transition: left 0.4s ease;
     }
     
-    .cpa-navbar-mobile-menu .cpa-navbar-link:hover::before {
+    .IAM-navbar-mobile-menu .IAM-navbar-link:hover::before {
       left: 100%;
     }
     
-    .cpa-navbar-mobile-menu .cpa-navbar-link:hover {
+    .IAM-navbar-mobile-menu .IAM-navbar-link:hover {
       background: linear-gradient(135deg, 
         rgba(0,255,136,0.1) 0%, 
         rgba(167,134,255,0.1) 100%);
@@ -462,7 +462,7 @@
         0 1px 0 rgba(255,255,255,0.1) inset;
     }
     /* Modern Section Titles */
-    .cpa-navbar-mobile-menu .cpa-navbar-section-title {
+    .IAM-navbar-mobile-menu .IAM-navbar-section-title {
       font-size: 0.8rem;
       color: #a786ff;
       font-weight: 700;
@@ -479,7 +479,7 @@
       position: relative;
     }
     
-    .cpa-navbar-mobile-menu .cpa-navbar-section-title::before {
+    .IAM-navbar-mobile-menu .IAM-navbar-section-title::before {
       content: '';
       position: absolute;
       left: 0; top: 50%;
@@ -488,7 +488,7 @@
       border-radius: 2px;
       transform: translateY(-50%);
     }
-    .cpa-navbar-mobile-close {
+    .IAM-navbar-mobile-close {
       position: absolute;
       top: 18px;
       left: 18px;
@@ -500,7 +500,7 @@
       cursor: pointer;
       transition: color 0.2s;
     }
-    .cpa-navbar-mobile-close:hover {
+    .IAM-navbar-mobile-close:hover {
       color: #00ff88;
     }
     @keyframes slideDownNav {
@@ -508,7 +508,7 @@
       to { transform: translateY(0); opacity: 1; }
     }
     @media (max-width: 700px) {
-      .cpa-navbar {
+      .IAM-navbar {
         flex-direction: row;
         justify-content: center;
         padding: 0.2rem 0.1rem;
@@ -519,38 +519,38 @@
     }
     /* Responsive Design */
     @media (max-width: 480px) {
-      .cpa-navbar-container {
+      .IAM-navbar-container {
         padding: 0.6rem 1rem;
         min-height: 64px;
       }
       
-      .cpa-userbar {
+      .IAM-userbar {
         gap: 0.5rem;
         padding: 0.4rem 0.8rem;
       }
       
-      .cpa-userbar .pill {
+      .IAM-userbar .pill {
         font-size: 0.8rem;
         padding: 0.3rem 0.6rem;
       }
       
-      .cpa-navbar-mobile-menu {
+      .IAM-navbar-mobile-menu {
         width: 280px;
         padding: 1.5rem 1rem;
       }
       
-      .cpa-navbar-logo-sidebar .logo-circle {
+      .IAM-navbar-logo-sidebar .logo-circle {
         width: 40px;
         height: 40px;
         font-size: 0.9rem;
       }
       
-      .cpa-navbar-logo-sidebar span {
+      .IAM-navbar-logo-sidebar span {
         font-size: 1.1rem;
       }
       
       /* Hamburger button for mobile */
-      .cpa-navbar-hamburger {
+      .IAM-navbar-hamburger {
         bottom: 16px !important;
         left: 16px !important;
         width: 52px !important;
@@ -559,17 +559,17 @@
     }
     
     @media (max-width: 320px) {
-      .cpa-navbar-mobile-menu {
+      .IAM-navbar-mobile-menu {
         width: 260px;
       }
       
-      .cpa-userbar .pill {
+      .IAM-userbar .pill {
         font-size: 0.75rem;
         padding: 0.25rem 0.5rem;
       }
       
       /* Smaller hamburger for very small screens */
-      .cpa-navbar-hamburger {
+      .IAM-navbar-hamburger {
         bottom: 12px !important;
         left: 12px !important;
         width: 48px !important;
@@ -580,76 +580,76 @@
   document.head.appendChild(style);
 
   const navbar = document.createElement('nav');
-  navbar.className = 'cpa-navbar';
+  navbar.className = 'IAM-navbar';
   navbar.innerHTML = `
-    <div class="cpa-navbar-container">
-      <div class="cpa-userbar" id="cpa-userbar">
+    <div class="IAM-navbar-container">
+      <div class="IAM-userbar" id="IAM-userbar">
         <span class="pill" id="nav-matic">POL: --</span>
-        <span class="pill" id="nav-cpa">CPA: --</span>
+        <span class="pill" id="nav-IAM">IAM: --</span>
         <span class="pill" id="nav-dai">DAI: --</span>
       </div>
-      <button class="cpa-navbar-hamburger" id="navbar-hamburger" aria-label="باز کردن منو">
+      <button class="IAM-navbar-hamburger" id="navbar-hamburger" aria-label="باز کردن منو">
         <span></span>
         <span></span>
         <span></span>
       </button>
     </div>
-    <div class="cpa-navbar-overlay" id="navbar-overlay"></div>
-    <div class="cpa-navbar-mobile-menu" id="navbar-mobile-menu" style="display:none;">
-      <div class="cpa-navbar-mobile-header">
-        <div class="cpa-navbar-logo-sidebar">
-          <div class="logo-circle">CPA</div>
-          <span>CPA Forex</span>
+    <div class="IAM-navbar-overlay" id="navbar-overlay"></div>
+    <div class="IAM-navbar-mobile-menu" id="navbar-mobile-menu" style="display:none;">
+      <div class="IAM-navbar-mobile-header">
+        <div class="IAM-navbar-logo-sidebar">
+          <div class="logo-circle">IAM</div>
+          <span>IAM Token</span>
         </div>
       </div>
-      <div class="cpa-navbar-mobile-section">
-        <div class="cpa-navbar-section-title">دسترسی سریع</div>
-        <a href="index.html#main-dashboard" class="cpa-navbar-link">
+      <div class="IAM-navbar-mobile-section">
+        <div class="IAM-navbar-section-title">دسترسی سریع</div>
+        <a href="index.html#main-dashboard" class="IAM-navbar-link">
           <span class="link-icon">🏠</span>خانه
         </a>
-        <a href="index.html#main-swap" class="cpa-navbar-link" id="navbar-swap-link-mobile">
+        <a href="index.html#main-swap" class="IAM-navbar-link" id="navbar-swap-link-mobile">
           <span class="link-icon">🔄</span>تبدیل
         </a>
-        <a href="index.html#main-transfer" class="cpa-navbar-link" id="navbar-transfer-link-mobile">
+        <a href="index.html#main-transfer" class="IAM-navbar-link" id="navbar-transfer-link-mobile">
           <span class="link-icon">💸</span>ترانسفر
         </a>
-        <a href="professional-tree.html" class="cpa-navbar-link" id="navbar-network-link-mobile">
+        <a href="professional-tree.html" class="IAM-navbar-link" id="navbar-network-link-mobile">
           <span class="link-icon">🌐</span>همکاران
         </a>
-        <a href="register.html" class="cpa-navbar-link">
+        <a href="register.html" class="IAM-navbar-link">
           <span class="link-icon">📝</span>ثبت‌نام
         </a>
-        <a href="register-free.html" class="cpa-navbar-link">
+        <a href="register-free.html" class="IAM-navbar-link">
           <span class="link-icon">🎫</span>رزرو
         </a>
       </div>
-      <div class="cpa-navbar-mobile-section">
-        <div class="cpa-navbar-section-title">ابزارها</div>
-        <a href="reports.html" class="cpa-navbar-link">
+      <div class="IAM-navbar-mobile-section">
+        <div class="IAM-navbar-section-title">ابزارها</div>
+        <a href="reports.html" class="IAM-navbar-link">
           <span class="link-icon">📊</span>گزارش
         </a>
-        <a href="profile.html" class="cpa-navbar-link">
+        <a href="profile.html" class="IAM-navbar-link">
           <span class="link-icon">👤</span>پروفایل
         </a>
-        <a href="products.html" class="cpa-navbar-link">
+        <a href="products.html" class="IAM-navbar-link">
           <span class="link-icon">🛍️</span>محصولات
         </a>
-        <a href="utility.html" class="cpa-navbar-link">
+        <a href="utility.html" class="IAM-navbar-link">
           <span class="link-icon">🛠️</span>ابزارها
         </a>
       </div>
-      <div class="cpa-navbar-mobile-section">
-        <div class="cpa-navbar-section-title">اطلاعات</div>
-        <a href="learning.html" class="cpa-navbar-link">
+      <div class="IAM-navbar-mobile-section">
+        <div class="IAM-navbar-section-title">اطلاعات</div>
+        <a href="learning.html" class="IAM-navbar-link">
           <span class="link-icon">📚</span>آموزش
         </a>
-        <a href="news.html" class="cpa-navbar-link">
+        <a href="news.html" class="IAM-navbar-link">
           <span class="link-icon">📰</span>اخبار
         </a>
-        <a href="about.html" class="cpa-navbar-link">
+        <a href="about.html" class="IAM-navbar-link">
           <span class="link-icon">ℹ️</span>درباره‌ما
         </a>
-        <a href="transfer-ownership.html" class="cpa-navbar-link">
+        <a href="transfer-ownership.html" class="IAM-navbar-link">
           <span class="link-icon">🔑</span>انتقال مالکیت
         </a>
       </div>
@@ -728,20 +728,20 @@
     // --- Fast, resilient userbar balances ---
     (function(){
       const maticEl = document.getElementById('nav-matic');
-      const cpaEl = document.getElementById('nav-cpa');
+      const IAMEl = document.getElementById('nav-IAM');
       const daiEl = document.getElementById('nav-dai');
 
       // Prefill from cache (≤ 2 دقیقه)
       try {
-        const cached = JSON.parse(localStorage.getItem('cpa_nav_balances')||'null');
+        const cached = JSON.parse(localStorage.getItem('IAM_nav_balances')||'null');
         if (cached && (Date.now() - (cached.ts||0) < 2*60*1000)) {
           if (maticEl && cached.pol != null) maticEl.textContent = 'POL: ' + cached.pol;
-          if (cpaEl && cached.cpa != null) cpaEl.textContent = 'CPA: ' + cached.cpa;
+          if (IAMEl && cached.IAM != null) IAMEl.textContent = 'IAM: ' + cached.IAM;
           if (daiEl && cached.dai != null) daiEl.textContent = 'DAI: ' + cached.dai;
         } else {
           // Optics for loading state
           if (maticEl) maticEl.textContent = 'POL: …';
-          if (cpaEl) cpaEl.textContent = 'CPA: …';
+          if (IAMEl) IAMEl.textContent = 'IAM: …';
           if (daiEl) daiEl.textContent = 'DAI: …';
         }
       } catch {}
@@ -789,9 +789,9 @@
           // Build calls
           const calls = [];
           calls.push(retry(()=>withTimeout(baseProvider.getBalance(address), 3000)));
-          if (window.CPA_ADDRESS && window.CPA_ABI) {
-            const cpa = new ethers.Contract(window.CPA_ADDRESS, window.CPA_ABI, baseProvider);
-            calls.push(retry(()=>withTimeout(cpa.balanceOf(address), 3000)));
+          if (window.IAM_ADDRESS && window.IAM_ABI) {
+            const IAM = new ethers.Contract(window.IAM_ADDRESS, window.IAM_ABI, baseProvider);
+            calls.push(retry(()=>withTimeout(IAM.balanceOf(address), 3000)));
           } else {
             calls.push(Promise.resolve(null));
           }
@@ -802,9 +802,9 @@
             calls.push(Promise.resolve(null));
           }
 
-          const [polWei, cpaBal, daiBal] = await Promise.all(calls);
+          const [polWei, IAMBal, daiBal] = await Promise.all(calls);
           if (polWei && maticEl) maticEl.textContent = 'POL: ' + formatCompact(Number(ethers.formatEther(polWei)), 4, 2);
-          if (cpaBal != null && cpaEl) cpaEl.textContent = 'CPA: ' + formatCompact(Number(ethers.formatUnits(cpaBal, 18)), 4, 2);
+          if (IAMBal != null && IAMEl) IAMEl.textContent = 'IAM: ' + formatCompact(Number(ethers.formatUnits(IAMBal, 18)), 4, 2);
           if (daiBal != null && daiEl) daiEl.textContent = 'DAI: ' + formatCompact(Number(ethers.formatUnits(daiBal, 18)), 2, 2);
 
           // Cache
@@ -812,10 +812,10 @@
             const cache = {
               ts: Date.now(),
               pol: polWei ? maticEl.textContent.replace('POL: ','') : null,
-              cpa: cpaBal!=null ? cpaEl.textContent.replace('CPA: ','') : null,
+              IAM: IAMBal!=null ? IAMEl.textContent.replace('IAM: ','') : null,
               dai: daiBal!=null ? daiEl.textContent.replace('DAI: ','') : null
             };
-            localStorage.setItem('cpa_nav_balances', JSON.stringify(cache));
+            localStorage.setItem('IAM_nav_balances', JSON.stringify(cache));
           } catch {}
 
           schedule(10000); // refresh every 10s after success

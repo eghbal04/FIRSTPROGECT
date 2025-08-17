@@ -1,11 +1,11 @@
-// swap.js - اصولی و حرفه‌ای برای سواپ DAI ↔ CPA
+// swap.js - اصولی و حرفه‌ای برای سواپ DAI ↔ IAM
 
 class SwapManager {
     constructor() {
         console.log('🏗️ ساخت نمونه SwapManager...');
         
         this.tokenPrice = null;
-        this.userBalances = { dai: 0, cpa: 0 };
+        this.userBalances = { dai: 0, IAM: 0 };
         this.isSwapping = false;
         
         console.log('✅ SwapManager ساخته شد');
@@ -99,16 +99,16 @@ class SwapManager {
         
         const tokenPrice = Number(this.tokenPrice);
         
-        if (direction.value === 'dai-to-cpa') {
+        if (direction.value === 'dai-to-IAM') {
             // تبدیل USD به DAI (فرض بر این که 1 USD = 1 DAI)
             const daiAmount = usdValue;
             swapAmount.value = daiAmount.toFixed(2);
             console.log('✅ USD به DAI تبدیل شد:', daiAmount);
-        } else if (direction.value === 'cpa-to-dai') {
-            // تبدیل USD به CPA
-            const cpaAmount = usdValue / tokenPrice;
-            swapAmount.value = cpaAmount.toFixed(6);
-            console.log('✅ USD به CPA تبدیل شد:', cpaAmount);
+        } else if (direction.value === 'IAM-to-dai') {
+            // تبدیل USD به IAM
+            const IAMAmount = usdValue / tokenPrice;
+            swapAmount.value = IAMAmount.toFixed(6);
+            console.log('✅ USD به IAM تبدیل شد:', IAMAmount);
         }
         
         // به‌روزرسانی پیش‌نمایش
@@ -138,12 +138,12 @@ class SwapManager {
         
         const tokenPrice = Number(this.tokenPrice);
         
-        if (direction.value === 'dai-to-cpa') {
+        if (direction.value === 'dai-to-IAM') {
             // DAI به USD (فرض بر این که 1 DAI = 1 USD)
             const usdValue = tokenAmount;
             swapUsdAmount.value = usdValue.toFixed(2);
-        } else if (direction.value === 'cpa-to-dai') {
-            // CPA به USD
+        } else if (direction.value === 'IAM-to-dai') {
+            // IAM به USD
             const usdValue = tokenAmount * tokenPrice;
             swapUsdAmount.value = usdValue.toFixed(2);
         }
@@ -158,7 +158,7 @@ class SwapManager {
             return;
         }
         
-        if (direction.value === 'cpa-to-dai') {
+        if (direction.value === 'IAM-to-dai') {
             usdConverterRow.style.display = 'block';
         } else {
             usdConverterRow.style.display = 'none';
@@ -186,9 +186,9 @@ class SwapManager {
         
         const tokenPrice = Number(this.tokenPrice);
         
-        if (direction.value === 'cpa-to-dai') {
-            const cpaAmount = usdValue / tokenPrice;
-            swapAmount.value = cpaAmount.toFixed(6);
+        if (direction.value === 'IAM-to-dai') {
+            const IAMAmount = usdValue / tokenPrice;
+            swapAmount.value = IAMAmount.toFixed(6);
             this.updateSwapPreview();
         }
     }
@@ -223,7 +223,7 @@ class SwapManager {
             
             console.log('📊 موجودی DAI قرارداد:', daiBalanceNum);
             
-            if (direction.value === 'dai-to-cpa') {
+            if (direction.value === 'dai-to-IAM') {
                 // Buy limits (طبق قرارداد)
                 let maxBuy;
                 if (daiBalanceNum <= 100000) {
@@ -236,7 +236,7 @@ class SwapManager {
                 const totalFeePct = deployerPct + backingPct;
                 const userSharePct = 1 - totalFeePct;
                 html += `<div style="background:#e8f5e8;padding:12px;border-radius:8px;border-left:4px solid #4caf50;margin-bottom:10px;">
-                    <h4 style="margin:0 0 8px 0;color:#2e7d32;">🛒 خرید CPA با DAI</h4>
+                    <h4 style="margin:0 0 8px 0;color:#2e7d32;">🛒 خرید IAM با DAI</h4>
                     <p style="margin:5px 0;color:#555;"><strong>حداقل خرید:</strong> ۱ DAI</p>
                     <p style="margin:5px 0;color:#555;"><strong>سقف خرید فعلی:</strong> ${maxBuy.toLocaleString('en-US', {maximumFractionDigits:2})} DAI</p>
                     <p style="margin:5px 0;color:#555;"><strong>کارمزد خرید:</strong> ${(totalFeePct*100).toFixed(1)}٪ کل</p>
@@ -246,15 +246,15 @@ class SwapManager {
                     </ul>
                     <p style="margin:5px 0;color:#2e7d32;"><strong>سهم شما: ${(userSharePct*100).toFixed(1)}٪ از مبلغ خرید به توکن تبدیل می‌شود</strong></p>
                 </div>`;
-            } else if (direction.value === 'cpa-to-dai') {
+            } else if (direction.value === 'IAM-to-dai') {
                 // محدودیت فروش: نمایش 50% موجودی کاربر
                 const deployerPct = 0.005; // 0.5%
                 const backingPct = this.getBackingFeePct(daiBalanceNum);
                 const totalFeePct = deployerPct + backingPct;
                 const userSharePct = 1 - totalFeePct;
                 html += `<div style="background:#fff3e0;padding:12px;border-radius:8px;border-left:4px solid #ff9800;margin-bottom:10px;">
-                    <h4 style="margin:0 0 8px 0;color:#e65100;">💰 فروش CPA و دریافت DAI</h4>
-                    <p style="margin:5px 0;color:#555;"><strong>حداقل فروش:</strong> ۱ توکن CPA</p>
+                    <h4 style="margin:0 0 8px 0;color:#e65100;">💰 فروش IAM و دریافت DAI</h4>
+                    <p style="margin:5px 0;color:#555;"><strong>حداقل فروش:</strong> ۱ توکن IAM</p>
                     <p style="margin:5px 0;color:#555;"><strong>سقف فروش:</strong> تا ۵۰٪ موجودی شما</p>
                     <p style="margin:5px 0;color:#555;"><strong>کارمزد فروش:</strong> ${(totalFeePct*100).toFixed(1)}٪ کل (از توکن)</p>
                     <ul style="margin:5px 0;padding-left:20px;color:#555;">
@@ -408,10 +408,10 @@ class SwapManager {
             this.tokenPrice = ethers.formatUnits(tokenPrice, 18);
             console.log('✅ قیمت توکن دریافت شد:', this.tokenPrice);
 
-            // موجودی CPA
-            const cpaBalance = await contract.balanceOf(address);
-            const cpaBalanceFormatted = ethers.formatUnits(cpaBalance, 18);
-            console.log('✅ موجودی CPA دریافت شد:', cpaBalanceFormatted);
+            // موجودی IAM
+            const IAMBalance = await contract.balanceOf(address);
+            const IAMBalanceFormatted = ethers.formatUnits(IAMBalance, 18);
+            console.log('✅ موجودی IAM دریافت شد:', IAMBalanceFormatted);
 
             // موجودی DAI
             const daiAddress = window.DAI_ADDRESS;
@@ -438,17 +438,17 @@ class SwapManager {
                 }
             }
             
-            // محاسبه معادل دلاری CPA
-            const cpaUsdValue = parseFloat(cpaBalanceFormatted) * parseFloat(this.tokenPrice);
+            // محاسبه معادل دلاری IAM
+            const IAMUsdValue = parseFloat(IAMBalanceFormatted) * parseFloat(this.tokenPrice);
             
             // نمایش موجودی‌ها
-            const cpaBalanceEl = document.getElementById('cpaBalance');
+            const IAMBalanceEl = document.getElementById('IAMBalance');
             const daiBalanceEl = document.getElementById('daiBalance');
-            if (cpaBalanceEl) {
-                const fullCpaAmount = Number(cpaBalanceFormatted).toLocaleString('en-US', {maximumFractionDigits: 6});
-                cpaBalanceEl.innerHTML = `
-                    <span title="${fullCpaAmount} CPA">${formatLargeNumber(Number(cpaBalanceFormatted))} CPA</span>
-                    <div style="font-size:0.8rem;color:#a786ff;margin-top:2px;">≈ $${formatLargeNumber(cpaUsdValue)}</div>
+            if (IAMBalanceEl) {
+                const fullIAMAmount = Number(IAMBalanceFormatted).toLocaleString('en-US', {maximumFractionDigits: 6});
+                IAMBalanceEl.innerHTML = `
+                    <span title="${fullIAMAmount} IAM">${formatLargeNumber(Number(IAMBalanceFormatted))} IAM</span>
+                    <div style="font-size:0.8rem;color:#a786ff;margin-top:2px;">≈ $${formatLargeNumber(IAMUsdValue)}</div>
                 `;
             }
             if (daiBalanceEl) {
@@ -458,7 +458,7 @@ class SwapManager {
 
             // ذخیره برای max
             this.userBalances = {
-                cpa: parseFloat(cpaBalanceFormatted),
+                IAM: parseFloat(IAMBalanceFormatted),
                 dai: parseFloat(daiBalanceFormatted)
             };
             
@@ -470,7 +470,7 @@ class SwapManager {
         } catch (error) {
             console.error('❌ خطا در بارگذاری داده‌های سواپ:', error);
             this.tokenPrice = null;
-            this.userBalances = { cpa: 0, dai: 0 };
+            this.userBalances = { IAM: 0, dai: 0 };
             this.updateSwapRate();
             this.showStatus('خطا در بارگذاری موجودی‌ها: ' + error.message, 'error');
         }
@@ -488,8 +488,8 @@ class SwapManager {
             const price = Number(this.tokenPrice);
             rateEl.innerHTML = `<div style="background:#f3e5f5;padding:10px;border-radius:6px;text-align:center;margin:10px 0;">
                 <strong>💱 نرخ تبدیل فعلی:</strong><br>
-                ۱ DAI = ${price.toFixed(6)} CPA<br>
-                ۱ CPA = ${(1/price).toFixed(6)} DAI
+                ۱ DAI = ${price.toFixed(6)} IAM<br>
+                ۱ IAM = ${(1/price).toFixed(6)} DAI
             </div>`;
             console.log('✅ نرخ تبدیل به‌روزرسانی شد:', price);
         } else {
@@ -523,7 +523,7 @@ class SwapManager {
             tokenPrice: this.tokenPrice
         });
         
-        if (direction.value === 'dai-to-cpa') {
+        if (direction.value === 'dai-to-IAM') {
             result = value / Number(this.tokenPrice);
             // کارمزد پویا بر اساس موجودی DAI قرارداد
             const daiBalanceNum = await this.getContractDaiBalanceNum();
@@ -539,9 +539,9 @@ class SwapManager {
                 <p style="margin:5px 0;color:#555;"><strong>مبلغ ورودی:</strong> ${value.toFixed(2)} DAI</p>
                 <p style="margin:5px 0;color:#555;"><strong>کارمزد (${(totalFeePct*100).toFixed(1)}٪):</strong> ${fees.toFixed(2)} DAI</p>
                 <p style="margin:5px 0;color:#555;"><strong>مبلغ خالص:</strong> ${netAmount.toFixed(2)} DAI</p>
-                <p style="margin:5px 0;color:#2e7d32;"><strong>توکن دریافتی:</strong> ${netTokens.toFixed(6)} CPA</p>
+                <p style="margin:5px 0;color:#2e7d32;"><strong>توکن دریافتی:</strong> ${netTokens.toFixed(6)} IAM</p>
             </div>`;
-        } else if (direction.value === 'cpa-to-dai') {
+        } else if (direction.value === 'IAM-to-dai') {
             result = value * Number(this.tokenPrice);
             // کارمزد پویا بر اساس موجودی DAI قرارداد
             const daiBalanceNum = await this.getContractDaiBalanceNum();
@@ -553,7 +553,7 @@ class SwapManager {
             
             previewHtml = `<div style="background:#fff3e0;padding:12px;border-radius:6px;margin:10px 0;">
                 <h4 style="margin:0 0 8px 0;color:#e65100;">📊 پیش‌نمایش فروش</h4>
-                <p style="margin:5px 0;color:#555;"><strong>توکن ورودی:</strong> ${value.toFixed(6)} CPA</p>
+                <p style="margin:5px 0;color:#555;"><strong>توکن ورودی:</strong> ${value.toFixed(6)} IAM</p>
                 <p style="margin:5px 0;color:#555;"><strong>ارزش کل:</strong> ${result.toFixed(6)} DAI</p>
                 <p style="margin:5px 0;color:#555;"><strong>کارمزد (${(totalFeePct*100).toFixed(1)}٪):</strong> ${fees.toFixed(6)} DAI</p>
                 <p style="margin:5px 0;color:#e65100;"><strong>DAI دریافتی:</strong> ${netDai.toFixed(6)} DAI</p>
@@ -573,14 +573,14 @@ class SwapManager {
             return;
         }
         
-        if (direction.value === 'dai-to-cpa') {
+        if (direction.value === 'dai-to-IAM') {
             amount.max = this.userBalances.dai;
             console.log('✅ حداکثر مقدار DAI تنظیم شد:', this.userBalances.dai);
-        } else if (direction.value === 'cpa-to-dai') {
+        } else if (direction.value === 'IAM-to-dai') {
             // برای جلوگیری از رد شدن توسط قرارداد، حداکثر ورودی را 50% موجودی تنظیم کن
-            const halfCpa = Math.floor(this.userBalances.cpa * 0.5 * 1e6) / 1e6;
-            amount.max = halfCpa;
-            console.log('✅ حداکثر مقدار CPA (نصف موجودی) تنظیم شد:', halfCpa);
+            const halfIAM = Math.floor(this.userBalances.IAM * 0.5 * 1e6) / 1e6;
+            amount.max = halfIAM;
+            console.log('✅ حداکثر مقدار IAM (نصف موجودی) تنظیم شد:', halfIAM);
         }
     }
 
@@ -598,7 +598,7 @@ class SwapManager {
                 const m = Math.pow(10, decimals);
                 return Math.floor(Number(val) * m) / m;
             };
-            if (direction.value === 'dai-to-cpa') {
+            if (direction.value === 'dai-to-IAM') {
                 // محاسبه سقف خرید هوشمند
                 const contract = window.contractConfig.contract;
                 const daiAddress = window.DAI_ADDRESS;
@@ -632,13 +632,13 @@ class SwapManager {
                     finalAmount: maxAmount.toFixed(2)
                 });
                 
-            } else if (direction.value === 'cpa-to-dai') {
+            } else if (direction.value === 'IAM-to-dai') {
                 // برای فروش، همیشه نصف موجودی کاربر را به صورت گرد شده به پایین وارد کن
-                let half = this.userBalances.cpa * 0.5;
+                let half = this.userBalances.IAM * 0.5;
                 half = floorToDecimals(half, 6);
                 amount.value = half.toFixed(6);
                 console.log('✅ مقدار فروش روی نصف موجودی تنظیم شد:', {
-                    userBalance: this.userBalances.cpa.toFixed(6),
+                    userBalance: this.userBalances.IAM.toFixed(6),
                     half: half.toFixed(6)
                 });
             }
@@ -650,10 +650,10 @@ class SwapManager {
             console.error('❌ خطا در محاسبه حداکثر هوشمند:', error);
             
             // در صورت خطا، از روش قبلی استفاده کن
-            if (direction.value === 'dai-to-cpa') {
+            if (direction.value === 'dai-to-IAM') {
                 amount.value = this.userBalances.dai.toFixed(2);
-            } else if (direction.value === 'cpa-to-dai') {
-                amount.value = this.userBalances.cpa.toFixed(6);
+            } else if (direction.value === 'IAM-to-dai') {
+                amount.value = this.userBalances.IAM.toFixed(6);
             }
             
             await this.updateSwapPreview();
@@ -775,33 +775,33 @@ class SwapManager {
             });
             
             // بررسی موجودی
-            if (direction.value === 'dai-to-cpa' && value > this.userBalances.dai) {
+            if (direction.value === 'dai-to-IAM' && value > this.userBalances.dai) {
                 throw new Error(`موجودی DAI کافی نیست. موجودی شما: ${this.userBalances.dai.toFixed(6)} DAI`);
             }
-            if (direction.value === 'cpa-to-dai' && value > this.userBalances.cpa) {
-                throw new Error(`موجودی CPA کافی نیست. موجودی شما: ${this.userBalances.cpa.toFixed(6)} CPA`);
+            if (direction.value === 'IAM-to-dai' && value > this.userBalances.IAM) {
+                throw new Error(`موجودی IAM کافی نیست. موجودی شما: ${this.userBalances.IAM.toFixed(6)} IAM`);
             }
 
             // اعتبارسنجی مطابق قرارداد
-            if (direction.value === 'dai-to-cpa') {
+            if (direction.value === 'dai-to-IAM') {
                 if (value < 1) throw new Error('حداقل خرید 1 DAI است');
                 // سقف خرید پویا
                 const daiContractBalance = await this.getContractDaiBalanceNum();
                 const maxBuy = (daiContractBalance <= 100000) ? 1000 : (daiContractBalance * 0.01);
                 if (value > maxBuy) throw new Error(`مقدار از سقف خرید بیشتر است (حداکثر مجاز: ${maxBuy.toFixed(2)} DAI)`);
-            } else if (direction.value === 'cpa-to-dai') {
-                if (value < 1) throw new Error('حداقل فروش 1 CPA است');
+            } else if (direction.value === 'IAM-to-dai') {
+                if (value < 1) throw new Error('حداقل فروش 1 IAM است');
                 // محدودیت فروش: حداکثر 50% موجودی کاربر (مطابق قرارداد)
-                const maxSell = this.userBalances.cpa * 0.5;
-                if (value > maxSell) throw new Error(`مقدار از سقف فروش بیشتر است (حداکثر مجاز: ${maxSell.toFixed(6)} CPA)`);
+                const maxSell = this.userBalances.IAM * 0.5;
+                if (value > maxSell) throw new Error(`مقدار از سقف فروش بیشتر است (حداکثر مجاز: ${maxSell.toFixed(6)} IAM)`);
             }
 
             // انجام عملیات سواپ
-            if (direction.value === 'dai-to-cpa') {
-                console.log('🛒 شروع خرید CPA با DAI...');
+            if (direction.value === 'dai-to-IAM') {
+                console.log('🛒 شروع خرید IAM با DAI...');
                 await this.buyTokensWithDAI(value);
-            } else if (direction.value === 'cpa-to-dai') {
-                console.log('💰 شروع فروش CPA و دریافت DAI...');
+            } else if (direction.value === 'IAM-to-dai') {
+                console.log('💰 شروع فروش IAM و دریافت DAI...');
                 await this.sellTokensForDAI(value);
             } else {
                 throw new Error('نوع تبدیل نامعتبر است');
@@ -826,9 +826,9 @@ class SwapManager {
         }
     }
 
-    // خرید CPA با DAI (با مدیریت allowance)
+    // خرید IAM با DAI (با مدیریت allowance)
     async buyTokensWithDAI(daiAmount) {
-        console.log('🛒 شروع خرید CPA با DAI:', daiAmount);
+        console.log('🛒 شروع خرید IAM با DAI:', daiAmount);
         
         try {
             const contract = window.contractConfig.contract;
@@ -868,9 +868,9 @@ class SwapManager {
                 console.log('✅ Allowance کافی است');
             }
             
-            // خرید CPA
-            console.log('🛒 شروع خرید توکن CPA...');
-            this.showStatus('🛒 در حال خرید توکن CPA...', 'loading');
+            // خرید IAM
+            console.log('🛒 شروع خرید توکن IAM...');
+            this.showStatus('🛒 در حال خرید توکن IAM...', 'loading');
             
             const tx = await contract.buyTokens(daiAmountWei);
             this.showStatus('⏳ در انتظار تایید تراکنش خرید...', 'loading', tx.hash);
@@ -878,18 +878,18 @@ class SwapManager {
             console.log('⏳ منتظر تایید تراکنش خرید...');
             await tx.wait();
             
-            this.showStatus('✅ خرید موفق! توکن‌های CPA به کیف پول شما اضافه شد', 'success', tx.hash);
+            this.showStatus('✅ خرید موفق! توکن‌های IAM به کیف پول شما اضافه شد', 'success', tx.hash);
             console.log('✅ خرید با موفقیت تکمیل شد');
             
         } catch (error) {
-            console.error('❌ خطا در خرید CPA:', error);
+            console.error('❌ خطا در خرید IAM:', error);
             throw error;
         }
     }
 
-    // فروش CPA و دریافت DAI
-    async sellTokensForDAI(cpaAmount) {
-        console.log('💰 شروع فروش CPA و دریافت DAI:', cpaAmount);
+    // فروش IAM و دریافت DAI
+    async sellTokensForDAI(IAMAmount) {
+        console.log('💰 شروع فروش IAM و دریافت DAI:', IAMAmount);
         
         try {
             const contract = window.contractConfig.contract;
@@ -898,12 +898,12 @@ class SwapManager {
                 throw new Error('اتصال به قرارداد برقرار نیست');
             }
             
-            const cpaAmountWei = ethers.parseUnits(cpaAmount.toString(), 18);
+            const IAMAmountWei = ethers.parseUnits(IAMAmount.toString(), 18);
             
-            console.log('💰 شروع فروش توکن CPA...');
-            this.showStatus('💰 در حال فروش توکن CPA...', 'loading');
+            console.log('💰 شروع فروش توکن IAM...');
+            this.showStatus('💰 در حال فروش توکن IAM...', 'loading');
             
-            const tx = await contract.sellTokens(cpaAmountWei);
+            const tx = await contract.sellTokens(IAMAmountWei);
             this.showStatus('⏳ در انتظار تایید تراکنش فروش...', 'loading', tx.hash);
             
             console.log('⏳ منتظر تایید تراکنش فروش...');
@@ -913,7 +913,7 @@ class SwapManager {
             console.log('✅ فروش با موفقیت تکمیل شد');
             
         } catch (error) {
-            console.error('❌ خطا در فروش CPA:', error);
+            console.error('❌ خطا در فروش IAM:', error);
             throw error;
         }
     }

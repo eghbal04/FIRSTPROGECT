@@ -64,20 +64,20 @@ window.TokenBalances = {
 
     async getAllBalances(address) {
         const balances = {
-            cpa: '0',
+            IAM: '0',
             dai: '0',
             matic: '0'
         };
 
         try {
-            // CPA Balance
+            // IAM Balance
             if (window.CONTRACT_ADDRESS && window.CONTRACT_ABI) {
-                const cpaBalance = await this.getTokenBalance(
+                const IAMBalance = await this.getTokenBalance(
                     address,
                     window.CONTRACT_ADDRESS,
                     window.CONTRACT_ABI
                 );
-                if (cpaBalance) balances.cpa = Number(cpaBalance).toFixed(2);
+                if (IAMBalance) balances.IAM = Number(IAMBalance).toFixed(2);
             }
 
                     // DAI Balance

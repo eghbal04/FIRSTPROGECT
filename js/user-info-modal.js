@@ -110,7 +110,7 @@ class UserInfoModal {
         // Simulate API call
         await new Promise(resolve => setTimeout(resolve, 500));
 
-        document.getElementById('userId').textContent = `CPA${String(nodeData.id).padStart(5, '0')}`;
+        document.getElementById('userId').textContent = `IAM${String(nodeData.id).padStart(5, '0')}`;
         document.getElementById('userWallet').textContent = this.formatAddress(nodeData.wallet);
         document.getElementById('userType').textContent = this.getUserType(nodeData.type);
         document.getElementById('userBalance').textContent = this.formatNumber(nodeData.balance);

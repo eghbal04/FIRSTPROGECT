@@ -185,12 +185,12 @@ function updateProfileUI(profile) {
     if (purchasedKindEl) {
         let rawValue = Number(profile.userStruct.totalPurchasedKind) / 1e18;
         let lvlDisplay = rawValue.toLocaleString('en-US', { maximumFractionDigits: 5, minimumFractionDigits: 0 });
-        lvlDisplay += ' LVL';
+        lvlDisplay += ' IAM';
         purchasedKindEl.textContent = lvlDisplay;
     }
 
     const refclimedEl = document.getElementById('profile-refclimed');
-    if (refclimedEl) refclimedEl.textContent = profile.userStruct.refclimed ? Math.floor(Number(profile.userStruct.refclimed) / 1e18) + ' LVL' : '۰';
+    if (refclimedEl) refclimedEl.textContent = profile.userStruct.refclimed ? Math.floor(Number(profile.userStruct.refclimed) / 1e18) + ' IAM' : '۰';
 
     // مدیریت وضعیت دکمه کلایم بر اساس پوینت‌های باینری
     const claimBtn = document.getElementById('profile-claim-btn');
@@ -257,14 +257,14 @@ function updateProfileUI(profile) {
     // موجودی متیک
     const maticEl = document.getElementById('profile-matic');
     if (maticEl) maticEl.textContent = profile.maticBalance ? (Number(profile.maticBalance).toFixed(2) + ' MATIC') : '0 MATIC';
-    // موجودی CPA
-    const cpaEl = document.getElementById('profile-lvl');
-    if (cpaEl) cpaEl.textContent = profile.lvlBalance ? profile.lvlBalance : '0'; // حذف پسوند CPA
-    // نمایش ارزش دلاری CPA و POL
+    // موجودی IAM
+    const IAMEl = document.getElementById('profile-lvl');
+    if (IAMEl) IAMEl.textContent = profile.lvlBalance ? profile.lvlBalance : '0'; // حذف پسوند IAM
+    // نمایش ارزش دلاری IAM و POL
     const maticUsdEl = document.getElementById('profile-matic-usd');
     if (maticUsdEl) maticUsdEl.textContent = profile.polValueUSD ? formatNumber(profile.polValueUSD, 2) + ' $' : '0 $';
-    const cpaUsdEl = document.getElementById('profile-lvl-usd');
-    if (cpaUsdEl) cpaUsdEl.textContent = profile.lvlValueUSD ? formatNumber(profile.lvlValueUSD, 2) + ' $' : '0 $';
+    const IAMUsdEl = document.getElementById('profile-lvl-usd');
+    if (IAMUsdEl) IAMUsdEl.textContent = profile.lvlValueUSD ? formatNumber(profile.lvlValueUSD, 2) + ' $' : '0 $';
     // تعداد پوینت
     const pointsEl = document.getElementById('profile-total-points');
     if (pointsEl) pointsEl.textContent = profile.userStruct.binaryPoints ? formatNumber(profile.userStruct.binaryPoints, 0) : '۰';

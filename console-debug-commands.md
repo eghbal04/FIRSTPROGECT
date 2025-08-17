@@ -25,7 +25,7 @@ if (window.contractConfig?.contract) {
 
 // بررسی آدرس‌های DAI
 console.log('DAI_ADDRESS:', window.DAI_ADDRESS);
-console.log('CPA_ADDRESS:', window.CPA_ADDRESS);
+console.log('IAM_ADDRESS:', window.IAM_ADDRESS);
 ```
 
 ## 💰 تست مستقیم موجودی DAI
@@ -42,7 +42,7 @@ async function testDAIDirect() {
         );
         
         // آدرس قرارداد اصلی
-        const contractAddress = contract.target || window.CPA_ADDRESS;
+        const contractAddress = contract.target || window.IAM_ADDRESS;
         console.log('آدرس قرارداد:', contractAddress);
         
         const balance = await daiContract.balanceOf(contractAddress);

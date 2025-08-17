@@ -1,4 +1,4 @@
-# CPA Terminal - Version History
+# IAM Terminal - Version History
 
 ## Version 2.0.0 (Latest)
 **Date**: 2024-12-19
@@ -14,7 +14,7 @@
 **Date**: 2024-12-18
 
 ### Initial Release
-- Basic CPA Terminal functionality
+- Basic IAM Terminal functionality
 - Web3 integration
 - Price charts
 - User dashboard

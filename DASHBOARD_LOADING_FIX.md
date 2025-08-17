@@ -13,7 +13,7 @@
 set('circulating-supply', Number(totalSupply) / 1e18);
 
 // بعد (فرمت شده):
-setFormatted('circulating-supply', totalSupply, 18, ' CPA');
+setFormatted('circulating-supply', totalSupply, 18, ' IAM');
 ```
 
 ### 2. Dashboard Loading Manager

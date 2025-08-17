@@ -49,31 +49,38 @@
             margin: 18px 0 28px 0;
             box-shadow: 0 2px 8px #a786ff11;
             padding: 18px 14px 10px 14px;
-            /* چیدمان پویا: عرض کارت‌ها بر اساس محتوا */
             display: flex;
             flex-wrap: wrap;
-            gap: 14px;
-            align-items: stretch;
-            justify-content: flex-start;
+            gap: 18px;
+            justify-content: space-between;
         }
         .balance-item {
-            /* کارت به اندازهٔ محتوا عریض می‌شود */
-            flex: 0 0 auto;
-            min-width: auto;
-            margin: 0;
-            box-sizing: border-box;
+            flex: 1 1 120px;
+            min-width: 120px;
+            margin: 0 8px;
             text-align: center;
         }
         .balance-label { color: #00ff88; font-weight: bold; font-size: 1.08em; }
-        .balance-value { color: #fff; font-size: 1.18em; font-family: monospace; margin-top: 4px; display: block; white-space: nowrap; }
-        /* در تبلت/دسکتاپ صرفاً فاصله‌ها را کمی بیشتر کن */
-        @media (min-width: 769px) and (max-width: 1023px) {
-            .balance-box { gap: 16px; }
+        .balance-value { color: #fff; font-size: 1.18em; font-family: monospace; margin-top: 4px; display: block; }
+        #connect-wallet-btn {
+            display: block;
+            margin: 0 auto 24px auto;
+            padding: 12px 32px;
+            font-size: 1.13em;
+            background: linear-gradient(90deg,#00ff88,#a786ff);
+            color: #181c2a;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s;
+            font-family: inherit;
+            font-weight: bold;
+            box-shadow: 0 2px 8px #00ff8822;
         }
-        @media (min-width: 1024px) {
-            .balance-box { gap: 18px; }
+        #connect-wallet-btn:hover {
+            background: linear-gradient(90deg,#a786ff,#00ff88);
+            box-shadow: 0 4px 16px #00ff8844;
         }
-        /* دکمه اتصال کیف پول حذف شد */
         .loading, .error-message {
             text-align: center;
             margin: 24px 0;
@@ -94,10 +101,7 @@
     <script src="js/navbar.js"></script>
     <div class="container">
         <h1>پروفایل کاربر</h1>
-        <div id="profile-progress" style="display:none;height:6px;background:rgba(255,255,255,0.12);border-radius:999px;overflow:hidden;margin:-8px 0 16px 0;">
-          <div id="profile-progress-inner" style="height:100%;width:0%;background:linear-gradient(90deg,#00ff88,#a786ff);box-shadow:0 0 12px rgba(0,255,136,0.35) inset;transition:width 300ms ease;">
-          </div>
-        </div>
+        <button id="connect-wallet-btn">اتصال کیف پول</button>
         <div id="profile-content">
             <div class="loading">در حال دریافت اطلاعات...</div>
         </div>
@@ -112,114 +116,6 @@
     <script src="js/config.js"></script>
     <script src="js/profile.js"></script>
     <script>
-    function showProfileProgress() {
-        const bar = document.getElementById('profile-progress');
-        if (bar) bar.style.display = 'block';
-    }
-    function setProfileProgress(pct) {
-        const inner = document.getElementById('profile-progress-inner');
-        if (inner) inner.style.width = Math.max(0, Math.min(100, pct)) + '%';
-    }
-    function hideProfileProgress() {
-        const bar = document.getElementById('profile-progress');
-        if (!bar) return;
-        setTimeout(() => { bar.style.display = 'none'; setProfileProgress(0); }, 400);
-    }
-
-    // شمارش معکوس دکمه‌ها
-    function formatHMS(totalSeconds) {
-        const s = Math.max(0, Math.floor(totalSeconds));
-        const hh = String(Math.floor(s / 3600)).padStart(2,'0');
-        const mm = String(Math.floor((s % 3600) / 60)).padStart(2,'0');
-        const ss = String(s % 60).padStart(2,'0');
-        return `${hh}:${mm}:${ss}`;
-    }
-    function startCountdownButton(btn, secondsRemaining, storageKey) {
-        if (!btn) return;
-        // ایجاد/یافتن span شمارش معکوس
-        let span = btn.querySelector('.btn-countdown');
-        if (!span) {
-            span = document.createElement('span');
-            span.className = 'btn-countdown';
-            span.style.marginInlineStart = '8px';
-            span.style.fontSize = '0.85em';
-            span.style.opacity = '0.9';
-            btn.appendChild(span);
-        }
-        // پاکسازی تایمر قبلی در صورت وجود
-        const prevId = btn.getAttribute('data-timer-id');
-        if (prevId) {
-            clearInterval(Number(prevId));
-            btn.removeAttribute('data-timer-id');
-        }
-        const endAt = Date.now() + Math.max(0, secondsRemaining) * 1000;
-        function tick() {
-            const remain = Math.ceil((endAt - Date.now()) / 1000);
-            if (remain > 0) {
-                btn.disabled = true;
-                btn.style.opacity = '0.6';
-                btn.style.cursor = 'not-allowed';
-                span.textContent = `(${formatHMS(remain)})`;
-                span.style.color = '#ffffff'; // رنگ سفید برای شمارش معکوس
-                span.style.fontWeight = 'normal';
-            } else {
-                // زمان به صفر رسیده - نمایش دائمی 00:00:00
-                btn.disabled = false;
-                btn.style.opacity = '';
-                btn.style.cursor = '';
-                span.textContent = '(00:00:00)';
-                span.style.color = '#232946'; // رنگ تیره برای کنتراست بهتر روی دکمه سبز
-                span.style.fontWeight = 'bold';
-                // تایمر را متوقف نکن، فقط مقدار ثابت نگه دار
-            }
-        }
-        tick();
-        const id = setInterval(tick, 1000);
-        btn.setAttribute('data-timer-id', String(id));
-    }
-
-    function startMonthCounterButton(btn, lastClaimTimestamp) {
-        if (!btn) return;
-        // ایجاد/یافتن span شمارنده ماه
-        let span = btn.querySelector('.btn-countdown');
-        if (!span) {
-            span = document.createElement('span');
-            span.className = 'btn-countdown';
-            span.style.marginInlineStart = '8px';
-            span.style.fontSize = '0.85em';
-            span.style.opacity = '0.9';
-            btn.appendChild(span);
-        }
-        
-        function updateCounter() {
-            const now = Math.floor(Date.now() / 1000);
-            const lastClaim = Number(lastClaimTimestamp || 0);
-            const monthsPassed = Math.floor((now - lastClaim) / (30 * 24 * 3600));
-            
-            if (monthsPassed >= 1) {
-                btn.disabled = false;
-                btn.style.opacity = '';
-                btn.style.cursor = '';
-                span.textContent = `(${monthsPassed} ماه)`;
-                span.style.color = '#232946'; // رنگ تیره روی دکمه سبز
-                span.style.fontWeight = 'bold';
-            } else {
-                // هنوز یک ماه نگذشته
-                const remainSeconds = (30 * 24 * 3600) - (now - lastClaim);
-                const remainDays = Math.ceil(remainSeconds / (24 * 3600));
-                btn.disabled = true;
-                btn.style.opacity = '0.6';
-                btn.style.cursor = 'not-allowed';
-                span.textContent = `(${remainDays} روز)`;
-                span.style.color = '#ffffff';
-                span.style.fontWeight = 'normal';
-            }
-        }
-        
-        updateCounter();
-        const id = setInterval(updateCounter, 60000); // هر دقیقه چک کن
-        btn.setAttribute('data-timer-id', String(id));
-    }
     function formatDateTime(ts) {
         if (!ts || ts == 0) return '-';
         // تبدیل به رشته و سپس عدد برای جلوگیری از خطای BigInt
@@ -233,22 +129,17 @@
         return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
     }
     async function loadProfile() {
-        showProfileProgress();
-        setProfileProgress(10);
         const content = document.getElementById('profile-content');
         content.innerHTML = '<div class="loading">در حال دریافت اطلاعات...</div>';
         try {
             if (!window.connectWallet) throw new Error('اتصال کیف پول فعال نیست');
             const { contract, address, provider } = await window.connectWallet();
-            setProfileProgress(40);
             if (!contract || !address) throw new Error('اتصال کیف پول برقرار نشد');
             // اطلاعات struct User
             const user = await contract.users(address);
-            setProfileProgress(60);
             // موجودی‌ها
             const maticBalance = await provider.getBalance(address);
-            const cpaBalance = await contract.balanceOf(address);
-            setProfileProgress(75);
+            const IAMBalance = await contract.balanceOf(address);
             
             // تابع کوتاه کردن اعداد بزرگ
             function formatLargeNumber(num) {
@@ -261,15 +152,15 @@
                 }
             }
             
-            // محاسبه معادل دلاری CPA
-            let cpaUsdValue = 0;
+            // محاسبه معادل دلاری IAM
+            let IAMUsdValue = 0;
             let tokenPrice = 0;
             try {
                 if (typeof contract.getTokenPrice === 'function') {
                     const tokenPriceRaw = await contract.getTokenPrice();
                     tokenPrice = Number(ethers.formatUnits(tokenPriceRaw, 18));
-                    const cpaAmount = Number(ethers.formatUnits(cpaBalance, 18));
-                    cpaUsdValue = cpaAmount * tokenPrice;
+                    const IAMAmount = Number(ethers.formatUnits(IAMBalance, 18));
+                    IAMUsdValue = IAMAmount * tokenPrice;
                 }
             } catch (e) {
                 console.log('خطا در دریافت قیمت توکن:', e);
@@ -285,7 +176,7 @@
                 daiBalance = ethers.formatUnits(daiRaw, 18);
             } catch {}
             // ایندکس
-            const cpaId = user.index ? `CPA${user.index.toString().padStart(5, '0')}` : '-';
+            const IAMId = user.index ? `IAM${user.index.toString().padStart(5, '0')}` : '-';
             // شرط فعال بودن دکمه کشبک ماهانه
             let canMonthlyCashback = false;
             let monthlyMsg = '';
@@ -307,14 +198,13 @@
                 if (!hasEmptyChild) monthlyMsg = 'برای برداشت کشبک ماهانه باید حداقل یک جایگاه فرزند خالی داشته باشید.';
                 else if (now - lastMonthly < oneMonth) monthlyMsg = 'از آخرین برداشت ماهانه باید حداقل یک ماه گذشته باشد.';
             }
-            const cashbackBtnDisplay = hasEmptyChild ? '' : 'display:none;';
             // نمایش
             content.innerHTML = `
                 <div class="balance-box">
                     <div class="balance-item">
-                        <div class="balance-label">CPA</div>
-                        <span class="balance-value" title="${Number.parseFloat(ethers.formatUnits(cpaBalance.toString(), 18)).toLocaleString('en-US', {maximumFractionDigits: 4})}">${formatLargeNumber(Number.parseFloat(ethers.formatUnits(cpaBalance.toString(), 18)))}</span>
-                        <div style="font-size:0.8rem;color:#a786ff;margin-top:2px;">≈ $${formatLargeNumber(cpaUsdValue)}</div>
+                        <div class="balance-label">IAM</div>
+                        <span class="balance-value" title="${Number.parseFloat(ethers.formatUnits(IAMBalance.toString(), 18)).toLocaleString('en-US', {maximumFractionDigits: 4})}">${formatLargeNumber(Number.parseFloat(ethers.formatUnits(IAMBalance.toString(), 18)))}</span>
+                        <div style="font-size:0.8rem;color:#a786ff;margin-top:2px;">≈ $${formatLargeNumber(IAMUsdValue)}</div>
                     </div>
                     <div class="balance-item">
                         <div class="balance-label">MATIC</div>
@@ -327,11 +217,11 @@
                 </div>
                 <div style="display:flex;gap:1.2rem;justify-content:center;margin-bottom:1.5rem;">
                   <button id="claim-btn" title="برداشت امتیاز فقط هر ۱۲ ساعت یکبار و در صورت داشتن امتیاز قابل برداشت است. اگر امتیاز ندارید یا هنوز ۱۲ ساعت نگذشته باشد، برداشت ممکن نیست." style="background:linear-gradient(90deg,#00ff88,#a786ff);color:#181c2a;font-weight:bold;border:none;border-radius:10px;padding:0.9em 2.2em;font-size:1.08em;cursor:pointer;box-shadow:0 2px 8px #00ff8840;display:inline-flex;align-items:center;gap:0.6em;transition:box-shadow 0.2s,transform 0.2s;"><span style='font-size:1.2em;'>💸</span> برداشت پورسانت</button>
-                  ${hasEmptyChild ? '<button id="monthly-cashback-btn" title="برداشت کش‌بک فقط هر ۳۰ روز یکبار، با داشتن حداقل یک جایگاه فرزند خالی و تا سقف سپرده امکان‌پذیر است. اگر هر دو جایگاه پر باشد یا هنوز ۳۰ روز نگذشته باشد یا سقف کش‌بک پر شده باشد، برداشت ممکن نیست." style="background:linear-gradient(90deg,#a786ff,#00ff88);color:#181c2a;font-weight:bold;border:none;border-radius:10px;padding:0.9em 2.2em;font-size:1.08em;cursor:pointer;box-shadow:0 2px 8px #a786ff40;display:inline-flex;align-items:center;gap:0.6em;transition:box-shadow 0.2s,transform 0.2s;"><span style="font-size:1.2em;">📆</span> کش‌بک</button>' : ''}
+                  <button id="monthly-cashback-btn" title="برداشت کش‌بک فقط هر ۳۰ روز یکبار، با داشتن حداقل یک جایگاه فرزند خالی و تا سقف سپرده امکان‌پذیر است. اگر هر دو جایگاه پر باشد یا هنوز ۳۰ روز نگذشته باشد یا سقف کش‌بک پر شده باشد، برداشت ممکن نیست." style="background:linear-gradient(90deg,#a786ff,#00ff88);color:#181c2a;font-weight:bold;border:none;border-radius:10px;padding:0.9em 2.2em;font-size:1.08em;cursor:pointer;box-shadow:0 2px 8px #a786ff40;display:inline-flex;align-items:center;gap:0.6em;transition:box-shadow 0.2s,transform 0.2s;"><span style='font-size:1.2em;'>📆</span> کش‌بک</button>
                 </div>
                 <div id="monthly-cashback-msg" style="display:none;color:#ff4444;text-align:center;margin-bottom:1.2rem;font-size:1.05em;transition:opacity 0.3s;"></div>
                 <div class="profile-row"><span class="profile-label">آدرس کیف پول:</span><span class="profile-value">${address}</span></div>
-                <div class="profile-row"><span class="profile-label">ایندکس:</span><span class="profile-value">${cpaId}</span></div>
+                <div class="profile-row"><span class="profile-label">ایندکس:</span><span class="profile-value">${IAMId}</span></div>
                 <div class="profile-row"><span class="profile-label">ایندکس:</span><span class="profile-value">${user.index}</span></div>
                 <div class="profile-row"><span class="profile-label">فعال:</span><span class="profile-value">${user.activated ? 'بله' : 'خیر'}</span></div>
                 <div class="profile-row"><span class="profile-label">امتیاز باینری:</span><span class="profile-value">${user.binaryPoints}</span></div>
@@ -356,21 +246,6 @@
                     </div>
                 </div>
             `;
-            // شمارش معکوس دکمه‌ها (۱۲ ساعت برای برداشت پورسانت و ۳۰ روز برای کش‌بک)
-            (function setupCountdowns(){
-              try {
-                const claimBtnEl = document.getElementById('claim-btn');
-                const cashbackBtnEl = document.getElementById('monthly-cashback-btn');
-                const nowTs = Math.floor(Date.now() / 1000);
-                const remainClaim = Math.max(0, Number(user.lastClaimTime || 0) + 12 * 3600 - nowTs);
-                const remainMonthly = Math.max(0, Number(user.lastMonthlyClaim || 0) + 30 * 24 * 3600 - nowTs);
-                
-                // همیشه تایمر را راه‌اندازی کن، حتی اگه زمان به صفر رسیده باشد
-                if (claimBtnEl) startCountdownButton(claimBtnEl, remainClaim);
-                if (cashbackBtnEl) startMonthCounterButton(cashbackBtnEl, user.lastMonthlyClaim);
-              } catch (e) { /* ignore */ }
-            })();
-
             setTimeout(function() {
               const cashbackBtn = document.getElementById('monthly-cashback-btn');
               const cashbackMsg = document.getElementById('monthly-cashback-msg');
@@ -407,8 +282,13 @@
                     try {
                       const { contract, address } = await window.connectWallet();
                       const user = await contract.users(address);
+                      const now = Math.floor(Date.now() / 1000);
                       if (!user.activated) throw new Error('حساب شما فعال نیست.');
                       if (user.binaryPoints == 0) throw new Error('امتیازی برای برداشت ندارید.');
+                      if (now < Number(user.lastClaimTime) + 12 * 3600) {
+                        const remain = Math.ceil((Number(user.lastClaimTime) + 12 * 3600 - now) / 3600);
+                        throw new Error(`هنوز ${remain} ساعت تا برداشت بعدی باقی مانده است.`);
+                      }
                       cashbackMsg.innerHTML = 'در حال ارسال درخواست برداشت امتیاز...';
                       cashbackMsg.style.color = '#a786ff';
                       const tx = await contract.claim();
@@ -489,8 +369,6 @@
                 }
               }
             }, 100);
-            setProfileProgress(100);
-            hideProfileProgress();
             
             // راه‌اندازی دکمه کپی لینک رفرال
             if (typeof setupReferralCopy === 'function') {
@@ -505,36 +383,24 @@
             }
         } catch (e) {
             content.innerHTML = `<div class="error-message">خطا: ${e.message || e}</div>`;
-            setProfileProgress(100);
-            hideProfileProgress();
         }
     }
+    document.getElementById('connect-wallet-btn').onclick = async function() {
+        await loadProfile();
+        this.style.display = 'none';
+    };
     window.addEventListener('DOMContentLoaded', async function() {
-        try {
-            await loadProfile();
-        } catch (e) {
-            // در صورت عدم اتصال، پروفایل بعد از اتصال خودکار بارگذاری می‌شود
+        if (typeof window.ethereum !== 'undefined') {
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            if (accounts && accounts.length > 0) {
+                document.getElementById('connect-wallet-btn').style.display = 'none';
+                await loadProfile();
+            }
         }
     });
     </script>
     
     <!-- Floating Token Growth Card - کارت شناور رشد توکن -->
-    <script src="js/floating-token-card.js?v=20250809"></script>
-    <script>
-      window.addEventListener('DOMContentLoaded', function() {
-        try {
-          if (window.showFloatingCardNow) {
-            window.showFloatingCardNow();
-          }
-          setTimeout(function(){
-            if (window.updateCardToOval) {
-              window.updateCardToOval();
-            }
-          }, 100);
-        } catch (e) {
-          console.warn('Floating card init error:', e);
-        }
-      });
-    </script>
+    <script src="js/floating-token-card.js"></script>
 </body>
 </html> 

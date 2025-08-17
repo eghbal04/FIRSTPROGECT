@@ -164,7 +164,7 @@ class CentralDashboardUpdater {
             try {
                 const contractBalance = await contract.balanceOf(contract.target);
                 const balanceNum = parseFloat(ethers.formatUnits(contractBalance, 18));
-                const formattedBalance = formatNumber(balanceNum, '', false, 4); // حذف پسوند CPA
+                const formattedBalance = formatNumber(balanceNum, '', false, 4); // حذف پسوند واحد
                 if (this.updateIfChanged('contract-token-balance', formattedBalance)) {
                     updateCount++;
                 }
@@ -198,7 +198,7 @@ class CentralDashboardUpdater {
             try {
                 const pointValue = await contract.getPointValue();
                 const pointValueNum = parseFloat(ethers.formatUnits(pointValue, 18));
-                const pointValueFormatted = formatNumber(pointValueNum, '', false, 6); // حذف پسوند CPA - Use 6 decimals for point values
+                const pointValueFormatted = formatNumber(pointValueNum, '', false, 6); // حذف پسوند واحد - Use 6 decimals for point values
                 
                 if (this.updateIfChanged('point-value', pointValueFormatted)) {
                     updateCount++;
@@ -212,7 +212,8 @@ class CentralDashboardUpdater {
 
             // 6. چک کردن Wallets Count
             try {
-                const walletsCount = await contract.wallets(0);
+                // قرارداد فعلی تابع بدون ورودی دارد
+                const walletsCount = await contract.wallets();
                 if (this.updateIfChanged('dashboard-wallets-count', walletsCount.toString())) {
                     updateCount++;
                 }
@@ -235,7 +236,7 @@ class CentralDashboardUpdater {
                     // Fallback به DAI contract مستقیم
                     if (window.DAI_ADDRESS && window.DAI_ABI) {
                         const daiContract = new ethers.Contract(window.DAI_ADDRESS, window.DAI_ABI, contract.provider);
-                        daiBalance = await daiContract.balanceOf(contract.target || window.CPA_ADDRESS);
+                        daiBalance = await daiContract.balanceOf(contract.target || window.IAM_ADDRESS);
                         this.log('✅ DAI balance دریافت شد از DAI contract');
                     } else {
                         this.log('❌ DAI_ADDRESS یا DAI_ABI موجود نیست');
@@ -254,9 +255,21 @@ class CentralDashboardUpdater {
 
             // 8. چک کردن Registration Price
             try {
-                const regPrice = await contract.registrationPrice();
+                let regPrice;
+                if (typeof contract.getRegPrice === 'function') {
+                    regPrice = await contract.getRegPrice();
+                } else if (typeof window.getRegPrice === 'function') {
+                    regPrice = await window.getRegPrice(contract);
+                } else if (typeof contract.registrationPrice === 'function') {
+                    regPrice = await contract.registrationPrice();
+                } else if (typeof contract.regPrice === 'function') {
+                    regPrice = await contract.regPrice();
+                } else {
+                    regPrice = 0n;
+                }
+
                 const regPriceNum = parseFloat(ethers.formatUnits(regPrice, 18));
-                const regPriceFormatted = formatNumber(regPriceNum, '', false, 0); // حذف پسوند CPA و استفاده از formatNumber یکسان
+                const regPriceFormatted = formatNumber(regPriceNum, '', false, 0); // حذف پسوند واحد
                 if (this.updateIfChanged('dashboard-registration-price', regPriceFormatted)) {
                     updateCount++;
                 }

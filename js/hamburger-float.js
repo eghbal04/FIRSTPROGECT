@@ -14,7 +14,7 @@
   menu.id = 'hamburgerMenu';
   menu.innerHTML = `
     <div class="menu-header">
-      <div class="menu-title">CPA</div>
+      <div class="menu-title">IAM</div>
       <div class="menu-close" onclick="toggleHamburgerMenu()">×</div>
     </div>
     

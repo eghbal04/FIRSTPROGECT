@@ -12,13 +12,9 @@ class NetworkTreeDatabase {
         try {
             console.log('🌳 راه‌اندازی دیتابیس درخت شبکه...');
             
-            // بررسی اینکه Firebase در دسترس است
-            if (typeof window.firebasePriceHistory !== 'undefined') {
-                console.log('✅ Firebase در دسترس است');
-            } else {
-                console.warn('ℹ️ Firebase در دسترس نیست، از localStorage برای کش استفاده می‌شود');
-            }
-            // حتی بدون Firebase هم حالت local را فعال نگه می‌داریم
+            // استفاده صرفاً از ذخیره‌سازی محلی (Firebase حذف شد)
+            console.log('ℹ️ ذخیره‌سازی محلی (localStorage/IndexedDB) فعال است');
+            // حالت local را فعال نگه می‌داریم
             this.isInitialized = true;
 
             // تلاش برای فعال‌سازی Persistent Storage تا مرورگر کش را پاک نکند
@@ -54,12 +50,8 @@ class NetworkTreeDatabase {
                 userId: 'anonymous',
                 type: 'node'
             };
-            // اگر Firestore فعال است، روی آن ذخیره کن
-            if (typeof db !== 'undefined' && db && typeof isFirebaseInitialized !== 'undefined' && isFirebaseInitialized) {
-                const docRef = await db.collection('network_tree_nodes').add(nodeDoc);
-                console.log('✅ گره درخت در Firestore ذخیره شد:', docRef.id);
-                return docRef.id;
-            } else {
+            // Firebase حذف شده - استفاده از localStorage
+            {
                 // استفاده از localStorage به عنوان جایگزین
                 const nodes = JSON.parse(localStorage.getItem('network_tree_nodes') || '[]');
                 const newNode = { id: Date.now().toString(), ...nodeDoc };
@@ -92,7 +84,7 @@ class NetworkTreeDatabase {
             if (typeof indexedDB !== 'undefined') {
                 try {
                     const db = await new Promise((resolve, reject) => {
-                        const req = indexedDB.open('cpa-network-cache', 1);
+                        const req = indexedDB.open('IAM-network-cache', 1);
                         req.onupgradeneeded = function() {
                             const dbi = req.result;
                             if (!dbi.objectStoreNames.contains('nodeIndex')) dbi.createObjectStore('nodeIndex', { keyPath: 'index' });
@@ -140,7 +132,7 @@ class NetworkTreeDatabase {
             if (typeof indexedDB !== 'undefined') {
                 try {
                     const db = await new Promise((resolve, reject) => {
-                        const req = indexedDB.open('cpa-network-cache', 1);
+                        const req = indexedDB.open('IAM-network-cache', 1);
                         req.onsuccess = () => resolve(req.result);
                         req.onerror = () => reject(req.error);
                     });
@@ -210,16 +202,7 @@ class NetworkTreeDatabase {
             return [];
         }
         try {
-            if (typeof db !== 'undefined' && db && typeof isFirebaseInitialized !== 'undefined' && isFirebaseInitialized) {
-                const snapshot = await db.collection('network_tree_nodes').orderBy('timestamp', 'desc').limit(limit).get();
-                const nodes = [];
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    nodes.push({ id: doc.id, ...data });
-                });
-                console.log(`✅ ${nodes.length} گره از Firestore بازیابی شد`);
-                return nodes;
-            } else {
+            {
                 // استفاده از localStorage
                 const nodes = JSON.parse(localStorage.getItem('network_tree_nodes') || '[]');
                 const limitedNodes = nodes.slice(0, limit);
@@ -239,18 +222,7 @@ class NetworkTreeDatabase {
             return null;
         }
         try {
-            if (typeof db !== 'undefined' && db && typeof isFirebaseInitialized !== 'undefined' && isFirebaseInitialized) {
-                const snapshot = await db.collection('network_tree_full').orderBy('timestamp', 'desc').limit(1).get();
-                if (!snapshot.empty) {
-                    const doc = snapshot.docs[0];
-                    const data = doc.data();
-                    console.log('✅ آخرین درخت کامل از Firestore بازیابی شد');
-                    return { id: doc.id, ...data };
-                } else {
-                    console.log('ℹ️ هیچ درخت کاملی در Firestore یافت نشد');
-                    return null;
-                }
-            } else {
+            {
                 // استفاده از localStorage
                 const trees = JSON.parse(localStorage.getItem('network_tree_full') || '[]');
                 if (trees.length > 0) {
@@ -509,7 +481,7 @@ window.testSaveSampleNodes = async function() {
             {
                 index: '1',
                 address: '0x1234567890123456789012345678901234567890',
-                cpaId: 'CPA001',
+                IAMId: 'IAM001',
                 level: 0,
                 hasDirects: true,
                 leftActive: true,
@@ -520,7 +492,7 @@ window.testSaveSampleNodes = async function() {
             {
                 index: '2',
                 address: '0x2345678901234567890123456789012345678901',
-                cpaId: 'CPA002',
+                IAMId: 'IAM002',
                 level: 1,
                 hasDirects: false,
                 leftActive: false,
@@ -531,7 +503,7 @@ window.testSaveSampleNodes = async function() {
             {
                 index: '3',
                 address: null,
-                cpaId: null,
+                IAMId: null,
                 level: 1,
                 hasDirects: false,
                 leftActive: false,
@@ -756,7 +728,7 @@ window.transferTreeToNewContract = async function(newContractAddress) {
         
         const newContract = new ethers.Contract(
             newContractAddress, 
-            window.CPA_ABI, 
+            window.IAM_ABI, 
             window.contractConfig.signer
         );
         
@@ -841,7 +813,7 @@ window.checkNewContractReadiness = async function(newContractAddress) {
         
         const newContract = new ethers.Contract(
             newContractAddress, 
-            window.CPA_ABI, 
+            window.IAM_ABI, 
             window.contractConfig.signer
         );
         

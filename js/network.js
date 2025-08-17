@@ -46,9 +46,9 @@ function updateNodeProgress() {
     }
 }
 
-// تابع fallback برای generateCPAId اگر موجود نباشد
-if (!window.generateCPAId) {
-    window.generateCPAId = function(index) {
+// تابع fallback برای generateIAMId اگر موجود نباشد
+if (!window.generateIAMId) {
+    window.generateIAMId = function(index) {
         if (!index || index === 0) return '0';
         return index.toString();
     };
@@ -108,8 +108,8 @@ window.networkShowUserPopup = async function(address, user) {
     }
     
     // اطلاعات مورد نیاز
-    const cpaId = user && user.index !== undefined && user.index !== null ? 
-        (window.generateCPAId ? window.generateCPAId(user.index) : user.index) : '-';
+    const IAMId = user && user.index !== undefined && user.index !== null ? 
+        (window.generateIAMId ? window.generateIAMId(user.index) : user.index) : '-';
     const walletAddress = address || '-';
     const isActive = user && user.activated ? true : false;
     
@@ -219,7 +219,7 @@ window.networkShowUserPopup = async function(address, user) {
       <div class="user-info-card">
         
         <div class="user-info-btn-row">
-            <button class="user-info-btn cpa-id-btn" title="کپی CPA ID" id="copy-cpa-id">🆔 <span>${cpaId}</span></button>
+            <button class="user-info-btn IAM-id-btn" title="کپی IAM ID" id="copy-IAM-id">🆔 <span>${IAMId}</span></button>
           <button class="user-info-btn wallet-address-btn" title="کپی آدرس ولت" id="copy-wallet-address">🔗 <span>${walletAddress ? shortAddress(walletAddress) : '-'}</span></button>
           <button class="user-info-btn status-btn">${isActive ? '✅ فعال' : '❌ غیرفعال'}</button>
         </div>
@@ -230,11 +230,11 @@ window.networkShowUserPopup = async function(address, user) {
         <div class="token-balances-container" style="margin-top:8px;">
           <h3 class="balance-title" style="font-size:0.95rem;margin:0 0 6px 0;">موجودی‌های زنده</h3>
           <div class="balance-grid" style="display:flex;flex-wrap:wrap;gap:6px;align-items:stretch;">
-            <div class="balance-item" id="cpa-balance" title="برای کپی کلیک کنید" style="display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border:1px solid rgba(0,255,136,0.25);border-radius:8px;background:rgba(0,255,136,0.06);width:auto;max-width:100%;white-space:nowrap;">
+            <div class="balance-item" id="IAM-balance" title="برای کپی کلیک کنید" style="display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border:1px solid rgba(0,255,136,0.25);border-radius:8px;background:rgba(0,255,136,0.06);width:auto;max-width:100%;white-space:nowrap;">
               <div class="balance-icon" style="font-size:1rem;line-height:1">🟢</div>
               <div class="balance-info" style="display:inline-flex;gap:6px;align-items:center;">
-                <span class="balance-label" style="font-size:0.85rem;color:#a6ffd6;">CPA</span>
-                <span class="balance-value copy-value" data-token="CPA" style="font-family:monospace;font-weight:bold;color:#fff;">⏳</span>
+                <span class="balance-label" style="font-size:0.85rem;color:#a6ffd6;">IAM</span>
+                <span class="balance-value copy-value" data-token="IAM" style="font-family:monospace;font-weight:bold;color:#fff;">⏳</span>
               </div>
             </div>
             <div class="balance-item" id="matic-balance" title="برای کپی کلیک کنید" style="display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border:1px solid rgba(167,134,255,0.25);border-radius:8px;background:rgba(167,134,255,0.06);width:auto;max-width:100%;white-space:nowrap;">
@@ -278,8 +278,8 @@ window.networkShowUserPopup = async function(address, user) {
       setTimeout(()=>{msg.style.display='none';}, 1200);
     }
     
-    document.getElementById('copy-cpa-id').onclick = function() {
-      navigator.clipboard.writeText(cpaId+'');
+    document.getElementById('copy-IAM-id').onclick = function() {
+      navigator.clipboard.writeText(IAMId+'');
       showCopyMsg();
     };
     
@@ -365,9 +365,9 @@ window.networkShowUserPopup = async function(address, user) {
         (async () => {
             try {
                 const { contract, provider } = await window.connectWallet();
-                let cpa = '-', dai = '-', matic = '-';
+                let IAM = '-', dai = '-', matic = '-';
                 if (contract && typeof contract.balanceOf === 'function') {
-                    try { const c = await contract.balanceOf(walletAddress); cpa = Number(ethers.formatEther(c)).toFixed(4); } catch {}
+                    try { const c = await contract.balanceOf(walletAddress); IAM = Number(ethers.formatEther(c)).toFixed(4); } catch {}
                 }
                 try {
                     const DAI_ADDRESS = window.DAI_ADDRESS || '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063';
@@ -378,53 +378,53 @@ window.networkShowUserPopup = async function(address, user) {
                 if (provider) {
                     try { const m = await provider.getBalance(walletAddress); matic = Number(ethers.formatEther(m)).toFixed(4); } catch {}
                 }
-                const cpaWrapA = document.getElementById('cpa-balance');
+                const IAMWrapA = document.getElementById('IAM-balance');
                 const maticWrapA = document.getElementById('matic-balance');
                 const daiWrapA = document.getElementById('dai-balance');
-                const cpaElA = document.querySelector('#cpa-balance .balance-value');
+                const IAMElA = document.querySelector('#IAM-balance .balance-value');
                 const maticElA = document.querySelector('#matic-balance .balance-value');
                 const daiElA = document.querySelector('#dai-balance .balance-value');
-                if (cpaElA) cpaElA.textContent = cpa;
+                if (IAMElA) IAMElA.textContent = IAM;
                 if (maticElA) maticElA.textContent = matic;
                 if (daiElA) daiElA.textContent = dai;
                 const isEmptyA = (val) => !val || val === '-' || val === '❌' || Number(val) === 0;
-                if (cpaWrapA) cpaWrapA.style.display = isEmptyA(cpa) ? 'none' : 'inline-flex';
+                if (IAMWrapA) IAMWrapA.style.display = isEmptyA(IAM) ? 'none' : 'inline-flex';
                 if (maticWrapA) maticWrapA.style.display = isEmptyA(matic) ? 'none' : 'inline-flex';
                 if (daiWrapA) daiWrapA.style.display = isEmptyA(dai) ? 'none' : 'inline-flex';
             } catch (error) {
                 console.warn('Error fetching balances (fallback):', error);
-                const cpaWrapB = document.getElementById('cpa-balance');
+                const IAMWrapB = document.getElementById('IAM-balance');
                 const maticWrapB = document.getElementById('matic-balance');
                 const daiWrapB = document.getElementById('dai-balance');
-                const cpaElB = document.querySelector('#cpa-balance .balance-value');
+                const IAMElB = document.querySelector('#IAM-balance .balance-value');
                 const maticElB = document.querySelector('#matic-balance .balance-value');
                 const daiElB = document.querySelector('#dai-balance .balance-value');
-                if (cpaElB) cpaElB.textContent = '❌';
+                if (IAMElB) IAMElB.textContent = '❌';
                 if (maticElB) maticElB.textContent = '❌';
                 if (daiElB) daiElB.textContent = '❌';
-                if (cpaWrapB) cpaWrapB.style.display = 'none';
+                if (IAMWrapB) IAMWrapB.style.display = 'none';
                 if (maticWrapB) maticWrapB.style.display = 'none';
                 if (daiWrapB) daiWrapB.style.display = 'none';
             }
         })();
     } else {
-        document.querySelector('#cpa-balance .balance-value').textContent = '-';
+        document.querySelector('#IAM-balance .balance-value').textContent = '-';
         document.querySelector('#matic-balance .balance-value').textContent = '-';
         document.querySelector('#dai-balance .balance-value').textContent = '-';
     }
 
     async function getLiveBalances(addr) {
-        let cpa = '-', dai = '-', matic = '-';
+        let IAM = '-', dai = '-', matic = '-';
         try {
             const { contract, provider } = await window.connectWallet();
             
-            // دریافت موجودی CPA
+            // دریافت موجودی IAM
             if (contract && typeof contract.balanceOf === 'function') {
                 try {
-                    let cpaRaw = await contract.balanceOf(addr);
-                    cpa = (typeof ethers !== 'undefined') ? Number(ethers.formatEther(cpaRaw)).toFixed(2) : (Number(cpaRaw)/1e18).toFixed(2);
+                    let IAMRaw = await contract.balanceOf(addr);
+                    IAM = (typeof ethers !== 'undefined') ? Number(ethers.formatEther(IAMRaw)).toFixed(2) : (Number(IAMRaw)/1e18).toFixed(2);
                 } catch(e) {
-                    console.warn('خطا در دریافت موجودی CPA:', e);
+                    console.warn('خطا در دریافت موجودی IAM:', e);
                 }
             }
             
@@ -451,18 +451,18 @@ window.networkShowUserPopup = async function(address, user) {
         } catch(e) {
             console.error('خطا در دریافت موجودی‌ها:', e);
         }
-        return {cpa, dai, matic};
+        return {IAM, dai, matic};
     }
 
     // به‌روزرسانی غیرمسدودکننده بعد از رندر
     setTimeout(() => {
       (async function() {
-          const {cpa, dai, matic} = await getLiveBalances(address);
+          const {IAM, dai, matic} = await getLiveBalances(address);
           const listItems = document.querySelectorAll('.user-info-list li');
           listItems.forEach(item => {
               const text = item.textContent;
-              if (text.includes('🟢 CPA:')) {
-                  item.innerHTML = item.innerHTML.replace(/🟢 <b>CPA:<\/b> [^<]*/, `🟢 <b>CPA:</b> ${cpa}`);
+              if (text.includes('🟢 IAM:')) {
+                  item.innerHTML = item.innerHTML.replace(/🟢 <b>IAM:<\/b> [^<]*/, `🟢 <b>IAM:</b> ${IAM}`);
               } else if (text.includes('🟣 MATIC:')) {
                   item.innerHTML = item.innerHTML.replace(/🟣 <b>MATIC:<\/b> [^<]*/, `🟣 <b>MATIC:</b> ${matic}`);
               } else if (text.includes('💵 DAI:')) {
@@ -540,7 +540,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         nodeDiv.style.position = 'relative';
         nodeDiv.style.background = getNodeColorByLevel(level, true);
         nodeDiv.style.borderRadius = '12px';
-        const cpaId = window.generateCPAId ? window.generateCPAId(user.index) : user.index;
+        const IAMId = window.generateIAMId ? window.generateIAMId(user.index) : user.index;
         nodeDiv.style.padding = '0.6em 1.2em';
         nodeDiv.style.width = 'auto';
         nodeDiv.style.minWidth = 'unset';
@@ -558,7 +558,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         nodeDiv.onmouseover = function() { this.style.background = '#232946'; this.style.boxShadow = '0 6px 24px #00ff8840'; };
         nodeDiv.onmouseout = function() { this.style.background = getNodeColorByLevel(level, true); this.style.boxShadow = '0 4px 16px rgba(0,255,136,0.10)'; };
         nodeDiv.innerHTML = `
-            <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 1.1em; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-weight: bold;">${cpaId}</span>
+            <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 1.1em; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-weight: bold;">${IAMId}</span>
         `;
         
         // دکمه expand/collapse اگر دایرکت دارد یا جای خالی دارد
@@ -606,7 +606,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                 const nodeData = {
                     index: index.toString(),
                     address: address,
-                    cpaId: cpaId,
+                    IAMId: IAMId,
                     level: level,
                     hasDirects: hasDirects,
                     leftActive: leftActive,
@@ -718,7 +718,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                 let userAddress = '';
                 let errorMsg = '';
                 let loading = true;
-                let cpaBalance = '...';
+                let IAMBalance = '...';
                 // ساخت modal
                 let modal = document.createElement('div');
                 modal.id = 'quick-register-modal';
@@ -786,10 +786,10 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                       let bal = await provider.getBalance(myAddress);
                       maticBalance = bal ? (typeof ethers !== 'undefined' ? Number(ethers.formatEther(bal)).toFixed(2) : (Number(bal)/1e18).toFixed(2)) : '...';
                     }
-                    // موجودی CPA
+                    // موجودی IAM
                     if (contract && myAddress && typeof contract.balanceOf === 'function') {
-                      let cpa = await contract.balanceOf(myAddress);
-                      cpaBalance = cpa ? (typeof ethers !== 'undefined' ? Number(ethers.formatEther(cpa)).toFixed(2) : (Number(cpa)/1e18).toFixed(2)) : '...';
+                      let IAM = await contract.balanceOf(myAddress);
+                      IAMBalance = IAM ? (typeof ethers !== 'undefined' ? Number(ethers.formatEther(IAM)).toFixed(2) : (Number(IAM)/1e18).toFixed(2)) : '...';
                     }
                     loading = false;
                   } catch (e) {
@@ -799,11 +799,11 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                   let infoDiv = document.getElementById('quick-register-info');
                   if (infoDiv) {
                     infoDiv.innerHTML =
-                      `<div>ایندکس رفرر: <b style='color:#00ff88'>${window.generateCPAId ? window.generateCPAId(parentIndex) : parentIndex}</b></div>`+
-                      `<div>ایندکس جایگاه جدید: <b style='color:#a786ff'>${window.generateCPAId ? window.generateCPAId(emptyIndex) : emptyIndex}</b></div>`+
-                      `<div>مقدار مورد نیاز برای ثبت‌نام: <b style='color:#00ff88'>${registerCost} CPA</b></div>`+
+                      `<div>ایندکس رفرر: <b style='color:#00ff88'>${window.generateIAMId ? window.generateIAMId(parentIndex) : parentIndex}</b></div>`+
+                      `<div>ایندکس جایگاه جدید: <b style='color:#a786ff'>${window.generateIAMId ? window.generateIAMId(emptyIndex) : emptyIndex}</b></div>`+
+                      `<div>مقدار مورد نیاز برای ثبت‌نام: <b style='color:#00ff88'>${registerCost} IAM</b></div>`+
                       `<div>موجودی متیک شما: <b style='color:#a786ff'>${maticBalance} MATIC</b></div>`+
-                      `<div>موجودی CPA شما: <b style='color:#00ff88'>${cpaBalance} CPA</b></div>`+
+                      `<div>موجودی IAM شما: <b style='color:#00ff88'>${IAMBalance} IAM</b></div>`+
                       (errorMsg ? `<div style='color:#ff4444'>${errorMsg}</div>` : '');
                   }
                 })();
@@ -893,7 +893,7 @@ function renderEmptyNodeVertical(index, container, level) {
             const nodeData = {
                 index: index.toString(),
                 address: null,
-                cpaId: null,
+                IAMId: null,
                 level: level,
                 hasDirects: false,
                 leftActive: false,
@@ -1236,7 +1236,7 @@ window.forceRenderNetwork = async function() {
 // تابع نمایش اطلاعات struct کاربر به صورت تایپ‌رایت (فارسی)
 window.showUserStructTypewriter = function(address, user) {
   const infoLines = [
-    `CPA ID:  ${window.generateCPAId ? window.generateCPAId(user.index) : user.index}`,
+    `IAM ID:  ${window.generateIAMId ? window.generateIAMId(user.index) : user.index}`,
     `امتیاز باینری:  ${user.binaryPoints}`,
     `امتیاز باینری دریافت‌شده:  ${user.binaryPointsClaimed}`,
     `امتیاز باینری مانده:  ${user.binaryPoints && user.binaryPointsClaimed ? (Number(user.binaryPoints) - Number(user.binaryPointsClaimed)) : '0'}`,
@@ -1244,7 +1244,7 @@ window.showUserStructTypewriter = function(address, user) {
     `امتیاز چپ:  ${user.leftPoints}`,
     `امتیاز راست:  ${user.rightPoints}`,
     `پاداش رفرال:  ${user.refclimed ? Math.floor(Number(user.refclimed) / 1e18) : '0'}`,
-    `موجودی CPA:  ${user.lvlBalance ? user.lvlBalance : '0'}`,
+    `موجودی IAM:  ${user.lvlBalance ? user.lvlBalance : '0'}`,
     `موجودی POL:  ${user.maticBalance ? user.maticBalance : '0'}`,
             `موجودی DAI:  ${user.daiBalance ? user.daiBalance : '0'}`
   ];

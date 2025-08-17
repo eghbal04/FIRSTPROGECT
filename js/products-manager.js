@@ -46,9 +46,9 @@ class ProductsManager {
     // بارگذاری داده‌ها
     loadData() {
         // پاک‌سازی محصولات ذخیره‌شده برای رفع مشکل seller آبجکت
-        localStorage.removeItem('cpa_products');
+        localStorage.removeItem('IAM_products');
         // بارگذاری محصولات از localStorage یا API
-        const savedProducts = localStorage.getItem('cpa_products');
+        const savedProducts = localStorage.getItem('IAM_products');
         if (savedProducts) {
             this.products = JSON.parse(savedProducts);
         } else {
@@ -95,7 +95,7 @@ class ProductsManager {
         }
         
         // بارگذاری فروشندگان
-        const savedSellers = localStorage.getItem('cpa_sellers');
+        const savedSellers = localStorage.getItem('IAM_sellers');
         if (savedSellers) {
             this.sellers = JSON.parse(savedSellers);
         } else {
@@ -126,7 +126,7 @@ class ProductsManager {
         }
         
         // بارگذاری ساب ادمین‌ها
-        const savedSubAdmins = localStorage.getItem('cpa_subadmins');
+        const savedSubAdmins = localStorage.getItem('IAM_subadmins');
         if (savedSubAdmins) {
             this.subAdmins = JSON.parse(savedSubAdmins);
         }
@@ -137,17 +137,17 @@ class ProductsManager {
     
     // ذخیره محصولات
     saveProducts() {
-        localStorage.setItem('cpa_products', JSON.stringify(this.products));
+        localStorage.setItem('IAM_products', JSON.stringify(this.products));
     }
     
     // ذخیره فروشندگان
     saveSellers() {
-        localStorage.setItem('cpa_sellers', JSON.stringify(this.sellers));
+        localStorage.setItem('IAM_sellers', JSON.stringify(this.sellers));
     }
     
     // ذخیره ساب ادمین‌ها
     saveSubAdmins() {
-        localStorage.setItem('cpa_subadmins', JSON.stringify(this.subAdmins));
+        localStorage.setItem('IAM_subadmins', JSON.stringify(this.subAdmins));
     }
     
     // نمایش محصولات
@@ -253,9 +253,9 @@ class ProductsManager {
             timestamp: new Date().toISOString()
         };
         
-        const transactions = JSON.parse(localStorage.getItem('cpa_transactions') || '[]');
+        const transactions = JSON.parse(localStorage.getItem('IAM_transactions') || '[]');
         transactions.push(transaction);
-        localStorage.setItem('cpa_transactions', JSON.stringify(transactions));
+        localStorage.setItem('IAM_transactions', JSON.stringify(transactions));
     }
     
     // فیلتر کردن محصولات
@@ -556,7 +556,7 @@ class ProductsManager {
             totalProducts: this.products.length,
             totalSellers: this.sellers.length,
             totalSubAdmins: this.subAdmins.length,
-            totalTransactions: JSON.parse(localStorage.getItem('cpa_transactions') || '[]').length
+            totalTransactions: JSON.parse(localStorage.getItem('IAM_transactions') || '[]').length
         };
     }
     
@@ -566,7 +566,7 @@ class ProductsManager {
             products: this.products,
             sellers: this.sellers,
             subAdmins: this.subAdmins,
-            transactions: JSON.parse(localStorage.getItem('cpa_transactions') || '[]')
+            transactions: JSON.parse(localStorage.getItem('IAM_transactions') || '[]')
         };
     }
     
@@ -585,7 +585,7 @@ class ProductsManager {
             this.saveSubAdmins();
         }
         if (data.transactions) {
-            localStorage.setItem('cpa_transactions', JSON.stringify(data.transactions));
+            localStorage.setItem('IAM_transactions', JSON.stringify(data.transactions));
         }
         
         this.loadData();

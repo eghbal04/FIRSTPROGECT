@@ -29,10 +29,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             let cashback = await window.contractConfig.contract.cashBack();
             cashback = cashback.toString();
-            cashbackValueEl.textContent = Number(cashback) / 1e18 + ' CPA';
+            cashbackValueEl.textContent = Number(cashback) / 1e18 + ' IAM';
             const cashbackDescEl = document.getElementById('dashboard-cashback-desc');
             if (cashbackDescEl) {
-                cashbackDescEl.textContent = `۵٪ از هر ثبت‌نام به این صندوق اضافه می‌شود. مجموع فعلی: ${Number(cashback) / 1e18} CPA`;
+                cashbackDescEl.textContent = `۵٪ از هر ثبت‌نام به این صندوق اضافه می‌شود. مجموع فعلی: ${Number(cashback) / 1e18} IAM`;
             }
         } catch (e) {
             cashbackValueEl.textContent = '-';
@@ -71,9 +71,9 @@ document.addEventListener('DOMContentLoaded', async () => {
           } 
         };
         
-        setFormatted('circulating-supply', totalSupply, 18, ''); // حذف پسوند CPA
+        setFormatted('circulating-supply', totalSupply, 18, ''); // حذف پسوند IAM
         setFormatted('dashboard-dai-balance', daiBalance, 18, ''); // حذف پسوند DAI
-        setFormatted('contract-token-balance', tokenBalance, 18, ''); // حذف پسوند CPA
+        setFormatted('contract-token-balance', tokenBalance, 18, ''); // حذف پسوند IAM
         setFormatted('dashboard-wallets-count', wallets, 0, '');
         // set('total-points', Math.floor(Number(totalPoints) / 1e18).toLocaleString('en-US'));
         // set('total-points', '-');
@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     // نمایش آدرس قرارداد در کارت داشبورد (بدون دکمه، فقط با کلیک روی آدرس)
-    const contractAddress = (window.contractConfig && window.contractConfig.CPA_ADDRESS) ? window.contractConfig.CPA_ADDRESS : (typeof CPA_ADDRESS !== 'undefined' ? CPA_ADDRESS : '');
+    const contractAddress = (window.contractConfig && window.contractConfig.IAM_ADDRESS) ? window.contractConfig.IAM_ADDRESS : (typeof IAM_ADDRESS !== 'undefined' ? IAM_ADDRESS : '');
     const dashAddrEl = document.getElementById('dashboard-contract-address');
     if (dashAddrEl && contractAddress) {
         dashAddrEl.textContent = contractAddress;
@@ -293,7 +293,7 @@ async function fetchUserProfile() {
         }
         // دریافت اطلاعات کاربر
         const userData = await window.retryRpcOperation(() => contract.users(address), 2);
-        // دریافت قیمت LVL/MATIC و MATIC/USD
+        // دریافت قیمت IAM/MATIC و MATIC/USD
         const [tokenPriceMatic, maticPriceUSD] = await Promise.all([
             window.retryRpcOperation(() => contract.getTokenPrice(), 2),
             window.fetchPolUsdPrice()
@@ -301,7 +301,7 @@ async function fetchUserProfile() {
         const formattedMaticBalance = ethers.formatEther(maticBalance);
         const formattedLvlBalance = ethers.formatUnits(lvlBalance, 18);
         const tokenPriceMaticFormatted = ethers.formatUnits(tokenPriceMatic, 18);
-        // قیمت CPA/USD = (CPA/MATIC) * (MATIC/USD)
+        // قیمت IAM/USD = (IAM/MATIC) * (MATIC/USD)
         const tokenPriceUSD = parseFloat(tokenPriceMaticFormatted) * parseFloat(maticPriceUSD);
         // محاسبه ارزش دلاری
         const maticValueUSD = parseFloat(formattedMaticBalance) * parseFloat(maticPriceUSD);
@@ -386,7 +386,7 @@ async function updateNavbarBasedOnUserStatus() {
                 
                 // به‌روزرسانی نمایش ID کاربر
                 if (userData.index) {
-                    updateCPAIdDisplay(userData.index);
+                    updateIAMIdDisplay(userData.index);
                 }
             } else {
                 // کاربر فعال نیست
@@ -798,21 +798,21 @@ window.showWelcomeRegistrationPrompt = async function() {
             registrationPrice = null;
         }
         
-        // دریافت قیمت فعلی CPA
-        let cpaPriceUSD = null;
+        // دریافت قیمت فعلی IAM
+        let IAMPriceUSD = null;
         try {
             if (window.contractConfig && window.contractConfig.contract) {
                 const price = await window.contractConfig.contract.getTokenPrice();
-                cpaPriceUSD = parseFloat(ethers.formatUnits(price, 18)).toFixed(6);
+                IAMPriceUSD = parseFloat(ethers.formatUnits(price, 18)).toFixed(6);
             }
         } catch (e) {
-            cpaPriceUSD = null;
+            IAMPriceUSD = null;
         }
         
         // محاسبه ارزش دلاری ثبت‌نام
         let registrationValueUSD = '';
-        if (registrationPrice && cpaPriceUSD) {
-            registrationValueUSD = (parseFloat(registrationPrice) * parseFloat(cpaPriceUSD)).toFixed(6);
+        if (registrationPrice && IAMPriceUSD) {
+            registrationValueUSD = (parseFloat(registrationPrice) * parseFloat(IAMPriceUSD)).toFixed(6);
         } else {
             registrationValueUSD = 'در حال دریافت...';
         }
@@ -875,7 +875,7 @@ window.showWelcomeRegistrationPrompt = async function() {
                     margin-bottom: 1rem;
                     font-size: 1.8rem;
                     font-weight: bold;
-                ">به CPA خوش آمدید!</h2>
+                ">به IAM خوش آمدید!</h2>
                 
                 <!-- توضیحات -->
                 <p style="
@@ -884,7 +884,7 @@ window.showWelcomeRegistrationPrompt = async function() {
                     line-height: 1.6;
                     font-size: 1.1rem;
                 ">
-                    برای استفاده از تمام امکانات CPA و دسترسی به خدمات پیشرفته، 
+                    برای استفاده از تمام امکانات IAM و دسترسی به خدمات پیشرفته، 
                     لطفاً ثبت‌نام کنید.
                 </p>
                 
@@ -916,7 +916,7 @@ window.showWelcomeRegistrationPrompt = async function() {
                                 font-size: 1.5rem;
                                 font-weight: bold;
                                 margin-bottom: 0.3rem;
-                            ">${registrationPrice} CPA</div>
+                            ">${registrationPrice} IAM</div>
                             <div style="
                                 color: #b8c1ec;
                                 font-size: 0.9rem;
@@ -941,7 +941,7 @@ window.showWelcomeRegistrationPrompt = async function() {
                         font-size: 0.9rem;
                         line-height: 1.4;
                     ">
-                        💡 قیمت فعلی CPA: $${cpaPriceUSD ? cpaPriceUSD : 'در حال دریافت...'} DAI
+                        💡 قیمت فعلی IAM: $${IAMPriceUSD ? IAMPriceUSD : 'در حال دریافت...'} DAI
                     </div>
                 </div>
                 
@@ -1155,7 +1155,7 @@ window.manageMainRegistrationButton = async function() {
                     const formattedPrice = parseFloat(ethers.formatUnits(price, 18)).toFixed(0);
                     const costDisplay = document.getElementById('registration-cost-display');
                     if (costDisplay) {
-                        costDisplay.textContent = `${formattedPrice} CPA`;
+                        costDisplay.textContent = `${formattedPrice} IAM`;
                     }
                 }
             } catch (e) {
@@ -1261,7 +1261,7 @@ window.showReferralInfo = function() {
                 margin-bottom: 1rem;
                 font-size: 1.8rem;
                 font-weight: bold;
-            ">سیستم رفرال CPA</h2>
+            ">سیستم رفرال IAM</h2>
             
             <!-- توضیحات -->
             <p style="
@@ -1327,7 +1327,7 @@ window.showReferralInfo = function() {
                     line-height: 1.4;
                     margin-top: 1rem;
                 ">
-                    💡 برای هر ثبت‌نام 100 CPA، شما 5 CPA کمیسیون مستقیم دریافت می‌کنید
+                    💡 برای هر ثبت‌نام 100 IAM، شما 5 IAM کمیسیون مستقیم دریافت می‌کنید
                 </div>
             </div>
             
@@ -1519,18 +1519,18 @@ async function showTokenPricesForAll() {
         // اگر contractConfig و contract آماده است
         if (window.contractConfig && window.contractConfig.contract) {
             const contract = window.contractConfig.contract;
-            // قیمت CPA به DAI (قیمت توکن مستقیماً به DAI است)
+            // قیمت IAM به DAI (قیمت توکن مستقیماً به DAI است)
             const tokenPrice = await contract.getTokenPrice();
             const tokenPriceFormatted = ethers.formatUnits(tokenPrice, 18);
             
             // نمایش در عناصر
-            const cpaUsd = document.getElementById('chart-lvl-usd');
-            if (cpaUsd) cpaUsd.textContent = '$' + tokenPriceFormatted;
+            const IAMUsd = document.getElementById('chart-lvl-usd');
+            if (IAMUsd) IAMUsd.textContent = '$' + tokenPriceFormatted;
         }
     } catch (e) {
         // اگر خطا بود، مقدار پیش‌فرض نمایش بده
-        const cpaUsd = document.getElementById('chart-lvl-usd');
-        if (cpaUsd) cpaUsd.textContent = '-';
+        const IAMUsd = document.getElementById('chart-lvl-usd');
+        if (IAMUsd) IAMUsd.textContent = '-';
     }
 }
 
@@ -1616,21 +1616,21 @@ window.updateUserBalanceBoxWithNode = async function(address, userData) {
     const lvlBalanceElement = document.getElementById('user-lvl-balance');
     
     if (lvlBalanceElement) {
-        // دریافت موجودی واقعی CPA از قرارداد
-        let balanceInCPA = '-';
+        // دریافت موجودی واقعی IAM از قرارداد
+        let balanceInIAM = '-';
         try {
             if (window.contractConfig && window.contractConfig.contract) {
                 const contract = window.contractConfig.contract;
                 const balance = await contract.balanceOf(address);
                 const balanceStr = balance ? (typeof balance === 'bigint' ? balance.toString() : balance) : null;
-                // تبدیل از wei به CPA (18 رقم اعشار)
-                balanceInCPA = balanceStr ? (parseInt(balanceStr) / Math.pow(10, 18)).toFixed(2) : null;
+                // تبدیل از wei به IAM (18 رقم اعشار)
+                balanceInIAM = balanceStr ? (parseInt(balanceStr) / Math.pow(10, 18)).toFixed(2) : null;
             }
         } catch (e) {
-            console.log('Error getting CPA balance:', e);
-            balanceInCPA = '-';
+            console.log('Error getting IAM balance:', e);
+            balanceInIAM = '-';
         }
-        lvlBalanceElement.textContent = balanceInCPA ? balanceInCPA : '-'; // حذف پسوند CPA
+        lvlBalanceElement.textContent = balanceInIAM ? balanceInIAM : '-'; // حذف پسوند IAM
         console.log('Updated lvl balance:', lvlBalanceElement.textContent);
     }
     
@@ -2057,8 +2057,8 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
             <span id="register-matic-balance" style="color: #a786ff; font-weight: bold;">در حال دریافت...</span>
           </div>
           <div style="display: flex; justify-content: space-between; align-items: center; font-size:0.95em;">
-            <span style="color: #fff;">🟢 CPA:</span>
-            <span id="register-cpa-balance" style="color: #00ff88; font-weight: bold;">در حال دریافت...</span>
+            <span style="color: #fff;">🟢 IAM:</span>
+            <span id="register-IAM-balance" style="color: #00ff88; font-weight: bold;">در حال دریافت...</span>
           </div>
           <div style="display: flex; justify-content: space-between; align-items: center; font-size:0.95em;">
             <span style="color: #fff;">💵 DAI:</span>
@@ -2154,7 +2154,7 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
         connectedAddress = connection.address;
       }
       let matic = '-';
-      let cpa = '-';
+      let IAM = '-';
       let dai = '-';
       let requiredDai = '-';
 
@@ -2168,10 +2168,10 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
       }
       if (contract && connectedAddress) {
         try {
-          const cpaBal = await contract.balanceOf(connectedAddress);
-          cpa = window.ethers ? window.ethers.formatUnits(cpaBal, 18) : cpaBal.toString();
+          const IAMBal = await contract.balanceOf(connectedAddress);
+          IAM = window.ethers ? window.ethers.formatUnits(IAMBal, 18) : IAMBal.toString();
         } catch (e) {
-          cpa = 'خطا در دریافت CPA';
+          IAM = 'خطا در دریافت IAM';
         }
         // دریافت موجودی DAI
         try {
@@ -2187,7 +2187,7 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
           if (window.getRegPrice) {
             const regPrice = await window.getRegPrice(contract);
             let priceValue = parseFloat(window.ethers.formatUnits(regPrice, 18));
-            requiredDai = Math.round(priceValue) + ' CPA'; // گرد کردن بدون اعشار
+            requiredDai = Math.round(priceValue) + ' IAM'; // گرد کردن بدون اعشار
           } else {
             requiredDai = '...';
           }
@@ -2196,7 +2196,7 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
         }
       }
       document.getElementById('register-matic-balance').textContent = matic;
-      document.getElementById('register-cpa-balance').textContent = cpa;
+      document.getElementById('register-IAM-balance').textContent = IAM;
       document.getElementById('register-dai-balance').textContent = dai;
       document.getElementById('register-required-dai').textContent = requiredDai;
 
@@ -2205,7 +2205,7 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
       }
     } catch (e) {
       document.getElementById('register-matic-balance').textContent = '-';
-      document.getElementById('register-cpa-balance').textContent = '-';
+      document.getElementById('register-IAM-balance').textContent = '-';
       document.getElementById('register-dai-balance').textContent = '-';
       document.getElementById('register-required-dai').textContent = '-';
     }
@@ -2592,7 +2592,7 @@ async function updatePermanentRegistrationForm(connection) {
     const userAddressInput = document.getElementById('permanent-user-address');
     const referrerAddressInput = document.getElementById('permanent-referrer-address');
     const balancesDiv = document.getElementById('permanent-balances-display');
-    const cpaBalanceDiv = document.getElementById('permanent-cpa-balance');
+    const IAMBalanceDiv = document.getElementById('permanent-IAM-balance');
     const maticBalanceDiv = document.getElementById('permanent-matic-balance');
     
     if (!connection || !connection.contract) {
@@ -2684,18 +2684,18 @@ async function updatePermanentRegistrationForm(connection) {
         }
         
         // به‌روزرسانی موجودی‌ها
-        if (balancesDiv && cpaBalanceDiv && maticBalanceDiv) {
+        if (balancesDiv && IAMBalanceDiv && maticBalanceDiv) {
             try {
-                const [cpaBalance, maticBalance] = await Promise.all([
+                const [IAMBalance, maticBalance] = await Promise.all([
                     contract.balanceOf(address),
                     connection.provider.getBalance(address)
                 ]);
                 
-                const cpaFormatted = parseFloat(ethers.formatUnits(cpaBalance, 18));
+                const IAMFormatted = parseFloat(ethers.formatUnits(IAMBalance, 18));
                 const maticFormatted = parseFloat(ethers.formatEther(maticBalance));
                 
-                cpaBalanceDiv.textContent = formatLargeNumber(cpaFormatted);
-                cpaBalanceDiv.title = cpaFormatted.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' CPA';
+                IAMBalanceDiv.textContent = formatLargeNumber(IAMFormatted);
+                IAMBalanceDiv.title = IAMFormatted.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' IAM';
                 maticBalanceDiv.textContent = formatLargeNumber(maticFormatted);
                 maticBalanceDiv.title = maticFormatted.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' MATIC';
                 
@@ -2713,7 +2713,7 @@ async function updatePermanentRegistrationForm(connection) {
             const formattedPrice = parseFloat(ethers.formatUnits(price, 18)).toFixed(0);
             const costDisplay = document.getElementById('permanent-registration-cost');
             if (costDisplay) {
-                costDisplay.textContent = `${formattedPrice} CPA`;
+                costDisplay.textContent = `${formattedPrice} IAM`;
             }
         } catch (e) {
             console.log('Could not update registration cost:', e);
@@ -2880,9 +2880,9 @@ async function updateTransferBalances(contract, address, provider) {
     try {
         const daiBalanceDiv = document.getElementById('transfer-dai-balance');
         const polyBalanceDiv = document.getElementById('transfer-poly-balance');
-        const cpaBalanceDiv = document.getElementById('transfer-cpa-balance');
+        const IAMBalanceDiv = document.getElementById('transfer-IAM-balance');
         
-        if (!daiBalanceDiv || !polyBalanceDiv || !cpaBalanceDiv) {
+        if (!daiBalanceDiv || !polyBalanceDiv || !IAMBalanceDiv) {
             console.log('Transfer balance elements not found');
             return;
         }
@@ -2921,7 +2921,7 @@ async function updateTransferBalances(contract, address, provider) {
             
             // تنظیم مقادیر به حالت خطا
             polyBalanceDiv.textContent = 'متصل نیست';
-            cpaBalanceDiv.textContent = 'متصل نیست';
+            IAMBalanceDiv.textContent = 'متصل نیست';
             daiBalanceDiv.textContent = 'متصل نیست';
             return;
         }
@@ -2956,30 +2956,30 @@ async function updateTransferBalances(contract, address, provider) {
             }
         }
         
-        // دریافت موجودی CPA
-        let cpaBalance = '-';
-        let cpaUsdValue = 0;
-        let cpaFullAmount = 0;
+        // دریافت موجودی IAM
+        let IAMBalance = '-';
+        let IAMUsdValue = 0;
+        let IAMFullAmount = 0;
         try {
-            const cpaBal = await contract.balanceOf(address);
-            cpaFullAmount = parseFloat(ethers.formatUnits(cpaBal, 18));
-            cpaBalance = formatLargeNumber(cpaFullAmount);
-            console.log('CPA balance:', cpaBalance);
+            const IAMBal = await contract.balanceOf(address);
+            IAMFullAmount = parseFloat(ethers.formatUnits(IAMBal, 18));
+            IAMBalance = formatLargeNumber(IAMFullAmount);
+            console.log('IAM balance:', IAMBalance);
             
-            // محاسبه معادل دلاری CPA
+            // محاسبه معادل دلاری IAM
             try {
                 if (typeof contract.getTokenPrice === 'function') {
                     const tokenPriceRaw = await contract.getTokenPrice();
                     const tokenPrice = Number(ethers.formatUnits(tokenPriceRaw, 18));
-                    cpaUsdValue = cpaFullAmount * tokenPrice;
-                    console.log('CPA USD value:', cpaUsdValue);
+                    IAMUsdValue = IAMFullAmount * tokenPrice;
+                    console.log('IAM USD value:', IAMUsdValue);
                 }
             } catch (e) {
                 console.log('خطا در دریافت قیمت توکن:', e);
             }
         } catch (e) {
-            console.error('Error getting CPA balance:', e);
-            cpaBalance = 'خطا';
+            console.error('Error getting IAM balance:', e);
+            IAMBalance = 'خطا';
         }
         
         // دریافت موجودی DAI
@@ -2999,21 +2999,21 @@ async function updateTransferBalances(contract, address, provider) {
         // به‌روزرسانی نمایش + ذخیره مقدار خام برای استفاده دکمه «حداکثر»
         polyBalanceDiv.textContent = polyBalance;
         polyBalanceDiv.dataset.value = (isNaN(Number(polyBalance)) ? '0' : String(polyBalance));
-        cpaBalanceDiv.textContent = cpaBalance;
-        if (cpaFullAmount > 0) {
-            cpaBalanceDiv.title = cpaFullAmount.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' CPA';
+        IAMBalanceDiv.textContent = IAMBalance;
+        if (IAMFullAmount > 0) {
+            IAMBalanceDiv.title = IAMFullAmount.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' IAM';
         }
-        // مقدار کامل CPA را در data ذخیره کن تا از نمایش کوتاه‌شده (K/M) مستقل باشیم
-        cpaBalanceDiv.dataset.value = String(cpaFullAmount);
+        // مقدار کامل IAM را در data ذخیره کن تا از نمایش کوتاه‌شده (K/M) مستقل باشیم
+        IAMBalanceDiv.dataset.value = String(IAMFullAmount);
         daiBalanceDiv.textContent = daiBalance;
         daiBalanceDiv.dataset.value = (isNaN(Number(daiBalance)) ? '0' : String(daiBalance));
         
-        // نمایش معادل دلاری CPA
-        const cpaUsdDiv = document.getElementById('transfer-cpa-usd');
-        if (cpaUsdDiv && cpaBalance !== '-' && cpaBalance !== 'خطا') {
-            cpaUsdDiv.textContent = `≈ $${formatLargeNumber(cpaUsdValue)}`;
-        } else if (cpaUsdDiv) {
-            cpaUsdDiv.textContent = '-';
+        // نمایش معادل دلاری IAM
+        const IAMUsdDiv = document.getElementById('transfer-IAM-usd');
+        if (IAMUsdDiv && IAMBalance !== '-' && IAMBalance !== 'خطا') {
+            IAMUsdDiv.textContent = `≈ $${formatLargeNumber(IAMUsdValue)}`;
+        } else if (IAMUsdDiv) {
+            IAMUsdDiv.textContent = '-';
         }
         
         console.log('Transfer balances updated successfully');
@@ -3104,8 +3104,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // حذف دکمه شناور ایندکس در زمان بارگذاری صفحه
     setTimeout(() => {
-        if (window.removeFloatingCPAId) {
-            window.removeFloatingCPAId();
+        if (window.removeFloatingIAMId) {
+            window.removeFloatingIAMId();
         }
     }, 1000);
 });
@@ -3140,20 +3140,20 @@ window.stopTransferBalanceAutoRefresh = function() {
 };
 
 // تابع تولید ID بر اساس ایندکس کاربر
-function generateCPAId(index) {
+function generateIAMId(index) {
     if (!index || index === 0) return '0';
     
     // نمایش دقیق همان مقدار کنترکت بدون هیچ تغییری
     return index.toString();
 }
 
-// تعریف تابع generateCPAId در window برای استفاده در فایل‌های دیگر
-window.generateCPAId = generateCPAId;
+// تعریف تابع generateIAMId در window برای استفاده در فایل‌های دیگر
+window.generateIAMId = generateIAMId;
 
 // تابع نمایش ID در گوشه بالا سمت راست - غیرفعال شده
-function displayCPAIdInCorner(index) {
+function displayIAMIdInCorner(index) {
     // حذف ID قبلی اگر وجود دارد
-    const existingId = document.getElementById('cpa-id-corner');
+    const existingId = document.getElementById('IAM-id-corner');
     if (existingId) existingId.remove();
     
     // غیرفعال شده - دیگر نمایش داده نمی‌شود
@@ -3162,12 +3162,12 @@ function displayCPAIdInCorner(index) {
     /*
     if (!index || index === 0) return;
     
-    const cpaId = generateCPAId(index);
+    const IAMId = generateIAMId(index);
     
     // ایجاد عنصر ID
     const idElement = document.createElement('div');
-    idElement.id = 'cpa-id-corner';
-    idElement.textContent = cpaId;
+    idElement.id = 'IAM-id-corner';
+    idElement.textContent = IAMId;
     idElement.style.cssText = `
         position: fixed;
         top: 10px;
@@ -3199,7 +3199,7 @@ function displayCPAIdInCorner(index) {
     
     // کلیک برای کپی کردن
     idElement.onclick = function() {
-        navigator.clipboard.writeText(cpaId);
+        navigator.clipboard.writeText(IAMId);
         const originalText = this.textContent;
         this.textContent = 'کپی شد!';
         this.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
@@ -3214,19 +3214,19 @@ function displayCPAIdInCorner(index) {
 }
 
 // تابع به‌روزرسانی نمایش ID در تمام بخش‌ها
-function updateCPAIdDisplay(index) {
-    const cpaId = generateCPAId(index);
+function updateIAMIdDisplay(index) {
+    const IAMId = generateIAMId(index);
     
     // به‌روزرسانی در پروفایل
     const profileIndexEl = document.getElementById('profile-index');
     if (profileIndexEl) {
-        profileIndexEl.textContent = cpaId;
+        profileIndexEl.textContent = IAMId;
     }
     
     // به‌روزرسانی در داشبورد
     const dashboardIndexEl = document.getElementById('dashboard-user-index');
     if (dashboardIndexEl) {
-        dashboardIndexEl.textContent = cpaId;
+        dashboardIndexEl.textContent = IAMId;
     }
     
     // نمایش بخش اطلاعات کاربر در داشبورد
@@ -3251,16 +3251,16 @@ function updateCPAIdDisplay(index) {
     // به‌روزرسانی در شبکه
     const networkIndexEl = document.getElementById('network-user-index');
     if (networkIndexEl) {
-        networkIndexEl.textContent = cpaId;
+        networkIndexEl.textContent = IAMId;
     }
     
     // نمایش در گوشه - غیرفعال شده
-    // displayCPAIdInCorner(index);
+    // displayIAMIdInCorner(index);
 }
 
 // تابع حذف دکمه شناور ایندکس
-window.removeFloatingCPAId = function() {
-    const existingId = document.getElementById('cpa-id-corner');
+window.removeFloatingIAMId = function() {
+    const existingId = document.getElementById('IAM-id-corner');
     if (existingId) {
         existingId.remove();
         console.log('✅ Floating index removed');

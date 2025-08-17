@@ -41,7 +41,7 @@ class SimpleFloatingAI {
         const button = document.createElement('div');
         button.id = 'simple-ai-button';
         button.innerHTML = '🤖';
-        button.title = 'دستیار هوشمند CPA';
+        button.title = 'دستیار هوشمند IAM';
         
         // Inline styles for guaranteed visibility
         Object.assign(button.style, {
@@ -112,7 +112,7 @@ class SimpleFloatingAI {
         // Simple AI button clicked
         
         // Show a simple alert for now
-        const message = 'سلام! من دستیار هوشمند CPA هستم. 🤖\n\nمی‌تونم در موارد زیر کمکتون کنم:\n• خرید و فروش توکن\n• بررسی موجودی\n• آمار شبکه\n• راهنمایی\n\nبرای استفاده کامل، به نسخه پیشرفته مراجعه کنید.';
+        const message = 'سلام! من دستیار هوشمند IAM هستم. 🤖\n\nمی‌تونم در موارد زیر کمکتون کنم:\n• خرید و فروش توکن\n• بررسی موجودی\n• آمار شبکه\n• راهنمایی\n\nبرای استفاده کامل، به نسخه پیشرفته مراجعه کنید.';
         
         // Create a simple modal
         this.showSimpleModal(message);
@@ -160,7 +160,7 @@ class SimpleFloatingAI {
         
         content.innerHTML = `
             <div style="font-size: 3rem; margin-bottom: 1rem;">🤖</div>
-            <h3 style="color: #00ff88; margin-bottom: 1rem;">دستیار هوشمند CPA</h3>
+            <h3 style="color: #00ff88; margin-bottom: 1rem;">دستیار هوشمند IAM</h3>
             <div style="white-space: pre-line; line-height: 1.6; margin-bottom: 2rem;">${message}</div>
             <button id="simple-ai-close" style="
                 background: linear-gradient(135deg, #00ff88, #a786ff);

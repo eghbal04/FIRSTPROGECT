@@ -19,7 +19,7 @@ async function debugUSDCBalance() {
         console.log('📍 آدرس‌ها:');
         console.log('- USDC_ADDRESS:', window.USDC_ADDRESS);
         console.log('- DAI_ADDRESS (compatibility):', window.DAI_ADDRESS);
-        console.log('- CPA_ADDRESS:', window.CPA_ADDRESS);
+        console.log('- IAM_ADDRESS:', window.IAM_ADDRESS);
         console.log('- Contract Target:', contract.target);
         
         // بررسی توابع قرارداد
@@ -68,11 +68,11 @@ async function debugUSDCBalance() {
                     console.log('✅ روش 3a (DAI.balanceOf(contract.target)):', formatted3a, 'USDC (DAI test)');
                 }
                 
-                // تست با CPA_ADDRESS
-                if (window.CPA_ADDRESS) {
-                    const balance3b = await daiContract.balanceOf(window.CPA_ADDRESS);
+                // تست با IAM_ADDRESS
+                if (window.IAM_ADDRESS) {
+                    const balance3b = await daiContract.balanceOf(window.IAM_ADDRESS);
                     const formatted3b = ethers.formatUnits(balance3b, 18);
-                    console.log('✅ روش 3b (DAI.balanceOf(CPA_ADDRESS)):', formatted3b, 'USDC (DAI test)');
+                    console.log('✅ روش 3b (DAI.balanceOf(IAM_ADDRESS)):', formatted3b, 'USDC (DAI test)');
                 }
                 
             } catch (error) {

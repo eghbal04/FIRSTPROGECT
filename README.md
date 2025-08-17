@@ -1,4 +1,4 @@
-# CPA Forex Platform
+# imphoenix Platform
 
 یک پلتفرم پیشرفته Web3 برای معاملات ارز دیجیتال و سیستم MLM.
 
@@ -10,7 +10,7 @@
 - پشتیبانی از شبکه Polygon
 
 ### 💰 سیستم مالی
-- خرید و فروش توکن CPA
+- خرید و فروش توکن IAM
 - سیستم پاداش باینری
 - مدیریت موجودی‌ها
 - تاریخچه قیمت‌ها
@@ -47,8 +47,8 @@
 ### نصب
 ```bash
 # کلون کردن پروژه
-git clone https://github.com/your-repo/cpaforex.git
-cd cpaforex
+git clone https://github.com/your-repo/IAMPHOENIX.git
+cd IAMPHOENIX
 
 # نصب dependencies
 npm install
@@ -145,9 +145,9 @@ npm start
 ## 📞 پشتیبانی
 
 برای پشتیبانی و سوالات:
-- ایمیل: support@cpaforex.com
-- تلگرام: @cpaforex_support
-- GitHub Issues: [اینجا](https://github.com/your-repo/cpaforex/issues)
+- ایمیل: support@IAMPHOENIX.com
+- تلگرام: @IAMPHOENIX_support
+- GitHub Issues: [اینجا](https://github.com/your-repo/IAMPHOENIX/issues)
 
 ---
 
@@ -156,7 +156,7 @@ npm start
 ### راه‌حل قطعی: فعال‌سازی GitHub Pages
 
 #### ۱. وارد مخزن شوید:
-[https://github.com/Cpaforex/Cpaforex](https://github.com/Cpaforex/Cpaforex)
+[https://github.com/IAMPHOENIX/IAMPHOENIX](https://github.com/IAMPHOENIX/IAMPHOENIX)
 
 #### ۲. به Settings بروید:
 - بالای صفحه روی **Settings** کلیک کنید.
@@ -170,9 +170,9 @@ npm start
 - روی **Save** کلیک کنید.
 
 #### ۵. (اختیاری) فایل CNAME:
-- اگر دامنه اختصاصی دارید (cpaforex.com)، مطمئن شوید فایل `CNAME` در ریشه مخزن وجود دارد و فقط همین نوشته شده:
+- اگر دامنه اختصاصی دارید (IAMPHOENIX.com)، مطمئن شوید فایل `CNAME` در ریشه مخزن وجود دارد و فقط همین نوشته شده:
   ```
-  cpaforex.com
+  IAMPHOENIX.com
   ```
 
 #### ۶. چند دقیقه صبر کنید:

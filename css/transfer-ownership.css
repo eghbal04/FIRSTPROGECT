@@ -1,17 +1,17 @@
 /* Transfer Ownership - Professional Styles */
 
 :root {
-  --cpa-bg: #f7f7fa;
-  --cpa-surface: #ffffff;
-  --cpa-text: #2c3e50;
-  --cpa-muted: #6b7280;
-  --cpa-primary: #7c4dff;
-  --cpa-accent: #00bfae;
-  --cpa-success: #00c853;
-  --cpa-success-ink: #009e60;
-  --cpa-error: #ff5252;
-  --cpa-error-ink: #c62828;
-  --cpa-warn: #ffe082;
+  --IAM-bg: #f7f7fa;
+  --IAM-surface: #ffffff;
+  --IAM-text: #2c3e50;
+  --IAM-muted: #6b7280;
+  --IAM-primary: #7c4dff;
+  --IAM-accent: #00bfae;
+  --IAM-success: #00c853;
+  --IAM-success-ink: #009e60;
+  --IAM-error: #ff5252;
+  --IAM-error-ink: #c62828;
+  --IAM-warn: #ffe082;
   --radius-lg: 16px;
   --radius-md: 12px;
   --radius-sm: 8px;
@@ -21,15 +21,15 @@
 
 body.transfer-ownership-page {
   font-family: Vazirmatn, Tahoma, sans-serif;
-  background: var(--cpa-bg);
-  color: var(--cpa-text);
+  background: var(--IAM-bg);
+  color: var(--IAM-text);
 }
 
 .transfer-ownership-container {
   max-width: 100%;
   width: 100%;
   margin: 64px auto 48px auto;
-  background: var(--cpa-surface);
+  background: var(--IAM-surface);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   padding: 2.2rem 2rem 2rem 2rem;
@@ -41,7 +41,7 @@ body.transfer-ownership-page {
   text-align: center;
   font-size: 1.4rem;
   font-weight: 800;
-  background: linear-gradient(90deg, var(--cpa-primary), var(--cpa-accent));
+  background: linear-gradient(90deg, var(--IAM-primary), var(--IAM-accent));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -51,7 +51,7 @@ body.transfer-ownership-page {
   text-align: center;
   margin-top: -0.6rem;
   margin-bottom: 1.2rem;
-  color: var(--cpa-muted);
+  color: var(--IAM-muted);
   font-size: 0.95rem;
 }
 
@@ -65,7 +65,7 @@ body.transfer-ownership-page {
 
 .balance-card {
   background: #f8f9ff;
-  border: 1px solid var(--cpa-accent);
+  border: 1px solid var(--IAM-accent);
 }
 
 .balance-grid {
@@ -77,7 +77,7 @@ body.transfer-ownership-page {
 
 .warning-card {
   background: #fffbe6;
-  border: 1px solid var(--cpa-warn);
+  border: 1px solid var(--IAM-warn);
   color: #b26a00;
   line-height: 1.8;
 }
@@ -111,18 +111,18 @@ label { display: block; margin-bottom: 0.5rem; font-weight: 700; }
   text-align: left;
 }
 .text-input:focus {
-  border-color: var(--cpa-primary);
+  border-color: var(--IAM-primary);
   box-shadow: 0 0 0 3px rgba(124, 77, 255, 0.12);
 }
 
 .hint { margin-top: 0.4rem; font-size: 0.86rem; }
-.hint.valid { color: var(--cpa-success-ink); }
-.hint.error { color: var(--cpa-error-ink); }
+.hint.valid { color: var(--IAM-success-ink); }
+.hint.error { color: var(--IAM-error-ink); }
 
 .btn-primary {
   width: 100%;
   padding: 0.9rem 1rem;
-  background: linear-gradient(90deg, var(--cpa-primary), var(--cpa-accent));
+  background: linear-gradient(90deg, var(--IAM-primary), var(--IAM-accent));
   color: #fff;
   border: none;
   border-radius: var(--radius-sm);
@@ -160,18 +160,18 @@ label { display: block; margin-bottom: 0.5rem; font-weight: 700; }
 }
 .status.success {
   background: linear-gradient(90deg, #e8f5e9 80%, #b9f6ca 100%);
-  color: var(--cpa-success-ink);
-  border: 1px solid var(--cpa-success);
+  color: var(--IAM-success-ink);
+  border: 1px solid var(--IAM-success);
 }
 .status.error {
   background: linear-gradient(90deg, #ffebee 80%, #ffcdd2 100%);
-  color: var(--cpa-error-ink);
-  border: 1px solid var(--cpa-error);
+  color: var(--IAM-error-ink);
+  border: 1px solid var(--IAM-error);
 }
 .status.loading, .status.warn {
   background: linear-gradient(90deg, #fffde7 80%, #fff9c4 100%);
   color: #b26a00;
-  border: 1px solid var(--cpa-warn);
+  border: 1px solid var(--IAM-warn);
 }
 
 /* Confirmation Modal */
@@ -189,7 +189,7 @@ label { display: block; margin-bottom: 0.5rem; font-weight: 700; }
 
 .modal {
   width: min(520px, 92vw);
-  background: var(--cpa-surface);
+  background: var(--IAM-surface);
   border-radius: 18px;
   border: 1px solid #e5e7eb;
   box-shadow: 0 12px 40px rgba(0,0,0,0.18);
@@ -199,9 +199,9 @@ label { display: block; margin-bottom: 0.5rem; font-weight: 700; }
 .modal h3 {
   margin: 0 0 0.6rem 0;
   font-size: 1.15rem;
-  color: var(--cpa-text);
+  color: var(--IAM-text);
 }
-.modal p { margin: 0.4rem 0; color: var(--cpa-muted); }
+.modal p { margin: 0.4rem 0; color: var(--IAM-muted); }
 .modal .modal-warning { color: #b26a00; font-weight: 700; }
 
 .modal .modal-actions {
@@ -213,7 +213,7 @@ label { display: block; margin-bottom: 0.5rem; font-weight: 700; }
   flex: 1;
   padding: 0.8rem 1rem;
   background: #ffffff;
-  color: var(--cpa-text);
+  color: var(--IAM-text);
   border: 1px solid #e5e7eb;
   border-radius: var(--radius-sm);
   cursor: pointer;

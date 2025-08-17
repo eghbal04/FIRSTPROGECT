@@ -1,4 +1,4 @@
-// lottery.js - تعامل با قرارداد هوشمند لاتاری و توکن CPA
+// lottery.js - تعامل با قرارداد هوشمند لاتاری و توکن IAM
 
 class LotteryManager {
   constructor() {
@@ -47,10 +47,10 @@ class LotteryManager {
         return false;
       }
 
-      // استفاده از قرارداد اصلی برای موجودی CPA
+      // استفاده از قرارداد اصلی برای موجودی IAM
       this.contract = window.contractConfig.contract;
       this.currentAccount = window.contractConfig.address;
-      this.cpaToken = this.contract; // قرارداد اصلی شامل تابع balanceOf است
+      this.IAMToken = this.contract; // قرارداد اصلی شامل تابع balanceOf است
       
       console.log('قرارداد اصلی متصل شد:', this.contract);
       console.log('آدرس کاربر:', this.currentAccount);
@@ -351,7 +351,7 @@ class LotteryManager {
       <div class="lottery-details">
         <div class="detail-item">
           <div class="detail-value">${ethers.formatEther(lottery.totalReward)}</div>
-          <div class="detail-label">جایزه (LVL)</div>
+          <div class="detail-label">جایزه (IAM)</div>
         </div>
         <div class="detail-item">
           <div class="detail-value">${lottery.currentParticipants}/${lottery.maxParticipants}</div>
@@ -363,7 +363,7 @@ class LotteryManager {
         </div>
         <div class="detail-item">
           <div class="detail-value">${ethers.formatEther(lottery.ticketPrice)}</div>
-          <div class="detail-label">LVL/نفر</div>
+          <div class="detail-label">IAM/نفر</div>
         </div>
       </div>
       <div class="lottery-status ${statusClass}">
@@ -412,7 +412,7 @@ class LotteryManager {
       <div class="lottery-details">
         <div class="detail-item">
           <div class="detail-value">${ethers.formatEther(group.totalReward)}</div>
-          <div class="detail-label">جایزه (LVL)</div>
+          <div class="detail-label">جایزه (IAM)</div>
         </div>
         <div class="detail-item">
           <div class="detail-value">${group.currentMembers}/${group.maxMembers}</div>
@@ -424,7 +424,7 @@ class LotteryManager {
         </div>
         <div class="detail-item">
           <div class="detail-value">${ethers.formatEther(group.contributionAmount)}</div>
-          <div class="detail-label">LVL/نفر</div>
+          <div class="detail-label">IAM/نفر</div>
         </div>
       </div>
       <div class="lottery-status ${statusClass}">
@@ -451,24 +451,24 @@ class LotteryManager {
       // دریافت اطلاعات لاتاری
       const lottery = await this.contract.getLottery(lotteryIndex);
       
-      // بررسی موجودی توکن CPA
-      const balance = await this.cpaToken.balanceOf(this.currentAccount);
+      // بررسی موجودی توکن IAM
+      const balance = await this.IAMToken.balanceOf(this.currentAccount);
       const balanceFormatted = ethers.formatEther(balance);
       const ticketPriceFormatted = ethers.formatEther(lottery.ticketPrice);
       
-      console.log(`موجودی شما: ${balanceFormatted} CPA`);
-      console.log(`قیمت بلیت: ${ticketPriceFormatted} CPA`);
+      console.log(`موجودی شما: ${balanceFormatted} IAM`);
+      console.log(`قیمت بلیت: ${ticketPriceFormatted} IAM`);
       
       if (balance < lottery.ticketPrice) {
-        throw new Error(`موجودی CPA شما کافی نیست. موجودی: ${balanceFormatted} CPA، قیمت بلیت: ${ticketPriceFormatted} CPA`);
+        throw new Error(`موجودی IAM شما کافی نیست. موجودی: ${balanceFormatted} IAM، قیمت بلیت: ${ticketPriceFormatted} IAM`);
       }
 
       // بررسی مجوز
-      const allowance = await this.cpaToken.allowance(this.currentAccount, this.contract.address);
+      const allowance = await this.IAMToken.allowance(this.currentAccount, this.contract.address);
       if (allowance < lottery.ticketPrice) {
         console.log('درخواست مجوز برای قرارداد...');
         // درخواست مجوز
-        const approveTx = await this.cpaToken.approve(this.contract.address, lottery.ticketPrice);
+        const approveTx = await this.IAMToken.approve(this.contract.address, lottery.ticketPrice);
         await approveTx.wait();
         console.log('مجوز تایید شد');
       }
@@ -496,15 +496,15 @@ class LotteryManager {
       // بررسی خطای موجودی ناکافی
       if (error.message.includes('Insufficient token balance') || error.reason === 'Insufficient token balance') {
         const errorMessage = `
-          موجودی توکن CPA شما برای این تراکنش کافی نیست.
+          موجودی توکن IAM شما برای این تراکنش کافی نیست.
           
           راه‌حل‌ها:
-          1. به صفحه Shop بروید و توکن CPA خریداری کنید
+          1. به صفحه Shop بروید و توکن IAM خریداری کنید
           2. از صفحه Swap برای تبدیل ارزهای دیگر استفاده کنید
           3. منتظر بمانید تا توکن‌های رایگان دریافت کنید
           
-          موجودی فعلی شما: ${balanceFormatted} CPA
-          قیمت بلیت: ${ticketPriceFormatted} CPA
+          موجودی فعلی شما: ${balanceFormatted} IAM
+          قیمت بلیت: ${ticketPriceFormatted} IAM
         `;
         this.showError(errorMessage);
       } else {
@@ -523,17 +523,17 @@ class LotteryManager {
       // دریافت اطلاعات گروه
       const group = await this.contract.getGroupDraw(groupIndex);
       
-      // بررسی موجودی توکن CPA
-      const balance = await this.cpaToken.balanceOf(this.currentAccount);
+      // بررسی موجودی توکن IAM
+      const balance = await this.IAMToken.balanceOf(this.currentAccount);
       if (balance < group.contributionAmount) {
-        throw new Error('موجودی CPA شما کافی نیست');
+        throw new Error('موجودی IAM شما کافی نیست');
       }
 
       // بررسی مجوز
-      const allowance = await this.cpaToken.allowance(this.currentAccount, this.contract.address);
+      const allowance = await this.IAMToken.allowance(this.currentAccount, this.contract.address);
       if (allowance < group.contributionAmount) {
         // درخواست مجوز
-        const approveTx = await this.cpaToken.approve(this.contract.address, group.contributionAmount);
+        const approveTx = await this.IAMToken.approve(this.contract.address, group.contributionAmount);
         await approveTx.wait();
       }
 
@@ -574,17 +574,17 @@ class LotteryManager {
       // محاسبه کل جایزه
       const totalReward = _ticketPrice * _maxParticipants;
       
-      // بررسی موجودی توکن CPA
-      const balance = await this.cpaToken.balanceOf(this.currentAccount);
+      // بررسی موجودی توکن IAM
+      const balance = await this.IAMToken.balanceOf(this.currentAccount);
       if (balance < totalReward) {
-        throw new Error('موجودی CPA شما برای ایجاد این لاتاری کافی نیست');
+        throw new Error('موجودی IAM شما برای ایجاد این لاتاری کافی نیست');
       }
 
       // بررسی مجوز
-      const allowance = await this.cpaToken.allowance(this.currentAccount, this.contract.address);
+      const allowance = await this.IAMToken.allowance(this.currentAccount, this.contract.address);
       if (allowance < totalReward) {
         // درخواست مجوز
-        const approveTx = await this.cpaToken.approve(this.contract.address, totalReward);
+        const approveTx = await this.IAMToken.approve(this.contract.address, totalReward);
         await approveTx.wait();
       }
 
@@ -635,8 +635,8 @@ class LotteryManager {
       
       const details = `
         نام: ${lottery.name}
-        جایزه کل: ${ethers.formatEther(lottery.totalReward)} CPA
-        قیمت بلیت: ${ethers.formatEther(lottery.ticketPrice)} CPA
+        جایزه کل: ${ethers.formatEther(lottery.totalReward)} IAM
+        قیمت بلیت: ${ethers.formatEther(lottery.ticketPrice)} IAM
         شرکت‌کنندگان: ${lottery.currentParticipants}/${lottery.maxParticipants}
         برندگان: ${lottery.winnersCount}
         وضعیت: ${this.getStatusText(lottery.status)}
@@ -659,8 +659,8 @@ class LotteryManager {
       
       const details = `
         نام: ${group.name}
-        جایزه کل: ${ethers.formatEther(group.totalReward)} CPA
-        سهم هر نفر: ${ethers.formatEther(group.contributionAmount)} CPA
+        جایزه کل: ${ethers.formatEther(group.totalReward)} IAM
+        سهم هر نفر: ${ethers.formatEther(group.contributionAmount)} IAM
         اعضا: ${group.currentMembers}/${group.maxMembers}
         برندگان: ${group.winnersCount}
         وضعیت: ${this.getStatusText(group.status)}
@@ -860,25 +860,25 @@ class LotteryManager {
         return null;
       }
 
-      if (!this.cpaToken) {
+      if (!this.IAMToken) {
         console.log('قرارداد متصل نیست');
         return null;
       }
 
-      console.log('دریافت موجودی CPA...');
+      console.log('دریافت موجودی IAM...');
       console.log('آدرس کیف پول:', this.currentAccount);
-      console.log('قرارداد:', this.cpaToken.address);
+      console.log('قرارداد:', this.IAMToken.address);
 
-      const balance = await this.cpaToken.balanceOf(this.currentAccount);
+      const balance = await this.IAMToken.balanceOf(this.currentAccount);
       const balanceFormatted = ethers.formatEther(balance);
       
-      console.log(`موجودی CPA شما: ${balanceFormatted} CPA`);
+      console.log(`موجودی IAM شما: ${balanceFormatted} IAM`);
       
       // نمایش در UI
       const balanceElement = document.getElementById('user-balance');
       if (balanceElement) {
         // فقط عدد صحیح نمایش داده شود
-        balanceElement.textContent = `${Math.floor(Number(balanceFormatted))} CPA`;
+        balanceElement.textContent = `${Math.floor(Number(balanceFormatted))} IAM`;
         console.log('موجودی در UI به‌روزرسانی شد');
       } else {
         console.log('عنصر user-balance یافت نشد');

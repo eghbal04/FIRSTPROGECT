@@ -134,7 +134,7 @@ class FloatingAIAssistant {
                 </div>
                 <div class="ai-message-preview" id="ai-message-preview"></div>
                 <div class="ai-message-default-info" id="ai-message-default-info" style="padding:0.7rem 1rem 1.2rem 1rem;">
-                  <div style="color:#00ff88;font-weight:bold;font-size:1.05rem;margin-bottom:0.3rem;">👋 به دستیار هوشمند CPA خوش آمدید!</div>
+                  <div style="color:#00ff88;font-weight:bold;font-size:1.05rem;margin-bottom:0.3rem;">👋 به دستیار هوشمند IAM خوش آمدید!</div>
                   <ul style="list-style:none;padding:0;margin:0 0 0.5rem 0;">
                     <li style="margin-bottom:0.2rem;">• <b>خرید و فروش توکن</b></li>
                     <li style="margin-bottom:0.2rem;">• <b>بررسی موجودی و آمار شبکه</b></li>
@@ -162,7 +162,7 @@ class FloatingAIAssistant {
         picker.style.alignItems = 'center';
         picker.style.overflow = 'hidden';
         // موضوعات اصلی نالج‌بیس و آیکون‌ها
-        const kb = window.CPA_KNOWLEDGE_BASE || {};
+        const kb = window.IAM_KNOWLEDGE_BASE || {};
         const defaultIcons = ['📄','📚','💱','🪙','🏦','🎁','🔒','📝','🛡️','🌐','🧑‍💼','🛒','⚙️','��','🎓','🪙','💡'];
         const topics = Object.entries(kb)
           .filter(([key, value]) => value && value.title)
@@ -218,7 +218,7 @@ class FloatingAIAssistant {
                 <div class="ai-full-header">
                     <div class="ai-full-title">
                         <span class="ai-full-icon">🤖</span>
-                        <span class="ai-full-text">دستیار هوشمند CPA</span>
+                        <span class="ai-full-text">دستیار هوشمند IAM</span>
                     </div>
                     <div class="ai-full-controls">
                         <button class="ai-full-minimize" id="ai-full-minimize">⤢</button>
@@ -231,7 +231,7 @@ class FloatingAIAssistant {
                         <div class="ai-full-welcome">
                             <div class="ai-welcome-icon">👋</div>
                             <div class="ai-welcome-text">
-                                سلام! من دستیار هوشمند CPA هستم. می‌تونم در همه زمینه‌ها کمکتون کنم:
+                                سلام! من دستیار هوشمند IAM هستم. می‌تونم در همه زمینه‌ها کمکتون کنم:
                             </div>
                             <div class="ai-welcome-capabilities">
                                 <div class="ai-capability">💰 خرید و فروش توکن</div>
@@ -797,11 +797,11 @@ class FloatingAIAssistant {
                     messages: [
                         {
                             role: 'system',
-                            content: `شما دستیار هوشمند CPA هستید. به فارسی پاسخ دهید و کوتاه و مفید باشید.
+                            content: `شما دستیار هوشمند IAM هستید. به فارسی پاسخ دهید و کوتاه و مفید باشید.
 
-اطلاعات قرارداد CPA:
-- نام: CONTINUOUS PROFIT ACADEMY (CPA)
-- توکن: CPA (ERC-20)
+اطلاعات قرارداد IAM:
+- نام: CONTINUOUS PROFIT ACADEMY (IAM)
+- توکن: IAM (ERC-20)
 - شبکه: Polygon
 - آدرس قرارداد: 0x045401e0692a84ecDd9c0c0fce3b2E23D864F076
 
@@ -810,7 +810,7 @@ class FloatingAIAssistant {
 - ساختار درختی باینری برای بازاریابی
 - سیستم پاداش باینری (هر 12 ساعت)
 - Cashback ماهانه برای کاربران بدون زیرمجموعه
-- هزینه ثبت‌نام: 100-200 CPA (بسته به تعداد کاربران)
+- هزینه ثبت‌نام: 100-200 IAM (بسته به تعداد کاربران)
 - کارمزد معاملات: 2% (1% پشتیبان، 0.5% توسعه‌دهنده، 0.5% معرف)
 
 برای سوالات تخصصی درباره قرارداد، از اطلاعات بالا استفاده کنید.`
@@ -890,7 +890,7 @@ class FloatingAIAssistant {
             const connection = await window.connectWallet();
             if (connection && connection.address) {
                 const profile = await window.getUserProfile();
-                const balanceText = `موجودی شما:\nPOL: ${profile.polBalance}\nCPA: ${profile.lvlBalance}\nDAI: ${profile.daiBalance}`;
+                const balanceText = `موجودی شما:\nPOL: ${profile.polBalance}\nIAM: ${profile.lvlBalance}\nDAI: ${profile.daiBalance}`;
                 this.addMessageToUI(balanceText, 'ai');
             } else {
                 this.addMessageToUI('لطفاً ابتدا کیف پول خود را متصل کنید.', 'ai');
@@ -1076,7 +1076,7 @@ class FloatingAIAssistant {
 
     // نمایش خلاصه یا پاسخ هر مبحث از نالج‌بیس
     showKnowledgeTopic(topicKey) {
-        const kb = window.CPA_KNOWLEDGE_BASE;
+        const kb = window.IAM_KNOWLEDGE_BASE;
         let content = '';
         switch(topicKey) {
             case 'registration':
@@ -1128,7 +1128,7 @@ class FloatingAIAssistant {
 
     // نمایش زیرعناوین هر دسته به صورت لینک در چت
     showKnowledgeSubtopics(topicKey) {
-        const kb = window.CPA_KNOWLEDGE_BASE;
+        const kb = window.IAM_KNOWLEDGE_BASE;
         console.log('topicKey:', topicKey, 'kb[topicKey]:', kb[topicKey]);
         let subtopics = [];
         let title = '';
@@ -1179,7 +1179,7 @@ class FloatingAIAssistant {
 
     // نمایش محتوای هر زیرعنوان
     showKnowledgeDetail(topicKey, subKey) {
-        const kb = window.CPA_KNOWLEDGE_BASE;
+        const kb = window.IAM_KNOWLEDGE_BASE;
         let content = '';
         // اگر بخش دارای subtopics بود، content زیرعنوان را نمایش بده
         if (kb[topicKey] && Array.isArray(kb[topicKey].subtopics)) {

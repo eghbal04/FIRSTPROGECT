@@ -111,7 +111,7 @@ class SmoothValueUpdater {
     }
     
     /**
-     * استخراج پسوند از رشته (مثل CPA، DAI و ...)
+     * استخراج پسوند از رشته (مثل IAM، DAI و ...)
      */
     _extractSuffix(str) {
         const match = str.match(/\s*([A-Z]+)\s*$/);
@@ -167,8 +167,8 @@ class SmoothValueUpdater {
      * بررسی عددی بودن مقدار
      */
     _isNumeric(value) {
-        const numericPattern = /^-?\d*\.?\d+/;
-        return numericPattern.test(String(value));
+        const numeriIAMttern = /^-?\d*\.?\d+/;
+        return numeriIAMttern.test(String(value));
     }
 
     /**

@@ -34,14 +34,14 @@
     <div class="section">
       <b>توتال سوپلای (Total Supply):</b>
       <span id="total-supply">در حال بارگذاری...</span><br>
-      <b>موجودی CPA در قرارداد:</b>
+      <b>موجودی IAM در قرارداد:</b>
       <span id="contract-balance">در حال بارگذاری...</span><br>
-      <b>CPA در دست کاربران/owner:</b>
+      <b>IAM در دست کاربران/owner:</b>
       <span id="supply-diff">در حال بارگذاری...</span><br>
       <b>ارزش کل (DAI):</b>
       <span id="total-supply-value">در حال بارگذاری...</span>
       <button onclick="refreshTotalSupply()">بروزرسانی</button>
-      <div class="desc">مقدار کل توکن‌های صادر شده، موجودی CPA در قرارداد و اختلاف آن‌ها (CPA در دست کاربران/owner) و ارزش تقریبی کل بر اساس قیمت فعلی توکن (DAI).</div>
+      <div class="desc">مقدار کل توکن‌های صادر شده، موجودی IAM در قرارداد و اختلاف آن‌ها (IAM در دست کاربران/owner) و ارزش تقریبی کل بر اساس قیمت فعلی توکن (DAI).</div>
     </div>
     <hr>
     <div class="section">
@@ -74,14 +74,14 @@
     <div class="section">
       <label>کد صحیح توابع خرید و فروش (Solidity)</label>
       <pre style="background:#f5f5f5;border-radius:6px;padding:12px;direction:ltr;font-size:0.95em;overflow-x:auto;">
-// خرید CPA با DAI (با فرض قیمت با 6 رقم اعشار)
+// خرید IAM با DAI (با فرض قیمت با 6 رقم اعشار)
 function _daiToTokens(uint256 daiAmount) internal view returns (uint256) {
     uint256 price = getTokenPrice(); // قیمت با 6 رقم اعشار
     require(price > 0, "Token price is zero");
     return (daiAmount * 1e18) / price;
 }
 
-// فروش CPA و دریافت DAI (با فرض قیمت با 6 رقم اعشار)
+// فروش IAM و دریافت DAI (با فرض قیمت با 6 رقم اعشار)
 function _tokensToDai(uint256 tokenAmount) internal view returns (uint256) {
     uint256 price = getTokenPrice(); // قیمت با 6 رقم اعشار
     require(price > 0, "Token price is zero");
@@ -171,16 +171,16 @@ function _tokensToDai(uint256 tokenAmount) internal view returns (uint256) {
         const tokenPrice = await contract.getTokenPrice();
         const totalSupplyNum = Number(ethers.formatUnits(totalSupply, 18));
         const tokenPriceNum = Number(ethers.formatUnits(tokenPrice, 6)); // 6 رقم اعشار
-        document.getElementById('total-supply').innerText = totalSupplyNum.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' CPA';
+        document.getElementById('total-supply').innerText = totalSupplyNum.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' IAM';
         document.getElementById('total-supply-value').innerText = (totalSupplyNum * tokenPriceNum).toLocaleString('en-US', {maximumFractionDigits: 2}) + ' DAI';
 
         // استفاده صحیح از contract.target
         const contractBalance = await contract.balanceOf(contract.target);
         const contractBalanceNum = Number(ethers.formatUnits(contractBalance, 18));
-        document.getElementById('contract-balance').innerText = contractBalanceNum.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' CPA';
+        document.getElementById('contract-balance').innerText = contractBalanceNum.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' IAM';
 
         const supplyDiff = totalSupplyNum - contractBalanceNum;
-        document.getElementById('supply-diff').innerText = supplyDiff.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' CPA';
+        document.getElementById('supply-diff').innerText = supplyDiff.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' IAM';
 
       } catch (e) {
         document.getElementById('total-supply').innerText = 'خطا';

@@ -38,7 +38,7 @@ class NetworkNodeManager {
                     </div>
                     <div class="info-group">
                         <div class="info-label">حجم شبکه</div>
-                        <div class="info-value" id="networkVolume">0 CPA</div>
+                        <div class="info-value" id="networkVolume">0 IAM</div>
                     </div>
                     <div class="info-group">
                         <div class="info-label">تاریخ آخرین فعالیت</div>
@@ -147,12 +147,12 @@ class NetworkNodeManager {
 
     // به‌روزرسانی محتوای مودال
     updateModalContent(userInfo) {
-        document.getElementById('userId').textContent = `CPA${String(userInfo.id).padStart(5, '0')}`;
+        document.getElementById('userId').textContent = `IAM${String(userInfo.id).padStart(5, '0')}`;
         document.getElementById('userWallet').textContent = this.formatAddress(userInfo.wallet);
         document.getElementById('userType').textContent = this.getUserTypeLabel(userInfo.type);
         document.getElementById('userBalance').textContent = this.formatNumber(userInfo.balance);
         document.getElementById('userReferrals').textContent = userInfo.referrals;
-        document.getElementById('networkVolume').textContent = `${this.formatNumber(userInfo.networkVolume)} CPA`;
+        document.getElementById('networkVolume').textContent = `${this.formatNumber(userInfo.networkVolume)} IAM`;
         document.getElementById('lastActive').textContent = this.formatDate(userInfo.lastActive);
     }
 

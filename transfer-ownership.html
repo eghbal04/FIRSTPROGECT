@@ -173,7 +173,7 @@
     <div class="card balance-card">
       <b>💰 موجودی‌های شما:</b><br>
       <div class="balance-grid">
-        <span>🪙 CPA: <strong id="user-cpa-balance">-</strong></span>
+        <span>🪙 IAM: <strong id="user-IAM-balance">-</strong></span>
         <span>💵 DAI: <strong id="user-dai-balance">-</strong></span>
         <span>⚡ MATIC: <strong id="user-matic-balance">-</strong></span>
       </div>
@@ -256,9 +256,9 @@
         
         // بروزرسانی موجودی‌ها
         try {
-          // موجودی CPA
-          const cpaBalance = await contract.balanceOf(userAddress);
-          updateElement('user-cpa-balance', parseFloat(ethers.formatEther(cpaBalance)).toFixed(2) + ' CPA');
+          // موجودی IAM
+          const IAMBalance = await contract.balanceOf(userAddress);
+          updateElement('user-IAM-balance', parseFloat(ethers.formatEther(IAMBalance)).toFixed(2) + ' IAM');
           
           // موجودی DAI
           const daiContract = new ethers.Contract(window.DAI_ADDRESS, window.DAI_ABI, signer);

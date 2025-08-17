@@ -163,8 +163,8 @@
         topics.forEach(topic => {
           const div = document.createElement('div');
           div.className = 'topic-item';
-          const cpaId = window.generateCPAId ? window.generateCPAId(topic.index) : topic.index;
-          div.innerHTML = `<div class='topic-title'>${topic.title}</div><div class='topic-meta'>توسط ${topic.creator} ${cpaId} - ${topic.created}${topic.desc ? '<br><span style=\"color:#fff;\">'+topic.desc+'</span>' : ''}</div>`;
+          const IAMId = window.generateIAMId ? window.generateIAMId(topic.index) : topic.index;
+          div.innerHTML = `<div class='topic-title'>${topic.title}</div><div class='topic-meta'>توسط ${topic.creator} ${IAMId} - ${topic.created}${topic.desc ? '<br><span style=\"color:#fff;\">'+topic.desc+'</span>' : ''}</div>`;
           div.onclick = () => openChat(topic.id);
           topicsList.appendChild(div);
         });
@@ -175,7 +175,7 @@
         const topic = topics.find(t => t.id === topicId);
         if (!topic) return;
         chatSection.style.display = '';
-        const cpaId = window.generateCPAId ? window.generateCPAId(topic.index) : topic.index;
+        const IAMId = window.generateIAMId ? window.generateIAMId(topic.index) : topic.index;
         let voiceBtnHtml = '';
         const canSendVoice = userProfile && Number(userProfile.binaryPoints) > 0;
         if (canSendVoice) {
@@ -183,7 +183,7 @@
         } else {
           voiceBtnHtml = `<button type='button' id='voice-btn' style='background:#888;color:#fff;border:none;border-radius:6px;padding:0.5em 1.2em;font-size:1em;font-weight:bold;cursor:not-allowed;opacity:0.5;margin-right:0.5em;' disabled>🎤 ارسال وویس</button><span style='color:#ff6b6b;font-size:0.95em;margin-right:0.5em;'>(فقط کاربران دارای حداقل یک پوینت)</span>`;
         }
-        chatSection.innerHTML = `<div style='font-size:1.1em;font-weight:bold;color:#00ff88;margin-bottom:0.7em;'>تاپیک: ${topic.title}</div><div style='color:#a786ff;margin-bottom:0.7em;'>توسط ${topic.creator} ${cpaId}</div><div class='chat-messages' id='chat-messages'></div><form class='chat-form' id='chat-form'><input type='text' id='chat-input' maxlength='300' placeholder='پیام خود را بنویسید...' required>${voiceBtnHtml}<button type='submit'>ارسال</button></form><button onclick='closeChat()' style='margin-top:1em;background:#a786ff;color:#fff;border:none;border-radius:6px;padding:0.4em 1.2em;cursor:pointer;'>بازگشت به لیست تاپیک‌ها</button>`;
+        chatSection.innerHTML = `<div style='font-size:1.1em;font-weight:bold;color:#00ff88;margin-bottom:0.7em;'>تاپیک: ${topic.title}</div><div style='color:#a786ff;margin-bottom:0.7em;'>توسط ${topic.creator} ${IAMId}</div><div class='chat-messages' id='chat-messages'></div><form class='chat-form' id='chat-form'><input type='text' id='chat-input' maxlength='300' placeholder='پیام خود را بنویسید...' required>${voiceBtnHtml}<button type='submit'>ارسال</button></form><button onclick='closeChat()' style='margin-top:1em;background:#a786ff;color:#fff;border:none;border-radius:6px;padding:0.4em 1.2em;cursor:pointer;'>بازگشت به لیست تاپیک‌ها</button>`;
         renderChatMessages();
         document.getElementById('chat-form').onsubmit = async function(e) {
           e.preventDefault();
@@ -199,7 +199,7 @@
         const msgs = chats[currentTopicId] || [];
         const box = document.getElementById('chat-messages');
         box.innerHTML = msgs.map(m => {
-          const cpaId = window.generateCPAId ? window.generateCPAId(m.index) : m.index;
+          const IAMId = window.generateIAMId ? window.generateIAMId(m.index) : m.index;
           let content = '';
           if (m.voice) {
             const url = URL.createObjectURL(m.voice);
@@ -207,7 +207,7 @@
           } else {
             content = `<div class='chat-text'>${m.text}</div>`;
           }
-          return `<div class='chat-message'><span class='chat-nick'>${m.nick}</span><span class='chat-index'>${cpaId}</span><span class='chat-time'>${m.time}</span>${content}</div>`;
+          return `<div class='chat-message'><span class='chat-nick'>${m.nick}</span><span class='chat-index'>${IAMId}</span><span class='chat-time'>${m.time}</span>${content}</div>`;
         }).join('');
         box.scrollTop = box.scrollHeight;
       }
@@ -303,7 +303,7 @@
         const formData = new FormData();
         formData.append('file', blob);
         formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-        // اختیاری: formData.append('folder', 'cpa-voices');
+        // اختیاری: formData.append('folder', 'IAM-voices');
         const res = await fetch(url, { method: 'POST', body: formData });
         const data = await res.json();
         if (data.secure_url) return data.secure_url;

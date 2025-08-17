@@ -17,7 +17,7 @@
   <script src="js/contract-knowledge-base.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      const kb = window.contractKnowledgeBase || window.CPA_KNOWLEDGE_BASE;
+      const kb = window.contractKnowledgeBase || window.IAM_KNOWLEDGE_BASE;
       let results = [];
       if (kb && kb.financialMarkets && Array.isArray(kb.financialMarkets.subtopics)) {
         results = kb.financialMarkets.subtopics.filter(x => {

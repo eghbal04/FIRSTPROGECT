@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>داشبورد ولت شخصی - CPA</title>
+    <title>داشبورد ولت شخصی - IAM</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
@@ -101,7 +101,7 @@
                     <div style="background:rgba(0,0,0,0.3); border-radius:12px; padding:1rem; text-align:center; border:1px solid rgba(0,255,136,0.2);">
                         <div style="color:#00ff88; font-size:1.2rem; margin-bottom:0.5rem;">🆔</div>
                         <div style="color:#fff; font-size:0.9rem; margin-bottom:0.3rem;">ایندکس</div>
-                        <div style="color:#00ff88; font-size:1.1rem; font-family:monospace; font-weight:bold;" id="cpa-id">-</div>
+                        <div style="color:#00ff88; font-size:1.1rem; font-family:monospace; font-weight:bold;" id="IAM-id">-</div>
                     </div>
 
                     <!-- Registration Date -->
@@ -128,7 +128,7 @@
                     <!-- Balance -->
                     <div style="background:rgba(0,0,0,0.3); border-radius:12px; padding:1rem; text-align:center; border:1px solid rgba(0,123,255,0.2);">
                         <div style="color:#007bff; font-size:1.2rem; margin-bottom:0.5rem;">💰</div>
-                        <div style="color:#fff; font-size:0.9rem; margin-bottom:0.3rem;">موجودی CPA</div>
+                        <div style="color:#fff; font-size:0.9rem; margin-bottom:0.3rem;">موجودی IAM</div>
                         <div style="color:#007bff; font-size:1.1rem; font-family:monospace; font-weight:bold;" id="user-balance">-</div>
                     </div>
 
@@ -181,12 +181,12 @@
                 <h2 style="color:#ffc107; margin-bottom:1.5rem; text-align:center;">💎 موجودی توکن‌ها</h2>
                 
                 <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:1rem;">
-                    <!-- CPA Balance -->
+                    <!-- IAM Balance -->
                     <div style="background:rgba(0,0,0,0.3); border-radius:12px; padding:1rem; text-align:center; border:1px solid rgba(0,255,136,0.2);">
                         <div style="color:#00ff88; font-size:1.2rem; margin-bottom:0.5rem;">🪙</div>
-                        <div style="color:#fff; font-size:0.9rem; margin-bottom:0.3rem;">CPA</div>
-                        <div style="color:#00ff88; font-size:1.1rem; font-family:monospace; font-weight:bold;" id="cpa-balance">-</div>
-                        <div style="color:#a786ff; font-size:0.8rem; margin-top:0.3rem;" id="cpa-usd-value">-</div>
+                        <div style="color:#fff; font-size:0.9rem; margin-bottom:0.3rem;">IAM</div>
+                        <div style="color:#00ff88; font-size:1.1rem; font-family:monospace; font-weight:bold;" id="IAM-balance">-</div>
+                        <div style="color:#a786ff; font-size:0.8rem; margin-top:0.3rem;" id="IAM-usd-value">-</div>
                     </div>
 
                     <!-- DAI Balance -->
@@ -238,12 +238,7 @@
         </div>
     </div>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    
-    <!-- سایر اسکریپت‌ها -->
-    <script src="js/firebase-config.js"></script>
+    <!-- Firebase removed -->
     <script src="js/config.js"></script>
     <script src="js/main.js"></script>
 
@@ -290,7 +285,7 @@
                     network: 'Polygon',
                     chainId: 137,
                     data: {
-                        cpaId: document.getElementById('cpa-id').textContent,
+                        IAMId: document.getElementById('IAM-id').textContent,
                         level: document.getElementById('user-level').textContent,
                         points: document.getElementById('user-points').textContent,
                         balance: document.getElementById('user-balance').textContent,
@@ -299,7 +294,7 @@
                         leftChild: document.getElementById('left-child').textContent,
                         rightChild: document.getElementById('right-child').textContent,
                         isActive: document.getElementById('is-active').textContent,
-                        cpaBalance: document.getElementById('cpa-balance').textContent,
+                        IAMBalance: document.getElementById('IAM-balance').textContent,
                         daiBalance: document.getElementById('dai-balance').textContent,
                         maticBalance: document.getElementById('matic-balance').textContent
                     }
@@ -346,7 +341,7 @@
 
                 // بروزرسانی اطلاعات اصلی با انتقال نرم
                 const updates = [
-                    { element: 'cpa-id', value: `CPA${userData.index.toString()}` },
+                    { element: 'IAM-id', value: `IAM${userData.index.toString()}` },
                     { element: 'user-level', value: userData.level.toString() },
                     { element: 'user-points', value: userData.points.toString() },
                     { element: 'user-balance', value: ethers.formatEther(userData.balance) },
@@ -375,8 +370,8 @@
                 }
 
                 // بروزرسانی موجودی توکن‌ها با انتقال نرم
-                const cpaBalance = await contract.balanceOf(currentWalletAddress);
-                const cpaAmount = Number(ethers.formatEther(cpaBalance));
+                const IAMBalance = await contract.balanceOf(currentWalletAddress);
+                const IAMAmount = Number(ethers.formatEther(IAMBalance));
                 
                 // تابع کوتاه کردن اعداد بزرگ
                 function formatLargeNumber(num) {
@@ -389,36 +384,36 @@
                     }
                 }
                 
-                // محاسبه معادل دلاری CPA
-                let cpaUsdValue = 0;
+                // محاسبه معادل دلاری IAM
+                let IAMUsdValue = 0;
                 try {
                     if (typeof contract.getTokenPrice === 'function') {
                         const tokenPriceRaw = await contract.getTokenPrice();
                         const tokenPrice = Number(ethers.formatUnits(tokenPriceRaw, 18));
-                        cpaUsdValue = cpaAmount * tokenPrice;
+                        IAMUsdValue = IAMAmount * tokenPrice;
                     }
                 } catch (e) {
                     console.log('خطا در دریافت قیمت توکن:', e);
                 }
                 
-                // نمایش موجودی CPA (کوتاه شده)
-                const shortCpaAmount = formatLargeNumber(cpaAmount);
+                // نمایش موجودی IAM (کوتاه شده)
+                const shortIAMAmount = formatLargeNumber(IAMAmount);
                 if (window.smartUpdate) {
-                    window.smartUpdate('cpa-balance', shortCpaAmount);
+                    window.smartUpdate('IAM-balance', shortIAMAmount);
                 } else if (window.updateValueSmoothly) {
-                    window.updateValueSmoothly('cpa-balance', shortCpaAmount);
+                    window.updateValueSmoothly('IAM-balance', shortIAMAmount);
                 } else {
-                    const el = document.getElementById('cpa-balance');
+                    const el = document.getElementById('IAM-balance');
                     if (el) {
-                        el.textContent = shortCpaAmount;
-                        el.title = cpaAmount.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' CPA';
+                        el.textContent = shortIAMAmount;
+                        el.title = IAMAmount.toLocaleString('en-US', {maximumFractionDigits: 4}) + ' IAM';
                     }
                 }
                 
                 // نمایش معادل دلاری
-                const usdEl = document.getElementById('cpa-usd-value');
+                const usdEl = document.getElementById('IAM-usd-value');
                 if (usdEl) {
-                    usdEl.textContent = `≈ $${formatLargeNumber(cpaUsdValue)}`;
+                    usdEl.textContent = `≈ $${formatLargeNumber(IAMUsdValue)}`;
                 }
 
                 // دریافت موجودی DAI
@@ -562,9 +557,9 @@
                     document.getElementById('wallet-dashboard').insertBefore(errorDiv, document.getElementById('wallet-dashboard').firstChild);
                     
                     // بروزرسانی فیلدها با پیام خطا
-                    const fields = ['cpa-id', 'user-level', 'user-points', 'user-balance', 'deposited-amount', 
+                    const fields = ['IAM-id', 'user-level', 'user-points', 'user-balance', 'deposited-amount', 
                                    'referrer-address', 'left-child', 'right-child', 'is-active', 
-                                   'cpa-balance', 'dai-balance', 'matic-balance'];
+                                   'IAM-balance', 'dai-balance', 'matic-balance'];
                     fields.forEach(field => {
                         const element = document.getElementById(field);
                         if (element) {

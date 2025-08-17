@@ -1,4 +1,4 @@
-# 🚀 CPA Terminal - Project Status
+# 🚀 IAM Terminal - Project Status
 
 ## 📊 Current Status
 **Status**: ✅ **ACTIVE & RUNNING**
@@ -54,6 +54,6 @@
 
 ---
 
-**Project**: CPA Terminal  
+**Project**: IAM Terminal  
 **Developer**: AI Assistant  
 **Status**: Production Ready 🎉 

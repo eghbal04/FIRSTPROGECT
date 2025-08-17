@@ -173,15 +173,15 @@
             <div style="color:#00ff88;font-size:1.2rem;margin-bottom:0.3rem;">💰</div>
             <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">کل عرضه</div>
             <div style="color:#00ff88;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="circulating-supply" class="dashboard-value smooth-value-transition numeric-value">-</div>
-            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">CPA Tokens</div>
+            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">IAM Tokens</div>
           </div>
           
-          <!-- 2. موجودی CPA قرارداد - اولویت دوم -->
+          <!-- 2. موجودی IAM قرارداد - اولویت دوم -->
           <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(255,193,7,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
             <div style="color:#ffc107;font-size:1.2rem;margin-bottom:0.3rem;">🏦</div>
             <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">موجودی قرارداد</div>
             <div style="color:#ffc107;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="contract-token-balance" class="dashboard-value smooth-value-transition numeric-value">-</div>
-            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">CPA in Contract</div>
+            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">IAM in Contract</div>
           </div>
           
           <!-- 3. موجودی قرارداد DAI - اولویت سوم -->
@@ -195,9 +195,9 @@
           <!-- 4. قیمت توکن - اولویت چهارم -->
           <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(0,255,136,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
             <div style="color:#00ff88;font-size:1.2rem;margin-bottom:0.3rem;">💲</div>
-            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">قیمت توکن CPA</div>
+            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">قیمت توکن IAM</div>
             <div style="color:#00ff88;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="dashboard-token-price" class="dashboard-value smooth-value-transition numeric-value">-</div>
-            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">DAI per CPA</div>
+            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">DAI per IAM</div>
           </div>
           
           <!-- 5. قیمت ثبت‌نام - اولویت پنجم -->
@@ -205,7 +205,7 @@
             <div style="color:#8a2be2;font-size:1.2rem;margin-bottom:0.3rem;">🎫</div>
             <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">قیمت ثبت‌نام</div>
             <div style="color:#8a2be2;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="dashboard-registration-price" class="dashboard-value smooth-value-transition numeric-value">-</div>
-            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">CPA per Registration</div>
+            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">IAM per Registration</div>
           </div>
           
           <!-- بقیه کارت‌ها -->
@@ -223,7 +223,7 @@
             <div style="color:#00ff88;font-size:1.2rem;margin-bottom:0.3rem;">💎</div>
             <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">ارزش هر پوینت</div>
             <div style="color:#00ff88;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="dashboard-point-value" class="dashboard-value smooth-value-transition numeric-value">-</div>
-            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">CPA per Point</div>
+            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">IAM per Point</div>
           </div>
           
           <!-- Help Fund Card -->
@@ -262,158 +262,14 @@
 
       </div>
 
-      <!-- Price Chart Section -->
-      <div class="dashboard-card" id="price-chart-section" style="background:linear-gradient(135deg,#1a1f2e,#232946);border-radius:16px;box-shadow:0 4px 20px rgba(0,255,136,0.15);min-width:100%;max-width:100%;margin:1rem 0;width:100%;padding:1.5rem;position:relative;overflow:hidden;">
-        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#00ff88,#a786ff,#00ff88);animation:shimmer 2s linear infinite;"></div>
-        
-        <!-- Current Prices Display -->
-        <!-- حذف شد: نمایش قیمت توکن و پوینت -->
 
-        <!-- Token Chart Controls -->
-        <div style="display:flex;justify-content:center;align-items:center;gap:0.5rem;margin-bottom:0.5rem;flex-wrap:wrap;">
-          <select id="token-period-select" style="background:rgba(0,255,136,0.1);color:#00ff88;border:1px solid #00ff88;border-radius:6px;padding:0.4rem 1rem;font-size:0.9rem;font-family:monospace;cursor:pointer;">
-            <option value="day">Day (24h)</option>
-            <option value="week">Week (7d)</option>
-            <option value="month">Month (30d)</option>
-            <option value="year">Year (12m)</option>
-          </select>
-          <div style="text-align:center;padding:0.3rem 0.8rem;background:rgba(0,0,0,0.3);border-radius:6px;border:1px solid rgba(0,255,136,0.2);min-width:120px;">
-            <div style="color:#00ff88;font-size:0.8rem;font-family:monospace;">Token Min: <span id="token-min-price" style="color:#fff;">-</span></div>
-          </div>
-          <div style="text-align:center;padding:0.3rem 0.8rem;background:rgba(0,0,0,0.3);border-radius:6px;border:1px solid rgba(0,255,136,0.2);min-width:120px;">
-            <div style="color:#00ff88;font-size:0.8rem;font-family:monospace;">Token Max: <span id="token-max-price" style="color:#fff;">-</span></div>
-          </div>
-        </div>
-        
-        <!-- Token Chart Container -->
-        <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:0.8rem;border:1px solid rgba(0,255,136,0.2);width:100%;max-width:100%;margin-bottom:1rem;">
-          <div style="color:#00ff88;font-size:0.9rem;font-weight:bold;text-align:center;margin-bottom:0.3rem;font-family:monospace;">Token Price Chart</div>
-          <canvas id="price-chart-canvas" style="width:100% !important;height:180px !important;border-radius:4px;max-width:100%;"></canvas>
-        </div>
-        
-        <!-- Point Chart Controls -->
-        <div style="display:flex;justify-content:center;align-items:center;gap:0.5rem;margin-bottom:0.5rem;flex-wrap:wrap;">
-          <select id="point-period-select" style="background:rgba(167,134,255,0.1);color:#a786ff;border:1px solid #a786ff;border-radius:6px;padding:0.4rem 1rem;font-size:0.9rem;font-family:monospace;cursor:pointer;">
-            <option value="day">Day (24h)</option>
-            <option value="week">Week (7d)</option>
-            <option value="month">Month (30d)</option>
-            <option value="year">Year (12m)</option>
-          </select>
-          <div style="text-align:center;padding:0.3rem 0.8rem;background:rgba(0,0,0,0.3);border-radius:6px;border:1px solid rgba(167,134,255,0.2);min-width:120px;">
-            <div style="color:#a786ff;font-size:0.8rem;font-family:monospace;">Point Min: <span id="point-min-price" style="color:#fff;">-</span></div>
-          </div>
-          <div style="text-align:center;padding:0.3rem 0.8rem;background:rgba(0,0,0,0.3);border-radius:6px;border:1px solid rgba(167,134,255,0.2);min-width:120px;">
-            <div style="color:#a786ff;font-size:0.8rem;font-family:monospace;">Point Max: <span id="point-max-price" style="color:#fff;">-</span></div>
-          </div>
-        </div>
-        
-        <!-- Point Chart Container -->
-        <div style="background:rgba(0,0,0,0.3);border-radius:8px;padding:0.8rem;border:1px solid rgba(167,134,255,0.2);width:100%;max-width:100%;">
-          <div style="color:#a786ff;font-size:0.9rem;font-weight:bold;text-align:center;margin-bottom:0.3rem;font-family:monospace;">Point Value Chart</div>
-          <canvas id="point-chart-canvas" style="width:100% !important;height:180px !important;border-radius:4px;max-width:100%;"></canvas>
-        </div>
-        
-
-        
-
-      </div>
-
-      <!-- Buttons Row for Main Sections -->
-      <!-- دکمه‌های پنج‌گانه حذف شدند، فقط نوار پایین فعال است -->
-
-      <!-- CPA Introduction Section -->
-      <div class="cpa-intro-section" style="background:linear-gradient(135deg,#181c2a,#232946);border-radius:18px;box-shadow:0 4px 24px rgba(0,255,136,0.10);margin:2rem 0 1.5rem 0;padding:2.2rem 1.5rem;max-width:900px;width:100%;margin-left:auto;margin-right:auto;direction:rtl;">
-        <h2 style="color:#00ff88;font-family:'Montserrat','Noto Sans Arabic',sans-serif;font-size:1.5rem;font-weight:bold;margin-bottom:1.2rem;text-align:center;">درباره آکادمی سود مستمر (CPA)</h2>
-        <div id="cpa-typewriter-wrapper" style="position:relative;max-height:2.1em;overflow:hidden;transition:max-height 0.5s cubic-bezier(.4,2,.6,1);">
-          <div id="cpa-typewriter" style="color:#fff;font-size:1.08rem;line-height:2.1;text-align:justify;min-height:220px;"></div>
-          <div id="cpa-fade" style="position:absolute;left:0;right:0;bottom:0;height:70px;background:linear-gradient(0deg,#181c2a 80%,rgba(35,41,70,0.01) 100%);pointer-events:none;transition:opacity 0.3s;"></div>
-        </div>
-        <div style="text-align:center;margin-top:1.2rem;">
-          <button id="cpa-expand-btn" style="background:linear-gradient(90deg,#00ff88,#a786ff);color:#181c2a;font-weight:bold;border:none;border-radius:8px;padding:0.7rem 2.2rem;font-size:1rem;cursor:pointer;box-shadow:0 2px 12px rgba(0,255,136,0.10);transition:background 0.2s,box-shadow 0.2s;">نمایش بیشتر</button>
-        </div>
-      </div>
-
-      <!-- Welcome Popup Modal -->
-      <div id="welcome-modal" style="display:flex;position:fixed;z-index:200000;top:0;left:0;width:100vw;height:100vh;background:rgba(24,28,42,0.95);align-items:center;justify-content:center;backdrop-filter:blur(5px);">
-        <div id="welcome-modal-content" style="background:linear-gradient(135deg,#232946,#181c2a);border-radius:20px;max-width:95vw;width:650px;max-height:calc(100vh - 0.6in);margin:0.3in auto; padding:2.5em 2em 2em 2em;box-shadow:0 12px 48px rgba(0,0,0,0.3);position:relative;color:#fff;font-size:1.1em;line-height:1.8;overflow-y:auto;-webkit-overflow-scrolling:touch;border:2px solid #a786ff33;">
-          
-          <div style="text-align:center;margin-bottom:2em;">
-            <h2 style="color:#00ff88;font-size:1.3em;font-weight:bold;margin:0;text-shadow:0 2px 8px rgba(0,255,136,0.3);">🌟 خوش آمدید به آکادمی سود مستمر 🌟</h2>
-            <div style="width:80px;height:3px;background:linear-gradient(90deg,#00ff88,#a786ff);margin:1em auto;border-radius:3px;"></div>
-          </div>
-          
-          <div style="text-align:justify;direction:rtl;">
-            <div id="welcome-typewriter-content" style="line-height:1.8;font-size:1.05em;max-height:calc(1.8em * 15);overflow-y:auto;-webkit-overflow-scrolling:touch;">
-               <div style="background:rgba(0,255,136,0.08);padding:1.2em;border-radius:12px;border-right:4px solid #00ff88;margin-bottom:1em;">
-                 <p style="margin:0;color:#e0e6f7;font-weight:500;">⚠️ <strong>اطلاعیه مهم:</strong> سرمایه‌گذاری بدون دانش و مدیریت ریسک می‌تواند منجر به زیان شود. سیستم بر پایه قراردادهای هوشمند غیرمتمرکز و شفاف روی اتریوم و پالیگان است.</p>
-               </div>
-               <p style="margin-top:0;">این پلتفرم بر <strong>غیرمتمرکز بودن</strong>، <strong>شفافیت</strong> و <strong>آموزش مستمر</strong> تکیه دارد. بازگشت‌های ماهانه، پورسانت‌ها و تمامی محاسبات طبق منطق قرارداد اجرا می‌شود. لطفاً با دید بلندمدت و سرمایه مازاد وارد شوید.</p>
-             </div>
-           </div>
-          
-          <div id="welcome-footer" style="position:sticky;bottom:0;left:0;right:0;text-align:center;margin-top:1.2em;padding-top:0.8em;background:linear-gradient(180deg,rgba(35,41,70,0),rgba(35,41,70,0.92));backdrop-filter:blur(4px);">
-            <button id="welcome-understand-btn" style="background:linear-gradient(90deg,#00ff88,#a786ff);color:#181c2a;border:none;border-radius:12px;padding:1em 2.5em;font-size:1.05em;font-weight:bold;cursor:pointer;box-shadow:0 4px 16px rgba(0,255,136,0.3);transition:all 0.3s;">
-               متوجه شدم، ادامه دهید 🚀
-             </button>
-           </div>
-        </div>
-      </div>
-
-      <!-- Responsive styles for welcome modal -->
-      <style id="welcome-modal-mobile">
-        @media (max-width: 600px) {
-          #welcome-modal-content {
-            width: 92vw !important;
-            max-height: calc(100vh - 0.6in) !important;
-            margin: 0.3in auto !important;
-            padding: 1.2em 1em 1em 1em !important;
-            border-radius: 14px !important;
-            font-size: 0.95em !important;
-            line-height: 1.7 !important;
-            -webkit-overflow-scrolling: touch !important;
-          }
-          #welcome-typewriter-content {
-            font-size: 1em !important;
-            line-height: 1.7 !important;
-            max-height: calc(1.7em * 15) !important;
-            overflow-y: auto !important;
-            -webkit-overflow-scrolling: touch !important;
-          }
-          #welcome-modal h2 {
-            font-size: 1.05em !important;
-          }
-          #welcome-footer {
-            padding-top: 0.6em !important;
-            background: linear-gradient(180deg,rgba(35,41,70,0),rgba(35,41,70,0.96)) !important;
-          }
-          #welcome-understand-btn {
-            width: 100% !important;
-            padding: 0.85em 1.2em !important;
-            font-size: 1em !important;
-            border-radius: 10px !important;
-          }
-        }
-        @media (max-width: 360px) {
-          #welcome-modal-content {
-            width: 94vw !important;
-            max-height: calc(100vh - 0.6in) !important;
-            margin: 0.3in auto !important;
-            padding: 0.9em !important;
-            font-size: 0.9em !important;
-          }
-          #welcome-typewriter-content {
-            max-height: calc(1.7em * 15) !important;
-            overflow-y: auto !important;
-          }
-          #welcome-understand-btn {
-            font-size: 0.95em !important;
-            padding: 0.75em 1em !important;
-          }
-        }
-      </style>
 
       <script>
       document.addEventListener('DOMContentLoaded', function() {
+        
+        // پاپ‌اپ قوانین سواپ حذف شد
+        
+        // (swap pre-modal removed)
         // نمایش پاپ آپ خوشامدگویی
         function showWelcomeModal() {
           console.log('🔄 showWelcomeModal called');
@@ -444,70 +300,242 @@
             // Do not persist seen flag; always show on next visit
           }
           
-          if (closeBtn) closeBtn.onclick = closeModal;
+          // تابع بستن پاپ اپ
+          window.closeWelcomeModal = function() {
+            // متوقف کردن تایمر
+            if (readingTimerInterval) {
+              clearInterval(readingTimerInterval);
+            }
+            const modal = document.getElementById('welcome-modal');
+            if (modal) {
+              modal.style.display = 'none';
+              document.body.style.overflow = '';
+            }
+          };
+          
+          if (closeBtn) closeBtn.onclick = function() {
+            // بررسی اینکه آیا چک‌باکس‌ها وجود دارند و آیا همه تیک خورده‌اند
+            const acceptButton = document.getElementById('acceptButton');
+            if (acceptButton && acceptButton.disabled) {
+              // اگر دکمه پذیرش غیرفعال است، اجازه بستن نده
+              return;
+            }
+            closeModal();
+          };
           if (understandBtn) understandBtn.onclick = closeModal;
           
-          // بستن با کلیک روی بک‌گراند
+          // بستن با کلیک روی بک‌گراند (فقط اگر شرایط پذیرفته نشده باشد)
           modal.onclick = function(e) {
-            if (e.target === modal) closeModal();
+            if (e.target === modal) {
+              // بررسی اینکه آیا چک‌باکس‌ها وجود دارند و آیا همه تیک خورده‌اند
+              const acceptButton = document.getElementById('acceptButton');
+              if (acceptButton && acceptButton.disabled) {
+                // اگر دکمه پذیرش غیرفعال است، اجازه بستن نده
+                return;
+              }
+              closeModal();
+            }
           };
         }
 
-        // تایپ‌رایتر پاپ آپ خوشامدگویی
+        // بررسی تعداد نمایش پاپ آپ در حافظه کش
+        function shouldShowWelcomeModal() {
+          const showCount = localStorage.getItem('welcomeModalShowCount') || 0;
+          return showCount < 3;
+        }
+
+        // افزایش شمارنده نمایش پاپ آپ
+        function incrementShowCount() {
+          const currentCount = parseInt(localStorage.getItem('welcomeModalShowCount') || 0);
+          localStorage.setItem('welcomeModalShowCount', currentCount + 1);
+        }
+
+        // تایمر مطالعه
+        let readingTimerInterval;
+        let readingSeconds = 0;
+        
+        function startReadingTimer() {
+          readingSeconds = 0;
+          readingTimerInterval = setInterval(() => {
+            readingSeconds++;
+            const minutes = Math.floor(readingSeconds / 60);
+            const seconds = readingSeconds % 60;
+            const timerDisplay = document.getElementById('readingTimer');
+            if (timerDisplay) {
+              timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+            
+            // بعد از 30 ثانیه مطالعه، چک‌باکس‌ها را فعال کن
+            if (readingSeconds >= 30) {
+              enableCheckboxes();
+              clearInterval(readingTimerInterval);
+            }
+          }, 1000);
+        }
+        
+        // فعال‌سازی چک‌باکس‌ها بعد از مطالعه
+        function enableCheckboxes() {
+          const condition1 = document.getElementById('condition1');
+          const condition2 = document.getElementById('condition2');
+          const condition3 = document.getElementById('condition3');
+          const acceptButton = document.getElementById('acceptButton');
+          
+          if (condition1 && condition2 && condition3 && acceptButton) {
+            // فعال‌سازی چک‌باکس‌ها
+            condition1.disabled = false;
+            condition2.disabled = false;
+            condition3.disabled = false;
+            
+            // تغییر متن چک‌باکس‌ها
+            const spans = document.querySelectorAll('#welcome-typewriter-content label span');
+            if (spans.length >= 3) {
+              spans[0].textContent = '✅ من شرایط پذیرش را مطالعه کرده و می‌پذیرم';
+              spans[0].style.opacity = '1';
+              spans[1].textContent = '🎓 من خواهان یادگیری این بازار هستم';
+              spans[1].style.opacity = '1';
+              spans[2].textContent = '📚 من از قواعد و قوانین ارزهای دیجیتال آشنایی دارم';
+              spans[2].style.opacity = '1';
+            }
+            
+            // تغییر متن دکمه
+            acceptButton.textContent = '🔓 ورود به پلتفرم';
+            acceptButton.style.background = 'linear-gradient(135deg,#00ff88,#00cc6a)';
+            acceptButton.style.color = '#000';
+            acceptButton.style.cursor = 'pointer';
+            
+            // تغییر متن تایمر
+            const timerText = document.querySelector('#welcome-typewriter-content p strong');
+            if (timerText) {
+              timerText.textContent = '✅ مطالعه کامل شد!';
+            }
+          }
+        }
+        
+        // تایپ‌رایتر پاپ آپ شرایط و قوانین
         function startWelcomeTypewriter() {
           const container = document.getElementById('welcome-typewriter-content');
-          if (!container) return;
+          if (!container) {
+            console.error('Container not found');
+            return;
+          }
           
-          const welcomeText = `<div style="background:rgba(0,255,136,0.08);padding:1.2em 1.4em;border-radius:12px;border-right:4px solid #00ff88;margin-bottom:1.2em;">
+          console.log('Starting typewriter...');
+          
+          // شروع تایمر مطالعه از ابتدای تایپ‌رایتر
+          if (typeof startReadingTimer === 'function') {
+            startReadingTimer();
+          }
+          
+          const welcomeText = `<div style="background:rgba(255,193,7,0.08);padding:1.2em 1.4em;border-radius:12px;border-right:4px solid #ffc107;margin-bottom:1.2em;">
   <p style="margin:0;color:#e0e6f7;font-weight:500;">
-    ⚠️ <strong>اطلاعیه مهم:</strong> ورود به هر بازار مالی مستلزم <strong>دانش، انضباط و مدیریت ریسک</strong> است. صرفِ استفاده از این پلتفرم به‌تنهایی باعث ثروتمند شدن شما نخواهد شد؛ <strong>بینش و استمرار شما</strong> نتیجه را می‌سازد.
+    ⚠️ <strong>اطلاعیه مهم:</strong> قبل از ورود به پلتفرم، لطفاً شرایط و قوانین زیر را مطالعه کرده و بپذیرید.
   </p>
 </div>
 
-<h3 style="color:#a786ff;font-size:1.25em;margin:0 0 0.8em 0;">دربارهٔ سامانه</h3>
-<p style="margin-top:0;">
-  این اکوسیستم بر پایهٔ <strong>قراردادهای هوشمند غیرمتمرکز</strong> بنا شده و بدون هرگونه مدیر متمرکز، مطابق منطق از پیش‌تعریف‌شده اجرا می‌شود. زیرساخت ما از شبکه‌های <strong>اتریوم</strong> و <strong>پالیگان</strong> و همچنین ارز پایدارِ غیرمتمرکز <strong>DAI</strong> بهره می‌برد؛ تا <strong>شفافیت، امنیت و دسترسی جهانی</strong> فراهم گردد.
- </p>
+<h3 style="color:#a786ff;font-size:1.25em;margin:0 0 0.8em 0;">شرایط پذیرش</h3>
+<div style="background:rgba(0,255,136,0.05);padding:1em;border-radius:8px;border-right:3px solid #00ff88;margin-bottom:1em;">
+  <p style="margin:0;color:#e0e6f7;line-height:1.6;">
+    <strong>✅ من شرایط زیر را می‌پذیرم:</strong><br>
+    • سرمایه‌گذاری در ارزهای دیجیتال با ریسک همراه است<br>
+    • تمامی تراکنش‌ها غیرقابل بازگشت و شفاف هستند<br>
+    • مسئولیت تصمیمات مالی بر عهده خودم است<br>
+    • قوانین و مقررات محلی را رعایت می‌کنم
+  </p>
+</div>
 
-<h3 style="color:#a786ff;font-size:1.25em;margin:1.1em 0 0.6em 0;">اصول و مزایا</h3>
+<h3 style="color:#a786ff;font-size:1.25em;margin:1.1em 0 0.6em 0;">تمایل به یادگیری</h3>
+<div style="background:rgba(138,43,226,0.05);padding:1em;border-radius:8px;border-right:3px solid #8a2be2;margin-bottom:1em;">
+  <p style="margin:0;color:#e0e6f7;line-height:1.6;">
+    <strong>🎓 من خواهان یادگیری این بازار هستم:</strong><br>
+    • مطالعه مستمر در زمینه ارزهای دیجیتال<br>
+    • آشنایی با مفاهیم بلاکچین و قراردادهای هوشمند<br>
+    • یادگیری مدیریت ریسک و سرمایه<br>
+    
+  </p>
+</div>
+
+<h3 style="color:#a786ff;font-size:1.25em;margin:1.1em 0 0.6em 0;">آشنایی با قواعد ارزهای دیجیتال</h3>
+<div style="background:rgba(255,69,0,0.05);padding:1em;border-radius:8px;border-right:3px solid #ff4500;margin-bottom:1em;">
+  <p style="margin:0;color:#e0e6f7;line-height:1.6;">
+    <strong>📚 من از قواعد و قوانین ارزهای دیجیتال آشنایی دارم:</strong><br>
+    • نحوه کارکرد کیف پول‌های دیجیتال<br>
+    • اصول امنیت و حفاظت از کلیدهای خصوصی<br>
+    • آشنایی با شبکه‌های مختلف (اتریوم، پالیگان)<br>
+    • درک مفاهیم گس (Gas) و تایید تراکنش‌ها
+  </p>
+</div>
+
+<h3 style="color:#a786ff;font-size:1.25em;margin:1.1em 0 0.6em 0;">مشخصات قرارداد هوشمند</h3>
+<p style="margin-top:0;">
+  <strong>آدرس قرارداد:</strong> 0xA3d5445e3e57dDA57C69184e88A93C9f6f7f9aA6<br>
+  <strong>شبکه:</strong> Polygon (MATIC)<br>
+  <strong>استاندارد:</strong> ERC-20<br>
+  <strong>نام توکن:</strong> IAM Token<br>
+  <strong>نماد:</strong> IAM<br>
+  <strong>تعداد اعشار:</strong> 18
+</p>
+
+<h3 style="color:#a786ff;font-size:1.25em;margin:1.1em 0 0.6em 0;">توابع اصلی قرارداد</h3>
 <ul style="list-style:none;padding:0;margin:0;">
   <li style="margin-bottom:0.65em;padding-right:1.5em;position:relative;">
     <span style="position:absolute;right:0;color:#00ff88;">🔹</span>
-    <strong>رشد تدریجی توکن CPA</strong> با هدف پایداری رفتاری و کاهش نوسانات هیجانی
+    <strong>register()</strong> - ثبت‌نام کاربر جدید
   </li>
   <li style="margin-bottom:0.65em;padding-right:1.5em;position:relative;">
     <span style="position:absolute;right:0;color:#00ff88;">🔹</span>
-    <strong>ریسک منطقی مدیریت‌شده</strong>؛ افت‌های معمول در منطق سیستم محدود و هزینه‌های شبکه/کارمزد باید در محاسبات لحاظ شود
+    <strong>transfer()</strong> - انتقال توکن بین کیف پول‌ها
   </li>
   <li style="margin-bottom:0.65em;padding-right:1.5em;position:relative;">
     <span style="position:absolute;right:0;color:#00ff88;">🔹</span>
-    <strong>شفافیت کامل</strong>؛ همهٔ تراکنش‌ها و محاسبات بر بستر زنجیره قابل رهگیری است
+    <strong>getTokenPrice()</strong> - دریافت قیمت فعلی توکن
+  </li>
+  <li style="margin-bottom:0.65em;padding-right:1.5em;position:relative;">
+    <span style="position:absolute;right:0;color:#00ff88;">🔹</span>
+    <strong>getPointValue()</strong> - دریافت ارزش هر پوینت
+  </li>
+  <li style="margin-bottom:0.65em;padding-right:1.5em;position:relative;">
+    <span style="position:absolute;right:0;color:#00ff88;">🔹</span>
+    <strong>buyTokens()</strong> - خرید توکن با DAI
+  </li>
+  <li style="margin-bottom:0.65em;padding-right:1.5em;position:relative;">
+    <span style="position:absolute;right:0;color:#00ff88;">🔹</span>
+    <strong>sellTokens()</strong> - فروش توکن و دریافت DAI
   </li>
 </ul>
 
-<h3 style="color:#a786ff;font-size:1.25em;margin:1.1em 0 0.6em 0;">سازوکار بازدهی</h3>
+<h3 style="color:#a786ff;font-size:1.25em;margin:1.1em 0 0.6em 0;">ساختار داده‌ها</h3>
 <p style="margin-top:0;">
-  در حالت عدم فعالیت، <strong>بازگشت ماهانهٔ ۳٪</strong> از مبلغ ورود طبق منطق قرارداد قابل دریافت است. با دریافت هرگونه پورسانت بازاریابی، مبالغ بازگشتی از سهم درآمدی کسر و <strong>تسویه منصفانه</strong> انجام می‌شود. موفقیت در بازاریابی، تابع <strong>کیفیت معرفی، آموزش و پشتیبانی شبکه</strong> است.
+  <strong>User Struct:</strong><br>
+  - address: آدرس کیف پول کاربر<br>
+  - uint256 index: شماره ایندکس کاربر<br>
+  - bool activated: وضعیت فعال بودن<br>
+  - uint256 registrationTime: زمان ثبت‌نام<br>
+  - address referrer: معرف کاربر<br>
+  - uint256 totalPoints: کل پوینت‌های کسب شده
 </p>
 
-<h3 style="color:#a786ff;font-size:1.25em;margin:1.1em 0 0.6em 0;">توصیهٔ مسئولانه</h3>
+<h3 style="color:#a786ff;font-size:1.25em;margin:1.1em 0 0.6em 0;">متغیرهای مهم</h3>
 <ul style="list-style:none;padding:0;margin:0;">
   <li style="margin-bottom:0.65em;padding-right:1.5em;position:relative;">
     <span style="position:absolute;right:0;color:#00ff88;">✅</span>
-    با <strong>سرمایهٔ مازاد</strong> و پس از مطالعهٔ مستندات وارد شوید
+    <strong>totalSupply:</strong> کل عرضه توکن IAM
   </li>
   <li style="margin-bottom:0.65em;padding-right:1.5em;position:relative;">
     <span style="position:absolute;right:0;color:#00ff88;">✅</span>
-    <strong>مدیریت ریسک</strong>، تنوع‌سازی و دید بلندمدت را در اولویت بگذارید
+    <strong>registrationPrice:</strong> قیمت ثبت‌نام (به IAM)
   </li>
   <li style="margin-bottom:0.65em;padding-right:1.5em;position:relative;">
     <span style="position:absolute;right:0;color:#00ff88;">✅</span>
-    در صورت ابهام، از تیم ما <strong>راهنمایی شفاف</strong> بخواهید
+    <strong>tokenPrice:</strong> قیمت فعلی توکن (به DAI)
+  </li>
+  <li style="margin-bottom:0.65em;padding-right:1.5em;position:relative;">
+    <span style="position:absolute;right:0;color:#00ff88;">✅</span>
+    <strong>pointValue:</strong> ارزش هر پوینت (به IAM)
   </li>
 </ul>
 
 <div style="margin-top:1.2em;background:rgba(167,134,255,0.08);padding:1em;border-radius:10px;border-right:4px solid #a786ff;">
-  <p style="margin:0;">هدف ما <strong>همراهی آگاهانه</strong> با شماست؛ تا با اتکا به فناوری غیرمتمرکز، آموزشی منظم و تصمیم‌های سنجیده، مسیری <strong>شفاف و پایدار</strong> را تجربه کنید.</p>
+  <p style="margin:0;">تمام تراکنش‌ها در <strong>PolygonScan</strong> قابل ردیابی هستند و کد قرارداد <strong>باز و قابل بررسی</strong> است.</p>
 </div>`;
           
           let i = 0;
@@ -536,15 +564,164 @@
               container.scrollTop = container.scrollHeight;
               const delay = (char === '.' || char === '!' || char === '؟' || char === '،') ? speed * 3 : speed;
               setTimeout(typeWriter, delay);
+            } else {
+              // تایپ‌رایتر تمام شد، حالا چک‌باکس‌ها را نمایش بده
+              if (typeof showCheckboxes === 'function') {
+                showCheckboxes();
+              }
             }
           }
           
           typeWriter();
         }
         
-        showWelcomeModal();
-        const text = `آکادمی سود مستمر (CPA) یک اکوسیستم نوآورانه و مردم‌محور است که با هدف ارائه خدمات مالی، آموزشی و معاملاتی کاملاً غیرمتمرکز و شفاف، بنیان نهاده شده است. در این مجموعه، سرمایه شما همیشه در اختیار خودتان باقی می‌ماند؛ چه در حساب شخصی‌تان در صرافی، چه در بروکر، و چه در کیف پول هوشمند متصل به قرارداد غیرمتمرکز.\n\nخدمات ما:\n• ارائه سیگنال‌های تخصصی و ربات‌های اتوترید برای بازارهای مالی\n• امکان فعالیت به عنوان ایجنت برای افراد و IB در بروکرها\n• امکان بازاریابی شبکه‌ای برای دوستانی که می‌خواهند این مجموعه را ارتقا دهند\n• شما می‌توانید از سهام‌های معرفی افراد (Referral Shares) بهره‌مند شوید.\n• همچنین می‌توانید با سرمایه‌گذاری در صندوق CPA و توکن افزایشی آن، به صورت تضمینی به سود برسید.\n• آموزش‌های جامع فارکس و ارز دیجیتال\n• پشتیبانی از صندوق غیرمتمرکز CPA و توکن CPA\n• خدمات کپی‌ترید: اگر ربات CPA سود کند، شما هم سود می‌کنید و اگر ضرر کند، شما نیز ضرر می‌کنید؛ هیچ سودی از حساب شما در زمان ضرر برداشت نمی‌شود و تا جبران ضرر، CPA سهمی دریافت نمی‌کند.\n• شعار ما: سرمایه‌ات در حساب خودت، سودت واقعی و شفاف\n\nصداقت، شفافیت و خدمات صددرصدی، اصول بنیادین ماست. هیچ‌گاه سرمایه شما به حساب CPA منتقل نمی‌شود؛ بلکه شما همواره کنترل کامل دارایی خود را دارید و تنها در سود واقعی شریک هستیم. در دنیایی که بسیاری به دنبال جذب سرمایه مردم و ارائه وعده‌های توخالی هستند، ما در CPA تنها زمانی سود می‌بریم که شما واقعاً سود کنید و در زیان، شریک و همراه شما خواهیم بود.\n\nCPA؛ انتخابی برای آینده‌ای مطمئن، شفاف و مردم‌محور.`;
-        const container = document.getElementById('cpa-typewriter');
+        // تابع تست برای تایپ‌رایتر
+        function testTypewriter() {
+          console.log('Testing typewriter...');
+          const container = document.getElementById('welcome-typewriter-content');
+          if (container) {
+            container.innerHTML = 'تست تایپ‌رایتر...';
+            setTimeout(() => {
+              startWelcomeTypewriter();
+            }, 1000);
+          }
+        }
+
+        // نمایش چک‌باکس‌های شرایط
+        function showCheckboxes() {
+          const container = document.getElementById('welcome-typewriter-content');
+          if (!container) return;
+
+          const checkboxesHTML = `
+            <div style="margin-top:2em;background:rgba(255,193,7,0.1);padding:1.5em;border-radius:12px;border:2px solid #ffc107;">
+              <h3 style="color:#ffc107;margin-bottom:1em;text-align:center;">✅ تایید شرایط و قوانین</h3>
+              
+              <div style="margin-bottom:1em;">
+                <label style="display:flex;align-items:center;cursor:pointer;color:#e0e6f7;">
+                  <input type="checkbox" id="condition1" style="margin-left:0.5em;transform:scale(1.2);" onchange="checkAllConditions()" disabled>
+                  <span style="opacity:0.6;">⏳ من شرایط پذیرش را مطالعه کرده و می‌پذیرم</span>
+                </label>
+              </div>
+              
+              <div style="margin-bottom:1em;">
+                <label style="display:flex;align-items:center;cursor:pointer;color:#e0e6f7;">
+                  <input type="checkbox" id="condition2" style="margin-left:0.5em;transform:scale(1.2);" onchange="checkAllConditions()" disabled>
+                  <span style="opacity:0.6;">⏳ من خواهان یادگیری این بازار هستم</span>
+                </label>
+              </div>
+              
+              <div style="margin-bottom:1em;">
+                <label style="display:flex;align-items:center;cursor:pointer;color:#e0e6f7;">
+                  <input type="checkbox" id="condition3" style="margin-left:0.5em;transform:scale(1.2);" onchange="checkAllConditions()" disabled>
+                  <span style="opacity:0.6;">⏳ من از قواعد و قوانین ارزهای دیجیتال آشنایی دارم</span>
+                </label>
+              </div>
+              
+              <div style="text-align:center;margin-top:1.5em;">
+                <button id="acceptButton" onclick="acceptConditions()" style="background:linear-gradient(135deg,#666,#444);color:#999;border:none;padding:0.8em 2em;border-radius:8px;font-weight:bold;cursor:not-allowed;opacity:0.5;pointer-events:none;" disabled>
+                  ⏳ لطفاً ابتدا مفاد را مطالعه کنید
+                </button>
+              </div>
+            </div>
+          `;
+          
+          container.innerHTML += checkboxesHTML;
+          container.scrollTop = container.scrollHeight;
+        }
+
+        // تایمر مطالعه
+        // تکراری حذف شد
+        
+        function startReadingTimer() {
+          readingSeconds = 0;
+          readingTimerInterval = setInterval(() => {
+            readingSeconds++;
+            const minutes = Math.floor(readingSeconds / 60);
+            const seconds = readingSeconds % 60;
+            const timerDisplay = document.getElementById('readingTimer');
+            if (timerDisplay) {
+              timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+            
+            // بعد از 30 ثانیه مطالعه، چک‌باکس‌ها را فعال کن
+            if (readingSeconds >= 30) {
+              enableCheckboxes();
+              clearInterval(readingTimerInterval);
+            }
+          }, 1000);
+        }
+        
+        // فعال‌سازی چک‌باکس‌ها بعد از مطالعه
+        function enableCheckboxes() {
+          const condition1 = document.getElementById('condition1');
+          const condition2 = document.getElementById('condition2');
+          const condition3 = document.getElementById('condition3');
+          const acceptButton = document.getElementById('acceptButton');
+          
+          if (condition1 && condition2 && condition3 && acceptButton) {
+            // فعال‌سازی چک‌باکس‌ها
+            condition1.disabled = false;
+            condition2.disabled = false;
+            condition3.disabled = false;
+            
+            // تغییر متن چک‌باکس‌ها
+            const spans = document.querySelectorAll('#welcome-typewriter-content label span');
+            if (spans.length >= 3) {
+              spans[0].textContent = '✅ من شرایط پذیرش را مطالعه کرده و می‌پذیرم';
+              spans[0].style.opacity = '1';
+              spans[1].textContent = '🎓 من خواهان یادگیری این بازار هستم';
+              spans[1].style.opacity = '1';
+              spans[2].textContent = '📚 من از قواعد و قوانین ارزهای دیجیتال آشنایی دارم';
+              spans[2].style.opacity = '1';
+            }
+            
+            // تغییر متن دکمه
+            acceptButton.textContent = '🔓 ورود به پلتفرم';
+            acceptButton.style.background = 'linear-gradient(135deg,#00ff88,#00cc6a)';
+            acceptButton.style.color = '#000';
+            acceptButton.style.cursor = 'pointer';
+            
+            // تغییر متن تایمر
+            const timerText = document.querySelector('#welcome-typewriter-content p strong');
+            if (timerText) {
+              timerText.textContent = '✅ مطالعه کامل شد!';
+            }
+          }
+        }
+        
+        // بررسی وضعیت تمام چک‌باکس‌ها
+        function checkAllConditions() {
+          const condition1 = document.getElementById('condition1');
+          const condition2 = document.getElementById('condition2');
+          const condition3 = document.getElementById('condition3');
+          const acceptButton = document.getElementById('acceptButton');
+          
+          if (condition1 && condition2 && condition3 && acceptButton) {
+            if (condition1.checked && condition2.checked && condition3.checked) {
+              acceptButton.style.opacity = '1';
+              acceptButton.style.pointerEvents = 'auto';
+              acceptButton.disabled = false;
+            } else {
+              acceptButton.style.opacity = '0.5';
+              acceptButton.style.pointerEvents = 'none';
+              acceptButton.disabled = true;
+            }
+          }
+        }
+
+        // پذیرش شرایط و ورود به پلتفرم
+        function acceptConditions() {
+          // متوقف کردن تایمر
+          if (readingTimerInterval) {
+            clearInterval(readingTimerInterval);
+          }
+          incrementShowCount();
+          closeWelcomeModal();
+        }
+        
+        
+        const text = `آکادمی سود مستمر (IAM) یک اکوسیستم نوآورانه و مردم‌محور است که با هدف ارائه خدمات مالی، آموزشی و معاملاتی کاملاً غیرمتمرکز و شفاف، بنیان نهاده شده است. در این مجموعه، سرمایه شما همیشه در اختیار خودتان باقی می‌ماند؛ چه در حساب شخصی‌تان در صرافی، چه در بروکر، و چه در کیف پول هوشمند متصل به قرارداد غیرمتمرکز.\n\nخدمات ما:\n• ارائه سیگنال‌های تخصصی و ربات‌های اتوترید برای بازارهای مالی\n• امکان فعالیت به عنوان ایجنت برای افراد و IB در بروکرها\n• امکان بازاریابی شبکه‌ای برای دوستانی که می‌خواهند این مجموعه را ارتقا دهند\n• شما می‌توانید از سهام‌های معرفی افراد (Referral Shares) بهره‌مند شوید.\n• همچنین می‌توانید با سرمایه‌گذاری در صندوق IAM و توکن افزایشی آن، به صورت تضمینی به سود برسید.\n• آموزش‌های جامع فارکس و ارز دیجیتال\n• پشتیبانی از صندوق غیرمتمرکز IAM و توکن IAM\n• خدمات کپی‌ترید: اگر ربات IAM سود کند، شما هم سود می‌کنید و اگر ضرر کند، شما نیز ضرر می‌کنید؛ هیچ سودی از حساب شما در زمان ضرر برداشت نمی‌شود و تا جبران ضرر، IAM سهمی دریافت نمی‌کند.\n• شعار ما: سرمایه‌ات در حساب خودت، سودت واقعی و شفاف\n\nصداقت، شفافیت و خدمات صددرصدی، اصول بنیادین ماست. هیچ‌گاه سرمایه شما به حساب IAM منتقل نمی‌شود؛ بلکه شما همواره کنترل کامل دارایی خود را دارید و تنها در سود واقعی شریک هستیم. در دنیایی که بسیاری به دنبال جذب سرمایه مردم و ارائه وعده‌های توخالی هستند، ما در IAM تنها زمانی سود می‌بریم که شما واقعاً سود کنید و در زیان، شریک و همراه شما خواهیم بود.\n\nIAM؛ انتخابی برای آینده‌ای مطمئن، شفاف و مردم‌محور.`;
+        const container = document.getElementById('IAM-typewriter');
         let i = 0;
         let speed = 40; // ms per character (slower)
         function typeWriter() {
@@ -564,9 +741,9 @@
         typeWriter();
 
         // Expand/collapse logic
-        const wrapper = document.getElementById('cpa-typewriter-wrapper');
-        const fade = document.getElementById('cpa-fade');
-        const btn = document.getElementById('cpa-expand-btn');
+        const wrapper = document.getElementById('IAM-typewriter-wrapper');
+        const fade = document.getElementById('IAM-fade');
+        const btn = document.getElementById('IAM-expand-btn');
         let expanded = false;
         btn.addEventListener('click', function() {
           expanded = !expanded;
@@ -584,10 +761,12 @@
       </script>
 
   <!-- Swap Section -->
-  <div id="main-swap" class="page-section expandable-container" style="width:100vw;max-width:none;margin:0;left:0;right:0;padding:0.5rem 0;display:none;">
+  <div id="main-swap" class="page-section expandable-container" style="width:100vw;max-width:none;margin:0;left:0;right:0;padding:0.5rem 0;">
+    
+    <div id="swap-main-content" style="display:block;">
     <div class="expand-header" style="padding:0 1.5rem;">
       <h2 style="margin:0 0 0.5rem 0;">🔄 تبدیل ارز</h2>
-      <p style="margin:0 0 0.5rem 0;">تبدیل بین توکن‌های DAI و CPA</p>
+      <p style="margin:0 0 0.5rem 0;">تبدیل بین توکن‌های DAI و IAM</p>
     </div>
     <div class="expand-content" style="padding:0;">
       <div class="swap-container" style="max-width:600px;margin:0 auto;padding:1.5rem;">
@@ -599,17 +778,17 @@
           <div style="margin-bottom:1rem;">
             <h4 style="color:#00ff88;margin-bottom:0.5rem;">🔄 نحوه تبدیل:</h4>
             <ul style="color:#b8c1ec;line-height:1.6;margin:0;padding-right:1rem;">
-              <li>✅ <strong style="color:#00ff88;">DAI → CPA:</strong> خرید توکن CPA با DAI (نرخ متغیر)</li>
-              <li>✅ <strong style="color:#00ff88;">CPA → DAI:</strong> فروش توکن CPA و دریافت DAI</li>
+              <li>✅ <strong style="color:#00ff88;">DAI → IAM:</strong> خرید توکن IAM با DAI (نرخ متغیر)</li>
+              <li>✅ <strong style="color:#00ff88;">IAM → DAI:</strong> فروش توکن IAM و دریافت DAI</li>
               <li>✅ کارمزد تبدیل: 2% از مبلغ تبدیل</li>
-              <li>✅ حداقل مقدار تبدیل: 1 DAI یا 1 CPA</li>
+              <li>✅ حداقل مقدار تبدیل: 1 DAI یا 1 IAM</li>
             </ul>
           </div>
           
           <div style="margin-bottom:1rem;">
             <h4 style="color:#00ff88;margin-bottom:0.5rem;">💰 مزایای تبدیل:</h4>
             <ul style="color:#b8c1ec;line-height:1.6;margin:0;padding-right:1rem;">
-              <li><strong style="color:#00ff88;">CPA:</strong> توکن اصلی پلتفرم - برای سرمایه‌گذاری و کسب درآمد</li>
+              <li><strong style="color:#00ff88;">IAM:</strong> توکن اصلی پلتفرم - برای سرمایه‌گذاری و کسب درآمد</li>
               <li><strong style="color:#00ccff;">DAI:</strong> توکن استیبل - برای حفظ ارزش و معاملات روزانه</li>
               <li>🔄 تبدیل فوری و بدون نیاز به تایید اضافی</li>
               <li>📊 نرخ تبدیل بر اساس عرضه و تقاضا محاسبه می‌شود</li>
@@ -632,8 +811,8 @@
           <div class="swap-row">
             <label for="swapDirection">نوع تبدیل:</label>
             <select id="swapDirection" required>
-              <option value="dai-to-cpa">DAI → CPA</option>
-              <option value="cpa-to-dai">CPA → DAI</option>
+              <option value="dai-to-IAM">DAI → IAM</option>
+              <option value="IAM-to-dai">IAM → DAI</option>
             </select>
             <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">نوع تبدیل مورد نظر را انتخاب کنید</small>
           </div>
@@ -684,9 +863,11 @@
               <div id="daiBalance" style="color:#b8c1ec;font-family:monospace;">-</div>
             </div>
             <div style="text-align:center;">
-              <div style="color:#00ccff;font-weight:bold;">CPA</div>
-              <div id="cpaBalance" style="color:#b8c1ec;font-family:monospace;">-</div>
-              <div id="cpaUsdValue" style="color:#a786ff;font-size:0.8rem;margin-top:2px;">-</div>
+              <div style="color:#00ccff;font-weight:bold;">IAM</div>
+              <div id="IAMBalance" style="color:#b8c1ec;font-family:monospace;">-</div>
+              <div id="IAMUsdValue" style="color:#a786ff;font-size:0.8rem;margin-top:2px;">-</div>
+            </div>
+          </div>
             </div>
           </div>
         </div>
@@ -722,7 +903,7 @@
             <ul style="color:#b8c1ec;line-height:1.6;margin:0;padding-right:1rem;">
               <li><strong style="color:#00ff88;">DAI:</strong> توکن استیبل با ارزش 1 دلار - برای معاملات روزانه</li>
               <li><strong style="color:#a786ff;">POL (MATIC):</strong> توکن شبکه Polygon - برای پرداخت کارمزد تراکنش‌ها</li>
-              <li><strong style="color:#00ccff;">CPA:</strong> توکن اصلی پلتفرم - برای سرمایه‌گذاری و کسب درآمد</li>
+              <li><strong style="color:#00ccff;">IAM:</strong> توکن اصلی پلتفرم - برای سرمایه‌گذاری و کسب درآمد</li>
             </ul>
           </div>
           
@@ -780,11 +961,11 @@
             <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">مقدار انتقال را وارد کنید یا روی "حداکثر" کلیک کنید</small>
           </div>
           <div class="transfer-row" id="usd-converter-row" style="display:none;">
-            <label for="transferUsdAmount">💰 معادل دلاری (فقط برای CPA):</label>
+            <label for="transferUsdAmount">💰 معادل دلاری (فقط برای IAM):</label>
             <div style="display:flex;gap:0.5rem;align-items:center;">
               <span style="color:#00ff88;font-weight:bold;">$</span>
               <input type="number" id="transferUsdAmount" placeholder="5.00" min="0" step="0.01" style="flex:1;">
-              <button type="button" id="usdToCpaBtn" style="
+              <button type="button" id="usdToIAMBtn" style="
                 background: linear-gradient(90deg,#00ff88,#a786ff);
                 color: #181c2a;
                 border: none;
@@ -796,14 +977,14 @@
                 font-weight: bold;
               ">🔄 تبدیل</button>
             </div>
-            <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">مقدار دلاری وارد کنید تا به CPA تبدیل شود (مثل: 5 برای $5)</small>
+            <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">مقدار دلاری وارد کنید تا به IAM تبدیل شود (مثل: 5 برای $5)</small>
           </div>
           <div class="transfer-row">
             <label for="transferToken">نوع توکن:</label>
             <select id="transferToken" required>
               <option value="dai" selected>DAI</option>
               <option value="pol">POL</option>
-              <option value="cpa">CPA</option>
+              <option value="IAM">IAM</option>
             </select>
             <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">نوع توکن مورد نظر برای انتقال را انتخاب کنید</small>
           </div>
@@ -821,9 +1002,9 @@
                 <div id="transfer-poly-balance" style="color:#b8c1ec;font-family:monospace;">-</div>
               </div>
               <div style="text-align:center;">
-                <div style="color:#00ccff;font-weight:bold;">CPA</div>
-                <div id="transfer-cpa-balance" style="color:#b8c1ec;font-family:monospace;">-</div>
-                <div id="transfer-cpa-usd" style="color:#a786ff;font-size:0.8rem;margin-top:2px;">-</div>
+                <div style="color:#00ccff;font-weight:bold;">IAM</div>
+                <div id="transfer-IAM-balance" style="color:#b8c1ec;font-family:monospace;">-</div>
+                <div id="transfer-IAM-usd" style="color:#a786ff;font-size:0.8rem;margin-top:2px;">-</div>
               </div>
             </div>
           </div>
@@ -850,12 +1031,7 @@
     text-align: center;
   "></div>
 
-      <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     
-    <!-- سایر اسکریپت‌ها -->
-    <script src="js/firebase-config.js"></script>
     <script src="js/smooth-value-updater.js"></script>
     <script src="js/smart-dashboard-updater.js"></script>
     <script src="js/central-dashboard-updater.js"></script>
@@ -869,7 +1045,7 @@
   <script src="js/network.js?v=5.7"></script>
   <script src="js/network-database.js?v=5.8"></script>
   <script src="js/profile.js?v=5.7"></script>
-  <script src="js/news.js?v=5.7"></script>
+  
   <script src="js/homepage.js?v=5.8"></script>
   <script src="js/price-history-manager.js?v=5.8"></script>
   <script src="js/price-chart.js?v=5.8"></script>
@@ -1076,100 +1252,7 @@
   
 
  
-  <!-- Chart.js CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
-  
-  <script>
-    // راه‌اندازی چارت‌ها بعد از لود Chart.js
-    let chartsInitialized = false;
-    
-    function initializeCharts() {
-      if (chartsInitialized) return;
-      
-      console.log('🔄 تلاش برای راه‌اندازی چارت‌ها...');
-      console.log('Chart.js وضعیت:', typeof Chart !== 'undefined' ? '✅ آماده' : '❌ نامعلوم');
-      console.log('PriceChart کلاس:', typeof PriceChart !== 'undefined' ? '✅ آماده' : '❌ نامعلوم');
-      console.log('PointChart کلاس:', typeof PointChart !== 'undefined' ? '✅ آماده' : '❌ نامعلوم');
-      console.log('PriceChartsManager کلاس:', typeof PriceChartsManager !== 'undefined' ? '✅ آماده' : '❌ نامعلوم');
-      
-      // بررسی canvas ها
-      const priceCanvas = document.getElementById('price-chart-canvas');
-      const pointCanvas = document.getElementById('point-chart-canvas');
-      console.log('price-chart-canvas:', priceCanvas ? '✅ موجود' : '❌ یافت نشد');
-      console.log('point-chart-canvas:', pointCanvas ? '✅ موجود' : '❌ یافت نشد');
-      
-      if (typeof Chart === 'undefined') {
-        console.log('⏳ منتظر بارگذاری Chart.js...');
-        setTimeout(initializeCharts, 500);
-        return;
-      }
-      
-      console.log('📊 Chart.js آماده - راه‌اندازی چارت‌ها...');
-      
-      // روش اول: استفاده از PriceChartsManager
-      if (typeof PriceChartsManager !== 'undefined') {
-        if (!window.priceChartsManager) {
-          window.priceChartsManager = new PriceChartsManager();
-        }
-        
-        setTimeout(async () => {
-          try {
-            await window.priceChartsManager.setupCharts();
-            console.log('✅ چارت‌ها از طریق PriceChartsManager راه‌اندازی شدند');
-            chartsInitialized = true;
-          } catch (error) {
-            console.error('❌ خطا در راه‌اندازی چارت‌ها با PriceChartsManager:', error);
-            // fallback to manual initialization
-            tryManualChartInit();
-          }
-        }, 1000);
-      } else {
-        console.warn('⚠️ کلاس PriceChartsManager پیدا نشد - سعی در راه‌اندازی دستی...');
-        tryManualChartInit();
-      }
-    }
-    
-    // راه‌اندازی دستی چارت‌ها
-    function tryManualChartInit() {
-      console.log('🔧 تلاش برای راه‌اندازی دستی چارت‌ها...');
-      
-      try {
-        // راه‌اندازی چارت قیمت توکن
-        if (typeof PriceChart !== 'undefined' && document.getElementById('price-chart-canvas')) {
-          const priceChart = new PriceChart();
-          priceChart.init();
-          console.log('✅ چارت قیمت توکن به صورت دستی راه‌اندازی شد');
-        }
-        
-        // راه‌اندازی چارت قیمت پوینت
-        if (typeof PointChart !== 'undefined' && document.getElementById('point-chart-canvas')) {
-          const pointChart = new PointChart();
-          pointChart.init();
-          console.log('✅ چارت قیمت پوینت به صورت دستی راه‌اندازی شد');
-        }
-        
-        chartsInitialized = true;
-        console.log('✅ تمام چارت‌ها به صورت دستی راه‌اندازی شدند');
-      } catch (error) {
-        console.error('❌ خطا در راه‌اندازی دستی چارت‌ها:', error);
-      }
-    }
-    
-    // شروع راه‌اندازی
-    document.addEventListener('DOMContentLoaded', function() {
-      setTimeout(initializeCharts, 2000);
-    });
-    
-    // backup initialization
-    window.addEventListener('load', function() {
-      setTimeout(() => {
-        if (!chartsInitialized) {
-          console.log('🔄 backup initialization - تلاش مجدد...');
-          initializeCharts();
-        }
-      }, 3000);
-    });
-  </script>
+  <!-- Charts removed -->
   
   <script>
     (async () => {
@@ -1396,12 +1479,12 @@
       // USD Converter functionality
       const usdConverterRow = document.getElementById('usd-converter-row');
       const transferUsdAmount = document.getElementById('transferUsdAmount');
-      const usdToCpaBtn = document.getElementById('usdToCpaBtn');
+      const usdToIAMBtn = document.getElementById('usdToIAMBtn');
       
       // نمایش/مخفی کردن فیلد USD بر اساس نوع توکن
       function toggleUsdConverter() {
         const selectedToken = transferTokenSelect.value;
-        if (selectedToken === 'cpa') {
+        if (selectedToken === 'IAM') {
           usdConverterRow.style.display = 'block';
         } else {
           usdConverterRow.style.display = 'none';
@@ -1409,8 +1492,8 @@
         }
       }
       
-      // تبدیل USD به CPA
-      async function convertUsdToCpa() {
+      // تبدیل USD به IAM
+      async function convertUsdToIAM() {
         const usdAmount = parseFloat(transferUsdAmount.value);
         if (isNaN(usdAmount) || usdAmount <= 0) {
           alert('لطفاً مقدار معتبری برای دلار وارد کنید');
@@ -1425,22 +1508,22 @@
             return;
           }
           
-          usdToCpaBtn.textContent = '⏳ در حال محاسبه...';
-          usdToCpaBtn.disabled = true;
+          usdToIAMBtn.textContent = '⏳ در حال محاسبه...';
+          usdToIAMBtn.disabled = true;
           
           const tokenPriceRaw = await connection.contract.getTokenPrice();
           const tokenPrice = Number(ethers.formatUnits(tokenPriceRaw, 18));
           
-          // محاسبه مقدار CPA مورد نیاز
-          const cpaAmount = (usdAmount / tokenPrice).toFixed(6);
+          // محاسبه مقدار IAM مورد نیاز
+          const IAMAmount = (usdAmount / tokenPrice).toFixed(6);
           
           // قرار دادن مقدار در فیلد اصلی
-          transferAmountInput.value = cpaAmount;
+          transferAmountInput.value = IAMAmount;
           
           // نمایش پیام موفقیت
           const statusDiv = document.getElementById('transferStatus');
           if (statusDiv) {
-            statusDiv.innerHTML = `✅ $${usdAmount} معادل ${parseFloat(cpaAmount).toLocaleString('en-US', {maximumFractionDigits: 6})} CPA است`;
+            statusDiv.innerHTML = `✅ $${usdAmount} معادل ${parseFloat(IAMAmount).toLocaleString('en-US', {maximumFractionDigits: 6})} IAM است`;
             statusDiv.style.color = '#00ff88';
             setTimeout(() => {
               statusDiv.innerHTML = '';
@@ -1448,11 +1531,11 @@
           }
           
         } catch (error) {
-          console.error('خطا در تبدیل USD به CPA:', error);
+          console.error('خطا در تبدیل USD به IAM:', error);
           alert('خطا در تبدیل. لطفاً دوباره تلاش کنید.');
         } finally {
-          usdToCpaBtn.textContent = '🔄 تبدیل';
-          usdToCpaBtn.disabled = false;
+          usdToIAMBtn.textContent = '🔄 تبدیل';
+          usdToIAMBtn.disabled = false;
         }
       }
       
@@ -1481,20 +1564,20 @@
                 maxAmount = Math.max(0, raw - 0.01).toString();
               }
             }
-          } else if (selectedToken === 'cpa') {
-            const cpaBalanceEl = document.getElementById('transfer-cpa-balance');
-            if (cpaBalanceEl) {
-              const raw = parseFloat(cpaBalanceEl.dataset.value || cpaBalanceEl.textContent);
+          } else if (selectedToken === 'IAM') {
+            const IAMBalanceEl = document.getElementById('transfer-IAM-balance');
+            if (IAMBalanceEl) {
+              const raw = parseFloat(IAMBalanceEl.dataset.value || IAMBalanceEl.textContent);
               if (!isNaN(raw) && raw > 0) maxAmount = raw.toString();
             }
           }
           
           // تنظیم مقدار در فیلد ورودی
           if (parseFloat(maxAmount) > 0) {
-            const decimals = (transferTokenSelect.value === 'cpa') ? 6 : 18;
-            // برای DAI و POL بهتر است 2 یا 4 رقم استفاده کنیم؛ برای CPA تا 6 رقم
+            const decimals = (transferTokenSelect.value === 'IAM') ? 6 : 18;
+            // برای DAI و POL بهتر است 2 یا 4 رقم استفاده کنیم؛ برای IAM تا 6 رقم
             const floorToDecimals = (val, d) => { const m = Math.pow(10, d); return Math.floor(Number(val) * m) / m; };
-            const d = (transferTokenSelect.value === 'cpa') ? 6 : 4;
+            const d = (transferTokenSelect.value === 'IAM') ? 6 : 4;
             const floored = floorToDecimals(maxAmount, d);
             transferAmountInput.value = floored.toFixed(d);
             // تغییر متن دکمه به صورت موقت
@@ -1526,9 +1609,9 @@
         toggleUsdConverter();
       }
       
-      if (usdToCpaBtn) {
+      if (usdToIAMBtn) {
         // کلیک دکمه تبدیل
-        usdToCpaBtn.addEventListener('click', convertUsdToCpa);
+        usdToIAMBtn.addEventListener('click', convertUsdToIAM);
       }
       
       if (transferUsdAmount) {
@@ -1536,7 +1619,7 @@
         transferUsdAmount.addEventListener('keypress', function(e) {
           if (e.key === 'Enter') {
             e.preventDefault();
-            convertUsdToCpa();
+            convertUsdToIAM();
           }
         });
         
@@ -1552,10 +1635,10 @@
                 if (connection && connection.contract) {
                   const tokenPriceRaw = await connection.contract.getTokenPrice();
                   const tokenPrice = Number(ethers.formatUnits(tokenPriceRaw, 18));
-                  const cpaAmount = (usdAmount / tokenPrice).toFixed(6);
+                  const IAMAmount = (usdAmount / tokenPrice).toFixed(6);
                   
                   // نمایش preview در placeholder
-                  transferAmountInput.placeholder = `≈ ${parseFloat(cpaAmount).toLocaleString('en-US', {maximumFractionDigits: 6})} CPA`;
+                  transferAmountInput.placeholder = `≈ ${parseFloat(IAMAmount).toLocaleString('en-US', {maximumFractionDigits: 6})} IAM`;
                 }
               } catch (e) {
                 // خطا در real-time - نادیده بگیر
@@ -1567,21 +1650,21 @@
         });
       }
       
-      // Real-time محاسبه معادل دلاری وقتی مقدار CPA تغییر میکنه
+      // Real-time محاسبه معادل دلاری وقتی مقدار IAM تغییر میکنه
       if (transferAmountInput) {
-        let cpaTimeout;
+        let IAMTimeout;
         transferAmountInput.addEventListener('input', function() {
-          if (transferTokenSelect.value === 'cpa') {
-            clearTimeout(cpaTimeout);
-            cpaTimeout = setTimeout(async () => {
-              const cpaAmount = parseFloat(transferAmountInput.value);
-              if (!isNaN(cpaAmount) && cpaAmount > 0) {
+          if (transferTokenSelect.value === 'IAM') {
+            clearTimeout(IAMTimeout);
+            IAMTimeout = setTimeout(async () => {
+              const IAMAmount = parseFloat(transferAmountInput.value);
+              if (!isNaN(IAMAmount) && IAMAmount > 0) {
                 try {
                   const connection = await window.connectWallet();
                   if (connection && connection.contract) {
                     const tokenPriceRaw = await connection.contract.getTokenPrice();
                     const tokenPrice = Number(ethers.formatUnits(tokenPriceRaw, 18));
-                    const usdValue = (cpaAmount * tokenPrice).toFixed(2);
+                    const usdValue = (IAMAmount * tokenPrice).toFixed(2);
                     
                     // نمایش معادل دلاری در فیلد USD
                     if (transferUsdAmount) {
@@ -1649,7 +1732,7 @@
             status.textContent = 'انتقال DAI با موفقیت انجام شد!\nکد تراکنش: ' + tx.hash;
             status.className = 'transfer-status success';
           } else {
-            // انتقال CPA
+            // انتقال IAM
             const contract = window.contractConfig.contract;
             const tx = await contract.transfer(to, ethers.parseEther(amount.toString()));
             await tx.wait();
@@ -1789,7 +1872,7 @@
           const pointValueNum = parseFloat(ethers.formatUnits(pointValue, 18));
           const pointValueFormatted = pointValueNum < 0.000001 ? pointValueNum.toExponential(6) : pointValueNum.toFixed(2);
           const el2 = document.getElementById('point-value');
-          if (el2) el2.textContent = pointValueFormatted; // حذف پسوند CPA
+          if (el2) el2.textContent = pointValueFormatted; // حذف پسوند IAM
         } catch (error) {
           // ...
         }
@@ -1990,7 +2073,7 @@
     background: rgba(0,255,136,0.1) !important;
   }
   
-  /* کارت موجودی قرارداد CPA */
+  /* کارت موجودی قرارداد IAM */
   div[style*="border:1px solid rgba(255,193,7,0.2)"] {
     border: 3px solid rgba(255,193,7,0.4) !important;
     background: rgba(255,193,7,0.1) !important;

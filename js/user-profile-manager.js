@@ -24,12 +24,12 @@ class UserProfileManager {
     }
 
     loadUserProfiles() {
-        const profiles = localStorage.getItem('cpa_user_profiles');
+        const profiles = localStorage.getItem('IAM_user_profiles');
         return profiles ? JSON.parse(profiles) : {};
     }
 
     saveUserProfiles() {
-        localStorage.setItem('cpa_user_profiles', JSON.stringify(this.userProfiles));
+        localStorage.setItem('IAM_user_profiles', JSON.stringify(this.userProfiles));
     }
 
     createUserProfile(address, data = {}) {
@@ -74,7 +74,7 @@ class UserProfileManager {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>پروفایل ${profile.name} - CPA Forex</title>
+    <title>پروفایل ${profile.name} - imphoenix</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/hamburger-menu.css">
     <!-- <link rel="stylesheet" href="css/floating-ai-assistant.css"> -->
@@ -282,7 +282,7 @@ class UserProfileManager {
             </div>
             <div class="stat-card">
                 <div class="stat-number">${profile.stats.totalSpent}</div>
-                <div class="stat-label">مجموع هزینه (CPA)</div>
+                <div class="stat-label">مجموع هزینه (IAM)</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number">${profile.stats.reviews.length}</div>
@@ -371,7 +371,7 @@ class UserProfileManager {
                     <div class="purchase-title">${purchase.productName}</div>
                     <div class="purchase-date">${new Date(purchase.date).toLocaleDateString('fa-IR')}</div>
                 </div>
-                <div class="purchase-amount">${purchase.amount} CPA</div>
+                <div class="purchase-amount">${purchase.amount} IAM</div>
             </div>
         `).join('');
     }

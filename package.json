@@ -1,7 +1,7 @@
 {
-  "name": "cpaforex-platform",
+  "name": "imphoenix-platform",
   "version": "2.0.0",
-  "description": "A comprehensive Web3 platform for CPA Forex trading and MLM system",
+  "description": "A comprehensive Web3 platform for imphoenix trading and MLM system",
   "main": "index.html",
   "scripts": {
     "start": "servor --reload",
@@ -22,18 +22,18 @@
     "ethereum",
     "defi",
     "forex",
-    "cpa"
+    "imphoenix"
   ],
-  "author": "CPA Forex Team",
+  "author": "imphoenix Team",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Cpaforex/Cpaforex.git"
+    "url": "https://github.com/imphoenix/imphoenix.git"
   },
   "bugs": {
-    "url": "https://github.com/Cpaforex/Cpaforex/issues"
+    "url": "https://github.com/imphoenix/imphoenix/issues"
   },
-  "homepage": "https://github.com/Cpaforex/Cpaforex#readme",
+  "homepage": "https://github.com/imphoenix/imphoenix#readme",
   "dependencies": {
     "@walletconnect/ethereum-provider": "^2.21.4",
     "ethers": "^6.15.0",

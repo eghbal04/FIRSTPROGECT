@@ -9,8 +9,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // تابع دریافت و نمایش مقدار توکن مورد نیاز برای ثبت‌نام
 window.updateRegisterRequiredAmount = function() {
-    const el = document.getElementById('register-required-usdc') || document.getElementById('register-cpa-required');
-    if (el) el.innerText = '100 CPA';
+    const el = document.getElementById('register-required-usdc') || document.getElementById('register-IAM-required');
+    if (el) el.innerText = '100 IAM';
 };
 
 // تابع بارگذاری اطلاعات ثبت‌نام
@@ -59,7 +59,7 @@ async function loadRegisterData(contract, address, tokenPriceUSDFormatted) {
         
         const tokenPriceMatic = await contract.getTokenPrice(); // قیمت توکن بر حسب MATIC
         const tokenPriceFormatted = ethers.formatUnits(tokenPriceMatic, 18);
-        // قیمت CPA/USDC (مستقیماً از قرارداد)
+        // قیمت IAM/USDC (مستقیماً از قرارداد)
         const tokenPriceUSDFormatted = tokenPriceFormatted;
         const regpriceFormatted = ethers.formatUnits(regprice, 18); // مقدار توکن مورد نیاز
         const regpriceUSD = ethers.formatUnits(regprice, 8); // مقدار دلاری
@@ -71,7 +71,7 @@ async function loadRegisterData(contract, address, tokenPriceUSDFormatted) {
         const twelveCentsInTokens = 0.12 / parseFloat(tokenPriceFormatted);
         const twelveCentsInTokensFormatted = twelveCentsInTokens.toFixed(6);
         // محاسبه ارزش دلاری موجودی
-        const cpaBalanceUSD = (parseFloat(usdcBalanceFormatted) * parseFloat(tokenPriceUSDFormatted)).toFixed(2);
+        const IAMBalanceUSD = (parseFloat(usdcBalanceFormatted) * parseFloat(tokenPriceUSDFormatted)).toFixed(2);
         // به‌روزرسانی نمایش موجودی‌ها
         await window.displayUserBalances();
         // بررسی وضعیت ثبت‌نام
@@ -126,19 +126,19 @@ function setRegisterTabSelected(selected) {
 // Export functions for global use
 window.setRegisterTabSelected = setRegisterTabSelected;
 window.updateRegisterRequiredAmount = function() {
-    const el = document.getElementById('register-required-usdc') || document.getElementById('register-cpa-required');
-    if (el) el.innerText = '100 CPA';
+    const el = document.getElementById('register-required-usdc') || document.getElementById('register-IAM-required');
+    if (el) el.innerText = '100 IAM';
 };
 
 // تابع بارگذاری اطلاعات ارتقا
 async function loadUpgradeData(contract, address, tokenPriceUSD) {
     try {
         const userData = await contract.users(address);
-        const cpaBalance = await contract.balanceOf(address);
-        const cpaBalanceFormatted = ethers.formatUnits(cpaBalance, 18);
+        const IAMBalance = await contract.balanceOf(address);
+        const IAMBalanceFormatted = ethers.formatUnits(IAMBalance, 18);
         
         // به‌روزرسانی محاسبات ارتقا
-        updateUpgradeCalculations(cpaBalanceFormatted, tokenPriceUSD, userData.binaryPointCap);
+        updateUpgradeCalculations(IAMBalanceFormatted, tokenPriceUSD, userData.binaryPointCap);
         
     } catch (error) {
         // console.error("Error loading upgrade data:", error);
@@ -146,7 +146,7 @@ async function loadUpgradeData(contract, address, tokenPriceUSD) {
 }
 
 // تابع به‌روزرسانی محاسبات ارتقا
-    function updateUpgradeCalculations(cpaBalance, tokenPriceUSD, currentCap) {
+    function updateUpgradeCalculations(IAMBalance, tokenPriceUSD, currentCap) {
     const upgradeAmountInput = document.getElementById('upgrade-amount');
     const usdValueElement = document.getElementById('upgrade-usd-value');
     const pointsGainElement = document.getElementById('upgrade-points-gain');
@@ -168,7 +168,7 @@ async function loadUpgradeData(contract, address, tokenPriceUSD) {
             }
             
             if (upgradeBtn) {
-                const userBalanceNum = parseFloat(cpaBalance);
+                const userBalanceNum = parseFloat(IAMBalance);
                 upgradeBtn.disabled = amount > userBalanceNum;
             }
         });
@@ -346,16 +346,16 @@ function showRegisterError(message) {
 }
 
 // تابع به‌روزرسانی نمایش موجودی
-function updateBalanceDisplay(cpaBalance, cpaBalanceUSD) {
+function updateBalanceDisplay(IAMBalance, IAMBalanceUSD) {
     const lvlBalanceElement = document.getElementById('user-lvl-balance');
     const lvlUsdElement = document.getElementById('user-lvl-usd-value');
     
     if (lvlBalanceElement) {
-        lvlBalanceElement.textContent = `${parseFloat(cpaBalance).toFixed(2)} USDC`;
+        lvlBalanceElement.textContent = `${parseFloat(IAMBalance).toFixed(2)} USDC`;
     }
     
     if (lvlUsdElement) {
-        lvlUsdElement.textContent = `$${cpaBalanceUSD} USD`;
+        lvlUsdElement.textContent = `$${IAMBalanceUSD} USD`;
     }
 }
 
@@ -442,8 +442,8 @@ window.showRegistrationForm = async function() {
     await window.displayUserBalances();
     
     // نمایش مقدار مورد نیاز
-    const cpaRequiredSpan = document.getElementById('register-cpa-required');
-    if (cpaRequiredSpan) cpaRequiredSpan.textContent = regPrice; // Static value
+    const IAMRequiredSpan = document.getElementById('register-IAM-required');
+    if (IAMRequiredSpan) IAMRequiredSpan.textContent = regPrice; // Static value
 
     // 1. Add logic to fetch MATIC balance and required MATIC for registration
     async function fetchMaticBalance(address, contract) {
@@ -456,14 +456,14 @@ window.showRegistrationForm = async function() {
     }
 
     // 2. Update registration form logic to show MATIC balance and required MATIC
-    // (Find the main registration form logic and add after CPA balance logic)
+    // (Find the main registration form logic and add after IAM balance logic)
 
     // Set required MATIC (for registration, e.g. 0.05 MATIC for gas)
     const requiredMatic = 0.05; // You can adjust this value as needed
     const maticRequiredSpan = document.getElementById('register-matic-required');
     if (maticRequiredSpan) maticRequiredSpan.textContent = requiredMatic + ' MATIC';
 
-    // 3. Update register button logic to check both CPA and MATIC balance
+    // 3. Update register button logic to check both IAM and MATIC balance
     const registerBtn = document.getElementById('register-btn');
     const registerStatus = document.getElementById('register-status');
     if (registerBtn) {
@@ -510,8 +510,8 @@ window.showRegistrationForm = async function() {
       // بررسی موجودی ولت متصل (address)
       if (parseFloat(userLvlBalance) < parseFloat(requiredTokenAmount)) {
         registerBtn.disabled = true;
-        registerBtn.textContent = 'موجودی CPA کافی نیست';
-        if (registerStatus) registerStatus.innerHTML = 'موجودی توکن CPA شما برای ثبت‌نام کافی نیست.<br>برای ثبت‌نام باید حداقل '+requiredTokenAmount+' CPA داشته باشید.<br>لطفاً ابتدا کیف پول خود را شارژ یا از بخش سواپ/فروشگاه توکن CPA تهیه کنید.';
+        registerBtn.textContent = 'موجودی IAM کافی نیست';
+        if (registerStatus) registerStatus.innerHTML = 'موجودی توکن IAM شما برای ثبت‌نام کافی نیست.<br>برای ثبت‌نام باید حداقل '+requiredTokenAmount+' IAM داشته باشید.<br>لطفاً ابتدا کیف پول خود را شارژ یا از بخش سواپ/فروشگاه توکن IAM تهیه کنید.';
         return;
       } else if (parseFloat(maticBalance) < requiredMatic) {
         registerBtn.disabled = true;
@@ -724,7 +724,7 @@ async function displayUserBalances() {
         if (!provider) throw new Error('No provider available for getBalance');
 
         // دریافت موجودی‌های مختلف
-        const [cpaBalance, usdcBalance, maticBalance] = await Promise.all([
+        const [IAMBalance, usdcBalance, maticBalance] = await Promise.all([
             contract.balanceOf(address),
             (function() {
                 const USDC_ADDRESS = window.USDC_ADDRESS || '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174';
@@ -736,16 +736,16 @@ async function displayUserBalances() {
         ]);
         
         // فرمت کردن موجودی‌ها
-        const cpaFormatted = parseFloat(ethers.formatUnits(cpaBalance, 18)).toFixed(4);
+        const IAMFormatted = parseFloat(ethers.formatUnits(IAMBalance, 18)).toFixed(4);
         const usdcFormatted = parseFloat(ethers.formatUnits(usdcBalance, 6)).toFixed(2);
         const maticFormatted = parseFloat(ethers.formatEther(maticBalance)).toFixed(4);
         
         // به‌روزرسانی المنت‌های موجودی
         const balanceElements = {
-            'user-cpa-balance': `${cpaFormatted} CPA`,
+            'user-IAM-balance': `${IAMFormatted} IAM`,
             'user-usdc-balance': `${usdcFormatted} USDC`,
             'user-matic-balance': `${maticFormatted} MATIC`,
-            'register-cpa-balance': `${cpaFormatted} CPA`,
+            'register-IAM-balance': `${IAMFormatted} IAM`,
             'register-usdc-balance': `${usdcFormatted} USDC`,
             'register-matic-balance': `${maticFormatted} MATIC`
         };
