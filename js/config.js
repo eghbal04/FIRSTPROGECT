@@ -1,6 +1,6 @@
 // تنظیمات قرارداد IAMPHOENIX
 
-const IAM_ADDRESS = '0x1C19CEC5A269656602DA62A3289F4bEAbBfa7EFe';
+const IAM_ADDRESS = '0x027291cAFD7D9F198A736f8C03E8a8e5673137F5';
 window.IAM_ADDRESS = IAM_ADDRESS;
 
 // آدرس DAI (Polygon)
@@ -3090,12 +3090,7 @@ if (typeof window.ethereum !== 'undefined') {
 						if (window.contractConfig && window.contractConfig.contract) {
 							const { contract } = window.contractConfig;
 							const userData = await contract.users(accounts[0]);
-							if (!userData.activated) {
-								// کاربر فعال نیست - فرم ثبت‌نام را نمایش بده
-								if (typeof window.showRegistrationFormForInactiveUser === 'function') {
-									window.showRegistrationFormForInactiveUser();
-								}
-							}
+							console.log('User data on account change:', userData);
 						}
 						
 						// رفرش شبکه بعد از تغییر حساب کاربر
@@ -3313,6 +3308,7 @@ window.getUserProfile = async function() {
 			}
 			const { contract, address: addr, provider, signer } = connection;
 			address = addr;
+			console.log('getUserProfile: Starting for address:', address);
 			
 			// بررسی cache برای جلوگیری از فراخوانی مکرر
 			const cacheKey = `userProfile_${address}`;
@@ -3322,12 +3318,12 @@ window.getUserProfile = async function() {
 				const cacheTime = parsed.timestamp || 0;
 				// اگر کمتر از 30 ثانیه از آخرین درخواست گذشته، از cache استفاده کن
 				if (Date.now() - cacheTime < 30000) {
-					console.log('Using cached user profile');
+					console.log('getUserProfile: Using cached user profile');
 					return parsed.data;
 				}
 			}
 			
-			// دریافت اطلاعات کاربر: احراز غیرفعال شده؛ مستقیماً از داده‌های پیش‌فرض استفاده کن
+			// دریافت اطلاعات کاربر از قرارداد
 			let user = {
 				activated: false,
 				index: 0n,
@@ -3342,16 +3338,51 @@ window.getUserProfile = async function() {
 				level: 0n
 			};
 
-			// تلاش برای دریافت واقعی user از قرارداد (index واقعی)
+			// تلاش برای دریافت واقعی user از قرارداد
 			try {
+				console.log('getUserProfile: Attempting contract.users...');
+				// ابتدا از تابع users استفاده کن
+				const userData = await contract.users(address);
+				console.log('getUserProfile: Raw userData from contract.users:', userData);
+				console.log('getUserProfile: userData.activated:', userData?.activated);
+				console.log('getUserProfile: userData.index:', userData?.index);
+				
+				if (userData && userData.activated) {
+					user = userData;
+					console.log('getUserProfile: User profile loaded from contract.users:', user);
+				} else {
+					console.log('getUserProfile: User not activated via contract.users, trying getIndexByAddress...');
+					// اگر از users نتوانستیم، از getIndexByAddress استفاده کن
 				const idx = await window.getIndexByAddress(contract, address);
+					console.log('getUserProfile: Index from getIndexByAddress:', idx);
 				if (idx && idx > 0n) {
 					user.index = idx;
 					user.activated = true;
+						console.log('getUserProfile: User index found via getIndexByAddress:', idx);
+					} else {
+						console.log('getUserProfile: User is not registered or activated');
+					}
 				}
 			} catch (error) {
-				console.warn('Profile: getIndexByAddress failed, keeping default index 0n', error?.message || error);
+				console.warn('getUserProfile: Error fetching user data, user may not be registered:', error?.message || error);
+				// تلاش نهایی با getIndexByAddress
+				try {
+					console.log('getUserProfile: Fallback to getIndexByAddress...');
+					const idx = await window.getIndexByAddress(contract, address);
+					console.log('getUserProfile: Fallback index result:', idx);
+					if (idx && idx > 0n) {
+						user.index = idx;
+						user.activated = true;
+						console.log('getUserProfile: User index found via getIndexByAddress (fallback):', idx);
+					}
+				} catch (fallbackError) {
+					console.warn('getUserProfile: getIndexByAddress also failed:', fallbackError?.message || fallbackError);
+				}
 			}
+			
+			console.log('getUserProfile: Final user object:', user);
+			console.log('getUserProfile: Final user.activated:', user.activated);
+			console.log('getUserProfile: Final user.index:', user.index);
 			
 			// دریافت موجودی‌ها با مدیریت خطا
 			const balanceProvider = provider || signer.provider;
@@ -5194,3 +5225,443 @@ window.DAI_ADDRESS = DAI_ADDRESS;
 window.DAI_ABI = DAI_ABI;
 window.IAM_ADDRESS = IAM_ADDRESS;
 window.CONTRACT_ABI = IAM_ABI;
+
+// تابع دریافت ده کاربر برتر بر اساس لایک
+window.getTopLikedUsers = async function(limit = 10) {
+  try {
+    if (!window.contractConfig || !window.contractConfig.contract) {
+      await window.connectWallet();
+    }
+    const contract = window.contractConfig.contract;
+    
+    if (!contract) {
+      console.error('قرارداد متصل نیست');
+      return [];
+    }
+
+    const topUsers = [];
+    
+    // جستجو در کاربران فعال برای یافتن برترین‌ها
+    for (let i = 1; i <= 1000; i++) { // جستجو در 1000 ایندکس اول
+      try {
+        const address = await contract.indexToAddress(i);
+        
+        // بررسی اینکه آیا آدرس معتبر است
+        if (address && address !== '0x0000000000000000000000000000000000000000') {
+          try {
+            // دریافت اطلاعات کاربر
+            const userData = await contract.users(address);
+            
+            // بررسی اینکه آیا کاربر فعال است
+            if (userData && userData.activated) {
+              try {
+                // دریافت تعداد لایک‌های کاربر
+                const likeCount = await contract.likeCount(address);
+                
+                if (likeCount && BigInt(likeCount) > 0n) {
+                  topUsers.push({
+                    index: i,
+                    address: address,
+                    likeCount: Number(likeCount),
+                    userData: userData
+                  });
+                }
+              } catch (e) {
+                // اگر تابع likeCount موجود نباشد، ادامه بده
+                console.log(`خطا در دریافت لایک برای ایندکس ${i}:`, e);
+              }
+            }
+          } catch (e) {
+            // اگر اطلاعات کاربر قابل دریافت نباشد، ادامه بده
+            continue;
+          }
+        }
+      } catch (e) {
+        // اگر ایندکس وجود نداشته باشد، ادامه بده
+        continue;
+      }
+    }
+    
+    // مرتب‌سازی بر اساس تعداد لایک (نزولی)
+    topUsers.sort((a, b) => b.likeCount - a.likeCount);
+    
+    // برگرداندن فقط تعداد درخواستی
+    return topUsers.slice(0, limit);
+    
+  } catch (error) {
+    console.error('خطا در دریافت کاربران برتر:', error);
+    return [];
+  }
+};
+
+// تابع نمایش رنکینگ کاربران برتر
+window.displayTopUsersRanking = async function(containerId = 'top-users-ranking') {
+  try {
+    const container = document.getElementById(containerId);
+    if (!container) {
+      console.error('کانتینر رنکینگ یافت نشد');
+      return;
+    }
+    
+    // نمایش وضعیت بارگذاری
+    container.innerHTML = `
+      <div style="text-align: center; padding: 2rem; color: #a786ff;">
+        <div style="font-size: 1.2rem; margin-bottom: 1rem;">🏆</div>
+        <div>در حال بارگذاری رنکینگ کاربران برتر...</div>
+      </div>
+    `;
+    
+    const topUsers = await window.getTopLikedUsers(10);
+    
+    if (topUsers.length === 0) {
+      container.innerHTML = `
+        <div style="text-align: center; padding: 2rem; color: #888;">
+          <div style="font-size: 1.2rem; margin-bottom: 1rem;">📊</div>
+          <div>هیچ کاربری با لایک یافت نشد</div>
+        </div>
+      `;
+      return;
+    }
+    
+    let rankingHTML = `
+      <div style="background: linear-gradient(135deg, #1a1f2e, #232946); border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem;">
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+          <h3 style="color: #00ff88; font-size: 1.3rem; font-weight: bold; margin: 0;">🏆 رنکینگ کاربران برتر</h3>
+          <div style="color: #a786ff; font-size: 0.9rem; margin-top: 0.5rem;">بر اساس تعداد لایک‌های دریافتی</div>
+        </div>
+        
+        <!-- بخش رای‌گیری با ایندکس -->
+        <div style="background: rgba(0,0,0,0.3); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; border: 1px solid rgba(167,134,255,0.2);">
+          <div style="text-align: center; margin-bottom: 1rem;">
+            <div style="color: #00ff88; font-size: 1rem; font-weight: bold; margin-bottom: 0.5rem;">🗳️ رای‌گیری برای ایندکس</div>
+            <div style="color: #888; font-size: 0.8rem;">ایندکس مورد نظر خود را وارد کنید</div>
+          </div>
+          
+          <div style="display: flex; gap: 0.5rem; align-items: center; justify-content: center; flex-wrap: wrap;">
+            <input type="number" id="vote-index-input" placeholder="مثال: 1" 
+                   style="background: rgba(255,255,255,0.1); border: 1px solid rgba(167,134,255,0.3); border-radius: 8px; padding: 0.5rem; color: #fff; width: 100px; text-align: center; font-size: 0.9rem;">
+            <button onclick="window.voteForIndex(true)" 
+                    style="background: #00ff88; color: #000; border: none; border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.9rem; cursor: pointer; font-weight: bold;">
+              👍 لایک
+            </button>
+            <button onclick="window.voteForIndex(false)" 
+                    style="background: #ff4444; color: #fff; border: none; border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.9rem; cursor: pointer; font-weight: bold;">
+              👎 دیسلایک
+            </button>
+          </div>
+          
+          <div id="vote-result" style="text-align: center; margin-top: 0.5rem; font-size: 0.8rem;"></div>
+        </div>
+        
+        <div style="display: grid; gap: 0.8rem;">
+    `;
+    
+    topUsers.forEach((user, index) => {
+      const rank = index + 1;
+      const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+      const rankColor = rank === 1 ? '#ffd700' : rank === 2 ? '#c0c0c0' : rank === 3 ? '#cd7f32' : '#a786ff';
+      
+      rankingHTML += `
+        <div style="background: rgba(0,0,0,0.3); border-radius: 12px; padding: 1rem; border: 1px solid rgba(167,134,255,0.2); display: flex; align-items: center; gap: 1rem;">
+          <div style="text-align: center; min-width: 60px;">
+            <div style="color: ${rankColor}; font-size: 1.5rem; font-weight: bold;">${medal}</div>
+            <div style="color: #888; font-size: 0.7rem;">رتبه</div>
+          </div>
+          
+          <div style="flex: 1;">
+            <div style="color: #fff; font-size: 0.9rem; font-weight: bold; margin-bottom: 0.3rem;">
+              ایندکس: IAM${user.index.toString().padStart(5, '0')}
+            </div>
+            <div style="color: #a786ff; font-size: 0.8rem; font-family: monospace; word-break: break-all;">
+              ${user.address}
+            </div>
+          </div>
+          
+          <div style="text-align: center; min-width: 80px;">
+            <div style="color: #00ff88; font-size: 1.1rem; font-weight: bold;">${user.likeCount}</div>
+            <div style="color: #888; font-size: 0.7rem;">لایک</div>
+            <div style="margin-top: 0.5rem;">
+              <button onclick="window.voteForUser('${user.address}', true)" 
+                      style="background: #00ff88; color: #000; border: none; border-radius: 6px; padding: 0.3rem 0.6rem; font-size: 0.7rem; cursor: pointer; margin-right: 0.3rem;">
+                👍
+              </button>
+              <button onclick="window.voteForUser('${user.address}', false)" 
+                      style="background: #ff4444; color: #fff; border: none; border-radius: 6px; padding: 0.3rem 0.6rem; font-size: 0.7rem; cursor: pointer;">
+                👎
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    
+    rankingHTML += `
+        </div>
+        
+        <div style="text-align: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+          <div style="color: #888; font-size: 0.8rem;">
+            آخرین بروزرسانی: ${new Date().toLocaleString('fa-IR')}
+          </div>
+        </div>
+      </div>
+    `;
+    
+    container.innerHTML = rankingHTML;
+    
+  } catch (error) {
+    console.error('خطا در نمایش رنکینگ:', error);
+    const container = document.getElementById(containerId);
+    if (container) {
+      container.innerHTML = `
+        <div style="text-align: center; padding: 2rem; color: #ff4444;">
+          <div style="font-size: 1.2rem; margin-bottom: 1rem;">❌</div>
+          <div>خطا در بارگذاری رنکینگ</div>
+        </div>
+      `;
+    }
+  }
+};
+
+// تابع بهبود یافته برای دریافت کاربران برتر با عملکرد بهتر
+window.getTopLikedUsersOptimized = async function(limit = 10) {
+  try {
+    if (!window.contractConfig || !window.contractConfig.contract) {
+      await window.connectWallet();
+    }
+    const contract = window.contractConfig.contract;
+    
+    if (!contract) {
+      console.error('قرارداد متصل نیست');
+      return [];
+    }
+
+    const topUsers = [];
+    const batchSize = 50; // پردازش دسته‌ای برای بهبود عملکرد
+    
+    // جستجو در کاربران فعال برای یافتن برترین‌ها
+    for (let batch = 0; batch < 20; batch++) { // 20 batch * 50 = 1000 کاربر
+      const startIndex = batch * batchSize + 1;
+      const endIndex = (batch + 1) * batchSize;
+      
+      const promises = [];
+      
+      for (let i = startIndex; i <= endIndex; i++) {
+        promises.push(
+          contract.indexToAddress(i).then(address => ({ index: i, address }))
+        );
+      }
+      
+      try {
+        const results = await Promise.allSettled(promises);
+        
+        for (const result of results) {
+          if (result.status === 'fulfilled' && result.value.address && 
+              result.value.address !== '0x0000000000000000000000000000000000000000') {
+            
+            try {
+              const userData = await contract.users(result.value.address);
+              
+              if (userData && userData.activated) {
+                const likeCount = await contract.likeCount(result.value.address);
+                
+                if (likeCount && BigInt(likeCount) > 0n) {
+                  topUsers.push({
+                    index: result.value.index,
+                    address: result.value.address,
+                    likeCount: Number(likeCount),
+                    userData: userData
+                  });
+                }
+              }
+            } catch (e) {
+              continue;
+            }
+          }
+        }
+      } catch (e) {
+        console.log(`خطا در پردازش batch ${batch}:`, e);
+        continue;
+      }
+    }
+    
+    // مرتب‌سازی بر اساس تعداد لایک (نزولی)
+    topUsers.sort((a, b) => b.likeCount - a.likeCount);
+    
+    // برگرداندن فقط تعداد درخواستی
+    return topUsers.slice(0, limit);
+    
+  } catch (error) {
+    console.error('خطا در دریافت کاربران برتر:', error);
+    return [];
+  }
+};
+
+// تابع نمایش اطلاعات دقیق رای‌گیری برای کاربر
+window.getUserVoteDetails = async function(userAddress) {
+  try {
+    if (!window.contractConfig || !window.contractConfig.contract) {
+      await window.connectWallet();
+    }
+    const contract = window.contractConfig.contract;
+    
+    if (!contract) {
+      console.error('قرارداد متصل نیست');
+      return null;
+    }
+
+    // دریافت اطلاعات رای‌گیری
+    const voteStatus = await contract.getVoteStatus(userAddress);
+    
+    return {
+      totalLikes: Number(voteStatus[0]),
+      totalDislikes: Number(voteStatus[1]),
+      myVote: Number(voteStatus[2]), // 0: بدون رای، 1: لایک، 2: دیسلایک
+      netScore: Number(voteStatus[0]) - Number(voteStatus[1])
+    };
+    
+  } catch (error) {
+    console.error('خطا در دریافت اطلاعات رای‌گیری:', error);
+    return null;
+  }
+};
+
+// تابع رای‌گیری برای کاربر
+window.voteForUser = async function(targetAddress, isLike) {
+  try {
+    if (!window.contractConfig || !window.contractConfig.contract) {
+      await window.connectWallet();
+    }
+    const contract = window.contractConfig.contract;
+    
+    if (!contract) {
+      throw new Error('قرارداد متصل نیست');
+    }
+
+    // بررسی اتصال کیف پول
+    if (!window.contractConfig.signer) {
+      throw new Error('کیف پول متصل نیست');
+    }
+
+    // ارسال تراکنش رای‌گیری
+    const tx = await contract.voteUser(targetAddress, isLike);
+    
+    // انتظار برای تایید تراکنش
+    const receipt = await tx.wait();
+    
+    return {
+      success: true,
+      transactionHash: receipt.transactionHash,
+      message: isLike ? 'لایک با موفقیت ثبت شد' : 'دیسلایک با موفقیت ثبت شد'
+    };
+    
+  } catch (error) {
+    console.error('خطا در رای‌گیری:', error);
+    return {
+      success: false,
+      error: error.message || 'خطا در رای‌گیری'
+    };
+  }
+};
+
+// تابع کمکی برای دریافت deployer با خطایابی
+window.getDeployerAddress = async function(contract) {
+  try {
+    if (!contract) {
+      throw new Error('قرارداد موجود نیست');
+    }
+    
+    if (typeof contract.deployer !== 'function') {
+      throw new Error('تابع deployer موجود نیست');
+    }
+    
+    return await contract.deployer();
+  } catch (error) {
+    console.warn('خطا در دریافت deployer:', error);
+    // در صورت خطا، آدرس صفر برگردان
+    return '0x0000000000000000000000000000000000000000';
+  }
+};
+
+// تابع رای‌گیری برای ایندکس
+window.voteForIndex = async function(isLike) {
+  try {
+    const indexInput = document.getElementById('vote-index-input');
+    const voteResult = document.getElementById('vote-result');
+
+    if (!indexInput) {
+      throw new Error('فیلد ایندکس یافت نشد');
+    }
+
+    const index = parseInt(indexInput.value.trim());
+
+    if (!index || index <= 0) {
+      voteResult.innerHTML = '<span style="color: #ff4444;">⚠️ لطفاً یک ایندکس معتبر وارد کنید</span>';
+      return;
+    }
+
+    if (!window.contractConfig || !window.contractConfig.contract) {
+      await window.connectWallet();
+    }
+    const contract = window.contractConfig.contract;
+
+    if (!contract) {
+      throw new Error('قرارداد متصل نیست');
+    }
+
+    // بررسی اتصال کیف پول
+    if (!window.contractConfig.signer) {
+      throw new Error('کیف پول متصل نیست');
+    }
+
+    // دریافت آدرس کاربر از ایندکس
+    const userAddress = await contract.indexToAddress(index);
+
+    if (userAddress === '0x0000000000000000000000000000000000000000') {
+      voteResult.innerHTML = '<span style="color: #ff4444;">⚠️ کاربری با این ایندکس یافت نشد</span>';
+      return;
+    }
+
+    // نمایش پیام در حال پردازش
+    voteResult.innerHTML = '<span style="color: #a786ff;">⏳ در حال ارسال رای...</span>';
+
+    // ارسال تراکنش رای‌گیری
+    const tx = await contract.voteUser(userAddress, isLike);
+
+    // انتظار برای تایید تراکنش
+    const receipt = await tx.wait();
+
+    // نمایش پیام موفقیت
+    const successMessage = isLike ? '✅ لایک با موفقیت ثبت شد' : '✅ دیسلایک با موفقیت ثبت شد';
+    voteResult.innerHTML = `<span style="color: #00ff88;">${successMessage}</span>`;
+
+    // پاک کردن فیلد ورودی
+    indexInput.value = '';
+
+    // بروزرسانی رنکینگ بعد از 2 ثانیه
+    setTimeout(() => {
+      if (typeof window.displayTopUsersRanking === 'function') {
+        const rankingContainer = document.getElementById('top-users-ranking');
+        if (rankingContainer) {
+          window.displayTopUsersRanking('top-users-ranking');
+        }
+      }
+    }, 2000);
+
+    return {
+      success: true,
+      transactionHash: receipt.transactionHash,
+      message: successMessage
+    };
+
+  } catch (error) {
+    console.error('خطا در رای‌گیری برای ایندکس:', error);
+    const voteResult = document.getElementById('vote-result');
+    if (voteResult) {
+      voteResult.innerHTML = `<span style="color: #ff4444;">❌ خطا: ${error.message || 'خطا در رای‌گیری'}</span>`;
+    }
+    return {
+      success: false,
+      error: error.message || 'خطا در رای‌گیری'
+    };
+  }
+};

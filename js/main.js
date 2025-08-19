@@ -152,21 +152,12 @@ async function connectWalletAndUpdateUI(walletType) {
         // به‌روزرسانی UI اتصال
         updateConnectionUI(null, address, walletType);
         
-        // بررسی وضعیت کاربر و نمایش فرم ثبت‌نام اگر فعال نیست
+        // بررسی وضعیت کاربر (بدون نمایش فرم ثبت‌نام)
         try {
             const userData = await contract.users(address);
-            if (!(userData && userData.index && BigInt(userData.index) > 0n)) {
-                // کاربر فعال نیست - فرم ثبت‌نام را نمایش بده
-                setTimeout(() => {
-                    showRegistrationFormForInactiveUser();
-                }, 1500); // کمی صبر کن تا UI کاملاً لود شود
-            }
+            console.log('User data on wallet connection:', userData);
         } catch (userDataError) {
             console.warn('Could not fetch user data:', userDataError);
-            // در صورت خطا، فرم ثبت‌نام را نمایش بده
-            setTimeout(() => {
-                showRegistrationFormForInactiveUser();
-            }, 1500);
         }
         
         // به‌روزرسانی ناوبار بر اساس وضعیت کاربر
@@ -680,8 +671,45 @@ window.showDirectRegistrationForm = async function() {
 };
 
 document.addEventListener('DOMContentLoaded', async function() {
+    console.log('=== DOMContentLoaded: Starting user status check ===');
+    
     // ابتدا قفل‌ها را اعمال کن
     await lockTabsForDeactivatedUsers();
+    
+    // سپس بررسی کن که آیا کاربر فعال نیست
+    try {
+        if (window.getUserProfile) {
+            console.log('getUserProfile function is available');
+            const profile = await loadUserProfileOnce();
+            console.log('User profile loaded on page load:', profile);
+            console.log('Profile type:', typeof profile);
+            console.log('Profile activated:', profile?.activated);
+            console.log('Profile index:', profile?.index);
+            console.log('Profile index type:', typeof profile?.index);
+            
+            // بررسی دقیق‌تر وضعیت کاربر
+            const hasIndex = profile && profile.index && BigInt(profile.index) > 0n;
+            const isActivated = profile && profile.activated;
+            const isActive = isActivated && hasIndex;
+            
+            console.log('User status breakdown:');
+            console.log('- hasIndex:', hasIndex);
+            console.log('- isActivated:', isActivated);
+            console.log('- isActive:', isActive);
+            
+            if (isActive) {
+                console.log('User is active');
+            } else {
+                console.log('User is not active (registration form removed as requested)');
+            }
+        } else {
+            console.log('getUserProfile function is NOT available');
+        }
+    } catch (error) {
+        console.log('Could not check user status on load:', error);
+        console.log('Error details:', error.message);
+        console.log('Error stack:', error.stack);
+    }
     
     // بازیابی تب فعال از localStorage
     const savedTab = localStorage.getItem('currentActiveTab');
@@ -691,6 +719,8 @@ document.addEventListener('DOMContentLoaded', async function() {
             window.showTab(savedTab);
         }, 500);
     }
+    
+    console.log('=== DOMContentLoaded: User status check completed ===');
 });
 
 // تابع تست برای بررسی وضعیت قفل‌ها - حذف شده
@@ -704,19 +734,11 @@ setTimeout(() => {
 
 // تابع اجباری برای قفل کردن همه چیز - حذف شده
 
-// نمایش پیام خوشامدگویی و ثبت‌نام برای کاربران غیرفعال
+// نمایش پیام خوشامدگویی و ثبت‌نام برای کاربران غیرفعال - DISABLED
 window.showWelcomeRegistrationPrompt = async function() {
-    try {
-        if (!window.getUserProfile) return;
-        const profile = await loadUserProfileOnce();
-        if (profile.index && BigInt(profile.index) > 0n) return;
-        // اگر کاربر ثبت‌نام نشده، مستقیماً فرم ثبت‌نام را باز کن
-        if (typeof window.showDirectRegistrationForm === 'function') {
-            await window.showDirectRegistrationForm();
-        }
-    } catch (e) {
-        console.warn('Welcome prompt failed:', e);
-    }
+    console.log('=== showWelcomeRegistrationPrompt: DISABLED as requested ===');
+    // This function has been disabled as per user request to remove registration form from page load
+    return;
 };
 
 // تابع بستن مودال خوشامدگویی
@@ -799,12 +821,12 @@ window.hideMainRegistrationButton = function() {
     }
 };
 
-// نمایش پیام خوشامدگویی بعد از 2 ثانیه
-setTimeout(() => {
-    if (typeof window.showWelcomeRegistrationPrompt === 'function') {
-        window.showWelcomeRegistrationPrompt();
-    }
-}, 2000);
+// نمایش پیام خوشامدگویی بعد از 2 ثانیه - DISABLED
+// setTimeout(() => {
+//     if (typeof window.showWelcomeRegistrationPrompt === 'function') {
+//         window.showWelcomeRegistrationPrompt();
+//     }
+// }, 2000);
 
 // مدیریت دکمه ثبت‌نام اصلی بعد از 3 ثانیه
 setTimeout(() => {
@@ -1410,7 +1432,16 @@ document.addEventListener('click', function(e) {
         // حالت ۲ و ۳: کاربر ثبت‌نام نکرده
         referrerAddress = getReferrerFromURL() || getReferrerFromStorage();
         if (!referrerAddress) {
+          if (typeof window.getDeployerAddress === 'function') {
+            referrerAddress = await window.getDeployerAddress(contract);
+          } else {
+            try {
           referrerAddress = await contract.deployer();
+            } catch (deployerError) {
+              console.warn('خطا در دریافت deployer:', deployerError);
+              referrerAddress = address || '0x0000000000000000000000000000000000000000';
+            }
+          }
         }
         defaultNewWallet = address;
       }
@@ -1487,13 +1518,33 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
         
         // اگر هنوز نبود، از deployer استفاده کن
         if (!referrerInputValue) {
+          if (typeof window.getDeployerAddress === 'function') {
+            referrerInputValue = await window.getDeployerAddress(contract);
+          } else {
+            try {
           referrerInputValue = await contract.deployer();
+            } catch (deployerError) {
+              console.warn('خطا در دریافت deployer:', deployerError);
+              // در صورت خطا، از آدرس فعلی استفاده کن
+              referrerInputValue = connectedAddress || '0x0000000000000000000000000000000000000000';
+            }
+          }
         }
       }
     }
   } catch (e) {
     // در صورت خطا، از deployer استفاده کن
+    if (typeof window.getDeployerAddress === 'function') {
+      referrerInputValue = await window.getDeployerAddress(contract);
+    } else {
+      try {
     referrerInputValue = await contract.deployer();
+      } catch (deployerError) {
+        console.warn('خطا در دریافت deployer:', deployerError);
+        // در صورت خطا، از آدرس فعلی استفاده کن
+        referrerInputValue = connectedAddress || '0x0000000000000000000000000000000000000000';
+      }
+    }
   }
 
   modal.innerHTML = `
@@ -1927,41 +1978,40 @@ document.addEventListener('DOMContentLoaded', async function() {
     // ابتدا قفل‌ها را اعمال کن
     await lockTabsForDeactivatedUsers();
     
-    // سپس بررسی کن که آیا کاربر فعال نیست
+    // بررسی وضعیت کاربر بدون نمایش فرم ثبت‌نام
     try {
         if (window.getUserProfile) {
             const profile = await loadUserProfileOnce();
-            if (!(profile.index && BigInt(profile.index) > 0n)) {
-                // اگر کاربر فعال نیست، فرم ثبت‌نام را نمایش بده
-                setTimeout(() => {
-                    showRegistrationFormForInactiveUser();
-                }, 1000); // کمی صبر کن تا صفحه کاملاً لود شود
+            console.log('User profile loaded on page load:', profile);
+            
+            // بررسی وضعیت کاربر (فقط برای لاگ)
+            const isActive = profile && profile.activated && profile.index && BigInt(profile.index) > 0n;
+            
+            if (isActive) {
+                console.log('User is active');
+            } else {
+                console.log('User is not active (registration form removed as requested)');
             }
         }
     } catch (error) {
         console.log('Could not check user status on load:', error);
     }
+    
+    // بازیابی تب فعال از localStorage
+    const savedTab = localStorage.getItem('currentActiveTab');
+    if (savedTab && typeof window.showTab === 'function') {
+        // کمی صبر کن تا صفحه کاملاً لود شود
+        setTimeout(() => {
+            window.showTab(savedTab);
+        }, 500);
+    }
 });
 
-// تابع جدید برای نمایش فرم ثبت‌نام برای کاربران غیرفعال
+// تابع جدید برای نمایش فرم ثبت‌نام برای کاربران غیرفعال - DISABLED
 window.showRegistrationFormForInactiveUser = async function() {
-    try {
-        const connection = await window.connectWallet();
-        if (!connection) return;
-        const { contract, address, provider } = connection;
-        // تعیین معرف مشابه showDirectRegistrationForm
-        let referrerAddress = '';
-        try {
-            if (typeof getReferrerFromURL === 'function') referrerAddress = getReferrerFromURL();
-            if (!referrerAddress && typeof getReferrerFromStorage === 'function') referrerAddress = getReferrerFromStorage();
-        } catch {}
-        if (!referrerAddress) referrerAddress = address;
-        if (typeof window.showRegisterForm === 'function') {
-            window.showRegisterForm(referrerAddress, '', address, provider, contract);
-        }
-    } catch (e) {
-        console.warn('showRegistrationFormForInactiveUser failed:', e);
-    }
+    console.log('=== showRegistrationFormForInactiveUser: DISABLED as requested ===');
+    // This function has been disabled as per user request to remove registration form from page load
+    return;
 };
 
 // تابع مدیریت فرم ثبت‌نام دائمی
@@ -2225,12 +2275,30 @@ async function updatePermanentRegistrationForm(connection) {
                     }
                     
                     if (!referrerAddress) {
+                        if (typeof window.getDeployerAddress === 'function') {
+                            referrerAddress = await window.getDeployerAddress(contract);
+                        } else {
+                            try {
                         referrerAddress = await contract.deployer();
+                            } catch (deployerError) {
+                                console.warn('خطا در دریافت deployer:', deployerError);
+                                referrerAddress = address || '0x0000000000000000000000000000000000000000';
+                            }
+                        }
                     }
                 }
             } catch (e) {
                 // در صورت خطا، از deployer استفاده کن
+                if (typeof window.getDeployerAddress === 'function') {
+                    referrerAddress = await window.getDeployerAddress(contract);
+                } else {
+                    try {
                 referrerAddress = await contract.deployer();
+                    } catch (deployerError) {
+                        console.warn('خطا در دریافت deployer:', deployerError);
+                        referrerAddress = address || '0x0000000000000000000000000000000000000000';
+                    }
+                }
             }
             
             referrerAddressInput.value = referrerAddress;

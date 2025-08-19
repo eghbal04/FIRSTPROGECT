@@ -107,11 +107,11 @@ window.networkShowUserPopup = async function(address, user) {
         existingPopup.remove();
     }
     
-    // اطلاعات مورد نیاز
-    const IAMId = user && user.index !== undefined && user.index !== null ? 
-        (window.generateIAMId ? window.generateIAMId(user.index) : user.index) : '-';
-    const walletAddress = address || '-';
-    const isActive = user && user.index && BigInt(user.index) > 0n ? true : false;
+         // اطلاعات مورد نیاز
+     const IAMId = user && user.index !== undefined && user.index !== null ? 
+         (window.generateIAMId ? window.generateIAMId(user.index) : user.index) : '-';
+     const walletAddress = address ? shortAddress(address) : '-';
+     const isActive = user && user.index && BigInt(user.index) > 0n ? true : false;
     
     // تابع محاسبه تعداد ولت‌های سمت راست و چپ (فعال‌ها در زیرشاخه)
     async function calculateWalletCounts(userIndex, contract) {
@@ -187,106 +187,190 @@ window.networkShowUserPopup = async function(address, user) {
     // محاسبه تعداد ولت‌ها (غیرمسدودکننده: ابتدا placeholder سپس بعد از رندر محاسبه می‌شود)
     let walletCounts = { leftCount: '⏳', rightCount: '⏳' };
 
-    // لیست struct
-    const infoList = [
-      {icon:'🎯', label:'امتیاز باینری', val: (user && user.binaryPoints !== undefined) ? user.binaryPoints : '-'},
-      {icon:'🏆', label:'سقف باینری', val: (user && user.binaryPointCap !== undefined) ? user.binaryPointCap : '-'},
-      {icon:'💎', label:'پاداش کل باینری', val: (user && user.totalMonthlyRewarded !== undefined) ? user.totalMonthlyRewarded : '-'},
-      {icon:'✅', label:'امتیاز دریافت‌شده', val: (user && user.binaryPointsClaimed !== undefined) ? user.binaryPointsClaimed : '-'},
-      {icon:'🤝', label:'درآمد رفرال', val: (user && user.refclimed) ? Math.floor(Number(user.refclimed) / 1e18) : '-'},
-      {icon:'💰', label:'سپرده کل', val: (user && user.depositedAmount) ? Math.floor(Number(user.depositedAmount) / 1e18) : '-'},
-      {icon:'⬅️', label:'امتیاز چپ', val: (user && user.leftPoints !== undefined) ? user.leftPoints : '-'},
-      {icon:'➡️', label:'امتیاز راست', val: (user && user.rightPoints !== undefined) ? user.rightPoints : '-'},
-      {icon:'👥⬅️', label:'تعداد ولت چپ', key:'left-wallet-count', val:(walletCounts && walletCounts.leftCount !== undefined) ? walletCounts.leftCount : '-'},
-      {icon:'👥➡️', label:'تعداد ولت راست', key:'right-wallet-count', val:(walletCounts && walletCounts.rightCount !== undefined) ? walletCounts.rightCount : '-'}
-    ];
+         // لیست struct
+     const infoList = [
+       {icon:'🎯', label:'امتیاز باینری', val: (user && user.binaryPoints !== undefined) ? user.binaryPoints : '-'},
+       {icon:'🏆', label:'سقف باینری', val: (user && user.binaryPointCap !== undefined) ? user.binaryPointCap : '-'},
+       {icon:'💎', label:'پاداش کل باینری', val: (user && user.totalMonthlyRewarded !== undefined) ? user.totalMonthlyRewarded : '-'},
+       {icon:'✅', label:'امتیاز دریافت‌شده', val: (user && user.binaryPointsClaimed !== undefined) ? user.binaryPointsClaimed : '-'},
+       {icon:'🤝', label:'درآمد رفرال', val: (user && user.refclimed) ? Math.floor(Number(user.refclimed) / 1e18) : '-'},
+       {icon:'💰', label:'سپرده کل', val: (user && user.depositedAmount) ? Math.floor(Number(user.depositedAmount) / 1e18) : '-'},
+       {icon:'⬅️', label:'امتیاز چپ', val: (user && user.leftPoints !== undefined) ? user.leftPoints : '-'},
+       {icon:'➡️', label:'امتیاز راست', val: (user && user.rightPoints !== undefined) ? user.rightPoints : '-'},
+       {icon:'👥⬅️', label:'تعداد ولت چپ', key:'left-wallet-count', userIndex: user && user.index ? user.index : 1n, val:(walletCounts && walletCounts.leftCount !== undefined) ? walletCounts.leftCount : '-'},
+       {icon:'👥➡️', label:'تعداد ولت راست', key:'right-wallet-count', userIndex: user && user.index ? user.index : 1n, val:(walletCounts && walletCounts.rightCount !== undefined) ? walletCounts.rightCount : '-'}
+     ];
 
     const popupEl = document.createElement('div');
     popupEl.id = 'network-user-popup';
     popupEl.style = `
-      position: fixed; z-index: 10005; top: 64px; left: 0; right: 0;
-      width: 100vw; min-width: 100vw; max-width: 100vw;
-      background: rgba(24,28,42,0.97);
-      display: flex; align-items: flex-start; justify-content: center;
-      padding: 0.5rem 0.5vw 0.5rem 0.5vw; box-sizing: border-box;
-      font-family: 'Montserrat', 'Noto Sans Arabic', monospace; font-size: 0.93rem;
-      transform: none !important; bottom: auto !important;`;
+      position: fixed; z-index: 10005; top: 50%; left: 50%;
+      transform: translate(-50%, -50%) scale(0.8); 
+      background: rgba(24,28,42,0.98);
+      border-radius: 16px;
+      box-sizing: border-box;
+      font-family: 'Courier New', monospace; font-size: 0.9rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(0,255,136,0.3);
+      box-shadow: 0 8px 32px rgba(0,255,136,0.2);
+      max-width: 90vw;
+      max-height: 80vh;
+      overflow: hidden;
+      opacity: 0;`;
     
     // نمایش loading برای موجودی‌ها
     const balanceSpinner = '<div style="display:inline-block;width:12px;height:12px;border:2px solid #00ff88;border-radius:50%;border-top-color:transparent;animation:spin 1s linear infinite;margin-right:5px;"></div>';
     
-    popupEl.innerHTML = `
-      <div class="user-info-card">
-        
-        <div class="user-info-btn-row">
-            <button class="user-info-btn IAM-id-btn" title="کپی IAM ID" id="copy-IAM-id">🆔 <span>${IAMId}</span></button>
-          <button class="user-info-btn wallet-address-btn" title="کپی آدرس ولت" id="copy-wallet-address">🔗 <span>${walletAddress ? shortAddress(walletAddress) : '-'}</span></button>
-          <button class="user-info-btn status-btn">${isActive ? '✅ فعال' : '❌ غیرفعال'}</button>
-        </div>
-        <ul class="user-info-list">
-          ${infoList.map(i=>`<li ${i.key ? `data-key="${i.key}"` : ''}><span>${i.icon}</span> <b>${i.label}:</b> <span class="value">${i.val !== undefined && i.val !== null && i.val !== '' ? i.val : '-'}</span></li>`).join('')}
-        </ul>
-        
-        <div class="token-balances-container" style="margin-top:8px;">
-          <h3 class="balance-title" style="font-size:0.95rem;margin:0 0 6px 0;">موجودی‌های زنده</h3>
-          <div class="balance-grid" style="display:flex;flex-wrap:wrap;gap:6px;align-items:stretch;">
-            <div class="balance-item" id="IAM-balance" title="برای کپی کلیک کنید" style="display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border:1px solid rgba(0,255,136,0.25);border-radius:8px;background:rgba(0,255,136,0.06);width:auto;max-width:100%;white-space:nowrap;">
-              <div class="balance-icon" style="font-size:1rem;line-height:1">🟢</div>
-              <div class="balance-info" style="display:inline-flex;gap:6px;align-items:center;">
-                <span class="balance-label" style="font-size:0.85rem;color:#a6ffd6;">IAM</span>
-                <span class="balance-value copy-value" data-token="IAM" style="font-family:monospace;font-weight:bold;color:#fff;">⏳</span>
-              </div>
-            </div>
-            <div class="balance-item" id="matic-balance" title="برای کپی کلیک کنید" style="display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border:1px solid rgba(167,134,255,0.25);border-radius:8px;background:rgba(167,134,255,0.06);width:auto;max-width:100%;white-space:nowrap;">
-              <div class="balance-icon" style="font-size:1rem;line-height:1">🟣</div>
-              <div class="balance-info" style="display:inline-flex;gap:6px;align-items:center;">
-                <span class="balance-label" style="font-size:0.85rem;color:#ccbaff;">MATIC</span>
-                <span class="balance-value copy-value" data-token="MATIC" style="font-family:monospace;font-weight:bold;color:#fff;">⏳</span>
-              </div>
-            </div>
-            <div class="balance-item" id="dai-balance" title="برای کپی کلیک کنید" style="display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border:1px solid rgba(255,230,0,0.25);border-radius:8px;background:rgba(255,230,0,0.06);width:auto;max-width:100%;white-space:nowrap;">
-              <div class="balance-icon" style="font-size:1rem;line-height:1">💵</div>
-              <div class="balance-info" style="display:inline-flex;gap:6px;align-items:center;">
-                <span class="balance-label" style="font-size:0.85rem;color:#fff0a6;">DAI</span>
-                <span class="balance-value copy-value" data-token="DAI" style="font-family:monospace;font-weight:bold;color:#fff;">⏳</span>
-              </div>
-            </div>
+         popupEl.innerHTML = `
+       <style>
+         .floating-typewriter {
+           padding: 20px;
+           color: #00ff88;
+           direction: rtl;
+           text-align: right;
+           line-height: 1.4;
+           min-width: 350px;
+           max-width: 700px;
+           width: auto;
+           height: auto;
+           overflow: hidden;
+           font-family: 'Courier New', monospace;
+           background: #0c0c0c;
+           border: 1px solid #00ff88;
+         }
+         .typewriter-header {
+           color: #00ff88;
+           font-weight: bold;
+           font-size: 1rem;
+           margin-bottom: 15px;
+           text-align: center;
+           border-bottom: 1px solid #00ff88;
+           padding-bottom: 8px;
+           display: flex;
+           justify-content: space-between;
+           align-items: center;
+         }
+         
+         .typewriter-line {
+           margin-bottom: 2px;
+           opacity: 0;
+           animation: fadeInLine 0.3s ease forwards;
+           white-space: nowrap;
+           overflow: hidden;
+           font-size: 0.9rem;
+         }
+                   .typewriter-line.typing {
+            border-right: 2px solid #00ff88;
+            animation: blink 1s infinite, fadeInLine 0.3s ease forwards;
+            position: relative;
+          }
+          .typewriter-line.typing::after {
+            content: '';
+            position: absolute;
+            right: -2px;
+            top: 0;
+            width: 2px;
+            height: 100%;
+            background-color: #00ff88;
+            animation: blink 1s infinite;
+          }
+         .typewriter-line.completed {
+           border-right: none;
+           white-space: normal;
+         }
+         @keyframes fadeInLine {
+           from {
+             opacity: 0;
+             transform: translateY(4px);
+           }
+           to {
+             opacity: 1;
+             transform: translateY(0);
+           }
+         }
+         @keyframes blink {
+           0%, 50% { border-color: #00ff88; }
+           51%, 100% { border-color: transparent; }
+         }
+         @keyframes expandPopup {
+           from {
+             transform: translate(-50%, -50%) scale(0.8);
+             opacity: 0;
+           }
+           to {
+             transform: translate(-50%, -50%) scale(1);
+             opacity: 1;
+           }
+         }
+         @media (max-width: 768px) {
+           .floating-typewriter {
+             padding: 15px;
+             font-size: 0.8rem;
+             min-width: 300px;
+           }
+         }
+       </style>
+               <div class="floating-typewriter">
+          <div class="typewriter-header">
+            <span>USER INFO - ${shortAddress(walletAddress)}</span>
           </div>
+          <div id="typewriter-content"></div>
         </div>
-        
-        <div class="wallet-info">
-          <div class="wallet-label">آدرس کیف پول:</div>
-          <div class="wallet-address copy-value" data-address="${walletAddress}" title="برای کپی کلیک کنید">
-            ${shortAddress(walletAddress)}
-          </div>
-        </div>
-        
-        <div id="copy-msg" style="display:none;text-align:center;color:#00ff88;font-size:1em;margin-top:0.7em;">کپی شد!</div>
-      </div>
-    `;
+     `;
     document.body.appendChild(popupEl);
-    // بستن با کلیک خارج از کارت
-    popupEl.addEventListener('click', function(e){ if (e.target === popupEl) popupEl.remove(); });
-    const cardEl = popupEl.querySelector('.user-info-card');
-    if (cardEl) { cardEl.addEventListener('click', function(e){ e.stopPropagation(); }); }
     
-    // قابلیت کپی
-    function showCopyMsg() {
-      const msg = document.getElementById('copy-msg');
-      if (!msg) return;
-      msg.style.display = 'block';
-      setTimeout(()=>{msg.style.display='none';}, 1200);
-    }
+              // نمایش پاپ‌آپ با انیمیشن expand
+     setTimeout(() => {
+       popupEl.style.animation = 'expandPopup 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards';
+       popupEl.style.transform = 'translate(-50%, -50%) scale(1)';
+       popupEl.style.opacity = '1';
+       
+       // بعد از expand شدن پاپ‌آپ، تایپ‌رایتر را شروع کن
+       setTimeout(() => {
+         // اضافه کردن قابلیت‌های موبایل پاپ‌آپ
+         setupMobilePopupFeatures(popupEl);
+         
+         // شروع تایپ‌رایتر
+         startTypewriter(popupEl, IAMId, walletAddress, isActive, infoList);
+       }, 400); // صبر کن تا انیمیشن expand تمام شود
+     }, 50);
     
-    document.getElementById('copy-IAM-id').onclick = function() {
-      navigator.clipboard.writeText(IAMId+'');
-      showCopyMsg();
-    };
+         // بستن با کلیک خارج از کارت
+     popupEl.addEventListener('click', function(e){ 
+       if (e.target === popupEl) {
+         popupEl.style.transform = 'translate(-50%, -50%) scale(0.8)';
+         popupEl.style.opacity = '0';
+         setTimeout(() => popupEl.remove(), 300);
+       }
+     });
+     
+     // جلوگیری از بسته شدن با کلیک روی محتوا
+     const typewriterEl = popupEl.querySelector('.floating-typewriter');
+     if (typewriterEl) { 
+       typewriterEl.addEventListener('click', function(e){ 
+         e.stopPropagation(); 
+       }); 
+     }
+     
+     // اضافه کردن event listener برای کلیک روی backdrop
+     function closePopup(e) {
+       if (e.target === popupEl || !popupEl.contains(e.target)) {
+         popupEl.style.transform = 'translate(-50%, -50%) scale(0.8)';
+         popupEl.style.opacity = '0';
+         setTimeout(() => {
+           popupEl.remove();
+           document.removeEventListener('click', closePopup);
+         }, 300);
+       }
+     }
+     
+     // تاخیر کوتاه برای جلوگیری از بسته شدن فوری
+     setTimeout(() => {
+       document.addEventListener('click', closePopup);
+     }, 100);
     
-    document.getElementById('copy-wallet-address').onclick = function() {
-      navigator.clipboard.writeText(walletAddress+'');
-      showCopyMsg();
-    };
+
 
     // نمایش پیام کپی
     function showCopyTooltip(element, message = 'کپی شد!') {
@@ -538,9 +622,11 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         nodeDiv.style.marginRight = '0px';
         nodeDiv.style.marginBottom = '0.9em';
         nodeDiv.style.position = 'relative';
+        nodeDiv.style.overflow = 'visible';
         nodeDiv.style.background = getNodeColorByLevel(level, true);
         nodeDiv.style.borderRadius = '12px';
         const IAMId = window.generateIAMId ? window.generateIAMId(user.index) : user.index;
+        const formattedIAMId = `IAM${String(IAMId).padStart(5, '0')}`;
         nodeDiv.style.padding = '0.6em 1.2em';
         nodeDiv.style.width = 'auto';
         nodeDiv.style.minWidth = 'unset';
@@ -555,11 +641,68 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         nodeDiv.style.cursor = 'pointer';
         nodeDiv.style.transition = 'background 0.2s, box-shadow 0.2s';
         nodeDiv.style.whiteSpace = 'nowrap';
-        nodeDiv.onmouseover = function() { this.style.background = '#232946'; this.style.boxShadow = '0 6px 24px #00ff8840'; };
-        nodeDiv.onmouseout = function() { this.style.background = getNodeColorByLevel(level, true); this.style.boxShadow = '0 4px 16px rgba(0,255,136,0.10)'; };
+        nodeDiv.onmouseover = function() { 
+            this.style.background = '#232946'; 
+            this.style.boxShadow = '0 6px 24px #00ff8840'; 
+            const infoIcon = this.querySelector('.info-icon');
+            if (infoIcon) {
+                infoIcon.style.opacity = '1';
+                infoIcon.style.transform = 'scale(1.1)';
+            }
+        };
+        nodeDiv.onmouseout = function() { 
+            this.style.background = getNodeColorByLevel(level, true); 
+            this.style.boxShadow = '0 4px 16px rgba(0,255,136,0.10)'; 
+            const infoIcon = this.querySelector('.info-icon');
+            if (infoIcon) {
+                infoIcon.style.opacity = '0.9';
+                infoIcon.style.transform = 'scale(1)';
+            }
+        };
         nodeDiv.innerHTML = `
-            <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 1.1em; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-weight: bold;">${IAMId}</span>
+            <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 1.1em; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-weight: bold;">${formattedIAMId}</span>
         `;
+        
+        // آیکون اطلاعات کاربر (بالای دکمه expand)
+        let infoIcon = document.createElement('div');
+        infoIcon.className = 'info-icon';
+        infoIcon.innerHTML = 'ℹ️';
+        infoIcon.style.cssText = `
+            position: absolute;
+            top: -12px;
+            right: -12px;
+            font-size: 20px; 
+            color: #00ff88; 
+            cursor: pointer; 
+            opacity: 1; 
+            transition: all 0.2s;
+            z-index: 9999;
+            background: #181c2a;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid #00ff88;
+            box-shadow: 0 4px 16px rgba(0,255,136,0.6);
+            font-weight: bold;
+            pointer-events: auto;
+        `;
+        infoIcon.title = 'مشاهده اطلاعات کاربر';
+        nodeDiv.appendChild(infoIcon);
+        
+        // اضافه کردن event listener برای آیکون
+        infoIcon.addEventListener('click', function(e) {
+            e.stopPropagation();
+            console.log('🔍 Info icon clicked for user:', IAMId);
+            if (typeof window.networkShowUserPopup === 'function') {
+                window.networkShowUserPopup(address, user);
+            }
+        });
+        
+        // تست: بررسی اینکه آیکون اضافه شده
+        console.log('🔍 Info icon added to node:', IAMId, 'Element:', infoIcon);
         
         // دکمه expand/collapse اگر دایرکت دارد یا جای خالی دارد
         let expandBtn = null;
@@ -572,12 +715,15 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
             expandBtn.style.border = 'none';
             expandBtn.style.outline = 'none';
             expandBtn.style.color = '#a786ff';
-            expandBtn.style.fontSize = '1.1em';
+            expandBtn.style.fontSize = '1.4em';
             expandBtn.style.lineHeight = '1';
             expandBtn.style.cursor = 'pointer';
             expandBtn.style.verticalAlign = 'middle';
             expandBtn.style.fontWeight = '700';
-            expandBtn.style.marginInlineEnd = '0.4em';
+            expandBtn.style.marginInlineEnd = '0.6em';
+            expandBtn.style.padding = '2px 4px';
+            expandBtn.style.borderRadius = '4px';
+            expandBtn.style.transition = 'all 0.2s';
             expandBtn.setAttribute('aria-label', 'Expand/Collapse');
             nodeDiv.prepend(expandBtn);
         }
@@ -594,8 +740,12 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                 e.stopPropagation();
                 return;
             }
-            if (typeof window.networkShowUserPopup === 'function') {
-                window.networkShowUserPopup(address, user);
+            if (e.target.classList.contains('info-icon')) {
+                if (typeof window.networkShowUserPopup === 'function') {
+                    window.networkShowUserPopup(address, user);
+                }
+                e.stopPropagation();
+                return;
             }
         });
         container.appendChild(nodeDiv);
@@ -698,11 +848,11 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
             newBtn.style.fontWeight = 'bold';
             newBtn.style.border = 'none';
             newBtn.style.borderRadius = '6px';
-            newBtn.style.padding = '0.4em 1.2em';
+            newBtn.style.padding = '0.3em 0.8em';
             newBtn.style.cursor = 'pointer';
-            newBtn.style.fontSize = '0.9em';
-            newBtn.style.marginRight = '0.8em';
-            newBtn.style.marginLeft = '0.8em';
+            newBtn.style.fontSize = '0.85em';
+            newBtn.style.marginRight = '0.5em';
+            newBtn.style.marginLeft = '0.5em';
             newBtn.style.whiteSpace = 'nowrap';
             newBtn.style.fontWeight = 'bold';
             newBtn.onclick = async function(e) {
@@ -1351,4 +1501,403 @@ window.showUserStructTypewriter = function(address, user) {
     typewriterEl.textContent = '';
     typeWriter(infoLines, typewriterEl);
   }
-}; 
+};
+
+// تابع تنظیم قابلیت‌های موبایل پاپ‌آپ
+function setupMobilePopupFeatures(popupEl) {
+  let touchStartY = 0;
+  let currentY = 0;
+  let isScrolling = false;
+  
+  // تنظیم gesture برای موبایل با بهبود اسکرول
+  popupEl.addEventListener('touchstart', (e) => {
+    touchStartY = e.touches[0].clientY;
+    popupEl.style.transition = 'none';
+    isScrolling = false;
+  });
+
+  popupEl.addEventListener('touchmove', (e) => {
+    currentY = e.touches[0].clientY;
+    const deltaY = currentY - touchStartY;
+    const scrollContainer = popupEl.querySelector('.popup-content');
+    
+    // بررسی اینکه آیا محتوا قابل اسکرول است
+    if (scrollContainer) {
+      const isAtTop = scrollContainer.scrollTop === 0;
+      const isAtBottom = scrollContainer.scrollTop + scrollContainer.clientHeight >= scrollContainer.scrollHeight;
+      
+      // اگر در بالای محتوا هستیم و به پایین می‌کشیم، یا در پایین محتوا هستیم و به بالا می‌کشیم
+      if ((isAtTop && deltaY > 0) || (isAtBottom && deltaY < 0)) {
+        e.preventDefault();
+        popupEl.style.transform = `translateY(${deltaY}px)`;
+      } else {
+        // اجازه اسکرول در محتوا
+        isScrolling = true;
+      }
+    } else {
+      // اگر محتوای قابل اسکرول نداریم، فقط اجازه کشیدن به پایین
+      if (deltaY > 0) {
+        e.preventDefault();
+        popupEl.style.transform = `translateY(${deltaY}px)`;
+      }
+    }
+  });
+
+     popupEl.addEventListener('touchend', () => {
+     const deltaY = currentY - touchStartY;
+     popupEl.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+     
+     // فقط اگر اسکرول نکرده باشیم، پاپ‌آپ را ببندیم
+     if (!isScrolling && deltaY > 100) {
+       popupEl.style.transform = 'translate(-50%, -50%) scale(0.8)';
+       popupEl.style.opacity = '0';
+       setTimeout(() => popupEl.remove(), 300);
+     } else {
+       popupEl.style.transform = 'translate(-50%, -50%) scale(1)';
+       popupEl.style.opacity = '1';
+     }
+   });
+  
+  // تنظیم event listeners برای کارت‌های قابل گسترش
+  setupExpandableCards(popupEl);
+}
+
+// تابع تنظیم کارت‌های قابل گسترش
+function setupExpandableCards(popupEl) {
+  // اضافه کردن event listener برای کارت‌های آمار
+  const statItems = popupEl.querySelectorAll('.stat-item');
+  statItems.forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleCard(item);
+    });
+  });
+  
+  // اضافه کردن event listener برای کارت موجودی‌ها
+  const liveBalances = popupEl.querySelector('#live-balances');
+  if (liveBalances) {
+    liveBalances.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleCard(liveBalances);
+    });
+  }
+}
+
+// تابع تغییر وضعیت کارت (گسترش/انقباض)
+function toggleCard(cardElement) {
+  const isExpanded = cardElement.classList.contains('expanded');
+  
+  if (isExpanded) {
+    cardElement.classList.remove('expanded');
+    cardElement.classList.add('collapsed');
+  } else {
+    cardElement.classList.remove('collapsed');
+    cardElement.classList.add('expanded');
+  }
+}
+
+// تابع شروع تایپ‌رایتر
+function startTypewriter(popupEl, IAMId, walletAddress, isActive, infoList) {
+  const contentDiv = popupEl.querySelector('#typewriter-content');
+  if (!contentDiv) return;
+  
+  // متغیرهای برای ذخیره خطوط و وضعیت‌ها
+  let lineElements = [];
+  let currentLineIndex = 0;
+  let currentCharIndex = 0;
+  let isTyping = false;
+  let isCompleted = false;
+  
+               // ساخت خطوط اولیه
+     const initialLines = [
+       // اطلاعات اصلی کاربر
+       `IAM > شناسه کاربر: ${IAMId}`,
+       `IAM >`,
+     
+     // اطلاعات امتیازات
+     `IAM > امتیاز باینری: ${infoList[0].val !== undefined && infoList[0].val !== null && infoList[0].val !== '' ? infoList[0].val : '-'}`,
+     `IAM > سقف باینری: ${infoList[1].val !== undefined && infoList[1].val !== null && infoList[1].val !== '' ? infoList[1].val : '-'}`,
+     `IAM > پاداش کل باینری: ${infoList[2].val !== undefined && infoList[2].val !== null && infoList[2].val !== '' ? infoList[2].val : '-'}`,
+     `IAM > امتیاز دریافت‌شده: ${infoList[3].val !== undefined && infoList[3].val !== null && infoList[3].val !== '' ? infoList[3].val : '-'}`,
+     `IAM >`,
+     
+     // اطلاعات مالی
+     `IAM > درآمد رفرال: ${infoList[4].val !== undefined && infoList[4].val !== null && infoList[4].val !== '' ? infoList[4].val : '-'}`,
+     `IAM > سپرده کل: ${infoList[5].val !== undefined && infoList[5].val !== null && infoList[5].val !== '' ? infoList[5].val : '-'}`,
+     `IAM >`,
+     
+     // امتیازات چپ و راست
+     `IAM > امتیاز چپ: ${infoList[6].val !== undefined && infoList[6].val !== null && infoList[6].val !== '' ? infoList[6].val : '-'}`,
+     `IAM > امتیاز راست: ${infoList[7].val !== undefined && infoList[7].val !== null && infoList[7].val !== '' ? infoList[7].val : '-'}`,
+     `IAM >`,
+     
+     // تعداد ولت‌ها (در ابتدا loading)
+     `IAM > تعداد ولت چپ: ⏳`,
+     `IAM > تعداد ولت راست: ⏳`,
+     `IAM >`,
+     
+     // موجودی‌های زنده (در ابتدا loading)
+     `IAM > موجودی IAM: ⏳`,
+     `IAM > موجودی MATIC: ⏳`,
+     `IAM > موجودی DAI: ⏳`,
+     `IAM >`,
+     `IAM > آماده.`
+   ];
+  
+     // تابع تایپ خط
+   function typeNextLine() {
+     if (currentLineIndex >= initialLines.length) {
+       // تایپ تمام شد - شروع به‌روزرسانی داده‌های پویا
+       isCompleted = true;
+       startDynamicUpdates();
+       return;
+     }
+     
+     const lineDiv = document.createElement('div');
+     lineDiv.className = 'typewriter-line typing';
+     lineDiv.setAttribute('data-line-index', currentLineIndex);
+     contentDiv.appendChild(lineDiv);
+     lineElements[currentLineIndex] = lineDiv;
+     
+     const line = initialLines[currentLineIndex];
+     currentCharIndex = 0;
+     isTyping = true;
+     
+     // ابتدا خط را expand کن
+     lineDiv.style.opacity = '0';
+     lineDiv.style.transform = 'translateY(10px)';
+     
+     setTimeout(() => {
+       lineDiv.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+       lineDiv.style.opacity = '1';
+       lineDiv.style.transform = 'translateY(0)';
+       
+       // بعد از expand، تایپ را شروع کن
+       setTimeout(() => {
+         function typeChar() {
+           if (currentCharIndex < line.length) {
+             // تایپ کاراکتر به کاراکتر
+             const currentText = line.substring(0, currentCharIndex + 1);
+             lineDiv.textContent = currentText;
+             currentCharIndex++;
+             
+             // تنظیم اندازه پویا
+             adjustContainerSize();
+             
+             // تاخیر برای تایپ کاراکتر بعدی
+             setTimeout(typeChar, 40);
+           } else {
+             // خط تمام شد
+             lineDiv.classList.remove('typing');
+             lineDiv.classList.add('completed');
+             isTyping = false;
+             currentLineIndex++;
+             
+             adjustContainerSize();
+             
+             // کمی صبر کن و خط بعدی را شروع کن
+             setTimeout(typeNextLine, 400);
+           }
+         }
+         
+         typeChar();
+       }, 400); // صبر کن تا expand تمام شود
+     }, 200);
+   }
+  
+     // تابع تنظیم اندازه container
+   function adjustContainerSize() {
+     const container = popupEl.querySelector('.floating-typewriter');
+     if (container) {
+       const contentHeight = contentDiv.scrollHeight;
+       const lineHeight = 24; // ارتفاع تقریبی هر خط
+       const padding = 40; // padding اضافی
+       
+       // اگر آخرین خط است، فضای اضافی اضافه نکن
+       if (currentLineIndex >= initialLines.length - 1) {
+         container.style.height = Math.min(contentHeight + padding, window.innerHeight * 0.8) + 'px';
+       } else {
+         // برای خطوط دیگر، فضای کافی برای خط بعدی اضافه کن
+         container.style.height = Math.min(contentHeight + lineHeight + padding, window.innerHeight * 0.8) + 'px';
+       }
+     }
+   }
+  
+  // تابع به‌روزرسانی خط خاص
+  function updateLine(lineIndex, newText, isAnimated = true) {
+    if (lineElements[lineIndex]) {
+      const lineDiv = lineElements[lineIndex];
+      if (isAnimated) {
+        // انیمیشن به‌روزرسانی
+        lineDiv.style.color = '#ffff00';
+        setTimeout(() => {
+          lineDiv.textContent = newText;
+          lineDiv.style.color = '#00ff88';
+          adjustContainerSize();
+        }, 200);
+      } else {
+        lineDiv.textContent = newText;
+        adjustContainerSize();
+      }
+    }
+  }
+  
+  // تابع شروع به‌روزرسانی داده‌های پویا
+  function startDynamicUpdates() {
+    // به‌روزرسانی تعداد ولت‌ها
+    updateWalletCounts();
+    
+    // به‌روزرسانی موجودی‌ها
+    updateBalances();
+  }
+  
+  // تابع به‌روزرسانی تعداد ولت‌ها
+  async function updateWalletCounts() {
+    try {
+      if (window.contractConfig && window.contractConfig.contract && infoList[8] && infoList[8].key === 'left-wallet-count') {
+        const userIndex = infoList[8].userIndex || 1n;
+        const counts = await calculateWalletCounts(userIndex, window.contractConfig.contract);
+        
+                 // به‌روزرسانی تعداد ولت چپ (خط 14)
+         updateLine(14, `IAM > تعداد ولت چپ: ${counts.leftCount}`, true);
+         
+         // به‌روزرسانی تعداد ولت راست (خط 15)
+         updateLine(15, `IAM > تعداد ولت راست: ${counts.rightCount}`, true);
+      }
+    } catch (error) {
+      console.warn('Error updating wallet counts:', error);
+             updateLine(14, `IAM > تعداد ولت چپ: ❌`, true);
+       updateLine(15, `IAM > تعداد ولت راست: ❌`, true);
+    }
+  }
+  
+  // تابع به‌روزرسانی موجودی‌ها
+  async function updateBalances() {
+         if (walletAddress === '-') {
+       updateLine(18, `IAM > موجودی IAM: -`, true);
+       updateLine(19, `IAM > موجودی MATIC: -`, true);
+       updateLine(20, `IAM > موجودی DAI: -`, true);
+       return;
+     }
+    
+    try {
+      const { contract, provider } = await window.connectWallet();
+      let IAM = '-', dai = '-', matic = '-';
+      
+      // دریافت موجودی IAM
+      if (contract && typeof contract.balanceOf === 'function') {
+        try {
+          const c = await contract.balanceOf(walletAddress);
+                     IAM = Number(ethers.formatEther(c)).toFixed(4);
+           updateLine(18, `IAM > موجودی IAM: ${IAM}`, true);
+                 } catch (e) {
+           updateLine(18, `IAM > موجودی IAM: ❌`, true);
+         }
+      }
+      
+      // دریافت موجودی DAI
+      try {
+        const DAI_ADDRESS = window.DAI_ADDRESS || '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063';
+        const Dai = new ethers.Contract(DAI_ADDRESS, window.DAI_ABI, provider);
+                 const d = await Dai.balanceOf(walletAddress);
+         dai = Number(ethers.formatUnits(d, 18)).toFixed(2);
+         updateLine(20, `IAM > موجودی DAI: ${dai}`, true);
+             } catch (e) {
+         updateLine(20, `IAM > موجودی DAI: ❌`, true);
+       }
+      
+      // دریافت موجودی MATIC
+      if (provider) {
+        try {
+                     const m = await provider.getBalance(walletAddress);
+           matic = Number(ethers.formatEther(m)).toFixed(4);
+           updateLine(19, `IAM > موجودی MATIC: ${matic}`, true);
+                 } catch (e) {
+           updateLine(19, `IAM > موجودی MATIC: ❌`, true);
+         }
+      }
+      
+    } catch (error) {
+      console.warn('Error updating balances:', error);
+      updateLine(18, `IAM > موجودی IAM: ❌`, true);
+      updateLine(19, `IAM > موجودی MATIC: ❌`, true);
+      updateLine(20, `IAM > موجودی DAI: ❌`, true);
+    }
+  }
+  
+  // تابع محاسبه تعداد ولت‌ها (کپی شده از کد قبلی)
+  async function calculateWalletCounts(userIndex, contract) {
+    try {
+      let leftCount = 0;
+      let rightCount = 0;
+      const leftChildIndex = BigInt(userIndex) * 2n;
+      const rightChildIndex = BigInt(userIndex) * 2n + 1n;
+      
+      // چپ
+      try {
+        const leftAddress = await contract.indexToAddress(leftChildIndex);
+        if (leftAddress && leftAddress !== '0x0000000000000000000000000000000000000000') {
+          const leftUser = await (async () => { try { return await contract.users(leftAddress); } catch(e){ return { index:0n }; } })();
+          if (leftUser && leftUser.index && BigInt(leftUser.index) > 0n) {
+            leftCount = 1 + await calculateSubtreeCount(leftChildIndex, contract, 'left');
+          }
+        }
+      } catch {}
+      
+      // راست
+      try {
+        const rightAddress = await contract.indexToAddress(rightChildIndex);
+        if (rightAddress && rightAddress !== '0x0000000000000000000000000000000000000000') {
+          const rightUser = await (async () => { try { return await contract.users(rightAddress); } catch(e){ return { index:0n }; } })();
+          if (rightUser && rightUser.index && BigInt(rightUser.index) > 0n) {
+            rightCount = 1 + await calculateSubtreeCount(rightChildIndex, contract, 'right');
+          }
+        }
+      } catch {}
+      
+      return { leftCount, rightCount };
+    } catch (error) {
+      return { leftCount: 0, rightCount: 0 };
+    }
+  }
+  
+  // تابع محاسبه بازگشتی تعداد ولت‌ها در زیرمجموعه
+  async function calculateSubtreeCount(parentIndex, contract, side) {
+    let count = 0;
+    async function countRecursive(index) {
+      const leftChildIndex = BigInt(index) * 2n;
+      const rightChildIndex = BigInt(index) * 2n + 1n;
+      let subtreeCount = 0;
+      
+      // بررسی فرزند چپ
+      try {
+        const leftAddress = await contract.indexToAddress(leftChildIndex);
+        if (leftAddress && leftAddress !== '0x0000000000000000000000000000000000000000') {
+          const leftUser = await (async () => { try { return await contract.users(leftAddress); } catch(e){ return { index:0n }; } })();
+          if (leftUser && leftUser.index && BigInt(leftUser.index) > 0n) {
+            subtreeCount += 1;
+            subtreeCount += await countRecursive(leftChildIndex);
+          }
+        }
+      } catch (e) {}
+      
+      // بررسی فرزند راست
+      try {
+        const rightAddress = await contract.indexToAddress(rightChildIndex);
+        if (rightAddress && rightAddress !== '0x0000000000000000000000000000000000000000') {
+          const rightUser = await (async () => { try { return await contract.users(rightAddress); } catch(e){ return { index:0n }; } })();
+          if (rightUser && rightUser.index && BigInt(rightUser.index) > 0n) {
+            subtreeCount += 1;
+            subtreeCount += await countRecursive(rightChildIndex);
+          }
+        }
+      } catch (e) {}
+      
+      return subtreeCount;
+    }
+    return await countRecursive(parentIndex);
+  }
+  
+     // شروع تایپ از خط اول
+   setTimeout(typeNextLine, 500);
+}

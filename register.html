@@ -803,8 +803,13 @@
             throw new Error('آدرس کاربر جدید معتبر نیست');
           }
           
-          // معرف: آدرس کاربر فعلی
-          const referrerAddress = myAddress;
+          // معرف: آدرس انتخاب شده در فیلد referrer-address
+          const referrerAddress = document.getElementById('referrer-address').value.trim();
+          
+          // بررسی معتبر بودن آدرس معرف
+          if (!referrerAddress || !/^0x[a-fA-F0-9]{40}$/.test(referrerAddress)) {
+            throw new Error('آدرس معرف معتبر نیست');
+          }
           
           // بررسی ثبت‌نام نبودن کاربر جدید
           const newUserData = await contract.users(newUser);

@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="css/index-custom.css">
     <link rel="stylesheet" href="css/floating-ai-assistant.css">
     <link rel="stylesheet" href="css/smooth-transitions.css">
+    <link rel="stylesheet" href="css/mobile-user-popup.css">
 
     <!-- بارگذاری ethers.js نسخه 6 از CDN -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
@@ -146,6 +147,7 @@
           <span id="index-status-active" style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.35rem 0.7rem;border-radius:12px;font-weight:700;color:#0f2d1f;background:linear-gradient(135deg,#00ff88,#00d178);border:1px solid rgba(0,255,136,0.4);box-shadow:0 2px 8px rgba(0,255,136,0.25);">✅ فعال</span>
           <span id="index-status-id" style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.35rem 0.7rem;border-radius:12px;color:#ffffff;background:linear-gradient(135deg, rgba(0,255,136,0.12), rgba(167,134,255,0.12));border:1px solid rgba(255,255,255,0.18);font-weight:700;">🆔 IAM--</span>
           <span id="index-status-address" title="" style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.35rem 0.7rem;border-radius:12px;color:#ffffff;background:linear-gradient(135deg, rgba(167,134,255,0.12), rgba(0,255,136,0.12));border:1px solid rgba(255,255,255,0.18);font-family:'Fira Mono', monospace;">📍 0x...</span>
+          <button onclick="scrollToRanking()" style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.35rem 0.7rem;border-radius:12px;color:#ffffff;background:linear-gradient(135deg, rgba(167,134,255,0.8), rgba(0,255,136,0.8));border:1px solid rgba(255,255,255,0.18);font-weight:700;cursor:pointer;border:none;font-size:0.9rem;">🏆 رنکینگ</button>
         </div>
       </div>
     </div>
@@ -460,6 +462,21 @@
         </div>
         
 
+      </div>
+
+      <!-- رنکینگ کاربران برتر -->
+      <div id="top-users-ranking" style="margin-top: 2rem; padding: 1rem; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px solid rgba(167,134,255,0.2);">
+        <!-- محتوای رنکینگ توسط JavaScript بارگذاری می‌شود -->
+        <div style="text-align: center; padding: 1rem; color: #a786ff;">
+          <div style="font-size: 1.2rem; font-weight: bold; margin-bottom: 1rem;">🏆 رنکینگ کاربران برتر</div>
+          <div style="color: #888; font-size: 0.9rem; margin-bottom: 1rem;">برای مشاهده 10 کاربر برتر بر اساس لایک‌ها، دکمه زیر را کلیک کنید</div>
+          <div style="color: #00ff88; font-size: 0.8rem; margin-bottom: 1rem; background: rgba(0,255,136,0.1); padding: 0.5rem; border-radius: 8px; border: 1px solid rgba(0,255,136,0.2);">
+            💡 <strong>نکته:</strong> می‌توانید برای هر کاربر لایک یا دیسلایک کنید و همچنین با وارد کردن ایندکس، برای هر کاربری رای دهید
+          </div>
+          <button onclick="loadRanking()" style="background: #00ff88; color: #000; border: none; border-radius: 8px; padding: 0.8rem 1.5rem; margin-top: 0.5rem; cursor: pointer; font-weight: bold; font-size: 1rem;">
+            🔄 بارگذاری رنکینگ
+          </button>
+        </div>
       </div>
 
 
@@ -1230,23 +1247,29 @@
     <script src="js/smart-dashboard-updater.js"></script>
     <script src="js/central-dashboard-updater.js"></script>
     <script src="js/test-address-config.js"></script>
-    <script src="js/final-test-config.js"></script>
-    <script src="js/dashboard-loading-manager.js"></script>
     <script src="js/config.js"></script>
+    <script>
+      // بررسی لود شدن config.js
+      console.log('🔍 بررسی لود شدن config.js...');
+      setTimeout(() => {
+        console.log('displayTopUsersRanking موجود:', typeof window.displayTopUsersRanking);
+        console.log('voteForIndex موجود:', typeof window.voteForIndex);
+        if (typeof window.displayTopUsersRanking !== 'function') {
+          console.error('❌ config.js درست لود نشده است!');
+        } else {
+          console.log('✅ config.js با موفقیت لود شد');
+        }
+      }, 1000);
+    </script>
   <script src="js/reports.js"></script>
   <script src="js/web3-interactions.js"></script>
   <script src="js/main.js"></script>
   <script src="js/network.js?v=5.7"></script>
   <script src="js/network-database.js?v=5.8"></script>
+  <script src="js/mobile-user-popup.js"></script>
   <script src="js/profile.js?v=5.7"></script>
   
   <script src="js/homepage.js?v=5.8"></script>
-  <script src="js/price-history-manager.js?v=5.8"></script>
-  <script src="js/price-chart.js?v=5.8"></script>
-  <script src="js/point-chart.js?v=5.8"></script>
-  <script src="js/price-charts-manager.js?v=5.8"></script>
-  <script src="js/chart-testing-helper.js?v=1.0"></script>
-  <script src="js/real-chart-validator.js?v=1.0"></script>
 
   <style>
     /* Fix for chart width issues */
@@ -2615,6 +2638,35 @@
       } else {
         console.warn('⚠️ SwapManager تعریف نشده است - فایل swap.js بارگذاری نشده');
       }
+      
+      // بارگذاری رنکینگ کاربران برتر
+      try {
+        if (typeof window.displayTopUsersRanking === 'function') {
+          // کمی صبر کن تا اتصال به قرارداد برقرار شود
+          setTimeout(async () => {
+            try {
+              // استفاده از تابع بهینه‌سازی شده برای عملکرد بهتر
+              if (typeof window.getTopLikedUsersOptimized === 'function') {
+                const topUsers = await window.getTopLikedUsersOptimized(10);
+                if (topUsers.length > 0) {
+                  await window.displayTopUsersRanking('top-users-ranking');
+                } else {
+                  // اگر تابع بهینه کار نکرد، از تابع اصلی استفاده کن
+                  await window.displayTopUsersRanking('top-users-ranking');
+                }
+              } else {
+                await window.displayTopUsersRanking('top-users-ranking');
+              }
+            } catch (error) {
+              console.error('❌ خطا در بارگذاری رنکینگ:', error);
+            }
+          }, 2000);
+        } else {
+          console.warn('⚠️ تابع displayTopUsersRanking تعریف نشده است');
+        }
+      } catch (error) {
+        console.error('❌ خطا در بارگذاری رنکینگ:', error);
+      }
     });
     
     // مقداردهی مجدد بعد از اتصال کیف پول
@@ -3005,6 +3057,74 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 // پایان اسکریپت‌های اصلی
+
+// تابع بارگذاری دستی رنکینگ
+function loadRanking() {
+  console.log('🔄 شروع بارگذاری رنکینگ...');
+  
+  // بررسی اتصال کیف پول
+  if (!window.contractConfig || !window.contractConfig.contract) {
+    console.log('⚠️ کیف پول متصل نیست، در حال اتصال...');
+    window.connectWallet().then(() => {
+      setTimeout(() => {
+        loadRankingInternal();
+      }, 1000);
+    }).catch(error => {
+      console.error('❌ خطا در اتصال کیف پول:', error);
+      document.getElementById('top-users-ranking').innerHTML = `
+        <div style="text-align: center; padding: 2rem; color: #ff4444;">
+          <div>❌ ابتدا کیف پول خود را متصل کنید</div>
+        </div>
+      `;
+    });
+  } else {
+    loadRankingInternal();
+  }
+}
+
+function loadRankingInternal() {
+  console.log('🔍 بررسی توابع رنکینگ...');
+  console.log('displayTopUsersRanking موجود:', typeof window.displayTopUsersRanking);
+  console.log('getTopLikedUsersOptimized موجود:', typeof window.getTopLikedUsersOptimized);
+  
+  if (typeof window.displayTopUsersRanking === 'function') {
+    console.log('✅ شروع نمایش رنکینگ...');
+    window.displayTopUsersRanking('top-users-ranking').then(() => {
+      console.log('✅ رنکینگ با موفقیت بارگذاری شد');
+    }).catch(error => {
+      console.error('❌ خطا در نمایش رنکینگ:', error);
+      document.getElementById('top-users-ranking').innerHTML = `
+        <div style="text-align: center; padding: 2rem; color: #ff4444;">
+          <div>❌ خطا در بارگذاری رنکینگ</div>
+          <div style="font-size: 0.8rem; margin-top: 0.5rem;">${error.message}</div>
+        </div>
+      `;
+    });
+  } else {
+    console.error('❌ تابع displayTopUsersRanking موجود نیست');
+    document.getElementById('top-users-ranking').innerHTML = `
+      <div style="text-align: center; padding: 2rem; color: #ff4444;">
+        <div>❌ تابع رنکینگ موجود نیست</div>
+        <div style="font-size: 0.8rem; margin-top: 0.5rem;">لطفاً صفحه را رفرش کنید</div>
+      </div>
+    `;
+  }
+}
+
+// تابع اسکرول به بخش رنکینگ
+function scrollToRanking() {
+  const rankingElement = document.getElementById('top-users-ranking');
+  if (rankingElement) {
+    rankingElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // هایلایت کردن بخش رنکینگ
+    rankingElement.style.boxShadow = '0 0 20px rgba(167,134,255,0.5)';
+    setTimeout(() => {
+      rankingElement.style.boxShadow = '';
+    }, 2000);
+  }
+}
+
+
 
 </script>
 
