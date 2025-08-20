@@ -72,7 +72,7 @@
         <div style="font-size:0.8rem;color:#718096;margin-bottom:6px;background:rgba(113,128,150,0.1);padding:6px;border-radius:4px;">
           🔗 این فیلد به صورت خودکار بر اساس ایندکس انتخاب شده پر می‌شود. معرف باید فعال باشد.
         </div>
-        <input type="text" id="referrer-address" class="register-form-input" placeholder="0x..." autocomplete="off" value="root">
+                 <input type="text" id="referrer-address" class="register-form-input" placeholder="0x..." autocomplete="off" value="root" style="background-color: #232946; color: #fff;">
       </div>
       <div class="form-group">
         <label for="new-user-address">آدرس کاربر جدید</label>
@@ -138,8 +138,9 @@
         <div style="margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(167,134,255,0.3);">
           <div style="color:#a786ff;font-size:0.9rem;margin-bottom:4px;">📊 اطلاعات ثبت‌نام:</div>
         </div>
-        <div style="margin-bottom:8px;">🎯 ایندکس رفرر: <b id="parent-index">...</b></div>
-        <div style="margin-bottom:8px;">📍 ایندکس جایگاه جدید: <b id="empty-index">...</b></div>
+                 <div style="margin-bottom:8px;">🎯 ایندکس رفرر: <b id="parent-index">...</b></div>
+         <div style="margin-bottom:8px;">📍 ایندکس جایگاه جدید: <b id="empty-index">...</b></div>
+         <div style="margin-bottom:8px;">🔄 جایگاه کاربر جدید: <b id="position-info">...</b></div>
         <div style="margin-bottom:8px;">💰 هزینه ثبت‌نام:<br><b id="register-cost" style="display:inline-block;margin-top:4px;font-size:1.1rem;color:#00ff88;">...</b></div>
         
         <div style="margin-top:12px;padding-top:8px;border-top:1px solid rgba(167,134,255,0.3);">
@@ -362,20 +363,25 @@
         
         
         
-        // مقداردهی empty-index (پیشنهادی)
-        let emptyIndex = '...';
-        if (parentIndex !== '...') {
-          let left = await contract.getLeftAddress(parentIndex);
-          let right = await contract.getRightAddress(parentIndex);
-          if (left === '0x0000000000000000000000000000000000000000') {
-            emptyIndex = (BigInt(parentIndex) * 2n).toString();
-          } else if (right === '0x0000000000000000000000000000000000000000') {
-            emptyIndex = (BigInt(parentIndex) * 2n + 1n).toString();
-          } else {
-            emptyIndex = 'پر شده';
-          }
-        }
-        document.getElementById('empty-index').textContent = emptyIndex;
+                 // مقداردهی empty-index و position-info (پیشنهادی)
+         let emptyIndex = '...';
+         let positionInfo = '...';
+         if (parentIndex !== '...') {
+           let left = await contract.getLeftAddress(parentIndex);
+           let right = await contract.getRightAddress(parentIndex);
+           if (left === '0x0000000000000000000000000000000000000000') {
+             emptyIndex = (BigInt(parentIndex) * 2n).toString();
+             positionInfo = `چپ (Left) - ایندکس ${emptyIndex}`;
+           } else if (right === '0x0000000000000000000000000000000000000000') {
+             emptyIndex = (BigInt(parentIndex) * 2n + 1n).toString();
+             positionInfo = `راست (Right) - ایندکس ${emptyIndex}`;
+           } else {
+             emptyIndex = 'پر شده';
+             positionInfo = 'هر دو جایگاه پر شده';
+           }
+         }
+         document.getElementById('empty-index').textContent = emptyIndex;
+         document.getElementById('position-info').textContent = positionInfo;
         // هزینه ثبت‌نام
         let regCost = '...';
         if (window.getRegPrice) {
@@ -459,51 +465,141 @@
 
     // --- Two-way mapping: index <-> address ---
     // indexInput و refInput فقط یکبار تعریف می‌شوند
-         // وقتی ایندکس تغییر می‌کند، آدرس را به‌روز کن و بررسی خط رفرال
-    indexInput.addEventListener('change', async function() {
-       await checkIndexReferralLine();
-     });
-     
-     // اضافه کردن event listener برای input و paste
-     indexInput.addEventListener('input', async function() {
-       await checkIndexReferralLine();
-     });
-     
-     indexInput.addEventListener('paste', async function() {
-       setTimeout(async () => {
-         await checkIndexReferralLine();
-       }, 100);
-     });
+               // وقتی ایندکس تغییر می‌کند، آدرس را به‌روز کن و بررسی خط رفرال
+     indexInput.addEventListener('change', async function() {
+        console.log(`🔄 تغییر ایندکس:`, this.value);
+        await checkIndexReferralLine();
+      });
+      
+                    // اضافه کردن event listener برای paste
+       indexInput.addEventListener('paste', async function() {
+         console.log(`📋 پیست ایندکس:`, this.value);
+         setTimeout(async () => {
+           await checkIndexReferralLine();
+         }, 100);
+       });
+      
+             // تبدیل خودکار ایندکس به فرمت IAM
+       indexInput.addEventListener('blur', async function() {
+         const value = this.value.trim();
+         console.log(`🔍 blur event - مقدار: ${value}`);
+         
+         if (value && /^\d+$/.test(value)) {
+           console.log(`🔢 عدد در blur تشخیص داده شد: ${value}`);
+           
+           // اگر فقط عدد وارد شده، اول آدرس را بگیر
+           await checkIndexReferralLine();
+           
+           // بعد به فرمت IAM تبدیل کن با قواعد خاص
+           let IAMId = '';
+           if (value.length === 1) {
+             // یک رقم: IAM00001
+             IAMId = 'IAM' + value.padStart(5, '0');
+           } else if (value.length === 2) {
+             // دو رقم: IAM00012 (یک صفر کمتر)
+             IAMId = 'IAM' + value.padStart(4, '0');
+           } else if (value.length === 3) {
+             // سه رقم: IAM00123 (دو صفر کمتر)
+             IAMId = 'IAM' + value.padStart(3, '0');
+           } else if (value.length === 4) {
+             // چهار رقم: IAM01234 (سه صفر کمتر)
+             IAMId = 'IAM' + value.padStart(2, '0');
+           } else {
+             // پنج رقم و بیشتر: IAM12345 (بدون صفر)
+             IAMId = 'IAM' + value;
+           }
+           
+           console.log(`🔄 تبدیل در blur به: ${IAMId}`);
+           this.value = IAMId;
+           console.log(`✅ تبدیل ایندکس ${value} به ${IAMId}`);
+         }
+       });
+      
+             // تبدیل خودکار در حین تایپ
+       indexInput.addEventListener('input', async function() {
+         const value = this.value.trim();
+         console.log(`📝 ورودی ایندکس: ${value}`);
+         
+         // اگر کاربر فقط عدد تایپ می‌کند
+         if (value && /^\d+$/.test(value)) {
+           console.log(`🔢 عدد تشخیص داده شد: ${value}`);
+           
+           // اول آدرس را بگیر
+           await checkIndexReferralLine();
+           
+           // بعد ایندکس را به فرمت IAM تبدیل کن با قواعد خاص
+           let IAMId = '';
+           if (value.length === 1) {
+             // یک رقم: IAM00001
+             IAMId = 'IAM' + value.padStart(5, '0');
+           } else if (value.length === 2) {
+             // دو رقم: IAM00012 (یک صفر کمتر)
+             IAMId = 'IAM' + value.padStart(4, '0');
+           } else if (value.length === 3) {
+             // سه رقم: IAM00123 (دو صفر کمتر)
+             IAMId = 'IAM' + value.padStart(3, '0');
+           } else if (value.length === 4) {
+             // چهار رقم: IAM01234 (سه صفر کمتر)
+             IAMId = 'IAM' + value.padStart(2, '0');
+           } else {
+             // پنج رقم و بیشتر: IAM12345 (بدون صفر)
+             IAMId = 'IAM' + value;
+           }
+           
+           console.log(`🔄 تبدیل به: ${IAMId}`);
+           this.value = IAMId;
+           console.log(`✅ تبدیل خودکار ایندکس ${value} به ${IAMId}`);
+         }
+       });
      
 
      
-           // تابع بررسی خط رفرال برای ایندکس
-      async function checkIndexReferralLine() {
-        const index = indexInput.value.replace(/[^0-9]/g, '');
-        if (!index) return;
+                  // تابع بررسی خط رفرال برای ایندکس
+       async function checkIndexReferralLine() {
+         let index = '';
+         // اگر با IAM شروع شده، فقط اعداد را بگیر
+         if (indexInput.value.startsWith('IAM')) {
+           index = indexInput.value.replace('IAM', '').replace(/^0+/, '') || '0';
+         } else {
+           // اگر فقط عدد است، مستقیماً استفاده کن
+           index = indexInput.value.trim();
+         }
+         console.log(`🔍 بررسی ایندکس: "${indexInput.value}" -> "${index}"`);
+         if (!index) {
+           console.log(`❌ ایندکس خالی است`);
+           return;
+         }
         
         try {
-          if (!window.contractConfig || !window.contractConfig.contract) await window.connectWallet();
+          console.log(`🔗 اتصال به قرارداد...`);
+          if (!window.contractConfig || !window.contractConfig.contract) {
+            console.log(`🔗 اتصال مجدد به کیف پول...`);
+            await window.connectWallet();
+          }
           const contract = window.contractConfig.contract;
           const status = document.getElementById('status-message');
+          console.log(`🔗 قرارداد آماده:`, contract ? 'بله' : 'خیر');
           
           // مرحله 1: بررسی وجود ایندکس در شبکه
-          console.log(`🔍 بررسی وجود ایندکس ${index} در شبکه...`);
           let addr = null;
           try {
             addr = await contract.indexToAddress(index);
             console.log(`📍 آدرس ایندکس ${index}:`, addr);
           } catch (e) {
             console.log(`❌ خطا در دریافت آدرس ایندکس ${index}:`, e);
+            refInput.value = '';
             status.style.color = '#d32f2f';
-            status.textContent = 'ایندکس وارد شده در شبکه وجود ندارد.';
+            status.textContent = `خطا در دریافت آدرس ایندکس ${index}: ${e.message || e}`;
             return;
           }
           
-          // بررسی اینکه آیا آدرس خالی است (ایندکس وجود ندارد)
+          // بررسی اینکه آیا آدرس خالی است
           if (!addr || addr === '0x0000000000000000000000000000000000000000') {
+            refInput.value = '';
+            refInput.style.backgroundColor = '#232946';
+            refInput.style.color = '#fff';
             status.style.color = '#d32f2f';
-            status.textContent = 'ایندکس وارد شده در شبکه وجود ندارد.';
+            status.textContent = `❌ ایندکس ${index} در شبکه وجود ندارد. لطفاً ایندکس معتبر وارد کنید.`;
             return;
           }
           
@@ -512,61 +608,71 @@
             const userAtAddress = await contract.users(addr);
             console.log(`👤 اطلاعات کاربر در ایندکس ${index}:`, userAtAddress);
             
-            if (!userAtAddress || !userAtAddress.activated) {
-              status.style.color = '#d32f2f';
-              status.textContent = 'کاربر در این ایندکس فعال نیست.';
-              return;
-            }
+                      // بررسی فعال بودن کاربر
+          const isActive = userAtAddress && userAtAddress.index && BigInt(userAtAddress.index) > 0n;
+          
+          if (!isActive) {
+            refInput.value = '';
+            refInput.style.backgroundColor = '#232946';
+            refInput.style.color = '#fff';
+            status.style.color = '#d32f2f';
+            status.textContent = `کاربر در ایندکس ${index} فعال نیست. لطفاً ایندکس کاربر فعال وارد کنید.`;
+            return;
+          }
           } catch (e) {
             console.log(`❌ خطا در بررسی وضعیت کاربر:`, e);
+            refInput.value = '';
             status.style.color = '#d32f2f';
-            status.textContent = 'خطا در بررسی وضعیت کاربر.';
+            status.textContent = `خطا در بررسی وضعیت کاربر در ایندکس ${index}. لطفاً مجدداً تلاش کنید.`;
             return;
           }
           
-          // مرحله 3: بررسی صلاحیت کاربر جاری
-          let myAddress = null, currentUser = null;
-          try {
-            if (window.currentUserAddress) {
-              myAddress = window.currentUserAddress;
-              currentUser = await contract.users(myAddress);
-            } else {
-              myAddress = contract.signer ? await contract.signer.getAddress() : null;
-              if (myAddress) {
-                currentUser = await contract.users(myAddress);
-                window.currentUserAddress = myAddress;
-              }
-            }
-          } catch (e) {
-            console.log(`خطا در دریافت اطلاعات کاربر:`, e);
-          }
+          // تنظیم آدرس معرف در فیلد
+          refInput.readOnly = false;
+          refInput.disabled = false;
+          refInput.value = addr;
+          refInput.style.backgroundColor = '#232946';
+          refInput.style.color = '#fff';
           
-          console.log(`🔍 بررسی کاربر جاری:`, currentUser);
-          if (currentUser && (currentUser.index && BigInt(currentUser.index) > 0n) && currentUser.index) {
-            const currentUserIndex = parseInt(currentUser.index);
-            const targetIndex = parseInt(index);
-            console.log(`🔍 بررسی صلاحیت: کاربر جاری=${currentUserIndex}, هدف=${targetIndex}`);
-            
-            if (!isIndexInUserSubtree(targetIndex, currentUserIndex)) {
-              status.style.color = '#d32f2f';
-              status.textContent = `شما مجاز به ثبت‌نام برای این ایندکس نیستید. فقط ایندکس‌های زیرمجموعه شما مجاز هستند.`;
-              return;
-            } else {
-              status.style.color = '#388e3c';
-              status.textContent = 'ایندکس معرف معتبر است و در زیرمجموعه شما قرار دارد.';
-              refInput.value = addr; // تنظیم آدرس معرف
-            }
-          } else {
-            console.log(`⚠️ کاربر فعال نیست یا ایندکس ندارد:`, currentUser);
-            status.style.color = '#d32f2f';
-            status.textContent = `شما باید ابتدا ثبت‌نام کنید تا بتوانید برای دیگران ثبت‌نام انجام دهید.`;
-            return;
-          }
+                     // نمایش پیام موفقیت
+           status.style.color = '#388e3c';
+           status.textContent = `✅ آدرس معرف به‌طور خودکار تنظیم شد: ${addr}`;
+           
+           // به‌روزرسانی اطلاعات جایگاه جدید
+           try {
+             let left = await contract.getLeftAddress(index);
+             let right = await contract.getRightAddress(index);
+             let newEmptyIndex = '...';
+             let newPositionInfo = '...';
+             
+             if (left === '0x0000000000000000000000000000000000000000') {
+               newEmptyIndex = (BigInt(index) * 2n).toString();
+               newPositionInfo = `چپ (Left) - ایندکس ${newEmptyIndex}`;
+             } else if (right === '0x0000000000000000000000000000000000000000') {
+               newEmptyIndex = (BigInt(index) * 2n + 1n).toString();
+               newPositionInfo = `راست (Right) - ایندکس ${newEmptyIndex}`;
+             } else {
+               newEmptyIndex = 'پر شده';
+               newPositionInfo = 'هر دو جایگاه پر شده';
+             }
+             
+             document.getElementById('empty-index').textContent = newEmptyIndex;
+             document.getElementById('position-info').textContent = newPositionInfo;
+             document.getElementById('parent-index').textContent = index;
+             
+             console.log(`🔄 اطلاعات جایگاه به‌روزرسانی شد: ${newPositionInfo}`);
+           } catch (e) {
+             console.log(`خطا در به‌روزرسانی اطلاعات جایگاه:`, e);
+           }
+           
+           // اتمام موفقیت‌آمیز
+           console.log(`✅ آدرس معرف تنظیم شد: ${addr}`);
           
         } catch (e) {
           const status = document.getElementById('status-message');
+          refInput.value = '';
           status.style.color = '#d32f2f';
-          status.textContent = 'خطا در بررسی ایندکس: ' + (e.message || e);
+          status.textContent = `خطا در بررسی ایندکس ${index}: ` + (e.message || e);
         }
       }
          // وقتی آدرس تغییر می‌کند، ایندکس را به‌روز کن و بررسی خط رفرال
@@ -611,14 +717,14 @@
           // مرحله 2: بررسی اینکه آیا کاربر فعال است
           if (!user || !(user.index && BigInt(user.index) > 0n)) {
             status.style.color = '#d32f2f';
-            status.textContent = 'کاربر در این آدرس فعال نیست یا وجود ندارد.';
+            status.textContent = `کاربر در آدرس ${address} فعال نیست یا وجود ندارد. لطفاً آدرس کاربر فعال وارد کنید.`;
             return;
           }
           
           // مرحله 3: بررسی اینکه آیا کاربر ایندکس دارد
           if (!user.index) {
             status.style.color = '#d32f2f';
-            status.textContent = 'کاربر در این آدرس ایندکس ندارد.';
+            status.textContent = `کاربر در آدرس ${address} ایندکس ندارد. لطفاً آدرس کاربر ثبت‌نام شده وارد کنید.`;
             return;
           }
           
@@ -628,6 +734,7 @@
           indexInput.style.background = '';
           indexInput.style.color = '';
           indexInput.style.opacity = '';
+          console.log(`✅ ایندکس معرف تنظیم شد:`, IAMId);
           
           // مرحله 5: بررسی صلاحیت کاربر جاری
           let myAddress = null, currentUser = null;
@@ -658,7 +765,7 @@
               return;
             } else {
               status.style.color = '#388e3c';
-              status.textContent = 'آدرس معرف معتبر است و در زیرمجموعه شما قرار دارد.';
+              status.textContent = `آدرس معرف معتبر است و در زیرمجموعه شما قرار دارد. ایندکس معرف: ${IAMId}`;
             }
           } else {
             console.log(`⚠️ کاربر فعال نیست یا ایندکس ندارد:`, currentUser);
@@ -670,7 +777,7 @@
         } catch (e) {
           const status = document.getElementById('status-message');
           status.style.color = '#d32f2f';
-          status.textContent = 'خطا در بررسی آدرس: ' + (e.message || e);
+          status.textContent = `خطا در بررسی آدرس رفرال ${address}: ` + (e.message || e);
         }
       }
      
@@ -706,7 +813,7 @@
         // بررسی فرمت آدرس
         if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
           status.style.color = '#d32f2f';
-          status.textContent = 'آدرس وارد شده معتبر نیست. لطفاً آدرس صحیح را وارد کنید.';
+          status.textContent = `آدرس ${address} فرمت نامعتبر دارد. لطفاً آدرس اتریوم صحیح (0x...) وارد کنید.`;
           return;
         }
         
@@ -718,13 +825,13 @@
           const user = await contract.users(address);
           if (user && (user.index && BigInt(user.index) > 0n)) {
             status.style.color = '#d32f2f';
-            status.textContent = 'این آدرس قبلاً ثبت‌نام شده است.';
+            status.textContent = `آدرس ${address} قبلاً ثبت‌نام شده است. لطفاً آدرس کاربر جدید وارد کنید.`;
             return;
           }
           
           // اگر ثبت‌نام نشده، پیام موفقیت
           status.style.color = '#388e3c';
-          status.textContent = 'آدرس کاربر جدید معتبر است و می‌تواند ثبت‌نام شود.';
+          status.textContent = `آدرس ${address} معتبر است و می‌تواند ثبت‌نام شود.`;
           
           // نمایش ایندکس مربوط به این آدرس (اگر وجود داشته باشد)
           try {
@@ -744,14 +851,14 @@
             }
             
             if (foundIndex) {
-              status.textContent += ` (ایندکس: ${foundIndex})`;
+              status.textContent += ` (ایندکس موجود: ${foundIndex})`;
             }
           } catch (e) {
             // اگر خطا در جستجوی ایندکس داشتیم، نادیده بگیر
           }
         } catch (e) {
           status.style.color = '#d32f2f';
-          status.textContent = 'خطا در بررسی آدرس: ' + (e.message || e);
+          status.textContent = `خطا در بررسی آدرس ${address}: ` + (e.message || e);
         }
       }
       

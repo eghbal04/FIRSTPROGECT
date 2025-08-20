@@ -175,12 +175,18 @@ class MobileUserPopup {
         // نمایش پاپ‌آپ و backdrop
         this.backdrop.style.display = 'block';
         this.popup.classList.add('active');
+        this.backdrop.classList.add('active');
         setTimeout(() => {
             this.backdrop.style.opacity = '0.5';
         }, 50);
 
         // دریافت موجودی‌های زنده
         this.getLiveBalances(walletAddress);
+        
+        // تست مستقیم موجودی‌ها
+        setTimeout(() => {
+            this.testBalancesInPopup(walletAddress);
+        }, 1000);
         
         // تنظیم اندازه اولیه کارت‌ها بر اساس محتوا
         this.adjustCardSizes();
@@ -292,43 +298,181 @@ class MobileUserPopup {
     }
 
     async getLiveBalances(address) {
-        if (!address || address === '-') return;
+        if (!address || address === '-') {
+            console.log('❌ No valid address provided for balance fetching');
+            return;
+        }
+
+        console.log('🔄 Fetching live balances for address:', address);
+        console.log('🔍 Connection status:', {
+            ethereum: !!window.ethereum,
+            contractConfig: !!window.contractConfig,
+            contract: !!(window.contractConfig && window.contractConfig.contract),
+            provider: !!(window.contractConfig && window.contractConfig.provider)
+        });
 
         try {
-            // دریافت موجودی IAM
-            if (window.contractConfig && window.contractConfig.contract) {
-                const { contract } = window.contractConfig;
-                const iamBalance = await contract.balanceOf(address);
-                const iamElement = document.getElementById('IAM-balance');
-                if (iamElement) {
-                    iamElement.textContent = this.formatValue(iamBalance);
-                }
-            }
-
-            // دریافت موجودی MATIC
-            if (window.ethereum) {
-                const provider = new ethers.providers.Web3Provider(window.ethereum);
-                const maticBalance = await provider.getBalance(address);
-                const maticElement = document.getElementById('matic-balance');
-                if (maticElement) {
-                    maticElement.textContent = this.formatValue(ethers.utils.formatEther(maticBalance));
-                }
-            }
-
-            // دریافت موجودی DAI (اگر توکن DAI موجود باشد)
-            if (window.contractConfig && window.contractConfig.daiToken) {
+            // روش 1: استفاده از window.connectWallet
+            if (typeof window.connectWallet === 'function') {
                 try {
-                    const daiBalance = await window.contractConfig.daiToken.balanceOf(address);
-                    const daiElement = document.getElementById('dai-balance');
-                    if (daiElement) {
-                        daiElement.textContent = this.formatValue(ethers.utils.formatEther(daiBalance));
+                    console.log('🔄 Trying window.connectWallet method...');
+                    const connection = await window.connectWallet();
+                    const { contract, provider, address: connectedAddress } = connection;
+                    
+                    // دریافت موجودی IAM
+                    if (contract && typeof contract.balanceOf === 'function') {
+                        try {
+                            const iamBalance = await contract.balanceOf(address);
+                            const iamElement = document.getElementById('IAM-balance');
+                            if (iamElement) {
+                                const formattedBalance = typeof ethers !== 'undefined' ? 
+                                    ethers.formatEther(iamBalance) : 
+                                    (Number(iamBalance) / 1e18).toString();
+                                iamElement.textContent = this.formatValue(formattedBalance);
+                                console.log('✅ IAM balance updated via connectWallet:', formattedBalance);
+                            }
+                        } catch (error) {
+                            console.warn('❌ Error fetching IAM balance via connectWallet:', error);
+                            const iamElement = document.getElementById('IAM-balance');
+                            if (iamElement) iamElement.textContent = '❌';
+                        }
+                    }
+
+                    // دریافت موجودی MATIC
+                    if (provider) {
+                        try {
+                            const maticBalance = await provider.getBalance(address);
+                            const maticElement = document.getElementById('matic-balance');
+                            if (maticElement) {
+                                const formattedBalance = typeof ethers !== 'undefined' ? 
+                                    ethers.formatEther(maticBalance) : 
+                                    (Number(maticBalance) / 1e18).toString();
+                                maticElement.textContent = this.formatValue(formattedBalance);
+                                console.log('✅ MATIC balance updated via connectWallet:', formattedBalance);
+                            }
+                        } catch (error) {
+                            console.warn('❌ Error fetching MATIC balance via connectWallet:', error);
+                            const maticElement = document.getElementById('matic-balance');
+                            if (maticElement) maticElement.textContent = '❌';
+                        }
+                    }
+
+                    // دریافت موجودی DAI
+                    if (window.DAI_ADDRESS && provider) {
+                        try {
+                            const DAI_ABI = window.DAI_ABI || [
+                                "function balanceOf(address owner) view returns (uint256)",
+                                "function decimals() view returns (uint8)",
+                                "function symbol() view returns (string)"
+                            ];
+                            const daiContract = new ethers.Contract(window.DAI_ADDRESS, DAI_ABI, provider);
+                            const daiBalance = await daiContract.balanceOf(address);
+                            const daiElement = document.getElementById('dai-balance');
+                            if (daiElement) {
+                                const formattedBalance = typeof ethers !== 'undefined' ? 
+                                    ethers.formatEther(daiBalance) : 
+                                    (Number(daiBalance) / 1e18).toString();
+                                daiElement.textContent = this.formatValue(formattedBalance);
+                                console.log('✅ DAI balance updated via connectWallet:', formattedBalance);
+                            }
+                        } catch (error) {
+                            console.warn('❌ Error fetching DAI balance via connectWallet:', error);
+                            const daiElement = document.getElementById('dai-balance');
+                            if (daiElement) daiElement.textContent = '❌';
+                        }
+                    }
+
+                    return; // اگر موفق بودیم، از اینجا خارج شویم
+                } catch (error) {
+                    console.warn('❌ Error with window.connectWallet method:', error);
+                }
+            }
+
+            // روش 2: استفاده از window.contractConfig
+            if (window.contractConfig && window.contractConfig.contract) {
+                try {
+                    console.log('🔄 Trying window.contractConfig method...');
+                    const { contract } = window.contractConfig;
+                    
+                    // دریافت موجودی IAM
+                    if (typeof contract.balanceOf === 'function') {
+                        try {
+                            const iamBalance = await contract.balanceOf(address);
+                            const iamElement = document.getElementById('IAM-balance');
+                            if (iamElement) {
+                                const formattedBalance = typeof ethers !== 'undefined' ? 
+                                    ethers.formatEther(iamBalance) : 
+                                    (Number(iamBalance) / 1e18).toString();
+                                iamElement.textContent = this.formatValue(formattedBalance);
+                                console.log('✅ IAM balance updated via contractConfig:', formattedBalance);
+                            }
+                        } catch (error) {
+                            console.warn('❌ Error fetching IAM balance via contractConfig:', error);
+                            const iamElement = document.getElementById('IAM-balance');
+                            if (iamElement) iamElement.textContent = '❌';
+                        }
                     }
                 } catch (error) {
-                    console.warn('Could not fetch DAI balance:', error);
+                    console.warn('❌ Error with window.contractConfig method:', error);
                 }
             }
+
+            // روش 3: استفاده از window.ethereum
+            if (window.ethereum) {
+                try {
+                    console.log('🔄 Trying window.ethereum method...');
+                    const provider = new ethers.BrowserProvider(window.ethereum);
+                    
+                    // دریافت موجودی MATIC
+                    try {
+                        const maticBalance = await provider.getBalance(address);
+                        const maticElement = document.getElementById('matic-balance');
+                        if (maticElement) {
+                            const formattedBalance = typeof ethers !== 'undefined' ? 
+                                ethers.formatEther(maticBalance) : 
+                                (Number(maticBalance) / 1e18).toString();
+                            maticElement.textContent = this.formatValue(formattedBalance);
+                            console.log('✅ MATIC balance updated via ethereum:', formattedBalance);
+                        }
+                    } catch (error) {
+                        console.warn('❌ Error fetching MATIC balance via ethereum:', error);
+                        const maticElement = document.getElementById('matic-balance');
+                        if (maticElement) maticElement.textContent = '❌';
+                    }
+                } catch (error) {
+                    console.warn('❌ Error with window.ethereum method:', error);
+                }
+            }
+
+            // روش 4: استفاده از provider موجود
+            if (window.contractConfig && window.contractConfig.provider) {
+                try {
+                    console.log('🔄 Trying existing provider method...');
+                    const provider = window.contractConfig.provider;
+                    
+                    // دریافت موجودی MATIC
+                    try {
+                        const maticBalance = await provider.getBalance(address);
+                        const maticElement = document.getElementById('matic-balance');
+                        if (maticElement && maticElement.textContent === '-') {
+                            const formattedBalance = typeof ethers !== 'undefined' ? 
+                                ethers.formatEther(maticBalance) : 
+                                (Number(maticBalance) / 1e18).toString();
+                            maticElement.textContent = this.formatValue(formattedBalance);
+                            console.log('✅ MATIC balance updated via existing provider:', formattedBalance);
+                        }
+                    } catch (error) {
+                        console.warn('❌ Error fetching MATIC balance via existing provider:', error);
+                    }
+                } catch (error) {
+                    console.warn('❌ Error with existing provider method:', error);
+                }
+            }
+
+            console.log('🏁 Balance fetching completed');
+            
         } catch (error) {
-            console.warn('Error fetching live balances:', error);
+            console.warn('❌ General error fetching live balances:', error);
         }
     }
 
@@ -352,6 +496,56 @@ class MobileUserPopup {
         if (liveBalances) {
             console.log('Testing live balances...');
             this.toggleCard(liveBalances);
+        }
+    }
+
+    // تابع تست مستقیم موجودی‌ها در پاپ‌آپ
+    async testBalancesInPopup(address) {
+        console.log('🧪 Testing balances directly in popup for address:', address);
+        
+        if (!address || address === '-') {
+            console.log('❌ No valid address provided');
+            return;
+        }
+
+        try {
+            // تست اتصال
+            if (typeof window.connectWallet === 'function') {
+                console.log('🔄 Testing connectWallet in popup...');
+                const connection = await window.connectWallet();
+                console.log('✅ connectWallet result in popup:', connection);
+                
+                if (connection && connection.contract) {
+                    console.log('🔄 Testing IAM balance in popup...');
+                    const iamBalance = await connection.contract.balanceOf(address);
+                    const iamElement = document.getElementById('IAM-balance');
+                    if (iamElement) {
+                        const formattedBalance = typeof ethers !== 'undefined' ? 
+                            ethers.formatEther(iamBalance) : 
+                            (Number(iamBalance) / 1e18).toString();
+                        iamElement.textContent = this.formatValue(formattedBalance);
+                        console.log('✅ IAM balance updated in popup:', formattedBalance);
+                    }
+                }
+                
+                if (connection && connection.provider) {
+                    console.log('🔄 Testing MATIC balance in popup...');
+                    const maticBalance = await connection.provider.getBalance(address);
+                    const maticElement = document.getElementById('matic-balance');
+                    if (maticElement) {
+                        const formattedBalance = typeof ethers !== 'undefined' ? 
+                            ethers.formatEther(maticBalance) : 
+                            (Number(maticBalance) / 1e18).toString();
+                        maticElement.textContent = this.formatValue(formattedBalance);
+                        console.log('✅ MATIC balance updated in popup:', formattedBalance);
+                    }
+                }
+            } else {
+                console.log('❌ window.connectWallet not available in popup');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error in testBalancesInPopup:', error);
         }
     }
 }
@@ -414,9 +608,184 @@ window.testMobilePopupShow = function() {
     console.log('💡 Try clicking on the cards to test expand/collapse functionality');
 };
 
+// تابع تست برای نمایش پاپ‌آپ با داده‌های واقعی
+window.testMobilePopupWithRealData = function() {
+    if (!window.mobileUserPopup) {
+        console.log('❌ Mobile popup not available');
+        return;
+    }
+    
+    console.log('🧪 Showing mobile popup with real data...');
+    
+    // استفاده از داده‌های واقعی
+    if (window.contractConfig && window.contractConfig.address) {
+        const realAddress = window.contractConfig.address;
+        console.log('🔍 Using real address:', realAddress);
+        
+        // داده‌های نمونه برای تست (می‌توانید از داده‌های واقعی استفاده کنید)
+        const testUser = {
+            index: 1,
+            binaryPoints: 1000000,
+            binaryPointCap: 2000000,
+            totalMonthlyRewarded: 500000,
+            binaryPointsClaimed: 750000,
+            refclimed: '1000000000000000000000', // 1 DAI in wei
+            depositedAmount: '5000000000000000000000', // 5 DAI in wei
+            leftPoints: 800000,
+            rightPoints: 700000
+        };
+        
+        // نمایش پاپ‌آپ
+        window.mobileUserPopup.show(realAddress, testUser);
+        
+        console.log('✅ Real data popup should be visible now');
+    } else {
+        console.log('❌ No real address available');
+    }
+};
+
+// تابع تست ساده برای نمایش پاپ‌آپ
+window.testMobilePopupSimple = function() {
+    if (!window.mobileUserPopup) {
+        console.log('❌ Mobile popup not available');
+        return;
+    }
+    
+    console.log('🧪 Showing simple mobile popup...');
+    
+    // داده‌های ساده برای تست
+    const testAddress = '0xB6F844eFE62948647968196257B7DcD2323beF0C';
+    const testUser = {
+        index: 1,
+        binaryPoints: 1000000,
+        binaryPointCap: 2000000,
+        totalMonthlyRewarded: 500000,
+        binaryPointsClaimed: 750000,
+        refclimed: '1000000000000000000000',
+        depositedAmount: '5000000000000000000000',
+        leftPoints: 800000,
+        rightPoints: 700000
+    };
+    
+    // نمایش پاپ‌آپ
+    window.mobileUserPopup.show(testAddress, testUser);
+    
+    console.log('✅ Simple popup should be visible now');
+    console.log('💡 Check if popup is visible at bottom of screen');
+};
+
+// تابع تست برای بررسی موجودی‌ها
+window.testMobilePopupBalances = function() {
+    if (!window.mobileUserPopup) {
+        console.log('❌ Mobile popup not available');
+        return;
+    }
+    
+    console.log('🧪 Testing balance fetching...');
+    
+    // تست با آدرس واقعی کاربر
+    if (window.contractConfig && window.contractConfig.address) {
+        const realAddress = window.contractConfig.address;
+        console.log('🔍 Testing with real address:', realAddress);
+        window.mobileUserPopup.getLiveBalances(realAddress);
+    } else {
+        console.log('⚠️ No real address available, testing with sample address');
+        const testAddress = '0xB6F844eFE62948647968196257B7DcD2323beF0C';
+        window.mobileUserPopup.getLiveBalances(testAddress);
+    }
+};
+
+// تابع تست مستقیم برای بررسی موجودی‌ها
+window.testBalancesDirectly = async function(address) {
+    console.log('🧪 Testing balances directly for address:', address);
+    
+    if (!address) {
+        console.log('❌ No address provided');
+        return;
+    }
+    
+    try {
+        // تست اتصال
+        if (typeof window.connectWallet === 'function') {
+            console.log('🔄 Testing connectWallet...');
+            const connection = await window.connectWallet();
+            console.log('✅ connectWallet result:', connection);
+            
+            if (connection && connection.contract) {
+                console.log('🔄 Testing IAM balance...');
+                const iamBalance = await connection.contract.balanceOf(address);
+                console.log('✅ IAM balance raw:', iamBalance);
+                console.log('✅ IAM balance formatted:', ethers.formatEther(iamBalance));
+            }
+            
+            if (connection && connection.provider) {
+                console.log('🔄 Testing MATIC balance...');
+                const maticBalance = await connection.provider.getBalance(address);
+                console.log('✅ MATIC balance raw:', maticBalance);
+                console.log('✅ MATIC balance formatted:', ethers.formatEther(maticBalance));
+            }
+        } else {
+            console.log('❌ window.connectWallet not available');
+        }
+        
+        // تست contractConfig
+        if (window.contractConfig) {
+            console.log('🔄 Testing contractConfig...');
+            console.log('contractConfig:', window.contractConfig);
+            
+            if (window.contractConfig.contract) {
+                console.log('🔄 Testing contract.balanceOf...');
+                const iamBalance = await window.contractConfig.contract.balanceOf(address);
+                console.log('✅ IAM balance via contractConfig:', ethers.formatEther(iamBalance));
+            }
+            
+            if (window.contractConfig.provider) {
+                console.log('🔄 Testing provider.getBalance...');
+                const maticBalance = await window.contractConfig.provider.getBalance(address);
+                console.log('✅ MATIC balance via contractConfig:', ethers.formatEther(maticBalance));
+            }
+        } else {
+            console.log('❌ window.contractConfig not available');
+        }
+        
+    } catch (error) {
+        console.error('❌ Error in testBalancesDirectly:', error);
+    }
+};
+
 // تست خودکار بعد از لود صفحه
 document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
         window.testMobilePopupLoad();
     }, 2000);
 });
+
+// تابع بررسی وضعیت اتصال
+window.checkMobilePopupConnection = function() {
+    console.log('🔍 Checking mobile popup connection status...');
+    
+    console.log('window.ethereum:', !!window.ethereum);
+    console.log('window.contractConfig:', !!window.contractConfig);
+    
+    if (window.contractConfig) {
+        console.log('contractConfig.contract:', !!window.contractConfig.contract);
+        console.log('contractConfig.provider:', !!window.contractConfig.provider);
+        console.log('contractConfig.address:', window.contractConfig.address);
+    }
+    
+    if (window.ethereum) {
+        console.log('ethereum.isMetaMask:', window.ethereum.isMetaMask);
+        console.log('ethereum.chainId:', window.ethereum.chainId);
+    }
+    
+    console.log('ethers version:', typeof ethers !== 'undefined' ? 'Available' : 'Not available');
+    
+    return {
+        ethereum: !!window.ethereum,
+        contractConfig: !!window.contractConfig,
+        contract: !!(window.contractConfig && window.contractConfig.contract),
+        provider: !!(window.contractConfig && window.contractConfig.provider),
+        address: window.contractConfig ? window.contractConfig.address : null,
+        ethers: typeof ethers !== 'undefined'
+    };
+};

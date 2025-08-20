@@ -1,5 +1,47 @@
 /* استایل‌های پاپ‌آپ موبایل */
 
+/* استایل‌های اصلی پاپ‌آپ */
+#user-popup {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, #232946 0%, #1a1d2e 100%);
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+    z-index: 9999;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(167,134,255,0.1);
+}
+
+#user-popup.active {
+    transform: translateY(0);
+}
+
+/* استایل‌های backdrop */
+.popup-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 9998;
+    display: none;
+    backdrop-filter: blur(10px);
+}
+
+.popup-backdrop.active {
+    opacity: 1;
+}
+
 /* استایل‌های کپی */
 .copy-value {
     cursor: pointer;

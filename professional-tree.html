@@ -4,6 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>درخت حرفه‌ای شبکه - IAM</title>
+    
+    <!-- Error handling for extension connections -->
+    <script>
+        // Suppress extension connection errors
+        window.addEventListener('error', function(e) {
+            if (e.message && e.message.includes('Could not establish connection')) {
+                e.preventDefault();
+                return false;
+            }
+        });
+        
+        // Suppress unhandled promise rejections
+        window.addEventListener('unhandledrejection', function(e) {
+            if (e.reason && e.reason.message && e.reason.message.includes('Could not establish connection')) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    </script>
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
