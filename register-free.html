@@ -112,6 +112,7 @@
         </div>
         <div style="margin-bottom:8px;">🎯 ایندکس رفرر: <b id="parent-index">...</b></div>
         <div style="margin-bottom:8px;">📍 ایندکس جایگاه جدید: <b id="empty-index">...</b></div>
+        <div style="margin-bottom:8px;">🔄 جایگاه کاربر جدید: <b id="position-info">...</b></div>
         <div style="margin-bottom:8px;">💰 هزینه ثبت‌نام رزرو:<br><b id="register-cost" style="display:inline-block;margin-top:4px;font-size:1.1rem;color:#00ff88;">...</b></div>
         
         <div style="margin-top:12px;padding-top:8px;border-top:1px solid rgba(167,134,255,0.3);">
@@ -381,7 +382,22 @@
      
      // اضافه کردن event listener برای input و paste
      indexInput.addEventListener('input', async function() {
-       await checkIndexReferralLine();
+       console.log('🔄 تغییر ایندکس:', this.value);
+       const value = this.value;
+       
+       // اگر مقدار عددی است، ابتدا آدرس را بررسی کن
+       if (/^\d+$/.test(value)) {
+         await checkIndexReferralLine();
+         
+         // سپس IAM ID را فرمت کن
+         let IAMId = '';
+         if (value.length <= 5) {
+           IAMId = 'IAM' + value.padStart(5, '0');
+         } else {
+           IAMId = 'IAM' + value; // برای طول‌های بیشتر از 5، بدون padding
+         }
+         this.value = IAMId;
+       }
      });
      
      indexInput.addEventListener('paste', async function() {
@@ -390,11 +406,40 @@
        }, 100);
      });
      
+     // اضافه کردن event listener برای blur
+     indexInput.addEventListener('blur', async function() {
+       console.log('🔍 blur event triggered');
+       const value = this.value;
+       
+       // اگر مقدار عددی است یا IAM ندارد، فرمت کن
+       if (/^\d+$/.test(value) || !value.startsWith('IAM')) {
+         await checkIndexReferralLine();
+         
+         // فرمت IAM ID
+         let IAMId = '';
+         if (value.length <= 5) {
+           IAMId = 'IAM' + value.padStart(5, '0');
+         } else {
+           IAMId = 'IAM' + value;
+         }
+         this.value = IAMId;
+       }
+     });
+     
 
      
            // تابع بررسی خط رفرال برای ایندکس
       async function checkIndexReferralLine() {
-        const index = indexInput.value.replace(/[^0-9]/g, '');
+        let index = indexInput.value;
+        
+        // اگر IAM prefix دارد، آن را حذف کن
+        if (index.startsWith('IAM')) {
+          index = index.substring(3);
+        }
+        
+        // فقط اعداد را نگه دار
+        index = index.replace(/[^0-9]/g, '');
+        
         if (!index) return;
         
         try {
@@ -427,11 +472,24 @@
             const userAtAddress = await contract.users(addr);
             console.log(`👤 اطلاعات کاربر در ایندکس ${index}:`, userAtAddress);
             
-            if (!userAtAddress || !userAtAddress.activated) {
+            const isActive = userAtAddress && userAtAddress.index && BigInt(userAtAddress.index) > 0n;
+            
+            if (!isActive) {
               status.style.color = '#d32f2f';
               status.textContent = 'کاربر در این ایندکس فعال نیست.';
               return;
             }
+            
+            // تنظیم آدرس معرف (همیشه انجام شود)
+            refInput.readOnly = false;
+            refInput.disabled = false;
+            refInput.value = addr;
+            refInput.style.backgroundColor = '#232946';
+            refInput.style.color = '#fff';
+            status.style.color = '#388e3c';
+            status.textContent = `✅ آدرس معرف به‌طور خودکار تنظیم شد: ${addr}`;
+            console.log(`✅ آدرس معرف تنظیم شد: ${addr}`);
+            
           } catch (e) {
             console.log(`❌ خطا در بررسی وضعیت کاربر:`, e);
             status.style.color = '#d32f2f';
@@ -469,7 +527,31 @@
             } else {
               status.style.color = '#388e3c';
               status.textContent = 'ایندکس معرف معتبر است و در زیرمجموعه شما قرار دارد.';
-              refInput.value = addr; // تنظیم آدرس معرف
+              
+              // محاسبه و نمایش اطلاعات جایگاه کاربر جدید
+              try {
+                const parentIndex = parseInt(index);
+                const leftAddress = await contract.getLeftAddress(parentIndex);
+                const rightAddress = await contract.getRightAddress(parentIndex);
+                
+                let emptyIndex, positionInfo;
+                if (leftAddress === '0x0000000000000000000000000000000000000000') {
+                  emptyIndex = (parentIndex * 2).toString();
+                  positionInfo = 'چپ (Left)';
+                } else if (rightAddress === '0x0000000000000000000000000000000000000000') {
+                  emptyIndex = (parentIndex * 2 + 1).toString();
+                  positionInfo = 'راست (Right)';
+                } else {
+                  emptyIndex = 'پر شده';
+                  positionInfo = 'هیچ جایگاه خالی';
+                }
+                
+                document.getElementById('empty-index').textContent = emptyIndex;
+                document.getElementById('position-info').textContent = positionInfo;
+              } catch (error) {
+                console.log('خطا در محاسبه اطلاعات جایگاه:', error);
+                document.getElementById('position-info').textContent = 'خطا در محاسبه';
+              }
             }
           } else {
             console.log(`⚠️ کاربر فعال نیست یا ایندکس ندارد:`, currentUser);

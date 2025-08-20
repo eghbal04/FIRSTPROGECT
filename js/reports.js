@@ -268,6 +268,12 @@ window._fetchReportsFresh = async function(address) {
     }
     console.log('📊 Activated events for user:', activatedCount);
     
+    // Activated events - برای پیدا کردن مبالغ ثبت‌نام (جایگزین PurchaseKind)
+    console.log('🔍 Using Activated events for registration amounts...');
+    // Activated events را از بلاک صفر بگیر تا همه مبالغ ثبت‌نام را پیدا کن
+    const eventsActivatedAll = await window.safeQueryEvents(contractWithProvider, contractWithProvider.filters.Activated(), 0, currentBlock);
+    console.log('📊 Activated events total for amounts:', eventsActivatedAll.length);
+    
     // معرفی‌ها - TreeStructureUpdated events که شما معرف بودید
     console.log('🔍 Testing TreeStructureUpdated events...');
     let eventsTreeAll = [];
@@ -306,26 +312,28 @@ window._fetchReportsFresh = async function(address) {
         if (treeEvent.args.referrer && treeEvent.args.referrer.toLowerCase() === userAddress.toLowerCase()) {
             console.log('✅ Found referral by user! User:', treeEvent.args.user, 'Amount will be calculated...');
             
-            // پیدا کردن PurchaseKind event مربوطه برای مقدار
-            const relatedPurchaseKind = eventsPurchaseKindAll.find(pkEvent => 
-                pkEvent.args.user.toLowerCase() === treeEvent.args.user.toLowerCase() &&
-                Math.abs(pkEvent.blockNumber - treeEvent.blockNumber) <= 2  // در همان تراکنش یا نزدیک به آن
+            // پیدا کردن Activated event مربوطه برای مقدار
+            const relatedActivated = eventsActivatedAll.find(actEvent => 
+                actEvent.args.user.toLowerCase() === treeEvent.args.user.toLowerCase() &&
+                Math.abs(actEvent.blockNumber - treeEvent.blockNumber) <= 2  // در همان تراکنش یا نزدیک به آن
             );
             
-            if (relatedPurchaseKind) {
-                referralCount++;
-                console.log('✅ Found related PurchaseKind event for referral! Amount:', relatedPurchaseKind.args.amountIAM.toString());
+            // همیشه referralCount را افزایش بده، صرف نظر از اینکه Activated event پیدا شد یا نه
+            referralCount++;
+            
+            if (relatedActivated) {
+                console.log('✅ Found related Activated event for referral! Amount:', relatedActivated.args.amountIAM.toString());
                 await pushReport(
                     'referral_registration', 
                     'معرفی و ثبت‌نام', 
-                    `${formatNumber(relatedPurchaseKind.args.amountIAM, 18)} IAM (${shortenAddress(treeEvent.args.user)})`, 
-                    relatedPurchaseKind, 
+                    `${formatNumber(relatedActivated.args.amountIAM, 18)} IAM (${shortenAddress(treeEvent.args.user)})`, 
+                    relatedActivated, 
                     treeEvent.args.user, 
                     provider
                 );
             } else {
-                console.log('⚠️ No related PurchaseKind event found for referral. Using default amount.');
-                // اگر PurchaseKind event پیدا نشد، از مقدار پیش‌فرض استفاده کن
+                console.log('⚠️ No related Activated event found for referral. Using default amount.');
+                // اگر Activated event پیدا نشد، از مقدار پیش‌فرض استفاده کن
                 await pushReport(
                     'referral_registration', 
                     'معرفی و ثبت‌نام', 
@@ -401,14 +409,12 @@ window._fetchReportsFresh = async function(address) {
         console.warn('خطا در بررسی مستقیم:', error);
     }
     
-    // PurchaseKind - خریدهای اضافی (purchase) و ثبت‌نام‌ها
-    const eventsPurchaseKindAll = await window.safeQueryEvents(contractWithProvider, contractWithProvider.filters.PurchaseKind(), fromBlock, currentBlock);
-    console.log('PurchaseKind events total:', eventsPurchaseKindAll.length);
-    
-    // برای کاربر خودش
-    for (const e of eventsPurchaseKindAll) {
-        if (e.args.user && e.args.user.toLowerCase() === userAddress.toLowerCase())
-            await pushReport('purchase', 'خرید اضافی', formatNumber(e.args.amountIAM, 18) + ' IAM', e, e.args.user, provider);
+    // برای کاربر خودش - خریدهای اضافی (از Activated events)
+    for (const e of eventsActivatedAll) {
+        if (e.args.user && e.args.user.toLowerCase() === userAddress.toLowerCase() && e.args.amountIAM) {
+            // این فقط برای ثبت‌نام‌های اولیه است، خریدهای اضافی جداگانه نیستند
+            // await pushReport('purchase', 'خرید اضافی', formatNumber(e.args.amountIAM, 18) + ' IAM', e, e.args.user, provider);
+        }
     }
     // TokensBought
     const eventsTokensBought = await window.safeQueryEvents(contractWithProvider, contractWithProvider.filters.TokensBought(), fromBlock, currentBlock);
