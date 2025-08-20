@@ -4338,6 +4338,24 @@ window.updateDashboardStats = async function() {
 	  const formattedSupply = parseFloat(ethers.formatUnits(totalSupply, 18)).toLocaleString('en-US', {maximumFractionDigits: 2});
 	  safeUpdate('circulating-supply', formattedSupply); // حذف پسوند IAM
 	  console.log('✅ Total supply updated:', formattedSupply);
+	  
+	  // محاسبه معادل DAI برای کل عرضه
+	  try {
+		const tokenPrice = await contract.getTokenPrice();
+		if (tokenPrice) {
+		  const tokenPriceNum = parseFloat(ethers.formatUnits(tokenPrice, 18));
+		  const supplyNum = parseFloat(ethers.formatUnits(totalSupply, 18));
+		  const daiEquivalent = supplyNum * tokenPriceNum;
+		  const daiFormatted = daiEquivalent.toLocaleString('en-US', {maximumFractionDigits: 2});
+		  safeUpdate('circulating-supply-dai', daiFormatted);
+		  console.log('✅ Total supply DAI equivalent updated:', daiFormatted);
+		} else {
+		  safeUpdate('circulating-supply-dai', '-');
+		}
+	  } catch (daiError) {
+		console.error('❌ Error calculating total supply DAI equivalent:', daiError);
+		safeUpdate('circulating-supply-dai', '-');
+	  }
 
 	} catch (e) {
 	  console.error('❌ Error fetching total supply:', e);
@@ -4347,6 +4365,7 @@ window.updateDashboardStats = async function() {
 		stack: e.stack
 	  });
 	  safeUpdate('circulating-supply', 'خطا در دریافت مقدار');
+	  safeUpdate('circulating-supply-dai', '-');
 	}
 
 	// TOTAL POINTS
@@ -4370,10 +4389,29 @@ window.updateDashboardStats = async function() {
 	  const formattedBalance = parseFloat(ethers.formatUnits(contractTokenBalance, 18)).toLocaleString('en-US', {maximumFractionDigits: 2});
 	  safeUpdate('contract-token-balance', formattedBalance); // حذف پسوند IAM
 	  console.log('✅ Contract token balance updated:', formattedBalance);
+	  
+	  // محاسبه معادل DAI برای موجودی قرارداد
+	  try {
+		const tokenPrice = await contract.getTokenPrice();
+		if (tokenPrice) {
+		  const tokenPriceNum = parseFloat(ethers.formatUnits(tokenPrice, 18));
+		  const balanceNum = parseFloat(ethers.formatUnits(contractTokenBalance, 18));
+		  const daiEquivalent = balanceNum * tokenPriceNum;
+		  const daiFormatted = daiEquivalent.toLocaleString('en-US', {maximumFractionDigits: 2});
+		  safeUpdate('contract-token-balance-dai', daiFormatted);
+		  console.log('✅ Contract token balance DAI equivalent updated:', daiFormatted);
+		} else {
+		  safeUpdate('contract-token-balance-dai', '-');
+		}
+	  } catch (daiError) {
+		console.error('❌ Error calculating contract token balance DAI equivalent:', daiError);
+		safeUpdate('contract-token-balance-dai', '-');
+	  }
 
 	} catch (e) {
 	  console.error('❌ Error fetching contract token balance:', e);
 	  safeUpdate('contract-token-balance', 'Error');
+	  safeUpdate('contract-token-balance-dai', '-');
 	}
 
 	// HELP FUND (cashback)
@@ -4394,10 +4432,29 @@ window.updateDashboardStats = async function() {
 	  const formattedCashback = parseFloat(ethers.formatUnits(cashback, 18)).toLocaleString('en-US', {maximumFractionDigits: 2});
 	  safeUpdate('dashboard-cashback-value', formattedCashback); // حذف پسوند IAM
 	  console.log('✅ Cashback updated:', formattedCashback);
+	  
+	  // محاسبه معادل DAI برای صندوق کمک
+	  try {
+		const tokenPrice = await contract.getTokenPrice();
+		if (tokenPrice) {
+		  const tokenPriceNum = parseFloat(ethers.formatUnits(tokenPrice, 18));
+		  const cashbackNum = parseFloat(ethers.formatUnits(cashback, 18));
+		  const daiEquivalent = cashbackNum * tokenPriceNum;
+		  const daiFormatted = daiEquivalent.toLocaleString('en-US', {maximumFractionDigits: 2});
+		  safeUpdate('dashboard-cashback-value-dai', daiFormatted);
+		  console.log('✅ Cashback DAI equivalent updated:', daiFormatted);
+		} else {
+		  safeUpdate('dashboard-cashback-value-dai', '-');
+		}
+	  } catch (daiError) {
+		console.error('❌ Error calculating cashback DAI equivalent:', daiError);
+		safeUpdate('dashboard-cashback-value-dai', '-');
+	  }
 
 	} catch (e) {
 	  console.error('❌ Error fetching cashback:', e);
 	  safeUpdate('dashboard-cashback-value', 'N/A');
+	  safeUpdate('dashboard-cashback-value-dai', '-');
 	}
 
 // DAI CONTRACT BALANCE - Using contract's getContractDAIBalance function
@@ -4448,6 +4505,23 @@ window.updateDashboardStats = async function() {
 	  safeUpdate('dashboard-point-value', formattedPointValue); // حذف پسوند IAM
 	  console.log('✅ Point value updated:', formattedPointValue);
 	  
+	  // محاسبه معادل DAI برای ارزش هر پوینت
+	  try {
+		const tokenPrice = await contract.getTokenPrice();
+		if (tokenPrice) {
+		  const tokenPriceNum = parseFloat(ethers.formatUnits(tokenPrice, 18));
+		  const daiEquivalent = pointValueNum * tokenPriceNum;
+		  const daiFormatted = daiEquivalent.toLocaleString('en-US', {maximumFractionDigits: 2});
+		  safeUpdate('dashboard-point-value-dai', daiFormatted);
+		  console.log('✅ Point value DAI equivalent updated:', daiFormatted);
+		} else {
+		  safeUpdate('dashboard-point-value-dai', '-');
+		}
+	  } catch (daiError) {
+		console.error('❌ Error calculating point value DAI equivalent:', daiError);
+		safeUpdate('dashboard-point-value-dai', '-');
+	  }
+	  
 	  // Save point price to history
 	  if (window.priceHistoryManager) {
 		await window.priceHistoryManager.addPointPrice(pointValueNum);
@@ -4456,6 +4530,7 @@ window.updateDashboardStats = async function() {
 	} catch (e) {
 	  console.error('❌ Error fetching point value:', e);
 	  safeUpdate('dashboard-point-value', 'Error');
+	  safeUpdate('dashboard-point-value-dai', '-');
 	}
 
 	// TOKEN PRICE (قیمت توکن IAM)
@@ -4500,9 +4575,28 @@ window.updateDashboardStats = async function() {
 	  const formattedRegPrice = parseFloat(ethers.formatUnits(registrationPrice, 18)).toLocaleString('en-US', {maximumFractionDigits: 0});
 	  safeUpdate('dashboard-registration-price', formattedRegPrice); // حذف پسوند IAM
 	  console.log('✅ Registration price updated:', formattedRegPrice);
+
+	  // محاسبه معادل DAI
+	  try {
+		const tokenPrice = await contract.getTokenPrice();
+		if (tokenPrice) {
+		  const tokenPriceNum = parseFloat(ethers.formatUnits(tokenPrice, 18));
+		  const regPriceNum = parseFloat(ethers.formatUnits(registrationPrice, 18));
+		  const daiEquivalent = regPriceNum * tokenPriceNum;
+		  const daiFormatted = daiEquivalent.toLocaleString('en-US', {maximumFractionDigits: 2});
+		  safeUpdate('dashboard-registration-price-dai', daiFormatted);
+		  console.log('✅ Registration price DAI equivalent updated:', daiFormatted);
+		} else {
+		  safeUpdate('dashboard-registration-price-dai', '-');
+		}
+	  } catch (daiError) {
+		console.error('❌ Error calculating DAI equivalent:', daiError);
+		safeUpdate('dashboard-registration-price-dai', '-');
+	  }
 	} catch (e) {
 	  console.error('❌ Error fetching registration price:', e);
 	  safeUpdate('dashboard-registration-price', 'Error');
+	  safeUpdate('dashboard-registration-price-dai', '-');
 	}
 
 	console.log('🎉 Dashboard stats update completed successfully!');

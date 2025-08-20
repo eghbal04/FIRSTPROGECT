@@ -144,6 +144,27 @@ class CentralDashboardUpdater {
                 if (this.updateIfChanged('circulating-supply', formattedSupply)) {
                     updateCount++;
                 }
+
+                // محاسبه معادل DAI برای کل عرضه
+                try {
+                    const tokenPrice = await this.getTokenPrice();
+                    if (tokenPrice && tokenPrice > 0) {
+                        const daiEquivalent = supplyNum * tokenPrice;
+                        const daiFormatted = formatNumber(daiEquivalent, '', false, 2);
+                        if (this.updateIfChanged('circulating-supply-dai', daiFormatted)) {
+                            updateCount++;
+                        }
+                    } else {
+                        if (this.updateIfChanged('circulating-supply-dai', '-')) {
+                            updateCount++;
+                        }
+                    }
+                } catch (error) {
+                    this.log('❌ خطا در محاسبه معادل DAI برای کل عرضه:', error.message);
+                    if (this.updateIfChanged('circulating-supply-dai', '-')) {
+                        updateCount++;
+                    }
+                }
             } catch (error) {
                 this.log('❌ خطا در دریافت Total Supply:', error.message);
             }
@@ -167,6 +188,27 @@ class CentralDashboardUpdater {
                 const formattedBalance = formatNumber(balanceNum, '', false, 4); // حذف پسوند واحد
                 if (this.updateIfChanged('contract-token-balance', formattedBalance)) {
                     updateCount++;
+                }
+
+                // محاسبه معادل DAI برای موجودی قرارداد
+                try {
+                    const tokenPrice = await this.getTokenPrice();
+                    if (tokenPrice && tokenPrice > 0) {
+                        const daiEquivalent = balanceNum * tokenPrice;
+                        const daiFormatted = formatNumber(daiEquivalent, '', false, 2);
+                        if (this.updateIfChanged('contract-token-balance-dai', daiFormatted)) {
+                            updateCount++;
+                        }
+                    } else {
+                        if (this.updateIfChanged('contract-token-balance-dai', '-')) {
+                            updateCount++;
+                        }
+                    }
+                } catch (error) {
+                    this.log('❌ خطا در محاسبه معادل DAI برای موجودی قرارداد:', error.message);
+                    if (this.updateIfChanged('contract-token-balance-dai', '-')) {
+                        updateCount++;
+                    }
                 }
             } catch (error) {
                 this.log('❌ خطا در دریافت Contract Balance:', error.message);
@@ -206,11 +248,76 @@ class CentralDashboardUpdater {
                 if (this.updateIfChanged('dashboard-point-value', pointValueFormatted)) {
                     updateCount++;
                 }
+
+                // محاسبه معادل DAI برای ارزش هر پوینت
+                try {
+                    const tokenPrice = await this.getTokenPrice();
+                    if (tokenPrice && tokenPrice > 0) {
+                        const daiEquivalent = pointValueNum * tokenPrice;
+                        const daiFormatted = formatNumber(daiEquivalent, '', false, 2);
+                        if (this.updateIfChanged('dashboard-point-value-dai', daiFormatted)) {
+                            updateCount++;
+                        }
+                    } else {
+                        if (this.updateIfChanged('dashboard-point-value-dai', '-')) {
+                            updateCount++;
+                        }
+                    }
+                } catch (error) {
+                    this.log('❌ خطا در محاسبه معادل DAI برای ارزش هر پوینت:', error.message);
+                    if (this.updateIfChanged('dashboard-point-value-dai', '-')) {
+                        updateCount++;
+                    }
+                }
             } catch (error) {
                 this.log('❌ خطا در دریافت Point Value:', error.message);
             }
 
-            // 6. چک کردن Wallets Count
+            // 6. چک کردن Cashback Pool
+            try {
+                let cashback;
+                
+                // Try different possible function names
+                if (typeof contract.cashBack === 'function') {
+                    cashback = await contract.cashBack();
+                } else if (typeof contract.cashback === 'function') {
+                    cashback = await contract.cashback();
+                } else {
+                    // If no cashback function exists, use 0
+                    cashback = 0n;
+                }
+                
+                const cashbackNum = parseFloat(ethers.formatUnits(cashback, 18));
+                const cashbackFormatted = formatNumber(cashbackNum, '', false, 2);
+                if (this.updateIfChanged('dashboard-cashback-value', cashbackFormatted)) {
+                    updateCount++;
+                }
+
+                // محاسبه معادل DAI برای صندوق کمک
+                try {
+                    const tokenPrice = await this.getTokenPrice();
+                    if (tokenPrice && tokenPrice > 0) {
+                        const daiEquivalent = cashbackNum * tokenPrice;
+                        const daiFormatted = formatNumber(daiEquivalent, '', false, 2);
+                        if (this.updateIfChanged('dashboard-cashback-value-dai', daiFormatted)) {
+                            updateCount++;
+                        }
+                    } else {
+                        if (this.updateIfChanged('dashboard-cashback-value-dai', '-')) {
+                            updateCount++;
+                        }
+                    }
+                } catch (error) {
+                    this.log('❌ خطا در محاسبه معادل DAI برای صندوق کمک:', error.message);
+                    if (this.updateIfChanged('dashboard-cashback-value-dai', '-')) {
+                        updateCount++;
+                    }
+                }
+            } catch (error) {
+                this.log('❌ خطا در دریافت Cashback Pool:', error.message);
+            }
+
+            // 7. چک کردن Wallets Count
             try {
                 // قرارداد فعلی تابع بدون ورودی دارد
                 const walletsCount = await contract.wallets();
@@ -221,7 +328,7 @@ class CentralDashboardUpdater {
                 this.log('❌ خطا در دریافت Wallets Count:', error.message);
             }
 
-            // 7. چک کردن DAI Contract Balance
+            // 8. چک کردن DAI Contract Balance
             try {
                 let daiBalance;
                 
@@ -253,7 +360,7 @@ class CentralDashboardUpdater {
                 this.log('❌ خطا در دریافت DAI Balance:', error.message);
             }
 
-            // 8. چک کردن Registration Price
+            // 9. چک کردن Registration Price
             try {
                 let regPrice;
                 if (typeof contract.getRegPrice === 'function') {
@@ -273,6 +380,27 @@ class CentralDashboardUpdater {
                 if (this.updateIfChanged('dashboard-registration-price', regPriceFormatted)) {
                     updateCount++;
                 }
+
+                // محاسبه معادل DAI
+                try {
+                    const tokenPrice = await this.getTokenPrice();
+                    if (tokenPrice && tokenPrice > 0) {
+                        const daiEquivalent = regPriceNum * tokenPrice;
+                        const daiFormatted = formatNumber(daiEquivalent, '', false, 2);
+                        if (this.updateIfChanged('dashboard-registration-price-dai', daiFormatted)) {
+                            updateCount++;
+                        }
+                    } else {
+                        if (this.updateIfChanged('dashboard-registration-price-dai', '-')) {
+                            updateCount++;
+                        }
+                    }
+                } catch (error) {
+                    this.log('❌ خطا در محاسبه معادل DAI:', error.message);
+                    if (this.updateIfChanged('dashboard-registration-price-dai', '-')) {
+                        updateCount++;
+                    }
+                }
             } catch (error) {
                 this.log('❌ خطا در دریافت Registration Price:', error.message);
             }
@@ -286,6 +414,25 @@ class CentralDashboardUpdater {
 
         } catch (error) {
             this.log('❌ خطا در چک کردن مقادیر:', error.message);
+        }
+    }
+
+    /**
+     * دریافت قیمت توکن
+     */
+    async getTokenPrice() {
+        try {
+            if (!window.contractConfig || !window.contractConfig.contract) {
+                return null;
+            }
+            
+            const contract = window.contractConfig.contract;
+            const tokenPrice = await contract.getTokenPrice();
+            const priceNum = parseFloat(ethers.formatUnits(tokenPrice, 18));
+            return priceNum;
+        } catch (error) {
+            this.log('❌ خطا در دریافت Token Price:', error.message);
+            return null;
         }
     }
 
