@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="css/floating-ai-assistant.css">
     <link rel="stylesheet" href="css/smooth-transitions.css">
     <link rel="stylesheet" href="css/mobile-user-popup.css">
+    <link rel="stylesheet" href="css/modern-theme.css">
 
     <!-- بارگذاری ethers.js نسخه 6 از CDN -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
@@ -30,6 +31,7 @@
   <script src="js/walletconnect-v1.8.0.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
   <script src="js/auth-redirect.js"></script>
+  <script src="js/modern-theme-variables.js"></script>
   
   <!-- بارگذاری دانش پایه قرارداد -->
   <!-- <script src="js/contract-knowledge-base.js"></script> -->
@@ -344,7 +346,7 @@
       <!-- AI Assistant will be inserted here by JavaScript -->
 
       <!-- Blockchain Information Cards -->
-      <div class="dashboard-card" style="background:linear-gradient(135deg,#1a1f2e,#232946);border-radius:16px;box-shadow:0 4px 20px rgba(0,255,136,0.15);min-width:100%;max-width:100%;margin:1rem 0;width:100%;padding:1.5rem;position:relative;overflow:hidden;">
+      <div class="modern-card dashboard-card" style="min-width:100%;max-width:100%;margin:1rem 0;width:100%;padding:1.5rem;position:relative;overflow:hidden;">
         <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#00ff88,#a786ff,#00ff88);animation:shimmer 2s linear infinite;"></div>
         
         <div style="text-align:center;margin-bottom:1.5rem;">
@@ -475,15 +477,15 @@
       </div>
 
       <!-- رنکینگ کاربران برتر -->
-      <div id="top-users-ranking" style="margin-top: 2rem; padding: 1rem; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px solid rgba(167,134,255,0.2);">
+      <div id="top-users-ranking" class="modern-card" style="margin-top: 2rem; padding: 1rem;">
         <!-- محتوای رنکینگ توسط JavaScript بارگذاری می‌شود -->
-        <div style="text-align: center; padding: 1rem; color: #a786ff;">
-          <div style="font-size: 1.2rem; font-weight: bold; margin-bottom: 1rem;">🏆 رنکینگ کاربران برتر</div>
-          <div style="color: #888; font-size: 0.9rem; margin-bottom: 1rem;">برای مشاهده 10 کاربر برتر بر اساس لایک‌ها، دکمه زیر را کلیک کنید</div>
-          <div style="color: #00ff88; font-size: 0.8rem; margin-bottom: 1rem; background: rgba(0,255,136,0.1); padding: 0.5rem; border-radius: 8px; border: 1px solid rgba(0,255,136,0.2);">
+        <div style="text-align: center; padding: 1rem;">
+          <div class="modern-heading-2" style="margin-bottom: 1rem;">🏆 رنکینگ کاربران برتر</div>
+          <div style="color: var(--modern-text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">برای مشاهده 10 کاربر برتر بر اساس لایک‌ها، دکمه زیر را کلیک کنید</div>
+          <div class="modern-alert modern-alert-info" style="margin-bottom: 1rem;">
             💡 <strong>نکته:</strong> می‌توانید برای هر کاربر لایک یا دیسلایک کنید و همچنین با وارد کردن ایندکس، برای هر کاربری رای دهید
           </div>
-          <button onclick="loadRanking()" style="background: #00ff88; color: #000; border: none; border-radius: 8px; padding: 0.8rem 1.5rem; margin-top: 0.5rem; cursor: pointer; font-weight: bold; font-size: 1rem;">
+          <button onclick="loadRanking()" class="modern-btn modern-btn-primary" style="font-size: 1rem;">
             🔄 بارگذاری رنکینگ
           </button>
         </div>
@@ -3140,6 +3142,39 @@ function scrollToRanking() {
 
 <!-- Floating Token Growth Card - کارت شناور رشد توکن -->
 <script src="js/floating-token-card.js"></script>
+
+<!-- اعمال تم مدرن -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('🎨 اعمال تم مدرن نارنجی و بنفش...');
+  
+  // اعمال کلاس modern-card به تمام کارت‌های موجود
+  const cards = document.querySelectorAll('.dashboard-card');
+  cards.forEach(card => {
+    if (!card.classList.contains('modern-card')) {
+      card.classList.add('modern-card');
+    }
+  });
+  
+  // اعمال کلاس modern-btn به تمام دکمه‌ها
+  const buttons = document.querySelectorAll('button');
+  buttons.forEach(button => {
+    if (!button.classList.contains('modern-btn')) {
+      button.classList.add('modern-btn', 'modern-btn-primary');
+    }
+  });
+  
+  // اعمال کلاس modern-input به تمام فیلدهای ورودی
+  const inputs = document.querySelectorAll('input');
+  inputs.forEach(input => {
+    if (!input.classList.contains('modern-input')) {
+      input.classList.add('modern-input');
+    }
+  });
+  
+  console.log('✅ تم مدرن نارنجی و بنفش اعمال شد');
+});
+</script>
 
 </body>
 </html>

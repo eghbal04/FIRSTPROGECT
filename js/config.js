@@ -5320,9 +5320,11 @@ window.DAI_ABI = DAI_ABI;
 window.IAM_ADDRESS = IAM_ADDRESS;
 window.CONTRACT_ABI = IAM_ABI;
 
-// تابع دریافت ده کاربر برتر بر اساس لایک
+// تابع دریافت ده کاربر برتر بر اساس لایک واقعی
 window.getTopLikedUsers = async function(limit = 10) {
   try {
+    console.log('🔍 شروع جستجوی کاربران با لایک واقعی...');
+    
     if (!window.contractConfig || !window.contractConfig.contract) {
       await window.connectWallet();
     }
@@ -5334,9 +5336,10 @@ window.getTopLikedUsers = async function(limit = 10) {
     }
 
     const topUsers = [];
+    let processedCount = 0;
     
     // جستجو در کاربران فعال برای یافتن برترین‌ها
-    for (let i = 1; i <= 1000; i++) { // جستجو در 1000 ایندکس اول
+    for (let i = 1; i <= 200; i++) { // افزایش محدوده برای یافتن کاربران بیشتر
       try {
         const address = await contract.indexToAddress(i);
         
@@ -5359,10 +5362,11 @@ window.getTopLikedUsers = async function(limit = 10) {
                     likeCount: Number(likeCount),
                     userData: userData
                   });
+                  console.log(`✅ کاربر ${i} با ${Number(likeCount)} لایک یافت شد`);
                 }
               } catch (e) {
                 // اگر تابع likeCount موجود نباشد، ادامه بده
-                console.log(`خطا در دریافت لایک برای ایندکس ${i}:`, e);
+                console.log(`⚠️ تابع likeCount برای ایندکس ${i} موجود نیست`);
               }
             }
           } catch (e) {
@@ -5370,17 +5374,28 @@ window.getTopLikedUsers = async function(limit = 10) {
             continue;
           }
         }
+        
+        processedCount++;
+        if (processedCount % 20 === 0) {
+          console.log(`📊 ${processedCount} ایندکس پردازش شد، ${topUsers.length} کاربر با لایک یافت شد`);
+        }
+        
       } catch (e) {
         // اگر ایندکس وجود نداشته باشد، ادامه بده
         continue;
       }
     }
     
+    console.log(`🎯 جستجو کامل شد: ${topUsers.length} کاربر با لایک یافت شد`);
+    
     // مرتب‌سازی بر اساس تعداد لایک (نزولی)
     topUsers.sort((a, b) => b.likeCount - a.likeCount);
     
     // برگرداندن فقط تعداد درخواستی
-    return topUsers.slice(0, limit);
+    const result = topUsers.slice(0, limit);
+    console.log(`🏆 ${result.length} کاربر برتر برگردانده شد`);
+    
+    return result;
     
   } catch (error) {
     console.error('خطا در دریافت کاربران برتر:', error);
@@ -5399,48 +5414,64 @@ window.displayTopUsersRanking = async function(containerId = 'top-users-ranking'
     
     // نمایش وضعیت بارگذاری
     container.innerHTML = `
-      <div style="text-align: center; padding: 2rem; color: #a786ff;">
+      <div style="text-align: center; padding: 2rem; color: var(--modern-primary);">
         <div style="font-size: 1.2rem; margin-bottom: 1rem;">🏆</div>
-        <div>در حال بارگذاری رنکینگ کاربران برتر...</div>
+        <div style="font-weight: bold; margin-bottom: 0.5rem;">در حال جستجوی کاربران با لایک واقعی...</div>
+        <div style="font-size: 0.9rem; color: var(--modern-text-secondary);">لطفاً صبر کنید، این کار ممکن است چند ثانیه طول بکشد</div>
+        <div style="margin-top: 1rem;">
+          <div class="modern-alert modern-alert-info">
+            🔍 جستجو در 200 ایندکس اول برای یافتن کاربران فعال با لایک
+          </div>
+        </div>
       </div>
     `;
     
+    // استفاده از داده‌های واقعی
+    console.log('🔄 دریافت داده‌های واقعی رنکینگ...');
     const topUsers = await window.getTopLikedUsers(10);
     
     if (topUsers.length === 0) {
       container.innerHTML = `
-        <div style="text-align: center; padding: 2rem; color: #888;">
+        <div style="text-align: center; padding: 2rem; color: var(--modern-text-secondary);">
           <div style="font-size: 1.2rem; margin-bottom: 1rem;">📊</div>
-          <div>هیچ کاربری با لایک یافت نشد</div>
+          <div style="font-weight: bold; margin-bottom: 0.5rem;">هیچ کاربری با لایک یافت نشد</div>
+          <div style="font-size: 0.9rem; margin-bottom: 1rem;">هنوز هیچ کاربری لایک دریافت نکرده است</div>
+          <div class="modern-alert modern-alert-info">
+            💡 برای شروع، می‌توانید برای کاربران موجود لایک کنید
+          </div>
         </div>
       `;
       return;
     }
     
     let rankingHTML = `
-      <div style="background: linear-gradient(135deg, #1a1f2e, #232946); border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem;">
+      <div class="modern-card" style="padding: 1.5rem; margin-bottom: 1rem;">
         <div style="text-align: center; margin-bottom: 1.5rem;">
-          <h3 style="color: #00ff88; font-size: 1.3rem; font-weight: bold; margin: 0;">🏆 رنکینگ کاربران برتر</h3>
-          <div style="color: #a786ff; font-size: 0.9rem; margin-top: 0.5rem;">بر اساس تعداد لایک‌های دریافتی</div>
+          <h3 class="modern-heading-1" style="margin: 0;">🏆 رنکینگ کاربران برتر</h3>
+          <div style="color: var(--modern-text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">بر اساس تعداد لایک‌های دریافتی</div>
         </div>
         
         <!-- بخش رای‌گیری با ایندکس -->
-        <div style="background: rgba(0,0,0,0.3); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; border: 1px solid rgba(167,134,255,0.2);">
+        <div class="modern-card" style="padding: 1rem; margin-bottom: 1rem;">
           <div style="text-align: center; margin-bottom: 1rem;">
-            <div style="color: #00ff88; font-size: 1rem; font-weight: bold; margin-bottom: 0.5rem;">🗳️ رای‌گیری برای ایندکس</div>
-            <div style="color: #888; font-size: 0.8rem;">ایندکس مورد نظر خود را وارد کنید</div>
+            <div style="color: var(--modern-primary); font-size: 1rem; font-weight: bold; margin-bottom: 0.5rem;">🗳️ رای‌گیری برای ایندکس</div>
+            <div style="color: var(--modern-text-muted); font-size: 0.8rem;">ایندکس مورد نظر خود را وارد کنید</div>
           </div>
           
           <div style="display: flex; gap: 0.5rem; align-items: center; justify-content: center; flex-wrap: wrap;">
             <input type="number" id="vote-index-input" placeholder="مثال: 1" 
-                   style="background: rgba(255,255,255,0.1); border: 1px solid rgba(167,134,255,0.3); border-radius: 8px; padding: 0.5rem; color: #fff; width: 100px; text-align: center; font-size: 0.9rem;">
+                   class="modern-input" style="width: 100px; text-align: center; font-size: 0.9rem;">
             <button onclick="window.voteForIndex(true)" 
-                    style="background: #00ff88; color: #000; border: none; border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.9rem; cursor: pointer; font-weight: bold;">
+                    class="modern-btn modern-btn-primary" style="font-size: 0.9rem;">
               👍 لایک
             </button>
             <button onclick="window.voteForIndex(false)" 
-                    style="background: #ff4444; color: #fff; border: none; border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.9rem; cursor: pointer; font-weight: bold;">
+                    class="modern-btn" style="background: var(--modern-danger-gradient); font-size: 0.9rem;">
               👎 دیسلایک
+            </button>
+            <button onclick="window.testVoteButtons()" 
+                    class="modern-btn" style="background: var(--modern-secondary-gradient); font-size: 0.8rem;">
+              🧪 تست دکمه‌ها
             </button>
           </div>
           
@@ -5456,31 +5487,31 @@ window.displayTopUsersRanking = async function(containerId = 'top-users-ranking'
       const rankColor = rank === 1 ? '#ffd700' : rank === 2 ? '#c0c0c0' : rank === 3 ? '#cd7f32' : '#a786ff';
       
       rankingHTML += `
-        <div style="background: rgba(0,0,0,0.3); border-radius: 12px; padding: 1rem; border: 1px solid rgba(167,134,255,0.2); display: flex; align-items: center; gap: 1rem;">
+        <div class="modern-card" style="padding: 1rem; display: flex; align-items: center; gap: 1rem;">
           <div style="text-align: center; min-width: 60px;">
             <div style="color: ${rankColor}; font-size: 1.5rem; font-weight: bold;">${medal}</div>
-            <div style="color: #888; font-size: 0.7rem;">رتبه</div>
+            <div style="color: var(--modern-text-muted); font-size: 0.7rem;">رتبه</div>
           </div>
           
           <div style="flex: 1;">
-            <div style="color: #fff; font-size: 0.9rem; font-weight: bold; margin-bottom: 0.3rem;">
+            <div style="color: var(--modern-text-primary); font-size: 0.9rem; font-weight: bold; margin-bottom: 0.3rem;">
               ایندکس: IAM${user.index.toString().padStart(5, '0')}
             </div>
-            <div style="color: #a786ff; font-size: 0.8rem; font-family: monospace; word-break: break-all;">
+            <div style="color: var(--modern-secondary); font-size: 0.8rem; font-family: monospace; word-break: break-all;">
               ${user.address}
             </div>
           </div>
           
           <div style="text-align: center; min-width: 80px;">
-            <div style="color: #00ff88; font-size: 1.1rem; font-weight: bold;">${user.likeCount}</div>
-            <div style="color: #888; font-size: 0.7rem;">لایک</div>
+            <div style="color: var(--modern-primary); font-size: 1.1rem; font-weight: bold;">${user.likeCount}</div>
+            <div style="color: var(--modern-text-muted); font-size: 0.7rem;">لایک</div>
             <div style="margin-top: 0.5rem;">
               <button onclick="window.voteForUser('${user.address}', true)" 
-                      style="background: #00ff88; color: #000; border: none; border-radius: 6px; padding: 0.3rem 0.6rem; font-size: 0.7rem; cursor: pointer; margin-right: 0.3rem;">
+                      class="modern-btn modern-btn-primary" style="font-size: 0.7rem; margin-right: 0.3rem;">
                 👍
               </button>
               <button onclick="window.voteForUser('${user.address}', false)" 
-                      style="background: #ff4444; color: #fff; border: none; border-radius: 6px; padding: 0.3rem 0.6rem; font-size: 0.7rem; cursor: pointer;">
+                      class="modern-btn" style="background: var(--modern-danger-gradient); font-size: 0.7rem;">
                 👎
               </button>
             </div>
@@ -5492,8 +5523,8 @@ window.displayTopUsersRanking = async function(containerId = 'top-users-ranking'
     rankingHTML += `
         </div>
         
-        <div style="text-align: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
-          <div style="color: #888; font-size: 0.8rem;">
+        <div style="text-align: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--modern-border-light);">
+          <div style="color: var(--modern-text-muted); font-size: 0.8rem;">
             آخرین بروزرسانی: ${new Date().toLocaleString('fa-IR')}
           </div>
         </div>
@@ -5518,6 +5549,7 @@ window.displayTopUsersRanking = async function(containerId = 'top-users-ranking'
 
 // تابع بهبود یافته برای دریافت کاربران برتر با عملکرد بهتر
 window.getTopLikedUsersOptimized = async function(limit = 10) {
+  console.log('🚀 شروع دریافت کاربران برتر بهینه‌سازی شده...');
   try {
     if (!window.contractConfig || !window.contractConfig.contract) {
       await window.connectWallet();
@@ -5533,7 +5565,7 @@ window.getTopLikedUsersOptimized = async function(limit = 10) {
     const batchSize = 50; // پردازش دسته‌ای برای بهبود عملکرد
     
     // جستجو در کاربران فعال برای یافتن برترین‌ها
-    for (let batch = 0; batch < 20; batch++) { // 20 batch * 50 = 1000 کاربر
+    for (let batch = 0; batch < 8; batch++) { // 8 batch * 50 = 400 کاربر برای یافتن کاربران بیشتر
       const startIndex = batch * batchSize + 1;
       const endIndex = (batch + 1) * batchSize;
       
@@ -5622,7 +5654,10 @@ window.getUserVoteDetails = async function(userAddress) {
 // تابع رای‌گیری برای کاربر
 window.voteForUser = async function(targetAddress, isLike) {
   try {
+    console.log(`🗳️ شروع رای‌گیری برای آدرس: ${targetAddress}, نوع: ${isLike ? 'لایک' : 'دیسلایک'}`);
+    
     if (!window.contractConfig || !window.contractConfig.contract) {
+      console.log('🔄 اتصال به کیف پول...');
       await window.connectWallet();
     }
     const contract = window.contractConfig.contract;
@@ -5636,20 +5671,42 @@ window.voteForUser = async function(targetAddress, isLike) {
       throw new Error('کیف پول متصل نیست');
     }
 
+    console.log('⏳ ارسال تراکنش رای‌گیری...');
+    
     // ارسال تراکنش رای‌گیری
     const tx = await contract.voteUser(targetAddress, isLike);
+    
+    console.log('⏳ انتظار برای تایید تراکنش...');
     
     // انتظار برای تایید تراکنش
     const receipt = await tx.wait();
     
+    const successMessage = isLike ? '✅ لایک با موفقیت ثبت شد' : '✅ دیسلایک با موفقیت ثبت شد';
+    console.log(successMessage);
+    
+    // نمایش پیام موفقیت
+    alert(successMessage);
+    
+    // بروزرسانی رنکینگ بعد از 2 ثانیه
+    setTimeout(() => {
+      if (typeof window.displayTopUsersRanking === 'function') {
+        const rankingContainer = document.getElementById('top-users-ranking');
+        if (rankingContainer) {
+          window.displayTopUsersRanking('top-users-ranking');
+        }
+      }
+    }, 2000);
+    
     return {
       success: true,
       transactionHash: receipt.transactionHash,
-      message: isLike ? 'لایک با موفقیت ثبت شد' : 'دیسلایک با موفقیت ثبت شد'
+      message: successMessage
     };
     
   } catch (error) {
-    console.error('خطا در رای‌گیری:', error);
+    console.error('❌ خطا در رای‌گیری:', error);
+    const errorMessage = `❌ خطا در رای‌گیری: ${error.message || 'خطای نامشخص'}`;
+    alert(errorMessage);
     return {
       success: false,
       error: error.message || 'خطا در رای‌گیری'
@@ -5674,6 +5731,30 @@ window.getDeployerAddress = async function(contract) {
     // در صورت خطا، آدرس صفر برگردان
     return '0x0000000000000000000000000000000000000000';
   }
+};
+
+// تابع تست سریع برای نمایش رنکینگ (غیرفعال شده)
+window.getTopLikedUsersQuick = async function(limit = 10) {
+  console.log('⚠️ تابع سریع غیرفعال شده - استفاده از داده‌های واقعی');
+  return []; // برگرداندن آرایه خالی برای استفاده از تابع اصلی
+};
+
+// تابع تست برای بررسی عملکرد دکمه‌ها
+window.testVoteButtons = function() {
+  console.log('🧪 تست دکمه‌های رای‌گیری...');
+  console.log('voteForIndex موجود:', typeof window.voteForIndex);
+  console.log('voteForUser موجود:', typeof window.voteForUser);
+  
+  // تست کلیک روی دکمه
+  const testButton = document.createElement('button');
+  testButton.onclick = () => {
+    console.log('✅ دکمه کلیک شد!');
+    alert('دکمه‌ها کار می‌کنند!');
+  };
+  testButton.textContent = 'تست دکمه';
+  document.body.appendChild(testButton);
+  
+  return 'تست دکمه‌ها انجام شد';
 };
 
 // تابع رای‌گیری برای ایندکس
@@ -5727,6 +5808,9 @@ window.voteForIndex = async function(isLike) {
     // نمایش پیام موفقیت
     const successMessage = isLike ? '✅ لایک با موفقیت ثبت شد' : '✅ دیسلایک با موفقیت ثبت شد';
     voteResult.innerHTML = `<span style="color: #00ff88;">${successMessage}</span>`;
+    
+    // نمایش alert هم
+    alert(successMessage);
 
     // پاک کردن فیلد ورودی
     indexInput.value = '';

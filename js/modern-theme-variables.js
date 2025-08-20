@@ -5,18 +5,18 @@
 
 window.MODERN_THEME = {
   colors: {
-    primary: '#667eea',
-    secondary: '#f093fb',
-    accent: '#4facfe',
+    primary: '#ff8c42',
+    secondary: '#9c27b0',
+    accent: '#ff9800',
     success: '#43e97b',
     warning: '#fa709a',
     danger: '#ff9a9e',
     info: '#4facfe',
     
     gradients: {
-      primary: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      secondary: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-      accent: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+      primary: 'linear-gradient(135deg, #ff8c42 0%, #ff6b35 100%)',
+      secondary: 'linear-gradient(135deg, #9c27b0 0%, #673ab7 100%)',
+      accent: 'linear-gradient(135deg, #ff9800 0%, #ff5722 100%)',
       success: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
       warning: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
       danger: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)'
@@ -146,7 +146,7 @@ window.applyModernTheme = function() {
 /**
  * تغییر پس‌زمینه انیمیشن دار
  */
-window.changeAnimatedBackground = function(colors = ['#667eea', '#764ba2', '#f093fb']) {
+window.changeAnimatedBackground = function(colors = ['#ff8c42', '#ff6b35', '#9c27b0']) {
   document.body.style.background = `
     linear-gradient(-45deg, ${colors.join(', ')})
   `;
