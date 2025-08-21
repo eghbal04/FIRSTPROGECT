@@ -20,23 +20,23 @@
     <link rel="stylesheet" href="css/mobile-user-popup.css">
     <link rel="stylesheet" href="css/modern-theme.css">
 
-    <!-- بارگذاری ethers.js نسخه 6 از CDN -->
+    <!-- Loading ethers.js version 6 from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
-    <!-- بارگذاری WalletConnect Provider از CDN رسمی -->
+    <!-- Loading WalletConnect Provider from official CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
-    <!-- بارگذاری WalletConnect Handler -->
+    <!-- Loading WalletConnect Handler -->
     <script src="js/walletconnect-handler.js?v=5.7"></script>
 
-      <!-- بارگذاری WalletConnect UMD به صورت لوکال -->
+      <!-- Loading WalletConnect UMD locally -->
   <script src="js/walletconnect-v1.8.0.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
   <script src="js/auth-redirect.js"></script>
   <script src="js/modern-theme-variables.js"></script>
   
-  <!-- بارگذاری دانش پایه قرارداد -->
+      <!-- Loading contract base knowledge -->
   <!-- <script src="js/contract-knowledge-base.js"></script> -->
   
-  <!-- بارگذاری Floating AI Assistants -->
+      <!-- Loading Floating AI Assistants -->
   <!-- <script src="js/floating-ai-assistant.js"></script> -->
   
   <!-- Immediate AI Assistant Initialization -->
@@ -73,9 +73,9 @@
 </head>
 <body>
   <div id="online-session-bubble" style="display:none;">
-    <span class="bubble-text">جلسه آنلاین در حال برگزاری است! 🚀</span>
+          <span class="bubble-text">Online session is in progress! 🚀</span>
     <span class="bubble-timer" id="bubble-timer"></span>
-    <a href="learning.html" class="bubble-link" target="_blank">ورود به کلاس</a>
+    <a href="learning.html" class="bubble-link" target="_blank">Go to Class</a>
     <span class="bubble-close" id="bubble-close">×</span>
   </div>
   <div id="bubble-mini" style="display:none;">
@@ -478,7 +478,7 @@
 
       <!-- رنکینگ کاربران برتر -->
       <div id="top-users-ranking" class="modern-card" style="margin-top: 2rem; padding: 1rem;">
-        <!-- محتوای رنکینگ توسط JavaScript بارگذاری می‌شود -->
+        <!-- Ranking content is loaded by JavaScript -->
         <div style="text-align: center; padding: 1rem;">
           <div class="modern-heading-2" style="margin-bottom: 1rem;">🏆 رنکینگ کاربران برتر</div>
           <div style="color: var(--modern-text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">برای مشاهده 10 کاربر برتر بر اساس لایک‌ها، دکمه زیر را کلیک کنید</div>
@@ -486,7 +486,7 @@
             💡 <strong>نکته:</strong> می‌توانید برای هر کاربر لایک یا دیسلایک کنید و همچنین با وارد کردن ایندکس، برای هر کاربری رای دهید
           </div>
           <button onclick="loadRanking()" class="modern-btn modern-btn-primary" style="font-size: 1rem;">
-            🔄 بارگذاری رنکینگ
+            🔄 Loading ranking
           </button>
         </div>
       </div>
@@ -627,7 +627,7 @@
             }
             
             // تغییر متن دکمه
-            acceptButton.textContent = '🔓 ورود به پلتفرم';
+            acceptButton.textContent = '🔓 Enter Platform';
             acceptButton.style.background = 'linear-gradient(135deg,#00ff88,#00cc6a)';
             acceptButton.style.color = '#000';
             acceptButton.style.cursor = 'pointer';
@@ -657,7 +657,7 @@
           
           const welcomeText = `<div style="background:rgba(255,193,7,0.08);padding:1.2em 1.4em;border-radius:12px;border-right:4px solid #ffc107;margin-bottom:1.2em;">
   <p style="margin:0;color:#e0e6f7;font-weight:500;">
-    ⚠️ <strong>اطلاعیه مهم:</strong> قبل از ورود به پلتفرم، لطفاً شرایط و قوانین زیر را مطالعه کرده و بپذیرید.
+    ⚠️ <strong>Important Notice:</strong> Before entering the platform, please read and accept the following terms and conditions.
   </p>
 </div>
 
@@ -716,11 +716,11 @@
   </li>
   <li style="margin-bottom:0.65em;padding-right:1.5em;position:relative;">
     <span style="position:absolute;right:0;color:#00ff88;">🔹</span>
-    <strong>getTokenPrice()</strong> - دریافت قیمت فعلی توکن
+    <strong>getTokenPrice()</strong> - Get current token price
   </li>
   <li style="margin-bottom:0.65em;padding-right:1.5em;position:relative;">
     <span style="position:absolute;right:0;color:#00ff88;">🔹</span>
-    <strong>getPointValue()</strong> - دریافت ارزش هر پوینت
+    <strong>getPointValue()</strong> - Get value of each point
   </li>
   <li style="margin-bottom:0.65em;padding-right:1.5em;position:relative;">
     <span style="position:absolute;right:0;color:#00ff88;">🔹</span>
@@ -728,7 +728,7 @@
   </li>
   <li style="margin-bottom:0.65em;padding-right:1.5em;position:relative;">
     <span style="position:absolute;right:0;color:#00ff88;">🔹</span>
-    <strong>sellTokens()</strong> - فروش توکن و دریافت DAI
+    <strong>sellTokens()</strong> - Sell tokens and receive DAI
   </li>
 </ul>
 
@@ -905,7 +905,7 @@
             }
             
             // تغییر متن دکمه
-            acceptButton.textContent = '🔓 ورود به پلتفرم';
+            acceptButton.textContent = '🔓 Enter Platform';
             acceptButton.style.background = 'linear-gradient(135deg,#00ff88,#00cc6a)';
             acceptButton.style.color = '#000';
             acceptButton.style.cursor = 'pointer';
@@ -938,9 +938,9 @@
           }
         }
 
-        // پذیرش شرایط و ورود به پلتفرم
+        // Accept terms and enter platform
         function acceptConditions() {
-          // متوقف کردن تایمر
+          // Stop timer
           if (readingTimerInterval) {
             clearInterval(readingTimerInterval);
           }
@@ -949,7 +949,18 @@
         }
         
         
-        const text = `آکادمی سود مستمر (IAM) یک اکوسیستم نوآورانه و مردم‌محور است که با هدف ارائه خدمات مالی، آموزشی و معاملاتی کاملاً غیرمتمرکز و شفاف، بنیان نهاده شده است. در این مجموعه، سرمایه شما همیشه در اختیار خودتان باقی می‌ماند؛ چه در حساب شخصی‌تان در صرافی، چه در بروکر، و چه در کیف پول هوشمند متصل به قرارداد غیرمتمرکز.\n\nخدمات ما:\n• ارائه سیگنال‌های تخصصی و ربات‌های اتوترید برای بازارهای مالی\n• امکان فعالیت به عنوان ایجنت برای افراد و IB در بروکرها\n• امکان بازاریابی شبکه‌ای برای دوستانی که می‌خواهند این مجموعه را ارتقا دهند\n• شما می‌توانید از سهام‌های معرفی افراد (Referral Shares) بهره‌مند شوید.\n• همچنین می‌توانید با سرمایه‌گذاری در صندوق IAM و توکن افزایشی آن، به صورت تضمینی به سود برسید.\n• آموزش‌های جامع فارکس و ارز دیجیتال\n• پشتیبانی از صندوق غیرمتمرکز IAM و توکن IAM\n• خدمات کپی‌ترید: اگر ربات IAM سود کند، شما هم سود می‌کنید و اگر ضرر کند، شما نیز ضرر می‌کنید؛ هیچ سودی از حساب شما در زمان ضرر برداشت نمی‌شود و تا جبران ضرر، IAM سهمی دریافت نمی‌کند.\n• شعار ما: سرمایه‌ات در حساب خودت، سودت واقعی و شفاف\n\nصداقت، شفافیت و خدمات صددرصدی، اصول بنیادین ماست. هیچ‌گاه سرمایه شما به حساب IAM منتقل نمی‌شود؛ بلکه شما همواره کنترل کامل دارایی خود را دارید و تنها در سود واقعی شریک هستیم. در دنیایی که بسیاری به دنبال جذب سرمایه مردم و ارائه وعده‌های توخالی هستند، ما در IAM تنها زمانی سود می‌بریم که شما واقعاً سود کنید و در زیان، شریک و همراه شما خواهیم بود.\n\nIAM؛ انتخابی برای آینده‌ای مطمئن، شفاف و مردم‌محور.`;
+        const text = `The IAM Continuous Profit Academy is an innovative, people-centric ecosystem established to provide fully decentralized and transparent financial, educational, and trading services. In this collection, your capital always remains under your control, whether in your personal exchange account, with a broker, or in a smart wallet connected to a decentralized contract.
+
+Our Services:
+• Providing specialized signals and auto-trading robots for financial markets
+• Opportunity to act as an agent for individuals and IBs in brokerages
+• Network marketing opportunities for friends who want to promote this collection
+• You can benefit from Referral Shares.
+• You can also achieve guaranteed profit by investing in the IAM fund and its incremental token.
+• Comprehensive Forex and Cryptocurrency training
+• Support for the decentralized IAM fund and IAM token
+• Copy-trading services: If the IAM robot profits, you profit, and if it incurs a loss, you also incur a loss; no profit is withdrawn from your account during a loss, and IAM receives no share until the loss is recovered.
+• Our motto: Your capital in your own account, your profit with us.`;
         const container = document.getElementById('IAM-typewriter');
         if (container) {
           let i = 0;
@@ -1012,7 +1023,7 @@
             <h4 style="color:#00ff88;margin-bottom:0.5rem;">🔄 نحوه تبدیل:</h4>
             <ul style="color:#b8c1ec;line-height:1.6;margin:0;padding-right:1rem;">
               <li>✅ <strong style="color:#00ff88;">DAI → IAM:</strong> خرید توکن IAM با DAI (نرخ متغیر)</li>
-              <li>✅ <strong style="color:#00ff88;">IAM → DAI:</strong> فروش توکن IAM و دریافت DAI</li>
+              <li>✅ <strong style="color:#00ff88;">IAM → DAI:</strong> Sell IAM tokens and receive DAI</li>
               <li>✅ کارمزد تبدیل: پویا (۲٪، ۲.۵٪ یا ۳٪ بر اساس موجودی DAI قرارداد)</li>
               <li>✅ حداقل مقدار تبدیل: بیش از 1 DAI یا بیش از 1 IAM</li>
             </ul>
@@ -1038,7 +1049,7 @@
             </ul>
           </div>
         </div>
-        <!-- داشبورد اطلاعات بلاکچین (افزوده شده برای جلوگیری از خطاهای not found) -->
+        <!-- Blockchain Information Dashboard (added to prevent not found errors) -->
 
         <form id="swapForm" class="swap-form">
           <div class="swap-row">
@@ -1079,7 +1090,7 @@
             <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">مقدار دلاری وارد کنید تا به توکن تبدیل شود (مثل: 5 برای $5)</small>
           </div>
           
-          <div id="swapRate" class="swap-rate">نرخ تبدیل: در حال بارگذاری...</div>
+          <div id="swapRate" class="swap-rate">Exchange rate: Loading...</div>
           <div id="swapPreview" class="swap-preview"></div>
           <div id="swapLimitInfo" class="swap-limit-info" style="margin-top:0.5rem;color:#555;font-size:0.98em;"></div>
           
@@ -2098,7 +2109,7 @@
       // بازیابی تب فعال از localStorage
       const savedTab = localStorage.getItem('currentActiveTab');
       if (savedTab && savedTab !== 'network' && typeof window.showTab === 'function') {
-        // کمی صبر کن تا صفحه کاملاً لود شود
+        // Wait a bit for the page to fully load
         setTimeout(() => {
           window.showTab(savedTab);
         }, 1000);
@@ -2122,7 +2133,7 @@
   })();
   </script>
 
-  <!-- کنترل نمایش ورودی آدرس مقصد -->
+  <!-- Control display of destination address input -->
   <script>
     // تابع بروزرسانی خودکار موجودی‌های ترنسفر
     async function autoRefreshTransferBalances() {
@@ -2140,7 +2151,7 @@
       const transferForm = document.getElementById('transferForm');
       if (!transferForm) return;
 
-      // بروزرسانی خودکار موجودی‌ها هنگام بارگذاری صفحه
+              // Auto-update balances when page loads
       const initTransferBalances = () => {
         if (window.contractConfig && window.contractConfig.contract) {
           autoRefreshTransferBalances();
@@ -2186,7 +2197,7 @@
         }
         
         try {
-          // دریافت قیمت توکن از smart contract
+          // Get token price from smart contract
           const connection = await window.connectWallet();
           if (!connection || !connection.contract) {
             alert('ابتدا کیف پول خود را متصل کنید');
@@ -2234,7 +2245,7 @@
           const selectedToken = transferTokenSelect.value;
           let maxAmount = '0';
           
-          // دریافت موجودی بر اساس توکن انتخاب شده
+          // Get balance based on selected token
           if (selectedToken === 'dai') {
             const daiBalanceEl = document.getElementById('transfer-dai-balance');
             if (daiBalanceEl) {
@@ -2257,7 +2268,7 @@
             }
           }
           
-          // تنظیم مقدار در فیلد ورودی
+          // Set value in input field
           if (parseFloat(maxAmount) > 0) {
             const decimals = (transferTokenSelect.value === 'IAM') ? 6 : 18;
             // برای DAI و POL بهتر است 2 یا 4 رقم استفاده کنیم؛ برای IAM تا 6 رقم
@@ -2469,7 +2480,7 @@
             const contract = window.contractConfig.contract;
             const address = await contract.indexToAddress(BigInt(idx));
             if (!address || address === '0x0000000000000000000000000000000000000000') {
-              searchStatus.textContent = 'آدرس ولت برای این ایندکس یافت نشد';
+              searchStatus.textContent = 'Wallet address not found for this index';
               searchStatus.className = 'transfer-status error';
               document.getElementById('transferTo').value = '';
             } else {
@@ -2563,7 +2574,7 @@
         }
       } catch (error) {
         const el = document.getElementById('chart-lvl-usd');
-        if (el) el.textContent = 'خطا در بارگذاری';
+                    if (el) el.textContent = 'Loading error';
       }
     }
     // ... existing code ...
@@ -2591,7 +2602,7 @@
         try {
           if (window.connectWallet) {
             await window.connectWallet();
-            // پس از اتصال، پروفایل را مجدد بارگذاری کن
+            // After connecting, reload profile
             if (typeof loadUserProfile === 'function') loadUserProfile();
           }
         } catch (e) {
@@ -2609,12 +2620,12 @@
     document.addEventListener('DOMContentLoaded', async function() {
       console.log('🚀 شروع مقداردهی SwapManager...');
       
-      // اطمینان از بارگذاری swap.js
+              // Ensure swap.js is loaded
       if (typeof SwapManager !== 'undefined') {
         try {
-          console.log('✅ کلاس SwapManager یافت شد');
+          console.log('✅ SwapManager class found');
           
-          // کمی صبر کن تا DOM کاملاً بارگذاری شود
+          // Wait a bit for DOM to fully load
           await new Promise(resolve => setTimeout(resolve, 1000));
           
           // بررسی وجود عناصر مورد نیاز
@@ -2622,7 +2633,7 @@
           const missingElements = requiredElements.filter(id => !document.getElementById(id));
           
           if (missingElements.length > 0) {
-            console.warn('⚠️ عناصر زیر یافت نشدند:', missingElements);
+            console.warn('⚠️ The following elements were not found:', missingElements);
             return;
           }
           
@@ -2698,7 +2709,7 @@
               console.warn('⚠️ خطا در رفرش SwapManager:', error);
             }
           }
-          // به‌روزرسانی نوار وضعیت داشبورد ایندکس
+          // Update index dashboard status bar
           try { if (typeof window.indexStatusTryUpdate === 'function') window.indexStatusTryUpdate(); } catch(_) {}
         }, 1000);
         
@@ -2807,14 +2818,14 @@
     background: rgba(138,43,226,0.1) !important;
   }
   
-  /* انیمیشن ورود کارت‌ها */
+  /* Card Entry Animation */
   div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] {
     animation: slideUpMobile 0.6s ease-out !important;
     animation-delay: calc(var(--card-index, 0) * 0.1s) !important;
   }
 }
 
-/* انیمیشن ورود کارت‌ها در موبایل */
+/* Card Entry Animation on Mobile */
 @keyframes slideUpMobile {
   from {
     opacity: 0;
@@ -2875,7 +2886,7 @@ div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:
   max-width: 100% !important;
 }
 
-/* چیدمان واکنش‌گرا برای کارت‌های متریک داشبورد در تبلت و دسکتاپ */
+/* Responsive Layout for Dashboard Metric Cards on Tablet and Desktop */
 @media (min-width: 769px) and (max-width: 1023px) {
   /* ظرف کارت‌ها → 2 ستون در هر سطر */
   div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] {
@@ -2912,7 +2923,7 @@ div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:
   }
 }
 
-/* حالت عرض پویا برای کارت‌های متریک داشبورد در تبلت/دسکتاپ
+/* Dynamic Width Mode for Dashboard Metric Cards on Tablet/Desktop
    این بلوک قوانین گرید را در بالا override می‌کند تا کارت‌ها به اندازهٔ محتوا عریض شوند */
 @media (min-width: 769px) {
   /* ظرف کارت‌ها: فلکس و قابل پیچش */
@@ -2939,7 +2950,7 @@ div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:
   }
 }
 
-/* حالت عرض پویا برای کارت‌های متریک داشبورد در موبایل */
+/* Dynamic Width Mode for Dashboard Metric Cards on Mobile */
 @media (max-width: 768px) {
   /* ظرف کارت‌ها: فلکس، پیچش فعال، چینش ردیفی، اسکرول افقی در صورت نیاز */
   div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] {
@@ -2987,7 +2998,7 @@ function optimizeCardsForMobile() {
       card.style.boxSizing = 'border-box';
       card.style.overflow = 'hidden';
       
-      // انیمیشن ورود
+      // Entry Animation
       card.style.setProperty('--card-index', index.toString());
       card.style.opacity = '0';
       card.style.transform = 'translateY(20px)';
@@ -3148,7 +3159,7 @@ function scrollToRanking() {
 document.addEventListener('DOMContentLoaded', function() {
   console.log('🎨 اعمال تم مدرن نارنجی و بنفش...');
   
-  // اعمال کلاس modern-card به تمام کارت‌های موجود
+  // Apply modern-card class to all existing cards
   const cards = document.querySelectorAll('.dashboard-card');
   cards.forEach(card => {
     if (!card.classList.contains('modern-card')) {
@@ -3156,7 +3167,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
   
-  // اعمال کلاس modern-btn به تمام دکمه‌ها
+  // Apply modern-btn class to all buttons
   const buttons = document.querySelectorAll('button');
   buttons.forEach(button => {
     if (!button.classList.contains('modern-btn')) {
@@ -3164,7 +3175,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
   
-  // اعمال کلاس modern-input به تمام فیلدهای ورودی
+  // Apply modern-input class to all input fields
   const inputs = document.querySelectorAll('input');
   inputs.forEach(input => {
     if (!input.classList.contains('modern-input')) {
