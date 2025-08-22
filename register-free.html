@@ -12,9 +12,9 @@
     .register-form {
       background: linear-gradient(135deg, #232946 80%, #181c2a 100%) !important;
       color: #fff !important;
-      border-radius: 22px;
+      border-radius: 16px;
       box-shadow: 0 8px 32px #00000033, 0 1.5px 6px #00ff8840;
-      padding: 36px 28px 28px 28px;
+      padding: 20px 16px 16px 16px;
     }
     .register-form label,
     .register-form-title {
@@ -51,39 +51,170 @@
     .register-form-status {
       color: #fff !important;
     }
+    .form-group {
+      margin-bottom: 12px !important;
+    }
+    .form-group label {
+      margin-bottom: 4px !important;
+      font-size: 0.9rem !important;
+    }
+    .register-form-input {
+      padding: 8px 12px !important;
+      font-size: 0.9rem !important;
+    }
+    .avatar-row {
+      margin-bottom: 8px !important;
+    }
+    .avatar-choice {
+      font-size: 1.5rem !important;
+      padding: 4px !important;
+    }
   </style>
 </head>
 <body>
   <script src="js/navbar.js"></script>
   <main style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--ios-background);">
     <form class="register-form" autocomplete="off" style="max-width:430px;width:100%;margin:0 auto;">
-      <h2 class="register-form-title" style="text-align:center;margin-bottom:18px;">فرم ثبت‌نام رزرو</h2>
+      <h2 class="register-form-title" style="text-align:center;margin-bottom:12px;font-size:1.3rem;">فرم ثبت‌نام رزرو</h2>
       <div class="register-form-status info" id="connection-status"></div>
       <div class="register-form-status warning" id="register-suggestion" style="display:none;"></div>
       <div class="form-group">
         <label for="index-search">ایندکس (Index)</label>
-                 <div style="font-size:0.85rem;color:#a786ff;margin-bottom:8px;background:rgba(167,134,255,0.1);padding:8px;border-radius:6px;border:1px solid rgba(167,134,255,0.3);">
+                 <div style="font-size:0.75rem;color:#a786ff;margin-bottom:6px;background:rgba(167,134,255,0.1);padding:6px;border-radius:4px;border:1px solid rgba(167,134,255,0.3);">
            ⚠️ <strong>محدودیت:</strong> فقط می‌توانید برای ایندکس‌های موجود در خط رفرال خود ثبت‌نام رزرو کنید.
          </div>
-        <input type="text" id="index-search" class="register-form-input" placeholder="مثلاً 123" autocomplete="off" value="refferer ID : IAM00000" style="width:100%;min-width:0;">
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <input type="text" id="index-search" class="register-form-input" placeholder="مثلاً 123" autocomplete="off" value="refferer ID : IAM00000" style="flex: 1; min-width: 0;">
+          <button type="button" id="apply-index-btn" class="register-btn" style="padding: 8px 16px; font-size: 0.9rem; white-space: nowrap;">اعمال</button>
+        </div>
       </div>
       <div class="form-group">
         <label for="referrer-address">آدرس معرف (والد)</label>
-        <div style="font-size:0.8rem;color:#718096;margin-bottom:6px;background:rgba(113,128,150,0.1);padding:6px;border-radius:4px;">
+        <div style="font-size:0.7rem;color:#718096;margin-bottom:4px;background:rgba(113,128,150,0.1);padding:4px;border-radius:3px;">
           🔗 این فیلد به صورت خودکار بر اساس ایندکس انتخاب شده پر می‌شود. معرف باید فعال باشد.
         </div>
         <input type="text" id="referrer-address" class="register-form-input" placeholder="0x..." autocomplete="off" value="root">
       </div>
       <div class="form-group">
         <label for="new-user-address">آدرس کاربر جدید</label>
-        <div style="font-size:0.8rem;color:#718096;margin-bottom:6px;background:rgba(113,128,150,0.1);padding:6px;border-radius:4px;">
+        <div style="font-size:0.7rem;color:#718096;margin-bottom:4px;background:rgba(113,128,150,0.1);padding:4px;border-radius:3px;">
           👤 آدرس کیف پول کاربری که می‌خواهید ثبت‌نام رزرو کنید. این آدرس نباید قبلاً ثبت‌نام شده باشد.
         </div>
         <input type="text" id="new-user-address" class="register-form-input" placeholder="0x..." autocomplete="off">
       </div>
       
-      <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        <script>
+    // تابع نمایش پیام‌های عمومی
+    function showMessageBox(message, type = 'info') {
+        // حذف message box قبلی اگر وجود دارد
+        const existingBox = document.getElementById('message-box');
+        if (existingBox) {
+            existingBox.remove();
+        }
+        
+        // ایجاد message box جدید
+        const messageBox = document.createElement('div');
+        messageBox.id = 'message-box';
+        messageBox.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: ${type === 'error' ? 'rgba(255, 0, 0, 0.95)' : type === 'success' ? 'rgba(0, 255, 136, 0.95)' : 'rgba(167, 134, 255, 0.95)'};
+            color: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 10000;
+            max-width: 400px;
+            text-align: center;
+            font-size: 14px;
+            line-height: 1.5;
+            backdrop-filter: blur(10px);
+            border: 1px solid ${type === 'error' ? 'rgba(255, 0, 0, 0.3)' : type === 'success' ? 'rgba(0, 255, 136, 0.3)' : 'rgba(167, 134, 255, 0.3)'};
+        `;
+        
+        // آیکون بر اساس نوع پیام
+        const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+        
+        messageBox.innerHTML = `
+            <div style="margin-bottom: 10px; font-size: 24px;">${icon}</div>
+            <div style="margin-bottom: 15px;">${message}</div>
+            <button onclick="this.parentElement.remove()" style="
+                background: rgba(255, 255, 255, 0.2);
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                color: white;
+                padding: 8px 20px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 13px;
+                transition: all 0.3s ease;
+            " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                بستن
+            </button>
+        `;
+        
+        document.body.appendChild(messageBox);
+        
+        // حذف خودکار بعد از 5 ثانیه
+        setTimeout(() => {
+            if (messageBox.parentElement) {
+                messageBox.remove();
+            }
+        }, 5000);
+    }
+
+    // تابع نمایش پیام‌های موقت (برای validation)
+    function showTempMessage(message, type = 'info', duration = 3000) {
+        const tempBox = document.createElement('div');
+        tempBox.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${type === 'error' ? 'rgba(255, 0, 0, 0.9)' : type === 'success' ? 'rgba(0, 255, 136, 0.9)' : 'rgba(167, 134, 255, 0.9)'};
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            z-index: 9999;
+            font-size: 13px;
+            max-width: 300px;
+            backdrop-filter: blur(8px);
+            border: 1px solid ${type === 'error' ? 'rgba(255, 0, 0, 0.3)' : type === 'success' ? 'rgba(0, 255, 136, 0.3)' : 'rgba(167, 134, 255, 0.3)'};
+            animation: slideIn 0.3s ease;
+        `;
+        
+        const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+        tempBox.innerHTML = `${icon} ${message}`;
+        
+        document.body.appendChild(tempBox);
+        
+        setTimeout(() => {
+            if (tempBox.parentElement) {
+                tempBox.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => tempBox.remove(), 300);
+            }
+        }, duration);
+    }
+
+    // اضافه کردن CSS animations
+    if (!document.getElementById('message-box-styles')) {
+        const style = document.createElement('style');
+        style.id = 'message-box-styles';
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
           const addressInput = document.getElementById('new-user-address');
           
           // وقتی کاربر روی اینپوت کلیک کند
@@ -106,28 +237,28 @@
           });
         });
       </script>
-      <div class="info-box" id="register-info" style="background:rgba(28,28,40,0.97);color:#fff;font-weight:bold;font-size:1.08rem;box-shadow:0 2px 8px #a786ff22;margin-bottom:18px;">
-        <div style="margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(167,134,255,0.3);">
-          <div style="color:#a786ff;font-size:0.9rem;margin-bottom:4px;">📊 اطلاعات ثبت‌نام رزرو:</div>
+      <div class="info-box" id="register-info" style="background:rgba(28,28,40,0.97);color:#fff;font-weight:bold;font-size:0.9rem;box-shadow:0 2px 8px #a786ff22;margin-bottom:12px;padding:12px;">
+        <div style="margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid rgba(167,134,255,0.3);">
+          <div style="color:#a786ff;font-size:0.8rem;margin-bottom:2px;">📊 اطلاعات ثبت‌نام رزرو:</div>
         </div>
-        <div style="margin-bottom:8px;">🎯 ایندکس رفرر: <b id="parent-index">...</b></div>
-        <div style="margin-bottom:8px;">📍 ایندکس جایگاه جدید: <b id="empty-index">...</b></div>
-        <div style="margin-bottom:8px;">🔄 جایگاه کاربر جدید: <b id="position-info">...</b></div>
-        <div style="margin-bottom:8px;">💰 هزینه ثبت‌نام رزرو:<br><b id="register-cost" style="display:inline-block;margin-top:4px;font-size:1.1rem;color:#00ff88;">...</b></div>
+        <div style="margin-bottom:4px;">🎯 ایندکس رفرر: <b id="parent-index">...</b></div>
+        <div style="margin-bottom:4px;">📍 ایندکس جایگاه جدید: <b id="empty-index">...</b></div>
+        <div style="margin-bottom:4px;">🔄 جایگاه کاربر جدید: <b id="position-info">...</b></div>
+        <div style="margin-bottom:4px;">💰 هزینه ثبت‌نام رزرو:<br><b id="register-cost" style="display:inline-block;margin-top:2px;font-size:1rem;color:#00ff88;">...</b></div>
         
-        <div style="margin-top:12px;padding-top:8px;border-top:1px solid rgba(167,134,255,0.3);">
-          <div style="color:#a786ff;font-size:0.9rem;margin-bottom:8px;">💳 موجودی کیف پول:</div>
-          <div style="display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center;">
-          <span style="display:flex;align-items:center;gap:6px;">
-            <img src="matic.svg" alt="MATIC" style="width:18px;height:18px;vertical-align:middle;"> 
+        <div style="margin-top:8px;padding-top:6px;border-top:1px solid rgba(167,134,255,0.3);">
+          <div style="color:#a786ff;font-size:0.8rem;margin-bottom:6px;">💳 موجودی کیف پول:</div>
+          <div style="display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;">
+          <span style="display:flex;align-items:center;gap:4px;">
+            <img src="matic.svg" alt="MATIC" style="width:16px;height:16px;vertical-align:middle;"> 
             <span>موجودی متیک: <b id="matic-balance">...</b></span>
           </span>
-          <span style="display:flex;align-items:center;gap:6px;">
-            <img src="IAM.jpg" alt="IAM" style="width:18px;height:18px;vertical-align:middle;border-radius:50%;"> 
+          <span style="display:flex;align-items:center;gap:4px;">
+            <img src="IAM.jpg" alt="IAM" style="width:16px;height:16px;vertical-align:middle;border-radius:50%;"> 
             <span>موجودی IAM: <b id="IAM-balance">...</b></span>
           </span>
           </div>
-          <div style="font-size:0.8rem;color:#718096;margin-top:8px;text-align:center;background:rgba(113,128,150,0.1);padding:6px;border-radius:4px;">
+          <div style="font-size:0.7rem;color:#718096;margin-top:6px;text-align:center;background:rgba(113,128,150,0.1);padding:4px;border-radius:3px;">
             💡 برای ثبت‌نام رزرو نیاز به معادل $23 توکن IAM دارید
           </div>
         </div>
@@ -138,10 +269,10 @@
         <span class="avatar-choice" data-avatar="student-man">👨‍🎓</span>
         <span class="avatar-choice" data-avatar="student-woman">👩‍🎓</span>
       </div>
-                             <button class="register-btn buy-btn" id="register-btn" type="button" style="width:100%;margin-top:18px;">ثبت‌نام رزرو</button>
+                             <button class="register-btn buy-btn" id="register-btn" type="button" style="width:100%;margin-top:12px;">ثبت‌نام رزرو</button>
                        <div class="register-form-status" id="status-message"></div>
                        
-                       <div style="margin-top:20px;padding:12px;background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3);border-radius:8px;text-align:center;font-size:0.9rem;color:#ffc107;">
+                       <div style="margin-top:12px;padding:8px;background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3);border-radius:6px;text-align:center;font-size:0.8rem;color:#ffc107;">
                            ⚠️ برای ثبت‌نام نیاز به موجودی کافی IAM و MATIC دارید
                        </div>
                    </form>
@@ -373,58 +504,41 @@
 
          
 
-    // --- Two-way mapping: index <-> address ---
-    // indexInput و refInput فقط یکبار تعریف می‌شوند
-         // وقتی ایندکس تغییر می‌کند، آدرس را به‌روز کن و بررسی خط رفرال
-    indexInput.addEventListener('change', async function() {
-       await checkIndexReferralLine();
-     });
-     
-     // اضافه کردن event listener برای input و paste
-     indexInput.addEventListener('input', async function() {
-       console.log('🔄 تغییر ایندکس:', this.value);
-       const value = this.value;
-       
-       // اگر مقدار عددی است، ابتدا آدرس را بررسی کن
-       if (/^\d+$/.test(value)) {
-         await checkIndexReferralLine();
-         
-         // سپس IAM ID را فرمت کن
-         let IAMId = '';
-         if (value.length <= 5) {
-           IAMId = 'IAM' + value.padStart(5, '0');
-         } else {
-           IAMId = 'IAM' + value; // برای طول‌های بیشتر از 5، بدون padding
-         }
-         this.value = IAMId;
-       }
-     });
-     
-     indexInput.addEventListener('paste', async function() {
-       setTimeout(async () => {
-         await checkIndexReferralLine();
-       }, 100);
-     });
-     
-     // اضافه کردن event listener برای blur
-     indexInput.addEventListener('blur', async function() {
-       console.log('🔍 blur event triggered');
-       const value = this.value;
-       
-       // اگر مقدار عددی است یا IAM ندارد، فرمت کن
-       if (/^\d+$/.test(value) || !value.startsWith('IAM')) {
-         await checkIndexReferralLine();
-         
-         // فرمت IAM ID
-         let IAMId = '';
-         if (value.length <= 5) {
-           IAMId = 'IAM' + value.padStart(5, '0');
-         } else {
-           IAMId = 'IAM' + value;
-         }
-         this.value = IAMId;
-       }
-     });
+    // --- Manual index application with button ---
+    // Add button click handler for manual index application
+    document.getElementById('apply-index-btn').addEventListener('click', async function() {
+      const value = indexInput.value.trim();
+      console.log(`🔍 Manual index application: ${value}`);
+      
+      if (!value || value === defaultGuide) {
+        alert('لطفاً ایندکس معتبر وارد کنید');
+        return;
+      }
+      
+      // Format index to IAM format if it's a number
+      let formattedValue = value;
+      if (/^\d+$/.test(value)) {
+        let IAMId = '';
+        if (value.length <= 5) {
+          IAMId = 'IAM' + value.padStart(5, '0');
+        } else {
+          IAMId = 'IAM' + value;
+        }
+        formattedValue = IAMId;
+        indexInput.value = IAMId;
+      }
+      
+      // Apply the index
+      await checkIndexReferralLine();
+    });
+    
+    // Keep only Enter key support for convenience
+    indexInput.addEventListener('keypress', async function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('apply-index-btn').click();
+      }
+    });
      
 
      
@@ -493,7 +607,7 @@
           } catch (e) {
             console.log(`❌ خطا در بررسی وضعیت کاربر:`, e);
             status.style.color = '#d32f2f';
-            status.textContent = 'خطا در بررسی وضعیت کاربر.';
+            showTempMessage('خطا در بررسی وضعیت کاربر.', 'error');
             return;
           }
           
@@ -563,7 +677,7 @@
         } catch (e) {
           const status = document.getElementById('status-message');
           status.style.color = '#d32f2f';
-          status.textContent = 'خطا در بررسی ایندکس: ' + (e.message || e);
+          showTempMessage('خطا در بررسی ایندکس: ' + (e.message || e), 'error');
         }
       }
          // وقتی آدرس تغییر می‌کند، ایندکس را به‌روز کن و بررسی خط رفرال
@@ -665,9 +779,7 @@
           }
           
         } catch (e) {
-          const status = document.getElementById('status-message');
-          status.style.color = '#d32f2f';
-          status.textContent = 'خطا در بررسی آدرس: ' + (e.message || e);
+          showTempMessage('خطا در بررسی آدرس: ' + (e.message || e), 'error');
         }
       }
      
@@ -747,8 +859,7 @@
             // اگر خطا در جستجوی ایندکس داشتیم، نادیده بگیر
           }
         } catch (e) {
-          status.style.color = '#d32f2f';
-          status.textContent = 'خطا در بررسی آدرس: ' + (e.message || e);
+          showTempMessage('خطا در بررسی آدرس: ' + (e.message || e), 'error');
         }
       }
       
@@ -758,8 +869,7 @@
     document.getElementById('register-btn').onclick = async function() {
       const status = document.getElementById('status-message');
       if (!isConnected) {
-        status.style.color = '#d32f2f';
-        status.textContent = 'لطفاً ابتدا کیف پول خود را متصل کنید.';
+        showTempMessage('لطفاً ابتدا کیف پول خود را متصل کنید.', 'error');
         return;
       }
       const referrer = refInput.value.trim();
@@ -838,43 +948,40 @@
           throw new Error(`موجودی IAM شما کافی نیست. مورد نیاز: ${requiredFormatted} IAM، موجودی فعلی: ${currentFormatted} IAM`);
         }
         
-        status.textContent = 'در حال ارسال درخواست ثبت‌نام رزرو به شبکه... لطفاً منتظر تأیید تراکنش باشید.';
-        status.style.color = '#1976d2';
+        showTempMessage('در حال ارسال درخواست ثبت‌نام رزرو به شبکه... لطفاً منتظر تأیید تراکنش باشید.', 'info');
         localStorage.setItem('avatar_' + newUser, selectedAvatar);
         const tx = await contract.registerFree(referrer, newUser);
-        status.textContent = 'در حال انتظار برای تأیید تراکنش توسط شبکه...';
+        showTempMessage('در حال انتظار برای تأیید تراکنش توسط شبکه...', 'info');
         await tx.wait();
-        status.style.color = '#388e3c';
-        status.textContent = 'ثبت‌نام رزرو با موفقیت انجام شد! به خانواده IAM خوش آمدید.';
+        showMessageBox('ثبت‌نام رزرو با موفقیت انجام شد! به خانواده IAM خوش آمدید.', 'success');
         setTimeout(loadRegisterInfo, 1500);
       } catch (e) {
-        status.style.color = '#d32f2f';
         let errorMsg = e && (e.reason || (e.revert && e.revert.args && e.revert.args[0]) || e.message || e);
         if (typeof errorMsg !== 'string') errorMsg = JSON.stringify(errorMsg);
         if (/already registered|Already registered/i.test(errorMsg)) {
-          status.textContent = 'این آدرس قبلاً ثبت‌نام شده است.';
+          showTempMessage('این آدرس قبلاً ثبت‌نام شده است.', 'error');
         } else if (/not active|inactive|فعال نیست/i.test(errorMsg)) {
-          status.textContent = 'معرف انتخابی فعال نیست. لطفاً معرف فعال وارد کنید.';
+          showTempMessage('معرف انتخابی فعال نیست. لطفاً معرف فعال وارد کنید.', 'error');
         } else if (/invalid referrer|referrer/i.test(errorMsg)) {
-          status.textContent = 'آدرس معرف معتبر نیست یا وجود ندارد.';
+          showTempMessage('آدرس معرف معتبر نیست یا وجود ندارد.', 'error');
         } else if (/insufficient|balance|موجودی/i.test(errorMsg)) {
           // اگر خطای کمبود موجودی از smart contract آمده، همان پیام رو نشون بده
           if (errorMsg.includes('IAM شما کافی نیست')) {
-            status.textContent = errorMsg;
+            showMessageBox(errorMsg, 'error');
           } else {
-            status.textContent = 'موجودی IAM شما برای ثبت‌نام رزرو کافی نیست.';
+            showTempMessage('موجودی IAM شما برای ثبت‌نام رزرو کافی نیست.', 'error');
           }
         } else if (/user rejected|reject|لغو شد/i.test(errorMsg)) {
-          status.textContent = 'فرآیند ثبت‌نام رزرو توسط شما لغو شد.';
+          showTempMessage('فرآیند ثبت‌نام رزرو توسط شما لغو شد.', 'error');
         } else if (/execution reverted/i.test(errorMsg)) {
           const match = errorMsg.match(/reverted: "([^"]+)"/);
           if (match && match[1]) {
-            status.textContent = 'خطا: ' + match[1];
+            showTempMessage('خطا: ' + match[1], 'error');
           } else {
-            status.textContent = 'تراکنش توسط قرارداد لغو شد. لطفاً ورودی‌ها را بررسی کنید.';
+            showTempMessage('تراکنش توسط قرارداد لغو شد. لطفاً ورودی‌ها را بررسی کنید.', 'error');
           }
         } else {
-          status.textContent = '❌ خطا در ثبت‌نام رزرو: ' + (errorMsg.length > 120 ? errorMsg.slice(0,120)+'...' : errorMsg);
+          showMessageBox('❌ خطا در ثبت‌نام رزرو: ' + (errorMsg.length > 120 ? errorMsg.slice(0,120)+'...' : errorMsg), 'error');
         }
       }
       this.disabled = false;

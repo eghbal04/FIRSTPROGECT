@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ابزارهای کاربردی | CONTINUOUS PROFIT ACADEMY</title>
+  <title>Utility Tools | PHOENIX (IAM)</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
@@ -234,432 +234,277 @@
 </head>
 <body>
   <div class="utility-container">
-    <!-- دکمه اتصال کیف پول -->
+    <!-- Wallet Connection Button -->
     <div style="text-align: center; margin-bottom: 2rem; padding: 1rem; background: rgba(0,255,136,0.1); border-radius: 12px; border: 1px solid rgba(0,255,136,0.2);">
-      <h3 style="color: #00ff88; margin-bottom: 1rem;">🔗 اتصال کیف پول</h3>
-      <p style="color: #a0aec0; margin-bottom: 1rem;">برای استفاده از ابزارهای تبدیل آدرس و ایندکس، کیف پول خود را متصل کنید</p>
+      <h3 style="color: #00ff88; margin-bottom: 1rem;">🔗 Connect Wallet</h3>
+      <p style="color: #a0aec0; margin-bottom: 1rem;">Connect your wallet to use address and index conversion tools</p>
       <button id="connect-wallet-btn" class="utility-btn" style="max-width: 300px;" onclick="connectWalletForUtility()">
-        🔗 اتصال کیف پول
+        🔗 Connect Wallet
       </button>
       <div id="wallet-status" style="margin-top: 1rem; padding: 0.5rem; border-radius: 8px; display: none;"></div>
     </div>
     
     <div class="utility-header">
-      <h1>🛠️ ابزارهای کاربردی</h1>
-      <p>ابزارهای مفید و کاربردی برای مدیریت بهتر حساب کاربری شما</p>
+      <h1>🛠️ Utility Tools</h1>
+      <p>Useful tools for better management of your account</p>
     </div>
     
     <div class="utility-grid">
-      <!-- محاسبه‌گر سود -->
-      <div class="utility-card">
-        <h3><span class="icon">💰</span>محاسبه‌گر سود</h3>
-        <p>محاسبه سود و زیان معاملات فارکس</p>
-        <ul class="utility-features">
-          <li>محاسبه سود/زیان بر اساس پیپ</li>
-          <li>محاسبه مارجین مورد نیاز</li>
-          <li>محاسبه ریسک به ریوارد</li>
-          <li>نمایش درصد سود/زیان</li>
-        </ul>
-        <div class="calculator-section">
-          <h4>محاسبه سریع سود</h4>
-          <input type="number" class="calculator-input" id="lot-size" placeholder="حجم معامله (لات)" step="0.01" min="0.01">
-          <input type="number" class="calculator-input" id="pip-value" placeholder="ارزش پیپ" step="0.01" min="0.01">
-          <input type="number" class="calculator-input" id="pip-movement" placeholder="تعداد پیپ" step="1">
-          <button class="utility-btn" onclick="calculateProfit()" style="width: 100%;">محاسبه سود/زیان</button>
-          <div class="calculator-result" id="profit-result" style="display: none;"></div>
-        </div>
-      </div>
+      
 
-      <!-- تبدیل آدرس و ایندکس -->
-      <div class="utility-card">
-        <h3><span class="icon">🔄</span>تبدیل آدرس و ایندکس</h3>
-        <p>تبدیل بین ایندکس کاربر و آدرس کیف پول</p>
-        <ul class="utility-features">
-          <li>تبدیل ایندکس به آدرس</li>
-          <li>تبدیل آدرس به ایندکس</li>
-          <li>جستجوی سریع کاربران</li>
-          <li>تأیید اعتبار آدرس‌ها</li>
-        </ul>
-        <div class="calculator-section">
-          <h4>تبدیل سریع</h4>
-          <div style="margin-bottom: 1.5rem;">
-            <h5 style="color: #a786ff; margin-bottom: 0.5rem;">📊 ایندکس به آدرس</h5>
-            <input type="number" class="calculator-input" id="index-input" placeholder="شماره ایندکس کاربر" min="0">
-            <button class="utility-btn" onclick="convertIndexToAddress()" style="width: 100%;">تبدیل</button>
-            <div class="calculator-result" id="index-result" style="display: none;"></div>
-          </div>
-          <div style="margin-bottom: 1.5rem;">
-            <h5 style="color: #a786ff; margin-bottom: 0.5rem;">👤 آدرس به ایندکس</h5>
-            <input type="text" class="calculator-input" id="address-input" placeholder="آدرس کیف پول (0x...)" style="direction: ltr;">
-            <button class="utility-btn" onclick="convertAddressToIndex()" style="width: 100%;">تبدیل</button>
-            <div class="calculator-result" id="address-result" style="display: none;"></div>
-          </div>
-        </div>
-      </div>
+             <!-- Address and Index Conversion -->
+       <div class="utility-card">
+         <h3><span class="icon">🔄</span>Address and Index Conversion</h3>
+         <p>Convert between user index and wallet address</p>
+         <ul class="utility-features">
+           <li>Convert index to address</li>
+           <li>Convert address to index</li>
+           <li>Quick user search</li>
+           <li>Address validation</li>
+         </ul>
+         <div class="calculator-section">
+           <h4>Quick Conversion</h4>
+           <div style="margin-bottom: 1.5rem;">
+             <h5 style="color: #a786ff; margin-bottom: 0.5rem;">📊 Index to Address</h5>
+             <input type="number" class="calculator-input" id="index-input" placeholder="User index number" min="0">
+             <button class="utility-btn" onclick="convertIndexToAddress()" style="width: 100%;">Convert</button>
+             <div class="calculator-result" id="index-result" style="display: none;"></div>
+           </div>
+           <div style="margin-bottom: 1.5rem;">
+             <h5 style="color: #a786ff; margin-bottom: 0.5rem;">👤 Address to Index</h5>
+             <input type="text" class="calculator-input" id="address-input" placeholder="Wallet address (0x...)" style="direction: ltr;">
+             <button class="utility-btn" onclick="convertAddressToIndex()" style="width: 100%;">Convert</button>
+             <div class="calculator-result" id="address-result" style="display: none;"></div>
+           </div>
+         </div>
+       </div>
 
-      <!-- محاسبه‌گر تعداد ولت‌ها -->
-      <div class="utility-card">
-        <h3><span class="icon">📊</span>محاسبه‌گر شبکه</h3>
-        <p>محاسبه تعداد ولت‌های سمت راست و چپ شبکه</p>
-        <ul class="utility-features">
-          <li>محاسبه ولت‌های سمت راست</li>
-          <li>محاسبه ولت‌های سمت چپ</li>
-          <li>نمایش نسبت‌ها</li>
-          <li>تحلیل تعادل شبکه</li>
-        </ul>
-        <div class="calculator-section">
-          <h4>محاسبه سریع</h4>
-          <input type="number" class="calculator-input" id="total-wallets" placeholder="تعداد کل ولت‌های شبکه" min="1">
-          <input type="number" class="calculator-input" id="right-percentage" placeholder="درصد سمت راست" min="0" max="100" step="0.1">
-          <button class="utility-btn" onclick="calculateWalletDistribution()" style="width: 100%;">محاسبه</button>
-          <div class="calculator-result" id="wallet-result" style="display: none;"></div>
-        </div>
-      </div>
 
-      <!-- مبدل ارز -->
-      <div class="utility-card">
-        <h3><span class="icon">💱</span>مبدل ارز</h3>
-        <p>تبدیل ارزهای مختلف به یکدیگر</p>
-        <ul class="utility-features">
-          <li>تبدیل ارزهای اصلی</li>
-          <li>نرخ‌های به‌روز</li>
-          <li>محاسبه سریع</li>
-          <li>نمایش تاریخچه نرخ‌ها</li>
-        </ul>
-        <div class="calculator-section">
-          <h4>تبدیل ارز</h4>
-          <input type="number" class="calculator-input" id="currency-amount" placeholder="مبلغ" min="0" step="0.01">
-          <select class="calculator-input" id="from-currency">
-            <option value="USD">دلار آمریکا (USD)</option>
-            <option value="EUR">یورو (EUR)</option>
-            <option value="GBP">پوند انگلیس (GBP)</option>
-            <option value="JPY">ین ژاپن (JPY)</option>
-            <option value="IRR">ریال ایران (IRR)</option>
-          </select>
-          <select class="calculator-input" id="to-currency">
-            <option value="EUR">یورو (EUR)</option>
-            <option value="USD">دلار آمریکا (USD)</option>
-            <option value="GBP">پوند انگلیس (GBP)</option>
-            <option value="JPY">ین ژاپن (JPY)</option>
-            <option value="IRR">ریال ایران (IRR)</option>
-          </select>
-          <button class="utility-btn" onclick="convertCurrency()" style="width: 100%;">تبدیل</button>
-          <div class="calculator-result" id="currency-result" style="display: none;"></div>
-        </div>
-      </div>
     </div>
 
-    <!-- وضعیت سرویس‌ها -->
-    <div class="utility-card" style="margin-top: 2rem;">
-      <h3><span class="icon">📡</span>وضعیت سرویس‌ها</h3>
-      <p>وضعیت آنلاین بودن سرویس‌های مختلف پلتفرم</p>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
-        <div style="display: flex; align-items: center; padding: 0.5rem; background: rgba(0,255,136,0.1); border-radius: 8px;">
-          <span class="status-indicator status-online"></span>
-          <span style="margin-right: 0.5rem;">سرور اصلی</span>
-        </div>
-        <div style="display: flex; align-items: center; padding: 0.5rem; background: rgba(0,255,136,0.1); border-radius: 8px;">
-          <span class="status-indicator status-online"></span>
-          <span style="margin-right: 0.5rem;">بلاکچین</span>
-        </div>
-        <div style="display: flex; align-items: center; padding: 0.5rem; background: rgba(0,255,136,0.1); border-radius: 8px;">
-          <span class="status-indicator status-online"></span>
-          <span style="margin-right: 0.5rem;">پایگاه داده</span>
-        </div>
-        <div style="display: flex; align-items: center; padding: 0.5rem; background: rgba(0,255,136,0.1); border-radius: 8px;">
-          <span class="status-indicator status-online"></span>
-          <span style="margin-right: 0.5rem;">API</span>
-        </div>
-      </div>
-      <div style="text-align: center; margin-top: 1rem; color: #a0aec0; font-size: 0.9rem;">
-        آخرین به‌روزرسانی: <span id="status-time"></span>
-      </div>
-    </div>
+         <!-- Service Status -->
+     <div class="utility-card" style="margin-top: 2rem;">
+       <h3><span class="icon">📡</span>Service Status</h3>
+       <p>Online status of various platform services</p>
+       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+         <div style="display: flex; align-items: center; padding: 0.5rem; background: rgba(0,255,136,0.1); border-radius: 8px;">
+           <span class="status-indicator status-online"></span>
+           <span style="margin-right: 0.5rem;">Main Server</span>
+         </div>
+         <div style="display: flex; align-items: center; padding: 0.5rem; background: rgba(0,255,136,0.1); border-radius: 8px;">
+           <span class="status-indicator status-online"></span>
+           <span style="margin-right: 0.5rem;">Blockchain</span>
+         </div>
+         <div style="display: flex; align-items: center; padding: 0.5rem; background: rgba(0,255,136,0.1); border-radius: 8px;">
+           <span class="status-indicator status-online"></span>
+           <span style="margin-right: 0.5rem;">Database</span>
+         </div>
+         <div style="display: flex; align-items: center; padding: 0.5rem; background: rgba(0,255,136,0.1); border-radius: 8px;">
+           <span class="status-indicator status-online"></span>
+           <span style="margin-right: 0.5rem;">API</span>
+         </div>
+       </div>
+       <div style="text-align: center; margin-top: 1rem; color: #a0aec0; font-size: 0.9rem;">
+         Last Update: <span id="status-time"></span>
+       </div>
+     </div>
   </div>
 
   <script>
-    // محاسبه سود
-    function calculateProfit() {
-      const lotSize = parseFloat(document.getElementById('lot-size').value);
-      const pipValue = parseFloat(document.getElementById('pip-value').value);
-      const pipMovement = parseFloat(document.getElementById('pip-movement').value);
-      
-      if (!lotSize || !pipValue || !pipMovement) {
-        alert('لطفاً تمام فیلدها را پر کنید');
-        return;
-      }
-      
-      const profit = lotSize * pipValue * pipMovement;
-      const resultDiv = document.getElementById('profit-result');
-      
-      resultDiv.innerHTML = `
-        <strong>نتیجه محاسبه:</strong><br>
-        حجم معامله: ${lotSize} لات<br>
-        ارزش پیپ: ${pipValue}<br>
-        تعداد پیپ: ${pipMovement}<br>
-        <strong style="color: ${profit >= 0 ? '#00ff88' : '#ff4757'}">
-          سود/زیان: ${profit >= 0 ? '+' : ''}${profit.toFixed(2)}
-        </strong>
-      `;
-      resultDiv.style.display = 'block';
-    }
+    
 
-    // تبدیل ایندکس به آدرس
-    async function convertIndexToAddress() {
-      const index = parseInt(document.getElementById('index-input').value);
-      
-      if (!index || index < 0) {
-        alert('لطفاً یک ایندکس معتبر وارد کنید');
-        return;
-      }
-      
-      const resultDiv = document.getElementById('index-result');
-      resultDiv.innerHTML = 'در حال تبدیل...';
-      resultDiv.style.display = 'block';
-      
-      try {
-        // تلاش برای اتصال به قرارداد
-        if (window.connectWallet && typeof window.connectWallet === 'function') {
-          await window.connectWallet();
-          if (window.contractConfig && window.contractConfig.contract) {
-            // استفاده از ABI mapping برای تبدیل ایندکس به آدرس
-            const address = await window.contractConfig.contract.indexToAddress(index);
-            resultDiv.innerHTML = `
-              <strong>نتیجه:</strong><br>
-              ایندکس: ${index}<br>
-              آدرس: ${address}<br>
-              <button onclick="copyToClipboard('${address}')" style="background: #00ff88; color: #1a202c; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; margin-top: 0.5rem;">کپی آدرس</button>
-            `;
-          } else {
-            throw new Error('قرارداد در دسترس نیست');
-          }
-        } else {
-          throw new Error('کیف پول متصل نیست');
-        }
-      } catch (error) {
-        resultDiv.innerHTML = `
-          <strong>خطا:</strong><br>
-          ${error.message}<br>
-          <small style="color: #a0aec0;">برای استفاده از این قابلیت، کیف پول خود را متصل کنید</small>
-        `;
-      }
-    }
+         // Convert index to address
+     async function convertIndexToAddress() {
+       const index = parseInt(document.getElementById('index-input').value);
+       
+       if (!index || index < 0) {
+         alert('Please enter a valid index');
+         return;
+       }
+       
+       const resultDiv = document.getElementById('index-result');
+       resultDiv.innerHTML = 'Converting...';
+       resultDiv.style.display = 'block';
+       
+       try {
+         // Attempt to connect to contract
+         if (window.connectWallet && typeof window.connectWallet === 'function') {
+           await window.connectWallet();
+           if (window.contractConfig && window.contractConfig.contract) {
+             // Use ABI mapping to convert index to address
+             const address = await window.contractConfig.contract.indexToAddress(index);
+             resultDiv.innerHTML = `
+               <strong>Result:</strong><br>
+               Index: ${index}<br>
+               Address: ${address}<br>
+               <button onclick="copyToClipboard('${address}')" style="background: #00ff88; color: #1a202c; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; margin-top: 0.5rem;">Copy Address</button>
+             `;
+           } else {
+             throw new Error('Contract not available');
+           }
+         } else {
+           throw new Error('Wallet not connected');
+         }
+       } catch (error) {
+         resultDiv.innerHTML = `
+           <strong>Error:</strong><br>
+           ${error.message}<br>
+           <small style="color: #a0aec0;">To use this feature, please connect your wallet</small>
+         `;
+       }
+     }
 
-    // تبدیل آدرس به ایندکس
-    async function convertAddressToIndex() {
-      const address = document.getElementById('address-input').value.trim();
-      
-      if (!address || !address.startsWith('0x')) {
-        alert('لطفاً یک آدرس معتبر وارد کنید');
-        return;
-      }
-      
-      const resultDiv = document.getElementById('address-result');
-      resultDiv.innerHTML = 'در حال تبدیل...';
-      resultDiv.style.display = 'block';
-      
-      try {
-        if (window.connectWallet && typeof window.connectWallet === 'function') {
-          await window.connectWallet();
-          if (window.contractConfig && window.contractConfig.contract) {
-            // استفاده از ABI mapping برای تبدیل آدرس به ایندکس
-            // ابتدا اطلاعات کاربر را از mapping users دریافت می‌کنیم
-            const userData = await window.contractConfig.contract.users(address);
-            const index = userData.index;
-            
-            if (index && index > 0) {
-              resultDiv.innerHTML = `
-                <strong>نتیجه:</strong><br>
-                آدرس: ${address}<br>
-                ایندکس: ${index.toString()}<br>
-                <button onclick="copyToClipboard('${index.toString()}')" style="background: #00ff88; color: #1a202c; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; margin-top: 0.5rem;">کپی ایندکس</button>
-              `;
-            } else {
-              resultDiv.innerHTML = `
-                <strong>نتیجه:</strong><br>
-                آدرس: ${address}<br>
-                <span style="color: #ffa502;">این آدرس در سیستم ثبت نشده است</span>
-              `;
-            }
-          } else {
-            throw new Error('قرارداد در دسترس نیست');
-          }
-        } else {
-          throw new Error('کیف پول متصل نیست');
-        }
-      } catch (error) {
-        resultDiv.innerHTML = `
-          <strong>خطا:</strong><br>
-          ${error.message}<br>
-          <small style="color: #a0aec0;">برای استفاده از این قابلیت، کیف پول خود را متصل کنید</small>
-        `;
-      }
-    }
+     // Convert address to index
+     async function convertAddressToIndex() {
+       const address = document.getElementById('address-input').value.trim();
+       
+       if (!address || !address.startsWith('0x')) {
+         alert('Please enter a valid address');
+         return;
+       }
+       
+       const resultDiv = document.getElementById('address-result');
+       resultDiv.innerHTML = 'Converting...';
+       resultDiv.style.display = 'block';
+       
+       try {
+         if (window.connectWallet && typeof window.connectWallet === 'function') {
+           await window.connectWallet();
+           if (window.contractConfig && window.contractConfig.contract) {
+             // Use ABI mapping to convert address to index
+             // First get user data from users mapping
+             const userData = await window.contractConfig.contract.users(address);
+             const index = userData.index;
+             
+             if (index && index > 0) {
+               resultDiv.innerHTML = `
+                 <strong>Result:</strong><br>
+                 Address: ${address}<br>
+                 Index: ${index.toString()}<br>
+                 <button onclick="copyToClipboard('${index.toString()}')" style="background: #00ff88; color: #1a202c; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; margin-top: 0.5rem;">Copy Index</button>
+               `;
+             } else {
+               resultDiv.innerHTML = `
+                 <strong>Result:</strong><br>
+                 Address: ${address}<br>
+                 <span style="color: #ffa502;">This address is not registered in the system</span>
+               `;
+             }
+           } else {
+             throw new Error('Contract not available');
+           }
+         } else {
+           throw new Error('Wallet not connected');
+         }
+       } catch (error) {
+         resultDiv.innerHTML = `
+           <strong>Error:</strong><br>
+           ${error.message}<br>
+           <small style="color: #a0aec0;">To use this feature, please connect your wallet</small>
+         `;
+       }
+     }
 
-    // محاسبه توزیع ولت‌ها
-    function calculateWalletDistribution() {
-      const totalWallets = parseInt(document.getElementById('total-wallets').value);
-      const rightPercentage = parseFloat(document.getElementById('right-percentage').value);
-      
-      if (!totalWallets || !rightPercentage || rightPercentage < 0 || rightPercentage > 100) {
-        alert('لطفاً مقادیر معتبر وارد کنید');
-        return;
-      }
-      
-      const rightWallets = Math.round((totalWallets * rightPercentage) / 100);
-      const leftWallets = totalWallets - rightWallets;
-      const leftPercentage = 100 - rightPercentage;
-      
-      const resultDiv = document.getElementById('wallet-result');
-      resultDiv.innerHTML = `
-        <strong>نتایج محاسبه:</strong><br>
-        تعداد کل ولت‌ها: ${totalWallets.toLocaleString()}<br>
-        ولت‌های سمت راست: ${rightWallets.toLocaleString()} (${rightPercentage}%)<br>
-        ولت‌های سمت چپ: ${leftWallets.toLocaleString()} (${leftPercentage}%)<br>
-        <div style="margin-top: 1rem; padding: 0.5rem; background: ${Math.abs(rightPercentage - 50) < 10 ? 'rgba(0,255,136,0.1)' : 'rgba(255,71,87,0.1)'}; border-radius: 5px;">
-          <strong style="color: ${Math.abs(rightPercentage - 50) < 10 ? '#00ff88' : '#ff4757'}">
-            وضعیت تعادل: ${Math.abs(rightPercentage - 50) < 10 ? 'متعادل' : 'نامتعادل'}
-          </strong>
-        </div>
-      `;
-      resultDiv.style.display = 'block';
-    }
+    
 
-    // تبدیل ارز
-    function convertCurrency() {
-      const amount = parseFloat(document.getElementById('currency-amount').value);
-      const fromCurrency = document.getElementById('from-currency').value;
-      const toCurrency = document.getElementById('to-currency').value;
-      
-      if (!amount || amount <= 0) {
-        alert('لطفاً مبلغ معتبر وارد کنید');
-        return;
-      }
-      
-      if (fromCurrency === toCurrency) {
-        alert('ارز مبدا و مقصد نمی‌تواند یکسان باشد');
-        return;
-      }
-      
-      // نرخ‌های تقریبی (در حالت واقعی باید از API دریافت شود)
-      const rates = {
-        'USD': { 'EUR': 0.85, 'GBP': 0.73, 'JPY': 110, 'IRR': 420000 },
-        'EUR': { 'USD': 1.18, 'GBP': 0.86, 'JPY': 129, 'IRR': 495000 },
-        'GBP': { 'USD': 1.37, 'EUR': 1.16, 'JPY': 150, 'IRR': 575000 },
-        'JPY': { 'USD': 0.009, 'EUR': 0.0077, 'GBP': 0.0067, 'IRR': 3820 },
-        'IRR': { 'USD': 0.0000024, 'EUR': 0.000002, 'GBP': 0.0000017, 'JPY': 0.00026 }
-      };
-      
-      const rate = rates[fromCurrency][toCurrency];
-      const convertedAmount = amount * rate;
-      
-      const resultDiv = document.getElementById('currency-result');
-      resultDiv.innerHTML = `
-        <strong>نتیجه تبدیل:</strong><br>
-        ${amount.toLocaleString()} ${fromCurrency} = ${convertedAmount.toLocaleString()} ${toCurrency}<br>
-        <small style="color: #a0aec0;">نرخ تقریبی: 1 ${fromCurrency} = ${rate.toLocaleString()} ${toCurrency}</small>
-      `;
-      resultDiv.style.display = 'block';
-    }
+         // Copy to clipboard
+     function copyToClipboard(text) {
+       navigator.clipboard.writeText(text).then(() => {
+         alert('Copied!');
+       }).catch(() => {
+         // Fallback for older browsers
+         const textArea = document.createElement('textarea');
+         textArea.value = text;
+         document.body.appendChild(textArea);
+         textArea.select();
+         document.execCommand('copy');
+         document.body.removeChild(textArea);
+         alert('Copied!');
+       });
+     }
 
-    // کپی کردن به کلیپ‌بورد
-    function copyToClipboard(text) {
-      navigator.clipboard.writeText(text).then(() => {
-        alert('کپی شد!');
-      }).catch(() => {
-        // Fallback برای مرورگرهای قدیمی
-        const textArea = document.createElement('textarea');
-        textArea.value = text;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        alert('کپی شد!');
-      });
-    }
+     // Update status time
+     function updateStatusTime() {
+       const now = new Date();
+       const timeString = now.toLocaleString('en-US');
+       document.getElementById('status-time').textContent = timeString;
+     }
 
-    // به‌روزرسانی زمان وضعیت
-    function updateStatusTime() {
-      const now = new Date();
-      const timeString = now.toLocaleString('fa-IR');
-      document.getElementById('status-time').textContent = timeString;
-    }
+     // Wallet connection function for utility page
+     async function connectWalletForUtility() {
+       const connectBtn = document.getElementById('connect-wallet-btn');
+       const statusDiv = document.getElementById('wallet-status');
+       
+       try {
+         connectBtn.textContent = 'Connecting...';
+         connectBtn.disabled = true;
+         
+         if (window.connectWallet && typeof window.connectWallet === 'function') {
+           const connection = await window.connectWallet();
+           
+           if (connection && connection.address) {
+             statusDiv.innerHTML = `
+               <div style="color: #00ff88; background: rgba(0,255,136,0.1); padding: 0.8rem; border-radius: 6px;">
+                 ✅ Wallet connected<br>
+                 <small>Address: ${connection.address.substring(0, 6)}...${connection.address.substring(38)}</small>
+               </div>
+             `;
+             connectBtn.textContent = '✅ Connected';
+             connectBtn.style.background = 'linear-gradient(45deg, #00ff88, #00cc6a)';
+           } else {
+             throw new Error('Connection failed');
+           }
+         } else {
+           throw new Error('Wallet connection function not available');
+         }
+       } catch (error) {
+         statusDiv.innerHTML = `
+           <div style="color: #ff4757; background: rgba(255,71,87,0.1); padding: 0.8rem; border-radius: 6px;">
+             ❌ Connection error: ${error.message}
+           </div>
+         `;
+         connectBtn.textContent = '🔗 Connect Wallet';
+         connectBtn.disabled = false;
+       }
+     }
 
-    // تابع اتصال کیف پول برای صفحه ابزارها
-    async function connectWalletForUtility() {
-      const connectBtn = document.getElementById('connect-wallet-btn');
-      const statusDiv = document.getElementById('wallet-status');
-      
-      try {
-        connectBtn.textContent = 'در حال اتصال...';
-        connectBtn.disabled = true;
-        
-        if (window.connectWallet && typeof window.connectWallet === 'function') {
-          const connection = await window.connectWallet();
-          
-          if (connection && connection.address) {
-            statusDiv.innerHTML = `
-              <div style="color: #00ff88; background: rgba(0,255,136,0.1); padding: 0.8rem; border-radius: 6px;">
-                ✅ کیف پول متصل شد<br>
-                <small>آدرس: ${connection.address.substring(0, 6)}...${connection.address.substring(38)}</small>
-              </div>
-            `;
-            connectBtn.textContent = '✅ متصل شد';
-            connectBtn.style.background = 'linear-gradient(45deg, #00ff88, #00cc6a)';
-          } else {
-            throw new Error('اتصال ناموفق بود');
-          }
-        } else {
-          throw new Error('تابع اتصال کیف پول در دسترس نیست');
-        }
-      } catch (error) {
-        statusDiv.innerHTML = `
-          <div style="color: #ff4757; background: rgba(255,71,87,0.1); padding: 0.8rem; border-radius: 6px;">
-            ❌ خطا در اتصال: ${error.message}
-          </div>
-        `;
-        connectBtn.textContent = '🔗 اتصال کیف پول';
-        connectBtn.disabled = false;
-      }
-    }
+     // Check wallet connection status on page load
+     function checkWalletConnection() {
+       const statusDiv = document.getElementById('wallet-status');
+       const connectBtn = document.getElementById('connect-wallet-btn');
+       
+       if (window.contractConfig && window.contractConfig.address) {
+         statusDiv.innerHTML = `
+           <div style="color: #00ff88; background: rgba(0,255,136,0.1); padding: 0.8rem; border-radius: 6px;">
+             ✅ Wallet already connected<br>
+             <small>Address: ${window.contractConfig.address.substring(0, 6)}...${window.contractConfig.address.substring(38)}</small>
+           </div>
+         `;
+         connectBtn.textContent = '✅ Connected';
+         connectBtn.style.background = 'linear-gradient(45deg, #00ff88, #00cc6a)';
+         connectBtn.disabled = true;
+       }
+     }
 
-    // بررسی وضعیت اتصال کیف پول در بارگذاری صفحه
-    function checkWalletConnection() {
-      const statusDiv = document.getElementById('wallet-status');
-      const connectBtn = document.getElementById('connect-wallet-btn');
-      
-      if (window.contractConfig && window.contractConfig.address) {
-        statusDiv.innerHTML = `
-          <div style="color: #00ff88; background: rgba(0,255,136,0.1); padding: 0.8rem; border-radius: 6px;">
-            ✅ کیف پول قبلاً متصل است<br>
-            <small>آدرس: ${window.contractConfig.address.substring(0, 6)}...${window.contractConfig.address.substring(38)}</small>
-          </div>
-        `;
-        connectBtn.textContent = '✅ متصل شد';
-        connectBtn.style.background = 'linear-gradient(45deg, #00ff88, #00cc6a)';
-        connectBtn.disabled = true;
-      }
-    }
-
-    // انیمیشن کارت‌ها
-    document.addEventListener('DOMContentLoaded', function() {
-      const cards = document.querySelectorAll('.utility-card');
-      cards.forEach((card, index) => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
-        setTimeout(() => {
-          card.style.transition = 'all 0.5s ease';
-          card.style.opacity = '1';
-          card.style.transform = 'translateY(0)';
-        }, index * 100);
-      });
-      
-      updateStatusTime();
-      setInterval(updateStatusTime, 60000); // به‌روزرسانی هر دقیقه
-      
-      // بررسی وضعیت اتصال کیف پول
-      setTimeout(checkWalletConnection, 1000);
-    });
+     // Card animations
+     document.addEventListener('DOMContentLoaded', function() {
+       const cards = document.querySelectorAll('.utility-card');
+       cards.forEach((card, index) => {
+         card.style.opacity = '0';
+         card.style.transform = 'translateY(20px)';
+         setTimeout(() => {
+           card.style.transition = 'all 0.5s ease';
+           card.style.opacity = '1';
+           card.style.transform = 'translateY(0)';
+         }, index * 100);
+       });
+       
+       updateStatusTime();
+       setInterval(updateStatusTime, 60000); // Update every minute
+       
+       // Check wallet connection status
+       setTimeout(checkWalletConnection, 1000);
+     });
   </script>
   
   <!-- بارگذاری ناوبار -->

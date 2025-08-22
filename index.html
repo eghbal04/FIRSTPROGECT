@@ -47,7 +47,7 @@
       console.log('🚀 DOM Content Loaded - Initializing AI Assistant...');
 
       setTimeout(() => {
-        // فقط دستیار پیشرفته را مقداردهی کن
+        // Only initialize the advanced assistant
         if (typeof FloatingAIAssistant !== 'undefined') {
           console.log('✅ FloatingAIAssistant class found');
 
@@ -103,15 +103,15 @@
       link.href = info.link || 'learning.html';
       bubble.style.display = 'flex';
       mini.style.display = 'none';
-      // شمارش معکوس
+      // Countdown
       function updateTimer() {
         const now = Date.now();
         if (now < info.startTime) {
-          timer.textContent = 'شروع تا جلسه: ' + formatCountdown(info.startTime - now);
+          timer.textContent = 'Session starts in: ' + formatCountdown(info.startTime - now);
         } else if (now < info.endTime) {
-          timer.textContent = 'زمان باقی‌مانده: ' + formatCountdown(info.endTime - now);
+          timer.textContent = 'Time remaining: ' + formatCountdown(info.endTime - now);
         } else {
-          timer.textContent = 'جلسه به پایان رسید';
+          timer.textContent = 'Session ended';
         }
       }
       updateTimer();
@@ -129,7 +129,7 @@
     function expandMiniBubble() {
       showSessionBubble();
     }
-    // رویداد بستن
+    // Close event
     document.addEventListener('DOMContentLoaded', function() {
       if (window.sessionInfo && window.sessionInfo.active) {
         showSessionBubble();
@@ -146,10 +146,10 @@
     <div id="index-user-status-bar" style="display:none;max-width:1200px;margin:0.75rem auto 0.5rem auto;padding:0.75rem 1rem;border-radius:16px;border:1px solid rgba(0,255,136,0.25);background:linear-gradient(135deg, rgba(0,255,136,0.08), rgba(167,134,255,0.08));box-shadow:0 6px 18px rgba(0,0,0,0.25), 0 1px 0 rgba(255,255,255,0.06) inset;backdrop-filter:blur(10px);">
       <div style="display:flex;align-items:center;justify-content:center;gap:0.75rem;flex-wrap:wrap;">
         <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
-          <span id="index-status-active" style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.35rem 0.7rem;border-radius:12px;font-weight:700;color:#0f2d1f;background:linear-gradient(135deg,#00ff88,#00d178);border:1px solid rgba(0,255,136,0.4);box-shadow:0 2px 8px rgba(0,255,136,0.25);">✅ فعال</span>
+          <span id="index-status-active" style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.35rem 0.7rem;border-radius:12px;font-weight:700;color:#0f2d1f;background:linear-gradient(135deg,#00ff88,#00d178);border:1px solid rgba(0,255,136,0.4);box-shadow:0 2px 8px rgba(0,255,136,0.25);">✅ Active</span>
           <span id="index-status-id" style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.35rem 0.7rem;border-radius:12px;color:#ffffff;background:linear-gradient(135deg, rgba(0,255,136,0.12), rgba(167,134,255,0.12));border:1px solid rgba(255,255,255,0.18);font-weight:700;">🆔 IAM--</span>
           <span id="index-status-address" title="" style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.35rem 0.7rem;border-radius:12px;color:#ffffff;background:linear-gradient(135deg, rgba(167,134,255,0.12), rgba(0,255,136,0.12));border:1px solid rgba(255,255,255,0.18);font-family:'Fira Mono', monospace;">📍 0x...</span>
-          <button onclick="scrollToRanking()" style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.35rem 0.7rem;border-radius:12px;color:#ffffff;background:linear-gradient(135deg, rgba(167,134,255,0.8), rgba(0,255,136,0.8));border:1px solid rgba(255,255,255,0.18);font-weight:700;cursor:pointer;border:none;font-size:0.9rem;">🏆 رنکینگ</button>
+          <button onclick="scrollToRanking()" style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.35rem 0.7rem;border-radius:12px;color:#ffffff;background:linear-gradient(135deg, rgba(167,134,255,0.8), rgba(0,255,136,0.8));border:1px solid rgba(255,255,255,0.18);font-weight:700;cursor:pointer;border:none;font-size:0.9rem;">🏆 Ranking</button>
         </div>
       </div>
     </div>
@@ -193,13 +193,13 @@
           if (addrEl) { addrEl.textContent = '📍 ' + shortenAddress(address); addrEl.title = address; }
           if (statusEl) {
             if (active) {
-              statusEl.textContent = '✅ فعال';
+              statusEl.textContent = '✅ Active';
               statusEl.style.background = 'linear-gradient(135deg,#00ff88,#00d178)';
               statusEl.style.color = '#0f2d1f';
               statusEl.style.border = '1px solid rgba(0,255,136,0.4)';
               statusEl.style.boxShadow = '0 2px 8px rgba(0,255,136,0.25)';
             } else {
-              statusEl.textContent = '⛔ غیرفعال';
+              statusEl.textContent = '⛔ Inactive';
               statusEl.style.background = 'linear-gradient(135deg,#ff6b6b,#c82333)';
               statusEl.style.color = '#ffffff';
               statusEl.style.border = '1px solid rgba(255,68,68,0.4)';
@@ -207,7 +207,7 @@
             }
           }
           const copyBtn = document.getElementById('index-status-copy');
-          if(copyBtn){ copyBtn.onclick = function(){ if(!address) return; navigator.clipboard.writeText(address).then(()=>{ const t=copyBtn.textContent; copyBtn.textContent='✅ کپی شد'; setTimeout(()=>copyBtn.textContent=t,1500); }); } }
+          if(copyBtn){ copyBtn.onclick = function(){ if(!address) return; navigator.clipboard.writeText(address).then(()=>{ const t=copyBtn.textContent; copyBtn.textContent='✅ Copied'; setTimeout(()=>copyBtn.textContent=t,1500); }); } }
           bar.style.display='block';
         }
         function schedule(ms, fn){ setTimeout(fn, ms); }
@@ -357,73 +357,73 @@
         <div id="dashboard-user-info" style="background:rgba(0,255,136,0.1);border-radius:12px;padding:1rem;margin-bottom:1rem;border:1px solid rgba(0,255,136,0.2);display:none;">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
             <div style="text-align:center;flex:1;min-width:120px;">
-                                  <div style="color:#00ff88;font-size:0.8rem;font-weight:bold;margin-bottom:0.3rem;">ایندکس</div>
+                                  <div style="color:#00ff88;font-size:0.8rem;font-weight:bold;margin-bottom:0.3rem;">Index</div>
               <div style="color:#fff;font-size:1rem;font-family:monospace;font-weight:bold;" id="dashboard-user-index">-</div>
             </div>
             <div style="text-align:center;flex:1;min-width:120px;">
-              <div style="color:#00ff88;font-size:0.8rem;font-weight:bold;margin-bottom:0.3rem;">آدرس کیف پول</div>
+              <div style="color:#00ff88;font-size:0.8rem;font-weight:bold;margin-bottom:0.3rem;">Wallet Address</div>
               <div style="color:#fff;font-size:0.9rem;font-family:monospace;" id="dashboard-user-address">-</div>
             </div>
             <div style="text-align:center;flex:1;min-width:120px;">
-              <div style="color:#00ff88;font-size:0.8rem;font-weight:bold;margin-bottom:0.3rem;">وضعیت</div>
+              <div style="color:#00ff88;font-size:0.8rem;font-weight:bold;margin-bottom:0.3rem;">Status</div>
               <div style="color:#00ff88;font-size:0.9rem;font-weight:bold;" id="dashboard-user-status">-</div>
             </div>
           </div>
         </div>
         
         <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;">
-          <!-- 1. کل عرضه - اولویت اول -->
+          <!-- 1. Total Supply - First Priority -->
           <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(0,255,136,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
             <div style="color:#00ff88;font-size:1.2rem;margin-bottom:0.3rem;">💰</div>
-            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">کل عرضه</div>
+                          <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">Total Supply</div>
             <div style="color:#00ff88;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="circulating-supply" class="dashboard-value smooth-value-transition numeric-value">-</div>
             <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">IAM Tokens</div>
             <div style="color:#f7931e;font-size:0.7rem;font-family:monospace;font-weight:bold;margin-top:0.2rem;" id="circulating-supply-dai">-</div>
             <div style="color:#888;font-size:0.6rem;margin-top:0.1rem;">≈ DAI</div>
           </div>
           
-          <!-- 2. موجودی IAM قرارداد - اولویت دوم -->
+          <!-- 2. IAM Binary Pool - Second Priority -->
           <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(255,193,7,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
             <div style="color:#ffc107;font-size:1.2rem;margin-bottom:0.3rem;">🏦</div>
-            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">موجودی قرارداد</div>
+            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">Binary Pool</div>
             <div style="color:#ffc107;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="contract-token-balance" class="dashboard-value smooth-value-transition numeric-value">-</div>
-            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">IAM in Contract</div>
+            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">IAM in Binary Pool</div>
             <div style="color:#f7931e;font-size:0.7rem;font-family:monospace;font-weight:bold;margin-top:0.2rem;" id="contract-token-balance-dai">-</div>
             <div style="color:#888;font-size:0.6rem;margin-top:0.1rem;">≈ DAI</div>
           </div>
           
-          <!-- 3. موجودی قرارداد DAI - اولویت سوم -->
+          <!-- 3. DAI Baking Pool - Third Priority -->
           <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(0,123,255,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
             <div style="color:#007bff;font-size:1.2rem;margin-bottom:0.3rem;">💵</div>
-            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">موجودی قرارداد</div>
+            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">Baking Pool</div>
             <div style="color:#007bff;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="dashboard-dai-balance" class="dashboard-value smooth-value-transition numeric-value">-</div>
-            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">Contract Balance</div>
+            <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">DAI in Baking Pool</div>
           </div>
           
-          <!-- 4. قیمت توکن - اولویت چهارم -->
+          <!-- 4. Token Price - Fourth Priority -->
           <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(0,255,136,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
             <div style="color:#00ff88;font-size:1.2rem;margin-bottom:0.3rem;">💲</div>
-            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">قیمت توکن IAM</div>
+            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">IAM Token Price</div>
             <div style="color:#00ff88;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="dashboard-token-price" class="dashboard-value smooth-value-transition numeric-value">-</div>
             <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">DAI per IAM</div>
           </div>
           
-          <!-- 5. قیمت ثبت‌نام - اولویت پنجم -->
+          <!-- 5. Registration Price - Fifth Priority -->
           <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(138,43,226,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
             <div style="color:#8a2be2;font-size:1.2rem;margin-bottom:0.3rem;">🎫</div>
-            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">قیمت ثبت‌نام</div>
+            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">Registration Price</div>
             <div style="color:#8a2be2;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="dashboard-registration-price" class="dashboard-value smooth-value-transition numeric-value">-</div>
             <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">IAM per Registration</div>
             <div style="color:#f7931e;font-size:0.7rem;font-family:monospace;font-weight:bold;margin-top:0.2rem;" id="dashboard-registration-price-dai">-</div>
             <div style="color:#888;font-size:0.6rem;margin-top:0.1rem;">≈ DAI</div>
           </div>
           
-          <!-- بقیه کارت‌ها -->
+          <!-- Other Cards -->
           
           <!-- Total Points Card -->
           <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(167,134,255,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
             <div style="color:#a786ff;font-size:1.2rem;margin-bottom:0.3rem;">🎯</div>
-            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">کل پوینت‌ها</div>
+            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">Total Points</div>
             <div style="color:#a786ff;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="total-points" class="dashboard-value smooth-value-transition numeric-value">-</div>
             <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">Binary Points</div>
           </div>
@@ -431,7 +431,7 @@
           <!-- Point Value Card -->
           <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(0,255,136,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
             <div style="color:#00ff88;font-size:1.2rem;margin-bottom:0.3rem;">💎</div>
-            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">ارزش هر پوینت</div>
+            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">Point Value</div>
             <div style="color:#00ff88;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="dashboard-point-value" class="dashboard-value smooth-value-transition numeric-value">-</div>
             <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">IAM per Point</div>
             <div style="color:#f7931e;font-size:0.7rem;font-family:monospace;font-weight:bold;margin-top:0.2rem;" id="dashboard-point-value-dai">-</div>
@@ -441,7 +441,7 @@
           <!-- Help Fund Card -->
           <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(220,53,69,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
             <div style="color:#dc3545;font-size:1.2rem;margin-bottom:0.3rem;">💝</div>
-            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">صندوق کمک</div>
+            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">Help Fund</div>
             <div style="color:#dc3545;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="dashboard-cashback-value">-</div>
             <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">Cashback Pool</div>
             <div style="color:#f7931e;font-size:0.7rem;font-family:monospace;font-weight:bold;margin-top:0.2rem;" id="dashboard-cashback-value-dai">-</div>
@@ -451,7 +451,7 @@
           <!-- Wallet Count Card -->
           <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(255,165,0,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
             <div style="color:#ffa500;font-size:1.2rem;margin-bottom:0.3rem;">👛</div>
-            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">تعداد ولت‌ها</div>
+            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">Wallet Count</div>
             <div style="color:#ffa500;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="dashboard-wallets-count" class="dashboard-value smooth-value-transition numeric-value">-</div>
             <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">Connected Wallets</div>
           </div>
@@ -459,7 +459,7 @@
           <!-- Network Status Card -->
           <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(40,167,69,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
             <div style="color:#28a745;font-size:1.2rem;margin-bottom:0.3rem;">🌐</div>
-            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">وضعیت شبکه</div>
+            <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">Network Status</div>
             <div style="color:#28a745;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="network-status">Polygon</div>
             <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">Active</div>
           </div>
@@ -468,22 +468,22 @@
         <!-- Last Update Info -->
         <div style="text-align:center;margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.1);">
           <div style="color:#888;font-size:0.8rem;font-family:monospace;margin-bottom:0.5rem;">
-            آخرین بروزرسانی: <span id="blockchain-last-update">-</span>
+            Last Update: <span id="blockchain-last-update">-</span>
           </div>
-          <!-- دکمه بروزرسانی حذف شد -->
+          <!-- Update button removed -->
         </div>
         
 
       </div>
 
-      <!-- رنکینگ کاربران برتر -->
+      <!-- Top Users Ranking -->
       <div id="top-users-ranking" class="modern-card" style="margin-top: 2rem; padding: 1rem;">
         <!-- Ranking content is loaded by JavaScript -->
         <div style="text-align: center; padding: 1rem;">
-          <div class="modern-heading-2" style="margin-bottom: 1rem;">🏆 رنکینگ کاربران برتر</div>
-          <div style="color: var(--modern-text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">برای مشاهده 10 کاربر برتر بر اساس لایک‌ها، دکمه زیر را کلیک کنید</div>
+          <div class="modern-heading-2" style="margin-bottom: 1rem;">🏆 Top Users Ranking</div>
+          <div style="color: var(--modern-text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">Click the button below to view the top 10 users based on likes</div>
           <div class="modern-alert modern-alert-info" style="margin-bottom: 1rem;">
-            💡 <strong>نکته:</strong> می‌توانید برای هر کاربر لایک یا دیسلایک کنید و همچنین با وارد کردن ایندکس، برای هر کاربری رای دهید
+            💡 <strong>Note:</strong> You can like or dislike each user and also vote for any user by entering their index
           </div>
           <button onclick="loadRanking()" class="modern-btn modern-btn-primary" style="font-size: 1rem;">
             🔄 Loading ranking
@@ -496,10 +496,10 @@
       <script>
       document.addEventListener('DOMContentLoaded', function() {
         
-        // پاپ‌اپ قوانین سواپ حذف شد
+        // Swap rules popup removed
         
         // (swap pre-modal removed)
-        // نمایش پاپ آپ خوشامدگویی
+        // Show welcome popup
         function showWelcomeModal() {
           console.log('🔄 showWelcomeModal called');
           const modal = document.getElementById('welcome-modal');
@@ -509,7 +509,7 @@
           
           // Always show the welcome modal on each visit
           
-          // نمایش مودال بعد از 1.5 ثانیه
+          // Show modal after 1.5 seconds
           console.log('⏱️ Setting timeout for modal display');
           setTimeout(() => {
             console.log('⚡ Timeout reached, showing modal');
@@ -529,9 +529,9 @@
             // Do not persist seen flag; always show on next visit
           }
           
-          // تابع بستن پاپ اپ
+          // Function to close popup
           window.closeWelcomeModal = function() {
-            // متوقف کردن تایمر
+                          // Stop timer
             if (readingTimerInterval) {
               clearInterval(readingTimerInterval);
             }
@@ -543,23 +543,23 @@
           };
           
           if (closeBtn) closeBtn.onclick = function() {
-            // بررسی اینکه آیا چک‌باکس‌ها وجود دارند و آیا همه تیک خورده‌اند
+            // Check if checkboxes exist and if all are checked
             const acceptButton = document.getElementById('acceptButton');
             if (acceptButton && acceptButton.disabled) {
-              // اگر دکمه پذیرش غیرفعال است، اجازه بستن نده
+              // If accept button is disabled, don't allow closing
               return;
             }
             closeModal();
           };
           if (understandBtn) understandBtn.onclick = closeModal;
           
-          // بستن با کلیک روی بک‌گراند (فقط اگر شرایط پذیرفته نشده باشد)
+          // Close by clicking on background (only if conditions are not accepted)
           modal.onclick = function(e) {
             if (e.target === modal) {
-              // بررسی اینکه آیا چک‌باکس‌ها وجود دارند و آیا همه تیک خورده‌اند
+              // Check if checkboxes exist and if all are checked
               const acceptButton = document.getElementById('acceptButton');
               if (acceptButton && acceptButton.disabled) {
-                // اگر دکمه پذیرش غیرفعال است، اجازه بستن نده
+                // If accept button is disabled, don't allow closing
                 return;
               }
               closeModal();
@@ -567,19 +567,19 @@
           };
         }
 
-        // بررسی تعداد نمایش پاپ آپ در حافظه کش
+        // Check the number of popup displays in cache
         function shouldShowWelcomeModal() {
           const showCount = localStorage.getItem('welcomeModalShowCount') || 0;
           return showCount < 3;
         }
 
-        // افزایش شمارنده نمایش پاپ آپ
+        // Increment popup display counter
         function incrementShowCount() {
           const currentCount = parseInt(localStorage.getItem('welcomeModalShowCount') || 0);
           localStorage.setItem('welcomeModalShowCount', currentCount + 1);
         }
 
-        // تایمر مطالعه
+        // Reading timer
         let readingTimerInterval;
         let readingSeconds = 0;
         
@@ -594,7 +594,7 @@
               timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
             }
             
-            // بعد از 30 ثانیه مطالعه، چک‌باکس‌ها را فعال کن
+            // After 30 seconds of reading, enable checkboxes
             if (readingSeconds >= 30) {
               enableCheckboxes();
               clearInterval(readingTimerInterval);
@@ -602,7 +602,7 @@
           }, 1000);
         }
         
-        // فعال‌سازی چک‌باکس‌ها بعد از مطالعه
+        // Enable checkboxes after reading
         function enableCheckboxes() {
           const condition1 = document.getElementById('condition1');
           const condition2 = document.getElementById('condition2');
@@ -610,37 +610,37 @@
           const acceptButton = document.getElementById('acceptButton');
           
           if (condition1 && condition2 && condition3 && acceptButton) {
-            // فعال‌سازی چک‌باکس‌ها
+            // Enable checkboxes
             condition1.disabled = false;
             condition2.disabled = false;
             condition3.disabled = false;
             
-            // تغییر متن چک‌باکس‌ها
+            // Change checkbox text
             const spans = document.querySelectorAll('#welcome-typewriter-content label span');
             if (spans.length >= 3) {
-              spans[0].textContent = '✅ من شرایط پذیرش را مطالعه کرده و می‌پذیرم';
+              spans[0].textContent = '✅ I have read and accept the acceptance conditions';
               spans[0].style.opacity = '1';
-              spans[1].textContent = '🎓 من خواهان یادگیری این بازار هستم';
+              spans[1].textContent = '🎓 I want to learn this market';
               spans[1].style.opacity = '1';
-              spans[2].textContent = '📚 من از قواعد و قوانین ارزهای دیجیتال آشنایی دارم';
+              spans[2].textContent = '📚 I am familiar with cryptocurrency rules and regulations';
               spans[2].style.opacity = '1';
             }
             
-            // تغییر متن دکمه
+            // Change button text
             acceptButton.textContent = '🔓 Enter Platform';
             acceptButton.style.background = 'linear-gradient(135deg,#00ff88,#00cc6a)';
             acceptButton.style.color = '#000';
             acceptButton.style.cursor = 'pointer';
             
-            // تغییر متن تایمر
+            // Change timer text
             const timerText = document.querySelector('#welcome-typewriter-content p strong');
             if (timerText) {
-              timerText.textContent = '✅ مطالعه کامل شد!';
+              timerText.textContent = '✅ Reading completed!';
             }
           }
         }
         
-        // تایپ‌رایتر پاپ آپ شرایط و قوانین
+        // Typewriter popup for terms and conditions
         function startWelcomeTypewriter() {
           const container = document.getElementById('welcome-typewriter-content');
           if (!container) {
@@ -650,7 +650,7 @@
           
           console.log('Starting typewriter...');
           
-          // شروع تایمر مطالعه از ابتدای تایپ‌رایتر
+          // Start reading timer from the beginning of typewriter
           if (typeof startReadingTimer === 'function') {
             startReadingTimer();
           }
@@ -661,58 +661,58 @@
   </p>
 </div>
 
-<h3 style="color:#a786ff;font-size:1.25em;margin:0 0 0.8em 0;">شرایط پذیرش</h3>
+<h3 style="color:#a786ff;font-size:1.25em;margin:0 0 0.8em 0;">Acceptance Conditions</h3>
 <div style="background:rgba(0,255,136,0.05);padding:1em;border-radius:8px;border-right:3px solid #00ff88;margin-bottom:1em;">
   <p style="margin:0;color:#e0e6f7;line-height:1.6;">
-    <strong>✅ من شرایط زیر را می‌پذیرم:</strong><br>
-    • سرمایه‌گذاری در ارزهای دیجیتال با ریسک همراه است<br>
-    • تمامی تراکنش‌ها غیرقابل بازگشت و شفاف هستند<br>
-    • مسئولیت تصمیمات مالی بر عهده خودم است<br>
-    • قوانین و مقررات محلی را رعایت می‌کنم
+    <strong>✅ I accept the following conditions:</strong><br>
+    • Investing in cryptocurrencies involves risk<br>
+    • All transactions are irreversible and transparent<br>
+    • I am responsible for my financial decisions<br>
+    • I will comply with local laws and regulations
   </p>
 </div>
 
-<h3 style="color:#a786ff;font-size:1.25em;margin:1.1em 0 0.6em 0;">تمایل به یادگیری</h3>
+<h3 style="color:#a786ff;font-size:1.25em;margin:1.1em 0 0.6em 0;">Desire to Learn</h3>
 <div style="background:rgba(138,43,226,0.05);padding:1em;border-radius:8px;border-right:3px solid #8a2be2;margin-bottom:1em;">
   <p style="margin:0;color:#e0e6f7;line-height:1.6;">
-    <strong>🎓 من خواهان یادگیری این بازار هستم:</strong><br>
-    • مطالعه مستمر در زمینه ارزهای دیجیتال<br>
-    • آشنایی با مفاهیم بلاکچین و قراردادهای هوشمند<br>
-    • یادگیری مدیریت ریسک و سرمایه<br>
+    <strong>🎓 I want to learn this market:</strong><br>
+    • Continuous study in the field of cryptocurrencies<br>
+    • Familiarity with blockchain concepts and smart contracts<br>
+    • Learning risk management and capital management<br>
     
   </p>
 </div>
 
-<h3 style="color:#a786ff;font-size:1.25em;margin:1.1em 0 0.6em 0;">آشنایی با قواعد ارزهای دیجیتال</h3>
+<h3 style="color:#a786ff;font-size:1.25em;margin:1.1em 0 0.6em 0;">Familiarity with Cryptocurrency Rules</h3>
 <div style="background:rgba(255,69,0,0.05);padding:1em;border-radius:8px;border-right:3px solid #ff4500;margin-bottom:1em;">
   <p style="margin:0;color:#e0e6f7;line-height:1.6;">
-    <strong>📚 من از قواعد و قوانین ارزهای دیجیتال آشنایی دارم:</strong><br>
-    • نحوه کارکرد کیف پول‌های دیجیتال<br>
-    • اصول امنیت و حفاظت از کلیدهای خصوصی<br>
-    • آشنایی با شبکه‌های مختلف (اتریوم، پالیگان)<br>
-    • درک مفاهیم گس (Gas) و تایید تراکنش‌ها
+    <strong>📚 I am familiar with cryptocurrency rules and regulations:</strong><br>
+    • How digital wallets work<br>
+    • Security principles and protection of private keys<br>
+    • Familiarity with different networks (Ethereum, Polygon)<br>
+    • Understanding Gas concepts and transaction confirmation
   </p>
 </div>
 
-<h3 style="color:#a786ff;font-size:1.25em;margin:1.1em 0 0.6em 0;">مشخصات قرارداد هوشمند</h3>
+<h3 style="color:#a786ff;font-size:1.25em;margin:1.1em 0 0.6em 0;">Smart Contract Specifications</h3>
 <p style="margin-top:0;">
-  <strong>آدرس قرارداد:</strong> 0xA3d5445e3e57dDA57C69184e88A93C9f6f7f9aA6<br>
-  <strong>شبکه:</strong> Polygon (MATIC)<br>
-  <strong>استاندارد:</strong> ERC-20<br>
-  <strong>نام توکن:</strong> IAM Token<br>
-  <strong>نماد:</strong> IAM<br>
-  <strong>تعداد اعشار:</strong> 18
+  <strong>Contract Address:</strong> 0xA3d5445e3e57dDA57C69184e88A93C9f6f7f9aA6<br>
+  <strong>Network:</strong> Polygon (MATIC)<br>
+  <strong>Standard:</strong> ERC-20<br>
+  <strong>Token Name:</strong> IAM Token<br>
+  <strong>Symbol:</strong> IAM<br>
+  <strong>Decimals:</strong> 18
 </p>
 
-<h3 style="color:#a786ff;font-size:1.25em;margin:1.1em 0 0.6em 0;">توابع اصلی قرارداد</h3>
+<h3 style="color:#a786ff;font-size:1.25em;margin:1.1em 0 0.6em 0;">Main Contract Functions</h3>
 <ul style="list-style:none;padding:0;margin:0;">
   <li style="margin-bottom:0.65em;padding-right:1.5em;position:relative;">
     <span style="position:absolute;right:0;color:#00ff88;">🔹</span>
-    <strong>register()</strong> - ثبت‌نام کاربر جدید
+    <strong>register()</strong> - Register new user
   </li>
   <li style="margin-bottom:0.65em;padding-right:1.5em;position:relative;">
     <span style="position:absolute;right:0;color:#00ff88;">🔹</span>
-    <strong>transfer()</strong> - انتقال توکن بین کیف پول‌ها
+    <strong>transfer()</strong> - Transfer tokens between wallets
   </li>
   <li style="margin-bottom:0.65em;padding-right:1.5em;position:relative;">
     <span style="position:absolute;right:0;color:#00ff88;">🔹</span>
@@ -724,7 +724,7 @@
   </li>
   <li style="margin-bottom:0.65em;padding-right:1.5em;position:relative;">
     <span style="position:absolute;right:0;color:#00ff88;">🔹</span>
-    <strong>buyTokens()</strong> - خرید توکن با DAI
+    <strong>buyTokens()</strong> - Buy tokens with DAI
   </li>
   <li style="margin-bottom:0.65em;padding-right:1.5em;position:relative;">
     <span style="position:absolute;right:0;color:#00ff88;">🔹</span>
@@ -732,30 +732,30 @@
   </li>
 </ul>
 
-<h3 style="color:#a786ff;font-size:1.25em;margin:1.1em 0 0.6em 0;">ساختار داده‌ها</h3>
+<h3 style="color:#a786ff;font-size:1.25em;margin:1.1em 0 0.6em 0;">Data Structure</h3>
 <p style="margin-top:0;">
   <strong>User Struct:</strong><br>
-  - address: آدرس کیف پول کاربر<br>
-  - uint256 index: شماره ایندکس کاربر<br>
-  - bool activated: وضعیت فعال بودن<br>
-  - uint256 registrationTime: زمان ثبت‌نام<br>
-  - address referrer: معرف کاربر<br>
-  - uint256 totalPoints: کل پوینت‌های کسب شده
+  - address: User wallet address<br>
+  - uint256 index: User index number<br>
+  - bool activated: Activation status<br>
+  - uint256 registrationTime: Registration time<br>
+  - address referrer: User referrer<br>
+  - uint256 totalPoints: Total points earned
 </p>
 
-<h3 style="color:#a786ff;font-size:1.25em;margin:1.1em 0 0.6em 0;">متغیرهای مهم</h3>
+<h3 style="color:#a786ff;font-size:1.25em;margin:1.1em 0 0.6em 0;">Important Variables</h3>
 <ul style="list-style:none;padding:0;margin:0;">
   <li style="margin-bottom:0.65em;padding-right:1.5em;position:relative;">
     <span style="position:absolute;right:0;color:#00ff88;">✅</span>
-    <strong>totalSupply:</strong> کل عرضه توکن IAM
+    <strong>totalSupply:</strong> Total IAM token supply
   </li>
   <li style="margin-bottom:0.65em;padding-right:1.5em;position:relative;">
     <span style="position:absolute;right:0;color:#00ff88;">✅</span>
-    <strong>registrationPrice:</strong> قیمت ثبت‌نام (به IAM)
+    <strong>registrationPrice:</strong> Registration price (in IAM)
   </li>
   <li style="margin-bottom:0.65em;padding-right:1.5em;position:relative;">
     <span style="position:absolute;right:0;color:#00ff88;">✅</span>
-    <strong>tokenPrice:</strong> قیمت فعلی توکن (به DAI)
+    <strong>tokenPrice:</strong> Current token price (in DAI)
   </li>
   <li style="margin-bottom:0.65em;padding-right:1.5em;position:relative;">
     <span style="position:absolute;right:0;color:#00ff88;">✅</span>
@@ -893,32 +893,32 @@
             condition2.disabled = false;
             condition3.disabled = false;
             
-            // تغییر متن چک‌باکس‌ها
+            // Change checkbox text
             const spans = document.querySelectorAll('#welcome-typewriter-content label span');
             if (spans.length >= 3) {
-              spans[0].textContent = '✅ من شرایط پذیرش را مطالعه کرده و می‌پذیرم';
+              spans[0].textContent = '✅ I have read and accept the acceptance conditions';
               spans[0].style.opacity = '1';
-              spans[1].textContent = '🎓 من خواهان یادگیری این بازار هستم';
+              spans[1].textContent = '🎓 I want to learn this market';
               spans[1].style.opacity = '1';
-              spans[2].textContent = '📚 من از قواعد و قوانین ارزهای دیجیتال آشنایی دارم';
+              spans[2].textContent = '📚 I am familiar with cryptocurrency rules and regulations';
               spans[2].style.opacity = '1';
             }
             
-            // تغییر متن دکمه
+            // Change button text
             acceptButton.textContent = '🔓 Enter Platform';
             acceptButton.style.background = 'linear-gradient(135deg,#00ff88,#00cc6a)';
             acceptButton.style.color = '#000';
             acceptButton.style.cursor = 'pointer';
             
-            // تغییر متن تایمر
+            // Change timer text
             const timerText = document.querySelector('#welcome-typewriter-content p strong');
             if (timerText) {
-              timerText.textContent = '✅ مطالعه کامل شد!';
+              timerText.textContent = '✅ Reading completed!';
             }
           }
         }
         
-        // بررسی وضعیت تمام چک‌باکس‌ها
+        // Check status of all checkboxes
         function checkAllConditions() {
           const condition1 = document.getElementById('condition1');
           const condition2 = document.getElementById('condition2');
@@ -993,11 +993,11 @@ Our Services:
             if (expanded) {
               wrapper.style.maxHeight = '2000px';
               fade.style.opacity = '0';
-              btn.textContent = 'نمایش کمتر';
+              btn.textContent = 'Show Less';
             } else {
               wrapper.style.maxHeight = '2.1em';
               fade.style.opacity = '1';
-              btn.textContent = 'نمایش بیشتر';
+              btn.textContent = 'Show More';
             }
           });
         }
@@ -1009,43 +1009,43 @@ Our Services:
     
     <div id="swap-main-content" style="display:block;">
     <div class="expand-header" style="padding:0 1.5rem;">
-      <h2 style="margin:0 0 0.5rem 0;">🔄 تبدیل ارز</h2>
-      <p style="margin:0 0 0.5rem 0;">تبدیل بین توکن‌های DAI و IAM</p>
+      <h2 style="margin:0 0 0.5rem 0;">🔄 Currency Exchange</h2>
+      <p style="margin:0 0 0.5rem 0;">Exchange between DAI and IAM tokens</p>
     </div>
     <div class="expand-content" style="padding:0;">
       <div class="swap-container" style="max-width:600px;margin:0 auto;padding:1.5rem;">
         
         <!-- Swap Rules and Information -->
         <div class="swap-rules" style="background:linear-gradient(135deg,#232946,#181c2a);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;border:2px solid #00ff88;">
-          <h3 style="color:#00ff88;margin-bottom:1rem;font-size:1.2rem;">📋 قوانین و راهنمای تبدیل</h3>
+          <h3 style="color:#00ff88;margin-bottom:1rem;font-size:1.2rem;">📋 Exchange Rules and Guide</h3>
           
           <div style="margin-bottom:1rem;">
-            <h4 style="color:#00ff88;margin-bottom:0.5rem;">🔄 نحوه تبدیل:</h4>
+            <h4 style="color:#00ff88;margin-bottom:0.5rem;">🔄 How to Exchange:</h4>
             <ul style="color:#b8c1ec;line-height:1.6;margin:0;padding-right:1rem;">
-              <li>✅ <strong style="color:#00ff88;">DAI → IAM:</strong> خرید توکن IAM با DAI (نرخ متغیر)</li>
+              <li>✅ <strong style="color:#00ff88;">DAI → IAM:</strong> Buy IAM tokens with DAI (variable rate)</li>
               <li>✅ <strong style="color:#00ff88;">IAM → DAI:</strong> Sell IAM tokens and receive DAI</li>
-              <li>✅ کارمزد تبدیل: پویا (۲٪، ۲.۵٪ یا ۳٪ بر اساس موجودی DAI قرارداد)</li>
-              <li>✅ حداقل مقدار تبدیل: بیش از 1 DAI یا بیش از 1 IAM</li>
+              <li>✅ Exchange fee: Dynamic (2%, 2.5%, or 3% based on contract DAI balance)</li>
+              <li>✅ Minimum exchange amount: More than 1 DAI or more than 1 IAM</li>
             </ul>
           </div>
           
           <div style="margin-bottom:1rem;">
-            <h4 style="color:#00ff88;margin-bottom:0.5rem;">💰 مزایای تبدیل:</h4>
+            <h4 style="color:#00ff88;margin-bottom:0.5rem;">💰 Exchange Benefits:</h4>
             <ul style="color:#b8c1ec;line-height:1.6;margin:0;padding-right:1rem;">
-              <li><strong style="color:#00ff88;">IAM:</strong> توکن اصلی پلتفرم - برای سرمایه‌گذاری و کسب درآمد</li>
-              <li><strong style="color:#00ccff;">DAI:</strong> توکن استیبل - برای حفظ ارزش و معاملات روزانه</li>
-              <li>🔄 تبدیل فوری و بدون نیاز به تایید اضافی</li>
-              <li>📊 نرخ تبدیل بر اساس عرضه و تقاضا محاسبه می‌شود</li>
+              <li><strong style="color:#00ff88;">IAM:</strong> Main platform token - for investment and earning</li>
+              <li><strong style="color:#00ccff;">DAI:</strong> Stable token - for value preservation and daily transactions</li>
+              <li>🔄 Instant exchange without additional approval</li>
+              <li>📊 Exchange rate calculated based on supply and demand</li>
             </ul>
           </div>
           
           <div>
-            <h4 style="color:#00ff88;margin-bottom:0.5rem;">⚠️ نکات مهم:</h4>
+            <h4 style="color:#00ff88;margin-bottom:0.5rem;">⚠️ Important Notes:</h4>
             <ul style="color:#b8c1ec;line-height:1.6;margin:0;padding-right:1rem;">
-              <li>🔍 قبل از تبدیل، نرخ فعلی را بررسی کنید</li>
-              <li>💰 موجودی کافی برای تبدیل + کارمزد داشته باشید</li>
-              <li>⏱️ تبدیل‌ها فوری انجام می‌شوند</li>
-              <li>📞 در صورت مشکل با پشتیبانی تماس بگیرید</li>
+              <li>🔍 Check current rate before exchange</li>
+              <li>💰 Have sufficient balance for exchange + fees</li>
+              <li>⏱️ Exchanges are processed instantly</li>
+              <li>📞 Contact support if you encounter issues</li>
             </ul>
           </div>
         </div>
@@ -1053,25 +1053,25 @@ Our Services:
 
         <form id="swapForm" class="swap-form">
           <div class="swap-row">
-            <label for="swapDirection">نوع تبدیل:</label>
+            <label for="swapDirection">Exchange Type:</label>
             <select id="swapDirection" required>
               <option value="dai-to-IAM">DAI → IAM</option>
               <option value="IAM-to-dai">IAM → DAI</option>
             </select>
-            <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">نوع تبدیل مورد نظر را انتخاب کنید</small>
+            <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Select your desired exchange type</small>
           </div>
           
           <div class="swap-row">
-            <label for="swapAmount">مقدار:</label>
+            <label for="swapAmount">Amount:</label>
             <div class="amount-input-group">
-              <input type="number" id="swapAmount" placeholder="مقدار را وارد کنید" min="0" step="any" required>
-              <button type="button" id="maxBtn" class="max-btn">حداکثر</button>
+              <input type="number" id="swapAmount" placeholder="Enter amount" min="0" step="any" required>
+              <button type="button" id="maxBtn" class="max-btn">Maximum</button>
             </div>
-            <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">مقدار مورد نظر برای تبدیل را وارد کنید</small>
+            <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Enter the amount you want to exchange</small>
           </div>
           
           <div class="swap-row" id="swap-usd-converter-row" style="display:none;">
-            <label for="swapUsdAmount">💰 معادل دلاری:</label>
+            <label for="swapUsdAmount">💰 Dollar Equivalent:</label>
             <div class="usd-converter-container" style="display:flex;gap:0.5rem;align-items:center;">
               <span style="color:#00ff88;font-weight:bold;">$</span>
               <input type="number" id="swapUsdAmount" placeholder="5.00" min="0" step="0.01" style="flex:1;">
@@ -1085,22 +1085,22 @@ Our Services:
                 cursor: pointer;
                 transition: all 0.3s ease;
                 font-weight: bold;
-              ">🔄 تبدیل</button>
+              ">🔄 Convert</button>
             </div>
-            <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">مقدار دلاری وارد کنید تا به توکن تبدیل شود (مثل: 5 برای $5)</small>
+            <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Enter dollar amount to convert to tokens (e.g., 5 for $5)</small>
           </div>
           
           <div id="swapRate" class="swap-rate">Exchange rate: Loading...</div>
           <div id="swapPreview" class="swap-preview"></div>
           <div id="swapLimitInfo" class="swap-limit-info" style="margin-top:0.5rem;color:#555;font-size:0.98em;"></div>
           
-          <button type="submit" class="swap-btn">تبدیل</button>
+          <button type="submit" class="swap-btn">Exchange</button>
           <div id="swapStatus" class="swap-status"></div>
         </form>
         
         <!-- Balance Check -->
         <div class="swap-balance-check" style="background:rgba(0,255,136,0.1);border-radius:8px;padding:1rem;margin-top:1.5rem;">
-          <h4 style="color:#00ff88;margin-bottom:0.8rem;">💰 موجودی فعلی شما:</h4>
+          <h4 style="color:#00ff88;margin-bottom:0.8rem;">💰 Your Current Balance:</h4>
           <div class="swap-balance-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
             <div style="text-align:center;">
               <div style="color:#00ff88;font-weight:bold;">DAI</div>
@@ -1122,73 +1122,73 @@ Our Services:
   <!-- Transfer Section -->
   <div id="main-transfer" class="page-section expandable-container" style="width:100vw;max-width:none;margin:0;left:0;right:0;padding:0.5rem 0;display:none;">
     <div class="expand-header">
-      <h2 style="margin:0 0 0.5rem 0;">💸 ترانسفر</h2>
-      <p style="margin:0 0 0.5rem 0;">انتقال توکن به کیف پول دیگر</p>
+      <h2 style="margin:0 0 0.5rem 0;">💸 Transfer</h2>
+      <p style="margin:0 0 0.5rem 0;">Transfer tokens to another wallet</p>
     </div>
     <div class="expand-content" style="padding:0;">
       <div class="transfer-container" style="max-width:600px;margin:0;padding:1.5rem;">
         
         <!-- Transfer Rules and Information -->
         <div class="transfer-rules" style="background:linear-gradient(135deg,#232946,#181c2a);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;border:2px solid #a786ff;">
-          <h3 style="color:#00ff88;margin-bottom:1rem;font-size:1.2rem;">📋 قوانین و راهنمای انتقال</h3>
+          <h3 style="color:#00ff88;margin-bottom:1rem;font-size:1.2rem;">📋 Transfer Rules and Guide</h3>
           
           <div style="margin-bottom:1rem;">
-            <h4 style="color:#a786ff;margin-bottom:0.5rem;">🔒 امنیت انتقال:</h4>
+            <h4 style="color:#a786ff;margin-bottom:0.5rem;">🔒 Transfer Security:</h4>
             <ul style="color:#b8c1ec;line-height:1.6;margin:0;padding-right:1rem;">
-              <li>✅ انتقال‌ها غیرقابل بازگشت هستند - قبل از ارسال دوباره بررسی کنید</li>
-              <li>✅ آدرس مقصد را با دقت وارد کنید - یک کاراکتر اشتباه باعث از دست رفتن دارایی می‌شود</li>
-              <li>✅ ابتدا مقدار کمی ارسال کنید تا از صحت آدرس مطمئن شوید</li>
-              <li>✅ از کیف پول‌های معتبر و امن استفاده کنید</li>
+              <li>✅ Transfers are irreversible - double-check before sending</li>
+              <li>✅ Enter destination address carefully - one wrong character can cause loss of assets</li>
+              <li>✅ Send a small amount first to verify the address is correct</li>
+              <li>✅ Use valid and secure wallets</li>
             </ul>
           </div>
           
           <div style="margin-bottom:1rem;">
-            <h4 style="color:#a786ff;margin-bottom:0.5rem;">💰 انواع توکن قابل انتقال:</h4>
+            <h4 style="color:#a786ff;margin-bottom:0.5rem;">💰 Transferable Token Types:</h4>
             <ul style="color:#b8c1ec;line-height:1.6;margin:0;padding-right:1rem;">
-              <li><strong style="color:#00ff88;">DAI:</strong> توکن استیبل با ارزش 1 دلار - برای معاملات روزانه</li>
-              <li><strong style="color:#a786ff;">POL (MATIC):</strong> توکن شبکه Polygon - برای پرداخت کارمزد تراکنش‌ها</li>
-              <li><strong style="color:#00ccff;">IAM:</strong> توکن اصلی پلتفرم - برای سرمایه‌گذاری و کسب درآمد</li>
+              <li><strong style="color:#00ff88;">DAI:</strong> Stable token with value of $1 - for daily transactions</li>
+              <li><strong style="color:#a786ff;">POL (MATIC):</strong> Polygon network token - for transaction fee payments</li>
+              <li><strong style="color:#00ccff;">IAM:</strong> Main platform token - for investment and earning</li>
             </ul>
           </div>
           
           <div style="margin-bottom:1rem;">
-            <h4 style="color:#a786ff;margin-bottom:0.5rem;">⚡ کارمزد تراکنش:</h4>
+            <h4 style="color:#a786ff;margin-bottom:0.5rem;">⚡ Transaction Fees:</h4>
             <ul style="color:#b8c1ec;line-height:1.6;margin:0;padding-right:1rem;">
-              <li>💸 کارمزد شبکه Polygon: ~0.001-0.01 MATIC (بسته به ترافیک شبکه)</li>
-              <li>⏱️ زمان تایید: 2-5 ثانیه (معمولاً)</li>
-              <li>🔍 تراکنش‌ها در PolygonScan قابل ردیابی هستند</li>
+              <li>💸 Polygon network fee: ~0.001-0.01 MATIC (depending on network traffic)</li>
+              <li>⏱️ Confirmation time: 2-5 seconds (usually)</li>
+              <li>🔍 Transactions can be tracked on PolygonScan</li>
             </ul>
           </div>
           
           <div>
-            <h4 style="color:#a786ff;margin-bottom:0.5rem;">🎯 نکات مهم:</h4>
+            <h4 style="color:#a786ff;margin-bottom:0.5rem;">🎯 Important Notes:</h4>
             <ul style="color:#b8c1ec;line-height:1.6;margin:0;padding-right:1rem;">
-              <li>📱 می‌توانید با ایندکس کاربر جستجو کنید تا آدرس را پیدا کنید</li>
-              <li>🔍 قبل از انتقال، موجودی خود را بررسی کنید</li>
-              <li>⚠️ مقدار انتقال + کارمزد شبکه باید کمتر از موجودی باشد</li>
-              <li>📞 در صورت مشکل با پشتیبانی تماس بگیرید</li>
+              <li>📱 You can search by user index to find the address</li>
+              <li>🔍 Check your balance before transferring</li>
+              <li>⚠️ Transfer amount + network fee must be less than your balance</li>
+              <li>📞 Contact support if you have any issues</li>
             </ul>
           </div>
         </div>
         
         <form id="transferForm" class="transfer-form">
           <div class="transfer-row">
-            <label for="transferTo">آدرس مقصد:</label>
+            <label for="transferTo">Destination Address:</label>
             <input type="text" id="transferTo" placeholder="0x..." required style="direction:ltr;">
-            <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">آدرس کیف پول مقصد را وارد کنید (42 کاراکتر)</small>
+            <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Enter destination wallet address (42 characters)</small>
           </div>
           <div class="transfer-row" style="margin-bottom:0.5rem;">
-            <label for="searchIndex">جستجو با ایندکس:</label>
+              <label for="searchIndex">Search by Index:</label>
             <div class="search-index-container" style="display:flex;gap:0.5rem;align-items:center;">
-              <input type="number" id="searchIndex" placeholder="ایندکس کاربر" min="0" style="width:120px;direction:ltr;">
-              <button type="button" id="searchIndexBtn" class="transfer-btn" style="padding:0.5rem 1.2rem;font-size:1rem;min-width:80px;">جستجو</button>
+                <input type="number" id="searchIndex" placeholder="User Index" min="0" style="width:120px;direction:ltr;">
+                <button type="button" id="searchIndexBtn" class="transfer-btn" style="padding:0.5rem 1.2rem;font-size:1rem;min-width:80px;">Search</button>
             </div>
             <div id="searchIndexStatus" class="transfer-status" style="margin-top:0.3rem;"></div>
-            <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">ایندکس کاربر را وارد کنید تا آدرس به طور خودکار پر شود</small>
+              <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Enter user index to automatically fill the address</small>
           </div>
           <div class="transfer-row">
-            <label for="transferAmount">مقدار:</label>
-            <input type="number" id="transferAmount" placeholder="مقدار را وارد کنید" min="0" step="any" required>
+              <label for="transferAmount">Amount:</label>
+              <input type="number" id="transferAmount" placeholder="Enter amount" min="0" step="any" required>
             <button type="button" id="maxAmountBtn" style="
               background: linear-gradient(90deg,#ff6b6b,#ee5a52);
               color: #fff;
@@ -1201,11 +1201,11 @@ Our Services:
               transition: all 0.3s ease;
               width: auto;
               display: inline-block;
-            ">🔥 حداکثر موجودی</button>
-            <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">مقدار انتقال را وارد کنید یا روی "حداکثر" کلیک کنید</small>
+              ">🔥 Maximum Balance</button>
+              <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Enter transfer amount or click "Maximum"</small>
           </div>
           <div class="transfer-row" id="usd-converter-row" style="display:none;">
-            <label for="transferUsdAmount">💰 معادل دلاری (فقط برای IAM):</label>
+              <label for="transferUsdAmount">💰 Dollar Equivalent (Only for IAM):</label>
             <div class="usd-converter-container" style="display:flex;gap:0.5rem;align-items:center;">
               <span style="color:#00ff88;font-weight:bold;">$</span>
               <input type="number" id="transferUsdAmount" placeholder="5.00" min="0" step="0.01" style="flex:1;">
@@ -1219,23 +1219,23 @@ Our Services:
                 cursor: pointer;
                 transition: all 0.3s ease;
                 font-weight: bold;
-              ">🔄 تبدیل</button>
+                ">🔄 Convert</button>
             </div>
-            <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">مقدار دلاری وارد کنید تا به IAM تبدیل شود (مثل: 5 برای $5)</small>
+              <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Enter dollar amount to convert to IAM (e.g., 5 for $5)</small>
           </div>
           <div class="transfer-row">
-            <label for="transferToken">نوع توکن:</label>
+              <label for="transferToken">Token Type:</label>
             <select id="transferToken" required>
               <option value="dai" selected>DAI</option>
               <option value="pol">POL</option>
               <option value="IAM">IAM</option>
             </select>
-            <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">نوع توکن مورد نظر برای انتقال را انتخاب کنید</small>
+              <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Select the token type you want to transfer</small>
           </div>
           
           <!-- Balance Check -->
           <div style="background:rgba(167,134,255,0.1);border-radius:8px;padding:1rem;margin-bottom:1rem;" class="balance-check">
-            <h4 style="color:#a786ff;margin-bottom:0.8rem;">💰 موجودی فعلی شما:</h4>
+            <h4 style="color:#a786ff;margin-bottom:0.8rem;">💰 Your Current Balance:</h4>
             <div class="balance-check-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;">
               <div style="text-align:center;">
                 <div style="color:#00ff88;font-weight:bold;">DAI</div>
@@ -1253,7 +1253,7 @@ Our Services:
             </div>
           </div>
           
-          <button type="submit" class="transfer-btn">انتقال</button>
+          <button type="submit" class="transfer-btn">Transfer</button>
           <div id="transferStatus" class="transfer-status"></div>
         </form>
       </div>
@@ -2276,9 +2276,9 @@ Our Services:
             const d = (transferTokenSelect.value === 'IAM') ? 6 : 4;
             const floored = floorToDecimals(maxAmount, d);
             transferAmountInput.value = floored.toFixed(d);
-            // تغییر متن دکمه به صورت موقت
+            // Temporarily change button text
             const originalText = maxAmountBtn.textContent;
-            maxAmountBtn.textContent = '✓ تنظیم شد';
+                          maxAmountBtn.textContent = '✓ Set';
             maxAmountBtn.style.background = 'linear-gradient(90deg,#00ff88,#00cc66)';
             setTimeout(() => {
               maxAmountBtn.textContent = originalText;

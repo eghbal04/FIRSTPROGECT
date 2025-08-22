@@ -5416,11 +5416,11 @@ window.displayTopUsersRanking = async function(containerId = 'top-users-ranking'
     container.innerHTML = `
       <div style="text-align: center; padding: 2rem; color: var(--modern-primary);">
         <div style="font-size: 1.2rem; margin-bottom: 1rem;">🏆</div>
-        <div style="font-weight: bold; margin-bottom: 0.5rem;">در حال جستجوی کاربران با لایک واقعی...</div>
-        <div style="font-size: 0.9rem; color: var(--modern-text-secondary);">لطفاً صبر کنید، این کار ممکن است چند ثانیه طول بکشد</div>
+        <div style="font-weight: bold; margin-bottom: 0.5rem;">Searching for users with real likes...</div>
+        <div style="font-size: 0.9rem; color: var(--modern-text-secondary);">Please wait, this may take a few seconds</div>
         <div style="margin-top: 1rem;">
           <div class="modern-alert modern-alert-info">
-            🔍 جستجو در 200 ایندکس اول برای یافتن کاربران فعال با لایک
+            🔍 Searching in first 200 indices for active users with likes
           </div>
         </div>
       </div>
@@ -5434,10 +5434,10 @@ window.displayTopUsersRanking = async function(containerId = 'top-users-ranking'
       container.innerHTML = `
         <div style="text-align: center; padding: 2rem; color: var(--modern-text-secondary);">
           <div style="font-size: 1.2rem; margin-bottom: 1rem;">📊</div>
-          <div style="font-weight: bold; margin-bottom: 0.5rem;">هیچ کاربری با لایک یافت نشد</div>
-          <div style="font-size: 0.9rem; margin-bottom: 1rem;">هنوز هیچ کاربری لایک دریافت نکرده است</div>
+          <div style="font-weight: bold; margin-bottom: 0.5rem;">No users with likes found</div>
+          <div style="font-size: 0.9rem; margin-bottom: 1rem;">No users have received likes yet</div>
           <div class="modern-alert modern-alert-info">
-            💡 برای شروع، می‌توانید برای کاربران موجود لایک کنید
+            💡 To get started, you can like existing users
           </div>
         </div>
       `;
@@ -5447,31 +5447,31 @@ window.displayTopUsersRanking = async function(containerId = 'top-users-ranking'
     let rankingHTML = `
       <div class="modern-card" style="padding: 1.5rem; margin-bottom: 1rem;">
         <div style="text-align: center; margin-bottom: 1.5rem;">
-          <h3 class="modern-heading-1" style="margin: 0;">🏆 رنکینگ کاربران برتر</h3>
-          <div style="color: var(--modern-text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">بر اساس تعداد لایک‌های دریافتی</div>
+          <h3 class="modern-heading-1" style="margin: 0;">🏆 Top Users Ranking</h3>
+          <div style="color: var(--modern-text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">Based on received likes</div>
         </div>
         
         <!-- بخش رای‌گیری با ایندکس -->
         <div class="modern-card" style="padding: 1rem; margin-bottom: 1rem;">
           <div style="text-align: center; margin-bottom: 1rem;">
-            <div style="color: var(--modern-primary); font-size: 1rem; font-weight: bold; margin-bottom: 0.5rem;">🗳️ رای‌گیری برای ایندکس</div>
-            <div style="color: var(--modern-text-muted); font-size: 0.8rem;">ایندکس مورد نظر خود را وارد کنید</div>
+            <div style="color: var(--modern-primary); font-size: 1rem; font-weight: bold; margin-bottom: 0.5rem;">🗳️ Vote for Index</div>
+            <div style="color: var(--modern-text-muted); font-size: 0.8rem;">Enter the index you want to vote for</div>
           </div>
           
           <div style="display: flex; gap: 0.5rem; align-items: center; justify-content: center; flex-wrap: wrap;">
-            <input type="number" id="vote-index-input" placeholder="مثال: 1" 
+            <input type="number" id="vote-index-input" placeholder="Example: 1" 
                    class="modern-input" style="width: 100px; text-align: center; font-size: 0.9rem;">
             <button onclick="window.voteForIndex(true)" 
                     class="modern-btn modern-btn-primary" style="font-size: 0.9rem;">
-              👍 لایک
+              👍 Like
             </button>
             <button onclick="window.voteForIndex(false)" 
                     class="modern-btn" style="background: var(--modern-danger-gradient); font-size: 0.9rem;">
-              👎 دیسلایک
+              👎 Dislike
             </button>
             <button onclick="window.testVoteButtons()" 
                     class="modern-btn" style="background: var(--modern-secondary-gradient); font-size: 0.8rem;">
-              🧪 تست دکمه‌ها
+              🧪 Test Buttons
             </button>
           </div>
           
@@ -5490,7 +5490,7 @@ window.displayTopUsersRanking = async function(containerId = 'top-users-ranking'
         <div class="modern-card" style="padding: 1rem; display: flex; align-items: center; gap: 1rem;">
           <div style="text-align: center; min-width: 60px;">
             <div style="color: ${rankColor}; font-size: 1.5rem; font-weight: bold;">${medal}</div>
-            <div style="color: var(--modern-text-muted); font-size: 0.7rem;">رتبه</div>
+            <div style="color: var(--modern-text-muted); font-size: 0.7rem;">Rank</div>
           </div>
           
           <div style="flex: 1;">
@@ -5504,7 +5504,7 @@ window.displayTopUsersRanking = async function(containerId = 'top-users-ranking'
           
           <div style="text-align: center; min-width: 80px;">
             <div style="color: var(--modern-primary); font-size: 1.1rem; font-weight: bold;">${user.likeCount}</div>
-            <div style="color: var(--modern-text-muted); font-size: 0.7rem;">لایک</div>
+            <div style="color: var(--modern-text-muted); font-size: 0.7rem;">Likes</div>
             <div style="margin-top: 0.5rem;">
               <button onclick="window.voteForUser('${user.address}', true)" 
                       class="modern-btn modern-btn-primary" style="font-size: 0.7rem; margin-right: 0.3rem;">
@@ -5514,6 +5514,9 @@ window.displayTopUsersRanking = async function(containerId = 'top-users-ranking'
                       class="modern-btn" style="background: var(--modern-danger-gradient); font-size: 0.7rem;">
                 👎
               </button>
+            </div>
+            <div id="vote-status-${user.address}" style="font-size: 0.6rem; margin-top: 0.3rem; color: var(--modern-text-muted);">
+              Loading...
             </div>
           </div>
         </div>
@@ -5544,6 +5547,56 @@ window.displayTopUsersRanking = async function(containerId = 'top-users-ranking'
         </div>
       `;
     }
+    
+    // Load voting status for each user
+    await window.loadVotingStatusForUsers(topUsers);
+  }
+};
+
+// Function to load voting status for users in ranking
+window.loadVotingStatusForUsers = async function(users) {
+  try {
+    if (!window.contractConfig || !window.contractConfig.contract) {
+      await window.connectWallet();
+    }
+    const contract = window.contractConfig.contract;
+    
+    if (!contract) {
+      console.error('Contract not connected');
+      return;
+    }
+
+    const currentUserAddress = window.contractConfig.signer?.address;
+    if (!currentUserAddress) {
+      console.log('No wallet connected, skipping vote status');
+      return;
+    }
+
+    // Load vote status for each user
+    for (const user of users) {
+      try {
+        const voteStatus = await contract.userVotes(currentUserAddress, user.address);
+        const statusElement = document.getElementById(`vote-status-${user.address}`);
+        
+        if (statusElement) {
+          if (voteStatus == 1) {
+            statusElement.innerHTML = '<span style="color: #00ff88;">✓ Liked</span>';
+          } else if (voteStatus == 2) {
+            statusElement.innerHTML = '<span style="color: #ff4444;">✗ Disliked</span>';
+          } else {
+            statusElement.innerHTML = '<span style="color: var(--modern-text-muted);">No vote</span>';
+          }
+        }
+      } catch (error) {
+        console.warn(`Error loading vote status for ${user.address}:`, error);
+        const statusElement = document.getElementById(`vote-status-${user.address}`);
+        if (statusElement) {
+          statusElement.innerHTML = '<span style="color: var(--modern-text-muted);">Error</span>';
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error loading voting status:', error);
   }
 };
 
@@ -5663,12 +5716,12 @@ window.voteForUser = async function(targetAddress, isLike) {
     const contract = window.contractConfig.contract;
     
     if (!contract) {
-      throw new Error('قرارداد متصل نیست');
+      throw new Error('Contract not connected');
     }
 
     // بررسی اتصال کیف پول
     if (!window.contractConfig.signer) {
-      throw new Error('کیف پول متصل نیست');
+      throw new Error('Wallet not connected');
     }
 
     console.log('⏳ ارسال تراکنش رای‌گیری...');
@@ -5681,11 +5734,19 @@ window.voteForUser = async function(targetAddress, isLike) {
     // انتظار برای تایید تراکنش
     const receipt = await tx.wait();
     
-    const successMessage = isLike ? '✅ لایک با موفقیت ثبت شد' : '✅ دیسلایک با موفقیت ثبت شد';
+    const successMessage = isLike ? '✅ Like successfully registered' : '✅ Dislike successfully registered';
     console.log(successMessage);
     
     // نمایش پیام موفقیت
     alert(successMessage);
+    
+    // Update voting status immediately
+    const statusElement = document.getElementById(`vote-status-${targetAddress}`);
+    if (statusElement) {
+      statusElement.innerHTML = isLike ? 
+        '<span style="color: #00ff88;">✓ Liked</span>' : 
+        '<span style="color: #ff4444;">✗ Disliked</span>';
+    }
     
     // بروزرسانی رنکینگ بعد از 2 ثانیه
     setTimeout(() => {
@@ -5704,12 +5765,12 @@ window.voteForUser = async function(targetAddress, isLike) {
     };
     
   } catch (error) {
-    console.error('❌ خطا در رای‌گیری:', error);
-    const errorMessage = `❌ خطا در رای‌گیری: ${error.message || 'خطای نامشخص'}`;
+    console.error('❌ Error in voting:', error);
+    const errorMessage = `❌ Voting error: ${error.message || 'Unknown error'}`;
     alert(errorMessage);
     return {
       success: false,
-      error: error.message || 'خطا در رای‌گیری'
+      error: error.message || 'Voting error'
     };
   }
 };
@@ -5764,13 +5825,13 @@ window.voteForIndex = async function(isLike) {
     const voteResult = document.getElementById('vote-result');
 
     if (!indexInput) {
-      throw new Error('فیلد ایندکس یافت نشد');
+      throw new Error('Index field not found');
     }
 
     const index = parseInt(indexInput.value.trim());
 
     if (!index || index <= 0) {
-      voteResult.innerHTML = '<span style="color: #ff4444;">⚠️ لطفاً یک ایندکس معتبر وارد کنید</span>';
+      voteResult.innerHTML = '<span style="color: #ff4444;">⚠️ Please enter a valid index</span>';
       return;
     }
 
@@ -5780,24 +5841,24 @@ window.voteForIndex = async function(isLike) {
     const contract = window.contractConfig.contract;
 
     if (!contract) {
-      throw new Error('قرارداد متصل نیست');
+      throw new Error('Contract not connected');
     }
 
     // بررسی اتصال کیف پول
     if (!window.contractConfig.signer) {
-      throw new Error('کیف پول متصل نیست');
+      throw new Error('Wallet not connected');
     }
 
     // دریافت آدرس کاربر از ایندکس
     const userAddress = await contract.indexToAddress(index);
 
     if (userAddress === '0x0000000000000000000000000000000000000000') {
-      voteResult.innerHTML = '<span style="color: #ff4444;">⚠️ کاربری با این ایندکس یافت نشد</span>';
+      voteResult.innerHTML = '<span style="color: #ff4444;">⚠️ No user found with this index</span>';
       return;
     }
 
     // نمایش پیام در حال پردازش
-    voteResult.innerHTML = '<span style="color: #a786ff;">⏳ در حال ارسال رای...</span>';
+    voteResult.innerHTML = '<span style="color: #a786ff;">⏳ Sending vote...</span>';
 
     // ارسال تراکنش رای‌گیری
     const tx = await contract.voteUser(userAddress, isLike);
@@ -5806,11 +5867,19 @@ window.voteForIndex = async function(isLike) {
     const receipt = await tx.wait();
 
     // نمایش پیام موفقیت
-    const successMessage = isLike ? '✅ لایک با موفقیت ثبت شد' : '✅ دیسلایک با موفقیت ثبت شد';
+    const successMessage = isLike ? '✅ Like successfully registered' : '✅ Dislike successfully registered';
     voteResult.innerHTML = `<span style="color: #00ff88;">${successMessage}</span>`;
     
     // نمایش alert هم
     alert(successMessage);
+
+    // Update voting status for this user if they're in the ranking
+    const statusElement = document.getElementById(`vote-status-${userAddress}`);
+    if (statusElement) {
+      statusElement.innerHTML = isLike ? 
+        '<span style="color: #00ff88;">✓ Liked</span>' : 
+        '<span style="color: #ff4444;">✗ Disliked</span>';
+    }
 
     // پاک کردن فیلد ورودی
     indexInput.value = '';
@@ -5832,14 +5901,14 @@ window.voteForIndex = async function(isLike) {
     };
 
   } catch (error) {
-    console.error('خطا در رای‌گیری برای ایندکس:', error);
+    console.error('Error voting for index:', error);
     const voteResult = document.getElementById('vote-result');
     if (voteResult) {
-      voteResult.innerHTML = `<span style="color: #ff4444;">❌ خطا: ${error.message || 'خطا در رای‌گیری'}</span>`;
+      voteResult.innerHTML = `<span style="color: #ff4444;">❌ Error: ${error.message || 'Voting error'}</span>`;
     }
     return {
       success: false,
-      error: error.message || 'خطا در رای‌گیری'
+      error: error.message || 'Voting error'
     };
   }
 };

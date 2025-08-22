@@ -1,17 +1,17 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>پروفایل کاربر</title>
+    <title>User Profile</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap');
         body {
-            font-family: 'Vazirmatn', Tahoma, sans-serif;
+            font-family: 'Inter', 'SF Pro Display', sans-serif;
             background: linear-gradient(135deg, #232946 0%, #181c2a 100%);
             margin: 0;
             padding: 0;
-            direction: rtl;
+            direction: ltr;
             color: #e0e6f7;
         }
         .container {
@@ -215,10 +215,10 @@
 <body>
     <script src="js/navbar.js"></script>
     <div class="container">
-        <h1>پروفایل کاربر</h1>
-        <button id="connect-wallet-btn">اتصال کیف پول</button>
+        <h1>User Profile</h1>
+        <button id="connect-wallet-btn">Connect Wallet</button>
         <div id="profile-content">
-            <div class="loading">در حال دریافت اطلاعات...</div>
+            <div class="loading">Loading information...</div>
         </div>
 
     </div>
@@ -228,10 +228,10 @@
     <script>
     function formatDateTime(ts) {
         if (!ts || ts == 0) return '-';
-        // تبدیل به رشته و سپس عدد برای جلوگیری از خطای BigInt
+        // Convert to string and then number to avoid BigInt error
         let n = Number(ts.toString());
         if (isNaN(n)) return '-';
-        // اگر مقدار بر حسب ثانیه است (کوچک)، ضربدر 1000 کن
+        // If the value is in seconds (small), multiply by 1000
         if (n < 10000000000) n = n * 1000;
         const d = new Date(n);
         if (isNaN(d.getTime())) return '-';
@@ -239,18 +239,18 @@
         return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
     }
     
-    // تابع راه‌اندازی تایمرهای برداشت
+    // Function to initialize withdrawal timers
     function startWithdrawalTimers(user) {
         const claimTimer = document.getElementById('claim-timer');
         const cashbackTimer = document.getElementById('cashback-timer');
         
         if (!claimTimer || !cashbackTimer) return;
         
-        // تایمر برداشت پورسانت (هر 12 ساعت)
+        // Commission withdrawal timer (every 12 hours)
         function updateClaimTimer() {
             const now = Math.floor(Date.now() / 1000);
             const lastClaim = user.lastClaimTime ? Number(user.lastClaimTime) : 0;
-            const nextClaimTime = lastClaim + (12 * 3600); // 12 ساعت
+            const nextClaimTime = lastClaim + (12 * 3600); // 12 hours
             const timeLeft = nextClaimTime - now;
             
             if (timeLeft > 0) {
@@ -260,46 +260,46 @@
                 claimTimer.textContent = `(${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')})`;
                 claimTimer.style.color = '#ff4444';
             } else {
-                claimTimer.textContent = '(آماده)';
+                claimTimer.textContent = '(Ready)';
                 claimTimer.style.color = '#00ff88';
             }
         }
         
-        // تایمر برداشت کش‌بک (هر 30 روز)
+        // Cashback withdrawal timer (every 30 days)
         function updateCashbackTimer() {
             const now = Math.floor(Date.now() / 1000);
             const lastCashback = user.lastMonthlyClaim ? Number(user.lastMonthlyClaim) : 0;
-            const nextCashbackTime = lastCashback + (30 * 24 * 3600); // 30 روز
+            const nextCashbackTime = lastCashback + (30 * 24 * 3600); // 30 days
             const timeLeft = nextCashbackTime - now;
             
             if (timeLeft > 0) {
                 const days = Math.floor(timeLeft / (24 * 3600));
                 const hours = Math.floor((timeLeft % (24 * 3600)) / 3600);
                 const minutes = Math.floor((timeLeft % 3600) / 60);
-                cashbackTimer.textContent = `(${days}روز ${hours}ساعت)`;
+                cashbackTimer.textContent = `(${days}days ${hours}hours)`;
                 cashbackTimer.style.color = '#ff4444';
             } else {
-                cashbackTimer.textContent = '(آماده)';
+                cashbackTimer.textContent = '(Ready)';
                 cashbackTimer.style.color = '#00ff88';
             }
         }
         
-        // راه‌اندازی تایمرها
+        // Initialize timers
         updateClaimTimer();
         updateCashbackTimer();
         
-        // به‌روزرسانی هر ثانیه
+        // Update every second
         setInterval(updateClaimTimer, 1000);
         setInterval(updateCashbackTimer, 1000);
     }
     async function loadProfile() {
         const content = document.getElementById('profile-content');
-        content.innerHTML = '<div class="loading">در حال دریافت اطلاعات...</div>';
+        content.innerHTML = '<div class="loading">Loading information...</div>';
         try {
-            if (!window.connectWallet) throw new Error('اتصال کیف پول فعال نیست');
+            if (!window.connectWallet) throw new Error('Wallet connection is not active');
             const { contract, address, provider } = await window.connectWallet();
-            if (!contract || !address) throw new Error('اتصال کیف پول برقرار نشد');
-            // اطلاعات struct User با هندل خطا
+            if (!contract || !address) throw new Error('Wallet connection failed');
+            // User struct information with error handling
             async function fetchUserSafe(addr) {
                 try {
                     return await contract.users(addr);
@@ -324,11 +324,11 @@
                 }
             }
             const user = await fetchUserSafe(address);
-            // موجودی‌ها
+            // Balances
             const maticBalance = await provider.getBalance(address);
             const IAMBalance = await contract.balanceOf(address);
             
-            // تابع کوتاه کردن اعداد بزرگ
+            // Function to format large numbers
             function formatLargeNumber(num) {
                 if (num >= 1000000) {
                     return (num / 1000000).toFixed(1) + 'M';
@@ -339,7 +339,7 @@
                 }
             }
             
-            // محاسبه معادل دلاری IAM
+            // Calculate IAM USD equivalent
             let IAMUsdValue = 0;
             let tokenPrice = 0;
             try {
@@ -350,7 +350,7 @@
                     IAMUsdValue = IAMAmount * tokenPrice;
                 }
             } catch (e) {
-                console.log('خطا در دریافت قیمت توکن:', e);
+                console.log('Error getting token price:', e);
             }
             
             // DAI
@@ -362,15 +362,15 @@
                 const daiRaw = await dai.balanceOf(address);
                 daiBalance = ethers.formatUnits(daiRaw, 18);
             } catch {}
-            // ایندکس
+            // Index
             const IAMId = user.index ? `IAM${user.index.toString().padStart(5, '0')}` : '-';
-            // شرط فعال بودن دکمه کشبک ماهانه
+            // Condition for monthly cashback button activation
             let canMonthlyCashback = false;
             let monthlyMsg = '';
             const now = Math.floor(Date.now() / 1000);
             const lastMonthly = user.lastMonthlyClaim ? Number(user.lastMonthlyClaim) : 0;
             const oneMonth = 30 * 24 * 60 * 60;
-            // بررسی فرزند خالی (left یا right)
+            // Check for empty child (left or right)
             let hasEmptyChild = false;
             if (typeof contract.indexToAddress === 'function') {
                 const leftAddr = await contract.indexToAddress(BigInt(user.index) * 2n);
@@ -382,8 +382,8 @@
             if (hasEmptyChild && (now - lastMonthly >= oneMonth)) {
                 canMonthlyCashback = true;
             } else {
-                if (!hasEmptyChild) monthlyMsg = 'برای برداشت کشبک ماهانه باید حداقل یک جایگاه فرزند خالی داشته باشید.';
-                else if (now - lastMonthly < oneMonth) monthlyMsg = 'از آخرین برداشت ماهانه باید حداقل یک ماه گذشته باشد.';
+                if (!hasEmptyChild) monthlyMsg = 'To withdraw monthly cashback, you must have at least one empty child position.';
+                else if (now - lastMonthly < oneMonth) monthlyMsg = 'At least one month must have passed since the last monthly withdrawal.';
             }
             // نمایش
             content.innerHTML = `
@@ -403,66 +403,72 @@
                     </div>
                 </div>
                 <div class="withdrawal-buttons" style="display:flex;gap:1.2rem;justify-content:center;margin-bottom:1.5rem;flex-wrap:wrap;">
-                  <button id="claim-btn" title="برداشت امتیاز فقط هر ۱۲ ساعت یکبار و در صورت داشتن امتیاز قابل برداشت است. اگر امتیاز ندارید یا هنوز ۱۲ ساعت نگذشته باشد، برداشت ممکن نیست." style="background:linear-gradient(90deg,#00ff88,#a786ff);color:#181c2a;font-weight:bold;border:none;border-radius:10px;padding:0.9em 2.2em;font-size:1.08em;cursor:pointer;box-shadow:0 2px 8px #00ff8840;display:inline-flex;align-items:center;gap:0.6em;transition:box-shadow 0.2s,transform 0.2s;"><span style='font-size:1.2em;'>💸</span> برداشت پورسانت <span id="claim-timer" style="font-size:0.9em;margin-right:0.5em;"></span></button>
-                  <button id="monthly-cashback-btn" title="برداشت کش‌بک فقط هر ۳۰ روز یکبار، با داشتن حداقل یک جایگاه فرزند خالی و تا سقف سپرده امکان‌پذیر است. اگر هر دو جایگاه پر باشد یا هنوز ۳۰ روز نگذشته باشد یا سقف کش‌بک پر شده باشد، برداشت ممکن نیست." style="background:linear-gradient(90deg,#a786ff,#00ff88);color:#181c2a;font-weight:bold;border:none;border-radius:10px;padding:0.9em 2.2em;font-size:1.08em;cursor:pointer;box-shadow:0 2px 8px #a786ff40;display:inline-flex;align-items:center;gap:0.6em;transition:box-shadow 0.2s,transform 0.2s;"><span style='font-size:1.2em;'>📆</span> کش‌بک <span id="cashback-timer" style="font-size:0.9em;margin-right:0.5em;"></span></button>
-                  <button id="upgrade-cap-btn" title="ارتقاع سقف امتیاز باینری با استفاده از توکن‌های IAM. هر چه بیشتر ارتقاع دهید، سقف امتیاز شما بیشتر می‌شود." style="background:linear-gradient(90deg,#ff6b35,#ff8e53);color:#181c2a;font-weight:bold;border:none;border-radius:10px;padding:0.9em 2.2em;font-size:1.08em;cursor:pointer;box-shadow:0 2px 8px #ff6b3540;display:inline-flex;align-items:center;gap:0.6em;transition:box-shadow 0.2s,transform 0.2s;"><span style='font-size:1.2em;'>📈</span> ارتقاع سقف</button>
+                  <button id="claim-btn" title="Commission withdrawal is only possible once every 12 hours and if you have points to withdraw. If you don't have points or 12 hours haven't passed yet, withdrawal is not possible." style="background:linear-gradient(90deg,#00ff88,#a786ff);color:#181c2a;font-weight:bold;border:none;border-radius:10px;padding:0.9em 2.2em;font-size:1.08em;cursor:pointer;box-shadow:0 2px 8px #00ff8840;display:inline-flex;align-items:center;gap:0.6em;transition:box-shadow 0.2s,transform 0.2s;"><span style='font-size:1.2em;'>💸</span> Withdraw Commission <span id="claim-timer" style="font-size:0.9em;margin-right:0.5em;"></span></button>
+                  <button id="monthly-cashback-btn" title="Cashback withdrawal is only possible once every 30 days, with at least one empty child position and up to the deposit limit. If both positions are full or 30 days haven't passed or the cashback limit is reached, withdrawal is not possible." style="background:linear-gradient(90deg,#a786ff,#00ff88);color:#181c2a;font-weight:bold;border:none;border-radius:10px;padding:0.9em 2.2em;font-size:1.08em;cursor:pointer;box-shadow:0 2px 8px #a786ff40;display:inline-flex;align-items:center;gap:0.6em;transition:box-shadow 0.2s,transform 0.2s;"><span style='font-size:1.2em;'>📆</span> Cashback <span id="cashback-timer" style="font-size:0.9em;margin-right:0.5em;"></span></button>
+                  <button id="upgrade-cap-btn" title="Upgrade binary points cap using IAM tokens. The more you upgrade, the higher your points cap becomes." style="background:linear-gradient(90deg,#ff6b35,#ff8e53);color:#181c2a;font-weight:bold;border:none;border-radius:10px;padding:0.9em 2.2em;font-size:1.08em;cursor:pointer;box-shadow:0 2px 8px #ff6b3540;display:inline-flex;align-items:center;gap:0.6em;transition:box-shadow 0.2s,transform 0.2s;"><span style='font-size:1.2em;'>📈</span> Upgrade Cap</button>
                 </div>
                 <div id="monthly-cashback-msg" style="display:none;color:#ff4444;text-align:center;margin-bottom:1.2rem;font-size:1.05em;transition:opacity 0.3s;"></div>
                 
-                                 <!-- مودال ارتقاع سقف -->
-                 <div id="upgrade-cap-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:1000;backdrop-filter:blur(5px);">
-                     <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(35,41,70,0.98);border-radius:18px;padding:2rem;max-width:600px;width:90%;border:2px solid #ff6b3533;box-shadow:0 8px 32px rgba(0,0,0,0.5);">
-                         <div style="text-align:center;margin-bottom:1.5rem;">
-                             <h3 style="color:#ff6b35;margin:0;font-size:1.5em;">📈 ارتقاع سقف امتیاز باینری</h3>
-                             <p style="color:#ccc;margin:0.5rem 0;font-size:0.9em;">هر 4 هفته می‌توانید حداکثر 2 پوینت خریداری کنید</p>
-                         </div>
-                         
-                         <div style="margin-bottom:1.5rem;">
-                             <label style="display:block;color:#a786ff;margin-bottom:0.5rem;font-weight:bold;">مقدار IAM برای ارتقاع:</label>
-                             <input type="number" id="upgrade-cap-amount" placeholder="مقدار IAM را وارد کنید" style="width:100%;padding:0.8rem;border:2px solid #ff6b3333;border-radius:8px;background:rgba(255,107,51,0.1);color:#fff;font-size:1rem;box-sizing:border-box;">
-                             <div style="margin-top:0.5rem;font-size:0.9em;color:#ccc;">
-                                 <span>موجودی فعلی: </span>
-                                 <span id="upgrade-cap-balance" style="color:#00ff88;font-weight:bold;">در حال بارگذاری...</span>
-                             </div>
-                             <div style="margin-top:0.5rem;font-size:0.9em;color:#ccc;">
-                                 <span>سقف فعلی: </span>
-                                 <span id="upgrade-cap-current" style="color:#a786ff;font-weight:bold;">در حال بارگذاری...</span>
-                             </div>
-                         </div>
-                         
-                         <div style="display:flex;gap:1rem;justify-content:center;">
-                             <button id="upgrade-cap-confirm" style="background:linear-gradient(90deg,#ff6b35,#ff8e53);color:#181c2a;border:none;border-radius:8px;padding:0.8rem 1.5rem;font-weight:bold;cursor:pointer;transition:all 0.2s;">تایید ارتقاع</button>
-                             <button id="upgrade-cap-cancel" style="background:rgba(255,255,255,0.1);color:#ccc;border:1px solid #666;border-radius:8px;padding:0.8rem 1.5rem;cursor:pointer;transition:all 0.2s;">لغو</button>
-                         </div>
-                         
-                         <div id="upgrade-cap-status" style="margin-top:1rem;text-align:center;font-size:0.9em;min-height:1.5em;"></div>
+                                                   <!-- Upgrade Cap Modal -->
+                  <div id="upgrade-cap-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:1000;backdrop-filter:blur(5px);">
+                      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(35,41,70,0.98);border-radius:18px;padding:2rem;max-width:600px;width:90%;border:2px solid #ff6b3533;box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+                          <div style="text-align:center;margin-bottom:1.5rem;">
+                              <h3 style="color:#ff6b35;margin:0;font-size:1.5em;">📈 Upgrade Binary Points Cap</h3>
+                              <p style="color:#ccc;margin:0.5rem 0;font-size:0.9em;">You can purchase up to 2 points every 4 weeks</p>
+                          </div>
+                          
+                          <div style="margin-bottom:1.5rem;">
+                              <label style="display:block;color:#a786ff;margin-bottom:0.5rem;font-weight:bold;">IAM Amount for Upgrade:</label>
+                              <input type="number" id="upgrade-cap-amount" placeholder="Enter IAM amount" style="width:100%;padding:0.8rem;border:2px solid #ff6b3333;border-radius:8px;background:rgba(255,107,51,0.1);color:#fff;font-size:1rem;box-sizing:border-box;">
+                              <div style="margin-top:0.5rem;font-size:0.9em;color:#ccc;">
+                                  <span>Current Balance: </span>
+                                  <span id="upgrade-cap-balance" style="color:#00ff88;font-weight:bold;">Loading...</span>
+                              </div>
+                              <div style="margin-top:0.5rem;font-size:0.9em;color:#ccc;">
+                                  <span>Current Cap: </span>
+                                  <span id="upgrade-cap-current" style="color:#a786ff;font-weight:bold;">Loading...</span>
+                              </div>
+                          </div>
+                          
+                          <div style="display:flex;gap:1rem;justify-content:center;">
+                              <button id="upgrade-cap-confirm" style="background:linear-gradient(90deg,#ff6b35,#ff8e53);color:#181c2a;border:none;border-radius:8px;padding:0.8rem 1.5rem;font-weight:bold;cursor:pointer;transition:all 0.2s;">Confirm Upgrade</button>
+                              <button id="upgrade-cap-cancel" style="background:rgba(255,255,255,0.1);color:#ccc;border:1px solid #666;border-radius:8px;padding:0.8rem 1.5rem;cursor:pointer;transition:all 0.2s;">Cancel</button>
+                          </div>
+                          
+                          <div id="upgrade-cap-status" style="margin-top:1rem;text-align:center;font-size:0.9em;min-height:1.5em;"></div>
+                      </div>
+                  </div>
+                <div class="profile-row"><span class="profile-label">Wallet Address:</span><span class="profile-value">${address}</span></div>
+                                 <div class="profile-row"><span class="profile-label">ID:</span><span class="profile-value">${IAMId}</span></div>
+                                 <div class="profile-row"><span class="profile-label">ID Number:</span><span class="profile-value">${user.index}</span></div>
+                <div class="profile-row"><span class="profile-label">Active:</span><span class="profile-value">${(user.index && BigInt(user.index) > 0n) ? 'Yes' : 'No'}</span></div>
+                <div class="profile-row"><span class="profile-label">Binary Points:</span><span class="profile-value">${user.binaryPoints}</span></div>
+                <div class="profile-row"><span class="profile-label">Binary Points Cap:</span><span class="profile-value">${user.binaryPointCap}</span></div>
+                <div class="profile-row"><span class="profile-label">Claimed Points:</span><span class="profile-value">${user.binaryPointsClaimed}</span></div>
+                <div class="profile-row"><span class="profile-label">Total Purchases:</span><span class="profile-value">${user.totalPurchasedKind}</span></div>
+                <div class="profile-row"><span class="profile-label">Upgrade Time:</span><span class="profile-value">${formatDateTime(user.upgradeTime)}</span></div>
+                <div class="profile-row"><span class="profile-label">Last Points Withdrawal:</span><span class="profile-value">${formatDateTime(user.lastClaimTime)}</span></div>
+                <div class="profile-row"><span class="profile-label">Left Points:</span><span class="profile-value">${user.leftPoints}</span></div>
+                <div class="profile-row"><span class="profile-label">Right Points:</span><span class="profile-value">${user.rightPoints}</span></div>
+                <div class="profile-row"><span class="profile-label">Left Wallets Count:</span><span class="profile-value" id="profile-left-wallets">Calculating...</span></div>
+                <div class="profile-row"><span class="profile-label">Right Wallets Count:</span><span class="profile-value" id="profile-right-wallets">Calculating...</span></div>
+                <div class="profile-row"><span class="profile-label">Last Monthly Withdrawal:</span><span class="profile-value">${formatDateTime(user.lastMonthlyClaim)}</span></div>
+                <div class="profile-row"><span class="profile-label">Total Monthly Rewards:</span><span class="profile-value">${user.totalMonthlyRewarded}</span></div>
+                <div class="profile-row"><span class="profile-label">Deposit:</span><span class="profile-value">${Number(user.depositedAmount.toString())/1e18|0}</span></div>
+                                 <div class="profile-row" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+                     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                         <span class="profile-label">Referral Reward:</span>
+                         <span class="profile-value">${Number(user.refclimed.toString())/1e18|0} IAM</span>
+                     </div>
+                     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                         <span class="profile-label">USD Value:</span>
+                         <span class="profile-value">$${formatLargeNumber(Number(user.refclimed.toString())/1e18 * tokenPrice)}</span>
+                     </div>
+                     <div style="display: flex; align-items: center; gap: 8px; width: 100%; background: rgba(167,134,255,0.08); border-radius: 6px; padding: 8px; border: 1px solid #a786ff22;">
+                         <span class="profile-value" id="profile-referral-link" style="flex: 1; word-break: break-all; font-size: 0.85em; color: #a786ff;">${window.location.origin}/?ref=${address}</span>
+                         <button id="copyProfileReferral" style="background: linear-gradient(90deg,#00ff88,#a786ff); color: #181c2a; border: none; border-radius: 4px; padding: 6px 12px; font-size: 0.8em; cursor: pointer; font-weight: bold; white-space: nowrap; transition: all 0.2s;">Copy</button>
                      </div>
                  </div>
-                <div class="profile-row"><span class="profile-label">آدرس کیف پول:</span><span class="profile-value">${address}</span></div>
-                <div class="profile-row"><span class="profile-label">ایندکس:</span><span class="profile-value">${IAMId}</span></div>
-                <div class="profile-row"><span class="profile-label">ایندکس:</span><span class="profile-value">${user.index}</span></div>
-                <div class="profile-row"><span class="profile-label">فعال:</span><span class="profile-value">${(user.index && BigInt(user.index) > 0n) ? 'بله' : 'خیر'}</span></div>
-                <div class="profile-row"><span class="profile-label">امتیاز باینری:</span><span class="profile-value">${user.binaryPoints}</span></div>
-                <div class="profile-row"><span class="profile-label">سقف امتیاز باینری:</span><span class="profile-value">${user.binaryPointCap}</span></div>
-                <div class="profile-row"><span class="profile-label">امتیازهای دریافت‌شده:</span><span class="profile-value">${user.binaryPointsClaimed}</span></div>
-                <div class="profile-row"><span class="profile-label">مجموع خرید:</span><span class="profile-value">${user.totalPurchasedKind}</span></div>
-                <div class="profile-row"><span class="profile-label">زمان ارتقا:</span><span class="profile-value">${formatDateTime(user.upgradeTime)}</span></div>
-                <div class="profile-row"><span class="profile-label">آخرین برداشت امتیاز:</span><span class="profile-value">${formatDateTime(user.lastClaimTime)}</span></div>
-                <div class="profile-row"><span class="profile-label">امتیاز چپ:</span><span class="profile-value">${user.leftPoints}</span></div>
-                <div class="profile-row"><span class="profile-label">امتیاز راست:</span><span class="profile-value">${user.rightPoints}</span></div>
-                <div class="profile-row"><span class="profile-label">تعداد ولت‌های سمت چپ:</span><span class="profile-value" id="profile-left-wallets">در حال محاسبه...</span></div>
-                <div class="profile-row"><span class="profile-label">تعداد ولت‌های سمت راست:</span><span class="profile-value" id="profile-right-wallets">در حال محاسبه...</span></div>
-                <div class="profile-row"><span class="profile-label">آخرین برداشت ماهانه:</span><span class="profile-value">${formatDateTime(user.lastMonthlyClaim)}</span></div>
-                <div class="profile-row"><span class="profile-label">کل پاداش ماهانه:</span><span class="profile-value">${user.totalMonthlyRewarded}</span></div>
-                <div class="profile-row"><span class="profile-label">پاداش رفرال:</span><span class="profile-value">${Number(user.refclimed.toString())/1e18|0}</span></div>
-                <div class="profile-row"><span class="profile-label">سپرده:</span><span class="profile-value">${Number(user.depositedAmount.toString())/1e18|0}</span></div>
-                <div class="profile-row" style="flex-direction: column; align-items: flex-start; gap: 10px;">
-                    <span class="profile-label">لینک رفرال:</span>
-                    <div style="display: flex; align-items: center; gap: 10px; width: 100%; background: rgba(167,134,255,0.1); border-radius: 8px; padding: 12px; border: 1px solid #a786ff33;">
-                        <span class="profile-value" id="profile-referral-link" style="flex: 1; word-break: break-all; font-size: 0.9em;">${window.location.origin}/?ref=${address}</span>
-                        <button id="copyProfileReferral" style="background: linear-gradient(90deg,#00ff88,#a786ff); color: #181c2a; border: none; border-radius: 6px; padding: 8px 16px; font-size: 0.9em; cursor: pointer; font-weight: bold; white-space: nowrap; transition: all 0.2s;">کپی</button>
-                    </div>
-                </div>
             `;
             setTimeout(function() {
               const cashbackBtn = document.getElementById('monthly-cashback-btn');
@@ -486,29 +492,29 @@
                     cashbackMsg.style.boxShadow = '0 2px 8px #a786ff22';
                     cashbackMsg.style.whiteSpace = 'pre-line';
                     
-                    // نمایش شرایط برداشت امتیاز
-                    cashbackMsg.innerHTML = '<b>شرایط برداشت امتیاز:</b><br>• فقط هر ۱۲ ساعت یکبار می‌توانید برداشت انجام دهید.<br>• باید امتیاز فعال داشته باشید.<br>• اگر امتیاز ندارید یا هنوز ۱۲ ساعت نگذشته باشد، برداشت ممکن نیست.<br><br><b>در حال بررسی شرایط...</b>';
-                    cashbackMsg.style.color = '#a786ff';
-                    
-                    try {
-                      const { contract, address } = await window.connectWallet();
-                      const user = await fetchUserSafe(address);
-                      const now = Math.floor(Date.now() / 1000);
-                      if (!(user.index && BigInt(user.index) > 0n)) throw new Error('حساب شما فعال نیست.');
-                      if (user.binaryPoints == 0) throw new Error('امتیازی برای برداشت ندارید.');
-                      if (now < Number(user.lastClaimTime) + 12 * 3600) {
-                        const remain = Math.ceil((Number(user.lastClaimTime) + 12 * 3600 - now) / 3600);
-                        throw new Error(`هنوز ${remain} ساعت تا برداشت بعدی باقی مانده است.`);
-                      }
-                      cashbackMsg.innerHTML = 'در حال ارسال درخواست برداشت امتیاز...';
-                      cashbackMsg.style.color = '#a786ff';
-                      const tx = await contract.claim();
-                      await tx.wait();
-                      cashbackMsg.style.display = 'none';
-                      await loadProfile();
-                    } catch(err) {
-                      cashbackMsg.style.display = 'none';
-                    }
+                                         // Display commission withdrawal conditions
+                     cashbackMsg.innerHTML = '<b>Commission Withdrawal Conditions:</b><br>• You can only withdraw once every 12 hours.<br>• You must have active points.<br>• If you don\'t have points or 12 hours haven\'t passed yet, withdrawal is not possible.<br><br><b>Checking conditions...</b>';
+                     cashbackMsg.style.color = '#a786ff';
+                     
+                     try {
+                       const { contract, address } = await window.connectWallet();
+                       const user = await fetchUserSafe(address);
+                       const now = Math.floor(Date.now() / 1000);
+                       if (!(user.index && BigInt(user.index) > 0n)) throw new Error('Your account is not active.');
+                       if (user.binaryPoints == 0) throw new Error('You have no points to withdraw.');
+                       if (now < Number(user.lastClaimTime) + 12 * 3600) {
+                         const remain = Math.ceil((Number(user.lastClaimTime) + 12 * 3600 - now) / 3600);
+                         throw new Error(`Still ${remain} hours until next withdrawal.`);
+                       }
+                       cashbackMsg.innerHTML = 'Sending commission withdrawal request...';
+                       cashbackMsg.style.color = '#a786ff';
+                       const tx = await contract.claim();
+                       await tx.wait();
+                       cashbackMsg.style.display = 'none';
+                       await loadProfile();
+                     } catch(err) {
+                       cashbackMsg.style.display = 'none';
+                     }
                     claimBtn.disabled = false;
                     claimBtn.style.opacity = '';
                     claimBtn.style.cursor = '';
@@ -531,34 +537,34 @@
                     cashbackMsg.style.boxShadow = '0 2px 8px #00ff8822';
                     cashbackMsg.style.whiteSpace = 'pre-line';
                     
-                    // نمایش شرایط برداشت کش‌بک
-                    cashbackMsg.innerHTML = '<b>شرایط برداشت کش‌بک ماهانه:</b><br>• فقط هر ۳۰ روز یکبار می‌توانید برداشت انجام دهید.<br>• باید حداقل یک جایگاه فرزند خالی داشته باشید.<br>• سقف کش‌بک برابر با مبلغ سپرده شماست.<br>• اگر هر دو جایگاه پر باشد یا هنوز ۳۰ روز نگذشته باشد یا سقف کش‌بک پر شده باشد، برداشت ممکن نیست.<br>• <span style=\'color:#a786ff\'>در صورتی که موجودی کافی در صندوق کمک وجود داشته باشد، هر ماه معادل <b>سه درصد</b> از مبلغی که پرداخت کرده‌اید به عنوان کش‌بک ماهانه به شما پرداخت خواهد شد.</span><br><br><b>در حال بررسی شرایط...</b>';
-                    cashbackMsg.style.color = '#00ff88';
-                    
-                    try {
-                      const { contract, address } = await window.connectWallet();
-                      const user = await fetchUserSafe(address);
-                      const now = Math.floor(Date.now() / 1000);
-                      const leftAddr = await contract.getLeftAddress(user.index);
-                      const rightAddr = await contract.getRightAddress(user.index);
-                      if (!(user.index && BigInt(user.index) > 0n)) throw new Error('حساب شما فعال نیست.');
-                      if (leftAddr != '0x0000000000000000000000000000000000000000' && rightAddr != '0x0000000000000000000000000000000000000000')
-                        throw new Error('برای برداشت کش‌بک باید حداقل یک جایگاه فرزند خالی داشته باشید.');
-                      if (now < Number(user.lastMonthlyClaim) + 30 * 24 * 3600) {
-                        const remain = Math.ceil((Number(user.lastMonthlyClaim) + 30 * 24 * 3600 - now) / (24*3600));
-                        throw new Error(`هنوز ${remain} روز تا برداشت بعدی کش‌بک باقی مانده است.`);
-                      }
-                      if (user.totalMonthlyRewarded >= user.depositedAmount)
-                        throw new Error('سقف کش‌بک ماهانه شما پر شده است.');
-                      cashbackMsg.innerHTML = 'در حال ارسال درخواست برداشت کش‌بک...';
-                      cashbackMsg.style.color = '#a786ff';
-                      const tx = await contract.claimMonthlyReward(1);
-                      await tx.wait();
-                      cashbackMsg.style.display = 'none';
-                      await loadProfile();
-                    } catch(err) {
-                      cashbackMsg.style.display = 'none';
-                    }
+                                         // Display cashback withdrawal conditions
+                     cashbackMsg.innerHTML = '<b>Monthly Cashback Withdrawal Conditions:</b><br>• You can only withdraw once every 30 days.<br>• You must have at least one empty child position.<br>• The cashback limit equals your deposit amount.<br>• If both positions are full or 30 days haven\'t passed or the cashback limit is reached, withdrawal is not possible.<br>• <span style=\'color:#a786ff\'>If there is sufficient balance in the help fund, you will receive <b>three percent</b> of the amount you paid as monthly cashback each month.</span><br><br><b>Checking conditions...</b>';
+                     cashbackMsg.style.color = '#00ff88';
+                     
+                     try {
+                       const { contract, address } = await window.connectWallet();
+                       const user = await fetchUserSafe(address);
+                       const now = Math.floor(Date.now() / 1000);
+                       const leftAddr = await contract.getLeftAddress(user.index);
+                       const rightAddr = await contract.getRightAddress(user.index);
+                       if (!(user.index && BigInt(user.index) > 0n)) throw new Error('Your account is not active.');
+                       if (leftAddr != '0x0000000000000000000000000000000000000000' && rightAddr != '0x0000000000000000000000000000000000000000')
+                         throw new Error('To withdraw cashback, you must have at least one empty child position.');
+                       if (now < Number(user.lastMonthlyClaim) + 30 * 24 * 3600) {
+                         const remain = Math.ceil((Number(user.lastMonthlyClaim) + 30 * 24 * 3600 - now) / (24*3600));
+                         throw new Error(`Still ${remain} days until next cashback withdrawal.`);
+                       }
+                       if (user.totalMonthlyRewarded >= user.depositedAmount)
+                         throw new Error('Your monthly cashback limit is full.');
+                       cashbackMsg.innerHTML = 'Sending cashback withdrawal request...';
+                       cashbackMsg.style.color = '#a786ff';
+                       const tx = await contract.claimMonthlyReward(1);
+                       await tx.wait();
+                       cashbackMsg.style.display = 'none';
+                       await loadProfile();
+                     } catch(err) {
+                       cashbackMsg.style.display = 'none';
+                     }
                     cashbackBtn.disabled = false;
                     cashbackBtn.style.opacity = '';
                     cashbackBtn.style.cursor = '';
@@ -567,26 +573,26 @@
               }
             }, 100);
             
-            // راه‌اندازی دکمه کپی لینک رفرال
-            if (typeof setupReferralCopy === 'function') {
-                setupReferralCopy();
-            }
-            
-            // محاسبه و نمایش تعداد ولت‌های سمت راست و چپ
-            if (typeof updateWalletCountsDisplay === 'function') {
-                setTimeout(async () => {
-                    await updateWalletCountsDisplay();
-                }, 1000); // تاخیر 1 ثانیه برای اطمینان از بارگذاری کامل
-            }
-            
-            // راه‌اندازی تایمرهای برداشت
-            startWithdrawalTimers(user);
-            
-                         // راه‌اندازی دکمه ارتقاع سقف
-             setupUpgradeCapButton(user, contract, address);
-        } catch (e) {
-            content.innerHTML = `<div class="error-message">خطا: ${e.message || e}</div>`;
-        }
+                         // Setup referral link copy button
+             if (typeof setupReferralCopy === 'function') {
+                 setupReferralCopy();
+             }
+             
+             // Calculate and display left and right wallet counts
+             if (typeof updateWalletCountsDisplay === 'function') {
+                 setTimeout(async () => {
+                     await updateWalletCountsDisplay();
+                 }, 1000); // 1 second delay to ensure complete loading
+             }
+             
+             // Initialize withdrawal timers
+             startWithdrawalTimers(user);
+             
+                          // Setup upgrade cap button
+              setupUpgradeCapButton(user, contract, address);
+                 } catch (e) {
+             content.innerHTML = `<div class="error-message">Error: ${e.message || e}</div>`;
+         }
     }
     document.getElementById('connect-wallet-btn').onclick = async function() {
         await loadProfile();

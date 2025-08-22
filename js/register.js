@@ -404,20 +404,122 @@ async function performUpgrade() {
 
 // تابع نمایش پیام موفقیت
 function showRegisterSuccess(message) {
-    const statusElement = document.getElementById('register-status');
-    if (statusElement) {
-        statusElement.textContent = message || 'ثبت‌نام با موفقیت انجام شد! به جمع کاربران ما خوش آمدید.';
-        statusElement.className = 'profile-status success';
-    }
+    showMessageBox(message || 'ثبت‌نام با موفقیت انجام شد! به جمع کاربران ما خوش آمدید.', 'success');
 }
 
 // تابع نمایش پیام خطا
 function showRegisterError(message) {
-    const statusElement = document.getElementById('register-status');
-    if (statusElement) {
-        statusElement.textContent = message || 'خطا در ثبت‌نام. لطفاً مجدداً تلاش کنید یا با پشتیبانی تماس بگیرید.';
-        statusElement.className = 'profile-status error';
+    showMessageBox(message || 'خطا در ثبت‌نام. لطفاً مجدداً تلاش کنید یا با پشتیبانی تماس بگیرید.', 'error');
+}
+
+// تابع نمایش پیام‌های عمومی
+function showMessageBox(message, type = 'info') {
+    // حذف message box قبلی اگر وجود دارد
+    const existingBox = document.getElementById('message-box');
+    if (existingBox) {
+        existingBox.remove();
     }
+    
+    // ایجاد message box جدید
+    const messageBox = document.createElement('div');
+    messageBox.id = 'message-box';
+    messageBox.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: ${type === 'error' ? 'rgba(255, 0, 0, 0.95)' : type === 'success' ? 'rgba(0, 255, 136, 0.95)' : 'rgba(167, 134, 255, 0.95)'};
+        color: white;
+        padding: 20px 30px;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        z-index: 10000;
+        max-width: 400px;
+        text-align: center;
+        font-size: 14px;
+        line-height: 1.5;
+        backdrop-filter: blur(10px);
+        border: 1px solid ${type === 'error' ? 'rgba(255, 0, 0, 0.3)' : type === 'success' ? 'rgba(0, 255, 136, 0.3)' : 'rgba(167, 134, 255, 0.3)'};
+    `;
+    
+    // آیکون بر اساس نوع پیام
+    const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+    
+    messageBox.innerHTML = `
+        <div style="margin-bottom: 10px; font-size: 24px;">${icon}</div>
+        <div style="margin-bottom: 15px;">${message}</div>
+        <button onclick="this.parentElement.remove()" style="
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s ease;
+        " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+            بستن
+        </button>
+    `;
+    
+    document.body.appendChild(messageBox);
+    
+    // حذف خودکار بعد از 5 ثانیه
+    setTimeout(() => {
+        if (messageBox.parentElement) {
+            messageBox.remove();
+        }
+    }, 5000);
+}
+
+// تابع نمایش پیام‌های موقت (برای validation)
+function showTempMessage(message, type = 'info', duration = 3000) {
+    const tempBox = document.createElement('div');
+    tempBox.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'error' ? 'rgba(255, 0, 0, 0.9)' : type === 'success' ? 'rgba(0, 255, 136, 0.9)' : 'rgba(167, 134, 255, 0.9)'};
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        z-index: 9999;
+        font-size: 13px;
+        max-width: 300px;
+        backdrop-filter: blur(8px);
+        border: 1px solid ${type === 'error' ? 'rgba(255, 0, 0, 0.3)' : type === 'success' ? 'rgba(0, 255, 136, 0.3)' : 'rgba(167, 134, 255, 0.3)'};
+        animation: slideIn 0.3s ease;
+    `;
+    
+    const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+    tempBox.innerHTML = `${icon} ${message}`;
+    
+    document.body.appendChild(tempBox);
+    
+    setTimeout(() => {
+        if (tempBox.parentElement) {
+            tempBox.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => tempBox.remove(), 300);
+        }
+    }, duration);
+}
+
+// اضافه کردن CSS animations
+if (!document.getElementById('message-box-styles')) {
+    const style = document.createElement('style');
+    style.id = 'message-box-styles';
+    style.textContent = `
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+    `;
+    document.head.appendChild(style);
 }
 
 // تابع به‌روزرسانی نمایش موجودی
@@ -451,11 +553,11 @@ function displayRegistrationInfo(registrationPrice, regprice, tokenPriceUSD, tok
                         <span style="color: #00ccff; font-weight: bold;">$0.01 USD</span>
                     </div>
                     <div style="display: flex; justify-content: space-between;">
-                        <span style="color: #ccc;">قیمت فعلی توکن (دلار):</span>
+                        <span style="color: #ccc;">Current Token Price (USD):</span>
                         <span style="color: #ffffff; font-weight: bold;">$${tokenPriceUSD} USD</span>
                     </div>
                     <div style="display: flex; justify-content: space-between;">
-                        <span style="color: #ccc;">قیمت فعلی توکن (MATIC):</span>
+                        <span style="color: #ccc;">Current Token Price (MATIC):</span>
                         <span style="color: #ff9500; font-weight: bold;">${tokenPriceMatic} MATIC</span>
                     </div>
                 </div>
@@ -671,13 +773,13 @@ window.showRegistrationForm = async function() {
       let referrer = referrerInput ? referrerInput.value.trim() : '';
 
       if (!/^0x[a-fA-F0-9]{40}$/.test(targetUserAddress)) {
-        if (registerStatus) registerStatus.textContent = 'آدرس کیف پول کاربر جدید معتبر نیست.';
+        showTempMessage('آدرس کیف پول کاربر جدید معتبر نیست.', 'error');
         registerBtn.disabled = false;
         registerBtn.textContent = 'ثبت‌ نام';
         return;
       }
       if (!/^0x[a-fA-F0-9]{40}$/.test(referrer)) {
-        if (registerStatus) registerStatus.textContent = 'آدرس معرف معتبر نیست.';
+        showTempMessage('آدرس معرف معتبر نیست.', 'error');
         registerBtn.disabled = false;
         registerBtn.textContent = 'ثبت‌ نام';
         return;
@@ -688,7 +790,7 @@ window.showRegistrationForm = async function() {
         userData = await contract.users(targetUserAddress);
       } catch (e) { userData = null; }
       if (userData && userData.index && BigInt(userData.index) > 0n) {
-        if (registerStatus) registerStatus.textContent = 'این آدرس قبلاً ثبت‌نام کرده است.';
+        showTempMessage('این آدرس قبلاً ثبت‌نام کرده است.', 'error');
         registerBtn.disabled = false;
         registerBtn.textContent = 'ثبت‌ نام';
         return;
@@ -699,7 +801,7 @@ window.showRegistrationForm = async function() {
         refData = await contract.users(referrer);
       } catch (e) { refData = null; }
       if (!refData || !(refData.index && BigInt(refData.index) > 0n)) {
-        if (registerStatus) registerStatus.textContent = 'معرف فعال نیست.';
+        showTempMessage('معرف فعال نیست.', 'error');
         registerBtn.disabled = false;
         registerBtn.textContent = 'ثبت‌ نام';
         return;
@@ -708,12 +810,12 @@ window.showRegistrationForm = async function() {
       if (parseFloat(userLvlBalance) < parseFloat(requiredTokenAmount)) {
         registerBtn.disabled = true;
         registerBtn.textContent = 'موجودی IAM کافی نیست';
-        if (registerStatus) registerStatus.innerHTML = 'موجودی توکن IAM شما برای ثبت‌نام کافی نیست.<br>برای ثبت‌نام باید حداقل '+requiredTokenAmount+' IAM داشته باشید.<br>لطفاً ابتدا کیف پول خود را شارژ یا از بخش سواپ/فروشگاه توکن IAM تهیه کنید.';
+        showTempMessage('موجودی توکن IAM شما برای ثبت‌نام کافی نیست. برای ثبت‌نام باید حداقل '+requiredTokenAmount+' IAM داشته باشید. لطفاً ابتدا کیف پول خود را شارژ یا از بخش سواپ/فروشگاه توکن IAM تهیه کنید.', 'error');
         return;
       } else if (parseFloat(maticBalance) < requiredMatic) {
         registerBtn.disabled = true;
         registerBtn.textContent = 'موجودی متیک کافی نیست';
-        if (registerStatus) registerStatus.textContent = 'برای ثبت‌نام باید حداقل '+requiredMatic+' MATIC در کیف پول خود داشته باشید.';
+        showTempMessage('برای ثبت‌نام باید حداقل '+requiredMatic+' MATIC در کیف پول خود داشته باشید.', 'error');
         return;
       }
       // ثبت‌نام
@@ -721,13 +823,13 @@ window.showRegistrationForm = async function() {
       registerBtn.textContent = 'در حال ثبت‌نام...';
       try {
         await contract.registerAndActivate(referrer, targetUserAddress);
-        registerStatus.textContent = 'ثبت‌نام با موفقیت انجام شد!';
+        showRegisterSuccess('ثبت‌نام با موفقیت انجام شد!');
         registerBtn.style.display = 'none';
       } catch (e) {
         if (e.code === 4001) {
-          registerStatus.textContent = 'فرآیند ثبت‌نام توسط شما لغو شد.';
+          showTempMessage('فرآیند ثبت‌نام توسط شما لغو شد.', 'error');
         } else {
-          registerStatus.textContent = 'خطا در ثبت‌نام: ' + (e.message || e);
+          showRegisterError('خطا در ثبت‌نام: ' + (e.message || e));
         }
         registerBtn.disabled = false;
         registerBtn.textContent = 'ثبت‌ نام';
@@ -757,8 +859,7 @@ window.showRegistrationForm = async function() {
             const refAddr = document.getElementById('new-referrer-address').value.trim();
             const statusDiv = document.getElementById('new-register-status');
             if (!userAddr || !refAddr) {
-                statusDiv.textContent = 'آدرس نفر جدید و معرف را وارد کنید';
-                statusDiv.className = 'profile-status error';
+                showTempMessage('آدرس نفر جدید و معرف را وارد کنید', 'error');
                 return;
             }
             submitNewRegister.disabled = true;
@@ -776,12 +877,10 @@ window.showRegistrationForm = async function() {
                 // ثبت‌نام نفر جدید (با ولت فعلی)
                 const tx = await contract.registerAndActivate(refAddr, userAddr);
                 await tx.wait();
-                statusDiv.textContent = 'ثبت‌نام نفر جدید با موفقیت انجام شد!';
-                statusDiv.className = 'profile-status success';
+                showRegisterSuccess('ثبت‌نام نفر جدید با موفقیت انجام شد!');
                 setTimeout(() => location.reload(), 1200);
             } catch (e) {
-                statusDiv.textContent = e.message || 'خطا در ثبت‌نام نفر جدید';
-                statusDiv.className = 'profile-status error';
+                showRegisterError(e.message || 'خطا در ثبت‌نام نفر جدید');
             }
             submitNewRegister.disabled = false;
             submitNewRegister.textContent = oldText;

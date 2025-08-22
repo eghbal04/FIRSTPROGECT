@@ -134,11 +134,11 @@ class FloatingTokenGrowthCard {
     // نمایش اطلاعات بیشتر
     this.statusElement.innerHTML = `
       <div style="display:flex; gap:8px; align-items:center; justify-content:center;">
-        <span style="opacity:.85">قیمت فعلی:</span>
+        <span style="opacity:.85">Current Price:</span>
         <span id="current-token-price" style="font-weight:700">--</span>
       </div>
       <div style="display:flex; gap:8px; align-items:center; justify-content:center; margin-top:4px;">
-        <span style="opacity:.85">قیمت اولیه:</span>
+        <span style="opacity:.85">Initial Price:</span>
         <span id="initial-token-price" style="font-weight:700">1e-15</span>
       </div>
     `;
@@ -273,9 +273,9 @@ class FloatingTokenGrowthCard {
     // به‌روزرسانی وضعیت
     if (this.isExpanded) {
       this.statusElement.innerHTML = `
-        <div style="margin-bottom: 8px;">قیمت فعلی: <span style="font-weight: bold;">${currentPrice.toExponential(4)}</span></div>
-        <div>قیمت اولیه: <span style="font-weight: bold;">1e-15</span></div>
-        <div style="margin-top: 5px; font-size: 0.6rem; opacity: 0.8;">منبع: ${source}</div>
+        <div style="margin-bottom: 8px;">Current Price: <span style="font-weight: bold;">${currentPrice.toExponential(4)}</span></div>
+        <div>Initial Price: <span style="font-weight: bold;">1e-15</span></div>
+        <div style="margin-top: 5px; font-size: 0.6rem; opacity: 0.8;">Source: ${source}</div>
       `;
     } else {
       this.statusElement.textContent = source === 'firebase' ? 'Firebase' : 'Local';

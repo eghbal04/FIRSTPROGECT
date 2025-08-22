@@ -589,7 +589,7 @@
         <span class="pill" id="nav-IAM">IAM: --</span>
         <span class="pill" id="nav-dai">DAI: --</span>
       </div>
-      <button class="IAM-navbar-hamburger" id="navbar-hamburger" aria-label="باز کردن منو">
+      <button class="IAM-navbar-hamburger" id="navbar-hamburger" aria-label="Open Menu">
         <span></span>
         <span></span>
         <span></span>
@@ -604,45 +604,38 @@
         </div>
       </div>
       <div class="IAM-navbar-mobile-section">
-        <div class="IAM-navbar-section-title">دسترسی سریع</div>
+        <div class="IAM-navbar-section-title">Quick Access</div>
         <a href="index.html#main-dashboard" class="IAM-navbar-link">
-          <span class="link-icon">🏠</span>خانه
+          <span class="link-icon">🏠</span>Home
         </a>
         <a href="index.html#main-swap" class="IAM-navbar-link" id="navbar-swap-link-mobile">
-          <span class="link-icon">🔄</span>تبدیل
+          <span class="link-icon">🔄</span>Swap
         </a>
         <a href="index.html#main-transfer" class="IAM-navbar-link" id="navbar-transfer-link-mobile">
-          <span class="link-icon">💸</span>ترانسفر
+          <span class="link-icon">💸</span>Transfer
         </a>
         <a href="professional-tree.html" class="IAM-navbar-link" id="navbar-network-link-mobile">
-          <span class="link-icon">🌐</span>همکاران
+          <span class="link-icon">🌐</span>Network
         </a>
-        <a href="register.html" class="IAM-navbar-link">
-          <span class="link-icon">📝</span>ثبت‌نام
-        </a>
-        <a href="register-free.html" class="IAM-navbar-link">
-          <span class="link-icon">🎫</span>رزرو
-        </a>
+
       </div>
       <div class="IAM-navbar-mobile-section">
-        <div class="IAM-navbar-section-title">ابزارها</div>
-        <a href="reports.html" class="IAM-navbar-link">
-          <span class="link-icon">📊</span>گزارش
-        </a>
+        <div class="IAM-navbar-section-title">Tools</div>
+
         <a href="profile.html" class="IAM-navbar-link">
-          <span class="link-icon">👤</span>پروفایل
+          <span class="link-icon">👤</span>Profile
         </a>
         <a href="utility.html" class="IAM-navbar-link">
-          <span class="link-icon">🛠️</span>ابزارها
+          <span class="link-icon">🛠️</span>Utilities
         </a>
       </div>
       <div class="IAM-navbar-mobile-section">
-        <div class="IAM-navbar-section-title">اطلاعات</div>
+        <div class="IAM-navbar-section-title">Information</div>
         <a href="about.html" class="IAM-navbar-link">
-          <span class="link-icon">ℹ️</span>درباره‌ما
+          <span class="link-icon">ℹ️</span>About Us
         </a>
         <a href="transfer-ownership.html" class="IAM-navbar-link">
-          <span class="link-icon">🔑</span>انتقال مالکیت
+          <span class="link-icon">🔑</span>Transfer Ownership
         </a>
       </div>
     </div>
@@ -724,7 +717,7 @@
       const IAMEl = document.getElementById('nav-IAM');
       const daiEl = document.getElementById('nav-dai');
 
-      // Prefill from cache (≤ 2 دقیقه)
+      // Prefill from cache (≤ 2 minutes)
       try {
         const cached = JSON.parse(localStorage.getItem('IAM_nav_balances')||'null');
         if (cached && (Date.now() - (cached.ts||0) < 2*60*1000)) {
@@ -833,17 +826,17 @@
     })();
   });
 
-  // لینک‌های قدیمی حذف شدند؛ نیازی به تزریق/اصلاح وجود ندارد
+      // Old links removed; no need for injection/modification
 
-  // منوی موبایل حذف شد؛ فقط منوی کندویی استفاده می‌شود
+    // Mobile menu removed; only honeycomb menu is used
 
-  // لینک‌های ناوبار قدیمی حذف شدند؛ هدایت از طریق کندو انجام می‌شود
+    // Old navbar links removed; navigation is done through honeycomb
 
   // Only add the floating bottom bar on index.html
   // Helper for bottom bar navigation (only on index.html)
   if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname === '') {
     window.showMainSection = function(sectionId) {
-      const ids = ['main-swap','main-transfer','main-profile','main-reports','main-register'];
+      const ids = ['main-swap','main-transfer','main-profile'];
       ids.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.style.display = (id === sectionId) ? '' : 'none';
@@ -857,7 +850,7 @@
     };
   }
 
-  // در index.html اگر هشی وجود دارد، بخش مربوطه را نمایش بده
+  // In index.html, if hash exists, show the corresponding section
   if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname === '') {
     document.addEventListener('DOMContentLoaded', function() {
       const hash = window.location.hash;

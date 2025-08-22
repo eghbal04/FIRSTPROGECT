@@ -590,96 +590,70 @@ function startBinaryClaimCountdown(lastClaimTime) {
 window.startBinaryClaimCountdown = startBinaryClaimCountdown;
 
 // تابع محاسبه تعداد ولت‌های سمت راست و چپ
+// Function to calculate left and right wallet counts using fastest binary tree traversal
 async function calculateWalletCounts(userIndex, contract) {
     try {
-        console.log(`🔍 محاسبه تعداد ولت‌ها برای ایندکس ${userIndex}...`);
+        console.log(`🚀 Starting ultra-fast wallet count calculation for index ${userIndex}...`);
         
-        let leftCount = 0;
-        let rightCount = 0;
-        
-        // بررسی فرزندان مستقیم
+        // Get direct children indices
         const leftChildIndex = BigInt(userIndex) * 2n;
         const rightChildIndex = BigInt(userIndex) * 2n + 1n;
         
-        // بررسی فرزند چپ
-        try {
-            const leftAddress = await contract.indexToAddress(leftChildIndex);
-            if (leftAddress && leftAddress !== '0x0000000000000000000000000000000000000000') {
-                const leftUser = await contract.users(leftAddress);
-                if (leftUser && leftUser.activated) {
-                    leftCount = 1;
-                    // محاسبه بازگشتی برای فرزندان فرزند چپ
-                    leftCount += await calculateSubtreeCount(leftChildIndex, contract, 'left');
-                }
-            }
-        } catch (e) {
-            console.log(`خطا در بررسی فرزند چپ:`, e);
-        }
+        // Use Promise.all for parallel execution with optimized counting
+        const [leftResult, rightResult] = await Promise.all([
+            countSubtreeUltraFast(leftChildIndex, contract),
+            countSubtreeUltraFast(rightChildIndex, contract)
+        ]);
         
-        // بررسی فرزند راست
-        try {
-            const rightAddress = await contract.indexToAddress(rightChildIndex);
-            if (rightAddress && rightAddress !== '0x0000000000000000000000000000000000000000') {
-                const rightUser = await contract.users(rightAddress);
-                if (rightUser && rightUser.activated) {
-                    rightCount = 1;
-                    // محاسبه بازگشتی برای فرزندان فرزند راست
-                    rightCount += await calculateSubtreeCount(rightChildIndex, contract, 'right');
-                }
-            }
-        } catch (e) {
-            console.log(`خطا در بررسی فرزند راست:`, e);
-        }
-        
-        console.log(`✅ تعداد ولت‌ها: چپ=${leftCount}, راست=${rightCount}`);
-        return { leftCount, rightCount };
+        console.log(`✅ Ultra-fast wallet counts: Left=${leftResult}, Right=${rightResult}`);
+        return { leftCount: leftResult, rightCount: rightResult };
         
     } catch (error) {
-        console.error(`خطا در محاسبه تعداد ولت‌ها:`, error);
+        console.error(`Error in ultra-fast wallet count calculation:`, error);
         return { leftCount: 0, rightCount: 0 };
     }
 }
 
-// تابع محاسبه بازگشتی تعداد ولت‌ها در زیرمجموعه
-async function calculateSubtreeCount(parentIndex, contract, side) {
+// Ultra-fast subtree counting using optimized depth-first traversal with early termination
+async function countSubtreeUltraFast(startIndex, contract) {
     let count = 0;
-    // const maxDepth = 10; // حذف محدودیت عمق
-    async function countRecursive(index) {
-        const leftChildIndex = BigInt(index) * 2n;
-        const rightChildIndex = BigInt(index) * 2n + 1n;
-        let subtreeCount = 0;
-        // بررسی فرزند چپ
+    const stack = [startIndex];
+    const maxDepth = 20; // Prevent infinite loops
+    const processedIndices = new Set();
+    
+    while (stack.length > 0) {
+        const currentIndex = stack.pop();
+        const indexStr = currentIndex.toString();
+        
+        // Skip if already processed or too deep
+        if (processedIndices.has(indexStr) || stack.length > maxDepth) continue;
+        processedIndices.add(indexStr);
+        
         try {
-            const leftAddress = await contract.indexToAddress(leftChildIndex);
-            if (leftAddress && leftAddress !== '0x0000000000000000000000000000000000000000') {
-                const leftUser = await contract.users(leftAddress);
-                if (leftUser && leftUser.activated) {
-                    subtreeCount += 1;
-                    subtreeCount += await countRecursive(leftChildIndex);
-                }
+            // Direct index to address check - fastest method
+            const address = await contract.indexToAddress(currentIndex);
+            
+            // Quick validation - if address exists and is not zero, count it
+            if (address && address !== '0x0000000000000000000000000000000000000000') {
+                count++;
+                
+                // Add children to stack for depth-first traversal (faster for binary trees)
+                const leftChild = BigInt(currentIndex) * 2n;
+                const rightChild = BigInt(currentIndex) * 2n + 1n;
+                
+                stack.push(rightChild); // Push right first (LIFO - left will be processed first)
+                stack.push(leftChild);
             }
         } catch (e) {
-            // نادیده گرفتن خطاها
+            // Skip errors and continue - don't log to avoid spam
+            continue;
         }
-        // بررسی فرزند راست
-        try {
-            const rightAddress = await contract.indexToAddress(rightChildIndex);
-            if (rightAddress && rightAddress !== '0x0000000000000000000000000000000000000000') {
-                const rightUser = await contract.users(rightAddress);
-                if (rightUser && rightUser.activated) {
-                    subtreeCount += 1;
-                    subtreeCount += await countRecursive(rightChildIndex);
-                }
-            }
-        } catch (e) {
-            // نادیده گرفتن خطاها
-        }
-        return subtreeCount;
     }
-    return await countRecursive(parentIndex);
+    
+    return count;
 }
 
-// تابع به‌روزرسانی نمایش تعداد ولت‌ها در پروفایل
+// Function to update wallet counts display in profile
 async function updateWalletCountsDisplay() {
     try {
         if (!window.connectWallet) return;
@@ -688,12 +662,12 @@ async function updateWalletCountsDisplay() {
         if (!contract || !address) return;
         
         const user = await contract.users(address);
-        if (!user || !user.activated || !user.index) return;
+        if (!user || !(user.index && BigInt(user.index) > 0n)) return;
         
         const userIndex = parseInt(user.index);
         const counts = await calculateWalletCounts(userIndex, contract);
         
-        // به‌روزرسانی نمایش در پروفایل
+        // Update display in profile
         const leftCountEl = document.getElementById('profile-left-wallets');
         const rightCountEl = document.getElementById('profile-right-wallets');
         
@@ -707,10 +681,10 @@ async function updateWalletCountsDisplay() {
             rightCountEl.style.color = counts.rightCount > 0 ? '#00ff88' : '#666';
         }
         
-        console.log(`✅ نمایش تعداد ولت‌ها به‌روزرسانی شد: چپ=${counts.leftCount}, راست=${counts.rightCount}`);
+        console.log(`✅ Wallet counts display updated: Left=${counts.leftCount}, Right=${counts.rightCount}`);
         
     } catch (error) {
-        console.error(`خطا در به‌روزرسانی نمایش تعداد ولت‌ها:`, error);
+        console.error(`Error updating wallet counts display:`, error);
     }
 }
 
