@@ -95,6 +95,9 @@ window.networkShowUserPopup = async function(address, user) {
     setTimeout(()=>{ _networkPopupOpening = false; }, 400);
     console.log('🚀 showUserPopup called with:', { address, user });
     
+    // ریست کردن متغیرهای تکرار برای popup جدید
+    _networkPopupOpening = false;
+    
     // تابع کوتاه‌کننده آدرس
     function shortAddress(addr) {
         if (!addr || addr === '-') return '-';
@@ -332,7 +335,7 @@ window.networkShowUserPopup = async function(address, user) {
          setupMobilePopupFeatures(popupEl);
          
          // شروع تایپ‌رایتر
-         startTypewriter(popupEl, IAMId, walletAddress, isActive, infoList);
+         startTypewriter(popupEl, IAMId, walletAddress, isActive, infoList, address);
        }, 400); // صبر کن تا انیمیشن expand تمام شود
      }, 50);
     
@@ -341,7 +344,11 @@ window.networkShowUserPopup = async function(address, user) {
        if (e.target === popupEl) {
          popupEl.style.transform = 'translate(-50%, -50%) scale(0.8)';
          popupEl.style.opacity = '0';
-         setTimeout(() => popupEl.remove(), 300);
+         setTimeout(() => {
+           popupEl.remove();
+           // ریست کردن متغیرهای تکرار برای popup بعدی
+           _networkPopupOpening = false;
+         }, 300);
        }
      });
      
@@ -361,6 +368,8 @@ window.networkShowUserPopup = async function(address, user) {
          setTimeout(() => {
            popupEl.remove();
            document.removeEventListener('click', closePopup);
+           // ریست کردن متغیرهای تکرار برای popup بعدی
+           _networkPopupOpening = false;
          }, 300);
        }
      }
@@ -427,19 +436,22 @@ window.networkShowUserPopup = async function(address, user) {
             const rightLi = document.querySelector('.user-info-list li[data-key="right-wallet-count"] .value');
             if (leftLi) leftLi.textContent = counts.leftCount;
             if (rightLi) rightLi.textContent = counts.rightCount;
-            // اگر صفر باشد، آیتم مخفی شود تا فضا نگیرد
+            // نمایش همه مقادیر حتی اگر صفر باشند
             const leftWrap = document.querySelector('.user-info-list li[data-key="left-wallet-count"]');
             const rightWrap = document.querySelector('.user-info-list li[data-key="right-wallet-count"]');
-            const hideIfZero = (el) => { if (el && (el.textContent === '0' || el.textContent === '-' || el.textContent === '❌')) el.closest('li').style.display = 'none'; };
-            hideIfZero(leftLi);
-            hideIfZero(rightLi);
+            if (leftWrap) leftWrap.style.display = 'flex';
+            if (rightWrap) rightWrap.style.display = 'flex';
           }
         } catch (e) {
-          // در صورت خطا، آیتم‌ها را مخفی کن تا UI سبک بماند
+          // در صورت خطا، آیتم‌ها را نمایش بده با علامت خطا
           const leftWrap = document.querySelector('.user-info-list li[data-key="left-wallet-count"]');
           const rightWrap = document.querySelector('.user-info-list li[data-key="right-wallet-count"]');
-          if (leftWrap) leftWrap.style.display = 'none';
-          if (rightWrap) rightWrap.style.display = 'none';
+          const leftLi = document.querySelector('.user-info-list li[data-key="left-wallet-count"] .value');
+          const rightLi = document.querySelector('.user-info-list li[data-key="right-wallet-count"] .value');
+          if (leftLi) leftLi.textContent = '❌';
+          if (rightLi) rightLi.textContent = '❌';
+          if (leftWrap) leftWrap.style.display = 'flex';
+          if (rightWrap) rightWrap.style.display = 'flex';
         }
       })();
     }, 0);
@@ -471,10 +483,10 @@ window.networkShowUserPopup = async function(address, user) {
                 if (IAMElA) IAMElA.textContent = IAM;
                 if (maticElA) maticElA.textContent = matic;
                 if (daiElA) daiElA.textContent = dai;
-                const isEmptyA = (val) => !val || val === '-' || val === '❌' || Number(val) === 0;
-                if (IAMWrapA) IAMWrapA.style.display = isEmptyA(IAM) ? 'none' : 'inline-flex';
-                if (maticWrapA) maticWrapA.style.display = isEmptyA(matic) ? 'none' : 'inline-flex';
-                if (daiWrapA) daiWrapA.style.display = isEmptyA(dai) ? 'none' : 'inline-flex';
+                // نمایش همه موجودی‌ها حتی اگر صفر باشند
+                if (IAMWrapA) IAMWrapA.style.display = 'inline-flex';
+                if (maticWrapA) maticWrapA.style.display = 'inline-flex';
+                if (daiWrapA) daiWrapA.style.display = 'inline-flex';
             } catch (error) {
                 console.warn('Error fetching balances (fallback):', error);
                 const IAMWrapB = document.getElementById('IAM-balance');
@@ -486,9 +498,10 @@ window.networkShowUserPopup = async function(address, user) {
                 if (IAMElB) IAMElB.textContent = '❌';
                 if (maticElB) maticElB.textContent = '❌';
                 if (daiElB) daiElB.textContent = '❌';
-                if (IAMWrapB) IAMWrapB.style.display = 'none';
-                if (maticWrapB) maticWrapB.style.display = 'none';
-                if (daiWrapB) daiWrapB.style.display = 'none';
+                // نمایش همه موجودی‌ها حتی در صورت خطا
+                if (IAMWrapB) IAMWrapB.style.display = 'inline-flex';
+                if (maticWrapB) maticWrapB.style.display = 'inline-flex';
+                if (daiWrapB) daiWrapB.style.display = 'inline-flex';
             }
         })();
     } else {
@@ -1597,7 +1610,7 @@ function toggleCard(cardElement) {
 }
 
 // تابع شروع تایپ‌رایتر
-function startTypewriter(popupEl, IAMId, walletAddress, isActive, infoList) {
+function startTypewriter(popupEl, IAMId, walletAddress, isActive, infoList, address) {
   const contentDiv = popupEl.querySelector('#typewriter-content');
   if (!contentDiv) return;
   
@@ -1607,6 +1620,19 @@ function startTypewriter(popupEl, IAMId, walletAddress, isActive, infoList) {
   let currentCharIndex = 0;
   let isTyping = false;
   let isCompleted = false;
+  
+  // ذخیره آدرس کامل کیف پول برای استفاده در توابع به‌روزرسانی
+  const fullWalletAddress = address;
+  
+  // متغیرهای برای جلوگیری از تکرار به‌روزرسانی
+  let isUpdatingWalletCounts = false;
+  let isUpdatingBalances = false;
+  let walletCountsUpdated = false;
+  let balancesUpdated = false;
+  
+  // Cache برای ذخیره نتایج محاسبه
+  const walletCountsCache = new Map();
+  const cacheTimeout = 30000; // 30 ثانیه
   
                // ساخت خطوط اولیه
      const initialLines = [
@@ -1723,10 +1749,34 @@ function startTypewriter(popupEl, IAMId, walletAddress, isActive, infoList) {
      }
    }
   
-  // تابع به‌روزرسانی خط خاص
+  // تابع پیدا کردن خط بر اساس محتوا
+  function findLineByContent(searchText) {
+    for (let i = 0; i < lineElements.length; i++) {
+      if (lineElements[i] && lineElements[i].textContent.includes(searchText)) {
+        return i;
+      }
+    }
+    return -1;
+  }
+  
+  // تابع به‌روزرسانی خط خاص با بهبود
   function updateLine(lineIndex, newText, isAnimated = true) {
+    // بررسی وجود خط
+    if (!lineElements[lineIndex]) {
+      console.warn(`Line ${lineIndex} not found, trying to find by content...`);
+      // تلاش برای پیدا کردن خط با محتوای مشابه
+      const targetText = newText.split(':')[0]; // گرفتن بخش قبل از :
+      const foundIndex = findLineByContent(targetText);
+      if (foundIndex !== -1) {
+        console.log(`Found line ${foundIndex} with content: ${lineElements[foundIndex].textContent}`);
+        lineIndex = foundIndex;
+      }
+    }
+    
     if (lineElements[lineIndex]) {
       const lineDiv = lineElements[lineIndex];
+      console.log(`Updating line ${lineIndex}: "${lineDiv.textContent}" -> "${newText}"`);
+      
       if (isAnimated) {
         // انیمیشن به‌روزرسانی
         lineDiv.style.color = '#ffff00';
@@ -1739,164 +1789,541 @@ function startTypewriter(popupEl, IAMId, walletAddress, isActive, infoList) {
         lineDiv.textContent = newText;
         adjustContainerSize();
       }
+    } else {
+      console.error(`Line ${lineIndex} not found and could not be located`);
     }
   }
   
-  // تابع شروع به‌روزرسانی داده‌های پویا
+  // تابع شروع به‌روزرسانی داده‌های پویا با بهینه‌سازی سرعت
   function startDynamicUpdates() {
-    // به‌روزرسانی تعداد ولت‌ها
-    updateWalletCounts();
+    // بررسی وجود ethers
+    if (typeof ethers === 'undefined') {
+      console.warn('Ethers library not available');
+      updateLine(14, `IAM > Left Wallet Count: ❌`, true);
+      updateLine(15, `IAM > Right Wallet Count: ❌`, true);
+      updateLine(18, `IAM > IAM Balance: ❌`, true);
+      updateLine(19, `IAM > MATIC Balance: ❌`, true);
+      updateLine(20, `IAM > DAI Balance: ❌`, true);
+      return;
+    }
     
-    // به‌روزرسانی موجودی‌ها
-    updateBalances();
+    console.log('Starting dynamic updates...');
+    
+    // شروع به‌روزرسانی فوری با timeout کلی
+    const overallTimeout = setTimeout(() => {
+      console.warn('Overall update timeout reached');
+      if (!walletCountsUpdated) {
+        updateLine(14, `IAM > Left Wallet Count: ⏰`, true);
+        updateLine(15, `IAM > Right Wallet Count: ⏰`, true);
+        walletCountsUpdated = true;
+        isUpdatingWalletCounts = false;
+      }
+      if (!balancesUpdated) {
+        updateLine(18, `IAM > IAM Balance: ⏰`, true);
+        updateLine(19, `IAM > MATIC Balance: ⏰`, true);
+        updateLine(20, `IAM > DAI Balance: ⏰`, true);
+        balancesUpdated = true;
+        isUpdatingBalances = false;
+      }
+    }, 10000); // کاهش به 10 ثانیه
+    
+    // شروع فوری به‌روزرسانی‌ها بدون انتظار برای اتصال
+    setTimeout(() => {
+      if (!walletCountsUpdated) {
+        console.log('Starting wallet counts update...');
+        updateWalletCounts();
+      }
+    }, 100);
+    
+    setTimeout(() => {
+      if (!balancesUpdated) {
+        console.log('Starting balances update...');
+        updateBalances();
+      }
+    }, 200);
+    
+    // بررسی اتصال کیف پول در پس‌زمینه
+    checkWalletConnection().then(() => {
+      console.log('Wallet connection check completed successfully');
+    }).catch((error) => {
+      console.warn('Wallet connection check failed:', error);
+    }).finally(() => {
+      clearTimeout(overallTimeout);
+    });
   }
   
-  // تابع به‌روزرسانی تعداد ولت‌ها
-  async function updateWalletCounts() {
+  // تابع بررسی اتصال کیف پول با بهینه‌سازی
+  async function checkWalletConnection() {
     try {
-      if (window.contractConfig && window.contractConfig.contract && infoList[8] && infoList[8].key === 'left-wallet-count') {
-        const userIndex = infoList[8].userIndex || 1n;
-        const counts = await calculateWalletCounts(userIndex, window.contractConfig.contract);
-        
-                           // Update left wallet count (line 14)
-          updateLine(14, `IAM > Left Wallet Count: ${counts.leftCount}`, true);
-         
-          // Update right wallet count (line 15)
-          updateLine(15, `IAM > Right Wallet Count: ${counts.rightCount}`, true);
+      // بررسی وجود اتصال موجود (سریع‌ترین راه)
+      if (window.contractConfig && window.contractConfig.contract && window.contractConfig.provider) {
+        console.log('Using existing wallet connection');
+        return Promise.resolve();
       }
+      
+      // تلاش برای اتصال جدید با timeout
+      if (typeof window.connectWallet === 'function') {
+        const connectionPromise = window.connectWallet();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Connection timeout')), 3000)
+        );
+        
+        try {
+          await Promise.race([connectionPromise, timeoutPromise]);
+          console.log('New wallet connection established');
+          return Promise.resolve();
+        } catch (timeoutError) {
+          console.warn('Wallet connection timed out, using fallback');
+          // اگر timeout شد، از اتصال موجود استفاده کن
+          if (window.contractConfig && window.contractConfig.contract) {
+            return Promise.resolve();
+          }
+          throw timeoutError;
+        }
+      }
+      
+      // اگر هیچ روش اتصالی در دسترس نباشد
+      console.warn('No wallet connection method available');
+      return Promise.resolve();
+    } catch (error) {
+      console.warn('Wallet connection failed:', error);
+      return Promise.reject(error);
+    }
+  }
+  
+  // تابع به‌روزرسانی تعداد ولت‌ها با بهینه‌سازی
+  async function updateWalletCounts() {
+    // جلوگیری از تکرار
+    if (isUpdatingWalletCounts || walletCountsUpdated) {
+      console.log('Wallet counts update already in progress or completed');
+      return;
+    }
+    
+    isUpdatingWalletCounts = true;
+    console.log('Starting wallet counts update...');
+    
+    try {
+      // نمایش وضعیت محاسبه با پیدا کردن خطوط
+      const leftWalletLineIndex = findLineByContent('Left Wallet Count');
+      const rightWalletLineIndex = findLineByContent('Right Wallet Count');
+      
+      if (leftWalletLineIndex !== -1) {
+        updateLine(leftWalletLineIndex, `IAM > Left Wallet Count: 🔄 محاسبه...`, true);
+      }
+      if (rightWalletLineIndex !== -1) {
+        updateLine(rightWalletLineIndex, `IAM > Right Wallet Count: 🔄 محاسبه...`, true);
+      }
+      
+      // بررسی وجود contract با timeout
+      let contract = null;
+      
+      if (window.contractConfig && window.contractConfig.contract) {
+        contract = window.contractConfig.contract;
+        console.log('Using existing contract for wallet counts');
+      } else {
+        // تلاش برای اتصال مجدد با timeout
+        try {
+          const connectionPromise = window.connectWallet();
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Connection timeout')), 3000)
+          );
+          
+          const connection = await Promise.race([connectionPromise, timeoutPromise]);
+          contract = connection.contract;
+          console.log('New connection established for wallet counts');
+        } catch (connError) {
+          console.warn('Wallet connection failed for wallet counts:', connError);
+          const leftWalletIndex = findLineByContent('Left Wallet Count');
+          const rightWalletIndex = findLineByContent('Right Wallet Count');
+          
+          if (leftWalletIndex !== -1) {
+            updateLine(leftWalletIndex, `IAM > Left Wallet Count: ❌`, true);
+          }
+          if (rightWalletIndex !== -1) {
+            updateLine(rightWalletIndex, `IAM > Right Wallet Count: ❌`, true);
+          }
+          walletCountsUpdated = true;
+          isUpdatingWalletCounts = false;
+          return;
+        }
+      }
+      
+      if (contract && infoList[8] && infoList[8].key === 'left-wallet-count') {
+        const userIndex = infoList[8].userIndex || 1n;
+        
+        // محاسبه با نمایش پیشرفت
+        const startTime = Date.now();
+        const counts = await calculateWalletCounts(userIndex, contract);
+        const endTime = Date.now();
+        
+        console.log(`Wallet counts calculated in ${endTime - startTime}ms`);
+        
+        // Update left wallet count
+        const leftWalletIndex = findLineByContent('Left Wallet Count');
+        const rightWalletIndex = findLineByContent('Right Wallet Count');
+        
+        if (leftWalletIndex !== -1) {
+          updateLine(leftWalletIndex, `IAM > Left Wallet Count: ${counts.leftCount}`, true);
+        }
+        if (rightWalletIndex !== -1) {
+          updateLine(rightWalletIndex, `IAM > Right Wallet Count: ${counts.rightCount}`, true);
+        }
+      } else {
+        const leftWalletIndex = findLineByContent('Left Wallet Count');
+        const rightWalletIndex = findLineByContent('Right Wallet Count');
+        
+        if (leftWalletIndex !== -1) {
+          updateLine(leftWalletIndex, `IAM > Left Wallet Count: ❌`, true);
+        }
+        if (rightWalletIndex !== -1) {
+          updateLine(rightWalletIndex, `IAM > Right Wallet Count: ❌`, true);
+        }
+      }
+      
+      walletCountsUpdated = true;
     } catch (error) {
       console.warn('Error updating wallet counts:', error);
-              updateLine(14, `IAM > Left Wallet Count: ❌`, true);
-        updateLine(15, `IAM > Right Wallet Count: ❌`, true);
+      const leftWalletIndex = findLineByContent('Left Wallet Count');
+      const rightWalletIndex = findLineByContent('Right Wallet Count');
+      
+      if (leftWalletIndex !== -1) {
+        updateLine(leftWalletIndex, `IAM > Left Wallet Count: ❌`, true);
+      }
+      if (rightWalletIndex !== -1) {
+        updateLine(rightWalletIndex, `IAM > Right Wallet Count: ❌`, true);
+      }
+      walletCountsUpdated = true;
+    } finally {
+      isUpdatingWalletCounts = false;
     }
   }
   
-  // تابع به‌روزرسانی موجودی‌ها
+  // تابع به‌روزرسانی موجودی‌ها با بهینه‌سازی سرعت
   async function updateBalances() {
-         if (walletAddress === '-') {
-               updateLine(18, `IAM > IAM Balance: -`, true);
-        updateLine(19, `IAM > MATIC Balance: -`, true);
-        updateLine(20, `IAM > DAI Balance: -`, true);
-       return;
-     }
+    // جلوگیری از تکرار
+    if (isUpdatingBalances || balancesUpdated) {
+      console.log('Balances update already in progress or completed');
+      return;
+    }
+    
+    isUpdatingBalances = true;
+    console.log('Starting balances update...');
+    
+    // نمایش وضعیت بارگذاری با پیدا کردن خطوط
+    const iamBalanceLineIndex = findLineByContent('IAM Balance');
+    const maticBalanceLineIndex = findLineByContent('MATIC Balance');
+    const daiBalanceLineIndex = findLineByContent('DAI Balance');
+    
+    if (iamBalanceLineIndex !== -1) {
+      updateLine(iamBalanceLineIndex, `IAM > IAM Balance: 🔄 بارگذاری...`, true);
+    }
+    if (maticBalanceLineIndex !== -1) {
+      updateLine(maticBalanceLineIndex, `IAM > MATIC Balance: 🔄 بارگذاری...`, true);
+    }
+    if (daiBalanceLineIndex !== -1) {
+      updateLine(daiBalanceLineIndex, `IAM > DAI Balance: 🔄 بارگذاری...`, true);
+    }
+    
+    // بررسی آدرس کیف پول - استفاده از آدرس کامل
+    if (!fullWalletAddress || fullWalletAddress === '-' || fullWalletAddress === '0x0000000000000000000000000000000000000000') {
+      updateLine(18, `IAM > IAM Balance: -`, true);
+      updateLine(19, `IAM > MATIC Balance: -`, true);
+      updateLine(20, `IAM > DAI Balance: -`, true);
+      balancesUpdated = true;
+      isUpdatingBalances = false;
+      return;
+    }
     
     try {
-      const { contract, provider } = await window.connectWallet();
-      let IAM = '-', dai = '-', matic = '-';
+      // تلاش برای اتصال به کیف پول با timeout
+      let contract, provider;
       
-      // دریافت موجودی IAM
-      if (contract && typeof contract.balanceOf === 'function') {
+      // ابتدا بررسی اتصال موجود
+      if (window.contractConfig && window.contractConfig.contract && window.contractConfig.provider) {
+        contract = window.contractConfig.contract;
+        provider = window.contractConfig.provider;
+        console.log('Using existing wallet connection for balances');
+      } else {
+        // تلاش برای اتصال جدید با timeout کوتاه‌تر
+        const connectionPromise = window.connectWallet();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Connection timeout')), 3000)
+        );
+        
         try {
-          const c = await contract.balanceOf(walletAddress);
-                     IAM = Number(ethers.formatEther(c)).toFixed(4);
-                       updateLine(18, `IAM > IAM Balance: ${IAM}`, true);
-                 } catch (e) {
-            updateLine(18, `IAM > IAM Balance: ❌`, true);
-         }
+          const connection = await Promise.race([connectionPromise, timeoutPromise]);
+          contract = connection.contract;
+          provider = connection.provider;
+          console.log('New wallet connection established for balances');
+        } catch (connError) {
+          console.warn('Wallet connection failed or timed out:', connError);
+          // اگر اتصال شکست خورد، از contractConfig موجود استفاده کن
+          if (window.contractConfig && window.contractConfig.contract && window.contractConfig.provider) {
+            contract = window.contractConfig.contract;
+            provider = window.contractConfig.provider;
+            console.log('Using fallback connection for balances');
+          } else {
+            throw new Error('No wallet connection available');
+          }
+        }
       }
       
-      // دریافت موجودی DAI
-      try {
-        const DAI_ADDRESS = window.DAI_ADDRESS || '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063';
-        const Dai = new ethers.Contract(DAI_ADDRESS, window.DAI_ABI, provider);
-                 const d = await Dai.balanceOf(walletAddress);
-         dai = Number(ethers.formatUnits(d, 18)).toFixed(2);
-                   updateLine(20, `IAM > DAI Balance: ${dai}`, true);
-             } catch (e) {
-          updateLine(20, `IAM > DAI Balance: ❌`, true);
-       }
+      // دریافت همزمان تمام موجودی‌ها برای سرعت بیشتر
+      const balancePromises = [];
       
-      // دریافت موجودی MATIC
+      // موجودی IAM
+      if (contract && typeof contract.balanceOf === 'function') {
+        balancePromises.push(
+          contract.balanceOf(fullWalletAddress)
+            .then(c => ({ type: 'IAM', value: Number(ethers.formatEther(c)).toFixed(4) }))
+            .catch(e => ({ type: 'IAM', error: e }))
+        );
+      } else {
+        balancePromises.push(Promise.resolve({ type: 'IAM', error: 'No contract' }));
+      }
+      
+      // موجودی MATIC
       if (provider) {
-        try {
-                     const m = await provider.getBalance(walletAddress);
-           matic = Number(ethers.formatEther(m)).toFixed(4);
-           updateLine(19, `IAM > MATIC Balance: ${matic}`, true);
-                 } catch (e) {
-           updateLine(19, `IAM > MATIC Balance: ❌`, true);
-         }
+        balancePromises.push(
+          provider.getBalance(fullWalletAddress)
+            .then(m => ({ type: 'MATIC', value: Number(ethers.formatEther(m)).toFixed(4) }))
+            .catch(e => ({ type: 'MATIC', error: e }))
+        );
+      } else {
+        balancePromises.push(Promise.resolve({ type: 'MATIC', error: 'No provider' }));
+      }
+      
+      // موجودی DAI
+      const DAI_ADDRESS = window.DAI_ADDRESS || '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063';
+      const DAI_ABI = window.DAI_ABI || [
+        {
+          "constant": true,
+          "inputs": [{"name": "_owner", "type": "address"}],
+          "name": "balanceOf",
+          "outputs": [{"name": "balance", "type": "uint256"}],
+          "type": "function"
+        }
+      ];
+      
+      if (provider && DAI_ADDRESS && DAI_ABI) {
+        const Dai = new ethers.Contract(DAI_ADDRESS, DAI_ABI, provider);
+        balancePromises.push(
+          Dai.balanceOf(fullWalletAddress)
+            .then(d => ({ type: 'DAI', value: Number(ethers.formatUnits(d, 18)).toFixed(2) }))
+            .catch(e => ({ type: 'DAI', error: e }))
+        );
+      } else {
+        balancePromises.push(Promise.resolve({ type: 'DAI', error: 'No DAI contract' }));
+      }
+      
+      // انتظار برای دریافت تمام موجودی‌ها با timeout
+      const balanceTimeout = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Balance fetch timeout')), 8000)
+      );
+      
+      try {
+        const results = await Promise.race([
+          Promise.all(balancePromises),
+          balanceTimeout
+        ]);
+        
+        // نمایش نتایج با پیدا کردن خطوط
+        results.forEach(result => {
+          if (result.error) {
+            console.warn(`Error getting ${result.type} balance:`, result.error);
+            if (result.type === 'IAM') {
+              const iamIndex = findLineByContent('IAM Balance');
+              if (iamIndex !== -1) updateLine(iamIndex, `IAM > IAM Balance: ❌`, true);
+            }
+            if (result.type === 'MATIC') {
+              const maticIndex = findLineByContent('MATIC Balance');
+              if (maticIndex !== -1) updateLine(maticIndex, `IAM > MATIC Balance: ❌`, true);
+            }
+            if (result.type === 'DAI') {
+              const daiIndex = findLineByContent('DAI Balance');
+              if (daiIndex !== -1) updateLine(daiIndex, `IAM > DAI Balance: ❌`, true);
+            }
+          } else {
+            if (result.type === 'IAM') {
+              const iamIndex = findLineByContent('IAM Balance');
+              if (iamIndex !== -1) updateLine(iamIndex, `IAM > IAM Balance: ${result.value}`, true);
+            }
+            if (result.type === 'MATIC') {
+              const maticIndex = findLineByContent('MATIC Balance');
+              if (maticIndex !== -1) updateLine(maticIndex, `IAM > MATIC Balance: ${result.value}`, true);
+            }
+            if (result.type === 'DAI') {
+              const daiIndex = findLineByContent('DAI Balance');
+              if (daiIndex !== -1) updateLine(daiIndex, `IAM > DAI Balance: ${result.value}`, true);
+            }
+          }
+        });
+        
+      } catch (timeoutError) {
+        console.warn('Balance fetch timed out:', timeoutError);
+        const iamIndex = findLineByContent('IAM Balance');
+        const maticIndex = findLineByContent('MATIC Balance');
+        const daiIndex = findLineByContent('DAI Balance');
+        
+        if (iamIndex !== -1) updateLine(iamIndex, `IAM > IAM Balance: ⏰`, true);
+        if (maticIndex !== -1) updateLine(maticIndex, `IAM > MATIC Balance: ⏰`, true);
+        if (daiIndex !== -1) updateLine(daiIndex, `IAM > DAI Balance: ⏰`, true);
+      } finally {
+        balancesUpdated = true;
+        isUpdatingBalances = false;
+        console.log('Balances update completed');
       }
       
     } catch (error) {
       console.warn('Error updating balances:', error);
-             updateLine(18, `IAM > IAM Balance: ❌`, true);
-              updateLine(19, `IAM > MATIC Balance: ❌`, true);
-        updateLine(20, `IAM > DAI Balance: ❌`, true);
+      const iamIndex = findLineByContent('IAM Balance');
+      const maticIndex = findLineByContent('MATIC Balance');
+      const daiIndex = findLineByContent('DAI Balance');
+      
+      if (iamIndex !== -1) updateLine(iamIndex, `IAM > IAM Balance: ❌`, true);
+      if (maticIndex !== -1) updateLine(maticIndex, `IAM > MATIC Balance: ❌`, true);
+      if (daiIndex !== -1) updateLine(daiIndex, `IAM > DAI Balance: ❌`, true);
+    } finally {
+      balancesUpdated = true;
+      isUpdatingBalances = false;
     }
   }
   
-  // تابع محاسبه تعداد ولت‌ها (کپی شده از کد قبلی)
+  // تابع محاسبه تعداد ولت‌ها با الگوریتم بهینه و cache
   async function calculateWalletCounts(userIndex, contract) {
     try {
-      let leftCount = 0;
-      let rightCount = 0;
+      const cacheKey = `${userIndex}_${contract.target}`;
+      const now = Date.now();
+      
+      // بررسی cache
+      if (walletCountsCache.has(cacheKey)) {
+        const cached = walletCountsCache.get(cacheKey);
+        if (now - cached.timestamp < cacheTimeout) {
+          console.log('Using cached wallet counts');
+          return cached.data;
+        }
+      }
+      
       const leftChildIndex = BigInt(userIndex) * 2n;
       const rightChildIndex = BigInt(userIndex) * 2n + 1n;
       
-      // چپ
-      try {
-        const leftAddress = await contract.indexToAddress(leftChildIndex);
-        if (leftAddress && leftAddress !== '0x0000000000000000000000000000000000000000') {
-          const leftUser = await (async () => { try { return await contract.users(leftAddress); } catch(e){ return { index:0n }; } })();
-          if (leftUser && leftUser.index && BigInt(leftUser.index) > 0n) {
-            leftCount = 1 + await calculateSubtreeCount(leftChildIndex, contract, 'left');
-          }
-        }
-      } catch {}
+      // اجرای همزمان محاسبه چپ و راست برای سرعت بیشتر
+      const [leftCount, rightCount] = await Promise.all([
+        calculateSubtreeCountOptimized(leftChildIndex, contract),
+        calculateSubtreeCountOptimized(rightChildIndex, contract)
+      ]);
       
-      // راست
-      try {
-        const rightAddress = await contract.indexToAddress(rightChildIndex);
-        if (rightAddress && rightAddress !== '0x0000000000000000000000000000000000000000') {
-          const rightUser = await (async () => { try { return await contract.users(rightAddress); } catch(e){ return { index:0n }; } })();
-          if (rightUser && rightUser.index && BigInt(rightUser.index) > 0n) {
-            rightCount = 1 + await calculateSubtreeCount(rightChildIndex, contract, 'right');
-          }
-        }
-      } catch {}
+      const result = { leftCount, rightCount };
       
-      return { leftCount, rightCount };
+      // ذخیره در cache
+      walletCountsCache.set(cacheKey, {
+        data: result,
+        timestamp: now
+      });
+      
+      return result;
     } catch (error) {
+      console.warn('Error calculating wallet counts:', error);
       return { leftCount: 0, rightCount: 0 };
     }
   }
   
-  // تابع محاسبه بازگشتی تعداد ولت‌ها در زیرمجموعه
-  async function calculateSubtreeCount(parentIndex, contract, side) {
-    let count = 0;
-    async function countRecursive(index) {
-      const leftChildIndex = BigInt(index) * 2n;
-      const rightChildIndex = BigInt(index) * 2n + 1n;
-      let subtreeCount = 0;
+  // تابع محاسبه فوق‌بهینه تعداد ولت‌ها با Level-Order Traversal
+  async function calculateSubtreeCountOptimized(startIndex, contract) {
+    try {
+      let count = 0;
+      const queue = [startIndex];
+      const visited = new Set();
+      const maxDepth = 8; // محدودیت عمق برای سرعت بیشتر
+      const batchSize = 5; // اندازه batch برای پردازش همزمان
       
-      // بررسی فرزند چپ
-      try {
-        const leftAddress = await contract.indexToAddress(leftChildIndex);
-        if (leftAddress && leftAddress !== '0x0000000000000000000000000000000000000000') {
-          const leftUser = await (async () => { try { return await contract.users(leftAddress); } catch(e){ return { index:0n }; } })();
-          if (leftUser && leftUser.index && BigInt(leftUser.index) > 0n) {
-            subtreeCount += 1;
-            subtreeCount += await countRecursive(leftChildIndex);
+      for (let depth = 0; depth < maxDepth && queue.length > 0; depth++) {
+        const currentLevel = [];
+        const levelSize = queue.length;
+        
+        // جمع‌آوری تمام گره‌های سطح فعلی
+        for (let i = 0; i < levelSize; i++) {
+          const currentIndex = queue.shift();
+          if (!visited.has(currentIndex.toString())) {
+            visited.add(currentIndex.toString());
+            currentLevel.push(currentIndex);
           }
         }
-      } catch (e) {}
-      
-      // بررسی فرزند راست
-      try {
-        const rightAddress = await contract.indexToAddress(rightChildIndex);
-        if (rightAddress && rightAddress !== '0x0000000000000000000000000000000000000000') {
-          const rightUser = await (async () => { try { return await contract.users(rightAddress); } catch(e){ return { index:0n }; } })();
-          if (rightUser && rightUser.index && BigInt(rightUser.index) > 0n) {
-            subtreeCount += 1;
-            subtreeCount += await countRecursive(rightChildIndex);
+        
+        if (currentLevel.length === 0) break;
+        
+        // پردازش batch به batch برای بهینه‌سازی
+        for (let i = 0; i < currentLevel.length; i += batchSize) {
+          const batch = currentLevel.slice(i, i + batchSize);
+          
+          // دریافت آدرس‌ها به صورت همزمان
+          const addressPromises = batch.map(index => 
+            contract.indexToAddress(index).catch(() => null)
+          );
+          const addresses = await Promise.all(addressPromises);
+          
+          // بررسی آدرس‌ها و شمارش کاربران
+          const validAddresses = addresses.filter(addr => 
+            addr && addr !== '0x0000000000000000000000000000000000000000'
+          );
+          
+          if (validAddresses.length > 0) {
+            // دریافت اطلاعات کاربران به صورت همزمان
+            const userPromises = validAddresses.map(addr => 
+              contract.users(addr).catch(() => ({ index: 0n }))
+            );
+            const users = await Promise.all(userPromises);
+            
+            // شمارش کاربران معتبر
+            const validUsers = users.filter(user => 
+              user && user.index && BigInt(user.index) > 0n
+            );
+            count += validUsers.length;
+            
+            // اضافه کردن فرزندان به صف برای سطح بعدی
+            for (let j = 0; j < batch.length; j++) {
+              const currentIndex = batch[j];
+              const address = addresses[j];
+              
+              if (address && address !== '0x0000000000000000000000000000000000000000') {
+                const user = users[validAddresses.indexOf(address)];
+                if (user && user.index && BigInt(user.index) > 0n) {
+                  const leftChild = BigInt(currentIndex) * 2n;
+                  const rightChild = BigInt(currentIndex) * 2n + 1n;
+                  
+                  if (!visited.has(leftChild.toString())) {
+                    queue.push(leftChild);
+                  }
+                  if (!visited.has(rightChild.toString())) {
+                    queue.push(rightChild);
+                  }
+                }
+              }
+            }
           }
         }
-      } catch (e) {}
+      }
       
-      return subtreeCount;
+      return count;
+    } catch (error) {
+      console.warn('Error in optimized subtree count:', error);
+      return 0;
     }
-    return await countRecursive(parentIndex);
   }
+  
+  // تابع محاسبه بازگشتی تعداد ولت‌ها در زیرمجموعه (برای سازگاری)
+  async function calculateSubtreeCount(parentIndex, contract, side) {
+    return await calculateSubtreeCountOptimized(parentIndex, contract);
+  }
+  
+  // تابع پاک کردن cache
+  function clearWalletCountsCache() {
+    walletCountsCache.clear();
+    console.log('Wallet counts cache cleared');
+  }
+  
+  // پاک کردن cache هر 5 دقیقه
+  setInterval(clearWalletCountsCache, 5 * 60 * 1000);
   
      // شروع تایپ از خط اول
        setTimeout(typeNextLine, 250);
