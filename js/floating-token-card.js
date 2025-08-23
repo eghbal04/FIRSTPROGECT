@@ -1,5 +1,5 @@
-// Floating Token Growth Card - کارت شناور رشد توکن
-// این فایل برای نمایش درصد رشد توکن در همه صفحات استفاده می‌شود
+// Floating Token Growth Card
+// This file is used to display token growth percentage on all pages
 
 class FloatingTokenGrowthCard {
   constructor() {
@@ -16,29 +16,21 @@ class FloatingTokenGrowthCard {
   }
   
   init() {
-    // ایجاد کارت اگر وجود ندارد
     this.createCard();
-    
-    // اضافه کردن event listeners
-    this.addEventListeners();
-    
-    // شروع به‌روزرسانی
-    this.startUpdates();
+        this.addEventListeners();
+        this.startUpdates();
     
     this.isInitialized = true;
   }
   
   createCard() {
-    // بررسی اینکه آیا کارت قبلاً وجود دارد
     if (document.getElementById('floating-token-growth-card')) {
       this.card = document.getElementById('floating-token-growth-card');
       this.percentageElement = document.getElementById('token-growth-percentage');
       this.statusElement = document.getElementById('token-growth-status');
       return;
     }
-    
-    // ایجاد HTML کارت - همیشه شناور در گوشه پایین راست
-    const cardHTML = `
+        const cardHTML = `
       <div id="floating-token-growth-card" style="
         position: fixed;
         bottom: 20px;
@@ -66,7 +58,7 @@ class FloatingTokenGrowthCard {
           text-align: center;
           margin-bottom: 3px;
           font-family: monospace;
-        ">رشد</div>
+        ">Growth</div>
         <div id="token-growth-percentage" style="
           color: #1a1f2e;
           font-size: 1.3rem;
@@ -81,14 +73,14 @@ class FloatingTokenGrowthCard {
           font-weight: bold;
           text-align: center;
           margin-top: 3px;
-        ">در حال بارگذاری...</div>
+        ">Loading...</div>
       </div>
     `;
     
-    // اضافه کردن کارت به body برای شناور بودن در همه صفحات
+    // Add card to body for floating on all pages
     document.body.insertAdjacentHTML('beforeend', cardHTML);
     
-    // دریافت عناصر
+    // Get elements
     this.card = document.getElementById('floating-token-growth-card');
     this.percentageElement = document.getElementById('token-growth-percentage');
     this.statusElement = document.getElementById('token-growth-status');
@@ -97,7 +89,7 @@ class FloatingTokenGrowthCard {
   addEventListeners() {
     if (!this.card) return;
     
-    // اضافه کردن hover effects
+    // Add hover effects
     this.card.addEventListener('mouseenter', () => {
       this.card.style.transform = 'scale(1.1)';
       this.card.style.boxShadow = '0 12px 40px rgba(0, 255, 136, 0.4)';
@@ -108,7 +100,7 @@ class FloatingTokenGrowthCard {
       this.card.style.boxShadow = '0 8px 32px rgba(0, 255, 136, 0.3)';
     });
     
-    // اضافه کردن click to expand
+    // Add click to expand
     this.card.addEventListener('click', () => {
       this.toggleExpanded();
     });
@@ -131,7 +123,7 @@ class FloatingTokenGrowthCard {
     this.card.style.backgroundSize = '200% 200%';
     this.card.style.animation = 'gradientShift 2s ease infinite';
     
-    // نمایش اطلاعات بیشتر
+    // Show more information
     this.statusElement.innerHTML = `
       <div style="display:flex; gap:8px; align-items:center; justify-content:center;">
         <span style="opacity:.85">Current Price:</span>
@@ -152,18 +144,15 @@ class FloatingTokenGrowthCard {
     this.card.style.background = 'linear-gradient(135deg, #00ff88, #00cc6a)';
     this.card.style.animation = 'none';
     
-    this.statusElement.textContent = 'در حال بارگذاری...';
+    this.statusElement.textContent = ' loading ...';
   }
   
   async getTokenGrowthData() {
     try {
-      // قیمت اولیه ثابت
+    
       const initialPrice = 1e-15;
+            let currentPrice = null;
       
-      // دریافت قیمت فعلی - اولویت با منابع محلی سریع‌تر
-      let currentPrice = null;
-      
-      // اولویت اول: تلاش برای دریافت از priceHistoryManager (سریع‌ترین)
       if (window.priceHistoryManager && window.priceHistoryManager.tokenHistory.length > 0) {
         const tokenHistory = window.priceHistoryManager.tokenHistory;
         currentPrice = tokenHistory[tokenHistory.length - 1];
@@ -179,7 +168,6 @@ class FloatingTokenGrowthCard {
         }
       }
       
-      // اولویت دوم: تلاش برای دریافت از localStorage (سریع)
       const storedTokenHistory = localStorage.getItem('tokenPriceHistory');
       if (storedTokenHistory) {
         try {
@@ -202,7 +190,7 @@ class FloatingTokenGrowthCard {
         }
       }
       
-      // اولویت سوم: تلاش برای دریافت از contract.getTokenPrice (کندتر)
+      // Third priority: Try to get from contract.getTokenPrice (slower)
       if (window.contractConfig && window.contractConfig.contract && typeof window.contractConfig.contract.getTokenPrice === 'function') {
         try {
           const tokenPriceRaw = typeof window.retryRpcOperation === 'function' 
@@ -210,11 +198,11 @@ class FloatingTokenGrowthCard {
             : await window.contractConfig.contract.getTokenPrice();
           
           if (tokenPriceRaw) {
-            // تبدیل از Wei به Ether (18 decimal)
+            // Convert from Wei to Ether (18 decimal)
             if (typeof ethers !== 'undefined') {
               currentPrice = parseFloat(ethers.formatUnits(tokenPriceRaw, 18));
             } else {
-              // Fallback: تبدیل دستی از Wei به Ether
+              // Fallback: Manual conversion from Wei to Ether
               currentPrice = parseFloat(tokenPriceRaw) / Math.pow(10, 18);
             }
             
@@ -229,13 +217,13 @@ class FloatingTokenGrowthCard {
             }
           }
         } catch (contractError) {
-          console.warn('⚠️ خطا در دریافت قیمت از contract.getTokenPrice:', contractError);
+          console.warn('⚠️ Error getting price from contract.getTokenPrice:', contractError);
         }
       }
       
       return null;
     } catch (error) {
-      console.error('❌ خطا در دریافت داده‌های رشد توکن:', error);
+      console.error('❌ Error getting token growth data:', error);
       return null;
     }
   }
@@ -245,20 +233,20 @@ class FloatingTokenGrowthCard {
     
     if (!data) {
       this.percentageElement.textContent = '--%';
-      this.statusElement.textContent = 'داده در دسترس نیست';
+      this.statusElement.textContent = 'Data not available';
       return;
     }
     
     const { currentPrice, initialPrice, growthPercentage, source } = data;
     
-    // به‌روزرسانی درصد با رنگ‌بندی
+    // Update percentage with color coding
     const formattedPercentage = growthPercentage >= 0 ? 
       `+${growthPercentage.toFixed(2)}%` : 
       `${growthPercentage.toFixed(2)}%`;
     
     this.percentageElement.textContent = formattedPercentage;
     
-    // رنگ‌بندی بر اساس رشد
+    // Color coding based on growth
     if (growthPercentage > 0) {
       this.percentageElement.style.color = '#1a1f2e';
       this.card.style.background = 'linear-gradient(135deg, #00ff88, #00cc6a)';
@@ -270,7 +258,7 @@ class FloatingTokenGrowthCard {
       this.card.style.background = 'linear-gradient(135deg, #ffaa00, #ff8800)';
     }
     
-    // به‌روزرسانی وضعیت
+    // Update status
     if (this.isExpanded) {
       this.statusElement.innerHTML = `
         <div style="margin-bottom: 8px;">Current Price: <span style="font-weight: bold;">${currentPrice.toExponential(4)}</span></div>
@@ -281,7 +269,7 @@ class FloatingTokenGrowthCard {
       this.statusElement.textContent = source === 'firebase' ? 'Firebase' : 'Local';
     }
     
-    // اضافه کردن انیمیشن pulse برای تغییرات مهم
+    // Add pulse animation for important changes
     if (Math.abs(growthPercentage) > 5) {
       this.card.style.animation = 'pulse 1s ease-in-out';
       setTimeout(() => {
@@ -296,22 +284,22 @@ class FloatingTokenGrowthCard {
   }
   
   startUpdates() {
-    // به‌روزرسانی اولیه فقط یک بار
+    // Initial update only once
     this.updateGrowthData();
     
-    // به‌روزرسانی وقتی صفحه رفرش می‌شود
+    // Update when page refreshes
     window.addEventListener('beforeunload', () => {
       this.updateGrowthData();
     });
     
-    // به‌روزرسانی وقتی صفحه کاملاً بارگذاری شد
+    // Update when page is fully loaded
     window.addEventListener('load', () => {
       setTimeout(() => {
         this.updateGrowthData();
       }, 1000);
     });
     
-    // به‌روزرسانی وقتی داده‌های قیمت تغییر می‌کند
+    // Update when price data changes
     if (window.priceHistoryManager) {
       const originalUpdateTokenPrice = window.priceHistoryManager.updateTokenPrice;
       window.priceHistoryManager.updateTokenPrice = async (price) => {
@@ -320,7 +308,7 @@ class FloatingTokenGrowthCard {
       };
     }
     
-    // به‌روزرسانی وقتی window.contractConfig تغییر می‌کند
+    // Update when window.contractConfig changes
     if (window.contractConfig) {
       let originalContract = window.contractConfig.contract;
       Object.defineProperty(window.contractConfig, 'contract', {
@@ -336,13 +324,13 @@ class FloatingTokenGrowthCard {
       });
     }
     
-    // به‌روزرسانی هر 5 ثانیه برای اطمینان
+    // Update every 5 seconds for reliability
     this.updateInterval = setInterval(() => {
       this.updateGrowthData();
     }, 5000);
   }
   
-  // تابع عمومی برای به‌روزرسانی دستی
+  // Public function for manual update
   refresh() {
     this.updateGrowthData();
   }
@@ -363,7 +351,7 @@ class FloatingTokenGrowthCard {
   }
 }
 
-// اضافه کردن CSS animations
+// Add CSS animations
 function addFloatingCardStyles() {
   if (document.getElementById('floating-card-styles')) return;
   
@@ -386,7 +374,7 @@ function addFloatingCardStyles() {
       #floating-token-growth-card {
         bottom: 15px !important;
         right: 15px !important;
-        width: 95px !important; /* بیضی کوچکتر برای موبایل */
+        width: 95px !important; /* Smaller oval for mobile */
         height: 60px !important;
         border-radius: 30px !important;
       }
@@ -416,7 +404,7 @@ function addFloatingCardStyles() {
       #floating-token-growth-card {
         bottom: 12px !important;
         right: 12px !important;
-        width: 85px !important; /* بیضی برای موبایل کوچک */
+        width: 85px !important; /* Oval for small mobile */
         height: 50px !important;
         border-radius: 25px !important;
       }
@@ -445,17 +433,17 @@ function addFloatingCardStyles() {
   document.head.appendChild(style);
 }
 
-// تابع راه‌اندازی کارت شناور
+// Function to initialize floating card
 function initializeFloatingTokenCard() {
-  // اضافه کردن استایل‌ها
+  // Add styles
   addFloatingCardStyles();
   
-  // راه‌اندازی کارت
+  // Initialize card
   if (!window.floatingTokenGrowthCard) {
     window.floatingTokenGrowthCard = new FloatingTokenGrowthCard();
   }
   
-  // اضافه کردن تابع به‌روزرسانی عمومی
+  // Add public update function
   window.refreshFloatingTokenCard = () => {
     if (window.floatingTokenGrowthCard) {
       window.floatingTokenGrowthCard.refresh();
@@ -465,7 +453,7 @@ function initializeFloatingTokenCard() {
   return window.floatingTokenGrowthCard;
 }
 
-// راه‌اندازی خودکار وقتی DOM بارگذاری شد
+// Auto-initialize when DOM is loaded
 function startFloatingCard() {
   try {
     console.log('🎯 Initializing floating token card...');
@@ -479,15 +467,15 @@ function startFloatingCard() {
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', startFloatingCard);
 } else {
-  // اگر DOM قبلاً بارگذاری شده
-  setTimeout(startFloatingCard, 100); // کمی تأخیر برای اطمینان از بارگذاری کامل
+  // If DOM is already loaded
+  setTimeout(startFloatingCard, 100); // Small delay to ensure complete loading
 }
 
-// Export برای استفاده در فایل‌های دیگر
+// Export for use in other files
 window.FloatingTokenGrowthCard = FloatingTokenGrowthCard;
 window.initializeFloatingTokenCard = initializeFloatingTokenCard;
 
-// تابع کمکی برای debug و راه‌اندازی مجدد
+// Helper function for debug and restart
 window.debugFloatingCard = function() {
   console.log('🔍 Debug floating card:');
   
@@ -506,18 +494,18 @@ window.debugFloatingCard = function() {
   }
 };
 
-// تابع برای راه‌اندازی مجدد کارت
+// Function to restart the card
 window.restartFloatingCard = function() {
   console.log('🔄 Restarting floating card...');
   
-  // حذف کارت موجود
+  // Remove existing card
   const existingCard = document.getElementById('floating-token-growth-card');
   if (existingCard) {
     existingCard.remove();
     console.log('🗑️ Removed existing card');
   }
   
-  // حذف instance موجود
+  // Remove existing instance
   if (window.floatingTokenGrowthCard) {
     if (typeof window.floatingTokenGrowthCard.destroy === 'function') {
       window.floatingTokenGrowthCard.destroy();
@@ -525,24 +513,24 @@ window.restartFloatingCard = function() {
     window.floatingTokenGrowthCard = null;
   }
   
-  // راه‌اندازی مجدد
+  // Restart
   setTimeout(() => {
     startFloatingCard();
     console.log('✅ Card restarted');
   }, 500);
 };
 
-// تابع سریع برای نمایش فوری کارت
+// Quick function to show card immediately
 window.showFloatingCardNow = function() {
   console.log('⚡ Showing floating card immediately...');
   
-  // حذف کارت موجود اگر وجود دارد
+  // Remove existing card if exists
   const existingCard = document.getElementById('floating-token-growth-card');
   if (existingCard) {
     existingCard.remove();
   }
   
-  // راه‌اندازی فوری
+  // Immediate initialization
   if (!window.floatingTokenGrowthCard) {
     window.floatingTokenGrowthCard = new FloatingTokenGrowthCard();
   }
@@ -550,7 +538,7 @@ window.showFloatingCardNow = function() {
   console.log('✅ Card should be visible now');
 };
 
-// تابع به‌روزرسانی کارت به شکل بیضی
+// Function to update card to oval shape
 window.updateCardToOval = function() {
   console.log('🔄 Updating card to oval shape...');
   

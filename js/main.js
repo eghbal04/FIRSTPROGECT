@@ -821,12 +821,12 @@ window.hideMainRegistrationButton = function() {
     }
 };
 
-// نمایش پیام خوشامدگویی بعد از 2 ثانیه - DISABLED
-// setTimeout(() => {
-//     if (typeof window.showWelcomeRegistrationPrompt === 'function') {
-//         window.showWelcomeRegistrationPrompt();
-//     }
-// }, 2000);
+// بررسی لینک رفرال بعد از 2 ثانیه
+setTimeout(() => {
+    if (typeof window.showRegistrationFormForInactiveUser === 'function') {
+        window.showRegistrationFormForInactiveUser();
+    }
+}, 2000);
 
 // مدیریت دکمه ثبت‌نام اصلی بعد از 3 ثانیه
 setTimeout(() => {
@@ -2007,11 +2007,210 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 });
 
-// تابع جدید برای نمایش فرم ثبت‌نام برای کاربران غیرفعال - DISABLED
+// تابع جدید برای نمایش فرم ثبت‌نام برای کاربران غیرفعال - ONLY FOR REFERRAL LINKS
 window.showRegistrationFormForInactiveUser = async function() {
-    console.log('=== showRegistrationFormForInactiveUser: DISABLED as requested ===');
-    // This function has been disabled as per user request to remove registration form from page load
+    console.log('=== showRegistrationFormForInactiveUser: Checking for referral link ===');
+    
+    // Check if there's a referral link in the URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const referrer = urlParams.get('ref') || urlParams.get('referrer') || urlParams.get('r');
+    
+    if (referrer && /^0x[a-fA-F0-9]{40}$/.test(referrer)) {
+        console.log('✅ Referral link detected:', referrer);
+        
+        // Check if user is not already registered
+        try {
+            if (window.getUserProfile) {
+                const profile = await loadUserProfileOnce();
+                const isActive = profile && profile.activated && profile.index && BigInt(profile.index) > 0n;
+                
+                if (!isActive) {
+                    console.log('✅ User is not registered, showing registration form for referral link');
+                    showReferralRegistrationForm(referrer);
+                } else {
+                    console.log('❌ User is already registered, not showing registration form');
+                }
+            }
+        } catch (error) {
+            console.log('Error checking user status for referral registration:', error);
+        }
+    } else {
+        console.log('❌ No valid referral link found in URL');
+    }
+};
+
+// تابع نمایش فرم ثبت‌نام برای لینک رفرال
+function showReferralRegistrationForm(referrerAddress) {
+    const modal = document.createElement('div');
+    modal.id = 'referral-registration-modal';
+    modal.style = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 10001;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.3s ease;
+    `;
+    
+    modal.innerHTML = `
+        <div style="
+            background: linear-gradient(135deg, #232946, #181c2a);
+            border: 2px solid #00ff88;
+            border-radius: 24px;
+            padding: 2.5rem;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            position: relative;
+        ">
+            <!-- دکمه بستن -->
+            <button onclick="closeReferralRegistrationModal()" style="
+                position: absolute;
+                top: 1rem;
+                right: 1rem;
+                background: none;
+                border: none;
+                color: #fff;
+                font-size: 1.5rem;
+                cursor: pointer;
+                padding: 0.5rem;
+                border-radius: 50%;
+                transition: background 0.3s;
+            " onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='none'">✕</button>
+            
+            <div style="margin-bottom: 2rem;">
+                <div style="font-size: 2rem; margin-bottom: 1rem;">🎯</div>
+                <h2 style="color: #00ff88; margin-bottom: 1rem; font-size: 1.5rem;">ثبت‌نام با لینک رفرال</h2>
+                <p style="color: #ccc; margin-bottom: 1.5rem; line-height: 1.6;">
+                    شما از طریق لینک رفرال وارد شده‌اید. برای ثبت‌نام در شبکه IAM، لطفاً کیف پول خود را متصل کنید.
+                </p>
+                <div style="background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3); border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem;">
+                    <div style="color: #00ff88; font-weight: bold; margin-bottom: 0.5rem;">رفرال شما:</div>
+                    <div style="color: #fff; font-family: monospace; font-size: 0.9rem; word-break: break-all;">
+                        ${referrerAddress}
+                    </div>
+                </div>
+            </div>
+            
+            <div id="referral-registration-content">
+                <button id="referral-connect-wallet-btn" style="
+                    background: linear-gradient(135deg, #00ff88, #00cc6a);
+                    color: #000;
+                    border: none;
+                    border-radius: 12px;
+                    padding: 1rem 2rem;
+                    font-size: 1.1rem;
+                    font-weight: bold;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                    width: 100%;
+                    margin-bottom: 1rem;
+                " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                    🔗 اتصال کیف پول
+                </button>
+                
+                <div id="referral-registration-status" style="margin-top: 1rem;"></div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Add event listener for connect wallet button
+    const connectBtn = document.getElementById('referral-connect-wallet-btn');
+    const statusDiv = document.getElementById('referral-registration-status');
+    
+    connectBtn.onclick = async function() {
+        try {
+            connectBtn.textContent = 'در حال اتصال...';
+            connectBtn.disabled = true;
+            
+            // Connect wallet
+            await window.connectWallet();
+            
+            // Check if user is already registered
+            const profile = await loadUserProfileOnce();
+            const isActive = profile && profile.activated && profile.index && BigInt(profile.index) > 0n;
+            
+            if (isActive) {
+                statusDiv.innerHTML = '<div style="color:#ff4444;background:rgba(255,68,68,0.1);padding:0.8rem;border-radius:6px;">شما قبلاً ثبت‌نام کرده‌اید!</div>';
     return;
+            }
+            
+            // Show registration form
+            statusDiv.innerHTML = `
+                <div style="background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3); border-radius: 12px; padding: 1rem; margin-bottom: 1rem;">
+                    <div style="color: #00ff88; font-weight: bold; margin-bottom: 0.5rem;">اطلاعات ثبت‌نام:</div>
+                    <div style="color: #fff; margin-bottom: 0.5rem;">رفرال: ${referrerAddress}</div>
+                    <div style="color: #fff; margin-bottom: 0.5rem;">آدرس شما: ${window.contractConfig.signer.address}</div>
+                </div>
+                <button id="referral-register-btn" style="
+                    background: linear-gradient(135deg, #a786ff, #8b5cf6);
+                    color: #fff;
+                    border: none;
+                    border-radius: 12px;
+                    padding: 1rem 2rem;
+                    font-size: 1.1rem;
+                    font-weight: bold;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                    width: 100%;
+                " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                    🚀 ثبت‌نام در شبکه
+                </button>
+            `;
+            
+            // Add event listener for register button
+            const registerBtn = document.getElementById('referral-register-btn');
+            registerBtn.onclick = async function() {
+                try {
+                    registerBtn.textContent = 'در حال ثبت‌نام...';
+                    registerBtn.disabled = true;
+                    
+                    const { contract } = window.contractConfig;
+                    
+                    // Register user with referrer
+                    const tx = await contract.registerAndActivate(referrerAddress, window.contractConfig.signer.address);
+                    await tx.wait();
+                    
+                    statusDiv.innerHTML = '<div style="color:#00ff88;background:rgba(0,255,136,0.1);padding:0.8rem;border-radius:6px;">✅ ثبت‌نام با موفقیت انجام شد!</div>';
+                    
+                    // Close modal after 3 seconds
+                    setTimeout(() => {
+                        closeReferralRegistrationModal();
+                        window.location.reload();
+                    }, 3000);
+                    
+                } catch (error) {
+                    console.error('Registration error:', error);
+                    statusDiv.innerHTML = `<div style="color:#ff4444;background:rgba(255,68,68,0.1);padding:0.8rem;border-radius:6px;">خطا در ثبت‌نام: ${error.message}</div>`;
+                    registerBtn.textContent = '🚀 ثبت‌نام در شبکه';
+                    registerBtn.disabled = false;
+                }
+            };
+            
+        } catch (error) {
+            console.error('Error connecting wallet for referral registration:', error);
+            statusDiv.innerHTML = `<div style="color:#ff4444;background:rgba(255,68,68,0.1);padding:0.8rem;border-radius:6px;">خطا در اتصال کیف پول: ${error.message}</div>`;
+        } finally {
+            connectBtn.textContent = '🔗 اتصال کیف پول';
+            connectBtn.disabled = false;
+        }
+    };
+};
+
+// تابع بستن مودال ثبت‌نام رفرال
+window.closeReferralRegistrationModal = function() {
+    const modal = document.getElementById('referral-registration-modal');
+    if (modal) {
+        modal.remove();
+    }
 };
 
 // تابع مدیریت فرم ثبت‌نام دائمی

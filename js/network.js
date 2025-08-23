@@ -189,16 +189,16 @@ window.networkShowUserPopup = async function(address, user) {
 
          // لیست struct
      const infoList = [
-       {icon:'🎯', label:'امتیاز باینری', val: (user && user.binaryPoints !== undefined) ? user.binaryPoints : '-'},
-       {icon:'🏆', label:'سقف باینری', val: (user && user.binaryPointCap !== undefined) ? user.binaryPointCap : '-'},
-       {icon:'💎', label:'پاداش کل باینری', val: (user && user.totalMonthlyRewarded !== undefined) ? user.totalMonthlyRewarded : '-'},
-       {icon:'✅', label:'امتیاز دریافت‌شده', val: (user && user.binaryPointsClaimed !== undefined) ? user.binaryPointsClaimed : '-'},
-       {icon:'🤝', label:'درآمد رفرال', val: (user && user.refclimed) ? Math.floor(Number(user.refclimed) / 1e18) : '-'},
-       {icon:'💰', label:'سپرده کل', val: (user && user.depositedAmount) ? Math.floor(Number(user.depositedAmount) / 1e18) : '-'},
-       {icon:'⬅️', label:'امتیاز چپ', val: (user && user.leftPoints !== undefined) ? user.leftPoints : '-'},
-       {icon:'➡️', label:'امتیاز راست', val: (user && user.rightPoints !== undefined) ? user.rightPoints : '-'},
-       {icon:'👥⬅️', label:'تعداد ولت چپ', key:'left-wallet-count', userIndex: user && user.index ? user.index : 1n, val:(walletCounts && walletCounts.leftCount !== undefined) ? walletCounts.leftCount : '-'},
-       {icon:'👥➡️', label:'تعداد ولت راست', key:'right-wallet-count', userIndex: user && user.index ? user.index : 1n, val:(walletCounts && walletCounts.rightCount !== undefined) ? walletCounts.rightCount : '-'}
+               {icon:'🎯', label:'Binary Points', val: (user && user.binaryPoints !== undefined) ? user.binaryPoints : '-'},
+        {icon:'🏆', label:'Binary Cap', val: (user && user.binaryPointCap !== undefined) ? user.binaryPointCap : '-'},
+        {icon:'💎', label:'Total Binary Reward', val: (user && user.totalMonthlyRewarded !== undefined) ? user.totalMonthlyRewarded : '-'},
+        {icon:'✅', label:'Claimed Points', val: (user && user.binaryPointsClaimed !== undefined) ? user.binaryPointsClaimed : '-'},
+        {icon:'🤝', label:'Referral Income', val: (user && user.refclimed) ? Math.floor(Number(user.refclimed) / 1e18) : '-'},
+        {icon:'💰', label:'Total Deposit', val: (user && user.depositedAmount) ? Math.floor(Number(user.depositedAmount) / 1e18) : '-'},
+        {icon:'⬅️', label:'Left Points', val: (user && user.leftPoints !== undefined) ? user.leftPoints : '-'},
+        {icon:'➡️', label:'Right Points', val: (user && user.rightPoints !== undefined) ? user.rightPoints : '-'},
+        {icon:'👥⬅️', label:'Left Wallet Count', key:'left-wallet-count', userIndex: user && user.index ? user.index : 1n, val:(walletCounts && walletCounts.leftCount !== undefined) ? walletCounts.leftCount : '-'},
+        {icon:'👥➡️', label:'Right Wallet Count', key:'right-wallet-count', userIndex: user && user.index ? user.index : 1n, val:(walletCounts && walletCounts.rightCount !== undefined) ? walletCounts.rightCount : '-'}
      ];
 
     const popupEl = document.createElement('div');
@@ -227,8 +227,8 @@ window.networkShowUserPopup = async function(address, user) {
          .floating-typewriter {
            padding: 20px;
            color: #00ff88;
-           direction: rtl;
-           text-align: right;
+            direction: ltr;
+            text-align: left;
            line-height: 1.4;
            min-width: 350px;
            max-width: 700px;
@@ -244,7 +244,7 @@ window.networkShowUserPopup = async function(address, user) {
            font-weight: bold;
            font-size: 1rem;
            margin-bottom: 15px;
-           text-align: center;
+            text-align: left;
            border-bottom: 1px solid #00ff88;
            padding-bottom: 8px;
            display: flex;
@@ -255,20 +255,20 @@ window.networkShowUserPopup = async function(address, user) {
          .typewriter-line {
            margin-bottom: 2px;
            opacity: 0;
-           animation: fadeInLine 0.3s ease forwards;
+            animation: fadeInLine 0.15s ease forwards;
            white-space: nowrap;
            overflow: hidden;
            font-size: 0.9rem;
          }
                    .typewriter-line.typing {
-            border-right: 2px solid #00ff88;
+             border-left: 2px solid #00ff88;
             animation: blink 1s infinite, fadeInLine 0.3s ease forwards;
             position: relative;
           }
           .typewriter-line.typing::after {
             content: '';
             position: absolute;
-            right: -2px;
+             left: -2px;
             top: 0;
             width: 2px;
             height: 100%;
@@ -276,13 +276,13 @@ window.networkShowUserPopup = async function(address, user) {
             animation: blink 1s infinite;
           }
          .typewriter-line.completed {
-           border-right: none;
+            border-left: none;
            white-space: normal;
          }
          @keyframes fadeInLine {
            from {
              opacity: 0;
-             transform: translateY(4px);
+              transform: translateY(2px);
            }
            to {
              opacity: 1;
@@ -689,7 +689,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
             font-weight: bold;
             pointer-events: auto;
         `;
-        infoIcon.title = 'مشاهده اطلاعات کاربر';
+        infoIcon.title = 'View User Information';
         nodeDiv.appendChild(infoIcon);
         
         // اضافه کردن event listener برای آیکون
@@ -1610,38 +1610,38 @@ function startTypewriter(popupEl, IAMId, walletAddress, isActive, infoList) {
   
                // ساخت خطوط اولیه
      const initialLines = [
-       // اطلاعات اصلی کاربر
-       `IAM > شناسه کاربر: ${IAMId}`,
+               // User main info
+        `IAM > User ID: ${IAMId}`,
        `IAM >`,
      
-     // اطلاعات امتیازات
-     `IAM > امتیاز باینری: ${infoList[0].val !== undefined && infoList[0].val !== null && infoList[0].val !== '' ? infoList[0].val : '-'}`,
-     `IAM > سقف باینری: ${infoList[1].val !== undefined && infoList[1].val !== null && infoList[1].val !== '' ? infoList[1].val : '-'}`,
-     `IAM > پاداش کل باینری: ${infoList[2].val !== undefined && infoList[2].val !== null && infoList[2].val !== '' ? infoList[2].val : '-'}`,
-     `IAM > امتیاز دریافت‌شده: ${infoList[3].val !== undefined && infoList[3].val !== null && infoList[3].val !== '' ? infoList[3].val : '-'}`,
+      // Points info
+      `IAM > Binary Points: ${infoList[0].val !== undefined && infoList[0].val !== null && infoList[0].val !== '' ? infoList[0].val : '-'}`,
+      `IAM > Binary Cap: ${infoList[1].val !== undefined && infoList[1].val !== null && infoList[1].val !== '' ? infoList[1].val : '-'}`,
+      `IAM > Total Binary Reward: ${infoList[2].val !== undefined && infoList[2].val !== null && infoList[2].val !== '' ? infoList[2].val : '-'}`,
+      `IAM > Claimed Points: ${infoList[3].val !== undefined && infoList[3].val !== null && infoList[3].val !== '' ? infoList[3].val : '-'}`,
      `IAM >`,
      
-     // اطلاعات مالی
-     `IAM > درآمد رفرال: ${infoList[4].val !== undefined && infoList[4].val !== null && infoList[4].val !== '' ? infoList[4].val : '-'}`,
-     `IAM > سپرده کل: ${infoList[5].val !== undefined && infoList[5].val !== null && infoList[5].val !== '' ? infoList[5].val : '-'}`,
+      // Financial info
+      `IAM > Referral Income: ${infoList[4].val !== undefined && infoList[4].val !== null && infoList[4].val !== '' ? infoList[4].val : '-'}`,
+      `IAM > Total Deposit: ${infoList[5].val !== undefined && infoList[5].val !== null && infoList[5].val !== '' ? infoList[5].val : '-'}`,
      `IAM >`,
      
-     // امتیازات چپ و راست
-     `IAM > امتیاز چپ: ${infoList[6].val !== undefined && infoList[6].val !== null && infoList[6].val !== '' ? infoList[6].val : '-'}`,
-     `IAM > امتیاز راست: ${infoList[7].val !== undefined && infoList[7].val !== null && infoList[7].val !== '' ? infoList[7].val : '-'}`,
+      // Left and right points
+      `IAM > Left Points: ${infoList[6].val !== undefined && infoList[6].val !== null && infoList[6].val !== '' ? infoList[6].val : '-'}`,
+      `IAM > Right Points: ${infoList[7].val !== undefined && infoList[7].val !== null && infoList[7].val !== '' ? infoList[7].val : '-'}`,
      `IAM >`,
      
-     // تعداد ولت‌ها (در ابتدا loading)
-     `IAM > تعداد ولت چپ: ⏳`,
-     `IAM > تعداد ولت راست: ⏳`,
+      // Wallet counts (loading initially)
+      `IAM > Left Wallet Count: ⏳`,
+      `IAM > Right Wallet Count: ⏳`,
      `IAM >`,
      
-     // موجودی‌های زنده (در ابتدا loading)
-     `IAM > موجودی IAM: ⏳`,
-     `IAM > موجودی MATIC: ⏳`,
-     `IAM > موجودی DAI: ⏳`,
+      // Live balances (loading initially)
+      `IAM > IAM Balance: ⏳`,
+      `IAM > MATIC Balance: ⏳`,
+      `IAM > DAI Balance: ⏳`,
      `IAM >`,
-     `IAM > آماده.`
+      `IAM > Ready.`
    ];
   
      // تابع تایپ خط
@@ -1668,7 +1668,7 @@ function startTypewriter(popupEl, IAMId, walletAddress, isActive, infoList) {
      lineDiv.style.transform = 'translateY(10px)';
      
      setTimeout(() => {
-       lineDiv.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+               lineDiv.style.transition = 'opacity 0.15s ease, transform 0.15s ease';
        lineDiv.style.opacity = '1';
        lineDiv.style.transform = 'translateY(0)';
        
@@ -1685,7 +1685,7 @@ function startTypewriter(popupEl, IAMId, walletAddress, isActive, infoList) {
              adjustContainerSize();
              
              // تاخیر برای تایپ کاراکتر بعدی
-             setTimeout(typeChar, 40);
+                           setTimeout(typeChar, 20);
            } else {
              // خط تمام شد
              lineDiv.classList.remove('typing');
@@ -1696,12 +1696,12 @@ function startTypewriter(popupEl, IAMId, walletAddress, isActive, infoList) {
              adjustContainerSize();
              
              // کمی صبر کن و خط بعدی را شروع کن
-             setTimeout(typeNextLine, 400);
+                           setTimeout(typeNextLine, 200);
            }
          }
          
          typeChar();
-       }, 400); // صبر کن تا expand تمام شود
+               }, 200); // صبر کن تا expand تمام شود
      }, 200);
    }
   
@@ -1758,25 +1758,25 @@ function startTypewriter(popupEl, IAMId, walletAddress, isActive, infoList) {
         const userIndex = infoList[8].userIndex || 1n;
         const counts = await calculateWalletCounts(userIndex, window.contractConfig.contract);
         
-                 // به‌روزرسانی تعداد ولت چپ (خط 14)
-         updateLine(14, `IAM > تعداد ولت چپ: ${counts.leftCount}`, true);
+                           // Update left wallet count (line 14)
+          updateLine(14, `IAM > Left Wallet Count: ${counts.leftCount}`, true);
          
-         // به‌روزرسانی تعداد ولت راست (خط 15)
-         updateLine(15, `IAM > تعداد ولت راست: ${counts.rightCount}`, true);
+          // Update right wallet count (line 15)
+          updateLine(15, `IAM > Right Wallet Count: ${counts.rightCount}`, true);
       }
     } catch (error) {
       console.warn('Error updating wallet counts:', error);
-             updateLine(14, `IAM > تعداد ولت چپ: ❌`, true);
-       updateLine(15, `IAM > تعداد ولت راست: ❌`, true);
+              updateLine(14, `IAM > Left Wallet Count: ❌`, true);
+        updateLine(15, `IAM > Right Wallet Count: ❌`, true);
     }
   }
   
   // تابع به‌روزرسانی موجودی‌ها
   async function updateBalances() {
          if (walletAddress === '-') {
-       updateLine(18, `IAM > موجودی IAM: -`, true);
-       updateLine(19, `IAM > موجودی MATIC: -`, true);
-       updateLine(20, `IAM > موجودی DAI: -`, true);
+               updateLine(18, `IAM > IAM Balance: -`, true);
+        updateLine(19, `IAM > MATIC Balance: -`, true);
+        updateLine(20, `IAM > DAI Balance: -`, true);
        return;
      }
     
@@ -1789,9 +1789,9 @@ function startTypewriter(popupEl, IAMId, walletAddress, isActive, infoList) {
         try {
           const c = await contract.balanceOf(walletAddress);
                      IAM = Number(ethers.formatEther(c)).toFixed(4);
-           updateLine(18, `IAM > موجودی IAM: ${IAM}`, true);
+                       updateLine(18, `IAM > IAM Balance: ${IAM}`, true);
                  } catch (e) {
-           updateLine(18, `IAM > موجودی IAM: ❌`, true);
+            updateLine(18, `IAM > IAM Balance: ❌`, true);
          }
       }
       
@@ -1801,9 +1801,9 @@ function startTypewriter(popupEl, IAMId, walletAddress, isActive, infoList) {
         const Dai = new ethers.Contract(DAI_ADDRESS, window.DAI_ABI, provider);
                  const d = await Dai.balanceOf(walletAddress);
          dai = Number(ethers.formatUnits(d, 18)).toFixed(2);
-         updateLine(20, `IAM > موجودی DAI: ${dai}`, true);
+                   updateLine(20, `IAM > DAI Balance: ${dai}`, true);
              } catch (e) {
-         updateLine(20, `IAM > موجودی DAI: ❌`, true);
+          updateLine(20, `IAM > DAI Balance: ❌`, true);
        }
       
       // دریافت موجودی MATIC
@@ -1811,17 +1811,17 @@ function startTypewriter(popupEl, IAMId, walletAddress, isActive, infoList) {
         try {
                      const m = await provider.getBalance(walletAddress);
            matic = Number(ethers.formatEther(m)).toFixed(4);
-           updateLine(19, `IAM > موجودی MATIC: ${matic}`, true);
+           updateLine(19, `IAM > MATIC Balance: ${matic}`, true);
                  } catch (e) {
-           updateLine(19, `IAM > موجودی MATIC: ❌`, true);
+           updateLine(19, `IAM > MATIC Balance: ❌`, true);
          }
       }
       
     } catch (error) {
       console.warn('Error updating balances:', error);
-      updateLine(18, `IAM > موجودی IAM: ❌`, true);
-      updateLine(19, `IAM > موجودی MATIC: ❌`, true);
-      updateLine(20, `IAM > موجودی DAI: ❌`, true);
+             updateLine(18, `IAM > IAM Balance: ❌`, true);
+              updateLine(19, `IAM > MATIC Balance: ❌`, true);
+        updateLine(20, `IAM > DAI Balance: ❌`, true);
     }
   }
   
@@ -1899,5 +1899,5 @@ function startTypewriter(popupEl, IAMId, walletAddress, isActive, infoList) {
   }
   
      // شروع تایپ از خط اول
-   setTimeout(typeNextLine, 500);
+       setTimeout(typeNextLine, 250);
 }

@@ -14,7 +14,7 @@
       color: #fff !important;
       border-radius: 16px;
       box-shadow: 0 8px 32px #00000033, 0 1.5px 6px #00ff8840;
-      padding: 20px 16px 16px 16px;
+      padding: 16px;
     }
     .register-form label,
     .register-form-title {
@@ -52,10 +52,10 @@
       color: #fff !important;
     }
     .form-group {
-      margin-bottom: 12px !important;
+      margin-bottom: 10px !important;
     }
     .form-group label {
-      margin-bottom: 4px !important;
+      margin-bottom: 3px !important;
       font-size: 0.9rem !important;
     }
     .register-form-input {
@@ -74,45 +74,37 @@
 <body>
   <script src="js/navbar.js"></script>
   <main style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--ios-background);">
-    <form class="register-form" autocomplete="off" style="max-width:430px;width:100%;margin:0 auto;">
-      <h2 class="register-form-title" style="text-align:center;margin-bottom:12px;font-size:1.3rem;">فرم ثبت‌نام کاربر جدید</h2>
+    <form class="register-form" autocomplete="off" style="max-width:400px;width:100%;margin:0 auto;">
+      <h2 class="register-form-title" style="text-align:center;margin-bottom:10px;font-size:1.2rem;">ثبت‌نام کاربر جدید</h2>
       <div class="register-form-status info" id="connection-status"></div>
       <div class="register-form-status warning" id="register-suggestion" style="display:none;"></div>
+      
       <div class="form-group">
-        <label for="index-search">ایندکس (Index)</label>
-                 <div style="font-size:0.75rem;color:#a786ff;margin-bottom:6px;background:rgba(167,134,255,0.1);padding:6px;border-radius:4px;border:1px solid rgba(167,134,255,0.3);">
-           ⚠️ <strong>محدودیت:</strong> فقط می‌توانید برای ایندکس‌های موجود در خط رفرال خود ثبت‌نام کنید.
-         </div>
+        <label for="index-search">ایندکس معرف</label>
         <div style="display: flex; gap: 8px; align-items: center;">
-          <input type="text" id="index-search" class="register-form-input" placeholder="مثلاً 123" autocomplete="off" value="refferer ID : IAM00000" style="flex: 1; min-width: 0;">
-          <button type="button" id="apply-index-btn" class="register-btn" style="padding: 8px 16px; font-size: 0.9rem; white-space: nowrap;">اعمال</button>
+          <input type="text" id="index-search" class="register-form-input" placeholder="ایندکس معرف را وارد کنید" autocomplete="off" value="" style="flex: 1; min-width: 0;">
+          <button type="button" id="apply-index-btn" class="register-btn" style="padding: 8px 12px; font-size: 0.85rem; white-space: nowrap;">اعمال</button>
         </div>
-      </div>
-      <div class="form-group">
-        <label for="referrer-address">آدرس معرف (والد)</label>
-        <div style="font-size:0.7rem;color:#718096;margin-bottom:4px;background:rgba(113,128,150,0.1);padding:4px;border-radius:3px;">
-          🔗 این فیلد به صورت خودکار بر اساس ایندکس انتخاب شده پر می‌شود. معرف باید فعال باشد.
-        </div>
-                 <input type="text" id="referrer-address" class="register-form-input" placeholder="0x..." autocomplete="off" value="root" style="background-color: #232946; color: #fff;">
-      </div>
-      <div class="form-group">
-        <label for="new-user-address">آدرس کاربر جدید</label>
-        <div style="font-size:0.7rem;color:#718096;margin-bottom:4px;background:rgba(113,128,150,0.1);padding:4px;border-radius:3px;">
-          👤 آدرس کیف پول کاربری که می‌خواهید ثبت‌نام کنید. این آدرس نباید قبلاً ثبت‌نام شده باشد.
-        </div>
-                 <input type="text" id="new-user-address" class="register-form-input" placeholder="آدرس کیف پول زیرمجموعه را وارد کنید یا کلیک کنید" autocomplete="off">
       </div>
       
-             <script>
+      <div class="form-group">
+        <label for="referrer-address">آدرس معرف</label>
+        <input type="text" id="referrer-address" class="register-form-input" placeholder="آدرس معرف (0x...)" autocomplete="off" value="" style="background-color: #232946; color: #fff;">
+      </div>
+      
+      <div class="form-group">
+        <label for="new-user-address">آدرس کاربر جدید</label>
+        <input type="text" id="new-user-address" class="register-form-input" placeholder="آدرس کیف پول زیرمجموعه" autocomplete="off">
+      </div>
+      
+      <script>
     // تابع نمایش پیام‌های عمومی
     function showMessageBox(message, type = 'info') {
-        // حذف message box قبلی اگر وجود دارد
         const existingBox = document.getElementById('message-box');
         if (existingBox) {
             existingBox.remove();
         }
         
-        // ایجاد message box جدید
         const messageBox = document.createElement('div');
         messageBox.id = 'message-box';
         messageBox.style.cssText = `
@@ -134,7 +126,6 @@
             border: 1px solid ${type === 'error' ? 'rgba(255, 0, 0, 0.3)' : type === 'success' ? 'rgba(0, 255, 136, 0.3)' : 'rgba(167, 134, 255, 0.3)'};
         `;
         
-        // آیکون بر اساس نوع پیام
         const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
         
         messageBox.innerHTML = `
@@ -156,7 +147,6 @@
         
         document.body.appendChild(messageBox);
         
-        // حذف خودکار بعد از 5 ثانیه
         setTimeout(() => {
             if (messageBox.parentElement) {
                 messageBox.remove();
@@ -164,7 +154,7 @@
         }, 5000);
     }
 
-    // تابع نمایش پیام‌های موقت (برای validation)
+    // تابع نمایش پیام‌های موقت
     function showTempMessage(message, type = 'info', duration = 3000) {
         const tempBox = document.createElement('div');
         tempBox.style.cssText = `
@@ -217,87 +207,51 @@
          document.addEventListener('DOMContentLoaded', function() {
            const addressInput = document.getElementById('new-user-address');
            
-           // وقتی کاربر روی اینپوت کلیک کند
            addressInput.addEventListener('click', async function() {
-             // فقط اگر فیلد قابل ویرایش باشد (کاربر ثبت‌نام شده)
              if (!addressInput.readOnly) {
                try {
-                 // خواندن محتوای کلیپبورد
                  const clipboardText = await navigator.clipboard.readText();
                  
-                 // بررسی اینکه آیا متن کپی شده شبیه آدرس اتریوم است
                  if (clipboardText.match(/^0x[a-fA-F0-9]{40}$/)) {
                    addressInput.value = clipboardText;
-                   
-                   // نمایش پیام موفقیت آمیز
-                   const status = document.getElementById('status-message');
-                   status.style.color = '#388e3c';
-                   showTempMessage('✅ آدرس از کلیپبورد با موفقیت وارد شد!', 'success');
-                   
-                   // پاک کردن پیام بعد از 3 ثانیه
-                   setTimeout(() => {
-                     status.textContent = '';
-                   }, 3000);
+                   showTempMessage('✅ آدرس از کلیپبورد وارد شد!', 'success');
                  } else {
-                   // نمایش پیام خطا
-                   const status = document.getElementById('status-message');
-                   status.style.color = '#d32f2f';
-                   showTempMessage('❌ محتوای کلیپبورد آدرس اتریوم معتبر نیست', 'error');
-                   
-                   // پاک کردن پیام بعد از 3 ثانیه
-                   setTimeout(() => {
-                     status.textContent = '';
-                   }, 3000);
+                   showTempMessage('❌ آدرس اتریوم معتبر نیست', 'error');
                  }
                } catch (err) {
                  console.error('خطا در دسترسی به کلیپبورد:', err);
-                 // نمایش پیام خطا
-                 const status = document.getElementById('status-message');
-                 status.style.color = '#d32f2f';
-                 showTempMessage('❌ خطا در دسترسی به کلیپبورد. لطفاً آدرس را دستی وارد کنید.', 'error');
-                 
-                 // پاک کردن پیام بعد از 3 ثانیه
-                 setTimeout(() => {
-                   status.textContent = '';
-                 }, 3000);
+                 showTempMessage('❌ خطا در دسترسی به کلیپبورد', 'error');
                }
              }
            });
          });
        </script>
-      <div class="info-box" id="register-info" style="background:rgba(28,28,40,0.97);color:#fff;font-weight:bold;font-size:0.9rem;box-shadow:0 2px 8px #a786ff22;margin-bottom:12px;padding:12px;">
-        <div style="margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid rgba(167,134,255,0.3);">
-          <div style="color:#a786ff;font-size:0.8rem;margin-bottom:2px;">📊 اطلاعات ثبت‌نام:</div>
+      
+      <div class="info-box" id="register-info" style="background:rgba(28,28,40,0.97);color:#fff;font-size:0.85rem;box-shadow:0 2px 8px #a786ff22;margin-bottom:10px;padding:10px;">
+        <div style="margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid rgba(167,134,255,0.3);">
+          <div style="color:#a786ff;font-size:0.8rem;">📊 اطلاعات ثبت‌نام:</div>
         </div>
-                 <div style="margin-bottom:4px;">🎯 ایندکس رفرر: <b id="parent-index">...</b></div>
-         <div style="margin-bottom:4px;">📍 ایندکس جایگاه جدید: <b id="empty-index">...</b></div>
-         <div style="margin-bottom:4px;">🔄 جایگاه کاربر جدید: <b id="position-info">...</b></div>
-        <div style="margin-bottom:4px;">💰 هزینه ثبت‌نام:<br><b id="register-cost" style="display:inline-block;margin-top:2px;font-size:1rem;color:#00ff88;">...</b></div>
+        <div style="margin-bottom:3px;">🎯 ایندکس رفرر: <b id="parent-index">...</b></div>
+        <div style="margin-bottom:3px;">📍 ایندکس جایگاه: <b id="empty-index">...</b></div>
+        <div style="margin-bottom:3px;">💰 هزینه: <b id="register-cost" style="color:#00ff88;">...</b></div>
         
-        <div style="margin-top:8px;padding-top:6px;border-top:1px solid rgba(167,134,255,0.3);">
-          <div style="color:#a786ff;font-size:0.8rem;margin-bottom:6px;">💳 موجودی کیف پول:</div>
-          <div style="display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;">
-                     <span style="display:flex;align-items:center;gap:4px;">
-             <span style="color:#8247E5;font-size:16px;">🔷</span>
-             <span>موجودی متیک: <b id="matic-balance">...</b></span>
-           </span>
-           <span style="display:flex;align-items:center;gap:4px;">
-             <span style="color:#00ff88;font-size:16px;">💎</span>
-             <span>موجودی IAM: <b id="IAM-balance">...</b></span>
-           </span>
-          </div>
-          <div style="font-size:0.7rem;color:#718096;margin-top:6px;text-align:center;background:rgba(113,128,150,0.1);padding:4px;border-radius:3px;">
-            💡 برای ثبت‌نام نیاز به موجودی کافی IAM یا MATIC دارید
+        <div style="margin-top:6px;padding-top:4px;border-top:1px solid rgba(167,134,255,0.3);">
+          <div style="color:#a786ff;font-size:0.8rem;margin-bottom:4px;">💳 موجودی:</div>
+          <div style="display:flex;flex-direction:column;gap:3px;align-items:center;">
+            <span>🔷 متیک: <b id="matic-balance">...</b></span>
+            <span>💎 IAM: <b id="IAM-balance">...</b></span>
           </div>
         </div>
       </div>
-      <div class="avatar-row" style="margin-bottom:0.5em;">
+      
+      <div class="avatar-row" style="margin-bottom:8px;">
         <span class="avatar-choice selected" data-avatar="man">👨‍💼</span>
         <span class="avatar-choice" data-avatar="woman">👩‍💼</span>
         <span class="avatar-choice" data-avatar="student-man">👨‍🎓</span>
         <span class="avatar-choice" data-avatar="student-woman">👩‍🎓</span>
       </div>
-      <button class="register-btn buy-btn" id="register-btn" type="button" style="width:100%;margin-top:12px;">ثبت‌نام</button>
+      
+      <button class="register-btn buy-btn" id="register-btn" type="button" style="width:100%;margin-top:10px;">ثبت‌نام</button>
       <div class="register-form-status" id="status-message"></div>
       
       <div style="margin-top:12px;padding:8px;background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3);border-radius:6px;text-align:center;font-size:0.8rem;color:#ffc107;">
@@ -314,7 +268,7 @@
     const indexInput = document.getElementById('index-search');
     const refInput = document.getElementById('referrer-address');
      const newUserInput = document.getElementById('new-user-address');
-    const defaultGuide = 'refferer ID : IAM00000';
+    const defaultGuide = '';
     
                                                 // تابع بررسی اینکه آیا ایندکس هدف در زیرمجموعه کاربر جاری قرار دارد
           function isIndexInUserSubtree(targetIndex, currentUserIndex) {
@@ -428,21 +382,9 @@
             // کاربر ثبت‌نام نشده است - حالت خودکار
             console.log(`⚠️ کاربر ثبت‌نام نشده است - حالت خودکار`);
             
-                         // معرف به‌صورت پیش‌فرض: آدرس ایندکس 1
-             let deployer;
-             try {
-               deployer = await contract.deployer();
-             } catch (e) {
-               // اگر تابع deployer موجود نباشد، آدرس ایندکس 1 را دریافت کن
-               try {
-                 deployer = await contract.indexToAddress(1);
-               } catch (e2) {
-                 // اگر ایندکس 1 هم موجود نباشد، از آدرس ثابت استفاده کن
-                 deployer = '0x0000000000000000000000000000000000000000';
-               }
-             }
-            refInput.value = deployer;
-            refInput.readOnly = true; // غیرفعال کردن تغییر معرف
+                         // معرف به‌صورت پیش‌فرض: آدرس خالی (کاربر باید دستی وارد کند)
+            refInput.value = '';
+            refInput.readOnly = false; // فعال کردن تغییر معرف
             
             // آدرس کاربر جدید: کیف پول متصل
             newUserInput.value = myAddress;
@@ -452,42 +394,33 @@
             const suggestionDiv = document.getElementById('register-suggestion');
             suggestionDiv.style.display = '';
             suggestionDiv.innerHTML = `
-              <div style="background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3); border-radius: 8px; padding: 12px; margin: 10px 0;">
-                <strong style="color: #00ff88;">📝 ثبت‌نام خودکار:</strong><br>
-                • معرف: <span style="color: #a786ff;">${deployer}</span><br>
+              <div style="background: rgba(255,193,7,0.1); border: 1px solid rgba(255,193,7,0.3); border-radius: 8px; padding: 12px; margin: 10px 0;">
+                <strong style="color: #ffc107;">📝 ثبت‌نام دستی:</strong><br>
+                • لطفاً ایندکس معرف را وارد کنید<br>
+                • آدرس معرف به‌طور خودکار تنظیم می‌شود<br>
                 • کاربر جدید: <span style="color: #a786ff;">${myAddress}</span><br>
-                • فقط روی دکمه "ثبت‌نام" کلیک کنید
+                • پس از وارد کردن ایندکس، روی دکمه "ثبت‌نام" کلیک کنید
               </div>
             `;
             
             // مقداردهی parent-index
-            parentIndex = '1'; // deployer index
+            parentIndex = '...'; // کاربر باید دستی وارد کند
             
             // مقداردهی پیش‌فرض فیلد ایندکس
-            indexInput.value = 'IAM00001';
+            indexInput.value = '';
             indexInput.style.background = '';
             indexInput.style.color = '';
             indexInput.style.opacity = '';
           }
                  } catch (e) {
            console.log(`خطا در بررسی وضعیت کاربر:`, e);
-           // اگر خطا داشتیم، حالت خودکار را اعمال کن
-           let deployer;
-           try {
-             deployer = await contract.deployer();
-           } catch (e2) {
-             try {
-               deployer = await contract.indexToAddress(1);
-             } catch (e3) {
-               deployer = '0x0000000000000000000000000000000000000000';
-             }
-           }
-           refInput.value = deployer;
-           refInput.readOnly = true;
+           // اگر خطا داشتیم، حالت خالی را اعمال کن
+           refInput.value = '';
+           refInput.readOnly = false;
            newUserInput.value = myAddress;
            newUserInput.readOnly = true;
-           parentIndex = '1';
-           indexInput.value = 'IAM00001';
+           parentIndex = '...';
+           indexInput.value = '';
          }
         
         document.getElementById('parent-index').textContent = parentIndex;
@@ -1016,16 +949,10 @@
           showMessageBox('ثبت‌نام زیرمجموعه با موفقیت انجام شد!', 'success');
           
         } else {
-                     // کاربر ثبت‌نام نشده است - حالت خودکار
-           let referrerAddress;
-           try {
-             referrerAddress = await contract.deployer();
-           } catch (e) {
-             try {
-               referrerAddress = await contract.indexToAddress(1);
-             } catch (e2) {
-               referrerAddress = '0x0000000000000000000000000000000000000000';
-             }
+                     // کاربر ثبت‌نام نشده است - حالت دستی
+           let referrerAddress = document.getElementById('referrer-address').value.trim();
+           if (!referrerAddress) {
+             throw new Error('لطفاً آدرس معرف را وارد کنید');
            }
           const userAddress = myAddress; // کاربر جدید: کیف پول متصل
           
@@ -1068,21 +995,10 @@
 
     // Clear faded guide on focus for index input
     indexInput.addEventListener('focus', function() {
-      if (this.value === defaultGuide) {
-        this.value = '';
-        this.style.background = '';
-        this.style.color = '';
-        this.style.opacity = '';
-      }
+      // No default guide behavior needed
     });
     indexInput.addEventListener('blur', function() {
-      if (this.value.trim() === '') {
-        this.value = defaultGuide;
-        this.style.background = '#f3f3f3';
-        this.style.color = '#888';
-        this.style.opacity = '0.7';
-        refInput.value = 'root';
-      }
+      // No default guide behavior needed
     });
   </script>
   

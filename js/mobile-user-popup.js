@@ -1,4 +1,4 @@
-// نمایش اطلاعات کاربر در موبایل
+// Display user information on mobile
 class MobileUserPopup {
     constructor() {
         this.popup = null;
@@ -7,14 +7,295 @@ class MobileUserPopup {
         this.currentY = 0;
         this.isScrolling = false;
         this.setupPopup();
+        this.setupStyles();
+    }
+
+    setupStyles() {
+        // Add CSS for left-aligned mobile popup
+        if (!document.getElementById('mobile-popup-styles')) {
+            const style = document.createElement('style');
+            style.id = 'mobile-popup-styles';
+            style.textContent = `
+                #user-popup {
+                    position: fixed;
+                    bottom: 0;
+                    left: 0;
+                    right: 0;
+                    background: linear-gradient(135deg, #232946 0%, #181c2a 100%);
+                    border-radius: 20px 20px 0 0;
+                    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.3);
+                    transform: translateY(100%);
+                    transition: transform 0.15s ease-out;
+                    z-index: 9999;
+                    max-height: 80vh;
+                    overflow: hidden;
+                    direction: ltr;
+                    text-align: left;
+                }
+
+                #user-popup.active {
+                    transform: translateY(0);
+                }
+
+                .popup-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 16px 20px 8px;
+                    border-bottom: 1px solid rgba(167, 134, 255, 0.2);
+                }
+
+                .popup-handle {
+                    width: 40px;
+                    height: 4px;
+                    background: rgba(167, 134, 255, 0.5);
+                    border-radius: 2px;
+                    margin: 0 auto;
+                }
+
+                .close-btn {
+                    background: none;
+                    border: none;
+                    color: #a786ff;
+                    font-size: 24px;
+                    cursor: pointer;
+                    padding: 4px;
+                    border-radius: 50%;
+                    transition: background 0.15s ease;
+                }
+
+                .close-btn:hover {
+                    background: rgba(167, 134, 255, 0.1);
+                }
+
+                .popup-content {
+                    padding: 0 20px 20px;
+                    max-height: calc(80vh - 80px);
+                    overflow-y: auto;
+                    direction: ltr;
+                    text-align: left;
+                }
+
+                .user-info-card {
+                    background: rgba(28, 28, 40, 0.8);
+                    border-radius: 12px;
+                    padding: 16px;
+                    margin-bottom: 12px;
+                }
+
+                .user-header {
+                    margin-bottom: 16px;
+                }
+
+                .user-primary-info {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 8px;
+                }
+
+                .user-id {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 4px;
+                }
+
+                .user-id .label {
+                    font-size: 12px;
+                    color: #a786ff;
+                    font-weight: 500;
+                }
+
+                .user-id .value {
+                    font-size: 16px;
+                    font-weight: bold;
+                    color: #fff;
+                    cursor: pointer;
+                    padding: 4px 8px;
+                    background: rgba(167, 134, 255, 0.1);
+                    border-radius: 6px;
+                    transition: background 0.15s ease;
+                }
+
+                .user-id .value:hover {
+                    background: rgba(167, 134, 255, 0.2);
+                }
+
+                .user-status {
+                    padding: 4px 8px;
+                    border-radius: 6px;
+                    font-size: 12px;
+                    font-weight: 500;
+                }
+
+                .user-status.active {
+                    background: rgba(0, 255, 136, 0.2);
+                    color: #00ff88;
+                }
+
+                .user-status.inactive {
+                    background: rgba(255, 0, 0, 0.2);
+                    color: #ff4444;
+                }
+
+                .user-wallet {
+                    font-size: 14px;
+                    color: #718096;
+                    cursor: pointer;
+                    padding: 4px 8px;
+                    background: rgba(113, 128, 150, 0.1);
+                    border-radius: 6px;
+                    transition: background 0.15s ease;
+                }
+
+                .user-wallet:hover {
+                    background: rgba(113, 128, 150, 0.2);
+                }
+
+                .user-stats {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                }
+
+                .stat-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    padding: 12px;
+                    background: rgba(167, 134, 255, 0.05);
+                    border-radius: 8px;
+                    cursor: pointer;
+                    transition: all 0.15s ease;
+                    border: 1px solid rgba(167, 134, 255, 0.1);
+                }
+
+                .stat-item:hover {
+                    background: rgba(167, 134, 255, 0.1);
+                    border-color: rgba(167, 134, 255, 0.3);
+                }
+
+                .stat-item.expanded {
+                    background: rgba(167, 134, 255, 0.15);
+                    border-color: rgba(167, 134, 255, 0.4);
+                }
+
+                .stat-icon {
+                    font-size: 20px;
+                    width: 24px;
+                    text-align: center;
+                }
+
+                .stat-details {
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 2px;
+                }
+
+                .stat-label {
+                    font-size: 12px;
+                    color: #a786ff;
+                    font-weight: 500;
+                }
+
+                .stat-value {
+                    font-size: 14px;
+                    font-weight: bold;
+                    color: #fff;
+                }
+
+                .expand-indicator {
+                    font-size: 12px;
+                    color: #a786ff;
+                    transition: transform 0.15s ease;
+                }
+
+                .stat-item.expanded .expand-indicator {
+                    transform: rotate(180deg);
+                }
+
+                .live-balances {
+                    background: rgba(0, 255, 136, 0.05);
+                    border: 1px solid rgba(0, 255, 136, 0.1);
+                    border-radius: 8px;
+                    padding: 12px;
+                    cursor: pointer;
+                    transition: all 0.15s ease;
+                }
+
+                .live-balances:hover {
+                    background: rgba(0, 255, 136, 0.1);
+                    border-color: rgba(0, 255, 136, 0.3);
+                }
+
+                .live-balances.expanded {
+                    background: rgba(0, 255, 136, 0.15);
+                    border-color: rgba(0, 255, 136, 0.4);
+                }
+
+                .balance-title {
+                    font-size: 14px;
+                    font-weight: bold;
+                    color: #00ff88;
+                    margin-bottom: 8px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+
+                .balance-grid {
+                    display: grid;
+                    grid-template-columns: 1fr;
+                    gap: 8px;
+                }
+
+                .balance-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    padding: 8px;
+                    background: rgba(0, 255, 136, 0.05);
+                    border-radius: 6px;
+                }
+
+                .balance-item span:first-child {
+                    font-size: 16px;
+                }
+
+                .balance-item span:nth-child(2) {
+                    font-size: 12px;
+                    color: #a786ff;
+                    font-weight: 500;
+                    flex: 1;
+                }
+
+                .balance-value {
+                    font-size: 14px;
+                    font-weight: bold;
+                    color: #fff;
+                }
+
+                @media (max-width: 480px) {
+                    #user-popup {
+                        max-height: 85vh;
+                    }
+                    
+                    .popup-content {
+                        max-height: calc(85vh - 80px);
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
     }
 
     setupPopup() {
-        // ایجاد پاپ‌آپ اصلی
+        // Create main popup
         this.popup = document.createElement('div');
         this.popup.id = 'user-popup';
         
-        // ایجاد backdrop
+        // Create backdrop
         this.backdrop = document.createElement('div');
         this.backdrop.className = 'popup-backdrop';
         this.backdrop.style.cssText = `
@@ -25,24 +306,24 @@ class MobileUserPopup {
             bottom: 0;
             background: rgba(0,0,0,0.5);
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.15s ease;
             z-index: 9998;
             display: none;
         `;
         
-        // اضافه کردن به DOM
+        // Add to DOM
         document.body.appendChild(this.backdrop);
         document.body.appendChild(this.popup);
         
-        // تنظیم event listeners
+        // Setup event listeners
         this.setupEventListeners();
     }
 
     setupEventListeners() {
-        // کلیک روی backdrop
+        // Click on backdrop
         this.backdrop.addEventListener('click', () => this.hide());
 
-        // تنظیم gesture برای موبایل با بهبود اسکرول
+        // Setup gesture for mobile with improved scroll
         this.popup.addEventListener('touchstart', (e) => {
             this.touchStartY = e.touches[0].clientY;
             this.popup.style.transition = 'none';
@@ -54,23 +335,23 @@ class MobileUserPopup {
             const deltaY = this.currentY - this.touchStartY;
             const scrollContainer = this.popup.querySelector('.popup-content');
             
-            // بررسی اینکه آیا محتوا قابل اسکرول است
+            // Check if content is scrollable
             if (scrollContainer) {
                 const isAtTop = scrollContainer.scrollTop === 0;
                 const isAtBottom = scrollContainer.scrollTop + scrollContainer.clientHeight >= scrollContainer.scrollHeight;
                 
-                // اگر در بالای محتوا هستیم و به پایین می‌کشیم، یا در پایین محتوا هستیم و به بالا می‌کشیم
+                // If at top and pulling down, or at bottom and pulling up
                 if ((isAtTop && deltaY > 0) || (isAtBottom && deltaY < 0)) {
                     e.preventDefault();
                     this.popup.style.transform = `translateY(${deltaY}px)`;
                     const opacity = Math.max(0.5 - (deltaY / 1000), 0);
                     this.backdrop.style.opacity = opacity.toString();
                 } else {
-                    // اجازه اسکرول در محتوا
+                    // Allow scrolling in content
                     this.isScrolling = true;
                 }
             } else {
-                // اگر محتوای قابل اسکرول نداریم، فقط اجازه کشیدن به پایین
+                // If no scrollable content, only allow pulling down
                 if (deltaY > 0) {
                     e.preventDefault();
                     this.popup.style.transform = `translateY(${deltaY}px)`;
@@ -82,9 +363,9 @@ class MobileUserPopup {
 
         this.popup.addEventListener('touchend', () => {
             const deltaY = this.currentY - this.touchStartY;
-            this.popup.style.transition = 'transform 0.3s ease-out';
+            this.popup.style.transition = 'transform 0.15s ease-out';
             
-            // فقط اگر اسکرول نکرده باشیم، پاپ‌آپ را ببندیم
+            // Only close popup if not scrolling
             if (!this.isScrolling && deltaY > 100) {
                 this.hide();
             } else {
@@ -102,14 +383,14 @@ class MobileUserPopup {
         const isActive = (user && user.index && BigInt(user.index) > 0n) || false;
         
         const infoList = [
-            {icon:'🎯', label:'امتیاز باینری', val:user.binaryPoints},
-            {icon:'🏆', label:'سقف باینری', val:user.binaryPointCap},
-            {icon:'💎', label:'پاداش باینری', val:user.totalMonthlyRewarded},
-            {icon:'✅', label:'امتیاز دریافتی', val:user.binaryPointsClaimed},
-            {icon:'🤝', label:'درآمد رفرال', val:user.refclimed ? Math.floor(Number(user.refclimed) / 1e18) : 0},
-            {icon:'💰', label:'سپرده کل', val:user.depositedAmount ? Math.floor(Number(user.depositedAmount) / 1e18) : 0},
-            {icon:'⬅️', label:'امتیاز چپ', val:user.leftPoints},
-            {icon:'➡️', label:'امتیاز راست', val:user.rightPoints}
+            {icon:'🎯', label:'Binary Points', val:user.binaryPoints},
+            {icon:'🏆', label:'Binary Cap', val:user.binaryPointCap},
+            {icon:'💎', label:'Binary Reward', val:user.totalMonthlyRewarded},
+            {icon:'✅', label:'Claimed Points', val:user.binaryPointsClaimed},
+            {icon:'🤝', label:'Referral Income', val:user.refclimed ? Math.floor(Number(user.refclimed) / 1e18) : 0},
+            {icon:'💰', label:'Total Deposit', val:user.depositedAmount ? Math.floor(Number(user.depositedAmount) / 1e18) : 0},
+            {icon:'⬅️', label:'Left Points', val:user.leftPoints},
+            {icon:'➡️', label:'Right Points', val:user.rightPoints}
         ];
 
         this.popup.innerHTML = `
@@ -122,11 +403,11 @@ class MobileUserPopup {
                     <div class="user-header">
                         <div class="user-primary-info">
                             <div class="user-id">
-                                <span class="label">شناسه کاربر</span>
+                                <span class="label">User ID</span>
                                 <span class="value" onclick="navigator.clipboard.writeText('${IAMId}')">${IAMId}</span>
                             </div>
                             <div class="user-status ${isActive ? 'active' : 'inactive'}">
-                                ${isActive ? '✅ فعال' : '❌ غیرفعال'}
+                                ${isActive ? '✅ Active' : '❌ Inactive'}
                             </div>
                         </div>
                         <div class="user-wallet" onclick="navigator.clipboard.writeText('${walletAddress}')">
@@ -148,7 +429,7 @@ class MobileUserPopup {
                     </div>
                     
                     <div id="live-balances" class="live-balances collapsed">
-                        <div class="balance-title">موجودی‌های زنده</div>
+                        <div class="balance-title">Live Balances</div>
                         <div class="balance-grid">
                             <div class="balance-item">
                                 <span>🟢</span>
@@ -172,26 +453,26 @@ class MobileUserPopup {
             </div>
         `;
 
-        // نمایش پاپ‌آپ و backdrop
+        // Show popup and backdrop
         this.backdrop.style.display = 'block';
         this.popup.classList.add('active');
         this.backdrop.classList.add('active');
         setTimeout(() => {
             this.backdrop.style.opacity = '0.5';
-        }, 50);
+        }, 25);
 
-        // دریافت موجودی‌های زنده
+        // Get live balances
         this.getLiveBalances(walletAddress);
         
-        // تست مستقیم موجودی‌ها
+        // Direct test balances
         setTimeout(() => {
             this.testBalancesInPopup(walletAddress);
-        }, 1000);
+        }, 500);
         
-        // تنظیم اندازه اولیه کارت‌ها بر اساس محتوا
+        // Setup initial card sizes based on content
         this.adjustCardSizes();
         
-        // اضافه کردن event listeners برای کارت‌ها
+        // Add event listeners for cards
         this.setupCardEventListeners();
     }
 
@@ -203,7 +484,7 @@ class MobileUserPopup {
             this.popup.classList.remove('active');
             this.backdrop.style.display = 'none';
             this.popup.style.transform = '';
-        }, 300);
+        }, 150);
     }
 
     shortAddress(addr) {
@@ -214,11 +495,11 @@ class MobileUserPopup {
     formatValue(value) {
         if (value === undefined || value === null) return '-';
         
-        // تبدیل به عدد
+        // Convert to number
         const numValue = Number(value);
         if (isNaN(numValue)) return value.toString();
         
-        // اگر عدد بزرگ است، فرمت مناسب نمایش بده
+        // If number is large, display appropriate format
         if (numValue >= 1000000) {
             return (numValue / 1000000).toFixed(2) + 'M';
         } else if (numValue >= 1000) {
@@ -241,12 +522,12 @@ class MobileUserPopup {
             cardElement.classList.add('expanded');
         }
         
-        // تنظیم مجدد اندازه کارت‌ها
+        // Reset card sizes
         this.adjustCardSizes();
     }
 
     setupCardEventListeners() {
-        // اضافه کردن event listener برای کارت‌های آمار
+        // Add event listener for stat cards
         const statItems = this.popup.querySelectorAll('.stat-item');
         statItems.forEach(item => {
             item.addEventListener('click', (e) => {
@@ -255,7 +536,7 @@ class MobileUserPopup {
             });
         });
         
-        // اضافه کردن event listener برای کارت موجودی‌ها
+        // Add event listener for balance card
         const liveBalances = this.popup.querySelector('#live-balances');
         if (liveBalances) {
             liveBalances.addEventListener('click', (e) => {
@@ -269,18 +550,18 @@ class MobileUserPopup {
         const statItems = this.popup.querySelectorAll('.stat-item');
         const liveBalances = this.popup.querySelector('#live-balances');
         
-        // تنظیم اندازه کارت‌های آمار
+        // Adjust stat card sizes
         statItems.forEach(item => {
             const valueElement = item.querySelector('.stat-value');
             const content = valueElement.textContent;
             
-            // اگر محتوا طولانی است، پیشنهاد expand بده
+            // If content is long, suggest expand
             if (content.length > 15 || content.includes('K') || content.includes('M')) {
                 item.style.cursor = 'pointer';
             }
         });
         
-        // تنظیم اندازه کارت موجودی‌ها
+        // Adjust balance card size
         if (liveBalances) {
             const balanceValues = liveBalances.querySelectorAll('.balance-value');
             let hasLongContent = false;
@@ -312,14 +593,14 @@ class MobileUserPopup {
         });
 
         try {
-            // روش 1: استفاده از window.connectWallet
+            // Method 1: Use window.connectWallet
             if (typeof window.connectWallet === 'function') {
                 try {
                     console.log('🔄 Trying window.connectWallet method...');
                     const connection = await window.connectWallet();
                     const { contract, provider, address: connectedAddress } = connection;
                     
-                    // دریافت موجودی IAM
+                    // Get IAM balance
                     if (contract && typeof contract.balanceOf === 'function') {
                         try {
                             const iamBalance = await contract.balanceOf(address);
@@ -338,7 +619,7 @@ class MobileUserPopup {
                         }
                     }
 
-                    // دریافت موجودی MATIC
+                    // Get MATIC balance
                     if (provider) {
                         try {
                             const maticBalance = await provider.getBalance(address);
@@ -357,7 +638,7 @@ class MobileUserPopup {
                         }
                     }
 
-                    // دریافت موجودی DAI
+                    // Get DAI balance
                     if (window.DAI_ADDRESS && provider) {
                         try {
                             const DAI_ABI = window.DAI_ABI || [
@@ -382,19 +663,19 @@ class MobileUserPopup {
                         }
                     }
 
-                    return; // اگر موفق بودیم، از اینجا خارج شویم
+                    return; // If successful, exit here
                 } catch (error) {
                     console.warn('❌ Error with window.connectWallet method:', error);
                 }
             }
 
-            // روش 2: استفاده از window.contractConfig
+            // Method 2: Use window.contractConfig
             if (window.contractConfig && window.contractConfig.contract) {
                 try {
                     console.log('🔄 Trying window.contractConfig method...');
                     const { contract } = window.contractConfig;
                     
-                    // دریافت موجودی IAM
+                    // Get IAM balance
                     if (typeof contract.balanceOf === 'function') {
                         try {
                             const iamBalance = await contract.balanceOf(address);
@@ -417,13 +698,13 @@ class MobileUserPopup {
                 }
             }
 
-            // روش 3: استفاده از window.ethereum
+            // Method 3: Use window.ethereum
             if (window.ethereum) {
                 try {
                     console.log('🔄 Trying window.ethereum method...');
                     const provider = new ethers.BrowserProvider(window.ethereum);
                     
-                    // دریافت موجودی MATIC
+                    // Get MATIC balance
                     try {
                         const maticBalance = await provider.getBalance(address);
                         const maticElement = document.getElementById('matic-balance');
@@ -444,13 +725,13 @@ class MobileUserPopup {
                 }
             }
 
-            // روش 4: استفاده از provider موجود
+            // Method 4: Use existing provider
             if (window.contractConfig && window.contractConfig.provider) {
                 try {
                     console.log('🔄 Trying existing provider method...');
                     const provider = window.contractConfig.provider;
                     
-                    // دریافت موجودی MATIC
+                    // Get MATIC balance
                     try {
                         const maticBalance = await provider.getBalance(address);
                         const maticElement = document.getElementById('matic-balance');
@@ -476,7 +757,7 @@ class MobileUserPopup {
         }
     }
 
-    // تابع تست برای بررسی عملکرد
+    // Test function to check functionality
     testExpandCollapse() {
         console.log('Testing expand/collapse functionality...');
         
@@ -486,20 +767,20 @@ class MobileUserPopup {
         console.log('Found stat items:', statItems.length);
         console.log('Found live balances:', !!liveBalances);
         
-        // تست کلیک روی اولین کارت آمار
+        // Test click on first stat card
         if (statItems.length > 0) {
             console.log('Testing first stat item...');
             this.toggleCard(statItems[0]);
         }
         
-        // تست کلیک روی کارت موجودی‌ها
+        // Test click on balance card
         if (liveBalances) {
             console.log('Testing live balances...');
             this.toggleCard(liveBalances);
         }
     }
 
-    // تابع تست مستقیم موجودی‌ها در پاپ‌آپ
+    // Direct test function for balances in popup
     async testBalancesInPopup(address) {
         console.log('🧪 Testing balances directly in popup for address:', address);
         
@@ -509,7 +790,7 @@ class MobileUserPopup {
         }
 
         try {
-            // تست اتصال
+            // Test connection
             if (typeof window.connectWallet === 'function') {
                 console.log('🔄 Testing connectWallet in popup...');
                 const connection = await window.connectWallet();
@@ -550,10 +831,10 @@ class MobileUserPopup {
     }
 }
 
-// ایجاد نمونه جهانی
+// Create global instance
 window.mobileUserPopup = new MobileUserPopup();
 
-// اضافه کردن تابع تست به window برای دسترسی از console
+// Add test function to window for console access
 window.testMobilePopup = function() {
     if (window.mobileUserPopup) {
         window.mobileUserPopup.testExpandCollapse();
@@ -562,7 +843,7 @@ window.testMobilePopup = function() {
     }
 };
 
-// تابع تست ساده برای بررسی لود شدن
+// Simple test function to check loading
 window.testMobilePopupLoad = function() {
     console.log('🔍 Testing mobile popup load...');
     console.log('MobileUserPopup class:', typeof MobileUserPopup);
@@ -578,7 +859,7 @@ window.testMobilePopupLoad = function() {
     }
 };
 
-// تابع تست برای نمایش پاپ‌آپ با داده‌های نمونه
+// Test function to show popup with sample data
 window.testMobilePopupShow = function() {
     if (!window.mobileUserPopup) {
         console.log('❌ Mobile popup not available');
@@ -587,7 +868,7 @@ window.testMobilePopupShow = function() {
     
     console.log('🧪 Showing test mobile popup...');
     
-    // داده‌های نمونه برای تست
+    // Sample data for testing
     const testAddress = '0x1234567890123456789012345678901234567890';
     const testUser = {
         index: 123,
@@ -601,14 +882,14 @@ window.testMobilePopupShow = function() {
         rightPoints: 700000
     };
     
-    // نمایش پاپ‌آپ
+    // Show popup
     window.mobileUserPopup.show(testAddress, testUser);
     
     console.log('✅ Test popup should be visible now');
     console.log('💡 Try clicking on the cards to test expand/collapse functionality');
 };
 
-// تابع تست برای نمایش پاپ‌آپ با داده‌های واقعی
+// Test function to show popup with real data
 window.testMobilePopupWithRealData = function() {
     if (!window.mobileUserPopup) {
         console.log('❌ Mobile popup not available');
@@ -617,12 +898,12 @@ window.testMobilePopupWithRealData = function() {
     
     console.log('🧪 Showing mobile popup with real data...');
     
-    // استفاده از داده‌های واقعی
+    // Use real data
     if (window.contractConfig && window.contractConfig.address) {
         const realAddress = window.contractConfig.address;
         console.log('🔍 Using real address:', realAddress);
         
-        // داده‌های نمونه برای تست (می‌توانید از داده‌های واقعی استفاده کنید)
+        // Sample data for testing (you can use real data)
         const testUser = {
             index: 1,
             binaryPoints: 1000000,
@@ -635,7 +916,7 @@ window.testMobilePopupWithRealData = function() {
             rightPoints: 700000
         };
         
-        // نمایش پاپ‌آپ
+        // Show popup
         window.mobileUserPopup.show(realAddress, testUser);
         
         console.log('✅ Real data popup should be visible now');
@@ -644,7 +925,7 @@ window.testMobilePopupWithRealData = function() {
     }
 };
 
-// تابع تست ساده برای نمایش پاپ‌آپ
+// Simple test function to show popup
 window.testMobilePopupSimple = function() {
     if (!window.mobileUserPopup) {
         console.log('❌ Mobile popup not available');
@@ -653,7 +934,7 @@ window.testMobilePopupSimple = function() {
     
     console.log('🧪 Showing simple mobile popup...');
     
-    // داده‌های ساده برای تست
+    // Simple data for testing
     const testAddress = '0xB6F844eFE62948647968196257B7DcD2323beF0C';
     const testUser = {
         index: 1,
@@ -667,14 +948,14 @@ window.testMobilePopupSimple = function() {
         rightPoints: 700000
     };
     
-    // نمایش پاپ‌آپ
+    // Show popup
     window.mobileUserPopup.show(testAddress, testUser);
     
     console.log('✅ Simple popup should be visible now');
     console.log('💡 Check if popup is visible at bottom of screen');
 };
 
-// تابع تست برای بررسی موجودی‌ها
+// Test function to check balances
 window.testMobilePopupBalances = function() {
     if (!window.mobileUserPopup) {
         console.log('❌ Mobile popup not available');
@@ -683,7 +964,7 @@ window.testMobilePopupBalances = function() {
     
     console.log('🧪 Testing balance fetching...');
     
-    // تست با آدرس واقعی کاربر
+    // Test with real user address
     if (window.contractConfig && window.contractConfig.address) {
         const realAddress = window.contractConfig.address;
         console.log('🔍 Testing with real address:', realAddress);
@@ -695,7 +976,7 @@ window.testMobilePopupBalances = function() {
     }
 };
 
-// تابع تست مستقیم برای بررسی موجودی‌ها
+// Direct test function to check balances
 window.testBalancesDirectly = async function(address) {
     console.log('🧪 Testing balances directly for address:', address);
     
@@ -705,7 +986,7 @@ window.testBalancesDirectly = async function(address) {
     }
     
     try {
-        // تست اتصال
+        // Test connection
         if (typeof window.connectWallet === 'function') {
             console.log('🔄 Testing connectWallet...');
             const connection = await window.connectWallet();
@@ -728,7 +1009,7 @@ window.testBalancesDirectly = async function(address) {
             console.log('❌ window.connectWallet not available');
         }
         
-        // تست contractConfig
+        // Test contractConfig
         if (window.contractConfig) {
             console.log('🔄 Testing contractConfig...');
             console.log('contractConfig:', window.contractConfig);
@@ -753,14 +1034,14 @@ window.testBalancesDirectly = async function(address) {
     }
 };
 
-// تست خودکار بعد از لود صفحه
+// Auto test after page load
 document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
         window.testMobilePopupLoad();
-    }, 2000);
+    }, 1000);
 });
 
-// تابع بررسی وضعیت اتصال
+// Connection status check function
 window.checkMobilePopupConnection = function() {
     console.log('🔍 Checking mobile popup connection status...');
     

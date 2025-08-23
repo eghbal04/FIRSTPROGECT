@@ -242,8 +242,12 @@ async function performRegistrationForNewUser() {
         }
         const { contract, address } = window.contractConfig;
         
-        // معرف به‌صورت پیش‌فرض: deployer (ایندکس 1)
-        const referrerAddress = await contract.deployer();
+        // معرف به‌صورت پیش‌فرض: از فیلد ورودی دریافت کن
+        const referrerInput = document.getElementById('referrer-address');
+        const referrerAddress = referrerInput && referrerInput.value ? referrerInput.value.trim() : '';
+        if (!referrerAddress) {
+            throw new Error('لطفاً آدرس معرف را وارد کنید');
+        }
         
         // کاربر جدید: کیف پول متصل
         const userAddress = address;
@@ -315,14 +319,14 @@ async function performRegistration() {
             await tx.wait();
             showRegisterSuccess("ثبت‌نام زیرمجموعه با موفقیت انجام شد!");
         } else {
-            // کاربر ثبت‌نام نشده است - حالت عادی
+            // کاربر ثبت‌نام نشده است - حالت دستی
             let referrerInput = document.getElementById('referrer-address');
             let referrerAddress = referrerInput && referrerInput.value ? referrerInput.value.trim() : '';
             if (!referrerAddress) {
                 referrerAddress = getReferrerFromURL() || getReferrerFromStorage();
             }
             if (!referrerAddress) {
-                referrerAddress = await contract.deployer();
+                throw new Error('لطفاً آدرس معرف را وارد کنید');
             }
 
             // منطق approve قبل از ثبت‌نام:
@@ -579,8 +583,8 @@ window.showRegistrationFormForNewUser = async function() {
     // دریافت و نمایش مقدار توکن مورد نیاز برای ثبت‌نام
     await window.displayUserBalances();
 
-    // تنظیم معرف به‌صورت پیش‌فرض: ایندکس 1 (deployer)
-    let referrer = await window.contractConfig.contract.deployer();
+    // تنظیم معرف به‌صورت پیش‌فرض: آدرس خالی (کاربر باید دستی وارد کند)
+    let referrer = '';
     
     // تنظیم آدرس کاربر جدید به کیف پول متصل
     const userAddress = window.contractConfig.address;
@@ -591,7 +595,7 @@ window.showRegistrationFormForNewUser = async function() {
     
     if (referrerInput) {
         referrerInput.value = referrer;
-        referrerInput.readOnly = true; // غیرفعال کردن تغییر معرف
+        referrerInput.readOnly = false; // فعال کردن تغییر معرف
     }
     
     if (userAddressInput) {
@@ -603,11 +607,11 @@ window.showRegistrationFormForNewUser = async function() {
     const statusElement = document.getElementById('register-status');
     if (statusElement) {
         statusElement.innerHTML = `
-            <div style="background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3); border-radius: 8px; padding: 12px; margin: 10px 0;">
-                <strong style="color: #00ff88;">📝 ثبت‌نام خودکار:</strong><br>
-                • معرف: <span style="color: #a786ff;">${referrer}</span><br>
+            <div style="background: rgba(255,193,7,0.1); border: 1px solid rgba(255,193,7,0.3); border-radius: 8px; padding: 12px; margin: 10px 0;">
+                <strong style="color: #ffc107;">📝 ثبت‌نام دستی:</strong><br>
+                • لطفاً آدرس معرف را وارد کنید<br>
                 • کاربر جدید: <span style="color: #a786ff;">${userAddress}</span><br>
-                • فقط روی دکمه "ثبت‌نام" کلیک کنید
+                • پس از وارد کردن آدرس معرف، روی دکمه "ثبت‌نام" کلیک کنید
             </div>
         `;
         statusElement.className = 'profile-status info';
@@ -712,9 +716,8 @@ window.showRegistrationForm = async function() {
         const referrerAddressSpan = document.getElementById('register-referrer-address');
         let isReferralMode = false;
         if (!referrer) {
-            // اگر در URL نبود، از userData یا deployer استفاده کن
-            const userData = await contract.users(window.contractConfig.address);
-            referrer = userData.referrer || (await contract.deployer());
+            // اگر در URL نبود، فیلد خالی بگذار (کاربر باید دستی وارد کند)
+            referrer = '';
         } else {
             // اگر رفرر در URL بود، حالت رفرال فعال شود
             isReferralMode = true;

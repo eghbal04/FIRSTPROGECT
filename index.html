@@ -29,6 +29,9 @@
 
       <!-- Loading WalletConnect UMD locally -->
   <script src="js/walletconnect-v1.8.0.js"></script>
+  
+  <!-- Binary Tree Traversal System -->
+  <script src="js/binary-tree-traversal.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
   <script src="js/auth-redirect.js"></script>
   <script src="js/modern-theme-variables.js"></script>
@@ -142,206 +145,7 @@
   
   
   <div id="main-dashboard" class="page-section" style="position:relative;overflow:visible;">
-    <!-- User Status Bar (shown above dashboard cards for active users) -->
-    <div id="index-user-status-bar" style="display:none;max-width:1200px;margin:0.75rem auto 0.5rem auto;padding:0.75rem 1rem;border-radius:16px;border:1px solid rgba(0,255,136,0.25);background:linear-gradient(135deg, rgba(0,255,136,0.08), rgba(167,134,255,0.08));box-shadow:0 6px 18px rgba(0,0,0,0.25), 0 1px 0 rgba(255,255,255,0.06) inset;backdrop-filter:blur(10px);">
-      <div style="display:flex;align-items:center;justify-content:center;gap:0.75rem;flex-wrap:wrap;">
-        <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
-          <span id="index-status-active" style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.35rem 0.7rem;border-radius:12px;font-weight:700;color:#0f2d1f;background:linear-gradient(135deg,#00ff88,#00d178);border:1px solid rgba(0,255,136,0.4);box-shadow:0 2px 8px rgba(0,255,136,0.25);">✅ Active</span>
-          <span id="index-status-id" style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.35rem 0.7rem;border-radius:12px;color:#ffffff;background:linear-gradient(135deg, rgba(0,255,136,0.12), rgba(167,134,255,0.12));border:1px solid rgba(255,255,255,0.18);font-weight:700;">🆔 IAM--</span>
-          <span id="index-status-address" title="" style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.35rem 0.7rem;border-radius:12px;color:#ffffff;background:linear-gradient(135deg, rgba(167,134,255,0.12), rgba(0,255,136,0.12));border:1px solid rgba(255,255,255,0.18);font-family:'Fira Mono', monospace;">📍 0x...</span>
-          <button onclick="scrollToRanking()" style="display:inline-flex;align-items:center;gap:0.4rem;padding:0.35rem 0.7rem;border-radius:12px;color:#ffffff;background:linear-gradient(135deg, rgba(167,134,255,0.8), rgba(0,255,136,0.8));border:1px solid rgba(255,255,255,0.18);font-weight:700;cursor:pointer;border:none;font-size:0.9rem;">🏆 Ranking</button>
-        </div>
-      </div>
-    </div>
-    <script>
-      (function(){
-        function shortenAddress(addr){ if(!addr||typeof addr!=='string') return '-'; return addr.slice(0,6)+'...'+addr.slice(-4); }
-        function formatIAMId(indexVal){
-          try {
-            let s = (typeof indexVal === 'bigint') ? indexVal.toString() : (indexVal && indexVal.toString ? indexVal.toString() : String(indexVal||''));
-            // ensure only digits
-            s = s.replace(/\D+/g,'');
-            if (!s) return 'IAM-----';
-            return 'IAM' + s.padStart(5,'0');
-          } catch { return 'IAM-----'; }
-        }
-        function showBar(address, userData){
-          const bar = document.getElementById('index-user-status-bar'); if(!bar) return;
-          if (!address) { bar.style.display='none'; return; }
-          // Derive active state robustly
-          let active = false;
-          let hasIndex = false;
-          if (userData && userData.index != null) {
-            try {
-              const idxStr = (typeof userData.index === 'bigint') ? userData.index.toString() : (userData.index.toString ? userData.index.toString() : String(userData.index));
-              hasIndex = idxStr !== '0';
-            } catch(_) {}
-          }
-          if (userData) {
-            if (userData.isActive === true || userData.activated === true) active = true;
-            else if (userData.isActive === false || userData.activated === false) active = false;
-          }
-          // Consider registered index as active indicator if flags are missing
-          if (!active && hasIndex) active = true;
-          const idEl = document.getElementById('index-status-id');
-          const addrEl = document.getElementById('index-status-address');
-          const statusEl = document.getElementById('index-status-active');
-          if (idEl) {
-            if (hasIndex) { idEl.textContent = '🆔 ' + formatIAMId(userData.index); }
-            else { idEl.textContent = '🆔 IAM--'; }
-          }
-          if (addrEl) { addrEl.textContent = '📍 ' + shortenAddress(address); addrEl.title = address; }
-          if (statusEl) {
-            if (active) {
-              statusEl.textContent = '✅ Active';
-              statusEl.style.background = 'linear-gradient(135deg,#00ff88,#00d178)';
-              statusEl.style.color = '#0f2d1f';
-              statusEl.style.border = '1px solid rgba(0,255,136,0.4)';
-              statusEl.style.boxShadow = '0 2px 8px rgba(0,255,136,0.25)';
-            } else {
-              statusEl.textContent = '⛔ Inactive';
-              statusEl.style.background = 'linear-gradient(135deg,#ff6b6b,#c82333)';
-              statusEl.style.color = '#ffffff';
-              statusEl.style.border = '1px solid rgba(255,68,68,0.4)';
-              statusEl.style.boxShadow = '0 2px 8px rgba(255,68,68,0.25)';
-            }
-          }
-          const copyBtn = document.getElementById('index-status-copy');
-          if(copyBtn){ copyBtn.onclick = function(){ if(!address) return; navigator.clipboard.writeText(address).then(()=>{ const t=copyBtn.textContent; copyBtn.textContent='✅ Copied'; setTimeout(()=>copyBtn.textContent=t,1500); }); } }
-          bar.style.display='block';
-        }
-        function schedule(ms, fn){ setTimeout(fn, ms); }
-        async function tryUpdate(){
-          try{
-            if(typeof window.ethers === 'undefined'){ return schedule(2000, tryUpdate); }
-            // Prefer existing connected contract (with correct ABI)
-            let address = null;
-            let userData = null;
-            if (window.contractConfig && window.contractConfig.contract) {
-              try {
-                address = window.contractConfig.address;
-                const contract = window.contractConfig.contract;
-                if (!address && window.contractConfig.signer && window.contractConfig.signer.getAddress) {
-                  address = await window.contractConfig.signer.getAddress();
-                }
-                if (!address) { return schedule(3000, tryUpdate); }
-                // Try primary users(address)
-                try {
-                  userData = await Promise.race([
-                    contract.users(address),
-                    new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),3000))
-                  ]);
-                } catch(e) {
-                  userData = null;
-                }
-                // Fallbacks to derive index and activation
-                let idxVal = null;
-                try {
-                  if (!userData || userData.index == null || (userData.index.toString && userData.index.toString() === '0')) {
-                    if (typeof contract.getUserIndex === 'function') {
-                      const idxRaw = await Promise.race([
-                        contract.getUserIndex(address),
-                        new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),3000))
-                      ]);
-                      idxVal = (typeof idxRaw === 'bigint') ? idxRaw : (idxRaw && idxRaw.toString ? BigInt(idxRaw.toString()) : null);
-                    }
-                  } else { idxVal = userData.index; }
-                } catch(_) {}
-                let act = null;
-                try {
-                  if (!userData || (userData.isActive == null && userData.activated == null)) {
-                    if (typeof contract.getUserTree === 'function') {
-                      const tree = await Promise.race([
-                        contract.getUserTree(address),
-                        new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),3000))
-                      ]);
-                      if (Array.isArray(tree) && tree.length >= 3) act = !!tree[2];
-                    }
-                  } else { act = !!(userData.isActive || userData.activated); }
-                } catch(_) {}
-                if (idxVal != null || act != null) {
-                  userData = userData || {};
-                  if (idxVal != null) userData.index = idxVal;
-                  if (act != null) { userData.isActive = act; userData.activated = act; }
-                }
-              } catch(e) {
-                // fallback to provider+IAM globals
-              }
-            }
 
-            if (!userData) {
-              const provider = (window.ethereum ? new ethers.BrowserProvider(window.ethereum) : null);
-              if(!provider){ return schedule(2000, tryUpdate); }
-              if(!address && window.ethereum && typeof window.ethereum.request==='function'){
-                try{ const acc = await Promise.race([window.ethereum.request({method:'eth_accounts'}), new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),1500))]); if(acc && acc[0]) address = acc[0]; }catch(_e){}
-              }
-              if(!address){ return schedule(4000, tryUpdate); }
-              if(!(window.IAM_ADDRESS && window.IAM_ABI)){
-                // Show bar with address even if contract globals not ready
-                showBar(address, null);
-                return schedule(2000, tryUpdate);
-              }
-              try {
-                const fallbackContract = new ethers.Contract(window.IAM_ADDRESS, window.IAM_ABI, provider);
-                // Try users(address)
-                try {
-                  userData = await Promise.race([
-                    fallbackContract.users(address),
-                    new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),3000))
-                  ]);
-                } catch(_) { userData = null; }
-                // Fill missing index
-                let idxVal = null;
-                try {
-                  if (!userData || userData.index == null || (userData.index.toString && userData.index.toString() === '0')) {
-                    if (typeof fallbackContract.getUserIndex === 'function') {
-                      const idxRaw = await Promise.race([
-                        fallbackContract.getUserIndex(address),
-                        new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),3000))
-                      ]);
-                      idxVal = (typeof idxRaw === 'bigint') ? idxRaw : (idxRaw && idxRaw.toString ? BigInt(idxRaw.toString()) : null);
-                    }
-                  } else { idxVal = userData.index; }
-                } catch(_) {}
-                // Fill missing activation
-                let act = null;
-                try {
-                  if (!userData || (userData.isActive == null && userData.activated == null)) {
-                    if (typeof fallbackContract.getUserTree === 'function') {
-                      const tree = await Promise.race([
-                        fallbackContract.getUserTree(address),
-                        new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),3000))
-                      ]);
-                      if (Array.isArray(tree) && tree.length >= 3) act = !!tree[2];
-                    }
-                  } else { act = !!(userData.isActive || userData.activated); }
-                } catch(_) {}
-                if (idxVal != null || act != null) {
-                  userData = userData || {};
-                  if (idxVal != null) userData.index = idxVal;
-                  if (act != null) { userData.isActive = act; userData.activated = act; }
-                }
-                if (!userData) return schedule(4000, tryUpdate);
-              } catch(e) {
-                return schedule(4000, tryUpdate);
-              }
-            }
-
-            showBar(address, userData);
-            schedule(10000, tryUpdate);
-          }catch(e){ schedule(4000, tryUpdate); }
-        }
-        // expose for external triggers (e.g., after connect)
-        window.indexStatusTryUpdate = tryUpdate;
-        document.addEventListener('DOMContentLoaded', function(){
-          schedule(1000, tryUpdate);
-          if (window.ethereum && typeof window.ethereum.on === 'function') {
-            try { window.ethereum.on('accountsChanged', () => setTimeout(tryUpdate, 500)); } catch(_){ }
-            try { window.ethereum.on('chainChanged', () => setTimeout(tryUpdate, 800)); } catch(_){ }
-          }
-        });
-      })();
-    </script>
     <div class="dashboard-cards" style="display:flex;justify-content:center;flex-wrap:wrap;gap:1rem;max-width:1400px;margin:0 auto;">
       <!-- AI Assistant will be inserted here by JavaScript -->
 
@@ -353,23 +157,7 @@
           <h3 style="color:#00ff88;font-size:1.2rem;font-weight:bold;margin:0;font-family:monospace;">IAMPHOENIX</h3>
         </div>
         
-        <!-- User Info Section -->
-        <div id="dashboard-user-info" style="background:rgba(0,255,136,0.1);border-radius:12px;padding:1rem;margin-bottom:1rem;border:1px solid rgba(0,255,136,0.2);display:none;">
-          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
-            <div style="text-align:center;flex:1;min-width:120px;">
-                                  <div style="color:#00ff88;font-size:0.8rem;font-weight:bold;margin-bottom:0.3rem;">Index</div>
-              <div style="color:#fff;font-size:1rem;font-family:monospace;font-weight:bold;" id="dashboard-user-index">-</div>
-            </div>
-            <div style="text-align:center;flex:1;min-width:120px;">
-              <div style="color:#00ff88;font-size:0.8rem;font-weight:bold;margin-bottom:0.3rem;">Wallet Address</div>
-              <div style="color:#fff;font-size:0.9rem;font-family:monospace;" id="dashboard-user-address">-</div>
-            </div>
-            <div style="text-align:center;flex:1;min-width:120px;">
-              <div style="color:#00ff88;font-size:0.8rem;font-weight:bold;margin-bottom:0.3rem;">Status</div>
-              <div style="color:#00ff88;font-size:0.9rem;font-weight:bold;" id="dashboard-user-status">-</div>
-            </div>
-          </div>
-        </div>
+
         
         <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;">
           <!-- 1. Total Supply - First Priority -->
@@ -476,20 +264,188 @@
 
       </div>
 
-      <!-- Top Users Ranking -->
-      <div id="top-users-ranking" class="modern-card" style="margin-top: 2rem; padding: 1rem;">
-        <!-- Ranking content is loaded by JavaScript -->
-        <div style="text-align: center; padding: 1rem;">
-          <div class="modern-heading-2" style="margin-bottom: 1rem;">🏆 Top Users Ranking</div>
-          <div style="color: var(--modern-text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">Click the button below to view the top 10 users based on likes</div>
-          <div class="modern-alert modern-alert-info" style="margin-bottom: 1rem;">
-            💡 <strong>Note:</strong> You can like or dislike each user and also vote for any user by entering their index
+      <!-- Popular Indexes Expandable Box -->
+      <div id="popular-indexes-section" class="modern-card" style="margin-top: 2rem; padding: 1.5rem; border: 2px solid rgba(0,255,136,0.3); border-radius: 15px; background: linear-gradient(135deg, rgba(26,31,46,0.9), rgba(42,47,62,0.9));">
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+          <h3 style="color: #00ff88; font-size: 1.3rem; font-weight: bold; margin: 0; margin-bottom: 0.5rem;">🌟 محبوب‌ترین ایندکس‌ها</h3>
+          <p style="color: #ccc; font-size: 0.9rem; margin: 0;">لیست محبوب‌ترین کاربران شبکه بر اساس رای‌های مثبت</p>
+        </div>
+        
+        <!-- Expandable Content -->
+        <div id="popular-indexes-content" style="display: none;">
+          <div style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin-bottom: 1.5rem;">
+            <!-- Popular Indexes List -->
+            <div style="flex: 1; min-width: 300px; background: rgba(0,0,0,0.3); border-radius: 12px; padding: 1rem; border: 1px solid rgba(0,255,136,0.2);">
+              <div style="text-align: center; margin-bottom: 1rem;">
+                <h4 style="color: #00ff88; font-size: 1.1rem; font-weight: bold; margin: 0;">🏆 رتبه‌بندی محبوب‌ترین‌ها</h4>
+              </div>
+              <div id="popular-indexes-list" style="max-height: 300px; overflow-y: auto;">
+                <div style="text-align: center; color: #888; font-size: 0.9rem; padding: 2rem;">
+                  در حال بارگذاری محبوب‌ترین ایندکس‌ها...
+                </div>
+              </div>
+            </div>
+            
+            <!-- Voting Section -->
+            <div style="flex: 1; min-width: 300px; background: rgba(0,0,0,0.3); border-radius: 12px; padding: 1rem; border: 1px solid rgba(167,134,255,0.2);">
+              <div style="text-align: center; margin-bottom: 1rem;">
+                <h4 style="color: #a786ff; font-size: 1.1rem; font-weight: bold; margin: 0;">🗳️ رای دادن</h4>
+              </div>
+              
+              <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                  <label style="color: #ccc; font-size: 0.9rem; font-weight: bold;">ایندکس مورد نظر:</label>
+                  <input type="number" id="popular-vote-index" placeholder="شماره ایندکس را وارد کنید" 
+                         style="background: rgba(0,0,0,0.3); border: 1px solid rgba(167,134,255,0.3); border-radius: 8px; padding: 0.8rem; color: #fff; text-align: center; font-size: 0.9rem; font-family: monospace;">
+                </div>
+                
+                <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                  <button onclick="voteForPopularIndex(true)" 
+                          style="background: linear-gradient(135deg,#00ff88,#00cc6a); color: #1a1f2e; border: none; border-radius: 8px; padding: 0.8rem 1.2rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; font-size: 0.9rem; flex: 1;">
+                    👍 پسندیدن
+                  </button>
+                  <button onclick="voteForPopularIndex(false)" 
+                          style="background: linear-gradient(135deg,#ff4444,#cc3333); color: #fff; border: none; border-radius: 8px; padding: 0.8rem 1.2rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; font-size: 0.9rem; flex: 1;">
+                    👎 نپسندیدن
+                  </button>
+                </div>
+                
+                <div id="popular-vote-result" style="text-align: center; padding: 0.5rem; border-radius: 8px; font-size: 0.9rem; min-height: 1.5em;"></div>
+              </div>
+            </div>
           </div>
-          <button onclick="loadRanking()" class="modern-btn modern-btn-primary" style="font-size: 1rem;">
-            🔄 Loading ranking
+          
+          <!-- Refresh Button -->
+          <div style="text-align: center;">
+            <button onclick="refreshPopularIndexes()" 
+                    style="background: linear-gradient(135deg,#a786ff,#8a6fff); color: #fff; border: none; border-radius: 8px; padding: 0.8rem 1.5rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; font-size: 0.9rem;">
+              🔄 بروزرسانی لیست
+            </button>
+          </div>
+        </div>
+        
+        <!-- Toggle Button -->
+        <div style="text-align: center;">
+          <button onclick="togglePopularIndexes()" id="popular-indexes-toggle" 
+                  style="background: linear-gradient(135deg,#00ff88,#00cc6a); color: #1a1f2e; border: none; border-radius: 8px; padding: 0.8rem 2rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; font-size: 1rem;">
+            📊 نمایش محبوب‌ترین‌ها
           </button>
         </div>
       </div>
+
+      <!-- Voting System Section (Hidden by default) -->
+      <div id="voting-system-section" class="modern-card" style="margin-top: 2rem; padding: 1.5rem; display: none;">
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+          <h3 style="color: #00ff88; font-size: 1.3rem; font-weight: bold; margin: 0; margin-bottom: 0.5rem;">🗳️ Voting System</h3>
+          <p style="color: #ccc; font-size: 0.9rem; margin: 0;">Vote for other users in the network (self-voting not allowed)</p>
+        </div>
+        
+        <div style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; align-items: center; margin-bottom: 1rem;">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+            <div style="color: #00ff88; font-size: 0.9rem; font-weight: bold;">Vote for Index:</div>
+            <input type="number" id="vote-index-input-main" placeholder="Enter index" 
+                   style="background: rgba(0,0,0,0.3); border: 1px solid rgba(0,255,136,0.3); border-radius: 8px; padding: 0.5rem; color: #fff; text-align: center; width: 120px; font-size: 0.9rem; font-family: monospace;">
+          </div>
+          
+          <div style="display: flex; flex-direction: column; gap: 0.3rem;">
+            <button onclick="voteForIndexMain(true)" 
+                    style="background: linear-gradient(135deg,#00ff88,#00cc6a); color: #1a1f2e; border: none; border-radius: 8px; padding: 0.5rem 1rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; font-size: 0.9rem; min-width: 80px;">
+              👍 Like
+            </button>
+            <button onclick="voteForIndexMain(false)" 
+                    style="background: linear-gradient(135deg,#ff4444,#cc3333); color: #fff; border: none; border-radius: 8px; padding: 0.5rem 1rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; font-size: 0.9rem; min-width: 80px;">
+              👎 Dislike
+            </button>
+          </div>
+          
+          <div style="display: flex; flex-direction: column; gap: 0.3rem;">
+            <button onclick="voteForSelfMain(true)" 
+                    style="background: linear-gradient(135deg,#666,#444); color: #ccc; border: none; border-radius: 8px; padding: 0.5rem 1rem; font-weight: bold; cursor: not-allowed; transition: all 0.3s ease; font-size: 0.9rem; min-width: 80px;" disabled>
+              👍 Vote Self (Disabled)
+            </button>
+            <button onclick="voteForSelfMain(false)" 
+                    style="background: linear-gradient(135deg,#666,#444); color: #ccc; border: none; border-radius: 8px; padding: 0.5rem 1rem; font-weight: bold; cursor: not-allowed; transition: all 0.3s ease; font-size: 0.9rem; min-width: 80px;" disabled>
+              👎 Dislike Self (Disabled)
+            </button>
+          </div>
+        </div>
+        
+        <div id="vote-result-main" style="text-align: center; margin-top: 1rem; padding: 0.5rem; border-radius: 8px; font-size: 0.9rem; min-height: 1.5em;"></div>
+        
+        <div style="text-align: center; margin-top: 1rem;">
+          <div style="color: #ccc; font-size: 0.8rem; margin-bottom: 0.5rem;">Your Vote Status:</div>
+          <div id="user-vote-status-main" style="color: #00ff88; font-size: 0.9rem; font-weight: bold;">Not voted yet</div>
+        </div>
+      </div>
+
+      <!-- Voting Popup Modal -->
+      <div id="voting-popup" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; backdrop-filter: blur(5px);">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, #1a1f2e, #2a2f3e); border: 2px solid #00ff88; border-radius: 15px; padding: 1.5rem; min-width: 350px; max-width: 500px; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,255,136,0.3);">
+          <div style="text-align: center; margin-bottom: 1rem;">
+            <h3 style="color: #00ff88; font-size: 1.2rem; font-weight: bold; margin: 0; margin-bottom: 0.5rem;">🗳️ Quick Vote</h3>
+            <p style="color: #ccc; font-size: 0.8rem; margin: 0;">Vote for any user (self-voting not allowed)</p>
+          </div>
+          
+          <!-- Top 10 Most Liked Users Section -->
+          <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 10px; border: 1px solid rgba(0,255,136,0.2);">
+            <div style="text-align: center; margin-bottom: 1rem;">
+              <h4 style="color: #00ff88; font-size: 1rem; font-weight: bold; margin: 0; margin-bottom: 0.3rem;">🏆 ۱۰ کاربر برتر با لایک</h4>
+              <p style="color: #ccc; font-size: 0.7rem; margin: 0;">کاربرانی که حداقل ۱ لایک دارند - روی هر کاربر کلیک کنید</p>
+            </div>
+            
+            <div id="top-users-popup-list" style="max-height: 200px; overflow-y: auto;">
+              <div style="text-align: center; color: #ccc; font-size: 0.8rem; padding: 1rem;">
+                🔄 Loading top users...
+              </div>
+            </div>
+          </div>
+          
+          <div style="display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 1rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="color: #00ff88; font-size: 0.9rem; font-weight: bold; min-width: 80px;">Index:</span>
+              <input type="number" id="vote-index-popup" placeholder="Enter index" 
+                     style="background: rgba(0,0,0,0.3); border: 1px solid rgba(0,255,136,0.3); border-radius: 8px; padding: 0.5rem; color: #fff; text-align: center; flex: 1; font-size: 0.9rem; font-family: monospace;">
+            </div>
+            
+            <div style="display: flex; gap: 0.5rem; justify-content: center;">
+              <button onclick="voteForIndexPopup(true)" 
+                      style="background: linear-gradient(135deg,#00ff88,#00cc6a); color: #1a1f2e; border: none; border-radius: 8px; padding: 0.5rem 1rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; font-size: 0.9rem; flex: 1;">
+                👍 Like
+              </button>
+              <button onclick="voteForIndexPopup(false)" 
+                      style="background: linear-gradient(135deg,#ff4444,#cc3333); color: #fff; border: none; border-radius: 8px; padding: 0.5rem 1rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; font-size: 0.9rem; flex: 1;">
+                👎 Dislike
+              </button>
+            </div>
+            
+            <div style="display: flex; gap: 0.5rem; justify-content: center;">
+              <button onclick="voteForSelfPopup(true)" 
+                      style="background: linear-gradient(135deg,#666,#444); color: #ccc; border: none; border-radius: 8px; padding: 0.5rem 1rem; font-weight: bold; cursor: not-allowed; transition: all 0.3s ease; font-size: 0.9rem; flex: 1;" disabled>
+                👍 Vote Self (Disabled)
+              </button>
+              <button onclick="voteForSelfPopup(false)" 
+                      style="background: linear-gradient(135deg,#666,#444); color: #ccc; border: none; border-radius: 8px; padding: 0.5rem 1rem; font-weight: bold; cursor: not-allowed; transition: all 0.3s ease; font-size: 0.9rem; flex: 1;" disabled>
+                👎 Dislike Self (Disabled)
+              </button>
+            </div>
+          </div>
+          
+          <div id="vote-result-popup" style="text-align: center; margin-bottom: 1rem; padding: 0.5rem; border-radius: 8px; font-size: 0.9rem; min-height: 1.5em;"></div>
+          
+          <div style="text-align: center; display: flex; gap: 0.5rem; justify-content: center;">
+            <button onclick="testTopUsersLoading()" 
+                    style="background: linear-gradient(135deg,#007bff,#0056b3); color: #fff; border: none; border-radius: 8px; padding: 0.5rem 1rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; font-size: 0.8rem;">
+              🧪 Test
+            </button>
+            <button onclick="closeVotingPopup()" 
+                    style="background: linear-gradient(135deg,#666,#444); color: #fff; border: none; border-radius: 8px; padding: 0.5rem 1.5rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; font-size: 0.9rem;">
+              ✕ Close
+            </button>
+          </div>
+        </div>
+      </div>
+
+
 
 
 
@@ -1177,15 +1133,7 @@ Our Services:
             <input type="text" id="transferTo" placeholder="0x..." required style="direction:ltr;">
             <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Enter destination wallet address (42 characters)</small>
           </div>
-          <div class="transfer-row" style="margin-bottom:0.5rem;">
-              <label for="searchIndex">Search by Index:</label>
-            <div class="search-index-container" style="display:flex;gap:0.5rem;align-items:center;">
-                <input type="number" id="searchIndex" placeholder="User Index" min="0" style="width:120px;direction:ltr;">
-                <button type="button" id="searchIndexBtn" class="transfer-btn" style="padding:0.5rem 1.2rem;font-size:1rem;min-width:80px;">Search</button>
-            </div>
-            <div id="searchIndexStatus" class="transfer-status" style="margin-top:0.3rem;"></div>
-              <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Enter user index to automatically fill the address</small>
-          </div>
+
           <div class="transfer-row">
               <label for="transferAmount">Amount:</label>
               <input type="number" id="transferAmount" placeholder="Enter amount" min="0" step="any" required>
@@ -2662,34 +2610,7 @@ Our Services:
         console.warn('⚠️ SwapManager تعریف نشده است - فایل swap.js بارگذاری نشده');
       }
       
-      // بارگذاری رنکینگ کاربران برتر
-      try {
-        if (typeof window.displayTopUsersRanking === 'function') {
-          // کمی صبر کن تا اتصال به قرارداد برقرار شود
-          setTimeout(async () => {
-            try {
-              // استفاده از تابع بهینه‌سازی شده برای عملکرد بهتر
-              if (typeof window.getTopLikedUsersOptimized === 'function') {
-                const topUsers = await window.getTopLikedUsersOptimized(10);
-                if (topUsers.length > 0) {
-                  await window.displayTopUsersRanking('top-users-ranking');
-                } else {
-                  // اگر تابع بهینه کار نکرد، از تابع اصلی استفاده کن
-                  await window.displayTopUsersRanking('top-users-ranking');
-                }
-              } else {
-                await window.displayTopUsersRanking('top-users-ranking');
-              }
-            } catch (error) {
-              console.error('❌ خطا در بارگذاری رنکینگ:', error);
-            }
-          }, 2000);
-        } else {
-          console.warn('⚠️ تابع displayTopUsersRanking تعریف نشده است');
-        }
-      } catch (error) {
-        console.error('❌ خطا در بارگذاری رنکینگ:', error);
-      }
+
     });
     
     // مقداردهی مجدد بعد از اتصال کیف پول
@@ -3081,71 +3002,1008 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // پایان اسکریپت‌های اصلی
 
-// تابع بارگذاری دستی رنکینگ
-function loadRanking() {
-  console.log('🔄 شروع بارگذاری رنکینگ...');
-  
-  // بررسی اتصال کیف پول
-  if (!window.contractConfig || !window.contractConfig.contract) {
-    console.log('⚠️ کیف پول متصل نیست، در حال اتصال...');
-    window.connectWallet().then(() => {
-      setTimeout(() => {
-        loadRankingInternal();
-      }, 1000);
-    }).catch(error => {
-      console.error('❌ خطا در اتصال کیف پول:', error);
-      document.getElementById('top-users-ranking').innerHTML = `
-        <div style="text-align: center; padding: 2rem; color: #ff4444;">
-          <div>❌ ابتدا کیف پول خود را متصل کنید</div>
-        </div>
-      `;
-    });
-  } else {
-    loadRankingInternal();
+
+
+// Voting Functions for Main Section
+async function voteForIndexMain(isLike) {
+  try {
+    const indexInput = document.getElementById('vote-index-input-main');
+    const voteResult = document.getElementById('vote-result-main');
+
+    if (!indexInput) {
+      throw new Error('Index input field not found');
+    }
+
+    const index = parseInt(indexInput.value.trim());
+
+    if (!index || index <= 0) {
+      voteResult.innerHTML = '<span style="color: #ff4444;">⚠️ Please enter a valid index</span>';
+      return;
+    }
+
+    if (!window.contractConfig || !window.contractConfig.contract) {
+      await window.connectWallet();
+    }
+    const contract = window.contractConfig.contract;
+
+    if (!contract) {
+      throw new Error('Contract not connected');
+    }
+
+    // Check wallet connection
+    if (!window.contractConfig.signer) {
+      throw new Error('Wallet not connected');
+    }
+
+    // Get user address from index
+    const userAddress = await contract.indexToAddress(index);
+
+    if (userAddress === '0x0000000000000000000000000000000000000000') {
+      voteResult.innerHTML = '<span style="color: #ff4444;">⚠️ No user found with this index</span>';
+      return;
+    }
+
+    // Check if user is trying to vote for themselves
+    const currentUserAddress = window.contractConfig.signer.address;
+    if (userAddress.toLowerCase() === currentUserAddress.toLowerCase()) {
+      voteResult.innerHTML = '<span style="color: #ff4444;">❌ Cannot vote for yourself</span>';
+      return;
+    }
+
+    // Show processing message
+    voteResult.innerHTML = '<span style="color: #a786ff;">⏳ Sending vote...</span>';
+
+    // Send voting transaction
+    const tx = await contract.voteUser(userAddress, isLike);
+
+    // Wait for transaction confirmation
+    const receipt = await tx.wait();
+
+    // Show success message
+    const successMessage = isLike ? '✅ Like successfully registered' : '✅ Dislike successfully registered';
+    voteResult.innerHTML = `<span style="color: #00ff88;">${successMessage}</span>`;
+    
+    // Show alert too
+    alert(successMessage);
+
+    // Update user vote status
+    updateUserVoteStatus();
+
+    // Update ranking after 2 seconds
+    setTimeout(() => {
+      if (typeof window.displayTopUsersRanking === 'function') {
+        const rankingContainer = document.getElementById('top-users-ranking');
+        if (rankingContainer) {
+          window.displayTopUsersRanking('top-users-ranking');
+        }
+      }
+    }, 2000);
+
+    return {
+      success: true,
+      transactionHash: receipt.transactionHash,
+      userAddress: userAddress,
+      voteType: isLike ? 'like' : 'dislike'
+    };
+
+  } catch (error) {
+    console.error('❌ Error voting for index:', error);
+    const voteResult = document.getElementById('vote-result');
+    if (voteResult) {
+      voteResult.innerHTML = `<span style="color: #ff4444;">❌ Error: ${error.message}</span>`;
+    }
+    return {
+      success: false,
+      error: error.message
+    };
   }
 }
 
-function loadRankingInternal() {
-  console.log('🔍 بررسی توابع رنکینگ...');
-  console.log('displayTopUsersRanking موجود:', typeof window.displayTopUsersRanking);
-  console.log('getTopLikedUsersOptimized موجود:', typeof window.getTopLikedUsersOptimized);
+async function voteForSelfMain(isLike) {
+  try {
+    const voteResult = document.getElementById('vote-result-main');
+    
+    // Show error message immediately since self-voting is not allowed
+    voteResult.innerHTML = '<span style="color: #ff4444;">❌ Self-voting is not allowed by the smart contract</span>';
+    
+    // Show alert
+    alert('❌ Self-voting is not allowed by the smart contract');
+    
+    return {
+      success: false,
+      error: 'Self-voting is not allowed by the smart contract'
+    };
+
+  } catch (error) {
+    console.error('❌ Error voting for self:', error);
+    const voteResult = document.getElementById('vote-result-main');
+    if (voteResult) {
+      voteResult.innerHTML = `<span style="color: #ff4444;">❌ Error: ${error.message}</span>`;
+    }
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+}
+
+async function voteForSelf(isLike) {
+  try {
+    const voteResult = document.getElementById('vote-result');
+
+    // Show error message immediately since self-voting is not allowed
+    voteResult.innerHTML = '<span style="color: #ff4444;">❌ Self-voting is not allowed by the smart contract</span>';
+    
+    // Show alert
+    alert('❌ Self-voting is not allowed by the smart contract');
+
+    return {
+      success: false,
+      error: 'Self-voting is not allowed by the smart contract'
+    };
+
+  } catch (error) {
+    console.error('❌ Error voting for self:', error);
+    const voteResult = document.getElementById('vote-result');
+    if (voteResult) {
+      voteResult.innerHTML = `<span style="color: #ff4444;">❌ Error: ${error.message}</span>`;
+    }
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+}
+
+async function updateUserVoteStatusMain() {
+  try {
+    if (!window.contractConfig || !window.contractConfig.contract) {
+      return;
+    }
+
+    const contract = window.contractConfig.contract;
+    const currentUserAddress = window.contractConfig.signer?.address;
+
+    if (!currentUserAddress) {
+      return;
+    }
+
+    const voteStatus = await contract.getVoteStatus(currentUserAddress);
+    const statusElement = document.getElementById('user-vote-status-main');
+    
+    if (statusElement) {
+      const myVote = Number(voteStatus[2]); // 0: no vote, 1: like, 2: dislike
+      if (myVote == 1) {
+        statusElement.innerHTML = '<span style="color: #00ff88;">✓ Self-liked</span>';
+      } else if (myVote == 2) {
+        statusElement.innerHTML = '<span style="color: #ff4444;">✗ Self-disliked</span>';
+      } else {
+        statusElement.innerHTML = '<span style="color: #ccc;">Not voted yet</span>';
+      }
+    }
+  } catch (error) {
+    console.warn('⚠️ Error updating user vote status:', error);
+  }
+}
+
+async function updateUserVoteStatus() {
+  try {
+    if (!window.contractConfig || !window.contractConfig.contract) {
+      return;
+    }
+
+    const contract = window.contractConfig.contract;
+    const currentUserAddress = window.contractConfig.signer?.address;
+
+    if (!currentUserAddress) {
+      return;
+    }
+
+    const voteStatus = await contract.getVoteStatus(currentUserAddress);
+    const statusElement = document.getElementById('user-vote-status');
+    
+    if (statusElement) {
+      const myVote = Number(voteStatus[2]); // 0: no vote, 1: like, 2: dislike
+      if (myVote == 1) {
+        statusElement.innerHTML = '<span style="color: #00ff88;">✓ Self-liked</span>';
+      } else if (myVote == 2) {
+        statusElement.innerHTML = '<span style="color: #ff4444;">✗ Self-disliked</span>';
+      } else {
+        statusElement.innerHTML = '<span style="color: #ccc;">Not voted yet</span>';
+      }
+    }
+  } catch (error) {
+    console.warn('⚠️ Error updating user vote status:', error);
+  }
+}
+
+// Make voting functions globally available
+window.voteForIndex = voteForIndex;
+window.voteForSelf = voteForSelf;
+window.updateUserVoteStatus = updateUserVoteStatus;
+
+// Update vote status when wallet connects
+document.addEventListener('DOMContentLoaded', function() {
+  // Check vote status after wallet connection
+  if (window.contractConfig && window.contractConfig.signer) {
+    setTimeout(updateUserVoteStatus, 2000);
+  }
   
-  if (typeof window.displayTopUsersRanking === 'function') {
-    console.log('✅ شروع نمایش رنکینگ...');
-    window.displayTopUsersRanking('top-users-ranking').then(() => {
-      console.log('✅ رنکینگ با موفقیت بارگذاری شد');
-    }).catch(error => {
-      console.error('❌ خطا در نمایش رنکینگ:', error);
-      document.getElementById('top-users-ranking').innerHTML = `
-        <div style="text-align: center; padding: 2rem; color: #ff4444;">
-          <div>❌ خطا در بارگذاری رنکینگ</div>
-          <div style="font-size: 0.8rem; margin-top: 0.5rem;">${error.message}</div>
+  // Update vote status when user info is displayed
+  const userInfoSection = document.getElementById('dashboard-user-info');
+  if (userInfoSection) {
+    const observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+          if (userInfoSection.style.display !== 'none') {
+            setTimeout(updateUserVoteStatus, 1000);
+          }
+        }
+      });
+    });
+    
+    observer.observe(userInfoSection, {
+      attributes: true,
+      attributeFilter: ['style']
+    });
+  }
+});
+
+// Quick traversal functions
+async function startQuickTraversal(method = 'bfs') {
+  try {
+    console.log(`🚀 Starting quick ${method.toUpperCase()} traversal...`);
+    
+    const progressElement = document.getElementById('traversal-progress');
+    const statusElement = document.getElementById('traversal-status');
+    
+    if (progressElement) {
+      progressElement.style.display = 'block';
+    }
+    
+    if (statusElement) {
+      statusElement.textContent = `Starting ${method.toUpperCase()} traversal...`;
+    }
+    
+    // Add event listener for progress updates
+    const progressHandler = (event) => {
+      const { totalFound, currentIndex, isComplete } = event.detail;
+      
+      if (statusElement) {
+        if (method === 'index') {
+          statusElement.textContent = `Processed ${currentIndex} indices, found ${totalFound} users`;
+        } else {
+          statusElement.textContent = `Found ${totalFound} users so far...`;
+        }
+      }
+      
+      if (isComplete) {
+        if (statusElement) {
+          statusElement.textContent = `✅ Traversal completed! Found ${totalFound} users`;
+        }
+        
+        // Hide progress after 3 seconds
+        setTimeout(() => {
+          if (progressElement) {
+            progressElement.style.display = 'none';
+          }
+        }, 3000);
+        
+        // Remove event listener
+        document.removeEventListener('traversalProgress', progressHandler);
+      }
+    };
+    
+    document.addEventListener('traversalProgress', progressHandler);
+    
+    let users;
+    
+                   switch (method.toLowerCase()) {
+        case 'bfs':
+          users = await window.traverseAllUsers('bfs', 1, 50);
+          break;
+        case 'dfs':
+          users = await window.traverseAllUsers('dfs', 1, 50);
+          break;
+        case 'index':
+          users = await window.traverseAllUsers('index', 1, 50);
+          break;
+        case 'unlimited':
+          users = await window.traverseAllUsers('unlimited', 1, 50);
+          break;
+        default:
+          users = await window.traverseAllUsers('bfs', 1, 50);
+      }
+    
+    console.log(`✅ Quick ${method.toUpperCase()} traversal completed! Found ${users.length} users`);
+    
+    // Show success message
+    if (statusElement) {
+      statusElement.innerHTML = `<span style="color: #00ff88;">✅ Found ${users.length} users! Results cached.</span>`;
+    }
+    
+    // Update ranking with new data
+    setTimeout(() => {
+      if (typeof window.displayTopUsersRanking === 'function') {
+        const rankingContainer = document.getElementById('top-users-ranking');
+        if (rankingContainer) {
+          window.displayTopUsersRanking('top-users-ranking');
+        }
+      }
+    }, 2000);
+    
+    return users;
+    
+  } catch (error) {
+    console.error('❌ Error in quick traversal:', error);
+    
+    const statusElement = document.getElementById('traversal-status');
+    if (statusElement) {
+      statusElement.innerHTML = `<span style="color: #ff4444;">❌ Error: ${error.message}</span>`;
+    }
+    
+    // Hide progress after 5 seconds
+    setTimeout(() => {
+      const progressElement = document.getElementById('traversal-progress');
+      if (progressElement) {
+        progressElement.style.display = 'none';
+      }
+    }, 5000);
+    
+    throw error;
+  }
+}
+
+function stopQuickTraversal() {
+  try {
+    window.stopTraversal();
+    
+    const statusElement = document.getElementById('traversal-status');
+    if (statusElement) {
+      statusElement.innerHTML = `<span style="color: #ffaa00;">⏹️ Traversal stopped by user</span>`;
+    }
+    
+    // Hide progress after 3 seconds
+    setTimeout(() => {
+      const progressElement = document.getElementById('traversal-progress');
+      if (progressElement) {
+        progressElement.style.display = 'none';
+      }
+    }, 3000);
+    
+    console.log('⏹️ Quick traversal stopped by user');
+    
+  } catch (error) {
+    console.error('❌ Error stopping traversal:', error);
+  }
+}
+
+// Make functions globally available
+window.startQuickTraversal = startQuickTraversal;
+window.stopQuickTraversal = stopQuickTraversal;
+
+// Toggle voting section visibility
+function toggleVotingSection() {
+  const userInfoSection = document.getElementById('dashboard-user-info');
+  if (userInfoSection) {
+    const currentDisplay = userInfoSection.style.display;
+    if (currentDisplay === 'none' || currentDisplay === '') {
+      userInfoSection.style.display = 'block';
+      console.log('✅ Voting section is now visible');
+    } else {
+      userInfoSection.style.display = 'none';
+      console.log('❌ Voting section is now hidden');
+    }
+  } else {
+    console.error('❌ Voting section not found');
+  }
+}
+
+// Make toggle function globally available
+window.toggleVotingSection = toggleVotingSection;
+
+// Popup Voting Functions
+async function voteForIndexPopup(isLike) {
+  try {
+    const indexInput = document.getElementById('vote-index-popup');
+    const voteResult = document.getElementById('vote-result-popup');
+
+    if (!indexInput) {
+      throw new Error('Index input field not found');
+    }
+
+    const index = parseInt(indexInput.value.trim());
+
+    if (!index || index <= 0) {
+      voteResult.innerHTML = '<span style="color: #ff4444;">⚠️ Please enter a valid index</span>';
+      return;
+    }
+
+    if (!window.contractConfig || !window.contractConfig.contract) {
+      await window.connectWallet();
+    }
+    const contract = window.contractConfig.contract;
+
+    if (!contract) {
+      throw new Error('Contract not connected');
+    }
+
+    // Check wallet connection
+    if (!window.contractConfig.signer) {
+      throw new Error('Wallet not connected');
+    }
+
+    // Get user address from index
+    const userAddress = await contract.indexToAddress(index);
+
+    if (userAddress === '0x0000000000000000000000000000000000000000') {
+      voteResult.innerHTML = '<span style="color: #ff4444;">⚠️ No user found with this index</span>';
+      return;
+    }
+
+    // Check if user is trying to vote for themselves
+    const currentUserAddress = window.contractConfig.signer.address;
+    if (userAddress.toLowerCase() === currentUserAddress.toLowerCase()) {
+      voteResult.innerHTML = '<span style="color: #ff4444;">❌ Cannot vote for yourself</span>';
+      return;
+    }
+
+    // Show processing message
+    voteResult.innerHTML = '<span style="color: #a786ff;">⏳ Sending vote...</span>';
+
+    // Send voting transaction
+    const tx = await contract.voteUser(userAddress, isLike);
+
+    // Wait for transaction confirmation
+    const receipt = await tx.wait();
+
+    // Show success message
+    const successMessage = isLike ? '✅ Like successfully registered' : '✅ Dislike successfully registered';
+    voteResult.innerHTML = `<span style="color: #00ff88;">${successMessage}</span>`;
+    
+    // Show alert too
+    alert(successMessage);
+
+    // Close popup after 2 seconds
+    setTimeout(() => {
+      closeVotingPopup();
+    }, 2000);
+
+    // Update ranking after 2 seconds
+    setTimeout(() => {
+      if (typeof window.displayTopUsersRanking === 'function') {
+        const rankingContainer = document.getElementById('top-users-ranking');
+        if (rankingContainer) {
+          window.displayTopUsersRanking('top-users-ranking');
+        }
+      }
+    }, 2000);
+
+    return {
+      success: true,
+      transactionHash: receipt.transactionHash,
+      userAddress: userAddress,
+      voteType: isLike ? 'like' : 'dislike'
+    };
+
+  } catch (error) {
+    console.error('❌ Error voting for index:', error);
+    const voteResult = document.getElementById('vote-result-popup');
+    if (voteResult) {
+      voteResult.innerHTML = `<span style="color: #ff4444;">❌ Error: ${error.message}</span>`;
+    }
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+}
+
+async function voteForSelfPopup(isLike) {
+  try {
+    const voteResult = document.getElementById('vote-result-popup');
+    
+    // Show error message immediately since self-voting is not allowed
+    voteResult.innerHTML = '<span style="color: #ff4444;">❌ Self-voting is not allowed by the smart contract</span>';
+    
+    // Show alert
+    alert('❌ Self-voting is not allowed by the smart contract');
+    
+    return {
+      success: false,
+      error: 'Self-voting is not allowed by the smart contract'
+    };
+
+  } catch (error) {
+    console.error('❌ Error voting for self:', error);
+    const voteResult = document.getElementById('vote-result-popup');
+    if (voteResult) {
+      voteResult.innerHTML = `<span style="color: #ff4444;">❌ Error: ${error.message}</span>`;
+    }
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+}
+
+// Make popup functions globally available
+window.voteForIndexPopup = voteForIndexPopup;
+window.voteForSelfPopup = voteForSelfPopup;
+window.showVotingPopup = showVotingPopup;
+window.closeVotingPopup = closeVotingPopup;
+window.loadTopUsersInPopup = loadTopUsersInPopup;
+window.displayTopUsersInPopup = displayTopUsersInPopup;
+window.selectUserForVoting = selectUserForVoting;
+window.testTopUsersLoading = testTopUsersLoading;
+
+// Test function for debugging
+async function testTopUsersLoading() {
+  console.log('🧪 Testing top users loading...');
+  
+  // Test 1: Check wallet connection
+  console.log('🔍 Test 1: Wallet connection');
+  console.log('contractConfig:', !!window.contractConfig);
+  console.log('contract:', !!window.contractConfig?.contract);
+  
+  if (!window.contractConfig?.contract) {
+    console.log('⚠️ No contract available, trying to connect...');
+    try {
+      await window.connectWallet();
+      console.log('✅ Wallet connected successfully');
+    } catch (error) {
+      console.error('❌ Failed to connect wallet:', error);
+      return;
+    }
+  }
+  
+  // Test 2: Simple manual test with first 10 users
+  console.log('🔍 Test 2: Manual test with first 10 users');
+  try {
+    const contract = window.contractConfig.contract;
+    const testUsers = [];
+    
+    for (let i = 1; i <= 10; i++) {
+      try {
+        console.log(`🔍 Testing user ${i}...`);
+        const address = await contract.indexToAddress(i);
+        console.log(`User ${i} address:`, address);
+        
+        if (address && address !== '0x0000000000000000000000000000000000000000') {
+          const likeCount = await contract.likeCount(address);
+          console.log(`User ${i} likes:`, likeCount);
+          
+          if (Number(likeCount) > 0) {
+            testUsers.push({
+              index: i,
+              address: address,
+              likeCount: Number(likeCount)
+            });
+            console.log(`✅ Added user ${i} with ${likeCount} likes`);
+          }
+        }
+        
+        // Small delay to avoid RPC issues
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+      } catch (error) {
+        console.log(`❌ Error checking user ${i}:`, error.message);
+      }
+    }
+    
+    console.log('✅ Manual test result:', testUsers);
+    
+    // Update popup with manual results
+    const listContainer = document.getElementById('top-users-popup-list');
+    if (listContainer && testUsers.length > 0) {
+      displayTopUsersInPopup(testUsers);
+      console.log('✅ Updated popup with test results');
+    } else if (listContainer) {
+      listContainer.innerHTML = `
+        <div style="text-align: center; color: #ccc; font-size: 0.8rem; padding: 1rem;">
+          <div style="font-size: 1.2rem; margin-bottom: 0.5rem;">📊</div>
+          <div style="font-weight: bold; margin-bottom: 0.3rem;">تست دستی انجام شد</div>
+          <div style="font-size: 0.7rem;">هیچ کاربری با لایک در ۱۰ کاربر اول یافت نشد</div>
+          <div style="font-size: 0.6rem; margin-top: 0.5rem; color: #888;">💡 ممکن است کاربران با لایک در ایندکس‌های بالاتر باشند</div>
         </div>
       `;
-    });
-  } else {
-    console.error('❌ تابع displayTopUsersRanking موجود نیست');
-    document.getElementById('top-users-ranking').innerHTML = `
-      <div style="text-align: center; padding: 2rem; color: #ff4444;">
-        <div>❌ تابع رنکینگ موجود نیست</div>
-        <div style="font-size: 0.8rem; margin-top: 0.5rem;">لطفاً صفحه را رفرش کنید</div>
+      console.log('✅ Updated popup with no results message');
+    }
+  } catch (error) {
+    console.error('❌ Manual test error:', error);
+  }
+}
+
+// Load top users in popup
+async function loadTopUsersInPopup() {
+  try {
+    const listContainer = document.getElementById('top-users-popup-list');
+    if (!listContainer) {
+      console.error('❌ top-users-popup-list container not found');
+      return;
+    }
+    
+    console.log('🔄 Starting to load top users in popup...');
+    listContainer.innerHTML = '<div style="text-align: center; color: #ccc; font-size: 0.8rem; padding: 1rem;">🔄 در حال جستجوی کاربران با لایک...</div>';
+    
+    // Check wallet connection
+    if (!window.contractConfig || !window.contractConfig.contract) {
+      console.log('⚠️ Wallet not connected, attempting to connect...');
+      try {
+        await window.connectWallet();
+      } catch (error) {
+        console.error('❌ Failed to connect wallet:', error);
+        listContainer.innerHTML = '<div style="text-align: center; color: #ff4444; font-size: 0.8rem; padding: 1rem;">لطفاً ابتدا کیف پول خود را متصل کنید</div>';
+        return;
+      }
+    }
+    
+    console.log('✅ Wallet connected, contract available:', !!window.contractConfig?.contract);
+    
+    // Try a simpler approach first - check first 20 users manually
+    console.log('🔍 Trying simple manual approach for first 20 users...');
+    const contract = window.contractConfig.contract;
+    const topUsers = [];
+    
+    for (let i = 1; i <= 20; i++) {
+      try {
+        console.log(`🔍 Checking user ${i}...`);
+        const address = await contract.indexToAddress(i);
+        console.log(`User ${i} address:`, address);
+        
+        if (address && address !== '0x0000000000000000000000000000000000000000') {
+          const likeCount = await contract.likeCount(address);
+          console.log(`User ${i} likes:`, likeCount);
+          
+          if (Number(likeCount) > 0) {
+            topUsers.push({
+              index: i,
+              address: address,
+              likeCount: Number(likeCount)
+            });
+            console.log(`✅ Added user ${i} with ${likeCount} likes`);
+          }
+        }
+      } catch (error) {
+        console.log(`❌ Error checking user ${i}:`, error.message);
+        // Continue with next user
+      }
+      
+      // Small delay to avoid overwhelming the RPC
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    
+    console.log('📋 Found users with likes:', topUsers);
+    
+    if (topUsers.length === 0) {
+      console.log('📊 No users with likes found in first 20 users');
+      listContainer.innerHTML = `
+        <div style="text-align: center; color: #ccc; font-size: 0.8rem; padding: 1rem;">
+          <div style="font-size: 1.2rem; margin-bottom: 0.5rem;">📊</div>
+          <div style="font-weight: bold; margin-bottom: 0.3rem;">هیچ کاربری با لایک یافت نشد</div>
+          <div style="font-size: 0.7rem;">در ۲۰ کاربر اول هیچ کاربری لایک دریافت نکرده است</div>
+          <div style="font-size: 0.6rem; margin-top: 0.5rem; color: #888;">💡 شما می‌توانید اولین کسی باشید که لایک دریافت می‌کند!</div>
+        </div>
+      `;
+      return;
+    }
+    
+    // Sort by like count (descending) and take top 10
+    const sortedUsers = topUsers
+      .sort((a, b) => b.likeCount - a.likeCount)
+      .slice(0, 10);
+    
+    console.log('🏆 Final sorted users:', sortedUsers);
+    displayTopUsersInPopup(sortedUsers);
+    
+  } catch (error) {
+    console.error('❌ Error loading top users in popup:', error);
+    const listContainer = document.getElementById('top-users-popup-list');
+    if (listContainer) {
+      listContainer.innerHTML = `<div style="text-align: center; color: #ff4444; font-size: 0.8rem; padding: 1rem;">خطا در بارگذاری کاربران: ${error.message}</div>`;
+    }
+  }
+}
+
+// Display top users in popup
+function displayTopUsersInPopup(users) {
+  const listContainer = document.getElementById('top-users-popup-list');
+  if (!listContainer) return;
+  
+  if (!users || users.length === 0) {
+    listContainer.innerHTML = `
+      <div style="text-align: center; color: #ccc; font-size: 0.8rem; padding: 1rem;">
+        <div style="font-size: 1.2rem; margin-bottom: 0.5rem;">📊</div>
+        <div style="font-weight: bold; margin-bottom: 0.3rem;">هیچ کاربری با لایک یافت نشد</div>
+        <div style="font-size: 0.7rem;">هنوز هیچ کاربری لایک دریافت نکرده است</div>
+        <div style="font-size: 0.6rem; margin-top: 0.5rem; color: #888;">💡 شما می‌توانید اولین کسی باشید که لایک دریافت می‌کند!</div>
       </div>
     `;
+    return;
+  }
+  
+  let usersHtml = '';
+  users.forEach((user, index) => {
+    const rank = index + 1;
+    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+    const rankColor = rank === 1 ? '#ffd700' : rank === 2 ? '#c0c0c0' : rank === 3 ? '#cd7f32' : '#a786ff';
+    
+    usersHtml += `
+      <div onclick="selectUserForVoting(${user.index})" 
+           style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; margin-bottom: 0.3rem; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(0,255,136,0.1); cursor: pointer; transition: all 0.2s ease; hover:background: rgba(0,255,136,0.1);">
+        <div style="text-align: center; min-width: 30px;">
+          <div style="color: ${rankColor}; font-size: 0.9rem; font-weight: bold;">${medal}</div>
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="color: #00ff88; font-size: 0.8rem; font-weight: bold; margin-bottom: 0.2rem;">
+            IAM${user.index.toString().padStart(5, '0')}
+          </div>
+          <div style="color: #ccc; font-size: 0.6rem; font-family: monospace; word-break: break-all;">
+            ${user.address.substring(0, 6)}...${user.address.substring(user.address.length - 4)}
+          </div>
+        </div>
+        <div style="text-align: center; min-width: 40px;">
+          <div style="color: #00ff88; font-size: 0.8rem; font-weight: bold;">${user.likeCount}</div>
+          <div style="color: #ccc; font-size: 0.5rem;">لایک</div>
+        </div>
+      </div>
+    `;
+  });
+  
+  listContainer.innerHTML = usersHtml;
+}
+
+// Select user for voting
+function selectUserForVoting(index) {
+  const indexInput = document.getElementById('vote-index-popup');
+  if (indexInput) {
+    indexInput.value = index;
+    // Highlight the input briefly
+    indexInput.style.borderColor = '#00ff88';
+    indexInput.style.boxShadow = '0 0 10px rgba(0,255,136,0.3)';
+    setTimeout(() => {
+      indexInput.style.borderColor = 'rgba(0,255,136,0.3)';
+      indexInput.style.boxShadow = 'none';
+    }, 1000);
   }
 }
 
-// تابع اسکرول به بخش رنکینگ
-function scrollToRanking() {
-  const rankingElement = document.getElementById('top-users-ranking');
-  if (rankingElement) {
-    rankingElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    // هایلایت کردن بخش رنکینگ
-    rankingElement.style.boxShadow = '0 0 20px rgba(167,134,255,0.5)';
+// Modified showVotingPopup function to load top users
+function showVotingPopup() {
+  const popup = document.getElementById('voting-popup');
+  if (popup) {
+    popup.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    // Load top users when popup opens
     setTimeout(() => {
-      rankingElement.style.boxShadow = '';
-    }, 2000);
+      loadTopUsersInPopup();
+    }, 100);
   }
 }
+
+// Close voting popup function
+function closeVotingPopup() {
+  const popup = document.getElementById('voting-popup');
+  if (popup) {
+    popup.style.display = 'none';
+    document.body.style.overflow = 'auto';
+  }
+}
+
+// Popular Indexes Functions
+function togglePopularIndexes() {
+  const content = document.getElementById('popular-indexes-content');
+  const toggleBtn = document.getElementById('popular-indexes-toggle');
+  
+  if (content.style.display === 'none' || !content.style.display) {
+    content.style.display = 'block';
+    toggleBtn.innerHTML = '📊 مخفی کردن محبوب‌ترین‌ها';
+    toggleBtn.style.background = 'linear-gradient(135deg,#ff4444,#cc3333)';
+    loadPopularIndexes();
+  } else {
+    content.style.display = 'none';
+    toggleBtn.innerHTML = '📊 نمایش محبوب‌ترین‌ها';
+    toggleBtn.style.background = 'linear-gradient(135deg,#00ff88,#00cc6a)';
+  }
+}
+
+async function loadPopularIndexes() {
+  try {
+    const listContainer = document.getElementById('popular-indexes-list');
+    listContainer.innerHTML = '<div style="text-align: center; color: #888; font-size: 0.9rem; padding: 2rem;">در حال بارگذاری محبوب‌ترین ایندکس‌ها...</div>';
+    
+    if (!window.contractConfig || !window.contractConfig.contract) {
+      listContainer.innerHTML = '<div style="text-align: center; color: #ff4444; font-size: 0.9rem; padding: 2rem;">لطفا ابتدا کیف پول خود را متصل کنید</div>';
+      return;
+    }
+    
+    const contract = window.contractConfig.contract;
+    
+    // Get top users (we'll use the existing ranking function if available)
+    if (typeof window.displayTopUsersRanking === 'function') {
+      // Use existing ranking function
+      const popularUsers = await getTopUsersByLikes(10);
+      displayPopularIndexes(popularUsers);
+    } else {
+      // Fallback: show a simple list
+      listContainer.innerHTML = '<div style="text-align: center; color: #888; font-size: 0.9rem; padding: 2rem;">سیستم رتبه‌بندی در دسترس نیست</div>';
+    }
+    
+  } catch (error) {
+    console.error('❌ Error loading popular indexes:', error);
+    const listContainer = document.getElementById('popular-indexes-list');
+    listContainer.innerHTML = `<div style="text-align: center; color: #ff4444; font-size: 0.9rem; padding: 2rem;">خطا در بارگذاری: ${error.message}</div>`;
+  }
+}
+
+async function getTopUsersByLikes(limit = 10) {
+  try {
+    const contract = window.contractConfig.contract;
+    const users = [];
+    
+    // Check first 50 users for likes
+    for (let i = 1; i <= 50; i++) {
+      try {
+        const userAddress = await contract.indexToAddress(i);
+        if (userAddress && userAddress !== '0x0000000000000000000000000000000000000000') {
+          const likeCount = await contract.likeCount(userAddress);
+          
+          if (Number(likeCount) > 0) {
+            users.push({
+              index: i,
+              address: userAddress,
+              likeCount: Number(likeCount)
+            });
+          }
+        }
+      } catch (error) {
+        console.log(`Error getting user ${i}:`, error.message);
+        continue;
+      }
+    }
+    
+    // Sort by like count (descending)
+    users.sort((a, b) => b.likeCount - a.likeCount);
+    
+    return users.slice(0, limit);
+    
+  } catch (error) {
+    console.error('❌ Error getting top users:', error);
+    return [];
+  }
+}
+
+function displayPopularIndexes(users) {
+  const listContainer = document.getElementById('popular-indexes-list');
+  
+  if (!users || users.length === 0) {
+    listContainer.innerHTML = '<div style="text-align: center; color: #888; font-size: 0.9rem; padding: 2rem;">هیچ کاربری یافت نشد</div>';
+    return;
+  }
+  
+  let html = '';
+  users.forEach((user, index) => {
+    const rank = index + 1;
+    const rankEmoji = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+    const shortAddress = user.address.substring(0, 6) + '...' + user.address.substring(user.address.length - 4);
+    
+    html += `
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.8rem; margin-bottom: 0.5rem; background: rgba(0,255,136,0.1); border-radius: 8px; border: 1px solid rgba(0,255,136,0.2);">
+        <div style="display: flex; align-items: center; gap: 0.8rem;">
+          <div style="color: #00ff88; font-weight: bold; font-size: 1.1rem;">${rankEmoji}</div>
+          <div>
+            <div style="color: #fff; font-weight: bold; font-size: 0.9rem;">ایندکس ${user.index}</div>
+            <div style="color: #ccc; font-size: 0.8rem; font-family: monospace;">${shortAddress}</div>
+          </div>
+        </div>
+        <div style="text-align: right;">
+          <div style="color: #00ff88; font-weight: bold; font-size: 0.9rem;">👍 ${user.likeCount}</div>
+        </div>
+      </div>
+    `;
+  });
+  
+  listContainer.innerHTML = html;
+}
+
+async function voteForPopularIndex(isLike) {
+  try {
+    const indexInput = document.getElementById('popular-vote-index');
+    const voteResult = document.getElementById('popular-vote-result');
+    
+    if (!indexInput) {
+      throw new Error('Index input field not found');
+    }
+    
+    const index = parseInt(indexInput.value.trim());
+    
+    if (!index || index <= 0) {
+      voteResult.innerHTML = '<span style="color: #ff4444;">⚠️ لطفا یک ایندکس معتبر وارد کنید</span>';
+      return;
+    }
+    
+    if (!window.contractConfig || !window.contractConfig.contract) {
+      await window.connectWallet();
+    }
+    const contract = window.contractConfig.contract;
+    
+    if (!contract) {
+      throw new Error('قرارداد متصل نیست');
+    }
+    
+    // Check wallet connection
+    if (!window.contractConfig.signer) {
+      throw new Error('کیف پول متصل نیست');
+    }
+    
+    // Get user address from index
+    const userAddress = await contract.indexToAddress(index);
+    
+    if (userAddress === '0x0000000000000000000000000000000000000000') {
+      voteResult.innerHTML = '<span style="color: #ff4444;">⚠️ هیچ کاربری با این ایندکس یافت نشد</span>';
+      return;
+    }
+    
+    // Check if user is trying to vote for themselves
+    const currentUserAddress = window.contractConfig.signer.address;
+    if (userAddress.toLowerCase() === currentUserAddress.toLowerCase()) {
+      voteResult.innerHTML = '<span style="color: #ff4444;">❌ نمی‌توانید برای خودتان رای دهید</span>';
+      return;
+    }
+    
+    // Show processing message
+    voteResult.innerHTML = '<span style="color: #a786ff;">⏳ در حال ارسال رای...</span>';
+    
+    // Send voting transaction
+    const tx = await contract.voteUser(userAddress, isLike);
+    
+    // Wait for transaction confirmation
+    const receipt = await tx.wait();
+    
+    // Show success message
+    const successMessage = isLike ? '✅ پسندیدن با موفقیت ثبت شد' : '✅ نپسندیدن با موفقیت ثبت شد';
+    voteResult.innerHTML = `<span style="color: #00ff88;">${successMessage}</span>`;
+    
+    // Clear input
+    indexInput.value = '';
+    
+    // Show alert too
+    alert(successMessage);
+    
+    // Refresh popular indexes list after 2 seconds
+    setTimeout(() => {
+      loadPopularIndexes();
+    }, 2000);
+    
+    return {
+      success: true,
+      transactionHash: receipt.transactionHash,
+      userAddress: userAddress,
+      voteType: isLike ? 'like' : 'dislike'
+    };
+    
+  } catch (error) {
+    console.error('❌ Error voting for popular index:', error);
+    const voteResult = document.getElementById('popular-vote-result');
+    if (voteResult) {
+      voteResult.innerHTML = `<span style="color: #ff4444;">❌ خطا: ${error.message}</span>`;
+    }
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+}
+
+function refreshPopularIndexes() {
+  loadPopularIndexes();
+}
+
+// Make popular indexes functions globally available
+window.togglePopularIndexes = togglePopularIndexes;
+window.loadPopularIndexes = loadPopularIndexes;
+window.voteForPopularIndex = voteForPopularIndex;
+window.refreshPopularIndexes = refreshPopularIndexes;
 
 
 

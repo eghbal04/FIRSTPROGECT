@@ -1,4 +1,4 @@
-// فایل جاوااسکریپت برای مدیریت اطلاعات کاربر در شبکه
+// JavaScript file for managing user information in network
 class UserInfoModal {
     constructor() {
         this.initModal();
@@ -10,35 +10,35 @@ class UserInfoModal {
         modal.className = 'user-info-modal';
         modal.innerHTML = `
             <div class="user-info-header">
-                <h3 class="user-info-title">اطلاعات کاربر</h3>
+                <h3 class="user-info-title">User Information</h3>
                 <button class="close-button">&times;</button>
             </div>
             <div class="user-info-content">
                 <div class="info-group">
-                    <div class="info-label">شناسه کاربر</div>
+                    <div class="info-label">User ID</div>
                     <div class="info-value" id="userId">-</div>
                 </div>
                 <div class="info-group">
-                    <div class="info-label">آدرس کیف پول</div>
+                    <div class="info-label">Wallet Address</div>
                     <div class="info-value" id="userWallet">-</div>
                 </div>
                 <div class="info-group">
-                    <div class="info-label">نوع کاربر</div>
+                    <div class="info-label">User Type</div>
                     <div class="info-value" id="userType">-</div>
                 </div>
                 <div class="user-stats">
                     <div class="stat-item">
                         <div class="stat-value" id="userBalance">0</div>
-                        <div class="stat-label">موجودی</div>
+                        <div class="stat-label">Balance</div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-value" id="userReferrals">0</div>
-                        <div class="stat-label">زیرمجموعه‌ها</div>
+                        <div class="stat-label">Referrals</div>
                     </div>
                 </div>
                 <div class="action-buttons">
-                    <button class="action-button" onclick="showUserTransactions()">تراکنش‌ها</button>
-                    <button class="action-button" onclick="showUserNetwork()">شبکه</button>
+                    <button class="action-button" onclick="showUserTransactions()">Transactions</button>
+                    <button class="action-button" onclick="showUserNetwork()">Network</button>
                 </div>
             </div>
         `;
@@ -77,7 +77,7 @@ class UserInfoModal {
         });
 
         this.modal.addEventListener('touchend', () => {
-            this.modal.style.transition = 'transform 0.3s ease-in-out';
+            this.modal.style.transition = 'transform 0.15s ease-in-out';
             if (currentY - startY > 100) { // If swiped down more than 100px
                 this.hide();
             } else {
@@ -103,12 +103,12 @@ class UserInfoModal {
         this.backdrop.classList.remove('active');
         setTimeout(() => {
             this.modal.style.transform = '';
-        }, 300);
+        }, 150);
     }
 
     async loadUserInfo(nodeData) {
         // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 250));
 
         document.getElementById('userId').textContent = `IAM${String(nodeData.id).padStart(5, '0')}`;
         document.getElementById('userWallet').textContent = this.formatAddress(nodeData.wallet);
@@ -120,9 +120,9 @@ class UserInfoModal {
     showError() {
         this.modal.querySelector('.user-info-content').innerHTML = `
             <div class="error-state">
-                خطا در دریافت اطلاعات کاربر
+                Error loading user information
                 <br>
-                لطفاً دوباره تلاش کنید
+                Please try again
             </div>
         `;
     }
@@ -133,16 +133,16 @@ class UserInfoModal {
     }
 
     formatNumber(num) {
-        return new Intl.NumberFormat('fa-IR').format(num || 0);
+        return new Intl.NumberFormat('en-US').format(num || 0);
     }
 
     getUserType(type) {
         const types = {
-            1: 'کاربر عادی',
-            2: 'کاربر ویژه',
-            3: 'ادمین'
+            1: 'Regular User',
+            2: 'Premium User',
+            3: 'Admin'
         };
-        return types[type] || 'نامشخص';
+        return types[type] || 'Unknown';
     }
 }
 

@@ -5575,6 +5575,15 @@ window.loadVotingStatusForUsers = async function(users) {
     // Load vote status for each user
     for (const user of users) {
       try {
+        // Check if this is the current user (self-vote)
+        if (user.address.toLowerCase() === currentUserAddress.toLowerCase()) {
+          const statusElement = document.getElementById(`vote-status-${user.address}`);
+          if (statusElement) {
+            statusElement.innerHTML = '<span style="color: #ffaa00;">⚠️ Cannot vote for yourself</span>';
+          }
+          continue; // Skip loading vote status for self
+        }
+        
         const voteStatus = await contract.userVotes(currentUserAddress, user.address);
         const statusElement = document.getElementById(`vote-status-${user.address}`);
         
@@ -5724,6 +5733,12 @@ window.voteForUser = async function(targetAddress, isLike) {
       throw new Error('Wallet not connected');
     }
 
+    // Check if user is trying to vote for themselves
+    const currentUserAddress = window.contractConfig.signer.address;
+    if (targetAddress.toLowerCase() === currentUserAddress.toLowerCase()) {
+      throw new Error('Cannot vote for yourself');
+    }
+
     console.log('⏳ ارسال تراکنش رای‌گیری...');
     
     // ارسال تراکنش رای‌گیری
@@ -5794,6 +5809,21 @@ window.getDeployerAddress = async function(contract) {
   }
 };
 
+// Helper function to check if user is trying to vote for themselves
+window.isSelfVote = function(targetAddress) {
+  try {
+    if (!window.contractConfig || !window.contractConfig.signer) {
+      return false;
+    }
+    
+    const currentUserAddress = window.contractConfig.signer.address;
+    return targetAddress.toLowerCase() === currentUserAddress.toLowerCase();
+  } catch (error) {
+    console.warn('Error checking self-vote:', error);
+    return false;
+  }
+};
+
 // تابع تست سریع برای نمایش رنکینگ (غیرفعال شده)
 window.getTopLikedUsersQuick = async function(limit = 10) {
   console.log('⚠️ تابع سریع غیرفعال شده - استفاده از داده‌های واقعی');
@@ -5816,6 +5846,35 @@ window.testVoteButtons = function() {
   document.body.appendChild(testButton);
   
   return 'تست دکمه‌ها انجام شد';
+};
+
+// Function to validate voting input and provide helpful feedback
+window.validateVotingInput = function(index) {
+  try {
+    if (!index || index <= 0) {
+      return {
+        valid: false,
+        message: 'Please enter a valid index (must be greater than 0)'
+      };
+    }
+    
+    if (!window.contractConfig || !window.contractConfig.signer) {
+      return {
+        valid: false,
+        message: 'Please connect your wallet first'
+      };
+    }
+    
+    return {
+      valid: true,
+      message: 'Input is valid'
+    };
+  } catch (error) {
+    return {
+      valid: false,
+      message: 'Error validating input: ' + error.message
+    };
+  }
 };
 
 // تابع رای‌گیری برای ایندکس
@@ -5854,6 +5913,13 @@ window.voteForIndex = async function(isLike) {
 
     if (userAddress === '0x0000000000000000000000000000000000000000') {
       voteResult.innerHTML = '<span style="color: #ff4444;">⚠️ No user found with this index</span>';
+      return;
+    }
+
+    // Check if user is trying to vote for themselves
+    const currentUserAddress = window.contractConfig.signer.address;
+    if (userAddress.toLowerCase() === currentUserAddress.toLowerCase()) {
+      voteResult.innerHTML = '<span style="color: #ff4444;">❌ Cannot vote for yourself</span>';
       return;
     }
 
