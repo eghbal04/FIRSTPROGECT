@@ -3795,12 +3795,12 @@ function togglePopularIndexes() {
   
   if (content.style.display === 'none' || !content.style.display) {
     content.style.display = 'block';
-    toggleBtn.innerHTML = '📊 مخفی کردن محبوب‌ترین‌ها';
+    toggleBtn.innerHTML = '📊 Hide Most Popular';
     toggleBtn.style.background = 'linear-gradient(135deg,#ff4444,#cc3333)';
     loadPopularIndexes();
   } else {
     content.style.display = 'none';
-    toggleBtn.innerHTML = '📊 نمایش محبوب‌ترین‌ها';
+    toggleBtn.innerHTML = '📊 Show Most Popular';
     toggleBtn.style.background = 'linear-gradient(135deg,#00ff88,#00cc6a)';
   }
 }
@@ -3808,10 +3808,10 @@ function togglePopularIndexes() {
 async function loadPopularIndexes() {
   try {
     const listContainer = document.getElementById('popular-indexes-list');
-    listContainer.innerHTML = '<div style="text-align: center; color: #888; font-size: 0.9rem; padding: 2rem;">در حال بارگذاری محبوب‌ترین ایندکس‌ها...</div>';
+    listContainer.innerHTML = '<div style="text-align: center; color: #888; font-size: 0.9rem; padding: 2rem;">Loading most popular indexes...</div>';
     
     if (!window.contractConfig || !window.contractConfig.contract) {
-      listContainer.innerHTML = '<div style="text-align: center; color: #ff4444; font-size: 0.9rem; padding: 2rem;">لطفا ابتدا کیف پول خود را متصل کنید</div>';
+      listContainer.innerHTML = '<div style="text-align: center; color: #ff4444; font-size: 0.9rem; padding: 2rem;">Please connect your wallet first</div>';
       return;
     }
     
@@ -3824,13 +3824,13 @@ async function loadPopularIndexes() {
       displayPopularIndexes(popularUsers);
     } else {
       // Fallback: show a simple list
-      listContainer.innerHTML = '<div style="text-align: center; color: #888; font-size: 0.9rem; padding: 2rem;">سیستم رتبه‌بندی در دسترس نیست</div>';
+      listContainer.innerHTML = '<div style="text-align: center; color: #888; font-size: 0.9rem; padding: 2rem;">Ranking system not available</div>';
     }
     
   } catch (error) {
     console.error('❌ Error loading popular indexes:', error);
     const listContainer = document.getElementById('popular-indexes-list');
-    listContainer.innerHTML = `<div style="text-align: center; color: #ff4444; font-size: 0.9rem; padding: 2rem;">خطا در بارگذاری: ${error.message}</div>`;
+    listContainer.innerHTML = `<div style="text-align: center; color: #ff4444; font-size: 0.9rem; padding: 2rem;">Error loading: ${error.message}</div>`;
   }
 }
 
@@ -3875,7 +3875,7 @@ function displayPopularIndexes(users) {
   const listContainer = document.getElementById('popular-indexes-list');
   
   if (!users || users.length === 0) {
-    listContainer.innerHTML = '<div style="text-align: center; color: #888; font-size: 0.9rem; padding: 2rem;">هیچ کاربری یافت نشد</div>';
+    listContainer.innerHTML = '<div style="text-align: center; color: #888; font-size: 0.9rem; padding: 2rem;">No users found</div>';
     return;
   }
   
@@ -3890,7 +3890,7 @@ function displayPopularIndexes(users) {
         <div style="display: flex; align-items: center; gap: 0.8rem;">
           <div style="color: #00ff88; font-weight: bold; font-size: 1.1rem;">${rankEmoji}</div>
           <div>
-            <div style="color: #fff; font-weight: bold; font-size: 0.9rem;">ایندکس ${user.index}</div>
+            <div style="color: #fff; font-weight: bold; font-size: 0.9rem;">Index ${user.index}</div>
             <div style="color: #ccc; font-size: 0.8rem; font-family: monospace;">${shortAddress}</div>
           </div>
         </div>
@@ -3916,7 +3916,7 @@ async function voteForPopularIndex(isLike) {
     const index = parseInt(indexInput.value.trim());
     
     if (!index || index <= 0) {
-      voteResult.innerHTML = '<span style="color: #ff4444;">⚠️ لطفا یک ایندکس معتبر وارد کنید</span>';
+      voteResult.innerHTML = '<span style="color: #ff4444;">⚠️ Please enter a valid index</span>';
       return;
     }
     
@@ -3938,19 +3938,19 @@ async function voteForPopularIndex(isLike) {
     const userAddress = await contract.indexToAddress(index);
     
     if (userAddress === '0x0000000000000000000000000000000000000000') {
-      voteResult.innerHTML = '<span style="color: #ff4444;">⚠️ هیچ کاربری با این ایندکس یافت نشد</span>';
+      voteResult.innerHTML = '<span style="color: #ff4444;">⚠️ No user found with this index</span>';
       return;
     }
     
     // Check if user is trying to vote for themselves
     const currentUserAddress = window.contractConfig.signer.address;
     if (userAddress.toLowerCase() === currentUserAddress.toLowerCase()) {
-      voteResult.innerHTML = '<span style="color: #ff4444;">❌ نمی‌توانید برای خودتان رای دهید</span>';
+      voteResult.innerHTML = '<span style="color: #ff4444;">❌ You cannot vote for yourself</span>';
       return;
     }
     
     // Show processing message
-    voteResult.innerHTML = '<span style="color: #a786ff;">⏳ در حال ارسال رای...</span>';
+    voteResult.innerHTML = '<span style="color: #a786ff;">⏳ Sending vote...</span>';
     
     // Send voting transaction
     const tx = await contract.voteUser(userAddress, isLike);
@@ -3959,7 +3959,7 @@ async function voteForPopularIndex(isLike) {
     const receipt = await tx.wait();
     
     // Show success message
-    const successMessage = isLike ? '✅ پسندیدن با موفقیت ثبت شد' : '✅ نپسندیدن با موفقیت ثبت شد';
+    const successMessage = isLike ? '✅ Like successfully registered' : '✅ Dislike successfully registered';
     voteResult.innerHTML = `<span style="color: #00ff88;">${successMessage}</span>`;
     
     // Clear input
@@ -3984,7 +3984,7 @@ async function voteForPopularIndex(isLike) {
     console.error('❌ Error voting for popular index:', error);
     const voteResult = document.getElementById('popular-vote-result');
     if (voteResult) {
-      voteResult.innerHTML = `<span style="color: #ff4444;">❌ خطا: ${error.message}</span>`;
+      voteResult.innerHTML = `<span style="color: #ff4444;">❌ Error: ${error.message}</span>`;
     }
     return {
       success: false,

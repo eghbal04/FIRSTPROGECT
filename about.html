@@ -131,7 +131,7 @@
               copyAddressBtn.style.color = '#00ff88';
             }, 2000);
           }).catch(function(err) {
-            console.error('خطا در کپی کردن: ', err);
+            console.error('Error copying: ', err);
             copyAddressBtn.textContent = '❌';
             copyAddressBtn.style.color = '#ff4757';
             setTimeout(() => {
@@ -154,7 +154,7 @@
         });
         
       } else if (contractAddressElement) {
-        contractAddressElement.textContent = 'خطا در بارگذاری آدرس قرارداد';
+        contractAddressElement.textContent = 'Error loading contract address';
         contractAddressElement.style.color = '#ff4757';
       }
 
@@ -177,7 +177,7 @@
           const scanLink = document.getElementById('polygonscan-link');
           if (scanLink && window.IAM_ADDRESS) {
             scanLink.href = 'https://polygonscan.com/address/' + window.IAM_ADDRESS;
-            scanLink.textContent = 'مشاهده در Polygonscan';
+            scanLink.textContent = 'View on Polygonscan';
           }
 
           // Contract DAI balance (for caps/fees)
@@ -208,8 +208,8 @@
             else if (daiBalanceNum <= 200000) backing = 1.5;
             else backing = 1.0;
             const dev = 0.5;
-            if (feeBackingEl) feeBackingEl.textContent = backing.toFixed(1) + '٪';
-            if (feeTotalEl) feeTotalEl.textContent = (backing + dev).toFixed(1) + '٪';
+            if (feeBackingEl) feeBackingEl.textContent = backing.toFixed(1) + '%';
+            if (feeTotalEl) feeTotalEl.textContent = (backing + dev).toFixed(1) + '%';
           }
 
           // Sell cap for connected user (50% of IAM balance)
@@ -248,7 +248,7 @@
          Join Phoenix and become part of the future of **Network Marketing** - where transparency, security, and growth are guaranteed by blockchain technology.
       </p>
 
-      <!-- اطلاعات عمومی و شفاف برای عموم -->
+      <!-- Public and Transparent Information -->
       <div class="about-cards">
       <div class="about-card">
         <h3>Key Network and Contract Information</h3>
@@ -527,10 +527,8 @@
     </div>
   </section>
   
-  <!-- Floating Token Growth Card - کارت شناور رشد توکن -->
   <script src="js/floating-token-card.js"></script>
   <script>
-    // درج آدرس DAI و امکان کپی
     (function(){
       function setDaiAddress(){
         var el = document.getElementById('dai-address');
@@ -548,15 +546,15 @@
           el.addEventListener('click', function(){ copy(window.DAI_ADDRESS); });
           if (ps && typeof window.IAM_ADDRESS !== 'undefined') {
             ps.href = 'https://polygonscan.com/address/' + window.IAM_ADDRESS;
-            ps.textContent = 'مشاهده قرارداد';
+            ps.textContent = 'View Contract';
           }
         } else {
-          el.textContent = 'در دسترس نیست';
+          el.textContent = 'Not Available';
         }
       }
       if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setDaiAddress); else setDaiAddress();
     })();
-    // آمار زنده درباره ما
+    // Live Statistics About Us
     (function(){
       async function getProvider(){
         try {
