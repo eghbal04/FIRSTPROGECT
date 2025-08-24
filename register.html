@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ثبت‌نام کاربر جدید</title>
+  <title>New User Registration</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
     body {
@@ -75,30 +75,30 @@
   <script src="js/navbar.js"></script>
   <main style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--ios-background);">
     <form class="register-form" autocomplete="off" style="max-width:400px;width:100%;margin:0 auto;">
-      <h2 class="register-form-title" style="text-align:center;margin-bottom:10px;font-size:1.2rem;">ثبت‌نام کاربر جدید</h2>
+      <h2 class="register-form-title" style="text-align:center;margin-bottom:10px;font-size:1.2rem;">New User Registration</h2>
       <div class="register-form-status info" id="connection-status"></div>
       <div class="register-form-status warning" id="register-suggestion" style="display:none;"></div>
       
       <div class="form-group">
-        <label for="index-search">ایندکس معرف</label>
+        <label for="index-search">Referrer Index</label>
         <div style="display: flex; gap: 8px; align-items: center;">
-          <input type="text" id="index-search" class="register-form-input" placeholder="ایندکس معرف را وارد کنید" autocomplete="off" value="" style="flex: 1; min-width: 0;">
-          <button type="button" id="apply-index-btn" class="register-btn" style="padding: 8px 12px; font-size: 0.85rem; white-space: nowrap;">اعمال</button>
+          <input type="text" id="index-search" class="register-form-input" placeholder="Enter referrer index" autocomplete="off" value="" style="flex: 1; min-width: 0;">
+          <button type="button" id="apply-index-btn" class="register-btn" style="padding: 8px 12px; font-size: 0.85rem; white-space: nowrap;">Apply</button>
         </div>
       </div>
       
       <div class="form-group">
-        <label for="referrer-address">آدرس معرف</label>
-        <input type="text" id="referrer-address" class="register-form-input" placeholder="آدرس معرف (0x...)" autocomplete="off" value="" style="background-color: #232946; color: #fff;">
+        <label for="referrer-address">Referrer Address</label>
+        <input type="text" id="referrer-address" class="register-form-input" placeholder="Referrer address (0x...)" autocomplete="off" value="" style="background-color: #232946; color: #fff;">
       </div>
       
       <div class="form-group">
-        <label for="new-user-address">آدرس کاربر جدید</label>
-        <input type="text" id="new-user-address" class="register-form-input" placeholder="آدرس کیف پول زیرمجموعه" autocomplete="off">
+        <label for="new-user-address">New User Address</label>
+        <input type="text" id="new-user-address" class="register-form-input" placeholder="Subordinate wallet address" autocomplete="off">
       </div>
       
       <script>
-    // تابع نمایش پیام‌های عمومی
+    // Function to show general messages
     function showMessageBox(message, type = 'info') {
         const existingBox = document.getElementById('message-box');
         if (existingBox) {
@@ -141,7 +141,7 @@
                 font-size: 13px;
                 transition: all 0.3s ease;
             " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
-                بستن
+                Close
             </button>
         `;
         
@@ -154,7 +154,7 @@
         }, 5000);
     }
 
-    // تابع نمایش پیام‌های موقت
+    // Function to show temporary messages
     function showTempMessage(message, type = 'info', duration = 3000) {
         const tempBox = document.createElement('div');
         tempBox.style.cssText = `
@@ -187,7 +187,7 @@
         }, duration);
     }
 
-    // اضافه کردن CSS animations
+    // Add CSS animations
     if (!document.getElementById('message-box-styles')) {
         const style = document.createElement('style');
         style.id = 'message-box-styles';
@@ -214,13 +214,13 @@
                  
                  if (clipboardText.match(/^0x[a-fA-F0-9]{40}$/)) {
                    addressInput.value = clipboardText;
-                   showTempMessage('✅ آدرس از کلیپبورد وارد شد!', 'success');
+                   showTempMessage('✅ Address inserted from clipboard!', 'success');
                  } else {
-                   showTempMessage('❌ آدرس اتریوم معتبر نیست', 'error');
+                   showTempMessage('❌ Invalid Ethereum address', 'error');
                  }
                } catch (err) {
-                 console.error('خطا در دسترسی به کلیپبورد:', err);
-                 showTempMessage('❌ خطا در دسترسی به کلیپبورد', 'error');
+                 console.error('Error accessing clipboard:', err);
+                 showTempMessage('❌ Error accessing clipboard', 'error');
                }
              }
            });
@@ -229,16 +229,16 @@
       
       <div class="info-box" id="register-info" style="background:rgba(28,28,40,0.97);color:#fff;font-size:0.85rem;box-shadow:0 2px 8px #a786ff22;margin-bottom:10px;padding:10px;">
         <div style="margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid rgba(167,134,255,0.3);">
-          <div style="color:#a786ff;font-size:0.8rem;">📊 اطلاعات ثبت‌نام:</div>
+          <div style="color:#a786ff;font-size:0.8rem;">📊 Registration Information:</div>
         </div>
-        <div style="margin-bottom:3px;">🎯 ایندکس رفرر: <b id="parent-index">...</b></div>
-        <div style="margin-bottom:3px;">📍 ایندکس جایگاه: <b id="empty-index">...</b></div>
-        <div style="margin-bottom:3px;">💰 هزینه: <b id="register-cost" style="color:#00ff88;">...</b></div>
+        <div style="margin-bottom:3px;">🎯 Referrer Index: <b id="parent-index">...</b></div>
+        <div style="margin-bottom:3px;">📍 Position Index: <b id="empty-index">...</b></div>
+        <div style="margin-bottom:3px;">💰 Cost: <b id="register-cost" style="color:#00ff88;">...</b></div>
         
         <div style="margin-top:6px;padding-top:4px;border-top:1px solid rgba(167,134,255,0.3);">
-          <div style="color:#a786ff;font-size:0.8rem;margin-bottom:4px;">💳 موجودی:</div>
+          <div style="color:#a786ff;font-size:0.8rem;margin-bottom:4px;">💳 Balance:</div>
           <div style="display:flex;flex-direction:column;gap:3px;align-items:center;">
-            <span>🔷 متیک: <b id="matic-balance">...</b></span>
+            <span>🔷 MATIC: <b id="matic-balance">...</b></span>
             <span>💎 IAM: <b id="IAM-balance">...</b></span>
           </div>
         </div>
@@ -251,11 +251,11 @@
         <span class="avatar-choice" data-avatar="student-woman">👩‍🎓</span>
       </div>
       
-      <button class="register-btn buy-btn" id="register-btn" type="button" style="width:100%;margin-top:10px;">ثبت‌نام</button>
+      <button class="register-btn buy-btn" id="register-btn" type="button" style="width:100%;margin-top:10px;">Register</button>
       <div class="register-form-status" id="status-message"></div>
       
       <div style="margin-top:12px;padding:8px;background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3);border-radius:6px;text-align:center;font-size:0.8rem;color:#ffc107;">
-          ⚠️ برای ثبت‌نام نیاز به موجودی کافی IAM و MATIC دارید
+          ⚠️ You need sufficient IAM and MATIC balance for registration
       </div>
     </form>
   </main>
@@ -264,45 +264,45 @@
   <script>
     let selectedAvatar = 'man';
     let isConnected = false;
-    // تعریف متغیرهای ورودی قبل از هر استفاده
+    // Define input variables before each use
     const indexInput = document.getElementById('index-search');
     const refInput = document.getElementById('referrer-address');
      const newUserInput = document.getElementById('new-user-address');
     const defaultGuide = '';
     
-                                                // تابع بررسی اینکه آیا ایندکس هدف در زیرمجموعه کاربر جاری قرار دارد
+                                                // Function to check if target index is in current user's subtree
           function isIndexInUserSubtree(targetIndex, currentUserIndex) {
-            console.log(`🔍 بررسی: ایندکس هدف=${targetIndex}, کاربر جاری=${currentUserIndex}`);
+            console.log(`🔍 Checking: target index=${targetIndex}, current user=${currentUserIndex}`);
             
             if (targetIndex === currentUserIndex) {
-              console.log(`❌ خودش نمی‌تواند زیرمجموعه خودش باشد`);
+              console.log(`❌ Cannot be subordinate of itself`);
               return false;
             }
             
-            // بررسی اینکه آیا ایندکس هدف در زیرمجموعه کاربر جاری قرار دارد
+            // Check if target index is in current user's subtree
             let checkIndex = targetIndex;
             while (checkIndex > currentUserIndex) {
               checkIndex = Math.floor(checkIndex / 2);
-              console.log(`🔍 بررسی مسیر: ${checkIndex}`);
+              console.log(`🔍 Checking path: ${checkIndex}`);
               if (checkIndex === currentUserIndex) {
-                console.log(`✅ در زیرمجموعه قرار دارد`);
+                console.log(`✅ In subtree`);
                 return true;
               }
             }
             
-            // بررسی اضافی: اگر ایندکس هدف کمتر از کاربر جاری باشد، در زیرمجموعه نیست
+            // Additional check: if target index is less than current user, not in subtree
             if (targetIndex < currentUserIndex) {
-              console.log(`❌ ایندکس هدف کمتر از کاربر جاری است`);
+              console.log(`❌ Target index is less than current user`);
               return false;
             }
             
-            console.log(`❌ در زیرمجموعه قرار ندارد`);
+            console.log(`❌ Not in subtree`);
             return false;
                     }
       
 
       
-     // انتخاب آواتار
+     // Avatar selection
     document.querySelectorAll('.avatar-choice').forEach(el => {
       el.onclick = function() {
         document.querySelectorAll('.avatar-choice').forEach(e2 => e2.classList.remove('selected'));
@@ -311,12 +311,12 @@
       };
     });
 
-            // مقداردهی اولیه اطلاعات
+            // Initial information loading
     async function loadRegisterInfo() {
       const status = document.getElementById('status-message');
       const connStatus = document.getElementById('connection-status');
       status.textContent = '';
-      connStatus.textContent = 'در حال اتصال به کیف پول...';
+      connStatus.textContent = 'Connecting to wallet...';
       isConnected = false;
       let myAddress = null;
       let contract = null;
@@ -325,14 +325,14 @@
                  connection = await window.connectWallet();
          contract = connection.contract;
          myAddress = connection.address;
-         window.currentUserAddress = myAddress; // ذخیره آدرس برای استفاده در توابع دیگر
+         window.currentUserAddress = myAddress; // Save address for use in other functions
          isConnected = true;
         connStatus.textContent = '';
         document.getElementById('register-info').style.display = '';
         document.getElementById('register-btn').disabled = false;
         document.querySelectorAll('input').forEach(i=>i.disabled=false);
         
-        // بررسی وضعیت کاربر
+        // Check user status
         const refInput = document.getElementById('referrer-address');
         const indexInput = document.getElementById('index-search');
         const newUserInput = document.getElementById('new-user-address');
@@ -341,37 +341,37 @@
         
         try {
           user = await contract.users(myAddress);
-          console.log(`🔍 وضعیت کاربر:`, user);
+          console.log(`🔍 User status:`, user);
           
           if (user && user.index && BigInt(user.index) > 0n) {
-            // کاربر ثبت‌نام شده است - فقط می‌تواند زیرمجموعه ثبت‌نام کند
-            console.log(`✅ کاربر فعال است: ایندکس=${user.index}`);
+            // User is registered - can only register subordinates
+            console.log(`✅ User is active: index=${user.index}`);
             
-            // معرف به‌صورت پیش‌فرض: آدرس کاربر فعلی
+            // Referrer by default: current user address
             refInput.value = myAddress;
-            refInput.readOnly = true; // غیرفعال کردن تغییر معرف
+            refInput.readOnly = true; // Disable referrer editing
             
-            // آدرس کاربر جدید: قابل ویرایش برای زیرمجموعه
+            // New user address: editable for subordinate
             newUserInput.value = '';
-            newUserInput.readOnly = false; // فعال کردن تغییر آدرس کاربر
-            newUserInput.placeholder = 'آدرس کیف پول زیرمجموعه را وارد کنید یا کلیک کنید';
+            newUserInput.readOnly = false; // Enable user address editing
+            newUserInput.placeholder = 'Enter subordinate wallet address or click';
             
-            // نمایش پیام راهنما
+            // Show guide message
             const suggestionDiv = document.getElementById('register-suggestion');
             suggestionDiv.style.display = '';
             suggestionDiv.innerHTML = `
               <div style="background: rgba(167,134,255,0.1); border: 1px solid rgba(167,134,255,0.3); border-radius: 8px; padding: 12px; margin: 10px 0;">
-                <strong style="color: #a786ff;">👥 ثبت‌نام زیرمجموعه:</strong><br>
-                • معرف: <span style="color: #a786ff;">${myAddress}</span> (شما)<br>
-                • آدرس کاربر جدید را وارد کنید یا روی فیلد کلیک کنید تا از کلیپبورد خوانده شود<br>
-                • فقط می‌توانید برای زیرمجموعه‌های خود ثبت‌نام کنید
+                <strong style="color: #a786ff;">👥 Subordinate Registration:</strong><br>
+                • Referrer: <span style="color: #a786ff;">${myAddress}</span> (You)<br>
+                • Enter new user address or click field to read from clipboard<br>
+                • You can only register your subordinates
               </div>
             `;
             
-            // مقداردهی parent-index
+            // Set parent-index
             parentIndex = user.index.toString();
             
-            // مقداردهی پیش‌فرض فیلد ایندکس
+            // Set default index field value
             let IAMId = 'IAM' + user.index.toString().padStart(5, '0');
             indexInput.value = IAMId;
             indexInput.style.background = '';
@@ -379,42 +379,42 @@
             indexInput.style.opacity = '';
             
           } else {
-            // کاربر ثبت‌نام نشده است - حالت خودکار
-            console.log(`⚠️ کاربر ثبت‌نام نشده است - حالت خودکار`);
+            // User is not registered - automatic mode
+            console.log(`⚠️ User not registered - automatic mode`);
             
-                         // معرف به‌صورت پیش‌فرض: آدرس خالی (کاربر باید دستی وارد کند)
+                         // Referrer by default: empty address (user must enter manually)
             refInput.value = '';
-            refInput.readOnly = false; // فعال کردن تغییر معرف
+            refInput.readOnly = false; // Enable referrer editing
             
-            // آدرس کاربر جدید: کیف پول متصل
+            // New user address: connected wallet
             newUserInput.value = myAddress;
-            newUserInput.readOnly = true; // غیرفعال کردن تغییر آدرس کاربر
+            newUserInput.readOnly = true; // Disable user address editing
             
-            // نمایش پیام راهنما
+            // Show guide message
             const suggestionDiv = document.getElementById('register-suggestion');
             suggestionDiv.style.display = '';
             suggestionDiv.innerHTML = `
               <div style="background: rgba(255,193,7,0.1); border: 1px solid rgba(255,193,7,0.3); border-radius: 8px; padding: 12px; margin: 10px 0;">
-                <strong style="color: #ffc107;">📝 ثبت‌نام دستی:</strong><br>
-                • لطفاً ایندکس معرف را وارد کنید<br>
-                • آدرس معرف به‌طور خودکار تنظیم می‌شود<br>
-                • کاربر جدید: <span style="color: #a786ff;">${myAddress}</span><br>
-                • پس از وارد کردن ایندکس، روی دکمه "ثبت‌نام" کلیک کنید
+                <strong style="color: #ffc107;">📝 Manual Registration:</strong><br>
+                • Please enter referrer index<br>
+                • Referrer address will be set automatically<br>
+                • New user: <span style="color: #a786ff;">${myAddress}</span><br>
+                • After entering index, click "Register" button
               </div>
             `;
             
-            // مقداردهی parent-index
-            parentIndex = '...'; // کاربر باید دستی وارد کند
+            // Set parent-index
+            parentIndex = '...'; // User must enter manually
             
-            // مقداردهی پیش‌فرض فیلد ایندکس
+            // Set default index field value
             indexInput.value = '';
             indexInput.style.background = '';
             indexInput.style.color = '';
             indexInput.style.opacity = '';
           }
                  } catch (e) {
-           console.log(`خطا در بررسی وضعیت کاربر:`, e);
-           // اگر خطا داشتیم، حالت خالی را اعمال کن
+           console.log(`Error checking user status:`, e);
+           // If error occurred, apply empty state
            refInput.value = '';
            refInput.readOnly = false;
            newUserInput.value = myAddress;
@@ -427,7 +427,7 @@
         
         
         
-                 // مقداردهی empty-index و position-info (پیشنهادی)
+                 // Set empty-index and position-info (suggested)
          let emptyIndex = '...';
          let positionInfo = '...';
          if (parentIndex !== '...') {
@@ -435,28 +435,28 @@
            let right = await contract.getRightAddress(parentIndex);
            if (left === '0x0000000000000000000000000000000000000000') {
              emptyIndex = (BigInt(parentIndex) * 2n).toString();
-             positionInfo = `چپ (Left) - ایندکس ${emptyIndex}`;
+             positionInfo = `Left - Index ${emptyIndex}`;
            } else if (right === '0x0000000000000000000000000000000000000000') {
              emptyIndex = (BigInt(parentIndex) * 2n + 1n).toString();
-             positionInfo = `راست (Right) - ایندکس ${emptyIndex}`;
+             positionInfo = `Right - Index ${emptyIndex}`;
            } else {
-             emptyIndex = 'پر شده';
-             positionInfo = 'هر دو جایگاه پر شده';
+             emptyIndex = 'Full';
+             positionInfo = 'Both positions filled';
            }
          }
          document.getElementById('empty-index').textContent = emptyIndex;
          document.getElementById('position-info').textContent = positionInfo;
-        // هزینه ثبت‌نام
+        // Registration cost
         let regCost = '...';
         if (window.getRegPrice) {
           let cost = await window.getRegPrice(contract);
           if (cost) {
             let costValue = typeof ethers !== 'undefined' ? ethers.formatEther(cost) : (Number(cost)/1e18);
-            regCost = Math.round(parseFloat(costValue)).toString(); // حذف اعشار و گرد کردن
+            regCost = Math.round(parseFloat(costValue)).toString(); // Remove decimals and round
           }
         }
         document.getElementById('register-cost').textContent = regCost + ' IAM';
-        // موجودی متیک
+        // MATIC balance
         let maticBalance = '...';
         if (isConnected && contract && myAddress) {
           try {
@@ -467,19 +467,19 @@
           }
         }
         document.getElementById('matic-balance').textContent = maticBalance;
-        // موجودی IAM
+        // IAM balance
         let IAMBalance = '...';
         if (isConnected && contract && myAddress && typeof contract.balanceOf === 'function') {
           try {
             let IAM = await contract.balanceOf(myAddress);
             IAMBalance = IAM ? (typeof ethers !== 'undefined' ? Number(ethers.formatEther(IAM)).toFixed(2) : (Number(IAM)/1e18).toFixed(2)) : '0.00';
             
-            // بررسی کفایت موجودی IAM برای ثبت‌نام
+            // Check IAM balance sufficiency for registration
             const IAMBalanceElement = document.getElementById('IAM-balance');
             const registerCostElement = document.getElementById('register-cost');
             try {
-              // دریافت هزینه ثبت‌نام
-              let requiredIAM = 0; // مقدار مورد نیاز IAM
+              // Get registration cost
+              let requiredIAM = 0; // Required IAM amount
               if (window.getRegPrice && contract) {
                 let cost = await window.getRegPrice(contract);
                 if (cost) {
@@ -488,16 +488,16 @@
                 }
               }
               
-              // رنگ موجودی و هزینه بر اساس کفایت موجودی IAM
+              // Color balance and cost based on IAM balance sufficiency
               if (parseFloat(IAMBalance) >= requiredIAM) {
-                IAMBalanceElement.style.color = '#00ff88'; // سبز: کافی است
+                IAMBalanceElement.style.color = '#00ff88'; // Green: sufficient
                 if (registerCostElement) registerCostElement.style.color = '#00ff88';
               } else {
-                IAMBalanceElement.style.color = '#ff453a'; // قرمز: کافی نیست  
+                IAMBalanceElement.style.color = '#ff453a'; // Red: insufficient  
                 if (registerCostElement) registerCostElement.style.color = '#ff453a';
               }
             } catch (e) {
-              console.log('خطا در بررسی کفایت موجودی:', e);
+              console.log('Error checking balance sufficiency:', e);
             }
           } catch (e) {
             IAMBalance = '0.00';
@@ -506,7 +506,7 @@
         document.getElementById('IAM-balance').textContent = IAMBalance;
       } catch (e) {
         isConnected = false;
-        showTempMessage('❌ اتصال به کیف پول برقرار نشد: ' + (e.message || e), 'error');
+        showTempMessage('❌ Wallet connection failed: ' + (e.message || e), 'error');
         document.getElementById('register-info').style.display = 'none';
         document.getElementById('register-btn').disabled = true;
         document.querySelectorAll('input').forEach(i=>i.disabled=true);
@@ -514,13 +514,13 @@
     }
          window.addEventListener('DOMContentLoaded', loadRegisterInfo);
      
-     // گوش دادن به تغییرات کیف پول
+     // Listen to wallet changes
      if (window.ethereum) {
        window.ethereum.on('accountsChanged', async function (accounts) {
-         console.log('🔄 کیف پول تغییر کرد:', accounts);
+         console.log('🔄 Wallet changed:', accounts);
          if (accounts.length > 0) {
            window.currentUserAddress = accounts[0];
-           await loadRegisterInfo(); // بارگذاری مجدد اطلاعات
+           await loadRegisterInfo(); // Reload information
          }
        });
      }
@@ -534,7 +534,7 @@
       console.log(`🔍 Manual index application: ${value}`);
       
       if (!value || value === defaultGuide) {
-        alert('لطفاً ایندکس معتبر وارد کنید');
+        alert('Please enter a valid index');
         return;
       }
       
@@ -571,31 +571,31 @@
      
 
      
-                  // تابع بررسی خط رفرال برای ایندکس
+                  // Function to check referral line for index
        async function checkIndexReferralLine() {
          let index = '';
-         // اگر با IAM شروع شده، فقط اعداد را بگیر
+         // If starts with IAM, get only numbers
          if (indexInput.value.startsWith('IAM')) {
            index = indexInput.value.replace('IAM', '').replace(/^0+/, '') || '0';
          } else {
-           // اگر فقط عدد است، مستقیماً استفاده کن
+           // If only number, use directly
            index = indexInput.value.trim();
          }
-         console.log(`🔍 بررسی ایندکس: "${indexInput.value}" -> "${index}"`);
+         console.log(`🔍 Checking index: "${indexInput.value}" -> "${index}"`);
          if (!index) {
-           console.log(`❌ ایندکس خالی است`);
+           console.log(`❌ Index is empty`);
            return;
          }
         
         try {
-          console.log(`🔗 اتصال به قرارداد...`);
+          console.log(`🔗 Connecting to contract...`);
           if (!window.contractConfig || !window.contractConfig.contract) {
-            console.log(`🔗 اتصال مجدد به کیف پول...`);
+            console.log(`🔗 Reconnecting to wallet...`);
             await window.connectWallet();
           }
           const contract = window.contractConfig.contract;
           const status = document.getElementById('status-message');
-          console.log(`🔗 قرارداد آماده:`, contract ? 'بله' : 'خیر');
+          console.log(`🔗 Contract ready:`, contract ? 'Yes' : 'No');
           
           // مرحله 1: بررسی وجود ایندکس در شبکه
           let addr = null;
@@ -616,7 +616,7 @@
             refInput.style.backgroundColor = '#232946';
             refInput.style.color = '#fff';
             status.style.color = '#d32f2f';
-            showTempMessage(`❌ ایندکس ${index} در شبکه وجود ندارد. لطفاً ایندکس معتبر وارد کنید.`, 'error');
+            showTempMessage(`❌ Index ${index} does not exist in network. Please enter a valid index.`, 'error');
             return;
           }
           
@@ -633,7 +633,7 @@
             refInput.style.backgroundColor = '#232946';
             refInput.style.color = '#fff';
             status.style.color = '#d32f2f';
-            showTempMessage(`کاربر در ایندکس ${index} فعال نیست. لطفاً ایندکس کاربر فعال وارد کنید.`, 'error');
+            showTempMessage(`User at index ${index} is not active. Please enter an active user index.`, 'error');
             return;
           }
           } catch (e) {
@@ -653,7 +653,7 @@
           
                      // نمایش پیام موفقیت
            status.style.color = '#388e3c';
-           showTempMessage(`✅ آدرس معرف به‌طور خودکار تنظیم شد: ${addr}`, 'success');
+           showTempMessage(`✅ Referrer address set automatically: ${addr}`, 'success');
            
            // به‌روزرسانی اطلاعات جایگاه جدید
            try {
@@ -664,13 +664,13 @@
              
              if (left === '0x0000000000000000000000000000000000000000') {
                newEmptyIndex = (BigInt(index) * 2n).toString();
-               newPositionInfo = `چپ (Left) - ایندکس ${newEmptyIndex}`;
+               newPositionInfo = `Left - Index ${newEmptyIndex}`;
              } else if (right === '0x0000000000000000000000000000000000000000') {
                newEmptyIndex = (BigInt(index) * 2n + 1n).toString();
-               newPositionInfo = `راست (Right) - ایندکس ${newEmptyIndex}`;
+               newPositionInfo = `Right - Index ${newEmptyIndex}`;
              } else {
-               newEmptyIndex = 'پر شده';
-               newPositionInfo = 'هر دو جایگاه پر شده';
+               newEmptyIndex = 'Full';
+               newPositionInfo = 'Both positions filled';
              }
              
              document.getElementById('empty-index').textContent = newEmptyIndex;
@@ -886,12 +886,12 @@
       const status = document.getElementById('status-message');
       if (!isConnected) {
         status.style.color = '#d32f2f';
-        showTempMessage('لطفاً ابتدا کیف پول خود را متصل کنید.', 'error');
+        showTempMessage('Please connect your wallet first.', 'error');
         return;
       }
       
       status.style.color = '#1976d2';
-              showTempMessage('در حال بررسی اطلاعات و اعتبارسنجی...', 'info');
+              showTempMessage('Checking information and validation...', 'info');
       this.disabled = true;
       
       try {
@@ -899,7 +899,7 @@
           await loadRegisterInfo();
         }
         const contract = window.contractConfig.contract;
-        if (!contract) throw new Error('اتصال به قرارداد برقرار نشد. لطفاً مجدداً تلاش کنید.');
+        if (!contract) throw new Error('Contract connection failed. Please try again.');
         
         let myAddress = null, user = null;
         try {
@@ -941,12 +941,12 @@
             throw new Error('این آدرس قبلاً ثبت‌نام کرده است');
           }
           
-          showTempMessage('در حال ارسال درخواست ثبت‌نام زیرمجموعه به شبکه...', 'info');
+          showTempMessage('Sending subordinate registration request to network...', 'info');
           localStorage.setItem('avatar_' + newUser, selectedAvatar);
           const tx = await contract.registerAndActivate(referrerAddress, newUser);
-          showTempMessage('در حال انتظار برای تأیید تراکنش توسط شبکه...', 'info');
+          showTempMessage('Waiting for transaction confirmation by network...', 'info');
           await tx.wait();
-          showMessageBox('ثبت‌نام زیرمجموعه با موفقیت انجام شد!', 'success');
+          showMessageBox('Subordinate registration completed successfully!', 'success');
           
         } else {
                      // کاربر ثبت‌نام نشده است - حالت دستی
@@ -956,12 +956,12 @@
            }
           const userAddress = myAddress; // کاربر جدید: کیف پول متصل
           
-          showTempMessage('در حال ارسال درخواست ثبت‌نام خودکار به شبکه...', 'info');
+          showTempMessage('Sending automatic registration request to network...', 'info');
           localStorage.setItem('avatar_' + userAddress, selectedAvatar);
           const tx = await contract.registerAndActivate(referrerAddress, userAddress);
-          showTempMessage('در حال انتظار برای تأیید تراکنش توسط شبکه...', 'info');
+          showTempMessage('Waiting for transaction confirmation by network...', 'info');
           await tx.wait();
-          showMessageBox('ثبت‌نام با موفقیت انجام شد! به خانواده IAM خوش آمدید.', 'success');
+          showMessageBox('Registration completed successfully! Welcome to IAM family.', 'success');
         }
         
         setTimeout(loadRegisterInfo, 1500);
@@ -970,24 +970,24 @@
         let errorMsg = e && (e.reason || (e.revert && e.revert.args && e.revert.args[0]) || e.message || e);
         if (typeof errorMsg !== 'string') errorMsg = JSON.stringify(errorMsg);
         if (/already registered|Already registered/i.test(errorMsg)) {
-          showTempMessage('این آدرس قبلاً ثبت‌نام شده است.', 'error');
+          showTempMessage('This address is already registered.', 'error');
         } else if (/not active|inactive|فعال نیست/i.test(errorMsg)) {
-          showTempMessage('معرف انتخابی فعال نیست. لطفاً معرف فعال وارد کنید.', 'error');
+          showTempMessage('Selected referrer is not active. Please enter an active referrer.', 'error');
         } else if (/invalid referrer|referrer/i.test(errorMsg)) {
-          showTempMessage('آدرس معرف معتبر نیست یا وجود ندارد.', 'error');
+          showTempMessage('Referrer address is invalid or does not exist.', 'error');
         } else if (/insufficient|balance|موجودی/i.test(errorMsg)) {
-          showTempMessage('موجودی کیف پول شما برای ثبت‌نام کافی نیست.', 'error');
+          showTempMessage('Your wallet balance is insufficient for registration.', 'error');
         } else if (/user rejected|reject|لغو شد/i.test(errorMsg)) {
-          showTempMessage('فرآیند ثبت‌نام توسط شما لغو شد.', 'error');
+          showTempMessage('Registration process was cancelled by you.', 'error');
         } else if (/execution reverted/i.test(errorMsg)) {
           const match = errorMsg.match(/reverted: "([^"]+)"/);
           if (match && match[1]) {
-            showTempMessage('خطا: ' + match[1], 'error');
+            showTempMessage('Error: ' + match[1], 'error');
           } else {
-            showTempMessage('تراکنش توسط قرارداد لغو شد. لطفاً ورودی‌ها را بررسی کنید.', 'error');
+            showTempMessage('Transaction was cancelled by contract. Please check inputs.', 'error');
           }
         } else {
-          showMessageBox('❌ خطا در ثبت‌نام: ' + (errorMsg.length > 120 ? errorMsg.slice(0,120)+'...' : errorMsg), 'error');
+          showMessageBox('❌ Registration error: ' + (errorMsg.length > 120 ? errorMsg.slice(0,120)+'...' : errorMsg), 'error');
         }
       }
       this.disabled = false;
@@ -1002,7 +1002,7 @@
     });
   </script>
   
-  <!-- Floating Token Growth Card - کارت شناور رشد توکن -->
+  <!-- Floating Token Growth Card -->
   <script src="js/floating-token-card.js"></script>
 </body>
 </html> 

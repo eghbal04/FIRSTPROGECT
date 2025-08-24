@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -281,41 +281,41 @@
 
     async function transferIndexOwnership(newOwner, statusEl, btn) {
       if (!window.contractConfig || !window.contractConfig.contract) {
-        statusEl.textContent = '❌ اتصال کیف پول برقرار نیست.';
+        statusEl.textContent = '❌ Wallet connection not established.';
         return;
       }
       if (!newOwner || !/^0x[a-fA-F0-9]{40}$/.test(newOwner)) {
-        statusEl.textContent = '❌ آدرس مقصد معتبر نیست.';
+        statusEl.textContent = '❌ Destination address is not valid.';
         return;
       }
       btn.disabled = true;
       statusEl.className = 'status loading';
-      statusEl.textContent = '⏳ در حال انتقال مالکیت...';
+      statusEl.textContent = '⏳ Transferring ownership...';
       try {
         const tx = await window.contractConfig.contract.transferIndexOwnership(newOwner);
         statusEl.className = 'status loading';
-        statusEl.textContent = '⏳ در انتظار تایید تراکنش در کیف پول شما...';
+        statusEl.textContent = '⏳ Waiting for transaction confirmation in your wallet...';
         await tx.wait();
         statusEl.className = 'status success';
-        statusEl.textContent = '✅ انتقال مالکیت با موفقیت انجام شد!';
+        statusEl.textContent = '✅ Ownership transfer completed successfully!';
         
-        // بروزرسانی اطلاعات بعد از انتقال موفق
+        // Update information after successful transfer
         setTimeout(autoRefreshBalances, 2000);
       } catch (error) {
         let msg = error && error.message ? error.message : error;
         statusEl.className = 'status error';
         if (error.code === 4001 || msg.includes('user denied')) {
-          msg = '❌ تراکنش توسط کاربر لغو شد.';
+          msg = '❌ Transaction was cancelled by user.';
         } else if (msg.includes('network')) {
-          msg = '❌ خطای شبکه! اتصال اینترنت یا شبکه بلاکچین را بررسی کنید.';
+          msg = '❌ Network error! Check your internet connection or blockchain network.';
         } else if (msg.includes('insufficient funds')) {
-          msg = '❌ موجودی کافی برای پرداخت کارمزد وجود ندارد.';
+          msg = '❌ Insufficient balance to pay transaction fee.';
         } else if (msg.includes('invalid address')) {
-          msg = '❌ آدرس مقصد نامعتبر است.';
+          msg = '❌ Destination address is invalid.';
         } else if (msg.includes('not allowed') || msg.includes('only owner')) {
-          msg = '❌ فقط مالک فعلی می‌تواند انتقال انجام دهد.';
+          msg = '❌ Only the current owner can perform the transfer.';
         } else {
-          msg = '❌ خطا در انتقال مالکیت: ' + msg;
+          msg = '❌ Error in ownership transfer: ' + msg;
         }
         statusEl.textContent = msg;
       } finally {
@@ -323,60 +323,60 @@
       }
     }
     
-    // تابع کپی کردن آدرس
+    // Function to copy address
     async function copyAddressToClipboard() {
       const addressInput = document.getElementById('newOwnerAddress');
       const address = addressInput.value.trim();
       
       if (!address) {
-        // اگر آدرسی وارد نشده، آدرس فعلی کاربر را کپی کن
+        // If no address entered, copy current user address
         if (window.contractConfig && window.contractConfig.address) {
           try {
             await navigator.clipboard.writeText(window.contractConfig.address);
-            showCopyStatus('✅ آدرس فعلی شما کپی شد', 'success');
+            showCopyStatus('✅ Your current address copied', 'success');
           } catch (error) {
-            showCopyStatus('❌ خطا در کپی کردن آدرس', 'error');
+            showCopyStatus('❌ Error copying address', 'error');
           }
         } else {
-          showCopyStatus('❌ آدرس وارد نشده و اتصال کیف پول برقرار نیست', 'error');
+          showCopyStatus('❌ No address entered and wallet connection not established', 'error');
         }
         return;
       }
       
-      // کپی کردن آدرس وارد شده
+      // Copy entered address
       try {
         await navigator.clipboard.writeText(address);
-        showCopyStatus('✅ آدرس کپی شد', 'success');
+        showCopyStatus('✅ Address copied', 'success');
       } catch (error) {
-        showCopyStatus('❌ خطا در کپی کردن آدرس', 'error');
+        showCopyStatus('❌ Error copying address', 'error');
       }
     }
     
-    // تابع چسباندن آدرس از کلیپ‌برد
+    // Function to paste address from clipboard
     async function pasteAddressFromClipboard() {
       try {
         const clipboardText = await navigator.clipboard.readText();
         const addressInput = document.getElementById('newOwnerAddress');
         
-        // بررسی اینکه آیا متن کپی شده آدرس اتریوم معتبر است
+        // Check if copied text is a valid Ethereum address
         if (clipboardText && /^0x[a-fA-F0-9]{40}$/.test(clipboardText.trim())) {
           addressInput.value = clipboardText.trim();
-          showCopyStatus('✅ آدرس از کلیپ‌برد چسبانده شد', 'success');
+          showCopyStatus('✅ Address pasted from clipboard', 'success');
         } else {
-          showCopyStatus('❌ محتوای کلیپ‌برد آدرس اتریوم معتبر نیست', 'error');
+          showCopyStatus('❌ Clipboard content is not a valid Ethereum address', 'error');
         }
       } catch (error) {
-        showCopyStatus('❌ خطا در خواندن از کلیپ‌برد', 'error');
+        showCopyStatus('❌ Error reading from clipboard', 'error');
       }
     }
     
-    // نمایش وضعیت کپی
+    // Display copy status
     function showCopyStatus(message, type) {
       const statusEl = document.getElementById('transferOwnershipStatus');
       statusEl.className = `status ${type}`;
       statusEl.textContent = message;
       
-      // پاک کردن پیام بعد از 3 ثانیه
+      // Clear message after 3 seconds
       setTimeout(() => {
         if (statusEl.textContent === message) {
           statusEl.className = 'status';
@@ -385,59 +385,59 @@
       }, 3000);
     }
     
-    // رویداد کلیک روی دکمه کپی
+    // Click event on copy button
     document.getElementById('copyAddressBtn').addEventListener('click', copyAddressToClipboard);
     
-    // تابع پاک کردن آدرس
+    // Function to clear address
     function clearAddress() {
       const addressInput = document.getElementById('newOwnerAddress');
       addressInput.value = '';
-      showCopyStatus('✅ فیلد آدرس پاک شد', 'success');
+      showCopyStatus('✅ Address field cleared', 'success');
     }
     
-    // تابع پر کردن خودکار آدرس فعلی کاربر
+    // Function to auto-fill current user address
     function fillCurrentUserAddress() {
       if (window.contractConfig && window.contractConfig.address) {
         const addressInput = document.getElementById('newOwnerAddress');
         addressInput.value = window.contractConfig.address;
-        showCopyStatus('✅ آدرس فعلی شما در فیلد قرار گرفت', 'success');
+        showCopyStatus('✅ Your current address placed in field', 'success');
       }
     }
     
-    // رویداد کلیک روی دکمه چسباندن
+    // Click event on paste button
     document.getElementById('pasteAddressBtn').addEventListener('click', pasteAddressFromClipboard);
     
-    // رویداد کلیک روی دکمه پاک کردن
+    // Click event on clear button
     document.getElementById('clearAddressBtn').addEventListener('click', clearAddress);
     
-    // رویداد کلیک روی دکمه پر کردن آدرس فعلی
+    // Click event on fill current address button
     document.getElementById('fillCurrentAddressBtn').addEventListener('click', fillCurrentUserAddress);
     
-    // کلیدهای میانبر
+    // Keyboard shortcuts
     document.addEventListener('keydown', function(e) {
-      // Ctrl+V برای چسباندن
+      // Ctrl+V for paste
       if (e.ctrlKey && e.key === 'v') {
         e.preventDefault();
         pasteAddressFromClipboard();
       }
-      // Ctrl+C برای کپی کردن
+      // Ctrl+C for copy
       if (e.ctrlKey && e.key === 'c') {
         e.preventDefault();
         copyAddressToClipboard();
       }
-      // Ctrl+X برای پاک کردن
+      // Ctrl+X for clear
       if (e.ctrlKey && e.key === 'x') {
         e.preventDefault();
         clearAddress();
       }
-      // Ctrl+F برای پر کردن آدرس فعلی
+      // Ctrl+F for fill current address
       if (e.ctrlKey && e.key === 'f') {
         e.preventDefault();
         fillCurrentUserAddress();
       }
     });
     
-    // اعتبارسنجی زنده آدرس و مدیریت وضعیت دکمه
+    // Live address validation and button state management
     const newOwnerInput = document.getElementById('newOwnerAddress');
     const addressHint = document.getElementById('addressHint');
     const submitBtn = document.getElementById('transferOwnershipBtn');
@@ -451,19 +451,19 @@
         return false;
       }
       if (ok) {
-        addressHint.textContent = '✅ آدرس معتبر است';
+        addressHint.textContent = '✅ Address is valid';
         addressHint.className = 'hint valid';
         submitBtn.disabled = false;
         return true;
       }
-      addressHint.textContent = '❌ آدرس نامعتبر است. فرمت صحیح: 0x... (۴۲ کاراکتر)';
+      addressHint.textContent = '❌ Address is invalid. Correct format: 0x... (42 characters)';
       addressHint.className = 'hint error';
       submitBtn.disabled = true;
       return false;
     }
     newOwnerInput.addEventListener('input', validateAddressInput);
 
-    // مودال تایید
+    // Confirmation modal
     let pendingTargetAddress = null;
     const modal = document.getElementById('confirmModal');
     const confirmAddressText = document.getElementById('confirmAddressText');
@@ -491,7 +491,7 @@
       const entered = (confirmInput.value || '').trim();
       if (!pendingTargetAddress) return;
       if (entered.toLowerCase() !== pendingTargetAddress.toLowerCase()) {
-        confirmHint.textContent = '❌ آدرس وارد شده مطابقت ندارد';
+        confirmHint.textContent = '❌ Entered address does not match';
         confirmHint.className = 'hint error';
         return;
       }
@@ -503,7 +503,7 @@
       pendingTargetAddress = null;
     });
 
-    // ارسال فرم → باز کردن مودال تایید
+    // Form submission → Open confirmation modal
     document.getElementById('transferOwnershipForm').addEventListener('submit', function(e) {
       e.preventDefault();
       const newOwner = newOwnerInput.value.trim();
@@ -511,19 +511,19 @@
       statusEl.className = 'status';
       if (!/^0x[a-fA-F0-9]{40}$/.test(newOwner)) {
         statusEl.className = 'status error';
-        statusEl.textContent = '❌ آدرس مقصد معتبر نیست.';
+        statusEl.textContent = '❌ Destination address is not valid.';
         return;
       }
       openConfirmModal(newOwner);
     });
 
-    // بروزرسانی خودکار هنگام بارگذاری صفحه
+    // Auto update when page loads
     document.addEventListener('DOMContentLoaded', function() {
-      // بررسی وضعیت اتصال کیف پول
+      // Check wallet connection status
       if (window.contractConfig && window.contractConfig.contract) {
         autoRefreshBalances();
       } else {
-        // انتظار برای اتصال کیف پول
+        // Wait for wallet connection
         const checkConnection = setInterval(() => {
           if (window.contractConfig && window.contractConfig.contract) {
             autoRefreshBalances();
@@ -531,17 +531,17 @@
           }
         }, 1000);
         
-        // متوقف کردن بررسی بعد از 10 ثانیه
+        // Stop checking after 10 seconds
         setTimeout(() => clearInterval(checkConnection), 10000);
       }
-      // اعتبارسنجی اولیه
+      // Initial validation
       validateAddressInput();
     });
   </script>
   <script src="js/navbar.js"></script>
   <script src="js/main.js"></script>
   
-  <!-- Floating Token Growth Card - کارت شناور رشد توکن -->
+  <!-- Floating Token Growth Card -->
   <script src="js/floating-token-card.js"></script>
 </body>
 </html> 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>درخت حرفه‌ای شبکه - IAM</title>
+    <title>Professional Network Tree - IAM</title>
     
     <!-- Error handling for extension connections -->
     <script>
@@ -29,7 +29,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
     
-    <!-- بارگذاری ethers.js -->
+    <!-- Load ethers.js -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
     
@@ -396,7 +396,7 @@
             margin-top: 0 !important;
         }
 
-        /* استایل‌های جدید برای نمایش موبایل */
+        /* New styles for mobile display */
         #user-popup {
             position: fixed;
             bottom: 0;
@@ -545,7 +545,7 @@
     </style>
 </head>
 <body>
-    <!-- نوار اطلاعات کاربر حذف شد -->
+    <!-- User info bar removed -->
     
     <div id="main-network" class="page-section expandable-container" style="width:100vw;max-width:none;margin:0;left:0;right:0;padding:0.5rem 0;">
         <div class="expand-header">
@@ -564,7 +564,7 @@
                 <!-- Network Members List -->
                 <div id="network-tree">
                     <div style="color:#00ccff;text-align:center;padding:2rem;">
-                        🔄 در حال بارگذاری درخت شبکه...
+                        🔄 Loading network tree...
                         <br><br>
                         <button onclick="window.initializeNetworkTab()" style="
                             background: linear-gradient(135deg, #00ff88, #00cc66);
@@ -575,7 +575,7 @@
                             font-weight: bold;
                             cursor: pointer;
                             margin-top: 1rem;
-                        ">🔄 بارگذاری مجدد</button>
+                        ">🔄 Reload</button>
                     </div>
                 </div>
                 
@@ -608,13 +608,13 @@
                         } else if (typeof window.renderSimpleBinaryTree === 'function') {
                             await window.renderSimpleBinaryTree();
                         } else {
-                            // نمایش پیام خطا به کاربر
+                            // Show error message to user
                             const container = document.getElementById('network-tree');
                             if (container) {
                                 container.innerHTML = `
                                     <div style="color:#ff4444;text-align:center;padding:2rem;">
-                                        ❌ خطا در بارگذاری درخت شبکه<br>
-                                        <small style="color:#ccc;">توابع مورد نیاز در دسترس نیستند</small>
+                                        ❌ Error loading network tree<br>
+                                        <small style="color:#ccc;">Required functions are not available</small>
                                     </div>
                                 `;
                             }
@@ -631,7 +631,7 @@
         });
     </script>
     
-    <!-- Floating Token Growth Card - کارت شناور رشد توکن -->
+    <!-- Floating Token Growth Card -->
     <script src="js/floating-token-card.js"></script>
 </body>
 </html> 

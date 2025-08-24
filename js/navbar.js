@@ -617,6 +617,9 @@
         <a href="professional-tree.html" class="IAM-navbar-link" id="navbar-network-link-mobile">
           <span class="link-icon">🌐</span>Network
         </a>
+        <a href="register.html" class="IAM-navbar-link">
+          <span class="link-icon">📝</span>Register
+        </a>
 
       </div>
       <div class="IAM-navbar-mobile-section">

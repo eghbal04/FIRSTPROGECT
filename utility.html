@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,16 +9,16 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/hamburger-menu.css">
   
-  <!-- بارگذاری ethers.js نسخه 6 از CDN -->
+  <!-- Load ethers.js version 6 from CDN -->
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
-  <!-- بارگذاری WalletConnect Provider از CDN رسمی -->
+  <!-- Load WalletConnect Provider from official CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
-  <!-- بارگذاری WalletConnect Handler -->
+  <!-- Load WalletConnect Handler -->
   <script src="js/walletconnect-handler.js?v=5.7"></script>
-  <!-- بارگذاری WalletConnect UMD به صورت لوکال -->
+  <!-- Load WalletConnect UMD locally -->
   <script src="js/walletconnect-v1.8.0.js"></script>
   
-  <!-- اسکریپت‌های اصلی برای اتصال کیف پول -->
+  <!-- Main scripts for wallet connection -->
   <script src="js/config.js"></script>
   <script src="js/web3-interactions.js"></script>
   <script src="js/main.js"></script>
@@ -115,13 +115,13 @@
       padding: 0.5rem 0;
       color: #cbd5e0;
       position: relative;
-      padding-right: 1.5rem;
+      padding-left: 1.5rem;
     }
     
     .utility-features li::before {
       content: '✓';
       position: absolute;
-      right: 0;
+      left: 0;
       color: #00ff88;
       font-weight: bold;
     }
@@ -289,19 +289,19 @@
        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
          <div style="display: flex; align-items: center; padding: 0.5rem; background: rgba(0,255,136,0.1); border-radius: 8px;">
            <span class="status-indicator status-online"></span>
-           <span style="margin-right: 0.5rem;">Main Server</span>
+           <span style="margin-left: 0.5rem;">Main Server</span>
          </div>
          <div style="display: flex; align-items: center; padding: 0.5rem; background: rgba(0,255,136,0.1); border-radius: 8px;">
            <span class="status-indicator status-online"></span>
-           <span style="margin-right: 0.5rem;">Blockchain</span>
+           <span style="margin-left: 0.5rem;">Blockchain</span>
          </div>
          <div style="display: flex; align-items: center; padding: 0.5rem; background: rgba(0,255,136,0.1); border-radius: 8px;">
            <span class="status-indicator status-online"></span>
-           <span style="margin-right: 0.5rem;">Database</span>
+           <span style="margin-left: 0.5rem;">Database</span>
          </div>
          <div style="display: flex; align-items: center; padding: 0.5rem; background: rgba(0,255,136,0.1); border-radius: 8px;">
            <span class="status-indicator status-online"></span>
-           <span style="margin-right: 0.5rem;">API</span>
+           <span style="margin-left: 0.5rem;">API</span>
          </div>
        </div>
        <div style="text-align: center; margin-top: 1rem; color: #a0aec0; font-size: 0.9rem;">
@@ -507,10 +507,10 @@
      });
   </script>
   
-  <!-- بارگذاری ناوبار -->
+  <!-- Load navbar -->
   <script src="js/navbar.js"></script>
   
-  <!-- Floating Token Growth Card - کارت شناور رشد توکن -->
+  <!-- Floating Token Growth Card -->
   <script src="js/floating-token-card.js"></script>
 </body>
 </html> 

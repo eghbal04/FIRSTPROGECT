@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>گزارشات فعالیت</title>
+    <title>Activity Reports</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap');
         body {
@@ -11,7 +11,7 @@
             background: linear-gradient(135deg, #232946 0%, #181c2a 100%);
             margin: 0;
             padding: 0;
-            direction: rtl;
+            direction: ltr;
             color: #e0e6f7;
         }
         .container {
@@ -37,7 +37,7 @@
             padding: 14px 0;
             font-size: 1.13em;
             border-bottom: 1px solid #2d3250;
-            text-align: right;
+            text-align: left;
             line-height: 2.1;
             color: #e0e6f7;
             word-break: break-word;
@@ -45,8 +45,8 @@
         .report-time {
             color: #a786ff;
             font-size: 0.98em;
-            margin-right: 8px;
-            margin-left: 0;
+            margin-left: 8px;
+            margin-right: 0;
             display: inline-block;
         }
         .wallet-address {
@@ -80,7 +80,7 @@
             border-top: 1px solid #2d3250;
             margin: 0;
         }
-        /* کنترل‌ها */
+        /* Controls */
         #event-type-select, #report-search, #time-range-select {
             background: #181c2a;
             color: #e0e6f7;
@@ -118,7 +118,7 @@
             padding: 8px 12px 2px 12px;
             overflow-x: auto;
         }
-        /* موبایل */
+        /* Mobile */
         @media (max-width: 700px) {
             .container { max-width: 99vw; padding: 10px 2vw; }
             h1 { font-size: 1.2em; }
@@ -144,41 +144,41 @@
 <body>
     <script src="js/navbar.js"></script>
     <div class="container">
-        <h1>گزارشات فعالیت شما</h1>
+        <h1>Your Activity Reports</h1>
         <div id="reports-progress" style="display:none;height:6px;background:rgba(255,255,255,0.12);border-radius:999px;overflow:hidden;margin:-8px 0 16px 0;">
           <div id="reports-progress-inner" style="height:100%;width:0%;background:linear-gradient(90deg,#00ff88,#a786ff);box-shadow:0 0 12px rgba(0,255,136,0.35) inset;transition:width 300ms ease;"></div>
         </div>
         <div class="controls-row">
             <select id="time-range-select">
-                <option value="week">هفته اخیر</option>
-                <option value="month">ماه اخیر</option>
-                <option value="year">سال اخیر</option>
+                <option value="week">Last Week</option>
+                <option value="month">Last Month</option>
+                <option value="year">Last Year</option>
             </select>
             
-            <input id="report-search" type="text" placeholder="جستجو در رویدادها..." />
+            <input id="report-search" type="text" placeholder="Search events..." />
             
             <select id="event-type-select">
-                <option value="all">همه دسته‌ها</option>
-                <option value="registration">ثبت‌نام و فعال‌سازی</option>
-                <option value="referral_registration">معرفی و ثبت‌نام</option>
-                <option value="purchase">خرید اضافی</option>
-                <option value="tokensbought">خرید توکن (DAI→IAM)</option>
-                <option value="tokenssold">فروش توکن (IAM→DAI)</option>
-                <option value="reward_transfer">دریافت از قرارداد</option>
-                <option value="payment_transfer">پرداخت به قرارداد</option>
-                <option value="incoming_transfer">انتقال IAM ورودی</option>
-                <option value="outgoing_transfer">انتقال IAM خروجی</option>
-                <option value="dai_incoming_transfer">انتقال DAI ورودی</option>
-                <option value="dai_outgoing_transfer">انتقال DAI خروجی</option>
-                <option value="dai_approval">تأییدیه DAI</option>
-                <option value="binarypoints">امتیاز باینری</option>
-                <option value="binaryreward">پاداش باینری</option>
-                <option value="tree">ساختار شبکه</option>
-                <option value="indextransfer">انتقال ایندکس</option>
-                <option value="monthlyreward">پاداش ماهانه</option>
-                <option value="approval">تأییدیه انتقال</option>
-                <option value="binarypool">استخر باینری</option>
-                <option value="monthlyfail">خطاهای پاداش</option>
+                <option value="all">All Categories</option>
+                <option value="registration">Registration & Activation</option>
+                <option value="referral_registration">Referral & Registration</option>
+                <option value="purchase">Additional Purchase</option>
+                <option value="tokensbought">Token Purchase (DAI→IAM)</option>
+                <option value="tokenssold">Token Sale (IAM→DAI)</option>
+                <option value="reward_transfer">Receive from Contract</option>
+                <option value="payment_transfer">Payment to Contract</option>
+                <option value="incoming_transfer">Incoming IAM Transfer</option>
+                <option value="outgoing_transfer">Outgoing IAM Transfer</option>
+                <option value="dai_incoming_transfer">Incoming DAI Transfer</option>
+                <option value="dai_outgoing_transfer">Outgoing DAI Transfer</option>
+                <option value="dai_approval">DAI Approval</option>
+                <option value="binarypoints">Binary Points</option>
+                <option value="binaryreward">Binary Reward</option>
+                <option value="tree">Network Structure</option>
+                <option value="indextransfer">Index Transfer</option>
+                <option value="monthlyreward">Monthly Reward</option>
+                <option value="approval">Transfer Approval</option>
+                <option value="binarypool">Binary Pool</option>
+                <option value="monthlyfail">Reward Errors</option>
             </select>
         </div>
         <div id="reports-list"></div>
@@ -188,42 +188,42 @@
     <script src="js/web3-interactions.js"></script>
     <script src="js/reports.js"></script>
     <script>
-        // --- رفع خطا: تعریف توابع کمکی برای نمایش دسته و توضیح ایونت ---
+        // --- Fix: Define helper functions for displaying category and event description ---
         window.getEventTypeLabel = function(type) {
             const labels = {
-                registration: '🎯 ثبت‌نام و فعال‌سازی',
-                referral_registration: '👥 معرفی و ثبت‌نام',
-                purchase: '🛒 خرید اضافی', 
-                tokensbought: '💰 خرید توکن (DAI→IAM)', 
-                tokenssold: '💸 فروش توکن (IAM→DAI)',
-                reward_transfer: '🎁 دریافت از قرارداد',
-                payment_transfer: '💳 پرداخت به قرارداد',
-                incoming_transfer: '📥 انتقال IAM ورودی',
-                outgoing_transfer: '📤 انتقال IAM خروجی',
-                dai_incoming_transfer: '💵📥 انتقال DAI ورودی',
-                dai_outgoing_transfer: '💵📤 انتقال DAI خروجی',
-                dai_approval: '💵✅ تأییدیه DAI',
-                binarypoints: '⭐ امتیاز باینری', 
-                binaryreward: '🏆 پاداش باینری', 
-                tree: '🌳 ساختار شبکه',
-                indextransfer: '🔄 انتقال ایندکس', 
-                monthlyreward: '📅 پاداش ماهانه',
-                approval: '✅ تأییدیه انتقال',
-                binarypool: '🏊 استخر باینری',
-                monthlyfail: '❌ خطاهای پاداش'
+                registration: '🎯 Registration & Activation',
+                referral_registration: '👥 Referral & Registration',
+                purchase: '🛒 Additional Purchase', 
+                tokensbought: '💰 Token Purchase (DAI→IAM)', 
+                tokenssold: '💸 Token Sale (IAM→DAI)',
+                reward_transfer: '🎁 Receive from Contract',
+                payment_transfer: '💳 Payment to Contract',
+                incoming_transfer: '📥 Incoming IAM Transfer',
+                outgoing_transfer: '📤 Outgoing IAM Transfer',
+                dai_incoming_transfer: '💵📥 Incoming DAI Transfer',
+                dai_outgoing_transfer: '💵📤 Outgoing DAI Transfer',
+                dai_approval: '💵✅ DAI Approval',
+                binarypoints: '⭐ Binary Points', 
+                binaryreward: '🏆 Binary Reward', 
+                tree: '🌳 Network Structure',
+                indextransfer: '🔄 Index Transfer', 
+                monthlyreward: '📅 Monthly Reward',
+                approval: '✅ Transfer Approval',
+                binarypool: '🏊 Binary Pool',
+                monthlyfail: '❌ Reward Errors'
             };
             return labels[type] || type;
         };
         window.getEventDescription = function(type, details) {
-            // اگر details رشته است، همان را برگردان
+            // If details is a string, return it as is
             if (typeof details === 'string') return details;
-            // اگر details شیء است، مقادیر مهم را نمایش بده
+            // If details is an object, display important values
             if (typeof details === 'object' && details !== null) {
                 return Object.values(details).join(' | ');
             }
             return '';
         };
-        // تلاش برای بارگذاری گزارشات هنگام لود صفحه
+        // Try to load reports when page loads
         // Progress helpers
         function showReportsProgress(){ const b=document.getElementById('reports-progress'); if(b) b.style.display='block'; }
         function setReportsProgress(p){ const i=document.getElementById('reports-progress-inner'); if(i) i.style.width=Math.max(0,Math.min(100,p))+'%'; }
@@ -232,8 +232,8 @@
         async function tryLoadReports() {
             if (window.loadReports) window.loadReports();
         }
-        // دسته‌بندی: دکمه حذف شده است؛ فقط از select استفاده می‌شود
-        // تابع فیلتر تاریخ روی گزارشات
+        // Categorization: Button removed; only select is used
+        // Date filter function on reports
         let allReportsCache = [];
         function filterReportsByDate(reports, from, to) {
             if (!from && !to) return reports;
@@ -241,11 +241,11 @@
             const toTime = to ? new Date(to).getTime() + 24*3600*1000 : Infinity;
             return reports.filter(r => r.timestamp >= fromTime && r.timestamp < toTime);
         }
-        // لود خودکار بعد از آماده شدن
+        // Auto load after ready
         window.addEventListener('DOMContentLoaded', function() {
             tryLoadReports();
             
-            // اضافه کردن event listener برای تغییر بازه زمانی
+            // Add event listener for time range change
             const timeRangeSelect = document.getElementById('time-range-select');
             if (timeRangeSelect) {
                 timeRangeSelect.addEventListener('change', function() {
@@ -258,10 +258,10 @@
             const reportsContainer = document.getElementById('reports-list');
             showReportsProgress(); setReportsProgress(10);
             
-            // پاک کردن کانتینر و آماده کردن برای تایپ فوری
+            // Clear container and prepare for instant typing
             reportsContainer.innerHTML = '';
             
-            // اضافه کردن توابع مورد نیاز به window
+            // Add required functions to window
             window.typeSentence = typeSentence;
             
             try {
@@ -271,21 +271,21 @@
                 if (!reports || reports.length === 0) {
                     const timeRange = document.getElementById('time-range-select')?.value || 'week';
                     const rangeText = {
-                        'week': 'هفته اخیر',
-                        'month': 'ماه اخیر', 
-                        'year': 'سال اخیر'
-                    }[timeRange] || 'بازه انتخابی';
-                    reportsContainer.innerHTML = `<div class="no-reports">هیچ ایونتی در ${rangeText} یافت نشد.</div>`;
+                        'week': 'Last Week',
+                        'month': 'Last Month', 
+                        'year': 'Last Year'
+                    }[timeRange] || 'Selected Range';
+                    reportsContainer.innerHTML = `<div class="no-reports">No events found in ${rangeText}.</div>`;
                     setReportsProgress(100); hideReportsProgress();
                     return;
                 }
                 
-                // اگر قبلاً ایونت‌هایی تایپ شده‌اند، نیازی به رندر مجدد نیست
+                // If events have been typed before, no need to re-render
                 allReportsCache = reports;
                 setReportsProgress(100); hideReportsProgress();
             } catch (error) {
-                console.error('خطا در بارگذاری گزارشات:', error);
-                reportsContainer.innerHTML = '<div class="error-message">خطا در بارگذاری گزارشات. لطفا دوباره تلاش کنید.</div>';
+                console.error('Error loading reports:', error);
+                reportsContainer.innerHTML = '<div class="error-message">Error loading reports. Please try again.</div>';
                 hideReportsProgress();
             }
         };
@@ -315,11 +315,11 @@
                 const text = `${r.type} ${r.title || ''} ${JSON.stringify(r.details || '')}`.toLowerCase();
                 return !search || text.includes(search);
             });
-            // مرتب‌سازی زمانی (قدیمی به جدید)
+            // Time sorting (oldest to newest)
             filtered.sort((a,b) => (a.timestamp||0) - (b.timestamp||0));
             reportsContainer.innerHTML = '';
             if (filtered.length === 0) {
-                reportsContainer.innerHTML = '<div class="no-reports">گزارشی پیدا نشد.</div>';
+                reportsContainer.innerHTML = '<div class="no-reports">No reports found.</div>';
                 return;
             }
             showReportsProgress(); setReportsProgress(75);
@@ -330,23 +330,23 @@
                 const sentenceDiv = document.createElement('div');
                 sentenceDiv.classList.add('report-sentence');
                 reportsContainer.appendChild(sentenceDiv);
-                // پیش‌نمایش سریع برای شروع تایپ فوری
+                // Quick preview for instant typing start
                 const label = (window.getEventTypeLabel ? window.getEventTypeLabel(report.type) : report.type) || '';
                 const preview = `${label} ...`;
                 await typeSentence(sentenceDiv, preview, 6);
 
-                // همزمان متن کامل را بگیر و وقتی آماده شد، بدون بلاک کردن ادامه، جایگزین کن
+                // Simultaneously get full text and when ready, replace without blocking continuation
                 if (window.getReportSentence) {
                     window.getReportSentence(report).then(full => {
-                        // اگر در میانه رندر جدید نیستیم و این آیتم هنوز وجود دارد
+                        // If not in middle of new render and this item still exists
                         if (sentenceDiv && sentenceDiv.isConnected && myToken === _renderToken) {
                             sentenceDiv.textContent = '';
-                            // تایپ نهایی سریع‌تر
+                            // Faster final typing
                             typeSentence(sentenceDiv, full || preview, 6);
                         }
                     }).catch(()=>{});
                 } else if (report.title) {
-                    // جایگزینی سریع عنوان در صورت نبود تابع جزئیات
+                    // Quick title replacement if no details function
                     const finalText = report.title;
                     sentenceDiv.textContent = '';
                     await typeSentence(sentenceDiv, finalText, 6);
@@ -354,13 +354,13 @@
                 setReportsProgress(75 + Math.floor(25 * ((idx + 1) / total)));
             }
             hideReportsProgress();
-            // جستجو و دسته‌بندی زنده
+            // Live search and categorization
             document.getElementById('report-search').oninput = renderFilteredReports;
             document.getElementById('event-type-select').onchange = renderFilteredReports;
         }
     </script>
     
-    <!-- Floating Token Growth Card - کارت شناور رشد توکن -->
+    <!-- Floating Token Growth Card -->
     <script src="js/floating-token-card.js"></script>
 </body>
 </html>

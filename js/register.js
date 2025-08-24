@@ -1,4 +1,4 @@
-// register.js - مدیریت بخش ثبت‌نام و ارتقا
+// register.js - Registration and upgrade management
 let isRegisterLoading = false;
 let registerDataLoaded = false;
 let registerTabSelected = false;
@@ -7,19 +7,19 @@ document.addEventListener('DOMContentLoaded', function() {
     // Register section loaded, waiting for wallet connection...
 });
 
-// تابع دریافت و نمایش مقدار توکن مورد نیاز برای ثبت‌نام
+// Function to get and display the required token amount for registration
 window.updateRegisterRequiredAmount = function() {
     const el = document.getElementById('register-required-usdc') || document.getElementById('register-IAM-required');
     if (el) el.innerText = '100 IAM';
 };
 
-// تابع بارگذاری اطلاعات ثبت‌نام
+// Function to load registration data
 async function loadRegisterData(contract, address, tokenPriceUSDFormatted) {
     if (isRegisterLoading || registerDataLoaded) {
         return;
     }
     
-    // فقط اگر تب register انتخاب شده باشد
+    // Only if register tab is selected
     if (!registerTabSelected) {
         return;
     }
@@ -28,23 +28,23 @@ async function loadRegisterData(contract, address, tokenPriceUSDFormatted) {
     
     try {
         
-        // بررسی اتصال کیف پول
+        // Check wallet connection
         if (!window.contractConfig || !window.contractConfig.contract) {
             return;
         }
         
         const { contract, address } = window.contractConfig;
         
-        // دریافت اطلاعات کاربر
+        // Get user data
         const userData = await contract.users(address);
         
-        // تغییر به USDC:
+        // Change to USDC:
         const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, signer);
         const usdcBalance = await usdcContract.balanceOf(address);
         const usdcDecimals = await usdcContract.decimals();
         const usdcBalanceFormatted = ethers.formatUnits(usdcBalance, usdcDecimals);
         
-        // دریافت قیمت‌ها و اطلاعات ثبت‌نام
+        // Get prices and registration information
         // Try to get registration price from contract, fallback to hardcoded value
         let regprice;
         try {
@@ -57,158 +57,145 @@ async function loadRegisterData(contract, address, tokenPriceUSDFormatted) {
             regprice = ethers.parseUnits('100', 18);
         }
         
-        const tokenPriceMatic = await contract.getTokenPrice(); // قیمت توکن بر حسب MATIC
+        const tokenPriceMatic = await contract.getTokenPrice(); // Token price in MATIC
         const tokenPriceFormatted = ethers.formatUnits(tokenPriceMatic, 18);
-        // قیمت IAM/USDC (مستقیماً از قرارداد)
+        // IAM/USDC price (directly from contract)
         const tokenPriceUSDFormatted = tokenPriceFormatted;
-        const regpriceFormatted = ethers.formatUnits(regprice, 18); // مقدار توکن مورد نیاز
-        const regpriceUSD = ethers.formatUnits(regprice, 8); // مقدار دلاری
-        // محاسبه مقدار توکن برای مقادیر مختلف (USDC همیشه 1 دلار است)
+        const regpriceFormatted = ethers.formatUnits(regprice, 18); // Required token amount
+        const regpriceUSD = ethers.formatUnits(regprice, 8); // Dollar amount
+        // Calculate token amount for different values (USDC is always $1)
         const oneCentTokens = 0.01 / parseFloat(tokenPriceFormatted);
         const oneCentTokensFormatted = oneCentTokens.toFixed(6);
         const tenCentsInTokens = 0.1 / parseFloat(tokenPriceFormatted);
         const tenCentsInTokensFormatted = tenCentsInTokens.toFixed(6);
         const twelveCentsInTokens = 0.12 / parseFloat(tokenPriceFormatted);
         const twelveCentsInTokensFormatted = twelveCentsInTokens.toFixed(6);
-        // محاسبه ارزش دلاری موجودی
+        // Calculate dollar value of balance
         const IAMBalanceUSD = (parseFloat(usdcBalanceFormatted) * parseFloat(tokenPriceUSDFormatted)).toFixed(2);
-        // به‌روزرسانی نمایش موجودی‌ها
+        // Update balance display
         await window.displayUserBalances();
-        // بررسی وضعیت ثبت‌نام
+        // Check registration status
         if (userData && userData.index && BigInt(userData.index) > 0n) {
-            // فقط فرم ارتقا را نمایش بده
+            // Only show upgrade form
             const profileContainer = document.querySelector('#main-register .profile-container');
             if (profileContainer) profileContainer.style.display = 'none';
             const upgradeForm = document.getElementById('upgrade-form');
             if (upgradeForm) upgradeForm.style.display = 'block';
-            // غیرفعال کردن input معرف
+            // Disable referrer input
             const refInput = document.getElementById('referrer-address');
             if (refInput) refInput.readOnly = true;
             await loadUpgradeData(contract, address, tokenPriceUSDFormatted);
-            // نمایش دکمه ثبت جدید
+            // Show new register button
             const newRegisterBtn = document.getElementById('new-register-btn');
             if (newRegisterBtn) newRegisterBtn.style.display = '';
         } else {
-            // فقط فرم ثبت‌نام ساده را نمایش بده
+            // Only show simple registration form
             const profileContainer = document.querySelector('#main-register .profile-container');
             if (profileContainer) profileContainer.style.display = '';
             const upgradeForm = document.getElementById('upgrade-form');
             if (upgradeForm) upgradeForm.style.display = 'none';
-            // فعال کردن input معرف
+            // Enable referrer input
             const refInput = document.getElementById('referrer-address');
             if (refInput) refInput.readOnly = false;
-            // مخفی کردن دکمه ثبت جدید
+            // Hide new register button
             const newRegisterBtn = document.getElementById('new-register-btn');
             if (newRegisterBtn) newRegisterBtn.style.display = 'none';
-            await showRegistrationFormForNewUser();
         }
-        registerDataLoaded = true;
         
+        registerDataLoaded = true;
     } catch (error) {
-        showRegisterError("خطا در بارگذاری اطلاعات ثبت‌نام");
+        showRegisterError("Error loading registration data");
     } finally {
         isRegisterLoading = false;
     }
 }
 
-
-
-// تابع تنظیم وضعیت تب register
-function setRegisterTabSelected(selected) {
+// Function to set register tab status
+window.setRegisterTabSelected = function(selected) {
     registerTabSelected = selected;
     if (selected && !registerDataLoaded) {
-        // ریست کردن وضعیت بارگذاری برای بارگذاری مجدد
+        // Reset loading status for reload
         registerDataLoaded = false;
         isRegisterLoading = false;
     }
 }
 
-// Export functions for global use
-window.setRegisterTabSelected = setRegisterTabSelected;
-window.updateRegisterRequiredAmount = function() {
-    const el = document.getElementById('register-required-usdc') || document.getElementById('register-IAM-required');
-    if (el) el.innerText = '100 IAM';
-};
-
-// تابع بارگذاری اطلاعات ارتقا
-async function loadUpgradeData(contract, address, tokenPriceUSD) {
+// Function to load upgrade data
+async function loadUpgradeData(contract, address, tokenPriceUSDFormatted) {
     try {
-        const userData = await contract.users(address);
-        const IAMBalance = await contract.balanceOf(address);
-        const IAMBalanceFormatted = ethers.formatUnits(IAMBalance, 18);
-        
-        // به‌روزرسانی محاسبات ارتقا
-        updateUpgradeCalculations(IAMBalanceFormatted, tokenPriceUSD, userData.binaryPointCap);
-        
+        // Update upgrade calculations
+        await updateUpgradeCalculations();
     } catch (error) {
-        // console.error("Error loading upgrade data:", error);
+        console.error("Error loading upgrade data:", error);
     }
 }
 
-// تابع به‌روزرسانی محاسبات ارتقا
-    function updateUpgradeCalculations(IAMBalance, tokenPriceUSD, currentCap) {
-    const upgradeAmountInput = document.getElementById('upgrade-amount');
-    const usdValueElement = document.getElementById('upgrade-usd-value');
-    const pointsGainElement = document.getElementById('upgrade-points-gain');
-    const upgradeBtn = document.getElementById('upgrade-btn');
-    
-    if (upgradeAmountInput) {
-        upgradeAmountInput.addEventListener('input', function() {
-            const amount = parseFloat(this.value) || 0;
-            const usdValue = (amount * parseFloat(tokenPriceUSD)).toFixed(2);
-            const pointsGain = Math.floor(parseFloat(usdValue) / 50);
-            const newCap = Math.min(100, currentCap + pointsGain);
+// Function to update upgrade calculations
+async function updateUpgradeCalculations() {
+    try {
+        const { contract, address } = window.contractConfig;
+        const userData = await contract.users(address);
+        
+        if (userData && userData.index && BigInt(userData.index) > 0n) {
+            const currentLevel = parseInt(userData.level);
+            const nextLevel = currentLevel + 1;
             
-            if (usdValueElement) {
-                usdValueElement.textContent = `$${usdValue} USD`;
-            }
+            // Get upgrade requirements
+            const upgradeRequirements = await contract.getUpgradeRequirements(nextLevel);
+            const requiredPoints = upgradeRequirements.requiredPoints;
+            const pointsGain = upgradeRequirements.pointsGain;
+            const newCap = upgradeRequirements.newCap;
             
+            // Update display
+            const pointsGainElement = document.getElementById('upgrade-points-gain');
             if (pointsGainElement) {
-                pointsGainElement.textContent = `${pointsGain} امتیاز (سقف جدید: ${newCap})`;
+                pointsGainElement.textContent = `${pointsGain} points (new cap: ${newCap})`;
             }
             
-            if (upgradeBtn) {
-                const userBalanceNum = parseFloat(IAMBalance);
-                upgradeBtn.disabled = amount > userBalanceNum;
+            const requiredPointsElement = document.getElementById('upgrade-required-points');
+            if (requiredPointsElement) {
+                requiredPointsElement.textContent = requiredPoints.toString();
             }
-        });
+        }
+    } catch (error) {
+        console.error("Error updating upgrade calculations:", error);
     }
 }
 
-// تابع راه‌اندازی دکمه ثبت‌نام
-function setupRegistrationButton() {
+// Function to setup registration button
+function setupRegisterButton() {
     const registerBtn = document.getElementById('register-btn');
     const registerStatus = document.getElementById('register-status');
     if (registerBtn) {
         registerBtn.onclick = async () => {
             const oldText = registerBtn.textContent;
             registerBtn.disabled = true;
-            registerBtn.innerHTML = '<span class="spinner" style="display:inline-block;width:18px;height:18px;border:2px solid #fff;border-top:2px solid #00ff88;border-radius:50%;margin-left:8px;vertical-align:middle;animation:spin 0.8s linear infinite;"></span> در حال ثبت‌نام...';
+            registerBtn.innerHTML = '<span class="spinner" style="display:inline-block;width:18px;height:18px;border:2px solid #fff;border-top:2px solid #00ff88;border-radius:50%;margin-left:8px;vertical-align:middle;animation:spin 0.8s linear infinite;"></span> Registering...';
             if (registerStatus) registerStatus.textContent = '';
             try {
                 await performRegistration();
-                if (registerStatus) registerStatus.textContent = '✅ ثبت‌نام با موفقیت انجام شد!';
+                if (registerStatus) registerStatus.textContent = '✅ Registration completed successfully!';
                 registerBtn.style.display = 'none';
             } catch (error) {
                 let msg = error && error.message ? error.message : error;
                 if (error.code === 4001 || msg.includes('user denied')) {
-                    msg = '❌ تراکنش توسط کاربر لغو شد.';
+                    msg = '❌ Transaction cancelled by user.';
                 } else if (error.code === -32002 || msg.includes('Already processing')) {
-                    msg = '⏳ متامسک در حال پردازش درخواست قبلی است. لطفاً چند لحظه صبر کنید.';
+                    msg = '⏳ MetaMask is processing a previous request. Please wait a moment.';
                 } else if (error.code === 'NETWORK_ERROR' || msg.includes('network')) {
-                    msg = '❌ خطای شبکه! اتصال اینترنت یا شبکه بلاکچین را بررسی کنید.';
+                    msg = '❌ Network error! Check your internet or blockchain network connection.';
                 } else if (msg.includes('insufficient funds')) {
-                    msg = 'موجودی کافی برای پرداخت کارمزد یا ثبت‌نام وجود ندارد.';
+                    msg = 'Insufficient balance for transaction fee or registration.';
                 } else if (msg.includes('invalid address')) {
-                    msg = 'آدرس معرف یا مقصد نامعتبر است.';
+                    msg = 'Invalid referrer or destination address.';
                 } else if (msg.includes('not allowed') || msg.includes('only owner')) {
-                    msg = 'شما مجاز به انجام این عملیات نیستید.';
+                    msg = 'You are not authorized to perform this operation.';
                 } else if (msg.includes('already registered') || msg.includes('already exists')) {
-                    msg = 'شما قبلاً ثبت‌نام کرده‌اید یا این آدرس قبلاً ثبت شده است.';
+                    msg = 'You are already registered or this address is already registered.';
                 } else if (msg.includes('execution reverted')) {
-                    msg = 'تراکنش ناموفق بود. شرایط ثبت‌نام را بررسی کنید.';
+                    msg = 'Transaction failed. Check registration conditions.';
                 } else {
-                    msg = '❌ خطا در ثبت‌نام: ' + (msg || 'خطای ناشناخته');
+                    msg = '❌ Registration error: ' + (msg || 'Unknown error');
                 }
                 if (registerStatus) registerStatus.textContent = msg;
             } finally {
@@ -219,7 +206,7 @@ function setupRegistrationButton() {
     }
 }
 
-// تابع راه‌اندازی فرم ارتقا
+// Function to setup upgrade form
 function setupUpgradeForm() {
     const upgradeBtn = document.getElementById('upgrade-btn');
     if (upgradeBtn) {
@@ -228,31 +215,31 @@ function setupUpgradeForm() {
                 await performUpgrade();
             } catch (error) {
                 // console.error("Upgrade error:", error);
-                showRegisterError("خطا در ارتقا");
+                showRegisterError("Error in upgrade");
             }
         };
     }
 }
 
-// تابع انجام ثبت‌نام برای کاربر جدید (کیف پول متصل)
+// Function to perform registration for new user (connected wallet)
 async function performRegistrationForNewUser() {
     try {
         if (!window.contractConfig || !window.contractConfig.contract) {
-            throw new Error('اتصال کیف پول برقرار نیست');
+            throw new Error('Wallet connection not established');
         }
         const { contract, address } = window.contractConfig;
         
-        // معرف به‌صورت پیش‌فرض: از فیلد ورودی دریافت کن
+        // Referrer by default: get from input field
         const referrerInput = document.getElementById('referrer-address');
         const referrerAddress = referrerInput && referrerInput.value ? referrerInput.value.trim() : '';
         if (!referrerAddress) {
-            throw new Error('لطفاً آدرس معرف را وارد کنید');
+            throw new Error('Please enter referrer address');
         }
         
-        // کاربر جدید: کیف پول متصل
+        // New user: connected wallet
         const userAddress = address;
 
-        // منطق approve قبل از ثبت‌نام:
+        // Approve logic before registration:
         const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, window.contractConfig.signer);
         const allowance = await usdcContract.allowance(address, CONTRACT_ADDRESS);
         if (allowance < regprice) {
@@ -262,9 +249,9 @@ async function performRegistrationForNewUser() {
         
         const tx = await contract.registerAndActivate(referrerAddress, userAddress);
         await tx.wait();
-        showRegisterSuccess("ثبت‌نام با موفقیت انجام شد!");
+        showRegisterSuccess("Registration completed successfully!");
         
-        // مخفی کردن دکمه ثبت‌نام اصلی
+        // Hide main registration button
         if (typeof window.hideMainRegistrationButton === 'function') {
             window.hideMainRegistrationButton();
         }
@@ -274,40 +261,40 @@ async function performRegistrationForNewUser() {
             loadRegisterData(contract, address, tokenPriceUSDFormatted);
         }, 2000);
     } catch (error) {
-        showRegisterError(error.message || 'خطا در ثبت‌نام.');
+        showRegisterError(error.message || 'Registration error.');
     }
 }
 
-// تابع انجام ثبت‌نام
+// Function to perform registration
 async function performRegistration() {
     try {
         if (!window.contractConfig || !window.contractConfig.contract) {
-            throw new Error('اتصال کیف پول برقرار نیست');
+            throw new Error('Wallet connection not established');
         }
         const { contract, address } = window.contractConfig;
         
-        // بررسی وضعیت کاربر فعلی
+        // Check current user status
         const currentUserData = await contract.users(address);
         
         if (currentUserData && currentUserData.index && BigInt(currentUserData.index) > 0n) {
-            // کاربر ثبت‌نام شده است - فقط می‌تواند زیرمجموعه ثبت‌نام کند
+            // User is registered - can only register subordinates
             const userAddressInput = document.getElementById('register-user-address') || document.getElementById('new-user-address');
             const userAddress = userAddressInput ? userAddressInput.value.trim() : '';
             
             if (!userAddress || !/^0x[a-fA-F0-9]{40}$/.test(userAddress)) {
-                throw new Error('آدرس کاربر جدید معتبر نیست');
+                throw new Error('New user address is not valid');
             }
             
-            // معرف: آدرس کاربر فعلی
+            // Referrer: current user address
             const referrerAddress = address;
             
-            // بررسی ثبت‌نام نبودن کاربر جدید
+            // Check that new user is not registered
             const newUserData = await contract.users(userAddress);
             if (newUserData && newUserData.index && BigInt(newUserData.index) > 0n) {
-                throw new Error('این آدرس قبلاً ثبت‌نام کرده است');
+                throw new Error('This address is already registered');
             }
             
-            // منطق approve قبل از ثبت‌نام:
+            // Approve logic before registration:
             const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, window.contractConfig.signer);
             const allowance = await usdcContract.allowance(address, CONTRACT_ADDRESS);
             if (allowance < regprice) {
@@ -317,19 +304,19 @@ async function performRegistration() {
             
             const tx = await contract.registerAndActivate(referrerAddress, userAddress);
             await tx.wait();
-            showRegisterSuccess("ثبت‌نام زیرمجموعه با موفقیت انجام شد!");
+            showRegisterSuccess("Subordinate registration completed successfully!");
         } else {
-            // کاربر ثبت‌نام نشده است - حالت دستی
+            // User is not registered - manual mode
             let referrerInput = document.getElementById('referrer-address');
             let referrerAddress = referrerInput && referrerInput.value ? referrerInput.value.trim() : '';
             if (!referrerAddress) {
                 referrerAddress = getReferrerFromURL() || getReferrerFromStorage();
             }
             if (!referrerAddress) {
-                throw new Error('لطفاً آدرس معرف را وارد کنید');
+                throw new Error('Please enter referrer address');
             }
 
-            // منطق approve قبل از ثبت‌نام:
+            // Approve logic before registration:
             const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, window.contractConfig.signer);
             const allowance = await usdcContract.allowance(address, CONTRACT_ADDRESS);
             if (allowance < regprice) {
@@ -338,7 +325,7 @@ async function performRegistration() {
             }
             const tx = await contract.registerAndActivate(referrerAddress, address);
             await tx.wait();
-            showRegisterSuccess("ثبت‌نام با موفقیت انجام شد!");
+            showRegisterSuccess("Registration completed successfully!");
         }
         
         // مخفی کردن دکمه ثبت‌نام اصلی
@@ -351,25 +338,25 @@ async function performRegistration() {
             loadRegisterData(contract, address, tokenPriceUSDFormatted);
         }, 2000);
     } catch (error) {
-        showRegisterError(error.message || 'خطا در ثبت‌نام.');
+        showRegisterError(error.message || 'Registration error.');
     }
 }
 
-// تابع دریافت معرف از URL
+// Function to get referrer from URL
 function getReferrerFromURL() {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get('ref') || urlParams.get('referrer');
 }
 
-// تابع دریافت معرف از localStorage
+// Function to get referrer from localStorage
 function getReferrerFromStorage() {
     return localStorage.getItem('referrer') || localStorage.getItem('ref');
 }
 
-// تابع انجام ارتقا
+// Function to perform upgrade
 async function performUpgrade() {
     try {
-        // استفاده از اتصال موجود به جای فراخوانی connectWallet
+        // Use existing connection instead of calling connectWallet
         if (!window.contractConfig || !window.contractConfig.contract) {
             throw new Error('No wallet connection');
         }
@@ -383,19 +370,19 @@ async function performUpgrade() {
             throw new Error('Invalid upgrade amount');
         }
         
-        // تبدیل مقدار به wei
+        // Convert amount to wei
         const amountInWei = ethers.parseUnits(amount.toString(), 18);
         
-        // انجام تراکنش ارتقا
+        // Perform upgrade transaction
         const tx = await contract.purchase(amountInWei, 0);
         await tx.wait();
         
-        showRegisterSuccess("ارتقا با موفقیت انجام شد!");
+        showRegisterSuccess("Upgrade completed successfully!");
         
-        // ریست کردن وضعیت بارگذاری برای بارگذاری مجدد
+        // Reset loading status for reload
         registerDataLoaded = false;
         
-        // بارگذاری مجدد اطلاعات
+        // Reload data
         setTimeout(() => {
             loadRegisterData(contract, address, tokenPriceUSDFormatted);
         }, 2000);
@@ -406,25 +393,25 @@ async function performUpgrade() {
     }
 }
 
-// تابع نمایش پیام موفقیت
+// Function to show success message
 function showRegisterSuccess(message) {
-    showMessageBox(message || 'ثبت‌نام با موفقیت انجام شد! به جمع کاربران ما خوش آمدید.', 'success');
+    showMessageBox(message || 'Registration completed successfully! Welcome to our user community.', 'success');
 }
 
-// تابع نمایش پیام خطا
+// Function to show error message
 function showRegisterError(message) {
-    showMessageBox(message || 'خطا در ثبت‌نام. لطفاً مجدداً تلاش کنید یا با پشتیبانی تماس بگیرید.', 'error');
+    showMessageBox(message || 'Error in registration. Please try again or contact support.', 'error');
 }
 
-// تابع نمایش پیام‌های عمومی
+// Function to show general messages
 function showMessageBox(message, type = 'info') {
-    // حذف message box قبلی اگر وجود دارد
+    // Remove previous message box if exists
     const existingBox = document.getElementById('message-box');
     if (existingBox) {
         existingBox.remove();
     }
     
-    // ایجاد message box جدید
+    // Create new message box
     const messageBox = document.createElement('div');
     messageBox.id = 'message-box';
     messageBox.style.cssText = `
@@ -446,7 +433,7 @@ function showMessageBox(message, type = 'info') {
         border: 1px solid ${type === 'error' ? 'rgba(255, 0, 0, 0.3)' : type === 'success' ? 'rgba(0, 255, 136, 0.3)' : 'rgba(167, 134, 255, 0.3)'};
     `;
     
-    // آیکون بر اساس نوع پیام
+    // Icon based on message type
     const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
     
     messageBox.innerHTML = `
@@ -462,13 +449,13 @@ function showMessageBox(message, type = 'info') {
             font-size: 13px;
             transition: all 0.3s ease;
         " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
-            بستن
+            Close
         </button>
     `;
     
     document.body.appendChild(messageBox);
     
-    // حذف خودکار بعد از 5 ثانیه
+    // Auto remove after 5 seconds
     setTimeout(() => {
         if (messageBox.parentElement) {
             messageBox.remove();
@@ -476,7 +463,7 @@ function showMessageBox(message, type = 'info') {
     }, 5000);
 }
 
-// تابع نمایش پیام‌های موقت (برای validation)
+// Function to show temporary messages (for validation)
 function showTempMessage(message, type = 'info', duration = 3000) {
     const tempBox = document.createElement('div');
     tempBox.style.cssText = `
@@ -509,7 +496,7 @@ function showTempMessage(message, type = 'info', duration = 3000) {
     }, duration);
 }
 
-// اضافه کردن CSS animations
+    // Add CSS animations
 if (!document.getElementById('message-box-styles')) {
     const style = document.createElement('style');
     style.id = 'message-box-styles';
@@ -526,7 +513,7 @@ if (!document.getElementById('message-box-styles')) {
     document.head.appendChild(style);
 }
 
-// تابع به‌روزرسانی نمایش موجودی
+// Function to update balance display
 function updateBalanceDisplay(IAMBalance, IAMBalanceUSD) {
     const lvlBalanceElement = document.getElementById('user-lvl-balance');
     const lvlUsdElement = document.getElementById('user-lvl-usd-value');
@@ -540,20 +527,20 @@ function updateBalanceDisplay(IAMBalance, IAMBalanceUSD) {
     }
 }
 
-// تابع نمایش اطلاعات کامل ثبت‌نام
+// Function to display complete registration information
 function displayRegistrationInfo(registrationPrice, regprice, tokenPriceUSD, tokenPriceMatic, oneCentTokens, tenCentsTokens, twelveCentsTokens) {
     const infoContainer = document.getElementById('registration-info');
     if (infoContainer) {
         const infoHTML = `
             <div style="background: rgba(0, 0, 0, 0.6); border-radius: 8px; padding: 1rem; margin: 1rem 0; border-left: 3px solid #a786ff;">
-                <h4 style="color: #a786ff; margin-bottom: 0.8rem;">📊 اطلاعات ثبت‌نام</h4>
+                <h4 style="color: #a786ff; margin-bottom: 0.8rem;">📊 Registration Information</h4>
                 <div style="display: grid; gap: 0.5rem; font-size: 0.9rem;">
                     <div style="display: flex; justify-content: space-between;">
-                        <span style="color: #ccc;">مقدار توکن مورد نیاز (دقیقاً طبق قرارداد):</span>
+                        <span style="color: #ccc;">Required token amount (exactly according to contract):</span>
                         <span style="color: #00ff88; font-weight: bold;">${registrationPrice} USDC</span>
                     </div>
                     <div style="display: flex; justify-content: space-between;">
-                        <span style="color: #ccc;">ارزش دلاری (هدف قرارداد):</span>
+                        <span style="color: #ccc;">Dollar value (contract target):</span>
                         <span style="color: #00ccff; font-weight: bold;">$0.01 USD</span>
                     </div>
                     <div style="display: flex; justify-content: space-between;">
@@ -566,7 +553,7 @@ function displayRegistrationInfo(registrationPrice, regprice, tokenPriceUSD, tok
                     </div>
                 </div>
                 <div style="font-size: 0.85rem; color: #aaa; margin-top: 0.7rem;">
-                    مقدار توکن مورد نیاز برای ثبت‌نام دقیقاً همان خروجی تابع <b>getRegistrationPrice</b> قرارداد است و معادل ۱ سنت (۰.۰۱ دلار) می‌باشد.
+                    The required token amount for registration is exactly the output of the <b>getRegistrationPrice</b> contract function and equals 1 cent ($0.01).
                 </div>
             </div>
         `;
@@ -574,33 +561,33 @@ function displayRegistrationInfo(registrationPrice, regprice, tokenPriceUSD, tok
     }
 }
 
-// تابع نمایش فرم ثبت‌نام برای کاربر جدید (کیف پول متصل)
+// Function to show registration form for new user (connected wallet)
 window.showRegistrationFormForNewUser = async function() {
     const registrationForm = document.getElementById('registration-form');
     if (!registrationForm) return;
     registrationForm.style.display = 'block';
 
-    // دریافت و نمایش مقدار توکن مورد نیاز برای ثبت‌نام
+    // Get and display required token amount for registration
     await window.displayUserBalances();
 
-    // تنظیم معرف به‌صورت پیش‌فرض: آدرس خالی (کاربر باید دستی وارد کند)
+    // Set referrer by default: empty address (user must enter manually)
     let referrer = '';
     
-    // تنظیم آدرس کاربر جدید به کیف پول متصل
+    // Set new user address to connected wallet
     const userAddress = window.contractConfig.address;
     
-    // پر کردن فیلدهای فرم
+    // Fill form fields
     const referrerInput = document.getElementById('referrer-address');
     const userAddressInput = document.getElementById('register-user-address') || document.getElementById('new-user-address');
     
     if (referrerInput) {
         referrerInput.value = referrer;
-        referrerInput.readOnly = false; // فعال کردن تغییر معرف
+        referrerInput.readOnly = false; // Enable referrer editing
     }
     
     if (userAddressInput) {
         userAddressInput.value = userAddress;
-        userAddressInput.readOnly = true; // غیرفعال کردن تغییر آدرس کاربر
+        userAddressInput.readOnly = true; // Disable user address editing
     }
     
     // نمایش پیام راهنما
@@ -608,40 +595,40 @@ window.showRegistrationFormForNewUser = async function() {
     if (statusElement) {
         statusElement.innerHTML = `
             <div style="background: rgba(255,193,7,0.1); border: 1px solid rgba(255,193,7,0.3); border-radius: 8px; padding: 12px; margin: 10px 0;">
-                <strong style="color: #ffc107;">📝 ثبت‌نام دستی:</strong><br>
-                • لطفاً آدرس معرف را وارد کنید<br>
-                • کاربر جدید: <span style="color: #a786ff;">${userAddress}</span><br>
-                • پس از وارد کردن آدرس معرف، روی دکمه "ثبت‌نام" کلیک کنید
+                <strong style="color: #ffc107;">📝 Manual Registration:</strong><br>
+                • Please enter the referrer address<br>
+                • New user: <span style="color: #a786ff;">${userAddress}</span><br>
+                • After entering the referrer address, click the "Register" button
             </div>
         `;
         statusElement.className = 'profile-status info';
     }
 
-    // تنظیم دکمه ثبت‌نام
+    // Setup registration button
     const registerBtn = document.getElementById('register-btn');
     if (registerBtn) {
         registerBtn.onclick = async () => {
             const oldText = registerBtn.textContent;
             registerBtn.disabled = true;
-            registerBtn.innerHTML = '<span class="spinner" style="display:inline-block;width:18px;height:18px;border:2px solid #fff;border-top:2px solid #00ff88;border-radius:50%;margin-left:8px;vertical-align:middle;animation:spin 0.8s linear infinite;"></span> در حال ثبت‌نام...';
+            registerBtn.innerHTML = '<span class="spinner" style="display:inline-block;width:18px;height:18px;border:2px solid #fff;border-top:2px solid #00ff88;border-radius:50%;margin-left:8px;vertical-align:middle;animation:spin 0.8s linear infinite;"></span> Registering...';
             
             try {
                 await performRegistrationForNewUser();
                 if (statusElement) {
-                    statusElement.textContent = '✅ ثبت‌نام با موفقیت انجام شد!';
+                    statusElement.textContent = '✅ Registration completed!';
                     statusElement.className = 'profile-status success';
                 }
                 registerBtn.style.display = 'none';
             } catch (error) {
                 let msg = error && error.message ? error.message : error;
                 if (error.code === 4001 || msg.includes('user denied')) {
-                    msg = '❌ تراکنش توسط کاربر لغو شد.';
+                    msg = '❌ Transaction cancelled by user.';
                 } else if (error.code === -32002 || msg.includes('Already processing')) {
-                    msg = '⏳ متامسک در حال پردازش درخواست قبلی است. لطفاً چند لحظه صبر کنید.';
+                    msg = '⏳ MetaMask is processing a previous request. Please wait a moment.';
                 } else if (error.code === 'NETWORK_ERROR' || msg.includes('network')) {
-                    msg = '❌ خطای شبکه! اتصال اینترنت یا شبکه بلاکچین را بررسی کنید.';
+                    msg = '❌ Network error! Check your internet or blockchain network connection.';
                 } else if (msg.includes('insufficient funds')) {
-                    msg = '❌ موجودی کافی نیست! موجودی IAM یا MATIC خود را بررسی کنید.';
+                    msg = '❌ Insufficient balance! Check your IAM or MATIC balance.';
                 }
                 
                 if (statusElement) {
@@ -655,35 +642,35 @@ window.showRegistrationFormForNewUser = async function() {
     }
 };
 
-// تابع نمایش فرم ثبت‌نام
+// Function to show registration form
 window.showRegistrationForm = async function() {
     const registrationForm = document.getElementById('registration-form');
     if (!registrationForm) return;
     registrationForm.style.display = 'block';
 
-    // دریافت و نمایش مقدار توکن مورد نیاز برای ثبت‌نام
+    // Get and display required token amount for registration
     // await updateRegisterRequiredAmount(); // Disabled infinite fetch
     
-    // نمایش موجودی‌های کاربر
+    // Display user balances
     await window.displayUserBalances();
 
-    // برای کاربران ثبت‌نام شده: فقط امکان ثبت‌نام زیرمجموعه‌های خودشان
+    // For registered users: only ability to register their subordinates
     const { contract, address } = window.contractConfig;
     const currentUserData = await contract.users(address);
     
     if (currentUserData && currentUserData.index && BigInt(currentUserData.index) > 0n) {
-        // کاربر ثبت‌نام شده است - فقط می‌تواند زیرمجموعه ثبت‌نام کند
+        // User is registered - can only register subordinates
         const refInputGroup = document.getElementById('register-ref-input-group');
         const refSummary = document.getElementById('register-ref-summary');
         const walletAddressSpan = document.getElementById('register-wallet-address');
         const referrerAddressSpan = document.getElementById('register-referrer-address');
         
-        // معرف به‌صورت پیش‌فرض: آدرس کاربر فعلی
+        // Referrer by default: current user address
         const referrer = address;
         const referrerInput = document.getElementById('referrer-address');
         if (referrerInput) {
             referrerInput.value = referrer;
-            referrerInput.readOnly = true; // غیرفعال کردن تغییر معرف
+            referrerInput.readOnly = true; // Disable referrer editing
         }
         
         // نمایش پیام راهنما
@@ -691,16 +678,16 @@ window.showRegistrationForm = async function() {
         if (statusElement) {
             statusElement.innerHTML = `
                 <div style="background: rgba(167,134,255,0.1); border: 1px solid rgba(167,134,255,0.3); border-radius: 8px; padding: 12px; margin: 10px 0;">
-                    <strong style="color: #a786ff;">👥 ثبت‌نام زیرمجموعه:</strong><br>
-                    • معرف: <span style="color: #a786ff;">${referrer}</span> (شما)<br>
-                    • آدرس کاربر جدید را وارد کنید<br>
-                    • فقط می‌توانید برای زیرمجموعه‌های خود ثبت‌نام کنید
+                    <strong style="color: #a786ff;">👥 Subordinate Registration:</strong><br>
+                    • Referrer: <span style="color: #a786ff;">${referrer}</span> (You)<br>
+                    • Enter the new user address<br>
+                    • You can only register subordinates for yourself
                 </div>
             `;
             statusElement.className = 'profile-status info';
         }
         
-        // مخفی کردن فیلد معرف و نمایش خلاصه
+        // Hide referrer field and show summary
         if (refInputGroup) refInputGroup.style.display = 'none';
         if (refSummary) {
             refSummary.style.display = 'block';
@@ -708,7 +695,7 @@ window.showRegistrationForm = async function() {
             if (referrerAddressSpan) referrerAddressSpan.textContent = referrer;
         }
     } else {
-        // کاربر ثبت‌نام نشده است - حالت عادی
+        // User is not registered - normal mode
         let referrer = getReferrerFromURL();
         const refInputGroup = document.getElementById('register-ref-input-group');
         const refSummary = document.getElementById('register-ref-summary');
@@ -716,16 +703,16 @@ window.showRegistrationForm = async function() {
         const referrerAddressSpan = document.getElementById('register-referrer-address');
         let isReferralMode = false;
         if (!referrer) {
-            // اگر در URL نبود، فیلد خالی بگذار (کاربر باید دستی وارد کند)
+            // If not in URL, leave field empty (user must enter manually)
             referrer = '';
         } else {
-            // اگر رفرر در URL بود، حالت رفرال فعال شود
+            // If referrer was in URL, activate referral mode
             isReferralMode = true;
         }
         const referrerInput = document.getElementById('referrer-address');
         if (referrerInput) referrerInput.value = referrer || '';
 
-        // اگر حالت رفرال است، ورودی را مخفی و خلاصه را نمایش بده
+                    // If referral mode is active, hide input and show summary
         if (isReferralMode) {
             if (refInputGroup) refInputGroup.style.display = 'none';
             if (refSummary) {
@@ -740,10 +727,10 @@ window.showRegistrationForm = async function() {
      }
 
 
-    // نمایش موجودی‌های کاربر
+            // Display user balances
     await window.displayUserBalances();
     
-    // نمایش مقدار مورد نیاز
+            // Display required amount
     const IAMRequiredSpan = document.getElementById('register-IAM-required');
     if (IAMRequiredSpan) IAMRequiredSpan.textContent = regPrice; // Static value
 
@@ -776,26 +763,26 @@ window.showRegistrationForm = async function() {
       let referrer = referrerInput ? referrerInput.value.trim() : '';
 
       if (!/^0x[a-fA-F0-9]{40}$/.test(targetUserAddress)) {
-        showTempMessage('آدرس کیف پول کاربر جدید معتبر نیست.', 'error');
+        showTempMessage('New user wallet address is not valid.', 'error');
         registerBtn.disabled = false;
-        registerBtn.textContent = 'ثبت‌ نام';
+        registerBtn.textContent = 'Register';
         return;
       }
       if (!/^0x[a-fA-F0-9]{40}$/.test(referrer)) {
-        showTempMessage('آدرس معرف معتبر نیست.', 'error');
+        showTempMessage('Referrer address is not valid.', 'error');
         registerBtn.disabled = false;
-        registerBtn.textContent = 'ثبت‌ نام';
+        registerBtn.textContent = 'Register';
         return;
       }
-      // بررسی ثبت‌نام نبودن کاربر جدید
+              // Check that new user is not registered
       let userData;
       try {
         userData = await contract.users(targetUserAddress);
       } catch (e) { userData = null; }
       if (userData && userData.index && BigInt(userData.index) > 0n) {
-        showTempMessage('این آدرس قبلاً ثبت‌نام کرده است.', 'error');
+        showTempMessage('This address is already registered.', 'error');
         registerBtn.disabled = false;
-        registerBtn.textContent = 'ثبت‌ نام';
+        registerBtn.textContent = 'Register';
         return;
       }
       // بررسی فعال بودن رفرر
@@ -804,42 +791,42 @@ window.showRegistrationForm = async function() {
         refData = await contract.users(referrer);
       } catch (e) { refData = null; }
       if (!refData || !(refData.index && BigInt(refData.index) > 0n)) {
-        showTempMessage('معرف فعال نیست.', 'error');
+        showTempMessage('Referrer is not active.', 'error');
         registerBtn.disabled = false;
-        registerBtn.textContent = 'ثبت‌ نام';
+        registerBtn.textContent = 'Register';
         return;
       }
-      // بررسی موجودی ولت متصل (address)
+              // Check connected wallet balance (address)
       if (parseFloat(userLvlBalance) < parseFloat(requiredTokenAmount)) {
         registerBtn.disabled = true;
-        registerBtn.textContent = 'موجودی IAM کافی نیست';
-        showTempMessage('موجودی توکن IAM شما برای ثبت‌نام کافی نیست. برای ثبت‌نام باید حداقل '+requiredTokenAmount+' IAM داشته باشید. لطفاً ابتدا کیف پول خود را شارژ یا از بخش سواپ/فروشگاه توکن IAM تهیه کنید.', 'error');
+        registerBtn.textContent = 'Insufficient IAM balance';
+        showTempMessage('Your IAM balance is insufficient for registration. You need at least '+requiredTokenAmount+' IAM. Please top up your wallet or purchase it from the marketplace/IAM token shop.', 'error');
         return;
       } else if (parseFloat(maticBalance) < requiredMatic) {
         registerBtn.disabled = true;
-        registerBtn.textContent = 'موجودی متیک کافی نیست';
-        showTempMessage('برای ثبت‌نام باید حداقل '+requiredMatic+' MATIC در کیف پول خود داشته باشید.', 'error');
+        registerBtn.textContent = 'Insufficient MATIC balance';
+        showTempMessage('You need at least '+requiredMatic+' MATIC in your wallet to register.', 'error');
         return;
       }
       // ثبت‌نام
       registerBtn.disabled = true;
-      registerBtn.textContent = 'در حال ثبت‌نام...';
+      registerBtn.textContent = 'Registering...';
       try {
         await contract.registerAndActivate(referrer, targetUserAddress);
-        showRegisterSuccess('ثبت‌نام با موفقیت انجام شد!');
+        showRegisterSuccess('Registration completed successfully!');
         registerBtn.style.display = 'none';
       } catch (e) {
         if (e.code === 4001) {
-          showTempMessage('فرآیند ثبت‌نام توسط شما لغو شد.', 'error');
+          showTempMessage('Registration process cancelled by you.', 'error');
         } else {
-          showRegisterError('خطا در ثبت‌نام: ' + (e.message || e));
+          showRegisterError('Registration error: ' + (e.message || e));
         }
         registerBtn.disabled = false;
-        registerBtn.textContent = 'ثبت‌ نام';
+        registerBtn.textContent = 'Register';
       }
     }
 
-    // دکمه ثبت‌نام
+            // Registration button
     const newRegisterBtn = document.getElementById('new-register-btn');
     const newRegisterModal = document.getElementById('new-registration-modal');
     const closeNewRegister = document.getElementById('close-new-register');
@@ -862,28 +849,28 @@ window.showRegistrationForm = async function() {
             const refAddr = document.getElementById('new-referrer-address').value.trim();
             const statusDiv = document.getElementById('new-register-status');
             if (!userAddr || !refAddr) {
-                showTempMessage('آدرس نفر جدید و معرف را وارد کنید', 'error');
+                showTempMessage('Please enter new user address and referrer address', 'error');
                 return;
             }
             submitNewRegister.disabled = true;
             const oldText = submitNewRegister.textContent;
-            submitNewRegister.textContent = 'در حال ثبت...';
+            submitNewRegister.textContent = 'Registering...';
             try {
-                if (!window.contractConfig || !window.contractConfig.contract) throw new Error('اتصال کیف پول برقرار نیست');
+                if (!window.contractConfig || !window.contractConfig.contract) throw new Error('Wallet connection not established');
                 const { contract } = window.contractConfig;
                 // بررسی معتبر بودن معرف
                 const refData = await contract.users(refAddr);
-                if (!(refData && refData.index && BigInt(refData.index) > 0n)) throw new Error('معرف فعال نیست');
+                if (!(refData && refData.index && BigInt(refData.index) > 0n)) throw new Error('Referrer is not active');
                 // بررسی ثبت‌نام نبودن نفر جدید
                 const userData = await contract.users(userAddr);
-                if (userData && userData.index && BigInt(userData.index) > 0n) throw new Error('این آدرس قبلاً ثبت‌نام کرده است');
+                if (userData && userData.index && BigInt(userData.index) > 0n) throw new Error('This address is already registered');
                 // ثبت‌نام نفر جدید (با ولت فعلی)
                 const tx = await contract.registerAndActivate(refAddr, userAddr);
                 await tx.wait();
-                showRegisterSuccess('ثبت‌نام نفر جدید با موفقیت انجام شد!');
+                showRegisterSuccess('New user registration completed successfully!');
                 setTimeout(() => location.reload(), 1200);
             } catch (e) {
-                showRegisterError(e.message || 'خطا در ثبت‌نام نفر جدید');
+                showRegisterError(e.message || 'Error registering new user');
             }
             submitNewRegister.disabled = false;
             submitNewRegister.textContent = oldText;
@@ -891,19 +878,19 @@ window.showRegistrationForm = async function() {
     }
 }
 
-// تابع ثبت‌نام ساده
+    // Simple registration function
 async function registerUser(referrer, requiredTokenAmount, targetUserAddress) {
     const { contract, address } = await window.connectWallet();
-    if (!contract || !address) throw new Error('کیف پول متصل نیست');
-    // تبدیل مقدار به wei (عدد صحیح)
+    if (!contract || !address) throw new Error('Wallet not connected');
+    // Convert amount to wei (integer)
     const amountInWei = ethers.parseUnits(requiredTokenAmount, 18);
     await contract.registerAndActivate(referrer, targetUserAddress);
 }
 
-// مدیریت نمایش فرم ثبت جدید و ثبت نفر جدید
+    // Manage display of new registration form and new person registration
 window.addEventListener('DOMContentLoaded', function() {
-    // راه‌اندازی دکمه ثبت‌نام اصلی
-    setupRegistrationButton();
+            // Setup main registration button
+    setupRegisterButton();
     setupUpgradeForm();
     
     const newRegisterBtn = document.getElementById('new-register-btn');
@@ -928,30 +915,30 @@ window.addEventListener('DOMContentLoaded', function() {
             const refAddr = document.getElementById('new-referrer-address').value.trim();
             const statusDiv = document.getElementById('new-register-status');
             if (!userAddr || !refAddr) {
-                statusDiv.textContent = 'آدرس نفر جدید و معرف را وارد کنید';
+                statusDiv.textContent = 'Please enter new user address and referrer address';
                 statusDiv.className = 'profile-status error';
                 return;
             }
             submitNewRegister.disabled = true;
             const oldText = submitNewRegister.textContent;
-            submitNewRegister.textContent = 'در حال ثبت...';
+            submitNewRegister.textContent = 'Registering...';
             try {
-                if (!window.contractConfig || !window.contractConfig.contract) throw new Error('اتصال کیف پول برقرار نیست');
+                if (!window.contractConfig || !window.contractConfig.contract) throw new Error('Wallet connection not established');
                 const { contract } = window.contractConfig;
                 // بررسی معتبر بودن معرف
                 const refData = await contract.users(refAddr);
-                if (!(refData && refData.index && BigInt(refData.index) > 0n)) throw new Error('معرف فعال نیست');
+                if (!(refData && refData.index && BigInt(refData.index) > 0n)) throw new Error('Referrer is not active');
                 // بررسی ثبت‌نام نبودن نفر جدید
                 const userData = await contract.users(userAddr);
-                if (userData && userData.index && BigInt(userData.index) > 0n) throw new Error('این آدرس قبلاً ثبت‌نام کرده است');
+                if (userData && userData.index && BigInt(userData.index) > 0n) throw new Error('This address is already registered');
                 // ثبت‌نام نفر جدید (با ولت فعلی)
                 const tx = await contract.registerAndActivate(refAddr, userAddr);
                 await tx.wait();
-                statusDiv.textContent = 'ثبت‌نام نفر جدید با موفقیت انجام شد!';
+                statusDiv.textContent = 'New user registration completed!';
                 statusDiv.className = 'profile-status success';
                 setTimeout(() => location.reload(), 1200);
             } catch (e) {
-                statusDiv.textContent = e.message || 'خطا در ثبت‌نام نفر جدید';
+                statusDiv.textContent = e.message || 'Error registering new user';
                 statusDiv.className = 'profile-status error';
             }
             submitNewRegister.disabled = false;
@@ -960,11 +947,11 @@ window.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// ثبت‌نام نفر جدید با رفرر دلخواه (برای استفاده در شبکه)
+        // Register new person with desired referrer (for network use)
 window.registerNewUserWithReferrer = async function(referrer, newUserAddress, statusElement) {
     if (!window.contractConfig || !window.contractConfig.contract) {
         if (statusElement) {
-            statusElement.textContent = 'اتصال کیف پول برقرار نیست';
+            statusElement.textContent = 'Wallet connection not established';
             statusElement.className = 'profile-status error';
         }
         return;
@@ -972,22 +959,22 @@ window.registerNewUserWithReferrer = async function(referrer, newUserAddress, st
     const { contract } = window.contractConfig;
     if (!referrer || !newUserAddress) {
         if (statusElement) {
-            statusElement.textContent = 'آدرس رفرر و آدرس نفر جدید الزامی است';
+            statusElement.textContent = 'Referrer address and new user address are required';
             statusElement.className = 'profile-status error';
         }
         return;
     }
     if (statusElement) {
-        statusElement.textContent = 'در حال ثبت‌نام...';
+        statusElement.textContent = 'Registering...';
         statusElement.className = 'profile-status info';
     }
     try {
-        // بررسی فعال بودن رفرر
+        // Check if referrer is active
         const refData = await contract.users(referrer);
-        if (!(refData && refData.index && BigInt(refData.index) > 0n)) throw new Error('معرف فعال نیست');
+        if (!(refData && refData.index && BigInt(refData.index) > 0n)) throw new Error('Referrer is not active');
         // بررسی ثبت‌نام نبودن نفر جدید
         const userData = await contract.users(newUserAddress);
-        if (userData && userData.index && BigInt(userData.index) > 0n) throw new Error('این آدرس قبلاً ثبت‌نام کرده است');
+        if (userData && userData.index && BigInt(userData.index) > 0n) throw new Error('This address is already registered');
         // ثبت‌نام نفر جدید (با ولت فعلی)
         const tx = await contract.registerAndActivate(referrer, newUserAddress);
         await tx.wait();
@@ -998,31 +985,31 @@ window.registerNewUserWithReferrer = async function(referrer, newUserAddress, st
         }
         
         if (statusElement) {
-            statusElement.textContent = 'ثبت‌نام نفر جدید با موفقیت انجام شد!';
+            statusElement.textContent = 'New user registration completed!';
             statusElement.className = 'profile-status success';
             setTimeout(() => location.reload(), 1200);
         }
     } catch (e) {
         if (statusElement) {
-            statusElement.textContent = e.message || 'خطا در ثبت‌نام نفر جدید';
+            statusElement.textContent = e.message || 'Error registering new user';
             statusElement.className = 'profile-status error';
         }
     }
 };
 window.loadRegisterData = loadRegisterData;
 
-// تابع نمایش موجودی‌های کاربر
+    // Function to display user balances
 async function displayUserBalances() {
     try {
         const { contract, address } = await window.connectWallet();
-        // مقداردهی robust برای provider
+        // Robust initialization for provider
         const provider =
             (contract && contract.provider) ||
             (window.contractConfig && window.contractConfig.provider) ||
             (window.ethereum ? new ethers.BrowserProvider(window.ethereum) : null);
         if (!provider) throw new Error('No provider available for getBalance');
 
-        // دریافت موجودی‌های مختلف
+        // Get different balances
         const [IAMBalance, usdcBalance, maticBalance] = await Promise.all([
             contract.balanceOf(address),
             (function() {
@@ -1034,12 +1021,12 @@ async function displayUserBalances() {
             provider.getBalance(address)
         ]);
         
-        // فرمت کردن موجودی‌ها
+        // Format balances
         const IAMFormatted = parseFloat(ethers.formatUnits(IAMBalance, 18)).toFixed(4);
         const usdcFormatted = parseFloat(ethers.formatUnits(usdcBalance, 6)).toFixed(2);
         const maticFormatted = parseFloat(ethers.formatEther(maticBalance)).toFixed(4);
         
-        // به‌روزرسانی المنت‌های موجودی
+        // Update balance elements
         const balanceElements = {
             'user-IAM-balance': `${IAMFormatted} IAM`,
             'user-usdc-balance': `${usdcFormatted} USDC`,
@@ -1049,7 +1036,7 @@ async function displayUserBalances() {
             'register-matic-balance': `${maticFormatted} MATIC`
         };
         
-        // به‌روزرسانی همه المنت‌های موجود
+        // Update all balance elements
         Object.entries(balanceElements).forEach(([id, value]) => {
             const element = document.getElementById(id);
             if (element) {

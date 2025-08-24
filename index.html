@@ -267,8 +267,8 @@
       <!-- Popular Indexes Expandable Box -->
       <div id="popular-indexes-section" class="modern-card" style="margin-top: 2rem; padding: 1.5rem; border: 2px solid rgba(0,255,136,0.3); border-radius: 15px; background: linear-gradient(135deg, rgba(26,31,46,0.9), rgba(42,47,62,0.9));">
         <div style="text-align: center; margin-bottom: 1.5rem;">
-          <h3 style="color: #00ff88; font-size: 1.3rem; font-weight: bold; margin: 0; margin-bottom: 0.5rem;">🌟 محبوب‌ترین ایندکس‌ها</h3>
-          <p style="color: #ccc; font-size: 0.9rem; margin: 0;">لیست محبوب‌ترین کاربران شبکه بر اساس رای‌های مثبت</p>
+          <h3 style="color: #00ff88; font-size: 1.3rem; font-weight: bold; margin: 0; margin-bottom: 0.5rem;">🌟 Most Popular Indexes</h3>
+          <p style="color: #ccc; font-size: 0.9rem; margin: 0;">List of most popular network users based on positive votes</p>
         </div>
         
         <!-- Expandable Content -->
@@ -277,11 +277,11 @@
             <!-- Popular Indexes List -->
             <div style="flex: 1; min-width: 300px; background: rgba(0,0,0,0.3); border-radius: 12px; padding: 1rem; border: 1px solid rgba(0,255,136,0.2);">
               <div style="text-align: center; margin-bottom: 1rem;">
-                <h4 style="color: #00ff88; font-size: 1.1rem; font-weight: bold; margin: 0;">🏆 رتبه‌بندی محبوب‌ترین‌ها</h4>
+                <h4 style="color: #00ff88; font-size: 1.1rem; font-weight: bold; margin: 0;">🏆 Most Popular Rankings</h4>
               </div>
               <div id="popular-indexes-list" style="max-height: 300px; overflow-y: auto;">
                 <div style="text-align: center; color: #888; font-size: 0.9rem; padding: 2rem;">
-                  در حال بارگذاری محبوب‌ترین ایندکس‌ها...
+                  Loading most popular indexes...
                 </div>
               </div>
             </div>
@@ -289,24 +289,24 @@
             <!-- Voting Section -->
             <div style="flex: 1; min-width: 300px; background: rgba(0,0,0,0.3); border-radius: 12px; padding: 1rem; border: 1px solid rgba(167,134,255,0.2);">
               <div style="text-align: center; margin-bottom: 1rem;">
-                <h4 style="color: #a786ff; font-size: 1.1rem; font-weight: bold; margin: 0;">🗳️ رای دادن</h4>
+                <h4 style="color: #a786ff; font-size: 1.1rem; font-weight: bold; margin: 0;">🗳️ Voting</h4>
               </div>
               
               <div style="display: flex; flex-direction: column; gap: 1rem;">
                 <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                  <label style="color: #ccc; font-size: 0.9rem; font-weight: bold;">ایندکس مورد نظر:</label>
-                  <input type="number" id="popular-vote-index" placeholder="شماره ایندکس را وارد کنید" 
+                  <label style="color: #ccc; font-size: 0.9rem; font-weight: bold;">Target Index:</label>
+                  <input type="number" id="popular-vote-index" placeholder="Enter index number" 
                          style="background: rgba(0,0,0,0.3); border: 1px solid rgba(167,134,255,0.3); border-radius: 8px; padding: 0.8rem; color: #fff; text-align: center; font-size: 0.9rem; font-family: monospace;">
                 </div>
                 
                 <div style="display: flex; gap: 0.5rem; justify-content: center;">
                   <button onclick="voteForPopularIndex(true)" 
                           style="background: linear-gradient(135deg,#00ff88,#00cc6a); color: #1a1f2e; border: none; border-radius: 8px; padding: 0.8rem 1.2rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; font-size: 0.9rem; flex: 1;">
-                    👍 پسندیدن
+                    👍 Like
                   </button>
                   <button onclick="voteForPopularIndex(false)" 
                           style="background: linear-gradient(135deg,#ff4444,#cc3333); color: #fff; border: none; border-radius: 8px; padding: 0.8rem 1.2rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; font-size: 0.9rem; flex: 1;">
-                    👎 نپسندیدن
+                    👎 Dislike
                   </button>
                 </div>
                 
@@ -319,7 +319,7 @@
           <div style="text-align: center;">
             <button onclick="refreshPopularIndexes()" 
                     style="background: linear-gradient(135deg,#a786ff,#8a6fff); color: #fff; border: none; border-radius: 8px; padding: 0.8rem 1.5rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; font-size: 0.9rem;">
-              🔄 بروزرسانی لیست
+              🔄 Refresh List
             </button>
           </div>
         </div>
@@ -328,7 +328,7 @@
         <div style="text-align: center;">
           <button onclick="togglePopularIndexes()" id="popular-indexes-toggle" 
                   style="background: linear-gradient(135deg,#00ff88,#00cc6a); color: #1a1f2e; border: none; border-radius: 8px; padding: 0.8rem 2rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; font-size: 1rem;">
-            📊 نمایش محبوب‌ترین‌ها
+            📊 Show Most Popular
           </button>
         </div>
       </div>
@@ -389,8 +389,8 @@
           <!-- Top 10 Most Liked Users Section -->
           <div style="margin-bottom: 1.5rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 10px; border: 1px solid rgba(0,255,136,0.2);">
             <div style="text-align: center; margin-bottom: 1rem;">
-              <h4 style="color: #00ff88; font-size: 1rem; font-weight: bold; margin: 0; margin-bottom: 0.3rem;">🏆 ۱۰ کاربر برتر با لایک</h4>
-              <p style="color: #ccc; font-size: 0.7rem; margin: 0;">کاربرانی که حداقل ۱ لایک دارند - روی هر کاربر کلیک کنید</p>
+              <h4 style="color: #00ff88; font-size: 1rem; font-weight: bold; margin: 0; margin-bottom: 0.3rem;">🏆 Top 10 Users with Likes</h4>
+              <p style="color: #ccc; font-size: 0.7rem; margin: 0;">Users with at least 1 like - click on any user</p>
             </div>
             
             <div id="top-users-popup-list" style="max-height: 200px; overflow-y: auto;">
@@ -715,22 +715,22 @@
   </li>
   <li style="margin-bottom:0.65em;padding-right:1.5em;position:relative;">
     <span style="position:absolute;right:0;color:#00ff88;">✅</span>
-    <strong>pointValue:</strong> ارزش هر پوینت (به IAM)
+                    <strong>pointValue:</strong> Value of each point (in IAM)
   </li>
 </ul>
 
 <div style="margin-top:1.2em;background:rgba(167,134,255,0.08);padding:1em;border-radius:10px;border-right:4px solid #a786ff;">
-  <p style="margin:0;">تمام تراکنش‌ها در <strong>PolygonScan</strong> قابل ردیابی هستند و کد قرارداد <strong>باز و قابل بررسی</strong> است.</p>
+  <p style="margin:0;">All transactions are traceable on <strong>PolygonScan</strong> and the contract code is <strong>open and verifiable</strong>.</p>
 </div>`;
           
           let i = 0;
-          const speed = 15; // سرعت تایپ‌رایتر (میلی‌ثانیه)
+          const speed = 15; // Typewriter speed (milliseconds)
           
           function typeWriter() {
             if (i < welcomeText.length) {
               let char = welcomeText.charAt(i);
               
-              // اگر کاراکتر < باشد، کل تگ HTML را یکجا اضافه کن
+              // If character is <, add the entire HTML tag at once
               if (char === '<') {
                 let tagEnd = welcomeText.indexOf('>', i);
                 if (tagEnd !== -1) {
@@ -738,7 +738,7 @@
                   i = tagEnd + 1;
                   // auto-scroll as content grows
                   container.scrollTop = container.scrollHeight;
-                  setTimeout(typeWriter, 5); // تگ‌ها سریع اضافه شوند
+                  setTimeout(typeWriter, 5); // Tags should be added quickly
                   return;
                 }
               }
@@ -747,10 +747,10 @@
               i++;
               // auto-scroll as content grows
               container.scrollTop = container.scrollHeight;
-              const delay = (char === '.' || char === '!' || char === '؟' || char === '،') ? speed * 3 : speed;
+              const delay = (char === '.' || char === '!' || char === '?' || char === ',') ? speed * 3 : speed;
               setTimeout(typeWriter, delay);
             } else {
-              // تایپ‌رایتر تمام شد، حالا چک‌باکس‌ها را نمایش بده
+              // Typewriter finished, now show checkboxes
               if (typeof showCheckboxes === 'function') {
                 showCheckboxes();
               }
@@ -760,51 +760,51 @@
           typeWriter();
         }
         
-        // تابع تست برای تایپ‌رایتر
+        // Test function for typewriter
         function testTypewriter() {
           console.log('Testing typewriter...');
           const container = document.getElementById('welcome-typewriter-content');
           if (container) {
-            container.innerHTML = 'تست تایپ‌رایتر...';
+            container.innerHTML = 'Testing typewriter...';
             setTimeout(() => {
               startWelcomeTypewriter();
             }, 1000);
           }
         }
 
-        // نمایش چک‌باکس‌های شرایط
+        // Display condition checkboxes
         function showCheckboxes() {
           const container = document.getElementById('welcome-typewriter-content');
           if (!container) return;
 
           const checkboxesHTML = `
             <div style="margin-top:2em;background:rgba(255,193,7,0.1);padding:1.5em;border-radius:12px;border:2px solid #ffc107;">
-              <h3 style="color:#ffc107;margin-bottom:1em;text-align:center;">✅ تایید شرایط و قوانین</h3>
+              <h3 style="color:#ffc107;margin-bottom:1em;text-align:center;">✅ Confirm Terms and Conditions</h3>
               
               <div style="margin-bottom:1em;">
                 <label style="display:flex;align-items:center;cursor:pointer;color:#e0e6f7;">
                   <input type="checkbox" id="condition1" style="margin-left:0.5em;transform:scale(1.2);" onchange="checkAllConditions()" disabled>
-                  <span style="opacity:0.6;">⏳ من شرایط پذیرش را مطالعه کرده و می‌پذیرم</span>
+                  <span style="opacity:0.6;">⏳ I have read and accept the acceptance conditions</span>
                 </label>
               </div>
               
               <div style="margin-bottom:1em;">
                 <label style="display:flex;align-items:center;cursor:pointer;color:#e0e6f7;">
                   <input type="checkbox" id="condition2" style="margin-left:0.5em;transform:scale(1.2);" onchange="checkAllConditions()" disabled>
-                  <span style="opacity:0.6;">⏳ من خواهان یادگیری این بازار هستم</span>
+                  <span style="opacity:0.6;">⏳ I want to learn this market</span>
                 </label>
               </div>
               
               <div style="margin-bottom:1em;">
                 <label style="display:flex;align-items:center;cursor:pointer;color:#e0e6f7;">
                   <input type="checkbox" id="condition3" style="margin-left:0.5em;transform:scale(1.2);" onchange="checkAllConditions()" disabled>
-                  <span style="opacity:0.6;">⏳ من از قواعد و قوانین ارزهای دیجیتال آشنایی دارم</span>
+                  <span style="opacity:0.6;">⏳ I am familiar with cryptocurrency rules and regulations</span>
                 </label>
               </div>
               
               <div style="text-align:center;margin-top:1.5em;">
                 <button id="acceptButton" onclick="acceptConditions()" style="background:linear-gradient(135deg,#666,#444);color:#999;border:none;padding:0.8em 2em;border-radius:8px;font-weight:bold;cursor:not-allowed;opacity:0.5;pointer-events:none;" disabled>
-                  ⏳ لطفاً ابتدا مفاد را مطالعه کنید
+                  ⏳ Please read the terms first
                 </button>
               </div>
             </div>
@@ -814,8 +814,8 @@
           container.scrollTop = container.scrollHeight;
         }
 
-        // تایمر مطالعه
-        // تکراری حذف شد
+        // Reading timer
+        // Removed duplicate
         
         function startReadingTimer() {
           readingSeconds = 0;
@@ -828,7 +828,7 @@
               timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
             }
             
-            // بعد از 30 ثانیه مطالعه، چک‌باکس‌ها را فعال کن
+            // After 30 seconds of reading, enable checkboxes
             if (readingSeconds >= 30) {
               enableCheckboxes();
               clearInterval(readingTimerInterval);
@@ -836,7 +836,7 @@
           }, 1000);
         }
         
-        // فعال‌سازی چک‌باکس‌ها بعد از مطالعه
+        // Enable checkboxes after reading
         function enableCheckboxes() {
           const condition1 = document.getElementById('condition1');
           const condition2 = document.getElementById('condition2');
@@ -844,7 +844,7 @@
           const acceptButton = document.getElementById('acceptButton');
           
           if (condition1 && condition2 && condition3 && acceptButton) {
-            // فعال‌سازی چک‌باکس‌ها
+            // Enable checkboxes
             condition1.disabled = false;
             condition2.disabled = false;
             condition3.disabled = false;
@@ -1221,16 +1221,16 @@ Our Services:
     <script src="js/config.js"></script>
     <script>
       // بررسی لود شدن config.js
-      console.log('🔍 بررسی لود شدن config.js...');
-      setTimeout(() => {
-        console.log('displayTopUsersRanking موجود:', typeof window.displayTopUsersRanking);
-        console.log('voteForIndex موجود:', typeof window.voteForIndex);
-        if (typeof window.displayTopUsersRanking !== 'function') {
-          console.error('❌ config.js درست لود نشده است!');
-        } else {
-          console.log('✅ config.js با موفقیت لود شد');
-        }
-      }, 1000);
+              console.log('🔍 Checking config.js loading...');
+        setTimeout(() => {
+          console.log('displayTopUsersRanking available:', typeof window.displayTopUsersRanking);
+          console.log('voteForIndex available:', typeof window.voteForIndex);
+          if (typeof window.displayTopUsersRanking !== 'function') {
+            console.error('❌ config.js not loaded properly!');
+          } else {
+            console.log('✅ config.js loaded successfully');
+          }
+        }, 1000);
     </script>
   <script src="js/reports.js"></script>
   <script src="js/web3-interactions.js"></script>
@@ -1811,12 +1811,12 @@ Our Services:
     }
   </style>
   
-  <!-- تعریف متغیرهای مورد نیاز برای سواپ -->
+      <!-- Define required variables for swap -->
   <script>
-    // آدرس قرارداد DAI (DAI) در شبکه Polygon
+    // DAI contract address in Polygon network
     window.DAI_ADDRESS = '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063';
     
-    // ABI ساده برای DAI (DAI)
+    // Simple ABI for DAI
     window.DAI_ABI = [
       {
         "inputs": [
@@ -1940,104 +1940,104 @@ Our Services:
       // Placeholder: Here you can load/render the chart if needed
     }
   </script>
-  <!-- مودال افزودن/ویرایش ساب ادمین -->
+  <!-- Add/Edit Sub-Admin Modal -->
   <div class="sub-admin-modal" id="sub-admin-modal">
     <div class="sub-admin-modal-content">
-      <h3 id="modal-title">افزودن ساب ادمین جدید</h3>
+      <h3 id="modal-title">Add New Sub-Admin</h3>
       <form class="sub-admin-form" id="sub-admin-form">
         <div class="form-group">
-          <label for="sub-admin-name">نام ساب ادمین:</label>
-          <input type="text" id="sub-admin-name" placeholder="نام کامل ساب ادمین" required>
+          <label for="sub-admin-name">Sub-Admin Name:</label>
+          <input type="text" id="sub-admin-name" placeholder="Full name of sub-admin" required>
         </div>
         
         <div class="form-group">
-          <label for="sub-admin-address">آدرس کیف پول:</label>
+          <label for="sub-admin-address">Wallet Address:</label>
           <input type="text" id="sub-admin-address" placeholder="0x..." required>
         </div>
         
         <div class="form-group">
-          <label for="sub-admin-role">نقش:</label>
+          <label for="sub-admin-role">Role:</label>
           <select id="sub-admin-role" required>
-            <option value="">انتخاب نقش</option>
-            <option value="moderator">مدیر محتوا</option>
-            <option value="support">پشتیبانی</option>
-            <option value="analyst">تحلیلگر</option>
-            <option value="teacher">مدرس</option>
-            <option value="custom">سفارشی</option>
+            <option value="">Select Role</option>
+            <option value="moderator">Content Manager</option>
+            <option value="support">Support</option>
+            <option value="analyst">Analyst</option>
+            <option value="teacher">Teacher</option>
+            <option value="custom">Custom</option>
           </select>
         </div>
         
         <div class="form-group">
-          <label for="sub-admin-description">توضیحات:</label>
-          <textarea id="sub-admin-description" placeholder="توضیحات اضافی..." rows="3"></textarea>
+          <label for="sub-admin-description">Description:</label>
+          <textarea id="sub-admin-description" placeholder="Additional descriptions..." rows="3"></textarea>
         </div>
         
         <div class="permissions-group">
-          <h5>🔐 دسترسی‌های ساب ادمین</h5>
+          <h5>🔐 Sub-Admin Permissions</h5>
           
           <div class="permission-item">
             <input type="checkbox" id="perm-stream-control" name="permissions">
-            <label for="perm-stream-control">کنترل لایو استریم</label>
+            <label for="perm-stream-control">Live Stream Control</label>
           </div>
           
           <div class="permission-item">
             <input type="checkbox" id="perm-chat-moderate" name="permissions">
-            <label for="perm-chat-moderate">مدیریت چت</label>
+            <label for="perm-chat-moderate">Chat Management</label>
           </div>
           
           <div class="permission-item">
             <input type="checkbox" id="perm-ban-users" name="permissions">
-            <label for="perm-ban-users">مسدود کردن کاربران</label>
+            <label for="perm-ban-users">Ban Users</label>
           </div>
           
           <div class="permission-item">
             <input type="checkbox" id="perm-view-reports" name="permissions">
-            <label for="perm-view-reports">مشاهده گزارش‌ها</label>
+            <label for="perm-view-reports">View Reports</label>
           </div>
           
           <div class="permission-item">
             <input type="checkbox" id="perm-manage-content" name="permissions">
-            <label for="perm-manage-content">مدیریت محتوا</label>
+            <label for="perm-manage-content">Content Management</label>
           </div>
           
           <div class="permission-item">
             <input type="checkbox" id="perm-view-analytics" name="permissions">
-            <label for="perm-view-analytics">مشاهده آمار</label>
+            <label for="perm-view-analytics">View Analytics</label>
           </div>
           
           <div class="permission-item">
             <input type="checkbox" id="perm-edit-products" name="permissions">
-            <label for="perm-edit-products">ویرایش محصولات</label>
+            <label for="perm-edit-products">Edit Products</label>
           </div>
           
           <div class="permission-item">
             <input type="checkbox" id="perm-view-orders" name="permissions">
-            <label for="perm-view-orders">مشاهده سفارشات</label>
+            <label for="perm-view-orders">View Orders</label>
           </div>
         </div>
         
         <div class="modal-buttons">
-          <button type="submit" class="modal-btn primary" id="save-sub-admin-btn">💾 ذخیره</button>
-          <button type="button" class="modal-btn secondary" id="cancel-sub-admin-btn">❌ انصراف</button>
+          <button type="submit" class="modal-btn primary" id="save-sub-admin-btn">💾 Save</button>
+          <button type="button" class="modal-btn secondary" id="cancel-sub-admin-btn">❌ Cancel</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- مودال تأیید حذف -->
+  <!-- Delete Confirmation Modal -->
   <div class="sub-admin-modal" id="delete-confirm-modal">
     <div class="sub-admin-modal-content">
-      <h3>⚠️ تأیید حذف</h3>
+      <h3>⚠️ Confirm Deletion</h3>
       <p style="color: #ccc; text-align: center; margin-bottom: 1.5rem;">
-        آیا مطمئن هستید که می‌خواهید این ساب ادمین را حذف کنید؟
+        Are you sure you want to delete this sub-admin?
       </p>
       <div style="background: #181c2a; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
-        <p style="color: #fff; margin: 0;"><strong>نام:</strong> <span id="delete-admin-name"></span></p>
-        <p style="color: #888; margin: 0.5rem 0 0 0;"><strong>آدرس:</strong> <span id="delete-admin-address"></span></p>
+        <p style="color: #fff; margin: 0;"><strong>Name:</strong> <span id="delete-admin-name"></span></p>
+        <p style="color: #888; margin: 0.5rem 0 0 0;"><strong>Address:</strong> <span id="delete-admin-address"></span></p>
       </div>
       <div class="modal-buttons">
-        <button class="modal-btn danger" id="confirm-delete-btn">🗑️ حذف</button>
-        <button class="modal-btn secondary" id="cancel-delete-btn">❌ انصراف</button>
+        <button class="modal-btn danger" id="confirm-delete-btn">🗑️ Delete</button>
+        <button class="modal-btn secondary" id="cancel-delete-btn">❌ Cancel</button>
       </div>
     </div>
   </div>
@@ -2051,10 +2051,10 @@ Our Services:
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      var archiveBtn = Array.from(document.querySelectorAll('button, a')).find(el => el.textContent.includes('آرشیو بازارهای مالی'));
+      var archiveBtn = Array.from(document.querySelectorAll('button, a')).find(el => el.textContent.includes('Financial Markets Archive'));
       if (archiveBtn) archiveBtn.remove();
       
-      // بازیابی تب فعال از localStorage
+      // Restore active tab from localStorage
       const savedTab = localStorage.getItem('currentActiveTab');
       if (savedTab && savedTab !== 'network' && typeof window.showTab === 'function') {
         // Wait a bit for the page to fully load
@@ -2070,10 +2070,10 @@ Our Services:
     if (window.getUserProfile) {
       const profile = await window.getUserProfile();
       if (!(profile.index && BigInt(profile.index) > 0n)) {
-        // قفل کردن فقط بخش ریپورت
+        // Lock only the reports section
         const reportsSection = document.getElementById('main-reports');
         if (reportsSection) {
-          reportsSection.innerHTML = '<div style="color:#ff6b6b;text-align:center;padding:3rem;font-size:1.5rem;">دسترسی به این بخش فقط برای کاربران فعال مجاز است.<br>🔒</div>';
+          reportsSection.innerHTML = '<div style="color:#ff6b6b;text-align:center;padding:3rem;font-size:1.5rem;">Access to this section is only allowed for active users.<br>🔒</div>';
           reportsSection.style.background = '#181c2a';
         }
       }
@@ -2083,17 +2083,17 @@ Our Services:
 
   <!-- Control display of destination address input -->
   <script>
-    // تابع بروزرسانی خودکار موجودی‌های ترنسفر
-    async function autoRefreshTransferBalances() {
-      try {
-        if (window.updateTransferBalancesOnConnect) {
-          await window.updateTransferBalancesOnConnect();
-          console.log('✅ موجودی‌های ترنسفر خودکار بروزرسانی شد');
+          // Auto-refresh transfer balances function
+      async function autoRefreshTransferBalances() {
+        try {
+          if (window.updateTransferBalancesOnConnect) {
+            await window.updateTransferBalancesOnConnect();
+            console.log('✅ Transfer balances auto-refreshed');
+          }
+        } catch (error) {
+          console.warn('Error in auto-refreshing transfer balances:', error);
         }
-      } catch (error) {
-        console.warn('خطا در بروزرسانی خودکار موجودی‌های ترنسفر:', error);
       }
-    }
 
     document.addEventListener('DOMContentLoaded', function() {
       const transferForm = document.getElementById('transferForm');
@@ -2104,7 +2104,7 @@ Our Services:
         if (window.contractConfig && window.contractConfig.contract) {
           autoRefreshTransferBalances();
         } else {
-          // انتظار برای اتصال کیف پول
+          // Wait for wallet connection
           const checkConnection = setInterval(() => {
             if (window.contractConfig && window.contractConfig.contract) {
               autoRefreshTransferBalances();
@@ -2112,12 +2112,12 @@ Our Services:
             }
           }, 1000);
           
-          // متوقف کردن بررسی بعد از 15 ثانیه
+          // Stop checking after 15 seconds
           setTimeout(() => clearInterval(checkConnection), 15000);
         }
       };
 
-      // شروع بروزرسانی
+      // Start updating
       initTransferBalances();
 
       // USD Converter functionality
@@ -2125,7 +2125,7 @@ Our Services:
       const transferUsdAmount = document.getElementById('transferUsdAmount');
       const usdToIAMBtn = document.getElementById('usdToIAMBtn');
       
-      // نمایش/مخفی کردن فیلد USD بر اساس نوع توکن
+      // Show/hide USD field based on token type
       function toggleUsdConverter() {
         const selectedToken = transferTokenSelect.value;
         if (selectedToken === 'IAM') {
@@ -2136,11 +2136,11 @@ Our Services:
         }
       }
       
-      // تبدیل USD به IAM
+      // Convert USD to IAM
       async function convertUsdToIAM() {
         const usdAmount = parseFloat(transferUsdAmount.value);
         if (isNaN(usdAmount) || usdAmount <= 0) {
-          alert('لطفاً مقدار معتبری برای دلار وارد کنید');
+          alert('Please enter a valid dollar amount');
           return;
         }
         
@@ -2148,26 +2148,26 @@ Our Services:
           // Get token price from smart contract
           const connection = await window.connectWallet();
           if (!connection || !connection.contract) {
-            alert('ابتدا کیف پول خود را متصل کنید');
+            alert('Please connect your wallet first');
             return;
           }
           
-          usdToIAMBtn.textContent = '⏳ در حال محاسبه...';
+          usdToIAMBtn.textContent = '⏳ Calculating...';
           usdToIAMBtn.disabled = true;
           
           const tokenPriceRaw = await connection.contract.getTokenPrice();
           const tokenPrice = Number(ethers.formatUnits(tokenPriceRaw, 18));
           
-          // محاسبه مقدار IAM مورد نیاز
+          // Calculate required IAM amount
           const IAMAmount = (usdAmount / tokenPrice).toFixed(6);
           
-          // قرار دادن مقدار در فیلد اصلی
+          // Set value in main field
           transferAmountInput.value = IAMAmount;
           
-          // نمایش پیام موفقیت
+          // Show success message
           const statusDiv = document.getElementById('transferStatus');
           if (statusDiv) {
-            statusDiv.innerHTML = `✅ $${usdAmount} معادل ${parseFloat(IAMAmount).toLocaleString('en-US', {maximumFractionDigits: 6})} IAM است`;
+            statusDiv.innerHTML = `✅ $${usdAmount} equals ${parseFloat(IAMAmount).toLocaleString('en-US', {maximumFractionDigits: 6})} IAM`;
             statusDiv.style.color = '#00ff88';
             setTimeout(() => {
               statusDiv.innerHTML = '';
@@ -2175,15 +2175,15 @@ Our Services:
           }
           
         } catch (error) {
-          console.error('خطا در تبدیل USD به IAM:', error);
-          alert('خطا در تبدیل. لطفاً دوباره تلاش کنید.');
+          console.error('Error converting USD to IAM:', error);
+          alert('Conversion error. Please try again.');
         } finally {
-          usdToIAMBtn.textContent = '🔄 تبدیل';
+          usdToIAMBtn.textContent = '🔄 Convert';
           usdToIAMBtn.disabled = false;
         }
       }
       
-      // دکمه حداکثر
+      // Maximum button
       const maxAmountBtn = document.getElementById('maxAmountBtn');
       const transferAmountInput = document.getElementById('transferAmount');
       const transferTokenSelect = document.getElementById('transferToken');
@@ -2219,7 +2219,7 @@ Our Services:
           // Set value in input field
           if (parseFloat(maxAmount) > 0) {
             const decimals = (transferTokenSelect.value === 'IAM') ? 6 : 18;
-            // برای DAI و POL بهتر است 2 یا 4 رقم استفاده کنیم؛ برای IAM تا 6 رقم
+            // For DAI and POL, it's better to use 2 or 4 digits; for IAM up to 6 digits
             const floorToDecimals = (val, d) => { const m = Math.pow(10, d); return Math.floor(Number(val) * m) / m; };
             const d = (transferTokenSelect.value === 'IAM') ? 6 : 4;
             const floored = floorToDecimals(maxAmount, d);
@@ -2233,33 +2233,33 @@ Our Services:
               maxAmountBtn.style.background = 'linear-gradient(90deg,#ff6b6b,#ee5a52)';
             }, 1500);
           } else {
-            // نمایش پیام خطا
-            maxAmountBtn.textContent = '❌ موجودی کافی نیست';
+            // Show error message
+            maxAmountBtn.textContent = '❌ Insufficient balance';
             maxAmountBtn.style.background = 'linear-gradient(90deg,#666,#555)';
             setTimeout(() => {
-              maxAmountBtn.textContent = 'حداکثر';
+              maxAmountBtn.textContent = 'Maximum';
               maxAmountBtn.style.background = 'linear-gradient(90deg,#ff6b6b,#ee5a52)';
             }, 2000);
           }
         });
       }
       
-      // Event listeners برای USD converter
+      // Event listeners for USD converter
       if (transferTokenSelect) {
-        // تغییر نوع توکن
+        // Change token type
         transferTokenSelect.addEventListener('change', toggleUsdConverter);
         
-        // اجرای اولیه برای تنظیم وضعیت اولیه
+        // Initial execution to set initial state
         toggleUsdConverter();
       }
       
       if (usdToIAMBtn) {
-        // کلیک دکمه تبدیل
+        // Convert button click
         usdToIAMBtn.addEventListener('click', convertUsdToIAM);
       }
       
       if (transferUsdAmount) {
-        // Enter key در فیلد USD
+        // Enter key in USD field
         transferUsdAmount.addEventListener('keypress', function(e) {
           if (e.key === 'Enter') {
             e.preventDefault();
@@ -2267,7 +2267,7 @@ Our Services:
           }
         });
         
-        // Real-time محاسبه وقتی کاربر تایپ می‌کنه
+        // Real-time calculation when user types
         let usdTimeout;
         transferUsdAmount.addEventListener('input', function() {
           clearTimeout(usdTimeout);
@@ -2281,20 +2281,20 @@ Our Services:
                   const tokenPrice = Number(ethers.formatUnits(tokenPriceRaw, 18));
                   const IAMAmount = (usdAmount / tokenPrice).toFixed(6);
                   
-                  // نمایش preview در placeholder
+                  // Show preview in placeholder
                   transferAmountInput.placeholder = `≈ ${parseFloat(IAMAmount).toLocaleString('en-US', {maximumFractionDigits: 6})} IAM`;
                 }
               } catch (e) {
-                // خطا در real-time - نادیده بگیر
+                // Error in real-time - ignore
               }
             } else {
-              transferAmountInput.placeholder = 'مقدار را وارد کنید';
+              transferAmountInput.placeholder = 'Enter amount';
             }
-          }, 500); // 500ms delay برای جلوگیری از کال‌های زیاد
+          }, 500); // 500ms delay to prevent too many calls
         });
       }
       
-      // Real-time محاسبه معادل دلاری وقتی مقدار IAM تغییر میکنه
+      // Real-time calculation of dollar equivalent when IAM amount changes
       if (transferAmountInput) {
         let IAMTimeout;
         transferAmountInput.addEventListener('input', function() {
@@ -2310,13 +2310,13 @@ Our Services:
                     const tokenPrice = Number(ethers.formatUnits(tokenPriceRaw, 18));
                     const usdValue = (IAMAmount * tokenPrice).toFixed(2);
                     
-                    // نمایش معادل دلاری در فیلد USD
+                    // Show dollar equivalent in USD field
                     if (transferUsdAmount) {
                       transferUsdAmount.placeholder = `≈ $${parseFloat(usdValue).toLocaleString('en-US', {maximumFractionDigits: 2})}`;
                     }
                   }
                 } catch (e) {
-                  // خطا در real-time - نادیده بگیر
+                  // Error in real-time - ignore
                 }
               } else {
                 if (transferUsdAmount) {
@@ -2334,7 +2334,7 @@ Our Services:
         if (transferBtn) {
           transferBtn.disabled = true;
           var oldText = transferBtn.textContent;
-          transferBtn.textContent = 'در حال پردازش...';
+                      transferBtn.textContent = 'Processing...';
         }
         const to = document.getElementById('transferTo').value.trim();
         const amount = parseFloat(document.getElementById('transferAmount').value);
@@ -2343,58 +2343,58 @@ Our Services:
         status.textContent = '';
         status.className = 'transfer-status';
         if (!to || !amount || amount <= 0) {
-          status.textContent = 'آدرس مقصد و مقدار معتبر وارد کنید';
+                      status.textContent = 'Please enter valid destination address and amount';
           status.className = 'transfer-status error';
           if (transferBtn) { transferBtn.disabled = false; transferBtn.textContent = oldText; }
           return;
         }
         if (!window.contractConfig || !window.contractConfig.contract || !window.contractConfig.signer) {
-          status.textContent = 'اتصال کیف پول برقرار نیست';
+                      status.textContent = 'Wallet connection not established';
           status.className = 'transfer-status error';
           if (transferBtn) { transferBtn.disabled = false; transferBtn.textContent = oldText; }
           return;
         }
         try {
-          status.textContent = 'در حال ارسال...';
+                      status.textContent = 'Sending...';
           status.className = 'transfer-status loading';
           if (token === 'pol') {
-            // انتقال MATIC/POL
+            // Transfer MATIC/POL
             const tx = await window.contractConfig.signer.sendTransaction({
               to,
               value: ethers.parseEther(amount.toString())
             });
             await tx.wait();
-            status.textContent = 'انتقال با موفقیت انجام شد!\nکد تراکنش: ' + tx.hash;
+            status.textContent = 'Transfer completed successfully!\nTransaction hash: ' + tx.hash;
             status.className = 'transfer-status success';
           } else if (token === 'dai') {
-            // انتقال DAI - تصحیح decimal به 18
+            // Transfer DAI - fix decimal to 18
             const daiContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, window.contractConfig.signer);
             const decimals = 18; // DAI has 18 decimals, not 6
             const parsedAmount = ethers.parseUnits(amount.toString(), decimals);
             const tx = await daiContract.transfer(to, parsedAmount);
             await tx.wait();
-            status.textContent = 'انتقال DAI با موفقیت انجام شد!\nکد تراکنش: ' + tx.hash;
+            status.textContent = 'DAI transfer completed successfully!\nTransaction hash: ' + tx.hash;
             status.className = 'transfer-status success';
           } else {
-            // انتقال IAM
+            // Transfer IAM
             const contract = window.contractConfig.contract;
             const tx = await contract.transfer(to, ethers.parseEther(amount.toString()));
             await tx.wait();
-            status.textContent = 'انتقال با موفقیت انجام شد!\nکد تراکنش: ' + tx.hash;
+            status.textContent = 'Transfer completed successfully!\nTransaction hash: ' + tx.hash;
             status.className = 'transfer-status success';
           }
           transferForm.reset();
           
-          // بروزرسانی موجودی‌ها بعد از انتقال موفق
+          // Update balances after successful transfer
           setTimeout(autoRefreshTransferBalances, 2000);
         } catch (error) {
           let msg = error && error.message ? error.message : error;
-          if (msg.includes('user rejected')) msg = 'تراکنش توسط کاربر لغو شد';
-          else if (msg.includes('insufficient funds')) msg = 'موجودی کافی نیست';
-          else if (msg.includes('invalid address')) msg = 'آدرس مقصد نامعتبر است';
-          else if (msg.includes('nonce')) msg = 'خطا در شماره تراکنش. لطفاً دوباره تلاش کنید';
-          else if (msg.includes('execution reverted')) msg = 'تراکنش ناموفق بود. لطفاً شرایط را بررسی کنید';
-          else msg = 'خطا در انتقال: ' + msg;
+          if (msg.includes('user rejected')) msg = 'Transaction cancelled by user';
+          else if (msg.includes('insufficient funds')) msg = 'Insufficient balance';
+          else if (msg.includes('invalid address')) msg = 'Invalid destination address';
+          else if (msg.includes('nonce')) msg = 'Transaction number error. Please try again';
+          else if (msg.includes('execution reverted')) msg = 'Transaction failed. Please check conditions';
+          else msg = 'Transfer error: ' + msg;
           status.textContent = msg;
           status.className = 'transfer-status error';
         }
@@ -2413,17 +2413,17 @@ Our Services:
           searchStatus.textContent = '';
           const idx = searchInput.value.trim();
           if (!idx || isNaN(idx) || Number(idx) < 0) {
-            searchStatus.textContent = 'ایندکس معتبر وارد کنید';
+            searchStatus.textContent = 'Please enter a valid index';
             searchStatus.className = 'transfer-status error';
             return;
           }
           if (!window.contractConfig || !window.contractConfig.contract) {
-            searchStatus.textContent = 'اتصال کیف پول برقرار نیست';
+            searchStatus.textContent = 'Wallet connection not established';
             searchStatus.className = 'transfer-status error';
             return;
           }
           try {
-            searchStatus.textContent = 'در حال جستجو...';
+            searchStatus.textContent = 'Searching...';
             searchStatus.className = 'transfer-status loading';
             const contract = window.contractConfig.contract;
             const address = await contract.indexToAddress(BigInt(idx));
@@ -2432,12 +2432,12 @@ Our Services:
               searchStatus.className = 'transfer-status error';
               document.getElementById('transferTo').value = '';
             } else {
-              searchStatus.textContent = 'آدرس ولت پیدا شد';
+              searchStatus.textContent = 'Wallet address found';
               searchStatus.className = 'transfer-status success';
               document.getElementById('transferTo').value = address;
             }
           } catch (err) {
-            searchStatus.textContent = 'خطا در جستجو: ' + (err && err.message ? err.message : err);
+            searchStatus.textContent = 'Search error: ' + (err && err.message ? err.message : err);
             searchStatus.className = 'transfer-status error';
             document.getElementById('transferTo').value = '';
           }
@@ -2447,19 +2447,19 @@ Our Services:
   </script>
 
   <script>
-    // تابع باز/بسته کردن بخش‌های قابل گسترش
+    // Function to expand/collapse expandable sections
     function toggleExpandable(containerId) {
       const container = document.getElementById(containerId);
       if (container) {
         container.classList.toggle('collapsed');
         
-        // ذخیره وضعیت در localStorage
+        // Save state in localStorage
         const isCollapsed = container.classList.contains('collapsed');
         localStorage.setItem(`expandable_${containerId}`, isCollapsed ? 'collapsed' : 'expanded');
       }
     }
 
-    // بازیابی وضعیت بخش‌های قابل گسترش از localStorage
+    // Restore expandable sections state from localStorage
     function restoreExpandableStates() {
       const expandableContainers = document.querySelectorAll('.expandable-container');
       expandableContainers.forEach(container => {
@@ -2472,7 +2472,6 @@ Our Services:
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-      // بازیابی وضعیت بخش‌های قابل گسترش
       restoreExpandableStates();
       
       
@@ -2480,7 +2479,6 @@ Our Services:
   </script>
 
   <script>
-    // تابع نمایش قیمت با نماد علمی
     window.formatTokenPrice = function(priceWei) {
       if (!priceWei || priceWei === '0') return '0';
       let priceString = priceWei.toString();
@@ -2494,14 +2492,14 @@ Our Services:
       return result;
     }
 
-    // تابع بروزرسانی نمایش قیمت
+    // Function to update price display
     async function updateTokenPriceDisplay() {
       try {
         if (!window.contractConfig || !window.contractConfig.contract) {
           await window.connectWallet();
           if (!window.contractConfig || !window.contractConfig.contract) {
             const el = document.getElementById('chart-lvl-usd');
-            if (el) el.textContent = 'اتصال ناموفق';
+            if (el) el.textContent = 'Connection failed';
             return;
           }
         }
@@ -2510,13 +2508,13 @@ Our Services:
         const priceFormatted = window.formatTokenPrice(tokenPrice);
         const el = document.getElementById('chart-lvl-usd');
         if (el) el.textContent = priceFormatted;
-        // بروزرسانی point-value از قرارداد
+        // Update point-value from contract
         try {
           const pointValue = await contract.getPointValue();
           const pointValueNum = parseFloat(ethers.formatUnits(pointValue, 18));
           const pointValueFormatted = pointValueNum < 0.000001 ? pointValueNum.toExponential(6) : pointValueNum.toFixed(2);
           const el2 = document.getElementById('point-value');
-          if (el2) el2.textContent = pointValueFormatted; // حذف پسوند IAM
+          if (el2) el2.textContent = pointValueFormatted; // Remove IAM suffix
         } catch (error) {
           // ...
         }
@@ -2533,7 +2531,7 @@ Our Services:
       const origLoadUserProfile = window.loadUserProfile;
       window.loadUserProfile = async function() {
         await origLoadUserProfile.apply(this, arguments);
-        await updateProfileReferrer(); // اینجا با await و بدون تاخیر
+        await updateProfileReferrer(); // Here with await and without delay
       };
     }
   </script>
@@ -2554,7 +2552,7 @@ Our Services:
             if (typeof loadUserProfile === 'function') loadUserProfile();
           }
         } catch (e) {
-          alert('خطا در اتصال کیف پول: ' + (e.message || e));
+          alert('Wallet connection error: ' + (e.message || e));
         }
       });
     }
@@ -2563,10 +2561,10 @@ Our Services:
 
   <script src="js/navbar.js"></script>
   
-  <!-- مقداردهی SwapManager -->
+      <!-- SwapManager initialization -->
   <script>
     document.addEventListener('DOMContentLoaded', async function() {
-      console.log('🚀 شروع مقداردهی SwapManager...');
+      console.log('🚀 Starting SwapManager initialization...');
       
               // Ensure swap.js is loaded
       if (typeof SwapManager !== 'undefined') {
@@ -2576,7 +2574,7 @@ Our Services:
           // Wait a bit for DOM to fully load
           await new Promise(resolve => setTimeout(resolve, 1000));
           
-          // بررسی وجود عناصر مورد نیاز
+          // Check for required elements
           const requiredElements = ['swapForm', 'swapDirection', 'swapAmount', 'maxBtn', 'swapRate', 'swapPreview', 'swapLimitInfo', 'swapStatus'];
           const missingElements = requiredElements.filter(id => !document.getElementById(id));
           
@@ -2585,49 +2583,49 @@ Our Services:
             return;
           }
           
-          console.log('✅ تمام عناصر مورد نیاز موجود هستند');
+          console.log('✅ All required elements are present');
           
-          // بررسی وجود متغیرهای مورد نیاز
+          // Check for required variables
           if (!window.DAI_ADDRESS || !window.DAI_ABI) {
-            console.error('❌ متغیرهای DAI_ADDRESS یا DAI_ABI تعریف نشده‌اند');
+            console.error('❌ DAI_ADDRESS or DAI_ABI variables are not defined');
             return;
           }
           
-          console.log('✅ متغیرهای DAI موجود هستند');
+          console.log('✅ DAI variables are present');
           
-          // ایجاد نمونه SwapManager
+          // Create SwapManager instance
           window.swapManager = new SwapManager();
-          console.log('✅ نمونه SwapManager ایجاد شد');
+          console.log('✅ SwapManager instance created');
           
-          // مقداردهی اولیه
+          // Initial setup
           await window.swapManager.initializeSwap();
-          console.log('✅ SwapManager با موفقیت مقداردهی شد');
+          console.log('✅ SwapManager initialized successfully');
           
         } catch (error) {
-          console.error('❌ خطا در مقداردهی SwapManager:', error);
+          console.error('❌ Error initializing SwapManager:', error);
         }
       } else {
-        console.warn('⚠️ SwapManager تعریف نشده است - فایل swap.js بارگذاری نشده');
+        console.warn('⚠️ SwapManager is not defined - swap.js file not loaded');
       }
       
 
     });
     
-    // مقداردهی مجدد بعد از اتصال کیف پول
+    // Re-initialization after wallet connection
     if (window.connectWallet) {
       const originalConnectWallet = window.connectWallet;
       window.connectWallet = async function() {
         const result = await originalConnectWallet();
         
-        // مقداردهی مجدد SwapManager بعد از اتصال
+        // Re-initialize SwapManager after connection
         setTimeout(async () => {
           if (window.swapManager && typeof window.swapManager.refreshSwapData === 'function') {
             try {
-              console.log('🔄 رفرش SwapManager بعد از اتصال کیف پول...');
+              console.log('🔄 Refreshing SwapManager after wallet connection...');
               await window.swapManager.refreshSwapData();
-              console.log('✅ SwapManager رفرش شد');
+              console.log('✅ SwapManager refreshed');
             } catch (error) {
-              console.warn('⚠️ خطا در رفرش SwapManager:', error);
+              console.warn('⚠️ Error refreshing SwapManager:', error);
             }
           }
           // Update index dashboard status bar
@@ -2641,11 +2639,11 @@ Our Services:
   </div>
 
 <style>
-/* فایل تمیز شد - CSS جدید در انتها قرار دارد */
+/* File cleaned - new CSS is at the end */
 
-/* === همه کارت‌ها فیکس عرض در موبایل === */
+/* === All cards fixed width on mobile === */
 @media (max-width: 768px) {
-  /* کانتینر اصلی کارت‌ها */
+  /* Main cards container */
   div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] {
     display: flex !important;
     flex-direction: column !important;
@@ -2654,7 +2652,7 @@ Our Services:
     padding: 0 0.5rem !important;
   }
   
-  /* همه کارت‌ها فیکس عرض کامل */
+  /* All cards fixed full width */
   div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] {
     width: 100% !important;
     min-width: 100% !important;
@@ -2671,14 +2669,14 @@ Our Services:
     overflow: hidden !important;
   }
   
-  /* آیکون‌های کارت */
+  /* Card icons */
   div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] > div[style*="font-size:1.2rem;margin-bottom:0.3rem;"] {
     font-size: 1.8rem !important;
     margin-bottom: 0.6rem !important;
     text-align: center !important;
   }
   
-  /* عنوان کارت‌ها */
+  /* Card titles */
   div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] > div[style*="font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;"] {
     font-size: 1rem !important;
     margin-bottom: 0.4rem !important;
@@ -2689,7 +2687,7 @@ Our Services:
     text-overflow: ellipsis !important;
   }
   
-  /* مقادیر کارت‌ها - فیکس overflow */
+  /* Card values - fix overflow */
   div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] > div[style*="font-size:0.9rem;font-family:monospace;font-weight:bold;"] {
     font-size: 1.1rem !important;
     margin: 0.6rem 0 !important;
@@ -2702,7 +2700,7 @@ Our Services:
     box-sizing: border-box !important;
   }
   
-  /* توضیحات کارت‌ها */
+  /* Card descriptions */
   div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] > div[style*="font-size:0.7rem;margin-top:0.2rem;"] {
     font-size: 0.8rem !important;
     margin-top: 0.4rem !important;
@@ -2713,27 +2711,27 @@ Our Services:
     text-overflow: ellipsis !important;
   }
   
-  /* کارت‌های خاص - اندازه‌های ویژه */
+  /* Special cards - special sizes */
   
-  /* کارت کل عرضه */
+  /* Total supply card */
   div[style*="border:1px solid rgba(0,255,136,0.2)"] {
     border: 3px solid rgba(0,255,136,0.4) !important;
     background: rgba(0,255,136,0.1) !important;
   }
   
-  /* کارت موجودی قرارداد IAM */
+  /* IAM contract balance card */
   div[style*="border:1px solid rgba(255,193,7,0.2)"] {
     border: 3px solid rgba(255,193,7,0.4) !important;
     background: rgba(255,193,7,0.1) !important;
   }
   
-  /* کارت موجودی DAI */
+  /* DAI balance card */
   div[style*="border:1px solid rgba(0,123,255,0.2)"] {
     border: 3px solid rgba(0,123,255,0.4) !important;
     background: rgba(0,123,255,0.1) !important;
   }
   
-  /* کارت قیمت ثبت‌نام */
+  /* Registration price card */
   div[style*="border:1px solid rgba(138,43,226,0.2)"] {
     border: 3px solid rgba(138,43,226,0.4) !important;
     background: rgba(138,43,226,0.1) !important;
@@ -2758,48 +2756,48 @@ Our Services:
   }
 }
 
-/* مخصوص صفحات خیلی کوچک */
+/* For very small screens */
 @media (max-width: 480px) {
-  /* کانتینر کارت‌ها */
+  /* Cards container */
   div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] {
     padding: 0 0.3rem !important;
     gap: 0.6rem !important;
   }
   
-  /* کارت‌ها */
+  /* Cards */
   div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] {
     padding: 1rem !important;
     margin-bottom: 0.6rem !important;
     border-radius: 10px !important;
   }
   
-  /* آیکون‌ها */
+  /* Icons */
   div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] > div[style*="font-size:1.2rem;margin-bottom:0.3rem;"] {
     font-size: 1.5rem !important;
     margin-bottom: 0.5rem !important;
   }
   
-  /* عناوین */
+  /* Titles */
   div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] > div[style*="font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;"] {
     font-size: 0.9rem !important;
     margin-bottom: 0.3rem !important;
   }
   
-  /* مقادیر */
+  /* Values */
   div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] > div[style*="font-size:0.9rem;font-family:monospace;font-weight:bold;"] {
     font-size: 1rem !important;
     margin: 0.5rem 0 !important;
     line-height: 1.2 !important;
   }
   
-  /* توضیحات */
+  /* Descriptions */
   div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] > div[style*="font-size:0.7rem;margin-top:0.2rem;"] {
     font-size: 0.75rem !important;
     margin-top: 0.3rem !important;
   }
 }
 
-/* جلوگیری از بیرون زدن اعداد طولانی از داخل کارت‌ها (در همه اندازه‌ها) */
+/* Prevent long numbers from overflowing out of cards (in all sizes) */
 div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] > div[style*="font-size:0.9rem;font-family:monospace;font-weight:bold;"] {
   word-break: break-all !important;
   overflow-wrap: anywhere !important;
@@ -2809,7 +2807,7 @@ div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:
 
 /* Responsive Layout for Dashboard Metric Cards on Tablet and Desktop */
 @media (min-width: 769px) and (max-width: 1023px) {
-  /* ظرف کارت‌ها → 2 ستون در هر سطر */
+  /* Cards container → 2 columns per row */
   div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
@@ -2827,7 +2825,7 @@ div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:
 }
 
 @media (min-width: 1024px) {
-  /* ظرف کارت‌ها → 3 ستون در هر سطر */
+  /* Cards container → 3 columns per row */
   div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] {
     display: grid !important;
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
@@ -2845,9 +2843,9 @@ div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:
 }
 
 /* Dynamic Width Mode for Dashboard Metric Cards on Tablet/Desktop
-   این بلوک قوانین گرید را در بالا override می‌کند تا کارت‌ها به اندازهٔ محتوا عریض شوند */
+   This block overrides the grid rules above to make cards expand to content width */
 @media (min-width: 769px) {
-  /* ظرف کارت‌ها: فلکس و قابل پیچش */
+  /* Cards container: flex and wrappable */
   div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] {
     display: flex !important;
     flex-wrap: wrap !important;
@@ -2855,7 +2853,7 @@ div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:
     justify-content: center !important;
     align-items: stretch !important;
   }
-  /* خود کارت‌ها: عرض بر اساس محتوا */
+  /* Cards themselves: width based on content */
   div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] > div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] {
     flex: 0 0 auto !important;
     width: auto !important;
@@ -2863,7 +2861,7 @@ div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:
     max-width: none !important;
     box-sizing: border-box !important;
   }
-  /* مقدارها: یک‌خطی بمانند تا کارت عریض شود */
+  /* Values: stay single-line so card expands */
   div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] > div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] > div[style*="font-size:0.9rem;font-family:monospace;font-weight:bold;"] {
     white-space: nowrap !important;
     word-break: normal !important;
@@ -2873,7 +2871,7 @@ div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:
 
 /* Dynamic Width Mode for Dashboard Metric Cards on Mobile */
 @media (max-width: 768px) {
-  /* ظرف کارت‌ها: فلکس، پیچش فعال، چینش ردیفی، اسکرول افقی در صورت نیاز */
+  /* Cards container: flex, active wrapping, row layout, horizontal scroll if needed */
   div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] {
     display: flex !important;
     flex-direction: row !important;
@@ -2886,7 +2884,7 @@ div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch !important;
   }
-  /* کارت‌ها: عرض بر اساس محتوا، جلوگیری از کشیده شدن به 100% */
+  /* Cards: width based on content, prevent stretching to 100% */
   div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] > div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] {
     flex: 0 0 auto !important;
     width: auto !important;
@@ -2895,7 +2893,7 @@ div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:
     box-sizing: border-box !important;
     margin: 0 !important;
   }
-  /* مقدارها: یک‌خطی برای افزایش عرض کارت */
+  /* Values: single-line to increase card width */
   div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] > div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] > div[style*="font-size:0.9rem;font-family:monospace;font-weight:bold;"] {
     white-space: nowrap !important;
     word-break: normal !important;
@@ -2905,14 +2903,14 @@ div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:
 </style>
 
 <script>
-// مدیریت کارت‌ها و مقادیر در موبایل
+// Manage cards and values on mobile
 function optimizeCardsForMobile() {
   if (window.innerWidth <= 768) {
-    // پیدا کردن همه کارت‌ها
+    // Find all cards
     const cards = document.querySelectorAll('div[style*="background:rgba(0,0,0,0.3)"]');
     
     cards.forEach((card, index) => {
-      // فیکس کردن عرض
+      // Fix width
       card.style.width = '100%';
       card.style.maxWidth = '100%';
       card.style.minWidth = '100%';
@@ -2924,14 +2922,14 @@ function optimizeCardsForMobile() {
       card.style.opacity = '0';
       card.style.transform = 'translateY(20px)';
       
-      // تاخیر برای انیمیشن
+      // Delay for animation
       setTimeout(() => {
         card.style.transition = 'all 0.4s ease';
         card.style.opacity = '1';
         card.style.transform = 'translateY(0)';
       }, index * 80);
       
-      // بهینه‌سازی مقادیر داخل کارت
+      // Optimize values inside card
       const valueElements = card.querySelectorAll('div[style*="font-family:monospace"]');
       valueElements.forEach(valueEl => {
         valueEl.style.wordBreak = 'break-all';
@@ -2939,7 +2937,7 @@ function optimizeCardsForMobile() {
         valueEl.style.maxWidth = '100%';
         valueEl.style.textAlign = 'center';
         
-        // اگر مقدار خیلی بلند است، فونت را کوچک‌تر کن
+        // If value is too long, make font smaller
         const text = valueEl.textContent || '';
         if (text.length > 15) {
           valueEl.style.fontSize = '0.9rem';
@@ -2952,7 +2950,7 @@ function optimizeCardsForMobile() {
       });
     });
     
-    // بهینه‌سازی کانتینر اصلی
+    // Optimize main container
     const container = document.querySelector('div[style*="display:flex;flex-wrap:wrap"]');
     if (container) {
       container.style.width = '100%';
@@ -2962,14 +2960,14 @@ function optimizeCardsForMobile() {
   }
 }
 
-// مدیریت دکمه رفرش موبایل
+// Manage mobile refresh button
 document.addEventListener('DOMContentLoaded', function() {
-  // بهینه‌سازی کارت‌ها برای موبایل
+  // Optimize cards for mobile
   setTimeout(() => {
     optimizeCardsForMobile();
   }, 800);
   
-  // بهینه‌سازی مجدد هنگام تغییر اندازه صفحه
+  // Re-optimize when page size changes
   let resizeTimeout;
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimeout);
@@ -2978,14 +2976,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 300);
   });
   
-  // بهینه‌سازی مجدد هنگام بروزرسانی مقادیر
+  // Re-optimize when values update
   const observer = new MutationObserver(() => {
     if (window.innerWidth <= 768) {
       setTimeout(optimizeCardsForMobile, 200);
     }
   });
   
-  // نظارت بر تغییرات در کارت‌ها
+  // Monitor changes in cards
   const targetNode = document.querySelector('div[style*="display:flex;flex-wrap:wrap"]');
   if (targetNode) {
     observer.observe(targetNode, {
@@ -2995,12 +2993,12 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   
-  // کدهای اصلی صفحه
+  // Main page codes
 });
 
 
 
-// پایان اسکریپت‌های اصلی
+// End of main scripts
 
 
 
@@ -3602,9 +3600,9 @@ async function testTopUsersLoading() {
       listContainer.innerHTML = `
         <div style="text-align: center; color: #ccc; font-size: 0.8rem; padding: 1rem;">
           <div style="font-size: 1.2rem; margin-bottom: 0.5rem;">📊</div>
-          <div style="font-weight: bold; margin-bottom: 0.3rem;">تست دستی انجام شد</div>
-          <div style="font-size: 0.7rem;">هیچ کاربری با لایک در ۱۰ کاربر اول یافت نشد</div>
-          <div style="font-size: 0.6rem; margin-top: 0.5rem; color: #888;">💡 ممکن است کاربران با لایک در ایندکس‌های بالاتر باشند</div>
+          <div style="font-weight: bold; margin-bottom: 0.3rem;">Manual test completed</div>
+          <div style="font-size: 0.7rem;">No users with likes found in first 10 users</div>
+          <div style="font-size: 0.6rem; margin-top: 0.5rem; color: #888;">💡 Users with likes might be in higher indexes</div>
         </div>
       `;
       console.log('✅ Updated popup with no results message');
@@ -3624,7 +3622,7 @@ async function loadTopUsersInPopup() {
     }
     
     console.log('🔄 Starting to load top users in popup...');
-    listContainer.innerHTML = '<div style="text-align: center; color: #ccc; font-size: 0.8rem; padding: 1rem;">🔄 در حال جستجوی کاربران با لایک...</div>';
+    listContainer.innerHTML = '<div style="text-align: center; color: #ccc; font-size: 0.8rem; padding: 1rem;">🔄 Searching for users with likes...</div>';
     
     // Check wallet connection
     if (!window.contractConfig || !window.contractConfig.contract) {
@@ -3633,7 +3631,7 @@ async function loadTopUsersInPopup() {
         await window.connectWallet();
       } catch (error) {
         console.error('❌ Failed to connect wallet:', error);
-        listContainer.innerHTML = '<div style="text-align: center; color: #ff4444; font-size: 0.8rem; padding: 1rem;">لطفاً ابتدا کیف پول خود را متصل کنید</div>';
+        listContainer.innerHTML = '<div style="text-align: center; color: #ff4444; font-size: 0.8rem; padding: 1rem;">Please connect your wallet first</div>';
         return;
       }
     }
@@ -3680,9 +3678,9 @@ async function loadTopUsersInPopup() {
       listContainer.innerHTML = `
         <div style="text-align: center; color: #ccc; font-size: 0.8rem; padding: 1rem;">
           <div style="font-size: 1.2rem; margin-bottom: 0.5rem;">📊</div>
-          <div style="font-weight: bold; margin-bottom: 0.3rem;">هیچ کاربری با لایک یافت نشد</div>
-          <div style="font-size: 0.7rem;">در ۲۰ کاربر اول هیچ کاربری لایک دریافت نکرده است</div>
-          <div style="font-size: 0.6rem; margin-top: 0.5rem; color: #888;">💡 شما می‌توانید اولین کسی باشید که لایک دریافت می‌کند!</div>
+          <div style="font-weight: bold; margin-bottom: 0.3rem;">No users with likes found</div>
+          <div style="font-size: 0.7rem;">In the first 20 users, no one has received likes</div>
+          <div style="font-size: 0.6rem; margin-top: 0.5rem; color: #888;">💡 You can be the first to receive likes!</div>
         </div>
       `;
       return;
@@ -3700,7 +3698,7 @@ async function loadTopUsersInPopup() {
     console.error('❌ Error loading top users in popup:', error);
     const listContainer = document.getElementById('top-users-popup-list');
     if (listContainer) {
-      listContainer.innerHTML = `<div style="text-align: center; color: #ff4444; font-size: 0.8rem; padding: 1rem;">خطا در بارگذاری کاربران: ${error.message}</div>`;
+      listContainer.innerHTML = `<div style="text-align: center; color: #ff4444; font-size: 0.8rem; padding: 1rem;">Error loading users: ${error.message}</div>`;
     }
   }
 }
@@ -3714,9 +3712,9 @@ function displayTopUsersInPopup(users) {
     listContainer.innerHTML = `
       <div style="text-align: center; color: #ccc; font-size: 0.8rem; padding: 1rem;">
         <div style="font-size: 1.2rem; margin-bottom: 0.5rem;">📊</div>
-        <div style="font-weight: bold; margin-bottom: 0.3rem;">هیچ کاربری با لایک یافت نشد</div>
-        <div style="font-size: 0.7rem;">هنوز هیچ کاربری لایک دریافت نکرده است</div>
-        <div style="font-size: 0.6rem; margin-top: 0.5rem; color: #888;">💡 شما می‌توانید اولین کسی باشید که لایک دریافت می‌کند!</div>
+        <div style="font-weight: bold; margin-bottom: 0.3rem;">No users with likes found</div>
+        <div style="font-size: 0.7rem;">No users have received likes yet</div>
+        <div style="font-size: 0.6rem; margin-top: 0.5rem; color: #888;">💡 You can be the first to receive likes!</div>
       </div>
     `;
     return;
@@ -3744,7 +3742,7 @@ function displayTopUsersInPopup(users) {
         </div>
         <div style="text-align: center; min-width: 40px;">
           <div style="color: #00ff88; font-size: 0.8rem; font-weight: bold;">${user.likeCount}</div>
-          <div style="color: #ccc; font-size: 0.5rem;">لایک</div>
+          <div style="color: #ccc; font-size: 0.5rem;">Likes</div>
         </div>
       </div>
     `;
