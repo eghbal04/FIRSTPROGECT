@@ -79,13 +79,11 @@
       <div class="register-form-status info" id="connection-status"></div>
       <div class="register-form-status warning" id="register-suggestion" style="display:none;"></div>
       
-      <div class="form-group">
-        <label for="index-search">Referrer Index</label>
-        <div style="display: flex; gap: 8px; align-items: center;">
-          <input type="text" id="index-search" class="register-form-input" placeholder="Enter referrer index" autocomplete="off" value="" style="flex: 1; min-width: 0;">
-          <button type="button" id="apply-index-btn" class="register-btn" style="padding: 8px 12px; font-size: 0.85rem; white-space: nowrap;">Apply</button>
-        </div>
-      </div>
+             <div class="form-group">
+         <label for="index-search">Referrer Index</label>
+         <input type="text" id="index-search" class="register-form-input" placeholder="Enter referrer index" autocomplete="off" value="" style="width: 100%; margin-bottom: 8px;">
+         <button type="button" id="apply-index-btn" class="register-btn" style="width: 100%; padding: 8px 12px; font-size: 0.85rem;">Apply</button>
+       </div>
       
       <div class="form-group">
         <label for="referrer-address">Referrer Address</label>
@@ -155,7 +153,7 @@
     }
 
     // Function to show temporary messages
-    function showTempMessage(message, type = 'info', duration = 3000) {
+    window.showTempMessage = function(message, type = 'info', duration = 3000) {
         const tempBox = document.createElement('div');
         tempBox.style.cssText = `
             position: fixed;
@@ -261,14 +259,25 @@
   </main>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
   <script src="js/config.js"></script>
+  <script src="js/register.js"></script>
   <script>
-    let selectedAvatar = 'man';
-    let isConnected = false;
-    // Define input variables before each use
-    const indexInput = document.getElementById('index-search');
-    const refInput = document.getElementById('referrer-address');
-     const newUserInput = document.getElementById('new-user-address');
-    const defaultGuide = '';
+         let selectedAvatar = 'man';
+     let isConnected = false;
+     let indexInput, refInput, newUserInput;
+     const defaultGuide = '';
+     
+     // Initialize input variables after DOM is loaded
+     document.addEventListener('DOMContentLoaded', function() {
+       indexInput = document.getElementById('index-search');
+       refInput = document.getElementById('referrer-address');
+       newUserInput = document.getElementById('new-user-address');
+       
+       // Ensure index input is properly initialized and enabled
+       if (indexInput) {
+         indexInput.disabled = false;
+         indexInput.readOnly = false;
+       }
+     });
     
                                                 // Function to check if target index is in current user's subtree
           function isIndexInUserSubtree(targetIndex, currentUserIndex) {
@@ -332,10 +341,16 @@
         document.getElementById('register-btn').disabled = false;
         document.querySelectorAll('input').forEach(i=>i.disabled=false);
         
-        // Check user status
-        const refInput = document.getElementById('referrer-address');
-        const indexInput = document.getElementById('index-search');
-        const newUserInput = document.getElementById('new-user-address');
+        // Ensure index input is always enabled and not read-only
+        if (indexInput) {
+          indexInput.disabled = false;
+          indexInput.readOnly = false;
+        }
+        
+                 // Check user status
+         if (!refInput) refInput = document.getElementById('referrer-address');
+         if (!indexInput) indexInput = document.getElementById('index-search');
+         if (!newUserInput) newUserInput = document.getElementById('new-user-address');
         let user;
         let parentIndex = '...';
         
@@ -344,12 +359,12 @@
           console.log(`🔍 User status:`, user);
           
           if (user && user.index && BigInt(user.index) > 0n) {
-            // User is registered - can only register subordinates
+            // User is registered - can register subordinates or find other referrers
             console.log(`✅ User is active: index=${user.index}`);
             
-            // Referrer by default: current user address
-            refInput.value = myAddress;
-            refInput.readOnly = true; // Disable referrer editing
+            // Allow user to enter any index to find referrer
+            refInput.value = '';
+            refInput.readOnly = false; // Enable referrer editing
             
             // New user address: editable for subordinate
             newUserInput.value = '';
@@ -362,21 +377,26 @@
             suggestionDiv.innerHTML = `
               <div style="background: rgba(167,134,255,0.1); border: 1px solid rgba(167,134,255,0.3); border-radius: 8px; padding: 12px; margin: 10px 0;">
                 <strong style="color: #a786ff;">👥 Subordinate Registration:</strong><br>
-                • Referrer: <span style="color: #a786ff;">${myAddress}</span> (You)<br>
+                • Enter referrer index to find referrer address<br>
                 • Enter new user address or click field to read from clipboard<br>
-                • You can only register your subordinates
+                • You can register subordinates under any valid referrer
               </div>
             `;
             
             // Set parent-index
             parentIndex = user.index.toString();
             
-            // Set default index field value
-            let IAMId = 'IAM' + user.index.toString().padStart(5, '0');
-            indexInput.value = IAMId;
+            // Clear index field to allow user input
+            indexInput.value = '';
             indexInput.style.background = '';
             indexInput.style.color = '';
             indexInput.style.opacity = '';
+            
+            // Update button text for registered users
+            const registerBtn = document.getElementById('register-btn');
+            if (registerBtn) {
+              registerBtn.textContent = 'Register Subordinate';
+            }
             
           } else {
             // User is not registered - automatic mode
@@ -395,10 +415,10 @@
             suggestionDiv.style.display = '';
             suggestionDiv.innerHTML = `
               <div style="background: rgba(255,193,7,0.1); border: 1px solid rgba(255,193,7,0.3); border-radius: 8px; padding: 12px; margin: 10px 0;">
-                <strong style="color: #ffc107;">📝 Manual Registration:</strong><br>
-                • Please enter referrer index<br>
+                <strong style="color: #ffc107;">📝 Self Registration:</strong><br>
+                • Enter referrer index to find referrer address<br>
                 • Referrer address will be set automatically<br>
-                • New user: <span style="color: #a786ff;">${myAddress}</span><br>
+                • New user: <span style="color: #a786ff;">${myAddress}</span> (You)<br>
                 • After entering index, click "Register" button
               </div>
             `;
@@ -411,6 +431,12 @@
             indexInput.style.background = '';
             indexInput.style.color = '';
             indexInput.style.opacity = '';
+            
+            // Update button text for unregistered users
+            const registerBtn = document.getElementById('register-btn');
+            if (registerBtn) {
+              registerBtn.textContent = 'Register Self';
+            }
           }
                  } catch (e) {
            console.log(`Error checking user status:`, e);
@@ -506,10 +532,15 @@
         document.getElementById('IAM-balance').textContent = IAMBalance;
       } catch (e) {
         isConnected = false;
-        showTempMessage('❌ Wallet connection failed: ' + (e.message || e), 'error');
+        window.showTempMessage('❌ Wallet connection failed: ' + (e.message || e), 'error');
         document.getElementById('register-info').style.display = 'none';
         document.getElementById('register-btn').disabled = true;
-        document.querySelectorAll('input').forEach(i=>i.disabled=true);
+        // Only disable specific inputs, not the index input
+        const refInput = document.getElementById('referrer-address');
+        const newUserInput = document.getElementById('new-user-address');
+        if (refInput) refInput.disabled = true;
+        if (newUserInput) newUserInput.disabled = true;
+        // Keep index input enabled so user can still enter index
       }
     }
          window.addEventListener('DOMContentLoaded', loadRegisterInfo);
@@ -529,186 +560,80 @@
 
     // --- Manual index application with button ---
     // Add button click handler for manual index application
-    document.getElementById('apply-index-btn').addEventListener('click', async function() {
-      const value = indexInput.value.trim();
-      console.log(`🔍 Manual index application: ${value}`);
-      
-      if (!value || value === defaultGuide) {
-        alert('Please enter a valid index');
-        return;
+    document.addEventListener('DOMContentLoaded', function() {
+      const applyBtn = document.getElementById('apply-index-btn');
+      if (applyBtn) {
+        applyBtn.addEventListener('click', async function() {
+          const value = indexInput.value.trim();
+          console.log(`🔍 Manual index application: ${value}`);
+          
+          if (!value) {
+            window.showTempMessage('Please enter a valid index', 'error');
+            return;
+          }
+          
+          // Format index to IAM format if it's a number
+          let formattedValue = value;
+          if (/^\d+$/.test(value)) {
+            let IAMId = '';
+            if (value.length === 1) {
+              IAMId = 'IAM' + value.padStart(5, '0');
+            } else if (value.length === 2) {
+              IAMId = 'IAM' + value.padStart(4, '0');
+            } else if (value.length === 3) {
+              IAMId = 'IAM' + value.padStart(3, '0');
+            } else if (value.length === 4) {
+              IAMId = 'IAM' + value.padStart(2, '0');
+            } else {
+              IAMId = 'IAM' + value;
+            }
+            formattedValue = IAMId;
+            indexInput.value = IAMId;
+          }
+          
+          // Apply the index
+          if (window.checkIndexReferralLine) {
+            await window.checkIndexReferralLine();
+          } else {
+            console.log('checkIndexReferralLine function not available');
+          }
+        });
       }
       
-      // Format index to IAM format if it's a number
-      let formattedValue = value;
-      if (/^\d+$/.test(value)) {
-        let IAMId = '';
-        if (value.length === 1) {
-          IAMId = 'IAM' + value.padStart(5, '0');
-        } else if (value.length === 2) {
-          IAMId = 'IAM' + value.padStart(4, '0');
-        } else if (value.length === 3) {
-          IAMId = 'IAM' + value.padStart(3, '0');
-        } else if (value.length === 4) {
-          IAMId = 'IAM' + value.padStart(2, '0');
-        } else {
-          IAMId = 'IAM' + value;
-        }
-        formattedValue = IAMId;
-        indexInput.value = IAMId;
-      }
-      
-      // Apply the index
-      await checkIndexReferralLine();
-    });
-    
-    // Keep only Enter key support for convenience
-    indexInput.addEventListener('keypress', async function(e) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        document.getElementById('apply-index-btn').click();
+      // Keep only Enter key support for convenience
+      if (indexInput) {
+        indexInput.addEventListener('keypress', async function(e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            const applyBtn = document.getElementById('apply-index-btn');
+            if (applyBtn) applyBtn.click();
+          }
+        });
       }
     });
      
 
      
-                  // Function to check referral line for index
-       async function checkIndexReferralLine() {
-         let index = '';
-         // If starts with IAM, get only numbers
-         if (indexInput.value.startsWith('IAM')) {
-           index = indexInput.value.replace('IAM', '').replace(/^0+/, '') || '0';
-         } else {
-           // If only number, use directly
-           index = indexInput.value.trim();
-         }
-         console.log(`🔍 Checking index: "${indexInput.value}" -> "${index}"`);
-         if (!index) {
-           console.log(`❌ Index is empty`);
-           return;
-         }
+                  // Function to check referral line for index (now handled by register.js)
+                   // When address changes, update index and check referral line
+      if (refInput) {
+        refInput.addEventListener('change', async function() {
+          await checkReferralLine();
+        });
         
-        try {
-          console.log(`🔗 Connecting to contract...`);
-          if (!window.contractConfig || !window.contractConfig.contract) {
-            console.log(`🔗 Reconnecting to wallet...`);
-            await window.connectWallet();
-          }
-          const contract = window.contractConfig.contract;
-          const status = document.getElementById('status-message');
-          console.log(`🔗 Contract ready:`, contract ? 'Yes' : 'No');
-          
-          // مرحله 1: بررسی وجود ایندکس در شبکه
-          let addr = null;
-          try {
-            addr = await contract.indexToAddress(index);
-            console.log(`📍 آدرس ایندکس ${index}:`, addr);
-          } catch (e) {
-            console.log(`❌ خطا در دریافت آدرس ایندکس ${index}:`, e);
-            refInput.value = '';
-            status.style.color = '#d32f2f';
-            showTempMessage(`خطا در دریافت آدرس ایندکس ${index}: ${e.message || e}`, 'error');
-            return;
-          }
-          
-          // بررسی اینکه آیا آدرس خالی است
-          if (!addr || addr === '0x0000000000000000000000000000000000000000') {
-            refInput.value = '';
-            refInput.style.backgroundColor = '#232946';
-            refInput.style.color = '#fff';
-            status.style.color = '#d32f2f';
-            showTempMessage(`❌ Index ${index} does not exist in network. Please enter a valid index.`, 'error');
-            return;
-          }
-          
-          // مرحله 2: بررسی اینکه آیا کاربر در این ایندکس فعال است
-          try {
-            const userAtAddress = await contract.users(addr);
-            console.log(`👤 اطلاعات کاربر در ایندکس ${index}:`, userAtAddress);
-            
-                      // بررسی فعال بودن کاربر
-          const isActive = userAtAddress && userAtAddress.index && BigInt(userAtAddress.index) > 0n;
-          
-          if (!isActive) {
-            refInput.value = '';
-            refInput.style.backgroundColor = '#232946';
-            refInput.style.color = '#fff';
-            status.style.color = '#d32f2f';
-            showTempMessage(`User at index ${index} is not active. Please enter an active user index.`, 'error');
-            return;
-          }
-          } catch (e) {
-            console.log(`❌ خطا در بررسی وضعیت کاربر:`, e);
-            refInput.value = '';
-            status.style.color = '#d32f2f';
-            showTempMessage(`خطا در بررسی وضعیت کاربر در ایندکس ${index}. لطفاً مجدداً تلاش کنید.`, 'error');
-            return;
-          }
-          
-          // تنظیم آدرس معرف در فیلد
-          refInput.readOnly = false;
-          refInput.disabled = false;
-          refInput.value = addr;
-          refInput.style.backgroundColor = '#232946';
-          refInput.style.color = '#fff';
-          
-                     // نمایش پیام موفقیت
-           status.style.color = '#388e3c';
-           showTempMessage(`✅ Referrer address set automatically: ${addr}`, 'success');
-           
-           // به‌روزرسانی اطلاعات جایگاه جدید
-           try {
-             let left = await contract.getLeftAddress(index);
-             let right = await contract.getRightAddress(index);
-             let newEmptyIndex = '...';
-             let newPositionInfo = '...';
-             
-             if (left === '0x0000000000000000000000000000000000000000') {
-               newEmptyIndex = (BigInt(index) * 2n).toString();
-               newPositionInfo = `Left - Index ${newEmptyIndex}`;
-             } else if (right === '0x0000000000000000000000000000000000000000') {
-               newEmptyIndex = (BigInt(index) * 2n + 1n).toString();
-               newPositionInfo = `Right - Index ${newEmptyIndex}`;
-             } else {
-               newEmptyIndex = 'Full';
-               newPositionInfo = 'Both positions filled';
-             }
-             
-             document.getElementById('empty-index').textContent = newEmptyIndex;
-             document.getElementById('position-info').textContent = newPositionInfo;
-             document.getElementById('parent-index').textContent = index;
-             
-             console.log(`🔄 اطلاعات جایگاه به‌روزرسانی شد: ${newPositionInfo}`);
-           } catch (e) {
-             console.log(`خطا در به‌روزرسانی اطلاعات جایگاه:`, e);
-           }
-           
-           // اتمام موفقیت‌آمیز
-           console.log(`✅ آدرس معرف تنظیم شد: ${addr}`);
-          
-        } catch (e) {
-          const status = document.getElementById('status-message');
-          refInput.value = '';
-          status.style.color = '#d32f2f';
-          showTempMessage(`خطا در بررسی ایندکس ${index}: ` + (e.message || e), 'error');
-        }
+        // Add event listeners for input and paste
+        refInput.addEventListener('input', async function() {
+          await checkReferralLine();
+        });
+        
+        refInput.addEventListener('paste', async function() {
+          setTimeout(async () => {
+            await checkReferralLine();
+          }, 100);
+        });
       }
-         // وقتی آدرس تغییر می‌کند، ایندکس را به‌روز کن و بررسی خط رفرال
-     refInput.addEventListener('change', async function() {
-       await checkReferralLine();
-     });
      
-     // اضافه کردن event listener برای input و paste
-     refInput.addEventListener('input', async function() {
-       await checkReferralLine();
-     });
-     
-     refInput.addEventListener('paste', async function() {
-       setTimeout(async () => {
-         await checkReferralLine();
-       }, 100);
-     });
-     
-           // تابع بررسی خط رفرال
+           // Function to check referral line
       async function checkReferralLine() {
         const address = refInput.value.trim();
         if (!/^0x[a-fA-F0-9]{40}$/.test(address)) return;
@@ -718,42 +643,42 @@
           const contract = window.contractConfig.contract;
           const status = document.getElementById('status-message');
           
-          // مرحله 1: بررسی وجود آدرس در شبکه و دریافت اطلاعات کاربر
-          console.log(`🔍 بررسی وجود آدرس ${address} در شبکه...`);
+          // Step 1: Check if address exists in network and get user info
+          console.log(`🔍 Checking if address ${address} exists in network...`);
           let user = null;
           try {
             user = await contract.users(address);
-            console.log(`👤 اطلاعات کاربر در آدرس ${address}:`, user);
+            console.log(`👤 User info at address ${address}:`, user);
           } catch (e) {
-            console.log(`❌ خطا در دریافت اطلاعات کاربر:`, e);
+            console.log(`❌ Error getting user info:`, e);
             status.style.color = '#d32f2f';
-            status.textContent = 'آدرس وارد شده در شبکه وجود ندارد.';
+            status.textContent = 'Entered address does not exist in network.';
             return;
           }
           
-          // مرحله 2: بررسی اینکه آیا کاربر فعال است
+          // Step 2: Check if user is active
           if (!user || !(user.index && BigInt(user.index) > 0n)) {
             status.style.color = '#d32f2f';
-            status.textContent = `کاربر در آدرس ${address} فعال نیست یا وجود ندارد. لطفاً آدرس کاربر فعال وارد کنید.`;
+            status.textContent = `User at address ${address} is not active or does not exist. Please enter an active user address.`;
             return;
           }
           
-          // مرحله 3: بررسی اینکه آیا کاربر ایندکس دارد
+          // Step 3: Check if user has index
           if (!user.index) {
             status.style.color = '#d32f2f';
-            status.textContent = `کاربر در آدرس ${address} ایندکس ندارد. لطفاً آدرس کاربر ثبت‌نام شده وارد کنید.`;
+            status.textContent = `User at address ${address} has no index. Please enter a registered user address.`;
             return;
           }
           
-          // مرحله 4: تنظیم ایندکس در فیلد مربوطه
+          // Step 4: Set index in corresponding field
           let IAMId = 'IAM' + user.index.toString().padStart(5, '0');
           indexInput.value = IAMId;
           indexInput.style.background = '';
           indexInput.style.color = '';
           indexInput.style.opacity = '';
-          console.log(`✅ ایندکس معرف تنظیم شد:`, IAMId);
+          console.log(`✅ Referrer index set:`, IAMId);
           
-          // مرحله 5: بررسی صلاحیت کاربر جاری
+          // Step 5: Check current user authorization
           let myAddress = null, currentUser = null;
           try {
             if (window.currentUserAddress) {
@@ -767,70 +692,72 @@
               }
             }
           } catch (e) {
-            console.log(`خطا در دریافت اطلاعات کاربر جاری:`, e);
+            console.log(`Error getting current user info:`, e);
           }
           
-          console.log(`🔍 بررسی کاربر جاری:`, currentUser);
+          console.log(`🔍 Checking current user:`, currentUser);
           if (currentUser && (currentUser.index && BigInt(currentUser.index) > 0n) && currentUser.index) {
             const currentUserIndex = parseInt(currentUser.index);
             const targetIndex = parseInt(user.index);
-            console.log(`🔍 بررسی صلاحیت: کاربر جاری=${currentUserIndex}, هدف=${targetIndex}`);
+            console.log(`🔍 Checking authorization: current user=${currentUserIndex}, target=${targetIndex}`);
             
             if (!isIndexInUserSubtree(targetIndex, currentUserIndex)) {
               status.style.color = '#d32f2f';
-              status.textContent = `شما مجاز به ثبت‌نام برای این آدرس نیستید. فقط ایندکس‌های زیرمجموعه شما مجاز هستند.`;
+              status.textContent = `You are not authorized to register for this address. Only your subordinate indexes are allowed.`;
               return;
             } else {
               status.style.color = '#388e3c';
-              status.textContent = `آدرس معرف معتبر است و در زیرمجموعه شما قرار دارد. ایندکس معرف: ${IAMId}`;
+              status.textContent = `Referrer address is valid and is in your subtree. Referrer index: ${IAMId}`;
             }
           } else {
-            console.log(`⚠️ کاربر فعال نیست یا ایندکس ندارد:`, currentUser);
+            console.log(`⚠️ User not active or has no index:`, currentUser);
             status.style.color = '#d32f2f';
-            status.textContent = `شما باید ابتدا ثبت‌نام کنید تا بتوانید برای دیگران ثبت‌نام انجام دهید.`;
+            status.textContent = `You must register first before you can register others.`;
             return;
           }
           
         } catch (e) {
           const status = document.getElementById('status-message');
           status.style.color = '#d32f2f';
-          status.textContent = `خطا در بررسی آدرس رفرال ${address}: ` + (e.message || e);
+          status.textContent = `Error checking referral address ${address}: ` + (e.message || e);
         }
       }
      
 
      
-     // وقتی آدرس کاربر جدید تغییر می‌کند، بررسی کن
-     newUserInput.addEventListener('change', async function() {
-       await checkNewUserAddress();
-     });
+           // When new user address changes, check it
+      if (newUserInput) {
+        newUserInput.addEventListener('change', async function() {
+          await checkNewUserAddress();
+        });
+        
+        // Add event listeners for input and paste
+        newUserInput.addEventListener('input', async function() {
+          await checkNewUserAddress();
+        });
+        
+        newUserInput.addEventListener('paste', async function() {
+          setTimeout(async () => {
+            await checkNewUserAddress();
+          }, 100);
+        });
+      }
      
-     // اضافه کردن event listener برای input و paste
-     newUserInput.addEventListener('input', async function() {
-       await checkNewUserAddress();
-     });
-     
-     newUserInput.addEventListener('paste', async function() {
-       setTimeout(async () => {
-         await checkNewUserAddress();
-       }, 100);
-     });
-     
-           // تابع بررسی آدرس کاربر جدید
+           // Function to check new user address
       async function checkNewUserAddress() {
         const address = newUserInput.value.trim();
         const status = document.getElementById('status-message');
         
-        // اگر آدرس خالی است، پیام را پاک کن
+        // If address is empty, clear message
         if (!address) {
           status.textContent = '';
           return;
         }
         
-        // بررسی فرمت آدرس
+        // Check address format
         if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
           status.style.color = '#d32f2f';
-          status.textContent = `آدرس ${address} فرمت نامعتبر دارد. لطفاً آدرس اتریوم صحیح (0x...) وارد کنید.`;
+          status.textContent = `Address ${address} has invalid format. Please enter a valid Ethereum address (0x...).`;
           return;
         }
         
@@ -838,23 +765,23 @@
           if (!window.contractConfig || !window.contractConfig.contract) await window.connectWallet();
           const contract = window.contractConfig.contract;
           
-          // بررسی اینکه آیا این آدرس قبلاً ثبت‌نام شده است
+          // Check if this address is already registered
           const user = await contract.users(address);
           if (user && (user.index && BigInt(user.index) > 0n)) {
             status.style.color = '#d32f2f';
-            status.textContent = `آدرس ${address} قبلاً ثبت‌نام شده است. لطفاً آدرس کاربر جدید وارد کنید.`;
+            status.textContent = `Address ${address} is already registered. Please enter a new user address.`;
             return;
           }
           
-          // اگر ثبت‌نام نشده، پیام موفقیت
+          // If not registered, success message
           status.style.color = '#388e3c';
-          status.textContent = `آدرس ${address} معتبر است و می‌تواند ثبت‌نام شود.`;
+          status.textContent = `Address ${address} is valid and can be registered.`;
           
-          // نمایش ایندکس مربوط به این آدرس (اگر وجود داشته باشد)
+          // Show index for this address (if exists)
           try {
-            // جستجو در ایندکس‌های موجود برای یافتن این آدرس
+            // Search existing indexes to find this address
             let foundIndex = null;
-            for (let i = 1; i <= 1000; i++) { // جستجو در 1000 ایندکس اول
+            for (let i = 1; i <= 1000; i++) { // Search first 1000 indexes
               try {
                 const addrAtIndex = await contract.indexToAddress(i);
                 if (addrAtIndex.toLowerCase() === address.toLowerCase()) {
@@ -862,36 +789,39 @@
                   break;
                 }
               } catch (e) {
-                // اگر ایندکس وجود نداشته باشد، ادامه بده
+                // If index doesn't exist, continue
                 continue;
               }
             }
             
             if (foundIndex) {
-              status.textContent += ` (ایندکس موجود: ${foundIndex})`;
+              status.textContent += ` (Existing index: ${foundIndex})`;
             }
           } catch (e) {
-            // اگر خطا در جستجوی ایندکس داشتیم، نادیده بگیر
+            // If error in index search, ignore
           }
         } catch (e) {
           status.style.color = '#d32f2f';
-          status.textContent = `خطا در بررسی آدرس ${address}: ` + (e.message || e);
+          status.textContent = `Error checking address ${address}: ` + (e.message || e);
         }
       }
       
 
 
-    // ثبت‌نام کاربر جدید
-    document.getElementById('register-btn').onclick = async function() {
+         // Register new user
+     document.addEventListener('DOMContentLoaded', function() {
+       const registerBtn = document.getElementById('register-btn');
+       if (registerBtn) {
+         registerBtn.onclick = async function() {
       const status = document.getElementById('status-message');
       if (!isConnected) {
         status.style.color = '#d32f2f';
-        showTempMessage('Please connect your wallet first.', 'error');
+        window.showTempMessage('Please connect your wallet first.', 'error');
         return;
       }
       
       status.style.color = '#1976d2';
-              showTempMessage('Checking information and validation...', 'info');
+              window.showTempMessage('Checking information and validation...', 'info');
       this.disabled = true;
       
       try {
@@ -914,52 +844,52 @@
             }
           }
         } catch (e) {
-          console.log(`خطا در دریافت اطلاعات کاربر در ثبت‌نام:`, e);
+          console.log(`Error getting current user info:`, e);
         }
         
-        console.log(`🔍 بررسی کاربر در ثبت‌نام:`, user);
+        console.log(`🔍 Checking user in registration:`, user);
         
         if (user && user.index && BigInt(user.index) > 0n) {
-          // کاربر ثبت‌نام شده است - فقط می‌تواند زیرمجموعه ثبت‌نام کند
+          // User is registered - can only register subordinates
           const newUser = document.getElementById('new-user-address').value.trim();
           
           if (!newUser || !/^0x[a-fA-F0-9]{40}$/.test(newUser)) {
-            throw new Error('آدرس کاربر جدید معتبر نیست');
+            throw new Error('New user address is not valid');
           }
           
-          // معرف: آدرس انتخاب شده در فیلد referrer-address
+          // Referrer: address selected in referrer-address field
           const referrerAddress = document.getElementById('referrer-address').value.trim();
           
-          // بررسی معتبر بودن آدرس معرف
+          // Check validity of referrer address
           if (!referrerAddress || !/^0x[a-fA-F0-9]{40}$/.test(referrerAddress)) {
-            throw new Error('آدرس معرف معتبر نیست');
+            throw new Error('Referrer address is not valid');
           }
           
-          // بررسی ثبت‌نام نبودن کاربر جدید
+          // Check if new user is not already registered
           const newUserData = await contract.users(newUser);
           if (newUserData && newUserData.index && BigInt(newUserData.index) > 0n) {
-            throw new Error('این آدرس قبلاً ثبت‌نام کرده است');
+            throw new Error('This address is already registered');
           }
           
-          showTempMessage('Sending subordinate registration request to network...', 'info');
+          window.showTempMessage('Sending subordinate registration request to network...', 'info');
           localStorage.setItem('avatar_' + newUser, selectedAvatar);
           const tx = await contract.registerAndActivate(referrerAddress, newUser);
-          showTempMessage('Waiting for transaction confirmation by network...', 'info');
+          window.showTempMessage('Waiting for transaction confirmation by network...', 'info');
           await tx.wait();
           showMessageBox('Subordinate registration completed successfully!', 'success');
           
         } else {
-                     // کاربر ثبت‌نام نشده است - حالت دستی
-           let referrerAddress = document.getElementById('referrer-address').value.trim();
-           if (!referrerAddress) {
-             throw new Error('لطفاً آدرس معرف را وارد کنید');
-           }
-          const userAddress = myAddress; // کاربر جدید: کیف پول متصل
+          // User is not registered - manual mode
+          let referrerAddress = document.getElementById('referrer-address').value.trim();
+          if (!referrerAddress) {
+            throw new Error('Please enter referrer address');
+          }
+          const userAddress = myAddress; // New user: connected wallet
           
-          showTempMessage('Sending automatic registration request to network...', 'info');
+          window.showTempMessage('Sending automatic registration request to network...', 'info');
           localStorage.setItem('avatar_' + userAddress, selectedAvatar);
           const tx = await contract.registerAndActivate(referrerAddress, userAddress);
-          showTempMessage('Waiting for transaction confirmation by network...', 'info');
+          window.showTempMessage('Waiting for transaction confirmation by network...', 'info');
           await tx.wait();
           showMessageBox('Registration completed successfully! Welcome to IAM family.', 'success');
         }
@@ -970,21 +900,21 @@
         let errorMsg = e && (e.reason || (e.revert && e.revert.args && e.revert.args[0]) || e.message || e);
         if (typeof errorMsg !== 'string') errorMsg = JSON.stringify(errorMsg);
         if (/already registered|Already registered/i.test(errorMsg)) {
-          showTempMessage('This address is already registered.', 'error');
-        } else if (/not active|inactive|فعال نیست/i.test(errorMsg)) {
-          showTempMessage('Selected referrer is not active. Please enter an active referrer.', 'error');
+          window.showTempMessage('This address is already registered.', 'error');
+        } else if (/not active|inactive/i.test(errorMsg)) {
+          window.showTempMessage('Selected referrer is not active. Please enter an active referrer.', 'error');
         } else if (/invalid referrer|referrer/i.test(errorMsg)) {
-          showTempMessage('Referrer address is invalid or does not exist.', 'error');
-        } else if (/insufficient|balance|موجودی/i.test(errorMsg)) {
-          showTempMessage('Your wallet balance is insufficient for registration.', 'error');
-        } else if (/user rejected|reject|لغو شد/i.test(errorMsg)) {
-          showTempMessage('Registration process was cancelled by you.', 'error');
+          window.showTempMessage('Referrer address is invalid or does not exist.', 'error');
+        } else if (/insufficient|balance/i.test(errorMsg)) {
+          window.showTempMessage('Your wallet balance is insufficient for registration.', 'error');
+        } else if (/user rejected|reject/i.test(errorMsg)) {
+          window.showTempMessage('Registration process was cancelled by you.', 'error');
         } else if (/execution reverted/i.test(errorMsg)) {
           const match = errorMsg.match(/reverted: "([^"]+)"/);
           if (match && match[1]) {
-            showTempMessage('Error: ' + match[1], 'error');
+            window.showTempMessage('Error: ' + match[1], 'error');
           } else {
-            showTempMessage('Transaction was cancelled by contract. Please check inputs.', 'error');
+            window.showTempMessage('Transaction was cancelled by contract. Please check inputs.', 'error');
           }
         } else {
           showMessageBox('❌ Registration error: ' + (errorMsg.length > 120 ? errorMsg.slice(0,120)+'...' : errorMsg), 'error');
@@ -992,14 +922,20 @@
       }
       this.disabled = false;
     };
-
-    // Clear faded guide on focus for index input
-    indexInput.addEventListener('focus', function() {
-      // No default guide behavior needed
-    });
-    indexInput.addEventListener('blur', function() {
-      // No default guide behavior needed
-    });
+  }
+  
+     // Clear faded guide on focus for index input
+   document.addEventListener('DOMContentLoaded', function() {
+     if (indexInput) {
+       indexInput.addEventListener('focus', function() {
+         // No default guide behavior needed
+       });
+       indexInput.addEventListener('blur', function() {
+         // No default guide behavior needed
+       });
+     }
+   });
+ });
   </script>
   
   <!-- Floating Token Growth Card -->

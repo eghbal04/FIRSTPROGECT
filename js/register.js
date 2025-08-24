@@ -265,6 +265,153 @@ async function performRegistrationForNewUser() {
     }
 }
 
+// Function to check index referral line (for register.html compatibility)
+window.checkIndexReferralLine = async function() {
+    const indexInput = document.getElementById('index-search');
+    const refInput = document.getElementById('referrer-address');
+    
+    if (!indexInput || !refInput) {
+        console.log('Index input elements not found');
+        return;
+    }
+    
+    let index = '';
+    // If starts with IAM, get only numbers
+    if (indexInput.value.startsWith('IAM')) {
+        index = indexInput.value.replace('IAM', '').replace(/^0+/, '') || '0';
+    } else {
+        // If only number, use directly
+        index = indexInput.value.trim();
+    }
+    
+    console.log(`🔍 Checking index: "${indexInput.value}" -> "${index}"`);
+    if (!index) {
+        console.log(`❌ Index is empty`);
+        return;
+    }
+    
+    try {
+        console.log(`🔗 Connecting to contract...`);
+        if (!window.contractConfig || !window.contractConfig.contract) {
+            console.log(`🔗 Reconnecting to wallet...`);
+            await window.connectWallet();
+        }
+        const contract = window.contractConfig.contract;
+        const status = document.getElementById('status-message');
+        console.log(`🔗 Contract ready:`, contract ? 'Yes' : 'No');
+        
+        // Step 1: Check if index exists in network
+        let addr = null;
+        try {
+            addr = await contract.indexToAddress(index);
+            console.log(`📍 Address for index ${index}:`, addr);
+        } catch (e) {
+            console.log(`❌ Error getting address for index ${index}:`, e);
+            refInput.value = '';
+            if (status) status.style.color = '#d32f2f';
+            if (window.showTempMessage) {
+                window.showTempMessage(`Error getting address for index ${index}: ${e.message || e}`, 'error');
+            }
+            return;
+        }
+        
+        // Check if address is empty
+        if (!addr || addr === '0x0000000000000000000000000000000000000000') {
+            refInput.value = '';
+            refInput.style.backgroundColor = '#232946';
+            refInput.style.color = '#fff';
+            if (status) status.style.color = '#d32f2f';
+            if (window.showTempMessage) {
+                window.showTempMessage(`❌ Index ${index} does not exist in network. Please enter a valid index.`, 'error');
+            }
+            return;
+        }
+        
+        // Step 2: Check if user at this index is active
+        try {
+            const userAtAddress = await contract.users(addr);
+            console.log(`👤 User info at index ${index}:`, userAtAddress);
+            
+            // Check if user is active
+            const isActive = userAtAddress && userAtAddress.index && BigInt(userAtAddress.index) > 0n;
+            
+            if (!isActive) {
+                refInput.value = '';
+                refInput.style.backgroundColor = '#232946';
+                refInput.style.color = '#fff';
+                if (status) status.style.color = '#d32f2f';
+                if (window.showTempMessage) {
+                    window.showTempMessage(`User at index ${index} is not active. Please enter an active user index.`, 'error');
+                }
+                return;
+            }
+        } catch (e) {
+            console.log(`❌ Error checking user status:`, e);
+            refInput.value = '';
+            if (status) status.style.color = '#d32f2f';
+            if (window.showTempMessage) {
+                window.showTempMessage(`Error checking user status at index ${index}. Please try again.`, 'error');
+            }
+            return;
+        }
+        
+        // Set referrer address in field
+        refInput.readOnly = false;
+        refInput.disabled = false;
+        refInput.value = addr;
+        refInput.style.backgroundColor = '#232946';
+        refInput.style.color = '#fff';
+        
+        // Show success message
+        if (status) status.style.color = '#388e3c';
+        if (window.showTempMessage) {
+            window.showTempMessage(`✅ Referrer address set automatically: ${addr}`, 'success');
+        }
+        
+        // Update new position information
+        try {
+            let left = await contract.getLeftAddress(index);
+            let right = await contract.getRightAddress(index);
+            let newEmptyIndex = '...';
+            let newPositionInfo = '...';
+            
+            if (left === '0x0000000000000000000000000000000000000000') {
+                newEmptyIndex = (BigInt(index) * 2n).toString();
+                newPositionInfo = `Left - Index ${newEmptyIndex}`;
+            } else if (right === '0x0000000000000000000000000000000000000000') {
+                newEmptyIndex = (BigInt(index) * 2n + 1n).toString();
+                newPositionInfo = `Right - Index ${newEmptyIndex}`;
+            } else {
+                newEmptyIndex = 'Full';
+                newPositionInfo = 'Both positions filled';
+            }
+            
+            const emptyIndexElement = document.getElementById('empty-index');
+            const positionInfoElement = document.getElementById('position-info');
+            const parentIndexElement = document.getElementById('parent-index');
+            
+            if (emptyIndexElement) emptyIndexElement.textContent = newEmptyIndex;
+            if (positionInfoElement) positionInfoElement.textContent = newPositionInfo;
+            if (parentIndexElement) parentIndexElement.textContent = index;
+            
+            console.log(`🔄 Position information updated: ${newPositionInfo}`);
+        } catch (e) {
+            console.log(`Error updating position information:`, e);
+        }
+        
+        // Successful completion
+        console.log(`✅ Referrer address set: ${addr}`);
+        
+    } catch (e) {
+        const status = document.getElementById('status-message');
+        refInput.value = '';
+        if (status) status.style.color = '#d32f2f';
+        if (window.showTempMessage) {
+            window.showTempMessage(`Error checking index ${index}: ` + (e.message || e), 'error');
+        }
+    }
+};
+
 // Function to perform registration
 async function performRegistration() {
     try {

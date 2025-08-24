@@ -1134,6 +1134,21 @@ Our Services:
             <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Enter destination wallet address (42 characters)</small>
           </div>
 
+          <!-- Index to Address Search -->
+          <div class="transfer-row" id="search-index-container" style="background:rgba(0,255,136,0.1);border-radius:8px;padding:1rem;margin-bottom:1rem;border:1px solid rgba(0,255,136,0.2);">
+            <h4 style="color:#00ff88;margin-bottom:0.8rem;font-size:1rem;">🔍 Search by Index</h4>
+            <div style="display:flex;gap:0.5rem;align-items:center;margin-bottom:0.5rem;">
+              <input type="number" id="searchIndex" placeholder="Enter user index" 
+                     style="background:rgba(0,0,0,0.3);border:1px solid rgba(0,255,136,0.3);border-radius:8px;padding:0.5rem;color:#fff;text-align:center;flex:1;font-size:0.9rem;font-family:monospace;">
+              <button type="button" id="searchIndexBtn" 
+                      style="background:linear-gradient(135deg,#00ff88,#00cc6a);color:#1a1f2e;border:none;border-radius:8px;padding:0.5rem 1rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:0.9rem;">
+                🔍 Search
+              </button>
+            </div>
+            <div id="searchIndexStatus" style="text-align:center;padding:0.5rem;border-radius:8px;font-size:0.9rem;min-height:1.5em;"></div>
+            <small style="color:#b8c1ec;font-size:0.8rem;margin-top:0.3rem;display:block;">Enter a user index to find their wallet address</small>
+          </div>
+
           <div class="transfer-row">
               <label for="transferAmount">Amount:</label>
               <input type="number" id="transferAmount" placeholder="Enter amount" min="0" step="any" required>
@@ -1293,6 +1308,38 @@ Our Services:
       color: #a786ff;
       border: 1px solid rgba(167, 134, 255, 0.3);
     }
+
+    /* Index Search Styles */
+    #search-index-container {
+      transition: all 0.3s ease;
+    }
+    
+    #search-index-container:hover {
+      background: rgba(0, 255, 136, 0.15) !important;
+      border-color: rgba(0, 255, 136, 0.4) !important;
+    }
+    
+    #searchIndexStatus {
+      transition: all 0.3s ease;
+    }
+    
+    #searchIndexStatus.success {
+      background: rgba(0, 255, 136, 0.1);
+      color: #00ff88;
+      border: 1px solid rgba(0, 255, 136, 0.3);
+    }
+    
+    #searchIndexStatus.error {
+      background: rgba(255, 68, 68, 0.1);
+      color: #ff4444;
+      border: 1px solid rgba(255, 68, 68, 0.3);
+    }
+    
+    #searchIndexStatus.loading {
+      background: rgba(167, 134, 255, 0.1);
+      color: #a786ff;
+      border: 1px solid rgba(167, 134, 255, 0.3);
+    }
     
     /* Transfer Form Improvements */
     .transfer-form {
@@ -1436,6 +1483,39 @@ Our Services:
         width: 100% !important;
         min-width: auto !important;
         padding: 0.5rem !important;
+      }
+
+      /* Index search responsive */
+      #search-index-container {
+        padding: 0.8rem !important;
+        margin-bottom: 0.8rem !important;
+      }
+      
+      #search-index-container h4 {
+        font-size: 0.95rem !important;
+        margin-bottom: 0.6rem !important;
+      }
+      
+      #search-index-container .transfer-row {
+        flex-direction: column !important;
+        gap: 0.4rem !important;
+      }
+      
+      #search-index-container input {
+        width: 100% !important;
+        padding: 0.6rem !important;
+        font-size: 0.9rem !important;
+      }
+      
+      #search-index-container button {
+        width: 100% !important;
+        padding: 0.6rem !important;
+        font-size: 0.9rem !important;
+      }
+      
+      #searchIndexStatus {
+        font-size: 0.8rem !important;
+        padding: 0.4rem !important;
       }
       
       /* USD converter row responsive */

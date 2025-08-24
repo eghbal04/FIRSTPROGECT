@@ -1,17 +1,17 @@
-// نمایش درخت باینری با lazy load: هر گره با کلیک expand می‌شود و فقط فرزندان همان گره نمایش داده می‌شوند
+// Display binary tree with lazy load: each node expands on click and only shows children of that node
 window.NETWORK_RENDER_VERSION = 'v-layout-rows-rtl-1';
 
-// متغیرهای سراسری برای مدیریت رندر درخت
+// Global variables for tree rendering management
 let lastRenderedIndex = null;
 let isRenderingTree = false;
 let lastRenderedTime = 0;
 let _networkPopupOpening = false;
 
-// متغیرهای پروگرس بار شبکه
+// Network progress bar variables
 let totalNodesToLoad = 0;
 let nodesLoaded = 0;
 
-// توابع مدیریت پروگرس بار شبکه
+// Network progress bar management functions
 function showNetworkProgress() {
     const progressBar = document.getElementById('network-progress');
     if (progressBar) {
@@ -46,7 +46,7 @@ function updateNodeProgress() {
     }
 }
 
-// تابع fallback برای generateIAMId اگر موجود نباشد
+// Fallback function for generateIAMId if not available
 if (!window.generateIAMId) {
     window.generateIAMId = function(index) {
         if (!index || index === 0) return '0';
@@ -54,15 +54,15 @@ if (!window.generateIAMId) {
     };
 }
 
-// تابع محاسبه رنگ بر اساس سطح درخت
+// Function to calculate color based on tree level
 function getNodeColorByLevel(level, isActive = true) {
     if (isActive) {
-        // برای گره‌های فعال: از روشن به تیره
+        // For active nodes: from light to dark
         const baseAlpha = 0.98;
         const alphaStep = 0.15;
         const alpha = Math.max(0.3, baseAlpha - (level * alphaStep));
         
-        // رنگ اصلی: آبی-سبز روشن برای ریشه، تیره‌تر برای سطوح پایین‌تر
+        // Main color: light blue-green for root, darker for lower levels
         const baseR = 35;
         const baseG = 41;
         const baseB = 70;
@@ -74,7 +74,7 @@ function getNodeColorByLevel(level, isActive = true) {
         
         return `rgba(${r},${g},${b},${alpha})`;
     } else {
-        // برای گره‌های خالی: از روشن به تیره
+        // For empty nodes: from light to dark
         const baseAlpha = 0.04;
         const alphaStep = 0.02;
         const alpha = Math.max(0.01, baseAlpha - (level * alphaStep));
@@ -95,16 +95,16 @@ window.networkShowUserPopup = async function(address, user) {
     setTimeout(()=>{ _networkPopupOpening = false; }, 400);
     console.log('🚀 showUserPopup called with:', { address, user });
     
-    // ریست کردن متغیرهای تکرار برای popup جدید
+    // Reset repeat variables for new popup
     _networkPopupOpening = false;
     
-    // تابع کوتاه‌کننده آدرس
+    // Address shortener function
     function shortAddress(addr) {
         if (!addr || addr === '-') return '-';
         return addr.slice(0, 4) + '...' + addr.slice(-3);
     }
     
-    // حذف popup قبلی اگر وجود دارد
+    // Remove previous popup if exists
     let existingPopup = document.getElementById('network-user-popup');
     if (existingPopup) {
         existingPopup.remove();
@@ -116,14 +116,14 @@ window.networkShowUserPopup = async function(address, user) {
      const walletAddress = address ? shortAddress(address) : '-';
      const isActive = user && user.index && BigInt(user.index) > 0n ? true : false;
     
-    // تابع محاسبه تعداد ولت‌های سمت راست و چپ (فعال‌ها در زیرشاخه)
+    // Function to calculate left and right wallet counts (active ones in subtree)
     async function calculateWalletCounts(userIndex, contract) {
         try {
             let leftCount = 0;
             let rightCount = 0;
             const leftChildIndex = BigInt(userIndex) * 2n;
             const rightChildIndex = BigInt(userIndex) * 2n + 1n;
-            // چپ
+            // Left
             try {
                 const leftAddress = await contract.indexToAddress(leftChildIndex);
                 if (leftAddress && leftAddress !== '0x0000000000000000000000000000000000000000') {
@@ -133,7 +133,7 @@ window.networkShowUserPopup = async function(address, user) {
                     }
                 }
             } catch {}
-            // راست
+            // Right
             try {
                 const rightAddress = await contract.indexToAddress(rightChildIndex);
                 if (rightAddress && rightAddress !== '0x0000000000000000000000000000000000000000') {
@@ -149,14 +149,14 @@ window.networkShowUserPopup = async function(address, user) {
         }
     }
 
-    // تابع محاسبه بازگشتی تعداد ولت‌ها در زیرمجموعه
+    // Recursive function to calculate wallet counts in subtree
     async function calculateSubtreeCount(parentIndex, contract, side) {
         let count = 0;
         async function countRecursive(index) {
             const leftChildIndex = BigInt(index) * 2n;
             const rightChildIndex = BigInt(index) * 2n + 1n;
             let subtreeCount = 0;
-            // بررسی فرزند چپ
+            // Check left child
             try {
                 const leftAddress = await contract.indexToAddress(leftChildIndex);
                 if (leftAddress && leftAddress !== '0x0000000000000000000000000000000000000000') {
@@ -169,7 +169,7 @@ window.networkShowUserPopup = async function(address, user) {
             } catch (e) {
                 // نادیده گرفتن خطاها
             }
-            // بررسی فرزند راست
+            // Check right child
             try {
                 const rightAddress = await contract.indexToAddress(rightChildIndex);
                 if (rightAddress && rightAddress !== '0x0000000000000000000000000000000000000000') {
@@ -570,11 +570,11 @@ window.networkShowUserPopup = async function(address, user) {
     }, 0);
 };
 
-// تابع جدید: رندر عمودی ساده با حفظ رفتارها
+// New function: Simple vertical render with preserved behaviors
 async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = false) {
-    // نسخه رندر برای دیباگ
+    // Render version for debug
     try { console.debug('renderVerticalNodeLazy', window.NETWORK_RENDER_VERSION, 'index:', String(index), 'level:', level); } catch {}
-    // به روزرسانی پروگرس هر گره
+    // Update progress for each node
     updateNodeProgress();
     console.log(`🔄 renderVerticalNodeLazy called with index: ${index}, level: ${level}`);
     try {
@@ -583,7 +583,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         if (!contract) throw new Error('No contract connection available');
         console.log('✅ Contract connection obtained');
         
-        // سعی کن از کش بخوانی تا سریع‌تر شود
+        // Try to read from cache for faster performance
         let cachedNode = null;
         if (window.getCachedNetworkNodeByIndex) {
             try { cachedNode = window.getCachedNetworkNodeByIndex(index); } catch {}
@@ -610,7 +610,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
             renderEmptyNodeVertical(index, container, level);
             return;
         }
-        // دریافت دایرکت‌های واقعی با getUserTree
+        // Get real directs with getUserTree
         let leftUser = null, rightUser = null, hasDirects = false;
         let tree = null;
         let leftActive = false, rightActive = false;
@@ -625,13 +625,13 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                 if (rightUser && rightUser.index && BigInt(rightUser.index) > 0n) { hasDirects = true; rightActive = true; }
             }
         }
-        // ساخت گره عمودی (همانند قبل)
+        // Create vertical node (same as before)
         let nodeDiv = document.createElement('div');
         nodeDiv.style.display = 'inline-flex';
         nodeDiv.style.alignItems = 'center';
         nodeDiv.style.justifyContent = 'flex-start';
         nodeDiv.style.flexWrap = 'nowrap';
-        // فاصله‌های پایه (سطح‌ها نزدیک‌تر و بدون عقب‌نشینی ثابت)
+        // Base spacing (levels closer and without fixed indentation)
         nodeDiv.style.marginRight = '0px';
         nodeDiv.style.marginBottom = '0.9em';
         nodeDiv.style.position = 'relative';
@@ -676,7 +676,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
             <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 1.1em; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-weight: bold;">${formattedIAMId}</span>
         `;
         
-        // آیکون اطلاعات کاربر (بالای دکمه expand)
+        // User info icon (above expand button)
         let infoIcon = document.createElement('div');
         infoIcon.className = 'info-icon';
         infoIcon.innerHTML = 'ℹ️';
@@ -705,7 +705,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         infoIcon.title = 'View User Information';
         nodeDiv.appendChild(infoIcon);
         
-        // اضافه کردن event listener برای آیکون
+        // Add event listener for icon
         infoIcon.addEventListener('click', function(e) {
             e.stopPropagation();
             console.log('🔍 Info icon clicked for user:', IAMId);
@@ -714,10 +714,10 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
             }
         });
         
-        // تست: بررسی اینکه آیکون اضافه شده
+        // Test: Check if icon was added
         console.log('🔍 Info icon added to node:', IAMId, 'Element:', infoIcon);
         
-        // دکمه expand/collapse اگر دایرکت دارد یا جای خالی دارد
+        // Expand/collapse button if has directs or empty position
         let expandBtn = null;
         let childrenDiv = null;
         if (hasDirects || !leftActive || !rightActive) {
@@ -763,7 +763,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         });
         container.appendChild(nodeDiv);
         
-        // ذخیره/به‌روزرسانی گره در کش محلی برای لود‌های بعدی
+        // Save/update node in local cache for future loads
         if (window.saveOrUpdateNetworkNode || window.saveNetworkNode) {
             try {
                 const nodeData = {
@@ -782,9 +782,9 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                         binaryPointsClaimed: user.binaryPointsClaimed,
                         refclimed: user.refclimed,
                         depositedAmount: user.depositedAmount,
-                        lvlBalance: 'در حال بارگذاری...',
-                        maticBalance: 'در حال بارگذاری...',
-                        daiBalance: 'در حال بارگذاری...',
+                        lvlBalance: 'Loading...',
+                        maticBalance: 'Loading...',
+                        daiBalance: 'Loading...',
                         leftPoints: user.leftPoints,
                         rightPoints: user.rightPoints
                     }
@@ -795,11 +795,11 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                     await window.saveNetworkNode(nodeData);
                 }
             } catch (error) {
-                console.warn('⚠️ خطا در ذخیره گره در دیتابیس:', error);
+                console.warn('⚠️ Error saving node to database:', error);
             }
         }
         
-        // ابزار کمکی: تنظیم عقب‌نشینی پویا بر اساس نصف عرض گره فرزند
+        // Helper tool: Set dynamic indentation based on half width of child node
         function setDynamicIndent(wrapperDiv) {
             if (!wrapperDiv) return;
             const apply = () => {
@@ -809,7 +809,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                     wrapperDiv.style.marginRight = Math.round(w / 2) + 'px';
                 }
             };
-            // تا بعد از layout صبر کن
+            // Wait until after layout
             if (typeof requestAnimationFrame === 'function') {
                 requestAnimationFrame(() => requestAnimationFrame(apply));
             } else {
@@ -817,31 +817,31 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
             }
         }
 
-        // div فرزندان (در ابتدا بسته یا باز بر اساس autoExpand)
+        // Children div (initially closed or open based on autoExpand)
         if (expandBtn) {
             childrenDiv = document.createElement('div');
             childrenDiv.style.display = autoExpand ? 'block' : 'none';
             childrenDiv.style.transition = 'all 0.3s';
-            // فرزندان زیرِ هم در دو سطر مجزا
+            // Children below each other in two separate rows
             container.appendChild(childrenDiv);
-            // چپ: سطر دوم، با عقب‌نشینی نصف عرض خودش
+            // Left: second row, with indentation of half its width
             if (leftActive) {
                 let leftRow = document.createElement('div');
                 leftRow.className = 'child-node-row left-row';
                 leftRow.style.display = 'block';
                 childrenDiv.appendChild(leftRow);
                 await renderVerticalNodeLazy(BigInt(leftUser.index), leftRow, level + 1, false);
-                // عقب‌نشینی نصف عرض خودش (پس از layout)
+                // Indentation of half its width (after layout)
                 setDynamicIndent(leftRow);
             }
-            // راست: سطر سوم، دقیقاً زیر چپ با همان عقب‌نشینی افقی
+            // Right: third row, exactly below left with same horizontal indentation
             if (rightActive) {
                 let rightRow = document.createElement('div');
                 rightRow.className = 'child-node-row right-row';
                 rightRow.style.display = 'block';
                 childrenDiv.appendChild(rightRow);
                 await renderVerticalNodeLazy(BigInt(rightUser.index), rightRow, level + 1, false);
-                // هم‌تراز با چپ (در صورت وجود)
+                // Aligned with left (if exists)
                 const leftRowRef = childrenDiv.querySelector('.left-row');
                 if (leftRowRef) {
                     rightRow.style.marginRight = leftRowRef.style.marginRight || '0px';
@@ -849,13 +849,13 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                     setDynamicIndent(rightRow);
                 }
             }
-            // دیگر نیازی به مرکزچین کردن ردیف مشترک نیست
+            // No longer need to center-align the common row
         }
-        // اگر جایگاه خالی وجود دارد، فقط یک دکمه کوچک "نیو" نمایش بده
+        // If empty position exists, only show a small "NEW" button
         if (!leftActive || !rightActive) {
             let newBtn = document.createElement('button');
             newBtn.textContent = 'N';
-            newBtn.title = 'ثبت‌نام زیرمجموعه جدید';
+            newBtn.title = 'Register new subordinate';
             newBtn.style.background = 'linear-gradient(90deg,#a786ff,#00ff88)';
             newBtn.style.color = '#181c2a';
             newBtn.style.fontWeight = 'bold';
@@ -870,10 +870,10 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
             newBtn.style.fontWeight = 'bold';
             newBtn.onclick = async function(e) {
                 e.stopPropagation();
-                // اگر modal قبلی باز است، حذف کن
+                // If previous modal is open, remove it
                 let oldModal = document.getElementById('quick-register-modal');
                 if (oldModal) oldModal.remove();
-                // اطلاعات مورد نیاز
+                // Required information
                 let emptyIndex = !leftActive ? index * 2n : index * 2n + 1n;
                 let parentIndex = index;
                 let registerCost = '...';
@@ -882,7 +882,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                 let errorMsg = '';
                 let loading = true;
                 let IAMBalance = '...';
-                // ساخت modal
+                // Create modal
                 let modal = document.createElement('div');
                 modal.id = 'quick-register-modal';
                 modal.style.position = 'fixed';
@@ -898,25 +898,25 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                 modal.innerHTML = `
                   <div style="background:linear-gradient(135deg,#232946,#181c2a);border-radius:18px;box-shadow:0 4px 24px #00ff8840;padding:2.2rem 2.2rem 1.5rem 2.2rem;min-width:320px;max-width:95vw;width:100%;position:relative;direction:rtl;">
                     <button id="close-quick-register" style="position:absolute;top:1.1rem;left:1.1rem;background:#ff6b6b;color:#fff;border:none;border-radius:50%;width:32px;height:32px;font-size:1.3em;cursor:pointer;">×</button>
-                    <h3 style="color:#00ff88;font-size:1.2rem;margin-bottom:1.2rem;text-align:center;">ثبت‌نام سریع زیرمجموعه جدید</h3>
+                    <h3 style="color:#00ff88;font-size:1.2rem;margin-bottom:1.2rem;text-align:center;">Quick Register New Subordinate</h3>
                     <div id="quick-register-info" style="margin-bottom:1.2rem;color:#a786ff;font-size:1.05em;text-align:right;line-height:2;"></div>
                     <div style="margin-bottom:1.2rem;">
                       <div style='margin-bottom:0.7em;display:flex;gap:1.2em;justify-content:center;align-items:center;'>
-                        <span style='color:#a786ff;font-weight:bold;'>انتخاب آواتار:</span>
+                        <span style='color:#a786ff;font-weight:bold;'>Select Avatar:</span>
                         <span class="avatar-choice" data-avatar="man" style="font-size:2em;cursor:pointer;border:2px solid #00ff88;border-radius:50%;padding:0.15em 0.3em;background:#232946;">👨‍💼</span>
                         <span class="avatar-choice" data-avatar="woman" style="font-size:2em;cursor:pointer;border:2px solid transparent;border-radius:50%;padding:0.15em 0.3em;background:#232946;">👩‍💼</span>
                         <span class="avatar-choice" data-avatar="student-man" style="font-size:2em;cursor:pointer;border:2px solid transparent;border-radius:50%;padding:0.15em 0.3em;background:#232946;">👨‍🎓</span>
                         <span class="avatar-choice" data-avatar="student-woman" style="font-size:2em;cursor:pointer;border:2px solid transparent;border-radius:50%;padding:0.15em 0.3em;background:#232946;">👩‍🎓</span>
                       </div>
-                      <label for="quick-register-address" style="color:#a786ff;font-weight:bold;margin-bottom:0.5rem;display:block;">آدرس ولت جدید:</label>
+                      <label for="quick-register-address" style="color:#a786ff;font-weight:bold;margin-bottom:0.5rem;display:block;">New Wallet Address:</label>
                       <input id="quick-register-address" type="text" placeholder="0x..." style="width:100%;padding:0.8rem 1.2rem;border-radius:8px;border:2px solid #a786ff;background:rgba(0,0,0,0.2);color:#fff;font-family:monospace;direction:ltr;text-align:left;box-sizing:border-box;font-size:1.05rem;">
                     </div>
-                    <button id="quick-register-btn" style="width:100%;background:linear-gradient(90deg,#00ff88,#a786ff);color:#181c2a;font-weight:bold;border:none;border-radius:8px;padding:1rem;font-size:1.1rem;cursor:pointer;transition:all 0.3s;margin-bottom:1rem;">ثبت‌نام</button>
+                    <button id="quick-register-btn" style="width:100%;background:linear-gradient(90deg,#00ff88,#a786ff);color:#181c2a;font-weight:bold;border:none;border-radius:8px;padding:1rem;font-size:1.1rem;cursor:pointer;transition:all 0.3s;margin-bottom:1rem;">Register</button>
                     <div id="quick-register-status" style="text-align:center;margin-top:0.5rem;font-size:1.05em;"></div>
                   </div>
                 `;
                 document.body.appendChild(modal);
-                // انتخاب آواتار
+                // Select avatar
                 let selectedAvatar = 'man';
                 const avatarChoices = modal.querySelectorAll('.avatar-choice');
                 avatarChoices.forEach(el => {
@@ -926,25 +926,25 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                     selectedAvatar = this.getAttribute('data-avatar');
                   };
                 });
-                // پیش‌فرض اولین آواتار انتخاب شود
+                // Default first avatar to be selected
                 avatarChoices[0].style.border = '2px solid #00ff88';
-                // بستن modal
+                // Close modal
                 document.getElementById('close-quick-register').onclick = () => modal.remove();
-                // گرفتن اطلاعات قرارداد و نمایش
+                // Get contract information and display
                 (async function() {
                   try {
                     const { contract, address: myAddress, provider } = await window.connectWallet();
-                    // مقدار مورد نیاز برای ثبت‌نام
+                                          // Required amount for registration
                     if (window.getRegPrice) {
                       let cost = await window.getRegPrice(contract);
                       if (cost) {
                         let costValue = typeof ethers !== 'undefined' ? ethers.formatEther(cost) : (Number(cost)/1e18);
-                        registerCost = Math.round(parseFloat(costValue)).toString(); // حذف اعشار و گرد کردن
+                        registerCost = Math.round(parseFloat(costValue)).toString(); // Remove decimals and round
                       } else {
                         registerCost = '...';
                       }
                     }
-                    // موجودی متیک
+                                          // MATIC balance
                     if (provider && myAddress) {
                       let bal = await provider.getBalance(myAddress);
                       maticBalance = bal ? (typeof ethers !== 'undefined' ? Number(ethers.formatEther(bal)).toFixed(2) : (Number(bal)/1e18).toFixed(2)) : '...';
@@ -955,48 +955,48 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                       IAMBalance = IAM ? (typeof ethers !== 'undefined' ? Number(ethers.formatEther(IAM)).toFixed(2) : (Number(IAM)/1e18).toFixed(2)) : '...';
                     }
                     loading = false;
-                  } catch (e) {
-                    errorMsg = 'خطا در دریافت اطلاعات کیف پول یا قرارداد';
-                  }
-                  // نمایش اطلاعات
+                                        } catch (e) {
+                        errorMsg = 'Error getting wallet or contract information';
+                      }
+                  // Display information
                   let infoDiv = document.getElementById('quick-register-info');
                   if (infoDiv) {
                     infoDiv.innerHTML =
-                      `<div>ایندکس رفرر: <b style='color:#00ff88'>${window.generateIAMId ? window.generateIAMId(parentIndex) : parentIndex}</b></div>`+
-                      `<div>ایندکس جایگاه جدید: <b style='color:#a786ff'>${window.generateIAMId ? window.generateIAMId(emptyIndex) : emptyIndex}</b></div>`+
-                      `<div>مقدار مورد نیاز برای ثبت‌نام: <b style='color:#00ff88'>${registerCost} IAM</b></div>`+
-                      `<div>موجودی متیک شما: <b style='color:#a786ff'>${maticBalance} MATIC</b></div>`+
-                      `<div>موجودی IAM شما: <b style='color:#00ff88'>${IAMBalance} IAM</b></div>`+
+                      `<div>Referrer Index: <b style='color:#00ff88'>${window.generateIAMId ? window.generateIAMId(parentIndex) : parentIndex}</b></div>`+
+                      `<div>New Position Index: <b style='color:#a786ff'>${window.generateIAMId ? window.generateIAMId(emptyIndex) : emptyIndex}</b></div>`+
+                      `<div>Required Amount for Registration: <b style='color:#00ff88'>${registerCost} IAM</b></div>`+
+                      `<div>Your MATIC Balance: <b style='color:#a786ff'>${maticBalance} MATIC</b></div>`+
+                      `<div>Your IAM Balance: <b style='color:#00ff88'>${IAMBalance} IAM</b></div>`+
                       (errorMsg ? `<div style='color:#ff4444'>${errorMsg}</div>` : '');
                   }
                 })();
-                // ثبت‌نام
+                // Registration
                 document.getElementById('quick-register-btn').onclick = async function() {
                   let statusDiv = document.getElementById('quick-register-status');
                   let input = document.getElementById('quick-register-address');
                   let newAddress = input.value.trim();
                   statusDiv.textContent = '';
-                  if (!/^0x[a-fA-F0-9]{40}$/.test(newAddress)) {
-                    statusDiv.textContent = 'لطفاً یک آدرس ولت معتبر وارد کنید!';
-                    statusDiv.style.color = '#ff4444';
-                    return;
-                  }
-                  statusDiv.textContent = 'در حال ارسال درخواست ثبت‌نام...';
+                                      if (!/^0x[a-fA-F0-9]{40}$/.test(newAddress)) {
+                      statusDiv.textContent = 'Please enter a valid wallet address!';
+                      statusDiv.style.color = '#ff4444';
+                      return;
+                    }
+                                      statusDiv.textContent = 'Sending registration request...';
                   statusDiv.style.color = '#a786ff';
                   this.disabled = true;
-                  // مقدار آواتار انتخابی را لاگ کن (در صورت نیاز بعداً به قرارداد هم می‌توان ارسال کرد)
-                  console.log('انتخاب آواتار کاربر:', selectedAvatar);
-                  // مقدار آواتار انتخابی را ذخیره کن
+                                      // Log selected avatar (can be sent to contract later if needed)
+                                      console.log('User avatar selection:', selectedAvatar);
+                    // Save selected avatar
                   localStorage.setItem('avatar_' + newAddress, selectedAvatar);
                   try {
                     const { contract } = await window.connectWallet();
                     const tx = await contract.registerAndActivate(address, newAddress);
                     await tx.wait();
-                    statusDiv.textContent = '✅ ثبت‌نام با موفقیت انجام شد!';
+                                          statusDiv.textContent = '✅ Registration completed successfully!';
                     statusDiv.style.color = '#00ff88';
                     setTimeout(() => { modal.remove(); if (typeof window.renderSimpleBinaryTree === 'function') window.renderSimpleBinaryTree(); }, 1200);
                   } catch (err) {
-                    statusDiv.textContent = '❌ خطا در ثبت‌نام: ' + (err && err.message ? err.message : err);
+                                          statusDiv.textContent = '❌ Registration error: ' + (err && err.message ? err.message : err);
                     statusDiv.style.color = '#ff4444';
                   }
                   this.disabled = false;
@@ -1008,16 +1008,16 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         renderEmptyNodeVertical(index, container, level);
     }
 }
-// تابع رندر گره خالی (علامت سؤال) به صورت عمودی
+// Function to render empty node (question mark) vertically
 function renderEmptyNodeVertical(index, container, level) {
-    // بازگشت به گره خالی مستطیلی ساده
+    // Return to simple rectangular empty node
     const emptyNode = document.createElement('div');
     emptyNode.className = 'empty-node';
     emptyNode.setAttribute('data-index', index);
     emptyNode.style.display = 'inline-flex';
     emptyNode.style.alignItems = 'center';
     emptyNode.style.justifyContent = 'center';
-    // کاهش فاصله افقی برای سطوح عمیق‌تر
+    // Reduce horizontal spacing for deeper levels
     const marginMultiplier = level <= 3 ? 3 : (level <= 5 ? 2 : 1);
     emptyNode.style.marginRight = (level * marginMultiplier) + 'em';
     emptyNode.style.marginBottom = '1.2em';
@@ -1040,17 +1040,17 @@ function renderEmptyNodeVertical(index, container, level) {
     emptyNode.innerHTML = `
         <span style="white-space: nowrap; font-size: 1em; display: flex; align-items: center; justify-content: center; font-weight: bold;">${index}</span>
     `;
-    emptyNode.title = 'ثبت‌نام زیرمجموعه جدید';
+    emptyNode.title = 'Register new subordinate';
     emptyNode.onmouseover = function() { this.style.opacity = '1'; };
     emptyNode.onmouseout = function() { this.style.opacity = '0.7'; };
     emptyNode.onclick = async function() {
-        // همان رفتار قبلی ثبت‌نام زیرمجموعه
-        // برای جلوگیری از تکرار، می‌توانی تابع renderEmptyNode را فراخوانی کنی
+        // Same previous behavior for subordinate registration
+        // To avoid repetition, you can call renderEmptyNode function
         renderEmptyNode(index, container);
     };
     container.appendChild(emptyNode);
     
-    // ذخیره گره خالی در دیتابیس
+    // Save empty node to database
     if (window.saveNetworkNode) {
         try {
             const nodeData = {
@@ -1066,11 +1066,11 @@ function renderEmptyNodeVertical(index, container, level) {
             };
             window.saveNetworkNode(nodeData);
         } catch (error) {
-            console.warn('⚠️ خطا در ذخیره گره خالی در دیتابیس:', error);
+            console.warn('⚠️ Error saving empty node to database:', error);
         }
     }
 }
-// جایگزینی رندر اصلی درخت با مدل عمودی
+// Replace main tree render with vertical model
 window.renderSimpleBinaryTree = async function() {
     console.log('🔄 Starting renderSimpleBinaryTree...');
     const container = document.getElementById('network-tree');
@@ -1080,9 +1080,9 @@ window.renderSimpleBinaryTree = async function() {
     }
     console.log('✅ Network tree container found');
     
-    // آماده‌سازی پروگرس بار
+    // Prepare progress bar
     showNetworkProgress();
-    totalNodesToLoad = 50; // تخمین تعداد گره‌های ممکن
+    totalNodesToLoad = 50; // Estimate of possible nodes
     nodesLoaded = 0;
     setNetworkProgress(5);
     
@@ -1138,7 +1138,7 @@ window.renderSimpleBinaryTree = async function() {
             } catch {}
         }
 
-        // اگر ایندکس کاربر صفر بود، درخت را نمایش نده
+        // If user index is zero, don't display tree
         let rootIndexToRender = userIndex;
         if (rootIndexToRender === 0n) {
             console.error('User index not found for connected wallet');
@@ -1148,26 +1148,26 @@ window.renderSimpleBinaryTree = async function() {
         console.log('✅ Rendering tree for index:', rootIndexToRender.toString());
         setNetworkProgress(30);
         
-        // در window.renderSimpleBinaryTree مقدار autoExpand فقط برای ریشه true باشد:
+        // In window.renderSimpleBinaryTree, autoExpand should only be true for root:
         console.log('🔄 Rendering vertical node...');
         await renderVerticalNodeLazy(rootIndexToRender, container, 0, true);
         console.log('✅ Vertical node rendered successfully');
         setNetworkProgress(100);
         
-        // مخفی کردن پروگرس بار بعد از تکمیل
+        // Hide progress bar after completion
         setTimeout(() => {
             hideNetworkProgress();
         }, 1000);
         
-        // ذخیره درخت در دیتابیس بعد از رندر
+        // Save tree to database after render
         if (window.saveCurrentNetworkTree) {
             setTimeout(async () => {
                 try {
                     await window.saveCurrentNetworkTree();
                 } catch (error) {
-                    console.warn('⚠️ خطا در ذخیره درخت در دیتابیس:', error);
+                    console.warn('⚠️ Error saving tree to database:', error);
                 }
-            }, 2000); // 2 ثانیه صبر کن تا رندر کامل شود
+                          }, 2000); // Wait 2 seconds for render to complete
         }
     } catch (error) {
         console.error('❌ Error rendering binary tree:', error);
@@ -1176,9 +1176,9 @@ window.renderSimpleBinaryTree = async function() {
         let errorMessage = error.message;
         let actionButton = '';
         
-        // اگر خطا مربوط به عدم ثبت‌نام باشد، پیام مناسب نمایش بده
+        // If error is related to not being registered, show appropriate message
         if (error.message.includes('ثبت‌نام نشده')) {
-            errorMessage = 'کیف پول متصل در سیستم ثبت‌نام نشده است. برای مشاهده درخت شبکه ابتدا ثبت‌نام کنید.';
+            errorMessage = 'Connected wallet is not registered in the system. Please register first to view the network tree.';
             actionButton = `
                 <br><br>
                 <button onclick="window.location.href='register.html'" style="
@@ -1190,7 +1190,7 @@ window.renderSimpleBinaryTree = async function() {
                     font-weight: bold;
                     cursor: pointer;
                     margin-top: 1rem;
-                ">📝 ثبت‌نام کنید</button>
+                ">📝 Register Now</button>
             `;
         }
         
@@ -1321,12 +1321,12 @@ window.initializeNetworkTab = async function() {
     
     console.log('✅ Network tree container found');
     
-    // نمایش پروگرس بار و وضعیت بارگذاری
+    // Show progress bar and loading status
     showNetworkProgress();
     setNetworkProgress(5);
-    container.innerHTML = '<div style="color:#00ccff;text-align:center;padding:2rem;">🔄 در حال بارگذاری درخت شبکه...</div>';
+            container.innerHTML = '<div style="color:#00ccff;text-align:center;padding:2rem;">🔄 Loading network tree...</div>';
     
-    // تست ساده برای بررسی اتصال
+    // Simple test to check connection
     try {
         console.log('🔄 Testing wallet connection...');
         const { contract, address } = await window.connectWallet();
@@ -1340,7 +1340,7 @@ window.initializeNetworkTab = async function() {
         return;
     }
     
-    // retry logic
+            // Retry logic
     let retryCount = 0;
     const maxRetries = 3;
     
@@ -1351,7 +1351,7 @@ window.initializeNetworkTab = async function() {
                 await window.renderSimpleBinaryTree();
             } else {
                 console.error('❌ renderSimpleBinaryTree function not found');
-                container.innerHTML = '<div style="color:#ff4444;text-align:center;padding:2rem;">❌ تابع رندر شبکه پیدا نشد</div>';
+                container.innerHTML = '<div style="color:#ff4444;text-align:center;padding:2rem;">❌ Network render function not found</div>';
             }
         } catch (error) {
             console.error(`❌ Error initializing network tab (attempt ${retryCount + 1}):`, error);
@@ -1364,7 +1364,7 @@ window.initializeNetworkTab = async function() {
                 hideNetworkProgress();
                 container.innerHTML = `
                     <div style="color:#ff4444;text-align:center;padding:2rem;">
-                        ❌ خطا در بارگذاری درخت شبکه<br>
+                        ❌ Error loading network tree<br>
                         <small style="color:#ccc;">${error.message}</small>
                         <br><br>
                         <button onclick="window.initializeNetworkTab()" style="
@@ -1376,14 +1376,14 @@ window.initializeNetworkTab = async function() {
                             font-weight: bold;
                             cursor: pointer;
                             margin-top: 1rem;
-                        ">🔄 تلاش مجدد</button>
+                        ">🔄 Try Again</button>
                     </div>
                 `;
             }
         }
     };
     
-    // کمی صبر کن تا UI کاملاً لود شود
+    // Wait a bit for UI to fully load
     setTimeout(tryRender, 1000);
 };
 

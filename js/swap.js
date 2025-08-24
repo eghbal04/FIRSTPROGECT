@@ -233,7 +233,7 @@ class SwapManager {
                 }
                 const backingPct = this.getBackingFeePct(daiBalanceNum);
                 const userSharePct = 1 - backingPct;
-                html += `<div style="background:#e8f5e8;padding:12px;border-radius:8px;border-left:4px solid #4caf50;margin-bottom:10px;">
+                html += `<div style="background:00000000;padding:12px;border-radius:8px;border-left:4px solidrgb(84, 211, 88);margin-bottom:10px;">
                     <h4 style="margin:0 0 8px 0;color:#2e7d32;">🛒 Buy IAM with DAI</h4>
                     <p style="margin:5px 0;color:#555;"><strong>Minimum purchase:</strong> More than 1 DAI</p>
                     <p style="margin:5px 0;color:#555;"><strong>Current buy limit:</strong> ${maxBuy.toLocaleString('en-US', {maximumFractionDigits:2})} DAI</p>
@@ -246,7 +246,7 @@ class SwapManager {
             } else if (direction.value === 'IAM-to-dai') {
                 const backingPct = this.getBackingFeePct(daiBalanceNum);
                 const userSharePct = 1 - backingPct;
-                html += `<div style="background:#fff3e0;padding:12px;border-radius:8px;border-left:4px solid #ff9800;margin-bottom:10px;">
+                html += `<div style="background:00000000;padding:12px;border-radius:8px;border-left:4px solid #ff9800;margin-bottom:10px;">
                     <h4 style="margin:0 0 8px 0;color:#e65100;">💰 Sell IAM and receive DAI</h4>
                     <p style="margin:5px 0;color:#555;"><strong>Minimum sale:</strong> More than 1 IAM token</p>
                     <p style="margin:5px 0;color:#555;"><strong>Sale fee:</strong> ${(backingPct*100).toFixed(1)}% (from tokens)</p>
@@ -261,7 +261,7 @@ class SwapManager {
             
         } catch (e) {
             console.error('❌ Error loading limit information:', e);
-            html = '<div style="background:#ffebee;padding:12px;border-radius:8px;border-left:4px solid #f44336;color:#c62828;">Loading limit information...</div>';
+            html = '<div style="background:00000000;padding:12px;border-radius:8px;border-left:4px solid #f44336;color:#c62828;">Loading limit information...</div>';
         }
         
         infoDiv.innerHTML = html;
@@ -478,14 +478,14 @@ class SwapManager {
         
         if (this.tokenPrice && Number(this.tokenPrice) > 0) {
             const price = Number(this.tokenPrice);
-            rateEl.innerHTML = `<div style="background:#f3e5f5;padding:10px;border-radius:6px;text-align:center;margin:10px 0;">
+            rateEl.innerHTML = `<div style="background:00000000;padding:10px;border-radius:6px;text-align:center;margin:10px 0;">
                 <strong>💱 Current Exchange Rate:</strong><br>
                 1 DAI = ${(1/price).toFixed(6)} IAM<br>
                 1 IAM = ${price.toFixed(6)} DAI
             </div>`;
             console.log('✅ Exchange rate updated:', price);
         } else {
-            rateEl.innerHTML = '<div style="background:#ffebee;padding:10px;border-radius:6px;text-align:center;color:#c62828;">Price not available</div>';
+            rateEl.innerHTML = '<div style="background:00000000;padding:10px;border-radius:6px;text-align:center;color:#c62828;">Price not available</div>';
             console.warn('⚠️ Token price not available');
         }
     }
@@ -524,7 +524,7 @@ class SwapManager {
             const netAmount = value - fees;
             const netTokens = netAmount / Number(this.tokenPrice);
             
-            previewHtml = `<div style=\"background:#e8f5e8;padding:12px;border-radius:6px;margin:10px 0;\">
+            previewHtml = `<div style=\"background:00000000;padding:12px;border-radius:6px;margin:10px 0;\">
                 <h4 style=\"margin:0 0 8px 0;color:#2e7d32;\">📊 Purchase Preview</h4>
                 <p style=\"margin:5px 0;color:#555;\"><strong>Input Amount:</strong> ${value.toFixed(2)} DAI</p>
                 <p style=\"margin:5px 0;color:#555;\"><strong>Fee (${(backingPct*100).toFixed(1)}%):</strong> ${fees.toFixed(2)} DAI</p>
