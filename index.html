@@ -1010,61 +1010,61 @@ Our Services:
         <form id="swapForm" class="swap-form">
           <!-- Left Column -->
           <div style="display:flex;flex-direction:column;gap:1rem;">
-            <div class="swap-row">
-              <label for="swapDirection">Exchange Type:</label>
-              <select id="swapDirection" required>
-                <option value="dai-to-IAM">DAI → IAM</option>
-                <option value="IAM-to-dai">IAM → DAI</option>
-              </select>
-              <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Select your desired exchange type</small>
+          <div class="swap-row">
+            <label for="swapDirection">Exchange Type:</label>
+            <select id="swapDirection" required>
+              <option value="dai-to-IAM">DAI → IAM</option>
+              <option value="IAM-to-dai">IAM → DAI</option>
+            </select>
+            <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Select your desired exchange type</small>
+          </div>
+          
+          <div class="swap-row">
+            <label for="swapAmount">Amount:</label>
+            <div class="amount-input-group">
+              <input type="number" id="swapAmount" placeholder="Enter amount" min="0" step="any" required>
+              <button type="button" id="maxBtn" class="max-btn">Maximum</button>
             </div>
-            
-            <div class="swap-row">
-              <label for="swapAmount">Amount:</label>
-              <div class="amount-input-group">
-                <input type="number" id="swapAmount" placeholder="Enter amount" min="0" step="any" required>
-                <button type="button" id="maxBtn" class="max-btn">Maximum</button>
-              </div>
-              <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Enter the amount you want to exchange</small>
+            <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Enter the amount you want to exchange</small>
             </div>
           </div>
-
+          
           <!-- Right Column -->
           <div style="display:flex;flex-direction:column;gap:1rem;">
-            <div class="swap-row" id="swap-usd-converter-row" style="display:none;">
-              <label for="swapUsdAmount">💰 Dollar Equivalent:</label>
-              <div class="usd-converter-container" style="display:flex;gap:0.5rem;align-items:center;">
-                <span style="color:#00ff88;font-weight:bold;">$</span>
-                <input type="number" id="swapUsdAmount" placeholder="5.00" min="0" step="0.01" style="flex:1;">
-                <button type="button" id="swapUsdToTokenBtn" style="
-                  background: linear-gradient(90deg,#00ff88,#a786ff);
-                  color: #181c2a;
-                  border: none;
-                  border-radius: 6px;
-                  padding: 0.4rem 0.8rem;
-                  font-size: 0.8rem;
-                  cursor: pointer;
-                  transition: all 0.3s ease;
-                  font-weight: bold;
-                ">🔄 Convert</button>
-              </div>
-              <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Enter dollar amount to convert to tokens (e.g., 5 for $5)</small>
+          <div class="swap-row" id="swap-usd-converter-row" style="display:none;">
+            <label for="swapUsdAmount">💰 Dollar Equivalent:</label>
+            <div class="usd-converter-container" style="display:flex;gap:0.5rem;align-items:center;">
+              <span style="color:#00ff88;font-weight:bold;">$</span>
+              <input type="number" id="swapUsdAmount" placeholder="5.00" min="0" step="0.01" style="flex:1;">
+              <button type="button" id="swapUsdToTokenBtn" style="
+                background: linear-gradient(90deg,#00ff88,#a786ff);
+                color: #181c2a;
+                border: none;
+                border-radius: 6px;
+                padding: 0.4rem 0.8rem;
+                font-size: 0.8rem;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                font-weight: bold;
+              ">🔄 Convert</button>
             </div>
-            
-            <!-- Balance Check -->
+            <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Enter dollar amount to convert to tokens (e.g., 5 for $5)</small>
+          </div>
+        
+        <!-- Balance Check -->
             <div style="background:rgba(0,255,136,0.1);border-radius:8px;padding:0.8rem;">
               <h4 style="color:#00ff88;margin-bottom:0.6rem;font-size:0.9rem;">💰 Your Current Balance:</h4>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;">
-                <div style="text-align:center;">
+            <div style="text-align:center;">
                   <div style="color:#00ff88;font-weight:bold;font-size:0.9rem;">DAI</div>
                   <div id="daiBalance" style="color:#b8c1ec;font-family:monospace;font-size:0.85rem;">-</div>
-                </div>
-                <div style="text-align:center;">
+            </div>
+            <div style="text-align:center;">
                   <div style="color:#00ccff;font-weight:bold;font-size:0.9rem;">IAM</div>
                   <div id="IAMBalance" style="color:#b8c1ec;font-family:monospace;font-size:0.85rem;">-</div>
                   <div id="IAMUsdValue" style="color:#a786ff;font-size:0.75rem;margin-top:2px;">-</div>
-                </div>
-              </div>
+            </div>
+          </div>
             </div>
             
             <!-- Exchange Button - Moved here to be closer to Current Balance -->
@@ -1142,45 +1142,45 @@ Our Services:
         <form id="transferForm" class="transfer-form" style="display:grid !important;grid-template-columns:1fr 1fr !important;gap:1.5rem !important;align-items:start !important;">
           <!-- Left Column -->
           <div style="display:flex;flex-direction:column;gap:1rem;">
-            <div class="transfer-row">
-              <label for="transferTo">Destination Address:</label>
-              <input type="text" id="transferTo" placeholder="0x..." required style="direction:ltr;">
-              <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Enter destination wallet address (42 characters)</small>
-            </div>
+          <div class="transfer-row">
+            <label for="transferTo">Destination Address:</label>
+            <input type="text" id="transferTo" placeholder="0x..." required style="direction:ltr;">
+            <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Enter destination wallet address (42 characters)</small>
+          </div>
 
-            <!-- Index to Address Search -->
+          <!-- Index to Address Search -->
             <div class="transfer-row" id="search-index-container" style="background:rgba(0,255,136,0.1);border-radius:8px;padding:0.8rem;border:1px solid rgba(0,255,136,0.2);">
               <h4 style="color:#00ff88;margin-bottom:0.6rem;font-size:0.9rem;">🔍 Search by Index</h4>
               <div style="margin-bottom:0.4rem;">
-                <input type="number" id="searchIndex" placeholder="Enter user index" 
+              <input type="number" id="searchIndex" placeholder="Enter user index" 
                        style="background:rgba(0,0,0,0.3);border:1px solid rgba(0,255,136,0.3);border-radius:6px;padding:0.4rem;color:#fff;text-align:center;width:100%;font-size:0.85rem;font-family:monospace;margin-bottom:0.4rem;">
-                <button type="button" id="searchIndexBtn" 
+              <button type="button" id="searchIndexBtn" 
                         style="background:linear-gradient(135deg,#00ff88,#00cc6a);color:#1a1f2e;border:none;border-radius:6px;padding:0.4rem 0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:0.85rem;width:100%;">
-                  🔍 Search
-                </button>
-              </div>
+                🔍 Search
+              </button>
+            </div>
               <div id="searchIndexStatus" style="text-align:center;padding:0.4rem;border-radius:6px;font-size:0.85rem;min-height:1.2em;"></div>
               <small style="color:#b8c1ec;font-size:0.75rem;margin-top:0.2rem;display:block;">Enter a user index to find their wallet address</small>
-            </div>
+          </div>
 
-            <div class="transfer-row">
+          <div class="transfer-row">
               <label for="transferAmount">Amount:</label>
               <input type="number" id="transferAmount" placeholder="Enter amount" min="0" step="any" required>
-              <button type="button" id="maxAmountBtn" style="
-                background: linear-gradient(90deg,#ff6b6b,#ee5a52);
-                color: #fff;
-                border: none;
-                border-radius: 6px;
-                padding: 0.4rem 0.8rem;
-                font-size: 0.8rem;
-                cursor: pointer;
+            <button type="button" id="maxAmountBtn" style="
+              background: linear-gradient(90deg,#ff6b6b,#ee5a52);
+              color: #fff;
+              border: none;
+              border-radius: 6px;
+              padding: 0.4rem 0.8rem;
+              font-size: 0.8rem;
+              cursor: pointer;
                 margin-top: 0.4rem;
-                transition: all 0.3s ease;
-                width: auto;
-                display: inline-block;
-                ">🔥 Maximum Balance</button>
+              transition: all 0.3s ease;
+              width: auto;
+              display: inline-block;
+              ">🔥 Maximum Balance</button>
               <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Enter transfer amount or click "Maximum"</small>
-            </div>
+          </div>
 
           </div>
 
@@ -1196,39 +1196,39 @@ Our Services:
               <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Select the token type you want to transfer</small>
             </div>
 
-            <div class="transfer-row" id="usd-converter-row" style="display:none;">
+          <div class="transfer-row" id="usd-converter-row" style="display:none;">
               <label for="transferUsdAmount">💰 Dollar Equivalent (Only for IAM):</label>
-              <div class="usd-converter-container" style="display:flex;gap:0.5rem;align-items:center;">
-                <span style="color:#00ff88;font-weight:bold;">$</span>
-                <input type="number" id="transferUsdAmount" placeholder="5.00" min="0" step="0.01" style="flex:1;">
-                <button type="button" id="usdToIAMBtn" style="
-                  background: linear-gradient(90deg,#00ff88,#a786ff);
-                  color: #181c2a;
-                  border: none;
-                  border-radius: 6px;
-                  padding: 0.4rem 0.8rem;
-                  font-size: 0.8rem;
-                  cursor: pointer;
-                  transition: all 0.3s ease;
-                  font-weight: bold;
-                  ">🔄 Convert</button>
-              </div>
-              <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Enter dollar amount to convert to IAM (e.g., 5 for $5)</small>
+            <div class="usd-converter-container" style="display:flex;gap:0.5rem;align-items:center;">
+              <span style="color:#00ff88;font-weight:bold;">$</span>
+              <input type="number" id="transferUsdAmount" placeholder="5.00" min="0" step="0.01" style="flex:1;">
+              <button type="button" id="usdToIAMBtn" style="
+                background: linear-gradient(90deg,#00ff88,#a786ff);
+                color: #181c2a;
+                border: none;
+                border-radius: 6px;
+                padding: 0.4rem 0.8rem;
+                font-size: 0.8rem;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                font-weight: bold;
+                ">🔄 Convert</button>
             </div>
-            
-            <!-- Balance Check -->
+              <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Enter dollar amount to convert to IAM (e.g., 5 for $5)</small>
+          </div>
+          
+          <!-- Balance Check -->
             <div style="background:rgba(167,134,255,0.1);border-radius:8px;padding:0.8rem;" class="balance-check">
               <h4 style="color:#a786ff;margin-bottom:0.6rem;font-size:0.9rem;">💰 Your Current Balance:</h4>
               <div class="balance-check-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.8rem;">
-                <div style="text-align:center;">
+              <div style="text-align:center;">
                   <div style="color:#00ff88;font-weight:bold;font-size:0.9rem;">DAI</div>
                   <div id="transfer-dai-balance" style="color:#b8c1ec;font-family:monospace;font-size:0.85rem;">-</div>
-                </div>
-                <div style="text-align:center;">
+              </div>
+              <div style="text-align:center;">
                   <div style="color:#a786ff;font-weight:bold;font-size:0.9rem;">POL</div>
                   <div id="transfer-poly-balance" style="color:#b8c1ec;font-family:monospace;font-size:0.85rem;">-</div>
-                </div>
-                <div style="text-align:center;">
+              </div>
+              <div style="text-align:center;">
                   <div style="color:#00ccff;font-weight:bold;font-size:0.9rem;">IAM</div>
                   <div id="transfer-IAM-balance" style="color:#b8c1ec;font-family:monospace;font-size:0.85rem;">-</div>
                   <div id="transfer-IAM-usd" style="color:#a786ff;font-size:0.75rem;margin-top:2px;">-</div>
@@ -1240,7 +1240,7 @@ Our Services:
           <!-- Full Width Submit Button -->
           <div style="grid-column:1/-1;margin-top:1rem;">
             <button type="submit" class="transfer-btn" style="width:100%;">Transfer</button>
-            <div id="transferStatus" class="transfer-status"></div>
+          <div id="transferStatus" class="transfer-status"></div>
           </div>
         </form>
       </div>

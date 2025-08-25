@@ -96,9 +96,9 @@
       <div class="register-form-status warning" id="register-suggestion" style="display:none;"></div>
       <div class="form-group">
                  <label for="index-search">Index</label>
-                                   <div style="font-size:0.7rem;color:#a786ff;margin-bottom:4px;background:rgba(167,134,255,0.1);padding:4px;border-radius:3px;border:1px solid rgba(167,134,255,0.3);">
-           ⚠️ <strong>Limit:</strong> You can only register for indexes in your referral line.
-        </div>
+                                                                       <div style="font-size:0.7rem;color:#a786ff;margin-bottom:4px;background:rgba(167,134,255,0.1);padding:4px;border-radius:3px;border:1px solid rgba(167,134,255,0.3);">
+            ⚠️ <strong>Limit:</strong> You can only register for indexes in your subtree. Referrer must have at least one empty child position.
+         </div>
                  <input type="text" id="index-search" class="register-form-input" placeholder="e.g. 123" autocomplete="off" value="refferer ID : IAM00000" style="width: 100%; margin-bottom: 6px;">
          <button type="button" id="apply-index-btn" class="register-btn" style="width: 100%; padding: 6px 12px; font-size: 0.85rem;">Apply</button>
       </div>
@@ -120,125 +120,192 @@
                        <button class="register-btn buy-btn" id="register-btn" type="button" style="width:100%;margin-top:8px;">Register</button>
       
       <script>
-    // تابع نمایش پیام‌های عمومی
-    function showMessageBox(message, type = 'info') {
-        // حذف message box قبلی اگر وجود دارد
-        const existingBox = document.getElementById('message-box');
-        if (existingBox) {
-            existingBox.remove();
-        }
-        
-        // ایجاد message box جدید
-        const messageBox = document.createElement('div');
-        messageBox.id = 'message-box';
-        messageBox.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: ${type === 'error' ? 'rgba(255, 0, 0, 0.95)' : type === 'success' ? 'rgba(0, 255, 136, 0.95)' : 'rgba(167, 134, 255, 0.95)'};
-            color: white;
-            padding: 20px 30px;
-            border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            z-index: 10000;
-            max-width: 400px;
-            text-align: center;
-            font-size: 14px;
-            line-height: 1.5;
-            backdrop-filter: blur(10px);
-            border: 1px solid ${type === 'error' ? 'rgba(255, 0, 0, 0.3)' : type === 'success' ? 'rgba(0, 255, 136, 0.3)' : 'rgba(167, 134, 255, 0.3)'};
-        `;
-        
-        // آیکون بر اساس نوع پیام
-        const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
-        
-        messageBox.innerHTML = `
-            <div style="margin-bottom: 10px; font-size: 24px;">${icon}</div>
-            <div style="margin-bottom: 15px;">${message}</div>
-            <button onclick="this.parentElement.remove()" style="
-                background: rgba(255, 255, 255, 0.2);
-                border: 1px solid rgba(255, 255, 255, 0.3);
-                color: white;
-                padding: 8px 20px;
-                border-radius: 6px;
-                cursor: pointer;
-                font-size: 13px;
-                transition: all 0.3s ease;
-            " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
-                بستن
-            </button>
-        `;
-        
-        document.body.appendChild(messageBox);
-        
-        // حذف خودکار بعد از 5 ثانیه
-        setTimeout(() => {
-            if (messageBox.parentElement) {
-                messageBox.remove();
-            }
-        }, 5000);
-    }
-
-    // تابع نمایش توضیحات رزرو
-    function showReserveInfoMessage() {
-        const messageBox = document.createElement('div');
-        messageBox.id = 'reserve-info-message';
-        messageBox.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: linear-gradient(135deg, rgba(255, 107, 107, 0.95), rgba(255, 165, 0, 0.95));
-            color: white;
-            padding: 25px 30px;
-            border-radius: 16px;
-            box-shadow: 0 12px 40px rgba(255, 107, 107, 0.4);
-            z-index: 10000;
-            max-width: 500px;
-            text-align: center;
-            font-size: 14px;
-            line-height: 1.6;
-            backdrop-filter: blur(15px);
-            border: 2px solid rgba(255, 165, 0, 0.5);
-        `;
-        
-                 messageBox.innerHTML = `
-             <div style="margin-bottom: 15px; font-size: 28px;">🔄</div>
-             <div style="margin-bottom: 20px; font-size: 18px; font-weight: bold; color: #fff;">Reserve Registration</div>
-             
-             <div style="text-align: left; margin-bottom: 15px; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">
-                 <div style="margin-bottom: 8px; font-weight: bold; color: #fff;">📋 Reserve Registration Features:</div>
-                 <div style="margin-bottom: 5px;">• Cost: Equivalent to $23 IAM tokens</div>
-                 <div style="margin-bottom: 5px;">• Type: Reserve registration (inactive)</div>
-                 <div style="margin-bottom: 5px;">• Status: User in waiting mode</div>
-                 <div style="margin-bottom: 5px;">• Activation: Requires additional payment</div>
-             </div>
-             
-             <div style="text-align: left; margin-bottom: 15px; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">
-                 <div style="margin-bottom: 8px; font-weight: bold; color: #fff;">⚠️ Important Notes:</div>
-                 <div style="margin-bottom: 5px;">• Reserved user is not active</div>
-                 <div style="margin-bottom: 5px;">• Additional payment required for activation</div>
-                 <div style="margin-bottom: 5px;">• Only used for position reservation</div>
-                 <div style="margin-bottom: 5px;">• Activation cost calculated separately</div>
-             </div>
-             
-             <div style="margin-top: 20px;">
-                 <button onclick="this.parentElement.parentElement.remove()" style="
-                     background: rgba(255, 255, 255, 0.2);
-                     border: 2px solid rgba(255, 255, 255, 0.4);
-                     color: white;
-                     padding: 12px 25px;
-                     border-radius: 8px;
-                     cursor: pointer;
-                     font-size: 14px;
-                     font-weight: bold;
-                     transition: all 0.3s ease;
-                 " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
-                     I Understand
-                 </button>
-             </div>
+         // تابع نمایش پیام‌های عمومی
+     function showMessageBox(message, type = 'info') {
+         // حذف message box قبلی اگر وجود دارد
+         const existingBox = document.getElementById('message-box');
+         if (existingBox) {
+             existingBox.remove();
+         }
+         
+         // ایجاد message box جدید
+         const messageBox = document.createElement('div');
+         messageBox.id = 'message-box';
+         messageBox.style.cssText = `
+             position: fixed;
+             top: 50%;
+             left: 50%;
+             transform: translate(-50%, -50%);
+             background: ${type === 'error' ? 'rgba(255, 0, 0, 0.95)' : type === 'success' ? 'rgba(0, 255, 136, 0.95)' : 'rgba(167, 134, 255, 0.95)'};
+             color: white;
+             padding: 20px 30px;
+             border-radius: 12px;
+             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+             z-index: 10000;
+             max-width: 400px;
+             text-align: center;
+             font-size: 14px;
+             line-height: 1.5;
+             backdrop-filter: blur(10px);
+             border: 1px solid ${type === 'error' ? 'rgba(255, 0, 0, 0.3)' : type === 'success' ? 'rgba(0, 255, 136, 0.3)' : 'rgba(167, 134, 255, 0.3)'};
          `;
+         
+         // آیکون بر اساس نوع پیام
+         const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+         
+         messageBox.innerHTML = `
+             <div style="margin-bottom: 10px; font-size: 24px;">${icon}</div>
+             <div style="margin-bottom: 15px;">${message}</div>
+             <button onclick="this.parentElement.remove()" style="
+                 background: rgba(255, 255, 255, 0.2);
+                 border: 1px solid rgba(255, 255, 255, 0.3);
+                 color: white;
+                 padding: 8px 20px;
+                 border-radius: 6px;
+                 cursor: pointer;
+                 font-size: 13px;
+                 transition: all 0.3s ease;
+             " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                 Close
+             </button>
+         `;
+         
+         document.body.appendChild(messageBox);
+         
+         // حذف خودکار بعد از 5 ثانیه
+         setTimeout(() => {
+             if (messageBox.parentElement) {
+                 messageBox.remove();
+             }
+         }, 5000);
+     }
+
+     // تابع نمایش message box برای بررسی ایندکس (بدون دکمه exit)
+     function showIndexCheckMessage(message, type = 'info') {
+         // حذف message box قبلی اگر وجود دارد
+         const existingBox = document.getElementById('index-check-message');
+         if (existingBox) {
+             existingBox.remove();
+         }
+         
+         // تعیین رنگ و آیکون بر اساس نوع
+         let bgColor, borderColor, icon;
+         if (type === 'error') {
+             bgColor = 'rgba(255, 0, 0, 0.95)';
+             borderColor = 'rgba(255, 0, 0, 0.3)';
+             icon = '❌';
+         } else if (type === 'success') {
+             bgColor = 'rgba(0, 255, 136, 0.95)';
+             borderColor = 'rgba(0, 255, 136, 0.3)';
+             icon = '✅';
+         } else {
+             bgColor = 'rgba(0, 123, 255, 0.95)';
+             borderColor = 'rgba(0, 123, 255, 0.3)';
+             icon = 'ℹ️';
+         }
+         
+         // ایجاد message box جدید
+         const messageBox = document.createElement('div');
+         messageBox.id = 'index-check-message';
+         messageBox.style.cssText = `
+             position: fixed;
+             top: 50%;
+             left: 50%;
+             transform: translate(-50%, -50%);
+             background: ${bgColor};
+             color: white;
+             padding: 25px 30px;
+             border-radius: 16px;
+             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+             z-index: 10000;
+             max-width: 90vw;
+             width: 350px;
+             text-align: center;
+             font-size: 16px;
+             line-height: 1.6;
+             backdrop-filter: blur(15px);
+             border: 2px solid ${borderColor};
+             font-weight: 500;
+         `;
+         
+         messageBox.innerHTML = `
+             <div style="margin-bottom: 15px; font-size: 32px;">${icon}</div>
+             <div style="margin-bottom: 20px; font-size: 18px; font-weight: bold;">Index Check Result</div>
+             <div style="margin-bottom: 20px; font-size: 15px; line-height: 1.5;">${message}</div>
+         `;
+         
+         document.body.appendChild(messageBox);
+         
+         // حذف خودکار بعد از 4 ثانیه
+         setTimeout(() => {
+             if (messageBox.parentElement) {
+                 messageBox.style.animation = 'fadeOut 0.5s ease';
+                 setTimeout(() => messageBox.remove(), 500);
+             }
+         }, 4000);
+     }
+
+         // تابع نمایش توضیحات رزرو
+     function showReserveInfoMessage() {
+         const messageBox = document.createElement('div');
+         messageBox.id = 'reserve-info-message';
+         messageBox.style.cssText = `
+             position: fixed;
+             top: 50%;
+             left: 50%;
+             transform: translate(-50%, -50%);
+             background: linear-gradient(135deg, rgba(255, 107, 107, 0.95), rgba(255, 165, 0, 0.95));
+             color: white;
+             padding: 20px 25px;
+             border-radius: 16px;
+             box-shadow: 0 12px 40px rgba(255, 107, 107, 0.4);
+             z-index: 10000;
+             max-width: 90vw;
+             width: 320px;
+             text-align: center;
+             font-size: 15px;
+             line-height: 1.5;
+             backdrop-filter: blur(15px);
+             border: 2px solid rgba(255, 165, 0, 0.5);
+         `;
+        
+                                   messageBox.innerHTML = `
+              <div style="margin-bottom: 12px; font-size: 24px;">🔄</div>
+              <div style="margin-bottom: 15px; font-size: 16px; font-weight: bold; color: #fff;">Reserve Registration</div>
+              
+              <div style="text-align: left; margin-bottom: 12px; background: rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">
+                  <div style="margin-bottom: 6px; font-weight: bold; color: #fff; font-size: 14px;">📋 Features:</div>
+                  <div style="margin-bottom: 4px; font-size: 13px;">• Cost: $23 IAM tokens</div>
+                  <div style="margin-bottom: 4px; font-size: 13px;">• Type: Reserve (inactive)</div>
+                  <div style="margin-bottom: 4px; font-size: 13px;">• Status: Waiting mode</div>
+                  <div style="margin-bottom: 4px; font-size: 13px;">• Activation: Extra payment needed</div>
+              </div>
+              
+              <div style="text-align: left; margin-bottom: 15px; background: rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">
+                  <div style="margin-bottom: 6px; font-weight: bold; color: #fff; font-size: 14px;">⚠️ Important:</div>
+                  <div style="margin-bottom: 4px; font-size: 13px;">• User not active</div>
+                  <div style="margin-bottom: 4px; font-size: 13px;">• Extra payment for activation</div>
+                  <div style="margin-bottom: 4px; font-size: 13px;">• Position reservation only</div>
+                  <div style="margin-bottom: 4px; font-size: 13px;">• Activation cost separate</div>
+              </div>
+              
+              <div style="margin-top: 15px;">
+                  <button onclick="this.parentElement.parentElement.remove()" style="
+                      background: rgba(255, 255, 255, 0.2);
+                      border: 2px solid rgba(255, 255, 255, 0.4);
+                      color: white;
+                      padding: 10px 20px;
+                      border-radius: 8px;
+                      cursor: pointer;
+                      font-size: 13px;
+                      font-weight: bold;
+                      transition: all 0.3s ease;
+                      width: 100%;
+                  " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                      I Understand
+                  </button>
+              </div>
+          `;
         
         document.body.appendChild(messageBox);
         
@@ -318,12 +385,12 @@
                  if (clipboardText.match(/^0x[a-fA-F0-9]{40}$/)) {
                    addressInput.value = clipboardText;
                 
-                // نمایش پیام موفقیت آمیز (اختیاری)
-                alert('آدرس از کلیپبورد با موفقیت وارد شد!');
+                                 // نمایش پیام موفقیت آمیز (اختیاری)
+                 alert('Address copied from clipboard successfully!');
                  }
                } catch (err) {
-              console.error('خطا در دسترسی به کلیپبورد:', err);
-              // در صورت نیاز می‌توانید یک پیام خطا به کاربر نمایش دهید
+                           console.error('Error accessing clipboard:', err);
+             // در صورت نیاز می‌توانید یک پیام خطا به کاربر نمایش دهید
              }
            });
          });
@@ -341,14 +408,14 @@
         <div style="margin-top:6px;padding-top:4px;border-top:1px solid rgba(167,134,255,0.3);">
            <div style="color:#a786ff;font-size:0.75rem;margin-bottom:4px;">💳 Wallet Balance:</div>
           <div style="display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;">
-                     <span style="display:flex;align-items:center;gap:4px;">
-             <span style="color:#8247E5;font-size:16px;">🔷</span>
-             <span>موجودی متیک: <b id="matic-balance">...</b></span>
-           </span>
-           <span style="display:flex;align-items:center;gap:4px;">
-             <span style="color:#00ff88;font-size:16px;">💎</span>
-             <span>موجودی IAM: <b id="IAM-balance">...</b></span>
-           </span>
+                                          <span style="display:flex;align-items:center;gap:4px;">
+              <span style="color:#8247E5;font-size:16px;">🔷</span>
+              <span>MATIC Balance: <b id="matic-balance">...</b></span>
+            </span>
+            <span style="display:flex;align-items:center;gap:4px;">
+              <span style="color:#00ff88;font-size:16px;">💎</span>
+              <span>IAM Balance: <b id="IAM-balance">...</b></span>
+            </span>
           </div>
                      <div style="font-size:0.65rem;color:#718096;margin-top:4px;text-align:center;background:rgba(113,128,150,0.1);padding:3px;border-radius:3px;">
              💡 <span id="registration-hint">For normal registration you need regPrice IAM tokens</span>
@@ -363,9 +430,9 @@
       </div>
       <div class="register-form-status" id="status-message"></div>
       
-                              <div style="margin-top:8px;padding:6px;background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3);border-radius:5px;text-align:center;font-size:0.75rem;color:#ffc107;">
-         ⚠️ برای ثبت‌نام نیاز به موجودی کافی IAM و MATIC دارید
-      </div>
+                                                             <div style="margin-top:8px;padding:6px;background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3);border-radius:5px;text-align:center;font-size:0.75rem;color:#ffc107;">
+          ⚠️ You need sufficient IAM and MATIC balance for registration
+       </div>
     </form>
   </main>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
@@ -549,18 +616,18 @@
           console.log(`🔍 وضعیت کاربر:`, user);
           // اگر کاربر فعال نیست، پیام پیشنهاد ثبت‌نام را نمایش بده
             const suggestionDiv = document.getElementById('register-suggestion');
-          if (user && !(user.index && BigInt(user.index) > 0n)) {
-            console.log(`⚠️ کاربر ثبت‌نام شده اما فعال نیست`);
-            suggestionDiv.style.display = '';
-            suggestionDiv.textContent = 'شما هنوز ثبت‌نام نکرده‌اید. لطفاً ثبت‌نام رزرو کنید.';
-          } else if (!user) {
-            console.log(`⚠️ کاربر اصلاً ثبت‌نام نشده است`);
-            suggestionDiv.style.display = '';
-            suggestionDiv.textContent = 'شما هنوز ثبت‌نام نکرده‌اید. لطفاً ثبت‌نام رزرو کنید.';
-          } else {
-            console.log(`✅ کاربر فعال است: ایندکس=${user.index}`);
-            suggestionDiv.style.display = 'none';
-          }
+                     if (user && !(user.index && BigInt(user.index) > 0n)) {
+             console.log(`⚠️ User registered but not active`);
+             suggestionDiv.style.display = '';
+             suggestionDiv.textContent = 'You have not registered yet. Please do a reserve registration.';
+           } else if (!user) {
+             console.log(`⚠️ User not registered at all`);
+             suggestionDiv.style.display = '';
+             suggestionDiv.textContent = 'You have not registered yet. Please do a reserve registration.';
+           } else {
+             console.log(`✅ User is active: index=${user.index}`);
+             suggestionDiv.style.display = 'none';
+           }
           // اگر کیف پول فعال است و مقدار فعلی روت یا خالی است، مقدار را به آدرس کیف پول متصل تغییر بده
           if ((!refInput.value || refInput.value === 'root') && (user.index && BigInt(user.index) > 0n)) {
             refInput.value = myAddress;
@@ -597,9 +664,9 @@
              emptyIndex = (BigInt(parentIndex) * 2n).toString();
            } else if (right === '0x0000000000000000000000000000000000000000') {
              emptyIndex = (BigInt(parentIndex) * 2n + 1n).toString();
-           } else {
-            emptyIndex = 'پر شده';
-           }
+                       } else {
+             emptyIndex = 'Full';
+            }
          }
          document.getElementById('empty-index').textContent = emptyIndex;
         
@@ -719,10 +786,10 @@
       const value = indexInput.value.trim();
       console.log(`🔍 Manual index application: ${value}`);
       
-      if (!value || value === defaultGuide) {
-        alert('لطفاً ایندکس معتبر وارد کنید');
-        return;
-      }
+             if (!value || value === defaultGuide) {
+         alert('Please enter a valid index');
+         return;
+       }
       
       // Format index to IAM format if it's a number
       let formattedValue = value;
@@ -763,12 +830,11 @@
          // فقط اعداد را نگه دار
          index = index.replace(/[^0-9]/g, '');
          
-         // اگر ایندکس خیلی بزرگ است، احتمالاً اشتباه است
-         if (index.length > 8) {
-           status.style.color = '#d32f2f';
-           status.textContent = 'ایندکس وارد شده خیلی بزرگ است. لطفاً بررسی کنید.';
-           return;
-         }
+                    // اگر ایندکس خیلی بزرگ است، احتمالاً اشتباه است
+           if (index.length > 8) {
+             showIndexCheckMessage('The entered index is too large. Please check and enter a valid index.', 'error');
+             return;
+           }
         
         if (!index) return;
         
@@ -777,57 +843,54 @@
           const contract = window.contractConfig.contract;
           const status = document.getElementById('status-message');
           
-          // مرحله 1: بررسی وجود ایندکس در شبکه
-          console.log(`🔍 بررسی وجود ایندکس ${index} در شبکه...`);
+                     // Step 1: Check if index exists in network
+           console.log(`🔍 Checking if index ${index} exists in network...`);
           let addr = null;
           try {
             addr = await contract.indexToAddress(index);
-            console.log(`📍 آدرس ایندکس ${index}:`, addr);
-          } catch (e) {
-            console.log(`❌ خطا در دریافت آدرس ایندکس ${index}:`, e);
-            status.style.color = '#d32f2f';
-            status.textContent = 'ایندکس وارد شده در شبکه وجود ندارد.';
-            return;
-          }
+                         console.log(`📍 Address of index ${index}:`, addr);
+           } catch (e) {
+             console.log(`❌ Error getting address of index ${index}:`, e);
+             showIndexCheckMessage('The entered index does not exist in the network. Please enter a valid index.', 'info');
+             return;
+           }
           
-          // بررسی اینکه آیا آدرس خالی است (ایندکس وجود ندارد)
-          if (!addr || addr === '0x0000000000000000000000000000000000000000') {
-            status.style.color = '#d32f2f';
-            status.textContent = 'ایندکس وارد شده در شبکه وجود ندارد.';
-            return;
-          }
+                     // بررسی اینکه آیا آدرس خالی است (ایندکس وجود ندارد)
+           if (!addr || addr === '0x0000000000000000000000000000000000000000') {
+             showIndexCheckMessage('The entered index does not exist in the network. Please enter a valid index.', 'info');
+             return;
+           }
           
-          // مرحله 2: بررسی اینکه آیا کاربر در این ایندکس فعال است
-          try {
-            const userAtAddress = await contract.users(addr);
-            console.log(`👤 اطلاعات کاربر در ایندکس ${index}:`, userAtAddress);
+                     // Step 2: Check if user at this index is active
+           try {
+             const userAtAddress = await contract.users(addr);
+             console.log(`👤 User info at index ${index}:`, userAtAddress);
+             
+           const isActive = userAtAddress && userAtAddress.index && BigInt(userAtAddress.index) > 0n;
+           
+           if (!isActive) {
+             showIndexCheckMessage('User at this index is not active. Please select an active referrer.', 'error');
+             return;
+           }
+          
+                         // تنظیم آدرس معرف (همیشه انجام شود)
+           refInput.readOnly = false;
+           refInput.disabled = false;
+           refInput.value = addr;
+           refInput.style.backgroundColor = '#232946';
+           refInput.style.color = '#fff';
+             status.style.color = '#388e3c';
+             status.textContent = `✅ Referrer address automatically set: ${addr}`;
+             console.log(`✅ Referrer address set: ${addr}`);
             
-          const isActive = userAtAddress && userAtAddress.index && BigInt(userAtAddress.index) > 0n;
+                     } catch (e) {
+             console.log(`❌ Error checking user status:`, e);
+             status.style.color = '#d32f2f';
+             showTempMessage('Error checking user status.', 'error');
+             return;
+           }
           
-          if (!isActive) {
-            status.style.color = '#d32f2f';
-              status.textContent = 'کاربر در این ایندکس فعال نیست.';
-            return;
-          }
-          
-            // تنظیم آدرس معرف (همیشه انجام شود)
-          refInput.readOnly = false;
-          refInput.disabled = false;
-          refInput.value = addr;
-          refInput.style.backgroundColor = '#232946';
-          refInput.style.color = '#fff';
-            status.style.color = '#388e3c';
-            status.textContent = `✅ آدرس معرف به‌طور خودکار تنظیم شد: ${addr}`;
-            console.log(`✅ آدرس معرف تنظیم شد: ${addr}`);
-            
-          } catch (e) {
-            console.log(`❌ خطا در بررسی وضعیت کاربر:`, e);
-            status.style.color = '#d32f2f';
-            showTempMessage('خطا در بررسی وضعیت کاربر.', 'error');
-            return;
-          }
-          
-          // مرحله 3: بررسی صلاحیت کاربر جاری
+                     // Step 3: Check current user's eligibility
           let myAddress = null, currentUser = null;
           try {
             if (window.currentUserAddress) {
@@ -840,68 +903,110 @@
                 window.currentUserAddress = myAddress;
               }
             }
-          } catch (e) {
-            console.log(`خطا در دریافت اطلاعات کاربر:`, e);
-          }
+                     } catch (e) {
+             console.log(`Error getting user info:`, e);
+           }
           
-          console.log(`🔍 بررسی کاربر جاری:`, currentUser);
-          if (currentUser && (currentUser.index && BigInt(currentUser.index) > 0n) && currentUser.index) {
-            const currentUserIndex = parseInt(currentUser.index);
-            const targetIndex = parseInt(index);
-            console.log(`🔍 بررسی صلاحیت: کاربر جاری=${currentUserIndex}, هدف=${targetIndex}`);
-            
-            if (!isIndexInUserSubtree(targetIndex, currentUserIndex)) {
-              status.style.color = '#d32f2f';
-              status.textContent = `شما مجاز به ثبت‌نام رزرو برای این ایندکس نیستید. فقط ایندکس‌های زیرمجموعه شما مجاز هستند.`;
-              return;
-            } else {
-           status.style.color = '#388e3c';
-              status.textContent = 'ایندکس معرف معتبر است و در زیرمجموعه شما قرار دارد.';
-              
-              // محاسبه و نمایش اطلاعات جایگاه کاربر جدید
-              try {
-                const parentIndex = parseInt(index);
-                const leftAddress = await contract.getLeftAddress(parentIndex);
-                const rightAddress = await contract.getRightAddress(parentIndex);
-                
-                let emptyIndex, positionInfo;
-                if (leftAddress === '0x0000000000000000000000000000000000000000') {
-                  emptyIndex = (parentIndex * 2).toString();
-                  positionInfo = 'چپ (Left)';
-                } else if (rightAddress === '0x0000000000000000000000000000000000000000') {
-                  emptyIndex = (parentIndex * 2 + 1).toString();
-                  positionInfo = 'راست (Right)';
+                     console.log(`🔍 Checking current user:`, currentUser);
+           if (currentUser && (currentUser.index && BigInt(currentUser.index) > 0n) && currentUser.index) {
+             const currentUserIndex = parseInt(currentUser.index);
+             const targetIndex = parseInt(index);
+             console.log(`🔍 Checking eligibility: current user=${currentUserIndex}, target=${targetIndex}`);
+             
+             // Check if target index is in user's subtree
+             if (!isIndexInUserSubtree(targetIndex, currentUserIndex)) {
+               showIndexCheckMessage('This index is cross-line. You can only register for indexes in your subtree.', 'error');
+               return;
              } else {
-                  emptyIndex = 'پر شده';
-                  positionInfo = 'هیچ جایگاه خالی';
-                }
-                
-                document.getElementById('empty-index').textContent = emptyIndex;
-                document.getElementById('position-info').textContent = positionInfo;
-              } catch (error) {
-                console.log('خطا در محاسبه اطلاعات جایگاه:', error);
-                document.getElementById('position-info').textContent = 'خطا در محاسبه';
-              }
-            }
-          } else {
-            console.log(`⚠️ کاربر فعال نیست یا ایندکس ندارد:`, currentUser);
-            status.style.color = '#d32f2f';
-            status.textContent = `شما باید ابتدا ثبت‌نام کنید تا بتوانید برای دیگران ثبت‌نام رزرو انجام دهید.`;
-            return;
-          }
+               // Check if referrer has at least one empty child at level 1
+               try {
+                 const parentIndex = parseInt(index);
+                 const leftAddress = await contract.getLeftAddress(parentIndex);
+                 const rightAddress = await contract.getRightAddress(parentIndex);
+                 
+                 if (leftAddress === '0x0000000000000000000000000000000000000000' || rightAddress === '0x0000000000000000000000000000000000000000') {
+                   // At least one child is empty
+                   showIndexCheckMessage('Index is valid and in your subtree. Referrer has available positions for registration.', 'success');
+                   
+                   // Calculate and display new user position info
+                   let emptyIndex, positionInfo;
+                   if (leftAddress === '0x0000000000000000000000000000000000000000') {
+                     emptyIndex = (parentIndex * 2).toString();
+                     positionInfo = 'Left';
+                   } else if (rightAddress === '0x0000000000000000000000000000000000000000') {
+                     emptyIndex = (parentIndex * 2 + 1).toString();
+                     positionInfo = 'Right';
+                   } else {
+                     emptyIndex = 'Full';
+                     positionInfo = 'No empty position';
+                   }
+                   
+                   document.getElementById('empty-index').textContent = emptyIndex;
+                   document.getElementById('position-info').textContent = positionInfo;
+                 } else {
+                   // Both children are occupied
+                   showIndexCheckMessage('This referrer is full. Please enter a different index with available positions.', 'error');
+                   document.getElementById('empty-index').textContent = 'Full';
+                   document.getElementById('position-info').textContent = 'No empty position';
+                   return;
+                 }
+               } catch (error) {
+                 console.log('Error calculating position info:', error);
+                 document.getElementById('position-info').textContent = 'Error calculating';
+               }
+             }
+                        } else {
+               // اگر کاربر فعال نیست، بررسی کن که آیا برای خودش ثبت‌نام می‌کند
+               const newUserAddress = document.getElementById('new-user-address').value.trim();
+               if (newUserAddress && newUserAddress.toLowerCase() === myAddress.toLowerCase()) {
+                 console.log(`✅ User registering for themselves`);
+                 status.style.color = '#388e3c';
+                 status.textContent = 'You can register for yourself.';
+                 
+                 // محاسبه و نمایش اطلاعات جایگاه کاربر جدید
+                 try {
+                   const parentIndex = parseInt(index);
+                   const leftAddress = await contract.getLeftAddress(parentIndex);
+                   const rightAddress = await contract.getRightAddress(parentIndex);
+                   
+                   let emptyIndex, positionInfo;
+                   if (leftAddress === '0x0000000000000000000000000000000000000000') {
+                     emptyIndex = (parentIndex * 2).toString();
+                     positionInfo = 'Left';
+                   } else if (rightAddress === '0x0000000000000000000000000000000000000000') {
+                     emptyIndex = (parentIndex * 2 + 1).toString();
+                     positionInfo = 'Right';
+                } else {
+                     emptyIndex = 'Full';
+                     positionInfo = 'No empty position';
+                   }
+                   
+                   document.getElementById('empty-index').textContent = emptyIndex;
+                   document.getElementById('position-info').textContent = positionInfo;
+                 } catch (error) {
+                   console.log('Error calculating position info:', error);
+                   document.getElementById('position-info').textContent = 'Error calculating';
+                 }
+               } else {
+                 console.log(`⚠️ User not active or no index:`, currentUser);
+                 status.style.color = '#d32f2f';
+                 status.textContent = `You must register first to be able to register others.`;
+                 return;
+               }
+             }
           
         } catch (e) {
           const status = document.getElementById('status-message');
           status.style.color = '#d32f2f';
-          showTempMessage('خطا در بررسی ایندکس: ' + (e.message || e), 'error');
+          showTempMessage('Error checking index: ' + (e.message || e), 'error');
         }
       }
-         // وقتی آدرس تغییر می‌کند، ایندکس را به‌روز کن و بررسی خط رفرال
+         // When address changes, update index and check referral line
      refInput.addEventListener('change', async function() {
        await checkReferralLine();
      });
      
-     // اضافه کردن event listener برای input و paste
+     // Adding event listener for input and paste
      refInput.addEventListener('input', async function() {
        await checkReferralLine();
      });
@@ -912,7 +1017,7 @@
        }, 100);
      });
      
-           // تابع بررسی خط رفرال
+           // Function to check referral line
       async function checkReferralLine() {
         const address = refInput.value.trim();
         if (!/^0x[a-fA-F0-9]{40}$/.test(address)) return;
@@ -922,41 +1027,38 @@
           const contract = window.contractConfig.contract;
           const status = document.getElementById('status-message');
           
-          // مرحله 1: بررسی وجود آدرس در شبکه و دریافت اطلاعات کاربر
-          console.log(`🔍 بررسی وجود آدرس ${address} در شبکه...`);
+          // Step 1: Check if address exists in network and get user info
+          console.log(`🔍 Checking if address ${address} exists in network...`);
           let user = null;
           try {
             user = await contract.users(address);
-            console.log(`👤 اطلاعات کاربر در آدرس ${address}:`, user);
-          } catch (e) {
-            console.log(`❌ خطا در دریافت اطلاعات کاربر:`, e);
-            status.style.color = '#d32f2f';
-            status.textContent = 'آدرس وارد شده در شبکه وجود ندارد.';
-            return;
-          }
+            console.log(`👤 User info at address ${address}:`, user);
+                     } catch (e) {
+             console.log(`❌ Error getting user info:`, e);
+             showIndexCheckMessage('The entered address does not exist in the network. Please enter a valid address.', 'info');
+             return;
+           }
           
-          // مرحله 2: بررسی اینکه آیا کاربر فعال است
-          if (!user || !(user.index && BigInt(user.index) > 0n)) {
-            status.style.color = '#d32f2f';
-            status.textContent = 'کاربر در این آدرس فعال نیست یا وجود ندارد.';
-            return;
-          }
-          
-          // مرحله 3: بررسی اینکه آیا کاربر ایندکس دارد
-          if (!user.index) {
-            status.style.color = '#d32f2f';
-            status.textContent = 'کاربر در این آدرس ایندکس ندارد.';
-            return;
-          }
-          
-          // مرحله 4: تنظیم ایندکس در فیلد مربوطه
+                     // Step 2: Check if user is active
+           if (!user || !(user.index && BigInt(user.index) > 0n)) {
+             showIndexCheckMessage('User at this address is not active or does not exist. Please select an active referrer.', 'error');
+             return;
+           }
+           
+           // Step 3: Check if user has index
+           if (!user.index) {
+             showIndexCheckMessage('User at this address has no index. Please select a valid referrer.', 'error');
+             return;
+           }
+           
+           // Step 4: Set index in the relevant field
           let IAMId = 'IAM' + user.index.toString().padStart(5, '0');
           indexInput.value = IAMId;
           indexInput.style.background = '';
           indexInput.style.color = '';
           indexInput.style.opacity = '';
           
-          // مرحله 5: بررسی صلاحیت کاربر جاری
+                     // Step 5: Check current user's eligibility
           let myAddress = null, currentUser = null;
           try {
             if (window.currentUserAddress) {
@@ -969,30 +1071,55 @@
                 window.currentUserAddress = myAddress;
               }
             }
-          } catch (e) {
-            console.log(`خطا در دریافت اطلاعات کاربر جاری:`, e);
-          }
-          
-          console.log(`🔍 بررسی کاربر جاری:`, currentUser);
-          if (currentUser && (currentUser.index && BigInt(currentUser.index) > 0n) && currentUser.index) {
-            const currentUserIndex = parseInt(currentUser.index);
-            const targetIndex = parseInt(user.index);
-            console.log(`🔍 بررسی صلاحیت: کاربر جاری=${currentUserIndex}, هدف=${targetIndex}`);
-            
-            if (!isIndexInUserSubtree(targetIndex, currentUserIndex)) {
-              status.style.color = '#d32f2f';
-              status.textContent = `شما مجاز به ثبت‌نام رزرو برای این آدرس نیستید. فقط ایندکس‌های زیرمجموعه شما مجاز هستند.`;
-              return;
-            } else {
-              status.style.color = '#388e3c';
-              status.textContent = 'آدرس معرف معتبر است و در زیرمجموعه شما قرار دارد.';
-            }
-          } else {
-            console.log(`⚠️ کاربر فعال نیست یا ایندکس ندارد:`, currentUser);
-            status.style.color = '#d32f2f';
-            status.textContent = `شما باید ابتدا ثبت‌نام کنید تا بتوانید برای دیگران ثبت‌نام رزرو انجام دهید.`;
-            return;
-          }
+                     } catch (e) {
+             console.log(`Error getting current user info:`, e);
+           }
+           
+           console.log(`🔍 Checking current user:`, currentUser);
+           if (currentUser && (currentUser.index && BigInt(currentUser.index) > 0n) && currentUser.index) {
+             const currentUserIndex = parseInt(currentUser.index);
+             const targetIndex = parseInt(user.index);
+             console.log(`🔍 Checking eligibility: current user=${currentUserIndex}, target=${targetIndex}`);
+             
+             if (!isIndexInUserSubtree(targetIndex, currentUserIndex)) {
+               showIndexCheckMessage('This address is cross-line. You can only register for addresses in your subtree.', 'error');
+               return;
+             } else {
+               // Check if referrer has at least one empty child at level 1
+               try {
+                 const parentIndex = parseInt(user.index);
+                 const leftAddress = await contract.getLeftAddress(parentIndex);
+                 const rightAddress = await contract.getRightAddress(parentIndex);
+                 
+                 if (leftAddress === '0x0000000000000000000000000000000000000000' || rightAddress === '0x0000000000000000000000000000000000000000') {
+                   // At least one child is empty
+                   showIndexCheckMessage('Address is valid and in your subtree. Referrer has available positions for registration.', 'success');
+                 } else {
+                   // Both children are occupied
+                   showIndexCheckMessage('This referrer is full. Please enter a different address with available positions.', 'error');
+                   return;
+                 }
+               } catch (error) {
+                 console.log('Error checking referrer positions:', error);
+                 status.style.color = '#d32f2f';
+                 status.textContent = 'Error checking referrer positions.';
+                 return;
+               }
+             }
+                        } else {
+               // اگر کاربر فعال نیست، بررسی کن که آیا برای خودش ثبت‌نام می‌کند
+               const newUserAddress = document.getElementById('new-user-address').value.trim();
+               if (newUserAddress && newUserAddress.toLowerCase() === myAddress.toLowerCase()) {
+                 console.log(`✅ User registering for themselves`);
+                 status.style.color = '#388e3c';
+                 status.textContent = 'You can register for yourself.';
+               } else {
+                 console.log(`⚠️ User not active or no index:`, currentUser);
+                 status.style.color = '#d32f2f';
+                 status.textContent = `You must register first to be able to register others.`;
+                 return;
+               }
+             }
           
         } catch (e) {
           showTempMessage('خطا در بررسی آدرس: ' + (e.message || e), 'error');
@@ -1001,87 +1128,108 @@
      
 
      
-     // وقتی آدرس کاربر جدید تغییر می‌کند، بررسی کن
-     newUserInput.addEventListener('change', async function() {
-       await checkNewUserAddress();
-     });
-     
-     // اضافه کردن event listener برای input و paste
-     newUserInput.addEventListener('input', async function() {
-       await checkNewUserAddress();
-     });
-     
-     newUserInput.addEventListener('paste', async function() {
-       setTimeout(async () => {
+            // وقتی آدرس کاربر جدید تغییر می‌کند، بررسی کن
+       newUserInput.addEventListener('change', async function() {
          await checkNewUserAddress();
-       }, 100);
-     });
-     
-           // تابع بررسی آدرس کاربر جدید
-      async function checkNewUserAddress() {
+       });
+       
+       // اضافه کردن event listener برای input و paste
+       newUserInput.addEventListener('input', async function() {
+         await checkNewUserAddress();
+       });
+       
+       newUserInput.addEventListener('paste', async function() {
+         setTimeout(async () => {
+           await checkNewUserAddress();
+         }, 100);
+       });
+       
+             // Function to check new user address
+        async function checkNewUserAddress() {
         const address = newUserInput.value.trim();
         const status = document.getElementById('status-message');
         
-        // اگر آدرس خالی است، پیام را پاک کن
-        if (!address) {
-          status.textContent = '';
-          return;
-        }
-        
-        // بررسی فرمت آدرس
-        if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
-          status.style.color = '#d32f2f';
-          status.textContent = 'آدرس وارد شده معتبر نیست. لطفاً آدرس صحیح را وارد کنید.';
-          return;
-        }
+                 // اگر آدرس خالی است، پیام را پاک کن
+         if (!address) {
+           status.textContent = '';
+           return;
+         }
+         
+         // بررسی فرمت آدرس
+         if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
+           status.style.color = '#d32f2f';
+           status.textContent = 'The entered address is not valid. Please enter a correct address.';
+           return;
+         }
         
         try {
           if (!window.contractConfig || !window.contractConfig.contract) await window.connectWallet();
           const contract = window.contractConfig.contract;
           
-          // بررسی اینکه آیا این آدرس قبلاً ثبت‌نام شده است
-          const user = await contract.users(address);
-          if (user && (user.index && BigInt(user.index) > 0n)) {
-            status.style.color = '#d32f2f';
-            status.textContent = 'این آدرس قبلاً ثبت‌نام شده است.';
-            return;
-          }
-          
-          // اگر ثبت‌نام نشده، پیام موفقیت
-          status.style.color = '#388e3c';
-          status.textContent = 'آدرس کاربر جدید معتبر است و می‌تواند ثبت‌نام رزرو شود.';
-          
-          // نمایش ایندکس مربوط به این آدرس (اگر وجود داشته باشد)
+          // دریافت آدرس کاربر جاری
+          let myAddress = null;
           try {
-            // جستجو در ایندکس‌های موجود برای یافتن این آدرس
-            let foundIndex = null;
-            for (let i = 1; i <= 1000; i++) { // جستجو در 1000 ایندکس اول
-              try {
-                const addrAtIndex = await contract.indexToAddress(i);
-                if (addrAtIndex.toLowerCase() === address.toLowerCase()) {
-                  foundIndex = i;
-                  break;
-                }
-              } catch (e) {
-                // اگر ایندکس وجود نداشته باشد، ادامه بده
-                continue;
+            if (window.currentUserAddress) {
+              myAddress = window.currentUserAddress;
+            } else {
+              myAddress = contract.signer ? await contract.signer.getAddress() : null;
+              if (myAddress) {
+                window.currentUserAddress = myAddress;
               }
             }
-            
-            if (foundIndex) {
-              status.textContent += ` (ایندکس: ${foundIndex})`;
-            }
           } catch (e) {
-            // اگر خطا در جستجوی ایندکس داشتیم، نادیده بگیر
+            console.log(`خطا در دریافت آدرس کاربر جاری:`, e);
           }
-        } catch (e) {
-          showTempMessage('خطا در بررسی آدرس: ' + (e.message || e), 'error');
-        }
-      }
+          
+                     // بررسی اینکه آیا این آدرس قبلاً ثبت‌نام شده است
+           const user = await contract.users(address);
+           if (user && (user.index && BigInt(user.index) > 0n)) {
+             status.style.color = '#d32f2f';
+             status.textContent = 'This address is already registered.';
+             return;
+           }
+           
+           // بررسی اینکه آیا کاربر برای خودش ثبت‌نام می‌کند
+           if (address.toLowerCase() === myAddress.toLowerCase()) {
+             status.style.color = '#388e3c';
+             status.textContent = 'You can register for yourself.';
+           } else {
+             // اگر ثبت‌نام نشده، پیام موفقیت
+             status.style.color = '#388e3c';
+             status.textContent = 'New user address is valid and can be registered.';
+           }
+          
+                     // نمایش ایندکس مربوط به این آدرس (اگر وجود داشته باشد)
+           try {
+             // جستجو در ایندکس‌های موجود برای یافتن این آدرس
+             let foundIndex = null;
+             for (let i = 1; i <= 1000; i++) { // جستجو در 1000 ایندکس اول
+               try {
+                 const addrAtIndex = await contract.indexToAddress(i);
+                 if (addrAtIndex.toLowerCase() === address.toLowerCase()) {
+                   foundIndex = i;
+                   break;
+                 }
+               } catch (e) {
+                 // اگر ایندکس وجود نداشته باشد، ادامه بده
+                 continue;
+               }
+             }
+             
+             if (foundIndex) {
+               status.textContent += ` (Index: ${foundIndex})`;
+             }
+                      } catch (e) {
+             // اگر خطا در جستجوی ایندکس داشتیم، نادیده بگیر
+           }
+         } catch (e) {
+           showTempMessage('Error checking address: ' + (e.message || e), 'error');
+         }
+       }
       
 
 
-              // ثبت‌نام کاربر جدید (بر اساس نوع انتخاب شده)
+                             // Register new user (based on selected type)
     document.getElementById('register-btn').onclick = async function() {
       const status = document.getElementById('status-message');
       const registerBtn = this;
@@ -1115,62 +1263,76 @@
         const contract = window.contractConfig.contract;
         if (!contract) throw new Error('Contract connection failed. Please try again.');
         let myAddress = null, user = null;
-        try {
-            // استفاده از آدرس ذخیره شده
-          if (window.currentUserAddress) {
-            myAddress = window.currentUserAddress;
-            user = await contract.users(myAddress);
-          } else {
-            myAddress = contract.signer ? await contract.signer.getAddress() : null;
-            if (myAddress) {
-              user = await contract.users(myAddress);
-              window.currentUserAddress = myAddress;
-            }
-          }
-        } catch (e) {
-            console.log(`خطا در دریافت اطلاعات کاربر در ثبت‌نام رزرو:`, e);
-          }
+                 try {
+             // استفاده از آدرس ذخیره شده
+           if (window.currentUserAddress) {
+             myAddress = window.currentUserAddress;
+             user = await contract.users(myAddress);
+           } else {
+             myAddress = contract.signer ? await contract.signer.getAddress() : null;
+             if (myAddress) {
+               user = await contract.users(myAddress);
+               window.currentUserAddress = myAddress;
+             }
+           }
+         } catch (e) {
+             console.log(`Error getting user info in reserve registration:`, e);
+           }
           
-          console.log(`🔍 بررسی کاربر در ثبت‌نام رزرو:`, user);
-                  // بررسی اینکه آیا ایندکس هدف در خط رفرال کاربر جاری قرار دارد
-          if (user && (user.index && BigInt(user.index) > 0n) && user.index && enteredIndex !== null) {
-            const currentUserIndex = parseInt(user.index);
-            const targetIndex = parseInt(enteredIndex);
-            console.log(`🔍 بررسی در ثبت‌نام رزرو: کاربر جاری=${currentUserIndex}, هدف=${targetIndex}`);
-            
-            if (!isIndexInUserSubtree(targetIndex, currentUserIndex)) {
-              throw new Error(`You are only allowed to register for indexes in your subtree.`);
-            }
-          } else {
-            console.log(`⚠️ کاربر فعال نیست یا ایندکس ندارد در ثبت‌نام رزرو:`, user);
-            throw new Error(`You must register first to be able to register others.`);
-         }
+                     console.log(`🔍 Checking user in reserve registration:`, user);
+                   // بررسی اینکه آیا ایندکس هدف در خط رفرال کاربر جاری قرار دارد
+           if (user && (user.index && BigInt(user.index) > 0n) && user.index && enteredIndex !== null) {
+             const currentUserIndex = parseInt(user.index);
+             const targetIndex = parseInt(enteredIndex);
+             console.log(`🔍 Checking in reserve registration: current user=${currentUserIndex}, target=${targetIndex}`);
+             
+             if (!isIndexInUserSubtree(targetIndex, currentUserIndex)) {
+               throw new Error(`You are only allowed to register for indexes in your subtree.`);
+             }
+             
+             // Check if referrer has at least one empty child at level 1
+             const leftAddress = await contract.getLeftAddress(targetIndex);
+             const rightAddress = await contract.getRightAddress(targetIndex);
+             
+             if (leftAddress !== '0x0000000000000000000000000000000000000000' && rightAddress !== '0x0000000000000000000000000000000000000000') {
+               throw new Error(`This referrer is full. Please select a different index with available positions.`);
+             }
+           } else {
+             // اگر کاربر فعال نیست، بررسی کن که آیا برای خودش ثبت‌نام می‌کند
+             if (newUser.toLowerCase() === myAddress.toLowerCase()) {
+               console.log(`✅ User registering for themselves`);
+               // اجازه ثبت‌نام برای خودش
+             } else {
+               console.log(`⚠️ User not active or no index in reserve registration:`, user);
+               throw new Error(`You must register first to be able to register others.`);
+             }
+          }
          const addrFromIndex = await contract.indexToAddress(enteredIndex);
          if (addrFromIndex.toLowerCase() !== referrer.toLowerCase()) {
            throw new Error('The entered index does not match the referrer address. Please check.');
          }
          
-         // بررسی موجودی توکن بر اساس نوع ثبت‌نام
+                   // Check token balance based on registration type
          const userBalance = await contract.balanceOf(myAddress);
          let requiredAmount;
          
-         if (currentRegistrationType === 'free') {
-           // حالت رزرو: معادل 23 دلار توکن
-           let tokenPriceNum = 1; // قیمت پیش‌فرض 1 دلار
-           try {
-             if (typeof contract.getTokenPrice === 'function') {
-               const tokenPrice = await contract.getTokenPrice();
-               tokenPriceNum = Number(ethers.formatUnits(tokenPrice, 18));
+                    if (currentRegistrationType === 'free') {
+             // Reserve mode: equivalent to $23 tokens
+             let tokenPriceNum = 1; // Default price $1
+             try {
+               if (typeof contract.getTokenPrice === 'function') {
+                 const tokenPrice = await contract.getTokenPrice();
+                 tokenPriceNum = Number(ethers.formatUnits(tokenPrice, 18));
+               }
+             } catch (e) {
+               console.log('Error getting token price, using default price:', e);
              }
-           } catch (e) {
-             console.log('خطا در دریافت قیمت توکن، از قیمت پیش‌فرض استفاده می‌شود:', e);
-           }
-           
-           // محاسبه مقدار مورد نیاز (23 دلار / قیمت هر توکن)
-           const requiredAmountFloat = 23 / tokenPriceNum;
-           requiredAmount = ethers.parseEther(requiredAmountFloat.toString());
-         } else {
-           // حالت نرمال: از تابع regPrice استفاده کن
+             
+             // Calculate required amount (23 USD / token price)
+             const requiredAmountFloat = 23 / tokenPriceNum;
+             requiredAmount = ethers.parseEther(requiredAmountFloat.toString());
+           } else {
+             // Normal mode: use regPrice function
            try {
              if (typeof window.getRegPrice === 'function') {
                const regPrice = await window.getRegPrice(contract);
@@ -1182,10 +1344,10 @@
              } else {
                throw new Error('RegPrice function not available');
              }
-           } catch (e) {
-             console.log('خطا در دریافت regPrice:', e);
-             throw new Error('Unable to get registration price');
-           }
+                        } catch (e) {
+               console.log('Error getting regPrice:', e);
+               throw new Error('Unable to get registration price');
+             }
          }
          
          if (userBalance < requiredAmount) {
@@ -1197,7 +1359,7 @@
                   showTempMessage(currentRegistrationType === 'free' ? 'Sending reserve registration request to network... Please wait for transaction confirmation.' : 'Sending normal registration request to network... Please wait for transaction confirmation.', 'info');
           localStorage.setItem('avatar_' + newUser, selectedAvatar);
           
-         // انتخاب تابع بر اساس نوع ثبت نام
+                   // Select function based on registration type
          let tx;
          if (currentRegistrationType === 'free') {
            tx = await contract.registerFree(referrer, newUser);
@@ -1214,18 +1376,18 @@
         if (typeof errorMsg !== 'string') errorMsg = JSON.stringify(errorMsg);
         if (/already registered|Already registered/i.test(errorMsg)) {
           showTempMessage('This address is already registered.', 'error');
-        } else if (/not active|inactive|فعال نیست/i.test(errorMsg)) {
+                   } else if (/not active|inactive/i.test(errorMsg)) {
           showTempMessage('Selected referrer is not active. Please enter an active referrer.', 'error');
         } else if (/invalid referrer|referrer/i.test(errorMsg)) {
            showTempMessage('Invalid referrer address or does not exist.', 'error');
-        } else if (/insufficient|balance|موجودی/i.test(errorMsg)) {
-           // اگر خطای کمبود موجودی از smart contract آمده، همان پیام رو نشون بده
-           if (errorMsg.includes('IAM شما کافی نیست')) {
+                   } else if (/insufficient|balance/i.test(errorMsg)) {
+              // اگر خطای کمبود موجودی از smart contract آمده، همان پیام رو نشون بده
+             if (errorMsg.includes('IAM balance insufficient')) {
              showMessageBox(errorMsg, 'error');
            } else {
              showTempMessage('Your IAM balance is insufficient for registration.', 'error');
            }
-        } else if (/user rejected|reject|لغو شد/i.test(errorMsg)) {
+                   } else if (/user rejected|reject/i.test(errorMsg)) {
           showTempMessage('Registration process was cancelled by you.', 'error');
         } else if (/execution reverted/i.test(errorMsg)) {
           const match = errorMsg.match(/reverted: "([^"]+)"/);
