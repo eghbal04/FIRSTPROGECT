@@ -561,7 +561,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function formatTimestamp(ts) {
     if (!ts || ts === '0') return '---';
     const date = new Date(Number(ts) * 1000);
-    return date.toLocaleDateString('fa-IR') + ' ' + date.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleDateString('en-US') + ' ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 }
 
 // شمارش معکوس برای دکمه برداشت پاداش‌های باینری

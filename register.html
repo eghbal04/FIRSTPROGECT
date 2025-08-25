@@ -198,6 +198,10 @@
              bgColor = 'rgba(0, 255, 136, 0.95)';
              borderColor = 'rgba(0, 255, 136, 0.3)';
              icon = '✅';
+         } else if (type === 'warning') {
+             bgColor = 'rgba(255, 165, 0, 0.95)';
+             borderColor = 'rgba(255, 165, 0, 0.3)';
+             icon = '⚠️';
          } else {
              bgColor = 'rgba(0, 123, 255, 0.95)';
              borderColor = 'rgba(0, 123, 255, 0.3)';
@@ -945,7 +949,7 @@
                    document.getElementById('position-info').textContent = positionInfo;
                  } else {
                    // Both children are occupied
-                   showIndexCheckMessage('This referrer is full. Please enter a different index with available positions.', 'error');
+                   showIndexCheckMessage('This referrer is full. Please enter a different index with available positions.', 'warning');
                    document.getElementById('empty-index').textContent = 'Full';
                    document.getElementById('position-info').textContent = 'No empty position';
                    return;
@@ -1096,7 +1100,7 @@
                    showIndexCheckMessage('Address is valid and in your subtree. Referrer has available positions for registration.', 'success');
                  } else {
                    // Both children are occupied
-                   showIndexCheckMessage('This referrer is full. Please enter a different address with available positions.', 'error');
+                   showIndexCheckMessage('This referrer is full. Please enter a different address with available positions.', 'warning');
                    return;
                  }
                } catch (error) {

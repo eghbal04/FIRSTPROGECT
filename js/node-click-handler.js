@@ -179,12 +179,12 @@ class NetworkNodeManager {
 
     formatNumber(num) {
         if (!num) return '0';
-        return new Intl.NumberFormat('fa-IR').format(num);
+        return new Intl.NumberFormat('en-US').format(num);
     }
 
     formatDate(timestamp) {
         if (!timestamp) return '-';
-        return new Date(timestamp).toLocaleDateString('fa-IR', {
+        return new Date(timestamp).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
             day: 'numeric',

@@ -4551,7 +4551,7 @@ window.updateDashboardStats = async function() {
 
 	// Update last update timestamp
 	const now = new Date();
-	const timeString = now.toLocaleTimeString('fa-IR', { 
+	const timeString = now.toLocaleTimeString('en-US', { 
 	  hour: '2-digit', 
 	  minute: '2-digit', 
 	  second: '2-digit' 

@@ -369,7 +369,7 @@ class UserProfileManager {
             <div class="purchase-item">
                 <div class="purchase-info">
                     <div class="purchase-title">${purchase.productName}</div>
-                    <div class="purchase-date">${new Date(purchase.date).toLocaleDateString('fa-IR')}</div>
+                    <div class="purchase-date">${new Date(purchase.date).toLocaleDateString('en-US')}</div>
                 </div>
                 <div class="purchase-amount">${purchase.amount} IAM</div>
             </div>
