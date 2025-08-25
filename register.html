@@ -85,7 +85,7 @@
        <!-- سربرگ‌های ثبت نام -->
        <div style="display: flex; margin-bottom: 16px; background: rgba(35, 41, 70, 0.5); border-radius: 8px; padding: 4px;">
          <button type="button" id="normal-tab" class="tab-btn active" style="flex: 1; padding: 8px 12px; background: linear-gradient(90deg,#00ff88,#a786ff); color: #232946; border: none; border-radius: 6px; font-weight: bold; font-size: 0.9rem; cursor: pointer;">Normal Registration</button>
-         <button type="button" id="free-tab" class="tab-btn" style="flex: 1; padding: 8px 12px; background: transparent; color: #a786ff; border: none; border-radius: 6px; font-weight: bold; font-size: 0.9rem; cursor: pointer;">Free Registration</button>
+         <button type="button" id="free-tab" class="tab-btn" style="flex: 1; padding: 8px 12px; background: transparent; color: #a786ff; border: none; border-radius: 6px; font-weight: bold; font-size: 0.9rem; cursor: pointer;">Reserve Registration</button>
        </div>
        
        <h2 class="register-form-title" style="text-align:center;margin-bottom:8px;font-size:1.2rem;">Register Form</h2>
@@ -180,6 +180,77 @@
         }, 5000);
     }
 
+    // تابع نمایش توضیحات رزرو
+    function showReserveInfoMessage() {
+        const messageBox = document.createElement('div');
+        messageBox.id = 'reserve-info-message';
+        messageBox.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.95), rgba(255, 165, 0, 0.95));
+            color: white;
+            padding: 25px 30px;
+            border-radius: 16px;
+            box-shadow: 0 12px 40px rgba(255, 107, 107, 0.4);
+            z-index: 10000;
+            max-width: 500px;
+            text-align: center;
+            font-size: 14px;
+            line-height: 1.6;
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(255, 165, 0, 0.5);
+        `;
+        
+                 messageBox.innerHTML = `
+             <div style="margin-bottom: 15px; font-size: 28px;">🔄</div>
+             <div style="margin-bottom: 20px; font-size: 18px; font-weight: bold; color: #fff;">Reserve Registration</div>
+             
+             <div style="text-align: left; margin-bottom: 15px; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">
+                 <div style="margin-bottom: 8px; font-weight: bold; color: #fff;">📋 Reserve Registration Features:</div>
+                 <div style="margin-bottom: 5px;">• Cost: Equivalent to $23 IAM tokens</div>
+                 <div style="margin-bottom: 5px;">• Type: Reserve registration (inactive)</div>
+                 <div style="margin-bottom: 5px;">• Status: User in waiting mode</div>
+                 <div style="margin-bottom: 5px;">• Activation: Requires additional payment</div>
+             </div>
+             
+             <div style="text-align: left; margin-bottom: 15px; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">
+                 <div style="margin-bottom: 8px; font-weight: bold; color: #fff;">⚠️ Important Notes:</div>
+                 <div style="margin-bottom: 5px;">• Reserved user is not active</div>
+                 <div style="margin-bottom: 5px;">• Additional payment required for activation</div>
+                 <div style="margin-bottom: 5px;">• Only used for position reservation</div>
+                 <div style="margin-bottom: 5px;">• Activation cost calculated separately</div>
+             </div>
+             
+             <div style="margin-top: 20px;">
+                 <button onclick="this.parentElement.parentElement.remove()" style="
+                     background: rgba(255, 255, 255, 0.2);
+                     border: 2px solid rgba(255, 255, 255, 0.4);
+                     color: white;
+                     padding: 12px 25px;
+                     border-radius: 8px;
+                     cursor: pointer;
+                     font-size: 14px;
+                     font-weight: bold;
+                     transition: all 0.3s ease;
+                 " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                     I Understand
+                 </button>
+             </div>
+         `;
+        
+        document.body.appendChild(messageBox);
+        
+        // حذف خودکار بعد از 15 ثانیه
+        setTimeout(() => {
+            if (messageBox.parentElement) {
+                messageBox.style.animation = 'fadeOut 0.5s ease';
+                setTimeout(() => messageBox.remove(), 500);
+            }
+        }, 15000);
+    }
+
     // تابع نمایش پیام‌های موقت (برای validation)
     function showTempMessage(message, type = 'info', duration = 3000) {
         const tempBox = document.createElement('div');
@@ -225,6 +296,10 @@
             @keyframes slideOut {
                 from { transform: translateX(0); opacity: 1; }
                 to { transform: translateX(100%); opacity: 0; }
+            }
+            @keyframes fadeOut {
+                from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+                to { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
             }
         `;
         document.head.appendChild(style);
@@ -276,7 +351,7 @@
            </span>
           </div>
                      <div style="font-size:0.65rem;color:#718096;margin-top:4px;text-align:center;background:rgba(113,128,150,0.1);padding:3px;border-radius:3px;">
-             💡 <span id="registration-hint">For normal registration you need equivalent $23 IAM tokens</span>
+             💡 <span id="registration-hint">For normal registration you need regPrice IAM tokens</span>
         </div>
       </div>
              </div>
@@ -365,7 +440,7 @@
        // تغییر اطلاعات
        document.getElementById('registration-type').textContent = 'Normal';
        document.getElementById('registration-type').style.color = '#00ff88';
-       document.getElementById('registration-hint').textContent = 'For normal registration you need equivalent $23 IAM tokens';
+       document.getElementById('registration-hint').textContent = 'For normal registration you need regPrice IAM tokens';
        
        // به‌روزرسانی هزینه
        updateRegistrationCost();
@@ -382,13 +457,16 @@
        document.getElementById('normal-tab').style.color = '#a786ff';
        
        // تغییر متن دکمه
-       document.getElementById('register-btn').textContent = 'Register Free';
+       document.getElementById('register-btn').textContent = 'Register Reserve';
        document.getElementById('register-btn').style.background = 'linear-gradient(90deg,#ff6b6b,#ffa500) !important';
        
        // تغییر اطلاعات
-       document.getElementById('registration-type').textContent = 'Free';
+       document.getElementById('registration-type').textContent = 'Reserve';
        document.getElementById('registration-type').style.color = '#ff6b6b';
-       document.getElementById('registration-hint').textContent = 'Free registration - no IAM tokens required';
+       document.getElementById('registration-hint').textContent = 'For reserve registration you need equivalent $23 IAM tokens';
+       
+       // نمایش message box با توضیحات رزرو
+       showReserveInfoMessage();
        
        // به‌روزرسانی هزینه
        updateRegistrationCost();
@@ -397,9 +475,7 @@
      // تابع به‌روزرسانی هزینه ثبت نام
      async function updateRegistrationCost() {
        if (currentRegistrationType === 'free') {
-         document.getElementById('register-cost').textContent = 'Free (0 IAM)';
-       } else {
-         // محاسبه هزینه معمولی
+         // حالت رزرو: معادل 23 دلار توکن
          try {
            if (window.contractConfig && window.contractConfig.contract) {
              const contract = window.contractConfig.contract;
@@ -416,6 +492,28 @@
            }
          } catch (e) {
            document.getElementById('register-cost').textContent = '23 IAM';
+         }
+       } else {
+         // حالت نرمال: از تابع regPrice استفاده کن
+         try {
+           if (window.contractConfig && window.contractConfig.contract) {
+             const contract = window.contractConfig.contract;
+             if (typeof window.getRegPrice === 'function') {
+               const regPrice = await window.getRegPrice(contract);
+               if (regPrice) {
+                 const regPriceNum = Number(ethers.formatUnits(regPrice, 18));
+                 document.getElementById('register-cost').textContent = `${regPriceNum.toFixed(2)} IAM`;
+               } else {
+                 document.getElementById('register-cost').textContent = 'RegPrice not available';
+               }
+             } else {
+               document.getElementById('register-cost').textContent = 'RegPrice function not available';
+             }
+           } else {
+             document.getElementById('register-cost').textContent = 'Contract not available';
+           }
+         } catch (e) {
+           document.getElementById('register-cost').textContent = 'Error loading regPrice';
          }
        }
      }
@@ -526,18 +624,35 @@
             let IAM = await contract.balanceOf(myAddress);
             IAMBalance = IAM ? (typeof ethers !== 'undefined' ? Number(ethers.formatEther(IAM)).toFixed(2) : (Number(IAM)/1e18).toFixed(2)) : '0.00';
             
-            // بررسی کفایت موجودی IAM برای ثبت‌نام رزرو
+            // بررسی کفایت موجودی IAM بر اساس نوع ثبت‌نام فعلی
             const IAMBalanceElement = document.getElementById('IAM-balance');
             try {
-              let tokenPriceNum = 1; // قیمت پیش‌فرض 1 دلار
-              if (typeof contract.getTokenPrice === 'function') {
-                const tokenPrice = await contract.getTokenPrice();
-                tokenPriceNum = Number(ethers.formatUnits(tokenPrice, 18));
+              let requiredIAM = 0;
+              
+              if (currentRegistrationType === 'free') {
+                // حالت رزرو: معادل 23 دلار توکن
+                let tokenPriceNum = 1; // قیمت پیش‌فرض 1 دلار
+                if (typeof contract.getTokenPrice === 'function') {
+                  const tokenPrice = await contract.getTokenPrice();
+                  tokenPriceNum = Number(ethers.formatUnits(tokenPrice, 18));
+                }
+                requiredIAM = parseFloat((23 / tokenPriceNum).toFixed(2));
+              } else {
+                // حالت نرمال: از تابع regPrice استفاده کن
+                if (typeof window.getRegPrice === 'function') {
+                  const regPrice = await window.getRegPrice(contract);
+                  if (regPrice) {
+                    requiredIAM = parseFloat(Number(ethers.formatUnits(regPrice, 18)).toFixed(2));
+                  } else {
+                    requiredIAM = 0; // اگر regPrice در دسترس نباشد
+                  }
+                } else {
+                  requiredIAM = 0; // اگر تابع getRegPrice در دسترس نباشد
+                }
               }
-              const requiredIAM = (23 / tokenPriceNum).toFixed(2); // مقدار مورد نیاز IAM
               
               // رنگ موجودی IAM
-              if (parseFloat(IAMBalance) >= parseFloat(requiredIAM)) {
+              if (parseFloat(IAMBalance) >= requiredIAM) {
                 IAMBalanceElement.style.color = '#00ff88'; // سبز: کافی است
               } else {
                 IAMBalanceElement.style.color = '#ff453a'; // قرمز: کافی نیست
@@ -546,7 +661,7 @@
               // رنگ هزینه ثبت‌نام بر اساس کفایت موجودی
               const registerCostElement = document.getElementById('register-cost');
               if (registerCostElement) {
-                if (parseFloat(IAMBalance) >= parseFloat(requiredIAM)) {
+                if (parseFloat(IAMBalance) >= requiredIAM) {
                   registerCostElement.style.color = '#00ff88'; // سبز: موجودی کافی است
               } else {
                   registerCostElement.style.color = '#ff453a'; // قرمز: موجودی کافی نیست
@@ -1035,29 +1150,51 @@
            throw new Error('The entered index does not match the referrer address. Please check.');
          }
          
-         // بررسی موجودی توکن برای ثبت‌نام رزرو
+         // بررسی موجودی توکن بر اساس نوع ثبت‌نام
          const userBalance = await contract.balanceOf(myAddress);
-         let tokenPriceNum = 1; // قیمت پیش‌فرض 1 دلار
-         try {
-           if (typeof contract.getTokenPrice === 'function') {
-             const tokenPrice = await contract.getTokenPrice();
-             tokenPriceNum = Number(ethers.formatUnits(tokenPrice, 18));
+         let requiredAmount;
+         
+         if (currentRegistrationType === 'free') {
+           // حالت رزرو: معادل 23 دلار توکن
+           let tokenPriceNum = 1; // قیمت پیش‌فرض 1 دلار
+           try {
+             if (typeof contract.getTokenPrice === 'function') {
+               const tokenPrice = await contract.getTokenPrice();
+               tokenPriceNum = Number(ethers.formatUnits(tokenPrice, 18));
+             }
+           } catch (e) {
+             console.log('خطا در دریافت قیمت توکن، از قیمت پیش‌فرض استفاده می‌شود:', e);
            }
-         } catch (e) {
-           console.log('خطا در دریافت قیمت توکن، از قیمت پیش‌فرض استفاده می‌شود:', e);
+           
+           // محاسبه مقدار مورد نیاز (23 دلار / قیمت هر توکن)
+           const requiredAmountFloat = 23 / tokenPriceNum;
+           requiredAmount = ethers.parseEther(requiredAmountFloat.toString());
+         } else {
+           // حالت نرمال: از تابع regPrice استفاده کن
+           try {
+             if (typeof window.getRegPrice === 'function') {
+               const regPrice = await window.getRegPrice(contract);
+               if (regPrice) {
+                 requiredAmount = regPrice;
+               } else {
+                 throw new Error('RegPrice not available');
+               }
+             } else {
+               throw new Error('RegPrice function not available');
+             }
+           } catch (e) {
+             console.log('خطا در دریافت regPrice:', e);
+             throw new Error('Unable to get registration price');
+           }
          }
          
-         // محاسبه مقدار مورد نیاز (23 دلار / قیمت هر توکن)
-         const requiredAmountFloat = 23 / tokenPriceNum;
-         const requiredAmount = ethers.parseEther(requiredAmountFloat.toString());
-         
          if (userBalance < requiredAmount) {
-           const requiredFormatted = requiredAmountFloat.toFixed(2);
+           const requiredFormatted = Number(ethers.formatEther(requiredAmount)).toFixed(2);
            const currentFormatted = Number(ethers.formatEther(userBalance)).toFixed(2);
            throw new Error(`Insufficient IAM balance. Required: ${requiredFormatted} IAM, Current: ${currentFormatted} IAM`);
          }
          
-                  showTempMessage(currentRegistrationType === 'free' ? 'Sending free registration request to network... Please wait for transaction confirmation.' : 'Sending registration request to network... Please wait for transaction confirmation.', 'info');
+                  showTempMessage(currentRegistrationType === 'free' ? 'Sending reserve registration request to network... Please wait for transaction confirmation.' : 'Sending normal registration request to network... Please wait for transaction confirmation.', 'info');
           localStorage.setItem('avatar_' + newUser, selectedAvatar);
           
          // انتخاب تابع بر اساس نوع ثبت نام
@@ -1070,7 +1207,7 @@
           
          showTempMessage('Waiting for network transaction confirmation...', 'info');
           await tx.wait();
-         showMessageBox(currentRegistrationType === 'free' ? 'Free registration completed successfully! Welcome to IAM family.' : 'Registration completed successfully! Welcome to IAM family.', 'success');
+         showMessageBox(currentRegistrationType === 'free' ? 'Reserve registration completed successfully! Welcome to IAM family.' : 'Normal registration completed successfully! Welcome to IAM family.', 'success');
         setTimeout(loadRegisterInfo, 1500);
       } catch (e) {
         let errorMsg = e && (e.reason || (e.revert && e.revert.args && e.revert.args[0]) || e.message || e);
