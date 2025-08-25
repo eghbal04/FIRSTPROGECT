@@ -2557,6 +2557,12 @@ async function requestAccountsWithDeduplication() {
 
 async function performWeb3Initialization() {
 	try {
+		// بررسی وجود MetaMask - بهبود یافته
+		if (typeof window === 'undefined' || !window.ethereum) {
+			console.error('MetaMask not detected: window.ethereum is undefined');
+			throw new Error('MetaMask is not installed. Please install MetaMask extension.');
+		}
+		
 		const provider = new ethers.BrowserProvider(window.ethereum);
 		let signer;
 		const accounts = await window.ethereum.request({ method: 'eth_accounts' });
@@ -2620,6 +2626,13 @@ async function performWeb3Initialization() {
 
 	} catch (error) {
 		console.error('خطا در راه‌اندازی Web3:', error);
+
+		// Check if the error is related to MetaMask not being installed
+		if (!window.ethereum) {
+			const metamaskError = new Error('MetaMask is not installed. Please install MetaMask extension.');
+			console.error('MetaMask not detected:', metamaskError);
+			throw metamaskError;
+		}
 
 		if (window.contractConfig) {
 			window.contractConfig.provider = null;
@@ -2751,6 +2764,12 @@ window.retryRpcOperation = async function(operation, maxRetries = 3, delay = 100
 // تابع مرکزی اتصال کیف پول
 window.connectWallet = async function() {
 	return await debounce('connectWallet', async () => {
+		// Early check for MetaMask
+		if (typeof window === 'undefined' || !window.ethereum) {
+			console.error('MetaMask not detected in connectWallet');
+			throw new Error('MetaMask is not installed. Please install MetaMask extension.');
+		}
+		
 		const maxRetries = 2;
 		let lastError;
 		
@@ -2796,29 +2815,44 @@ window.connectWallet = async function() {
 				}
 				
 				// راه‌اندازی Web3
-				const result = await window.contractConfig.initializeWeb3();
-				if (result && result.contract && result.address) {
-					// رفرش شبکه بعد از اتصال موفق
-					setTimeout(async () => {
-						try {
-							await window.refreshNetworkAfterConnection(result);
-						} catch (error) {
-							console.warn('Error refreshing network data after connection:', error);
-						}
-					}, 1000); // 1 ثانیه صبر کن
+				try {
+					const result = await initializeWeb3();
+					if (result && result.contract && result.address) {
+						// رفرش شبکه بعد از اتصال موفق
+						setTimeout(async () => {
+							try {
+								await window.refreshNetworkAfterConnection(result);
+							} catch (error) {
+								console.warn('Error refreshing network data after connection:', error);
+							}
+						}, 1000); // 1 ثانیه صبر کن
+						
+						return {
+							contract: result.contract,
+							address: result.address,
+							signer: result.signer,
+							provider: result.provider
+						};
+					}
 					
-					return {
-						contract: result.contract,
-						address: result.address,
-						signer: result.signer,
-						provider: result.provider
-					};
+					throw new Error('خطا در اتصال به کیف پول');
+				} catch (web3Error) {
+					// Check if this is a MetaMask not installed error
+					if (web3Error.message && web3Error.message.includes('MetaMask is not installed')) {
+						console.error('MetaMask not installed error caught:', web3Error);
+						throw web3Error; // Re-throw to be handled by outer catch
+					}
+					throw web3Error;
 				}
-				
-				throw new Error('خطا در اتصال به کیف پول');
 			} catch (error) {
 				lastError = error;
 				console.error(`Central: Error connecting wallet (attempt ${attempt + 1}/${maxRetries + 1}):`, error);
+				
+				// Check for MetaMask not installed error
+				if (error.message && error.message.includes('MetaMask is not installed')) {
+					console.error('MetaMask not installed - stopping retries');
+					throw error; // Don't retry, just throw the error
+				}
 				
 				// Don't clear cache on -32002 error (already processing)
 				if (error.code === -32002) {
@@ -3980,6 +4014,12 @@ window.showPriceHistoryStats = function() {
 window.handleRpcError = function(error, operation = 'unknown') {
 	console.warn(`RPC Error in ${operation}:`, error);
 	
+	// Handle MetaMask method not available errors
+	if (error.code === -32601 || (error.message && error.message.includes('does not exist / is not available'))) {
+		console.warn('MetaMask method not available - ignoring...');
+		return null;
+	}
+	
 	// اگر خطای eth_getLogs بود، آن را نادیده بگیر
 	if (error.message && error.message.includes('eth_getLogs')) {
 		console.warn('Ignoring eth_getLogs error - this is common on some RPC endpoints');
@@ -4039,6 +4079,28 @@ window.handleRpcError = function(error, operation = 'unknown') {
 	// سایر خطاها
 	return 'error';
 };
+
+// Global unhandled promise rejection handler
+window.addEventListener('unhandledrejection', function(event) {
+	const error = event.reason;
+	
+	// Handle MetaMask method not available errors
+	if (error && error.code === -32601 && error.message && error.message.includes('does not exist / is not available')) {
+		console.warn('Caught unhandled MetaMask method error - ignoring:', error.message);
+		event.preventDefault(); // Prevent the error from being logged
+		return;
+	}
+	
+	// Handle other MetaMask RPC errors
+	if (error && error.code && (error.code === -32601 || error.code === -32602 || error.code === -32603)) {
+		console.warn('Caught unhandled RPC error - handling gracefully:', error.message);
+		event.preventDefault();
+		return;
+	}
+	
+	// For other errors, let them through
+	console.warn('Unhandled promise rejection:', error);
+});
 
 // تابع retry برای عملیات RPC
 window.retryRpcOperation = async function(operation, maxRetries = 3) {

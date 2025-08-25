@@ -2642,62 +2642,7 @@ window.loadTransferTab = async function() {
         // شروع به‌روزرسانی خودکار
         window.startTransferBalanceAutoRefresh();
         
-        // تنظیم event listener برای جستجوی ایندکس
-        const searchIndexBtn = document.getElementById('searchIndexBtn');
-        const searchIndexInput = document.getElementById('searchIndex');
-        const searchIndexStatus = document.getElementById('searchIndexStatus');
-        
-        if (searchIndexBtn && searchIndexInput) {
-            searchIndexBtn.onclick = async function() {
-                try {
-                    const index = parseInt(searchIndexInput.value);
-                    if (isNaN(index) || index < 0) {
-                        searchIndexStatus.textContent = 'لطفاً ایندکس معتبر وارد کنید';
-                        searchIndexStatus.className = 'transfer-status error';
-                        return;
-                    }
-                    
-                    searchIndexBtn.textContent = 'در حال جستجو...';
-                    searchIndexBtn.disabled = true;
-                    
-                    // دریافت آدرس از ایندکس
-                    const userAddress = await contract.indexToAddress(BigInt(index));
-                    
-                    // بررسی فعال بودن کاربر
-                    const userData = await contract.users(userAddress);
-                    if (!userData.activated) {
-                        searchIndexStatus.textContent = `کاربر با ایندکس ${index} فعال نیست`;
-                        searchIndexStatus.className = 'transfer-status error';
-                        return;
-                    }
-                    
-                    // به‌روزرسانی فیلد آدرس مقصد
-                    const transferToInput = document.getElementById('transferTo');
-                    if (transferToInput) {
-                        transferToInput.value = userAddress;
-                    }
-                    
-                    searchIndexStatus.textContent = `✅ آدرس پیدا شد: ${userAddress.substring(0, 6)}...${userAddress.substring(38)}`;
-                    searchIndexStatus.className = 'transfer-status success';
-                    
-                } catch (error) {
-                    console.error('Error searching by index:', error);
-                    let errorMessage = 'خطا در جستجو';
-                    
-                    if (error.message.includes('reverted')) {
-                        errorMessage = 'ایندکس معتبر نیست یا کاربر وجود ندارد';
-                    } else if (error.message.includes('network')) {
-                        errorMessage = 'خطا در اتصال شبکه';
-                    }
-                    
-                    searchIndexStatus.textContent = errorMessage;
-                    searchIndexStatus.className = 'transfer-status error';
-                } finally {
-                    searchIndexBtn.textContent = 'جستجو';
-                    searchIndexBtn.disabled = false;
-                }
-            };
-        }
+
         
         console.log('Transfer tab loaded successfully');
         

@@ -7032,6 +7032,28 @@ body.signal-page { background: #181c2a; color: #fff; font-family: 'Noto Sans Ara
   .transfer-row-search .transfer-btn {
     width: 100%;
   }
+  
+  /* Responsive two-column layout for transfer form */
+  .transfer-form {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
+  }
+  
+  .transfer-form > div {
+    width: 100% !important;
+  }
+  
+  /* Ensure grid layout is overridden on mobile */
+  .transfer-form[style*="display:grid"] {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  .balance-check-grid {
+    grid-template-columns: 1fr 1fr 1fr !important;
+    gap: 0.5rem !important;
+  }
 }
 
 .menu-group-title {

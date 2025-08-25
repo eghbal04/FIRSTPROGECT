@@ -31,7 +31,9 @@ document.addEventListener('DOMContentLoaded', function() {
       var oldText = transferBtn.textContent;
       transferBtn.textContent = 'Processing...';
     }
-    const to = document.getElementById('transferTo').value.trim();
+    const transferToInput = document.getElementById('transferTo');
+    // استفاده از آدرس کامل اگر در data attribute ذخیره شده باشد
+    const to = transferToInput.getAttribute('data-full-address') || transferToInput.value.trim();
     const amount = parseFloat(document.getElementById('transferAmount').value);
     const token = document.getElementById('transferToken').value;
     const status = document.getElementById('transferStatus');

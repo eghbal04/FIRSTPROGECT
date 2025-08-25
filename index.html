@@ -1127,97 +1127,109 @@ Our Services:
           </div>
         </div>
         
-        <form id="transferForm" class="transfer-form">
-          <div class="transfer-row">
-            <label for="transferTo">Destination Address:</label>
-            <input type="text" id="transferTo" placeholder="0x..." required style="direction:ltr;">
-            <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Enter destination wallet address (42 characters)</small>
-          </div>
-
-          <!-- Index to Address Search -->
-          <div class="transfer-row" id="search-index-container" style="background:rgba(0,255,136,0.1);border-radius:8px;padding:1rem;margin-bottom:1rem;border:1px solid rgba(0,255,136,0.2);">
-            <h4 style="color:#00ff88;margin-bottom:0.8rem;font-size:1rem;">🔍 Search by Index</h4>
-            <div style="display:flex;gap:0.5rem;align-items:center;margin-bottom:0.5rem;">
-              <input type="number" id="searchIndex" placeholder="Enter user index" 
-                     style="background:rgba(0,0,0,0.3);border:1px solid rgba(0,255,136,0.3);border-radius:8px;padding:0.5rem;color:#fff;text-align:center;flex:1;font-size:0.9rem;font-family:monospace;">
-              <button type="button" id="searchIndexBtn" 
-                      style="background:linear-gradient(135deg,#00ff88,#00cc6a);color:#1a1f2e;border:none;border-radius:8px;padding:0.5rem 1rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:0.9rem;">
-                🔍 Search
-              </button>
+        <form id="transferForm" class="transfer-form" style="display:grid !important;grid-template-columns:1fr 1fr !important;gap:1.5rem !important;align-items:start !important;">
+          <!-- Left Column -->
+          <div style="display:flex;flex-direction:column;gap:1rem;">
+            <div class="transfer-row">
+              <label for="transferTo">Destination Address:</label>
+              <input type="text" id="transferTo" placeholder="0x..." required style="direction:ltr;">
+              <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Enter destination wallet address (42 characters)</small>
             </div>
-            <div id="searchIndexStatus" style="text-align:center;padding:0.5rem;border-radius:8px;font-size:0.9rem;min-height:1.5em;"></div>
-            <small style="color:#b8c1ec;font-size:0.8rem;margin-top:0.3rem;display:block;">Enter a user index to find their wallet address</small>
-          </div>
 
-          <div class="transfer-row">
+            <!-- Index to Address Search -->
+            <div class="transfer-row" id="search-index-container" style="background:rgba(0,255,136,0.1);border-radius:8px;padding:0.8rem;border:1px solid rgba(0,255,136,0.2);">
+              <h4 style="color:#00ff88;margin-bottom:0.6rem;font-size:0.9rem;">🔍 Search by Index</h4>
+              <div style="margin-bottom:0.4rem;">
+                <input type="number" id="searchIndex" placeholder="Enter user index" 
+                       style="background:rgba(0,0,0,0.3);border:1px solid rgba(0,255,136,0.3);border-radius:6px;padding:0.4rem;color:#fff;text-align:center;width:100%;font-size:0.85rem;font-family:monospace;margin-bottom:0.4rem;">
+                <button type="button" id="searchIndexBtn" 
+                        style="background:linear-gradient(135deg,#00ff88,#00cc6a);color:#1a1f2e;border:none;border-radius:6px;padding:0.4rem 0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:0.85rem;width:100%;">
+                  🔍 Search
+                </button>
+              </div>
+              <div id="searchIndexStatus" style="text-align:center;padding:0.4rem;border-radius:6px;font-size:0.85rem;min-height:1.2em;"></div>
+              <small style="color:#b8c1ec;font-size:0.75rem;margin-top:0.2rem;display:block;">Enter a user index to find their wallet address</small>
+            </div>
+
+            <div class="transfer-row">
               <label for="transferAmount">Amount:</label>
               <input type="number" id="transferAmount" placeholder="Enter amount" min="0" step="any" required>
-            <button type="button" id="maxAmountBtn" style="
-              background: linear-gradient(90deg,#ff6b6b,#ee5a52);
-              color: #fff;
-              border: none;
-              border-radius: 6px;
-              padding: 0.4rem 0.8rem;
-              font-size: 0.8rem;
-              cursor: pointer;
-              margin-top: 0.5rem;
-              transition: all 0.3s ease;
-              width: auto;
-              display: inline-block;
-              ">🔥 Maximum Balance</button>
-              <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Enter transfer amount or click "Maximum"</small>
-          </div>
-          <div class="transfer-row" id="usd-converter-row" style="display:none;">
-              <label for="transferUsdAmount">💰 Dollar Equivalent (Only for IAM):</label>
-            <div class="usd-converter-container" style="display:flex;gap:0.5rem;align-items:center;">
-              <span style="color:#00ff88;font-weight:bold;">$</span>
-              <input type="number" id="transferUsdAmount" placeholder="5.00" min="0" step="0.01" style="flex:1;">
-              <button type="button" id="usdToIAMBtn" style="
-                background: linear-gradient(90deg,#00ff88,#a786ff);
-                color: #181c2a;
+              <button type="button" id="maxAmountBtn" style="
+                background: linear-gradient(90deg,#ff6b6b,#ee5a52);
+                color: #fff;
                 border: none;
                 border-radius: 6px;
                 padding: 0.4rem 0.8rem;
                 font-size: 0.8rem;
                 cursor: pointer;
+                margin-top: 0.4rem;
                 transition: all 0.3s ease;
-                font-weight: bold;
-                ">🔄 Convert</button>
+                width: auto;
+                display: inline-block;
+                ">🔥 Maximum Balance</button>
+              <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Enter transfer amount or click "Maximum"</small>
             </div>
-              <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Enter dollar amount to convert to IAM (e.g., 5 for $5)</small>
+
           </div>
-          <div class="transfer-row">
+
+          <!-- Right Column -->
+          <div style="display:flex;flex-direction:column;gap:1rem;">
+            <div class="transfer-row">
               <label for="transferToken">Token Type:</label>
-            <select id="transferToken" required>
-              <option value="dai" selected>DAI</option>
-              <option value="pol">POL</option>
-              <option value="IAM">IAM</option>
-            </select>
+              <select id="transferToken" required>
+                <option value="dai" selected>DAI</option>
+                <option value="pol">POL</option>
+                <option value="IAM">IAM</option>
+              </select>
               <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Select the token type you want to transfer</small>
-          </div>
-          
-          <!-- Balance Check -->
-          <div style="background:rgba(167,134,255,0.1);border-radius:8px;padding:1rem;margin-bottom:1rem;" class="balance-check">
-            <h4 style="color:#a786ff;margin-bottom:0.8rem;">💰 Your Current Balance:</h4>
-            <div class="balance-check-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;">
-              <div style="text-align:center;">
-                <div style="color:#00ff88;font-weight:bold;">DAI</div>
-                <div id="transfer-dai-balance" style="color:#b8c1ec;font-family:monospace;">-</div>
+            </div>
+
+            <div class="transfer-row" id="usd-converter-row" style="display:none;">
+              <label for="transferUsdAmount">💰 Dollar Equivalent (Only for IAM):</label>
+              <div class="usd-converter-container" style="display:flex;gap:0.5rem;align-items:center;">
+                <span style="color:#00ff88;font-weight:bold;">$</span>
+                <input type="number" id="transferUsdAmount" placeholder="5.00" min="0" step="0.01" style="flex:1;">
+                <button type="button" id="usdToIAMBtn" style="
+                  background: linear-gradient(90deg,#00ff88,#a786ff);
+                  color: #181c2a;
+                  border: none;
+                  border-radius: 6px;
+                  padding: 0.4rem 0.8rem;
+                  font-size: 0.8rem;
+                  cursor: pointer;
+                  transition: all 0.3s ease;
+                  font-weight: bold;
+                  ">🔄 Convert</button>
               </div>
-              <div style="text-align:center;">
-                <div style="color:#a786ff;font-weight:bold;">POL</div>
-                <div id="transfer-poly-balance" style="color:#b8c1ec;font-family:monospace;">-</div>
-              </div>
-              <div style="text-align:center;">
-                <div style="color:#00ccff;font-weight:bold;">IAM</div>
-                <div id="transfer-IAM-balance" style="color:#b8c1ec;font-family:monospace;">-</div>
-                <div id="transfer-IAM-usd" style="color:#a786ff;font-size:0.8rem;margin-top:2px;">-</div>
+              <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Enter dollar amount to convert to IAM (e.g., 5 for $5)</small>
+            </div>
+            
+            <!-- Balance Check -->
+            <div style="background:rgba(167,134,255,0.1);border-radius:8px;padding:0.8rem;" class="balance-check">
+              <h4 style="color:#a786ff;margin-bottom:0.6rem;font-size:0.9rem;">💰 Your Current Balance:</h4>
+              <div class="balance-check-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.8rem;">
+                <div style="text-align:center;">
+                  <div style="color:#00ff88;font-weight:bold;font-size:0.9rem;">DAI</div>
+                  <div id="transfer-dai-balance" style="color:#b8c1ec;font-family:monospace;font-size:0.85rem;">-</div>
+                </div>
+                <div style="text-align:center;">
+                  <div style="color:#a786ff;font-weight:bold;font-size:0.9rem;">POL</div>
+                  <div id="transfer-poly-balance" style="color:#b8c1ec;font-family:monospace;font-size:0.85rem;">-</div>
+                </div>
+                <div style="text-align:center;">
+                  <div style="color:#00ccff;font-weight:bold;font-size:0.9rem;">IAM</div>
+                  <div id="transfer-IAM-balance" style="color:#b8c1ec;font-family:monospace;font-size:0.85rem;">-</div>
+                  <div id="transfer-IAM-usd" style="color:#a786ff;font-size:0.75rem;margin-top:2px;">-</div>
+                </div>
               </div>
             </div>
           </div>
           
-          <button type="submit" class="transfer-btn">Transfer</button>
-          <div id="transferStatus" class="transfer-status"></div>
+          <!-- Full Width Submit Button -->
+          <div style="grid-column:1/-1;margin-top:1rem;">
+            <button type="submit" class="transfer-btn" style="width:100%;">Transfer</button>
+            <div id="transferStatus" class="transfer-status"></div>
+          </div>
         </form>
       </div>
     </div>
@@ -1250,6 +1262,7 @@ Our Services:
   <script src="js/reports.js"></script>
   <script src="js/web3-interactions.js"></script>
   <script src="js/main.js"></script>
+  <script src="js/search-index.js"></script>
   <script src="js/network.js?v=5.7"></script>
   <script src="js/network-database.js?v=5.8"></script>
   <script src="js/mobile-user-popup.js"></script>
@@ -2416,7 +2429,9 @@ Our Services:
           var oldText = transferBtn.textContent;
                       transferBtn.textContent = 'Processing...';
         }
-        const to = document.getElementById('transferTo').value.trim();
+        const transferToInput = document.getElementById('transferTo');
+                      // استفاده از آدرس کامل اگر در data attribute ذخیره شده باشد
+              const to = transferToInput.getAttribute('data-full-address') || transferToInput.value.trim();
         const amount = parseFloat(document.getElementById('transferAmount').value);
         const token = document.getElementById('transferToken').value;
         const status = document.getElementById('transferStatus');
@@ -2484,47 +2499,36 @@ Our Services:
   </script>
 
   <script>
+    // تابع کوتاه کردن آدرس
+    function shortenAddress(address) {
+      if (address && address.length === 42 && address.startsWith('0x')) {
+        return `${address.substring(0, 6)}...${address.substring(38)}`;
+      }
+      return address;
+    }
+
+    // Event listener برای کوتاه کردن آدرس‌های وارد شده دستی
     document.addEventListener('DOMContentLoaded', function() {
-      const searchBtn = document.getElementById('searchIndexBtn');
-      const searchInput = document.getElementById('searchIndex');
-      const searchStatus = document.getElementById('searchIndexStatus');
-      if (searchBtn && searchInput) {
-        searchBtn.onclick = async function() {
-          searchStatus.textContent = '';
-          const idx = searchInput.value.trim();
-          if (!idx || isNaN(idx) || Number(idx) < 0) {
-            searchStatus.textContent = 'Please enter a valid index';
-            searchStatus.className = 'transfer-status error';
-            return;
+      console.log('Manual address shortening script loaded');
+      const transferToInput = document.getElementById('transferTo');
+      console.log('TransferTo input found:', !!transferToInput);
+      if (transferToInput) {
+        transferToInput.addEventListener('blur', function() {
+          console.log('TransferTo input blur event triggered');
+          const value = this.value.trim();
+          console.log('Input value:', value, 'Length:', value.length, 'Starts with 0x:', value.startsWith('0x'));
+          if (value && value.length === 42 && value.startsWith('0x')) {
+            // ذخیره آدرس کامل
+            this.setAttribute('data-full-address', value);
+            // نمایش آدرس کوتاه شده
+            this.value = shortenAddress(value);
           }
-          if (!window.contractConfig || !window.contractConfig.contract) {
-            searchStatus.textContent = 'Wallet connection not established';
-            searchStatus.className = 'transfer-status error';
-            return;
-          }
-          try {
-            searchStatus.textContent = 'Searching...';
-            searchStatus.className = 'transfer-status loading';
-            const contract = window.contractConfig.contract;
-            const address = await contract.indexToAddress(BigInt(idx));
-            if (!address || address === '0x0000000000000000000000000000000000000000') {
-              searchStatus.textContent = 'Wallet address not found for this index';
-              searchStatus.className = 'transfer-status error';
-              document.getElementById('transferTo').value = '';
-            } else {
-              searchStatus.textContent = 'Wallet address found';
-              searchStatus.className = 'transfer-status success';
-              document.getElementById('transferTo').value = address;
-            }
-          } catch (err) {
-            searchStatus.textContent = 'Search error: ' + (err && err.message ? err.message : err);
-            searchStatus.className = 'transfer-status error';
-            document.getElementById('transferTo').value = '';
-          }
-        };
+        });
       }
     });
   </script>
+
+
 
   <script>
     // Function to expand/collapse expandable sections

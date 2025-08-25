@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const searchBtn = document.getElementById('searchIndexBtn');
   const searchInput = document.getElementById('searchIndex');
   const searchStatus = document.getElementById('searchIndexStatus');
+
   if (searchBtn && searchInput) {
     searchBtn.onclick = async function() {
       searchStatus.textContent = '';
@@ -28,9 +29,21 @@ document.addEventListener('DOMContentLoaded', function() {
           searchStatus.className = 'transfer-status error';
           document.getElementById('transferTo').value = '';
         } else {
-          searchStatus.textContent = 'آدرس ولت پیدا شد';
+          const transferToInput = document.getElementById('transferTo');
+          // ذخیره آدرس کامل در data attribute برای استفاده در ترنسفر
+          transferToInput.setAttribute('data-full-address', address);
+          // نمایش آدرس کوتاه شده در فیلد ورودی
+          const shortenedAddress = `${address.substring(0, 6)}...${address.substring(38)}`;
+          transferToInput.value = shortenedAddress;
+          
+          console.log('Address shortening applied:', {
+            fullAddress: address,
+            shortenedAddress: shortenedAddress,
+            dataAttribute: transferToInput.getAttribute('data-full-address')
+          });
+          
+          searchStatus.textContent = `آدرس ولت پیدا شد: ${shortenedAddress}`;
           searchStatus.className = 'transfer-status success';
-          document.getElementById('transferTo').value = address;
         }
       } catch (err) {
         searchStatus.textContent = 'خطا در جستجو: ' + (err && err.message ? err.message : err);
