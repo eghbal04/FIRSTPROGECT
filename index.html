@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Fira+Mono&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=1.1">
     <link rel="stylesheet" href="css/index-custom.css">
     <link rel="stylesheet" href="css/floating-ai-assistant.css">
     <link rel="stylesheet" href="css/smooth-transitions.css">
@@ -1008,68 +1008,80 @@ Our Services:
         <!-- Blockchain Information Dashboard (added to prevent not found errors) -->
 
         <form id="swapForm" class="swap-form">
-          <div class="swap-row">
-            <label for="swapDirection">Exchange Type:</label>
-            <select id="swapDirection" required>
-              <option value="dai-to-IAM">DAI → IAM</option>
-              <option value="IAM-to-dai">IAM → DAI</option>
-            </select>
-            <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Select your desired exchange type</small>
-          </div>
-          
-          <div class="swap-row">
-            <label for="swapAmount">Amount:</label>
-            <div class="amount-input-group">
-              <input type="number" id="swapAmount" placeholder="Enter amount" min="0" step="any" required>
-              <button type="button" id="maxBtn" class="max-btn">Maximum</button>
+          <!-- Left Column -->
+          <div style="display:flex;flex-direction:column;gap:1rem;">
+            <div class="swap-row">
+              <label for="swapDirection">Exchange Type:</label>
+              <select id="swapDirection" required>
+                <option value="dai-to-IAM">DAI → IAM</option>
+                <option value="IAM-to-dai">IAM → DAI</option>
+              </select>
+              <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Select your desired exchange type</small>
             </div>
-            <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Enter the amount you want to exchange</small>
-          </div>
-          
-          <div class="swap-row" id="swap-usd-converter-row" style="display:none;">
-            <label for="swapUsdAmount">💰 Dollar Equivalent:</label>
-            <div class="usd-converter-container" style="display:flex;gap:0.5rem;align-items:center;">
-              <span style="color:#00ff88;font-weight:bold;">$</span>
-              <input type="number" id="swapUsdAmount" placeholder="5.00" min="0" step="0.01" style="flex:1;">
-              <button type="button" id="swapUsdToTokenBtn" style="
-                background: linear-gradient(90deg,#00ff88,#a786ff);
-                color: #181c2a;
-                border: none;
-                border-radius: 6px;
-                padding: 0.4rem 0.8rem;
-                font-size: 0.8rem;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                font-weight: bold;
-              ">🔄 Convert</button>
+            
+            <div class="swap-row">
+              <label for="swapAmount">Amount:</label>
+              <div class="amount-input-group">
+                <input type="number" id="swapAmount" placeholder="Enter amount" min="0" step="any" required>
+                <button type="button" id="maxBtn" class="max-btn">Maximum</button>
+              </div>
+              <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Enter the amount you want to exchange</small>
             </div>
-            <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Enter dollar amount to convert to tokens (e.g., 5 for $5)</small>
+          </div>
+
+          <!-- Right Column -->
+          <div style="display:flex;flex-direction:column;gap:1rem;">
+            <div class="swap-row" id="swap-usd-converter-row" style="display:none;">
+              <label for="swapUsdAmount">💰 Dollar Equivalent:</label>
+              <div class="usd-converter-container" style="display:flex;gap:0.5rem;align-items:center;">
+                <span style="color:#00ff88;font-weight:bold;">$</span>
+                <input type="number" id="swapUsdAmount" placeholder="5.00" min="0" step="0.01" style="flex:1;">
+                <button type="button" id="swapUsdToTokenBtn" style="
+                  background: linear-gradient(90deg,#00ff88,#a786ff);
+                  color: #181c2a;
+                  border: none;
+                  border-radius: 6px;
+                  padding: 0.4rem 0.8rem;
+                  font-size: 0.8rem;
+                  cursor: pointer;
+                  transition: all 0.3s ease;
+                  font-weight: bold;
+                ">🔄 Convert</button>
+              </div>
+              <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Enter dollar amount to convert to tokens (e.g., 5 for $5)</small>
+            </div>
+            
+            <!-- Balance Check -->
+            <div style="background:rgba(0,255,136,0.1);border-radius:8px;padding:0.8rem;">
+              <h4 style="color:#00ff88;margin-bottom:0.6rem;font-size:0.9rem;">💰 Your Current Balance:</h4>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;">
+                <div style="text-align:center;">
+                  <div style="color:#00ff88;font-weight:bold;font-size:0.9rem;">DAI</div>
+                  <div id="daiBalance" style="color:#b8c1ec;font-family:monospace;font-size:0.85rem;">-</div>
+                </div>
+                <div style="text-align:center;">
+                  <div style="color:#00ccff;font-weight:bold;font-size:0.9rem;">IAM</div>
+                  <div id="IAMBalance" style="color:#b8c1ec;font-family:monospace;font-size:0.85rem;">-</div>
+                  <div id="IAMUsdValue" style="color:#a786ff;font-size:0.75rem;margin-top:2px;">-</div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Exchange Button - Moved here to be closer to Current Balance -->
+            <button type="submit" class="swap-btn" style="width:100%;margin-top:1rem;background:linear-gradient(135deg,#00ff88,#00cc6a);color:#1a1f2e;border:none;border-radius:8px;padding:0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:1rem;">💱 Exchange</button>
           </div>
           
-          <div id="swapRate" class="swap-rate">Exchange rate: Loading...</div>
-          <div id="swapPreview" class="swap-preview"></div>
-          <div id="swapLimitInfo" class="swap-limit-info" style="margin-top:0.5rem;color:#555;font-size:0.98em;"></div>
-          
-          <button type="submit" class="swap-btn">Exchange</button>
-          <div id="swapStatus" class="swap-status"></div>
+          <!-- Full Width Elements -->
+          <div style="grid-column:1/-1;margin-top:1rem;">
+            <div id="swapRate" class="swap-rate">Exchange rate: Loading...</div>
+            <div id="swapPreview" class="swap-preview"></div>
+            <div id="swapLimitInfo" class="swap-limit-info" style="margin-top:0.5rem;color:#555;font-size:0.98em;"></div>
+            
+            <div id="swapStatus" class="swap-status"></div>
+          </div>
         </form>
         
-        <!-- Balance Check -->
-        <div class="swap-balance-check" style="background:rgba(0,255,136,0.1);border-radius:8px;padding:1rem;margin-top:1.5rem;">
-          <h4 style="color:#00ff88;margin-bottom:0.8rem;">💰 Your Current Balance:</h4>
-          <div class="swap-balance-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-            <div style="text-align:center;">
-              <div style="color:#00ff88;font-weight:bold;">DAI</div>
-              <div id="daiBalance" style="color:#b8c1ec;font-family:monospace;">-</div>
-            </div>
-            <div style="text-align:center;">
-              <div style="color:#00ccff;font-weight:bold;">IAM</div>
-              <div id="IAMBalance" style="color:#b8c1ec;font-family:monospace;">-</div>
-              <div id="IAMUsdValue" style="color:#a786ff;font-size:0.8rem;margin-top:2px;">-</div>
-            </div>
-          </div>
-            </div>
-          </div>
+
         </div>
       </div>
     </div>
@@ -4128,4 +4140,5 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 </body>
+</html>
 </html>

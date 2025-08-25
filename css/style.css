@@ -962,9 +962,9 @@ margin: 0 auto;
 }
 
 .swap-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 1.5rem !important;
   background: rgba(0, 0, 0, 0.9);
   border: 1px solid rgba(0, 255, 136, 0.3);
 border-radius: 20px;
@@ -1129,6 +1129,8 @@ width: 100%;
   }
   
   .swap-form {
+    display: flex !important;
+    flex-direction: column !important;
     padding: 1.5rem;
     gap: 1.2rem;
   }
@@ -6566,9 +6568,9 @@ body.signal-page { background: #181c2a; color: #fff; font-family: 'Noto Sans Ara
 }
 
 .swap-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 1.5rem !important;
 }
 
 .swap-row {
