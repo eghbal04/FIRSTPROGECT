@@ -1,5 +1,5 @@
 // main.js
-// پاک‌سازی کنسول در ابتدای برنامه
+// Clear console at the beginning of the program
 console.clear();
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -18,12 +18,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
     
-    // === اضافه کردن دکمه مخفی پنل اونر به منوی همبرگری ===
+    // === Adding hidden owner panel button to hamburger menu ===
 
-    // به‌روزرسانی ناوبار بر اساس وضعیت کاربر
+    // Update navbar based on user status
     await updateNavbarBasedOnUserStatus();
 
-    // کشبک داشبورد
+    // Dashboard cashback
     const cashbackValueEl = document.getElementById('dashboard-cashback-value');
     if (cashbackValueEl) {
         try {
@@ -32,18 +32,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             cashbackValueEl.textContent = Number(cashback) / 1e18 + ' IAM';
             const cashbackDescEl = document.getElementById('dashboard-cashback-desc');
             if (cashbackDescEl) {
-                cashbackDescEl.textContent = `۵٪ از هر ثبت‌نام به این صندوق اضافه می‌شود. مجموع فعلی: ${Number(cashback) / 1e18} IAM`;
+                cashbackDescEl.textContent = `5% of each registration is added to this fund. Current total: ${Number(cashback) / 1e18} IAM`;
             }
         } catch (e) {
             cashbackValueEl.textContent = '-';
             const cashbackDescEl = document.getElementById('dashboard-cashback-desc');
             if (cashbackDescEl) {
-                cashbackDescEl.textContent = '۵٪ از هر ثبت‌نام به این صندوق اضافه می‌شود.';
+                cashbackDescEl.textContent = '5% of each registration is added to this fund.';
             }
         }
     }
     await updateContractStats();
-    // به‌روزرسانی همزمان همه کارت‌های داشبورد با Promise.all
+    // Update all dashboard cards simultaneously with Promise.all
     if (window.contractConfig && window.contractConfig.contract) {
       const contract = window.contractConfig.contract;
       try {
@@ -71,9 +71,9 @@ document.addEventListener('DOMContentLoaded', async () => {
           } 
         };
         
-        setFormatted('circulating-supply', totalSupply, 18, ''); // حذف پسوند IAM
-        setFormatted('dashboard-dai-balance', daiBalance, 18, ''); // حذف پسوند DAI
-        setFormatted('contract-token-balance', tokenBalance, 18, ''); // حذف پسوند IAM
+        setFormatted('circulating-supply', totalSupply, 18, ''); // Remove IAM suffix
+        setFormatted('dashboard-dai-balance', daiBalance, 18, ''); // Remove DAI suffix
+        setFormatted('contract-token-balance', tokenBalance, 18, ''); // Remove IAM suffix
         setFormatted('dashboard-wallets-count', wallets, 0, '');
         // set('total-points', Math.floor(Number(totalPoints) / 1e18).toLocaleString('en-US'));
         // set('total-points', '-');
@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
 
-    // نمایش آدرس قرارداد در کارت داشبورد (بدون دکمه، فقط با کلیک روی آدرس)
+    // Display contract address in dashboard card (without button, only by clicking on address)
     const contractAddress = (window.contractConfig && window.contractConfig.IAM_ADDRESS) ? window.contractConfig.IAM_ADDRESS : (typeof IAM_ADDRESS !== 'undefined' ? IAM_ADDRESS : '');
     const dashAddrEl = document.getElementById('dashboard-contract-address');
     if (dashAddrEl && contractAddress) {
@@ -94,11 +94,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         dashAddrEl.style.background = 'rgba(0,255,136,0.07)';
         dashAddrEl.style.padding = '2px 8px';
         dashAddrEl.style.borderRadius = '6px';
-        dashAddrEl.title = 'برای کپی کلیک کنید';
+        dashAddrEl.title = 'Click to copy';
         dashAddrEl.onclick = function() {
             navigator.clipboard.writeText(contractAddress);
             const old = dashAddrEl.textContent;
-            dashAddrEl.textContent = 'کپی شد!';
+            dashAddrEl.textContent = 'Copied!';
             dashAddrEl.style.background = '#bbf7d0';
             setTimeout(() => {
                 dashAddrEl.textContent = old;
@@ -106,25 +106,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             }, 1200);
         };
     }
-    // حذف هر دکمه کپی اضافی اگر وجود دارد
+    // Remove any additional copy button if exists
     const dashCopyBtn = document.getElementById('dashboard-contract-copy-btn');
     if (dashCopyBtn) dashCopyBtn.remove();
 
-    // همزمان با سایر مقادیر داشبورد، کل پوینت‌ها را هم به‌روزرسانی کن
+    // Update total points along with other dashboard values
     const totalPointsEl = document.getElementById('total-points');
     if (totalPointsEl && window.contractConfig && window.contractConfig.contract) {
       try {
-        // استفاده از تابع totalClaimablePoints برای نمایش کل پوینت‌های باینری
+        // Use totalClaimablePoints function to display total binary points
         const contract = window.contractConfig.contract;
         const result = await contract.totalClaimablePoints();
-        // استفاده از ethers.formatUnits برای تبدیل صحیح BigInt به عدد
+        // Use ethers.formatUnits for correct BigInt to number conversion
         const totalPoints = parseInt(ethers.formatUnits(result, 0));
         
         totalPointsEl.textContent = totalPoints.toLocaleString('en-US');
-        console.log(`📊 کل پوینت‌های باینری: ${totalPoints.toLocaleString('en-US')}`);
+        console.log(`📊 Total binary points: ${totalPoints.toLocaleString('en-US')}`);
         
       } catch (e) {
-        console.warn('⚠️ خطا در دریافت پوینت‌های باینری:', e);
+        console.warn('⚠️ Error getting binary points:', e);
         totalPointsEl.textContent = '-';
       }
     }
@@ -140,19 +140,19 @@ function shorten(address) {
     return address.substring(0, 6) + '...' + address.substring(address.length - 4);
 }
 
-// تابع اضافه کردن دکمه owner به انتهای منوی همبرگری فقط برای owner
+// Function to add owner button to the end of hamburger menu only for owner
 
 
-// تابع اتصال کیف پول با نوع مشخص
+// Function to connect wallet with specific type
 async function connectWalletAndUpdateUI(walletType) {
     try {
         const connection = await connectWallet();
         const { contract, address, provider } = connection;
         
-        // به‌روزرسانی UI اتصال
+        // Update connection UI
         updateConnectionUI(null, address, walletType);
         
-        // بررسی وضعیت کاربر (بدون نمایش فرم ثبت‌نام)
+        // Check user status (without showing registration form)
         try {
             const userData = await contract.users(address);
             console.log('User data on wallet connection:', userData);
@@ -160,13 +160,13 @@ async function connectWalletAndUpdateUI(walletType) {
             console.warn('Could not fetch user data:', userDataError);
         }
         
-        // به‌روزرسانی ناوبار بر اساس وضعیت کاربر
+        // Update navbar based on user status
         await updateNavbarBasedOnUserStatus();
         
-        // به‌روزرسانی قفل‌ها
+        // Update locks
         await lockTabsForDeactivatedUsers();
         
-        // به‌روزرسانی موجودی‌های ترنسفر
+        // Update transfer balances
         setTimeout(() => {
             if (window.updateTransferBalancesOnConnect) {
                 window.updateTransferBalancesOnConnect();
@@ -187,22 +187,22 @@ async function connectWalletAndUpdateUI(walletType) {
     }
 }
 
-// به‌روزرسانی تابع updateConnectionUI برای پشتیبانی از انواع کیف پول
+// Update updateConnectionUI function to support different wallet types
 function updateConnectionUI(profile, address, walletType) {
     const connectButton = document.getElementById('connectButton');
     const walletConnectButton = document.getElementById('walletConnectButton');
     
     if (walletType === 'metamask' && connectButton) {
-        connectButton.textContent = 'متصل: ' + shortenAddress(address);
+        connectButton.textContent = 'Connected: ' + shortenAddress(address);
         connectButton.style.background = 'linear-gradient(90deg, #4CAF50 0%, #45a049 100%)';
         connectButton.disabled = true;
     } else if (walletType === 'walletconnect' && walletConnectButton) {
-        walletConnectButton.textContent = 'متصل: ' + shortenAddress(address);
+        walletConnectButton.textContent = 'Connected: ' + shortenAddress(address);
         walletConnectButton.style.background = 'linear-gradient(90deg, #3b99fc 0%, #2a7de1 100%)';
         walletConnectButton.disabled = true;
     }
 
-    // سایر به‌روزرسانی‌های UI
+    // Other UI updates
 const updateElement = (id, value) => {
     const element = document.getElementById(id);
     if (!element) return;
@@ -227,8 +227,8 @@ const updateElement = (id, value) => {
 };
 
     updateElement('user-address', shortenAddress(address));
-            updateElement('dai-balance', profile.daiBalance); // حذف پسوند DAI
-        updateElement('profile-dai', profile.daiBalance); // حذف پسوند DAI
+            updateElement('dai-balance', profile.daiBalance); // Remove DAI suffix
+        updateElement('profile-dai', profile.daiBalance); // Remove DAI suffix
 
     const userDashboard = document.getElementById('user-dashboard');
     const mainContent = document.getElementById('main-content');
@@ -236,13 +236,13 @@ const updateElement = (id, value) => {
     if (userDashboard) userDashboard.style.display = 'block';
     if (mainContent) mainContent.style.display = 'none';
     
-    // راه‌اندازی تایمر پاداش باینری
+    // Initialize binary reward timer
     if (profile.lastClaimTime) {
-        // بررسی وجود تابع startBinaryClaimCountdown
+        // Check if startBinaryClaimCountdown function exists
         if (typeof window.startBinaryClaimCountdown === 'function') {
             window.startBinaryClaimCountdown(profile.lastClaimTime);
         } else {
-            // اگر تابع موجود نیست، مستقیماً تایمر را راه‌اندازی کن
+            // If function doesn't exist, initialize timer directly
             const timerEl = document.getElementById('binary-claim-timer');
             if (timerEl) {
                 function updateTimer() {
@@ -265,22 +265,22 @@ const updateElement = (id, value) => {
         }
     }
     
-    // به‌روزرسانی ناوبار بر اساس وضعیت کاربر
+    // Update navbar based on user status
     updateNavbarBasedOnUserStatus();
     
-    // بعد از به‌روزرسانی UI:
+    // After UI update:
     setTimeout(window.addOwnerPanelButtonIfOwner, 500);
 }
 
-// تابع fetchUserProfile که در main.js فراخوانی می‌شود
+// fetchUserProfile function that is called in main.js
 async function fetchUserProfile() {
     try {
         const connectionResult = await connectWallet();
         if (!connectionResult || !connectionResult.contract || !connectionResult.address) {
-            throw new Error('اتصال کیف پول در دسترس نیست');
+            throw new Error('Wallet connection not available');
         }
         const { contract, address } = connectionResult;
-        // دریافت موجودی‌ها
+        // Get balances
         const provider = contract.provider;
         const signer = contract.signer || (provider && provider.getSigner ? await provider.getSigner() : null);
         let daiBalance = '0';
@@ -289,9 +289,9 @@ async function fetchUserProfile() {
           const daiRaw = await window.retryRpcOperation(() => daiContract.balanceOf(address), 2);
           daiBalance = ethers.formatUnits(daiRaw, 18); // DAI has 18 decimals
         }
-        // دریافت اطلاعات کاربر
+        // Get user data
         const userData = await window.retryRpcOperation(() => contract.users(address), 2);
-        // دریافت قیمت IAM/MATIC و MATIC/USD
+        // Get IAM/MATIC and MATIC/USD prices
         const [tokenPriceMatic, maticPriceUSD] = await Promise.all([
             window.retryRpcOperation(() => contract.getTokenPrice(), 2),
             window.fetchPolUsdPrice()
@@ -299,9 +299,9 @@ async function fetchUserProfile() {
         const formattedMaticBalance = ethers.formatEther(maticBalance);
         const formattedLvlBalance = ethers.formatUnits(lvlBalance, 18);
         const tokenPriceMaticFormatted = ethers.formatUnits(tokenPriceMatic, 18);
-        // قیمت IAM/USD = (IAM/MATIC) * (MATIC/USD)
+        // IAM/USD price = (IAM/MATIC) * (MATIC/USD)
         const tokenPriceUSD = parseFloat(tokenPriceMaticFormatted) * parseFloat(maticPriceUSD);
-        // محاسبه ارزش دلاری
+        // Calculate USD value
         const maticValueUSD = parseFloat(formattedMaticBalance) * parseFloat(maticPriceUSD);
         const lvlValueUSD = parseFloat(formattedLvlBalance) * tokenPriceUSD;
         return {
@@ -324,15 +324,15 @@ async function fetchUserProfile() {
     }
 }
 
-// تابع اتصال به کیف پول
+// Function to connect to wallet
 async function connectWallet() {
     try {
-        // بررسی اتصال موجود
+        // Check existing connection
         if (window.contractConfig && window.contractConfig.contract && window.contractConfig.address) {
             return window.contractConfig;
         }
         
-        // بررسی اتصال MetaMask موجود
+        // Check existing MetaMask connection
         if (typeof window.ethereum !== 'undefined') {
             const accounts = await window.ethereum.request({ method: 'eth_accounts' });
             if (accounts && accounts.length > 0) {
@@ -344,34 +344,34 @@ async function connectWallet() {
                     }
                     return window.contractConfig;
                 } catch (error) {
-                    throw new Error('خطا در راه‌اندازی Web3');
+                    throw new Error('Error initializing Web3');
                 }
             }
         }
         
-        throw new Error('لطفاً ابتدا کیف پول خود را متصل کنید');
+        throw new Error('Please connect your wallet first');
         
     } catch (error) {
         throw error;
     }
 }
 
-// تعریف تابع connectWallet در window برای استفاده در فایل‌های دیگر
+// Define connectWallet function in window for use in other files
 window.connectWallet = connectWallet;
 
-// تابع به‌روزرسانی ناوبار بر اساس وضعیت کاربر
+// Function to update navbar based on user status
 async function updateNavbarBasedOnUserStatus() {
     try {
         const connection = await checkConnection();
         if (!connection.connected) {
-            // اگر کاربر متصل نیست، ناوبار را به حالت پیش‌فرض برگردان
+            // If user is not connected, reset navbar to default
             resetNavbarToDefault();
             return;
         }
 
         const connectionResult = await connectWallet();
         if (!connectionResult || !connectionResult.contract || !connectionResult.address) {
-            throw new Error('اتصال کیف پول در دسترس نیست');
+            throw new Error('Wallet connection not available');
         }
         const { contract, address } = connectionResult;
         
@@ -379,15 +379,15 @@ async function updateNavbarBasedOnUserStatus() {
             const userData = await window.retryRpcOperation(() => contract.users(address), 2);
             
             if (userData && userData.index && BigInt(userData.index) > 0n) {
-                // کاربر فعال است
+                // User is active
                 updateNavbarForActiveUser();
                 
-                // به‌روزرسانی نمایش ID کاربر
+                // Update user ID display
                 if (userData.index) {
                     updateIAMIdDisplay(userData.index);
                 }
             } else {
-                // کاربر فعال نیست
+                // User is not active
                 resetNavbarToDefault();
             }
         } catch (error) {
@@ -400,41 +400,41 @@ async function updateNavbarBasedOnUserStatus() {
     }
 }
 
-// تابع تغییر ناوبار برای کاربران فعال
+// Function to change navbar for active users
 function updateNavbarForActiveUser() {
-    // تغییر در ناوبار دسکتاپ
+    // Change in desktop navbar
     const desktopRegisterLink = document.querySelector('.desktop-nav a[href="#main-register"]');
     if (desktopRegisterLink) {
-        desktopRegisterLink.innerHTML = '<i class="fa-solid fa-arrow-up icon" aria-hidden="true"></i><span class="label">افزایش سقف</span>';
-        desktopRegisterLink.title = 'افزایش سقف';
+        desktopRegisterLink.innerHTML = '<i class="fa-solid fa-arrow-up icon" aria-hidden="true"></i><span class="label">Increase Cap</span>';
+        desktopRegisterLink.title = 'Increase Cap';
     }
     
-    // تغییر در ناوبار موبایل
+    // Change in mobile navbar
     const mobileRegisterLink = document.querySelector('.fab-menu a[href="#main-register"]');
     if (mobileRegisterLink) {
-        mobileRegisterLink.innerHTML = '<i class="fa-solid fa-arrow-up icon" aria-hidden="true"></i><span class="label">افزایش سقف</span>';
-        mobileRegisterLink.title = 'افزایش سقف';
+        mobileRegisterLink.innerHTML = '<i class="fa-solid fa-arrow-up icon" aria-hidden="true"></i><span class="label">Increase Cap</span>';
+        mobileRegisterLink.title = 'Increase Cap';
     }
 }
 
-// تابع بازگرداندن ناوبار به حالت پیش‌فرض
+// Function to reset navbar to default state
 function resetNavbarToDefault() {
-    // بازگرداندن ناوبار دسکتاپ
+    // Reset desktop navbar
     const desktopRegisterLink = document.querySelector('.desktop-nav a[href="#main-register"]');
     if (desktopRegisterLink) {
-        desktopRegisterLink.innerHTML = '<i class="fa-solid fa-user-plus icon" aria-hidden="true"></i><span class="label">ثبت‌نام</span>';
-        desktopRegisterLink.title = 'ثبت‌نام';
+        desktopRegisterLink.innerHTML = '<i class="fa-solid fa-user-plus icon" aria-hidden="true"></i><span class="label">Register</span>';
+        desktopRegisterLink.title = 'Register';
     }
     
-    // بازگرداندن ناوبار موبایل
+    // Reset mobile navbar
     const mobileRegisterLink = document.querySelector('.fab-menu a[href="#main-register"]');
     if (mobileRegisterLink) {
-        mobileRegisterLink.innerHTML = '<i class="fa-solid fa-user-plus icon" aria-hidden="true"></i><span class="label">ثبت‌نام</span>';
-        mobileRegisterLink.title = 'ثبت‌نام';
+        mobileRegisterLink.innerHTML = '<i class="fa-solid fa-user-plus icon" aria-hidden="true"></i><span class="label">Register</span>';
+        mobileRegisterLink.title = 'Register';
     }
 }
 
-// تابع بررسی اتصال کیف پول
+// Function to check wallet connection
 async function checkConnection() {
     try {
         const { provider, address } = await connectWallet();
@@ -467,21 +467,21 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 1000);
 });
 
-// Cache برای پروفایل کاربر
+// Cache for user profile
 let userProfileCache = null;
 let userProfileCacheTime = 0;
-const CACHE_DURATION = 30000; // 30 ثانیه
+const CACHE_DURATION = 30000; // 30 seconds
 
 async function loadUserProfileOnce() {
     const now = Date.now();
     
-    // اگر cache معتبر است، از آن استفاده کن
+    // If cache is valid, use it
     if (userProfileCache && (now - userProfileCacheTime) < CACHE_DURATION) {
         return userProfileCache;
     }
     
     try {
-        // دریافت پروفایل جدید
+        // Get new profile
         if (window.getUserProfile) {
             userProfileCache = await window.getUserProfile();
             userProfileCacheTime = now;
@@ -496,21 +496,21 @@ async function loadUserProfileOnce() {
     }
 }
 
-// تابع پاک کردن cache پروفایل
+// Function to clear profile cache
 function clearUserProfileCache() {
     userProfileCache = null;
     userProfileCacheTime = 0;
     console.log('User profile cache cleared');
 }
 
-// Export برای استفاده در سایر فایل‌ها
+// Export for use in other files
 window.clearUserProfileCache = clearUserProfileCache;
 
-// قفل‌گذاری تب‌ها غیرفعال شد
+// Tab locking disabled
 async function lockTabsForDeactivatedUsers() { return; }
 
 
-// نمایش پیام ثبت‌نام برای تب‌های قفل شده
+// Show registration message for locked tabs
 function showRegistrationPrompt() {
     // Remove existing prompt if any
     const existingPrompt = document.getElementById('registration-prompt');
@@ -536,10 +536,10 @@ function showRegistrationPrompt() {
     
     prompt.innerHTML = `
         <div style="font-size: 3rem; margin-bottom: 1rem;">🔒</div>
-        <h3 style="color: #00ff88; margin-bottom: 1rem; font-size: 1.3rem;">دسترسی محدود</h3>
+        <h3 style="color: #00ff88; margin-bottom: 1rem; font-size: 1.3rem;">Limited Access</h3>
         <p style="color: #b8c1ec; margin-bottom: 1.5rem; line-height: 1.6;">
-            این بخش فقط برای کاربران فعال باز است.<br>
-            لطفاً ابتدا ثبت‌نام کنید تا به تمام امکانات دسترسی داشته باشید.
+            This section is only open for active users.<br>
+            Please register first to access all features.
         </p>
         <button onclick="showDirectRegistrationForm()" style="
             background: linear-gradient(135deg, #a786ff, #8b6bff);
@@ -550,7 +550,7 @@ function showRegistrationPrompt() {
             font-size: 1rem;
             cursor: pointer;
             transition: all 0.3s;
-        ">ثبت‌نام کنید</button>
+        ">Register Now</button>
     `;
     
     document.body.appendChild(prompt);
@@ -574,7 +574,7 @@ function showRegistrationPrompt() {
     document.body.appendChild(overlay);
 }
 
-// تابع تست وضعیت قفل
+// Function to test lock status
 window.testLockStatus = async function() {
     try {
         console.log('🔍 Testing lock status...');
@@ -603,30 +603,30 @@ window.testLockStatus = async function() {
     }
 };
 
-// تابع نمایش مستقیم فرم ثبت‌نام
+// Function to show direct registration form
 window.showDirectRegistrationForm = async function() {
     try {
-        // اضافه کردن حالت loading به دکمه
+        // Add loading state to button
         const registrationButton = document.getElementById('main-registration-button');
         if (registrationButton) {
             registrationButton.classList.add('loading');
             const button = registrationButton.querySelector('button');
             if (button) {
-                button.textContent = '⏳ در حال بارگذاری...';
+                button.textContent = '⏳ Loading...';
             }
         }
         
-        // بستن پیام ثبت‌نام فعلی
+        // Close current registration message
         const existingPrompt = document.getElementById('registration-prompt');
         const existingOverlay = document.getElementById('registration-prompt-overlay');
         if (existingPrompt) existingPrompt.remove();
         if (existingOverlay) existingOverlay.remove();
         
-        // اتصال به کیف پول
+        // Connect to wallet
         const connection = await window.connectWallet();
         const { contract, address, provider } = connection;
         
-        // تعیین آدرس معرف بدون تماس‌های حساس به قرارداد
+        // Determine referrer address without sensitive contract calls
         let referrerAddress = '';
         try {
             if (typeof getReferrerFromURL === 'function') {
@@ -638,39 +638,39 @@ window.showDirectRegistrationForm = async function() {
         } catch {}
         if (!referrerAddress) referrerAddress = address;
         
-        // نمایش فرم ثبت‌نام
+        // Show registration form
         if (typeof window.showRegisterForm === 'function') {
             window.showRegisterForm(referrerAddress, '', address, provider, contract);
         } else {
-            // fallback به تب شبکه
+            // fallback to network tab
             if (typeof window.showTab === 'function') {
                 window.showTab('network');
             }
         }
         
-        // حذف حالت loading
+        // Remove loading state
         if (registrationButton) {
             registrationButton.classList.remove('loading');
             const button = registrationButton.querySelector('button');
             if (button) {
-                button.textContent = '🚀 ثبت‌نام اکنون';
+                button.textContent = '🚀 Register Now';
             }
         }
         
     } catch (error) {
         console.error('Error showing direct registration form:', error);
         
-        // حذف حالت loading در صورت خطا
+        // Remove loading state on error
         const registrationButton = document.getElementById('main-registration-button');
         if (registrationButton) {
             registrationButton.classList.remove('loading');
             const button = registrationButton.querySelector('button');
             if (button) {
-                button.textContent = '🚀 ثبت‌نام اکنون';
+                button.textContent = '🚀 Register Now';
             }
         }
         
-        // در صورت خطا، به تب شبکه هدایت کن
+        // On error, redirect to network tab
         if (typeof window.showTab === 'function') {
             window.showTab('network');
         }
@@ -680,10 +680,10 @@ window.showDirectRegistrationForm = async function() {
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('=== DOMContentLoaded: Starting user status check ===');
     
-    // ابتدا قفل‌ها را اعمال کن
+    // First apply locks
     await lockTabsForDeactivatedUsers();
     
-    // سپس بررسی کن که آیا کاربر فعال نیست
+    // Then check if user is not active
     try {
         if (window.getUserProfile) {
             console.log('getUserProfile function is available');
@@ -694,7 +694,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             console.log('Profile index:', profile?.index);
             console.log('Profile index type:', typeof profile?.index);
             
-            // بررسی دقیق‌تر وضعیت کاربر
+            // More detailed user status check
             const hasIndex = profile && profile.index && BigInt(profile.index) > 0n;
             const isActivated = profile && profile.activated;
             const isActive = isActivated && hasIndex;
@@ -718,10 +718,10 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.log('Error stack:', error.stack);
     }
     
-    // بازیابی تب فعال از localStorage
+    // Restore active tab from localStorage
     const savedTab = localStorage.getItem('currentActiveTab');
     if (savedTab && typeof window.showTab === 'function') {
-        // کمی صبر کن تا صفحه کاملاً لود شود
+        // Wait a bit for page to fully load
         setTimeout(() => {
             window.showTab(savedTab);
         }, 500);
@@ -732,23 +732,23 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 // تابع تست برای بررسی وضعیت قفل‌ها - حذف شده
 
-// اجرای تست قفل‌ها بعد از 3 ثانیه
+// Execute lock tests after 3 seconds
 setTimeout(() => {
     if (typeof window.testLockStatus === 'function') {
         window.testLockStatus();
     }
 }, 3000);
 
-// تابع اجباری برای قفل کردن همه چیز - حذف شده
+// Function to force lock everything - removed
 
-// نمایش پیام خوشامدگویی و ثبت‌نام برای کاربران غیرفعال - DISABLED
+// Show welcome and registration message for inactive users - DISABLED
 window.showWelcomeRegistrationPrompt = async function() {
     console.log('=== showWelcomeRegistrationPrompt: DISABLED as requested ===');
     // This function has been disabled as per user request to remove registration form from page load
     return;
 };
 
-// تابع بستن مودال خوشامدگویی
+// Function to close welcome modal
 window.closeWelcomeModal = function() {
     const modal = document.getElementById('welcome-registration-modal');
     if (modal) {
@@ -756,10 +756,10 @@ window.closeWelcomeModal = function() {
     }
 };
 
-// تابع ثبت‌نام مستقیم
+// Function for direct registration
 window.registerNow = function() {
     closeWelcomeModal();
-    // استفاده از تابع نمایش مستقیم فرم ثبت‌نام
+    // Use direct registration form function
     if (typeof window.showDirectRegistrationForm === 'function') {
         window.showDirectRegistrationForm();
     } else if (typeof window.showTab === 'function') {
