@@ -652,70 +652,22 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         nodeDiv.style.fontSize = '1.08em';
         nodeDiv.style.boxShadow = '0 4px 16px rgba(0,255,136,0.10)';
         nodeDiv.style.cursor = 'pointer';
+        nodeDiv.title = 'Click to view user information';
         nodeDiv.style.transition = 'background 0.2s, box-shadow 0.2s';
         nodeDiv.style.whiteSpace = 'nowrap';
         nodeDiv.onmouseover = function() { 
             this.style.background = '#232946'; 
             this.style.boxShadow = '0 6px 24px #00ff8840'; 
-            const infoIcon = this.querySelector('.info-icon');
-            if (infoIcon) {
-                infoIcon.style.opacity = '1';
-                infoIcon.style.transform = 'scale(1.1)';
-            }
         };
         nodeDiv.onmouseout = function() { 
             this.style.background = getNodeColorByLevel(level, true); 
             this.style.boxShadow = '0 4px 16px rgba(0,255,136,0.10)'; 
-            const infoIcon = this.querySelector('.info-icon');
-            if (infoIcon) {
-                infoIcon.style.opacity = '0.9';
-                infoIcon.style.transform = 'scale(1)';
-            }
         };
         nodeDiv.innerHTML = `
             <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 1.1em; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-weight: bold;">${formattedIAMId}</span>
         `;
         
-        // User info icon (above expand button)
-        let infoIcon = document.createElement('div');
-        infoIcon.className = 'info-icon';
-        infoIcon.innerHTML = 'ℹ️';
-        infoIcon.style.cssText = `
-            position: absolute;
-            top: -12px;
-            right: -12px;
-            font-size: 20px; 
-            color: #00ff88; 
-            cursor: pointer; 
-            opacity: 1; 
-            transition: all 0.2s;
-            z-index: 9999;
-            background: #181c2a;
-            border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 3px solid #00ff88;
-            box-shadow: 0 4px 16px rgba(0,255,136,0.6);
-            font-weight: bold;
-            pointer-events: auto;
-        `;
-        infoIcon.title = 'View User Information';
-        nodeDiv.appendChild(infoIcon);
-        
-        // Add event listener for icon
-        infoIcon.addEventListener('click', function(e) {
-            e.stopPropagation();
-            console.log('🔍 Info icon clicked for user:', IAMId);
-            if (typeof window.networkShowUserPopup === 'function') {
-                window.networkShowUserPopup(address, user);
-            }
-        });
-        
-        // Test: Check if icon was added
-        console.log('🔍 Info icon added to node:', IAMId, 'Element:', infoIcon);
+
         
         // Expand/collapse button if has directs or empty position
         let expandBtn = null;
@@ -753,12 +705,10 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                 e.stopPropagation();
                 return;
             }
-            if (e.target.classList.contains('info-icon')) {
-                if (typeof window.networkShowUserPopup === 'function') {
-                    window.networkShowUserPopup(address, user);
-                }
-                e.stopPropagation();
-                return;
+
+            // Make the entire node clickable to show user info
+            if (typeof window.networkShowUserPopup === 'function') {
+                window.networkShowUserPopup(address, user);
             }
         });
         container.appendChild(nodeDiv);

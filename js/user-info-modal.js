@@ -1,5 +1,5 @@
 // JavaScript file for managing user information in network
-class UserInfoModal {
+window.UserInfoModal = class UserInfoModal {
     constructor() {
         this.initModal();
         this.bindEvents();
@@ -150,6 +150,7 @@ class UserInfoModal {
 let userInfoModal;
 document.addEventListener('DOMContentLoaded', () => {
     userInfoModal = new UserInfoModal();
+    window.userInfoModal = userInfoModal;
     
     // Add click listeners to network nodes
     document.querySelectorAll('.network-node').forEach(node => {

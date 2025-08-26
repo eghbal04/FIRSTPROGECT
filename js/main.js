@@ -3192,10 +3192,9 @@ async function updateContractStats() {
 
 // Function to update user status bar
 window.updateUserStatusBar = async function() {
-    console.log('updateUserStatusBar function called');
+    console.log('🔄 updateUserStatusBar function called');
     try {
         const userStatusBar = document.getElementById('user-status-bar');
-        console.log('User status bar element found:', !!userStatusBar);
         const userStatusIdValue = document.getElementById('user-status-id-value');
         const userStatusWallet = document.getElementById('user-status-wallet');
         const userStatusLikes = document.getElementById('user-status-likes');
@@ -3203,47 +3202,42 @@ window.updateUserStatusBar = async function() {
         const userStatusConnection = document.getElementById('user-status-connection');
         const userStatusPulse = document.getElementById('user-status-pulse');
 
-        if (!userStatusBar || !userStatusIdValue || !userStatusLikes || !userStatusDislikes || !userStatusConnection) {
-            console.warn('User status bar elements not found:', {
+        console.log('🔍 User status bar elements found:', {
+            userStatusBar: !!userStatusBar,
+            userStatusIdValue: !!userStatusIdValue,
+            userStatusWallet: !!userStatusWallet,
+            userStatusLikes: !!userStatusLikes,
+            userStatusDislikes: !!userStatusDislikes,
+            userStatusConnection: !!userStatusConnection,
+            userStatusPulse: !!userStatusPulse
+        });
+
+        // Check for required elements (connection and pulse are optional)
+        if (!userStatusBar || !userStatusIdValue || !userStatusLikes || !userStatusDislikes) {
+            console.warn('Required user status bar elements not found:', {
                 userStatusBar: !!userStatusBar,
                 userStatusIdValue: !!userStatusIdValue,
                 userStatusWallet: !!userStatusWallet,
                 userStatusLikes: !!userStatusLikes,
-                userStatusDislikes: !!userStatusDislikes,
-                userStatusConnection: !!userStatusConnection
+                userStatusDislikes: !!userStatusDislikes
             });
-            // Don't return, just set default values for available elements
+            // Set default values for available elements
             if (userStatusBar) userStatusBar.style.display = 'block';
             if (userStatusIdValue) userStatusIdValue.textContent = 'Not Connected';
             if (userStatusWallet) userStatusWallet.textContent = 'Not Connected';
             if (userStatusLikes) userStatusLikes.textContent = '0';
             if (userStatusDislikes) userStatusDislikes.textContent = '0';
-            if (userStatusConnection) {
-                userStatusConnection.textContent = 'Not Connected';
-                userStatusConnection.style.color = '#888';
-            }
-            if (userStatusPulse) {
-                userStatusPulse.style.background = '#888';
-                userStatusPulse.style.animation = 'none';
-            }
             return;
         }
 
         if (!window.contractConfig || !window.contractConfig.signer || !window.contractConfig.contract) {
+            console.log('🔍 Wallet not connected, showing default values');
             // Show status bar even when wallet is not connected, but with default values
             if (userStatusBar) userStatusBar.style.display = 'block';
             if (userStatusIdValue) userStatusIdValue.textContent = 'Not Connected';
             if (userStatusWallet) userStatusWallet.textContent = 'Not Connected';
             if (userStatusLikes) userStatusLikes.textContent = '0';
             if (userStatusDislikes) userStatusDislikes.textContent = '0';
-            if (userStatusConnection) {
-                userStatusConnection.textContent = 'Not Connected';
-                userStatusConnection.style.color = '#888';
-            }
-            if (userStatusPulse) {
-                userStatusPulse.style.background = '#888';
-                userStatusPulse.style.animation = 'none';
-            }
             const userStarRating = document.getElementById('user-star-rating');
             if (userStarRating) userStarRating.style.display = 'none';
             return;
@@ -3358,67 +3352,25 @@ window.updateUserStatusBar = async function() {
                 if (userStatusDislikes) userStatusDislikes.textContent = '0';
                 const userStarRating = document.getElementById('user-star-rating');
                 if (userStarRating) userStarRating.style.display = 'none';
-                // Keep connection status as connected since wallet is available
-                if (userStatusConnection) {
-                    userStatusConnection.textContent = 'Connected to Polygon Network';
-                    userStatusConnection.style.color = '#00ff88';
-                }
-                if (userStatusPulse) {
-                    userStatusPulse.style.background = '#00ff88';
-                    userStatusPulse.style.animation = 'pulse 2s infinite';
-                }
+                // User is registered but not active
+                console.log('🔍 User is registered but not active');
             }
         } catch (error) {
             console.warn('Error getting user data:', error);
+            console.warn('❌ Error getting user data:', error);
             if (userStatusIdValue) userStatusIdValue.textContent = 'Error';
             if (userStatusLikes) userStatusLikes.textContent = '0';
             if (userStatusDislikes) userStatusDislikes.textContent = '0';
-            // Keep connection status as connected since wallet is available
-            if (userStatusConnection) {
-                userStatusConnection.textContent = 'Connected to Polygon Network';
-                userStatusConnection.style.color = '#00ff88';
-            }
-            if (userStatusPulse) {
-                userStatusPulse.style.background = '#00ff88';
-                userStatusPulse.style.animation = 'pulse 2s infinite';
-            }
         }
 
-        // Update connection status
-        try {
-            const network = await window.contractConfig.provider.getNetwork();
-            userStatusConnection.textContent = `Connected to ${network.name} Network`;
-            userStatusConnection.style.color = '#00ff88';
-            if (userStatusPulse) {
-                userStatusPulse.style.background = '#00ff88';
-                userStatusPulse.style.animation = 'pulse 2s infinite';
-            }
-        } catch (error) {
-            userStatusConnection.textContent = 'Connected to Polygon Network';
-            userStatusConnection.style.color = '#00ff88';
-            if (userStatusPulse) {
-                userStatusPulse.style.background = '#00ff88';
-                userStatusPulse.style.animation = 'pulse 2s infinite';
-            }
-        }
+        console.log('✅ User status bar updated successfully');
 
     } catch (error) {
-        console.warn('Error updating user status bar:', error);
+        console.warn('❌ Error updating user status bar:', error);
         // Ensure status bar is visible even if there's an error
         const userStatusBar = document.getElementById('user-status-bar');
         if (userStatusBar) {
             userStatusBar.style.display = 'block';
-        }
-        // Set default connection status on error
-        const userStatusConnection = document.getElementById('user-status-connection');
-        const userStatusPulse = document.getElementById('user-status-pulse');
-        if (userStatusConnection) {
-            userStatusConnection.textContent = 'Not Connected';
-            userStatusConnection.style.color = '#888';
-        }
-        if (userStatusPulse) {
-            userStatusPulse.style.background = '#888';
-            userStatusPulse.style.animation = 'none';
         }
     }
 };
@@ -3430,6 +3382,11 @@ function updateCardSizes() {
         const walletCard = document.querySelector('.wallet-card');
         const likesCard = document.querySelector('.likes-card');
         const dislikesCard = document.querySelector('.dislikes-card');
+
+        const userStatusIdValue = document.getElementById('user-status-id-value');
+        const userStatusWallet = document.getElementById('user-status-wallet');
+        const userStatusLikes = document.getElementById('user-status-likes');
+        const userStatusDislikes = document.getElementById('user-status-dislikes');
 
         const userIdLength = userStatusIdValue ? userStatusIdValue.textContent.length : 0;
         const walletLength = userStatusWallet ? userStatusWallet.textContent.length : 0;
@@ -3456,14 +3413,35 @@ function updateCardSizes() {
 
 // Initialize user status bar on page load
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔍 DOMContentLoaded: Initializing user status bar...');
+    
+    // Check if elements exist
+    const userStatusBar = document.getElementById('user-status-bar');
+    const userStatusIdValue = document.getElementById('user-status-id-value');
+    const userStatusWallet = document.getElementById('user-status-wallet');
+    const userStatusLikes = document.getElementById('user-status-likes');
+    const userStatusDislikes = document.getElementById('user-status-dislikes');
+    
+    console.log('🔍 User status bar elements found:', {
+        userStatusBar: !!userStatusBar,
+        userStatusIdValue: !!userStatusIdValue,
+        userStatusWallet: !!userStatusWallet,
+        userStatusLikes: !!userStatusLikes,
+        userStatusDislikes: !!userStatusDislikes
+    });
+    
     // Update user status bar immediately
     if (typeof window.updateUserStatusBar === 'function') {
+        console.log('✅ updateUserStatusBar function found, calling it...');
         window.updateUserStatusBar();
+    } else {
+        console.log('❌ updateUserStatusBar function not found');
     }
     
     // Update user status bar after a short delay
     setTimeout(() => {
         if (typeof window.updateUserStatusBar === 'function') {
+            console.log('🔄 Calling updateUserStatusBar after 2 seconds...');
             window.updateUserStatusBar();
         }
     }, 2000);
@@ -3475,6 +3453,26 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 30000);
 });
+
+// Add test function to window for debugging
+window.testUserStatusBar = function() {
+    console.log('🧪 Testing user status bar...');
+    console.log('🔍 Contract config:', !!window.contractConfig);
+    if (window.contractConfig) {
+        console.log('🔍 Contract:', !!window.contractConfig.contract);
+        console.log('🔍 Signer:', !!window.contractConfig.signer);
+        console.log('🔍 Address:', window.contractConfig.address);
+    }
+    
+    if (typeof window.updateUserStatusBar === 'function') {
+        console.log('✅ Calling updateUserStatusBar...');
+        window.updateUserStatusBar();
+    } else {
+        console.log('❌ updateUserStatusBar function not found');
+    }
+};
+
+
 
 
 
