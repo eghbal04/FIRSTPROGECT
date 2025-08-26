@@ -173,6 +173,13 @@ async function connectWalletAndUpdateUI(walletType) {
             }
         }, 2000);
         
+        // Update user status bar after wallet connection
+        setTimeout(() => {
+            if (typeof window.updateUserStatusBar === 'function') {
+                window.updateUserStatusBar();
+            }
+        }, 1500);
+        
         return connection;
     } catch (error) {
         console.error('Error in connectWalletAndUpdateUI:', error);
@@ -3139,6 +3146,335 @@ window.getTotalBinaryPoints = async function() {
 function isValidEthereumAddress(address) {
     return /^0x[a-fA-F0-9]{40}$/.test(address);
 }
+
+// Function to check Ethereum address validity
+function isValidEthereumAddress(address) {
+    return /^0x[a-fA-F0-9]{40}$/.test(address);
+}
+
+// Function to update contract statistics
+async function updateContractStats() {
+    try {
+        if (!window.contractConfig || !window.contractConfig.contract) {
+            return;
+        }
+        
+        const contract = window.contractConfig.contract;
+        
+        // Update contract statistics
+        const [totalSupply, daiBalance, tokenBalance, wallets, totalPoints] = await Promise.all([
+            contract.totalSupply(),
+            contract.getContractdaiBalance ? contract.getContractdaiBalance() :
+            (new ethers.Contract(window.DAI_ADDRESS, window.DAI_ABI, contract.provider)).balanceOf(contract.target),
+            contract.balanceOf ? contract.balanceOf(contract.target) : Promise.resolve(0),
+            contract.wallets(),
+            contract.totalClaimableBinaryPoints()
+        ]);
+        
+        const setFormatted = (id, val, decimals = 18, suffix = '') => { 
+            const el = document.getElementById(id); 
+            if (el) {
+                const num = Number(val) / Math.pow(10, decimals);
+                const formatted = num.toLocaleString('en-US', {maximumFractionDigits: 2}) + suffix;
+                el.textContent = formatted;
+            } 
+        };
+        
+        setFormatted('circulating-supply', totalSupply, 18, '');
+        setFormatted('dashboard-dai-balance', daiBalance, 18, '');
+        setFormatted('contract-token-balance', tokenBalance, 18, '');
+        setFormatted('dashboard-wallets-count', wallets, 0, '');
+        
+    } catch (e) {
+        console.warn('Error updating contract stats:', e);
+    }
+}
+
+// Function to update user status bar
+window.updateUserStatusBar = async function() {
+    console.log('updateUserStatusBar function called');
+    try {
+        const userStatusBar = document.getElementById('user-status-bar');
+        console.log('User status bar element found:', !!userStatusBar);
+        const userStatusIdValue = document.getElementById('user-status-id-value');
+        const userStatusWallet = document.getElementById('user-status-wallet');
+        const userStatusLikes = document.getElementById('user-status-likes');
+        const userStatusDislikes = document.getElementById('user-status-dislikes');
+        const userStatusConnection = document.getElementById('user-status-connection');
+        const userStatusPulse = document.getElementById('user-status-pulse');
+
+        if (!userStatusBar || !userStatusIdValue || !userStatusLikes || !userStatusDislikes || !userStatusConnection) {
+            console.warn('User status bar elements not found:', {
+                userStatusBar: !!userStatusBar,
+                userStatusIdValue: !!userStatusIdValue,
+                userStatusWallet: !!userStatusWallet,
+                userStatusLikes: !!userStatusLikes,
+                userStatusDislikes: !!userStatusDislikes,
+                userStatusConnection: !!userStatusConnection
+            });
+            // Don't return, just set default values for available elements
+            if (userStatusBar) userStatusBar.style.display = 'block';
+            if (userStatusIdValue) userStatusIdValue.textContent = 'Not Connected';
+            if (userStatusWallet) userStatusWallet.textContent = 'Not Connected';
+            if (userStatusLikes) userStatusLikes.textContent = '0';
+            if (userStatusDislikes) userStatusDislikes.textContent = '0';
+            if (userStatusConnection) {
+                userStatusConnection.textContent = 'Not Connected';
+                userStatusConnection.style.color = '#888';
+            }
+            if (userStatusPulse) {
+                userStatusPulse.style.background = '#888';
+                userStatusPulse.style.animation = 'none';
+            }
+            return;
+        }
+
+        if (!window.contractConfig || !window.contractConfig.signer || !window.contractConfig.contract) {
+            // Show status bar even when wallet is not connected, but with default values
+            if (userStatusBar) userStatusBar.style.display = 'block';
+            if (userStatusIdValue) userStatusIdValue.textContent = 'Not Connected';
+            if (userStatusWallet) userStatusWallet.textContent = 'Not Connected';
+            if (userStatusLikes) userStatusLikes.textContent = '0';
+            if (userStatusDislikes) userStatusDislikes.textContent = '0';
+            if (userStatusConnection) {
+                userStatusConnection.textContent = 'Not Connected';
+                userStatusConnection.style.color = '#888';
+            }
+            if (userStatusPulse) {
+                userStatusPulse.style.background = '#888';
+                userStatusPulse.style.animation = 'none';
+            }
+            const userStarRating = document.getElementById('user-star-rating');
+            if (userStarRating) userStarRating.style.display = 'none';
+            return;
+        }
+
+        const address = window.contractConfig.signer.address;
+        let contract = window.contractConfig.contract;
+
+        // Ensure contract has the correct ABI by creating a fresh instance if needed
+        if (!contract.users || !contract.getVoteStatus) {
+            try {
+                const { ethers } = await import('https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js');
+                contract = new ethers.Contract(window.contractConfig.contract.address, window.IAM_ABI, window.contractConfig.signer);
+            } catch (error) {
+                console.warn('Error creating fresh contract instance:', error);
+            }
+        }
+
+        userStatusBar.style.display = 'block';
+
+        // Update wallet address display
+        if (userStatusWallet && address) {
+            const shortAddress = address.substring(0, 6) + '...' + address.substring(address.length - 4);
+            userStatusWallet.textContent = shortAddress;
+            userStatusWallet.title = address;
+            
+            // Add click to copy functionality
+            userStatusWallet.onclick = async function() {
+                try {
+                    await navigator.clipboard.writeText(address);
+                    
+                    // Visual feedback
+                    const originalText = this.textContent;
+                    const originalColor = this.style.color;
+                    const originalBackground = this.style.background;
+                    
+                    this.textContent = '✅ Copied!';
+                    this.style.color = '#00ff88';
+                    this.style.background = 'rgba(0, 255, 136, 0.1)';
+                    this.style.border = '1px solid rgba(0, 255, 136, 0.5)';
+                    
+                    // Reset after 2 seconds
+                    setTimeout(() => {
+                        this.textContent = originalText;
+                        this.style.color = originalColor;
+                        this.style.background = originalBackground;
+                        this.style.border = 'none';
+                    }, 2000);
+                } catch (err) {
+                    console.error('Error copying address:', err);
+                    
+                    // Error feedback
+                    const originalText = this.textContent;
+                    const originalColor = this.style.color;
+                    
+                    this.textContent = '❌ Error';
+                    this.style.color = '#ff4444';
+                    
+                    setTimeout(() => {
+                        this.textContent = originalText;
+                        this.style.color = originalColor;
+                    }, 2000);
+                }
+            };
+        }
+
+        try {
+            const userData = await contract.users(address);
+            if (userData && userData.index && userData.index > 0) {
+                const formattedUserId = 'IAM' + userData.index.toString().padStart(5, '0');
+                if (userStatusIdValue) userStatusIdValue.textContent = formattedUserId;
+
+                const voteStatus = await contract.getVoteStatus(address);
+                if (voteStatus && voteStatus.length >= 2) {
+                    if (userStatusLikes) userStatusLikes.textContent = voteStatus[0].toString();
+                    if (userStatusDislikes) userStatusDislikes.textContent = voteStatus[1].toString();
+                } else {
+                    if (userStatusLikes) userStatusLikes.textContent = '0';
+                    if (userStatusDislikes) userStatusDislikes.textContent = '0';
+                }
+
+                // Calculate star rating based on binaryPointsClaimed
+                const userStarRating = document.getElementById('user-star-rating');
+                const userStarCount = document.getElementById('user-star-count');
+
+                if (userData.binaryPointsClaimed && userData.binaryPointsClaimed.toString() !== '0') {
+                    const points = parseInt(userData.binaryPointsClaimed.toString());
+                    let starCount = 0;
+                    if (points >= 10000) { starCount = 5; }
+                    else if (points >= 1000) { starCount = 4; }
+                    else if (points >= 100) { starCount = 3; }
+                    else if (points >= 10) { starCount = 2; }
+                    else if (points >= 1) { starCount = 1; }
+
+                    userStarCount.innerHTML = '';
+                    for (let i = 0; i < starCount; i++) {
+                        const starSpan = document.createElement('span');
+                        starSpan.textContent = '⭐';
+                        starSpan.style.color = '#ffd700';
+                        starSpan.style.fontSize = '0.8rem';
+                        userStarCount.appendChild(starSpan);
+                    }
+                    userStarRating.style.display = starCount > 0 ? 'flex' : 'none';
+                } else {
+                    userStarCount.innerHTML = '';
+                    userStarRating.style.display = 'none';
+                }
+                updateCardSizes();
+            } else {
+                if (userStatusIdValue) userStatusIdValue.textContent = 'Not Registered';
+                if (userStatusLikes) userStatusLikes.textContent = '0';
+                if (userStatusDislikes) userStatusDislikes.textContent = '0';
+                const userStarRating = document.getElementById('user-star-rating');
+                if (userStarRating) userStarRating.style.display = 'none';
+                // Keep connection status as connected since wallet is available
+                if (userStatusConnection) {
+                    userStatusConnection.textContent = 'Connected to Polygon Network';
+                    userStatusConnection.style.color = '#00ff88';
+                }
+                if (userStatusPulse) {
+                    userStatusPulse.style.background = '#00ff88';
+                    userStatusPulse.style.animation = 'pulse 2s infinite';
+                }
+            }
+        } catch (error) {
+            console.warn('Error getting user data:', error);
+            if (userStatusIdValue) userStatusIdValue.textContent = 'Error';
+            if (userStatusLikes) userStatusLikes.textContent = '0';
+            if (userStatusDislikes) userStatusDislikes.textContent = '0';
+            // Keep connection status as connected since wallet is available
+            if (userStatusConnection) {
+                userStatusConnection.textContent = 'Connected to Polygon Network';
+                userStatusConnection.style.color = '#00ff88';
+            }
+            if (userStatusPulse) {
+                userStatusPulse.style.background = '#00ff88';
+                userStatusPulse.style.animation = 'pulse 2s infinite';
+            }
+        }
+
+        // Update connection status
+        try {
+            const network = await window.contractConfig.provider.getNetwork();
+            userStatusConnection.textContent = `Connected to ${network.name} Network`;
+            userStatusConnection.style.color = '#00ff88';
+            if (userStatusPulse) {
+                userStatusPulse.style.background = '#00ff88';
+                userStatusPulse.style.animation = 'pulse 2s infinite';
+            }
+        } catch (error) {
+            userStatusConnection.textContent = 'Connected to Polygon Network';
+            userStatusConnection.style.color = '#00ff88';
+            if (userStatusPulse) {
+                userStatusPulse.style.background = '#00ff88';
+                userStatusPulse.style.animation = 'pulse 2s infinite';
+            }
+        }
+
+    } catch (error) {
+        console.warn('Error updating user status bar:', error);
+        // Ensure status bar is visible even if there's an error
+        const userStatusBar = document.getElementById('user-status-bar');
+        if (userStatusBar) {
+            userStatusBar.style.display = 'block';
+        }
+        // Set default connection status on error
+        const userStatusConnection = document.getElementById('user-status-connection');
+        const userStatusPulse = document.getElementById('user-status-pulse');
+        if (userStatusConnection) {
+            userStatusConnection.textContent = 'Not Connected';
+            userStatusConnection.style.color = '#888';
+        }
+        if (userStatusPulse) {
+            userStatusPulse.style.background = '#888';
+            userStatusPulse.style.animation = 'none';
+        }
+    }
+};
+
+// Function to update card sizes based on content
+function updateCardSizes() {
+    try {
+        const userIdCard = document.querySelector('.user-id-card');
+        const walletCard = document.querySelector('.wallet-card');
+        const likesCard = document.querySelector('.likes-card');
+        const dislikesCard = document.querySelector('.dislikes-card');
+
+        const userIdLength = userStatusIdValue ? userStatusIdValue.textContent.length : 0;
+        const walletLength = userStatusWallet ? userStatusWallet.textContent.length : 0;
+        const likesLength = userStatusLikes ? userStatusLikes.textContent.length : 0;
+        const dislikesLength = userStatusDislikes ? userStatusDislikes.textContent.length : 0;
+
+        function getContentLengthCategory(length) {
+            if (length <= 5) return 'short';
+            if (length <= 10) return 'medium';
+            if (length <= 20) return 'long';
+            return 'very-long';
+        }
+
+        if (userIdCard) { userIdCard.setAttribute('data-content-length', getContentLengthCategory(userIdLength)); }
+        if (walletCard) { walletCard.setAttribute('data-content-length', getContentLengthCategory(walletLength)); }
+        if (likesCard) { likesCard.setAttribute('data-content-length', getContentLengthCategory(likesLength)); }
+        if (dislikesCard) { dislikesCard.setAttribute('data-content-length', getContentLengthCategory(dislikesLength)); }
+
+        [userIdCard, walletCard, likesCard, dislikesCard].forEach(card => {
+            if (card) { card.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'; }
+        });
+    } catch (error) { console.warn('Error updating card sizes:', error); }
+}
+
+// Initialize user status bar on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Update user status bar immediately
+    if (typeof window.updateUserStatusBar === 'function') {
+        window.updateUserStatusBar();
+    }
+    
+    // Update user status bar after a short delay
+    setTimeout(() => {
+        if (typeof window.updateUserStatusBar === 'function') {
+            window.updateUserStatusBar();
+        }
+    }, 2000);
+
+    // Update user status bar every 30 seconds
+    setInterval(() => {
+        if (typeof window.updateUserStatusBar === 'function') {
+            window.updateUserStatusBar();
+        }
+    }, 30000);
+});
 
 
 

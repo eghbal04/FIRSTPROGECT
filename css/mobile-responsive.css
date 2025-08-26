@@ -676,3 +676,36 @@ body {
 .mobile-gap-large {
   gap: 1.5rem !important;
 }
+
+/* Mobile-specific styles for referral link */
+@media (max-width: 768px) {
+    #profile-referral-link {
+        font-size: 0.75em !important;
+        min-width: 150px !important;
+        padding: 6px 8px !important;
+    }
+    
+    #copyProfileReferral {
+        font-size: 0.75em !important;
+        padding: 8px 10px !important;
+        min-width: 50px !important;
+    }
+    
+    .profile-row[style*="flex-direction: column"] {
+        gap: 12px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    #profile-referral-link {
+        font-size: 0.7em !important;
+        min-width: 120px !important;
+        padding: 4px 6px !important;
+    }
+    
+    #copyProfileReferral {
+        font-size: 0.7em !important;
+        padding: 6px 8px !important;
+        min-width: 45px !important;
+    }
+}

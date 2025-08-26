@@ -488,9 +488,14 @@
                          <span class="profile-label">USD Value:</span>
                          <span class="profile-value">$${formatLargeNumber(Number(user.refclimed.toString())/1e18 * tokenPrice)}</span>
                      </div>
-                     <div style="display: flex; align-items: center; gap: 8px; width: 100%; background: rgba(167,134,255,0.08); border-radius: 6px; padding: 8px; border: 1px solid #a786ff22;">
-                         <span class="profile-value" id="profile-referral-link" style="flex: 1; word-break: break-all; font-size: 0.85em; color: #a786ff;">${window.location.origin}/?ref=${address}</span>
-                         <button id="copyProfileReferral" style="background: linear-gradient(90deg,#00ff88,#a786ff); color: #181c2a; border: none; border-radius: 4px; padding: 6px 12px; font-size: 0.8em; cursor: pointer; font-weight: bold; white-space: nowrap; transition: all 0.2s;">Copy</button>
+                     <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; background: rgba(167,134,255,0.08); border-radius: 6px; padding: 8px; border: 1px solid #a786ff22;">
+                         <div style="display: flex; align-items: center; gap: 8px; width: 100%; flex-wrap: wrap;">
+                             <span class="profile-value" id="profile-referral-link" style="flex: 1; min-width: 200px; word-break: break-all; font-size: 0.85em; color: #a786ff; font-family: monospace; background: rgba(0,0,0,0.1); padding: 4px 6px; border-radius: 4px;">${window.location.origin}/?ref=${address}</span>
+                             <button id="copyProfileReferral" style="background: linear-gradient(90deg,#00ff88,#a786ff); color: #181c2a; border: none; border-radius: 4px; padding: 6px 12px; font-size: 0.8em; cursor: pointer; font-weight: bold; white-space: nowrap; transition: all 0.2s; min-width: 60px; flex-shrink: 0;">Copy</button>
+                         </div>
+                         <div style="font-size: 0.75em; color: #a786ff; opacity: 0.8; text-align: center; margin-top: 4px;">
+                             Share this link to earn referral rewards (10% of registration fee)
+                         </div>
                      </div>
                  </div>
             `;

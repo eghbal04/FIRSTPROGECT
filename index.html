@@ -258,7 +258,7 @@
   <div id="main-dashboard" class="page-section" style="position:relative;overflow:visible;">
 
     <!-- User Status Bar -->
-    <div id="user-status-bar" class="user-status-container" style="display:none;background:linear-gradient(135deg,rgba(35,41,70,0.95),rgba(24,28,42,0.95));border:1px solid rgba(0,255,136,0.2);border-radius:16px;padding:1rem;margin:1rem auto;max-width:1400px;backdrop-filter:blur(10px);box-shadow:0 8px 32px rgba(0,0,0,0.3);position:relative;">
+    <div id="user-status-bar" class="user-status-container" style="display:block;background:linear-gradient(135deg,rgba(35,41,70,0.95),rgba(24,28,42,0.95));border:1px solid rgba(0,255,136,0.2);border-radius:16px;padding:1rem;margin:1rem auto;max-width:1400px;backdrop-filter:blur(10px);box-shadow:0 8px 32px rgba(0,0,0,0.3);position:relative;">
       <!-- Star Rating - Top Left Corner -->
       <div id="user-star-rating" style="position:absolute;top:0.5rem;left:0.5rem;background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.3);border-radius:8px;padding:0.3rem 0.5rem;display:flex;align-items:center;gap:0.2rem;z-index:10;">
         <span style="color:#ffd700;font-size:0.8rem;font-weight:bold;" id="user-star-count">0</span>
@@ -274,37 +274,30 @@
         </div>
 
         <!-- Wallet Address Section -->
-        <div class="status-card wallet-card" style="display:flex;align-items:center;gap:0.5rem;flex:2;min-width:200px;max-width:400px;background:rgba(167,134,255,0.1);border:1px solid rgba(167,134,255,0.3);border-radius:10px;padding:0.6rem;transition:all 0.4s cubic-bezier(0.4, 0, 0.2, 1);transform:scale(1);box-shadow:0 2px 8px rgba(167,134,255,0.1);" onmouseenter="this.style.transform='scale(1.02)';this.style.boxShadow='0 4px 16px rgba(167,134,255,0.2)'" onmouseleave="this.style.transform='scale(1)';this.style.boxShadow='0 2px 8px rgba(167,134,255,0.1)'">
-          <div style="color:#a786ff;font-size:1rem;margin-bottom:0;flex-shrink:0;">💳</div>
+        <div class="status-card wallet-card" style="display:flex;align-items:center;gap:0.5rem;flex:1.5;min-width:150px;max-width:280px;background:rgba(167,134,255,0.1);border:1px solid rgba(167,134,255,0.3);border-radius:10px;padding:0.5rem;transition:all 0.4s cubic-bezier(0.4, 0, 0.2, 1);transform:scale(1);box-shadow:0 2px 8px rgba(167,134,255,0.1);" onmouseenter="this.style.transform='scale(1.02)';this.style.boxShadow='0 4px 16px rgba(167,134,255,0.2)'" onmouseleave="this.style.transform='scale(1)';this.style.boxShadow='0 2px 8px rgba(167,134,255,0.1)'">
           <div style="flex:1;min-width:0;">
-            <div style="color:#a786ff;font-size:0.7rem;font-weight:600;margin-bottom:0.1rem;white-space:nowrap;">Wallet Address</div>
-            <div style="color:#e0e6f7;font-size:0.75rem;font-family:monospace;word-break:break-all;cursor:pointer;padding:0.2rem;border-radius:4px;transition:all 0.2s;overflow:hidden;text-overflow:ellipsis;" id="user-status-wallet" title="Click to copy">Not Connected</div>
+            <div style="color:#a786ff;font-size:0.6rem;font-weight:600;margin-bottom:0.1rem;white-space:nowrap;">Wallet Address</div>
+            <div style="color:#e0e6f7;font-size:0.65rem;font-family:monospace;word-break:break-all;padding:0.1rem;border-radius:4px;overflow:hidden;text-overflow:ellipsis;cursor:pointer;" id="user-status-wallet" title="Click to copy">Not Connected</div>
           </div>
         </div>
 
         <!-- Likes Section -->
-        <div class="status-card likes-card" style="display:flex;align-items:center;gap:0.5rem;flex:1;min-width:80px;max-width:150px;background:rgba(40,167,69,0.1);border:1px solid rgba(40,167,69,0.3);border-radius:10px;padding:0.6rem;text-align:center;transition:all 0.4s cubic-bezier(0.4, 0, 0.2, 1);transform:scale(1);box-shadow:0 2px 8px rgba(40,167,69,0.1);" onmouseenter="this.style.transform='scale(1.02)';this.style.boxShadow='0 4px 16px rgba(40,167,69,0.2)'" onmouseleave="this.style.transform='scale(1)';this.style.boxShadow='0 2px 8px rgba(40,167,69,0.1)'">
-          <div style="color:#28a745;font-size:1rem;margin-bottom:0;flex-shrink:0;">👍</div>
-          <div style="flex:1;min-width:0;">
-            <div style="color:#28a745;font-size:0.8rem;font-weight:bold;font-family:monospace;overflow:hidden;text-overflow:ellipsis;" id="user-status-likes">0</div>
-            <div style="color:#b8c1ec;font-size:0.6rem;white-space:nowrap;">Likes</div>
-          </div>
+        <div class="status-card likes-card" style="display:flex;flex-direction:column;align-items:center;gap:0.15rem;flex:1;min-width:60px;max-width:100px;background:rgba(40,167,69,0.1);border:1px solid rgba(40,167,69,0.3);border-radius:8px;padding:0.4rem;text-align:center;transition:all 0.4s cubic-bezier(0.4, 0, 0.2, 1);transform:scale(1);box-shadow:0 2px 8px rgba(40,167,69,0.1);" onmouseenter="this.style.transform='scale(1.02)';this.style.boxShadow='0 4px 16px rgba(40,167,69,0.2)'" onmouseleave="this.style.transform='scale(1)';this.style.boxShadow='0 2px 8px rgba(40,167,69,0.1)'">
+          <div style="color:#28a745;font-size:0.65rem;font-weight:bold;font-family:monospace;overflow:hidden;text-overflow:ellipsis;" id="user-status-likes">0</div>
+          <div style="color:#28a745;font-size:0.8rem;flex-shrink:0;">👍</div>
         </div>
 
         <!-- Dislikes Section -->
-        <div class="status-card dislikes-card" style="display:flex;align-items:center;gap:0.5rem;flex:1;min-width:80px;max-width:150px;background:rgba(220,53,69,0.1);border:1px solid rgba(220,53,69,0.3);border-radius:10px;padding:0.6rem;text-align:center;transition:all 0.4s cubic-bezier(0.4, 0, 0.2, 1);transform:scale(1);box-shadow:0 2px 8px rgba(220,53,69,0.1);" onmouseenter="this.style.transform='scale(1.02)';this.style.boxShadow='0 4px 16px rgba(220,53,69,0.2)'" onmouseleave="this.style.transform='scale(1)';this.style.boxShadow='0 2px 8px rgba(220,53,69,0.1)'">
-          <div style="color:#dc3545;font-size:1rem;margin-bottom:0;flex-shrink:0;">👎</div>
-          <div style="flex:1;min-width:0;">
-            <div style="color:#dc3545;font-size:0.8rem;font-weight:bold;font-family:monospace;overflow:hidden;text-overflow:ellipsis;" id="user-status-dislikes">0</div>
-            <div style="color:#b8c1ec;font-size:0.6rem;white-space:nowrap;">Dislikes</div>
-          </div>
+        <div class="status-card dislikes-card" style="display:flex;flex-direction:column;align-items:center;gap:0.15rem;flex:1;min-width:60px;max-width:100px;background:rgba(220,53,69,0.1);border:1px solid rgba(220,53,69,0.3);border-radius:8px;padding:0.4rem;text-align:center;transition:all 0.4s cubic-bezier(0.4, 0, 0.2, 1);transform:scale(1);box-shadow:0 2px 8px rgba(220,53,69,0.1);" onmouseenter="this.style.transform='scale(1.02)';this.style.boxShadow='0 4px 16px rgba(220,53,69,0.2)'" onmouseleave="this.style.transform='scale(1)';this.style.boxShadow='0 2px 8px rgba(220,53,69,0.1)'">
+          <div style="color:#dc3545;font-size:0.65rem;font-weight:bold;font-family:monospace;overflow:hidden;text-overflow:ellipsis;" id="user-status-dislikes">0</div>
+          <div style="color:#dc3545;font-size:0.8rem;flex-shrink:0;">👎</div>
         </div>
       </div>
 
       <!-- Connection Status -->
       <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.1);text-align:center;">
         <div style="display:inline-flex;align-items:center;gap:0.5rem;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:20px;padding:0.5rem 1rem;">
-          <div style="width:8px;height:8px;background:#00ff88;border-radius:50%;animation:pulse 2s infinite;"></div>
+          <div id="user-status-pulse" style="width:8px;height:8px;background:#00ff88;border-radius:50%;animation:pulse 2s infinite;"></div>
           <span style="color:#00ff88;font-size:0.8rem;font-weight:600;" id="user-status-connection">Connected to Polygon Network</span>
         </div>
       </div>
@@ -2833,288 +2826,7 @@ Our Services:
     }
   </script>
 
-  <!-- User Status Bar Functionality -->
-  <script>
-    // Global function to update user status bar
-    window.updateUserStatusBar = async function() {
-      try {
-        const userStatusBar = document.getElementById('user-status-bar');
-        const userStatusId = document.getElementById('user-status-id');
-        const userStatusIdValue = document.getElementById('user-status-id-value');
-        const userStatusWallet = document.getElementById('user-status-wallet');
-        const userStatusLikes = document.getElementById('user-status-likes');
-        const userStatusDislikes = document.getElementById('user-status-dislikes');
-        const userStatusConnection = document.getElementById('user-status-connection');
 
-        if (!userStatusBar || !window.contractConfig || !window.contractConfig.signer) {
-          if (userStatusBar) userStatusBar.style.display = 'none';
-          return;
-        }
-
-        const address = window.contractConfig.signer.address;
-        let contract = window.contractConfig.contract;
-
-        if (!address || !contract) {
-          if (userStatusBar) userStatusBar.style.display = 'none';
-          return;
-        }
-
-        // Ensure contract has the correct ABI by creating a fresh instance if needed
-        if (!contract.users || !contract.getVoteStatus) {
-          try {
-            const { ethers } = await import('https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js');
-            contract = new ethers.Contract(window.contractConfig.contract.address, window.IAM_ABI, window.contractConfig.signer);
-          } catch (error) {
-            console.warn('Error creating fresh contract instance:', error);
-          }
-        }
-
-        // Show the status bar
-        userStatusBar.style.display = 'block';
-
-        // Update wallet address
-        const shortAddress = address.substring(0, 6) + '...' + address.substring(address.length - 4);
-        userStatusWallet.textContent = shortAddress;
-        userStatusWallet.title = address;
-
-        // Enhanced click to copy wallet address functionality
-        userStatusWallet.onclick = async function() {
-          try {
-            await navigator.clipboard.writeText(address);
-            
-            // Enhanced visual feedback
-            const originalText = this.textContent;
-            const originalColor = this.style.color;
-            const originalBackground = this.style.background;
-            
-            // Change text and add visual feedback
-            this.textContent = '✅ Copied!';
-            this.style.color = '#00ff88';
-            this.style.background = 'rgba(0, 255, 136, 0.1)';
-            this.style.border = '1px solid rgba(0, 255, 136, 0.5)';
-            
-            // Reset after 2 seconds
-            setTimeout(() => {
-              this.textContent = originalText;
-              this.style.color = originalColor;
-              this.style.background = originalBackground;
-              this.style.border = 'none';
-            }, 2000);
-          } catch (err) {
-            console.error('Error copying address:', err);
-            
-            // Error feedback
-            const originalText = this.textContent;
-            const originalColor = this.style.color;
-            
-            this.textContent = '❌ Error';
-            this.style.color = '#ff4444';
-            
-            setTimeout(() => {
-              this.textContent = originalText;
-              this.style.color = originalColor;
-            }, 2000);
-          }
-        };
-
-        // Get user index, vote status, and calculate star rating
-        try {
-          console.log('🔍 Debugging contract functions:', {
-            hasUsers: typeof contract.users === 'function',
-            hasGetVoteStatus: typeof contract.getVoteStatus === 'function',
-            contractAddress: contract.address,
-            userAddress: address
-          });
-          
-          // Get user data directly from the users mapping
-          const userData = await contract.users(address);
-          console.log('📊 User data from contract:', userData);
-          
-          if (userData && userData.index && userData.index > 0) {
-            // Format user ID as IAM00001 format
-            const formattedUserId = 'IAM' + userData.index.toString().padStart(5, '0');
-            userStatusIdValue.textContent = formattedUserId;
-            
-            // Get vote status using getVoteStatus function
-            const voteStatus = await contract.getVoteStatus(address);
-            console.log('🗳️ Vote status from contract:', voteStatus);
-            
-            if (voteStatus && voteStatus.length >= 2) {
-              userStatusLikes.textContent = voteStatus[0].toString();
-              userStatusDislikes.textContent = voteStatus[1].toString();
-            } else {
-              userStatusLikes.textContent = '0';
-              userStatusDislikes.textContent = '0';
-            }
-            
-            // Calculate star rating based on binaryPointsClaimed
-            const userStarRating = document.getElementById('user-star-rating');
-            const userStarCount = document.getElementById('user-star-count');
-            
-            console.log('🔍 Checking binaryPointsClaimed:', {
-              binaryPointsClaimed: userData.binaryPointsClaimed,
-              type: typeof userData.binaryPointsClaimed,
-              toString: userData.binaryPointsClaimed?.toString(),
-              isZero: userData.binaryPointsClaimed?.toString() === '0',
-              isNull: userData.binaryPointsClaimed === null,
-              isUndefined: userData.binaryPointsClaimed === undefined
-            });
-            
-                if (userData.binaryPointsClaimed && userData.binaryPointsClaimed.toString() !== '0') {
-      const points = parseInt(userData.binaryPointsClaimed.toString()); // Use points directly without conversion
-      console.log('⭐ User claimed points for star calculation:', points);
-              
-              let starCount = 0;
-              if (points >= 10000) {
-                starCount = 5;
-              } else if (points >= 1000) {
-                starCount = 4;
-              } else if (points >= 100) {
-                starCount = 3;
-              } else if (points >= 10) {
-                starCount = 2;
-              } else if (points >= 1) {
-                starCount = 1;
-              }
-              
-              // Display star icons instead of numbers - ensure exact count
-              userStarCount.innerHTML = ''; // Clear any existing content
-              for (let i = 0; i < starCount; i++) {
-                const starSpan = document.createElement('span');
-                starSpan.textContent = '⭐';
-                starSpan.style.color = '#ffd700';
-                starSpan.style.fontSize = '0.8rem';
-                userStarCount.appendChild(starSpan);
-              }
-              userStarRating.style.display = starCount > 0 ? 'flex' : 'none';
-              
-              console.log('⭐ Star rating calculated:', starCount, 'stars for', points, 'points');
-            } else {
-              console.log('⭐ No claimed points found, hiding star rating');
-              userStarCount.innerHTML = ''; // Clear any existing stars
-              userStarRating.style.display = 'none';
-            }
-            
-            // Dynamic card sizing based on content
-            updateCardSizes();
-          } else {
-            userStatusIdValue.textContent = 'Not Registered';
-            userStatusLikes.textContent = '0';
-            userStatusDislikes.textContent = '0';
-            
-            // Hide star rating for non-registered users
-            const userStarRating = document.getElementById('user-star-rating');
-            if (userStarRating) userStarRating.style.display = 'none';
-          }
-        } catch (error) {
-          console.warn('Error getting user data:', error);
-          userStatusIdValue.textContent = 'Error Loading';
-          userStatusLikes.textContent = '0';
-          userStatusDislikes.textContent = '0';
-          
-          // Hide star rating on error
-          const userStarRating = document.getElementById('user-star-rating');
-          if (userStarRating) userStarRating.style.display = 'none';
-          
-          // Update card sizes even on error
-          updateCardSizes();
-        }
-
-        // Update connection status
-        try {
-          const network = await window.contractConfig.provider.getNetwork();
-          if (network && network.chainId) {
-            const chainName = network.chainId === 137 ? 'Polygon' : 
-                             network.chainId === 1 ? 'Ethereum' : 
-                             network.chainId === 56 ? 'BSC' : 
-                             `Chain ${network.chainId}`;
-            userStatusConnection.textContent = `Connected to ${chainName} Network`;
-          }
-        } catch (error) {
-          console.warn('Error getting network info:', error);
-          userStatusConnection.textContent = 'Connected to Blockchain';
-        }
-
-        // Function to dynamically adjust card sizes based on content
-        function updateCardSizes() {
-          try {
-            // Get card elements
-            const userIdCard = document.querySelector('.user-id-card');
-            const walletCard = document.querySelector('.wallet-card');
-            const likesCard = document.querySelector('.likes-card');
-            const dislikesCard = document.querySelector('.dislikes-card');
-            
-            // Get content lengths
-            const userIdLength = userStatusIdValue.textContent.length;
-            const walletLength = userStatusWallet.textContent.length;
-            const likesLength = userStatusLikes.textContent.length;
-            const dislikesLength = userStatusDislikes.textContent.length;
-            
-            // Function to determine content length category
-            function getContentLengthCategory(length) {
-              if (length <= 5) return 'short';
-              if (length <= 10) return 'medium';
-              if (length <= 20) return 'long';
-              return 'very-long';
-            }
-            
-            // Update card data attributes for dynamic sizing
-            if (userIdCard) {
-              userIdCard.setAttribute('data-content-length', getContentLengthCategory(userIdLength));
-            }
-            
-            if (walletCard) {
-              walletCard.setAttribute('data-content-length', getContentLengthCategory(walletLength));
-            }
-            
-            if (likesCard) {
-              likesCard.setAttribute('data-content-length', getContentLengthCategory(likesLength));
-            }
-            
-            if (dislikesCard) {
-              dislikesCard.setAttribute('data-content-length', getContentLengthCategory(dislikesLength));
-            }
-            
-            // Add smooth transitions for size changes
-            [userIdCard, walletCard, likesCard, dislikesCard].forEach(card => {
-              if (card) {
-                card.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
-              }
-            });
-            
-            console.log('🎨 Card sizes updated based on content:', {
-              userId: getContentLengthCategory(userIdLength),
-              wallet: getContentLengthCategory(walletLength),
-              likes: getContentLengthCategory(likesLength),
-              dislikes: getContentLengthCategory(dislikesLength)
-            });
-            
-          } catch (error) {
-            console.warn('Error updating card sizes:', error);
-          }
-        }
-
-      } catch (error) {
-        console.error('Error updating user status bar:', error);
-        const userStatusBar = document.getElementById('user-status-bar');
-        if (userStatusBar) userStatusBar.style.display = 'none';
-      }
-    };
-
-    // Initialize user status bar on page load
-    document.addEventListener('DOMContentLoaded', function() {
-      // Initial check for wallet connection
-      setTimeout(() => {
-        if (typeof window.updateUserStatusBar === 'function') {
-          window.updateUserStatusBar();
-        }
-      }, 2000);
-
-      // Update user status bar periodically
-      setInterval(() => {
-        if (typeof window.updateUserStatusBar === 'function') {
-          window.updateUserStatusBar();
-        }
       }, 30000); // Update every 30 seconds
     });
 

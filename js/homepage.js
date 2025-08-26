@@ -461,6 +461,13 @@ async function disconnectWallet() {
         updateWalletButtonVisibility();
         updateConnectionStatus('info', 'کیف پول قطع شد');
         
+        // Update user status bar after wallet disconnection
+        if (typeof window.updateUserStatusBar === 'function') {
+            setTimeout(() => {
+                window.updateUserStatusBar();
+            }, 500);
+        }
+        
     } catch (error) {
         // console.error('Dashboard: Error disconnecting wallet:', error);
         updateConnectionStatus('error', 'خطا در قطع اتصال کیف پول');
@@ -682,6 +689,13 @@ async function handleWalletConnectSuccess(walletConnectProvider) {
         window.contractConfig.signer = signer;
         window.contractConfig.contract = contract;
         window.contractConfig.walletConnectProvider = walletConnectProvider;
+        
+        // Update user status bar after wallet connection
+        if (typeof window.updateUserStatusBar === 'function') {
+            setTimeout(() => {
+                window.updateUserStatusBar();
+            }, 1000);
+        }
         
         const address = await signer.getAddress();
         window.contractConfig.address = address;
