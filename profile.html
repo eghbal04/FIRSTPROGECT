@@ -143,40 +143,7 @@
         }
         .balance-label { color: #00ff88; font-weight: bold; font-size: 1.08em; }
         .balance-value { color: #fff; font-size: 1.18em; font-family: monospace; margin-top: 4px; display: block; }
-        #connect-wallet-btn {
-            display: block;
-            margin: 0 auto 24px auto;
-            padding: 12px 32px;
-            font-size: 1.13em;
-            background: linear-gradient(90deg,#00ff88,#a786ff);
-            color: #181c2a;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.2s, box-shadow 0.2s;
-            font-family: inherit;
-            font-weight: bold;
-            box-shadow: 0 2px 8px #00ff8822;
-        }
-        #connect-wallet-btn:hover {
-            background: linear-gradient(90deg,#a786ff,#00ff88);
-            box-shadow: 0 4px 16px #00ff8844;
-        }
-        
-        /* Responsive button styles */
-        @media (max-width: 768px) {
-            #connect-wallet-btn {
-                padding: 10px 24px;
-                font-size: 1.05em;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            #connect-wallet-btn {
-                padding: 8px 20px;
-                font-size: 1em;
-            }
-        }
+
         .loading, .error-message {
             text-align: center;
             margin: 24px 0;
@@ -219,7 +186,6 @@
     <script src="js/navbar.js"></script>
     <div class="container">
         <h1>User Profile</h1>
-        <button id="connect-wallet-btn">Connect Wallet</button>
         <div id="profile-content">
             <div class="loading">Loading information...</div>
         </div>
@@ -246,8 +212,9 @@
     function startWithdrawalTimers(user) {
         const claimTimer = document.getElementById('claim-timer');
         const cashbackTimer = document.getElementById('cashback-timer');
+        const upgradeTimer = document.getElementById('upgrade-timer');
         
-        if (!claimTimer || !cashbackTimer) return;
+        if (!claimTimer) return;
         
         // Commission withdrawal timer (every 12 hours)
         function updateClaimTimer() {
@@ -260,16 +227,20 @@
                 const hours = Math.floor(timeLeft / 3600);
                 const minutes = Math.floor((timeLeft % 3600) / 60);
                 const seconds = timeLeft % 60;
-                claimTimer.textContent = `(${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')})`;
+                claimTimer.textContent = `⏰ ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
                 claimTimer.style.color = '#ff4444';
+                claimTimer.style.fontWeight = 'bold';
             } else {
-                claimTimer.textContent = '(Ready)';
+                claimTimer.textContent = '✅ Ready';
                 claimTimer.style.color = '#00ff88';
+                claimTimer.style.fontWeight = 'bold';
             }
         }
         
-        // Cashback withdrawal timer (every 30 days)
+        // Cashback withdrawal timer (every 30 days) - only if button exists
         function updateCashbackTimer() {
+            if (!cashbackTimer) return;
+            
             const now = Math.floor(Date.now() / 1000);
             const lastCashback = user.lastMonthlyClaim ? Number(user.lastMonthlyClaim) : 0;
             const nextCashbackTime = lastCashback + (30 * 24 * 3600); // 30 days
@@ -279,21 +250,62 @@
                 const days = Math.floor(timeLeft / (24 * 3600));
                 const hours = Math.floor((timeLeft % (24 * 3600)) / 3600);
                 const minutes = Math.floor((timeLeft % 3600) / 60);
-                cashbackTimer.textContent = `(${days}days ${hours}hours)`;
+                
+                if (days > 0) {
+                    cashbackTimer.textContent = `⏰ ${days}d ${hours}h ${minutes}m`;
+                } else if (hours > 0) {
+                    cashbackTimer.textContent = `⏰ ${hours}h ${minutes}m`;
+                } else {
+                    cashbackTimer.textContent = `⏰ ${minutes}m`;
+                }
                 cashbackTimer.style.color = '#ff4444';
+                cashbackTimer.style.fontWeight = 'bold';
             } else {
-                cashbackTimer.textContent = '(Ready)';
+                cashbackTimer.textContent = '✅ Ready';
                 cashbackTimer.style.color = '#00ff88';
+                cashbackTimer.style.fontWeight = 'bold';
+            }
+        }
+        
+        // Upgrade cap timer (every 4 weeks = 28 days)
+        function updateUpgradeTimer() {
+            if (!upgradeTimer) return;
+            
+            const now = Math.floor(Date.now() / 1000);
+            const lastUpgrade = user.upgradeTime ? Number(user.upgradeTime) : 0;
+            const nextUpgradeTime = lastUpgrade + (28 * 24 * 3600); // 28 days (4 weeks)
+            const timeLeft = nextUpgradeTime - now;
+            
+            if (timeLeft > 0) {
+                const days = Math.floor(timeLeft / (24 * 3600));
+                const hours = Math.floor((timeLeft % (24 * 3600)) / 3600);
+                const minutes = Math.floor((timeLeft % 3600) / 60);
+                
+                if (days > 0) {
+                    upgradeTimer.textContent = `⏰ ${days}d ${hours}h`;
+                } else if (hours > 0) {
+                    upgradeTimer.textContent = `⏰ ${hours}h ${minutes}m`;
+                } else {
+                    upgradeTimer.textContent = `⏰ ${minutes}m`;
+                }
+                upgradeTimer.style.color = '#ff4444';
+                upgradeTimer.style.fontWeight = 'bold';
+            } else {
+                upgradeTimer.textContent = '✅ Ready';
+                upgradeTimer.style.color = '#00ff88';
+                upgradeTimer.style.fontWeight = 'bold';
             }
         }
         
         // Initialize timers
         updateClaimTimer();
         updateCashbackTimer();
+        updateUpgradeTimer();
         
         // Update every second
         setInterval(updateClaimTimer, 1000);
         setInterval(updateCashbackTimer, 1000);
+        setInterval(updateUpgradeTimer, 1000);
     }
     async function loadProfile() {
         const content = document.getElementById('profile-content');
@@ -370,23 +382,31 @@
             // Condition for monthly cashback button activation
             let canMonthlyCashback = false;
             let monthlyMsg = '';
-            const now = Math.floor(Date.now() / 1000);
-            const lastMonthly = user.lastMonthlyClaim ? Number(user.lastMonthlyClaim) : 0;
-            const oneMonth = 30 * 24 * 60 * 60;
-            // Check for empty child (left or right)
-            let hasEmptyChild = false;
-            if (typeof contract.indexToAddress === 'function') {
-                const leftAddr = await contract.indexToAddress(BigInt(user.index) * 2n);
-                const rightAddr = await contract.indexToAddress(BigInt(user.index) * 2n + 1n);
-                if (!leftAddr || leftAddr === '0x0000000000000000000000000000000000000000' || !rightAddr || rightAddr === '0x0000000000000000000000000000000000000000') {
-                    hasEmptyChild = true;
-                }
-            }
-            if (hasEmptyChild && (now - lastMonthly >= oneMonth)) {
-                canMonthlyCashback = true;
+            
+            // Check if user is active (has an index)
+            if (!user.index || BigInt(user.index) <= 0n) {
+                monthlyMsg = 'You must be an active user to access cashback withdrawal.';
             } else {
-                if (!hasEmptyChild) monthlyMsg = 'To withdraw monthly cashback, you must have at least one empty child position.';
-                else if (now - lastMonthly < oneMonth) monthlyMsg = 'At least one month must have passed since the last monthly withdrawal.';
+                const now = Math.floor(Date.now() / 1000);
+                const lastMonthly = user.lastMonthlyClaim ? Number(user.lastMonthlyClaim) : 0;
+                const oneMonth = 30 * 24 * 60 * 60;
+                
+                // Check for empty child (left or right)
+                let hasEmptyChild = false;
+                if (typeof contract.indexToAddress === 'function') {
+                    const leftAddr = await contract.indexToAddress(BigInt(user.index) * 2n);
+                    const rightAddr = await contract.indexToAddress(BigInt(user.index) * 2n + 1n);
+                    if (!leftAddr || leftAddr === '0x0000000000000000000000000000000000000000' || !rightAddr || rightAddr === '0x0000000000000000000000000000000000000000') {
+                        hasEmptyChild = true;
+                    }
+                }
+                
+                if (hasEmptyChild && (now - lastMonthly >= oneMonth)) {
+                    canMonthlyCashback = true;
+                } else {
+                    if (!hasEmptyChild) monthlyMsg = 'To withdraw monthly cashback, you must have at least one empty child position.';
+                    else if (now - lastMonthly < oneMonth) monthlyMsg = 'At least one month must have passed since the last monthly withdrawal.';
+                }
             }
             // نمایش
             content.innerHTML = `
@@ -407,9 +427,10 @@
                 </div>
                 <div class="withdrawal-buttons" style="display:flex;gap:1.2rem;justify-content:center;margin-bottom:1.5rem;flex-wrap:wrap;">
                   <button id="claim-btn" title="Commission withdrawal is only possible once every 12 hours and if you have points to withdraw. If you don't have points or 12 hours haven't passed yet, withdrawal is not possible." style="background:linear-gradient(90deg,#00ff88,#a786ff);color:#181c2a;font-weight:bold;border:none;border-radius:10px;padding:0.9em 2.2em;font-size:1.08em;cursor:pointer;box-shadow:0 2px 8px #00ff8840;display:inline-flex;align-items:center;gap:0.6em;transition:box-shadow 0.2s,transform 0.2s;"><span style='font-size:1.2em;'>💸</span> Withdraw Commission <span id="claim-timer" style="font-size:0.9em;margin-right:0.5em;"></span></button>
-                  <button id="monthly-cashback-btn" title="Cashback withdrawal is only possible once every 30 days, with at least one empty child position and up to the deposit limit. If both positions are full or 30 days haven't passed or the cashback limit is reached, withdrawal is not possible." style="background:linear-gradient(90deg,#a786ff,#00ff88);color:#181c2a;font-weight:bold;border:none;border-radius:10px;padding:0.9em 2.2em;font-size:1.08em;cursor:pointer;box-shadow:0 2px 8px #a786ff40;display:inline-flex;align-items:center;gap:0.6em;transition:box-shadow 0.2s,transform 0.2s;"><span style='font-size:1.2em;'>📆</span> Cashback <span id="cashback-timer" style="font-size:0.9em;margin-right:0.5em;"></span></button>
-                  <button id="upgrade-cap-btn" title="Upgrade binary points cap using IAM tokens. The more you upgrade, the higher your points cap becomes." style="background:linear-gradient(90deg,#ff6b35,#ff8e53);color:#181c2a;font-weight:bold;border:none;border-radius:10px;padding:0.9em 2.2em;font-size:1.08em;cursor:pointer;box-shadow:0 2px 8px #ff6b3540;display:inline-flex;align-items:center;gap:0.6em;transition:box-shadow 0.2s,transform 0.2s;"><span style='font-size:1.2em;'>📈</span> Upgrade Cap</button>
+                  ${canMonthlyCashback ? `<button id="monthly-cashback-btn" title="Cashback withdrawal is only possible once every 30 days, with at least one empty child position and up to the deposit limit. If both positions are full or 30 days haven't passed or the cashback limit is reached, withdrawal is not possible." style="background:linear-gradient(90deg,#a786ff,#00ff88);color:#181c2a;font-weight:bold;border:none;border-radius:10px;padding:0.9em 2.2em;font-size:1.08em;cursor:pointer;box-shadow:0 2px 8px #a786ff40;display:inline-flex;align-items:center;gap:0.6em;transition:box-shadow 0.2s,transform 0.2s;"><span style='font-size:1.2em;'>📆</span> Cashback <span id="cashback-timer" style="font-size:0.9em;margin-right:0.5em;"></span></button>` : ''}
+                  <button id="upgrade-cap-btn" title="Upgrade binary points cap using IAM tokens. The more you upgrade, the higher your points cap becomes." style="background:linear-gradient(90deg,#ff6b35,#ff8e53);color:#181c2a;font-weight:bold;border:none;border-radius:10px;padding:0.9em 2.2em;font-size:1.08em;cursor:pointer;box-shadow:0 2px 8px #ff6b3540;display:inline-flex;align-items:center;gap:0.6em;transition:box-shadow 0.2s,transform 0.2s;"><span style='font-size:1.2em;'>📈</span> Upgrade Cap <span id="upgrade-timer" style="font-size:0.9em;margin-right:0.5em;"></span></button>
                 </div>
+                ${!canMonthlyCashback && monthlyMsg ? `<div style="background:rgba(167,134,255,0.08);border:1.5px solid #a786ff;border-radius:10px;padding:1em 1.2em;margin-bottom:1.5rem;text-align:center;font-size:1.07em;color:#a786ff;box-shadow:0 2px 8px #a786ff22;"><span style='font-size:1.2em;'>📆</span> <b>Cashback Not Available:</b><br>${monthlyMsg}</div>` : ''}
                 <div id="monthly-cashback-msg" style="display:none;color:#ff4444;text-align:center;margin-bottom:1.2rem;font-size:1.05em;transition:opacity 0.3s;"></div>
                 
                                                    <!-- Upgrade Cap Modal -->
@@ -597,15 +618,10 @@
              content.innerHTML = `<div class="error-message">Error: ${e.message || e}</div>`;
          }
     }
-    document.getElementById('connect-wallet-btn').onclick = async function() {
-        await loadProfile();
-        this.style.display = 'none';
-    };
     window.addEventListener('DOMContentLoaded', async function() {
         if (typeof window.ethereum !== 'undefined') {
             const accounts = await window.ethereum.request({ method: 'eth_accounts' });
             if (accounts && accounts.length > 0) {
-                document.getElementById('connect-wallet-btn').style.display = 'none';
                 await loadProfile();
             }
         }
