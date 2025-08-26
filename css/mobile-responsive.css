@@ -1,0 +1,678 @@
+/* Mobile Responsive CSS - Comprehensive Mobile Optimization */
+
+/* Base Mobile Responsive Variables */
+:root {
+  --mobile-padding: 1rem;
+  --mobile-margin: 0.5rem;
+  --mobile-font-size: 0.9rem;
+  --mobile-border-radius: 12px;
+  --mobile-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* Global Mobile Responsive Rules */
+* {
+  box-sizing: border-box;
+}
+
+/* Protect IAM Navbar from mobile responsive interference */
+.IAM-navbar {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 10000 !important;
+  width: 100vw !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.IAM-navbar-container {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  min-height: 72px !important;
+}
+
+.IAM-userbar {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.8rem !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.IAM-userbar .pill {
+  display: inline-block !important;
+  white-space: nowrap !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Ensure body margin for IAM navbar */
+body {
+  margin-top: 84px !important;
+  padding-top: 0 !important;
+}
+
+@media (max-width: 480px) {
+  body {
+    margin-top: 64px !important;
+  }
+  
+  .IAM-navbar-container {
+    min-height: 64px !important;
+  }
+}
+
+/* Mobile-First Approach - Base styles for mobile */
+@media (max-width: 768px) {
+  /* Typography adjustments for mobile */
+  body {
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+  }
+
+  h1 {
+    font-size: 1.8rem !important;
+    line-height: 1.2;
+    margin-bottom: 1rem !important;
+  }
+
+  h2 {
+    font-size: 1.5rem !important;
+    line-height: 1.3;
+    margin-bottom: 0.8rem !important;
+  }
+
+  h3 {
+    font-size: 1.3rem !important;
+    line-height: 1.4;
+    margin-bottom: 0.6rem !important;
+  }
+
+  p {
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 0.8rem;
+  }
+
+  /* Container adjustments */
+  .container,
+  .about-section,
+  .register-form,
+  .transfer-ownership-container,
+  .utility-container {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 1rem auto !important;
+    padding: 1rem !important;
+    border-radius: var(--mobile-border-radius) !important;
+  }
+
+  /* Form elements mobile optimization */
+  input, select, textarea, button {
+    font-size: 16px !important; /* Prevents zoom on iOS */
+    padding: 0.8rem !important;
+    border-radius: 8px !important;
+    margin-bottom: 0.8rem !important;
+  }
+
+  /* Button mobile optimization */
+  .btn, button {
+    min-height: 44px !important; /* Touch target minimum */
+    padding: 0.8rem 1.2rem !important;
+    font-size: 1rem !important;
+    border-radius: 8px !important;
+    margin: 0.3rem 0 !important;
+  }
+
+  /* Grid and flex adjustments */
+  .grid, .flex, .about-cards, .utility-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
+  }
+
+  /* Card mobile optimization */
+  .card, .about-card, .utility-card {
+    padding: 1rem !important;
+    margin-bottom: 1rem !important;
+    border-radius: var(--mobile-border-radius) !important;
+  }
+
+  /* Navigation mobile optimization - Exclude IAM navbar */
+  nav:not(.IAM-navbar), .navbar:not(.IAM-navbar) {
+    padding: 0.5rem 1rem !important;
+  }
+
+  nav:not(.IAM-navbar) ul, .navbar:not(.IAM-navbar) ul {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+  }
+
+  /* Table mobile optimization */
+  table {
+    font-size: 0.9rem !important;
+    width: 100% !important;
+    overflow-x: auto !important;
+  }
+
+  table th, table td {
+    padding: 0.5rem 0.3rem !important;
+    min-width: 80px !important;
+  }
+
+  /* Modal and popup mobile optimization */
+  .modal, .popup, #user-popup {
+    width: 95% !important;
+    max-width: 400px !important;
+    margin: 1rem auto !important;
+    border-radius: var(--mobile-border-radius) !important;
+  }
+
+  /* Status bar mobile optimization */
+  #online-session-bubble {
+    position: fixed !important;
+    top: 1rem !important;
+    right: 1rem !important;
+    left: 1rem !important;
+    width: auto !important;
+    max-width: none !important;
+    padding: 0.8rem 1rem !important;
+    font-size: 0.9rem !important;
+    border-radius: 12px !important;
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+    text-align: center !important;
+  }
+
+  /* Tree view mobile optimization */
+  .tree-container, .tree-viewport {
+    padding: 1rem !important;
+    margin: 1rem !important;
+    border-radius: var(--mobile-border-radius) !important;
+  }
+
+  .tree-header {
+    flex-direction: column !important;
+    gap: 1rem !important;
+    text-align: center !important;
+  }
+
+  .tree-stats {
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+  }
+
+  /* Profile mobile optimization */
+  .profile-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.5rem !important;
+  }
+
+  .balance-box {
+    flex-direction: column !important;
+    gap: 0.8rem !important;
+  }
+
+  .balance-item {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  /* Reports mobile optimization */
+  .controls-row {
+    flex-direction: column !important;
+    gap: 0.8rem !important;
+  }
+
+  #event-type-select, #report-search, #time-range-select {
+    width: 100% !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  /* Transfer ownership mobile optimization */
+  .input-row {
+    flex-direction: column !important;
+    gap: 0.8rem !important;
+  }
+
+  .btn-icon {
+    width: 100% !important;
+    text-align: center !important;
+  }
+
+  /* Utility tools mobile optimization */
+  .utility-header {
+    padding: 1.5rem 1rem !important;
+    margin-bottom: 2rem !important;
+  }
+
+  .utility-header h1 {
+    font-size: 2rem !important;
+  }
+
+  /* Three buttons row mobile optimization */
+  .three-buttons-row {
+    flex-direction: column !important;
+    gap: 0.8rem !important;
+  }
+
+  .three-btn {
+    width: 100% !important;
+    padding: 1rem !important;
+    font-size: 1rem !important;
+  }
+
+  /* Hamburger menu mobile optimization */
+  .hamburger-menu {
+    display: block !important;
+  }
+
+  .nav-menu {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background: rgba(24, 28, 42, 0.95) !important;
+    backdrop-filter: blur(10px) !important;
+    z-index: 1000 !important;
+    transform: translateX(-100%) !important;
+    transition: transform 0.3s ease !important;
+  }
+
+  .nav-menu.active {
+    transform: translateX(0) !important;
+  }
+
+  .nav-menu ul {
+    flex-direction: column !important;
+    padding: 2rem 1rem !important;
+    gap: 1rem !important;
+  }
+
+  .nav-menu li {
+    width: 100% !important;
+  }
+
+  .nav-menu a {
+    display: block !important;
+    padding: 1rem !important;
+    border-radius: 8px !important;
+    background: rgba(167, 134, 255, 0.1) !important;
+    border: 1px solid rgba(167, 134, 255, 0.2) !important;
+  }
+
+  /* Close button for mobile menu */
+  .nav-close {
+    position: absolute !important;
+    top: 1rem !important;
+    right: 1rem !important;
+    background: rgba(255, 68, 68, 0.2) !important;
+    border: 1px solid rgba(255, 68, 68, 0.3) !important;
+    color: #ff4444 !important;
+    padding: 0.5rem !important;
+    border-radius: 50% !important;
+    width: 40px !important;
+    height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+  }
+}
+
+/* Small Mobile Devices (320px - 480px) */
+@media (max-width: 480px) {
+  body {
+    font-size: 14px;
+  }
+
+  h1 {
+    font-size: 1.6rem !important;
+  }
+
+  h2 {
+    font-size: 1.3rem !important;
+  }
+
+  h3 {
+    font-size: 1.1rem !important;
+  }
+
+  .container,
+  .about-section,
+  .register-form,
+  .transfer-ownership-container,
+  .utility-container {
+    padding: 0.8rem !important;
+    margin: 0.5rem auto !important;
+  }
+
+  .card, .about-card, .utility-card {
+    padding: 0.8rem !important;
+  }
+
+  .btn, button {
+    padding: 0.7rem 1rem !important;
+    font-size: 0.9rem !important;
+  }
+
+  input, select, textarea {
+    padding: 0.7rem !important;
+    font-size: 16px !important;
+  }
+
+  /* Status bubble for very small screens */
+  #online-session-bubble {
+    top: 0.5rem !important;
+    right: 0.5rem !important;
+    left: 0.5rem !important;
+    padding: 0.6rem 0.8rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  .bubble-text, .bubble-timer, .bubble-link {
+    font-size: 0.8rem !important;
+  }
+
+  /* Tree view for very small screens */
+  .tree-container {
+    padding: 0.8rem !important;
+    margin: 0.5rem !important;
+  }
+
+  .tree-title {
+    font-size: 1.4rem !important;
+  }
+
+  .tree-stats {
+    font-size: 0.8rem !important;
+  }
+
+  .tree-stats span {
+    padding: 0.3rem 0.6rem !important;
+  }
+}
+
+/* Medium Mobile Devices (481px - 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+  .container,
+  .about-section,
+  .register-form,
+  .transfer-ownership-container,
+  .utility-container {
+    max-width: 95% !important;
+    padding: 1.2rem !important;
+  }
+
+  .card, .about-card, .utility-card {
+    padding: 1.2rem !important;
+  }
+
+  /* Two column layout for medium screens */
+  .about-cards,
+  .utility-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1rem !important;
+  }
+
+  .three-buttons-row {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.8rem !important;
+  }
+
+  .three-btn:nth-child(3) {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+/* Large Mobile Devices (769px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .container,
+  .about-section,
+  .register-form,
+  .transfer-ownership-container,
+  .utility-container {
+    max-width: 90% !important;
+    padding: 1.5rem !important;
+  }
+
+  .about-cards,
+  .utility-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 1.2rem !important;
+  }
+
+  .three-buttons-row {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 1rem !important;
+  }
+
+  .three-btn {
+    flex: 1 !important;
+  }
+}
+
+/* Landscape Mobile Orientation */
+@media (max-width: 768px) and (orientation: landscape) {
+  .container,
+  .about-section,
+  .register-form,
+  .transfer-ownership-container,
+  .utility-container {
+    margin: 0.5rem auto !important;
+    padding: 0.8rem !important;
+  }
+
+  h1 {
+    font-size: 1.5rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  h2 {
+    font-size: 1.2rem !important;
+    margin-bottom: 0.4rem !important;
+  }
+
+  .card, .about-card, .utility-card {
+    padding: 0.8rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  /* Status bubble landscape adjustment */
+  #online-session-bubble {
+    top: 0.3rem !important;
+    right: 0.3rem !important;
+    left: 0.3rem !important;
+    padding: 0.5rem 0.8rem !important;
+    font-size: 0.8rem !important;
+  }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+  /* Larger touch targets */
+  .btn, button, a {
+    min-height: 44px !important;
+    min-width: 44px !important;
+  }
+
+  /* Remove hover effects on touch devices */
+  .btn:hover, button:hover, a:hover {
+    transform: none !important;
+    box-shadow: inherit !important;
+  }
+
+  /* Active state for touch feedback */
+  .btn:active, button:active, a:active {
+    transform: scale(0.98) !important;
+    opacity: 0.8 !important;
+  }
+
+  /* Scroll optimization for touch */
+  .tree-viewport,
+  .modal-content,
+  .popup-content {
+    -webkit-overflow-scrolling: touch !important;
+    scroll-behavior: smooth !important;
+  }
+}
+
+/* High DPI Display Optimizations */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  /* Sharper borders and shadows */
+  .card, .btn, input, select, textarea {
+    border-width: 0.5px !important;
+  }
+
+  /* Optimized shadows for high DPI */
+  .card, .modal, .popup {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .nav-menu, .hamburger-menu, #online-session-bubble, .modal, .popup {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .container, .card, .about-section {
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+  }
+}
+
+/* Accessibility Improvements */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --mobile-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* Focus Management for Mobile */
+.btn:focus, button:focus, input:focus, select:focus, textarea:focus {
+  outline: 2px solid #00ff88 !important;
+  outline-offset: 2px !important;
+}
+
+/* Loading States for Mobile */
+.loading {
+  opacity: 0.7 !important;
+  pointer-events: none !important;
+}
+
+.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid #00ff88;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Mobile-specific utility classes */
+.mobile-hidden {
+  display: none !important;
+}
+
+.mobile-visible {
+  display: block !important;
+}
+
+.mobile-full-width {
+  width: 100% !important;
+}
+
+.mobile-center {
+  text-align: center !important;
+}
+
+.mobile-padding {
+  padding: var(--mobile-padding) !important;
+}
+
+.mobile-margin {
+  margin: var(--mobile-margin) !important;
+}
+
+/* Responsive text utilities */
+.text-mobile-small {
+  font-size: 0.8rem !important;
+}
+
+.text-mobile-normal {
+  font-size: 1rem !important;
+}
+
+.text-mobile-large {
+  font-size: 1.2rem !important;
+}
+
+/* Mobile grid utilities */
+.mobile-grid-1 {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+}
+
+.mobile-grid-2 {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+}
+
+.mobile-flex-column {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.mobile-flex-row {
+  display: flex !important;
+  flex-direction: row !important;
+}
+
+/* Mobile spacing utilities */
+.mobile-gap-small {
+  gap: 0.5rem !important;
+}
+
+.mobile-gap-normal {
+  gap: 1rem !important;
+}
+
+.mobile-gap-large {
+  gap: 1.5rem !important;
+}

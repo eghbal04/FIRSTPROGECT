@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="css/smooth-transitions.css">
     <link rel="stylesheet" href="css/mobile-user-popup.css">
     <link rel="stylesheet" href="css/modern-theme.css">
+    <link rel="stylesheet" href="css/mobile-responsive.css">
 
     <!-- Loading ethers.js version 6 from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
@@ -26,6 +27,9 @@
     <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
     <!-- Loading WalletConnect Handler -->
     <script src="js/walletconnect-handler.js?v=5.7"></script>
+    <script src="js/mobile-navigation.js"></script>
+    <script src="js/mobile-optimizer.js"></script>
+
 
       <!-- Loading WalletConnect UMD locally -->
   <script src="js/walletconnect-v1.8.0.js"></script>
@@ -75,72 +79,10 @@
 
 </head>
 <body>
-  <div id="online-session-bubble" style="display:none;">
-          <span class="bubble-text">Online session is in progress! 🚀</span>
-    <span class="bubble-timer" id="bubble-timer"></span>
-    <a href="learning.html" class="bubble-link" target="_blank">Go to Class</a>
-    <span class="bubble-close" id="bubble-close">×</span>
-  </div>
-  <div id="bubble-mini" style="display:none;">
-    <span class="bubble-mini-icon">🚀</span>
-  </div>
 
 
-  <script>
-    function formatCountdown(ms) {
-      if (ms <= 0) return '00:00:00';
-      let s = Math.floor(ms / 1000);
-      let h = Math.floor(s / 3600);
-      s = s % 3600;
-      let m = Math.floor(s / 60);
-      s = s % 60;
-      return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-    }
-    function showSessionBubble() {
-      const info = window.sessionInfo;
-      if (!info || !info.active) return;
-      const bubble = document.getElementById('online-session-bubble');
-      const mini = document.getElementById('bubble-mini');
-      const timer = document.getElementById('bubble-timer');
-      const link = bubble.querySelector('.bubble-link');
-      link.href = info.link || 'learning.html';
-      bubble.style.display = 'flex';
-      mini.style.display = 'none';
-      // Countdown
-      function updateTimer() {
-        const now = Date.now();
-        if (now < info.startTime) {
-          timer.textContent = 'Session starts in: ' + formatCountdown(info.startTime - now);
-        } else if (now < info.endTime) {
-          timer.textContent = 'Time remaining: ' + formatCountdown(info.endTime - now);
-        } else {
-          timer.textContent = 'Session ended';
-        }
-      }
-      updateTimer();
-      window._bubbleTimerInterval = setInterval(updateTimer, 1000);
-    }
-    function hideSessionBubble() {
-      document.getElementById('online-session-bubble').style.display = 'none';
-      document.getElementById('bubble-mini').style.display = 'flex';
-      if (window._bubbleTimerInterval) clearInterval(window._bubbleTimerInterval);
-    }
-    function showMiniBubble() {
-      document.getElementById('bubble-mini').style.display = 'flex';
-      document.getElementById('online-session-bubble').style.display = 'none';
-    }
-    function expandMiniBubble() {
-      showSessionBubble();
-    }
-    // Close event
-    document.addEventListener('DOMContentLoaded', function() {
-      if (window.sessionInfo && window.sessionInfo.active) {
-        showSessionBubble();
-      }
-      document.getElementById('bubble-close').onclick = hideSessionBubble;
-      document.getElementById('bubble-mini').onclick = expandMiniBubble;
-    });
-  </script>
+
+
 
   
   
