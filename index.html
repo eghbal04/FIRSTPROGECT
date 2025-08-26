@@ -21,6 +21,56 @@
     <link rel="stylesheet" href="css/modern-theme.css">
     <link rel="stylesheet" href="css/mobile-responsive.css">
 
+    <style>
+      /* User Status Bar Animations */
+      @keyframes pulse {
+        0% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.5; transform: scale(1.1); }
+        100% { opacity: 1; transform: scale(1); }
+      }
+
+      /* Mobile Responsive for User Status Bar */
+      @media (max-width: 768px) {
+        .user-status-container {
+          padding: 0.8rem !important;
+        }
+        
+        .user-status-container > div:first-child {
+          gap: 0.5rem !important;
+          overflow-x: auto !important;
+          padding-bottom: 0.5rem !important;
+        }
+        
+        .user-status-container > div:first-child > div {
+          min-width: 100px !important;
+          flex-shrink: 0 !important;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .user-status-container {
+          padding: 0.6rem !important;
+        }
+        
+        .user-status-container > div:first-child {
+          gap: 0.4rem !important;
+        }
+        
+        .user-status-container > div:first-child > div {
+          min-width: 80px !important;
+          padding: 0.4rem !important;
+        }
+        
+        .user-status-container > div:first-child > div > div:first-child {
+          font-size: 0.8rem !important;
+        }
+        
+        .user-status-container > div:first-child > div > div > div {
+          font-size: 0.6rem !important;
+        }
+      }
+    </style>
+
     <!-- Loading ethers.js version 6 from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
     <!-- Loading WalletConnect Provider from official CDN -->
@@ -87,6 +137,57 @@
   
   
   <div id="main-dashboard" class="page-section" style="position:relative;overflow:visible;">
+
+    <!-- User Status Bar -->
+    <div id="user-status-bar" class="user-status-container" style="display:none;background:linear-gradient(135deg,rgba(35,41,70,0.95),rgba(24,28,42,0.95));border:1px solid rgba(0,255,136,0.2);border-radius:16px;padding:1rem;margin:1rem auto;max-width:1400px;backdrop-filter:blur(10px);box-shadow:0 8px 32px rgba(0,0,0,0.3);">
+      <div style="display:flex;flex-wrap:nowrap;gap:0.8rem;align-items:center;justify-content:space-between;overflow-x:auto;">
+        <!-- User ID Section -->
+        <div style="display:flex;align-items:center;gap:0.5rem;flex:1;min-width:120px;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:10px;padding:0.6rem;">
+          <div style="background:linear-gradient(135deg,#00ff88,#a786ff);border-radius:50%;width:35px;height:35px;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:bold;color:#181c2a;box-shadow:0 2px 8px rgba(0,255,136,0.3);">
+            <span id="user-status-id">-</span>
+          </div>
+          <div>
+            <div style="color:#00ff88;font-size:0.7rem;font-weight:600;margin-bottom:0.1rem;">User ID</div>
+            <div style="color:#e0e6f7;font-size:0.8rem;font-weight:bold;font-family:monospace;" id="user-status-id-value">Not Connected</div>
+          </div>
+        </div>
+
+        <!-- Wallet Address Section -->
+        <div style="display:flex;align-items:center;gap:0.5rem;flex:2;min-width:200px;background:rgba(167,134,255,0.1);border:1px solid rgba(167,134,255,0.3);border-radius:10px;padding:0.6rem;">
+          <div style="color:#a786ff;font-size:1rem;margin-bottom:0;">💳</div>
+          <div style="flex:1;">
+            <div style="color:#a786ff;font-size:0.7rem;font-weight:600;margin-bottom:0.1rem;">Wallet Address</div>
+            <div style="color:#e0e6f7;font-size:0.75rem;font-family:monospace;word-break:break-all;cursor:pointer;padding:0.2rem;border-radius:4px;transition:all 0.2s;" id="user-status-wallet" title="Click to copy">Not Connected</div>
+          </div>
+        </div>
+
+        <!-- Likes Section -->
+        <div style="display:flex;align-items:center;gap:0.5rem;flex:1;min-width:80px;background:rgba(40,167,69,0.1);border:1px solid rgba(40,167,69,0.3);border-radius:10px;padding:0.6rem;text-align:center;">
+          <div style="color:#28a745;font-size:1rem;margin-bottom:0;">👍</div>
+          <div>
+            <div style="color:#28a745;font-size:0.8rem;font-weight:bold;font-family:monospace;" id="user-status-likes">0</div>
+            <div style="color:#b8c1ec;font-size:0.6rem;">Likes</div>
+          </div>
+        </div>
+
+        <!-- Dislikes Section -->
+        <div style="display:flex;align-items:center;gap:0.5rem;flex:1;min-width:80px;background:rgba(220,53,69,0.1);border:1px solid rgba(220,53,69,0.3);border-radius:10px;padding:0.6rem;text-align:center;">
+          <div style="color:#dc3545;font-size:1rem;margin-bottom:0;">👎</div>
+          <div>
+            <div style="color:#dc3545;font-size:0.8rem;font-weight:bold;font-family:monospace;" id="user-status-dislikes">0</div>
+            <div style="color:#b8c1ec;font-size:0.6rem;">Dislikes</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Connection Status -->
+      <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.1);text-align:center;">
+        <div style="display:inline-flex;align-items:center;gap:0.5rem;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:20px;padding:0.5rem 1rem;">
+          <div style="width:8px;height:8px;background:#00ff88;border-radius:50%;animation:pulse 2s infinite;"></div>
+          <span style="color:#00ff88;font-size:0.8rem;font-weight:600;" id="user-status-connection">Connected to Polygon Network</span>
+        </div>
+      </div>
+    </div>
 
     <div class="dashboard-cards" style="display:flex;justify-content:center;flex-wrap:wrap;gap:1rem;max-width:1400px;margin:0 auto;">
       <!-- AI Assistant will be inserted here by JavaScript -->
@@ -206,74 +307,7 @@
 
       </div>
 
-      <!-- Popular Indexes Expandable Box -->
-      <div id="popular-indexes-section" class="modern-card" style="margin-top: 2rem; padding: 1.5rem; border: 2px solid rgba(0,255,136,0.3); border-radius: 15px; background: linear-gradient(135deg, rgba(26,31,46,0.9), rgba(42,47,62,0.9));">
-        <div style="text-align: center; margin-bottom: 1.5rem;">
-          <h3 style="color: #00ff88; font-size: 1.3rem; font-weight: bold; margin: 0; margin-bottom: 0.5rem;">🌟 Most Popular Indexes</h3>
-          <p style="color: #ccc; font-size: 0.9rem; margin: 0;">List of most popular network users based on positive votes</p>
-        </div>
-        
-        <!-- Expandable Content -->
-        <div id="popular-indexes-content" style="display: none;">
-          <div style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin-bottom: 1.5rem;">
-            <!-- Popular Indexes List -->
-            <div style="flex: 1; min-width: 300px; background: rgba(0,0,0,0.3); border-radius: 12px; padding: 1rem; border: 1px solid rgba(0,255,136,0.2);">
-              <div style="text-align: center; margin-bottom: 1rem;">
-                <h4 style="color: #00ff88; font-size: 1.1rem; font-weight: bold; margin: 0;">🏆 Most Popular Rankings</h4>
-              </div>
-              <div id="popular-indexes-list" style="max-height: 300px; overflow-y: auto;">
-                <div style="text-align: center; color: #888; font-size: 0.9rem; padding: 2rem;">
-                  Loading most popular indexes...
-                </div>
-              </div>
-            </div>
-            
-            <!-- Voting Section -->
-            <div style="flex: 1; min-width: 300px; background: rgba(0,0,0,0.3); border-radius: 12px; padding: 1rem; border: 1px solid rgba(167,134,255,0.2);">
-              <div style="text-align: center; margin-bottom: 1rem;">
-                <h4 style="color: #a786ff; font-size: 1.1rem; font-weight: bold; margin: 0;">🗳️ Voting</h4>
-              </div>
-              
-              <div style="display: flex; flex-direction: column; gap: 1rem;">
-                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                  <label style="color: #ccc; font-size: 0.9rem; font-weight: bold;">Target Index:</label>
-                  <input type="number" id="popular-vote-index" placeholder="Enter index number" 
-                         style="background: rgba(0,0,0,0.3); border: 1px solid rgba(167,134,255,0.3); border-radius: 8px; padding: 0.8rem; color: #fff; text-align: center; font-size: 0.9rem; font-family: monospace;">
-                </div>
-                
-                <div style="display: flex; gap: 0.5rem; justify-content: center;">
-                  <button onclick="voteForPopularIndex(true)" 
-                          style="background: linear-gradient(135deg,#00ff88,#00cc6a); color: #1a1f2e; border: none; border-radius: 8px; padding: 0.8rem 1.2rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; font-size: 0.9rem; flex: 1;">
-                    👍 Like
-                  </button>
-                  <button onclick="voteForPopularIndex(false)" 
-                          style="background: linear-gradient(135deg,#ff4444,#cc3333); color: #fff; border: none; border-radius: 8px; padding: 0.8rem 1.2rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; font-size: 0.9rem; flex: 1;">
-                    👎 Dislike
-                  </button>
-                </div>
-                
-                <div id="popular-vote-result" style="text-align: center; padding: 0.5rem; border-radius: 8px; font-size: 0.9rem; min-height: 1.5em;"></div>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Refresh Button -->
-          <div style="text-align: center;">
-            <button onclick="refreshPopularIndexes()" 
-                    style="background: linear-gradient(135deg,#a786ff,#8a6fff); color: #fff; border: none; border-radius: 8px; padding: 0.8rem 1.5rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; font-size: 0.9rem;">
-              🔄 Refresh List
-            </button>
-          </div>
-        </div>
-        
-        <!-- Toggle Button -->
-        <div style="text-align: center;">
-          <button onclick="togglePopularIndexes()" id="popular-indexes-toggle" 
-                  style="background: linear-gradient(135deg,#00ff88,#00cc6a); color: #1a1f2e; border: none; border-radius: 8px; padding: 0.8rem 2rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; font-size: 1rem;">
-            📊 Show Most Popular
-          </button>
-        </div>
-      </div>
+
 
       <!-- Voting System Section (Hidden by default) -->
       <div id="voting-system-section" class="modern-card" style="margin-top: 2rem; padding: 1.5rem; display: none;">
@@ -2666,8 +2700,193 @@ Our Services:
               console.warn('⚠️ Error refreshing SwapManager:', error);
             }
           }
-          // Update index dashboard status bar
-          try { if (typeof window.indexStatusTryUpdate === 'function') window.indexStatusTryUpdate(); } catch(_) {}
+                  // Update index dashboard status bar
+        try { if (typeof window.indexStatusTryUpdate === 'function') window.indexStatusTryUpdate(); } catch(_) {}
+        
+        // Update user status bar
+        try { if (typeof window.updateUserStatusBar === 'function') window.updateUserStatusBar(); } catch(_) {}
+        }, 1000);
+        
+        return result;
+      };
+    }
+  </script>
+
+  <!-- User Status Bar Functionality -->
+  <script>
+    // Global function to update user status bar
+    window.updateUserStatusBar = async function() {
+      try {
+        const userStatusBar = document.getElementById('user-status-bar');
+        const userStatusId = document.getElementById('user-status-id');
+        const userStatusIdValue = document.getElementById('user-status-id-value');
+        const userStatusWallet = document.getElementById('user-status-wallet');
+        const userStatusLikes = document.getElementById('user-status-likes');
+        const userStatusDislikes = document.getElementById('user-status-dislikes');
+        const userStatusConnection = document.getElementById('user-status-connection');
+
+        if (!userStatusBar || !window.contractConfig || !window.contractConfig.signer) {
+          if (userStatusBar) userStatusBar.style.display = 'none';
+          return;
+        }
+
+        const address = window.contractConfig.signer.address;
+        let contract = window.contractConfig.contract;
+
+        if (!address || !contract) {
+          if (userStatusBar) userStatusBar.style.display = 'none';
+          return;
+        }
+
+        // Ensure contract has the correct ABI by creating a fresh instance if needed
+        if (!contract.users || !contract.getVoteStatus) {
+          try {
+            const { ethers } = await import('https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js');
+            contract = new ethers.Contract(window.contractConfig.contract.address, window.IAM_ABI, window.contractConfig.signer);
+          } catch (error) {
+            console.warn('Error creating fresh contract instance:', error);
+          }
+        }
+
+        // Show the status bar
+        userStatusBar.style.display = 'block';
+
+        // Update wallet address
+        const shortAddress = address.substring(0, 6) + '...' + address.substring(address.length - 4);
+        userStatusWallet.textContent = shortAddress;
+        userStatusWallet.title = address;
+
+        // Enhanced click to copy wallet address functionality
+        userStatusWallet.onclick = async function() {
+          try {
+            await navigator.clipboard.writeText(address);
+            
+            // Enhanced visual feedback
+            const originalText = this.textContent;
+            const originalColor = this.style.color;
+            const originalBackground = this.style.background;
+            
+            // Change text and add visual feedback
+            this.textContent = '✅ Copied!';
+            this.style.color = '#00ff88';
+            this.style.background = 'rgba(0, 255, 136, 0.1)';
+            this.style.border = '1px solid rgba(0, 255, 136, 0.5)';
+            
+            // Reset after 2 seconds
+            setTimeout(() => {
+              this.textContent = originalText;
+              this.style.color = originalColor;
+              this.style.background = originalBackground;
+              this.style.border = 'none';
+            }, 2000);
+          } catch (err) {
+            console.error('Error copying address:', err);
+            
+            // Error feedback
+            const originalText = this.textContent;
+            const originalColor = this.style.color;
+            
+            this.textContent = '❌ Error';
+            this.style.color = '#ff4444';
+            
+            setTimeout(() => {
+              this.textContent = originalText;
+              this.style.color = originalColor;
+            }, 2000);
+          }
+        };
+
+        // Get user index and vote status
+        try {
+          console.log('🔍 Debugging contract functions:', {
+            hasUsers: typeof contract.users === 'function',
+            hasGetVoteStatus: typeof contract.getVoteStatus === 'function',
+            contractAddress: contract.address,
+            userAddress: address
+          });
+          
+          // Get user data directly from the users mapping
+          const userData = await contract.users(address);
+          console.log('📊 User data from contract:', userData);
+          
+          if (userData && userData.index && userData.index > 0) {
+            // Format user ID as IAM00001 format
+            const formattedUserId = 'IAM' + userData.index.toString().padStart(5, '0');
+            userStatusIdValue.textContent = formattedUserId;
+            
+            // Get vote status using getVoteStatus function
+            const voteStatus = await contract.getVoteStatus(address);
+            console.log('🗳️ Vote status from contract:', voteStatus);
+            
+            if (voteStatus && voteStatus.length >= 2) {
+              userStatusLikes.textContent = voteStatus[0].toString();
+              userStatusDislikes.textContent = voteStatus[1].toString();
+            } else {
+              userStatusLikes.textContent = '0';
+              userStatusDislikes.textContent = '0';
+            }
+          } else {
+            userStatusIdValue.textContent = 'Not Registered';
+            userStatusLikes.textContent = '0';
+            userStatusDislikes.textContent = '0';
+          }
+        } catch (error) {
+          console.warn('Error getting user data:', error);
+          userStatusIdValue.textContent = 'Error Loading';
+          userStatusLikes.textContent = '0';
+          userStatusDislikes.textContent = '0';
+        }
+
+        // Update connection status
+        try {
+          const network = await window.contractConfig.provider.getNetwork();
+          if (network && network.chainId) {
+            const chainName = network.chainId === 137 ? 'Polygon' : 
+                             network.chainId === 1 ? 'Ethereum' : 
+                             network.chainId === 56 ? 'BSC' : 
+                             `Chain ${network.chainId}`;
+            userStatusConnection.textContent = `Connected to ${chainName} Network`;
+          }
+        } catch (error) {
+          console.warn('Error getting network info:', error);
+          userStatusConnection.textContent = 'Connected to Blockchain';
+        }
+
+      } catch (error) {
+        console.error('Error updating user status bar:', error);
+        const userStatusBar = document.getElementById('user-status-bar');
+        if (userStatusBar) userStatusBar.style.display = 'none';
+      }
+    };
+
+    // Initialize user status bar on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initial check for wallet connection
+      setTimeout(() => {
+        if (typeof window.updateUserStatusBar === 'function') {
+          window.updateUserStatusBar();
+        }
+      }, 2000);
+
+      // Update user status bar periodically
+      setInterval(() => {
+        if (typeof window.updateUserStatusBar === 'function') {
+          window.updateUserStatusBar();
+        }
+      }, 30000); // Update every 30 seconds
+    });
+
+    // Update user status bar when wallet connects
+    if (window.connectWallet) {
+      const originalConnectWallet = window.connectWallet;
+      window.connectWallet = async function() {
+        const result = await originalConnectWallet();
+        
+        // Update user status bar after connection
+        setTimeout(() => {
+          if (typeof window.updateUserStatusBar === 'function') {
+            window.updateUserStatusBar();
+          }
         }, 1000);
         
         return result;
@@ -4078,6 +4297,79 @@ document.addEventListener('DOMContentLoaded', function() {
   });
   
   console.log('✅ تم مدرن نارنجی و بنفش اعمال شد');
+});
+</script>
+
+<!-- Most Popular Indexes Section - Always Expanded at Bottom -->
+<div id="popular-indexes-section" class="modern-card" style="margin-top: 2rem; margin-bottom: 2rem; padding: 1.5rem; border: 2px solid rgba(0,255,136,0.3); border-radius: 15px; background: linear-gradient(135deg, rgba(26,31,46,0.9), rgba(42,47,62,0.9));">
+  <div style="text-align: center; margin-bottom: 1.5rem;">
+    <h3 style="color: #00ff88; font-size: 1.3rem; font-weight: bold; margin: 0; margin-bottom: 0.5rem;">🌟 Most Popular Indexes</h3>
+    <p style="color: #ccc; font-size: 0.9rem; margin: 0;">List of most popular network users based on positive votes</p>
+  </div>
+  
+  <!-- Always Visible Content -->
+  <div id="popular-indexes-content" style="display: block;">
+    <div style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin-bottom: 1.5rem;">
+      <!-- Popular Indexes List -->
+      <div style="flex: 1; min-width: 300px; background: rgba(0,0,0,0.3); border-radius: 12px; padding: 1rem; border: 1px solid rgba(0,255,136,0.2);">
+        <div style="text-align: center; margin-bottom: 1rem;">
+          <h4 style="color: #00ff88; font-size: 1.1rem; font-weight: bold; margin: 0;">🏆 Most Popular Rankings</h4>
+        </div>
+        <div id="popular-indexes-list" style="max-height: 300px; overflow-y: auto;">
+          <div style="text-align: center; color: #888; font-size: 0.9rem; padding: 2rem;">
+            Loading most popular indexes...
+          </div>
+        </div>
+      </div>
+      
+      <!-- Voting Section -->
+      <div style="flex: 1; min-width: 300px; background: rgba(0,0,0,0.3); border-radius: 12px; padding: 1rem; border: 1px solid rgba(167,134,255,0.2);">
+        <div style="text-align: center; margin-bottom: 1rem;">
+          <h4 style="color: #a786ff; font-size: 1.1rem; font-weight: bold; margin: 0;">🗳️ Voting</h4>
+        </div>
+        
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+          <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <label style="color: #ccc; font-size: 0.9rem; font-weight: bold;">Target Index:</label>
+            <input type="number" id="popular-vote-index" placeholder="Enter index number" 
+                   style="background: rgba(0,0,0,0.3); border: 1px solid rgba(167,134,255,0.3); border-radius: 8px; padding: 0.8rem; color: #fff; text-align: center; font-size: 0.9rem; font-family: monospace;">
+          </div>
+          
+          <div style="display: flex; gap: 0.5rem; justify-content: center;">
+            <button onclick="voteForPopularIndex(true)" 
+                    style="background: linear-gradient(135deg,#00ff88,#00cc6a); color: #1a1f2e; border: none; border-radius: 8px; padding: 0.8rem 1.2rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; font-size: 0.9rem; flex: 1;">
+              👍 Like
+            </button>
+            <button onclick="voteForPopularIndex(false)" 
+                    style="background: linear-gradient(135deg,#ff4444,#cc3333); color: #fff; border: none; border-radius: 8px; padding: 0.8rem 1.2rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; font-size: 0.9rem; flex: 1;">
+              👎 Dislike
+            </button>
+          </div>
+          
+          <div id="popular-vote-result" style="text-align: center; padding: 0.5rem; border-radius: 8px; font-size: 0.9rem; min-height: 1.5em;"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Refresh Button -->
+    <div style="text-align: center;">
+      <button onclick="refreshPopularIndexes()" 
+              style="background: linear-gradient(135deg,#a786ff,#8a6fff); color: #fff; border: none; border-radius: 8px; padding: 0.8rem 1.5rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; font-size: 0.9rem;">
+        🔄 Refresh List
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Auto-load popular indexes when page loads -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Auto-load popular indexes after a short delay
+  setTimeout(() => {
+    if (typeof loadPopularIndexes === 'function') {
+      loadPopularIndexes();
+    }
+  }, 2000);
 });
 </script>
 
