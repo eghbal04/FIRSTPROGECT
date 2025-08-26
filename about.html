@@ -1,111 +1,379 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>About Us | IAM - PHOENIX</title>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/mobile-responsive.css">
   <script src="js/mobile-navigation.js"></script>
   <script src="js/mobile-optimizer.js"></script>
   <style>
     body {
-      background: linear-gradient(135deg, #181c2a 60%, #232946 100%);
-      color: #fff;
-      font-family: 'Noto Sans Arabic', 'Montserrat', sans-serif;
+      background: linear-gradient(135deg, #181c2a 0%, #232946 100%);
+      color: #e0e6f7;
+      font-family: 'Inter', sans-serif;
       margin: 0;
       min-height: 100vh;
+      line-height: 1.6;
     }
+
+    .about-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+
+    .about-header {
+      text-align: center;
+      margin-bottom: 3rem;
+      padding: 2rem 0;
+    }
+
+    .about-header h1 {
+      color: #00ff88;
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      text-shadow: 0 2px 8px rgba(0, 255, 136, 0.3);
+    }
+
+    .about-header p {
+      color: #b8c1ec;
+      font-size: 1.1rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
     .about-section {
-      background: linear-gradient(135deg, #232946 60%, #181c2a 100%);
-      border-radius: 18px;
-      box-shadow: 0 4px 24px rgba(0,255,136,0.10);
-      margin: 4rem auto 2rem auto;
-      padding: 2.2rem 1.5rem;
-      max-width: 900px;
-      width: 100%;
-      direction: rtl;
+      background: rgba(35, 41, 70, 0.8);
+      border-radius: 20px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      border: 1px solid rgba(0, 255, 136, 0.1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
     }
+
     .about-section h2 {
       color: #00ff88;
-      font-size: 1.5rem;
-      font-weight: bold;
-      margin-bottom: 1.2rem;
-      text-align: center;
-      font-family: 'Montserrat', 'Noto Sans Arabic', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
-    .about-features, .about-stats, .about-contact {
+
+    .about-section h3 {
+      color: #a786ff;
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
       margin-top: 2rem;
     }
-    .about-features h3, .about-contact h3 {
-      color: #a786ff;
-      margin-bottom: 0.7rem;
+
+    .about-content {
+      color: #e0e6f7;
+      font-size: 1rem;
+      line-height: 1.7;
     }
-    .about-features ul {
+
+    .about-content p {
+      margin-bottom: 1.5rem;
+      text-align: justify;
+    }
+
+    .about-content ul {
+      margin: 1rem 0;
+      padding-left: 1.5rem;
+    }
+
+    .about-content li {
+      margin-bottom: 0.8rem;
       color: #b8c1ec;
-      text-align: right;
-      margin: 0;
-      padding-right: 1rem;
     }
-    /* Cards grid for key info blocks */
-    .about-cards {
+
+    .about-content strong {
+      color: #00ff88;
+      font-weight: 600;
+    }
+
+    .about-grid {
       display: grid;
-      gap: 1rem;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      margin-top: 1.2rem;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin: 2rem 0;
     }
+
     .about-card {
-      background: rgba(24,28,42,0.6);
-      border: 1px solid rgba(167,134,255,0.25);
-      border-radius: 14px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-      padding: 1rem;
+      background: rgba(24, 28, 42, 0.6);
+      border: 1px solid rgba(167, 134, 255, 0.2);
+      border-radius: 16px;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
     }
-    .about-stats { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-top: 1.6rem; }
+
+    .about-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(167, 134, 255, 0.4);
+      box-shadow: 0 8px 24px rgba(167, 134, 255, 0.1);
+    }
+
+    .about-card h3 {
+      color: #a786ff;
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .about-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+
     .about-stat {
-      background: rgba(0,255,136,0.07);
+      background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(167, 134, 255, 0.1));
+      border: 1px solid rgba(0, 255, 136, 0.2);
       border-radius: 12px;
-      padding: 1.2rem 1.5rem;
-      min-width: 120px;
+      padding: 1.5rem;
       text-align: center;
-      color: #fff;
-      box-shadow: 0 2px 12px rgba(0,255,136,0.07);
+      transition: all 0.3s ease;
     }
+
+    .about-stat:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 255, 136, 0.15);
+    }
+
     .about-stat .icon {
       font-size: 2rem;
-      margin-bottom: 0.3rem;
+      margin-bottom: 0.5rem;
     }
+
     .about-stat .number {
-      font-size: 1.2rem;
-      font-weight: bold;
+      font-size: 1.5rem;
+      font-weight: 700;
       color: #00ff88;
+      margin-bottom: 0.5rem;
     }
+
     .about-stat .label {
       font-size: 0.9rem;
       color: #b8c1ec;
     }
-    .about-contact .contact-info {
+
+    .contract-info {
+      background: rgba(0, 255, 136, 0.05);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .contract-info h3 {
+      color: #00ff88;
+      margin-bottom: 1rem;
+    }
+
+    .contract-address {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      border-radius: 8px;
+      padding: 0.8rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      color: #00ff88;
+      word-break: break-all;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .contract-address:hover {
+      background: rgba(0, 255, 136, 0.1);
+    }
+
+    .copy-btn {
+      background: linear-gradient(135deg, #00ff88, #a786ff);
+      color: #181c2a;
+      border: none;
+      border-radius: 6px;
+      padding: 0.5rem 1rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-left: 0.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .copy-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 255, 136, 0.3);
+    }
+
+    .faq-section {
+      background: rgba(167, 134, 255, 0.05);
+      border: 1px solid rgba(167, 134, 255, 0.2);
+      border-radius: 16px;
+      padding: 2rem;
+      margin: 2rem 0;
+    }
+
+    .faq-item {
+      margin-bottom: 1.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(167, 134, 255, 0.1);
+    }
+
+    .faq-item:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+
+    .faq-question {
+      color: #a786ff;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .faq-answer {
+      color: #b8c1ec;
+      line-height: 1.6;
+    }
+
+    .contact-section {
+      background: linear-gradient(135deg, rgba(0, 255, 136, 0.05), rgba(167, 134, 255, 0.05));
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      border-radius: 16px;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .contact-info {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
-      margin-top: 1rem;
-      color: #fff;
-      font-size: 1rem;
+      gap: 1rem;
+      margin-top: 1.5rem;
     }
-    .about-contact .contact-item {
+
+    .contact-item {
       display: flex;
       align-items: center;
-      gap: 0.7rem;
+      justify-content: center;
+      gap: 0.8rem;
+      color: #e0e6f7;
+      font-size: 1rem;
     }
-    .about-contact .icon {
+
+    .contact-item .icon {
       font-size: 1.2rem;
       color: #00ff88;
     }
-    @media (max-width: 860px) {
-      .about-section { padding: 1.1rem 0.8rem; max-width: 96vw; }
-      .about-section h2 { font-size: 1.35rem; }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      .about-container {
+        padding: 1rem;
+      }
+
+      .about-header h1 {
+        font-size: 2rem;
+      }
+
+      .about-header p {
+        font-size: 1rem;
+      }
+
+      .about-section {
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .about-section h2 {
+        font-size: 1.5rem;
+      }
+
+      .about-section h3 {
+        font-size: 1.2rem;
+      }
+
+      .about-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .about-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.8rem;
+      }
+
+      .about-stat {
+        padding: 1rem;
+      }
+
+      .about-stat .number {
+        font-size: 1.2rem;
+      }
+
+      .about-stat .label {
+        font-size: 0.8rem;
+      }
+
+      .contract-address {
+        font-size: 0.8rem;
+        padding: 0.6rem;
+      }
+
+      .copy-btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.7rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .about-header h1 {
+        font-size: 1.8rem;
+      }
+
+      .about-section {
+        padding: 1rem;
+      }
+
+      .about-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .contact-item {
+        font-size: 0.9rem;
+      }
+    }
+
+    /* Animation */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .about-section {
+      animation: fadeInUp 0.6s ease-out;
+    }
+
+    .about-card {
+      animation: fadeInUp 0.6s ease-out;
+    }
+
+    .about-stat {
+      animation: fadeInUp 0.6s ease-out;
     }
   </style>
 </head>
@@ -113,524 +381,368 @@
   <script src="js/config.js"></script>
   <script src="js/navbar.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
+  
+  <div class="about-container">
+    <!-- Header Section -->
+    <div class="about-header">
+      <h1>🚀 About IAM PHOENIX</h1>
+      <p>A revolutionary Network Marketing platform built on blockchain technology, creating a decentralized ecosystem where transparency, security, and growth are guaranteed by smart contracts.</p>
+    </div>
+
+    <!-- Main About Section -->
+    <div class="about-section">
+      <h2>🌟 What is IAM PHOENIX?</h2>
+      <div class="about-content">
+        <p>
+          IAM PHOENIX is a cutting-edge <strong>Network Marketing platform</strong> that leverages blockchain technology and Web3 infrastructure to create a transparent, secure, and decentralized ecosystem. Our platform eliminates traditional intermediaries and creates direct, trustless relationships between participants through smart contracts.
+        </p>
+        <p>
+          Built on the Polygon blockchain, IAM PHOENIX combines the power of network marketing with the security and transparency of blockchain technology. All network marketing activities, rewards, and commissions are automatically calculated and distributed through audited smart contracts, ensuring complete transparency and eliminating the possibility of fraud or manipulation.
+        </p>
+      </div>
+    </div>
+
+    <!-- Contract Information -->
+    <div class="about-section">
+      <h2>📋 Contract Information</h2>
+      <div class="contract-info">
+        <h3>Smart Contract Details</h3>
+        <p><strong>Network:</strong> Polygon Mainnet (ChainId: 137)</p>
+        <p><strong>Reference Token:</strong> DAI (18 decimals)</p>
+        <p><strong>IAM Contract Address:</strong></p>
+        <div class="contract-address" id="contract-address" title="Click to copy">
+          Loading contract address...
+        </div>
+        <button class="copy-btn" id="copy-address-btn">📋 Copy Address</button>
+        <p><strong>DAI Token Address:</strong></p>
+        <div class="contract-address" id="dai-address" title="Click to copy">
+          Loading DAI address...
+        </div>
+        <button class="copy-btn" id="copy-dai-btn">📋 Copy DAI Address</button>
+        <p><strong>Blockchain Explorer:</strong> <a id="polygonscan-link" href="#" target="_blank" style="color: #a786ff;">View on Polygonscan</a></p>
+      </div>
+    </div>
+
+    <!-- Key Features Grid -->
+    <div class="about-section">
+      <h2>✨ Key Features</h2>
+      <div class="about-grid">
+        <div class="about-card">
+          <h3>🔗 Web3 Technology</h3>
+          <ul>
+            <li>Built on next-generation internet protocols</li>
+            <li>Decentralized network marketing without intermediaries</li>
+            <li>Smart contract security and automation</li>
+            <li>User sovereignty and asset control</li>
+          </ul>
+        </div>
+
+        <div class="about-card">
+          <h3>🌐 Network Marketing</h3>
+          <ul>
+            <li>Binary tree network structure</li>
+            <li>Automated reward distribution</li>
+            <li>Transparent referral tracking</li>
+            <li>Fair commission system</li>
+          </ul>
+        </div>
+
+        <div class="about-card">
+          <h3>💎 Token Economy</h3>
+          <ul>
+            <li>IAM tokens as primary currency</li>
+            <li>Dynamic price calculation</li>
+            <li>Token burning mechanism</li>
+            <li>Liquidity and trading support</li>
+          </ul>
+        </div>
+
+        <div class="about-card">
+          <h3>🛍️ Vendor Marketplace</h3>
+          <ul>
+            <li>Individual vendor pages</li>
+            <li>IAM token transactions</li>
+            <li>Automated commission system</li>
+            <li>Secure payment processing</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trading Rules -->
+    <div class="about-section">
+      <h2>💱 Trading Rules & Fees</h2>
+      <div class="about-content">
+        <h3>Buy/Sell Rules</h3>
+        <ul>
+          <li><strong>Minimum Purchase:</strong> 1 DAI</li>
+          <li><strong>Minimum Sale:</strong> 1 IAM</li>
+          <li><strong>Buy Cap:</strong> <span id="about-max-buy">—</span> (Dynamic based on contract balance)</li>
+          <li><strong>Sell Cap:</strong> No restriction (sell full balance)</li>
+        </ul>
+
+        <h3>Fee Structure</h3>
+        <ul>
+          <li><strong>Developer Fee:</strong> 0%</li>
+          <li><strong>Backing Fee:</strong> <span id="about-fee-backing">—</span> (Dynamic based on contract balance)</li>
+          <li><strong>Total Fee:</strong> <span id="about-fee-total">—</span></li>
+          <li><strong>Token Burn:</strong> 5% during purchases</li>
+        </ul>
+
+        <h3>Price Calculation</h3>
+        <p>Token price is calculated dynamically based on contract DAI balance and total supply, ensuring fair and transparent pricing.</p>
+      </div>
+    </div>
+
+    <!-- Network Marketing Features -->
+    <div class="about-section">
+      <h2>🌳 Network Marketing System</h2>
+      <div class="about-content">
+        <h3>Registration & Activation</h3>
+        <ul>
+          <li>Smart contract-based registration</li>
+          <li>Binary tree network structure</li>
+          <li>Dynamic registration pricing</li>
+          <li>Free registration option (burn tokens)</li>
+        </ul>
+
+        <h3>Rewards & Cashback</h3>
+        <ul>
+          <li>Binary claim with 12-hour cooldown</li>
+          <li>Monthly cashback up to 3% of deposited amount</li>
+          <li>Referral rewards (10% of registration fee)</li>
+          <li>Binary point system (max 100 points per user)</li>
+        </ul>
+
+        <h3>Binary Point System</h3>
+        <ul>
+          <li>Earn up to 2 points per purchase cycle</li>
+          <li>4-week cooldown between point earnings</li>
+          <li>Point value based on contract token balance</li>
+          <li>Automatic reward distribution</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Security Features -->
+    <div class="about-section">
+      <h2>🔒 Security & Protection</h2>
+      <div class="about-content">
+        <ul>
+          <li><strong>Smart Contract Security:</strong> All operations secured by audited smart contracts</li>
+          <li><strong>Reentrancy Protection:</strong> Advanced security measures against attacks</li>
+          <li><strong>Automated Operations:</strong> No human intervention in critical functions</li>
+          <li><strong>Transparent Transactions:</strong> All activities visible on blockchain</li>
+          <li><strong>Fund Protection:</strong> Users maintain full control of assets</li>
+          <li><strong>Voting System:</strong> Community-driven quality control</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Live Statistics -->
+    <div class="about-section">
+      <h2>📊 Live Statistics</h2>
+      <div class="about-stats">
+        <div class="about-stat">
+          <div class="icon">👛</div>
+          <div class="number" id="about-wallets-count">—</div>
+          <div class="label">Registered Wallets</div>
+        </div>
+        <div class="about-stat">
+          <div class="icon">💰</div>
+          <div class="number" id="about-dai-balance">—</div>
+          <div class="label">Contract DAI Balance</div>
+        </div>
+        <div class="about-stat">
+          <div class="icon">💱</div>
+          <div class="number" id="about-price-1dai">—</div>
+          <div class="label">1 DAI = IAM</div>
+        </div>
+        <div class="about-stat">
+          <div class="icon">💱</div>
+          <div class="number" id="about-price-1IAM">—</div>
+          <div class="label">1 IAM = DAI</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <div class="faq-section">
+      <h2>❓ Frequently Asked Questions</h2>
+      <div class="faq-item">
+        <div class="faq-question">How do I buy IAM tokens?</div>
+        <div class="faq-answer">Use the buyTokens() function with DAI. Minimum 1 DAI required. Dynamic buy cap based on contract balance.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question">How do I sell IAM tokens?</div>
+        <div class="faq-answer">Use the sellTokens() function. Minimum 1 IAM required. No sell cap restriction.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question">What are the fees?</div>
+        <div class="faq-answer">0% developer fee + dynamic backing fee (1-2% based on contract balance). Fees are automatically calculated.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question">How do I register in the network?</div>
+        <div class="faq-answer">Use registerAndActivate() with a referrer address. Dynamic registration price based on total wallets.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question">Can I register for free?</div>
+        <div class="faq-answer">Yes, use registerFree() by burning tokens equivalent to 23 DAI value.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question">How do binary points work?</div>
+        <div class="faq-answer">Earn up to 2 points per purchase cycle with 4-week cooldown. Maximum 100 points per user.</div>
+      </div>
+    </div>
+
+    <!-- Contact Section -->
+    <div class="contact-section">
+      <h2>📞 Contact Us</h2>
+      <p>For questions and support, please contact us through any of the following channels:</p>
+      <div class="contact-info">
+        <div class="contact-item">
+          <span class="icon">📧</span>
+          <span>support@IAMPHOENIX.com</span>
+        </div>
+        <div class="contact-item">
+          <span class="icon">📱</span>
+          <span>@IAMPHOENIX_support</span>
+        </div>
+        <div class="contact-item">
+          <span class="icon">🌐</span>
+          <span>www.IAMPHOENIX.com</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/floating-token-card.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Update contract address from config
+      // Copy functionality
+      function copyToClipboard(text, buttonId) {
+        navigator.clipboard.writeText(text).then(function() {
+          const btn = document.getElementById(buttonId);
+          if (btn) {
+            const originalText = btn.textContent;
+            btn.textContent = '✅ Copied!';
+            btn.style.background = 'linear-gradient(135deg, #00ff88, #00ff88)';
+            setTimeout(() => {
+              btn.textContent = originalText;
+              btn.style.background = 'linear-gradient(135deg, #00ff88, #a786ff)';
+            }, 2000);
+          }
+        }).catch(function(err) {
+          console.error('Error copying: ', err);
+          const btn = document.getElementById(buttonId);
+          if (btn) {
+            btn.textContent = '❌ Error';
+            btn.style.background = 'linear-gradient(135deg, #ff4444, #ff4444)';
+            setTimeout(() => {
+              btn.textContent = '📋 Copy Address';
+              btn.style.background = 'linear-gradient(135deg, #00ff88, #a786ff)';
+            }, 2000);
+          }
+        });
+      }
+
+      // Update contract addresses
       const contractAddressElement = document.getElementById('contract-address');
+      const daiAddressElement = document.getElementById('dai-address');
       const copyAddressBtn = document.getElementById('copy-address-btn');
+      const copyDaiBtn = document.getElementById('copy-dai-btn');
       
       if (contractAddressElement && typeof IAM_ADDRESS !== 'undefined') {
         contractAddressElement.textContent = IAM_ADDRESS;
         
-        // Add copy functionality
-        function copyToClipboard(text) {
-          navigator.clipboard.writeText(text).then(function() {
-            // Show success feedback
-            const originalText = copyAddressBtn.textContent;
-            copyAddressBtn.textContent = '✅';
-            copyAddressBtn.style.color = '#00ff88';
-            setTimeout(() => {
-              copyAddressBtn.textContent = originalText;
-              copyAddressBtn.style.color = '#00ff88';
-            }, 2000);
-          }).catch(function(err) {
-            console.error('Error copying: ', err);
-            copyAddressBtn.textContent = '❌';
-            copyAddressBtn.style.color = '#ff4757';
-            setTimeout(() => {
-              copyAddressBtn.textContent = '📋';
-              copyAddressBtn.style.color = '#00ff88';
-            }, 2000);
-          });
-        }
-        
-        // Add click event to copy button
         if (copyAddressBtn) {
           copyAddressBtn.addEventListener('click', function() {
-            copyToClipboard(IAM_ADDRESS);
+            copyToClipboard(IAM_ADDRESS, 'copy-address-btn');
           });
         }
         
-        // Add click event to address span
         contractAddressElement.addEventListener('click', function() {
-          copyToClipboard(IAM_ADDRESS);
+          copyToClipboard(IAM_ADDRESS, 'copy-address-btn');
         });
+      }
+
+      if (daiAddressElement && typeof DAI_ADDRESS !== 'undefined') {
+        daiAddressElement.textContent = DAI_ADDRESS;
         
-      } else if (contractAddressElement) {
-        contractAddressElement.textContent = 'Error loading contract address';
-        contractAddressElement.style.color = '#ff4757';
+        if (copyDaiBtn) {
+          copyDaiBtn.addEventListener('click', function() {
+            copyToClipboard(DAI_ADDRESS, 'copy-dai-btn');
+          });
+        }
+        
+        daiAddressElement.addEventListener('click', function() {
+          copyToClipboard(DAI_ADDRESS, 'copy-dai-btn');
+        });
       }
 
-      // === Populate dynamic About data ===
-      (async function populateAboutData(){
+      // Update Polygonscan link
+      const scanLink = document.getElementById('polygonscan-link');
+      if (scanLink && typeof IAM_ADDRESS !== 'undefined') {
+        scanLink.href = 'https://polygonscan.com/address/' + IAM_ADDRESS;
+      }
+
+      // Live Statistics Update
+      async function updateAboutStats() {
         try {
-          // DAI address
-          const daiEl = document.getElementById('dai-address');
-          const copyDaiBtn = document.getElementById('copy-dai-btn');
-          if (daiEl && window.DAI_ADDRESS) {
-            daiEl.textContent = window.DAI_ADDRESS;
-            const copyDai = () => navigator.clipboard.writeText(window.DAI_ADDRESS).then(()=>{
-              if (copyDaiBtn) copyDaiBtn.textContent = '✅'; setTimeout(()=>copyDaiBtn.textContent='📋', 1500); }
-            ).catch(()=>{ if (copyDaiBtn) { copyDaiBtn.textContent = '❌'; setTimeout(()=>copyDaiBtn.textContent='📋', 1500); }});
-            if (copyDaiBtn) copyDaiBtn.addEventListener('click', copyDai);
-            daiEl.addEventListener('click', copyDai);
-          }
+          const provider = window.ethereum ? new ethers.BrowserProvider(window.ethereum) : null;
+          if (!provider || !window.IAM_ADDRESS || !window.DAI_ADDRESS) return;
 
-          // Polygonscan link
-          const scanLink = document.getElementById('polygonscan-link');
-          if (scanLink && window.IAM_ADDRESS) {
-            scanLink.href = 'https://polygonscan.com/address/' + window.IAM_ADDRESS;
-            scanLink.textContent = 'View on Polygonscan';
-          }
+          const IAM = new ethers.Contract(window.IAM_ADDRESS, window.IAM_ABI || [], provider);
+          const dai = new ethers.Contract(window.DAI_ADDRESS, window.DAI_ABI || [], provider);
 
-          // Contract DAI balance (for caps/fees)
-          let daiBalanceNum = 0;
-          if (typeof window.getContractDAIBalance === 'function') {
-            try {
-              const balStr = await window.getContractDAIBalance();
-              const parsed = parseFloat(balStr);
-              if (!Number.isNaN(parsed)) daiBalanceNum = parsed;
-            } catch (e) {
-              console.warn('About: getContractDAIBalance failed', e);
+          // Update wallets count
+          try {
+            const wallets = await IAM.wallets();
+            document.getElementById('about-wallets-count').textContent = Number(wallets).toLocaleString();
+          } catch(e) {}
+
+          // Update DAI balance
+          try {
+            const daiBalance = await dai.balanceOf(window.IAM_ADDRESS);
+            const daiFormatted = ethers.formatUnits(daiBalance, 18);
+            document.getElementById('about-dai-balance').textContent = Number(daiFormatted).toLocaleString(undefined, {maximumFractionDigits: 2}) + ' DAI';
+          } catch(e) {}
+
+          // Update prices
+          try {
+            const priceRaw = await IAM.getTokenPrice();
+            const price = Number(ethers.formatUnits(priceRaw, 18));
+            if (price > 0) {
+              document.getElementById('about-price-1dai').textContent = price.toLocaleString(undefined, {maximumFractionDigits: 6}) + ' IAM';
+              document.getElementById('about-price-1IAM').textContent = (1/price).toLocaleString(undefined, {maximumFractionDigits: 6}) + ' DAI';
             }
-          }
+          } catch(e) {}
 
-          // Max buy cap
-          const maxBuyEl = document.getElementById('about-max-buy');
-          if (maxBuyEl) {
-            const cap = daiBalanceNum <= 100000 ? 1000 : Math.floor(daiBalanceNum * 0.01);
-            maxBuyEl.textContent = cap.toLocaleString('fa-IR') + ' DAI';
-          }
+          // Update dynamic limits and fees
+          try {
+            const daiBalance = await dai.balanceOf(window.IAM_ADDRESS);
+            const daiNum = Number(ethers.formatUnits(daiBalance, 18));
+            
+            // Max buy cap
+            const maxBuy = daiNum <= 100000 ? 1000 : (daiNum * 0.01);
+            document.getElementById('about-max-buy').textContent = maxBuy.toLocaleString(undefined, {maximumFractionDigits: 2}) + ' DAI';
+            
+            // Fees
+            const backingFee = daiNum <= 200000 ? 1 : (daiNum <= 500000 ? 1.5 : 2);
+            const totalFee = 0.5 + backingFee;
+            document.getElementById('about-fee-backing').textContent = backingFee.toFixed(1) + '%';
+            document.getElementById('about-fee-total').textContent = totalFee.toFixed(1) + '%';
+          } catch(e) {}
 
-          // Fees (heuristic tiers based on DAI balance)
-          const feeBackingEl = document.getElementById('about-fee-backing');
-          const feeTotalEl = document.getElementById('about-fee-total');
-          if (feeBackingEl || feeTotalEl) {
-            let backing;
-            if (daiBalanceNum <= 50000) backing = 2.0;
-            else if (daiBalanceNum <= 200000) backing = 1.5;
-            else backing = 1.0;
-            const dev = 0.5;
-            if (feeBackingEl) feeBackingEl.textContent = backing.toFixed(1) + '%';
-            if (feeTotalEl) feeTotalEl.textContent = (backing + dev).toFixed(1) + '%';
-          }
-
-          // Sell cap for connected user (50% of IAM balance)
-          const sellCapEl = document.getElementById('about-sell-cap');
-          if (sellCapEl && window.contractConfig && typeof window.contractConfig.initializeWeb3 === 'function') {
-            try {
-              const conn = await window.contractConfig.initializeWeb3();
-              const { contract, address } = conn || {};
-              if (contract && address && window.ethers && typeof contract.balanceOf === 'function') {
-                const bal = await contract.balanceOf(address);
-                const IAM = parseFloat(window.ethers.formatUnits(bal, 18));
-                const capIAM = IAM * 0.5;
-                sellCapEl.textContent = capIAM.toLocaleString('fa-IR', { maximumFractionDigits: 4 }) + ' IAM';
-              }
-            } catch (e) {
-              // leave as default —
-              console.warn('About: sell-cap fetch skipped', e?.message || e);
-            }
-          }
-        } catch (e) {
-          console.warn('About: populate error', e);
+        } catch(e) {
+          console.warn('Error updating about stats:', e);
         }
-      })();
+      }
+
+      // Initial update and periodic updates
+      updateAboutStats();
+      setInterval(updateAboutStats, 60000); // Update every minute
     });
-  </script>
-  <section class="about-section">
-    <h2>About Phoenix (IAM)</h2>
-    <div class="about-content">
-      <p style="font-family: 'Fira Mono', monospace; direction: rtl; text-align: justify; font-size: 1.08rem; line-height: 2.1; color: #fff; background: rgba(0,255,136,0.04); border-radius: 12px; padding: 1.2rem 1rem; margin-bottom: 1.5rem;">
-                          Phoenix (IAM) is a revolutionary **Network Marketing project** built on blockchain technology and Web3 infrastructure, creating a decentralized ecosystem where token holders can participate in a transparent and secure network marketing system.<br><br>
-         As a **Network Marketing platform**, Phoenix leverages the power of blockchain to eliminate traditional intermediaries and create direct, trustless relationships between participants. Our smart contract (Address: <span id="contract-address" style='color:#00ff88;font-family:monospace;cursor:pointer;' title='Click to copy address'>Loading...</span> <button id="copy-address-btn" style='background:none;border:none;color:#00ff88;cursor:pointer;font-size:0.9rem;margin-right:5px;' title='Copy address'>📋</button>) ensures that all network marketing activities, rewards, and commissions are automatically calculated and distributed with complete transparency and security.<br><br>
-         In our **Network Marketing ecosystem**, participants can build their networks, earn rewards through referrals, and benefit from the collective growth of the community. The binary tree structure ensures fair distribution of rewards while maintaining the integrity of the network marketing model.<br><br>
-         **Vendor Marketplace**: Vendors and sellers can create their own individual pages on our platform, showcasing their products and services. All transactions are conducted using IAM tokens, creating continuous demand and driving token value growth. As vendors sell products and bring customers into the ecosystem, both the network and token value expand organically.<br><br>
-         **Token Growth and Value**: The IAM token serves as the central currency of our network marketing platform and vendor marketplace. As the network expands and more vendors join with their customers, the token value grows organically through increased demand and utility within the ecosystem.<br><br>
-         **Financial Security**: All transactions and network marketing activities are secured by smart contracts on the Polygon blockchain, ensuring that funds are protected and rewards are distributed automatically without human intervention or manipulation.<br><br>
-         Join Phoenix and become part of the future of **Network Marketing** - where transparency, security, and growth are guaranteed by blockchain technology.
-      </p>
-
-      <!-- Public and Transparent Information -->
-      <div class="about-cards">
-      <div class="about-card">
-        <h3>Key Network and Contract Information</h3>
-        <ul>
-          <li>Network: Polygon Mainnet (ChainId: 137)</li>
-          <li>Reference Stable Token (18 decimals): <b>DAI</b> — Address: <span id="dai-address" style="color:#00ff88;font-family:monospace;cursor:pointer;" title="Click to copy">Loading...</span> <button id="copy-dai-btn" style="background:none;border:none;color:#00ff88;cursor:pointer;font-size:0.9rem;margin-right:5px;" title="Copy DAI address">📋</button></li>
-                     <li>IAM Contract (displayed above): <small style="opacity:.8">Click on address to copy</small></li>
-           <li>View contract on Polygonscan: <a id="polygonscan-link" href="#" target="_blank" rel="noopener" style="color:#a786ff;">View on Polygonscan</a></li>
-        </ul>
-      </div>
-             <div class="about-card">
-         <h3>Buy/Sell Rules and Fees (Public Summary)</h3>
-         <ul>
-           <li>Minimum purchase: 1 DAI — Minimum sale: 1 IAM</li>
-           <li>Dynamic buy cap: If contract DAI balance ≤ 100k → cap 1,000 DAI; otherwise 1% of contract DAI balance</li>
-           <li>Current buy cap: <b id="about-max-buy">—</b></li>
-           <li>No sell cap restriction (users can sell their full balance)</li>
-           <li>Dynamic fees: 0% developer + 2%/2.5%/3% backing (depending on contract DAI balance)</li>
-           <li>Current backing fee: <b id="about-fee-backing">—</b></li>
-           <li>Current total buy/sell fee: <b id="about-fee-total">—</b></li>
-           <li>Dynamic price: Calculated based on contract DAI balance and total supply</li>
-         </ul>
-       </div>
-
-             <div class="about-features">
-         <h3>Registration, Rewards and Cashback</h3>
-         <ul>
-           <li>Registration and activation through smart contract; network structure as binary tree</li>
-           <li>Binary claim with 12-hour cooldown based on earned points</li>
-           <li>Monthly cashback up to 3% of deposited amount for every 30 days (with contract conditions)</li>
-           <li>Free registration option: Burn tokens equivalent to 23 DAI value for free registration</li>
-           <li>Dynamic registration price based on total wallets: 60-100 wallets, 100-1000 wallets, 1000-6000 wallets, and 6000+ wallets</li>
-           <li>Referral rewards: 10% of registration fee goes to referrer</li>
-           <li>Binary point system: Users earn points through network activities with maximum cap of 100 points</li>
-         </ul>
-       </div>
-
-             <div class="about-features">
-         <h3>🌐 Web3 & Network Marketing Ecosystem</h3>
-         <ul>
-           <li><strong>Web3 Technology:</strong> Built on next-generation internet protocols enabling decentralized network marketing without intermediaries</li>
-           <li><strong>Decentralized Network Marketing:</strong> No central authority controls the platform - all network marketing activities are automated through smart contracts</li>
-           <li><strong>Smart Contract Security:</strong> All network marketing operations, rewards, and commissions are executed through audited smart contracts on Polygon blockchain</li>
-           <li><strong>User Sovereignty:</strong> Network marketers maintain full control over their assets, networks, and earnings</li>
-           <li><strong>Transparent Network Structure:</strong> All network marketing relationships and rewards are visible on the blockchain</li>
-         </ul>
-       </div>
-
-             <div class="about-features">
-         <h3>🏪 Network Marketing Platform Features</h3>
-         <ul>
-           <li><strong>Binary Network Structure:</strong> Organized network marketing system with binary tree architecture</li>
-           <li><strong>Automated Reward Distribution:</strong> Smart contracts automatically calculate and distribute network marketing rewards</li>
-           <li><strong>Referral Tracking:</strong> Transparent tracking of all network marketing relationships and referrals</li>
-           <li><strong>Commission System:</strong> Fair and transparent commission structure based on network performance</li>
-           <li><strong>Network Growth Analytics:</strong> Real-time analytics and insights into network marketing performance</li>
-         </ul>
-       </div>
-
-             <div class="about-features">
-         <h3>💎 IAM Token Features & Network Marketing Benefits</h3>
-         <ul>
-           <li><strong>Network Marketing Currency:</strong> IAM tokens are the primary currency for all network marketing activities</li>
-           <li><strong>Reward Distribution:</strong> Earn tokens through network marketing activities and referrals</li>
-           <li><strong>Network Growth Incentives:</strong> Tokens reward network expansion and community building</li>
-           <li><strong>Value Appreciation:</strong> Token value grows as the network marketing community expands</li>
-           <li><strong>Liquidity and Trading:</strong> Tokens can be traded on decentralized exchanges for other cryptocurrencies</li>
-           <li><strong>Network Marketing Tools:</strong> Access to advanced network marketing analytics and tools</li>
-         </ul>
-       </div>
-
-             <div class="about-features">
-         <h3>🔒 Financial Security & Network Marketing Protection</h3>
-         <ul>
-           <li><strong>Smart Contract Security:</strong> All network marketing rewards and commissions are secured by audited smart contracts</li>
-           <li><strong>Automated Reward Distribution:</strong> No human intervention in reward calculations - eliminating fraud and manipulation</li>
-           <li><strong>Transparent Network Structure:</strong> All network marketing relationships and earnings are visible on the blockchain</li>
-           <li><strong>Fund Protection:</strong> User funds are protected by blockchain security and smart contract safeguards</li>
-           <li><strong>Audit Trail:</strong> All network marketing activities and transactions are permanently recorded on blockchain</li>
-           <li><strong>Anti-Fraud Measures:</strong> Advanced algorithms prevent network marketing fraud and ensure fair play</li>
-           <li><strong>Regular Security Audits:</strong> Continuous security assessments by third-party experts to protect network marketing participants</li>
-         </ul>
-       </div>
-
-       <div class="about-features">
-         <h3>🛍️ Vendor Marketplace & Individual Store Pages</h3>
-         <ul>
-           <li><strong>Individual Vendor Pages:</strong> Each seller can have their own dedicated page on our platform to showcase their products and services</li>
-           <li><strong>IAM Token Transactions:</strong> All vendor transactions are conducted using IAM tokens, creating continuous demand and token utility</li>
-           <li><strong>Token Growth Mechanism:</strong> As vendors sell products and services, IAM token demand increases, driving token value appreciation</li>
-           <li><strong>Network Expansion:</strong> Vendors bring their customers into the ecosystem, expanding the network marketing community</li>
-           <li><strong>Automated Commission System:</strong> Vendors earn commissions through the network marketing structure when their customers make purchases</li>
-           <li><strong>Product & Service Showcase:</strong> Vendors can display their complete product catalogs, services, and business information</li>
-           <li><strong>Secure Payment Processing:</strong> All vendor transactions are processed securely through smart contracts using IAM tokens</li>
-           <li><strong>Vendor Analytics Dashboard:</strong> Comprehensive analytics showing sales performance, customer engagement, and network growth</li>
-         </ul>
-       </div>
-
-                           <div class="about-features">
-          <h3>Swap/Convert and Pre-Transaction Transparency</h3>
-          <ul>
-            <li>In the swap section, fees and net amount received are displayed before sending the transaction</li>
-            <li>When buying with DAI, approval (approve) is first requested for the contract</li>
-            <li>Token burning mechanism: 5% of tokens are burned during purchases (purchase function)</li>
-            <li>Binary pool distribution: 50% of purchase amount goes to binary pool, 50% to seller</li>
-            <li>Point earning system: Users can earn up to 2 points per purchase cycle with 4-week cooldown</li>
-          </ul>
-        </div>
-
-                           <div class="about-features">
-          <h3>Index Ownership Transfer</h3>
-          <ul>
-            <li>Only for users who have an index; the new address must be valid and without a previous index</li>
-            <li>The operation is irreversible; performed in UI with a two-stage confirmation modal</li>
-            <li>Complete data transfer: All user data including binary points, purchase history, and rewards are transferred</li>
-            <li>Tree structure preservation: Network structure and relationships are maintained after transfer</li>
-          </ul>
-        </div>
-
-                           <div class="about-features">
-          <h3>Security and Wallet</h3>
-          <ul>
-            <li>Secure connection with MetaMask and WalletConnect</li>
-            <li>Use of ReentrancyGuard in the contract to prevent reentrancy attacks</li>
-            <li>Voting system: Users can like/dislike other registered users</li>
-            <li>Vote tracking: System tracks total likes, dislikes, and individual user votes</li>
-            <li>Self-vote prevention: Users cannot vote for themselves</li>
-          </ul>
-        </div>
-
-                                                       <div class="about-card">
-           <h3>Frequently Asked Questions</h3>
-           <ul>
-             <li><b>How do I buy IAM tokens?</b> Use the buyTokens() function with DAI. Minimum 1 DAI required. Dynamic buy cap: 1,000 DAI if contract balance ≤ 100k, otherwise 1% of contract DAI balance.</li>
-             <li><b>How do I sell IAM tokens?</b> Use the sellTokens() function. Minimum 1 IAM required. No sell cap restriction - you can sell your full balance.</li>
-             <li><b>What are the buy/sell fees?</b> 0% developer fee + 2%/2.5%/3% backing fee (≤200k/≤500k/>500k DAI contract balance). Fees are automatically calculated and deducted.</li>
-             <li><b>How does the purchase function work?</b> Purchase() allows buying products/services with IAM tokens. 5% tokens are burned, 50% goes to binary pool, 50% to seller. Payout percentage must be 30-100%.</li>
-             <li><b>How do I register in the network?</b> Use registerAndActivate() with a referrer address. Dynamic registration price based on total wallets. 10% of fee goes to referrer.</li>
-             <li><b>Can I register for free?</b> Yes, use registerFree() by burning tokens equivalent to 23 DAI value. No binary point cap for free registrations.</li>
-             <li><b>How do binary points work?</b> Earn up to 2 points per purchase cycle with 4-week cooldown. Maximum 100 points per user. Claim rewards every 12 hours.</li>
-             <li><b>How do monthly rewards work?</b> claimMonthlyReward() gives 3% of deposited amount per 30 days. Only for users with at least one empty position. Maximum reward equals deposited amount.</li>
-             <li><b>Can I transfer my position?</b> Yes, use transferIndexOwnership() to transfer your index to a new address. New owner must not have an existing index.</li>
-             <li><b>How does the voting system work?</b> voteUser() allows liking/disliking other registered users. Users cannot vote for themselves. System tracks total likes/dislikes per user.</li>
-             <li><b>Is my asset secure?</b> Yes, all functions use ReentrancyGuard protection. No custody is held - you maintain full control of your assets.</li>
-             <li><b>How is the token price calculated?</b> Price = (Contract DAI Balance × 1e18) / Total Supply. Minimum price is 1,000 (1e3) tokens per DAI.</li>
-           </ul>
-         </div>
-      </div>
-      
-                           <div class="about-features">
-          <h3>📋 Detailed Contract Functions & Features</h3>
-          <ul>
-            <li><strong>Token Functions:</strong> buyTokens(), sellTokens(), purchase(), registerAndActivate(), registerFree()</li>
-            <li><strong>Binary System:</strong> claim(), claimMonthlyReward(), updateParent() with 12-hour cooldown</li>
-            <li><strong>Network Management:</strong> transferIndexOwnership(), voteUser(), getVoteStatus()</li>
-            <li><strong>Price Calculation:</strong> getTokenPrice(), estimateBuy(), estimateSell() based on contract DAI balance and total supply</li>
-            <li><strong>Tree Structure:</strong> getReferrer(), getLeftChild(), getRightChild(), getParent() for binary tree navigation</li>
-            <li><strong>User Data:</strong> getUserTree() returns complete user information including binary points, caps, and rewards</li>
-          </ul>
-        </div>
-
-        <div class="about-features">
-          <h3>💰 Fee Structure & Economic Model</h3>
-          <ul>
-            <li><strong>Buy Fees:</strong> 0% developer + 2%/2.5%/3% backing (≤200k/≤500k/>500k DAI balance)</li>
-            <li><strong>Sell Fees:</strong> 0% developer + 2%/2.5%/3% backing (≤200k/≤500k/>500k DAI balance)</li>
-            <li><strong>Purchase Function:</strong> 5% token burn + 50% to binary pool + 50% to seller</li>
-            <li><strong>Registration Fees:</strong> Dynamic pricing based on total wallets (60-100, 100-1000, 1000-6000, 6000+)</li>
-            <li><strong>Referral Rewards:</strong> 10% of registration fee to referrer</li>
-            <li><strong>Binary Claim:</strong> 1% fee on claimed rewards</li>
-            <li><strong>Monthly Cashback:</strong> 3% of deposited amount per 30 days, maximum up to deposited amount</li>
-          </ul>
-        </div>
-
-        <div class="about-features">
-          <h3>🎯 Binary Point System & Rewards</h3>
-          <ul>
-            <li><strong>Point Cap:</strong> Maximum 100 binary points per user</li>
-            <li><strong>Point Earning:</strong> Up to 2 points per purchase cycle with 4-week cooldown</li>
-            <li><strong>Point Distribution:</strong> Based on minimum of left/right points in binary tree</li>
-            <li><strong>Claim System:</strong> 12-hour cooldown between claims</li>
-            <li><strong>Reward Calculation:</strong> Point value = Contract token balance / Total claimable points</li>
-            <li><strong>Monthly Rewards:</strong> Only for users with at least one empty position (left or right)</li>
-            <li><strong>Cashback Repayment:</strong> Monthly rewards first repay any outstanding cashback debt</li>
-          </ul>
-        </div>
-
-        <div class="about-features">
-          <h3>🔐 Security Features & Limitations</h3>
-          <ul>
-            <li><strong>Reentrancy Protection:</strong> All external calls protected with nonReentrant modifier</li>
-            <li><strong>Minimum Amounts:</strong> 1 DAI for buying, 1 IAM for selling</li>
-            <li><strong>Buy Limits:</strong> Dynamic cap based on contract DAI balance (1,000 DAI or 1%)</li>
-            <li><strong>Registration Validation:</strong> Users must not be already registered</li>
-            <li><strong>Referrer Validation:</strong> Referrer must be registered and active</li>
-            <li><strong>Index Transfer:</strong> New owner must not have existing index</li>
-            <li><strong>Vote System:</strong> Users cannot vote for themselves</li>
-            <li><strong>Tree Balance:</strong> Automatic placement in less populated side of binary tree</li>
-          </ul>
-        </div>
-
-        <div class="about-features">
-          <h3>📊 Contract State & Analytics</h3>
-          <ul>
-            <li><strong>Total Supply:</strong> contractTotalSupply() - Current IAM token supply</li>
-            <li><strong>Contract Balances:</strong> getContractdaiBalance(), getContractTokenBalance()</li>
-            <li><strong>Total Claimable Points:</strong> totalClaimablePoints() - Global binary points pool</li>
-            <li><strong>Cashback Pool:</strong> cashBack() - Available monthly reward pool</li>
-            <li><strong>Registration Price:</strong> getRegPrice() - Current dynamic registration cost</li>
-            <li><strong>Point Value:</strong> getPointValue() - Current value per binary point</li>
-            <li><strong>User Count:</strong> wallets - Total registered users</li>
-            <li><strong>Price Estimates:</strong> estimateBuy(), estimateSell() for transaction preview</li>
-          </ul>
-        </div>
-
-        <div class="about-features">
-          <h3>Our Fundamental Principles:</h3>
-          <ul>
-            <li>Honesty, transparency and 100% service</li>
-            <li>Your capital is never transferred to the IAM account; rather, you always maintain complete control over your assets and we only share in real profits.</li>
-            <li>In a world where many seek to attract people's capital and offer empty promises, we at IAM only profit when you actually profit, and in loss, we will be your partner and companion.</li>
-          </ul>
-        </div>
-             <div class="about-features">
-         <h3>Compact Value Display Guide</h3>
-         <ul>
-           <li><b>k</b>: Thousand (1,000). Example: 12.3k means 12,300</li>
-           <li><b>m</b>: Million (1,000,000). Example: 2.5m means 2,500,000</li>
-           <li><b>b</b>: Billion (1,000,000,000). Example: 3.2b means 3,200,000,000</li>
-           <li><b>t</b>: Trillion (1,000,000,000,000)</li>
-           <li><b>q</b>: Quadrillion (1e15)</li>
-           <li><b>e</b>: Quintillion (1e18)</li>
-           <li>For values less than 1, the number is displayed with precise decimals (e.g., 0.0456).</li>
-         </ul>
-       </div>
-      <div class="about-stats">
-                 <div class="about-stat">
-           <div class="icon">👛</div>
-           <div class="number" id="about-wallets-count">—</div>
-           <div class="label">Registered Wallets Count</div>
-         </div>
-         <div class="about-stat">
-           <div class="icon">💰</div>
-           <div class="number" id="about-dai-balance">—</div>
-           <div class="label">Contract DAI Balance (TVL)</div>
-         </div>
-         <div class="about-stat">
-           <div class="icon">💱</div>
-           <div class="number" id="about-price-1dai">—</div>
-           <div class="label">1 DAI = ? IAM</div>
-         </div>
-         <div class="about-stat">
-           <div class="icon">💱</div>
-           <div class="number" id="about-price-1IAM">—</div>
-           <div class="label">1 IAM = ? DAI</div>
-         </div>
-      </div>
-             <div class="about-contact">
-         <h3>Contact Us</h3>
-         <p>For questions and support, please contact us</p>
-         <div class="contact-info">
-           <div class="contact-item">
-             <span class="icon">📧</span>
-             <span class="text">support@IAMPHOENIX.com</span>
-           </div>
-           <div class="contact-item">
-             <span class="icon">📱</span>
-             <span class="text">@IAMPHOENIX_support</span>
-           </div>
-           <div class="contact-item">
-             <span class="icon">🌐</span>
-             <span class="text">www.IAMPHOENIX.com</span>
-           </div>
-         </div>
-       </div>
-    </div>
-  </section>
-  
-  <script src="js/floating-token-card.js"></script>
-  <script>
-    (function(){
-      function setDaiAddress(){
-        var el = document.getElementById('dai-address');
-        var btn = document.getElementById('copy-dai-btn');
-        var ps = document.getElementById('polygonscan-link');
-        if (!el || !btn) return;
-        if (typeof window.DAI_ADDRESS !== 'undefined') {
-          el.textContent = window.DAI_ADDRESS;
-          function copy(text){
-            navigator.clipboard.writeText(text).then(function(){
-              var old = btn.textContent; btn.textContent = '✅'; setTimeout(function(){ btn.textContent = old; }, 1500);
-            }).catch(function(){ var old = btn.textContent; btn.textContent = '❌'; setTimeout(function(){ btn.textContent = old; }, 1500); });
-          }
-          btn.addEventListener('click', function(){ copy(window.DAI_ADDRESS); });
-          el.addEventListener('click', function(){ copy(window.DAI_ADDRESS); });
-          if (ps && typeof window.IAM_ADDRESS !== 'undefined') {
-            ps.href = 'https://polygonscan.com/address/' + window.IAM_ADDRESS;
-            ps.textContent = 'View Contract';
-          }
-        } else {
-          el.textContent = 'Not Available';
-        }
-      }
-      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setDaiAddress); else setDaiAddress();
-    })();
-    // Live Statistics About Us
-    (function(){
-      async function getProvider(){
-        try {
-          if (window.contractConfig?.contract?.provider) return window.contractConfig.contract.provider;
-          if (window.contractConfig?.provider) return window.contractConfig.provider;
-          if (window.ethereum) return new ethers.BrowserProvider(window.ethereum);
-        } catch(e) {}
-        return null;
-      }
-      function setText(id, txt){ var el=document.getElementById(id); if(el) el.textContent = txt; }
-      function fmt(num, frac=2){ try { return Number(num).toLocaleString('en-US',{maximumFractionDigits:frac}); } catch(e){ return String(num); } }
-      async function updateAboutStats(){
-        try {
-          const provider = await getProvider();
-          const IAMAbi = (typeof window.IAM_ABI !== 'undefined' && window.IAM_ABI)
-                       || (typeof window.CONTRACT_ABI !== 'undefined' && window.CONTRACT_ABI)
-                       || (typeof IAM_ABI !== 'undefined' ? IAM_ABI : null);
-          const daiAbi = (typeof window.DAI_ABI !== 'undefined' && window.DAI_ABI)
-                       || (typeof DAI_ABI !== 'undefined' ? DAI_ABI : null);
-          if (!provider || !window.IAM_ADDRESS || !window.DAI_ADDRESS || !IAMAbi || !daiAbi) { return; }
-          const IAM = new ethers.Contract(window.IAM_ADDRESS, IAMAbi, provider);
-          const dai = new ethers.Contract(window.DAI_ADDRESS, daiAbi, provider);
-          // wallets
-          try {
-            const w = await IAM.wallets();
-            setText('about-wallets-count', fmt(w.toString(),0));
-          } catch(e) {}
-          // DAI TVL (contract DAI balance)
-          try {
-            const balRaw = await dai.balanceOf(window.IAM_ADDRESS);
-            const bal = ethers.formatUnits(balRaw, 18);
-            setText('about-dai-balance', fmt(bal,2) + ' DAI');
-          } catch(e) {}
-          // Price
-          try {
-            const pRaw = await IAM.getTokenPrice();
-            const price = Number(ethers.formatUnits(pRaw, 18));
-            if (price>0) {
-              setText('about-price-1dai', fmt(price,6) + ' IAM');
-              setText('about-price-1IAM', fmt(1/price,6) + ' DAI');
-            }
-          } catch(e) {}
-
-          // Dynamic limits and fees (from contract state)
-          try {
-            // TVL used already above: bal (DAI in contract)
-            const balRaw = await dai.balanceOf(window.IAM_ADDRESS);
-            const balNum = Number(ethers.formatUnits(balRaw, 18));
-            // max buy rule
-            const maxBuy = balNum <= 100000 ? 1000 : (balNum * 0.01);
-            setText('about-max-buy', fmt(maxBuy,2) + ' DAI');
-            // fees
-            const deployerPct = 0.5;
-            const backingPct = balNum <= 200000 ? 1 : (balNum <= 500000 ? 1.5 : 2);
-            const totalPct = deployerPct + backingPct;
-            setText('about-fee-backing', backingPct.toFixed(1) + '%');
-            setText('about-fee-total', totalPct.toFixed(1) + '%');
-          } catch(e) {}
-          // sell cap for connected user (50% of user IAM balance)
-          try {
-            if (window.contractConfig?.address) {
-              const addr = window.contractConfig.address;
-              const userBalRaw = await IAM.balanceOf(addr);
-              const userBal = Number(ethers.formatUnits(userBalRaw, 18));
-              const cap = userBal * 0.5;
-              setText('about-sell-cap', fmt(cap,6) + ' IAM');
-            }
-          } catch(e) {}
-        } catch(e) {}
-      }
-      if (document.readyState==='loading') document.addEventListener('DOMContentLoaded', updateAboutStats); else updateAboutStats();
-      setInterval(updateAboutStats, 60000);
-    })();
   </script>
 </body>
 </html> 
