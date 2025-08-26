@@ -2093,12 +2093,12 @@ function showReferralRegistrationForm(referrerAddress) {
             
             <div style="margin-bottom: 2rem;">
                 <div style="font-size: 2rem; margin-bottom: 1rem;">🎯</div>
-                <h2 style="color: #00ff88; margin-bottom: 1rem; font-size: 1.5rem;">ثبت‌نام با لینک رفرال</h2>
+                <h2 style="color: #00ff88; margin-bottom: 1rem; font-size: 1.5rem;">Registration with Referral Link</h2>
                 <p style="color: #ccc; margin-bottom: 1.5rem; line-height: 1.6;">
-                    شما از طریق لینک رفرال وارد شده‌اید. برای ثبت‌نام در شبکه IAM، لطفاً کیف پول خود را متصل کنید.
+                    You have entered through a referral link. To register in the IAM network, please connect your wallet.
                 </p>
                 <div style="background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3); border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem;">
-                    <div style="color: #00ff88; font-weight: bold; margin-bottom: 0.5rem;">رفرال شما:</div>
+                    <div style="color: #00ff88; font-weight: bold; margin-bottom: 0.5rem;">Your Referral:</div>
                     <div style="color: #fff; font-family: monospace; font-size: 0.9rem; word-break: break-all;">
                         ${referrerAddress}
                     </div>
@@ -2119,7 +2119,7 @@ function showReferralRegistrationForm(referrerAddress) {
                     width: 100%;
                     margin-bottom: 1rem;
                 " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-                    🔗 اتصال کیف پول
+                    🔗 Connect Wallet
                 </button>
                 
                 <div id="referral-registration-status" style="margin-top: 1rem;"></div>
@@ -2135,7 +2135,7 @@ function showReferralRegistrationForm(referrerAddress) {
     
     connectBtn.onclick = async function() {
         try {
-            connectBtn.textContent = 'در حال اتصال...';
+            connectBtn.textContent = 'Connecting...';
             connectBtn.disabled = true;
             
             // Connect wallet
@@ -2146,16 +2146,16 @@ function showReferralRegistrationForm(referrerAddress) {
             const isActive = profile && profile.activated && profile.index && BigInt(profile.index) > 0n;
             
             if (isActive) {
-                statusDiv.innerHTML = '<div style="color:#ff4444;background:rgba(255,68,68,0.1);padding:0.8rem;border-radius:6px;">شما قبلاً ثبت‌نام کرده‌اید!</div>';
+                statusDiv.innerHTML = '<div style="color:#ff4444;background:rgba(255,68,68,0.1);padding:0.8rem;border-radius:6px;">You are already registered!</div>';
     return;
             }
             
             // Show registration form
             statusDiv.innerHTML = `
                 <div style="background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3); border-radius: 12px; padding: 1rem; margin-bottom: 1rem;">
-                    <div style="color: #00ff88; font-weight: bold; margin-bottom: 0.5rem;">اطلاعات ثبت‌نام:</div>
-                    <div style="color: #fff; margin-bottom: 0.5rem;">رفرال: ${referrerAddress}</div>
-                    <div style="color: #fff; margin-bottom: 0.5rem;">آدرس شما: ${window.contractConfig.signer.address}</div>
+                    <div style="color: #00ff88; font-weight: bold; margin-bottom: 0.5rem;">Registration Information:</div>
+                    <div style="color: #fff; margin-bottom: 0.5rem;">Referral: ${referrerAddress}</div>
+                    <div style="color: #fff; margin-bottom: 0.5rem;">Your Address: ${window.contractConfig.signer.address}</div>
                 </div>
                 <button id="referral-register-btn" style="
                     background: linear-gradient(135deg, #a786ff, #8b5cf6);
@@ -2169,7 +2169,7 @@ function showReferralRegistrationForm(referrerAddress) {
                     transition: all 0.3s;
                     width: 100%;
                 " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-                    🚀 ثبت‌نام در شبکه
+                    🚀 Register in Network
                 </button>
             `;
             
@@ -2177,7 +2177,7 @@ function showReferralRegistrationForm(referrerAddress) {
             const registerBtn = document.getElementById('referral-register-btn');
             registerBtn.onclick = async function() {
                 try {
-                    registerBtn.textContent = 'در حال ثبت‌نام...';
+                    registerBtn.textContent = 'Registering...';
                     registerBtn.disabled = true;
                     
                     const { contract } = window.contractConfig;
@@ -2186,7 +2186,7 @@ function showReferralRegistrationForm(referrerAddress) {
                     const tx = await contract.registerAndActivate(referrerAddress, window.contractConfig.signer.address);
                     await tx.wait();
                     
-                    statusDiv.innerHTML = '<div style="color:#00ff88;background:rgba(0,255,136,0.1);padding:0.8rem;border-radius:6px;">✅ ثبت‌نام با موفقیت انجام شد!</div>';
+                    statusDiv.innerHTML = '<div style="color:#00ff88;background:rgba(0,255,136,0.1);padding:0.8rem;border-radius:6px;">✅ Registration completed successfully!</div>';
                     
                     // Close modal after 3 seconds
                     setTimeout(() => {
@@ -2196,17 +2196,17 @@ function showReferralRegistrationForm(referrerAddress) {
                     
                 } catch (error) {
                     console.error('Registration error:', error);
-                    statusDiv.innerHTML = `<div style="color:#ff4444;background:rgba(255,68,68,0.1);padding:0.8rem;border-radius:6px;">خطا در ثبت‌نام: ${error.message}</div>`;
-                    registerBtn.textContent = '🚀 ثبت‌نام در شبکه';
+                    statusDiv.innerHTML = `<div style="color:#ff4444;background:rgba(255,68,68,0.1);padding:0.8rem;border-radius:6px;">Registration error: ${error.message}</div>`;
+                    registerBtn.textContent = '🚀 Register in Network';
                     registerBtn.disabled = false;
                 }
             };
             
         } catch (error) {
             console.error('Error connecting wallet for referral registration:', error);
-            statusDiv.innerHTML = `<div style="color:#ff4444;background:rgba(255,68,68,0.1);padding:0.8rem;border-radius:6px;">خطا در اتصال کیف پول: ${error.message}</div>`;
+            statusDiv.innerHTML = `<div style="color:#ff4444;background:rgba(255,68,68,0.1);padding:0.8rem;border-radius:6px;">Wallet connection error: ${error.message}</div>`;
         } finally {
-            connectBtn.textContent = '🔗 اتصال کیف پول';
+            connectBtn.textContent = '🔗 Connect Wallet';
             connectBtn.disabled = false;
         }
     };
@@ -2237,7 +2237,7 @@ window.initializePermanentRegistrationForm = function() {
     if (connectBtn) {
         connectBtn.onclick = async function() {
             try {
-                connectBtn.textContent = 'در حال اتصال...';
+                connectBtn.textContent = 'Connecting...';
                 connectBtn.disabled = true;
                 
                 const connection = await connectWallet();
@@ -2245,9 +2245,9 @@ window.initializePermanentRegistrationForm = function() {
                 
             } catch (error) {
                 console.error('Error connecting wallet:', error);
-                statusDiv.innerHTML = `<div style="color:#ff4444;background:rgba(255,68,68,0.1);padding:0.8rem;border-radius:6px;margin-top:0.5rem;">خطا در اتصال کیف پول: ${error.message}</div>`;
+                statusDiv.innerHTML = `<div style="color:#ff4444;background:rgba(255,68,68,0.1);padding:0.8rem;border-radius:6px;margin-top:0.5rem;">Wallet connection error: ${error.message}</div>`;
             } finally {
-                connectBtn.textContent = '🔗 اتصال کیف پول';
+                connectBtn.textContent = '🔗 Connect Wallet';
                 connectBtn.disabled = false;
             }
         };
@@ -2261,17 +2261,17 @@ window.initializePermanentRegistrationForm = function() {
         getReferrerAddressBtn.onclick = async function() {
             try {
                 if (!window.contractConfig || !window.contractConfig.contract) {
-                    statusDiv.innerHTML = `<div style="color:#ff4444;background:rgba(255,68,68,0.1);padding:0.8rem;border-radius:6px;margin-top:0.5rem;">لطفاً ابتدا کیف پول را متصل کنید</div>`;
+                    statusDiv.innerHTML = `<div style="color:#ff4444;background:rgba(255,68,68,0.1);padding:0.8rem;border-radius:6px;margin-top:0.5rem;">Please connect your wallet first</div>`;
                     return;
                 }
                 
                 const index = parseInt(referrerIndexInput.value);
                 if (isNaN(index) || index < 0) {
-                    statusDiv.innerHTML = `<div style="color:#ff4444;background:rgba(255,68,68,0.1);padding:0.8rem;border-radius:6px;margin-top:0.5rem;">لطفاً ایندکس معتبر وارد کنید</div>`;
+                    statusDiv.innerHTML = `<div style="color:#ff4444;background:rgba(255,68,68,0.1);padding:0.8rem;border-radius:6px;margin-top:0.5rem;">Please enter a valid index</div>`;
                     return;
                 }
                 
-                getReferrerAddressBtn.textContent = 'در حال دریافت...';
+                getReferrerAddressBtn.textContent = 'Getting...';
                 getReferrerAddressBtn.disabled = true;
                 
                 const { contract } = window.contractConfig;
@@ -2282,7 +2282,7 @@ window.initializePermanentRegistrationForm = function() {
                 // بررسی فعال بودن کاربر
                 const userData = await contract.users(address);
                 if (!userData.activated) {
-                    statusDiv.innerHTML = `<div style="color:#ff4444;background:rgba(255,68,68,0.1);padding:0.8rem;border-radius:6px;margin-top:0.5rem;">کاربر با ایندکس ${index} فعال نیست</div>`;
+                    statusDiv.innerHTML = `<div style="color:#ff4444;background:rgba(255,68,68,0.1);padding:0.8rem;border-radius:6px;margin-top:0.5rem;">User with index ${index} is not active</div>`;
                     return;
                 }
                 
@@ -2291,21 +2291,21 @@ window.initializePermanentRegistrationForm = function() {
                     referrerAddressInput.value = address;
                 }
                 
-                statusDiv.innerHTML = `<div style="color:#00ff88;background:rgba(0,255,136,0.1);padding:0.8rem;border-radius:6px;margin-top:0.5rem;">✅ آدرس معرف دریافت شد: ${address.substring(0, 6)}...${address.substring(38)}</div>`;
+                statusDiv.innerHTML = `<div style="color:#00ff88;background:rgba(0,255,136,0.1);padding:0.8rem;border-radius:6px;margin-top:0.5rem;">✅ Referrer address received: ${address.substring(0, 6)}...${address.substring(38)}</div>`;
                 
             } catch (error) {
                 console.error('Error getting address from index:', error);
-                let errorMessage = 'خطا در دریافت آدرس';
+                let errorMessage = 'Error getting address';
                 
                 if (error.message.includes('reverted')) {
-                    errorMessage = 'ایندکس معتبر نیست یا کاربر وجود ندارد';
+                    errorMessage = 'Index is not valid or user does not exist';
                 } else if (error.message.includes('network')) {
-                    errorMessage = 'خطا در اتصال شبکه';
+                    errorMessage = 'Network connection error';
                 }
                 
                 statusDiv.innerHTML = `<div style="color:#ff4444;background:rgba(255,68,68,0.1);padding:0.8rem;border-radius:6px;margin-top:0.5rem;">${errorMessage}</div>`;
             } finally {
-                getReferrerAddressBtn.textContent = '🔍 دریافت آدرس';
+                getReferrerAddressBtn.textContent = '🔍 Get Address';
                 getReferrerAddressBtn.disabled = false;
             }
         };
@@ -2316,12 +2316,12 @@ window.initializePermanentRegistrationForm = function() {
         e.preventDefault();
 
         registerBtn.disabled = true;
-        registerBtn.textContent = 'در حال ثبت‌نام...';
+        registerBtn.textContent = 'Registering...';
 
         if (!window.contractConfig || !window.contractConfig.contract) {
-            statusDiv.innerHTML = `<div style="color:#ff4444;background:rgba(255,68,68,0.1);padding:0.8rem;border-radius:6px;margin-top:0.5rem;">لطفاً ابتدا کیف پول را متصل کنید</div>`;
+            statusDiv.innerHTML = `<div style="color:#ff4444;background:rgba(255,68,68,0.1);padding:0.8rem;border-radius:6px;margin-top:0.5rem;">Please connect your wallet first</div>`;
             registerBtn.disabled = false;
-            registerBtn.textContent = '🚀 ثبت‌نام';
+            registerBtn.textContent = '🚀 Register';
             return;
         }
 
@@ -2329,16 +2329,16 @@ window.initializePermanentRegistrationForm = function() {
         const referrerAddress = referrerAddressInput.value.trim();
 
         if (!userAddress || !/^0x[a-fA-F0-9]{40}$/.test(userAddress)) {
-            statusDiv.innerHTML = `<div style="color:#ff4444;background:rgba(255,68,68,0.1);padding:0.8rem;border-radius:6px;margin-top:0.5rem;">آدرس کیف پول کاربر معتبر نیست</div>`;
+            statusDiv.innerHTML = `<div style="color:#ff4444;background:rgba(255,68,68,0.1);padding:0.8rem;border-radius:6px;margin-top:0.5rem;">User wallet address is not valid</div>`;
             registerBtn.disabled = false;
-            registerBtn.textContent = '🚀 ثبت‌نام';
+            registerBtn.textContent = '🚀 Register';
             return;
         }
 
         if (!referrerAddress || !/^0x[a-fA-F0-9]{40}$/.test(referrerAddress)) {
-            statusDiv.innerHTML = `<div style="color:#ff4444;background:rgba(255,68,68,0.1);padding:0.8rem;border-radius:6px;margin-top:0.5rem;">آدرس معرف معتبر نیست</div>`;
+            statusDiv.innerHTML = `<div style="color:#ff4444;background:rgba(255,68,68,0.1);padding:0.8rem;border-radius:6px;margin-top:0.5rem;">Referrer address is not valid</div>`;
             registerBtn.disabled = false;
-            registerBtn.textContent = '🚀 ثبت‌نام';
+            registerBtn.textContent = '🚀 Register';
             return;
         }
 
@@ -2349,52 +2349,52 @@ window.initializePermanentRegistrationForm = function() {
             
             const { contract } = window.contractConfig;
             
-            // بررسی معتبر بودن معرف
+            // Check if referrer is valid
             const refData = await contract.users(referrerAddress);
             if (!refData.activated) {
-                throw new Error('معرف فعال نیست');
+                throw new Error('Referrer is not active');
             }
             
-            // بررسی ثبت‌نام نبودن کاربر جدید
+            // Check if new user is not already registered
             const userData = await contract.users(userAddress);
             if (userData.activated) {
-                throw new Error('این آدرس قبلاً ثبت‌نام کرده است');
+                throw new Error('This address is already registered');
             }
             
             // ثبت‌نام
             const tx = await contract.registerAndActivate(referrerAddress, userAddress);
-            statusDiv.innerHTML = `<div style="color:#00ff88;background:rgba(0,255,136,0.1);padding:0.8rem;border-radius:6px;margin-top:0.5rem;">⏳ در انتظار تایید تراکنش...</div>`;
+            statusDiv.innerHTML = `<div style="color:#00ff88;background:rgba(0,255,136,0.1);padding:0.8rem;border-radius:6px;margin-top:0.5rem;">⏳ Waiting for transaction confirmation...</div>`;
             
             await tx.wait();
             
-            statusDiv.innerHTML = `<div style="color:#00ff88;background:rgba(0,255,136,0.1);padding:0.8rem;border-radius:6px;margin-top:0.5rem;">✅ ثبت‌نام با موفقیت انجام شد!</div>`;
+            statusDiv.innerHTML = `<div style="color:#00ff88;background:rgba(0,255,136,0.1);padding:0.8rem;border-radius:6px;margin-top:0.5rem;">✅ Registration completed successfully!</div>`;
             
-            // پاک کردن فرم
+            // Clear form
             userAddressInput.value = '';
             referrerAddressInput.value = '';
             
-            // به‌روزرسانی فرم
+            // Update form
             setTimeout(() => {
                 updatePermanentRegistrationForm(window.contractConfig);
             }, 2000);
             
         } catch (error) {
             console.error('Registration error:', error);
-            let errorMessage = 'خطا در ثبت‌نام';
+            let errorMessage = 'Registration error';
             
             if (error.code === 4001) {
-                errorMessage = 'لغو توسط کاربر';
+                errorMessage = 'Cancelled by user';
             } else if (error.message.includes('activated')) {
                 errorMessage = error.message;
             } else if (error.message.includes('registered')) {
                 errorMessage = error.message;
             } else if (error.message.includes('insufficient')) {
-                errorMessage = 'موجودی کافی نیست';
+                errorMessage = 'Insufficient balance';
             }
             
             statusDiv.innerHTML = `<div style="color:#ff4444;background:rgba(255,68,68,0.1);padding:0.8rem;border-radius:6px;margin-top:0.5rem;">${errorMessage}</div>`;
         } finally {
-            registerBtn.textContent = '🚀 ثبت‌نام';
+            registerBtn.textContent = '🚀 Register';
             registerBtn.disabled = false;
         }
     };
@@ -2416,19 +2416,19 @@ async function updatePermanentRegistrationForm(connection) {
     const maticBalanceDiv = document.getElementById('permanent-matic-balance');
     
     if (!connection || !connection.contract) {
-        // کیف پول متصل نیست
+        // Wallet not connected
         if (walletStatusDiv) {
             walletStatusDiv.innerHTML = `
-                <div style="color:#ff4444;font-weight:bold;margin-bottom:0.5rem;">⚠️ کیف پول متصل نیست</div>
-                <p style="color:#b8c1ec;margin:0;font-size:0.9rem;">لطفاً ابتدا کیف پول خود را متصل کنید</p>
+                <div style="color:#ff4444;font-weight:bold;margin-bottom:0.5rem;">⚠️ Wallet not connected</div>
+                <p style="color:#b8c1ec;margin:0;font-size:0.9rem;">Please connect your wallet first</p>
                 <button type="button" id="connect-wallet-btn" style="background:linear-gradient(90deg,#00ff88,#a786ff);color:#181c2a;font-weight:bold;border:none;border-radius:8px;padding:0.7rem 2rem;font-size:1rem;cursor:pointer;margin-top:0.5rem;transition:all 0.3s;">
-                    🔗 اتصال کیف پول
+                    🔗 Connect Wallet
                 </button>
             `;
         }
         
         if (registerBtn) {
-            registerBtn.textContent = '🔒 ابتدا کیف پول را متصل کنید';
+            registerBtn.textContent = '🔒 Connect wallet first';
             registerBtn.disabled = true;
         }
         
@@ -2442,36 +2442,36 @@ async function updatePermanentRegistrationForm(connection) {
     try {
         const { contract, address } = connection;
         
-        // به‌روزرسانی وضعیت کیف پول
+        // Update wallet status
         if (walletStatusDiv) {
             walletStatusDiv.innerHTML = `
-                <div style="color:#00ff88;font-weight:bold;margin-bottom:0.5rem;">✅ کیف پول متصل است</div>
-                <p style="color:#b8c1ec;margin:0;font-size:0.9rem;">آدرس: ${address.substring(0, 6)}...${address.substring(38)}</p>
+                <div style="color:#00ff88;font-weight:bold;margin-bottom:0.5rem;">✅ Wallet connected</div>
+                <p style="color:#b8c1ec;margin:0;font-size:0.9rem;">Address: ${address.substring(0, 6)}...${address.substring(38)}</p>
             `;
         }
         
-        // به‌روزرسانی دکمه ثبت‌نام
+        // Update register button
         if (registerBtn) {
-            registerBtn.textContent = '🚀 ثبت‌نام';
+            registerBtn.textContent = '🚀 Register';
             registerBtn.disabled = false;
         }
         
-        // مقداردهی آدرس‌ها
+        // Set addresses
         if (userAddressInput) {
             userAddressInput.value = address;
         }
         
         if (referrerAddressInput) {
-            // دریافت آدرس معرف
+            // Get referrer address
             let referrerAddress = '';
             try {
-                // ابتدا بررسی کنیم که آیا کاربر متصل فعال است و ایندکس دارد
+                // First check if connected user is active and has index
                 const connectedUserData = await contract.users(address);
                 if (connectedUserData.activated) {
-                    // اگر کاربر فعال است، از آدرس خودش به عنوان معرف استفاده کن
+                    // If user is active, use their own address as referrer
                     referrerAddress = address;
                 } else {
-                    // اگر کاربر فعال نیست، از روش‌های قبلی استفاده کن
+                    // If user is not active, use previous methods
                     if (typeof getReferrerFromURL === 'function') {
                         referrerAddress = getReferrerFromURL();
                     }
@@ -2487,21 +2487,21 @@ async function updatePermanentRegistrationForm(connection) {
                             try {
                         referrerAddress = await contract.deployer();
                             } catch (deployerError) {
-                                console.warn('خطا در دریافت deployer:', deployerError);
+                                console.warn('Error getting deployer:', deployerError);
                                 referrerAddress = address || '0x0000000000000000000000000000000000000000';
                             }
                         }
                     }
                 }
             } catch (e) {
-                // در صورت خطا، از deployer استفاده کن
+                // In case of error, use deployer
                 if (typeof window.getDeployerAddress === 'function') {
                     referrerAddress = await window.getDeployerAddress(contract);
                 } else {
                     try {
                 referrerAddress = await contract.deployer();
                     } catch (deployerError) {
-                        console.warn('خطا در دریافت deployer:', deployerError);
+                        console.warn('Error getting deployer:', deployerError);
                         referrerAddress = address || '0x0000000000000000000000000000000000000000';
                     }
                 }
@@ -2510,7 +2510,7 @@ async function updatePermanentRegistrationForm(connection) {
             referrerAddressInput.value = referrerAddress;
         }
         
-        // تابع کوتاه کردن اعداد بزرگ
+        // Function to shorten large numbers
         function formatLargeNumber(num) {
             if (num >= 1000000) {
                 return (num / 1000000).toFixed(1) + 'M';
@@ -2521,7 +2521,7 @@ async function updatePermanentRegistrationForm(connection) {
             }
         }
         
-        // به‌روزرسانی موجودی‌ها
+        // Update balances
         if (balancesDiv && IAMBalanceDiv && maticBalanceDiv) {
             try {
                 const [IAMBalance, maticBalance] = await Promise.all([
@@ -2545,7 +2545,7 @@ async function updatePermanentRegistrationForm(connection) {
             }
         }
         
-        // به‌روزرسانی هزینه ثبت‌نام
+        // Update registration cost
         try {
             const price = await window.getRegPrice(contract);
             const formattedPrice = parseFloat(ethers.formatUnits(price, 18)).toFixed(0);
@@ -2562,23 +2562,23 @@ async function updatePermanentRegistrationForm(connection) {
     }
 }
 
-// مقداردهی فرم ثبت‌نام دائمی در زمان لود صفحه
+// Initialize permanent registration form on page load
 document.addEventListener('DOMContentLoaded', function() {
     if (typeof window.initializePermanentRegistrationForm === 'function') {
         window.initializePermanentRegistrationForm();
     }
 });
 
-// تابع لود کردن تب ترنسفر
+// Function to load transfer tab
 window.loadTransferTab = async function() {
     try {
         console.log('Loading transfer tab...');
         
-        // بررسی اتصال کیف پول
+        // Check wallet connection
         if (!window.contractConfig || !window.contractConfig.contract) {
             console.log('Wallet not connected, loading transfer tab with connection message');
             
-            // نمایش پیام اتصال کیف پول
+            // Show wallet connection message
             const transferContainer = document.querySelector('.transfer-container');
             if (transferContainer) {
                 const existingMessage = transferContainer.querySelector('.wallet-connection-message');
