@@ -131,7 +131,7 @@
              existingBox.remove();
          }
          
-         // ایجاد message box جدید
+         // Create new message box
          const messageBox = document.createElement('div');
          messageBox.id = 'message-box';
          messageBox.style.cssText = `
@@ -153,7 +153,7 @@
              border: 1px solid ${type === 'error' ? 'rgba(255, 0, 0, 0.3)' : type === 'success' ? 'rgba(0, 255, 136, 0.3)' : 'rgba(167, 134, 255, 0.3)'};
          `;
          
-         // آیکون بر اساس نوع پیام
+         // Icon based on message type
          const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
          
          messageBox.innerHTML = `
@@ -175,7 +175,7 @@
          
          document.body.appendChild(messageBox);
          
-         // حذف خودکار بعد از 5 ثانیه
+         // Auto remove after 5 seconds
          setTimeout(() => {
              if (messageBox.parentElement) {
                  messageBox.remove();
@@ -183,15 +183,15 @@
          }, 5000);
      }
 
-     // تابع نمایش message box برای بررسی ایندکس (بدون دکمه exit)
+     // Function to display message box for index checking (without exit button)
      function showIndexCheckMessage(message, type = 'info') {
-         // حذف message box قبلی اگر وجود دارد
+         // Remove previous message box if exists
          const existingBox = document.getElementById('index-check-message');
          if (existingBox) {
              existingBox.remove();
          }
          
-         // تعیین رنگ و آیکون بر اساس نوع
+         // Determine color and icon based on type
          let bgColor, borderColor, icon;
          if (type === 'error') {
              bgColor = 'rgba(255, 0, 0, 0.95)';
@@ -211,7 +211,7 @@
              icon = 'ℹ️';
          }
          
-         // ایجاد message box جدید
+         // Create new message box
          const messageBox = document.createElement('div');
          messageBox.id = 'index-check-message';
          messageBox.style.cssText = `
@@ -243,7 +243,7 @@
          
          document.body.appendChild(messageBox);
          
-         // حذف خودکار بعد از 4 ثانیه
+         // Auto remove after 4 seconds
          setTimeout(() => {
              if (messageBox.parentElement) {
                  messageBox.style.animation = 'fadeOut 0.5s ease';
@@ -252,7 +252,7 @@
          }, 4000);
      }
 
-         // تابع نمایش توضیحات رزرو
+         // Function to display reserve information
      function showReserveInfoMessage() {
          const messageBox = document.createElement('div');
          messageBox.id = 'reserve-info-message';
@@ -316,7 +316,7 @@
         
         document.body.appendChild(messageBox);
         
-        // حذف خودکار بعد از 15 ثانیه
+                 // Auto remove after 15 seconds
         setTimeout(() => {
             if (messageBox.parentElement) {
                 messageBox.style.animation = 'fadeOut 0.5s ease';
@@ -325,7 +325,7 @@
         }, 15000);
     }
 
-    // تابع نمایش پیام‌های موقت (برای validation)
+    // Function to display temporary messages (for validation)
     function showTempMessage(message, type = 'info', duration = 3000) {
         const tempBox = document.createElement('div');
         tempBox.style.cssText = `
@@ -358,7 +358,7 @@
         }, duration);
     }
 
-    // اضافه کردن CSS animations
+    // Add CSS animations
     if (!document.getElementById('message-box-styles')) {
         const style = document.createElement('style');
         style.id = 'message-box-styles';
@@ -382,22 +382,22 @@
          document.addEventListener('DOMContentLoaded', function() {
            const addressInput = document.getElementById('new-user-address');
            
-          // وقتی کاربر روی اینپوت کلیک کند
+          // When user clicks on input
            addressInput.addEventListener('click', async function() {
                try {
-              // خواندن محتوای کلیپبورد
+              // Read clipboard content
                  const clipboardText = await navigator.clipboard.readText();
                  
-              // بررسی اینکه آیا متن کپی شده شبیه آدرس اتریوم است
+              // Check if copied text looks like Ethereum address
                  if (clipboardText.match(/^0x[a-fA-F0-9]{40}$/)) {
                    addressInput.value = clipboardText;
                 
-                                 // نمایش پیام موفقیت آمیز (اختیاری)
+                                 // Display success message (optional)
                  alert('Address copied from clipboard successfully!');
                  }
                } catch (err) {
                            console.error('Error accessing clipboard:', err);
-             // در صورت نیاز می‌توانید یک پیام خطا به کاربر نمایش دهید
+             // If needed, you can display an error message to user
              }
            });
          });
@@ -447,45 +447,45 @@
   <script>
     let selectedAvatar = 'man';
     let isConnected = false;
-    // تعریف متغیرهای ورودی قبل از هر استفاده
+    // Define input variables before any use
     const indexInput = document.getElementById('index-search');
     const refInput = document.getElementById('referrer-address');
      const newUserInput = document.getElementById('new-user-address');
     const defaultGuide = 'refferer ID : IAM00000';
     
-                                                // تابع بررسی اینکه آیا ایندکس هدف در زیرمجموعه کاربر جاری قرار دارد
+                                                // Function to check if target index is in current user's subtree
           function isIndexInUserSubtree(targetIndex, currentUserIndex) {
-            console.log(`🔍 بررسی: ایندکس هدف=${targetIndex}, کاربر جاری=${currentUserIndex}`);
+            console.log(`🔍 Checking: target index=${targetIndex}, current user=${currentUserIndex}`);
             
             if (targetIndex === currentUserIndex) {
-              console.log(`❌ خودش نمی‌تواند زیرمجموعه خودش باشد`);
+              console.log(`❌ Cannot be a subtree of itself`);
               return false;
             }
             
-            // بررسی اینکه آیا ایندکس هدف در زیرمجموعه کاربر جاری قرار دارد
+            // Check if target index is in current user's subtree
             let checkIndex = targetIndex;
             while (checkIndex > currentUserIndex) {
               checkIndex = Math.floor(checkIndex / 2);
-              console.log(`🔍 بررسی مسیر: ${checkIndex}`);
+              console.log(`🔍 Checking path: ${checkIndex}`);
               if (checkIndex === currentUserIndex) {
-                console.log(`✅ در زیرمجموعه قرار دارد`);
+                console.log(`✅ Is in subtree`);
                 return true;
               }
             }
             
-            // بررسی اضافی: اگر ایندکس هدف کمتر از کاربر جاری باشد، در زیرمجموعه نیست
+            // Additional check: if target index is less than current user, it's not in subtree
             if (targetIndex < currentUserIndex) {
-              console.log(`❌ ایندکس هدف کمتر از کاربر جاری است`);
+              console.log(`❌ Target index is less than current user`);
               return false;
             }
             
-            console.log(`❌ در زیرمجموعه قرار ندارد`);
+            console.log(`❌ Not in subtree`);
             return false;
                     }
       
 
       
-          // انتخاب آواتار
+          // Avatar selection
     document.querySelectorAll('.avatar-choice').forEach(el => {
       el.onclick = function() {
         document.querySelectorAll('.avatar-choice').forEach(e2 => e2.classList.remove('selected'));
@@ -494,10 +494,10 @@
       };
     });
 
-     // تغییر نوع ثبت نام بر اساس سربرگ انتخاب شده
+     // Change registration type based on selected tab
      let currentRegistrationType = 'normal';
      
-     // Event listener برای سربرگ ثبت نام معمولی
+     // Event listener for normal registration tab
      document.getElementById('normal-tab').addEventListener('click', function() {
        currentRegistrationType = 'normal';
        
@@ -507,20 +507,20 @@
        document.getElementById('free-tab').style.background = 'transparent';
        document.getElementById('free-tab').style.color = '#a786ff';
        
-       // تغییر متن دکمه
+       // Change button text
        document.getElementById('register-btn').textContent = 'Register';
        document.getElementById('register-btn').style.background = 'linear-gradient(90deg,#00ff88,#a786ff) !important';
        
-       // تغییر اطلاعات
+       // Change information
        document.getElementById('registration-type').textContent = 'Normal';
        document.getElementById('registration-type').style.color = '#00ff88';
        document.getElementById('registration-hint').textContent = 'For normal registration you need regPrice IAM tokens';
        
-       // به‌روزرسانی هزینه
+       // Update cost
        updateRegistrationCost();
      });
      
-     // Event listener برای سربرگ ثبت نام رایگان
+     // Event listener for free registration tab
      document.getElementById('free-tab').addEventListener('click', function() {
        currentRegistrationType = 'free';
        
@@ -530,26 +530,26 @@
        document.getElementById('normal-tab').style.background = 'transparent';
        document.getElementById('normal-tab').style.color = '#a786ff';
        
-       // تغییر متن دکمه
+       // Change button text
        document.getElementById('register-btn').textContent = 'Register Reserve';
        document.getElementById('register-btn').style.background = 'linear-gradient(90deg,#ff6b6b,#ffa500) !important';
        
-       // تغییر اطلاعات
+       // Change information
        document.getElementById('registration-type').textContent = 'Reserve';
        document.getElementById('registration-type').style.color = '#ff6b6b';
        document.getElementById('registration-hint').textContent = 'For reserve registration you need equivalent $23 IAM tokens';
        
-       // نمایش message box با توضیحات رزرو
+       // Display message box with reserve information
        showReserveInfoMessage();
        
-       // به‌روزرسانی هزینه
+       // Update cost
        updateRegistrationCost();
      });
      
-     // تابع به‌روزرسانی هزینه ثبت نام
+     // Function to update registration cost
      async function updateRegistrationCost() {
        if (currentRegistrationType === 'free') {
-         // حالت رزرو: معادل 23 دلار توکن
+         // Reserve mode: equivalent to $23 tokens
          try {
            if (window.contractConfig && window.contractConfig.contract) {
              const contract = window.contractConfig.contract;
@@ -567,9 +567,9 @@
          } catch (e) {
            document.getElementById('register-cost').textContent = '23 IAM';
          }
-       } else {
-         // حالت نرمال: از تابع regPrice استفاده کن
-         try {
+                } else {
+           // Normal mode: use regPrice function
+           try {
            if (window.contractConfig && window.contractConfig.contract) {
              const contract = window.contractConfig.contract;
              if (typeof window.getRegPrice === 'function') {
@@ -592,7 +592,7 @@
        }
      }
 
-         // مقداردهی اولیه اطلاعات
+         // Initialize information
     async function loadRegisterInfo() {
       const status = document.getElementById('status-message');
       const connStatus = document.getElementById('connection-status');
@@ -608,20 +608,20 @@
                  connection = await window.connectWallet();
          contract = connection.contract;
          myAddress = connection.address;
-         window.currentUserAddress = myAddress; // ذخیره آدرس برای استفاده در توابع دیگر
+         window.currentUserAddress = myAddress; // Save address for use in other functions
          isConnected = true;
         connStatus.textContent = '';
         document.getElementById('register-info').style.display = '';
         document.getElementById('register-btn').disabled = false;
         document.querySelectorAll('input').forEach(i=>i.disabled=false);
-        // مقداردهی referrer (والد) و parent-index فقط بعد از مقداردهی user
+                 // Initialize referrer (parent) and parent-index only after user initialization
         const refInput = document.getElementById('referrer-address');
         let user;
         let parentIndex = '...';
         try {
           user = await contract.users(myAddress);
           console.log(`🔍 وضعیت کاربر:`, user);
-          // اگر کاربر فعال نیست، پیام پیشنهاد ثبت‌نام را نمایش بده
+                     // If user is not active, show registration suggestion message
             const suggestionDiv = document.getElementById('register-suggestion');
                      if (user && !(user.index && BigInt(user.index) > 0n)) {
              console.log(`⚠️ User registered but not active`);
@@ -635,18 +635,18 @@
              console.log(`✅ User is active: index=${user.index}`);
              suggestionDiv.style.display = 'none';
            }
-          // اگر کیف پول فعال است و مقدار فعلی روت یا خالی است، مقدار را به آدرس کیف پول متصل تغییر بده
+                     // If wallet is active and current value is root or empty, change value to connected wallet address
           if ((!refInput.value || refInput.value === 'root') && (user.index && BigInt(user.index) > 0n)) {
             refInput.value = myAddress;
           } else if (!(user.index && BigInt(user.index) > 0n) && (!refInput.value || refInput.value === myAddress)) {
             refInput.value = 'root';
           }
-          // مقداردهی parent-index
+                     // Initialize parent-index
           parentIndex = user.index ? user.index.toString() : '...';
-          // مقداردهی پیش‌فرض فیلد ایندکس فقط اگر مقدار فعلی راهنما یا خالی است
+                     // Initialize default index field only if current value is guide or empty
           const indexInput = document.getElementById('index-search');
           if ((!indexInput.value || indexInput.value === defaultGuide) && (user.index && BigInt(user.index) > 0n) && user.index) {
-            // فرمت ایندکس
+                         // Format index
             let IAMId = 'IAM' + user.index.toString().padStart(5, '0');
             indexInput.value = IAMId;
             indexInput.style.background = '';
@@ -654,7 +654,7 @@
             indexInput.style.opacity = '';
           }
                  } catch (e) {
-          // اگر خطا داشتیم، مقدار پیش‌فرض روت و راهنما را نگه دار
+          // If we had an error, keep default root and guide values
           refInput.value = 'root';
            parentIndex = '...';
          }
@@ -662,7 +662,7 @@
         
         
         
-        // مقداردهی empty-index (پیشنهادی)
+                 // Initialize empty-index (suggested)
          let emptyIndex = '...';
          if (parentIndex !== '...') {
            let left = await contract.getLeftAddress(parentIndex);
@@ -677,10 +677,10 @@
          }
          document.getElementById('empty-index').textContent = emptyIndex;
         
-                 // به‌روزرسانی هزینه ثبت نام
+                 // Update registration cost
          await updateRegistrationCost();
         
-        // موجودی متیک
+                 // MATIC balance
         let maticBalance = '...';
         if (isConnected && contract && myAddress) {
           try {
@@ -691,59 +691,59 @@
           }
         }
         document.getElementById('matic-balance').textContent = maticBalance;
-        // موجودی IAM
+                 // IAM balance
         let IAMBalance = '...';
         if (isConnected && contract && myAddress && typeof contract.balanceOf === 'function') {
           try {
             let IAM = await contract.balanceOf(myAddress);
             IAMBalance = IAM ? (typeof ethers !== 'undefined' ? Number(ethers.formatEther(IAM)).toFixed(2) : (Number(IAM)/1e18).toFixed(2)) : '0.00';
             
-            // بررسی کفایت موجودی IAM بر اساس نوع ثبت‌نام فعلی
+                         // Check IAM balance sufficiency based on current registration type
             const IAMBalanceElement = document.getElementById('IAM-balance');
             try {
               let requiredIAM = 0;
               
-              if (currentRegistrationType === 'free') {
-                // حالت رزرو: معادل 23 دلار توکن
-                let tokenPriceNum = 1; // قیمت پیش‌فرض 1 دلار
+                             if (currentRegistrationType === 'free') {
+                 // Reserve mode: equivalent to $23 tokens
+                                 let tokenPriceNum = 1; // Default price $1
                 if (typeof contract.getTokenPrice === 'function') {
                   const tokenPrice = await contract.getTokenPrice();
                   tokenPriceNum = Number(ethers.formatUnits(tokenPrice, 18));
                 }
                 requiredIAM = parseFloat((23 / tokenPriceNum).toFixed(2));
-              } else {
-                // حالت نرمال: از تابع regPrice استفاده کن
+                             } else {
+                 // Normal mode: use regPrice function
                 if (typeof window.getRegPrice === 'function') {
                   const regPrice = await window.getRegPrice(contract);
                   if (regPrice) {
                     requiredIAM = parseFloat(Number(ethers.formatUnits(regPrice, 18)).toFixed(2));
-                  } else {
-                    requiredIAM = 0; // اگر regPrice در دسترس نباشد
-                  }
-                } else {
-                  requiredIAM = 0; // اگر تابع getRegPrice در دسترس نباشد
-                }
+                                   } else {
+                   requiredIAM = 0; // If regPrice is not available
+                 }
+               } else {
+                 requiredIAM = 0; // If getRegPrice function is not available
+               }
               }
               
-              // رنگ موجودی IAM
+                             // IAM balance color
               if (parseFloat(IAMBalance) >= requiredIAM) {
-                IAMBalanceElement.style.color = '#00ff88'; // سبز: کافی است
-              } else {
-                IAMBalanceElement.style.color = '#ff453a'; // قرمز: کافی نیست
-              }
+                                 IAMBalanceElement.style.color = '#00ff88'; // Green: sufficient
+               } else {
+                 IAMBalanceElement.style.color = '#ff453a'; // Red: insufficient
+               }
               
-              // رنگ هزینه ثبت‌نام بر اساس کفایت موجودی
+                             // Registration cost color based on balance sufficiency
               const registerCostElement = document.getElementById('register-cost');
               if (registerCostElement) {
-                if (parseFloat(IAMBalance) >= requiredIAM) {
-                  registerCostElement.style.color = '#00ff88'; // سبز: موجودی کافی است
-              } else {
-                  registerCostElement.style.color = '#ff453a'; // قرمز: موجودی کافی نیست
-                }
+                                 if (parseFloat(IAMBalance) >= requiredIAM) {
+                   registerCostElement.style.color = '#00ff88'; // Green: balance sufficient
+               } else {
+                   registerCostElement.style.color = '#ff453a'; // Red: balance insufficient
+                 }
               }
-            } catch (e) {
-              console.log('خطا در بررسی کفایت موجودی:', e);
-            }
+                         } catch (e) {
+               console.log('Error checking balance sufficiency:', e);
+             }
           } catch (e) {
             IAMBalance = '0.00';
           }
@@ -753,7 +753,7 @@
         isConnected = false;
         console.error('Connection error in loadRegisterInfo:', e);
          
-         // بررسی خطای MetaMask - بهبود یافته
+         // MetaMask error check - improved
          if (e.message && (
            e.message.includes('MetaMask is not installed') ||
            e.message.includes('Cannot read properties of undefined') ||
@@ -774,13 +774,13 @@
     }
          window.addEventListener('DOMContentLoaded', loadRegisterInfo);
      
-     // گوش دادن به تغییرات کیف پول
+     // Listen to wallet changes
      if (window.ethereum) {
        window.ethereum.on('accountsChanged', async function (accounts) {
-         console.log('🔄 کیف پول تغییر کرد:', accounts);
+         console.log('🔄 Wallet changed:', accounts);
          if (accounts.length > 0) {
            window.currentUserAddress = accounts[0];
-           await loadRegisterInfo(); // بارگذاری مجدد اطلاعات
+           await loadRegisterInfo(); // Reload information
          }
        });
      }
