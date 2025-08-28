@@ -1,18 +1,18 @@
 // homepage.js
-// سایر کدهای مربوط به داشبورد و آمار و ... (کدهای expand/collapse و marquee حذف شدند)
+// Other codes related to dashboard and statistics and ... (expand/collapse and marquee codes were removed)
 // ...
 
-// homepage.js - بارگذاری داده‌های داشبورد و آمار پلتفرم
+// homepage.js - Loading dashboard data and platform statistics
 let dashboardLoading = false;
 let dashboardInitialized = false;
 let lastDashboardUpdate = 0;
 let dashboardUpdateInterval = null;
 const DASHBOARD_UPDATE_INTERVAL = 30000; // 30 seconds between dashboard updates
 
-// متغیرهای سراسری
+// Global variables
 let isDashboardLoading = false;
 
-// تابع به‌روزرسانی وضعیت اتصال
+// Function to update connection status
 function updateConnectionStatus(type, message) {
     const statusElement = document.getElementById('connection-status');
     if (statusElement) {
@@ -20,21 +20,21 @@ function updateConnectionStatus(type, message) {
         statusElement.className = `connection-status ${type}`;
         statusElement.style.display = 'block';
         
-        // پاک کردن پیام بعد از 5 ثانیه
+        // Clear message after 5 seconds
         setTimeout(() => {
             statusElement.style.display = 'none';
         }, 5000);
     }
 }
 
-// --- کش داشبورد: ذخیره و بازیابی ---
+// --- Dashboard cache: save and retrieve ---
 function cacheDashboardData(data) {
   try {
     localStorage.setItem('dashboardCache', JSON.stringify({
       data,
       timestamp: Date.now()
     }));
-  } catch (e) { /* نادیده بگیر */ }
+  } catch (e) { /* ignore */ }
 }
 function getCachedDashboardData() {
   const cached = localStorage.getItem('dashboardCache');
@@ -45,11 +45,11 @@ function getCachedDashboardData() {
   }
   return null;
 }
-// --- افکت نرم برای آپدیت مقدار - بروزرسانی هوشمند ---
+// --- Smooth effect for value update - Smart update ---
 function animateValueChange(el, newValue) {
   if (!el) return;
   
-  // استفاده از سیستم بروزرسانی هوشمند (فقط در صورت تغییر)
+  // Use smart update system (only if changed)
   if (window.smartUpdate) {
     return window.smartUpdate(el, newValue, {
       transitionDuration: 500,
@@ -57,14 +57,14 @@ function animateValueChange(el, newValue) {
       preventFlicker: true
     });
   } else if (window.updateValueSmoothly) {
-    // Fallback به سیستم نرم قدیمی
+
     window.updateValueSmoothly(el, newValue, {
       transitionDuration: 500,
       numberAnimation: true,
       preventFlicker: true
     });
   } else {
-    // Fallback نهایی
+
     if (el.textContent !== newValue) {
       el.textContent = newValue;
     }
@@ -72,40 +72,40 @@ function animateValueChange(el, newValue) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // تنظیم loading state برای تمام elements
+    // Set loading state for all elements
     if (window.dashboardLoadingManager) {
         window.dashboardLoadingManager.setDashboardLoading(true);
     }
     
-    // نمایش داده کش‌شده بلافاصله
+    // Display cached data immediately
     const cached = getCachedDashboardData();
     if (cached) {
       await updateDashboardUI(
         cached.prices, cached.stats, cached.additionalStats, cached.tradingVolume, cached.priceChanges
       );
     }
-    // سپس آپدیت بک‌گراند را شروع کن
+    // Then start background update
     try {
-        // به‌روزرسانی نمایش دکمه‌های کیف پول
+        // Update wallet button display
         if (window.WalletConnectHandler) {
             window.WalletConnectHandler.updateWalletButtonVisibility();
         }
         
-        // شروع نظارت بر تغییرات اتصال
+        // Start connection monitoring
         startConnectionMonitoring();
         
-        // منتظر اتصال کیف پول بمان
+        // Wait for wallet connection
         const walletConnected = await waitForWalletConnection();
         
         if (walletConnected.connected) {
-            // بارگذاری داده‌های داشبورد
+            // Load dashboard data
             await loadDashboardData();
             dashboardInitialized = true;
 
-            // سیستم مرکزی به صورت خودکار راه‌اندازی می‌شود
-            console.log('✅ کیف پول متصل شد - سیستم مرکزی مدیریت بروزرسانی را انجام می‌دهد');
+            // Central system starts automatically
+            console.log('✅ Wallet connected - Central system manages updates');
         } else {
-            // شروع نظارت بر اتصال
+            // Start connection monitoring
             startConnectionMonitoring();
         }
 
@@ -114,13 +114,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// تابع شروع به‌روزرسانی خودکار داشبورد - غیرفعال شده (سیستم مرکزی جایگزین شده)
+// Function to start automatic dashboard update - Disabled (Central system replaced it)
 function startDashboardAutoUpdate() {
-    console.log('⚠️ startDashboardAutoUpdate غیرفعال شده - سیستم مرکزی فعال است');
-    // این تابع غیرفعال شده و سیستم مرکزی جایگزین آن شده است
+    console.log('⚠️ startDashboardAutoUpdate disabled - Central system is active');
+    // This function is disabled and the central system has replaced it
 }
 
-// تابع توقف به‌روزرسانی خودکار داشبورد
+// Function to stop automatic dashboard update
 function stopDashboardAutoUpdate() {
     if (dashboardUpdateInterval) {
         clearInterval(dashboardUpdateInterval);
@@ -128,38 +128,38 @@ function stopDashboardAutoUpdate() {
     }
 }
 
-// تابع انتظار برای اتصال کیف پول
+// Function to wait for wallet connection
 async function waitForWalletConnection() {
     let attempts = 0;
-    const maxAttempts = 5; // کاهش به 5 ثانیه
+    const maxAttempts = 5; // Reduced to 5 seconds
     
     while (attempts < maxAttempts) {
         try {
-            // بررسی اینکه آیا تابع checkConnection موجود است
+            // Check if checkConnection function exists
             if (typeof window.checkConnection === 'function') {
                 const result = await window.checkConnection();
                 if (result && result.connected) {
                     return result;
                 }
             } else {
-                // اگر تابع checkConnection موجود نیست، منتظر بمانیم
+                // If checkConnection function doesn't exist, wait
                 await new Promise(resolve => setTimeout(resolve, 1000));
             }
         } catch (error) {
             console.warn('Wallet connection attempt failed:', error);
-            // خطا را نادیده بگیر و ادامه بده
+            // Ignore error and continue
         }
         
         await new Promise(resolve => setTimeout(resolve, 1000));
         attempts++;
     }
     
-    // به جای throw کردن خطا، false برگردان
+    // Instead of throwing error, return false
     console.warn('Dashboard: Timeout waiting for wallet connection - continuing without wallet');
     return { connected: false, error: 'Timeout waiting for wallet connection' };
 }
 
-// تابع بارگذاری داده‌های داشبورد
+// Function to load dashboard data
 async function loadDashboardData() {
     if (isDashboardLoading) {
         return;
@@ -168,11 +168,11 @@ async function loadDashboardData() {
     isDashboardLoading = true;
     
     try {
-        // بررسی اتصال کیف پول
+        // Check wallet connection
         const walletConnected = await waitForWalletConnection();
         
         if (walletConnected.connected) {
-            // دریافت داده‌ها به صورت موازی - بدون fallback values
+            // Get data in parallel - without fallback values
             const [prices, stats, additionalStats, tradingVolume] = await Promise.all([
                 window.getPrices(),
                 window.getContractStats(),
@@ -180,46 +180,46 @@ async function loadDashboardData() {
                 getTradingVolume()
             ]);
             
-            // محاسبه تغییرات قیمت
+            // Calculate price changes
             const priceChanges = await calculatePriceChanges();
             
-            // بارگذاری آمار شبکه
+            // Load network statistics
             try {
                 await window.autoLoadNetworkStats();
             } catch (error) {
                 console.warn('Failed to load network stats:', error);
             }
             
-            // بررسی تغییرات قبل از بروزرسانی UI (بروزرسانی هوشمند)
+            // Check changes before updating UI (Smart update)
             const newDashboardData = {prices, stats, additionalStats, tradingVolume, priceChanges};
             
-            // بررسی تغییر در داده‌های کلی
+            // Check for changes in overall data
             if (window.hasObjectChanged && window.hasObjectChanged('dashboardData', newDashboardData)) {
-                console.log('🔄 تغییرات در داده‌های داشبورد تشخیص داده شد - بروزرسانی UI');
+                console.log('🔄 Changes detected in dashboard data - Updating UI');
                 
-                // به‌روزرسانی UI فقط در صورت تغییر
+                // Update UI only if changed
                 await updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceChanges);
                 await updateDAIContractBalance();
                 
-                // ذخیره داده جدید در کش
+                // Save new data to cache
                 cacheDashboardData(newDashboardData);
                 
-                // حذف loading state بعد از تکمیل بروزرسانی
+                // Remove loading state after update completion
                 if (window.dashboardLoadingManager) {
                     window.dashboardLoadingManager.setDashboardLoading(false);
                 }
             } else {
-                console.log('⚡ هیچ تغییری در داده‌های داشبورد نیست - بروزرسانی UI لغو شد');
-                // در صورت عدم تغییر هم loading را حذف کن
+                console.log('⚡ No changes in dashboard data - UI update cancelled');
+                // Remove loading even if no changes
                 if (window.dashboardLoadingManager) {
                     window.dashboardLoadingManager.setDashboardLoading(false);
                 }
             }
         } else {
-            // اگر کیف پول متصل نیست، پیام مناسب نمایش بده
-            updateConnectionStatus('info', 'برای مشاهده داده‌های کامل، کیف پول خود را متصل کنید');
+            // If wallet is not connected, show appropriate message
+            updateConnectionStatus('info', 'Connect your wallet to view complete data');
             
-            // نمایش حالت خالی بدون مقادیر پیش‌فرض
+            // Display empty state without default values
             const emptyData = {
                 prices: { IAMPriceUSD: null, IAMPriceMatic: null },
                 stats: {
@@ -242,19 +242,19 @@ async function loadDashboardData() {
         
     } catch (error) {
         console.warn('Dashboard: Error loading data:', error);
-        updateConnectionStatus('error', 'خطا در بارگذاری داده‌های داشبورد');
+        updateConnectionStatus('error', 'Error loading dashboard data');
     } finally {
         isDashboardLoading = false;
     }
 }
 
-// تابع محاسبه تغییرات قیمت
+// Function to calculate price changes
 async function calculatePriceChanges() {
     try {
-        // در اینجا می‌توانید تغییرات قیمت را محاسبه کنید
-        // برای مثال، مقایسه با قیمت قبلی یا میانگین قیمت‌ها
+        // Here you can calculate price changes
+        // For example, compare with previous price or average prices
         
-        // اگر داده‌ای برای محاسبه تغییرات موجود نیست، null برگردان
+        // If no data is available for calculating changes, return null
         return {
             IAMPriceChange: null,
             maticPriceChange: null,
@@ -273,10 +273,10 @@ async function calculatePriceChanges() {
 // تابع به‌روزرسانی UI داشبورد
 async function updateDashboardUI(prices, stats, additionalStats, tradingVolume, priceChanges) {
     const safeFormat = (val, prefix = '', suffix = '', isInteger = false, maxDecimals = 4) => {
-        if (val === null || val === undefined || val === '') return 'در دسترس نیست';
+        if (val === null || val === undefined || val === '') return 'Not Available';
         if (typeof val === 'string' && val.includes('e')) return val; // Already in scientific notation
         const num = parseFloat(val);
-        if (isNaN(num)) return 'در دسترس نیست';
+        if (isNaN(num)) return 'Not Available';
         if (num === 0) return '0';
         if (num < 0.000001) {
             return num.toExponential(6);
@@ -298,11 +298,11 @@ async function updateDashboardUI(prices, stats, additionalStats, tradingVolume, 
         if (el) {
             let formatted;
             if (value === null || value === undefined) {
-                formatted = 'در دسترس نیست';
+                formatted = 'Not Available';
             } else {
                 const num = parseFloat(value);
                 if (isNaN(num)) {
-                    formatted = 'در دسترس نیست';
+                    formatted = 'Not Available';
                 } else if (num === 0) {
                     formatted = '0' + suffix;
                 } else if (num < 0.000001) {
@@ -406,15 +406,15 @@ async function updateDashboardUI(prices, stats, additionalStats, tradingVolume, 
 function checkWalletConnectionStatus() {
     try {
         if (window.contractConfig && window.contractConfig.address) {
-            updateConnectionStatus('success', `متصل به: ${shortenAddress(window.contractConfig.address)}`);
+            updateConnectionStatus('success', `Connected to: ${shortenAddress(window.contractConfig.address)}`);
             return true;
         } else {
-            updateConnectionStatus('info', 'کیف پول متصل نیست');
+            updateConnectionStatus('info', 'Wallet not connected');
             return false;
         }
     } catch (error) {
         // console.error('Dashboard: Error checking wallet status:', error);
-        updateConnectionStatus('error', 'خطا در بررسی وضعیت کیف پول');
+        updateConnectionStatus('error', 'Error checking wallet status');
         return false;
     }
 }
@@ -459,7 +459,7 @@ async function disconnectWallet() {
         
         // به‌روزرسانی UI
         updateWalletButtonVisibility();
-        updateConnectionStatus('info', 'کیف پول قطع شد');
+        updateConnectionStatus('info', 'Wallet disconnected');
         
         // Update user status bar after wallet disconnection
         if (typeof window.updateUserStatusBar === 'function') {
@@ -470,7 +470,7 @@ async function disconnectWallet() {
         
     } catch (error) {
         // console.error('Dashboard: Error disconnecting wallet:', error);
-        updateConnectionStatus('error', 'خطا در قطع اتصال کیف پول');
+        updateConnectionStatus('error', 'Error disconnecting wallet');
     }
 }
 
@@ -705,7 +705,7 @@ async function handleWalletConnectSuccess(walletConnectProvider) {
         localStorage.setItem('walletAddress', address);
         localStorage.setItem('walletType', 'walletconnect');
         
-        updateConnectionStatus('success', 'اتصال با کیف پول موفقیت‌آمیز بود');
+        updateConnectionStatus('success', 'Wallet connection successful');
         updateWalletButtonVisibility();
         
         // بارگذاری داده‌های داشبورد فقط اگر در حال بارگذاری نیست
@@ -738,7 +738,7 @@ async function handleWalletConnectSuccess(walletConnectProvider) {
         };
     } catch (error) {
         // console.error('Error handling WalletConnect success:', error);
-        updateConnectionStatus('error', 'خطا در تنظیم اتصال: ' + error.message);
+        updateConnectionStatus('error', 'Error setting up connection: ' + error.message);
         throw error;
     }
 }
@@ -758,7 +758,7 @@ async function connectWithQRCode() {
         }
         
         // به‌روزرسانی وضعیت اتصال
-        updateConnectionStatus('info', 'در حال اتصال با WalletConnect...');
+        updateConnectionStatus('info', 'Connecting with WalletConnect...');
         
         // فراخوانی تابع اتصال از WalletConnectHandler
         const provider = await window.WalletConnectHandler.connectWithWalletConnect();
@@ -785,7 +785,7 @@ async function connectWithQRCode() {
         }
         
         // نمایش خطا به کاربر
-        const errorMessage = error.message || 'خطا در اتصال WalletConnect';
+        const errorMessage = error.message || 'Error connecting WalletConnect';
         updateConnectionStatus('error', errorMessage);
         
         // به‌روزرسانی UI

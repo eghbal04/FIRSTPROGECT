@@ -408,7 +408,7 @@
                     else if (now - lastMonthly < oneMonth) monthlyMsg = 'At least one month must have passed since the last monthly withdrawal.';
                 }
             }
-            // نمایش
+            // Display
             content.innerHTML = `
                 <div class="balance-box">
                     <div class="balance-item">
@@ -503,11 +503,11 @@
               const cashbackBtn = document.getElementById('monthly-cashback-btn');
               const cashbackMsg = document.getElementById('monthly-cashback-msg');
               
-              // دکمه کلایم (برداشت کمیسیون)
+              // Claim button (commission withdrawal)
               const claimBtn = document.getElementById('claim-btn');
               if (claimBtn) {
                 claimBtn.addEventListener('click', async function(e) {
-                  console.log('Claim button clicked!'); // برای دیباگ
+                  console.log('Claim button clicked!'); // for debugging
                   claimBtn.disabled = true;
                   claimBtn.style.opacity = '0.5';
                   claimBtn.style.cursor = 'not-allowed';
@@ -523,8 +523,8 @@
                   cashbackMsg.style.boxShadow = '0 2px 8px #a786ff22';
                   cashbackMsg.style.whiteSpace = 'pre-line';
                   
-                  // نمایش پیام مشخص برای عملیات کلایم
-                  cashbackMsg.innerHTML = '<b>💸 عملیات برداشت کمیسیون:</b><br>• این عملیات پاداش‌های باینری شما را برداشت می‌کند<br>• فقط هر 12 ساعت یکبار امکان برداشت وجود دارد<br>• باید پوینت‌های فعال داشته باشید<br>• اگر پوینت ندارید یا 12 ساعت نگذشته، برداشت ممکن نیست<br><br><b>🔍 در حال بررسی شرایط...</b>';
+                  // Display specific message for claim operation
+                  cashbackMsg.innerHTML = '<b>💸 Commission Withdrawal Operation:</b><br>• This operation withdraws your binary rewards<br>• Withdrawal is only possible once every 12 hours<br>• You must have active points<br>• If you don\'t have points or 12 hours haven\'t passed, withdrawal is not possible<br><br><b>🔍 Checking conditions...</b>';
                   cashbackMsg.style.color = '#a786ff';
                   
                   try {
@@ -532,55 +532,55 @@
                     const user = await fetchUserSafe(address);
                     const now = Math.floor(Date.now() / 1000);
                     
-                    // بررسی شرایط برداشت
+                    // Check withdrawal conditions
                     if (!(user.index && BigInt(user.index) > 0n)) {
-                      throw new Error('حساب شما فعال نیست. ابتدا باید ثبت‌نام کنید.');
+                      throw new Error('Your account is not active. You must register first.');
                     }
                     
                     if (user.binaryPoints == 0) {
-                      throw new Error('شما هیچ پوینتی برای برداشت ندارید.');
+                      throw new Error('You have no points to withdraw.');
                     }
                     
                     if (now < Number(user.lastClaimTime) + 12 * 3600) {
                       const remain = Math.ceil((Number(user.lastClaimTime) + 12 * 3600 - now) / 3600);
-                      throw new Error(`هنوز ${remain} ساعت تا برداشت بعدی باقی مانده است.`);
+                      throw new Error(`Still ${remain} hours remaining until next withdrawal.`);
                     }
                     
-                    cashbackMsg.innerHTML = '⏳ در حال ارسال درخواست برداشت کمیسیون...';
+                    cashbackMsg.innerHTML = '⏳ Sending commission withdrawal request...';
                     cashbackMsg.style.color = '#00ff88';
                     
-                    // فراخوانی تابع کلایم
+                    // Call claim function
                     const tx = await contract.claim();
                     
-                    cashbackMsg.innerHTML = '⏳ منتظر تایید تراکنش در کیف پول...';
+                    cashbackMsg.innerHTML = '⏳ Waiting for transaction confirmation in wallet...';
                     cashbackMsg.style.color = '#a786ff';
                     
                     await tx.wait();
                     
-                    cashbackMsg.innerHTML = '✅ برداشت کمیسیون با موفقیت انجام شد!';
+                    cashbackMsg.innerHTML = '✅ Commission withdrawal completed successfully!';
                     cashbackMsg.style.color = '#00ff88';
                     cashbackMsg.style.background = 'rgba(0,255,136,0.08)';
                     cashbackMsg.style.border = '1.5px solid #00ff88';
                     
                     setTimeout(() => {
                       cashbackMsg.style.display = 'none';
-                      loadProfile(); // بارگذاری مجدد پروفایل
+                      loadProfile(); // Reload profile
                     }, 2000);
                     
                   } catch(err) {
-                    console.error('Claim error:', err); // برای دیباگ
-                    let errorMsg = 'خطا در برداشت کمیسیون';
+                    console.error('Claim error:', err); // for debugging
+                    let errorMsg = 'Error in commission withdrawal';
                     
                     if (err.code === 4001 || err.message.includes('user denied')) {
-                      errorMsg = '❌ تراکنش توسط کاربر لغو شد.';
+                      errorMsg = '❌ Transaction was cancelled by user.';
                     } else if (err.code === -32002 || err.message.includes('Already processing')) {
-                      errorMsg = '⏳ کیف پول در حال پردازش درخواست دیگری است. لطفاً صبر کنید.';
+                      errorMsg = '⏳ Wallet is processing another request. Please wait.';
                     } else if (err.message.includes('network')) {
-                      errorMsg = '❌ خطای شبکه! اتصال اینترنت را بررسی کنید.';
+                      errorMsg = '❌ Network error! Check your internet connection.';
                     } else if (err.message.includes('insufficient funds')) {
-                      errorMsg = '❌ موجودی کافی برای پرداخت کارمزد تراکنش ندارید.';
+                      errorMsg = '❌ Insufficient balance to pay transaction fee.';
                     } else {
-                      errorMsg = '❌ ' + (err.message || 'خطای نامشخص در برداشت');
+                      errorMsg = '❌ ' + (err.message || 'Unknown withdrawal error');
                     }
                     
                     cashbackMsg.innerHTML = errorMsg;
@@ -599,10 +599,10 @@
                 });
               }
               
-              // دکمه کش‌بک (برداشت ماهانه)
+              // Cashback button (monthly withdrawal)
               if (cashbackBtn && cashbackMsg) {
                 cashbackBtn.addEventListener('click', async function(e) {
-                  console.log('Cashback button clicked!'); // برای دیباگ
+                  console.log('Cashback button clicked!'); // for debugging
                   cashbackBtn.disabled = true;
                   cashbackBtn.style.opacity = '0.5';
                   cashbackBtn.style.cursor = 'not-allowed';
@@ -618,8 +618,8 @@
                   cashbackMsg.style.boxShadow = '0 2px 8px #00ff8822';
                   cashbackMsg.style.whiteSpace = 'pre-line';
                   
-                  // نمایش پیام مشخص برای عملیات کش‌بک
-                  cashbackMsg.innerHTML = '<b>📆 عملیات برداشت کش‌بک ماهانه:</b><br>• این عملیات پاداش ماهانه شما را برداشت می‌کند<br>• فقط هر 30 روز یکبار امکان برداشت وجود دارد<br>• باید حداقل یک موقعیت فرزند خالی داشته باشید<br>• سقف کش‌بک برابر با مبلغ سپرده شما است<br>• <span style=\'color:#a786ff\'>در صورت وجود موجودی کافی در صندوق کمک، <b>سه درصد</b> از مبلغ پرداختی شما به عنوان کش‌بک ماهانه پرداخت می‌شود.</span><br><br><b>🔍 در حال بررسی شرایط...</b>';
+                  // Display specific message for cashback operation
+                  cashbackMsg.innerHTML = '<b>📆 Monthly Cashback Withdrawal Operation:</b><br>• This operation withdraws your monthly reward<br>• Withdrawal is only possible once every 30 days<br>• You must have at least one empty child position<br>• Cashback limit equals your deposit amount<br>• <span style=\'color:#a786ff\'>If there is sufficient balance in the help fund, <b>three percent</b> of your payment amount is paid as monthly cashback.</span><br><br><b>🔍 Checking conditions...</b>';
                   cashbackMsg.style.color = '#00ff88';
                   
                   try {
@@ -629,59 +629,59 @@
                     const leftAddr = await contract.getLeftAddress(user.index);
                     const rightAddr = await contract.getRightAddress(user.index);
                     
-                    // بررسی شرایط برداشت کش‌بک
+                    // Check cashback withdrawal conditions
                     if (!(user.index && BigInt(user.index) > 0n)) {
-                      throw new Error('حساب شما فعال نیست. ابتدا باید ثبت‌نام کنید.');
+                      throw new Error('Your account is not active. You must register first.');
                     }
                     
                     if (leftAddr != '0x0000000000000000000000000000000000000000' && rightAddr != '0x0000000000000000000000000000000000000000') {
-                      throw new Error('برای برداشت کش‌بک، باید حداقل یک موقعیت فرزند خالی داشته باشید.');
+                      throw new Error('To withdraw cashback, you must have at least one empty child position.');
                     }
                     
                     if (now < Number(user.lastMonthlyClaim) + 30 * 24 * 3600) {
                       const remain = Math.ceil((Number(user.lastMonthlyClaim) + 30 * 24 * 3600 - now) / (24*3600));
-                      throw new Error(`هنوز ${remain} روز تا برداشت کش‌بک بعدی باقی مانده است.`);
+                      throw new Error(`Still ${remain} days remaining until next cashback withdrawal.`);
                     }
                     
                     if (user.totalMonthlyRewarded >= user.depositedAmount) {
-                      throw new Error('سقف کش‌بک ماهانه شما پر شده است.');
+                      throw new Error('Your monthly cashback limit is full.');
                     }
                     
-                    cashbackMsg.innerHTML = '⏳ در حال ارسال درخواست برداشت کش‌بک...';
+                    cashbackMsg.innerHTML = '⏳ Sending cashback withdrawal request...';
                     cashbackMsg.style.color = '#a786ff';
                     
-                    // فراخوانی تابع کش‌بک
+                    // Call cashback function
                     const tx = await contract.claimMonthlyReward(1);
                     
-                    cashbackMsg.innerHTML = '⏳ منتظر تایید تراکنش در کیف پول...';
+                    cashbackMsg.innerHTML = '⏳ Waiting for transaction confirmation in wallet...';
                     cashbackMsg.style.color = '#a786ff';
                     
                     await tx.wait();
                     
-                    cashbackMsg.innerHTML = '✅ برداشت کش‌بک ماهانه با موفقیت انجام شد!';
+                    cashbackMsg.innerHTML = '✅ Monthly cashback withdrawal completed successfully!';
                     cashbackMsg.style.color = '#00ff88';
                     cashbackMsg.style.background = 'rgba(0,255,136,0.08)';
                     cashbackMsg.style.border = '1.5px solid #00ff88';
                     
                     setTimeout(() => {
                       cashbackMsg.style.display = 'none';
-                      loadProfile(); // بارگذاری مجدد پروفایل
+                      loadProfile(); // Reload profile
                     }, 2000);
                     
                   } catch(err) {
-                    console.error('Cashback error:', err); // برای دیباگ
-                    let errorMsg = 'خطا در برداشت کش‌بک';
+                    console.error('Cashback error:', err); // for debugging
+                    let errorMsg = 'Error in cashback withdrawal';
                     
                     if (err.code === 4001 || err.message.includes('user denied')) {
-                      errorMsg = '❌ تراکنش توسط کاربر لغو شد.';
+                      errorMsg = '❌ Transaction was cancelled by user.';
                     } else if (err.code === -32002 || err.message.includes('Already processing')) {
-                      errorMsg = '⏳ کیف پول در حال پردازش درخواست دیگری است. لطفاً صبر کنید.';
+                      errorMsg = '⏳ Wallet is processing another request. Please wait.';
                     } else if (err.message.includes('network')) {
-                      errorMsg = '❌ خطای شبکه! اتصال اینترنت را بررسی کنید.';
+                      errorMsg = '❌ Network error! Check your internet connection.';
                     } else if (err.message.includes('insufficient funds')) {
-                      errorMsg = '❌ موجودی کافی برای پرداخت کارمزد تراکنش ندارید.';
+                      errorMsg = '❌ Insufficient balance to pay transaction fee.';
                     } else {
-                      errorMsg = '❌ ' + (err.message || 'خطای نامشخص در برداشت');
+                      errorMsg = '❌ ' + (err.message || 'Unknown withdrawal error');
                     }
                     
                     cashbackMsg.innerHTML = errorMsg;

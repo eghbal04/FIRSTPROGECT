@@ -207,7 +207,7 @@ const updateElement = (id, value) => {
     const element = document.getElementById(id);
     if (!element) return;
     
-    // فرمت‌دهی اعداد بزرگ
+    // Format large numbers
     if (typeof value === 'string' && value.includes('.')) {
         const num = parseFloat(value);
         if (!isNaN(num)) {
@@ -730,7 +730,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     console.log('=== DOMContentLoaded: User status check completed ===');
 });
 
-// تابع تست برای بررسی وضعیت قفل‌ها - حذف شده
+// Function to test lock status - removed
 
 // Execute lock tests after 3 seconds
 setTimeout(() => {
@@ -767,10 +767,10 @@ window.registerNow = function() {
     }
 };
 
-// تابع مدیریت دکمه ثبت‌نام اصلی
+// Function to manage main registration button
 window.manageMainRegistrationButton = async function() {
     try {
-        // بررسی وضعیت کاربر
+        // Check user status
         if (!window.getUserProfile) {
             console.log('getUserProfile function not available');
             return;
@@ -785,10 +785,10 @@ window.manageMainRegistrationButton = async function() {
         }
         
         if (!(profile.index && BigInt(profile.index) > 0n)) {
-            // کاربر ثبت‌نام نکرده - نمایش دکمه
+            // User not registered - show button
             registrationButton.style.display = 'block';
             
-            // بروزرسانی هزینه ثبت‌نام
+            // Update registration cost
             try {
                 if (window.contractConfig && window.contractConfig.contract) {
                     const price = await window.getRegPrice(window.contractConfig.contract);
@@ -804,14 +804,14 @@ window.manageMainRegistrationButton = async function() {
             
             console.log('✅ Main registration button shown for unregistered user');
         } else {
-            // کاربر ثبت‌نام کرده - مخفی کردن دکمه
+            // User registered - hide button
             registrationButton.style.display = 'none';
             console.log('✅ Main registration button hidden for registered user');
         }
         
     } catch (error) {
         console.error('Error managing main registration button:', error);
-        // در صورت خطا، دکمه را مخفی کن
+        // In case of error, hide the button
         const registrationButton = document.getElementById('main-registration-button');
         if (registrationButton) {
             registrationButton.style.display = 'none';
@@ -819,7 +819,7 @@ window.manageMainRegistrationButton = async function() {
     }
 };
 
-// تابع پاک کردن دکمه ثبت‌نام اصلی (بعد از ثبت‌نام موفق)
+// Function to clear main registration button (after successful registration)
 window.hideMainRegistrationButton = function() {
     const registrationButton = document.getElementById('main-registration-button');
     if (registrationButton) {
@@ -828,21 +828,21 @@ window.hideMainRegistrationButton = function() {
     }
 };
 
-// بررسی لینک رفرال بعد از 2 ثانیه
+// Check referral link after 2 seconds
 setTimeout(() => {
     if (typeof window.showRegistrationFormForInactiveUser === 'function') {
         window.showRegistrationFormForInactiveUser();
     }
 }, 2000);
 
-// مدیریت دکمه ثبت‌نام اصلی بعد از 3 ثانیه
+// Manage main registration button after 3 seconds
 setTimeout(() => {
     if (typeof window.manageMainRegistrationButton === 'function') {
         window.manageMainRegistrationButton();
     }
 }, 3000);
 
-// تابع نمایش اطلاعات رفرال و کمیسیون
+// Function to display referral and commission information
 window.showReferralInfo = function() {
     const referralModal = document.createElement('div');
     referralModal.id = 'referral-info-modal';
@@ -872,7 +872,7 @@ window.showReferralInfo = function() {
             box-shadow: 0 20px 40px rgba(0,0,0,0.5);
             position: relative;
         ">
-            <!-- دکمه بستن -->
+            <!-- Close Button -->
             <button onclick="closeReferralModal()" style="
                 position: absolute;
                 top: 1rem;
@@ -892,28 +892,28 @@ window.showReferralInfo = function() {
                 transition: all 0.3s;
             " onmouseover="this.style.background='rgba(0,255,136,0.1)'" onmouseout="this.style.background='none'">×</button>
             
-            <!-- آیکون رفرال -->
+            <!-- Referral Icon -->
             <div style="font-size: 4rem; margin-bottom: 1rem;">🤝</div>
             
-            <!-- عنوان -->
+            <!-- Title -->
             <h2 style="
                 color: #00ff88;
                 margin-bottom: 1rem;
                 font-size: 1.8rem;
                 font-weight: bold;
-            ">سیستم رفرال IAM</h2>
+            ">IAM Referral System</h2>
             
-            <!-- توضیحات -->
+            <!-- Description -->
             <p style="
                 color: #b8c1ec;
                 margin-bottom: 1.5rem;
                 line-height: 1.6;
                 font-size: 1.1rem;
             ">
-                با معرفی دوستان خود، کمیسیون دریافت کنید و درآمد کسب کنید!
+                Earn commission and income by referring your friends!
             </p>
             
-            <!-- کارت اطلاعات رفرال -->
+            <!-- Referral Information Card -->
             <div style="
                 background: rgba(0, 255, 136, 0.1);
                 border: 1px solid rgba(0, 255, 136, 0.3);
@@ -927,7 +927,7 @@ window.showReferralInfo = function() {
                     margin-bottom: 1rem;
                     font-size: 1.3rem;
                     font-weight: bold;
-                ">💰 ساختار کمیسیون</h3>
+                ">💰 Commission Structure</h3>
                 
                 <div style="
                     display: grid;
@@ -945,7 +945,7 @@ window.showReferralInfo = function() {
                         <div style="
                             color: #b8c1ec;
                             font-size: 0.9rem;
-                        ">کمیسیون مستقیم</div>
+                        ">Direct Commission</div>
                     </div>
                     <div style="text-align: center;">
                         <div style="
@@ -957,7 +957,7 @@ window.showReferralInfo = function() {
                         <div style="
                             color: #b8c1ec;
                             font-size: 0.9rem;
-                        ">کمیسیون غیرمستقیم</div>
+                        ">Indirect Commission</div>
                     </div>
                 </div>
                 
@@ -967,11 +967,11 @@ window.showReferralInfo = function() {
                     line-height: 1.4;
                     margin-top: 1rem;
                 ">
-                    💡 برای هر ثبت‌نام 100 IAM، شما 5 IAM کمیسیون مستقیم دریافت می‌کنید
+                    💡 For every 100 IAM registration, you receive 5 IAM direct commission
                 </div>
             </div>
             
-            <!-- کارت مزایای رفرال -->
+            <!-- Referral Benefits Card -->
             <div style="
                 background: rgba(167, 134, 255, 0.1);
                 border: 1px solid rgba(167, 134, 255, 0.3);
@@ -985,7 +985,7 @@ window.showReferralInfo = function() {
                     margin-bottom: 1rem;
                     font-size: 1.3rem;
                     font-weight: bold;
-                ">🎯 مزایای رفرال</h3>
+                ">🎯 Referral Benefits</h3>
                 
                 <div style="
                     display: grid;
@@ -1001,7 +1001,7 @@ window.showReferralInfo = function() {
                         gap: 0.5rem;
                     ">
                         <span style="color: #00ff88;">✅</span>
-                        درآمد مستمر از فعالیت‌های معرفی شده
+                        Continuous income from referred activities
                     </div>
                     <div style="
                         color: #b8c1ec;
@@ -1011,7 +1011,7 @@ window.showReferralInfo = function() {
                         gap: 0.5rem;
                     ">
                         <span style="color: #00ff88;">✅</span>
-                        کمیسیون از تمام معاملات زیرمجموعه
+                        Commission from all sub-transactions
                     </div>
                     <div style="
                         color: #b8c1ec;
@@ -1021,7 +1021,7 @@ window.showReferralInfo = function() {
                         gap: 0.5rem;
                     ">
                         <span style="color: #00ff88;">✅</span>
-                        پاداش‌های ویژه برای رفرال‌های موفق
+                        Special rewards for successful referrals
                     </div>
                     <div style="
                         color: #b8c1ec;
@@ -1031,12 +1031,12 @@ window.showReferralInfo = function() {
                         gap: 0.5rem;
                     ">
                         <span style="color: #00ff88;">✅</span>
-                        دسترسی به ابزارهای مدیریت رفرال
+                        Access to referral management tools
                     </div>
                 </div>
             </div>
             
-            <!-- دکمه‌های عملیات -->
+            <!-- Action Buttons -->
             <div style="
                 display: flex;
                 gap: 1rem;
@@ -1056,7 +1056,7 @@ window.showReferralInfo = function() {
                     flex: 1;
                     max-width: 200px;
                 " onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 20px rgba(167,134,255,0.3)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='none'">
-                    📋 کپی لینک رفرال
+                    📋 Copy Referral Link
                 </button>
                 
                 <button onclick="closeReferralModal()" style="
@@ -1071,7 +1071,7 @@ window.showReferralInfo = function() {
                     flex: 1;
                     max-width: 200px;
                 " onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
-                    بستن
+                    Close
                 </button>
             </div>
         </div>
@@ -1080,7 +1080,7 @@ window.showReferralInfo = function() {
     document.body.appendChild(referralModal);
 };
 
-// تابع بستن مودال رفرال
+// Function to close referral modal
 window.closeReferralModal = function() {
     const modal = document.getElementById('referral-info-modal');
     if (modal) {
@@ -1088,7 +1088,7 @@ window.closeReferralModal = function() {
     }
 };
 
-// تابع کپی لینک رفرال
+// Function to copy referral link
 window.copyReferralLink = async function() {
     try {
         const profile = await loadUserProfileOnce();
@@ -1097,7 +1097,7 @@ window.copyReferralLink = async function() {
         
         await navigator.clipboard.writeText(referralLink);
         
-        // نمایش پیام موفقیت
+        // Display success message
         const successMsg = document.createElement('div');
         successMsg.style = `
             position: fixed;
@@ -1111,7 +1111,7 @@ window.copyReferralLink = async function() {
             z-index: 10002;
             animation: slideInRight 0.3s ease;
         `;
-        successMsg.textContent = '✅ لینک رفرال کپی شد!';
+        successMsg.textContent = '✅ Referral link copied!';
         document.body.appendChild(successMsg);
         
         setTimeout(() => {
@@ -1123,13 +1123,13 @@ window.copyReferralLink = async function() {
     }
 };
 
-// تایمر شمارش معکوس جلسه آنلاین بعدی (فقط برای کاربران فعال)
-const nextSessionDate = new Date("2025-07-01T16:30:00+03:30"); // تاریخ و ساعت جلسه بعدی را اینجا تنظیم کنید
+// Countdown timer for next online session (only for active users)
+const nextSessionDate = new Date("2025-07-01T16:30:00+03:30"); // Set the date and time of the next session here
 function updateSessionTimer() {
     const now = new Date();
     const diff = nextSessionDate - now;
     if (diff <= 0) {
-        document.getElementById('session-timer').textContent = "جلسه آنلاین در حال برگزاری است!";
+        document.getElementById('session-timer').textContent = "Online session is in progress!";
         return;
     }
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -1137,7 +1137,7 @@ function updateSessionTimer() {
     const minutes = Math.floor((diff / (1000 * 60)) % 60);
     const seconds = Math.floor((diff / 1000) % 60);
     document.getElementById('session-timer').textContent =
-        `${days} روز و ${hours} ساعت و ${minutes} دقیقه و ${seconds} ثانیه`;
+        `${days} days and ${hours} hours and ${minutes} minutes and ${seconds} seconds`;
 }
 if (document.getElementById('session-timer')) {
     setInterval(updateSessionTimer, 1000);
@@ -1153,22 +1153,22 @@ if (document.getElementById('session-timer')) {
     }
 })();
 
-// نمایش قیمت توکن برای همه کاربران (حتی بدون اتصال کیف پول)
+// Display token price for all users (even without wallet connection)
 async function showTokenPricesForAll() {
     try {
-        // اگر contractConfig و contract آماده است
+        // If contractConfig and contract are ready
         if (window.contractConfig && window.contractConfig.contract) {
             const contract = window.contractConfig.contract;
-            // قیمت IAM به DAI (قیمت توکن مستقیماً به DAI است)
+            // IAM to DAI price (token price is directly to DAI)
             const tokenPrice = await contract.getTokenPrice();
             const tokenPriceFormatted = ethers.formatUnits(tokenPrice, 18);
             
-            // نمایش در عناصر
+            // Display in elements
             const IAMUsd = document.getElementById('chart-lvl-usd');
             if (IAMUsd) IAMUsd.textContent = '$' + tokenPriceFormatted;
         }
     } catch (e) {
-        // اگر خطا بود، مقدار پیش‌فرض نمایش بده
+        // If there was an error, display default value
         const IAMUsd = document.getElementById('chart-lvl-usd');
         if (IAMUsd) IAMUsd.textContent = '-';
     }
@@ -1178,17 +1178,17 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(showTokenPricesForAll, 1200);
 });
 
-// نمایش موجودی و ارزش دلاری فقط با اتصال کیف پول
+// Display balance and dollar value only with wallet connection
 async function showUserBalanceBox() {
     const box = document.getElementById('user-balance-box');
     if (!box) return;
     try {
         const connectionResult = await connectWallet();
         if (!connectionResult || !connectionResult.contract || !connectionResult.address) {
-            throw new Error('اتصال کیف پول در دسترس نیست');
+            throw new Error('Wallet connection not available');
         }
         const { contract, address } = connectionResult;
-        // دریافت موجودی و قیمت با retry mechanism
+        // Get balance and price with retry mechanism
         const [lvlBalance, tokenPrice] = await Promise.all([
             window.retryRpcOperation(() => contract.balanceOf(address), 2),
             window.retryRpcOperation(() => contract.getTokenPrice(), 2)
@@ -1208,7 +1208,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(showUserBalanceBox, 1500);
 });
 
-// تابع نمایش اطلاعات یک گره شبکه در باکس موجودی شما
+// Function to display information of a network node in your balance box
 window.updateUserBalanceBoxWithNode = async function(address, userData) {
     console.log('updateUserBalanceBoxWithNode called with:', address, userData);
     console.log('UserData fields:', Object.keys(userData || {}));
@@ -1231,11 +1231,11 @@ window.updateUserBalanceBoxWithNode = async function(address, userData) {
     console.log('Found user-balance-box, setting display to block');
     box.style.display = 'block';
     
-    // آدرس کوتاه شده
+    // Shortened address
     const shortAddress = address ? `${address.slice(0, 3)}...${address.slice(-2)}` : '-';
     console.log('Short address:', shortAddress);
     
-    // دریافت معرف از قرارداد
+    // Get referrer from contract
     let referrerAddress = '-';
     try {
         if (window.contractConfig && window.contractConfig.contract) {
@@ -1252,29 +1252,29 @@ window.updateUserBalanceBoxWithNode = async function(address, userData) {
         referrerAddress = '-';
     }
     
-    // اطلاعات اصلی
+    // Main information
     const lvlBalanceElement = document.getElementById('user-lvl-balance');
     
     if (lvlBalanceElement) {
-        // دریافت موجودی واقعی IAM از قرارداد
+        // Get real IAM balance from contract
         let balanceInIAM = '-';
         try {
             if (window.contractConfig && window.contractConfig.contract) {
                 const contract = window.contractConfig.contract;
                 const balance = await contract.balanceOf(address);
                 const balanceStr = balance ? (typeof balance === 'bigint' ? balance.toString() : balance) : null;
-                // تبدیل از wei به IAM (18 رقم اعشار)
+                // Convert from wei to IAM (18 decimal places)
                 balanceInIAM = balanceStr ? (parseInt(balanceStr) / Math.pow(10, 18)).toFixed(2) : null;
             }
         } catch (e) {
             console.log('Error getting IAM balance:', e);
             balanceInIAM = '-';
         }
-        lvlBalanceElement.textContent = balanceInIAM ? balanceInIAM : '-'; // حذف پسوند IAM
+        lvlBalanceElement.textContent = balanceInIAM ? balanceInIAM : '-'; // Remove IAM suffix
         console.log('Updated lvl balance:', lvlBalanceElement.textContent);
     }
     
-    // ایجاد یا آپدیت بخش اطلاعات تکمیلی
+    // Create or update additional information section
     let extraInfo = document.getElementById('node-extra-info');
     if (!extraInfo) {
         extraInfo = document.createElement('div');
@@ -1291,48 +1291,48 @@ window.updateUserBalanceBoxWithNode = async function(address, userData) {
         console.log('Created new extra-info div');
     }
     
-    // محتوای اطلاعات دسته‌بندی شده - فشرده و بهینه برای موبایل
+    // Categorized information content - compact and optimized for mobile
     extraInfo.innerHTML = `
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; font-size: 0.8rem;">
-            <!-- آدرس و وضعیت در یک ردیف -->
+            <!-- Address and status in one row -->
             <div style="grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem; padding-bottom: 0.3rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
                 <div style="color: #b8c1ec; font-family: monospace; font-size: 0.75rem;">${shortAddress}</div>
                 <div style="color: ${userData?.[4] ? '#4ade80' : '#f87171'}; font-size: 0.7rem; padding: 0.1rem 0.4rem; background: ${userData?.[4] ? 'rgba(74,222,128,0.1)' : 'rgba(248,113,113,0.1)'}; border-radius: 3px;">
-                    ${userData?.[4] ? 'فعال' : 'غیرفعال'}
+                    ${userData?.[4] ? 'Active' : 'Inactive'}
                 </div>
             </div>
             
-            <!-- معرف -->
+            <!-- Referrer -->
             <div style="display: flex; flex-direction: column; gap: 0.1rem;">
-                <div style="color: #a786ff; font-size: 0.7rem; opacity: 0.8;">👤 معرف</div>
+                                        <div style="color: #a786ff; font-size: 0.7rem; opacity: 0.8;">👤 Referrer</div>
                 <div style="color: #b8c1ec; font-size: 0.7rem; font-family: monospace;">
                     ${referrerAddress}
                 </div>
             </div>
             
-            <!-- سقف درآمد -->
+            <!-- Income Cap -->
             <div style="display: flex; flex-direction: column; gap: 0.1rem;">
-                <div style="color: #a786ff; font-size: 0.7rem; opacity: 0.8;">💰 سقف</div>
-                <div style="color: #b8c1ec; font-size: 0.7rem;">${userData?.[2] ? (typeof userData[2] === 'bigint' ? userData[2].toString() : userData[2]) : '-'} پوینت</div>
+                <div style="color: #a786ff; font-size: 0.7rem; opacity: 0.8;">💰 Cap</div>
+                <div style="color: #b8c1ec; font-size: 0.7rem;">${userData?.[2] ? (typeof userData[2] === 'bigint' ? userData[2].toString() : userData[2]) : '-'} Points</div>
             </div>
             
-            <!-- امتیاز چپ -->
+            <!-- Left Points -->
             <div style="display: flex; flex-direction: column; gap: 0.1rem;">
-                <div style="color: #a786ff; font-size: 0.7rem; opacity: 0.8;">⬅️ چپ</div>
+                <div style="color: #a786ff; font-size: 0.7rem; opacity: 0.8;">⬅️ Left</div>
                 <div style="color: #b8c1ec; font-size: 0.7rem;">${userData?.[8] ? (typeof userData[8] === 'bigint' ? userData[8].toString() : userData[8]) : '-'}</div>
             </div>
             
-            <!-- امتیاز راست -->
+            <!-- Right Points -->
             <div style="display: flex; flex-direction: column; gap: 0.1rem;">
-                <div style="color: #a786ff; font-size: 0.7rem; opacity: 0.8;">➡️ راست</div>
+                <div style="color: #a786ff; font-size: 0.7rem; opacity: 0.8;">➡️ Right</div>
                 <div style="color: #b8c1ec; font-size: 0.7rem;">${userData?.[7] ? (typeof userData[7] === 'bigint' ? userData[7].toString() : userData[7]) : '-'}</div>
             </div>
             
-            <!-- لینک رفرال -->
+            <!-- Referral Link -->
             <div style="grid-column: 1 / -1; display: flex; align-items: center; gap: 0.3rem; margin-top: 0.2rem; padding-top: 0.2rem; border-top: 1px solid rgba(255,255,255,0.1);">
-                <div style="color: #a786ff; font-size: 0.7rem; opacity: 0.8;">🔗 دعوت:</div>
+                <div style="color: #a786ff; font-size: 0.7rem; opacity: 0.8;">🔗 Invite:</div>
                 <div style="color: #b8c1ec; font-size: 0.65rem; font-family: monospace; flex: 1;">${shortWallet(address)}</div>
-                <button onclick="copyReferralLink('${address}')" style="background: #a786ff; color: white; border: none; border-radius: 3px; padding: 0.2rem 0.4rem; font-size: 0.6rem; cursor: pointer;">کپی</button>
+                <button onclick="copyReferralLink('${address}')" style="background: #a786ff; color: white; border: none; border-radius: 3px; padding: 0.2rem 0.4rem; font-size: 0.6rem; cursor: pointer;">Copy</button>
             </div>
         </div>
     `;
@@ -1430,13 +1430,13 @@ document.addEventListener('click', function(e) {
       let referrerAddress;
       let defaultNewWallet = '';
       if (userData.activated) {
-        // حالت ۱: کاربر ثبت‌نام کرده و می‌خواهد زیرمجموعه بگیرد
+        // Case 1: User is registered and wants to get subordinates
         const childIndex = e.target.getAttribute('data-index');
         const parentIndex = Math.floor(Number(childIndex) / 2);
         referrerAddress = await contract.indexToAddress(BigInt(parentIndex));
         defaultNewWallet = '';
       } else {
-        // حالت ۲ و ۳: کاربر ثبت‌نام نکرده
+        // Case 2 and 3: User is not registered
         referrerAddress = getReferrerFromURL() || getReferrerFromStorage();
         if (!referrerAddress) {
           if (typeof window.getDeployerAddress === 'function') {
@@ -1445,7 +1445,7 @@ document.addEventListener('click', function(e) {
             try {
           referrerAddress = await contract.deployer();
             } catch (deployerError) {
-              console.warn('خطا در دریافت deployer:', deployerError);
+              console.warn('Error getting deployer:', deployerError);
               referrerAddress = address || '0x0000000000000000000000000000000000000000';
             }
           }
@@ -1457,7 +1457,7 @@ document.addEventListener('click', function(e) {
   }
 });
 
-// فرم ثبت‌نام با ورودی آدرس ولت جدید و نمایش موجودی متیک و توکن - بهینه‌سازی شده برای موبایل
+// Registration form with new wallet address input and display of MATIC and token balance - optimized for mobile
 window.showRegisterForm = async function(referrerAddress, defaultNewWallet, connectedAddress, provider, contract) {
   let old = document.getElementById('register-form-modal');
   if (old) old.remove();
@@ -1503,27 +1503,27 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
   let referrerInputValue = referrerAddress;
   let referrerInputReadonly = false;
   
-  // ابتدا بررسی کنیم که آیا کاربر متصل فعال است و ایندکس دارد
+  // First check if the connected user is active and has an index
   try {
     if (contract && connectedAddress) {
       const connectedUserData = await contract.users(connectedAddress);
       if (connectedUserData.activated) {
-        // اگر کاربر فعال است، از آدرس خودش به عنوان معرف استفاده کن
+        // If user is active, use their own address as referrer
         referrerInputValue = connectedAddress;
         referrerInputReadonly = true;
       } else {
-        // اگر کاربر فعال نیست، از روش‌های قبلی استفاده کن
-        // ابتدا از URL بگیر
+        // If user is not active, use previous methods
+        // First get from URL
         if (typeof getReferrerFromURL === 'function') {
           referrerInputValue = getReferrerFromURL();
         }
         
-        // اگر در URL نبود، از localStorage بگیر
+        // If not in URL, get from localStorage
         if (!referrerInputValue && typeof getReferrerFromStorage === 'function') {
           referrerInputValue = getReferrerFromStorage();
         }
         
-        // اگر هنوز نبود، از deployer استفاده کن
+        // If still not available, use deployer
         if (!referrerInputValue) {
           if (typeof window.getDeployerAddress === 'function') {
             referrerInputValue = await window.getDeployerAddress(contract);
@@ -1531,8 +1531,8 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
             try {
           referrerInputValue = await contract.deployer();
             } catch (deployerError) {
-              console.warn('خطا در دریافت deployer:', deployerError);
-              // در صورت خطا، از آدرس فعلی استفاده کن
+              console.warn('Error getting deployer:', deployerError);
+              // In case of error, use current address
               referrerInputValue = connectedAddress || '0x0000000000000000000000000000000000000000';
             }
           }
@@ -1540,15 +1540,15 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
       }
     }
   } catch (e) {
-    // در صورت خطا، از deployer استفاده کن
+    // In case of error, use deployer
     if (typeof window.getDeployerAddress === 'function') {
       referrerInputValue = await window.getDeployerAddress(contract);
     } else {
       try {
     referrerInputValue = await contract.deployer();
       } catch (deployerError) {
-        console.warn('خطا در دریافت deployer:', deployerError);
-        // در صورت خطا، از آدرس فعلی استفاده کن
+        console.warn('Error getting deployer:', deployerError);
+        // In case of error, use current address
         referrerInputValue = connectedAddress || '0x0000000000000000000000000000000000000000';
       }
     }
@@ -1585,7 +1585,7 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
           font-weight: bold;
           text-align: center;
           flex: 1;
-        ">📝 ثبت‌نام جدید</h3>
+        ">📝 New Registration</h3>
         <button id="register-form-close" style="
           background: none;
           border: none;
@@ -1611,7 +1611,7 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
         padding: 0.6rem 0.7rem;
         margin-bottom: 0.7rem;
       ">
-        <label for="register-referrer-address" style="color: #a786ff; font-weight: bold; margin-bottom: 0.3rem; font-size:0.95em; display:block;">👤 معرف (Referrer):</label>
+        <label for="register-referrer-address" style="color: #a786ff; font-weight: bold; margin-bottom: 0.3rem; font-size:0.95em; display:block;">👤 Referrer:</label>
         <input id="register-referrer-address"
           type="text"
           value="${referrerInputValue}"
@@ -1641,7 +1641,7 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
         padding: 0.6rem 0.7rem;
         margin-bottom: 0.7rem;
       ">
-        <label for="register-referrer-index" style="color: #a786ff; font-weight: bold; margin-bottom: 0.3rem; font-size:0.95em; display:block;">🔢 ایندکس معرف (اختیاری):</label>
+        <label for="register-referrer-index" style="color: #a786ff; font-weight: bold; margin-bottom: 0.3rem; font-size:0.95em; display:block;">🔢 Referrer Index (Optional):</label>
         <div style="display:flex;gap:0.5rem;align-items:center;">
           <input id="register-referrer-index"
             type="number"
@@ -1672,9 +1672,9 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
             cursor: pointer;
             transition: all 0.3s;
             white-space: nowrap;
-          ">🔍 دریافت آدرس</button>
+          ">🔍 Get Address</button>
         </div>
-        <small style="color: #b8c1ec; font-size: 0.8rem; margin-top: 0.2rem; display: block;">ایندکس معرف را وارد کنید تا آدرس ولت به طور خودکار دریافت شود</small>
+        <small style="color: #b8c1ec; font-size: 0.8rem; margin-top: 0.2rem; display: block;">Enter referrer index to automatically get wallet address</small>
       </div>
 
       <!-- New Wallet Input -->
@@ -1685,7 +1685,7 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
           font-weight: bold;
           margin-bottom: 0.3rem;
           font-size:0.95em;
-        ">🔑 آدرس ولت جدید:</label>
+        ">🔑 New Wallet Address:</label>
         <input id="register-new-wallet" 
           type="text" 
           placeholder="0x..." 
@@ -1719,19 +1719,19 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
         padding: 0.6rem 0.7rem;
         margin-bottom: 0.7rem;
       ">
-        <div style="color: #00ff88; font-weight: bold; margin-bottom: 0.5rem; font-size:0.95em;">💰 موجودی‌های شما:</div>
+        <div style="color: #00ff88; font-weight: bold; margin-bottom: 0.5rem; font-size:0.95em;">💰 Your Balances:</div>
         <div style="display: grid; gap: 0.5rem;">
           <div style="display: flex; justify-content: space-between; align-items: center; font-size:0.95em;">
             <span style="color: #fff;">🟣 POL:</span>
-            <span id="register-matic-balance" style="color: #a786ff; font-weight: bold;">در حال دریافت...</span>
+            <span id="register-matic-balance" style="color: #a786ff; font-weight: bold;">Loading...</span>
           </div>
           <div style="display: flex; justify-content: space-between; align-items: center; font-size:0.95em;">
             <span style="color: #fff;">🟢 IAM:</span>
-            <span id="register-IAM-balance" style="color: #00ff88; font-weight: bold;">در حال دریافت...</span>
+            <span id="register-IAM-balance" style="color: #00ff88; font-weight: bold;">Loading...</span>
           </div>
           <div style="display: flex; justify-content: space-between; align-items: center; font-size:0.95em;">
             <span style="color: #fff;">💵 DAI:</span>
-            <span id="register-dai-balance" style="color: #00ccff; font-weight: bold;">در حال دریافت...</span>
+            <span id="register-dai-balance" style="color: #00ccff; font-weight: bold;">Loading...</span>
           </div>
         </div>
       </div>
@@ -1744,13 +1744,13 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
         padding: 0.6rem 0.7rem;
         margin-bottom: 0.7rem;
       ">
-        <div style="color: #ff6b6b; font-weight: bold; margin-bottom: 0.3rem; font-size:0.95em;">⚠️ مقدار مورد نیاز:</div>
+        <div style="color: #ff6b6b; font-weight: bold; margin-bottom: 0.3rem; font-size:0.95em;">⚠️ Required Amount:</div>
         <div id="register-required-dai" style="
           color: #ff6b6b;
           font-size: 1rem;
           font-weight: bold;
           text-align: center;
-        ">در حال دریافت...</div>
+        ">Loading...</div>
       </div>
 
       <!-- Action Buttons -->
@@ -1771,7 +1771,7 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
           transition: all 0.3s;
           box-shadow: 0 2px 8px rgba(0, 255, 136, 0.18);
         " onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 12px rgba(0,255,136,0.22)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(0,255,136,0.18)'">
-          ✅ ثبت‌نام
+          ✅ Register
         </button>
         <button id="register-form-cancel" style="
           background: linear-gradient(135deg, #a786ff, #8b6bff);
@@ -1785,7 +1785,7 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
           transition: all 0.3s;
           box-shadow: 0 2px 8px rgba(167, 134, 255, 0.18);
         " onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 12px rgba(167,134,255,0.22)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(167,134,255,0.18)'">
-          ❌ انصراف
+          ❌ Cancel
         </button>
       </div>
 
@@ -1812,10 +1812,10 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
   modal.onclick = (e) => {
     if (e.target === modal) modal.remove();
   };
-  // دریافت و نمایش موجودی متیک و توکن و مقدار مورد نیاز ثبت‌نام
+  // Get and display MATIC and token balance and required registration amount
   (async function() {
     try {
-      // اطمینان از مقداردهی provider و contract و connectedAddress
+      // Ensure provider, contract, and connectedAddress are initialized
       if (!provider || !contract || !connectedAddress) {
         const connection = await window.connectWallet();
         provider = connection.provider;
@@ -1832,7 +1832,7 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
           const bal = await provider.getBalance(connectedAddress);
           matic = window.ethers ? window.ethers.formatUnits(bal, 18) : bal.toString();
         } catch (e) {
-          matic = 'خطا در دریافت POL';
+          matic = 'Error getting POL';
         }
       }
       if (contract && connectedAddress) {
@@ -1840,28 +1840,28 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
           const IAMBal = await contract.balanceOf(connectedAddress);
           IAM = window.ethers ? window.ethers.formatUnits(IAMBal, 18) : IAMBal.toString();
         } catch (e) {
-          IAM = 'خطا در دریافت IAM';
+          IAM = 'Error getting IAM';
         }
-        // دریافت موجودی DAI
+        // Get DAI balance
         try {
           const DAI_ABI = ["function balanceOf(address) view returns (uint256)"];
           const daiContract = new ethers.Contract(window.DAI_ADDRESS, DAI_ABI, provider || contract.provider);
           const daiBal = await daiContract.balanceOf(connectedAddress);
           dai = window.ethers ? window.ethers.formatUnits(daiBal, 18) : daiBal.toString(); // DAI has 18 decimals
         } catch (e) {
-          dai = 'خطا در دریافت DAI';
+          dai = 'Error getting DAI';
         }
-        // مقدار مورد نیاز ثبت‌نام از قرارداد
+        // Required registration amount from contract
         try {
           if (window.getRegPrice) {
             const regPrice = await window.getRegPrice(contract);
             let priceValue = parseFloat(window.ethers.formatUnits(regPrice, 18));
-            requiredDai = Math.round(priceValue) + ' IAM'; // گرد کردن بدون اعشار
+            requiredDai = Math.round(priceValue) + ' IAM'; // Round without decimals
           } else {
             requiredDai = '...';
           }
         } catch (e) {
-          requiredDai = 'خطا';
+          requiredDai = 'Error';
         }
       }
       document.getElementById('register-matic-balance').textContent = matic;
@@ -1880,7 +1880,7 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
     }
   })();
   
-  // دکمه دریافت آدرس از ایندکس در فرم موقت
+  // Button to get address from index in temporary form
   const registerGetReferrerAddressBtn = document.getElementById('register-get-referrer-address-btn');
   const registerReferrerIndexInput = document.getElementById('register-referrer-index');
   
@@ -1891,28 +1891,28 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
         if (isNaN(index) || index < 0) {
           const statusDiv = document.getElementById('register-form-status');
           if (statusDiv) {
-            statusDiv.textContent = 'لطفاً ایندکس معتبر وارد کنید';
+            statusDiv.textContent = 'Please enter a valid index';
           }
           return;
         }
         
-        registerGetReferrerAddressBtn.textContent = 'در حال دریافت...';
+        registerGetReferrerAddressBtn.textContent = 'Loading...';
         registerGetReferrerAddressBtn.disabled = true;
         
-        // دریافت آدرس از ایندکس
+        // Get address from index
         const address = await contract.indexToAddress(BigInt(index));
         
-        // بررسی فعال بودن کاربر
+        // Check if user is active
         const userData = await contract.users(address);
         if (!userData.activated) {
           const statusDiv = document.getElementById('register-form-status');
           if (statusDiv) {
-            statusDiv.textContent = `کاربر با ایندکس ${index} فعال نیست`;
+            statusDiv.textContent = `User with index ${index} is not active`;
           }
           return;
         }
         
-        // به‌روزرسانی فیلد آدرس معرف
+        // Update referrer address field
         const referrerAddressInput = document.getElementById('register-referrer-address');
         if (referrerAddressInput) {
           referrerAddressInput.value = address;
@@ -1920,17 +1920,17 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
         
         const statusDiv = document.getElementById('register-form-status');
         if (statusDiv) {
-          statusDiv.textContent = `✅ آدرس معرف دریافت شد: ${address.substring(0, 6)}...${address.substring(38)}`;
+          statusDiv.textContent = `✅ Referrer address received: ${address.substring(0, 6)}...${address.substring(38)}`;
         }
         
       } catch (error) {
         console.error('Error getting address from index:', error);
-        let errorMessage = 'خطا در دریافت آدرس';
+        let errorMessage = 'Error getting address';
         
         if (error.message.includes('reverted')) {
-          errorMessage = 'ایندکس معتبر نیست یا کاربر وجود ندارد';
+          errorMessage = 'Index is not valid or user does not exist';
         } else if (error.message.includes('network')) {
-          errorMessage = 'خطا در اتصال شبکه';
+          errorMessage = 'Network connection error';
         }
         
         const statusDiv = document.getElementById('register-form-status');
@@ -1938,7 +1938,7 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
           statusDiv.textContent = errorMessage;
         }
       } finally {
-        registerGetReferrerAddressBtn.textContent = '🔍 دریافت آدرس';
+        registerGetReferrerAddressBtn.textContent = '🔍 Get Address';
         registerGetReferrerAddressBtn.disabled = false;
       }
     };
@@ -1948,27 +1948,27 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
     const statusDiv = document.getElementById('register-form-status');
     let newWallet = document.getElementById('register-new-wallet').value.trim();
     if (!/^0x[a-fA-F0-9]{40}$/.test(newWallet)) {
-      statusDiv.textContent = 'آدرس ولت جدید معتبر نیست!';
+      statusDiv.textContent = 'New wallet address is not valid!';
       return;
     }
     try {
       const { contract } = await window.connectWallet();
       await contract.registerAndActivate(referrerAddress, newWallet);
-      statusDiv.textContent = 'ثبت‌نام با موفقیت انجام شد!';
+      statusDiv.textContent = 'Registration completed successfully!';
       
-      // مخفی کردن دکمه ثبت‌نام اصلی
+      // Hide main registration button
       if (typeof window.hideMainRegistrationButton === 'function') {
         window.hideMainRegistrationButton();
       }
       
-      // پاک‌سازی کش پروفایل و اجرای مجدد قفل‌گذاری بدون رفرش
+      // Clear profile cache and re-run locking without refresh
       if (typeof window.clearUserProfileCache === 'function') window.clearUserProfileCache();
       setTimeout(() => { 
         if (typeof lockTabsForDeactivatedUsers === 'function') lockTabsForDeactivatedUsers();
         modal.remove();
       }, 1200);
     } catch (e) {
-      statusDiv.textContent = 'خطا در ثبت‌نام: ' + (e && e.message ? e.message : e);
+      statusDiv.textContent = 'Registration error: ' + (e && e.message ? e.message : e);
     }
   };
 }
@@ -1982,16 +1982,16 @@ function showUserPopup(address, user) {
 }
 
 document.addEventListener('DOMContentLoaded', async function() {
-    // ابتدا قفل‌ها را اعمال کن
+    // First apply locks
     await lockTabsForDeactivatedUsers();
     
-    // بررسی وضعیت کاربر بدون نمایش فرم ثبت‌نام
+    // Check user status without showing registration form
     try {
         if (window.getUserProfile) {
             const profile = await loadUserProfileOnce();
             console.log('User profile loaded on page load:', profile);
             
-            // بررسی وضعیت کاربر (فقط برای لاگ)
+            // Check user status (for logging only)
             const isActive = profile && profile.activated && profile.index && BigInt(profile.index) > 0n;
             
             if (isActive) {
@@ -2004,7 +2004,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.log('Could not check user status on load:', error);
     }
     
-    // بازیابی تب فعال از localStorage
+    // Restore active tab from localStorage
     const savedTab = localStorage.getItem('currentActiveTab');
     if (savedTab && typeof window.showTab === 'function') {
         // کمی صبر کن تا صفحه کاملاً لود شود
@@ -2014,7 +2014,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 });
 
-// تابع جدید برای نمایش فرم ثبت‌نام برای کاربران غیرفعال - ONLY FOR REFERRAL LINKS
+// New function to display registration form for inactive users - ONLY FOR REFERRAL LINKS
 window.showRegistrationFormForInactiveUser = async function() {
     console.log('=== showRegistrationFormForInactiveUser: Checking for referral link ===');
     
@@ -2983,11 +2983,11 @@ function displayIAMIdInCorner(index) {
         this.style.boxShadow = '0 2px 8px rgba(0,255,136,0.3)';
     };
     
-    // کلیک برای کپی کردن
+    // Click to copy
     idElement.onclick = function() {
         navigator.clipboard.writeText(IAMId);
         const originalText = this.textContent;
-        this.textContent = 'کپی شد!';
+        this.textContent = 'Copied!';
         this.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
         setTimeout(() => {
             this.textContent = originalText;
@@ -2999,52 +2999,52 @@ function displayIAMIdInCorner(index) {
     */
 }
 
-// تابع به‌روزرسانی نمایش ID در تمام بخش‌ها
+// Function to update ID display in all sections
 function updateIAMIdDisplay(index) {
     const IAMId = generateIAMId(index);
     
-    // به‌روزرسانی در پروفایل
+    // Update in profile
     const profileIndexEl = document.getElementById('profile-index');
     if (profileIndexEl) {
         profileIndexEl.textContent = IAMId;
     }
     
-    // به‌روزرسانی در داشبورد
+    // Update in dashboard
     const dashboardIndexEl = document.getElementById('dashboard-user-index');
     if (dashboardIndexEl) {
         dashboardIndexEl.textContent = IAMId;
     }
     
-    // نمایش بخش اطلاعات کاربر در داشبورد
+    // Display user information section in dashboard
     const dashboardUserInfo = document.getElementById('dashboard-user-info');
     if (dashboardUserInfo) {
         dashboardUserInfo.style.display = 'block';
         
-        // به‌روزرسانی آدرس کیف پول
+        // Update wallet address
         const dashboardUserAddress = document.getElementById('dashboard-user-address');
         if (dashboardUserAddress && window.contractConfig && window.contractConfig.address) {
             dashboardUserAddress.textContent = shortenAddress(window.contractConfig.address);
         }
         
-        // به‌روزرسانی وضعیت
+        // Update status
         const dashboardUserStatus = document.getElementById('dashboard-user-status');
         if (dashboardUserStatus) {
-            dashboardUserStatus.textContent = 'فعال';
+            dashboardUserStatus.textContent = 'Active';
             dashboardUserStatus.style.color = '#00ff88';
         }
     }
     
-    // به‌روزرسانی در شبکه
+    // Update in network
     const networkIndexEl = document.getElementById('network-user-index');
     if (networkIndexEl) {
         networkIndexEl.textContent = IAMId;
     }
     
-    // نمایش در گوشه - غیرفعال شده
+    // Display in corner - disabled
     // displayIAMIdInCorner(index);
 }
 
-// تابع حذف دکمه شناور ایندکس
+// Function to remove floating index button
 window.removeFloatingIAMId = function() {
     const existingId = document.getElementById('IAM-id-corner');
     if (existingId) {
@@ -3053,17 +3053,17 @@ window.removeFloatingIAMId = function() {
     }
 };
 
-// تابع پاک کردن کش و تلاش مجدد اتصال کیف پول
+// Function to clear cache and retry wallet connection
 window.refreshWalletConnection = async function() {
     try {
         console.log('🔄 Refreshing wallet connection...');
         
-        // پاک کردن کش‌ها
+        // Clear caches
         if (window.clearConnectionCache) {
             window.clearConnectionCache();
         }
         
-        // پاک کردن متغیرهای سراسری
+        // Clear global variables
         if (typeof connectionCache !== 'undefined') {
             connectionCache = null;
         }
@@ -3074,7 +3074,7 @@ window.refreshWalletConnection = async function() {
             pendingAccountRequest = null;
         }
         
-        // پاک کردن contractConfig
+        // Clear contractConfig
         if (window.contractConfig) {
             window.contractConfig.provider = null;
             window.contractConfig.signer = null;

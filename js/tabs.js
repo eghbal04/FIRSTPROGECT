@@ -1,4 +1,4 @@
-// نمایش پیام ثبت‌نام برای تب‌های قفل شده
+// Display registration message for locked tabs
 function showRegistrationPrompt() {
   // Remove existing prompt if any
   const existingPrompt = document.getElementById('registration-prompt');
@@ -24,10 +24,10 @@ function showRegistrationPrompt() {
   
   prompt.innerHTML = `
     <div style="font-size: 3rem; margin-bottom: 1rem;">🔒</div>
-    <h3 style="color: #00ff88; margin-bottom: 1rem;">دسترسی محدود</h3>
+    <h3 style="color: #00ff88; margin-bottom: 1rem;">Limited Access</h3>
     <p style="color: #fff; margin-bottom: 1.5rem; line-height: 1.6;">
-      این بخش فقط برای کاربران فعال باز است.<br>
-      لطفاً ابتدا ثبت‌نام کنید تا به تمام امکانات دسترسی داشته باشید.
+      This section is only open for active users.<br>
+      Please register first to access all features.
     </p>
     <button onclick="closeRegistrationPrompt()" style="
       background: linear-gradient(135deg, #a786ff, #8b6bff);
@@ -38,7 +38,7 @@ function showRegistrationPrompt() {
       cursor: pointer;
       font-weight: bold;
       margin-right: 0.5rem;
-    ">بستن</button>
+    ">Close</button>
     <button onclick="showDirectRegistrationForm()" style="
       background: linear-gradient(135deg, #00ff88, #00cc66);
       color: #232946;
@@ -47,7 +47,7 @@ function showRegistrationPrompt() {
       border-radius: 10px;
       cursor: pointer;
       font-weight: bold;
-    ">ثبت‌نام</button>
+    ">Register</button>
   `;
   
   document.body.appendChild(prompt);
@@ -67,7 +67,7 @@ function showRegistrationPrompt() {
   document.body.appendChild(overlay);
 }
 
-// بستن پیام ثبت‌نام
+// Close registration message
 window.closeRegistrationPrompt = function() {
   const prompt = document.getElementById('registration-prompt');
   const overlay = document.getElementById('registration-prompt-overlay');
@@ -75,10 +75,10 @@ window.closeRegistrationPrompt = function() {
   if (overlay) overlay.remove();
 };
 
-// رفتن به صفحه ثبت‌نام
+// Go to registration page
 window.goToRegistration = function() {
   closeRegistrationPrompt();
-  // استفاده از تابع نمایش مستقیم فرم ثبت‌نام
+  // Use direct registration form display function
   if (typeof window.showDirectRegistrationForm === 'function') {
     window.showDirectRegistrationForm();
   } else if (typeof window.showTab === 'function') {
@@ -86,37 +86,37 @@ window.goToRegistration = function() {
   }
 };
 
-// تابع نمایش مستقیم فرم ثبت‌نام (برای tabs.js)
+// Function to display direct registration form (for tabs.js)
 window.showDirectRegistrationForm = async function() {
   try {
-    // بستن پیام ثبت‌نام فعلی
+    // Close current registration message
     const existingPrompt = document.getElementById('registration-prompt');
     const existingOverlay = document.getElementById('registration-prompt-overlay');
     if (existingPrompt) existingPrompt.remove();
     if (existingOverlay) existingOverlay.remove();
     
-    // اتصال به کیف پول
+    // Connect to wallet
     const connection = await window.connectWallet();
     const { contract, address, provider } = connection;
     
-    // دریافت آدرس معرف (deployer)
+    // Get referrer address (deployer)
     let referrerAddress;
     try {
-      // ابتدا بررسی کنیم که آیا کاربر متصل فعال است و ایندکس دارد
+      // First check if the connected user is active and has an index
       const connectedUserData = await contract.users(address);
       const isActive = connectedUserData && connectedUserData.index && BigInt(connectedUserData.index) > 0n;
-      // اگر کاربر ایندکس دارد، فعال محسوب می‌شود
+      // If user has an index, they are considered active
       referrerAddress = isActive ? address : await contract.deployer();
     } catch (e) {
       console.error('Error getting referrer address:', e);
       referrerAddress = address; // fallback to connected address
     }
     
-    // نمایش فرم ثبت‌نام
+    // Display registration form
     if (typeof window.showRegisterForm === 'function') {
       window.showRegisterForm(referrerAddress, '', address, provider, contract);
     } else {
-      // fallback به تب شبکه
+      // fallback to network tab
       if (typeof window.showTab === 'function') {
         window.showTab('network');
       }
@@ -124,14 +124,14 @@ window.showDirectRegistrationForm = async function() {
     
   } catch (error) {
     console.error('Error showing direct registration form:', error);
-    // در صورت خطا، به تب شبکه هدایت کن
+    // In case of error, redirect to network tab
     if (typeof window.showTab === 'function') {
       window.showTab('network');
     }
   }
 };
 
-// مدیریت نمایش و سوییچ تب‌ها
+// Manage display and switch tabs
 window.navigateToPage = function(pageUrl) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
   setTimeout(() => {
@@ -139,10 +139,10 @@ window.navigateToPage = function(pageUrl) {
   }, 300);
 };
 window.showTab = async function(tab) {
-  // ذخیره تب فعال در localStorage
+  // Save active tab in localStorage
   localStorage.setItem('currentActiveTab', tab);
   
-  // احراز هویت تب‌ها غیرفعال شد
+  // Tab authentication disabled
 
   const tabs = ['network','profile','reports','swap','transfer','register','news','shop','learning','about'];
   tabs.forEach(function(name) {
@@ -221,15 +221,15 @@ window.showTab = async function(tab) {
 
 // Check user status on page load and redirect if needed
 window.checkUserAccessOnLoad = async function() {
-  // بازیابی تب فعال از localStorage
+  // Retrieve active tab from localStorage
   const savedTab = localStorage.getItem('currentActiveTab');
   const urlParams = new URLSearchParams(window.location.search);
   const urlTab = urlParams.get('tab');
   
-  // اولویت: URL parameter > localStorage > default
+  // Priority: URL parameter > localStorage > default
   const currentTab = urlTab || savedTab || 'network';
   
-  // احراز هویت تب‌ها غیرفعال شد؛ تب ذخیره‌شده یا پیش‌فرض را نمایش بده
+  // Tab authentication disabled; display saved or default tab
   if (typeof window.showTab === 'function') {
     window.showTab(currentTab);
   }
@@ -237,14 +237,14 @@ window.checkUserAccessOnLoad = async function() {
 
 // Run access check when page loads
 document.addEventListener('DOMContentLoaded', function() {
-  // بررسی تب فعال از localStorage قدیمی (برای سازگاری)
+  // Check active tab from old localStorage (for compatibility)
   const oldActiveTab = localStorage.getItem('activeTab');
   if (oldActiveTab) {
     localStorage.setItem('currentActiveTab', oldActiveTab);
     localStorage.removeItem('activeTab');
   }
   
-  // اجرای بررسی دسترسی با کمی تاخیر
+  // Run access check with slight delay
   setTimeout(() => {
     window.checkUserAccessOnLoad();
   }, 1000); // Wait for user profile to load

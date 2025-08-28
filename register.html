@@ -85,7 +85,7 @@
   <script src="js/navbar.js"></script>
   <main style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--ios-background);">
          <form class="register-form" autocomplete="off" style="max-width:430px;width:100%;margin:0 auto;">
-       <!-- سربرگ‌های ثبت نام -->
+       <!-- Registration tabs -->
        <div style="display: flex; margin-bottom: 16px; background: rgba(35, 41, 70, 0.5); border-radius: 8px; padding: 4px;">
          <button type="button" id="normal-tab" class="tab-btn active" style="flex: 1; padding: 8px 12px; background: linear-gradient(90deg,#00ff88,#a786ff); color: #232946; border: none; border-radius: 6px; font-weight: bold; font-size: 0.9rem; cursor: pointer;">Normal Registration</button>
          <button type="button" id="free-tab" class="tab-btn" style="flex: 1; padding: 8px 12px; background: transparent; color: #a786ff; border: none; border-radius: 6px; font-weight: bold; font-size: 0.9rem; cursor: pointer;">Reserve Registration</button>
@@ -123,9 +123,9 @@
                        <button class="register-btn buy-btn" id="register-btn" type="button" style="width:100%;margin-top:8px;">Register</button>
       
       <script>
-         // تابع نمایش پیام‌های عمومی
+         // Function to display general messages
      function showMessageBox(message, type = 'info') {
-         // حذف message box قبلی اگر وجود دارد
+         // Remove previous message box if exists
          const existingBox = document.getElementById('message-box');
          if (existingBox) {
              existingBox.remove();

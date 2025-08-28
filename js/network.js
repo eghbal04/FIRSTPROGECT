@@ -51,7 +51,7 @@ function shortAddress(addr) {
     return addr.slice(0, 4) + '...' + addr.slice(-3);
 }
 
-// Alias عمومی برای استفاده از سایر فایل‌ها
+// Public alias for use from other files
 window.networkShowUserPopup = async function(address, user) {
     if (_networkPopupOpening) return;
     _networkPopupOpening = true;
@@ -73,7 +73,7 @@ window.networkShowUserPopup = async function(address, user) {
         existingPopup.remove();
     }
     
-         // اطلاعات مورد نیاز
+         // Required information
      const IAMId = user && user.index !== undefined && user.index !== null ? 
          (window.generateIAMId ? window.generateIAMId(user.index) : user.index) : '-';
      const walletAddress = address ? shortAddress(address) : '-';

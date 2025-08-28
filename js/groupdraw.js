@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const groupDrawStatus = document.getElementById('groupdraw-status');
 
   if (groupDrawInfo && groupDrawCreateBtn && groupDrawStatus) {
-    // نمایش اطلاعات اولیه
+    // Display initial information
     groupDrawInfo.innerHTML = 'برای ایجاد گروه جدید روی دکمه زیر کلیک کنید یا منتظر لیست گروه‌های فعال باشید.';
 
     // هندل کلیک دکمه ایجاد گروه جدید
