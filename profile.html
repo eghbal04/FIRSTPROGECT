@@ -502,103 +502,202 @@
             setTimeout(function() {
               const cashbackBtn = document.getElementById('monthly-cashback-btn');
               const cashbackMsg = document.getElementById('monthly-cashback-msg');
-              if (cashbackBtn && cashbackMsg) {
-                const claimBtn = document.getElementById('claim-btn');
-                if (claimBtn) {
-                  claimBtn.addEventListener('click', async function(e) {
-                    claimBtn.disabled = true;
-                    claimBtn.style.opacity = '0.5';
-                    claimBtn.style.cursor = 'not-allowed';
-                    cashbackMsg.style.display = 'block';
-                    cashbackMsg.style.opacity = '1';
-                    cashbackMsg.style.background = 'rgba(167,134,255,0.08)';
-                    cashbackMsg.style.border = '1.5px solid #a786ff';
-                    cashbackMsg.style.borderRadius = '10px';
-                    cashbackMsg.style.padding = '1em 1.2em';
-                    cashbackMsg.style.marginBottom = '1.2rem';
-                    cashbackMsg.style.textAlign = 'center';
-                    cashbackMsg.style.fontSize = '1.07em';
-                    cashbackMsg.style.boxShadow = '0 2px 8px #a786ff22';
-                    cashbackMsg.style.whiteSpace = 'pre-line';
+              
+              // دکمه کلایم (برداشت کمیسیون)
+              const claimBtn = document.getElementById('claim-btn');
+              if (claimBtn) {
+                claimBtn.addEventListener('click', async function(e) {
+                  console.log('Claim button clicked!'); // برای دیباگ
+                  claimBtn.disabled = true;
+                  claimBtn.style.opacity = '0.5';
+                  claimBtn.style.cursor = 'not-allowed';
+                  cashbackMsg.style.display = 'block';
+                  cashbackMsg.style.opacity = '1';
+                  cashbackMsg.style.background = 'rgba(167,134,255,0.08)';
+                  cashbackMsg.style.border = '1.5px solid #a786ff';
+                  cashbackMsg.style.borderRadius = '10px';
+                  cashbackMsg.style.padding = '1em 1.2em';
+                  cashbackMsg.style.marginBottom = '1.2rem';
+                  cashbackMsg.style.textAlign = 'center';
+                  cashbackMsg.style.fontSize = '1.07em';
+                  cashbackMsg.style.boxShadow = '0 2px 8px #a786ff22';
+                  cashbackMsg.style.whiteSpace = 'pre-line';
+                  
+                  // نمایش پیام مشخص برای عملیات کلایم
+                  cashbackMsg.innerHTML = '<b>💸 عملیات برداشت کمیسیون:</b><br>• این عملیات پاداش‌های باینری شما را برداشت می‌کند<br>• فقط هر 12 ساعت یکبار امکان برداشت وجود دارد<br>• باید پوینت‌های فعال داشته باشید<br>• اگر پوینت ندارید یا 12 ساعت نگذشته، برداشت ممکن نیست<br><br><b>🔍 در حال بررسی شرایط...</b>';
+                  cashbackMsg.style.color = '#a786ff';
+                  
+                  try {
+                    const { contract, address } = await window.connectWallet();
+                    const user = await fetchUserSafe(address);
+                    const now = Math.floor(Date.now() / 1000);
                     
-                                         // Display commission withdrawal conditions
-                     cashbackMsg.innerHTML = '<b>Commission Withdrawal Conditions:</b><br>• You can only withdraw once every 12 hours.<br>• You must have active points.<br>• If you don\'t have points or 12 hours haven\'t passed yet, withdrawal is not possible.<br><br><b>Checking conditions...</b>';
-                     cashbackMsg.style.color = '#a786ff';
-                     
-                     try {
-                       const { contract, address } = await window.connectWallet();
-                       const user = await fetchUserSafe(address);
-                       const now = Math.floor(Date.now() / 1000);
-                       if (!(user.index && BigInt(user.index) > 0n)) throw new Error('Your account is not active.');
-                       if (user.binaryPoints == 0) throw new Error('You have no points to withdraw.');
-                       if (now < Number(user.lastClaimTime) + 12 * 3600) {
-                         const remain = Math.ceil((Number(user.lastClaimTime) + 12 * 3600 - now) / 3600);
-                         throw new Error(`Still ${remain} hours until next withdrawal.`);
-                       }
-                       cashbackMsg.innerHTML = 'Sending commission withdrawal request...';
-                       cashbackMsg.style.color = '#a786ff';
-                       const tx = await contract.claim();
-                       await tx.wait();
-                       cashbackMsg.style.display = 'none';
-                       await loadProfile();
-                     } catch(err) {
-                       cashbackMsg.style.display = 'none';
-                     }
-                    claimBtn.disabled = false;
-                    claimBtn.style.opacity = '';
-                    claimBtn.style.cursor = '';
-                  });
-                }
-                if (cashbackBtn && cashbackMsg) {
-                  cashbackBtn.addEventListener('click', async function(e) {
-                    cashbackBtn.disabled = true;
-                    cashbackBtn.style.opacity = '0.5';
-                    cashbackBtn.style.cursor = 'not-allowed';
-                    cashbackMsg.style.display = 'block';
-                    cashbackMsg.style.opacity = '1';
+                    // بررسی شرایط برداشت
+                    if (!(user.index && BigInt(user.index) > 0n)) {
+                      throw new Error('حساب شما فعال نیست. ابتدا باید ثبت‌نام کنید.');
+                    }
+                    
+                    if (user.binaryPoints == 0) {
+                      throw new Error('شما هیچ پوینتی برای برداشت ندارید.');
+                    }
+                    
+                    if (now < Number(user.lastClaimTime) + 12 * 3600) {
+                      const remain = Math.ceil((Number(user.lastClaimTime) + 12 * 3600 - now) / 3600);
+                      throw new Error(`هنوز ${remain} ساعت تا برداشت بعدی باقی مانده است.`);
+                    }
+                    
+                    cashbackMsg.innerHTML = '⏳ در حال ارسال درخواست برداشت کمیسیون...';
+                    cashbackMsg.style.color = '#00ff88';
+                    
+                    // فراخوانی تابع کلایم
+                    const tx = await contract.claim();
+                    
+                    cashbackMsg.innerHTML = '⏳ منتظر تایید تراکنش در کیف پول...';
+                    cashbackMsg.style.color = '#a786ff';
+                    
+                    await tx.wait();
+                    
+                    cashbackMsg.innerHTML = '✅ برداشت کمیسیون با موفقیت انجام شد!';
+                    cashbackMsg.style.color = '#00ff88';
                     cashbackMsg.style.background = 'rgba(0,255,136,0.08)';
                     cashbackMsg.style.border = '1.5px solid #00ff88';
-                    cashbackMsg.style.borderRadius = '10px';
-                    cashbackMsg.style.padding = '1em 1.2em';
-                    cashbackMsg.style.marginBottom = '1.2rem';
-                    cashbackMsg.style.textAlign = 'center';
-                    cashbackMsg.style.fontSize = '1.07em';
-                    cashbackMsg.style.boxShadow = '0 2px 8px #00ff8822';
-                    cashbackMsg.style.whiteSpace = 'pre-line';
                     
-                                         // Display cashback withdrawal conditions
-                     cashbackMsg.innerHTML = '<b>Monthly Cashback Withdrawal Conditions:</b><br>• You can only withdraw once every 30 days.<br>• You must have at least one empty child position.<br>• The cashback limit equals your deposit amount.<br>• If both positions are full or 30 days haven\'t passed or the cashback limit is reached, withdrawal is not possible.<br>• <span style=\'color:#a786ff\'>If there is sufficient balance in the help fund, you will receive <b>three percent</b> of the amount you paid as monthly cashback each month.</span><br><br><b>Checking conditions...</b>';
-                     cashbackMsg.style.color = '#00ff88';
-                     
-                     try {
-                       const { contract, address } = await window.connectWallet();
-                       const user = await fetchUserSafe(address);
-                       const now = Math.floor(Date.now() / 1000);
-                       const leftAddr = await contract.getLeftAddress(user.index);
-                       const rightAddr = await contract.getRightAddress(user.index);
-                       if (!(user.index && BigInt(user.index) > 0n)) throw new Error('Your account is not active.');
-                       if (leftAddr != '0x0000000000000000000000000000000000000000' && rightAddr != '0x0000000000000000000000000000000000000000')
-                         throw new Error('To withdraw cashback, you must have at least one empty child position.');
-                       if (now < Number(user.lastMonthlyClaim) + 30 * 24 * 3600) {
-                         const remain = Math.ceil((Number(user.lastMonthlyClaim) + 30 * 24 * 3600 - now) / (24*3600));
-                         throw new Error(`Still ${remain} days until next cashback withdrawal.`);
-                       }
-                       if (user.totalMonthlyRewarded >= user.depositedAmount)
-                         throw new Error('Your monthly cashback limit is full.');
-                       cashbackMsg.innerHTML = 'Sending cashback withdrawal request...';
-                       cashbackMsg.style.color = '#a786ff';
-                       const tx = await contract.claimMonthlyReward(1);
-                       await tx.wait();
-                       cashbackMsg.style.display = 'none';
-                       await loadProfile();
-                     } catch(err) {
-                       cashbackMsg.style.display = 'none';
-                     }
-                    cashbackBtn.disabled = false;
-                    cashbackBtn.style.opacity = '';
-                    cashbackBtn.style.cursor = '';
-                  });
-                }
+                    setTimeout(() => {
+                      cashbackMsg.style.display = 'none';
+                      loadProfile(); // بارگذاری مجدد پروفایل
+                    }, 2000);
+                    
+                  } catch(err) {
+                    console.error('Claim error:', err); // برای دیباگ
+                    let errorMsg = 'خطا در برداشت کمیسیون';
+                    
+                    if (err.code === 4001 || err.message.includes('user denied')) {
+                      errorMsg = '❌ تراکنش توسط کاربر لغو شد.';
+                    } else if (err.code === -32002 || err.message.includes('Already processing')) {
+                      errorMsg = '⏳ کیف پول در حال پردازش درخواست دیگری است. لطفاً صبر کنید.';
+                    } else if (err.message.includes('network')) {
+                      errorMsg = '❌ خطای شبکه! اتصال اینترنت را بررسی کنید.';
+                    } else if (err.message.includes('insufficient funds')) {
+                      errorMsg = '❌ موجودی کافی برای پرداخت کارمزد تراکنش ندارید.';
+                    } else {
+                      errorMsg = '❌ ' + (err.message || 'خطای نامشخص در برداشت');
+                    }
+                    
+                    cashbackMsg.innerHTML = errorMsg;
+                    cashbackMsg.style.color = '#ff4444';
+                    cashbackMsg.style.background = 'rgba(255,68,68,0.08)';
+                    cashbackMsg.style.border = '1.5px solid #ff4444';
+                    
+                    setTimeout(() => {
+                      cashbackMsg.style.display = 'none';
+                    }, 5000);
+                  }
+                  
+                  claimBtn.disabled = false;
+                  claimBtn.style.opacity = '';
+                  claimBtn.style.cursor = '';
+                });
+              }
+              
+              // دکمه کش‌بک (برداشت ماهانه)
+              if (cashbackBtn && cashbackMsg) {
+                cashbackBtn.addEventListener('click', async function(e) {
+                  console.log('Cashback button clicked!'); // برای دیباگ
+                  cashbackBtn.disabled = true;
+                  cashbackBtn.style.opacity = '0.5';
+                  cashbackBtn.style.cursor = 'not-allowed';
+                  cashbackMsg.style.display = 'block';
+                  cashbackMsg.style.opacity = '1';
+                  cashbackMsg.style.background = 'rgba(0,255,136,0.08)';
+                  cashbackMsg.style.border = '1.5px solid #00ff88';
+                  cashbackMsg.style.borderRadius = '10px';
+                  cashbackMsg.style.padding = '1em 1.2em';
+                  cashbackMsg.style.marginBottom = '1.2rem';
+                  cashbackMsg.style.textAlign = 'center';
+                  cashbackMsg.style.fontSize = '1.07em';
+                  cashbackMsg.style.boxShadow = '0 2px 8px #00ff8822';
+                  cashbackMsg.style.whiteSpace = 'pre-line';
+                  
+                  // نمایش پیام مشخص برای عملیات کش‌بک
+                  cashbackMsg.innerHTML = '<b>📆 عملیات برداشت کش‌بک ماهانه:</b><br>• این عملیات پاداش ماهانه شما را برداشت می‌کند<br>• فقط هر 30 روز یکبار امکان برداشت وجود دارد<br>• باید حداقل یک موقعیت فرزند خالی داشته باشید<br>• سقف کش‌بک برابر با مبلغ سپرده شما است<br>• <span style=\'color:#a786ff\'>در صورت وجود موجودی کافی در صندوق کمک، <b>سه درصد</b> از مبلغ پرداختی شما به عنوان کش‌بک ماهانه پرداخت می‌شود.</span><br><br><b>🔍 در حال بررسی شرایط...</b>';
+                  cashbackMsg.style.color = '#00ff88';
+                  
+                  try {
+                    const { contract, address } = await window.connectWallet();
+                    const user = await fetchUserSafe(address);
+                    const now = Math.floor(Date.now() / 1000);
+                    const leftAddr = await contract.getLeftAddress(user.index);
+                    const rightAddr = await contract.getRightAddress(user.index);
+                    
+                    // بررسی شرایط برداشت کش‌بک
+                    if (!(user.index && BigInt(user.index) > 0n)) {
+                      throw new Error('حساب شما فعال نیست. ابتدا باید ثبت‌نام کنید.');
+                    }
+                    
+                    if (leftAddr != '0x0000000000000000000000000000000000000000' && rightAddr != '0x0000000000000000000000000000000000000000') {
+                      throw new Error('برای برداشت کش‌بک، باید حداقل یک موقعیت فرزند خالی داشته باشید.');
+                    }
+                    
+                    if (now < Number(user.lastMonthlyClaim) + 30 * 24 * 3600) {
+                      const remain = Math.ceil((Number(user.lastMonthlyClaim) + 30 * 24 * 3600 - now) / (24*3600));
+                      throw new Error(`هنوز ${remain} روز تا برداشت کش‌بک بعدی باقی مانده است.`);
+                    }
+                    
+                    if (user.totalMonthlyRewarded >= user.depositedAmount) {
+                      throw new Error('سقف کش‌بک ماهانه شما پر شده است.');
+                    }
+                    
+                    cashbackMsg.innerHTML = '⏳ در حال ارسال درخواست برداشت کش‌بک...';
+                    cashbackMsg.style.color = '#a786ff';
+                    
+                    // فراخوانی تابع کش‌بک
+                    const tx = await contract.claimMonthlyReward(1);
+                    
+                    cashbackMsg.innerHTML = '⏳ منتظر تایید تراکنش در کیف پول...';
+                    cashbackMsg.style.color = '#a786ff';
+                    
+                    await tx.wait();
+                    
+                    cashbackMsg.innerHTML = '✅ برداشت کش‌بک ماهانه با موفقیت انجام شد!';
+                    cashbackMsg.style.color = '#00ff88';
+                    cashbackMsg.style.background = 'rgba(0,255,136,0.08)';
+                    cashbackMsg.style.border = '1.5px solid #00ff88';
+                    
+                    setTimeout(() => {
+                      cashbackMsg.style.display = 'none';
+                      loadProfile(); // بارگذاری مجدد پروفایل
+                    }, 2000);
+                    
+                  } catch(err) {
+                    console.error('Cashback error:', err); // برای دیباگ
+                    let errorMsg = 'خطا در برداشت کش‌بک';
+                    
+                    if (err.code === 4001 || err.message.includes('user denied')) {
+                      errorMsg = '❌ تراکنش توسط کاربر لغو شد.';
+                    } else if (err.code === -32002 || err.message.includes('Already processing')) {
+                      errorMsg = '⏳ کیف پول در حال پردازش درخواست دیگری است. لطفاً صبر کنید.';
+                    } else if (err.message.includes('network')) {
+                      errorMsg = '❌ خطای شبکه! اتصال اینترنت را بررسی کنید.';
+                    } else if (err.message.includes('insufficient funds')) {
+                      errorMsg = '❌ موجودی کافی برای پرداخت کارمزد تراکنش ندارید.';
+                    } else {
+                      errorMsg = '❌ ' + (err.message || 'خطای نامشخص در برداشت');
+                    }
+                    
+                    cashbackMsg.innerHTML = errorMsg;
+                    cashbackMsg.style.color = '#ff4444';
+                    cashbackMsg.style.background = 'rgba(255,68,68,0.08)';
+                    cashbackMsg.style.border = '1.5px solid #ff4444';
+                    
+                    setTimeout(() => {
+                      cashbackMsg.style.display = 'none';
+                    }, 5000);
+                  }
+                  
+                  cashbackBtn.disabled = false;
+                  cashbackBtn.style.opacity = '';
+                  cashbackBtn.style.cursor = '';
+                });
               }
             }, 100);
             
