@@ -260,6 +260,9 @@
 
     <!-- User Status Bar -->
     <div id="user-status-bar" class="user-status-container" style="display:block;background:linear-gradient(135deg,rgba(35,41,70,0.95),rgba(24,28,42,0.95));border:1px solid rgba(0,255,136,0.2);border-radius:16px;padding:1rem;margin:1rem auto;max-width:1400px;backdrop-filter:blur(10px);box-shadow:0 8px 32px rgba(0,0,0,0.3);position:relative;">
+      
+      
+      
       <!-- Star Rating - Top Left Corner -->
       <div id="user-star-rating" style="position:absolute;top:0.5rem;left:0.5rem;background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.3);border-radius:8px;padding:0.3rem 0.5rem;display:flex;align-items:center;gap:0.2rem;z-index:10;">
         <span style="color:#ffd700;font-size:0.8rem;font-weight:bold;" id="user-star-count">0</span>
@@ -581,24 +584,24 @@ Our Services:
         <!-- Blockchain Information Dashboard (added to prevent not found errors) -->
 
         <form id="swapForm" class="swap-form">
-          <!-- Left Column -->
-          <div style="display:flex;flex-direction:column;gap:1rem;">
-          <div class="swap-row">
-            <label for="swapDirection">Exchange Type:</label>
-            <select id="swapDirection" required>
-              <option value="dai-to-IAM">DAI → IAM</option>
-              <option value="IAM-to-dai">IAM → DAI</option>
-            </select>
-            <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Select your desired exchange type</small>
-          </div>
-          
-          <div class="swap-row">
-            <label for="swapAmount">Amount:</label>
-            <div class="amount-input-group">
-              <input type="number" id="swapAmount" placeholder="Enter amount" min="0" step="any" required>
-              <button type="button" id="maxBtn" class="max-btn">Maximum</button>
+          <!-- Exchange Type and Amount Row - Vertical Layout -->
+          <div style="display:flex;flex-direction:column;gap:1.5rem;margin-bottom:1rem;">
+            <div class="swap-row">
+              <label for="swapDirection">Exchange Type:</label>
+              <select id="swapDirection" required>
+                <option value="dai-to-IAM">DAI → IAM</option>
+                <option value="IAM-to-dai">IAM → DAI</option>
+              </select>
+              <small style="color:#b8c1ec;font-size:0.8rem;margin-top:0.3rem;display:block;">Select your desired exchange type</small>
             </div>
-            <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Enter the amount you want to exchange</small>
+            
+            <div class="swap-row">
+              <label for="swapAmount">Amount:</label>
+              <div class="amount-input-group">
+                <input type="number" id="swapAmount" placeholder="Enter amount" min="0" step="any" required>
+                <button type="button" id="maxBtn" class="max-btn">Maximum</button>
+              </div>
+              <small style="color:#b8c1ec;font-size:0.8rem;margin-top:0.3rem;display:block;">Enter the amount you want to exchange</small>
             </div>
           </div>
           
@@ -621,7 +624,7 @@ Our Services:
                 font-weight: bold;
               ">🔄 Convert</button>
             </div>
-            <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Enter dollar amount to convert to tokens (e.g., 5 for $5)</small>
+            <small style="color:#b8c1ec;font-size:0.8rem;margin-top:0.3rem;display:block;">Enter dollar amount to convert to tokens (e.g., 5 for $5)</small>
           </div>
         
         <!-- Balance Check -->
@@ -1281,40 +1284,43 @@ Our Services:
         margin: 0 !important;
         left: 0 !important;
         right: 0 !important;
-        padding: 0.5rem !important;
+        padding: 0.4rem !important;
       }
       
       .swap-container {
         max-width: 100% !important;
-        padding: 0.8rem !important;
+        padding: 0.6rem !important;
         margin: 0 !important;
         width: 100% !important;
       }
       
       .swap-form {
-        padding: 0.8rem !important;
+        padding: 0.6rem !important;
         border-radius: 8px !important;
+        gap: 0.8rem !important;
       }
       
+      /* Exchange Type and Amount vertical layout - already stacked by default */
+      
       .swap-row {
-        margin-bottom: 0.8rem !important;
+        margin-bottom: 0.6rem !important;
       }
       
       .swap-row label {
-        font-size: 0.9rem !important;
+        font-size: 0.8rem !important;
         margin-bottom: 0.3rem !important;
       }
       
       .swap-row input,
       .swap-row select {
-        padding: 0.6rem !important;
-        font-size: 0.9rem !important;
+        padding: 0.5rem !important;
+        font-size: 0.8rem !important;
         border-radius: 6px !important;
       }
       
       .swap-btn {
-        padding: 0.7rem 1.2rem !important;
-        font-size: 0.9rem !important;
+        padding: 0.6rem 1rem !important;
+        font-size: 0.8rem !important;
         border-radius: 6px !important;
       }
       
@@ -1393,41 +1399,44 @@ Our Services:
       
       /* Small text responsive */
       .swap-row small {
-        font-size: 0.75rem !important;
+        font-size: 0.7rem !important;
         margin-top: 0.2rem !important;
       }
     }
     
     @media (max-width: 480px) {
       #main-swap {
-        padding: 0.3rem !important;
+        padding: 0.2rem !important;
       }
       
       .swap-container {
-        padding: 0.6rem !important;
+        padding: 0.4rem !important;
       }
       
       .swap-form {
-        padding: 0.6rem !important;
+        padding: 0.4rem !important;
+        gap: 0.6rem !important;
       }
       
+      /* Exchange Type and Amount vertical layout - already stacked by default */
+      
       .swap-row {
-        margin-bottom: 0.6rem !important;
+        margin-bottom: 0.5rem !important;
       }
       
       .swap-row label {
-        font-size: 0.85rem !important;
+        font-size: 0.75rem !important;
       }
       
       .swap-row input,
       .swap-row select {
-        padding: 0.5rem !important;
-        font-size: 0.85rem !important;
+        padding: 0.4rem !important;
+        font-size: 0.75rem !important;
       }
       
       .swap-btn {
-        padding: 0.6rem 1rem !important;
-        font-size: 0.85rem !important;
+        padding: 0.5rem 0.8rem !important;
+        font-size: 0.75rem !important;
       }
       
       .swap-balance-check {
@@ -1441,6 +1450,81 @@ Our Services:
       .swap-rules h3 {
         font-size: 1rem !important;
       }
+    }
+    
+    /* Extra small devices (phones, 320px and down) */
+    @media (max-width: 320px) {
+      #main-swap {
+        padding: 0.1rem !important;
+      }
+      
+      .swap-container {
+        padding: 0.3rem !important;
+      }
+      
+      .swap-form {
+        padding: 0.3rem !important;
+        gap: 0.5rem !important;
+      }
+      
+      .swap-row {
+        margin-bottom: 0.4rem !important;
+      }
+      
+      .swap-row label {
+        font-size: 0.7rem !important;
+      }
+      
+      .swap-row input,
+      .swap-row select {
+        padding: 0.3rem !important;
+        font-size: 0.7rem !important;
+      }
+      
+      .swap-btn {
+        padding: 0.4rem 0.6rem !important;
+        font-size: 0.7rem !important;
+      }
+      
+      .swap-row small {
+        font-size: 0.65rem !important;
+      }
+    }
+    
+    /* Small tablets (600px and down) */
+    @media (max-width: 600px) and (min-width: 481px) {
+      #main-swap {
+        padding: 0.3rem !important;
+      }
+      
+      .swap-container {
+        padding: 0.5rem !important;
+      }
+      
+      .swap-form {
+        padding: 0.5rem !important;
+        gap: 0.7rem !important;
+      }
+      
+      .swap-row {
+        margin-bottom: 0.6rem !important;
+      }
+      
+      .swap-row label {
+        font-size: 0.8rem !important;
+      }
+      
+      .swap-row input,
+      .swap-row select {
+        padding: 0.5rem !important;
+        font-size: 0.8rem !important;
+      }
+      
+      .swap-btn {
+        padding: 0.6rem 1rem !important;
+        font-size: 0.8rem !important;
+      }
+    }
       
       .swap-rules h4 {
         font-size: 0.9rem !important;

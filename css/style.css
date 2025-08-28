@@ -976,7 +976,7 @@ padding: 2rem;
 
 .swap-form label {
   font-family: 'Nazanin', 'B Nazanin', 'BNazanin', Tahoma, Arial, sans-serif;
-  font-size: 1rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: #00ff88;
   margin-bottom: 0.5rem;
@@ -985,13 +985,13 @@ padding: 2rem;
 
 .swap-form select {
 width: 100%;
-  padding: 1rem;
+  padding: 0.8rem;
   border: 2px solid rgba(0, 255, 136, 0.3);
   border-radius: 12px;
   background: rgba(0, 0, 0, 0.8);
   color: #ffffff;
   font-family: 'Nazanin', 'B Nazanin', 'BNazanin', Tahoma, Arial, sans-serif;
-  font-size: 1rem;
+  font-size: 0.85rem;
   transition: all 0.3s ease;
   cursor: pointer;
 }
@@ -1010,13 +1010,13 @@ width: 100%;
 
 .amount-row input {
   flex: 1;
-  padding: 1rem;
+  padding: 0.8rem;
   border: 2px solid rgba(0, 255, 136, 0.3);
   border-radius: 12px;
   background: rgba(0, 0, 0, 0.8);
   color: #ffffff;
   font-family: 'Nazanin', 'B Nazanin', 'BNazanin', Tahoma, Arial, sans-serif;
-  font-size: 1rem;
+  font-size: 0.85rem;
   transition: all 0.3s ease;
 }
 
@@ -1027,13 +1027,13 @@ width: 100%;
 }
 
 .max-btn {
-  padding: 1rem 1.5rem;
+  padding: 0.8rem 1.2rem;
   background: linear-gradient(135deg, #00ff88, #00ccff);
   color: #000000;
   border: none;
   border-radius: 12px;
   font-family: 'Nazanin', 'B Nazanin', 'BNazanin', Tahoma, Arial, sans-serif;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -1058,13 +1058,13 @@ width: 100%;
 }
 
 .swap-form button[type="submit"] {
-  padding: 1.2rem;
+  padding: 1rem;
   background: linear-gradient(135deg, #00ff88, #00ccff);
   color: #000000;
   border: none;
   border-radius: 12px;
   font-family: 'Nazanin', 'B Nazanin', 'BNazanin', Tahoma, Arial, sans-serif;
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
