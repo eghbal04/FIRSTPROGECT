@@ -7,44 +7,7 @@ let isRenderingTree = false;
 let lastRenderedTime = 0;
 let _networkPopupOpening = false;
 
-// Network progress bar variables
-let totalNodesToLoad = 0;
-let nodesLoaded = 0;
 
-// Network progress bar management functions
-function showNetworkProgress() {
-    const progressBar = document.getElementById('network-progress');
-    if (progressBar) {
-        progressBar.style.display = 'block';
-        setNetworkProgress(0);
-    }
-}
-
-function setNetworkProgress(percentage) {
-    const progressInner = document.getElementById('network-progress-inner');
-    if (progressInner) {
-        progressInner.style.width = Math.min(100, Math.max(0, percentage)) + '%';
-    }
-}
-
-function hideNetworkProgress() {
-    const progressBar = document.getElementById('network-progress');
-    if (progressBar) {
-        setTimeout(() => {
-            progressBar.style.display = 'none';
-            setNetworkProgress(0);
-        }, 500);
-    }
-}
-
-function updateNodeProgress() {
-    nodesLoaded++;
-    if (totalNodesToLoad > 0) {
-        const percentage = (nodesLoaded / totalNodesToLoad) * 100;
-        setNetworkProgress(percentage);
-        console.log(`📊 Network progress: ${nodesLoaded}/${totalNodesToLoad} nodes loaded (${percentage.toFixed(1)}%)`);
-    }
-}
 
 // Fallback function for generateIAMId if not available
 if (!window.generateIAMId) {
@@ -570,12 +533,10 @@ window.networkShowUserPopup = async function(address, user) {
     }, 0);
 };
 
-// New function: Simple vertical render with preserved behaviors
+// New function: Simple vertical render with lazy loading - ALL NODES CAN EXPAND
 async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = false) {
     // Render version for debug
     try { console.debug('renderVerticalNodeLazy', window.NETWORK_RENDER_VERSION, 'index:', String(index), 'level:', level); } catch {}
-    // Update progress for each node
-    updateNodeProgress();
     console.log(`🔄 renderVerticalNodeLazy called with index: ${index}, level: ${level}`);
     try {
         console.log('🔄 Getting contract connection...');
@@ -669,7 +630,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         
 
         
-        // Expand/collapse button if has directs or empty position
+        // Expand/collapse button if has directs or empty position - LAZY LOADING FOR ALL NODES
         let expandBtn = null;
         let childrenDiv = null;
         if (hasDirects || !leftActive || !rightActive) {
@@ -695,14 +656,119 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         nodeDiv.addEventListener('click', function(e) {
             if (e.target.classList.contains('register-question-mark')) return;
             if (expandBtn && e.target === expandBtn) {
-                if (childrenDiv.style.display === 'none') {
+                e.stopPropagation();
+                
+                // Lazy loading: Only render children when expand button is clicked
+                if (!childrenDiv) {
+                    // Transform node into progress bar
+                    const originalContent = nodeDiv.innerHTML;
+                    const originalBackground = nodeDiv.style.background;
+                    const originalBoxShadow = nodeDiv.style.boxShadow;
+                    const originalColor = nodeDiv.style.color;
+                    
+                    // Create progress bar effect
+                    nodeDiv.innerHTML = `
+                        <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; border-radius: 12px;">
+                            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, #00ff88, #a786ff); opacity: 0.3; animation: progressShimmer 1.5s ease-in-out infinite;"></div>
+                            <div style="position: relative; z-index: 2; color: #00ff88; font-weight: bold; font-size: 1.1em; display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 16px; height: 16px; border: 2px solid #00ff88; border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                                <span>Loading...</span>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Update node styling for progress state
+                    nodeDiv.style.background = 'rgba(0, 255, 136, 0.1)';
+                    nodeDiv.style.boxShadow = '0 4px 16px rgba(0, 255, 136, 0.3)';
+                    nodeDiv.style.color = '#00ff88';
+                    nodeDiv.style.cursor = 'default';
+                    
+                    // Disable hover effects during loading
+                    nodeDiv.onmouseover = null;
+                    nodeDiv.onmouseout = null;
+                    
+                    // Create children div and render children for the first time
+                    childrenDiv = document.createElement('div');
+                    childrenDiv.style.transition = 'all 0.3s';
+                    container.appendChild(childrenDiv);
+                    
+                    // Render children nodes
+                    (async function() {
+                        try {
+                            // Left child
+                            if (leftActive) {
+                                let leftRow = document.createElement('div');
+                                leftRow.className = 'child-node-row left-row';
+                                leftRow.style.display = 'block';
+                                childrenDiv.appendChild(leftRow);
+                                await renderVerticalNodeLazy(BigInt(leftUser.index), leftRow, level + 1, false);
+                                // Indentation of half its width (after layout)
+                                setDynamicIndent(leftRow);
+                            }
+                            // Right child
+                            if (rightActive) {
+                                let rightRow = document.createElement('div');
+                                rightRow.className = 'child-node-row right-row';
+                                rightRow.style.display = 'block';
+                                childrenDiv.appendChild(rightRow);
+                                await renderVerticalNodeLazy(BigInt(rightUser.index), rightRow, level + 1, false);
+                                // Aligned with left (if exists)
+                                const leftRowRef = childrenDiv.querySelector('.left-row');
+                                if (leftRowRef) {
+                                    rightRow.style.marginRight = leftRowRef.style.marginRight || '0px';
+                                } else {
+                                    setDynamicIndent(rightRow);
+                                }
+                            }
+                            
+                            // Restore original node appearance after rendering is complete
+                            nodeDiv.innerHTML = originalContent;
+                            nodeDiv.style.background = originalBackground;
+                            nodeDiv.style.boxShadow = originalBoxShadow;
+                            nodeDiv.style.color = originalColor;
+                            nodeDiv.style.cursor = 'pointer';
+                            
+                            // Restore hover effects
+                            nodeDiv.onmouseover = function() { 
+                                this.style.background = '#232946'; 
+                                this.style.boxShadow = '0 6px 24px #00ff8840'; 
+                            };
+                            nodeDiv.onmouseout = function() { 
+                                this.style.background = getNodeColorByLevel(level, true); 
+                                this.style.boxShadow = '0 4px 16px rgba(0,255,136,0.10)'; 
+                            };
+                            
+                        } catch (error) {
+                            console.error('Error rendering children:', error);
+                            
+                            // Restore original node appearance even if there's an error
+                            nodeDiv.innerHTML = originalContent;
+                            nodeDiv.style.background = originalBackground;
+                            nodeDiv.style.boxShadow = originalBoxShadow;
+                            nodeDiv.style.color = originalColor;
+                            nodeDiv.style.cursor = 'pointer';
+                            
+                            // Restore hover effects
+                            nodeDiv.onmouseover = function() { 
+                                this.style.background = '#232946'; 
+                                this.style.boxShadow = '0 6px 24px #00ff8840'; 
+                            };
+                            nodeDiv.onmouseout = function() { 
+                                this.style.background = getNodeColorByLevel(level, true); 
+                                this.style.boxShadow = '0 4px 16px rgba(0,255,136,0.10)'; 
+                            };
+                        }
+                    })();
+                }
+                
+                // Toggle display
+                if (childrenDiv.style.display === 'none' || !childrenDiv.style.display) {
                     childrenDiv.style.display = 'block';
                     expandBtn.textContent = '▾';
                 } else {
                     childrenDiv.style.display = 'none';
                     expandBtn.textContent = '▸';
                 }
-                e.stopPropagation();
                 return;
             }
 
@@ -767,40 +833,8 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
             }
         }
 
-        // Children div (initially closed or open based on autoExpand)
-        if (expandBtn) {
-            childrenDiv = document.createElement('div');
-            childrenDiv.style.display = autoExpand ? 'block' : 'none';
-            childrenDiv.style.transition = 'all 0.3s';
-            // Children below each other in two separate rows
-            container.appendChild(childrenDiv);
-            // Left: second row, with indentation of half its width
-            if (leftActive) {
-                let leftRow = document.createElement('div');
-                leftRow.className = 'child-node-row left-row';
-                leftRow.style.display = 'block';
-                childrenDiv.appendChild(leftRow);
-                await renderVerticalNodeLazy(BigInt(leftUser.index), leftRow, level + 1, false);
-                // Indentation of half its width (after layout)
-                setDynamicIndent(leftRow);
-            }
-            // Right: third row, exactly below left with same horizontal indentation
-            if (rightActive) {
-                let rightRow = document.createElement('div');
-                rightRow.className = 'child-node-row right-row';
-                rightRow.style.display = 'block';
-                childrenDiv.appendChild(rightRow);
-                await renderVerticalNodeLazy(BigInt(rightUser.index), rightRow, level + 1, false);
-                // Aligned with left (if exists)
-                const leftRowRef = childrenDiv.querySelector('.left-row');
-                if (leftRowRef) {
-                    rightRow.style.marginRight = leftRowRef.style.marginRight || '0px';
-                } else {
-                    setDynamicIndent(rightRow);
-                }
-            }
-            // No longer need to center-align the common row
-        }
+        // Children div will be created lazily when expand button is clicked
+        // No pre-rendering of children - they will be created on-demand
         // If empty position exists, only show a small "NEW" button
         if (!leftActive || !rightActive) {
             let newBtn = document.createElement('button');
@@ -1030,11 +1064,7 @@ window.renderSimpleBinaryTree = async function() {
     }
     console.log('✅ Network tree container found');
     
-    // Prepare progress bar
-    showNetworkProgress();
-    totalNodesToLoad = 50; // Estimate of possible nodes
-    nodesLoaded = 0;
-    setNetworkProgress(5);
+    // Initialize rendering
     
     container.innerHTML = '';
     container.style.overflow = 'auto';
@@ -1043,13 +1073,11 @@ window.renderSimpleBinaryTree = async function() {
     container.style.display = 'block';
     try {
         console.log('🔄 Connecting to wallet...');
-        setNetworkProgress(10);
         const { contract, address } = await window.connectWallet();
         if (!contract || !address) {
             throw new Error('اتصال کیف پول در دسترس نیست');
         }
         console.log('✅ Wallet connected, address:', address);
-        setNetworkProgress(20);
         console.log('🔄 Getting user data...');
 
         // Robust index detection for the connected address
@@ -1096,18 +1124,11 @@ window.renderSimpleBinaryTree = async function() {
         }
 
         console.log('✅ Rendering tree for index:', rootIndexToRender.toString());
-        setNetworkProgress(30);
         
         // In window.renderSimpleBinaryTree, autoExpand should only be true for root:
         console.log('🔄 Rendering vertical node...');
         await renderVerticalNodeLazy(rootIndexToRender, container, 0, true);
         console.log('✅ Vertical node rendered successfully');
-        setNetworkProgress(100);
-        
-        // Hide progress bar after completion
-        setTimeout(() => {
-            hideNetworkProgress();
-        }, 1000);
         
         // Save tree to database after render
         if (window.saveCurrentNetworkTree) {
@@ -1121,7 +1142,6 @@ window.renderSimpleBinaryTree = async function() {
         }
     } catch (error) {
         console.error('❌ Error rendering binary tree:', error);
-        hideNetworkProgress();
         
         let errorMessage = error.message;
         let actionButton = '';
@@ -1271,9 +1291,7 @@ window.initializeNetworkTab = async function() {
     
     console.log('✅ Network tree container found');
     
-    // Show progress bar and loading status
-    showNetworkProgress();
-    setNetworkProgress(5);
+    // Show loading status
             container.innerHTML = '<div style="color:#00ccff;text-align:center;padding:2rem;">🔄 Loading network tree...</div>';
     
     // Simple test to check connection
@@ -1285,7 +1303,6 @@ window.initializeNetworkTab = async function() {
         console.log('Address:', address);
     } catch (error) {
         console.error('❌ Wallet connection test failed:', error);
-        hideNetworkProgress();
         container.innerHTML = `<div style="color:#ff4444;text-align:center;padding:2rem;">❌ خطا در اتصال کیف پول<br><small style="color:#ccc;">${error.message}</small></div>`;
         return;
     }
@@ -1311,7 +1328,6 @@ window.initializeNetworkTab = async function() {
                 console.log(`🔄 Retrying in 2 seconds... (${retryCount}/${maxRetries})`);
                 setTimeout(tryRender, 2000);
             } else {
-                hideNetworkProgress();
                 container.innerHTML = `
                     <div style="color:#ff4444;text-align:center;padding:2rem;">
                         ❌ Error loading network tree<br>

@@ -56,6 +56,11 @@
             100% { transform: rotate(360deg); }
         }
         
+        @keyframes progressShimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
         .tree-container {
             background: linear-gradient(135deg, #0a0d1a, #1a1f2e, #0a0d1a);
             border-radius: 15px;
@@ -559,10 +564,7 @@
                 <!-- Network Stats -->
                 <div id="network-stats" class="network-user-info-container"></div>
                 
-                <!-- Network Progress Bar -->
-                <div id="network-progress" style="display:none;height:8px;background:rgba(255,255,255,0.12);border-radius:999px;overflow:hidden;margin:16px 0;">
-                    <div id="network-progress-inner" style="height:100%;width:0%;background:linear-gradient(90deg,#00ff88,#a786ff);box-shadow:0 0 12px rgba(0,255,136,0.35) inset;transition:width 300ms ease;"></div>
-                </div>
+
                 
                 <!-- Network Members List -->
                 <div id="network-tree">
