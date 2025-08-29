@@ -1,17 +1,17 @@
 /**
- * Central Dashboard Updater - سیستم مرکزی بروزرسانی داشبورد
- * یک interval مرکزی که تک تک مقادیر را چک می‌کند و فقط مقادیر تغییر یافته را بروزرسانی می‌کند
+ * Central Dashboard Updater - Central Dashboard Update System
+ * A central interval that checks each value individually and only updates changed values
  */
 
 class CentralDashboardUpdater {
     constructor() {
         this.interval = null;
         this.isRunning = false;
-        this.updateFrequency = 5000; // 5 ثانیه
+        this.updateFrequency = 5000; // 5 seconds
         this.previousValues = new Map();
         this.debugMode = false;
         
-        // فهرست مقادیری که باید چک شوند
+        // List of values that should be checked
         this.trackedElements = [
             'circulating-supply',
             'total-points', 
@@ -28,29 +28,29 @@ class CentralDashboardUpdater {
     }
 
     /**
-     * شروع سیستم مرکزی - تنها interval فعال
+     * Start central system - only active interval
      */
     start() {
         if (this.isRunning) {
-            this.log('⚠️ سیستم مرکزی از قبل فعال است');
+            this.log('⚠️ Central system is already active');
             return;
         }
 
-        this.log('🚀 شروع سیستم مرکزی بروزرسانی داشبورد...');
+        this.log('🚀 Starting central dashboard update system...');
         
-        // متوقف کردن تمام interval های قدیمی
+        // Stop all old intervals
         this.stopAllOtherIntervals();
         
-        this.isRunning = false; // غیرفعال شد - فقط رفرش دستی
+        this.isRunning = false; // Deactivated - manual refresh only
         // this.interval = setInterval(() => {
         //     this.checkAndUpdateValues();
         // }, this.updateFrequency);
         
-        this.log(`❌ سیستم مرکزی غیرفعال شد - فقط رفرش دستی`);
+        this.log(`❌ Central system deactivated - manual refresh only`);
     }
 
     /**
-     * متوقف کردن سیستم مرکزی
+     * Stop central system
      */
     stop() {
         if (this.interval) {
@@ -58,94 +58,94 @@ class CentralDashboardUpdater {
             this.interval = null;
         }
         this.isRunning = false;
-        this.log('⏹️ سیستم مرکزی متوقف شد');
+        this.log('⏹️ Central system stopped');
     }
 
     /**
-     * متوقف کردن تمام interval های قدیمی
+     * Stop all old intervals
      */
     stopAllOtherIntervals() {
-        this.log('🧹 حذف تمام interval های قدیمی...');
+        this.log('🧹 Removing all old intervals...');
         
-        // متوقف کردن dashboard intervals
+        // Stop dashboard intervals
         if (window.dashboardUpdateInterval) {
             clearInterval(window.dashboardUpdateInterval);
             window.dashboardUpdateInterval = null;
-            this.log('❌ dashboardUpdateInterval حذف شد');
+            this.log('❌ dashboardUpdateInterval removed');
         }
         
-        // متوقف کردن price charts intervals
+        // Stop price charts intervals
         if (window.priceChartsManager && window.priceChartsManager.updateInterval) {
             clearInterval(window.priceChartsManager.updateInterval);
             window.priceChartsManager.updateInterval = null;
-            this.log('❌ priceChartsManager interval حذف شد');
+            this.log('❌ priceChartsManager interval removed');
         }
         
-        // متوقف کردن network stats interval
+        // Stop network stats interval
         if (window.networkStatsInterval) {
             clearInterval(window.networkStatsInterval);
             window.networkStatsInterval = null;
-            this.log('❌ networkStatsInterval حذف شد');
+            this.log('❌ networkStatsInterval removed');
         }
         
-        // متوقف کردن news auto refresh
+        // Stop news auto refresh
         if (window.autoRefreshInterval) {
             clearInterval(window.autoRefreshInterval);
             window.autoRefreshInterval = null;
-            this.log('❌ autoRefreshInterval حذف شد');
+            this.log('❌ autoRefreshInterval removed');
         }
 
-        // جلوگیری از ایجاد interval های جدید
+        // Prevent creation of new intervals
         window._blockchainInfoIntervalSet = true;
         
-        this.log('✅ تمام interval های قدیمی حذف شدند');
+        this.log('✅ All old intervals removed');
     }
 
     /**
-     * چک و بروزرسانی مقادیر - فقط مقادیر تغییر یافته
+     * Check and update values - only changed values
      */
     async checkAndUpdateValues() {
         try {
-            // بررسی وضعیت صفحه
+            // Check page status
             if (document.hidden) {
-                return; // اگر صفحه مخفی است، هیچ کاری نکن
+                return; // If page is hidden, do nothing
             }
 
-            // چک کردن اتصال کیف پول
+            // Check wallet connection
             if (!window.contractConfig || !window.contractConfig.contract) {
-                return; // اگر کیف پول متصل نیست، هیچ کاری نکن
+                return; // If wallet is not connected, do nothing
             }
 
             const contract = window.contractConfig.contract;
             let updateCount = 0;
 
-            // Helper function for consistent number formatting (مثل main.js)
+            // Helper function for consistent number formatting (like main.js)
             const formatNumber = (value, suffix = '', isInteger = false, maxDecimals = 2) => {
-                if (value === null || value === undefined || value === '') return 'در دسترس نیست';
+                if (value === null || value === undefined || value === '') return 'Not Available';
                 const num = parseFloat(value);
-                if (isNaN(num)) return 'در دسترس نیست';
+                if (isNaN(num)) return 'Not Available';
                 if (num === 0) return '0' + suffix;
                 if (!isInteger && num < 0.000001) {
                     return num.toExponential(6) + suffix;
                 }
                 if (isInteger) {
-                    // برای اعداد صحیح از toLocaleString استفاده کن
+                    // For integers use toLocaleString
                     return Math.floor(num).toLocaleString('en-US') + suffix;
                 }
-                // برای اعداد اعشاری از toLocaleString استفاده کن (مثل main.js)
+                // For decimal numbers use toLocaleString (like main.js)
                 return num.toLocaleString('en-US', {maximumFractionDigits: maxDecimals}) + suffix;
             };
 
-            // 1. چک کردن Total Supply
+            // 1. Check Total Supply
             try {
                 const totalSupply = await contract.totalSupply();
                 const supplyNum = parseFloat(ethers.formatUnits(totalSupply, 18));
-                const formattedSupply = formatNumber(supplyNum, '', false, 2); // استفاده از formatNumber یکسان
+                const formattedSupply = formatNumber(supplyNum, '', false, 2); // Use consistent formatNumber
                 if (this.updateIfChanged('circulating-supply', formattedSupply)) {
                     updateCount++;
                 }
 
-                // محاسبه معادل DAI برای کل عرضه
+                // Calculate DAI equivalent for total supply
                 try {
                     const tokenPrice = await this.getTokenPrice();
                     if (tokenPrice && tokenPrice > 0) {
@@ -160,16 +160,16 @@ class CentralDashboardUpdater {
                         }
                     }
                 } catch (error) {
-                    this.log('❌ خطا در محاسبه معادل DAI برای کل عرضه:', error.message);
+                    this.log('❌ Error calculating DAI equivalent for total supply:', error.message);
                     if (this.updateIfChanged('circulating-supply-dai', '-')) {
                         updateCount++;
                     }
                 }
             } catch (error) {
-                this.log('❌ خطا در دریافت Total Supply:', error.message);
+                this.log('❌ Error getting Total Supply:', error.message);
             }
 
-            // 2. چک کردن Total Points
+            // 2. Check Total Points
             try {
                 const totalPoints = await contract.totalClaimableBinaryPoints();
                 const pointsNum = parseFloat(ethers.formatUnits(totalPoints, 18));
@@ -178,19 +178,19 @@ class CentralDashboardUpdater {
                     updateCount++;
                 }
             } catch (error) {
-                this.log('❌ خطا در دریافت Total Points:', error.message);
+                this.log('❌ Error getting Total Points:', error.message);
             }
 
-            // 3. چک کردن Contract Token Balance
+            // 3. Check Contract Token Balance
             try {
                 const contractBalance = await contract.balanceOf(contract.target);
                 const balanceNum = parseFloat(ethers.formatUnits(contractBalance, 18));
-                const formattedBalance = formatNumber(balanceNum, '', false, 4); // حذف پسوند واحد
+                const formattedBalance = formatNumber(balanceNum, '', false, 4); // Remove unit suffix
                 if (this.updateIfChanged('contract-token-balance', formattedBalance)) {
                     updateCount++;
                 }
 
-                // محاسبه معادل DAI برای موجودی قرارداد
+                // Calculate DAI equivalent for contract balance
                 try {
                     const tokenPrice = await this.getTokenPrice();
                     if (tokenPrice && tokenPrice > 0) {
@@ -205,16 +205,16 @@ class CentralDashboardUpdater {
                         }
                     }
                 } catch (error) {
-                    this.log('❌ خطا در محاسبه معادل DAI برای موجودی قرارداد:', error.message);
+                    this.log('❌ Error calculating DAI equivalent for contract balance:', error.message);
                     if (this.updateIfChanged('contract-token-balance-dai', '-')) {
                         updateCount++;
                     }
                 }
             } catch (error) {
-                this.log('❌ خطا در دریافت Contract Balance:', error.message);
+                this.log('❌ Error getting Contract Balance:', error.message);
             }
 
-            // 4. چک کردن Token Price
+            // 4. Check Token Price
             try {
                 const tokenPrice = await contract.getTokenPrice();
                 let priceFormatted;
@@ -233,14 +233,14 @@ class CentralDashboardUpdater {
                     updateCount++;
                 }
             } catch (error) {
-                this.log('❌ خطا در دریافت Token Price:', error.message);
+                this.log('❌ Error getting Token Price:', error.message);
             }
 
-            // 5. چک کردن Point Value
+            // 5. Check Point Value
             try {
                 const pointValue = await contract.getPointValue();
                 const pointValueNum = parseFloat(ethers.formatUnits(pointValue, 18));
-                const pointValueFormatted = formatNumber(pointValueNum, '', false, 6); // حذف پسوند واحد - Use 6 decimals for point values
+                const pointValueFormatted = formatNumber(pointValueNum, '', false, 6); // Remove unit suffix - Use 6 decimals for point values
                 
                 if (this.updateIfChanged('point-value', pointValueFormatted)) {
                     updateCount++;
@@ -249,7 +249,7 @@ class CentralDashboardUpdater {
                     updateCount++;
                 }
 
-                // محاسبه معادل DAI برای ارزش هر پوینت
+                // Calculate DAI equivalent for point value
                 try {
                     const tokenPrice = await this.getTokenPrice();
                     if (tokenPrice && tokenPrice > 0) {
@@ -264,16 +264,16 @@ class CentralDashboardUpdater {
                         }
                     }
                 } catch (error) {
-                    this.log('❌ خطا در محاسبه معادل DAI برای ارزش هر پوینت:', error.message);
+                    this.log('❌ Error calculating DAI equivalent for point value:', error.message);
                     if (this.updateIfChanged('dashboard-point-value-dai', '-')) {
                         updateCount++;
                     }
                 }
             } catch (error) {
-                this.log('❌ خطا در دریافت Point Value:', error.message);
+                this.log('❌ Error getting Point Value:', error.message);
             }
 
-            // 6. چک کردن Cashback Pool
+            // 6. Check Cashback Pool
             try {
                 let cashback;
                 
@@ -293,7 +293,7 @@ class CentralDashboardUpdater {
                     updateCount++;
                 }
 
-                // محاسبه معادل DAI برای صندوق کمک
+                // Calculate DAI equivalent for cashback pool
                 try {
                     const tokenPrice = await this.getTokenPrice();
                     if (tokenPrice && tokenPrice > 0) {
@@ -308,59 +308,59 @@ class CentralDashboardUpdater {
                         }
                     }
                 } catch (error) {
-                    this.log('❌ خطا در محاسبه معادل DAI برای صندوق کمک:', error.message);
+                    this.log('❌ Error calculating DAI equivalent for cashback pool:', error.message);
                     if (this.updateIfChanged('dashboard-cashback-value-dai', '-')) {
                         updateCount++;
                     }
                 }
             } catch (error) {
-                this.log('❌ خطا در دریافت Cashback Pool:', error.message);
+                this.log('❌ Error getting Cashback Pool:', error.message);
             }
 
-            // 7. چک کردن Wallets Count
+            // 7. Check Wallets Count
             try {
-                // قرارداد فعلی تابع بدون ورودی دارد
+                // Current contract has function without parameters
                 const walletsCount = await contract.wallets();
                 if (this.updateIfChanged('dashboard-wallets-count', walletsCount.toString())) {
                     updateCount++;
                 }
             } catch (error) {
-                this.log('❌ خطا در دریافت Wallets Count:', error.message);
+                this.log('❌ Error getting Wallets Count:', error.message);
             }
 
-            // 8. چک کردن DAI Contract Balance
+            // 8. Check DAI Contract Balance
             try {
                 let daiBalance;
                 
-                // سعی کردن با تابع قرارداد اول
+                // Try with first contract function
                 if (typeof contract.getContractdaiBalance === 'function') {
                     daiBalance = await contract.getContractdaiBalance();
-                    this.log('✅ DAI balance دریافت شد از getContractdaiBalance');
+                    this.log('✅ DAI balance received from getContractdaiBalance');
                 } else if (typeof contract.getContractDAIBalance === 'function') {
                     daiBalance = await contract.getContractDAIBalance();
-                    this.log('✅ DAI balance دریافت شد از getContractDAIBalance');
+                    this.log('✅ DAI balance received from getContractDAIBalance');
                 } else {
-                    // Fallback به DAI contract مستقیم
+                    // Fallback to direct DAI contract
                     if (window.DAI_ADDRESS && window.DAI_ABI) {
                         const daiContract = new ethers.Contract(window.DAI_ADDRESS, window.DAI_ABI, contract.provider);
                         daiBalance = await daiContract.balanceOf(contract.target || window.IAM_ADDRESS);
-                        this.log('✅ DAI balance دریافت شد از DAI contract');
+                        this.log('✅ DAI balance received from DAI contract');
                     } else {
-                        this.log('❌ DAI_ADDRESS یا DAI_ABI موجود نیست');
+                        this.log('❌ DAI_ADDRESS or DAI_ABI not available');
                         daiBalance = 0n;
                     }
                 }
                 
                 const daiNum = parseFloat(ethers.formatUnits(daiBalance, 18));
-                const daiFormatted = formatNumber(daiNum, '', false, 2); // استفاده از formatNumber یکسان
+                const daiFormatted = formatNumber(daiNum, '', false, 2); // Use consistent formatNumber
                 if (this.updateIfChanged('dashboard-dai-balance', daiFormatted)) {
                     updateCount++;
                 }
             } catch (error) {
-                this.log('❌ خطا در دریافت DAI Balance:', error.message);
+                this.log('❌ Error getting DAI Balance:', error.message);
             }
 
-            // 9. چک کردن Registration Price
+            // 9. Check Registration Price
             try {
                 let regPrice;
                 if (typeof contract.getRegPrice === 'function') {
@@ -376,12 +376,12 @@ class CentralDashboardUpdater {
                 }
 
                 const regPriceNum = parseFloat(ethers.formatUnits(regPrice, 18));
-                const regPriceFormatted = formatNumber(regPriceNum, '', false, 0); // حذف پسوند واحد
+                const regPriceFormatted = formatNumber(regPriceNum, '', false, 0); // Remove unit suffix
                 if (this.updateIfChanged('dashboard-registration-price', regPriceFormatted)) {
                     updateCount++;
                 }
 
-                // محاسبه معادل DAI
+                // Calculate DAI equivalent
                 try {
                     const tokenPrice = await this.getTokenPrice();
                     if (tokenPrice && tokenPrice > 0) {
@@ -396,29 +396,29 @@ class CentralDashboardUpdater {
                         }
                     }
                 } catch (error) {
-                    this.log('❌ خطا در محاسبه معادل DAI:', error.message);
+                    this.log('❌ Error calculating DAI equivalent:', error.message);
                     if (this.updateIfChanged('dashboard-registration-price-dai', '-')) {
                         updateCount++;
                     }
                 }
             } catch (error) {
-                this.log('❌ خطا در دریافت Registration Price:', error.message);
+                this.log('❌ Error getting Registration Price:', error.message);
             }
 
-            // گزارش نتایج
+            // Report results
             if (updateCount > 0) {
-                this.log(`🔄 ${updateCount} مقدار بروزرسانی شد`);
+                this.log(`🔄 ${updateCount} values updated`);
             } else {
-                this.log('⚡ هیچ تغییری تشخیص داده نشد');
+                this.log('⚡ No changes detected');
             }
 
         } catch (error) {
-            this.log('❌ خطا در چک کردن مقادیر:', error.message);
+            this.log('❌ Error checking values:', error.message);
         }
     }
 
     /**
-     * دریافت قیمت توکن
+     * Get token price
      */
     async getTokenPrice() {
         try {
@@ -431,26 +431,26 @@ class CentralDashboardUpdater {
             const priceNum = parseFloat(ethers.formatUnits(tokenPrice, 18));
             return priceNum;
         } catch (error) {
-            this.log('❌ خطا در دریافت Token Price:', error.message);
+            this.log('❌ Error getting Token Price:', error.message);
             return null;
         }
     }
 
     /**
-     * بروزرسانی مقدار فقط در صورت تغییر
+     * Update value only if changed
      */
     updateIfChanged(elementId, newValue) {
         const previousValue = this.previousValues.get(elementId);
         const currentValue = String(newValue);
         
         if (previousValue === currentValue) {
-            return false; // تغییری نیست
+            return false; // No change
         }
 
-        // ذخیره مقدار جدید
+        // Save new value
         this.previousValues.set(elementId, currentValue);
         
-        // بروزرسانی UI
+        // Update UI
         if (window.smartUpdate) {
             window.smartUpdate(elementId, newValue);
         } else if (window.updateValueSmoothly) {
@@ -464,19 +464,19 @@ class CentralDashboardUpdater {
         }
 
         this.log(`🔄 ${elementId}: ${previousValue} → ${currentValue}`);
-        return true; // بروزرسانی انجام شد
+        return true; // Update performed
     }
 
     /**
-     * فعال/غیرفعال کردن حالت debug
+     * Enable/disable debug mode
      */
     setDebugMode(enabled) {
         this.debugMode = enabled;
-        this.log(`${enabled ? '🐛' : '📊'} حالت debug ${enabled ? 'فعال' : 'غیرفعال'} شد`);
+        this.log(`${enabled ? '🐛' : '📊'} Debug mode ${enabled ? 'enabled' : 'disabled'}`);
     }
 
     /**
-     * لاگ کردن پیام‌ها
+     * Log messages
      */
     log(message, ...args) {
         if (this.debugMode) {
@@ -485,7 +485,7 @@ class CentralDashboardUpdater {
     }
 
     /**
-     * دریافت آمار سیستم
+     * Get system stats
      */
     getStats() {
         return {
@@ -498,20 +498,20 @@ class CentralDashboardUpdater {
     }
 
     /**
-     * ریست کردن حافظه
+     * Reset memory
      */
     reset() {
         this.previousValues.clear();
-        this.log('🔄 حافظه مقادیر پاک شد');
+        this.log('🔄 Value memory cleared');
     }
 }
 
-// ایجاد نمونه سراسری
+// Create global instance
 window.centralDashboardUpdater = new CentralDashboardUpdater();
 
-// شروع خودکار غیرفعال شد
+// Auto-start disabled
 // document.addEventListener('DOMContentLoaded', function() {
-//     // تاخیر برای اطمینان از بارگذاری کامل
+//     // Delay to ensure complete loading
 //     setTimeout(() => {
 //         if (window.centralDashboardUpdater) {
 //             window.centralDashboardUpdater.start();
@@ -519,7 +519,7 @@ window.centralDashboardUpdater = new CentralDashboardUpdater();
 //     }, 3000);
 // });
 
-// توابع سراسری برای کنترل
+// Global functions for control
 window.startCentralUpdater = function() {
     return window.centralDashboardUpdater.start();
 };
