@@ -210,63 +210,15 @@
   <script src="js/auth-redirect.js"></script>
   <script src="js/modern-theme-variables.js"></script>
   
-      <!-- Loading contract base knowledge -->
-  <!-- <script src="js/contract-knowledge-base.js"></script> -->
-  
-      <!-- Loading Floating AI Assistants -->
-  <!-- <script src="js/floating-ai-assistant.js"></script> -->
-  
-  <!-- Immediate AI Assistant Initialization -->
-  <!--
-  <script>
-    // Force immediate initialization
-    document.addEventListener('DOMContentLoaded', function() {
-      console.log('🚀 DOM Content Loaded - Initializing AI Assistant...');
-
-      setTimeout(() => {
-        // Only initialize the advanced assistant
-        if (typeof FloatingAIAssistant !== 'undefined') {
-          console.log('✅ FloatingAIAssistant class found');
-
-          if (!window.floatingAI) {
-            console.log('🔄 Creating new FloatingAIAssistant instance...');
-            window.floatingAI = new FloatingAIAssistant();
-          }
-          
-          if (window.floatingAI) {
-            console.log('✅ FloatingAI instance ready');
-            window.floatingAI.switchToIdleState();
-          }
-        } else {
-          console.error('❌ FloatingAIAssistant class not found');
-        }
-      }, 1000);
-    });
-  </script>
-  -->
-  
-  <!-- Test script for floating AI -->
-
 </head>
 <body>
 
-
-
-
-
-  
-  
   <div id="main-dashboard" class="page-section" style="position:relative;overflow:visible;">
 
     <!-- User Status Bar -->
     <div id="user-status-bar" class="user-status-container" style="display:block;background:linear-gradient(135deg,rgba(35,41,70,0.95),rgba(24,28,42,0.95));border:1px solid rgba(0,255,136,0.2);border-radius:16px;padding:1rem;margin:1rem auto;max-width:1400px;backdrop-filter:blur(10px);box-shadow:0 8px 32px rgba(0,0,0,0.3);position:relative;">
-      
-      
-      
-      <!-- Star Rating - Top Left Corner -->
-      <div id="user-star-rating" style="position:absolute;top:0.5rem;left:0.5rem;background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.3);border-radius:8px;padding:0.3rem 0.5rem;display:flex;align-items:center;gap:0.2rem;z-index:10;">
-        <span style="color:#ffd700;font-size:0.8rem;font-weight:bold;" id="user-star-count">0</span>
-      </div>
+     
+
       
       <div style="display:flex;flex-wrap:nowrap;gap:0.8rem;align-items:center;justify-content:space-between;overflow-x:auto;">
         <!-- User ID Section -->
@@ -307,6 +259,10 @@
         <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#00ff88,#a786ff,#00ff88);animation:shimmer 2s linear infinite;"></div>
         
         <div style="text-align:center;margin-bottom:1.5rem;">
+                <!-- Star Rating - Top Left Corner -->
+      <div id="user-star-rating" style="position:absolute;top:0.5rem;left:0.5rem;background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.3);border-radius:8px;padding:0.3rem 0.5rem;display:flex;align-items:center;gap:0.2rem;z-index:10;">
+          <span style="color:#ffd700;font-size:0.8rem;font-weight:bold;" id="user-star-count">0</span>
+          </div>
           <h3 style="color:#00ff88;font-size:1.2rem;font-weight:bold;margin:0;font-family:monospace;">IAMPHOENIX</h3>
         </div>
         
