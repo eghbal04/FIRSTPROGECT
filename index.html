@@ -425,73 +425,6 @@
 
 
 
-
-      <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        
-
-
-        
-
-
-
-        
-        
-        const text = `The IAM Continuous Profit Academy is an innovative, people-centric ecosystem established to provide fully decentralized and transparent financial, educational, and trading services. In this collection, your capital always remains under your control, whether in your personal exchange account, with a broker, or in a smart wallet connected to a decentralized contract.
-
-Our Services:
-• Providing specialized signals and auto-trading robots for financial markets
-• Opportunity to act as an agent for individuals and IBs in brokerages
-• Network marketing opportunities for friends who want to promote this collection
-• You can benefit from Referral Shares.
-• You can also achieve guaranteed profit by investing in the IAM fund and its incremental token.
-• Comprehensive Forex and Cryptocurrency training
-• Support for the decentralized IAM fund and IAM token
-• Copy-trading services: If the IAM robot profits, you profit, and if it incurs a loss, you also incur a loss; no profit is withdrawn from your account during a loss, and IAM receives no share until the loss is recovered.
-• Our motto: Your capital in your own account, your profit with us.`;
-        const container = document.getElementById('IAM-typewriter');
-        if (container) {
-          let i = 0;
-          const speed = 40; // ms per character (slower)
-          function typeWriter() {
-            if (i < text.length) {
-              const char = text.charAt(i);
-              if (char === '\\n' || char === '\n') {
-                container.innerHTML += '<br>';
-                i++;
-                setTimeout(typeWriter, 350);
-              } else {
-                container.innerHTML += char;
-                i++;
-                setTimeout(typeWriter, speed);
-              }
-            }
-          }
-          typeWriter();
-        }
-
-        // Expand/collapse logic
-        const wrapper = document.getElementById('IAM-typewriter-wrapper');
-        const fade = document.getElementById('IAM-fade');
-        const btn = document.getElementById('IAM-expand-btn');
-        if (wrapper && fade && btn) {
-          let expanded = false;
-          btn.addEventListener('click', function() {
-            expanded = !expanded;
-            if (expanded) {
-              wrapper.style.maxHeight = '2000px';
-              fade.style.opacity = '0';
-              btn.textContent = 'Show Less';
-            } else {
-              wrapper.style.maxHeight = '2.1em';
-              fade.style.opacity = '1';
-              btn.textContent = 'Show More';
-            }
-          });
-        }
-      });
-      </script>
-
   <!-- Swap Section -->
   <div id="main-swap" class="page-section expandable-container" style="width:100vw;max-width:none;margin:0;left:0;right:0;padding:0.5rem 0;">
     
@@ -550,7 +483,7 @@ Our Services:
               </select>
               <small style="color:#b8c1ec;font-size:0.8rem;margin-top:0.3rem;display:block;">Select your desired exchange type</small>
             </div>
-            
+            <br>
             <div class="swap-row">
               <label for="swapAmount">Amount:</label>
               <div class="amount-input-group">
@@ -560,10 +493,10 @@ Our Services:
               <small style="color:#b8c1ec;font-size:0.8rem;margin-top:0.3rem;display:block;">Enter the amount you want to exchange</small>
             </div>
           </div>
-          
+          <br>
           <!-- Right Column -->
           <div style="display:flex;flex-direction:column;gap:1rem;">
-          <div class="swap-row" id="swap-usd-converter-row" style="display:none;">
+          <div  id="swap-usd-converter-row" style="display:none;">
             <label for="swapUsdAmount">💰 Dollar Equivalent:</label>
             <div class="usd-converter-container" style="display:flex;gap:0.5rem;align-items:center;">
               <span style="color:#00ff88;font-weight:bold;">$</span>
@@ -612,8 +545,6 @@ Our Services:
             <div id="swapStatus" class="swap-status"></div>
           </div>
         </form>
-        
-
         </div>
       </div>
     </div>
