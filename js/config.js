@@ -2890,7 +2890,7 @@ window.refreshNetworkAfterConnection = async function(connection) {
 			await window.loadNetworkStats(connection.contract);
 		}
 		
-		// رفرش درخت شبکه — فقط اگر کانتینر روی صفحه حاضر باشد
+		// رفرش tree — فقط اگر کانتینر روی صفحه حاضر باشد
 		const hasNetworkContainer = typeof document !== 'undefined' && document.getElementById('network-tree');
 		if (hasNetworkContainer) {
 			if (typeof window.renderSimpleBinaryTree === 'function') {
@@ -3258,7 +3258,7 @@ async function preventConcurrentCalls(functionName, operation, cacheTime = 10000
 	}
 }
 
-// تابع پاک کردن interval درخت شبکه
+// تابع پاک کردن interval tree
 window.clearNetworkTreeInterval = function() {
 	if (window.networkTreeInterval) {
 		clearInterval(window.networkTreeInterval);
@@ -4384,7 +4384,7 @@ window.updateDashboardStats = async function() {
 	
 
 	// حذف loading state در بروزرسانی‌ها - فقط مقادیر قبلی را نگه دار
-	// عدم نمایش "در حال بارگذاری..." در بروزرسانی‌های عادی
+	// عدم نمایش "waiting..." در بروزرسانی‌های عادی
 
 	// TOTAL SUPPLY (circulating supply)
 	try {
@@ -5131,9 +5131,9 @@ const META_MASK_MESSAGES = {
 	// پیام‌های شبکه و درخت
 	NETWORK: {
 		USER_NOT_FOUND: "کاربر یافت نشد.",
-		TREE_LOADING: "در حال بارگذاری درخت شبکه...",
-		TREE_ERROR: "خطا در بارگذاری درخت شبکه.",
-		NETWORK_STATS_LOADING: "در حال بارگذاری آمار شبکه...",
+		TREE_LOADING: "waiting tree...",
+		TREE_ERROR: "خطا در بارگذاری tree.",
+		NETWORK_STATS_LOADING: "waiting آمار شبکه...",
 		NETWORK_STATS_ERROR: "خطا در بارگذاری آمار شبکه."
 	},
 	

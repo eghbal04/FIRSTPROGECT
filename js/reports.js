@@ -615,7 +615,7 @@ window._fetchReportsFresh = async function(address) {
 // نمایش گزارشات دسته‌بندی شده
 window.loadReports = async function(address) {
     const reportsContainer = document.getElementById('reports-list');
-    reportsContainer.innerHTML = '<div class="loading">در حال بارگذاری گزارشات...</div>';
+    reportsContainer.innerHTML = '<div class="loading">waiting گزارشات...</div>';
     const reports = await window.fetchReports(address);
     if (!reports || reports.length === 0) {
         reportsContainer.innerHTML = '<div class="no-reports">هیچ گزارشی برای شما یافت نشد.</div>';

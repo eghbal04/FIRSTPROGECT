@@ -1166,7 +1166,7 @@ window.renderSimpleBinaryTree = async function() {
         
         container.innerHTML = `
             <div style="color:#ff4444;text-align:center;padding:2rem;">
-                ❌ خطا در بارگذاری درخت شبکه<br>
+                ❌ خطا در بارگذاری tree<br>
                 <small style="color:#ccc;">${errorMessage}</small>
                 ${actionButton}
             </div>

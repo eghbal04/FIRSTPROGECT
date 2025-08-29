@@ -708,7 +708,7 @@ async function handleWalletConnectSuccess(walletConnectProvider) {
         updateConnectionStatus('success', 'Wallet connection successful');
         updateWalletButtonVisibility();
         
-        // بارگذاری داده‌های داشبورد فقط اگر در حال بارگذاری نیست
+        // بارگذاری داده‌های داشبورد فقط اگر waiting نیست
         if (!dashboardLoading) {
             if (!dashboardInitialized) {
                 dashboardInitialized = true;
