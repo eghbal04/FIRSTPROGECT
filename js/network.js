@@ -7,6 +7,13 @@ let isRenderingTree = false;
 let lastRenderedTime = 0;
 let _networkPopupOpening = false;
 
+// Performance optimization variables
+let renderDepthLimit = 5; // Limit rendering depth to prevent hanging
+let maxConcurrentRenders = 3; // Limit concurrent async operations
+let activeRenders = 0;
+let renderQueue = [];
+let isProcessingQueue = false;
+
 
 
 // Fallback function for generateIAMId if not available
@@ -535,9 +542,27 @@ window.networkShowUserPopup = async function(address, user) {
 
 // New function: Simple vertical render with lazy loading - ALL NODES CAN EXPAND
 async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = false) {
-    // Render version for debug
-    try { console.debug('renderVerticalNodeLazy', window.NETWORK_RENDER_VERSION, 'index:', String(index), 'level:', level); } catch {}
-    console.log(`🔄 renderVerticalNodeLazy called with index: ${index}, level: ${level}`);
+    // Performance check: Limit depth to prevent hanging
+    if (level >= renderDepthLimit) {
+        console.log(`⚠️ Depth limit reached (${level}/${renderDepthLimit}), rendering simplified node`);
+        renderSimplifiedNode(index, container, level);
+        return;
+    }
+    
+    // Performance check: Limit concurrent renders
+    if (activeRenders >= maxConcurrentRenders) {
+        console.log(`⚠️ Too many concurrent renders (${activeRenders}/${maxConcurrentRenders}), queuing render`);
+        return new Promise((resolve) => {
+            renderQueue.push({ index, container, level, autoExpand, resolve });
+            if (!isProcessingQueue) {
+                processRenderQueue();
+            }
+        });
+    }
+    
+    activeRenders++;
+    console.log(`🔄 renderVerticalNodeLazy called with index: ${index}, level: ${level}, active renders: ${activeRenders}`);
+    
     try {
         console.log('🔄 Getting contract connection...');
         const { contract } = await window.connectWallet();
@@ -552,7 +577,24 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         let address = cachedNode && cachedNode.address ? cachedNode.address : null;
         if (!address) {
             console.log(`🔄 Getting address for index: ${index}`);
+            try {
             address = await contract.indexToAddress(index);
+                // Cache the address immediately
+                if (address && window.saveOrUpdateNetworkNode) {
+                    try {
+                        await window.saveOrUpdateNetworkNode({
+                            index: index.toString(),
+                            address: address,
+                            level: level
+                        });
+                    } catch (e) {
+                        console.warn('Failed to cache address:', e);
+                    }
+                }
+            } catch (error) {
+                console.error('Error getting address for index:', index, error);
+                address = null;
+            }
         }
         console.log('✅ Address obtained:', address);
         
@@ -563,7 +605,20 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         }
         
         console.log('🔄 Getting user data for address:', address);
-        let user = cachedNode && cachedNode.userData ? cachedNode.userData : await (async () => { try { return await contract.users(address); } catch(e){ return { index:0n, activated:false, binaryPoints:0n, binaryPointCap:0n, binaryPointsClaimed:0n, totalMonthlyRewarded:0n, refclimed:0n, depositedAmount:0n, leftPoints:0n, rightPoints:0n }; } })();
+        let user = cachedNode && cachedNode.userData ? cachedNode.userData : null;
+        if (!user) {
+            try {
+                // Add timeout to prevent hanging
+                const userPromise = contract.users(address);
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('User data fetch timeout')), 10000)
+                );
+                user = await Promise.race([userPromise, timeoutPromise]);
+            } catch(e) {
+                console.warn('Error getting user data, using fallback:', e);
+                user = { index:0n, activated:false, binaryPoints:0n, binaryPointCap:0n, binaryPointsClaimed:0n, totalMonthlyRewarded:0n, refclimed:0n, depositedAmount:0n, leftPoints:0n, rightPoints:0n };
+            }
+        }
         console.log('✅ User data obtained:', user);
         
         if (!user) {
@@ -576,14 +631,43 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         let tree = null;
         let leftActive = false, rightActive = false;
         if (typeof contract.getUserTree === 'function') {
-            try { tree = await contract.getUserTree(address); } catch(e) { tree = { left:'0x0000000000000000000000000000000000000000', right:'0x0000000000000000000000000000000000000000' }; }
+            try {
+                // Add timeout to prevent hanging
+                const treePromise = contract.getUserTree(address);
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('User tree fetch timeout')), 10000)
+                );
+                tree = await Promise.race([treePromise, timeoutPromise]);
+            } catch(e) { 
+                console.warn('Error getting user tree, using fallback:', e);
+                tree = { left:'0x0000000000000000000000000000000000000000', right:'0x0000000000000000000000000000000000000000' }; 
+            }
+            
             if (tree.left && tree.left !== '0x0000000000000000000000000000000000000000') {
-                leftUser = await (async () => { try { return await contract.users(tree.left); } catch(e){ return { index:0n }; } })();
+                try {
+                    const leftUserPromise = contract.users(tree.left);
+                    const leftTimeoutPromise = new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Left user fetch timeout')), 8000)
+                    );
+                    leftUser = await Promise.race([leftUserPromise, leftTimeoutPromise]);
                 if (leftUser && leftUser.index && BigInt(leftUser.index) > 0n) { hasDirects = true; leftActive = true; }
+                } catch(e) {
+                    console.warn('Error getting left user, skipping:', e);
+                    leftUser = { index:0n };
+                }
             }
             if (tree.right && tree.right !== '0x0000000000000000000000000000000000000000') {
-                rightUser = await (async () => { try { return await contract.users(tree.right); } catch(e){ return { index:0n }; } })();
+                try {
+                    const rightUserPromise = contract.users(tree.right);
+                    const rightTimeoutPromise = new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Right user fetch timeout')), 8000)
+                    );
+                    rightUser = await Promise.race([rightUserPromise, rightTimeoutPromise]);
                 if (rightUser && rightUser.index && BigInt(rightUser.index) > 0n) { hasDirects = true; rightActive = true; }
+                } catch(e) {
+                    console.warn('Error getting right user, skipping:', e);
+                    rightUser = { index:0n };
+                }
             }
         }
         // Create vertical node (same as before)
@@ -625,7 +709,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
             this.style.boxShadow = '0 4px 16px rgba(0,255,136,0.10)'; 
         };
         nodeDiv.innerHTML = `
-            <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 1.1em; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-weight: bold;">${formattedIAMId}</span>
+            <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 1.1em; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-weight: bold;">${IAMId}</span>
         `;
         
 
@@ -635,7 +719,10 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         let childrenDiv = null;
         if (hasDirects || !leftActive || !rightActive) {
             expandBtn = document.createElement('button');
-            expandBtn.textContent = autoExpand ? '▾' : '▸';
+            expandBtn.textContent = '▸';
+            expandBtn.style.transform = autoExpand ? 'rotate(90deg)' : 'rotate(0deg)';
+            // Store expansion state on the button itself
+            expandBtn.setAttribute('data-expanded', autoExpand ? 'true' : 'false');
             expandBtn.style.padding = '0';
             expandBtn.style.background = 'transparent';
             expandBtn.style.border = 'none';
@@ -649,17 +736,23 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
             expandBtn.style.marginInlineEnd = '0.6em';
             expandBtn.style.padding = '2px 4px';
             expandBtn.style.borderRadius = '4px';
-            expandBtn.style.transition = 'all 0.2s';
+            expandBtn.style.transition = 'all 0.2s ease-in-out';
+            expandBtn.style.transform = 'rotate(0deg)';
             expandBtn.setAttribute('aria-label', 'Expand/Collapse');
             nodeDiv.prepend(expandBtn);
         }
-        nodeDiv.addEventListener('click', function(e) {
-            if (e.target.classList.contains('register-question-mark')) return;
-            if (expandBtn && e.target === expandBtn) {
+        // Add click event listener to the expand button directly
+        if (expandBtn) {
+            expandBtn.addEventListener('click', async function(e) {
                 e.stopPropagation();
+                console.log('🔘 Expand button clicked for node:', index);
+                
+                // Check if children div already exists in the container
+                let existingChildrenDiv = container.querySelector('.children-div');
                 
                 // Lazy loading: Only render children when expand button is clicked
-                if (!childrenDiv) {
+                if (!existingChildrenDiv) {
+                    console.log('🔄 Creating children div for first time...');
                     // Transform node into progress bar
                     const originalContent = nodeDiv.innerHTML;
                     const originalBackground = nodeDiv.style.background;
@@ -689,14 +782,17 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                     
                     // Create children div and render children for the first time
                     childrenDiv = document.createElement('div');
+                    childrenDiv.className = 'children-div';
                     childrenDiv.style.transition = 'all 0.3s';
+                    childrenDiv.style.display = 'none'; // Start hidden
                     container.appendChild(childrenDiv);
                     
                     // Render children nodes
-                    (async function() {
                         try {
+                        console.log('🔄 Starting to render children...');
                             // Left child
                             if (leftActive) {
+                            console.log('🔄 Rendering left child...');
                                 let leftRow = document.createElement('div');
                                 leftRow.className = 'child-node-row left-row';
                                 leftRow.style.display = 'block';
@@ -704,9 +800,11 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                                 await renderVerticalNodeLazy(BigInt(leftUser.index), leftRow, level + 1, false);
                                 // Indentation of half its width (after layout)
                                 setDynamicIndent(leftRow);
+                            console.log('✅ Left child rendered');
                             }
                             // Right child
                             if (rightActive) {
+                            console.log('🔄 Rendering right child...');
                                 let rightRow = document.createElement('div');
                                 rightRow.className = 'child-node-row right-row';
                                 rightRow.style.display = 'block';
@@ -719,7 +817,119 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                                 } else {
                                     setDynamicIndent(rightRow);
                                 }
+                            console.log('✅ Right child rendered');
+                        }
+                        
+                        // Create single empty slot if at least one child position is empty
+                        if (!leftActive || !rightActive) {
+                            console.log('🔄 Creating empty slot...');
+                            // Calculate the IAM ID for the empty position
+                            let emptySlotIAMId;
+                            let targetEmptyIndex, targetPosition;
+                            if (!leftActive) {
+                                emptySlotIAMId = window.generateIAMId ? window.generateIAMId(index * 2n) : (index * 2n);
+                                targetEmptyIndex = index * 2n;
+                                targetPosition = 'left';
+                            } else {
+                                emptySlotIAMId = window.generateIAMId ? window.generateIAMId(index * 2n + 1n) : (index * 2n + 1n);
+                                targetEmptyIndex = index * 2n + 1n;
+                                targetPosition = 'right';
                             }
+                            
+                            // Create wrapper div for consistent positioning with registered nodes
+                            let emptySlotWrapper = document.createElement('div');
+                            emptySlotWrapper.className = 'child-node-row empty-slot-wrapper';
+                            emptySlotWrapper.style.display = 'block';
+                            emptySlotWrapper.style.marginBottom = '0.9em';
+                            emptySlotWrapper.style.maxWidth = 'none';
+                            emptySlotWrapper.style.display = 'inline-flex';
+                            
+                            // Create the empty slot node with consistent styling to registered nodes
+                            let emptySlotRow = document.createElement('div');
+                            emptySlotRow.className = 'empty-slot';
+                            emptySlotRow.style.display = 'inline-flex';
+                            emptySlotRow.style.alignItems = 'center';
+                            emptySlotRow.style.justifyContent = 'flex-start';
+                            emptySlotRow.style.flexWrap = 'nowrap';
+                            emptySlotRow.style.marginRight = '0px';
+                            emptySlotRow.style.marginBottom = '0.9em';
+                            emptySlotRow.style.position = 'relative';
+                            emptySlotRow.style.overflow = 'visible';
+                            emptySlotRow.style.background = getNodeColorByLevel(level + 1, false);
+                            emptySlotRow.style.borderRadius = '12px';
+                            emptySlotRow.style.padding = '0.6em 1.2em';
+                            emptySlotRow.style.width = 'auto';
+                            emptySlotRow.style.minWidth = 'unset';
+                            emptySlotRow.style.maxWidth = 'none';
+                            emptySlotRow.style.height = 'auto';
+                            emptySlotRow.style.minHeight = 'unset';
+                            emptySlotRow.style.maxHeight = 'none';
+                            emptySlotRow.style.color = '#00ff88';
+                            emptySlotRow.style.fontFamily = 'monospace';
+                            emptySlotRow.style.fontSize = '1.08em';
+                            emptySlotRow.style.boxShadow = '0 4px 16px rgba(0,255,136,0.10)';
+                            emptySlotRow.style.cursor = 'pointer';
+                            emptySlotRow.style.transition = 'background 0.2s, box-shadow 0.2s';
+                            emptySlotRow.style.whiteSpace = 'nowrap';
+                            emptySlotRow.style.border = '2px solid rgba(0, 255, 136, 0.3)';
+                            emptySlotRow.title = 'Click to register new account';
+                            emptySlotRow.innerHTML = `
+                                <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 1.1em; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-weight: bold;">${emptySlotIAMId}</span>
+                            `;
+                            emptySlotRow.onmouseover = function() {
+                                this.style.background = '#232946';
+                                this.style.boxShadow = '0 6px 24px #00ff8840';
+                                this.style.borderColor = 'rgba(0, 255, 136, 0.6)';
+                                this.style.transform = 'scale(1.02)';
+                            };
+                            emptySlotRow.onmouseout = function() {
+                                this.style.background = getNodeColorByLevel(level + 1, false);
+                                this.style.boxShadow = '0 4px 16px rgba(0,255,136,0.10)';
+                                this.style.borderColor = 'rgba(0, 255, 136, 0.3)';
+                                this.style.transform = 'scale(1)';
+                            };
+                            emptySlotRow.onclick = async function(e) {
+                                e.stopPropagation();
+                                await showRegistrationModal(index, targetEmptyIndex, targetPosition);
+                            };
+                            
+                            // Add empty slot to wrapper
+                            emptySlotWrapper.appendChild(emptySlotRow);
+                            
+                            // Position the empty slot appropriately based on existing siblings
+                            if (leftActive && rightActive) {
+                                // Both children exist, this shouldn't happen, but if it does, position after right child
+                                setDynamicIndent(emptySlotWrapper);
+                            } else if (leftActive && !rightActive) {
+                                // Only left child exists, position empty slot to the right (attached to left sibling)
+                                const leftRowRef = childrenDiv.querySelector('.left-row');
+                                if (leftRowRef) {
+                                    // Position empty slot next to left child with same indentation
+                                    emptySlotWrapper.style.marginRight = leftRowRef.style.marginRight || '0px';
+                                    emptySlotWrapper.style.marginLeft = '20px'; // Small gap between siblings
+                                } else {
+                                    setDynamicIndent(emptySlotWrapper);
+                                }
+                            } else if (!leftActive && rightActive) {
+                                // Only right child exists, position empty slot to the left (attached to right sibling)
+                                const rightRowRef = childrenDiv.querySelector('.right-row');
+                                if (rightRowRef) {
+                                    // Position empty slot next to right child with same indentation
+                                    emptySlotWrapper.style.marginRight = rightRowRef.style.marginRight || '0px';
+                                    emptySlotWrapper.style.marginLeft = '-20px'; // Overlap slightly with right child
+                                } else {
+                                    setDynamicIndent(emptySlotWrapper);
+                                }
+                            } else {
+                                // No children exist, position empty slot attached to parent
+                                setDynamicIndent(emptySlotWrapper);
+                            }
+                            
+                            childrenDiv.appendChild(emptySlotWrapper);
+                            console.log('✅ Empty slot created with appropriate positioning');
+                        }
+                        
+                        console.log('✅ All children rendered successfully');
                             
                             // Restore original node appearance after rendering is complete
                             nodeDiv.innerHTML = originalContent;
@@ -738,6 +948,13 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                                 this.style.boxShadow = '0 4px 16px rgba(0,255,136,0.10)'; 
                             };
                             
+                        // Now show the children div after rendering is complete
+                        childrenDiv.style.display = 'block';
+                        expandBtn.textContent = '▸';
+                        expandBtn.style.transform = 'rotate(90deg)';
+                        expandBtn.setAttribute('data-expanded', 'true');
+                        console.log('✅ Children displayed after rendering');
+                        
                         } catch (error) {
                             console.error('Error rendering children:', error);
                             
@@ -757,18 +974,68 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                                 this.style.background = getNodeColorByLevel(level, true); 
                                 this.style.boxShadow = '0 4px 16px rgba(0,255,136,0.10)'; 
                             };
-                        }
-                    })();
-                }
-                
-                // Toggle display
-                if (childrenDiv.style.display === 'none' || !childrenDiv.style.display) {
-                    childrenDiv.style.display = 'block';
-                    expandBtn.textContent = '▾';
+                        
+                        // Don't show children if there was an error
+                        expandBtn.textContent = '▸';
+                        expandBtn.style.transform = 'rotate(0deg)';
+                        expandBtn.setAttribute('data-expanded', 'false');
+                        console.log('❌ Children not displayed due to error');
+                    }
                 } else {
-                    childrenDiv.style.display = 'none';
+                    // Toggle display for existing children div
+                    const isExpanded = expandBtn.getAttribute('data-expanded') === 'true';
+                    console.log('🔄 Toggle expand/collapse - Current state:', isExpanded);
+                    console.log('🔍 existingChildrenDiv found:', !!existingChildrenDiv);
+                    
+                    if (existingChildrenDiv) {
+                        console.log('🔍 existingChildrenDiv display before:', existingChildrenDiv.style.display);
+                        
+                        if (!isExpanded) {
+                            existingChildrenDiv.style.display = 'block';
+                            expandBtn.textContent = '▸';
+                            expandBtn.style.transform = 'rotate(90deg)';
+                            expandBtn.setAttribute('data-expanded', 'true');
+                            console.log('✅ Expanded node');
+                        } else {
+                            existingChildrenDiv.style.display = 'none';
+                            expandBtn.textContent = '▸';
+                            expandBtn.style.transform = 'rotate(0deg)';
+                            expandBtn.setAttribute('data-expanded', 'false');
+                            console.log('✅ Collapsed node');
+                        }
+                        
+                        console.log('🔍 existingChildrenDiv display after:', existingChildrenDiv.style.display);
+                    } else {
+                        console.log('❌ existingChildrenDiv not found, trying to find it again...');
+                        // Try to find the children div again
+                        const foundChildrenDiv = container.querySelector('.children-div');
+                        if (foundChildrenDiv) {
+                            console.log('✅ Found children div on second attempt');
+                            if (!isExpanded) {
+                                foundChildrenDiv.style.display = 'block';
                     expandBtn.textContent = '▸';
+                                expandBtn.style.transform = 'rotate(90deg)';
+                                expandBtn.setAttribute('data-expanded', 'true');
+                                console.log('✅ Expanded node (second attempt)');
+                } else {
+                                foundChildrenDiv.style.display = 'none';
+                    expandBtn.textContent = '▸';
+                                expandBtn.style.transform = 'rotate(0deg)';
+                                expandBtn.setAttribute('data-expanded', 'false');
+                                console.log('✅ Collapsed node (second attempt)');
+                            }
+                        } else {
+                            console.log('❌ Still cannot find children div');
+                        }
+                    }
                 }
+            });
+        }
+        
+        // Add click event listener to the node div for user info
+        nodeDiv.addEventListener('click', function(e) {
+            // Don't trigger user info popup if clicking on expand button
+            if (expandBtn && (e.target === expandBtn || expandBtn.contains(e.target))) {
                 return;
             }
 
@@ -835,162 +1102,109 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
 
         // Children div will be created lazily when expand button is clicked
         // No pre-rendering of children - they will be created on-demand
-        // If empty position exists, only show a small "NEW" button
-        if (!leftActive || !rightActive) {
-            let newBtn = document.createElement('button');
-            newBtn.textContent = 'N';
-            newBtn.title = 'Register new subordinate';
-            newBtn.style.background = 'linear-gradient(90deg,#a786ff,#00ff88)';
-            newBtn.style.color = '#181c2a';
-            newBtn.style.fontWeight = 'bold';
-            newBtn.style.border = 'none';
-            newBtn.style.borderRadius = '6px';
-            newBtn.style.padding = '0.3em 0.8em';
-            newBtn.style.cursor = 'pointer';
-            newBtn.style.fontSize = '0.85em';
-            newBtn.style.marginRight = '0.5em';
-            newBtn.style.marginLeft = '0.5em';
-            newBtn.style.whiteSpace = 'nowrap';
-            newBtn.style.fontWeight = 'bold';
-            newBtn.onclick = async function(e) {
-                e.stopPropagation();
-                // If previous modal is open, remove it
-                let oldModal = document.getElementById('quick-register-modal');
-                if (oldModal) oldModal.remove();
-                // Required information
-                let emptyIndex = !leftActive ? index * 2n : index * 2n + 1n;
-                let parentIndex = index;
-                let registerCost = '...';
-                let maticBalance = '...';
-                let userAddress = '';
-                let errorMsg = '';
-                let loading = true;
-                let IAMBalance = '...';
-                // Create modal
-                let modal = document.createElement('div');
-                modal.id = 'quick-register-modal';
-                modal.style.position = 'fixed';
-                modal.style.top = '0';
-                modal.style.left = '0';
-                modal.style.width = '100vw';
-                modal.style.height = '100vh';
-                modal.style.background = 'rgba(24,28,42,0.85)';
-                modal.style.zIndex = '99999';
-                modal.style.display = 'flex';
-                modal.style.alignItems = 'center';
-                modal.style.justifyContent = 'center';
-                modal.innerHTML = `
-                  <div style="background:linear-gradient(135deg,#232946,#181c2a);border-radius:18px;box-shadow:0 4px 24px #00ff8840;padding:2.2rem 2.2rem 1.5rem 2.2rem;min-width:320px;max-width:95vw;width:100%;position:relative;direction:rtl;">
-                    <button id="close-quick-register" style="position:absolute;top:1.1rem;left:1.1rem;background:#ff6b6b;color:#fff;border:none;border-radius:50%;width:32px;height:32px;font-size:1.3em;cursor:pointer;">×</button>
-                    <h3 style="color:#00ff88;font-size:1.2rem;margin-bottom:1.2rem;text-align:center;">Quick Register New Subordinate</h3>
-                    <div id="quick-register-info" style="margin-bottom:1.2rem;color:#a786ff;font-size:1.05em;text-align:right;line-height:2;"></div>
-                    <div style="margin-bottom:1.2rem;">
-                      <div style='margin-bottom:0.7em;display:flex;gap:1.2em;justify-content:center;align-items:center;'>
-                        <span style='color:#a786ff;font-weight:bold;'>Select Avatar:</span>
-                        <span class="avatar-choice" data-avatar="man" style="font-size:2em;cursor:pointer;border:2px solid #00ff88;border-radius:50%;padding:0.15em 0.3em;background:#232946;">👨‍💼</span>
-                        <span class="avatar-choice" data-avatar="woman" style="font-size:2em;cursor:pointer;border:2px solid transparent;border-radius:50%;padding:0.15em 0.3em;background:#232946;">👩‍💼</span>
-                        <span class="avatar-choice" data-avatar="student-man" style="font-size:2em;cursor:pointer;border:2px solid transparent;border-radius:50%;padding:0.15em 0.3em;background:#232946;">👨‍🎓</span>
-                        <span class="avatar-choice" data-avatar="student-woman" style="font-size:2em;cursor:pointer;border:2px solid transparent;border-radius:50%;padding:0.15em 0.3em;background:#232946;">👩‍🎓</span>
-                      </div>
-                      <label for="quick-register-address" style="color:#a786ff;font-weight:bold;margin-bottom:0.5rem;display:block;">New Wallet Address:</label>
-                      <input id="quick-register-address" type="text" placeholder="0x..." style="width:100%;padding:0.8rem 1.2rem;border-radius:8px;border:2px solid #a786ff;background:rgba(0,0,0,0.2);color:#fff;font-family:monospace;direction:ltr;text-align:left;box-sizing:border-box;font-size:1.05rem;">
-                    </div>
-                    <button id="quick-register-btn" style="width:100%;background:linear-gradient(90deg,#00ff88,#a786ff);color:#181c2a;font-weight:bold;border:none;border-radius:8px;padding:1rem;font-size:1.1rem;cursor:pointer;transition:all 0.3s;margin-bottom:1rem;">Register</button>
-                    <div id="quick-register-status" style="text-align:center;margin-top:0.5rem;font-size:1.05em;"></div>
-                  </div>
-                `;
-                document.body.appendChild(modal);
-                // Select avatar
-                let selectedAvatar = 'man';
-                const avatarChoices = modal.querySelectorAll('.avatar-choice');
-                avatarChoices.forEach(el => {
-                  el.onclick = function() {
-                    avatarChoices.forEach(e2 => e2.style.border = '2px solid transparent');
-                    this.style.border = '2px solid #00ff88';
-                    selectedAvatar = this.getAttribute('data-avatar');
-                  };
-                });
-                // Default first avatar to be selected
-                avatarChoices[0].style.border = '2px solid #00ff88';
-                // Close modal
-                document.getElementById('close-quick-register').onclick = () => modal.remove();
-                // Get contract information and display
-                (async function() {
-                  try {
-                    const { contract, address: myAddress, provider } = await window.connectWallet();
-                                          // Required amount for registration
-                    if (window.getRegPrice) {
-                      let cost = await window.getRegPrice(contract);
-                      if (cost) {
-                        let costValue = typeof ethers !== 'undefined' ? ethers.formatEther(cost) : (Number(cost)/1e18);
-                        registerCost = Math.round(parseFloat(costValue)).toString(); // Remove decimals and round
-                      } else {
-                        registerCost = '...';
-                      }
-                    }
-                                          // MATIC balance
-                    if (provider && myAddress) {
-                      let bal = await provider.getBalance(myAddress);
-                      maticBalance = bal ? (typeof ethers !== 'undefined' ? Number(ethers.formatEther(bal)).toFixed(2) : (Number(bal)/1e18).toFixed(2)) : '...';
-                    }
-                    // موجودی IAM
-                    if (contract && myAddress && typeof contract.balanceOf === 'function') {
-                      let IAM = await contract.balanceOf(myAddress);
-                      IAMBalance = IAM ? (typeof ethers !== 'undefined' ? Number(ethers.formatEther(IAM)).toFixed(2) : (Number(IAM)/1e18).toFixed(2)) : '...';
-                    }
-                    loading = false;
-                                        } catch (e) {
-                        errorMsg = 'Error getting wallet or contract information';
-                      }
-                  // Display information
-                  let infoDiv = document.getElementById('quick-register-info');
-                  if (infoDiv) {
-                    infoDiv.innerHTML =
-                      `<div>Referrer Index: <b style='color:#00ff88'>${window.generateIAMId ? window.generateIAMId(parentIndex) : parentIndex}</b></div>`+
-                      `<div>New Position Index: <b style='color:#a786ff'>${window.generateIAMId ? window.generateIAMId(emptyIndex) : emptyIndex}</b></div>`+
-                      `<div>Required Amount for Registration: <b style='color:#00ff88'>${registerCost} IAM</b></div>`+
-                      `<div>Your MATIC Balance: <b style='color:#a786ff'>${maticBalance} MATIC</b></div>`+
-                      `<div>Your IAM Balance: <b style='color:#00ff88'>${IAMBalance} IAM</b></div>`+
-                      (errorMsg ? `<div style='color:#ff4444'>${errorMsg}</div>` : '');
-                  }
-                })();
-                // Registration
-                document.getElementById('quick-register-btn').onclick = async function() {
-                  let statusDiv = document.getElementById('quick-register-status');
-                  let input = document.getElementById('quick-register-address');
-                  let newAddress = input.value.trim();
-                  statusDiv.textContent = '';
-                                      if (!/^0x[a-fA-F0-9]{40}$/.test(newAddress)) {
-                      statusDiv.textContent = 'Please enter a valid wallet address!';
-                      statusDiv.style.color = '#ff4444';
-                      return;
-                    }
-                                      statusDiv.textContent = 'Sending registration request...';
-                  statusDiv.style.color = '#a786ff';
-                  this.disabled = true;
-                                      // Log selected avatar (can be sent to contract later if needed)
-                                      console.log('User avatar selection:', selectedAvatar);
-                    // Save selected avatar
-                  localStorage.setItem('avatar_' + newAddress, selectedAvatar);
-                  try {
-                    const { contract } = await window.connectWallet();
-                    const tx = await contract.registerAndActivate(address, newAddress);
-                    await tx.wait();
-                                          statusDiv.textContent = '✅ Registration completed successfully!';
-                    statusDiv.style.color = '#00ff88';
-                    setTimeout(() => { modal.remove(); if (typeof window.renderSimpleBinaryTree === 'function') window.renderSimpleBinaryTree(); }, 1200);
-                  } catch (err) {
-                                          statusDiv.textContent = '❌ Registration error: ' + (err && err.message ? err.message : err);
-                    statusDiv.style.color = '#ff4444';
-                  }
-                  this.disabled = false;
-                };
-            };
-            nodeDiv.appendChild(newBtn);
-        }
+        // Empty slots will be created in the children area instead of N button on parent
+        console.log(`🔍 Node ${index}: leftActive=${leftActive}, rightActive=${rightActive}, has empty slots=${!leftActive || !rightActive}`);
     } catch (error) {
+        console.error('Error in renderVerticalNodeLazy:', error);
         renderEmptyNodeVertical(index, container, level);
+    } finally {
+        activeRenders--;
+        console.log(`✅ renderVerticalNodeLazy completed for index: ${index}, level: ${level}, active renders: ${activeRenders}`);
     }
+}
+
+// Helper function to process render queue
+async function processRenderQueue() {
+    if (isProcessingQueue || renderQueue.length === 0) return;
+    
+    isProcessingQueue = true;
+    console.log(`🔄 Processing render queue, ${renderQueue.length} items pending`);
+    
+    while (renderQueue.length > 0 && activeRenders < maxConcurrentRenders) {
+        const item = renderQueue.shift();
+        try {
+            await renderVerticalNodeLazy(item.index, item.container, item.level, item.autoExpand);
+            item.resolve();
+        } catch (error) {
+            console.error('Error processing queued render:', error);
+            item.resolve();
+        }
+    }
+    
+    isProcessingQueue = false;
+    if (renderQueue.length > 0) {
+        console.log(`⏳ ${renderQueue.length} items still in queue, will process when slots available`);
+        setTimeout(processRenderQueue, 100);
+    }
+}
+
+// Helper function to render simplified nodes at depth limit
+function renderSimplifiedNode(index, container, level) {
+    console.log(`📝 Rendering simplified node for index: ${index} at level: ${level}`);
+    
+    const simplifiedNode = document.createElement('div');
+    simplifiedNode.className = 'simplified-node';
+    simplifiedNode.setAttribute('data-index', index);
+    simplifiedNode.style.display = 'inline-flex';
+    simplifiedNode.style.alignItems = 'center';
+    simplifiedNode.style.justifyContent = 'center';
+    simplifiedNode.style.marginRight = '0px';
+    simplifiedNode.style.marginBottom = '0.9em';
+    simplifiedNode.style.background = getNodeColorByLevel(level, true);
+    simplifiedNode.style.borderRadius = '8px';
+    simplifiedNode.style.padding = '0.4em 0.8em';
+    simplifiedNode.style.color = '#00ff88';
+    simplifiedNode.style.fontFamily = 'monospace';
+    simplifiedNode.style.fontSize = '0.9em';
+    simplifiedNode.style.boxShadow = '0 2px 8px rgba(0,255,136,0.10)';
+    simplifiedNode.style.cursor = 'pointer';
+    simplifiedNode.style.opacity = '0.7';
+    simplifiedNode.innerHTML = `
+        <span style="white-space: nowrap; font-size: 0.9em; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+            ${window.generateIAMId ? window.generateIAMId(index) : index}
+        </span>
+    `;
+    simplifiedNode.title = 'Click to view user information (simplified view)';
+    
+    simplifiedNode.onmouseover = function() { 
+        this.style.background = '#232946'; 
+        this.style.boxShadow = '0 4px 16px #00ff8840'; 
+        this.style.opacity = '1';
+    };
+    simplifiedNode.onmouseout = function() { 
+        this.style.background = getNodeColorByLevel(level, true); 
+        this.style.boxShadow = '0 2px 8px rgba(0,255,136,0.10)'; 
+        this.style.opacity = '0.7';
+    };
+    
+    simplifiedNode.onclick = function() {
+        // Show a simple popup with basic info
+        const popup = document.createElement('div');
+        popup.style.cssText = `
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: #1a1b26; border: 2px solid #00ff88; border-radius: 12px;
+            padding: 20px; z-index: 10000; color: #00ff88; font-family: monospace;
+            max-width: 300px; text-align: center; box-shadow: 0 8px 32px rgba(0,255,136,0.3);
+        `;
+        popup.innerHTML = `
+            <h3 style="margin: 0 0 15px 0; color: #00ff88;">Simplified View</h3>
+            <p style="margin: 5px 0;">IAM ID: ${window.generateIAMId ? window.generateIAMId(index) : index}</p>
+            <p style="margin: 5px 0;">Level: ${level}</p>
+            <p style="margin: 5px 0; font-size: 0.9em; opacity: 0.8;">Deep level - full details not loaded for performance</p>
+            <button onclick="this.parentElement.remove()" style="
+                margin-top: 15px; padding: 8px 16px; background: #00ff88; color: #1a1b26;
+                border: none; border-radius: 6px; cursor: pointer; font-weight: bold;
+            ">Close</button>
+        `;
+        document.body.appendChild(popup);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (popup.parentElement) popup.remove();
+        }, 5000);
+    };
+    
+    container.appendChild(simplifiedNode);
 }
 // Function to render empty node (question mark) vertically
 function renderEmptyNodeVertical(index, container, level) {
@@ -2293,4 +2507,171 @@ function startTypewriter(popupEl, IAMId, walletAddress, isActive, infoList, addr
   
      // شروع تایپ از خط اول
        setTimeout(typeNextLine, 250);
+}
+
+// Function to show registration modal for empty slots
+async function showRegistrationModal(parentIndex, emptyIndex, position) {
+    console.log(`🎯 Registration modal triggered for parent ${parentIndex}, empty index ${emptyIndex}, position ${position}`);
+    
+    // If previous modal is open, remove it
+    let oldModal = document.getElementById('quick-register-modal');
+    if (oldModal) {
+        console.log('🗑️ Removing existing modal');
+        oldModal.remove();
+    }
+    
+    let registerCost = '...';
+    let maticBalance = '...';
+    let errorMsg = '';
+    let loading = true;
+    let IAMBalance = '...';
+    
+    // Create modal
+    let modal = document.createElement('div');
+    modal.id = 'quick-register-modal';
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100vw';
+    modal.style.height = '100vh';
+    modal.style.background = 'rgba(24,28,42,0.85)';
+    modal.style.zIndex = '99999';
+    modal.style.display = 'flex';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+    modal.style.visibility = 'visible';
+    modal.style.opacity = '1';
+    
+    modal.innerHTML = `
+        <div style="background:linear-gradient(135deg,#232946,#181c2a);border-radius:18px;box-shadow:0 4px 24px #00ff8840;padding:2.2rem 2.2rem 1.5rem 2.2rem;min-width:320px;max-width:95vw;width:100%;position:relative;direction:rtl;">
+            <button id="close-quick-register" style="position:absolute;top:1.1rem;left:1.1rem;background:#ff6b6b;color:#fff;border:none;border-radius:50%;width:32px;height:32px;font-size:1.3em;cursor:pointer;">×</button>
+            <h3 style="color:#00ff88;font-size:1.2rem;margin-bottom:1.2rem;text-align:center;">ثبت عضو جدید</h3>
+            <div id="quick-register-info" style="margin-bottom:1.2rem;color:#a786ff;font-size:1.05em;text-align:right;line-height:2;"></div>
+            <div style="margin-bottom:1.2rem;">
+                <div style='margin-bottom:0.7em;display:flex;gap:1.2em;justify-content:center;align-items:center;'>
+                    <span style='color:#a786ff;font-weight:bold;'>انتخاب آواتار:</span>
+                    <span class="avatar-choice" data-avatar="man" style="font-size:2em;cursor:pointer;border:2px solid #00ff88;border-radius:50%;padding:0.15em 0.3em;background:#232946;">👨‍💼</span>
+                    <span class="avatar-choice" data-avatar="woman" style="font-size:2em;cursor:pointer;border:2px solid transparent;border-radius:50%;padding:0.15em 0.3em;background:#232946;">👩‍💼</span>
+                    <span class="avatar-choice" data-avatar="student-man" style="font-size:2em;cursor:pointer;border:2px solid transparent;border-radius:50%;padding:0.15em 0.3em;background:#232946;">👨‍🎓</span>
+                    <span class="avatar-choice" data-avatar="student-woman" style="font-size:2em;cursor:pointer;border:2px solid transparent;border-radius:50%;padding:0.15em 0.3em;background:#232946;">👩‍🎓</span>
+                </div>
+            </div>
+            <div style="margin-bottom:1.2rem;">
+                <label style="color:#a786ff;font-weight:bold;display:block;margin-bottom:0.5rem;">آدرس کیف پول جدید:</label>
+                <input id="quick-register-address" type="text" placeholder="0x..." style="width:100%;padding:0.8rem;border:1px solid rgba(167,134,255,0.3);border-radius:8px;background:rgba(167,134,255,0.05);color:#fff;font-size:1rem;direction:ltr;text-align:left;">
+            </div>
+            <button id="quick-register-btn" style="width:100%;padding:1rem;background:linear-gradient(135deg,#00ff88,#00cc66);color:#232946;border:none;border-radius:8px;font-weight:bold;font-size:1rem;cursor:pointer;transition:all 0.3s ease;">ثبت عضو جدید</button>
+            <div id="quick-register-status" style="margin-top:1rem;text-align:center;font-size:0.9rem;"></div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    console.log(`📋 Modal created and appended to body for parent ${parentIndex}, empty index ${emptyIndex}`);
+    
+    // Force modal visibility
+    modal.style.display = 'flex';
+    modal.style.visibility = 'visible';
+    modal.style.opacity = '1';
+    modal.style.zIndex = '99999';
+    modal.focus();
+    
+    // Select avatar
+    let selectedAvatar = 'man';
+    const avatarChoices = modal.querySelectorAll('.avatar-choice');
+    avatarChoices.forEach(el => {
+        el.onclick = function() {
+            avatarChoices.forEach(e2 => e2.style.border = '2px solid transparent');
+            this.style.border = '2px solid #00ff88';
+            selectedAvatar = this.getAttribute('data-avatar');
+        };
+    });
+    // Default first avatar to be selected
+    avatarChoices[0].style.border = '2px solid #00ff88';
+    
+    // Close modal
+    document.getElementById('close-quick-register').onclick = () => modal.remove();
+    
+    // Get contract information and display
+    (async function() {
+        try {
+            const { contract, address: myAddress, provider } = await window.connectWallet();
+            
+            // Required amount for registration
+            if (window.getRegPrice) {
+                let cost = await window.getRegPrice(contract);
+                if (cost) {
+                    let costValue = typeof ethers !== 'undefined' ? ethers.formatEther(cost) : (Number(cost)/1e18);
+                    registerCost = Math.round(parseFloat(costValue)).toString();
+                } else {
+                    registerCost = '...';
+                }
+            }
+            
+            // MATIC balance
+            if (provider && myAddress) {
+                let bal = await provider.getBalance(myAddress);
+                maticBalance = bal ? (typeof ethers !== 'undefined' ? Number(ethers.formatEther(bal)).toFixed(2) : (Number(bal)/1e18).toFixed(2)) : '...';
+            }
+            
+            // IAM balance
+            if (contract && myAddress && typeof contract.balanceOf === 'function') {
+                let IAM = await contract.balanceOf(myAddress);
+                IAMBalance = IAM ? (typeof ethers !== 'undefined' ? Number(ethers.formatEther(IAM)).toFixed(2) : (Number(IAM)/1e18).toFixed(2)) : '...';
+            }
+            
+            loading = false;
+        } catch (e) {
+            errorMsg = 'Error getting wallet or contract information';
+        }
+        
+        // Display information
+        let infoDiv = document.getElementById('quick-register-info');
+        if (infoDiv) {
+            infoDiv.innerHTML =
+                `<div>شاخص معرف: <b style='color:#00ff88'>${window.generateIAMId ? window.generateIAMId(parentIndex) : parentIndex}</b></div>`+
+                `<div>شاخص موقعیت جدید: <b style='color:#a786ff'>${window.generateIAMId ? window.generateIAMId(emptyIndex) : emptyIndex}</b></div>`+
+                `<div>مبلغ مورد نیاز: <b style='color:#00ff88'>${registerCost} IAM</b></div>`+
+                `<div>موجودی MATIC شما: <b style='color:#a786ff'>${maticBalance} MATIC</b></div>`+
+                `<div>موجودی IAM شما: <b style='color:#00ff88'>${IAMBalance} IAM</b></div>`+
+                (errorMsg ? `<div style='color:#ff4444'>${errorMsg}</div>` : '');
+        }
+    })();
+    
+    // Registration button click handler
+    document.getElementById('quick-register-btn').onclick = async function() {
+        let statusDiv = document.getElementById('quick-register-status');
+        let input = document.getElementById('quick-register-address');
+        let newAddress = input.value.trim();
+        statusDiv.textContent = '';
+        
+        if (!/^0x[a-fA-F0-9]{40}$/.test(newAddress)) {
+            statusDiv.textContent = 'لطفاً آدرس کیف پول معتبر وارد کنید!';
+            statusDiv.style.color = '#ff4444';
+            return;
+        }
+        
+        statusDiv.textContent = 'در حال ارسال درخواست ثبت نام...';
+        statusDiv.style.color = '#a786ff';
+        this.disabled = true;
+        
+        console.log('User avatar selection:', selectedAvatar);
+        localStorage.setItem('avatar_' + newAddress, selectedAvatar);
+        
+        try {
+            const { contract, address: myAddress } = await window.connectWallet();
+            const tx = await contract.registerAndActivate(myAddress, newAddress);
+            await tx.wait();
+            
+            statusDiv.textContent = '✅ ثبت نام با موفقیت انجام شد!';
+            statusDiv.style.color = '#00ff88';
+            setTimeout(() => { 
+                modal.remove(); 
+                if (typeof window.renderSimpleBinaryTree === 'function') window.renderSimpleBinaryTree(); 
+            }, 1200);
+        } catch (err) {
+            statusDiv.textContent = '❌ خطا در ثبت نام: ' + (err && err.message ? err.message : err);
+            statusDiv.style.color = '#ff4444';
+        }
+        this.disabled = false;
+    };
 }

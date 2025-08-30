@@ -583,8 +583,8 @@
                   <select id="swapDirection" required style="width:100%;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
                     <option value="dai-to-IAM">🟢 DAI → IAM (Buy IAM)</option>
                     <option value="IAM-to-dai">🔴 IAM → DAI (Sell IAM)</option>
-                  </select>
-                </div>
+              </select>
+            </div>
                 
                 <!-- Amount Input -->
                 <div class="form-group" style="margin-bottom:0.5rem;">
@@ -592,19 +592,19 @@
                   <div class="amount-input-group" style="display:flex;gap:0.5rem;align-items:center;">
                     <input type="number" id="swapAmount" placeholder="Enter amount" min="0" step="any" required style="flex:1;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
                     <button type="button" id="maxBtn" class="max-btn" style="background:linear-gradient(135deg,#a786ff,#00ff88);color:#0a0f1c;border:none;padding:0.8rem 1rem;border-radius:12px;font-weight:600;cursor:pointer;transition:all 0.3s ease;white-space:nowrap;font-size:0.85rem;">Max</button>
-                  </div>
-                </div>
+              </div>
+            </div>
                 
                 <!-- USD Converter -->
                 <div id="swap-usd-converter-row" style="display:none;margin-bottom:0.5rem;">
                   <label for="swapUsdAmount" style="display:block;color:#00ff88;margin-bottom:0.3rem;font-weight:600;font-size:0.85rem;">💰 Dollar Equivalent:</label>
-                  <div class="usd-converter-container" style="display:flex;gap:0.5rem;align-items:center;">
+            <div class="usd-converter-container" style="display:flex;gap:0.5rem;align-items:center;">
                     <span style="color:#00ff88;font-weight:bold;font-size:1rem;"></span>
                     <input type="number" id="swapUsdAmount" placeholder="5.00" min="0" step="0.01" style="flex:1;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
                     <button type="button" id="swapUsdToTokenBtn" style="background:linear-gradient(135deg,#00ff88,#a786ff);color:#0a0f1c;border:none;padding:0.8rem 1rem;border-radius:12px;font-weight:600;cursor:pointer;transition:all 0.3s ease;font-size:0.8rem;">🔄</button>
-                  </div>
-                </div>
-                
+            </div>
+          </div>
+        
                 <!-- Balance Display -->
                 <div class="balance-display" style="background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:12px;padding:1rem;margin-bottom:0.5rem;">
                   <h4 style="color:#00ff88;margin:0 0 0.5rem 0;font-size:0.9rem;">💰 Your Balances</h4>
@@ -612,21 +612,21 @@
                     <div style="text-align:center;background:rgba(0,255,136,0.1);border-radius:8px;padding:0.8rem;">
                       <div style="color:#00ff88;font-weight:bold;font-size:0.8rem;">DAI</div>
                       <div id="daiBalance" style="color:#ffffff;font-family:monospace;font-size:0.9rem;font-weight:600;">-</div>
-                    </div>
+            </div>
                     <div style="text-align:center;background:rgba(167,134,255,0.1);border-radius:8px;padding:0.8rem;">
                       <div style="color:#a786ff;font-weight:bold;font-size:0.8rem;">IAM</div>
                       <div id="IAMBalance" style="color:#ffffff;font-family:monospace;font-size:0.9rem;font-weight:600;">-</div>
                       <div id="IAMUsdValue" style="color:#a786ff;font-size:0.7rem;margin-top:0.2rem;">-</div>
-                    </div>
-                  </div>
-                </div>
-                
+            </div>
+          </div>
+            </div>
+            
                 <!-- Exchange Button -->
                 <button type="submit" class="exchange-btn" style="width:100%;background:linear-gradient(135deg,#00ff88,#00cc6a);color:#0a0f1c;border:none;border-radius:12px;padding:0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:1rem;margin-top:0.3rem;">💱 Execute Exchange</button>
                 
               </form>
-            </div>
-            
+          </div>
+          
             <!-- Exchange Rate Message -->
             <div class="message received" style="max-width:80%;margin-bottom:0.5rem;animation:messageSlide 0.5s ease-out 0.4s both;">
               <div class="message-bubble" style="background:#1a1f2e;color:#ffffff;padding:1rem 1.2rem;border-radius:20px;border-bottom-left-radius:5px;">
@@ -635,9 +635,9 @@
                   <div id="swapRate" class="swap-rate" style="color:#b8c1ec;margin-bottom:0.5rem;font-size:0.85rem;">Exchange rate: Loading...</div>
                   <div id="swapPreview" class="swap-preview" style="color:#a786ff;margin-bottom:0.5rem;font-size:0.85rem;"></div>
                   <div id="swapLimitInfo" class="swap-limit-info" style="color:#ffc107;font-size:0.8rem;"></div>
-                </div>
-              </div>
-            </div>
+          </div>
+        </div>
+      </div>
             
             <!-- Status Message -->
             <div id="swapStatus" class="swap-status" style="max-width:80%;margin-bottom:0.5rem;"></div>
@@ -663,18 +663,18 @@
                   <label for="transferTo" style="display:block;color:#00ff88;margin-bottom:0.3rem;font-weight:600;font-size:0.85rem;">Destination Address:</label>
                   <input type="text" id="transferTo" placeholder="0x..." required style="width:100%;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;direction:ltr;">
                   <small style="color:#b8c1ec;font-size:0.75rem;margin-top:0.2rem;display:block;">Enter destination wallet address (42 characters)</small>
-                </div>
+          </div>
 
-                <!-- Index to Address Search -->
+          <!-- Index to Address Search -->
                 <div class="form-group" style="margin-bottom:0.5rem;">
                   <label style="display:block;color:#00ff88;margin-bottom:0.3rem;font-weight:600;font-size:0.85rem;">🔍 Search by Index:</label>
                   <div style="display:flex;gap:0.5rem;align-items:center;">
                     <input type="number" id="searchIndex" placeholder="Enter user index" style="flex:1;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;font-family:monospace;">
                     <button type="button" id="searchIndexBtn" style="background:linear-gradient(135deg,#00ff88,#00cc6a);color:#0a0f1c;border:none;padding:0.8rem 1rem;border-radius:12px;font-weight:600;cursor:pointer;transition:all 0.3s ease;font-size:0.85rem;">🔍 Search</button>
-                  </div>
+            </div>
                   <div id="searchIndexStatus" style="text-align:center;padding:0.4rem;border-radius:6px;font-size:0.85rem;min-height:1.2em;margin-top:0.3rem;"></div>
-                  <small style="color:#b8c1ec;font-size:0.75rem;margin-top:0.2rem;display:block;">Enter a user index to find their wallet address</small>
-                </div>
+              <small style="color:#b8c1ec;font-size:0.75rem;margin-top:0.2rem;display:block;">Enter a user index to find their wallet address</small>
+          </div>
 
                 <!-- Amount Input -->
                 <div class="form-group" style="margin-bottom:0.5rem;">
@@ -682,9 +682,9 @@
                   <div class="amount-input-group" style="display:flex;gap:0.5rem;align-items:center;">
                     <input type="number" id="transferAmount" placeholder="Enter amount" min="0" step="any" required style="flex:1;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
                     <button type="button" id="maxAmountBtn" class="max-btn" style="background:linear-gradient(135deg,#a786ff,#00ff88);color:#0a0f1c;border:none;padding:0.8rem 1rem;border-radius:12px;font-weight:600;cursor:pointer;transition:all 0.3s ease;white-space:nowrap;font-size:0.85rem;">Max</button>
-                  </div>
+          </div>
                   <small style="color:#b8c1ec;font-size:0.75rem;margin-top:0.2rem;display:block;">Enter transfer amount or click "Maximum"</small>
-                </div>
+          </div>
 
                 <!-- Token Type -->
                 <div class="form-group" style="margin-bottom:0.5rem;">
@@ -693,20 +693,20 @@
                     <option value="DAI">🟢 DAI (Stable Token)</option>
                     <option value="POL">🔵 POL (MATIC)</option>
                     <option value="IAM">🟣 IAM (Platform Token)</option>
-                  </select>
+              </select>
                   <small style="color:#b8c1ec;font-size:0.75rem;margin-top:0.2rem;display:block;">Select the token type you want to transfer</small>
-                </div>
+            </div>
 
                 <!-- USD Converter (for IAM) -->
                 <div id="usd-converter-row" style="display:none;margin-bottom:0.5rem;">
                   <label for="transferUsdAmount" style="display:block;color:#00ff88;margin-bottom:0.3rem;font-weight:600;font-size:0.85rem;">💰 Dollar Equivalent:</label>
-                  <div class="usd-converter-container" style="display:flex;gap:0.5rem;align-items:center;">
+            <div class="usd-converter-container" style="display:flex;gap:0.5rem;align-items:center;">
                     <span style="color:#00ff88;font-weight:bold;font-size:1rem;"></span>
                     <input type="number" id="transferUsdAmount" placeholder="5.00" min="0" step="0.01" style="flex:1;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
                     <button type="button" id="transferUsdToTokenBtn" style="background:linear-gradient(135deg,#00ff88,#a786ff);color:#0a0f1c;border:none;padding:0.8rem 1rem;border-radius:12px;font-weight:600;cursor:pointer;transition:all 0.3s ease;font-size:0.8rem;">🔄</button>
-                  </div>
-                </div>
-
+            </div>
+          </div>
+          
                 <!-- Balance Display -->
                 <div class="balance-display" style="background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:12px;padding:1rem;margin-bottom:0.5rem;">
                   <h4 style="color:#00ff88;margin:0 0 0.5rem 0;font-size:0.9rem;">💰 Your Balances</h4>
@@ -714,24 +714,24 @@
                     <div style="text-align:center;background:rgba(0,255,136,0.1);border-radius:8px;padding:0.8rem;">
                       <div style="color:#00ff88;font-weight:bold;font-size:0.8rem;">DAI</div>
                       <div id="transfer-dai-balance" style="color:#ffffff;font-family:monospace;font-size:0.9rem;font-weight:600;">-</div>
-                    </div>
+              </div>
                     <div style="text-align:center;background:rgba(0,204,255,0.1);border-radius:8px;padding:0.8rem;">
                       <div style="color:#00ccff;font-weight:bold;font-size:0.8rem;">POL</div>
                       <div id="transfer-poly-balance" style="color:#ffffff;font-family:monospace;font-size:0.9rem;font-weight:600;">-</div>
-                    </div>
+              </div>
                     <div style="text-align:center;background:rgba(167,134,255,0.1);border-radius:8px;padding:0.8rem;">
                       <div style="color:#a786ff;font-weight:bold;font-size:0.8rem;">IAM</div>
                       <div id="transfer-IAM-balance" style="color:#ffffff;font-family:monospace;font-size:0.9rem;font-weight:600;">-</div>
                       <div id="transfer-IAM-usd" style="color:#a786ff;font-size:0.7rem;margin-top:0.2rem;">-</div>
-                    </div>
-                  </div>
-                </div>
-
+              </div>
+            </div>
+          </div>
+          
                 <!-- Transfer Button -->
                 <button type="submit" class="transfer-btn" style="width:100%;background:linear-gradient(135deg,#00ff88,#00cc6a);color:#0a0f1c;border:none;border-radius:12px;padding:0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:1rem;margin-top:0.3rem;">📤 Execute Transfer</button>
                 
-              </form>
-            </div>
+        </form>
+      </div>
             
             <!-- Transfer Information -->
             <div style="background:#1a1f2e;color:#ffffff;padding:1rem;border-radius:20px;margin-bottom:0.5rem;max-width:400px;margin-left:auto;margin-right:auto;border:2px solid #a786ff;">
@@ -739,12 +739,12 @@
               <div style="color:#b8c1ec;margin-bottom:0.5rem;font-size:0.85rem;text-align:center;">🔒 Transfers are irreversible - double-check before sending</div>
               <div style="color:#a786ff;margin-bottom:0.5rem;font-size:0.85rem;text-align:center;">⚡ Network fee: ~0.001-0.01 MATIC</div>
               <div style="color:#ffc107;font-size:0.8rem;text-align:center;">⏱️ Confirmation: 2-5 seconds</div>
-            </div>
+    </div>
 
             <!-- Status Message -->
             <div id="transferStatus" class="transfer-status" style="max-width:80%;margin-bottom:0.5rem;"></div>
 
-          </div>
+  </div>
 
   
 
@@ -2139,7 +2139,7 @@
             transferAmountInput.value = floored.toFixed(d);
             // Temporarily change button text
             const originalText = maxAmountBtn.textContent;
-            maxAmountBtn.textContent = '✓ Set';
+                          maxAmountBtn.textContent = '✓ Set';
             maxAmountBtn.style.background = 'linear-gradient(135deg,#00ff88,#00cc6a)';
             setTimeout(() => {
               maxAmountBtn.textContent = originalText;
