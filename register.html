@@ -40,16 +40,47 @@
       border: 1px solid #444;
       box-shadow: 0 2px 8px #00ff8840;
     }
+    /* Tab buttons - separate from main register button */
+    .tab-btn {
+      background: transparent;
+      color: #a786ff;
+      font-weight: bold;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    /* Normal tab active styles */
+    .tab-btn.active[id="normal-tab"] {
+      background: linear-gradient(90deg,#00ff88,#00cc66) !important;
+      color: #232946 !important;
+      box-shadow: 0 2px 8px rgba(0, 255, 136, 0.3) !important;
+      font-size: 0.9rem !important;
+      padding: 8px 12px !important;
+    }
+    
+    /* Reserve tab active styles */
+    .tab-btn.active[id="free-tab"] {
+      background: linear-gradient(90deg,#ffd700,#ffa500) !important;
+      color: #232946 !important;
+      box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3) !important;
+      font-size: 0.8rem !important;
+      padding: 6px 10px !important;
+    }
+    
+    /* Main register button */
     .register-btn, .buy-btn {
-      background: linear-gradient(90deg,#00ff88,#a786ff) !important;
+      background: linear-gradient(90deg,#00ff88,#00cc66) !important;
       color: #232946 !important;
       font-weight: bold;
       border-radius: 10px;
       font-size: 1.13rem;
-      box-shadow: 0 2px 8px #a786ff22;
+      box-shadow: 0 2px 8px rgba(0, 255, 136, 0.3);
     }
     .register-btn:active, .buy-btn:active {
-      background: linear-gradient(90deg,#a786ff,#00ff88) !important;
+      background: linear-gradient(90deg,#00cc66,#00ff88) !important;
     }
     .register-form-status {
       color: #fff !important;
@@ -85,11 +116,16 @@
   <script src="js/navbar.js"></script>
   <main style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--ios-background);">
          <form class="register-form" autocomplete="off" style="max-width:430px;width:100%;margin:0 auto;">
-       <!-- Registration tabs -->
-       <div style="display: flex; margin-bottom: 16px; background: rgba(35, 41, 70, 0.5); border-radius: 8px; padding: 4px;">
-         <button type="button" id="normal-tab" class="tab-btn active" style="flex: 1; padding: 8px 12px; background: linear-gradient(90deg,#00ff88,#a786ff); color: #232946; border: none; border-radius: 6px; font-weight: bold; font-size: 0.9rem; cursor: pointer;">Normal Registration</button>
-         <button type="button" id="free-tab" class="tab-btn" style="flex: 1; padding: 8px 12px; background: transparent; color: #a786ff; border: none; border-radius: 6px; font-weight: bold; font-size: 0.9rem; cursor: pointer;">Reserve Registration</button>
-       </div>
+               <!-- Registration tabs -->
+        <div style="display: flex; margin-bottom: 16px; background: rgba(35, 41, 70, 0.5); border-radius: 8px; padding: 4px;">
+          <button type="button" id="normal-tab" class="tab-btn active" style="flex: 1; padding: 8px 12px; background: linear-gradient(90deg,#00ff88,#00cc66); color: #232946; border: none; border-radius: 6px; font-weight: bold; font-size: 0.9rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0, 255, 136, 0.3); position: relative;">Normal Registration <span style="position: absolute; top: -8px; right: -8px; background: #00ff88; color: #232946; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">⭐</span></button>
+          <button type="button" id="free-tab" class="tab-btn" style="flex: 1; padding: 6px 10px; background: rgba(255, 215, 0, 0.1); color: #ffd700; border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 6px; font-weight: bold; font-size: 0.8rem; cursor: pointer; opacity: 0.7;">Reserve <span style="font-size: 0.7rem; margin-left: 2px;">⚠️</span></button>
+        </div>
+       
+               <!-- Recommendation message -->
+        <div id="registration-recommendation" style="margin-bottom: 12px; padding: 8px 12px; background: linear-gradient(90deg, rgba(0, 255, 136, 0.1), rgba(167, 134, 255, 0.1)); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 6px; text-align: center; font-size: 0.85rem; color: #00ff88;">
+          <span style="font-weight: bold;">💡 Recommendation:</span> Choose normal registration to activate immediately and benefit from all advantages
+        </div>
        
        <h2 class="register-form-title" style="text-align:center;margin-bottom:8px;font-size:1.2rem;">Register Form</h2>
       <div class="register-form-status info" id="connection-status"></div>
@@ -501,20 +537,27 @@
      document.getElementById('normal-tab').addEventListener('click', function() {
        currentRegistrationType = 'normal';
        
-       // تغییر ظاهر سربرگ‌ها
-       document.getElementById('normal-tab').style.background = 'linear-gradient(90deg,#00ff88,#a786ff)';
-       document.getElementById('normal-tab').style.color = '#232946';
-       document.getElementById('free-tab').style.background = 'transparent';
-       document.getElementById('free-tab').style.color = '#a786ff';
+               // Change tab appearance using CSS classes
+        document.getElementById('normal-tab').classList.add('active');
+        document.getElementById('normal-tab').innerHTML = 'Normal Registration <span style="position: absolute; top: -8px; right: -8px; background: #00ff88; color: #232946; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">⭐</span>';
+        document.getElementById('free-tab').classList.remove('active');
+        document.getElementById('free-tab').innerHTML = 'Reserve <span style="font-size: 0.7rem; margin-left: 2px;">⚠️</span>';
        
-       // Change button text
-       document.getElementById('register-btn').textContent = 'Register';
-       document.getElementById('register-btn').style.background = 'linear-gradient(90deg,#00ff88,#a786ff) !important';
+               // Change button text
+        document.getElementById('register-btn').textContent = 'Register';
+        document.getElementById('register-btn').style.background = 'linear-gradient(90deg,#00ff88,#00cc66) !important';
        
        // Change information
        document.getElementById('registration-type').textContent = 'Normal';
        document.getElementById('registration-type').style.color = '#00ff88';
        document.getElementById('registration-hint').textContent = 'For normal registration you need regPrice IAM tokens';
+       
+               // Show recommendation for normal registration
+        document.getElementById('registration-recommendation').style.display = 'block';
+        document.getElementById('registration-recommendation').style.background = 'linear-gradient(90deg, rgba(0, 255, 136, 0.1), rgba(167, 134, 255, 0.1))';
+        document.getElementById('registration-recommendation').style.border = '1px solid rgba(0, 255, 136, 0.3)';
+        document.getElementById('registration-recommendation').style.color = '#00ff88';
+        document.getElementById('registration-recommendation').innerHTML = '<span style="font-weight: bold;">💡 Recommendation:</span> Choose normal registration to activate immediately and benefit from all advantages';
        
        // Update cost
        updateRegistrationCost();
@@ -524,15 +567,15 @@
      document.getElementById('free-tab').addEventListener('click', function() {
        currentRegistrationType = 'free';
        
-       // تغییر ظاهر سربرگ‌ها
-       document.getElementById('free-tab').style.background = 'linear-gradient(90deg,#ff6b6b,#ffa500)';
-       document.getElementById('free-tab').style.color = '#232946';
-       document.getElementById('normal-tab').style.background = 'transparent';
-       document.getElementById('normal-tab').style.color = '#a786ff';
+       // Change tab appearance using CSS classes
+       document.getElementById('free-tab').classList.add('active');
+       document.getElementById('free-tab').innerHTML = 'Reserve <span style="font-size: 0.7rem; margin-left: 2px;">⚠️</span>';
+       document.getElementById('normal-tab').classList.remove('active');
+       document.getElementById('normal-tab').innerHTML = 'Normal Registration <span style="position: absolute; top: -8px; right: -8px; background: #00ff88; color: #232946; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">⭐</span>';
        
-       // Change button text
-       document.getElementById('register-btn').textContent = 'Register Reserve';
-       document.getElementById('register-btn').style.background = 'linear-gradient(90deg,#ff6b6b,#ffa500) !important';
+               // Change button text
+        document.getElementById('register-btn').textContent = 'Register Reserve';
+        document.getElementById('register-btn').style.background = 'linear-gradient(90deg,#ffa500,#ff8c00) !important';
        
        // Change information
        document.getElementById('registration-type').textContent = 'Reserve';
@@ -541,6 +584,13 @@
        
        // Display message box with reserve information
        showReserveInfoMessage();
+       
+               // Show warning for reserve registration
+        document.getElementById('registration-recommendation').style.display = 'block';
+        document.getElementById('registration-recommendation').style.background = 'linear-gradient(90deg, rgba(255, 165, 0, 0.1), rgba(255, 140, 0, 0.1))';
+        document.getElementById('registration-recommendation').style.border = '1px solid rgba(255, 165, 0, 0.3)';
+        document.getElementById('registration-recommendation').style.color = '#ffa500';
+        document.getElementById('registration-recommendation').innerHTML = '<span style="font-weight: bold;">⚠️ Warning:</span> Reserve registration requires additional payment for activation';
        
        // Update cost
        updateRegistrationCost();
@@ -620,7 +670,7 @@
         let parentIndex = '...';
         try {
           user = await contract.users(myAddress);
-          console.log(`🔍 وضعیت کاربر:`, user);
+                     console.log(`🔍 User status:`, user);
                      // If user is not active, show registration suggestion message
             const suggestionDiv = document.getElementById('register-suggestion');
                      if (user && !(user.index && BigInt(user.index) > 0n)) {
