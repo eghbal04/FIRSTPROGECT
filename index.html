@@ -425,127 +425,143 @@
 
 
 
-  <!-- Swap Section -->
+  <!-- Swap Section - Messenger Style -->
   <div id="main-swap" class="page-section expandable-container" style="width:100vw;max-width:none;margin:0;left:0;right:0;padding:0.5rem 0;">
     
     <div id="swap-main-content" style="display:block;">
     <div class="expand-header" style="padding:0 1.5rem;">
-      <h2 style="margin:0 0 0.5rem 0;">🔄 Currency Exchange</h2>
-      <p style="margin:0 0 0.5rem 0;">Exchange between DAI and IAM tokens</p>
+      <h2 style="margin:0 0 0.5rem 0;">💬 Exchange Messenger</h2>
+      <p style="margin:0 0 0.5rem 0;">Exchange between DAI and IAM tokens with messenger interface</p>
     </div>
     <div class="expand-content" style="padding:0;">
-      <div class="swap-container" style="max-width:600px;margin:0 auto;padding:1.5rem;">
+      <div class="swap-container" style="max-width:800px;margin:0 auto;padding:1.5rem;">
         
-        <!-- Swap Rules and Information -->
-        <div class="swap-rules" style="background:linear-gradient(135deg,#232946,#181c2a);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;border:2px solid #00ff88;">
-          <h3 style="color:#00ff88;margin-bottom:1rem;font-size:1.2rem;">📋 Exchange Rules and Guide</h3>
+        <!-- Messenger Style Chat Interface -->
+        <div class="messenger-swap-interface" style="background:linear-gradient(135deg,#0a0f1c,#1a1f2e);border-radius:20px;border:2px solid #00ff88;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.3);">
           
-          <div style="margin-bottom:1rem;">
-            <h4 style="color:#00ff88;margin-bottom:0.5rem;">🔄 How to Exchange:</h4>
-            <ul style="color:#b8c1ec;line-height:1.6;margin:0;padding-right:1rem;">
-              <li>✅ <strong style="color:#00ff88;">DAI → IAM:</strong> Buy IAM tokens with DAI (variable rate)</li>
-              <li>✅ <strong style="color:#00ff88;">IAM → DAI:</strong> Sell IAM tokens and receive DAI</li>
-              <li>✅ Exchange fee: Dynamic (2%, 2.5%, or 3% based on contract DAI balance)</li>
-              <li>✅ Minimum exchange amount: More than 1 DAI or more than 1 IAM</li>
-            </ul>
-          </div>
-          
-          <div style="margin-bottom:1rem;">
-            <h4 style="color:#00ff88;margin-bottom:0.5rem;">💰 Exchange Benefits:</h4>
-            <ul style="color:#b8c1ec;line-height:1.6;margin:0;padding-right:1rem;">
-              <li><strong style="color:#00ff88;">IAM:</strong> Main platform token - for investment and earning</li>
-              <li><strong style="color:#00ccff;">DAI:</strong> Stable token - for value preservation and daily transactions</li>
-              <li>🔄 Instant exchange without additional approval</li>
-              <li>📊 Exchange rate calculated based on supply and demand</li>
-            </ul>
-          </div>
-          
-          <div>
-            <h4 style="color:#00ff88;margin-bottom:0.5rem;">⚠️ Important Notes:</h4>
-            <ul style="color:#b8c1ec;line-height:1.6;margin:0;padding-right:1rem;">
-              <li>🔍 Check current rate before exchange</li>
-              <li>💰 Have sufficient balance for exchange + fees</li>
-              <li>⏱️ Exchanges are processed instantly</li>
-              <li>📞 Contact support if you encounter issues</li>
-            </ul>
-          </div>
-        </div>
-        <!-- Blockchain Information Dashboard (added to prevent not found errors) -->
-
-        <form id="swapForm" class="swap-form">
-          <!-- Exchange Type and Amount Row - Vertical Layout -->
-          <div style="display:flex;flex-direction:column;gap:1.5rem;margin-bottom:1rem;">
-            <div class="swap-row">
-              <label for="swapDirection">Exchange Type:</label>
-              <select id="swapDirection" required>
-                <option value="dai-to-IAM">DAI → IAM</option>
-                <option value="IAM-to-dai">IAM → DAI</option>
-              </select>
-              <small style="color:#b8c1ec;font-size:0.8rem;margin-top:0.3rem;display:block;">Select your desired exchange type</small>
+          <!-- Messenger Header -->
+          <div class="messenger-header" style="background:linear-gradient(135deg,#1a1f2e,#2a3441);padding:1.5rem;border-bottom:1px solid #2a3441;display:flex;align-items:center;gap:1rem;">
+            <div class="messenger-avatar" style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#00ff88,#a786ff);display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:white;">💱</div>
+            <div class="messenger-info">
+              <h3 style="color:#00ff88;margin:0;font-size:1.2rem;">Exchange Assistant</h3>
+              <p style="color:#b8c1ec;margin:0.2rem 0 0 0;font-size:0.9rem;">Ready to help you exchange tokens</p>
             </div>
-            <br>
-            <div class="swap-row">
-              <label for="swapAmount">Amount:</label>
-              <div class="amount-input-group">
-                <input type="number" id="swapAmount" placeholder="Enter amount" min="0" step="any" required>
-                <button type="button" id="maxBtn" class="max-btn">Maximum</button>
+            <div class="messenger-status" style="margin-right:auto;display:flex;align-items:center;gap:0.5rem;">
+              <div class="status-dot" style="width:10px;height:10px;border-radius:50%;background:#00ff88;animation:pulse 2s infinite;"></div>
+              <span style="color:#00ff88;font-size:0.8rem;">Online</span>
+            </div>
+          </div>
+          
+          <!-- Messenger Messages Area -->
+          <div class="messenger-messages" style="height:400px;overflow-y:auto;padding:1.5rem;background:#0a0f1c;">
+            
+            <!-- Welcome Message -->
+            <div class="message received" style="max-width:80%;margin-bottom:1rem;animation:messageSlide 0.5s ease-out;">
+              <div class="message-bubble" style="background:#1a1f2e;color:#ffffff;padding:1rem 1.2rem;border-radius:20px;border-bottom-left-radius:5px;">
+                <div class="message-content">
+                  <h4 style="color:#00ff88;margin:0 0 0.5rem 0;">🔄 Welcome to Exchange Assistant!</h4>
+                  <p style="margin:0 0 0.5rem 0;line-height:1.5;">I can help you exchange between DAI and IAM tokens. Here's what you can do:</p>
+                  <ul style="margin:0.5rem 0;padding-right:1rem;color:#b8c1ec;">
+                    <li>✅ <strong style="color:#00ff88;">DAI → IAM:</strong> Buy IAM tokens with DAI</li>
+                    <li>✅ <strong style="color:#00ff88;">IAM → DAI:</strong> Sell IAM tokens for DAI</li>
+                    <li>✅ Dynamic exchange rates based on supply/demand</li>
+                    <li>✅ Instant processing with low fees</li>
+                  </ul>
+                  <p style="margin:0.5rem 0 0 0;color:#a786ff;">What would you like to exchange today?</p>
+                </div>
               </div>
-              <small style="color:#b8c1ec;font-size:0.8rem;margin-top:0.3rem;display:block;">Enter the amount you want to exchange</small>
-            </div>
-          </div>
-          <br>
-          <!-- Right Column -->
-          <div style="display:flex;flex-direction:column;gap:1rem;">
-          <div  id="swap-usd-converter-row" style="display:none;">
-            <label for="swapUsdAmount">💰 Dollar Equivalent:</label>
-            <div class="usd-converter-container" style="display:flex;gap:0.5rem;align-items:center;">
-              <span style="color:#00ff88;font-weight:bold;">$</span>
-              <input type="number" id="swapUsdAmount" placeholder="5.00" min="0" step="0.01" style="flex:1;">
-              <button type="button" id="swapUsdToTokenBtn" style="
-                background: linear-gradient(90deg,#00ff88,#a786ff);
-                color: #181c2a;
-                border: none;
-                border-radius: 6px;
-                padding: 0.4rem 0.8rem;
-                font-size: 0.8rem;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                font-weight: bold;
-              ">🔄 Convert</button>
-            </div>
-            <small style="color:#b8c1ec;font-size:0.8rem;margin-top:0.3rem;display:block;">Enter dollar amount to convert to tokens (e.g., 5 for $5)</small>
-          </div>
-        
-        <!-- Balance Check -->
-            <div style="background:rgba(0,255,136,0.1);border-radius:8px;padding:0.8rem;">
-              <h4 style="color:#00ff88;margin-bottom:0.6rem;font-size:0.9rem;">💰 Your Current Balance:</h4>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;">
-            <div style="text-align:center;">
-                  <div style="color:#00ff88;font-weight:bold;font-size:0.9rem;">DAI</div>
-                  <div id="daiBalance" style="color:#b8c1ec;font-family:monospace;font-size:0.85rem;">-</div>
-            </div>
-            <div style="text-align:center;">
-                  <div style="color:#00ccff;font-weight:bold;font-size:0.9rem;">IAM</div>
-                  <div id="IAMBalance" style="color:#b8c1ec;font-family:monospace;font-size:0.85rem;">-</div>
-                  <div id="IAMUsdValue" style="color:#a786ff;font-size:0.75rem;margin-top:2px;">-</div>
-            </div>
-          </div>
             </div>
             
-            <!-- Exchange Button - Moved here to be closer to Current Balance -->
-            <button type="submit" class="swap-btn" style="width:100%;margin-top:1rem;background:linear-gradient(135deg,#00ff88,#00cc6a);color:#1a1f2e;border:none;border-radius:8px;padding:0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:1rem;">💱 Exchange</button>
+            <!-- Exchange Form Message -->
+            <div class="message received" style="max-width:80%;margin-bottom:1rem;animation:messageSlide 0.5s ease-out 0.2s both;">
+              <div class="message-bubble" style="background:#1a1f2e;color:#ffffff;padding:1rem 1.2rem;border-radius:20px;border-bottom-left-radius:5px;">
+                <div class="message-content">
+                  <h4 style="color:#00ff88;margin:0 0 1rem 0;">📝 Exchange Form</h4>
+                  
+                  <form id="swapForm" class="messenger-form" style="display:flex;flex-direction:column;gap:1rem;">
+                    
+                    <!-- Exchange Type -->
+                    <div class="form-group" style="margin-bottom:1rem;">
+                      <label for="swapDirection" style="display:block;color:#00ff88;margin-bottom:0.5rem;font-weight:600;">Exchange Type:</label>
+                      <select id="swapDirection" required style="width:100%;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.95rem;">
+                        <option value="dai-to-IAM">🟢 DAI → IAM (Buy IAM)</option>
+                        <option value="IAM-to-dai">🔴 IAM → DAI (Sell IAM)</option>
+                      </select>
+                    </div>
+                    
+                    <!-- Amount Input -->
+                    <div class="form-group" style="margin-bottom:1rem;">
+                      <label for="swapAmount" style="display:block;color:#00ff88;margin-bottom:0.5rem;font-weight:600;">Amount:</label>
+                      <div class="amount-input-group" style="display:flex;gap:0.5rem;align-items:center;">
+                        <input type="number" id="swapAmount" placeholder="Enter amount" min="0" step="any" required style="flex:1;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.95rem;">
+                        <button type="button" id="maxBtn" class="max-btn" style="background:linear-gradient(135deg,#a786ff,#00ff88);color:#0a0f1c;border:none;padding:0.8rem 1rem;border-radius:12px;font-weight:600;cursor:pointer;transition:all 0.3s ease;white-space:nowrap;">Max</button>
+                      </div>
+                    </div>
+                    
+                    <!-- USD Converter -->
+                    <div id="swap-usd-converter-row" style="display:none;margin-bottom:1rem;">
+                      <label for="swapUsdAmount" style="display:block;color:#00ff88;margin-bottom:0.5rem;font-weight:600;">💰 Dollar Equivalent:</label>
+                      <div class="usd-converter-container" style="display:flex;gap:0.5rem;align-items:center;">
+                        <span style="color:#00ff88;font-weight:bold;font-size:1.1rem;">$</span>
+                        <input type="number" id="swapUsdAmount" placeholder="5.00" min="0" step="0.01" style="flex:1;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.95rem;">
+                        <button type="button" id="swapUsdToTokenBtn" style="background:linear-gradient(135deg,#00ff88,#a786ff);color:#0a0f1c;border:none;padding:0.8rem 1rem;border-radius:12px;font-weight:600;cursor:pointer;transition:all 0.3s ease;font-size:0.9rem;">🔄</button>
+                      </div>
+                    </div>
+                    
+                    <!-- Balance Display -->
+                    <div class="balance-display" style="background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:12px;padding:1rem;margin-bottom:1rem;">
+                      <h4 style="color:#00ff88;margin:0 0 0.8rem 0;font-size:1rem;">💰 Your Balances</h4>
+                      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                        <div style="text-align:center;background:rgba(0,255,136,0.1);border-radius:8px;padding:0.8rem;">
+                          <div style="color:#00ff88;font-weight:bold;font-size:0.9rem;">DAI</div>
+                          <div id="daiBalance" style="color:#ffffff;font-family:monospace;font-size:1rem;font-weight:600;">-</div>
+                        </div>
+                        <div style="text-align:center;background:rgba(167,134,255,0.1);border-radius:8px;padding:0.8rem;">
+                          <div style="color:#a786ff;font-weight:bold;font-size:0.9rem;">IAM</div>
+                          <div id="IAMBalance" style="color:#ffffff;font-family:monospace;font-size:1rem;font-weight:600;">-</div>
+                          <div id="IAMUsdValue" style="color:#a786ff;font-size:0.8rem;margin-top:0.2rem;">-</div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Exchange Button -->
+                    <button type="submit" class="exchange-btn" style="width:100%;background:linear-gradient(135deg,#00ff88,#00cc6a);color:#0a0f1c;border:none;border-radius:12px;padding:1rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:1.1rem;margin-top:0.5rem;">💱 Execute Exchange</button>
+                    
+                  </form>
+                  
+                </div>
+              </div>
+            </div>
+            
+            <!-- Exchange Rate Message -->
+            <div class="message received" style="max-width:80%;margin-bottom:1rem;animation:messageSlide 0.5s ease-out 0.4s both;">
+              <div class="message-bubble" style="background:#1a1f2e;color:#ffffff;padding:1rem 1.2rem;border-radius:20px;border-bottom-left-radius:5px;">
+                <div class="message-content">
+                  <h4 style="color:#00ff88;margin:0 0 0.5rem 0;">📊 Exchange Information</h4>
+                  <div id="swapRate" class="swap-rate" style="color:#b8c1ec;margin-bottom:0.5rem;">Exchange rate: Loading...</div>
+                  <div id="swapPreview" class="swap-preview" style="color:#a786ff;margin-bottom:0.5rem;"></div>
+                  <div id="swapLimitInfo" class="swap-limit-info" style="color:#ffc107;font-size:0.9rem;"></div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Status Message -->
+            <div id="swapStatus" class="swap-status" style="max-width:80%;margin-bottom:1rem;"></div>
+            
           </div>
           
-          <!-- Full Width Elements -->
-          <div style="grid-column:1/-1;margin-top:1rem;">
-            <div id="swapRate" class="swap-rate">Exchange rate: Loading...</div>
-            <div id="swapPreview" class="swap-preview"></div>
-            <div id="swapLimitInfo" class="swap-limit-info" style="margin-top:0.5rem;color:#555;font-size:0.98em;"></div>
-            
-            <div id="swapStatus" class="swap-status"></div>
+          <!-- Messenger Input Area -->
+          <div class="messenger-input-area" style="background:#1a1f2e;border-top:1px solid #2a3441;padding:1rem 1.5rem;">
+            <div class="input-container" style="display:flex;align-items:center;gap:0.5rem;background:#0a0f1c;border:2px solid #2a3441;border-radius:25px;padding:0.5rem;">
+              <div style="flex:1;color:#b8c1ec;font-size:0.9rem;padding:0 1rem;">
+                💡 Tip: Check your balance and exchange rate before proceeding
+              </div>
+                                            <button type="button" class="refresh-btn" onclick="if(window.swapManager) window.swapManager.refreshSwapData()" style="background:linear-gradient(135deg,#00ff88,#a786ff);color:#0a0f1c;border:none;padding:0.8rem;border-radius:50%;cursor:pointer;transition:all 0.3s ease;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;">🔄</button>
+            </div>
           </div>
-        </form>
+          
         </div>
+        
       </div>
     </div>
   </div>
@@ -1163,7 +1179,86 @@
       }
     }
     
-    /* Responsive Design for Swap Section */
+    /* Messenger Style Swap Interface */
+    .messenger-swap-interface {
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .messenger-swap-interface::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(0,255,136,0.1), transparent);
+      transition: left 0.8s;
+      z-index: 1;
+      pointer-events: none;
+    }
+    
+    .messenger-swap-interface:hover::before {
+      left: 100%;
+    }
+    
+    .messenger-header {
+      position: relative;
+      z-index: 2;
+    }
+    
+    .messenger-messages {
+      position: relative;
+      z-index: 2;
+    }
+    
+    .messenger-input-area {
+      position: relative;
+      z-index: 2;
+    }
+    
+    /* Message animations */
+    @keyframes messageSlide {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes pulse {
+      0%, 100% { 
+        opacity: 1; 
+        transform: scale(1); 
+      }
+      50% { 
+        opacity: 0.7; 
+        transform: scale(1.1); 
+      }
+    }
+    
+    /* Form styling */
+    .messenger-form .form-group input:focus,
+    .messenger-form .form-group select:focus {
+      border-color: #00ff88 !important;
+      box-shadow: 0 0 0 2px rgba(0,255,136,0.2) !important;
+    }
+    
+    .exchange-btn:hover {
+      transform: translateY(-2px) !important;
+      box-shadow: 0 8px 25px rgba(0,255,136,0.3) !important;
+    }
+    
+         .refresh-btn:hover {
+       transform: rotate(180deg) scale(1.1) !important;
+     }
+     
+     
+    
+    /* Responsive Design for Messenger Swap Section */
     @media (max-width: 768px) {
       #main-swap {
         width: 100% !important;
@@ -1181,64 +1276,61 @@
         width: 100% !important;
       }
       
-      .swap-form {
-        padding: 0.6rem !important;
-        border-radius: 8px !important;
+      .messenger-swap-interface {
+        border-radius: 15px !important;
+      }
+      
+      .messenger-header {
+        padding: 1rem !important;
+        flex-direction: column !important;
         gap: 0.8rem !important;
+        text-align: center !important;
       }
       
-      /* Exchange Type and Amount vertical layout - already stacked by default */
-      
-      .swap-row {
-        margin-bottom: 0.6rem !important;
+      .messenger-avatar {
+        width: 40px !important;
+        height: 40px !important;
+        font-size: 1.2rem !important;
       }
       
-      .swap-row label {
+      .messenger-info h3 {
+        font-size: 1rem !important;
+      }
+      
+      .messenger-info p {
         font-size: 0.8rem !important;
-        margin-bottom: 0.3rem !important;
       }
       
-      .swap-row input,
-      .swap-row select {
-        padding: 0.5rem !important;
-        font-size: 0.8rem !important;
-        border-radius: 6px !important;
+      .messenger-messages {
+        height: 350px !important;
+        padding: 1rem !important;
       }
       
-      .swap-btn {
-        padding: 0.6rem 1rem !important;
-        font-size: 0.8rem !important;
-        border-radius: 6px !important;
+      .message {
+        max-width: 95% !important;
       }
       
-      /* Swap rules responsive */
-      .swap-rules {
-        padding: 0.8rem !important;
-        border-radius: 8px !important;
-        margin-bottom: 1rem !important;
+      .message-bubble {
+        padding: 0.8rem 1rem !important;
+        border-radius: 15px !important;
       }
       
-      .swap-rules h3 {
-        font-size: 1.1rem !important;
+      .messenger-form .form-group {
         margin-bottom: 0.8rem !important;
       }
       
-      .swap-rules h4 {
-        font-size: 0.95rem !important;
+      .messenger-form .form-group label {
+        font-size: 0.9rem !important;
         margin-bottom: 0.4rem !important;
       }
       
-      .swap-rules ul {
-        font-size: 0.8rem !important;
-        line-height: 1.4 !important;
-        padding-right: 0.8rem !important;
+      .messenger-form .form-group input,
+      .messenger-form .form-group select {
+        padding: 0.7rem !important;
+        font-size: 0.9rem !important;
+        border-radius: 10px !important;
       }
       
-      .swap-rules li {
-        margin-bottom: 0.3rem !important;
-      }
-      
-      /* Amount input group responsive */
       .amount-input-group {
         flex-direction: column !important;
         gap: 0.4rem !important;
@@ -1250,44 +1342,64 @@
       
       .amount-input-group .max-btn {
         width: 100% !important;
-        padding: 0.5rem !important;
+        padding: 0.7rem !important;
+        font-size: 0.9rem !important;
       }
       
-      /* USD converter responsive */
-      .swap-row .usd-converter-container {
+      .usd-converter-container {
         flex-direction: column !important;
         gap: 0.4rem !important;
       }
       
-      .swap-row .usd-converter-container input {
+      .usd-converter-container input {
         width: 100% !important;
       }
       
-      .swap-row .usd-converter-container button {
+      .usd-converter-container button {
         width: 100% !important;
-        padding: 0.5rem !important;
+        padding: 0.7rem !important;
       }
       
-      /* Balance check responsive */
-      .swap-balance-check {
+      .balance-display {
         padding: 0.8rem !important;
-        border-radius: 6px !important;
+        border-radius: 10px !important;
       }
       
-      .swap-balance-check .swap-balance-grid {
+      .balance-display h4 {
+        font-size: 0.9rem !important;
+        margin-bottom: 0.6rem !important;
+      }
+      
+      .balance-display > div > div {
         grid-template-columns: 1fr !important;
         gap: 0.6rem !important;
       }
       
-      .swap-balance-check h4 {
+      .exchange-btn {
+        padding: 0.8rem !important;
         font-size: 1rem !important;
-        margin-bottom: 0.6rem !important;
+        border-radius: 10px !important;
       }
       
-      /* Small text responsive */
-      .swap-row small {
-        font-size: 0.7rem !important;
-        margin-top: 0.2rem !important;
+      .messenger-input-area {
+        padding: 0.8rem 1rem !important;
+      }
+      
+      .input-container {
+        flex-direction: column !important;
+        gap: 0.5rem !important;
+        padding: 0.8rem !important;
+      }
+      
+      .input-container > div {
+        text-align: center !important;
+        font-size: 0.8rem !important;
+      }
+      
+      .refresh-btn {
+        width: 35px !important;
+        height: 35px !important;
+        font-size: 1rem !important;
       }
     }
     
@@ -1300,42 +1412,131 @@
         padding: 0.4rem !important;
       }
       
-      .swap-form {
-        padding: 0.4rem !important;
+      .messenger-swap-interface {
+        border-radius: 12px !important;
+      }
+      
+      .messenger-header {
+        padding: 0.8rem !important;
         gap: 0.6rem !important;
       }
       
-      /* Exchange Type and Amount vertical layout - already stacked by default */
+      .messenger-avatar {
+        width: 35px !important;
+        height: 35px !important;
+        font-size: 1rem !important;
+      }
       
-      .swap-row {
+      .messenger-info h3 {
+        font-size: 0.9rem !important;
+      }
+      
+      .messenger-info p {
+        font-size: 0.75rem !important;
+      }
+      
+      .messenger-messages {
+        height: 300px !important;
+        padding: 0.8rem !important;
+      }
+      
+      .message {
+        max-width: 98% !important;
+      }
+      
+      .message-bubble {
+        padding: 0.6rem 0.8rem !important;
+        border-radius: 12px !important;
+      }
+      
+      .message-bubble h4 {
+        font-size: 0.9rem !important;
+        margin-bottom: 0.4rem !important;
+      }
+      
+      .message-bubble p {
+        font-size: 0.8rem !important;
+        line-height: 1.3 !important;
+      }
+      
+      .message-bubble ul {
+        font-size: 0.75rem !important;
+        padding-right: 0.6rem !important;
+      }
+      
+      .messenger-form .form-group {
+        margin-bottom: 0.6rem !important;
+      }
+      
+      .messenger-form .form-group label {
+        font-size: 0.8rem !important;
+        margin-bottom: 0.3rem !important;
+      }
+      
+      .messenger-form .form-group input,
+      .messenger-form .form-group select {
+        padding: 0.6rem !important;
+        font-size: 0.8rem !important;
+        border-radius: 8px !important;
+      }
+      
+      .amount-input-group .max-btn {
+        padding: 0.6rem !important;
+        font-size: 0.8rem !important;
+      }
+      
+      .usd-converter-container button {
+        padding: 0.6rem !important;
+        font-size: 0.8rem !important;
+      }
+      
+      .balance-display {
+        padding: 0.6rem !important;
+        border-radius: 8px !important;
+      }
+      
+      .balance-display h4 {
+        font-size: 0.8rem !important;
         margin-bottom: 0.5rem !important;
       }
       
-      .swap-row label {
-        font-size: 0.75rem !important;
-      }
-      
-      .swap-row input,
-      .swap-row select {
-        padding: 0.4rem !important;
-        font-size: 0.75rem !important;
-      }
-      
-      .swap-btn {
-        padding: 0.5rem 0.8rem !important;
-        font-size: 0.75rem !important;
-      }
-      
-      .swap-balance-check {
+      .balance-display > div > div > div {
         padding: 0.6rem !important;
+        border-radius: 6px !important;
       }
       
-      .swap-rules {
+      .balance-display > div > div > div > div:first-child {
+        font-size: 0.8rem !important;
+      }
+      
+      .balance-display > div > div > div > div:nth-child(2) {
+        font-size: 0.9rem !important;
+      }
+      
+      .exchange-btn {
+        padding: 0.7rem !important;
+        font-size: 0.9rem !important;
+        border-radius: 8px !important;
+      }
+      
+      .messenger-input-area {
+        padding: 0.6rem 0.8rem !important;
+      }
+      
+      .input-container {
         padding: 0.6rem !important;
+        gap: 0.4rem !important;
       }
       
-      .swap-rules h3 {
-        font-size: 1rem !important;
+      .input-container > div {
+        font-size: 0.75rem !important;
+        padding: 0 0.8rem !important;
+      }
+      
+      .refresh-btn {
+        width: 30px !important;
+        height: 30px !important;
+        font-size: 0.9rem !important;
       }
     }
     
@@ -1412,15 +1613,6 @@
         font-size: 0.8rem !important;
       }
     }
-      
-      .swap-rules h4 {
-        font-size: 0.9rem !important;
-      }
-      
-      .swap-rules ul {
-        font-size: 0.75rem !important;
-      }
-    }
     
     @media (min-width: 769px) and (max-width: 1024px) {
       .swap-container {
@@ -1429,11 +1621,24 @@
         margin: 0 auto !important;
       }
       
-      .swap-form {
-        padding: 1.2rem !important;
+      .messenger-swap-interface {
+        border-radius: 18px !important;
       }
       
-      .swap-balance-check .swap-balance-grid {
+      .messenger-header {
+        padding: 1.3rem !important;
+      }
+      
+      .messenger-messages {
+        height: 450px !important;
+        padding: 1.3rem !important;
+      }
+      
+      .message {
+        max-width: 85% !important;
+      }
+      
+      .balance-display > div > div {
         grid-template-columns: 1fr 1fr !important;
         gap: 1rem !important;
       }
@@ -1441,22 +1646,40 @@
     
     @media (min-width: 1025px) {
       .swap-container {
-        max-width: 700px !important;
+        max-width: 900px !important;
         padding: 1.5rem !important;
         margin: 0 auto !important;
       }
       
-      .swap-form {
+      .messenger-swap-interface {
+        border-radius: 20px !important;
+      }
+      
+      .messenger-header {
         padding: 1.5rem !important;
       }
       
-      .swap-row {
-        margin-bottom: 1.5rem !important;
+      .messenger-messages {
+        height: 500px !important;
+        padding: 1.5rem !important;
       }
       
-      .swap-balance-check .swap-balance-grid {
+      .message {
+        max-width: 80% !important;
+      }
+      
+      .messenger-form .form-group {
+        margin-bottom: 1rem !important;
+      }
+      
+      .balance-display > div > div {
         grid-template-columns: 1fr 1fr !important;
-        gap: 1rem !important;
+        gap: 1.2rem !important;
+      }
+      
+      .exchange-btn:hover {
+        transform: translateY(-3px) !important;
+        box-shadow: 0 12px 35px rgba(0,255,136,0.4) !important;
       }
     }
   </style>
