@@ -511,164 +511,106 @@
   </div>
 
   <!-- Transfer Section -->
-  <div id="main-transfer" class="page-section expandable-container" style="width:100vw;max-width:none;margin:0;left:0;right:0;padding:0.5rem 0;display:none;">
-    <div class="expand-header">
+  <div id="main-transfer" class="page-section expandable-container" style="width:100vw;max-width:none;margin:0;left:0;right:0;padding:0.5rem 0;display:block !important;visibility:visible !important;opacity:1 !important;">
+    <div class="expand-header" style="display:block !important;visibility:visible !important;opacity:1 !important;">
       <h2 style="margin:0 0 0.5rem 0;">💸 Transfer</h2>
       <p style="margin:0 0 0.5rem 0;">Transfer tokens to another wallet</p>
     </div>
-    <div class="expand-content" style="padding:0;">
-      <div class="transfer-container" style="max-width:600px;margin:0;padding:1.5rem;">
-        
-        <!-- Transfer Rules and Information -->
-        <div class="transfer-rules" style="background:linear-gradient(135deg,#232946,#181c2a);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;border:2px solid #a786ff;">
-          <h3 style="color:#00ff88;margin-bottom:1rem;font-size:1.2rem;">📋 Transfer Rules and Guide</h3>
-          
-          <div style="margin-bottom:1rem;">
-            <h4 style="color:#a786ff;margin-bottom:0.5rem;">🔒 Transfer Security:</h4>
-            <ul style="color:#b8c1ec;line-height:1.6;margin:0;padding-right:1rem;">
-              <li>✅ Transfers are irreversible - double-check before sending</li>
-              <li>✅ Enter destination address carefully - one wrong character can cause loss of assets</li>
-              <li>✅ Send a small amount first to verify the address is correct</li>
-              <li>✅ Use valid and secure wallets</li>
-            </ul>
-          </div>
-          
-          <div style="margin-bottom:1rem;">
-            <h4 style="color:#a786ff;margin-bottom:0.5rem;">💰 Transferable Token Types:</h4>
-            <ul style="color:#b8c1ec;line-height:1.6;margin:0;padding-right:1rem;">
-              <li><strong style="color:#00ff88;">DAI:</strong> Stable token with value of $1 - for daily transactions</li>
-              <li><strong style="color:#a786ff;">POL (MATIC):</strong> Polygon network token - for transaction fee payments</li>
-              <li><strong style="color:#00ccff;">IAM:</strong> Main platform token - for investment and earning</li>
-            </ul>
-          </div>
-          
-          <div style="margin-bottom:1rem;">
-            <h4 style="color:#a786ff;margin-bottom:0.5rem;">⚡ Transaction Fees:</h4>
-            <ul style="color:#b8c1ec;line-height:1.6;margin:0;padding-right:1rem;">
-              <li>💸 Polygon network fee: ~0.001-0.01 MATIC (depending on network traffic)</li>
-              <li>⏱️ Confirmation time: 2-5 seconds (usually)</li>
-              <li>🔍 Transactions can be tracked on PolygonScan</li>
-            </ul>
-          </div>
-          
-          <div>
-            <h4 style="color:#a786ff;margin-bottom:0.5rem;">🎯 Important Notes:</h4>
-            <ul style="color:#b8c1ec;line-height:1.6;margin:0;padding-right:1rem;">
-              <li>📱 You can search by user index to find the address</li>
-              <li>🔍 Check your balance before transferring</li>
-              <li>⚠️ Transfer amount + network fee must be less than your balance</li>
-              <li>📞 Contact support if you have any issues</li>
-            </ul>
-          </div>
-        </div>
-        
-        <form id="transferForm" class="transfer-form" style="display:grid !important;grid-template-columns:1fr 1fr !important;gap:1.5rem !important;align-items:start !important;">
-          <!-- Left Column -->
-          <div style="display:flex;flex-direction:column;gap:1rem;">
-          <div class="transfer-row">
-            <label for="transferTo">Destination Address:</label>
-            <input type="text" id="transferTo" placeholder="0x..." required style="direction:ltr;">
-            <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Enter destination wallet address (42 characters)</small>
-          </div>
+    <div class="expand-content" style="padding:1rem;display:block !important;visibility:visible !important;opacity:1 !important;">
 
-          <!-- Index to Address Search -->
-            <div class="transfer-row" id="search-index-container" style="background:rgba(0,255,136,0.1);border-radius:8px;padding:0.8rem;border:1px solid rgba(0,255,136,0.2);">
-              <h4 style="color:#00ff88;margin-bottom:0.6rem;font-size:0.9rem;">🔍 Search by Index</h4>
-              <div style="margin-bottom:0.4rem;">
-              <input type="number" id="searchIndex" placeholder="Enter user index" 
-                       style="background:rgba(0,0,0,0.3);border:1px solid rgba(0,255,136,0.3);border-radius:6px;padding:0.4rem;color:#fff;text-align:center;width:100%;font-size:0.85rem;font-family:monospace;margin-bottom:0.4rem;">
-              <button type="button" id="searchIndexBtn" 
-                        style="background:linear-gradient(135deg,#00ff88,#00cc6a);color:#1a1f2e;border:none;border-radius:6px;padding:0.4rem 0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:0.85rem;width:100%;">
-                🔍 Search
-              </button>
-            </div>
-              <div id="searchIndexStatus" style="text-align:center;padding:0.4rem;border-radius:6px;font-size:0.85rem;min-height:1.2em;"></div>
-              <small style="color:#b8c1ec;font-size:0.75rem;margin-top:0.2rem;display:block;">Enter a user index to find their wallet address</small>
-          </div>
-
-          <div class="transfer-row">
-              <label for="transferAmount">Amount:</label>
-              <input type="number" id="transferAmount" placeholder="Enter amount" min="0" step="any" required>
-            <button type="button" id="maxAmountBtn" style="
-              background: linear-gradient(90deg,#ff6b6b,#ee5a52);
-              color: #fff;
-              border: none;
-              border-radius: 6px;
-              padding: 0.4rem 0.8rem;
-              font-size: 0.8rem;
-              cursor: pointer;
-                margin-top: 0.4rem;
-              transition: all 0.3s ease;
-              width: auto;
-              display: inline-block;
-              ">🔥 Maximum Balance</button>
-              <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Enter transfer amount or click "Maximum"</small>
-          </div>
-
-          </div>
-
-          <!-- Right Column -->
-          <div style="display:flex;flex-direction:column;gap:1rem;">
-            <div class="transfer-row">
-              <label for="transferToken">Token Type:</label>
-              <select id="transferToken" required>
-                <option value="dai" selected>DAI</option>
-                <option value="pol">POL</option>
-                <option value="IAM">IAM</option>
-              </select>
-              <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Select the token type you want to transfer</small>
-            </div>
-
-          <div class="transfer-row" id="usd-converter-row" style="display:none;">
-              <label for="transferUsdAmount">💰 Dollar Equivalent (Only for IAM):</label>
-            <div class="usd-converter-container" style="display:flex;gap:0.5rem;align-items:center;">
-              <span style="color:#00ff88;font-weight:bold;">$</span>
-              <input type="number" id="transferUsdAmount" placeholder="5.00" min="0" step="0.01" style="flex:1;">
-              <button type="button" id="usdToIAMBtn" style="
-                background: linear-gradient(90deg,#00ff88,#a786ff);
-                color: #181c2a;
-                border: none;
-                border-radius: 6px;
-                padding: 0.4rem 0.8rem;
-                font-size: 0.8rem;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                font-weight: bold;
-                ">🔄 Convert</button>
-            </div>
-              <small style="color:#b8c1ec;font-size:0.85rem;margin-top:0.3rem;display:block;">Enter dollar amount to convert to IAM (e.g., 5 for $5)</small>
-          </div>
-          
-          <!-- Balance Check -->
-            <div style="background:rgba(167,134,255,0.1);border-radius:8px;padding:0.8rem;" class="balance-check">
-              <h4 style="color:#a786ff;margin-bottom:0.6rem;font-size:0.9rem;">💰 Your Current Balance:</h4>
-              <div class="balance-check-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.8rem;">
-              <div style="text-align:center;">
-                  <div style="color:#00ff88;font-weight:bold;font-size:0.9rem;">DAI</div>
-                  <div id="transfer-dai-balance" style="color:#b8c1ec;font-family:monospace;font-size:0.85rem;">-</div>
-              </div>
-              <div style="text-align:center;">
-                  <div style="color:#a786ff;font-weight:bold;font-size:0.9rem;">POL</div>
-                  <div id="transfer-poly-balance" style="color:#b8c1ec;font-family:monospace;font-size:0.85rem;">-</div>
-              </div>
-              <div style="text-align:center;">
-                  <div style="color:#00ccff;font-weight:bold;font-size:0.9rem;">IAM</div>
-                  <div id="transfer-IAM-balance" style="color:#b8c1ec;font-family:monospace;font-size:0.85rem;">-</div>
-                  <div id="transfer-IAM-usd" style="color:#a786ff;font-size:0.75rem;margin-top:2px;">-</div>
+            <!-- Transfer Form -->
+            <div style="background:#1a1f2e;color:#ffffff;padding:2rem 2.4rem;border-radius:20px;margin-bottom:1rem;width:90%;max-width:1200px;margin-left:auto;margin-right:auto;border:4px solid #00ff88;">
+              <h4 style="color:#00ff88;margin:0 0 0.5rem 0;font-size:0.95rem;">📤 Transfer Form</h4>
+              
+              <form id="transferForm" class="messenger-form" style="display:flex;flex-direction:column;gap:0.5rem;">
+                
+                <!-- Destination Address -->
+                <div class="form-group" style="margin-bottom:0.5rem;">
+                  <label for="transferTo" style="display:block;color:#00ff88;margin-bottom:0.3rem;font-weight:600;font-size:0.85rem;">Destination Address:</label>
+                  <input type="text" id="transferTo" placeholder="0x..." required style="width:100%;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;direction:ltr;">
+                  <small style="color:#b8c1ec;font-size:0.75rem;margin-top:0.2rem;display:block;">Enter destination wallet address (42 characters)</small>
                 </div>
-              </div>
+
+                <!-- Index to Address Search -->
+                <div class="form-group" style="margin-bottom:0.5rem;">
+                  <label style="display:block;color:#00ff88;margin-bottom:0.3rem;font-weight:600;font-size:0.85rem;">🔍 Search by Index:</label>
+                  <div style="display:flex;gap:0.5rem;align-items:center;">
+                    <input type="number" id="searchIndex" placeholder="Enter user index" style="flex:1;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;font-family:monospace;">
+                    <button type="button" id="searchIndexBtn" style="background:linear-gradient(135deg,#00ff88,#00cc6a);color:#0a0f1c;border:none;padding:0.8rem 1rem;border-radius:12px;font-weight:600;cursor:pointer;transition:all 0.3s ease;font-size:0.85rem;">🔍 Search</button>
+                  </div>
+                  <div id="searchIndexStatus" style="text-align:center;padding:0.4rem;border-radius:6px;font-size:0.85rem;min-height:1.2em;margin-top:0.3rem;"></div>
+                  <small style="color:#b8c1ec;font-size:0.75rem;margin-top:0.2rem;display:block;">Enter a user index to find their wallet address</small>
+                </div>
+
+                <!-- Amount Input -->
+                <div class="form-group" style="margin-bottom:0.5rem;">
+                  <label for="transferAmount" style="display:block;color:#00ff88;margin-bottom:0.3rem;font-weight:600;font-size:0.85rem;">Amount:</label>
+                  <div class="amount-input-group" style="display:flex;gap:0.5rem;align-items:center;">
+                    <input type="number" id="transferAmount" placeholder="Enter amount" min="0" step="any" required style="flex:1;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
+                    <button type="button" id="maxAmountBtn" class="max-btn" style="background:linear-gradient(135deg,#a786ff,#00ff88);color:#0a0f1c;border:none;padding:0.8rem 1rem;border-radius:12px;font-weight:600;cursor:pointer;transition:all 0.3s ease;white-space:nowrap;font-size:0.85rem;">Max</button>
+                  </div>
+                  <small style="color:#b8c1ec;font-size:0.75rem;margin-top:0.2rem;display:block;">Enter transfer amount or click "Maximum"</small>
+                </div>
+
+                <!-- Token Type -->
+                <div class="form-group" style="margin-bottom:0.5rem;">
+                  <label for="transferToken" style="display:block;color:#00ff88;margin-bottom:0.3rem;font-weight:600;font-size:0.85rem;">Token Type:</label>
+                  <select id="transferToken" required style="width:100%;background:#0a0f1c;border:2px solid #2a3441;color:#e01616;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
+                    <option value="DAI">🟢 DAI (Stable Token)</option>
+                    <option value="POL">🔵 POL (MATIC)</option>
+                    <option value="IAM">🟣 IAM (Platform Token)</option>
+                  </select>
+                  <small style="color:#b8c1ec;font-size:0.75rem;margin-top:0.2rem;display:block;">Select the token type you want to transfer</small>
+                </div>
+
+                <!-- USD Converter (for IAM) -->
+                <div id="usd-converter-row" style="display:none;margin-bottom:0.5rem;">
+                  <label for="transferUsdAmount" style="display:block;color:#00ff88;margin-bottom:0.3rem;font-weight:600;font-size:0.85rem;">💰 Dollar Equivalent:</label>
+                  <div class="usd-converter-container" style="display:flex;gap:0.5rem;align-items:center;">
+                    <span style="color:#00ff88;font-weight:bold;font-size:1rem;"></span>
+                    <input type="number" id="transferUsdAmount" placeholder="5.00" min="0" step="0.01" style="flex:1;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
+                    <button type="button" id="transferUsdToTokenBtn" style="background:linear-gradient(135deg,#00ff88,#a786ff);color:#0a0f1c;border:none;padding:0.8rem 1rem;border-radius:12px;font-weight:600;cursor:pointer;transition:all 0.3s ease;font-size:0.8rem;">🔄</button>
+                  </div>
+                </div>
+
+                <!-- Balance Display -->
+                <div class="balance-display" style="background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:12px;padding:1rem;margin-bottom:0.5rem;">
+                  <h4 style="color:#00ff88;margin:0 0 0.5rem 0;font-size:0.9rem;">💰 Your Balances</h4>
+                  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;">
+                    <div style="text-align:center;background:rgba(0,255,136,0.1);border-radius:8px;padding:0.8rem;">
+                      <div style="color:#00ff88;font-weight:bold;font-size:0.8rem;">DAI</div>
+                      <div id="transfer-dai-balance" style="color:#ffffff;font-family:monospace;font-size:0.9rem;font-weight:600;">-</div>
+                    </div>
+                    <div style="text-align:center;background:rgba(0,204,255,0.1);border-radius:8px;padding:0.8rem;">
+                      <div style="color:#00ccff;font-weight:bold;font-size:0.8rem;">POL</div>
+                      <div id="transfer-poly-balance" style="color:#ffffff;font-family:monospace;font-size:0.9rem;font-weight:600;">-</div>
+                    </div>
+                    <div style="text-align:center;background:rgba(167,134,255,0.1);border-radius:8px;padding:0.8rem;">
+                      <div style="color:#a786ff;font-weight:bold;font-size:0.8rem;">IAM</div>
+                      <div id="transfer-IAM-balance" style="color:#ffffff;font-family:monospace;font-size:0.9rem;font-weight:600;">-</div>
+                      <div id="transfer-IAM-usd" style="color:#a786ff;font-size:0.7rem;margin-top:0.2rem;">-</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Transfer Button -->
+                <button type="submit" class="transfer-btn" style="width:100%;background:linear-gradient(135deg,#00ff88,#00cc6a);color:#0a0f1c;border:none;border-radius:12px;padding:0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:1rem;margin-top:0.3rem;">📤 Execute Transfer</button>
+                
+              </form>
             </div>
+            
+            <!-- Transfer Information -->
+            <div style="background:#1a1f2e;color:#ffffff;padding:1rem;border-radius:20px;margin-bottom:0.5rem;max-width:400px;margin-left:auto;margin-right:auto;border:2px solid #a786ff;">
+              <h4 style="color:#00ff88;margin:0 0 0.5rem 0;font-size:0.95rem;text-align:center;">📋 Transfer Information</h4>
+              <div style="color:#b8c1ec;margin-bottom:0.5rem;font-size:0.85rem;text-align:center;">🔒 Transfers are irreversible - double-check before sending</div>
+              <div style="color:#a786ff;margin-bottom:0.5rem;font-size:0.85rem;text-align:center;">⚡ Network fee: ~0.001-0.01 MATIC</div>
+              <div style="color:#ffc107;font-size:0.8rem;text-align:center;">⏱️ Confirmation: 2-5 seconds</div>
+            </div>
+
+            <!-- Status Message -->
+            <div id="transferStatus" class="transfer-status" style="max-width:80%;margin-bottom:0.5rem;"></div>
+
           </div>
-          
-          <!-- Full Width Submit Button -->
-          <div style="grid-column:1/-1;margin-top:1rem;">
-            <button type="submit" class="transfer-btn" style="width:100%;">Transfer</button>
-          <div id="transferStatus" class="transfer-status"></div>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
 
   
 
@@ -2010,32 +1952,41 @@
           const selectedToken = transferTokenSelect.value;
           let maxAmount = '0';
           
+          console.log('🔍 Max button clicked for token:', selectedToken);
+          
           // Get balance based on selected token
-          if (selectedToken === 'dai') {
+          if (selectedToken === 'DAI') {
             const daiBalanceEl = document.getElementById('transfer-dai-balance');
-            if (daiBalanceEl) {
-              const raw = parseFloat(daiBalanceEl.dataset.value || daiBalanceEl.textContent);
+            console.log('💰 DAI balance element:', daiBalanceEl);
+            if (daiBalanceEl && daiBalanceEl.dataset.value) {
+              const raw = parseFloat(daiBalanceEl.dataset.value);
+              console.log('💰 DAI raw balance:', raw);
               if (!isNaN(raw) && raw > 0) maxAmount = raw.toString();
             }
-          } else if (selectedToken === 'pol') {
+          } else if (selectedToken === 'POL') {
             const polBalanceEl = document.getElementById('transfer-poly-balance');
-            if (polBalanceEl) {
-              const raw = parseFloat(polBalanceEl.dataset.value || polBalanceEl.textContent);
+            console.log('💰 POL balance element:', polBalanceEl);
+            if (polBalanceEl && polBalanceEl.dataset.value) {
+              const raw = parseFloat(polBalanceEl.dataset.value);
+              console.log('💰 POL raw balance:', raw);
               if (!isNaN(raw)) {
                 maxAmount = Math.max(0, raw - 0.01).toString();
               }
             }
           } else if (selectedToken === 'IAM') {
             const IAMBalanceEl = document.getElementById('transfer-IAM-balance');
-            if (IAMBalanceEl) {
-              const raw = parseFloat(IAMBalanceEl.dataset.value || IAMBalanceEl.textContent);
+            console.log('💰 IAM balance element:', IAMBalanceEl);
+            if (IAMBalanceEl && IAMBalanceEl.dataset.value) {
+              const raw = parseFloat(IAMBalanceEl.dataset.value);
+              console.log('💰 IAM raw balance:', raw);
               if (!isNaN(raw) && raw > 0) maxAmount = raw.toString();
             }
           }
           
+          console.log('💰 Final max amount:', maxAmount);
+          
           // Set value in input field
           if (parseFloat(maxAmount) > 0) {
-            const decimals = (transferTokenSelect.value === 'IAM') ? 6 : 18;
             // For DAI and POL, it's better to use 2 or 4 digits; for IAM up to 6 digits
             const floorToDecimals = (val, d) => { const m = Math.pow(10, d); return Math.floor(Number(val) * m) / m; };
             const d = (transferTokenSelect.value === 'IAM') ? 6 : 4;
@@ -2043,19 +1994,19 @@
             transferAmountInput.value = floored.toFixed(d);
             // Temporarily change button text
             const originalText = maxAmountBtn.textContent;
-                          maxAmountBtn.textContent = '✓ Set';
-            maxAmountBtn.style.background = 'linear-gradient(90deg,#00ff88,#00cc66)';
+            maxAmountBtn.textContent = '✓ Set';
+            maxAmountBtn.style.background = 'linear-gradient(135deg,#00ff88,#00cc6a)';
             setTimeout(() => {
               maxAmountBtn.textContent = originalText;
-              maxAmountBtn.style.background = 'linear-gradient(90deg,#ff6b6b,#ee5a52)';
+              maxAmountBtn.style.background = 'linear-gradient(135deg,#a786ff,#00ff88)';
             }, 1500);
           } else {
             // Show error message
             maxAmountBtn.textContent = '❌ Insufficient balance';
-            maxAmountBtn.style.background = 'linear-gradient(90deg,#666,#555)';
+            maxAmountBtn.style.background = 'linear-gradient(135deg,#ff6b6b,#ee5a52)';
             setTimeout(() => {
-              maxAmountBtn.textContent = 'Maximum';
-              maxAmountBtn.style.background = 'linear-gradient(90deg,#ff6b6b,#ee5a52)';
+              maxAmountBtn.textContent = 'Max';
+              maxAmountBtn.style.background = 'linear-gradient(135deg,#a786ff,#00ff88)';
             }, 2000);
           }
         });
