@@ -1422,40 +1422,7 @@ window.copyReferralLink = function(address) {
 };
 
 
-document.addEventListener('click', function(e) {
-  if (e.target.classList.contains('empty-node')) {
-    (async function() {
-      const { contract, address, provider } = await window.connectWallet();
-      const userData = await contract.users(address);
-      let referrerAddress;
-      let defaultNewWallet = '';
-      if (userData.activated) {
-        // Case 1: User is registered and wants to get subordinates
-        const childIndex = e.target.getAttribute('data-index');
-        const parentIndex = Math.floor(Number(childIndex) / 2);
-        referrerAddress = await contract.indexToAddress(BigInt(parentIndex));
-        defaultNewWallet = '';
-      } else {
-        // Case 2 and 3: User is not registered
-        referrerAddress = getReferrerFromURL() || getReferrerFromStorage();
-        if (!referrerAddress) {
-          if (typeof window.getDeployerAddress === 'function') {
-            referrerAddress = await window.getDeployerAddress(contract);
-          } else {
-            try {
-          referrerAddress = await contract.deployer();
-            } catch (deployerError) {
-              console.warn('Error getting deployer:', deployerError);
-              referrerAddress = address || '0x0000000000000000000000000000000000000000';
-            }
-          }
-        }
-        defaultNewWallet = address;
-      }
-      showRegisterForm(referrerAddress, defaultNewWallet, address, provider, contract);
-    })();
-  }
-});
+// Empty node click handler removed - empty slots are now handled by + buttons on parent nodes
 
 // Registration form with new wallet address input and display of MATIC and token balance - optimized for mobile
 window.showRegisterForm = async function(referrerAddress, defaultNewWallet, connectedAddress, provider, contract) {

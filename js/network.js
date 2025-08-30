@@ -8,7 +8,7 @@ let lastRenderedTime = 0;
 let _networkPopupOpening = false;
 
 // Performance optimization variables
-let renderDepthLimit = 5; // Limit rendering depth to prevent hanging
+let renderDepthLimit = 10; // Limit rendering depth to prevent hanging (increased from 5 to 10)
 let maxConcurrentRenders = 3; // Limit concurrent async operations
 let activeRenders = 0;
 let renderQueue = [];
@@ -599,8 +599,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         console.log('✅ Address obtained:', address);
         
         if (!address || address === '0x0000000000000000000000000000000000000000') {
-            console.log('⚠️ Empty address, rendering empty node');
-            renderEmptyNodeVertical(index, container, level);
+            console.log('⚠️ Empty address, skipping node');
             return;
         }
         
@@ -622,8 +621,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         console.log('✅ User data obtained:', user);
         
         if (!user) {
-            console.log('⚠️ No user data, rendering empty node');
-            renderEmptyNodeVertical(index, container, level);
+            console.log('⚠️ No user data, skipping node');
             return;
         }
         // Get real directs with getUserTree
@@ -650,7 +648,13 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                         setTimeout(() => reject(new Error('Left user fetch timeout')), 8000)
                     );
                     leftUser = await Promise.race([leftUserPromise, leftTimeoutPromise]);
-                if (leftUser && leftUser.index && BigInt(leftUser.index) > 0n) { hasDirects = true; leftActive = true; }
+                    if (leftUser && leftUser.index && BigInt(leftUser.index) > 0n) { 
+                        hasDirects = true; 
+                        leftActive = true; 
+                        console.log(`✅ Left child active for node ${index}, leftUser.index: ${leftUser.index}`);
+                    } else {
+                        console.log(`❌ Left child not active for node ${index}, leftUser:`, leftUser);
+                    }
                 } catch(e) {
                     console.warn('Error getting left user, skipping:', e);
                     leftUser = { index:0n };
@@ -663,7 +667,13 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                         setTimeout(() => reject(new Error('Right user fetch timeout')), 8000)
                     );
                     rightUser = await Promise.race([rightUserPromise, rightTimeoutPromise]);
-                if (rightUser && rightUser.index && BigInt(rightUser.index) > 0n) { hasDirects = true; rightActive = true; }
+                    if (rightUser && rightUser.index && BigInt(rightUser.index) > 0n) { 
+                        hasDirects = true; 
+                        rightActive = true; 
+                        console.log(`✅ Right child active for node ${index}, rightUser.index: ${rightUser.index}`);
+                    } else {
+                        console.log(`❌ Right child not active for node ${index}, rightUser:`, rightUser);
+                    }
                 } catch(e) {
                     console.warn('Error getting right user, skipping:', e);
                     rightUser = { index:0n };
@@ -714,10 +724,10 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         
 
         
-        // Expand/collapse button if has directs or empty position - LAZY LOADING FOR ALL NODES
+        // Expand/collapse button if has directs - LAZY LOADING FOR ALL NODES
         let expandBtn = null;
         let childrenDiv = null;
-        if (hasDirects || !leftActive || !rightActive) {
+        if (hasDirects) {
             expandBtn = document.createElement('button');
             expandBtn.textContent = '▸';
             expandBtn.style.transform = autoExpand ? 'rotate(90deg)' : 'rotate(0deg)';
@@ -740,6 +750,76 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
             expandBtn.style.transform = 'rotate(0deg)';
             expandBtn.setAttribute('aria-label', 'Expand/Collapse');
             nodeDiv.prepend(expandBtn);
+        }
+        
+        // Add + button for users with empty child slots
+        console.log(`🔍 Node ${index}: leftActive=${leftActive}, rightActive=${rightActive}, hasDirects=${hasDirects}`);
+        if (!leftActive || !rightActive) {
+            console.log(`✅ Adding + button for node ${index} - leftActive: ${leftActive}, rightActive: ${rightActive}`);
+            const addBtn = document.createElement('button');
+            addBtn.textContent = '+';
+            addBtn.style.padding = '0';
+            addBtn.style.background = 'linear-gradient(135deg, #00ff88, #00cc66)';
+            addBtn.style.border = 'none';
+            addBtn.style.outline = 'none';
+            addBtn.style.color = '#232946';
+            addBtn.style.fontSize = '1.2em';
+            addBtn.style.lineHeight = '1';
+            addBtn.style.cursor = 'pointer';
+            addBtn.style.verticalAlign = 'middle';
+            addBtn.style.fontWeight = 'bold';
+            addBtn.style.marginInlineStart = '0.6em';
+            addBtn.style.padding = '4px 8px';
+            addBtn.style.borderRadius = '50%';
+            addBtn.style.transition = 'all 0.2s ease-in-out';
+            addBtn.style.width = '24px';
+            addBtn.style.height = '24px';
+            addBtn.style.display = 'flex';
+            addBtn.style.alignItems = 'center';
+            addBtn.style.justifyContent = 'center';
+            addBtn.setAttribute('aria-label', 'Add new user');
+            addBtn.title = 'افزودن عضو جدید';
+            
+            addBtn.onmouseover = function() {
+                this.style.transform = 'scale(1.1)';
+                this.style.boxShadow = '0 4px 12px rgba(0, 255, 136, 0.4)';
+            };
+            addBtn.onmouseout = function() {
+                this.style.transform = 'scale(1)';
+                this.style.boxShadow = 'none';
+            };
+            
+            addBtn.onclick = async function(e) {
+                e.stopPropagation();
+                console.log(`🔘 + button clicked for node ${index}`);
+                console.log(`🔍 Current state: leftActive=${leftActive}, rightActive=${rightActive}`);
+                
+                // Determine which position is empty and show registration modal
+                let targetEmptyIndex, targetPosition;
+                if (!leftActive) {
+                    targetEmptyIndex = index * 2n;
+                    targetPosition = 'left';
+                    console.log(`🎯 Left slot is empty, using index: ${targetEmptyIndex}`);
+                } else if (!rightActive) {
+                    targetEmptyIndex = index * 2n + 1n;
+                    targetPosition = 'right';
+                    console.log(`🎯 Right slot is empty, using index: ${targetEmptyIndex}`);
+                } else {
+                    // This shouldn't happen since the button only shows when there's an empty slot
+                    console.warn('Both slots appear to be full, but + button was clicked');
+                    return;
+                }
+                console.log(`🎯 Adding user to ${targetPosition} position, index: ${targetEmptyIndex}`);
+                try {
+                    await showRegistrationModal(index, targetEmptyIndex, targetPosition);
+                } catch (error) {
+                    console.error('Error calling showRegistrationModal:', error);
+                }
+            };
+            
+            nodeDiv.appendChild(addBtn);
+        } else {
+            console.log(`❌ No + button for node ${index} - both slots are full`);
         }
         // Add click event listener to the expand button directly
         if (expandBtn) {
@@ -785,6 +865,11 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                     childrenDiv.className = 'children-div';
                     childrenDiv.style.transition = 'all 0.3s';
                     childrenDiv.style.display = 'none'; // Start hidden
+                    childrenDiv.style.marginTop = '0.5em'; // Add spacing from parent
+                    childrenDiv.style.marginRight = '0px'; // Ensure no right margin on container
+                    childrenDiv.style.display = 'flex';
+                    childrenDiv.style.flexDirection = 'column';
+                    childrenDiv.style.alignItems = 'flex-start'; // Align children to the start
                     container.appendChild(childrenDiv);
                     
                     // Render children nodes
@@ -796,10 +881,10 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                                 let leftRow = document.createElement('div');
                                 leftRow.className = 'child-node-row left-row';
                                 leftRow.style.display = 'block';
+                                leftRow.style.marginBottom = '0.3em'; // Consistent spacing between children
+                                leftRow.style.width = '100%'; // Ensure full width
                                 childrenDiv.appendChild(leftRow);
                                 await renderVerticalNodeLazy(BigInt(leftUser.index), leftRow, level + 1, false);
-                                // Indentation of half its width (after layout)
-                                setDynamicIndent(leftRow);
                             console.log('✅ Left child rendered');
                             }
                             // Right child
@@ -808,126 +893,18 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                                 let rightRow = document.createElement('div');
                                 rightRow.className = 'child-node-row right-row';
                                 rightRow.style.display = 'block';
+                                rightRow.style.marginBottom = '0.3em'; // Consistent spacing between children
+                                rightRow.style.width = '100%'; // Ensure full width
                                 childrenDiv.appendChild(rightRow);
                                 await renderVerticalNodeLazy(BigInt(rightUser.index), rightRow, level + 1, false);
-                                // Aligned with left (if exists)
-                                const leftRowRef = childrenDiv.querySelector('.left-row');
-                                if (leftRowRef) {
-                                    rightRow.style.marginRight = leftRowRef.style.marginRight || '0px';
-                                } else {
-                                    setDynamicIndent(rightRow);
-                                }
                             console.log('✅ Right child rendered');
-                        }
+                            }
+                            
+                            // Align all cross nodes from the front after all children are rendered
+                            alignCrossNodes(childrenDiv, level + 1);
                         
-                        // Create single empty slot if at least one child position is empty
-                        if (!leftActive || !rightActive) {
-                            console.log('🔄 Creating empty slot...');
-                            // Calculate the IAM ID for the empty position
-                            let emptySlotIAMId;
-                            let targetEmptyIndex, targetPosition;
-                            if (!leftActive) {
-                                emptySlotIAMId = window.generateIAMId ? window.generateIAMId(index * 2n) : (index * 2n);
-                                targetEmptyIndex = index * 2n;
-                                targetPosition = 'left';
-                            } else {
-                                emptySlotIAMId = window.generateIAMId ? window.generateIAMId(index * 2n + 1n) : (index * 2n + 1n);
-                                targetEmptyIndex = index * 2n + 1n;
-                                targetPosition = 'right';
-                            }
-                            
-                            // Create wrapper div for consistent positioning with registered nodes
-                            let emptySlotWrapper = document.createElement('div');
-                            emptySlotWrapper.className = 'child-node-row empty-slot-wrapper';
-                            emptySlotWrapper.style.display = 'block';
-                            emptySlotWrapper.style.marginBottom = '0.9em';
-                            emptySlotWrapper.style.maxWidth = 'none';
-                            emptySlotWrapper.style.display = 'inline-flex';
-                            
-                            // Create the empty slot node with consistent styling to registered nodes
-                            let emptySlotRow = document.createElement('div');
-                            emptySlotRow.className = 'empty-slot';
-                            emptySlotRow.style.display = 'inline-flex';
-                            emptySlotRow.style.alignItems = 'center';
-                            emptySlotRow.style.justifyContent = 'flex-start';
-                            emptySlotRow.style.flexWrap = 'nowrap';
-                            emptySlotRow.style.marginRight = '0px';
-                            emptySlotRow.style.marginBottom = '0.9em';
-                            emptySlotRow.style.position = 'relative';
-                            emptySlotRow.style.overflow = 'visible';
-                            emptySlotRow.style.background = getNodeColorByLevel(level + 1, false);
-                            emptySlotRow.style.borderRadius = '12px';
-                            emptySlotRow.style.padding = '0.6em 1.2em';
-                            emptySlotRow.style.width = 'auto';
-                            emptySlotRow.style.minWidth = 'unset';
-                            emptySlotRow.style.maxWidth = 'none';
-                            emptySlotRow.style.height = 'auto';
-                            emptySlotRow.style.minHeight = 'unset';
-                            emptySlotRow.style.maxHeight = 'none';
-                            emptySlotRow.style.color = '#00ff88';
-                            emptySlotRow.style.fontFamily = 'monospace';
-                            emptySlotRow.style.fontSize = '1.08em';
-                            emptySlotRow.style.boxShadow = '0 4px 16px rgba(0,255,136,0.10)';
-                            emptySlotRow.style.cursor = 'pointer';
-                            emptySlotRow.style.transition = 'background 0.2s, box-shadow 0.2s';
-                            emptySlotRow.style.whiteSpace = 'nowrap';
-                            emptySlotRow.style.border = '2px solid rgba(0, 255, 136, 0.3)';
-                            emptySlotRow.title = 'Click to register new account';
-                            emptySlotRow.innerHTML = `
-                                <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 1.1em; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-weight: bold;">${emptySlotIAMId}</span>
-                            `;
-                            emptySlotRow.onmouseover = function() {
-                                this.style.background = '#232946';
-                                this.style.boxShadow = '0 6px 24px #00ff8840';
-                                this.style.borderColor = 'rgba(0, 255, 136, 0.6)';
-                                this.style.transform = 'scale(1.02)';
-                            };
-                            emptySlotRow.onmouseout = function() {
-                                this.style.background = getNodeColorByLevel(level + 1, false);
-                                this.style.boxShadow = '0 4px 16px rgba(0,255,136,0.10)';
-                                this.style.borderColor = 'rgba(0, 255, 136, 0.3)';
-                                this.style.transform = 'scale(1)';
-                            };
-                            emptySlotRow.onclick = async function(e) {
-                                e.stopPropagation();
-                                await showRegistrationModal(index, targetEmptyIndex, targetPosition);
-                            };
-                            
-                            // Add empty slot to wrapper
-                            emptySlotWrapper.appendChild(emptySlotRow);
-                            
-                            // Position the empty slot appropriately based on existing siblings
-                            if (leftActive && rightActive) {
-                                // Both children exist, this shouldn't happen, but if it does, position after right child
-                                setDynamicIndent(emptySlotWrapper);
-                            } else if (leftActive && !rightActive) {
-                                // Only left child exists, position empty slot to the right (attached to left sibling)
-                                const leftRowRef = childrenDiv.querySelector('.left-row');
-                                if (leftRowRef) {
-                                    // Position empty slot next to left child with same indentation
-                                    emptySlotWrapper.style.marginRight = leftRowRef.style.marginRight || '0px';
-                                    emptySlotWrapper.style.marginLeft = '20px'; // Small gap between siblings
-                                } else {
-                                    setDynamicIndent(emptySlotWrapper);
-                                }
-                            } else if (!leftActive && rightActive) {
-                                // Only right child exists, position empty slot to the left (attached to right sibling)
-                                const rightRowRef = childrenDiv.querySelector('.right-row');
-                                if (rightRowRef) {
-                                    // Position empty slot next to right child with same indentation
-                                    emptySlotWrapper.style.marginRight = rightRowRef.style.marginRight || '0px';
-                                    emptySlotWrapper.style.marginLeft = '-20px'; // Overlap slightly with right child
-                                } else {
-                                    setDynamicIndent(emptySlotWrapper);
-                                }
-                            } else {
-                                // No children exist, position empty slot attached to parent
-                                setDynamicIndent(emptySlotWrapper);
-                            }
-                            
-                            childrenDiv.appendChild(emptySlotWrapper);
-                            console.log('✅ Empty slot created with appropriate positioning');
-                        }
+                        // Empty slots are now handled by + buttons on parent nodes
+                        // No need to create empty slot nodes anymore
                         
                         console.log('✅ All children rendered successfully');
                             
@@ -1100,13 +1077,66 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
             }
         }
 
+        // Helper tool: Align cross nodes from the front
+        function alignCrossNodes(childrenDiv, level) {
+            if (!childrenDiv) return;
+            
+            const apply = () => {
+                const childRows = childrenDiv.querySelectorAll('.child-node-row');
+                if (childRows.length === 0) return;
+                
+                // Find the maximum indentation needed for proper alignment
+                let maxIndent = 0;
+                let maxNodeWidth = 0;
+                
+                childRows.forEach(row => {
+                    const childEl = row.firstElementChild;
+                    if (childEl && typeof childEl.getBoundingClientRect === 'function') {
+                        const rect = childEl.getBoundingClientRect();
+                        const w = rect.width || 160;
+                        maxNodeWidth = Math.max(maxNodeWidth, w);
+                        
+                        // Calculate indentation based on node width
+                        const currentIndent = Math.round(w / 2);
+                        maxIndent = Math.max(maxIndent, currentIndent);
+                    }
+                });
+                
+                // Apply consistent indentation to all child rows
+                childRows.forEach(row => {
+                    row.style.marginRight = maxIndent + 'px';
+                    row.style.position = 'relative';
+                    
+                    // Ensure the child node is properly positioned
+                    const childEl = row.firstElementChild;
+                    if (childEl) {
+                        childEl.style.position = 'relative';
+                        childEl.style.left = '0px';
+                    }
+                });
+                
+                console.log(`🎯 Aligned ${childRows.length} cross nodes at level ${level} with indent: ${maxIndent}px, max node width: ${maxNodeWidth}px`);
+            };
+            
+            // Wait until after layout with multiple frames for better accuracy
+            if (typeof requestAnimationFrame === 'function') {
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(apply);
+                    });
+                });
+            } else {
+                setTimeout(apply, 50);
+            }
+        }
+
         // Children div will be created lazily when expand button is clicked
         // No pre-rendering of children - they will be created on-demand
         // Empty slots will be created in the children area instead of N button on parent
         console.log(`🔍 Node ${index}: leftActive=${leftActive}, rightActive=${rightActive}, has empty slots=${!leftActive || !rightActive}`);
     } catch (error) {
         console.error('Error in renderVerticalNodeLazy:', error);
-        renderEmptyNodeVertical(index, container, level);
+        // Skip rendering this node on error
     } finally {
         activeRenders--;
         console.log(`✅ renderVerticalNodeLazy completed for index: ${index}, level: ${level}, active renders: ${activeRenders}`);
@@ -1157,14 +1187,14 @@ function renderSimplifiedNode(index, container, level) {
     simplifiedNode.style.fontFamily = 'monospace';
     simplifiedNode.style.fontSize = '0.9em';
     simplifiedNode.style.boxShadow = '0 2px 8px rgba(0,255,136,0.10)';
-    simplifiedNode.style.cursor = 'pointer';
+
     simplifiedNode.style.opacity = '0.7';
     simplifiedNode.innerHTML = `
         <span style="white-space: nowrap; font-size: 0.9em; display: flex; align-items: center; justify-content: center; font-weight: bold;">
             ${window.generateIAMId ? window.generateIAMId(index) : index}
         </span>
     `;
-    simplifiedNode.title = 'Click to view user information (simplified view)';
+
     
     simplifiedNode.onmouseover = function() { 
         this.style.background = '#232946'; 
@@ -1177,97 +1207,11 @@ function renderSimplifiedNode(index, container, level) {
         this.style.opacity = '0.7';
     };
     
-    simplifiedNode.onclick = function() {
-        // Show a simple popup with basic info
-        const popup = document.createElement('div');
-        popup.style.cssText = `
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: #1a1b26; border: 2px solid #00ff88; border-radius: 12px;
-            padding: 20px; z-index: 10000; color: #00ff88; font-family: monospace;
-            max-width: 300px; text-align: center; box-shadow: 0 8px 32px rgba(0,255,136,0.3);
-        `;
-        popup.innerHTML = `
-            <h3 style="margin: 0 0 15px 0; color: #00ff88;">Simplified View</h3>
-            <p style="margin: 5px 0;">IAM ID: ${window.generateIAMId ? window.generateIAMId(index) : index}</p>
-            <p style="margin: 5px 0;">Level: ${level}</p>
-            <p style="margin: 5px 0; font-size: 0.9em; opacity: 0.8;">Deep level - full details not loaded for performance</p>
-            <button onclick="this.parentElement.remove()" style="
-                margin-top: 15px; padding: 8px 16px; background: #00ff88; color: #1a1b26;
-                border: none; border-radius: 6px; cursor: pointer; font-weight: bold;
-            ">Close</button>
-        `;
-        document.body.appendChild(popup);
-        
-        // Auto-remove after 5 seconds
-        setTimeout(() => {
-            if (popup.parentElement) popup.remove();
-        }, 5000);
-    };
+
     
     container.appendChild(simplifiedNode);
 }
-// Function to render empty node (question mark) vertically
-function renderEmptyNodeVertical(index, container, level) {
-    // Return to simple rectangular empty node
-    const emptyNode = document.createElement('div');
-    emptyNode.className = 'empty-node';
-    emptyNode.setAttribute('data-index', index);
-    emptyNode.style.display = 'inline-flex';
-    emptyNode.style.alignItems = 'center';
-    emptyNode.style.justifyContent = 'center';
-    // Reduce horizontal spacing for deeper levels
-    const marginMultiplier = level <= 3 ? 3 : (level <= 5 ? 2 : 1);
-    emptyNode.style.marginRight = (level * marginMultiplier) + 'em';
-    emptyNode.style.marginBottom = '1.2em';
-    emptyNode.style.background = getNodeColorByLevel(level, false);
-    emptyNode.style.borderRadius = '8px';
-    emptyNode.style.padding = '0.5em 1.0em';
-    emptyNode.style.width = 'auto';
-    emptyNode.style.minWidth = 'unset';
-    emptyNode.style.maxWidth = 'none';
-    emptyNode.style.height = 'auto';
-    emptyNode.style.minHeight = 'unset';
-    emptyNode.style.maxHeight = 'none';
-    emptyNode.style.color = '#888';
-    emptyNode.style.fontFamily = 'monospace';
-    emptyNode.style.fontSize = '1em';
-    emptyNode.style.opacity = '0.7';
-    emptyNode.style.whiteSpace = 'nowrap';
-    emptyNode.style.overflow = 'hidden';
-    emptyNode.style.textOverflow = 'ellipsis';
-    emptyNode.innerHTML = `
-        <span style="white-space: nowrap; font-size: 1em; display: flex; align-items: center; justify-content: center; font-weight: bold;">${index}</span>
-    `;
-    emptyNode.title = 'Register new subordinate';
-    emptyNode.onmouseover = function() { this.style.opacity = '1'; };
-    emptyNode.onmouseout = function() { this.style.opacity = '0.7'; };
-    emptyNode.onclick = async function() {
-        // Same previous behavior for subordinate registration
-        // To avoid repetition, you can call renderEmptyNode function
-        renderEmptyNode(index, container);
-    };
-    container.appendChild(emptyNode);
-    
-    // Save empty node to database
-    if (window.saveNetworkNode) {
-        try {
-            const nodeData = {
-                index: index.toString(),
-                address: null,
-                IAMId: null,
-                level: level,
-                hasDirects: false,
-                leftActive: false,
-                rightActive: false,
-                isEmpty: true,
-                userData: null
-            };
-            window.saveNetworkNode(nodeData);
-        } catch (error) {
-            console.warn('⚠️ Error saving empty node to database:', error);
-        }
-    }
-}
+// Function renderEmptyNodeVertical removed - empty slots are now handled by + buttons on parent nodes
 // Replace main tree render with vertical model
 window.renderSimpleBinaryTree = async function() {
     console.log('🔄 Starting renderSimpleBinaryTree...');
@@ -2512,6 +2456,7 @@ function startTypewriter(popupEl, IAMId, walletAddress, isActive, infoList, addr
 // Function to show registration modal for empty slots
 async function showRegistrationModal(parentIndex, emptyIndex, position) {
     console.log(`🎯 Registration modal triggered for parent ${parentIndex}, empty index ${emptyIndex}, position ${position}`);
+    console.log(`🔍 Function called with arguments:`, { parentIndex, emptyIndex, position });
     
     // If previous modal is open, remove it
     let oldModal = document.getElementById('quick-register-modal');
