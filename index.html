@@ -430,8 +430,8 @@
     
     <div id="swap-main-content" style="display:block;">
     <div class="expand-header" style="padding:0 1.5rem;">
-      <h2 style="margin:0 0 0.5rem 0;">💬 Exchange Messenger</h2>
-      <p style="margin:0 0 0.5rem 0;">Exchange between DAI and IAM tokens with messenger interface</p>
+      <h2 style="margin:0 0 0.5rem 0;font-size:1.4rem;">💬 Exchange Messenger</h2>
+      <p style="margin:0 0 0.5rem 0;font-size:0.85rem;">Exchange between DAI and IAM tokens with messenger interface</p>
     </div>
     <div class="expand-content" style="padding:0;">
       <div class="swap-container" style="max-width:800px;margin:0 auto;padding:1.5rem;">
@@ -441,14 +441,14 @@
           
           <!-- Messenger Header -->
           <div class="messenger-header" style="background:linear-gradient(135deg,#1a1f2e,#2a3441);padding:1.5rem;border-bottom:1px solid #2a3441;display:flex;align-items:center;gap:1rem;">
-            <div class="messenger-avatar" style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#00ff88,#a786ff);display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:white;">💱</div>
+            <div class="messenger-avatar" style="width:45px;height:45px;border-radius:50%;background:linear-gradient(135deg,#00ff88,#a786ff);display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:white;">💱</div>
             <div class="messenger-info">
-              <h3 style="color:#00ff88;margin:0;font-size:1.2rem;">Exchange Assistant</h3>
-              <p style="color:#b8c1ec;margin:0.2rem 0 0 0;font-size:0.9rem;">Ready to help you exchange tokens</p>
+              <h3 style="color:#00ff88;margin:0;font-size:1rem;">Exchange Assistant</h3>
+              <p style="color:#b8c1ec;margin:0.2rem 0 0 0;font-size:0.8rem;">Ready to help you exchange tokens</p>
             </div>
             <div class="messenger-status" style="margin-right:auto;display:flex;align-items:center;gap:0.5rem;">
               <div class="status-dot" style="width:10px;height:10px;border-radius:50%;background:#00ff88;animation:pulse 2s infinite;"></div>
-              <span style="color:#00ff88;font-size:0.8rem;">Online</span>
+              <span style="color:#00ff88;font-size:0.7rem;">Online</span>
             </div>
           </div>
           
@@ -459,15 +459,15 @@
             <div class="message received" style="max-width:80%;margin-bottom:1rem;animation:messageSlide 0.5s ease-out;">
               <div class="message-bubble" style="background:#1a1f2e;color:#ffffff;padding:1rem 1.2rem;border-radius:20px;border-bottom-left-radius:5px;">
                 <div class="message-content">
-                  <h4 style="color:#00ff88;margin:0 0 0.5rem 0;">🔄 Welcome to Exchange Assistant!</h4>
-                  <p style="margin:0 0 0.5rem 0;line-height:1.5;">I can help you exchange between DAI and IAM tokens. Here's what you can do:</p>
-                  <ul style="margin:0.5rem 0;padding-right:1rem;color:#b8c1ec;">
+                  <h4 style="color:#00ff88;margin:0 0 0.5rem 0;font-size:0.95rem;">🔄 Welcome to Exchange Assistant!</h4>
+                  <p style="margin:0 0 0.5rem 0;line-height:1.5;font-size:0.85rem;">I can help you exchange between DAI and IAM tokens. Here's what you can do:</p>
+                  <ul style="margin:0.5rem 0;padding-right:1rem;color:#b8c1ec;font-size:0.8rem;">
                     <li>✅ <strong style="color:#00ff88;">DAI → IAM:</strong> Buy IAM tokens with DAI</li>
                     <li>✅ <strong style="color:#00ff88;">IAM → DAI:</strong> Sell IAM tokens for DAI</li>
                     <li>✅ Dynamic exchange rates based on supply/demand</li>
                     <li>✅ Instant processing with low fees</li>
                   </ul>
-                  <p style="margin:0.5rem 0 0 0;color:#a786ff;">What would you like to exchange today?</p>
+                  <p style="margin:0.5rem 0 0 0;color:#a786ff;font-size:0.8rem;">What would you like to exchange today?</p>
                 </div>
               </div>
             </div>
@@ -476,14 +476,14 @@
             <div class="message received" style="max-width:80%;margin-bottom:1rem;animation:messageSlide 0.5s ease-out 0.2s both;">
               <div class="message-bubble" style="background:#1a1f2e;color:#ffffff;padding:1rem 1.2rem;border-radius:20px;border-bottom-left-radius:5px;">
                 <div class="message-content">
-                  <h4 style="color:#00ff88;margin:0 0 1rem 0;">📝 Exchange Form</h4>
+                  <h4 style="color:#00ff88;margin:0 0 1rem 0;font-size:0.95rem;">📝 Exchange Form</h4>
                   
                   <form id="swapForm" class="messenger-form" style="display:flex;flex-direction:column;gap:1rem;">
                     
                     <!-- Exchange Type -->
                     <div class="form-group" style="margin-bottom:1rem;">
-                      <label for="swapDirection" style="display:block;color:#00ff88;margin-bottom:0.5rem;font-weight:600;">Exchange Type:</label>
-                      <select id="swapDirection" required style="width:100%;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.95rem;">
+                      <label for="swapDirection" style="display:block;color:#00ff88;margin-bottom:0.5rem;font-weight:600;font-size:0.85rem;">Exchange Type:</label>
+                      <select id="swapDirection" required style="width:100%;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
                         <option value="dai-to-IAM">🟢 DAI → IAM (Buy IAM)</option>
                         <option value="IAM-to-dai">🔴 IAM → DAI (Sell IAM)</option>
                       </select>
@@ -491,41 +491,41 @@
                     
                     <!-- Amount Input -->
                     <div class="form-group" style="margin-bottom:1rem;">
-                      <label for="swapAmount" style="display:block;color:#00ff88;margin-bottom:0.5rem;font-weight:600;">Amount:</label>
+                      <label for="swapAmount" style="display:block;color:#00ff88;margin-bottom:0.5rem;font-weight:600;font-size:0.85rem;">Amount:</label>
                       <div class="amount-input-group" style="display:flex;gap:0.5rem;align-items:center;">
-                        <input type="number" id="swapAmount" placeholder="Enter amount" min="0" step="any" required style="flex:1;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.95rem;">
-                        <button type="button" id="maxBtn" class="max-btn" style="background:linear-gradient(135deg,#a786ff,#00ff88);color:#0a0f1c;border:none;padding:0.8rem 1rem;border-radius:12px;font-weight:600;cursor:pointer;transition:all 0.3s ease;white-space:nowrap;">Max</button>
+                        <input type="number" id="swapAmount" placeholder="Enter amount" min="0" step="any" required style="flex:1;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
+                        <button type="button" id="maxBtn" class="max-btn" style="background:linear-gradient(135deg,#a786ff,#00ff88);color:#0a0f1c;border:none;padding:0.8rem 1rem;border-radius:12px;font-weight:600;cursor:pointer;transition:all 0.3s ease;white-space:nowrap;font-size:0.85rem;">Max</button>
                       </div>
                     </div>
                     
                     <!-- USD Converter -->
                     <div id="swap-usd-converter-row" style="display:none;margin-bottom:1rem;">
-                      <label for="swapUsdAmount" style="display:block;color:#00ff88;margin-bottom:0.5rem;font-weight:600;">💰 Dollar Equivalent:</label>
+                      <label for="swapUsdAmount" style="display:block;color:#00ff88;margin-bottom:0.5rem;font-weight:600;font-size:0.85rem;">💰 Dollar Equivalent:</label>
                       <div class="usd-converter-container" style="display:flex;gap:0.5rem;align-items:center;">
-                        <span style="color:#00ff88;font-weight:bold;font-size:1.1rem;">$</span>
-                        <input type="number" id="swapUsdAmount" placeholder="5.00" min="0" step="0.01" style="flex:1;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.95rem;">
-                        <button type="button" id="swapUsdToTokenBtn" style="background:linear-gradient(135deg,#00ff88,#a786ff);color:#0a0f1c;border:none;padding:0.8rem 1rem;border-radius:12px;font-weight:600;cursor:pointer;transition:all 0.3s ease;font-size:0.9rem;">🔄</button>
+                        <span style="color:#00ff88;font-weight:bold;font-size:1rem;"></span>
+                        <input type="number" id="swapUsdAmount" placeholder="5.00" min="0" step="0.01" style="flex:1;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
+                        <button type="button" id="swapUsdToTokenBtn" style="background:linear-gradient(135deg,#00ff88,#a786ff);color:#0a0f1c;border:none;padding:0.8rem 1rem;border-radius:12px;font-weight:600;cursor:pointer;transition:all 0.3s ease;font-size:0.8rem;">🔄</button>
                       </div>
                     </div>
                     
                     <!-- Balance Display -->
                     <div class="balance-display" style="background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:12px;padding:1rem;margin-bottom:1rem;">
-                      <h4 style="color:#00ff88;margin:0 0 0.8rem 0;font-size:1rem;">💰 Your Balances</h4>
+                      <h4 style="color:#00ff88;margin:0 0 0.8rem 0;font-size:0.9rem;">💰 Your Balances</h4>
                       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
                         <div style="text-align:center;background:rgba(0,255,136,0.1);border-radius:8px;padding:0.8rem;">
-                          <div style="color:#00ff88;font-weight:bold;font-size:0.9rem;">DAI</div>
-                          <div id="daiBalance" style="color:#ffffff;font-family:monospace;font-size:1rem;font-weight:600;">-</div>
+                          <div style="color:#00ff88;font-weight:bold;font-size:0.8rem;">DAI</div>
+                          <div id="daiBalance" style="color:#ffffff;font-family:monospace;font-size:0.9rem;font-weight:600;">-</div>
                         </div>
                         <div style="text-align:center;background:rgba(167,134,255,0.1);border-radius:8px;padding:0.8rem;">
-                          <div style="color:#a786ff;font-weight:bold;font-size:0.9rem;">IAM</div>
-                          <div id="IAMBalance" style="color:#ffffff;font-family:monospace;font-size:1rem;font-weight:600;">-</div>
-                          <div id="IAMUsdValue" style="color:#a786ff;font-size:0.8rem;margin-top:0.2rem;">-</div>
+                          <div style="color:#a786ff;font-weight:bold;font-size:0.8rem;">IAM</div>
+                          <div id="IAMBalance" style="color:#ffffff;font-family:monospace;font-size:0.9rem;font-weight:600;">-</div>
+                          <div id="IAMUsdValue" style="color:#a786ff;font-size:0.7rem;margin-top:0.2rem;">-</div>
                         </div>
                       </div>
                     </div>
                     
                     <!-- Exchange Button -->
-                    <button type="submit" class="exchange-btn" style="width:100%;background:linear-gradient(135deg,#00ff88,#00cc6a);color:#0a0f1c;border:none;border-radius:12px;padding:1rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:1.1rem;margin-top:0.5rem;">💱 Execute Exchange</button>
+                    <button type="submit" class="exchange-btn" style="width:100%;background:linear-gradient(135deg,#00ff88,#00cc6a);color:#0a0f1c;border:none;border-radius:12px;padding:1rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:1rem;margin-top:0.5rem;">💱 Execute Exchange</button>
                     
                   </form>
                   
@@ -537,10 +537,10 @@
             <div class="message received" style="max-width:80%;margin-bottom:1rem;animation:messageSlide 0.5s ease-out 0.4s both;">
               <div class="message-bubble" style="background:#1a1f2e;color:#ffffff;padding:1rem 1.2rem;border-radius:20px;border-bottom-left-radius:5px;">
                 <div class="message-content">
-                  <h4 style="color:#00ff88;margin:0 0 0.5rem 0;">📊 Exchange Information</h4>
-                  <div id="swapRate" class="swap-rate" style="color:#b8c1ec;margin-bottom:0.5rem;">Exchange rate: Loading...</div>
-                  <div id="swapPreview" class="swap-preview" style="color:#a786ff;margin-bottom:0.5rem;"></div>
-                  <div id="swapLimitInfo" class="swap-limit-info" style="color:#ffc107;font-size:0.9rem;"></div>
+                  <h4 style="color:#00ff88;margin:0 0 0.5rem 0;font-size:0.95rem;">📊 Exchange Information</h4>
+                  <div id="swapRate" class="swap-rate" style="color:#b8c1ec;margin-bottom:0.5rem;font-size:0.85rem;">Exchange rate: Loading...</div>
+                  <div id="swapPreview" class="swap-preview" style="color:#a786ff;margin-bottom:0.5rem;font-size:0.85rem;"></div>
+                  <div id="swapLimitInfo" class="swap-limit-info" style="color:#ffc107;font-size:0.8rem;"></div>
                 </div>
               </div>
             </div>
@@ -553,10 +553,10 @@
           <!-- Messenger Input Area -->
           <div class="messenger-input-area" style="background:#1a1f2e;border-top:1px solid #2a3441;padding:1rem 1.5rem;">
             <div class="input-container" style="display:flex;align-items:center;gap:0.5rem;background:#0a0f1c;border:2px solid #2a3441;border-radius:25px;padding:0.5rem;">
-              <div style="flex:1;color:#b8c1ec;font-size:0.9rem;padding:0 1rem;">
+                            <div style="flex:1;color:#b8c1ec;font-size:0.8rem;padding:0 1rem;">
                 💡 Tip: Check your balance and exchange rate before proceeding
               </div>
-                                            <button type="button" class="refresh-btn" onclick="if(window.swapManager) window.swapManager.refreshSwapData()" style="background:linear-gradient(135deg,#00ff88,#a786ff);color:#0a0f1c;border:none;padding:0.8rem;border-radius:50%;cursor:pointer;transition:all 0.3s ease;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;">🔄</button>
+              <button type="button" class="refresh-btn" onclick="if(window.swapManager) window.swapManager.refreshSwapData()" style="background:linear-gradient(135deg,#00ff88,#a786ff);color:#0a0f1c;border:none;padding:0.8rem;border-radius:50%;cursor:pointer;transition:all 0.3s ease;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:1rem;">🔄</button>
             </div>
           </div>
           
