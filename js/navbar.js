@@ -608,12 +608,6 @@
         <a href="index.html#main-dashboard" class="IAM-navbar-link">
           <span class="link-icon">🏠</span>Home
         </a>
-        <a href="index.html#main-swap" class="IAM-navbar-link" id="navbar-swap-link-mobile">
-          <span class="link-icon">🔄</span>Swap
-        </a>
-        <a href="index.html#main-transfer" class="IAM-navbar-link" id="navbar-transfer-link-mobile">
-          <span class="link-icon">💸</span>Transfer
-        </a>
         <a href="professional-tree.html" class="IAM-navbar-link" id="navbar-network-link-mobile">
           <span class="link-icon">🌐</span>Network
         </a>
@@ -707,11 +701,7 @@
         const t = document.getElementById(section); if (t) setTimeout(()=>t.scrollIntoView({behavior:'smooth',block:'start'}), 100);
       } else { window.location.href = `index.html#${section}`; }
     }
-    const swapLinkMobile = document.getElementById('navbar-swap-link-mobile');
-    const transferLinkMobile = document.getElementById('navbar-transfer-link-mobile');
     const networkLinkMobile = document.getElementById('navbar-network-link-mobile');
-    if (swapLinkMobile) swapLinkMobile.onclick = function(e){ e.preventDefault(); closeMenu(); goTo('main-swap'); };
-    if (transferLinkMobile) transferLinkMobile.onclick = function(e){ e.preventDefault(); closeMenu(); goTo('main-transfer'); };
     if (networkLinkMobile) networkLinkMobile.onclick = function(e){ e.preventDefault(); closeMenu(); window.location.href = 'professional-tree.html'; };
 
     // --- Fast, resilient userbar balances ---
@@ -839,16 +829,29 @@
   // Helper for bottom bar navigation (only on index.html)
   if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname === '') {
     window.showMainSection = function(sectionId) {
-      const ids = ['main-swap','main-transfer','main-profile'];
-      ids.forEach(id => {
+      console.log('🔍 showMainSection called with:', sectionId);
+      
+      // Hide all main sections first
+      const allSections = ['main-swap', 'main-transfer', 'main-profile', 'main-dashboard'];
+      allSections.forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.style.display = (id === sectionId) ? '' : 'none';
+        if (el) {
+          el.style.display = 'none';
+        }
       });
+      
+      // Show the target section
       const target = document.getElementById(sectionId);
       if (target) {
+        target.style.display = 'block';
+        console.log('✅ Section displayed:', sectionId);
+        
+        // Scroll to the section
         setTimeout(() => {
           target.scrollIntoView({behavior:'smooth',block:'start'});
         }, 100);
+      } else {
+        console.error('❌ Section not found:', sectionId);
       }
     };
   }
@@ -856,6 +859,18 @@
   // In index.html, if hash exists, show the corresponding section
   if (window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname === '') {
     document.addEventListener('DOMContentLoaded', function() {
+      // Initially hide swap and transfer sections, show only dashboard
+      const swapSection = document.getElementById('main-swap');
+      const transferSection = document.getElementById('main-transfer');
+      
+      if (swapSection) swapSection.style.display = 'none';
+      if (transferSection) transferSection.style.display = 'none';
+      
+      // Show dashboard by default
+      const dashboardSection = document.getElementById('main-dashboard');
+      if (dashboardSection) dashboardSection.style.display = 'block';
+      
+      // Check for hash in URL
       const hash = window.location.hash;
       if (hash === '#main-swap' || hash === '#main-transfer') {
         if (typeof showMainSection === 'function') showMainSection(hash.replace('#',''));

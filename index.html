@@ -169,10 +169,6 @@
           font-size: 0.8rem !important;
         }
         
-        .user-status-container > div:first-child > div > div > div {
-          font-size: 0.6rem !important;
-        }
-        
         /* Star rating responsive for small screens */
         #user-star-rating {
           top: 0.2rem !important;
@@ -250,6 +246,144 @@
         </div>
       </div>
     </div>
+
+    <!-- Quick Action Buttons -->
+    <div class="quick-action-buttons" style="display:flex;justify-content:center;gap:0.3rem;margin:0.5rem auto;max-width:300px;flex-wrap:nowrap;">
+      <button onclick="showMainSection('main-swap')" style="background:linear-gradient(135deg,#00ff88,#00cc6a);color:#0a0f1c;border:none;border-radius:6px;padding:0.4rem 0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:0.75rem;display:flex;align-items:center;gap:0.2rem;box-shadow:0 2px 6px rgba(0,255,136,0.3);min-width:80px;justify-content:center;flex:1;max-width:120px;" onmouseenter="this.style.transform='translateY(-1px)';this.style.boxShadow='0 3px 10px rgba(0,255,136,0.4)'" onmouseleave="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 6px rgba(0,255,136,0.3)'">
+        🔄 Swap
+      </button>
+      <button onclick="showMainSection('main-transfer')" style="background:linear-gradient(135deg,#a786ff,#8b5cf6);color:#ffffff;border:none;border-radius:6px;padding:0.4rem 0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:0.75rem;display:flex;align-items:center;gap:0.2rem;box-shadow:0 2px 6px rgba(167,134,255,0.3);min-width:80px;justify-content:center;flex:1;max-width:120px;" onmouseenter="this.style.transform='translateY(-1px)';this.style.boxShadow='0 3px 10px rgba(167,134,255,0.4)'" onmouseleave="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 6px rgba(167,134,255,0.3)'">
+        💸 Transfer
+      </button>
+    </div>
+    
+
+
+    <style>
+      /* Force visibility for main sections */
+      #main-swap, #main-transfer, #main-dashboard {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: relative !important;
+        z-index: 1 !important;
+      }
+      
+      /* Override any collapsed states */
+      #main-swap.expanded, #main-transfer.expanded, #main-dashboard.expanded {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        height: auto !important;
+        overflow: visible !important;
+      }
+      
+      /* Ensure expandable content is visible */
+      .expandable-container.expanded .expand-content {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        height: auto !important;
+        overflow: visible !important;
+      }
+      
+      @media (max-width: 768px) {
+        .quick-action-buttons {
+          flex-direction: row !important;
+          gap: 0.3rem !important;
+          max-width: 280px !important;
+        }
+        .quick-action-buttons button {
+          padding: 0.3rem 0.6rem !important;
+          font-size: 0.7rem !important;
+          min-width: 70px !important;
+          max-width: 100px !important;
+        }
+      }
+      
+      @media (max-width: 480px) {
+        .quick-action-buttons {
+          gap: 0.2rem !important;
+          max-width: 250px !important;
+        }
+        .quick-action-buttons button {
+          padding: 0.25rem 0.5rem !important;
+          font-size: 0.65rem !important;
+          min-width: 60px !important;
+          max-width: 90px !important;
+        }
+      }
+    </style>
+
+    <script>
+      // Enhanced navigation function
+      function showMainSection(sectionId) {
+        console.log('🔍 showMainSection called with:', sectionId);
+        
+        // Hide all main sections first
+        const allSections = ['main-swap', 'main-transfer', 'main-profile', 'main-dashboard'];
+        allSections.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.style.display = 'none';
+            el.style.visibility = 'hidden';
+            el.style.opacity = '0';
+            el.classList.remove('collapsed');
+          }
+        });
+        
+        // Show the target section
+        const target = document.getElementById(sectionId);
+        if (target) {
+          target.style.display = 'block';
+          target.style.visibility = 'visible';
+          target.style.opacity = '1';
+          target.classList.remove('collapsed');
+          target.classList.add('expanded');
+          console.log('✅ Section displayed:', sectionId);
+          
+          // Force visibility for all child elements
+          const allChildren = target.querySelectorAll('*');
+          allChildren.forEach(child => {
+            if (child.style.display === 'none') {
+              child.style.display = '';
+            }
+            if (child.style.visibility === 'hidden') {
+              child.style.visibility = 'visible';
+            }
+            if (child.style.opacity === '0') {
+              child.style.opacity = '1';
+            }
+            child.classList.remove('collapsed');
+          });
+          
+          // Scroll to the section
+          setTimeout(() => {
+            target.scrollIntoView({behavior:'smooth',block:'start'});
+          }, 100);
+        } else {
+          console.error('❌ Section not found:', sectionId);
+        }
+      }
+      
+      // Initialize sections on page load
+      document.addEventListener('DOMContentLoaded', function() {
+        // Initially hide swap and transfer sections, show only dashboard
+        const swapSection = document.getElementById('main-swap');
+        const transferSection = document.getElementById('main-transfer');
+        
+        if (swapSection) swapSection.style.display = 'none';
+        if (transferSection) transferSection.style.display = 'none';
+        
+        // Show dashboard by default
+        const dashboardSection = document.getElementById('main-dashboard');
+        if (dashboardSection) dashboardSection.style.display = 'block';
+        
+        console.log('✅ Navigation initialized');
+      });
+      
+
+    </script>
 
     <div class="dashboard-cards" style="display:flex;justify-content:center;flex-wrap:wrap;gap:1rem;max-width:1400px;margin:0 auto;">
       <!-- AI Assistant will be inserted here by JavaScript -->
