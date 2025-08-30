@@ -1882,22 +1882,33 @@
       // USD Converter functionality
       const usdConverterRow = document.getElementById('usd-converter-row');
       const transferUsdAmount = document.getElementById('transferUsdAmount');
-      const usdToIAMBtn = document.getElementById('usdToIAMBtn');
+      const usdToIAMBtn = document.getElementById('transferUsdToTokenBtn');
+      
+      console.log('🔍 USD Converter elements:', {
+        usdConverterRow: !!usdConverterRow,
+        transferUsdAmount: !!transferUsdAmount,
+        usdToIAMBtn: !!usdToIAMBtn
+      });
       
       // Show/hide USD field based on token type
       function toggleUsdConverter() {
         const selectedToken = transferTokenSelect.value;
+        console.log('🔄 Toggling USD converter for token:', selectedToken);
         if (selectedToken === 'IAM') {
           usdConverterRow.style.display = 'block';
+          console.log('✅ USD converter shown for IAM');
         } else {
           usdConverterRow.style.display = 'none';
           transferUsdAmount.value = '';
+          console.log('✅ USD converter hidden for', selectedToken);
         }
       }
       
       // Convert USD to IAM
       async function convertUsdToIAM() {
+        console.log('🔄 Converting USD to IAM...');
         const usdAmount = parseFloat(transferUsdAmount.value);
+        console.log('💰 USD amount:', usdAmount);
         if (isNaN(usdAmount) || usdAmount <= 0) {
           alert('Please enter a valid dollar amount');
           return;
@@ -2016,14 +2027,20 @@
       if (transferTokenSelect) {
         // Change token type
         transferTokenSelect.addEventListener('change', toggleUsdConverter);
+        console.log('✅ Transfer token select event listener added');
         
         // Initial execution to set initial state
         toggleUsdConverter();
+      } else {
+        console.error('❌ Transfer token select not found');
       }
       
       if (usdToIAMBtn) {
         // Convert button click
         usdToIAMBtn.addEventListener('click', convertUsdToIAM);
+        console.log('✅ USD converter button event listener added');
+      } else {
+        console.error('❌ USD converter button not found');
       }
       
       if (transferUsdAmount) {
