@@ -24,32 +24,58 @@ if (!window.generateIAMId) {
     };
 }
 
-// Function to calculate color based on tree level
-function getNodeColorByLevel(level, isActive = true) {
+// Function to calculate color based on tree level and index
+function getNodeColorByLevel(level, isActive = true, index = null) {
     if (isActive) {
-        // For active nodes: from light to dark
-        const baseAlpha = 0.98;
-        const alphaStep = 0.15;
-        const alpha = Math.max(0.3, baseAlpha - (level * alphaStep));
-        
-        // Main color: light blue-green for root, darker for lower levels
-        const baseR = 35;
-        const baseG = 41;
-        const baseB = 70;
-        const darkenStep = 15;
-        
-        const r = Math.max(20, baseR - (level * darkenStep));
-        const g = Math.max(25, baseG - (level * darkenStep));
-        const b = Math.max(45, baseB - (level * darkenStep));
-        
-        return `rgba(${r},${g},${b},${alpha})`;
+        // Creative color system based on index and level
+        if (index !== null) {
+            // Check if this is the root node (index 1)
+            if (BigInt(index) === 1n) {
+                // Golden gradient for root node
+                return `linear-gradient(135deg, 
+                    rgba(255, 215, 0, ${0.9 - level * 0.1}), 
+                    rgba(255, 165, 0, ${0.8 - level * 0.1})), 
+                    linear-gradient(45deg, 
+                    rgba(255, 255, 255, 0.1), 
+                    rgba(255, 255, 255, 0.05))`;
+            } else {
+                const isEven = BigInt(index) % 2n === 0n;
+                
+                if (isEven) {
+                    // Blue gradient for even indices
+                    return `linear-gradient(135deg, 
+                        rgba(30, 144, 255, ${0.9 - level * 0.1}), 
+                        rgba(0, 191, 255, ${0.8 - level * 0.1})), 
+                        linear-gradient(45deg, 
+                        rgba(255, 255, 255, 0.1), 
+                        rgba(255, 255, 255, 0.05))`;
+                } else {
+                    // Red gradient for odd indices
+                    return `linear-gradient(135deg, 
+                        rgba(255, 69, 0, ${0.9 - level * 0.1}), 
+                        rgba(220, 20, 60, ${0.8 - level * 0.1})), 
+                        linear-gradient(45deg, 
+                        rgba(255, 255, 255, 0.1), 
+                        rgba(255, 255, 255, 0.05))`;
+                }
+            }
+        } else {
+            // Default gradient for nodes without index
+            return `linear-gradient(135deg, 
+                rgba(35, 41, 70, ${0.9 - level * 0.1}), 
+                rgba(25, 31, 60, ${0.8 - level * 0.1})), 
+                linear-gradient(45deg, 
+                rgba(255, 255, 255, 0.1), 
+                rgba(255, 255, 255, 0.05))`;
+        }
     } else {
-        // For empty nodes: from light to dark
-        const baseAlpha = 0.04;
-        const alphaStep = 0.02;
-        const alpha = Math.max(0.01, baseAlpha - (level * alphaStep));
-        
-        return `rgba(255,255,255,${alpha})`;
+        // For empty nodes: elegant gray gradient
+        return `linear-gradient(135deg, 
+            rgba(224, 224, 224, 0.8), 
+            rgba(200, 200, 200, 0.6)), 
+            linear-gradient(45deg, 
+            rgba(255, 255, 255, 0.05), 
+            rgba(255, 255, 255, 0.02))`;
     }
 }
 
@@ -691,11 +717,17 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         nodeDiv.style.marginBottom = '0.9em';
         nodeDiv.style.position = 'relative';
         nodeDiv.style.overflow = 'visible';
-        nodeDiv.style.background = getNodeColorByLevel(level, true);
-        nodeDiv.style.borderRadius = '12px';
-        const IAMId = window.generateIAMId ? window.generateIAMId(user.index) : user.index;
-        const formattedIAMId = `IAM${String(IAMId).padStart(5, '0')}`;
-        nodeDiv.style.padding = '0.6em 1.2em';
+                 nodeDiv.style.background = getNodeColorByLevel(level, true, index);
+                 nodeDiv.style.borderRadius = '12px';
+         nodeDiv.style.border = '1px solid rgba(255, 255, 255, 0.1)';
+         nodeDiv.style.backdropFilter = 'blur(10px)';
+         nodeDiv.style.webkitBackdropFilter = 'blur(10px)';
+         nodeDiv.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+         nodeDiv.style.transform = 'translateZ(0)';
+         
+         const IAMId = window.generateIAMId ? window.generateIAMId(user.index) : user.index;
+         const formattedIAMId = `IAM${String(IAMId).padStart(5, '0')}`;
+         nodeDiv.style.padding = '0.6em 1.2em';
         nodeDiv.style.width = 'auto';
         nodeDiv.style.minWidth = 'unset';
         nodeDiv.style.maxWidth = 'none';
@@ -711,12 +743,15 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         nodeDiv.style.transition = 'background 0.2s, box-shadow 0.2s';
         nodeDiv.style.whiteSpace = 'nowrap';
         nodeDiv.onmouseover = function() { 
-            this.style.background = '#232946'; 
-            this.style.boxShadow = '0 6px 24px #00ff8840'; 
+            this.style.transform = 'translateZ(0) scale(1.05)';
+            this.style.boxShadow = '0 8px 32px rgba(0, 255, 136, 0.3), 0 4px 16px rgba(0, 0, 0, 0.2)';
+            this.style.border = '1px solid rgba(255, 255, 255, 0.2)';
         };
         nodeDiv.onmouseout = function() { 
-            this.style.background = getNodeColorByLevel(level, true); 
-            this.style.boxShadow = '0 4px 16px rgba(0,255,136,0.10)'; 
+            this.style.background = getNodeColorByLevel(level, true, index); 
+            this.style.transform = 'translateZ(0) scale(1)';
+            this.style.boxShadow = '0 4px 16px rgba(0,255,136,0.10)';
+            this.style.border = '1px solid rgba(255, 255, 255, 0.1)';
         };
         nodeDiv.innerHTML = `
             <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 1.1em; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-weight: bold;">${IAMId}</span>
@@ -724,103 +759,40 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         
 
         
-        // Expand/collapse button if has directs - LAZY LOADING FOR ALL NODES
-        let expandBtn = null;
-        let childrenDiv = null;
-        if (hasDirects) {
-            expandBtn = document.createElement('button');
-            expandBtn.textContent = '▸';
-            expandBtn.style.transform = autoExpand ? 'rotate(90deg)' : 'rotate(0deg)';
-            // Store expansion state on the button itself
-            expandBtn.setAttribute('data-expanded', autoExpand ? 'true' : 'false');
-            expandBtn.style.padding = '0';
-            expandBtn.style.background = 'transparent';
-            expandBtn.style.border = 'none';
-            expandBtn.style.outline = 'none';
-            expandBtn.style.color = '#a786ff';
-            expandBtn.style.fontSize = '1.4em';
-            expandBtn.style.lineHeight = '1';
-            expandBtn.style.cursor = 'pointer';
-            expandBtn.style.verticalAlign = 'middle';
-            expandBtn.style.fontWeight = '700';
-            expandBtn.style.marginInlineEnd = '0.6em';
-            expandBtn.style.padding = '2px 4px';
-            expandBtn.style.borderRadius = '4px';
-            expandBtn.style.transition = 'all 0.2s ease-in-out';
-            expandBtn.style.transform = 'rotate(0deg)';
-            expandBtn.setAttribute('aria-label', 'Expand/Collapse');
-            nodeDiv.prepend(expandBtn);
-        }
+                          // Expand/collapse button for ALL REGISTERED NODES - LAZY LOADING FOR ALL NODES
+         let expandBtn = null;
+         let childrenDiv = null;
+         // Add expand button for ALL registered nodes (not just those with directs)
+         expandBtn = document.createElement('button');
+         expandBtn.textContent = '▸';
+         expandBtn.style.transform = autoExpand ? 'rotate(90deg)' : 'rotate(0deg)';
+         // Store expansion state on the button itself
+         expandBtn.setAttribute('data-expanded', autoExpand ? 'true' : 'false');
+         expandBtn.style.padding = '0';
+         expandBtn.style.background = 'transparent';
+         expandBtn.style.border = 'none';
+         expandBtn.style.outline = 'none';
+         expandBtn.style.color = '#ffffff';
+         expandBtn.style.fontSize = '1.2em';
+         expandBtn.style.lineHeight = '1';
+         expandBtn.style.cursor = 'pointer';
+         expandBtn.style.verticalAlign = 'middle';
+         expandBtn.style.fontWeight = '700';
+         expandBtn.style.marginInlineEnd = '0.6em';
+         expandBtn.style.padding = '4px 6px';
+         expandBtn.style.borderRadius = '6px';
+         expandBtn.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+         expandBtn.style.transform = 'rotate(0deg)';
+         expandBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+         expandBtn.style.border = '1px solid rgba(255, 255, 255, 0.2)';
+         expandBtn.style.backdropFilter = 'blur(5px)';
+         expandBtn.style.webkitBackdropFilter = 'blur(5px)';
+         expandBtn.setAttribute('aria-label', 'Expand/Collapse');
+         nodeDiv.prepend(expandBtn);
         
-        // Add + button for users with empty child slots
-        console.log(`🔍 Node ${index}: leftActive=${leftActive}, rightActive=${rightActive}, hasDirects=${hasDirects}`);
-        if (!leftActive || !rightActive) {
-            console.log(`✅ Adding + button for node ${index} - leftActive: ${leftActive}, rightActive: ${rightActive}`);
-            const addBtn = document.createElement('button');
-            addBtn.textContent = '+';
-            addBtn.style.padding = '0';
-            addBtn.style.background = 'linear-gradient(135deg, #00ff88, #00cc66)';
-            addBtn.style.border = 'none';
-            addBtn.style.outline = 'none';
-            addBtn.style.color = '#232946';
-            addBtn.style.fontSize = '1.2em';
-            addBtn.style.lineHeight = '1';
-            addBtn.style.cursor = 'pointer';
-            addBtn.style.verticalAlign = 'middle';
-            addBtn.style.fontWeight = 'bold';
-            addBtn.style.marginInlineStart = '0.6em';
-            addBtn.style.padding = '4px 8px';
-            addBtn.style.borderRadius = '50%';
-            addBtn.style.transition = 'all 0.2s ease-in-out';
-            addBtn.style.width = '24px';
-            addBtn.style.height = '24px';
-            addBtn.style.display = 'flex';
-            addBtn.style.alignItems = 'center';
-            addBtn.style.justifyContent = 'center';
-            addBtn.setAttribute('aria-label', 'Add new user');
-            addBtn.title = 'افزودن عضو جدید';
-            
-            addBtn.onmouseover = function() {
-                this.style.transform = 'scale(1.1)';
-                this.style.boxShadow = '0 4px 12px rgba(0, 255, 136, 0.4)';
-            };
-            addBtn.onmouseout = function() {
-                this.style.transform = 'scale(1)';
-                this.style.boxShadow = 'none';
-            };
-            
-            addBtn.onclick = async function(e) {
-                e.stopPropagation();
-                console.log(`🔘 + button clicked for node ${index}`);
-                console.log(`🔍 Current state: leftActive=${leftActive}, rightActive=${rightActive}`);
-                
-                // Determine which position is empty and show registration modal
-                let targetEmptyIndex, targetPosition;
-                if (!leftActive) {
-                    targetEmptyIndex = index * 2n;
-                    targetPosition = 'left';
-                    console.log(`🎯 Left slot is empty, using index: ${targetEmptyIndex}`);
-                } else if (!rightActive) {
-                    targetEmptyIndex = index * 2n + 1n;
-                    targetPosition = 'right';
-                    console.log(`🎯 Right slot is empty, using index: ${targetEmptyIndex}`);
-                } else {
-                    // This shouldn't happen since the button only shows when there's an empty slot
-                    console.warn('Both slots appear to be full, but + button was clicked');
-                    return;
-                }
-                console.log(`🎯 Adding user to ${targetPosition} position, index: ${targetEmptyIndex}`);
-                try {
-                    await showRegistrationModal(index, targetEmptyIndex, targetPosition);
-                } catch (error) {
-                    console.error('Error calling showRegistrationModal:', error);
-                }
-            };
-            
-            nodeDiv.appendChild(addBtn);
-        } else {
-            console.log(`❌ No + button for node ${index} - both slots are full`);
-        }
+                 // Remove + button completely - no + buttons on any nodes
+         console.log(`🔍 Node ${index}: leftActive=${leftActive}, rightActive=${rightActive}, hasDirects=${hasDirects}`);
+         console.log(`❌ No + button for node ${index} - + buttons removed from all nodes`);
         // Add click event listener to the expand button directly
         if (expandBtn) {
             expandBtn.addEventListener('click', async function(e) {
@@ -903,8 +875,28 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                             // Align all cross nodes from the front after all children are rendered
                             alignCrossNodes(childrenDiv, level + 1);
                         
-                        // Empty slots are now handled by + buttons on parent nodes
-                        // No need to create empty slot nodes anymore
+                                                 // Create empty slots for positions that don't have children
+                         if (!leftActive) {
+                             console.log('🔄 Creating empty left slot...');
+                             let leftEmptyRow = document.createElement('div');
+                             leftEmptyRow.className = 'empty-slot-row left-empty-row';
+                             leftEmptyRow.style.display = 'block';
+                             leftEmptyRow.style.marginBottom = '0.3em';
+                             leftEmptyRow.style.width = '100%';
+                             childrenDiv.appendChild(leftEmptyRow);
+                             await renderEmptySlot(index * 2n, leftEmptyRow, level + 1);
+                         }
+                         
+                         if (!rightActive) {
+                             console.log('🔄 Creating empty right slot...');
+                             let rightEmptyRow = document.createElement('div');
+                             rightEmptyRow.className = 'empty-slot-row right-empty-row';
+                             rightEmptyRow.style.display = 'block';
+                             rightEmptyRow.style.marginBottom = '0.3em';
+                             rightEmptyRow.style.width = '100%';
+                             childrenDiv.appendChild(rightEmptyRow);
+                             await renderEmptySlot(index * 2n + 1n, rightEmptyRow, level + 1);
+                         }
                         
                         console.log('✅ All children rendered successfully');
                             
@@ -1166,9 +1158,76 @@ async function processRenderQueue() {
         console.log(`⏳ ${renderQueue.length} items still in queue, will process when slots available`);
         setTimeout(processRenderQueue, 100);
     }
-}
-
-// Helper function to render simplified nodes at depth limit
+ }
+ 
+ // Helper function to render empty slots
+ async function renderEmptySlot(index, container, level) {
+     console.log(`📝 Rendering empty slot for index: ${index} at level: ${level}`);
+     
+     const emptySlotDiv = document.createElement('div');
+     emptySlotDiv.className = 'empty-slot-node';
+     emptySlotDiv.setAttribute('data-index', index);
+     emptySlotDiv.style.display = 'inline-flex';
+     emptySlotDiv.style.alignItems = 'center';
+     emptySlotDiv.style.justifyContent = 'center';
+     emptySlotDiv.style.marginRight = '0px';
+     emptySlotDiv.style.marginBottom = '0.9em';
+     emptySlotDiv.style.background = 'linear-gradient(135deg, rgba(224, 224, 224, 0.8), rgba(200, 200, 200, 0.6)), linear-gradient(45deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02))';
+     emptySlotDiv.style.borderRadius = '10px';
+     emptySlotDiv.style.padding = '0.5em 1em';
+     emptySlotDiv.style.color = '#666';
+     emptySlotDiv.style.fontFamily = 'monospace';
+     emptySlotDiv.style.fontSize = '0.9em';
+     emptySlotDiv.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)';
+     emptySlotDiv.style.opacity = '0.9';
+     emptySlotDiv.style.border = '1px dashed rgba(150, 150, 150, 0.5)';
+     emptySlotDiv.style.backdropFilter = 'blur(5px)';
+     emptySlotDiv.style.webkitBackdropFilter = 'blur(5px)';
+     emptySlotDiv.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+     emptySlotDiv.style.cursor = 'pointer';
+     emptySlotDiv.title = 'Empty slot - Click to add new user';
+     
+     const IAMId = window.generateIAMId ? window.generateIAMId(index) : index;
+     emptySlotDiv.innerHTML = `
+         <span style="white-space: nowrap; font-size: 0.9em; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+             ${IAMId} (Empty)
+         </span>
+     `;
+     
+     emptySlotDiv.onmouseover = function() { 
+         this.style.transform = 'translateZ(0) scale(1.02)';
+         this.style.background = 'linear-gradient(135deg, rgba(240, 240, 240, 0.9), rgba(220, 220, 220, 0.7)), linear-gradient(45deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05))';
+         this.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2)';
+         this.style.border = '1px dashed rgba(100, 100, 100, 0.7)';
+     };
+     emptySlotDiv.onmouseout = function() { 
+         this.style.transform = 'translateZ(0) scale(1)';
+         this.style.background = 'linear-gradient(135deg, rgba(224, 224, 224, 0.8), rgba(200, 200, 200, 0.6)), linear-gradient(45deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02))';
+         this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)';
+         this.style.border = '1px dashed rgba(150, 150, 150, 0.5)';
+     };
+     
+     // Add click event to show registration modal
+     emptySlotDiv.addEventListener('click', async function(e) {
+         e.stopPropagation();
+         console.log(`🔘 Empty slot clicked for index: ${index}`);
+         
+         // Determine position (left or right)
+         const parentIndex = index / 2n;
+         const isLeft = index % 2n === 0n;
+         const position = isLeft ? 'left' : 'right';
+         
+         try {
+             await showRegistrationModal(parentIndex, index, position);
+         } catch (error) {
+             console.error('Error calling showRegistrationModal:', error);
+         }
+     });
+     
+     container.appendChild(emptySlotDiv);
+ }
+ 
+ // Helper function to render simplified nodes at depth limit
 function renderSimplifiedNode(index, container, level) {
     console.log(`📝 Rendering simplified node for index: ${index} at level: ${level}`);
     
