@@ -274,6 +274,45 @@
       color: #00ff88;
     }
 
+    .feature-highlight {
+      background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(167, 134, 255, 0.1));
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 1rem 0;
+    }
+
+    .feature-highlight h4 {
+      color: #00ff88;
+      margin-bottom: 0.5rem;
+    }
+
+    .price-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .price-table th,
+    .price-table td {
+      padding: 0.8rem;
+      text-align: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .price-table th {
+      background: rgba(0, 255, 136, 0.2);
+      color: #00ff88;
+      font-weight: 600;
+    }
+
+    .price-table td {
+      color: #b8c1ec;
+    }
+
     /* Mobile Responsive */
     @media (max-width: 768px) {
       .about-container {
@@ -331,6 +370,15 @@
       .copy-btn {
         padding: 0.4rem 0.8rem;
         font-size: 0.7rem;
+      }
+
+      .price-table {
+        font-size: 0.9rem;
+      }
+
+      .price-table th,
+      .price-table td {
+        padding: 0.5rem;
       }
     }
 
@@ -394,7 +442,7 @@
       <h2>🌟 What is IAM PHOENIX?</h2>
       <div class="about-content">
         <p>
-          IAM PHOENIX is a cutting-edge <strong>Network Marketing platform</strong> that leverages blockchain technology and Web3 infrastructure to create a transparent, secure, and decentralized ecosystem. Our platform eliminates traditional intermediaries and creates direct, trustless relationships between participants through smart contracts.
+          <strong>IAM PHOENIX</strong> is a cutting-edge Network Marketing platform that leverages blockchain technology and Web3 infrastructure to create a transparent, secure, and decentralized ecosystem. Our platform eliminates traditional intermediaries and creates direct, trustless relationships between participants through smart contracts.
         </p>
         <p>
           Built on the Polygon blockchain, IAM PHOENIX combines the power of network marketing with the security and transparency of blockchain technology. All network marketing activities, rewards, and commissions are automatically calculated and distributed through audited smart contracts, ensuring complete transparency and eliminating the possibility of fraud or manipulation.
@@ -404,7 +452,7 @@
 
     <!-- Contract Information -->
     <div class="about-section">
-      <h2>📋 Contract Information</h2>
+      <h2>📋 Smart Contract Information</h2>
       <div class="contract-info">
         <h3>Smart Contract Details</h3>
         <p><strong>Network:</strong> Polygon Mainnet (ChainId: 137)</p>
@@ -469,64 +517,144 @@
       </div>
     </div>
 
-    <!-- Trading Rules -->
+    <!-- Trading System -->
     <div class="about-section">
-      <h2>💱 Trading Rules & Fees</h2>
+      <h2>💱 Trading System</h2>
       <div class="about-content">
-        <h3>Buy/Sell Rules</h3>
-        <ul>
-          <li><strong>Minimum Purchase:</strong> 1 DAI</li>
-          <li><strong>Minimum Sale:</strong> 1 IAM</li>
-          <li><strong>Buy Cap:</strong> <span id="about-max-buy">—</span> (Dynamic based on contract balance)</li>
-          <li><strong>Sell Cap:</strong> No restriction (sell full balance)</li>
-        </ul>
+        <h3>Buy and Sell Tokens</h3>
+        <div class="feature-highlight">
+          <h4>🛒 Buy Tokens</h4>
+          <ul>
+            <li><strong>Minimum Purchase:</strong> 1 DAI</li>
+            <li><strong>Maximum Purchase:</strong> <span id="about-max-buy">—</span> (Dynamic based on contract balance)</li>
+            <li><strong>Fee:</strong> <span id="about-fee-backing">—</span> (Dynamic based on contract balance)</li>
+            <li><strong>Token Burn:</strong> 5% during purchases</li>
+          </ul>
+        </div>
 
-        <h3>Fee Structure</h3>
-        <ul>
-          <li><strong>Developer Fee:</strong> 0%</li>
-          <li><strong>Backing Fee:</strong> <span id="about-fee-backing">—</span> (Dynamic based on contract balance)</li>
-          <li><strong>Total Fee:</strong> <span id="about-fee-total">—</span></li>
-          <li><strong>Token Burn:</strong> 5% during purchases</li>
-        </ul>
+        <div class="feature-highlight">
+          <h4>💰 Sell Tokens</h4>
+          <ul>
+            <li><strong>Minimum Sale:</strong> 1 IAM</li>
+            <li><strong>Maximum Sale:</strong> No restriction (sell full balance)</li>
+            <li><strong>Fee:</strong> <span id="about-fee-backing-sell">—</span> (Dynamic based on contract balance)</li>
+            <li><strong>Instant Conversion:</strong> DAI to your wallet</li>
+          </ul>
+        </div>
 
         <h3>Price Calculation</h3>
         <p>Token price is calculated dynamically based on contract DAI balance and total supply, ensuring fair and transparent pricing.</p>
       </div>
     </div>
 
-    <!-- Network Marketing Features -->
+    <!-- Network Marketing System -->
     <div class="about-section">
       <h2>🌳 Network Marketing System</h2>
       <div class="about-content">
-        <h3>Registration & Activation</h3>
+        <h3>Registration and Activation</h3>
+        <div class="feature-highlight">
+          <h4>📝 Paid Registration</h4>
+          <ul>
+            <li>Smart contract-based registration</li>
+            <li>Binary tree network structure</li>
+            <li>Dynamic registration pricing based on wallet count</li>
+            <li>10% referral reward from registration fee</li>
+          </ul>
+        </div>
+
+        <div class="feature-highlight">
+          <h4>🆓 Free Registration</h4>
+          <ul>
+            <li>Burn tokens equivalent to 23 DAI</li>
+            <li>No registration fee</li>
+            <li>Same benefits as paid registration</li>
+            <li>Identical network structure</li>
+          </ul>
+        </div>
+
+        <h3>Registration Pricing</h3>
+        <table class="price-table">
+          <thead>
+            <tr>
+              <th>Wallet Count</th>
+              <th>Registration Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>60-100</td>
+              <td>(Count/10) DAI</td>
+            </tr>
+            <tr>
+              <td>100-1000</td>
+              <td>(30 + Count/30) DAI</td>
+            </tr>
+            <tr>
+              <td>1000-6000</td>
+              <td>(50 + Count/100) DAI</td>
+            </tr>
+            <tr>
+              <td>Over 6000</td>
+              <td>110 DAI</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Binary Points System -->
+    <div class="about-section">
+      <h2>🎯 Binary Points System</h2>
+      <div class="about-content">
+        <h3>How to Earn Points</h3>
         <ul>
-          <li>Smart contract-based registration</li>
-          <li>Binary tree network structure</li>
-          <li>Dynamic registration pricing</li>
-          <li>Free registration option (burn tokens)</li>
+          <li><strong>Maximum Points:</strong> 100 points per user</li>
+          <li><strong>Initial Points:</strong> 5 points for paid registration, 0 for free registration</li>
+          <li><strong>Point Increase:</strong> Maximum 2 points per purchase cycle</li>
+          <li><strong>Time Interval:</strong> 4 weeks between point earnings</li>
         </ul>
 
-        <h3>Rewards & Cashback</h3>
+        <h3>Point Earning Conditions</h3>
         <ul>
-          <li>Binary claim with 12-hour cooldown</li>
-          <li>Monthly cashback up to 3% of deposited amount</li>
-          <li>Referral rewards (10% of registration fee)</li>
-          <li>Binary point system (max 100 points per user)</li>
+          <li>Purchase products from vendors</li>
+          <li>Minimum 30% to 100% payout to vendor</li>
+          <li>Reach purchase threshold (registration price / 3)</li>
+          <li>4 weeks passed since last upgrade</li>
         </ul>
 
-        <h3>Binary Point System</h3>
+        <h3>Reward Claim System</h3>
         <ul>
-          <li>Earn up to 2 points per purchase cycle</li>
-          <li>4-week cooldown between point earnings</li>
-          <li>Point value based on contract token balance</li>
-          <li>Automatic reward distribution</li>
+          <li><strong>Time Interval:</strong> 12 hours between claims</li>
+          <li><strong>Reward Calculation:</strong> Points × Value per point</li>
+          <li><strong>Point Value:</strong> Contract token balance / Total claimable points</li>
+          <li><strong>Fee:</strong> 1% of reward</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Monthly Rewards -->
+    <div class="about-section">
+      <h2>💰 Monthly Rewards</h2>
+      <div class="about-content">
+        <h3>Eligibility Requirements</h3>
+        <ul>
+          <li>Only users with at least one empty position</li>
+          <li>Minimum 30 days from last claim</li>
+          <li>Maximum reward: deposited amount</li>
+        </ul>
+
+        <h3>Reward Calculation</h3>
+        <ul>
+          <li><strong>Reward Rate:</strong> 3% of deposited amount per month for users with at least one empty position. Maximum up to 100% of deposited amount.</li>
+          <li><strong>Source:</strong> Contract cashback fund</li>
+          <li><strong>Repayment:</strong> Previous cashback is repaid first</li>
         </ul>
       </div>
     </div>
 
     <!-- Security Features -->
     <div class="about-section">
-      <h2>🔒 Security & Protection</h2>
+      <h2>🔒 Security and Protection</h2>
       <div class="about-content">
         <ul>
           <li><strong>Smart Contract Security:</strong> All operations secured by audited smart contracts</li>
@@ -535,6 +663,7 @@
           <li><strong>Transparent Transactions:</strong> All activities visible on blockchain</li>
           <li><strong>Fund Protection:</strong> Users maintain full control of assets</li>
           <li><strong>Voting System:</strong> Community-driven quality control</li>
+          <li><strong>Ownership Transfer:</strong> Ability to transfer index to new address</li>
         </ul>
       </div>
     </div>
@@ -562,6 +691,16 @@
           <div class="icon">💱</div>
           <div class="number" id="about-price-1IAM">—</div>
           <div class="label">1 IAM = DAI</div>
+        </div>
+        <div class="about-stat">
+          <div class="icon">🎯</div>
+          <div class="number" id="about-binary-points">—</div>
+          <div class="label">Claimable Points</div>
+        </div>
+        <div class="about-stat">
+          <div class="icon">💸</div>
+          <div class="number" id="about-cashback">—</div>
+          <div class="label">Cashback Fund</div>
         </div>
       </div>
     </div>
@@ -591,7 +730,15 @@
       </div>
       <div class="faq-item">
         <div class="faq-question">How do binary points work?</div>
-        <div class="faq-answer">Earn up to 2 points per purchase cycle with 4-week cooldown. Maximum 100 points per user.</div>
+        <div class="faq-answer">Maximum 2 points per purchase cycle with 4-week cooldown. Maximum 100 points per user.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question">What are monthly rewards?</div>
+        <div class="faq-answer">3% of deposited amount per month for users with at least one empty position. Maximum up to 100% of deposited amount.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question">Can I transfer index ownership?</div>
+        <div class="faq-answer">Yes, use the transferIndexOwnership() function to transfer index to a new address.</div>
       </div>
     </div>
 
@@ -636,7 +783,7 @@
           console.error('Error copying: ', err);
           const btn = document.getElementById(buttonId);
           if (btn) {
-            btn.textContent = '❌ Error';
+            btn.textContent = '❌ خطا';
             btn.style.background = 'linear-gradient(135deg, #ff4444, #ff4444)';
             setTimeout(() => {
               btn.textContent = '📋 Copy Address';
@@ -718,6 +865,19 @@
             }
           } catch(e) {}
 
+          // Update binary points
+          try {
+            const binaryPoints = await IAM.totalClaimablePoints();
+            document.getElementById('about-binary-points').textContent = Number(binaryPoints).toLocaleString();
+          } catch(e) {}
+
+          // Update cashback
+          try {
+            const cashback = await IAM.cashBack();
+            const cashbackFormatted = ethers.formatUnits(cashback, 18);
+            document.getElementById('about-cashback').textContent = Number(cashbackFormatted).toLocaleString(undefined, {maximumFractionDigits: 2}) + ' IAM';
+          } catch(e) {}
+
           // Update dynamic limits and fees
           try {
             const daiBalance = await dai.balanceOf(window.IAM_ADDRESS);
@@ -731,6 +891,7 @@
             const backingFee = daiNum <= 200000 ? 1 : (daiNum <= 500000 ? 1.5 : 2);
             const totalFee = 0.5 + backingFee;
             document.getElementById('about-fee-backing').textContent = backingFee.toFixed(1) + '%';
+            document.getElementById('about-fee-backing-sell').textContent = backingFee.toFixed(1) + '%';
             document.getElementById('about-fee-total').textContent = totalFee.toFixed(1) + '%';
           } catch(e) {}
 

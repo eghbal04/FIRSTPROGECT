@@ -188,26 +188,11 @@
       This operation is irreversible. Please ensure the destination address is correct before proceeding.<br>
       <b>Recommendation:</b> Carefully check the destination address multiple times. If there's an error, recovery is not possible.
     </div>
-
-    <div class="card tips-card">
-      <b>💡 Copy and Paste Guide:</b><br>
-      • 📋 Copy entered address or your current address<br>
-      • 📄 Paste address from clipboard<br>
-      • 🗑️ Clear address field<br>
-      • 👤 Fill your current address<br>
-      <small>Shortcuts: Ctrl+C (copy), Ctrl+V (paste), Ctrl+X (clear), Ctrl+F (current address)</small>
-    </div>
-
     <form id="transferOwnershipForm">
       <div class="form-group">
         <label for="newOwnerAddress">New Owner Address</label>
         <div class="input-row">
           <input type="text" id="newOwnerAddress" class="text-input" placeholder="Example: 0x..." autocomplete="off" required>
-          <button type="button" id="copyAddressBtn" class="btn-icon" title="Copy Address">📋</button>
-          <button type="button" id="pasteAddressBtn" class="btn-icon" title="Paste from Clipboard">📄</button>
-          <button type="button" id="clearAddressBtn" class="btn-icon" title="Clear">🗑️</button>
-          <button type="button" id="fillCurrentAddressBtn" class="btn-icon" title="Fill Current Address">👤</button>
-        </div>
         <div class="hint" id="addressHint"></div>
       </div>
       <button type="submit" id="transferOwnershipBtn" class="btn-primary" disabled>Transfer Ownership</button>

@@ -236,26 +236,8 @@
   </style>
 </head>
 <body>
-  <div class="utility-container">
-    <!-- Wallet Connection Button -->
-    <div style="text-align: center; margin-bottom: 2rem; padding: 1rem; background: rgba(0,255,136,0.1); border-radius: 12px; border: 1px solid rgba(0,255,136,0.2);">
-      <h3 style="color: #00ff88; margin-bottom: 1rem;">🔗 Connect Wallet</h3>
-      <p style="color: #a0aec0; margin-bottom: 1rem;">Connect your wallet to use address and index conversion tools</p>
-      <button id="connect-wallet-btn" class="utility-btn" style="max-width: 300px;" onclick="connectWalletForUtility()">
-        🔗 Connect Wallet
-      </button>
-      <div id="wallet-status" style="margin-top: 1rem; padding: 0.5rem; border-radius: 8px; display: none;"></div>
-    </div>
-    
-    <div class="utility-header">
-      <h1>🛠️ Utility Tools</h1>
-      <p>Useful tools for better management of your account</p>
-    </div>
-    
-    <div class="utility-grid">
-      
 
-             <!-- Address and Index Conversion -->
+    <div class="utility-grid">      <!-- Address and Index Conversion -->
        <div class="utility-card">
          <h3><span class="icon">🔄</span>Address and Index Conversion</h3>
          <p>Convert between user index and wallet address</p>
@@ -285,33 +267,7 @@
 
     </div>
 
-         <!-- Service Status -->
-     <div class="utility-card" style="margin-top: 2rem;">
-       <h3><span class="icon">📡</span>Service Status</h3>
-       <p>Online status of various platform services</p>
-       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
-         <div style="display: flex; align-items: center; padding: 0.5rem; background: rgba(0,255,136,0.1); border-radius: 8px;">
-           <span class="status-indicator status-online"></span>
-           <span style="margin-left: 0.5rem;">Main Server</span>
-         </div>
-         <div style="display: flex; align-items: center; padding: 0.5rem; background: rgba(0,255,136,0.1); border-radius: 8px;">
-           <span class="status-indicator status-online"></span>
-           <span style="margin-left: 0.5rem;">Blockchain</span>
-         </div>
-         <div style="display: flex; align-items: center; padding: 0.5rem; background: rgba(0,255,136,0.1); border-radius: 8px;">
-           <span class="status-indicator status-online"></span>
-           <span style="margin-left: 0.5rem;">Database</span>
-         </div>
-         <div style="display: flex; align-items: center; padding: 0.5rem; background: rgba(0,255,136,0.1); border-radius: 8px;">
-           <span class="status-indicator status-online"></span>
-           <span style="margin-left: 0.5rem;">API</span>
-         </div>
-       </div>
-       <div style="text-align: center; margin-top: 1rem; color: #a0aec0; font-size: 0.9rem;">
-         Last Update: <span id="status-time"></span>
-       </div>
-     </div>
-  </div>
+
 
   <script>
     
