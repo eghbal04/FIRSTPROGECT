@@ -796,11 +796,15 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         // Add click event listener to the expand button directly
         if (expandBtn) {
             expandBtn.addEventListener('click', async function(e) {
+                e.preventDefault();
                 e.stopPropagation();
+                e.stopImmediatePropagation();
                 console.log('🔘 Expand button clicked for node:', index);
                 
                 // Check if children div already exists in the container
-                let existingChildrenDiv = container.querySelector('.children-div');
+                let existingChildrenDiv = container.querySelector(`.children-div[data-parent-index="${index}"]`);
+                console.log('🔍 Looking for existing children div in container for index:', index);
+                console.log('🔍 Found existing children div:', !!existingChildrenDiv);
                 
                 // Lazy loading: Only render children when expand button is clicked
                 if (!existingChildrenDiv) {
@@ -812,7 +816,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                     const originalColor = nodeDiv.style.color;
                     
                     // Create progress bar effect
-                    nodeDiv.innerHTML = `
+                    const progressContent = `
                         <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; border-radius: 12px;">
                             <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, #00ff88, #a786ff); opacity: 0.3; animation: progressShimmer 1.5s ease-in-out infinite;"></div>
                             <div style="position: relative; z-index: 2; color: #00ff88; font-weight: bold; font-size: 1.1em; display: flex; align-items: center; gap: 8px;">
@@ -821,6 +825,13 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                             </div>
                         </div>
                     `;
+                    
+                    // Clear node content but preserve the expand button
+                    const expandButton = nodeDiv.querySelector('button');
+                    nodeDiv.innerHTML = progressContent;
+                    if (expandButton) {
+                        nodeDiv.prepend(expandButton);
+                    }
                     
                     // Update node styling for progress state
                     nodeDiv.style.background = 'rgba(0, 255, 136, 0.1)';
@@ -835,68 +846,60 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                     // Create children div and render children for the first time
                     childrenDiv = document.createElement('div');
                     childrenDiv.className = 'children-div';
+                    childrenDiv.setAttribute('data-parent-index', index.toString());
                     childrenDiv.style.transition = 'all 0.3s';
                     childrenDiv.style.display = 'none'; // Start hidden
                     childrenDiv.style.marginTop = '0.5em'; // Add spacing from parent
                     childrenDiv.style.marginRight = '0px'; // Ensure no right margin on container
-                    childrenDiv.style.display = 'flex';
                     childrenDiv.style.flexDirection = 'column';
                     childrenDiv.style.alignItems = 'flex-start'; // Align children to the start
                     container.appendChild(childrenDiv);
+                    console.log('✅ Created children div with parent index:', index);
                     
                     // Render children nodes
                         try {
                         console.log('🔄 Starting to render children...');
-                            // Left child
-                            if (leftActive) {
-                            console.log('🔄 Rendering left child...');
-                                let leftRow = document.createElement('div');
-                                leftRow.className = 'child-node-row left-row';
-                                leftRow.style.display = 'block';
-                                leftRow.style.marginBottom = '0.3em'; // Consistent spacing between children
-                                leftRow.style.width = '100%'; // Ensure full width
-                                childrenDiv.appendChild(leftRow);
-                                await renderVerticalNodeLazy(BigInt(leftUser.index), leftRow, level + 1, false);
-                            console.log('✅ Left child rendered');
-                            }
-                            // Right child
-                            if (rightActive) {
-                            console.log('🔄 Rendering right child...');
-                                let rightRow = document.createElement('div');
-                                rightRow.className = 'child-node-row right-row';
-                                rightRow.style.display = 'block';
-                                rightRow.style.marginBottom = '0.3em'; // Consistent spacing between children
-                                rightRow.style.width = '100%'; // Ensure full width
-                                childrenDiv.appendChild(rightRow);
-                                await renderVerticalNodeLazy(BigInt(rightUser.index), rightRow, level + 1, false);
-                            console.log('✅ Right child rendered');
-                            }
-                            
-                            // Align all cross nodes from the front after all children are rendered
-                            alignCrossNodes(childrenDiv, level + 1);
                         
-                                                 // Create empty slots for positions that don't have children
-                         if (!leftActive) {
-                             console.log('🔄 Creating empty left slot...');
-                             let leftEmptyRow = document.createElement('div');
-                             leftEmptyRow.className = 'empty-slot-row left-empty-row';
-                             leftEmptyRow.style.display = 'block';
-                             leftEmptyRow.style.marginBottom = '0.3em';
-                             leftEmptyRow.style.width = '100%';
-                             childrenDiv.appendChild(leftEmptyRow);
-                             await renderEmptySlot(index * 2n, leftEmptyRow, level + 1);
-                         }
-                         
-                         if (!rightActive) {
-                             console.log('🔄 Creating empty right slot...');
-                             let rightEmptyRow = document.createElement('div');
-                             rightEmptyRow.className = 'empty-slot-row right-empty-row';
-                             rightEmptyRow.style.display = 'block';
-                             rightEmptyRow.style.marginBottom = '0.3em';
-                             rightEmptyRow.style.width = '100%';
-                             childrenDiv.appendChild(rightEmptyRow);
-                             await renderEmptySlot(index * 2n + 1n, rightEmptyRow, level + 1);
-                         }
+                        // Create all rows first (both active and empty) in correct order
+                        const leftRow = document.createElement('div');
+                        leftRow.className = 'child-node-row left-row';
+                        leftRow.style.display = 'block';
+                        leftRow.style.marginBottom = '0.3em';
+                        leftRow.style.width = '100%';
+                        
+                        const rightRow = document.createElement('div');
+                        rightRow.className = 'child-node-row right-row';
+                        rightRow.style.display = 'block';
+                        rightRow.style.marginBottom = '0.3em';
+                        rightRow.style.width = '100%';
+                        
+                        // Add rows to children div in correct order (left first, then right)
+                        childrenDiv.appendChild(leftRow);
+                        childrenDiv.appendChild(rightRow);
+                        
+                        // Now render content in each row based on availability
+                        if (leftActive) {
+                            console.log('🔄 Rendering left child...');
+                            await renderVerticalNodeLazy(BigInt(leftUser.index), leftRow, level + 1, false);
+                            console.log('✅ Left child rendered');
+                        } else {
+                            console.log('🔄 Creating empty left slot...');
+                            await renderEmptySlot(index * 2n, leftRow, level + 1);
+                            console.log('✅ Left empty slot created');
+                        }
+                        
+                        if (rightActive) {
+                            console.log('🔄 Rendering right child...');
+                            await renderVerticalNodeLazy(BigInt(rightUser.index), rightRow, level + 1, false);
+                            console.log('✅ Right child rendered');
+                        } else {
+                            console.log('🔄 Creating empty right slot...');
+                            await renderEmptySlot(index * 2n + 1n, rightRow, level + 1);
+                            console.log('✅ Right empty slot created');
+                        }
+                        
+                        // Align all cross nodes from the front after all children are rendered
+                        alignCrossNodes(childrenDiv, level + 1);
                         
                         console.log('✅ All children rendered successfully');
                             
@@ -909,18 +912,21 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                             
                             // Restore hover effects
                             nodeDiv.onmouseover = function() { 
-                                this.style.background = '#232946'; 
-                                this.style.boxShadow = '0 6px 24px #00ff8840'; 
+                                this.style.transform = 'translateZ(0) scale(1.05)';
+                                this.style.boxShadow = '0 8px 32px rgba(0, 255, 136, 0.3), 0 4px 16px rgba(0, 0, 0, 0.2)';
+                                this.style.border = '1px solid rgba(255, 255, 255, 0.2)';
                             };
                             nodeDiv.onmouseout = function() { 
-                                this.style.background = getNodeColorByLevel(level, true); 
-                                this.style.boxShadow = '0 4px 16px rgba(0,255,136,0.10)'; 
+                                this.style.background = getNodeColorByLevel(level, true, index); 
+                                this.style.transform = 'translateZ(0) scale(1)';
+                                this.style.boxShadow = '0 4px 16px rgba(0,255,136,0.10)';
+                                this.style.border = '1px solid rgba(255, 255, 255, 0.1)';
                             };
                             
                         // Now show the children div after rendering is complete
-                        childrenDiv.style.display = 'block';
-                        expandBtn.textContent = '▸';
-                        expandBtn.style.transform = 'rotate(90deg)';
+                        childrenDiv.style.display = 'flex';
+                        expandBtn.textContent = '▾';
+                        expandBtn.style.transform = 'rotate(0deg)';
                         expandBtn.setAttribute('data-expanded', 'true');
                         console.log('✅ Children displayed after rendering');
                         
@@ -936,12 +942,15 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                             
                             // Restore hover effects
                             nodeDiv.onmouseover = function() { 
-                                this.style.background = '#232946'; 
-                                this.style.boxShadow = '0 6px 24px #00ff8840'; 
+                                this.style.transform = 'translateZ(0) scale(1.05)';
+                                this.style.boxShadow = '0 8px 32px rgba(0, 255, 136, 0.3), 0 4px 16px rgba(0, 0, 0, 0.2)';
+                                this.style.border = '1px solid rgba(255, 255, 255, 0.2)';
                             };
                             nodeDiv.onmouseout = function() { 
-                                this.style.background = getNodeColorByLevel(level, true); 
-                                this.style.boxShadow = '0 4px 16px rgba(0,255,136,0.10)'; 
+                                this.style.background = getNodeColorByLevel(level, true, index); 
+                                this.style.transform = 'translateZ(0) scale(1)';
+                                this.style.boxShadow = '0 4px 16px rgba(0,255,136,0.10)';
+                                this.style.border = '1px solid rgba(255, 255, 255, 0.1)';
                             };
                         
                         // Don't show children if there was an error
@@ -960,9 +969,9 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                         console.log('🔍 existingChildrenDiv display before:', existingChildrenDiv.style.display);
                         
                         if (!isExpanded) {
-                            existingChildrenDiv.style.display = 'block';
-                            expandBtn.textContent = '▸';
-                            expandBtn.style.transform = 'rotate(90deg)';
+                            existingChildrenDiv.style.display = 'flex';
+                            expandBtn.textContent = '▾';
+                            expandBtn.style.transform = 'rotate(0deg)';
                             expandBtn.setAttribute('data-expanded', 'true');
                             console.log('✅ Expanded node');
                         } else {
@@ -976,25 +985,45 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                         console.log('🔍 existingChildrenDiv display after:', existingChildrenDiv.style.display);
                     } else {
                         console.log('❌ existingChildrenDiv not found, trying to find it again...');
-                        // Try to find the children div again
-                        const foundChildrenDiv = container.querySelector('.children-div');
+                        // Try to find the children div again with multiple selectors
+                        let foundChildrenDiv = container.querySelector(`.children-div[data-parent-index="${index}"]`);
+                        if (!foundChildrenDiv) {
+                            // Try to find it in the parent container
+                            foundChildrenDiv = container.parentElement?.querySelector(`.children-div[data-parent-index="${index}"]`);
+                        }
+                        if (!foundChildrenDiv) {
+                            // Try to find it by looking for the next sibling
+                            const nextSibling = container.nextElementSibling;
+                            if (nextSibling && nextSibling.classList.contains('children-div') && nextSibling.getAttribute('data-parent-index') === index.toString()) {
+                                foundChildrenDiv = nextSibling;
+                            }
+                        }
+                        if (!foundChildrenDiv) {
+                            // Last resort: find any children div in the container
+                            foundChildrenDiv = container.querySelector('.children-div');
+                        }
+                        
                         if (foundChildrenDiv) {
                             console.log('✅ Found children div on second attempt');
                             if (!isExpanded) {
-                                foundChildrenDiv.style.display = 'block';
-                    expandBtn.textContent = '▸';
-                                expandBtn.style.transform = 'rotate(90deg)';
+                                foundChildrenDiv.style.display = 'flex';
+                                expandBtn.textContent = '▾';
+                                expandBtn.style.transform = 'rotate(0deg)';
                                 expandBtn.setAttribute('data-expanded', 'true');
                                 console.log('✅ Expanded node (second attempt)');
-                } else {
+                            } else {
                                 foundChildrenDiv.style.display = 'none';
-                    expandBtn.textContent = '▸';
+                                expandBtn.textContent = '▸';
                                 expandBtn.style.transform = 'rotate(0deg)';
                                 expandBtn.setAttribute('data-expanded', 'false');
                                 console.log('✅ Collapsed node (second attempt)');
                             }
                         } else {
-                            console.log('❌ Still cannot find children div');
+                            console.log('❌ Still cannot find children div - recreating...');
+                            // If we still can't find it, recreate the children div
+                            expandBtn.setAttribute('data-expanded', 'false');
+                            expandBtn.textContent = '▸';
+                            expandBtn.style.transform = 'rotate(0deg)';
                         }
                     }
                 }
@@ -1003,8 +1032,9 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         
         // Add click event listener to the node div for user info
         nodeDiv.addEventListener('click', function(e) {
-            // Don't trigger user info popup if clicking on expand button
-            if (expandBtn && (e.target === expandBtn || expandBtn.contains(e.target))) {
+            // Don't trigger user info popup if clicking on expand button or its children
+            if (expandBtn && (e.target === expandBtn || expandBtn.contains(e.target) || e.target.closest('button'))) {
+                e.stopPropagation();
                 return;
             }
 
