@@ -19,65 +19,97 @@
         }
         .container {
             max-width: 600px;
-            margin: 40px auto;
+            margin: 20px auto;
             background: rgba(35,41,70,0.98);
-            border-radius: 18px;
-            box-shadow: 0 4px 24px #0005;
-            padding: 36px 22px 28px 22px;
-            border: 2px solid #a786ff33;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px #0005;
+            padding: 20px 16px 16px 16px;
+            border: 1px solid #a786ff33;
         }
         
         /* Responsive Design for different screen sizes */
         @media (max-width: 768px) {
+            .back-btn {
+                top: 0.5rem;
+                left: 0.5rem;
+                padding: 0.5rem 0.8rem;
+                font-size: 0.8rem;
+            }
+            
             .container {
-                max-width: 95%;
-                margin: 20px auto;
-                padding: 24px 16px 20px 16px;
+                max-width: 98%;
+                margin: 10px auto;
+                padding: 16px 12px 12px 12px;
             }
             h1 {
-                font-size: 1.8em;
+                font-size: 1.5em;
+                margin-bottom: 12px;
             }
             .balance-box {
                 flex-direction: column;
-                gap: 12px;
+                gap: 8px;
+                margin: 8px 0 12px 0;
+                padding: 10px 8px 6px 8px;
             }
             .balance-item {
                 flex: none;
                 min-width: auto;
                 margin: 0;
             }
+            .balance-label {
+                font-size: 0.85em;
+            }
+            .balance-value {
+                font-size: 0.9em;
+            }
             .profile-row {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 8px;
+                gap: 4px;
+                padding: 6px 0;
+                font-size: 0.9em;
             }
             .profile-value {
                 word-break: break-all;
+                font-size: 0.85em;
             }
         }
         
         @media (max-width: 480px) {
+            .back-btn {
+                top: 0.25rem;
+                left: 0.25rem;
+                padding: 0.4rem 0.6rem;
+                font-size: 0.75rem;
+            }
+            
             .container {
-                max-width: 98%;
-                margin: 10px auto;
-                padding: 20px 12px 16px 12px;
+                max-width: 99%;
+                margin: 5px auto;
+                padding: 12px 8px 8px 8px;
             }
             h1 {
-                font-size: 1.6em;
-                margin-bottom: 20px;
+                font-size: 1.3em;
+                margin-bottom: 8px;
             }
             .balance-box {
-                padding: 14px 10px 8px 10px;
+                padding: 8px 6px 4px 6px;
+                margin: 6px 0 8px 0;
+                gap: 6px;
             }
             .balance-label {
-                font-size: 1em;
+                font-size: 0.8em;
             }
             .balance-value {
-                font-size: 1.1em;
+                font-size: 0.85em;
             }
             .profile-row {
-                font-size: 1em;
-                padding: 10px 0;
+                font-size: 0.85em;
+                padding: 4px 0;
+                gap: 2px;
+            }
+            .profile-value {
+                font-size: 0.8em;
             }
         }
         
@@ -107,42 +139,64 @@
         h1 {
             text-align: center;
             color: #00ff88;
-            margin-bottom: 28px;
+            margin-bottom: 16px;
             font-weight: 700;
-            letter-spacing: 0.5px;
-            font-size: 2.1em;
-            text-shadow: 0 2px 8px #00ff8822;
+            letter-spacing: 0.3px;
+            font-size: 1.8em;
+            text-shadow: 0 1px 4px #00ff8822;
         }
         .profile-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 0;
+            padding: 8px 0;
             border-bottom: 1px solid #2d3250;
-            font-size: 1.08em;
+            font-size: 0.95em;
         }
         .profile-row:last-child { border-bottom: none; }
         .profile-label { color: #a786ff; font-weight: bold; }
         .profile-value { color: #e0e6f7; font-family: monospace; }
         .balance-box {
             background: #181c2a;
-            border-radius: 10px;
-            margin: 18px 0 28px 0;
-            box-shadow: 0 2px 8px #a786ff11;
-            padding: 18px 14px 10px 14px;
+            border-radius: 8px;
+            margin: 12px 0 16px 0;
+            box-shadow: 0 1px 4px #a786ff11;
+            padding: 12px 10px 8px 10px;
             display: flex;
             flex-wrap: wrap;
-            gap: 18px;
+            gap: 12px;
             justify-content: space-between;
         }
         .balance-item {
-            flex: 1 1 120px;
-            min-width: 120px;
-            margin: 0 8px;
+            flex: 1 1 100px;
+            min-width: 100px;
+            margin: 0 4px;
             text-align: center;
         }
-        .balance-label { color: #00ff88; font-weight: bold; font-size: 1.08em; }
-        .balance-value { color: #fff; font-size: 1.18em; font-family: monospace; margin-top: 4px; display: block; }
+        .balance-label { color: #00ff88; font-weight: bold; font-size: 0.9em; }
+        .balance-value { color: #fff; font-size: 1em; font-family: monospace; margin-top: 2px; display: block; }
+        
+        .back-btn {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            background: linear-gradient(135deg, #a786ff, #00ff88);
+            color: #181c2a;
+            border: none;
+            padding: 0.6rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.9rem;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(167, 134, 255, 0.3);
+        }
 
         .loading, .error-message {
             text-align: center;
@@ -163,27 +217,31 @@
         @media (max-width: 768px) {
             .withdrawal-buttons {
                 flex-direction: column !important;
-                gap: 1rem !important;
+                gap: 0.6rem !important;
+                margin-bottom: 1rem !important;
             }
             .withdrawal-buttons button {
-                padding: 0.8em 1.8em !important;
-                font-size: 1em !important;
+                padding: 0.6em 1.2em !important;
+                font-size: 0.9em !important;
             }
         }
         
         @media (max-width: 480px) {
             .withdrawal-buttons {
-                gap: 0.8rem !important;
+                gap: 0.4rem !important;
+                margin-bottom: 0.8rem !important;
             }
             .withdrawal-buttons button {
-                padding: 0.7em 1.5em !important;
-                font-size: 0.95em !important;
+                padding: 0.5em 1em !important;
+                font-size: 0.8em !important;
             }
         }
     </style>
 </head>
 <body>
-    <script src="js/navbar.js"></script>
+    <!-- Back Button -->
+    <a href="index.html" class="back-btn">← Back</a>
+    
     <div class="container">
         <h1>User Profile</h1>
         <div id="profile-content">
@@ -425,10 +483,10 @@
                         <span class="balance-value" title="${Number.parseFloat(daiBalance.toString()).toLocaleString('en-US', {maximumFractionDigits: 4})}">${formatLargeNumber(Number.parseFloat(daiBalance.toString()))}</span>
                     </div>
                 </div>
-                <div class="withdrawal-buttons" style="display:flex;gap:1.2rem;justify-content:center;margin-bottom:1.5rem;flex-wrap:wrap;">
-                  <button id="claim-btn" title="Commission withdrawal is only possible once every 12 hours and if you have points to withdraw. If you don't have points or 12 hours haven't passed yet, withdrawal is not possible." style="background:linear-gradient(90deg,#00ff88,#a786ff);color:#181c2a;font-weight:bold;border:none;border-radius:10px;padding:0.9em 2.2em;font-size:1.08em;cursor:pointer;box-shadow:0 2px 8px #00ff8840;display:inline-flex;align-items:center;gap:0.6em;transition:box-shadow 0.2s,transform 0.2s;"><span style='font-size:1.2em;'>💸</span> Withdraw Commission <span id="claim-timer" style="font-size:0.9em;margin-right:0.5em;"></span></button>
-                  ${canMonthlyCashback ? `<button id="monthly-cashback-btn" title="Cashback withdrawal is only possible once every 30 days, with at least one empty child position and up to the deposit limit. If both positions are full or 30 days haven't passed or the cashback limit is reached, withdrawal is not possible." style="background:linear-gradient(90deg,#a786ff,#00ff88);color:#181c2a;font-weight:bold;border:none;border-radius:10px;padding:0.9em 2.2em;font-size:1.08em;cursor:pointer;box-shadow:0 2px 8px #a786ff40;display:inline-flex;align-items:center;gap:0.6em;transition:box-shadow 0.2s,transform 0.2s;"><span style='font-size:1.2em;'>📆</span> Cashback <span id="cashback-timer" style="font-size:0.9em;margin-right:0.5em;"></span></button>` : ''}
-                  <button id="upgrade-cap-btn" title="Upgrade binary points cap using IAM tokens. The more you upgrade, the higher your points cap becomes." style="background:linear-gradient(90deg,#ff6b35,#ff8e53);color:#181c2a;font-weight:bold;border:none;border-radius:10px;padding:0.9em 2.2em;font-size:1.08em;cursor:pointer;box-shadow:0 2px 8px #ff6b3540;display:inline-flex;align-items:center;gap:0.6em;transition:box-shadow 0.2s,transform 0.2s;"><span style='font-size:1.2em;'>📈</span> Upgrade Cap <span id="upgrade-timer" style="font-size:0.9em;margin-right:0.5em;"></span></button>
+                <div class="withdrawal-buttons" style="display:flex;gap:0.8rem;justify-content:center;margin-bottom:1rem;flex-wrap:wrap;">
+                  <button id="claim-btn" title="Commission withdrawal is only possible once every 12 hours and if you have points to withdraw. If you don't have points or 12 hours haven't passed yet, withdrawal is not possible." style="background:linear-gradient(90deg,#00ff88,#a786ff);color:#181c2a;font-weight:bold;border:none;border-radius:8px;padding:0.7em 1.5em;font-size:0.95em;cursor:pointer;box-shadow:0 1px 4px #00ff8840;display:inline-flex;align-items:center;gap:0.4em;transition:box-shadow 0.2s,transform 0.2s;"><span style='font-size:1em;'>💸</span> Withdraw Commission <span id="claim-timer" style="font-size:0.8em;margin-right:0.3em;"></span></button>
+                  ${canMonthlyCashback ? `<button id="monthly-cashback-btn" title="Cashback withdrawal is only possible once every 30 days, with at least one empty child position and up to the deposit limit. If both positions are full or 30 days haven't passed or the cashback limit is reached, withdrawal is not possible." style="background:linear-gradient(90deg,#a786ff,#00ff88);color:#181c2a;font-weight:bold;border:none;border-radius:8px;padding:0.7em 1.5em;font-size:0.95em;cursor:pointer;box-shadow:0 1px 4px #a786ff40;display:inline-flex;align-items:center;gap:0.4em;transition:box-shadow 0.2s,transform 0.2s;"><span style='font-size:1em;'>📆</span> Cashback <span id="cashback-timer" style="font-size:0.8em;margin-right:0.3em;"></span></button>` : ''}
+                  <button id="upgrade-cap-btn" title="Upgrade binary points cap using IAM tokens. The more you upgrade, the higher your points cap becomes." style="background:linear-gradient(90deg,#ff6b35,#ff8e53);color:#181c2a;font-weight:bold;border:none;border-radius:8px;padding:0.7em 1.5em;font-size:0.95em;cursor:pointer;box-shadow:0 1px 4px #ff6b3540;display:inline-flex;align-items:center;gap:0.4em;transition:box-shadow 0.2s,transform 0.2s;"><span style='font-size:1em;'>📈</span> Upgrade Cap <span id="upgrade-timer" style="font-size:0.8em;margin-right:0.3em;"></span></button>
                 </div>
                 ${!canMonthlyCashback && monthlyMsg ? `<div style="background:rgba(167,134,255,0.08);border:1.5px solid #a786ff;border-radius:10px;padding:1em 1.2em;margin-bottom:1.5rem;text-align:center;font-size:1.07em;color:#a786ff;box-shadow:0 2px 8px #a786ff22;"><span style='font-size:1.2em;'>📆</span> <b>Cashback Not Available:</b><br>${monthlyMsg}</div>` : ''}
                 <div id="monthly-cashback-msg" style="display:none;color:#ff4444;text-align:center;margin-bottom:1.2rem;font-size:1.05em;transition:opacity 0.3s;"></div>
