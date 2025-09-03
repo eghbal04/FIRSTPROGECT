@@ -541,7 +541,11 @@ class MobileUserPopup {
         // Also try comprehensive debug
         setTimeout(() => {
             console.log('🔄 Starting comprehensive debug...');
-            this.debugAllBalances(walletAddress);
+            if (window.debugAllBalances) {
+                window.debugAllBalances(walletAddress);
+            } else {
+                console.log('⚠️ debugAllBalances function not available');
+            }
         }, 1000);
         
         // Setup initial card sizes based on content

@@ -1069,14 +1069,14 @@
                 // Show success message
                 const toast = document.createElement('div');
                 toast.style.cssText = `
-                    position: fixed;
-                    top: 20px;
+            position: fixed;
+            top: 20px;
                     right: 20px;
                     background: linear-gradient(135deg, #00ff88, #00cc6a);
                     color: #1a202c;
                     padding: 12px 20px;
-                    border-radius: 8px;
-                    font-weight: bold;
+            border-radius: 8px;
+            font-weight: bold;
                     font-size: 14px;
                     z-index: 10000;
                     box-shadow: 0 4px 12px rgba(0, 255, 136, 0.3);
@@ -1519,11 +1519,11 @@
                 width: 100%;
                 background: linear-gradient(45deg, #00ff88, #00cc6a);
                 color: #1a202c;
-                            border: none;
+            border: none;
                 padding: 0.5rem;
                 border-radius: 6px;
                 font-weight: 600;
-                            cursor: pointer;
+            cursor: pointer;
                             margin-top: 1rem;
                 transition: all 0.3s ease;
             `;
@@ -1702,9 +1702,36 @@
                 const realData = await getRealWalletData();
                 if (realData) {
                     console.log('✅ Real data loaded, rendering tree...');
+                    
+                    // Update button state after successful data load
+                    const connectBtn = document.getElementById('connect-wallet-btn');
+                    if (connectBtn && window.contractConfig && window.contractConfig.userAddress) {
+                        const shortAddress = window.contractConfig.userAddress.slice(0, 6) + '...' + window.contractConfig.userAddress.slice(-4);
+                        connectBtn.className = 'connect-wallet-btn modern-btn connected';
+                        connectBtn.textContent = `✅ ${shortAddress}`;
+                    }
+                    
                     renderPyramidTree();
                 } else {
                     console.log('⚠️ Could not load real data, using default data');
+                    
+                    // Update button state for failed data load
+                    const connectBtn = document.getElementById('connect-wallet-btn');
+                    if (connectBtn) {
+                        connectBtn.className = 'connect-wallet-btn modern-btn error';
+                        connectBtn.textContent = '⚠️ Data Load Failed';
+                        setTimeout(() => {
+                            if (window.contractConfig && window.contractConfig.userAddress) {
+                                const shortAddress = window.contractConfig.userAddress.slice(0, 6) + '...' + window.contractConfig.userAddress.slice(-4);
+                                connectBtn.className = 'connect-wallet-btn modern-btn connected';
+                                connectBtn.textContent = `✅ ${shortAddress}`;
+                            } else {
+                                connectBtn.className = 'connect-wallet-btn modern-btn';
+                                connectBtn.textContent = '🔗 Connect Wallet';
+                            }
+                        }, 3000);
+                    }
+                    
                     renderPyramidTree();
                 }
 
@@ -1823,6 +1850,11 @@
                 }
             }
             
+            // Update button state during auto-connection
+            function updateButtonForAutoConnection() {
+                updateButtonState('connecting', '🔄 Auto-Connecting...');
+            }
+            
             // Connect wallet function
             async function connectWallet() {
                 try {
@@ -1876,10 +1908,42 @@
                 });
             }
         }
+        
+        // Show auto-connection status
+        function showAutoConnectionStatus() {
+            const statusDiv = document.createElement('div');
+            statusDiv.id = 'auto-connection-status';
+            statusDiv.style.cssText = `
+                position: fixed;
+                top: 70px;
+                right: 20px;
+                background: rgba(0, 255, 136, 0.1);
+                border: 1px solid rgba(0, 255, 136, 0.3);
+                border-radius: 8px;
+                padding: 10px 15px;
+                color: #00ff88;
+                font-size: 12px;
+                z-index: 999;
+                backdrop-filter: blur(10px);
+                max-width: 200px;
+            `;
+            statusDiv.textContent = '🔄 Auto-connecting to wallet...';
+            document.body.appendChild(statusDiv);
+            
+            // Remove after 5 seconds
+            setTimeout(() => {
+                if (statusDiv.parentNode) {
+                    statusDiv.parentNode.removeChild(statusDiv);
+                }
+            }, 5000);
+        }
 
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('🚀 Pyramid Tree page loaded');
+            
+            // Show auto-connection status
+            showAutoConnectionStatus();
             
             // Debug wallet connection
             console.log('🔍 Debug Wallet Connection:');
@@ -1910,38 +1974,95 @@
             
             const tryConnectWallet = async () => {
                 attempts++;
-                console.log(`🔄 Attempt ${attempts}/${maxAttempts} to connect wallet...`);
+                console.log(`🔄 Attempt ${attempts}/${maxAttempts} to auto-connect wallet...`);
                 
                 try {
-                    // Check if required functions are available
-                    if (!window.connectWallet && !window.contractConfig) {
+                    // Check if MetaMask is available
+                    if (!window.ethereum) {
                         if (attempts < maxAttempts) {
-                            console.log('⏳ Waiting for scripts to load...');
-                            setTimeout(tryConnectWallet, 500);
+                            console.log('⏳ MetaMask not detected, waiting...');
+                            setTimeout(tryConnectWallet, 1000);
                             return;
                         } else {
-                            console.log('❌ Required functions not available after max attempts');
+                            console.log('❌ MetaMask not available after max attempts');
                             renderPyramidTree();
                             return;
                         }
                     }
                     
-                    // Try to connect wallet
-                    const walletConnected = await connectWalletAndLoadData();
+                    // Check if already connected
+                    if (window.ethereum.selectedAddress) {
+                        console.log('✅ Wallet already connected:', window.ethereum.selectedAddress);
+                        
+                        // Set up contract config
+                        if (!window.contractConfig) {
+                            window.contractConfig = {};
+                        }
+                        window.contractConfig.userAddress = window.ethereum.selectedAddress;
+                        
+                        // Try to create contract
+                        if (window.IAM_ADDRESS && (window.IAM_ABI || window.CONTRACT_ABI)) {
+                            try {
+                                const provider = new ethers.BrowserProvider(window.ethereum);
+                                const signer = await provider.getSigner();
+                                const abi = window.IAM_ABI || window.CONTRACT_ABI;
+                                window.contractConfig.contract = new ethers.Contract(
+                                    window.IAM_ADDRESS,
+                                    abi,
+                                    signer
+                                );
+                                window.contractConfig.contractAddress = window.IAM_ADDRESS;
+                                window.contractConfig.contractABI = abi;
+                                console.log('✅ Contract created for auto-connection');
+                            } catch (contractError) {
+                                console.log('⚠️ Contract creation failed:', contractError.message);
+                            }
+                        }
+                        
+                        console.log('✅ Auto-connection successful, loading real data...');
+                        
+                        // Update button state
+                        if (connectBtn) {
+                            const shortAddress = window.ethereum.selectedAddress.slice(0, 6) + '...' + window.ethereum.selectedAddress.slice(-4);
+                            connectBtn.className = 'connect-wallet-btn modern-btn connected';
+                            connectBtn.textContent = `✅ ${shortAddress}`;
+                        }
+                        
+                        await loadRealDataAndRender();
+                        return;
+                    }
+                    
+                    // Try to connect using simple method
+                    const walletConnected = await simpleConnectWallet();
                     
                     if (walletConnected) {
-                        console.log('✅ Wallet connected successfully, loading real data...');
+                        console.log('✅ Auto-connection successful, loading real data...');
+                        
+                        // Update button state
+                        if (connectBtn && window.contractConfig && window.contractConfig.userAddress) {
+                            const shortAddress = window.contractConfig.userAddress.slice(0, 6) + '...' + window.contractConfig.userAddress.slice(-4);
+                            connectBtn.className = 'connect-wallet-btn modern-btn connected';
+                            connectBtn.textContent = `✅ ${shortAddress}`;
+                        }
+                        
                         await loadRealDataAndRender();
                     } else {
-                        console.log('⚠️ Could not connect wallet, showing default data');
+                        console.log('⚠️ Auto-connection failed, showing default data');
+                        
+                        // Update button state
+                        if (connectBtn) {
+                            connectBtn.className = 'connect-wallet-btn modern-btn';
+                            connectBtn.textContent = '🔗 Connect Wallet';
+                        }
+                        
                         renderPyramidTree();
                     }
-                } catch (error) {
-                    console.error(`❌ Error in attempt ${attempts}:`, error);
+            } catch (error) {
+                    console.error(`❌ Error in auto-connection attempt ${attempts}:`, error);
                     if (attempts < maxAttempts) {
-                        setTimeout(tryConnectWallet, 500);
+                        setTimeout(tryConnectWallet, 1000);
                     } else {
-                        console.log('❌ Max attempts reached, showing default data');
+                        console.log('❌ Max auto-connection attempts reached, showing default data');
                         renderPyramidTree();
                     }
                 }
@@ -1955,6 +2076,13 @@
             console.log('- isMobile():', isMobile());
             console.log('- User Agent:', navigator.userAgent);
             console.log('- Screen width:', window.innerWidth);
+            
+            // Update button state for auto-connection
+            const connectBtn = document.getElementById('connect-wallet-btn');
+            if (connectBtn) {
+                connectBtn.className = 'connect-wallet-btn modern-btn connecting';
+                connectBtn.textContent = '🔄 Auto-Connecting...';
+            }
             
             // Start trying to connect
             setTimeout(tryConnectWallet, 200);
