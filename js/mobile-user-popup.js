@@ -489,18 +489,24 @@ class MobileUserPopup {
                         <div class="balance-title">Live Balances</div>
                         <div class="balance-grid">
                             <div class="balance-item">
-                                <span>🟢</span>
-                                <span>IAM</span>
+                                <div class="balance-left">
+                                    <span class="balance-icon">🟢</span>
+                                    <span class="balance-name">IAM</span>
+                                </div>
                                 <span class="balance-value" id="IAM-balance">-</span>
                             </div>
                             <div class="balance-item">
-                                <span>🟣</span>
-                                <span>MATIC</span>
+                                <div class="balance-left">
+                                    <span class="balance-icon">🟣</span>
+                                    <span class="balance-name">MATIC</span>
+                                </div>
                                 <span class="balance-value" id="matic-balance">-</span>
                             </div>
                             <div class="balance-item">
-                                <span>💵</span>
-                                <span>DAI</span>
+                                <div class="balance-left">
+                                    <span class="balance-icon">💵</span>
+                                    <span class="balance-name">DAI</span>
+                                </div>
                                 <span class="balance-value" id="dai-balance">-</span>
                             </div>
                         </div>

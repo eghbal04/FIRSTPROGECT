@@ -113,13 +113,7 @@
                 <!-- Network Stats -->
                 <div id="network-stats" class="network-user-info-container"></div>
                 
-                <!-- Wallet Connection Status -->
-                <div id="wallet-status" class="modern-card" style="margin-bottom: 1rem; text-align: center; padding: 1rem;">
-                    <div id="wallet-info" style="color: #00ccff; font-size: 0.9em;">
-                        🔄 Connecting to wallet...
-                    </div>
-                </div>
-                
+
                 <!-- File Manager Style Tree Display -->
                 <div id="file-manager-tree">
                     <div class="file-manager-container">
@@ -190,8 +184,15 @@
                     return true;
                 }
                 
+                // Check if ethereum is available
+                if (!window.ethereum) {
+                    console.log('❌ Ethereum provider not available');
+                    return false;
+                }
+                
                 // Try to connect wallet
                 if (window.connectWallet) {
+                    console.log('🔄 Calling connectWallet function...');
                     await window.connectWallet();
                     console.log('✅ Wallet connected successfully');
                     
@@ -203,7 +204,46 @@
                     
                     return true;
                 } else {
-                    console.log('❌ connectWallet function not available');
+                    console.log('❌ connectWallet function not available, trying direct connection...');
+                    
+                    // Try direct connection
+                    try {
+                        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                        if (accounts && accounts.length > 0) {
+                            console.log('✅ Direct wallet connection successful');
+                            
+                            // Set up contract config if not exists
+                            if (!window.contractConfig) {
+                                window.contractConfig = {};
+                            }
+                            window.contractConfig.userAddress = accounts[0];
+                            
+                            // Try to get contract from other sources
+                            if (window.contractConfig.contract) {
+                                console.log('✅ Contract already available');
+                                return true;
+                            }
+                            
+                            // Try to create contract
+                            if (window.ethereum && window.contractConfig.contractAddress && window.contractConfig.contractABI) {
+                                const provider = new ethers.BrowserProvider(window.ethereum);
+                                const signer = await provider.getSigner();
+                                window.contractConfig.contract = new ethers.Contract(
+                                    window.contractConfig.contractAddress,
+                                    window.contractConfig.contractABI,
+                                    signer
+                                );
+                                console.log('✅ Contract created successfully');
+                                return true;
+                            }
+                            
+                            console.log('⚠️ Contract not available, but wallet connected');
+                            return true;
+                        }
+                    } catch (directError) {
+                        console.log('❌ Direct connection failed:', directError.message);
+                    }
+                    
                     return false;
                 }
             } catch (error) {
@@ -1452,29 +1492,14 @@
 
 
 
-        // Update wallet status
-        function updateWalletStatus() {
-            const walletInfo = document.getElementById('wallet-info');
-            
-            if (window.contractConfig && window.contractConfig.userAddress) {
-                const userAddress = window.contractConfig.userAddress;
-                if (userAddress) {
-                    walletInfo.innerHTML = `✅ Connected: ${userAddress.substring(0, 6)}...${userAddress.substring(userAddress.length - 4)}`;
-                } else {
-                    walletInfo.innerHTML = '✅ Connected: Wallet Address Not Available';
-                }
-            } else {
-                walletInfo.innerHTML = '❌ Wallet not connected';
-            }
-        }
+
 
         // Load real data and render tree
         async function loadRealDataAndRender() {
             try {
                 console.log('🔄 Loading real wallet data...');
                 
-                // Update wallet status
-                updateWalletStatus();
+
                 
                 // Check if wallet is connected
                 if (!window.contractConfig || !window.contractConfig.contract) {
@@ -1496,7 +1521,6 @@
             } catch (error) {
                 console.error('❌ Error loading real data:', error);
                 console.log('⚠️ Using default data');
-                updateWalletStatus();
                 renderPyramidTree();
             }
         }
@@ -1505,27 +1529,71 @@
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('🚀 Pyramid Tree page loaded');
             
-            // Wait a bit for other scripts to load
-                setTimeout(async () => {
-                    try {
-                    // Try to connect wallet automatically
-                    console.log('🔄 Attempting to connect wallet automatically...');
+            // Wait for scripts to load and try multiple times
+            let attempts = 0;
+            const maxAttempts = 5;
+            
+            const tryConnectWallet = async () => {
+                attempts++;
+                console.log(`🔄 Attempt ${attempts}/${maxAttempts} to connect wallet...`);
+                
+                try {
+                    // Check if required functions are available
+                    if (!window.connectWallet && !window.contractConfig) {
+                        if (attempts < maxAttempts) {
+                            console.log('⏳ Waiting for scripts to load...');
+                            setTimeout(tryConnectWallet, 500);
+                            return;
+                        } else {
+                            console.log('❌ Required functions not available after max attempts');
+                            renderPyramidTree();
+                            return;
+                        }
+                    }
+                    
+                    // Try to connect wallet
                     const walletConnected = await connectWalletAndLoadData();
                     
                     if (walletConnected) {
-                        console.log('✅ Wallet connected automatically, loading real data...');
+                        console.log('✅ Wallet connected successfully, loading real data...');
                         await loadRealDataAndRender();
-                        } else {
-                        console.log('⚠️ Could not connect wallet automatically, showing default data');
-                        updateWalletStatus();
+                    } else {
+                        console.log('⚠️ Could not connect wallet, showing default data');
                         renderPyramidTree();
                     }
-                    } catch (error) {
-                    console.error('❌ Error in automatic wallet connection:', error);
-                    updateWalletStatus();
-                    renderPyramidTree();
+                } catch (error) {
+                    console.error(`❌ Error in attempt ${attempts}:`, error);
+                    if (attempts < maxAttempts) {
+                        setTimeout(tryConnectWallet, 500);
+                    } else {
+                        console.log('❌ Max attempts reached, showing default data');
+                        renderPyramidTree();
                     }
-                }, 1000);
+                }
+            };
+            
+            // Start trying to connect
+            setTimeout(tryConnectWallet, 200);
+            
+            // Listen for account changes
+            if (window.ethereum) {
+                window.ethereum.on('accountsChanged', async (accounts) => {
+                    console.log('🔄 Account changed:', accounts);
+                    if (accounts && accounts.length > 0) {
+                        if (window.contractConfig) {
+                            window.contractConfig.userAddress = accounts[0];
+                        }
+                        await loadRealDataAndRender();
+                    } else {
+                        renderPyramidTree();
+                    }
+                });
+                
+                window.ethereum.on('chainChanged', () => {
+                    console.log('🔄 Chain changed, reloading...');
+                    window.location.reload();
+                });
+            }
         });
     </script>
     

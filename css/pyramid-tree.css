@@ -597,6 +597,33 @@
     font-size: 0.9rem;
 }
 
+/* Large screens - Better font sizes */
+@media (min-width: 1200px) {
+    .tree-node-label {
+        font-size: 1.4rem;
+        padding: 6px 10px;
+        font-weight: 600;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+        letter-spacing: 0.4px;
+    }
+    
+    .tree-node-info {
+        font-size: 1.3rem;
+        margin-top: 3px;
+        padding: 0.5rem 0.8rem;
+        font-weight: 600;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        letter-spacing: 0.3px;
+    }
+    
+    .tree-expand-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 1.1em;
+        margin-right: 8px;
+    }
+}
+
 /* File Manager Responsive Design - Infinite Tree */
 @media (max-width: 768px) {
     .file-manager-container {
@@ -615,6 +642,30 @@
     
     .file-manager-title {
         font-size: 0.9em;
+    }
+    
+    .tree-node-label {
+        font-size: 1.3rem;
+        padding: 4px 8px;
+        font-weight: 600;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+        letter-spacing: 0.3px;
+    }
+    
+    .tree-node-info {
+        font-size: 1.2rem;
+        margin-top: 2px;
+        padding: 0.4rem 0.6rem;
+        font-weight: 600;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        letter-spacing: 0.2px;
+    }
+    
+    .tree-expand-btn {
+        width: 24px;
+        height: 24px;
+        font-size: 1em;
+        margin-right: 6px;
     }
     
     .file-manager-content {
@@ -642,7 +693,7 @@
     }
     
     .tree-node-label {
-        font-size: 1.2em;
+        font-size: 1.4em;
         padding: 4px 8px;
         font-weight: 600;
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
@@ -650,7 +701,7 @@
     }
     
     .tree-node-info {
-        font-size: 1em;
+        font-size: 1.2em;
         margin-top: 2px;
         padding: 0.4rem 0.6rem;
         font-weight: 600;
@@ -710,7 +761,7 @@
     }
     
     .tree-node-label {
-        font-size: 1.1em;
+        font-size: 1.3em;
         padding: 3px 6px;
         font-weight: 600;
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
@@ -718,7 +769,7 @@
     }
     
     .tree-node-info {
-        font-size: 0.9em;
+        font-size: 1.1em;
         margin-top: 1px;
         padding: 0.3rem 0.5rem;
         font-weight: 600;
@@ -753,7 +804,7 @@
     }
     
     .tree-node-label {
-        font-size: 1em;
+        font-size: 1.2em;
         padding: 2px 4px;
         font-weight: 600;
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
@@ -761,7 +812,7 @@
     }
     
     .tree-node-info {
-        font-size: 0.8em;
+        font-size: 1em;
         margin-top: 1px;
         padding: 0.2rem 0.4rem;
         font-weight: 600;

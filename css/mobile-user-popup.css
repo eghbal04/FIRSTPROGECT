@@ -140,18 +140,44 @@
 
 .balance-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    grid-template-columns: 1fr;
+    gap: 12px;
 }
 
 .balance-item {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     background: rgba(0,255,136,0.05);
     border: 1px solid rgba(0,255,136,0.1);
     border-radius: 12px;
-    padding: 12px;
+    padding: 12px 14px;
     transition: transform 0.2s ease;
+    min-height: 48px;
+}
+
+.balance-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.balance-icon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.balance-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.balance-value {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #00ff88;
+    font-family: 'Fira Mono', monospace;
 }
 
 .balance-item:hover {
@@ -180,27 +206,84 @@
     color: #00ff88;
 }
 
+@media (max-width: 768px) {
+    .balance-grid {
+        gap: 10px;
+    }
+    
+    .balance-item {
+        padding: 10px 12px;
+        min-height: 44px;
+    }
+    
+    .balance-icon {
+        font-size: 1.1rem;
+    }
+    
+    .balance-name {
+        font-size: 0.85rem;
+    }
+    
+    .balance-value {
+        font-size: 0.9rem;
+    }
+}
+
 @media (max-width: 480px) {
     .balance-grid {
-        grid-template-columns: repeat(3, 1fr);
         gap: 8px;
     }
 
     .balance-item {
-        padding: 8px;
+        padding: 8px 10px;
+        min-height: 40px;
+    }
+
+    .balance-left {
+        gap: 6px;
     }
 
     .balance-icon {
         font-size: 1rem;
-        margin-right: 8px;
+    }
+    
+    .balance-name {
+        font-size: 0.8rem;
+    }
+    
+    .balance-value {
+        font-size: 0.85rem;
     }
 
     .balance-label {
         font-size: 0.75rem;
     }
+}
 
+@media (max-width: 360px) {
+    .balance-grid {
+        gap: 6px;
+    }
+
+    .balance-item {
+        padding: 6px 8px;
+        min-height: 36px;
+    }
+
+    .balance-left {
+        gap: 4px;
+    }
+
+    .balance-icon {
+        font-size: 0.9rem;
+    }
+    
+    .balance-name {
+        font-size: 0.75rem;
+    }
+    
     .balance-value {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
     }
 }
 
@@ -627,12 +710,13 @@
     }
     
     .balance-grid {
-        gap: 8px;
+        gap: 10px;
     }
     
     .balance-item {
-        padding: 10px;
+        padding: 12px 14px;
         font-size: 1rem;
+        min-height: 45px;
     }
     
     .stat-item {
