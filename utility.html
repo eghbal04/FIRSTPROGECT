@@ -36,48 +36,24 @@
     }
     
     .utility-container {
-      max-width: 1200px;
+      max-width: 800px;
       margin: 0 auto;
-      padding: 2rem 1rem;
-    }
-    
-    .utility-header {
-      text-align: center;
-      margin-bottom: 3rem;
-      padding: 2rem;
-      background: linear-gradient(135deg, rgba(0,255,136,0.1) 0%, rgba(167,134,255,0.1) 100%);
-      border-radius: 20px;
-      border: 1px solid rgba(0,255,136,0.2);
-    }
-    
-    .utility-header h1 {
-      font-size: 2.5rem;
-      margin: 0 0 1rem 0;
-      background: linear-gradient(45deg, #00ff88, #a786ff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    
-    .utility-header p {
-      font-size: 1.1rem;
-      color: #a0aec0;
-      margin: 0;
+      padding: 1rem;
     }
     
     .utility-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-      gap: 2rem;
-      margin-bottom: 2rem;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
     }
     
     .utility-card {
       background: linear-gradient(135deg, rgba(35,41,70,0.8) 0%, rgba(45,55,72,0.8) 100%);
       border: 1px solid rgba(0,255,136,0.2);
-      border-radius: 16px;
-      padding: 2rem;
-      box-shadow: 0 8px 32px rgba(0,255,136,0.1);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 16px rgba(0,255,136,0.1);
       transition: all 0.3s ease;
       backdrop-filter: blur(10px);
     }
@@ -89,8 +65,8 @@
     }
     
     .utility-card h3 {
-      font-size: 1.5rem;
-      margin: 0 0 1rem 0;
+      font-size: 1.3rem;
+      margin: 0 0 0.8rem 0;
       color: #00ff88;
       display: flex;
       align-items: center;
@@ -98,40 +74,7 @@
     }
     
     .utility-card .icon {
-      font-size: 1.8rem;
-    }
-    
-    .utility-card p {
-      color: #a0aec0;
-      margin: 0 0 1.5rem 0;
-      line-height: 1.6;
-    }
-    
-    .utility-features {
-      list-style: none;
-      padding: 0;
-      margin: 0 0 1.5rem 0;
-    }
-    
-    .utility-features li {
-      padding: 0.5rem 0;
-      color: #cbd5e0;
-      position: relative;
-      padding-left: 1.5rem;
-    }
-    
-    .utility-features li::before {
-      content: '✓';
-      position: absolute;
-      left: 0;
-      color: #00ff88;
-      font-weight: bold;
-    }
-    
-    .utility-actions {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
+      font-size: 1.5rem;
     }
     
     .utility-btn {
@@ -161,15 +104,9 @@
     
     .calculator-section {
       background: rgba(0,255,136,0.05);
-      border-radius: 12px;
-      padding: 1.5rem;
+      border-radius: 8px;
+      padding: 1rem;
       border: 1px solid rgba(0,255,136,0.1);
-    }
-    
-    .calculator-section h4 {
-      color: #00ff88;
-      margin: 0 0 1rem 0;
-      font-size: 1.2rem;
     }
     
     .calculator-input {
@@ -242,51 +179,46 @@
       from { transform: translateX(0); opacity: 1; }
       to { transform: translateX(100%); opacity: 0; }
     }
+    /* Back Button */
+    .back-btn {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      background: linear-gradient(135deg, #a786ff, #00ff88);
+      color: #0a0f1c;
+      border: none;
+      padding: 0.6rem 1rem;
+      border-radius: 20px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 0.9rem;
+      z-index: 1000;
+    }
+    
+    .back-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(167, 134, 255, 0.3);
+    }
   </style>
 </head>
 <body>
+    <!-- Back Button -->
+    <a href="index.html" class="back-btn">← Back</a>
 
-    <!-- Contract Selection -->
-    <div class="utility-card" style="margin-bottom: 2rem;">
-      <h3><span class="icon">📋</span>Contract Selection</h3>
-      <p>Choose between the new contract (default) or the old contract for utility operations</p>
-      
-      <div style="margin-bottom: 1rem;">
-        <label for="contractSelector" style="display: block; color: #00ff88; margin-bottom: 0.5rem; font-weight: 600;">Select Contract:</label>
-        <select id="contractSelector" style="width: 100%; padding: 0.8rem; border: 1px solid rgba(0,255,136,0.3); border-radius: 8px; background: rgba(26,32,44,0.8); color: #e2e8f0; font-size: 1rem;">
-          <option value="new">🆕 New Contract (0x63F5...d2FE)</option>
-          <option value="old">🔄 Old Contract (0xd7eD...0607)</option>
-        </select>
-      </div>
-      
-      <!-- Contract Info Display -->
-      <div id="contractInfo"></div>
-      
-      <!-- Contract Selection Info -->
-      <div style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); border-radius: 8px; padding: 0.8rem; margin-top: 1rem; font-size: 0.9rem; color: #ffc107;">
-        <strong>💡 Contract Selection:</strong> Choose between the new contract (default) or the old contract if you want to use utility tools with the old network.
-      </div>
-    </div>
+
 
     <div class="utility-grid">      <!-- Address and Index Conversion -->
        <div class="utility-card">
          <h3><span class="icon">🔄</span>Address and Index Conversion</h3>
-         <p>Convert between user index and wallet address</p>
-         <ul class="utility-features">
-           <li>Convert index to address</li>
-           <li>Convert address to index</li>
-           <li>Quick user search</li>
-           <li>Address validation</li>
-         </ul>
          <div class="calculator-section">
-           <h4>Quick Conversion</h4>
-           <div style="margin-bottom: 1.5rem;">
+           <div style="margin-bottom: 1rem;">
              <h5 style="color: #a786ff; margin-bottom: 0.5rem;">📊 Index to Address</h5>
              <input type="number" class="calculator-input" id="index-input" placeholder="User index number" min="0">
              <button class="utility-btn" onclick="convertIndexToAddress()" style="width: 100%;">Convert</button>
              <div class="calculator-result" id="index-result" style="display: none;"></div>
            </div>
-           <div style="margin-bottom: 1.5rem;">
+           <div>
              <h5 style="color: #a786ff; margin-bottom: 0.5rem;">👤 Address to Index</h5>
              <input type="text" class="calculator-input" id="address-input" placeholder="Wallet address (0x...)" style="direction: ltr;">
              <button class="utility-btn" onclick="convertAddressToIndex()" style="width: 100%;">Convert</button>
@@ -301,58 +233,12 @@
 
 
   <script>
-    // Contract addresses
-    const IAM_ADDRESS_NEW = '0x63F5a2085906f5fcC206d6589d78038FBc74d2FE'; // New contract
-    const IAM_ADDRESS_OLD = '0xd7eDAdcae9073FD69Ae1081B057922F41Adf0607'; // Old contract
+    // Contract address - using new contract by default
+    const UTILITY_IAM_ADDRESS = '0x63F5a2085906f5fcC206d6589d78038FBc74d2FE'; // New contract
     
-    // Default to new contract (override global if exists)
-    window.IAM_ADDRESS = IAM_ADDRESS_NEW;
-    let selectedContract = 'new'; // 'new' or 'old'
-
-    // Switch between old and new contracts
-    async function switchContract(contractType) {
-        console.log('🔄 Switching contract to:', contractType);
-        
-        if (contractType === 'old') {
-            window.IAM_ADDRESS = IAM_ADDRESS_OLD;
-            selectedContract = 'old';
-        } else {
-            window.IAM_ADDRESS = IAM_ADDRESS_NEW;
-            selectedContract = 'new';
-        }
-        
-        // Update global config if it exists
-        if (window.contractConfig && window.contractConfig.contract) {
-            // Recreate contract instance with new address
-            const signer = window.contractConfig.signer;
-            const provider = window.contractConfig.provider;
-            window.contractConfig.contract = new ethers.Contract(window.IAM_ADDRESS, window.IAM_ABI, signer);
-            console.log('✅ Contract switched to:', window.IAM_ADDRESS);
-        }
-        
-        updateContractSelectionUI();
-        showStatus(`✅ Switched to ${contractType === 'old' ? 'Old' : 'New'} contract successfully!`, 'success');
-    }
-
-    // Update contract selection UI
-    function updateContractSelectionUI() {
-        const contractSelector = document.getElementById('contractSelector');
-        if (contractSelector) {
-            contractSelector.value = selectedContract;
-        }
-        
-        const contractInfo = document.getElementById('contractInfo');
-        if (contractInfo) {
-            const contractAddress = selectedContract === 'old' ? IAM_ADDRESS_OLD : IAM_ADDRESS_NEW;
-            const contractName = selectedContract === 'old' ? 'Old Contract' : 'New Contract';
-            contractInfo.innerHTML = `
-                <div style="background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 8px; padding: 0.8rem; margin-bottom: 1rem;">
-                    <h4 style="color: #00ff88; margin: 0 0 0.5rem 0; font-size: 0.9rem;">📋 Selected Contract</h4>
-                    <p style="margin: 0; color: #ffffff; font-size: 0.8rem;"><strong>${contractName}:</strong></p>
-                    <p style="margin: 0; color: #a786ff; font-family: monospace; font-size: 0.75rem; word-break: break-all;">${contractAddress}</p>
-                </div>
-            `;
-        }
+    // Set global contract address if not already set
+    if (!window.IAM_ADDRESS) {
+        window.IAM_ADDRESS = UTILITY_IAM_ADDRESS;
     }
 
     // Show status message
@@ -389,8 +275,8 @@
         }, 3000);
     }
 
-         // Convert index to address
-     async function convertIndexToAddress() {
+    // Convert index to address
+    window.convertIndexToAddress = async function() {
        const index = parseInt(document.getElementById('index-input').value);
        
        if (!index || index < 0) {
@@ -432,8 +318,8 @@
        }
      }
 
-     // Convert address to index
-     async function convertAddressToIndex() {
+    // Convert address to index
+    window.convertAddressToIndex = async function() {
        const address = document.getElementById('address-input').value.trim();
        
        if (!address || !address.startsWith('0x')) {
@@ -487,8 +373,8 @@
 
     
 
-         // Copy to clipboard
-     function copyToClipboard(text) {
+    // Copy to clipboard
+    window.copyToClipboard = function(text) {
        navigator.clipboard.writeText(text).then(() => {
          alert('Copied!');
        }).catch(() => {
@@ -503,15 +389,15 @@
        });
      }
 
-     // Update status time
-     function updateStatusTime() {
+    // Update status time
+    window.updateStatusTime = function() {
        const now = new Date();
        const timeString = now.toLocaleString('en-US');
        document.getElementById('status-time').textContent = timeString;
      }
 
-     // Wallet connection function for utility page
-     async function connectWalletForUtility() {
+    // Wallet connection function for utility page
+    window.connectWalletForUtility = async function() {
        const connectBtn = document.getElementById('connect-wallet-btn');
        const statusDiv = document.getElementById('wallet-status');
        
@@ -548,8 +434,8 @@
        }
      }
 
-     // Check wallet connection status on page load
-     function checkWalletConnection() {
+    // Check wallet connection status on page load
+    window.checkWalletConnection = function() {
        const statusDiv = document.getElementById('wallet-status');
        const connectBtn = document.getElementById('connect-wallet-btn');
        
@@ -579,22 +465,8 @@
          }, index * 100);
        });
        
-       // Setup contract selector event listener
-       const contractSelector = document.getElementById('contractSelector');
-       if (contractSelector) {
-         contractSelector.addEventListener('change', async (e) => {
-           console.log('🔄 Contract selector changed to:', e.target.value);
-           try {
-             await switchContract(e.target.value);
-           } catch (error) {
-             console.error('❌ Error switching contract:', error);
-             showStatus('Error switching contract: ' + error.message, 'error');
-           }
-         });
-       }
-       
-       // Initialize contract selection UI
-       updateContractSelectionUI();
+       // Contract is set to new contract by default
+       console.log('✅ Using new contract:', window.IAM_ADDRESS);
        
        updateStatusTime();
        setInterval(updateStatusTime, 60000); // Update every minute
