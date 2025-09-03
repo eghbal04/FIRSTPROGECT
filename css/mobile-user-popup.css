@@ -122,6 +122,98 @@
     color: #00ff88;
 }
 
+/* Terminal Styles */
+.terminal-container {
+    background: #0a0a0a;
+    border: 2px solid #00ff88;
+    border-radius: 8px;
+    overflow: hidden;
+    font-family: 'Courier New', monospace;
+    direction: ltr;
+    text-align: left;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.terminal-header {
+    background: linear-gradient(135deg, #00ff88, #00cc6a);
+    color: #1a202c;
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+    position: relative;
+}
+
+.terminal-close-btn {
+    background: #ff6b6b;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Courier New', monospace;
+}
+
+.terminal-close-btn:hover {
+    background: #ff4444;
+    transform: scale(1.1);
+}
+
+.terminal-title {
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.terminal-subtitle {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+.terminal-body {
+    background: #0a0a0a;
+    padding: 12px;
+    flex: 1;
+    overflow-y: auto;
+    position: relative;
+    min-height: 300px;
+}
+
+.terminal-output {
+    color: #00ff88;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    font-family: 'Courier New', monospace;
+}
+
+.terminal-line {
+    margin-bottom: 2px;
+    white-space: pre;
+}
+
+.terminal-cursor {
+    color: #00ff88;
+    font-size: 0.85rem;
+    animation: blink 1s infinite;
+    display: inline-block;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+
 /* استایل‌های موجودی‌ها */
 .token-balances-container {
     margin-top: 20px;

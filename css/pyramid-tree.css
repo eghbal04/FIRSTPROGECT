@@ -488,16 +488,56 @@
     margin-bottom: 0.5rem;
 }
 
+/* Flat tree structure styles */
+.flat-tree-node {
+    display: block;
+    margin-bottom: 0.3rem;
+}
+
+.flat-tree-node[data-depth="0"] {
+    border-left: 3px solid #00ff88;
+    padding-left: 0.5rem;
+}
+
+.flat-tree-node[data-depth="1"] {
+    border-left: 2px solid #4facfe;
+    padding-left: 1rem;
+}
+
+.flat-tree-node[data-depth="2"] {
+    border-left: 2px solid #fa709a;
+    padding-left: 1.5rem;
+}
+
+.flat-tree-node[data-depth="3"] {
+    border-left: 1px solid #fee140;
+    padding-left: 2rem;
+}
+
+.flat-tree-node[data-depth="4"] {
+    border-left: 1px solid #a786ff;
+    padding-left: 2.5rem;
+}
+
+.flat-tree-node[data-depth="5"] {
+    border-left: 1px solid #00f2fe;
+    padding-left: 3rem;
+}
+
 .tree-node-content {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem;
-    border-radius: 6px;
+    gap: 0.2rem;
+    padding: 0.1rem 0.3rem;
+    border-radius: 3px;
     cursor: pointer;
+    width: fit-content;
+    min-width: fit-content;
+    max-width: 100%;
     transition: all 0.3s ease;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid transparent;
+    min-height: 24px;
 }
 
 .tree-node-content:hover {
@@ -514,13 +554,13 @@
     background: linear-gradient(135deg, #00ff88, #00cc6a);
     color: #1a202c;
     border: none;
-    border-radius: 4px;
-    width: 20px;
-    height: 20px;
+    border-radius: 2px;
+    width: 14px;
+    height: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.7rem;
+    font-size: 0.5rem;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -536,34 +576,36 @@
     background: linear-gradient(135deg, #ff6b6b, #ff4757);
 }
 
-.tree-node-icon {
-    font-size: 1.4rem;
-    flex-shrink: 0;
-}
+
 
 .tree-node-label {
     color: #ffffff;
     font-weight: 600;
-    font-size: 1.2rem;
-    flex: 1;
+    font-size: 0.9rem;
+    flex: 0 0 auto;
     font-family: 'Courier New', monospace;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-    letter-spacing: 0.5px;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+    line-height: 1.2;
 }
 
 .tree-node-info {
     color: #a786ff;
-    font-size: 1.1rem;
+    font-size: 0.8rem;
     background: rgba(167, 134, 255, 0.1);
-    padding: 0.4rem 0.7rem;
-    border-radius: 4px;
+    padding: 0.1rem 0.3rem;
+    border-radius: 2px;
     font-weight: 600;
     font-family: 'Courier New', monospace;
     border: 1px solid rgba(167, 134, 255, 0.2);
     transition: all 0.3s ease;
     cursor: pointer;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-    letter-spacing: 0.3px;
+    letter-spacing: 0.1px;
+    flex: 0 0 auto;
+    white-space: nowrap;
+    line-height: 1.2;
 }
 
 .tree-node-info:hover {
@@ -683,13 +725,16 @@
         padding: 4px 8px;
         font-size: 0.8em;
         min-height: 32px;
+        width: fit-content;
+        min-width: fit-content;
+        max-width: 100%;
     }
     
     .tree-expand-btn {
-        width: 22px;
-        height: 22px;
-        font-size: 0.9em;
-        margin-right: 4px;
+        width: 18px;
+        height: 18px;
+        font-size: 0.7em;
+        margin-right: 3px;
     }
     
     .tree-node-label {
@@ -751,12 +796,15 @@
         padding: 2px 4px;
         font-size: 0.7em;
         min-height: 28px;
+        width: fit-content;
+        min-width: fit-content;
+        max-width: 100%;
     }
     
     .tree-expand-btn {
-        width: 18px;
-        height: 18px;
-        font-size: 0.8em;
+        width: 16px;
+        height: 16px;
+        font-size: 0.6em;
         margin-right: 2px;
     }
     
@@ -794,12 +842,15 @@
         padding: 3px 6px;
         font-size: 0.9em;
         min-height: 26px;
+        width: fit-content;
+        min-width: fit-content;
+        max-width: 100%;
     }
     
     .tree-expand-btn {
-        width: 16px;
-        height: 16px;
-        font-size: 0.8em;
+        width: 14px;
+        height: 14px;
+        font-size: 0.5em;
         margin-right: 2px;
     }
     
@@ -835,6 +886,9 @@
     .tree-node {
         will-change: transform;
         transform: translateZ(0);
+        width: fit-content;
+        min-width: fit-content;
+        max-width: 100%;
     }
     
     .tree-children {

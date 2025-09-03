@@ -160,6 +160,128 @@
                 font-size: 11px;
             }
         }
+        
+        /* Level-based color system for tree nodes */
+        .flat-tree-node {
+            transition: all 0.3s ease;
+            border-radius: 6px;
+            margin-bottom: 0.3rem;
+        }
+        
+        /* Level 0 - Root (brightest) */
+        .flat-tree-node[data-depth="0"] {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.15), rgba(0, 255, 136, 0.08));
+            border: 2px solid rgba(0, 255, 136, 0.4);
+            box-shadow: 0 2px 8px rgba(0, 255, 136, 0.2);
+        }
+        
+        /* Level 1 - Very bright */
+        .flat-tree-node[data-depth="1"] {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.12), rgba(0, 255, 136, 0.06));
+            border: 2px solid rgba(0, 255, 136, 0.35);
+            box-shadow: 0 2px 6px rgba(0, 255, 136, 0.15);
+        }
+        
+        /* Level 2 - Bright */
+        .flat-tree-node[data-depth="2"] {
+            background: linear-gradient(135deg, rgba(0, 230, 119, 0.1), rgba(0, 230, 119, 0.05));
+            border: 2px solid rgba(0, 230, 119, 0.3);
+            box-shadow: 0 2px 5px rgba(0, 230, 119, 0.12);
+        }
+        
+        /* Level 3 - Medium bright */
+        .flat-tree-node[data-depth="3"] {
+            background: linear-gradient(135deg, rgba(0, 204, 106, 0.08), rgba(0, 204, 106, 0.04));
+            border: 2px solid rgba(0, 204, 106, 0.25);
+            box-shadow: 0 2px 4px rgba(0, 204, 106, 0.1);
+        }
+        
+        /* Level 4 - Medium */
+        .flat-tree-node[data-depth="4"] {
+            background: linear-gradient(135deg, rgba(0, 179, 92, 0.06), rgba(0, 179, 92, 0.03));
+            border: 2px solid rgba(0, 179, 92, 0.2);
+            box-shadow: 0 1px 3px rgba(0, 179, 92, 0.08);
+        }
+        
+        /* Level 5 - Medium dark */
+        .flat-tree-node[data-depth="5"] {
+            background: linear-gradient(135deg, rgba(0, 153, 77, 0.05), rgba(0, 153, 77, 0.025));
+            border: 2px solid rgba(0, 153, 77, 0.18);
+            box-shadow: 0 1px 3px rgba(0, 153, 77, 0.06);
+        }
+        
+        /* Level 6 - Dark */
+        .flat-tree-node[data-depth="6"] {
+            background: linear-gradient(135deg, rgba(0, 136, 68, 0.04), rgba(0, 136, 68, 0.02));
+            border: 2px solid rgba(0, 136, 68, 0.15);
+            box-shadow: 0 1px 2px rgba(0, 136, 68, 0.05);
+        }
+        
+        /* Level 7 - Darker */
+        .flat-tree-node[data-depth="7"] {
+            background: linear-gradient(135deg, rgba(0, 119, 58, 0.03), rgba(0, 119, 58, 0.015));
+            border: 2px solid rgba(0, 119, 58, 0.12);
+            box-shadow: 0 1px 2px rgba(0, 119, 58, 0.04);
+        }
+        
+        /* Level 8 - Very dark */
+        .flat-tree-node[data-depth="8"] {
+            background: linear-gradient(135deg, rgba(0, 102, 51, 0.025), rgba(0, 102, 51, 0.012));
+            border: 2px solid rgba(0, 102, 51, 0.1);
+            box-shadow: 0 1px 2px rgba(0, 102, 51, 0.03);
+        }
+        
+        /* Level 9 - Darkest */
+        .flat-tree-node[data-depth="9"] {
+            background: linear-gradient(135deg, rgba(0, 85, 34, 0.02), rgba(0, 85, 34, 0.01));
+            border: 2px solid rgba(0, 85, 34, 0.08);
+            box-shadow: 0 1px 1px rgba(0, 85, 34, 0.025);
+        }
+        
+        /* Level 10+ - Very darkest */
+        .flat-tree-node[data-depth="10"],
+        .flat-tree-node[data-depth="11"],
+        .flat-tree-node[data-depth="12"],
+        .flat-tree-node[data-depth="13"],
+        .flat-tree-node[data-depth="14"],
+        .flat-tree-node[data-depth="15"] {
+            background: linear-gradient(135deg, rgba(0, 68, 34, 0.015), rgba(0, 68, 34, 0.007));
+            border: 2px solid rgba(0, 68, 34, 0.06);
+            box-shadow: 0 1px 1px rgba(0, 68, 34, 0.02);
+        }
+        
+        /* Level 16+ - Almost invisible */
+        .flat-tree-node[data-depth="16"],
+        .flat-tree-node[data-depth="17"],
+        .flat-tree-node[data-depth="18"],
+        .flat-tree-node[data-depth="19"],
+        .flat-tree-node[data-depth="20"] {
+            background: linear-gradient(135deg, rgba(0, 51, 17, 0.01), rgba(0, 51, 17, 0.005));
+            border: 2px solid rgba(0, 51, 17, 0.04);
+            box-shadow: 0 1px 1px rgba(0, 51, 17, 0.015);
+        }
+        
+        /* Level 21+ - Minimal visibility */
+        .flat-tree-node[data-depth="21"],
+        .flat-tree-node[data-depth="22"],
+        .flat-tree-node[data-depth="23"],
+        .flat-tree-node[data-depth="24"],
+        .flat-tree-node[data-depth="25"] {
+            background: linear-gradient(135deg, rgba(0, 34, 0, 0.008), rgba(0, 34, 0, 0.004));
+            border: 2px solid rgba(0, 34, 0, 0.03);
+            box-shadow: 0 1px 1px rgba(0, 34, 0, 0.01);
+        }
+        
+        /* Hover effects for all levels */
+        .flat-tree-node:hover {
+            transform: translateX(2px);
+            box-shadow: 0 4px 12px rgba(0, 255, 136, 0.2);
+        }
+        
+        /* Active/expanded state */
+        .flat-tree-node.expanded {
+            border-left: 4px solid #00ff88;
+        }
     </style>
     
     <!-- Load ethers.js -->
@@ -956,7 +1078,7 @@
             console.log('✅ Root node loaded:', fileManagerData.treeData);
         }
 
-        // Render tree view
+        // Render tree view - Flat structure
         function renderTreeView() {
             const treeView = document.getElementById('tree-view');
             if (!treeView) return;
@@ -968,15 +1090,48 @@
             
             treeView.innerHTML = '';
             
-            // Render root node
-            renderTreeNode(fileManagerData.treeData, treeView, 0);
+            // Render all nodes in flat structure
+            renderFlatTree(fileManagerData.treeData, treeView, 0);
         }
 
-        // Render individual tree node
-        function renderTreeNode(node, container, depth = 0) {
+        // Render flat tree structure - all nodes in single container
+        function renderFlatTree(node, container, depth = 0) {
+            // Debug logging
+            console.log(`🌳 Rendering node ${node.id} at depth ${depth}`);
+            
+            // Render current node
+            renderFlatNode(node, container, depth);
+            
+            // If node is expanded and has children, render them
+            const isExpanded = fileManagerData.expandedNodes.has(node.id);
+            console.log(`🔍 Node ${node.id} - expanded: ${isExpanded}, hasChildren: ${node.children && node.children.length > 0}, childrenCount: ${node.children ? node.children.length : 0}`);
+            
+            if (isExpanded && node.children && node.children.length > 0) {
+                node.children.forEach(child => {
+                    console.log(`👶 Rendering child ${child.id} at depth ${depth + 1}`);
+                    renderFlatTree(child, container, depth + 1);
+                });
+            }
+        }
+
+        // Render individual flat tree node
+        function renderFlatNode(node, container, depth = 0) {
             const nodeElement = document.createElement('div');
-            nodeElement.className = 'tree-node';
+            nodeElement.className = 'tree-node flat-tree-node';
             nodeElement.style.marginRight = `${depth * 1.5}rem`;
+            nodeElement.setAttribute('data-node-id', node.id);
+            nodeElement.setAttribute('data-depth', depth);
+            
+            // Dynamic color generation for very deep levels (26+)
+            if (depth >= 26) {
+                const intensity = Math.max(0.001, 0.02 - (depth - 26) * 0.001);
+                const borderIntensity = Math.max(0.01, 0.1 - (depth - 26) * 0.002);
+                const shadowIntensity = Math.max(0.005, 0.05 - (depth - 26) * 0.001);
+                
+                nodeElement.style.background = `linear-gradient(135deg, rgba(0, 34, 0, ${intensity}), rgba(0, 34, 0, ${intensity * 0.5}))`;
+                nodeElement.style.border = `2px solid rgba(0, 34, 0, ${borderIntensity})`;
+                nodeElement.style.boxShadow = `0 1px 1px rgba(0, 34, 0, ${shadowIntensity})`;
+            }
             
             const isExpanded = fileManagerData.expandedNodes.has(node.id);
             const hasChildren = node.hasChildren || (node.children && node.children.length > 0);
@@ -987,11 +1142,11 @@
                         <button class="tree-expand-btn ${isExpanded ? 'expanded' : ''}" data-node-id="${node.id}">
                             ${isExpanded ? '−' : '+'}
                         </button>
-                    ` : '<div style="width: 20px;"></div>'}
+                    ` : '<div style="width: 14px;"></div>'}
                     
-                    <span class="tree-node-icon">${getNodeIcon(node.type)}</span>
+
                     <span class="tree-node-label">${node.index}</span>
-                    <span class="tree-node-info" onclick="copyToClipboard('${node.address}')" title="Click to copy full address">${node.address ? node.address.substring(0, 6) + '...' + node.address.substring(node.address.length - 4) : ''}</span>
+                    ${!isMobile() ? `<span class="tree-node-info" onclick="copyToClipboard('${node.address}')" title="Click to copy full address">${node.address ? node.address.substring(0, 6) + '...' + node.address.substring(node.address.length - 4) : ''}</span>` : ''}
                 </div>
             `;
             
@@ -1010,43 +1165,43 @@
             nodeContent.addEventListener('click', () => {
                 selectNode(node);
             });
-            
-            // Render children if expanded
-            if (isExpanded && hasChildren) {
-                const childrenContainer = document.createElement('div');
-                childrenContainer.className = 'tree-children';
-                nodeElement.appendChild(childrenContainer);
-                
-                if (node.children && node.children.length > 0) {
-                    node.children.forEach(child => {
-                        renderTreeNode(child, childrenContainer, depth + 1);
-                    });
-                } else {
-                    // Load children if not loaded yet
-                    loadNodeChildren(node, childrenContainer, depth + 1);
-                }
-            }
         }
 
-        // Get node icon based on type
-        function getNodeIcon(type) {
-            switch (type) {
-                case 'root': return '🏠';
-                case 'network': return '🌐';
-                case 'node': return '👤';
-                default: return '📁';
-            }
-        }
 
-        // Toggle node expansion
+
+        // Toggle node expansion for flat structure
         async function toggleNodeExpansion(nodeId) {
+            const node = findNodeInTree(fileManagerData.treeData, nodeId);
+            if (!node) return;
+            
             if (fileManagerData.expandedNodes.has(nodeId)) {
+                // Collapsing - remove from expanded set
                 fileManagerData.expandedNodes.delete(nodeId);
             } else {
+                // Expanding - add to expanded set and load children if needed
                 fileManagerData.expandedNodes.add(nodeId);
+                
+                // Load children if not already loaded
+                if (!node.children || node.children.length === 0) {
+                    await loadNodeChildren(node, 0);
+                }
             }
             
+            // Re-render the entire tree
             renderTreeView();
+        }
+
+        // Find node in tree structure
+        function findNodeInTree(node, nodeId) {
+            if (node.id === nodeId) return node;
+            
+            if (node.children && node.children.length > 0) {
+                for (let child of node.children) {
+                    const found = findNodeInTree(child, nodeId);
+                    if (found) return found;
+                }
+            }
+            return null;
         }
 
         // Select node
@@ -1189,17 +1344,8 @@
             }
         }
 
-        // Load node children
-        async function loadNodeChildren(node, container, depth) {
-            // Show loading state
-            const loadingElement = document.createElement('div');
-            loadingElement.className = 'tree-loading';
-            loadingElement.innerHTML = `
-                <div class="loading-spinner"></div>
-                <span>Loading children...</span>
-            `;
-            container.appendChild(loadingElement);
-            
+        // Load node children for flat structure
+        async function loadNodeChildren(node, depth) {
             try {
                 const contract = window.contractConfig.contract;
                 const nodeIndex = parseInt(node.index);
@@ -1238,23 +1384,15 @@
                     });
                 }
                 
-                // Remove loading element
-                loadingElement.remove();
-                
                 // Update node with children
                 node.children = children;
                 node.hasChildren = children.length > 0;
                 
-                // Render children
-                children.forEach(child => {
-                    renderTreeNode(child, container, depth);
-                });
+                // Re-render the entire tree to show new children
+                renderTreeView();
                 
             } catch (error) {
                 console.error('❌ Error loading node children:', error);
-                loadingElement.innerHTML = `
-                    <span style="color: #ff6b6b;">❌ Error loading children</span>
-                `;
             }
         }
 
@@ -1404,9 +1542,9 @@
             const queue = [rootIndex];
             const visited = new Set();
             let maxDepth = 0;
-            const maxNodes = 100; // Limit to prevent hanging
+            // No node limit - render unlimited tree
             
-            while (queue.length > 0 && networkArray.length < maxNodes) {
+            while (queue.length > 0) {
                 const currentIndex = queue.shift();
                 
                 if (visited.has(currentIndex.toString())) continue;

@@ -1498,7 +1498,9 @@ font-size: 1.1rem;
   }
   
   .tree-node {
-    min-width: 160px;
+    width: fit-content;
+    min-width: fit-content;
+    max-width: 100%;
     padding: 0.8rem;
   }
   
@@ -2298,7 +2300,9 @@ background: rgba(0, 0, 0, 0.6);
 border: 2px solid rgba(0, 255, 136, 0.3);
 border-radius: 12px;
 padding: 1rem;
-min-width: 200px;
+width: fit-content;
+min-width: fit-content;
+max-width: 100%;
 transition: all 0.3s ease;
 position: relative;
 cursor: pointer;
@@ -2437,30 +2441,35 @@ align-items: center;
 /* Level-specific styling */
 .tree-node.level-0 {
 border-width: 3px;
-min-width: 250px;
+width: fit-content;
+min-width: fit-content;
 }
 
 .tree-node.level-1 {
 border-width: 2px;
-min-width: 220px;
+width: fit-content;
+min-width: fit-content;
 margin: 0 1rem;
 }
 
 .tree-node.level-2 {
 border-width: 1px;
-min-width: 200px;
+width: fit-content;
+min-width: fit-content;
 margin: 0 0.5rem;
 }
 
 .tree-node.level-3 {
 border-width: 1px;
-min-width: 180px;
+width: fit-content;
+min-width: fit-content;
 margin: 0 0.3rem;
 }
 
 .tree-node.level-4 {
 border-width: 1px;
-min-width: 160px;
+width: fit-content;
+min-width: fit-content;
 margin: 0 0.2rem;
 }
 

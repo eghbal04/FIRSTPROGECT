@@ -444,74 +444,25 @@ class MobileUserPopup {
             {icon:'🤝', label:'Referral Income', val:user.refclimed ? Math.floor(Number(user.refclimed) / 1e18) : 0},
             {icon:'💰', label:'Total Deposit', val:user.depositedAmount ? Math.floor(Number(user.depositedAmount) / 1e18) : 0},
             {icon:'⬅️', label:'Left Points', val:user.leftPoints},
-            {icon:'➡️', label:'Right Points', val:user.rightPoints},
-            {icon:'👥', label:'Left Wallets', val:'Loading...', id:'left-wallets-count'},
-            {icon:'👥', label:'Right Wallets', val:'Loading...', id:'right-wallets-count'},
-            {icon:'📊', label:'Total Wallets', val:'Loading...', id:'total-wallets-count'}
+            {icon:'➡️', label:'Right Points', val:user.rightPoints}
         ];
 
         this.popup.innerHTML = `
-            <div class="popup-header">
-                <div class="popup-handle"></div>
-                <button class="close-btn" onclick="window.mobileUserPopup.hide()">×</button>
-            </div>
-            <div class="popup-content">
-                <div class="user-info-card">
-                    <div class="user-header">
-                        <div class="user-primary-info">
-                            <div class="user-id">
-                                <span class="label">User ID</span>
-                                <span class="value" id="user-id-value" onclick="navigator.clipboard.writeText('${IAMId}')">Loading...</span>
-                            </div>
-                            <div class="user-status ${isActive ? 'active' : 'inactive'}" id="user-status">
-                                Loading...
-                            </div>
-                        </div>
-                        <div class="user-wallet" id="user-wallet" onclick="navigator.clipboard.writeText('${walletAddress}')">
-                            Loading...
-                        </div>
+            <div class="terminal-container">
+                <div class="terminal-header">
+                    <div class="terminal-title">👤 USER TERMINAL</div>
+                    <div class="terminal-subtitle">${this.shortAddress(walletAddress)}</div>
+                    <button class="terminal-close-btn" onclick="window.mobileUserPopup.hide()">×</button>
+                </div>
+                <div class="terminal-body">
+                    <div class="terminal-output" id="terminal-output">
+                        <div class="terminal-line">> INITIALIZING USER DATABASE CONNECTION...</div>
+                        <div class="terminal-line">> ESTABLISHING SECURE CHANNEL...</div>
+                        <div class="terminal-line">> AUTHENTICATING USER CREDENTIALS...</div>
+                        <div class="terminal-line">> CONNECTION ESTABLISHED</div>
+                        <div class="terminal-line">> LOADING USER INFORMATION...</div>
                     </div>
-
-                    <div class="user-stats">
-                        ${infoList.map((info, index) => `
-                            <div class="stat-item collapsed" data-index="${index}">
-                                <div class="stat-icon">${info.icon}</div>
-                                <div class="stat-details">
-                                    <div class="stat-label">${info.label}</div>
-                                    <div class="stat-value" id="${info.id || `stat-value-${index}`}">${info.val}</div>
-                                </div>
-                                <div class="expand-indicator">▼</div>
-                            </div>
-                        `).join('')}
-                    </div>
-                    
-                    <div id="live-balances" class="live-balances collapsed">
-                        <div class="balance-title">Live Balances</div>
-                        <div class="balance-grid">
-                            <div class="balance-item">
-                                <div class="balance-left">
-                                    <span class="balance-icon">🟢</span>
-                                    <span class="balance-name">IAM</span>
-                                </div>
-                                <span class="balance-value" id="IAM-balance">-</span>
-                            </div>
-                            <div class="balance-item">
-                                <div class="balance-left">
-                                    <span class="balance-icon">🟣</span>
-                                    <span class="balance-name">MATIC</span>
-                                </div>
-                                <span class="balance-value" id="matic-balance">-</span>
-                            </div>
-                            <div class="balance-item">
-                                <div class="balance-left">
-                                    <span class="balance-icon">💵</span>
-                                    <span class="balance-name">DAI</span>
-                                </div>
-                                <span class="balance-value" id="dai-balance">-</span>
-                            </div>
-                        </div>
-                        <div class="expand-indicator">▼</div>
-                    </div>
+                    <div class="terminal-cursor">█</div>
                 </div>
             </div>
         `;
@@ -524,175 +475,186 @@ class MobileUserPopup {
             this.backdrop.style.opacity = '0.5';
         }, 25);
 
-        // Start typewriter effects
-        console.log('🔄 Starting typewriter effects...');
-        await this.startTypewriterEffects(IAMId, isActive, walletAddress, infoList);
-        console.log('✅ Typewriter effects completed');
-
-        // Load wallet counts with DFS
-        console.log('🔄 Loading wallet counts...');
-        await this.loadWalletCounts(user.index);
-        console.log('✅ Wallet counts loaded');
-
-        // Get live balances
-        console.log('🔄 Getting live balances...');
-        this.getLiveBalances(walletAddress);
+        // Start terminal typewriter effect
+        console.log('🔄 Starting terminal typewriter effect...');
+        await this.startTerminalTypewriter(IAMId, isActive, walletAddress, infoList);
+        console.log('✅ Terminal typewriter effect completed');
         
-        // Also try comprehensive debug
+        // Load live balances in background (non-blocking)
         setTimeout(() => {
-            console.log('🔄 Starting comprehensive debug...');
-            if (window.debugAllBalances) {
-                window.debugAllBalances(walletAddress);
-            } else {
-                console.log('⚠️ debugAllBalances function not available');
-            }
-        }, 1000);
-        
-        // Setup initial card sizes based on content
-        this.adjustCardSizes();
-        
-        // Add event listeners for cards
-        this.setupCardEventListeners();
+            this.loadLiveBalancesBackground(walletAddress);
+        }, 2000);
     }
 
-    async startTypewriterEffects(IAMId, isActive, walletAddress, infoList) {
-        console.log('⌨️ Starting typewriter effects...');
-        console.log('📊 Input data:', { IAMId, isActive, walletAddress, infoListLength: infoList.length });
+    async startTerminalTypewriter(IAMId, isActive, walletAddress, infoList) {
+        console.log('⌨️ Starting terminal typewriter...');
+        
+        const terminalOutput = document.getElementById('terminal-output');
+        if (!terminalOutput) return;
         
         try {
-            // User ID typewriter
-            const userIdElement = document.getElementById('user-id-value');
-            if (userIdElement) {
-                console.log('🔄 Typing User ID:', IAMId);
-                const userIdTypewriter = new TypewriterEffect(userIdElement, IAMId, 30);
-                await userIdTypewriter.start();
-                console.log('✅ User ID typed');
-            } else {
-                console.log('❌ User ID element not found');
+            // Clear initial loading messages
+            await this.delay(1000);
+            terminalOutput.innerHTML = '';
+            
+            // Filter out binary reward and status from infoList
+            const filteredInfoList = infoList.filter(info => 
+                !info.label.toLowerCase().includes('binary reward') && 
+                !info.label.toLowerCase().includes('status')
+            );
+
+            // Terminal-style information display
+            const terminalLines = [
+                '┌─────────────────────────────────────┐',
+                '│           USER INFORMATION          │',
+                '└─────────────────────────────────────┘',
+                '',
+                `> USER ID: ${IAMId}`,
+                '',
+                '┌─────────────────────────────────────┐',
+                '│            USER STATISTICS          │',
+                '└─────────────────────────────────────┘',
+                '',
+                ...filteredInfoList.map(info => `> ${info.label.toUpperCase()}: ${this.formatValue(info.val)}`),
+                '',
+                '┌─────────────────────────────────────┐',
+                '│            LIVE BALANCES            │',
+                '└─────────────────────────────────────┘',
+                '',
+                '> FETCHING LIVE BALANCES...',
+                '> IAM TOKEN: LOADING...',
+                '> MATIC: LOADING...',
+                '> DAI: LOADING...',
+                '',
+                '> CONNECTION ESTABLISHED',
+                '> READY FOR COMMANDS',
+                ''
+            ];
+            
+            // Type each line with terminal effect
+            for (let i = 0; i < terminalLines.length; i++) {
+                const line = terminalLines[i];
+                await this.typeTerminalLine(terminalOutput, line);
+                await this.delay(150);
             }
             
-            // Wait a bit before next effect
-            await this.delay(200);
-            
-            // User status typewriter
-            const statusElement = document.getElementById('user-status');
-            if (statusElement) {
-                const statusText = isActive ? '✅ Active' : '❌ Inactive';
-                console.log('🔄 Typing Status:', statusText);
-                const statusTypewriter = new TypewriterEffect(statusElement, statusText, 50);
-                await statusTypewriter.start();
-                console.log('✅ Status typed');
-            } else {
-                console.log('❌ Status element not found');
+            // Hide cursor after completion
+            const cursor = document.querySelector('.terminal-cursor');
+            if (cursor) {
+                cursor.style.display = 'none';
             }
             
-            // Wait a bit before next effect
-            await this.delay(200);
-            
-            // Wallet address typewriter
-            const walletElement = document.getElementById('user-wallet');
-            if (walletElement) {
-                const walletText = this.shortAddress(walletAddress);
-                console.log('🔄 Typing Wallet:', walletText);
-                const walletTypewriter = new TypewriterEffect(walletElement, walletText, 40);
-                await walletTypewriter.start();
-                console.log('✅ Wallet typed');
-            } else {
-                console.log('❌ Wallet element not found');
-            }
-        
-            // Wait a bit before stats
-            await this.delay(300);
-            
-            // Stats typewriter effects (sequential)
-            console.log('🔄 Typing stats:', infoList.length);
-            for (let i = 0; i < infoList.length; i++) {
-                const info = infoList[i];
-                const statElement = document.getElementById(info.id || `stat-value-${i}`);
-                if (statElement) {
-                    const statText = this.formatValue(info.val);
-                    console.log(`🔄 Typing ${info.label}:`, statText);
-                    const statTypewriter = new TypewriterEffect(statElement, statText, 60);
-                    await statTypewriter.start();
-                    console.log(`✅ ${info.label} typed`);
-                    
-                    // Small delay between stats
-                    await this.delay(100);
-                } else {
-                    console.log(`❌ Stat element not found for ${info.label}`);
-                }
-            }
-            
-            console.log('✅ All typewriter effects completed');
+            console.log('✅ Terminal typewriter completed');
         } catch (error) {
-            console.error('❌ Error in typewriter effects:', error);
+            console.error('❌ Error in terminal typewriter:', error);
         }
+    }
+
+    async typeTerminalLine(container, text) {
+        return new Promise((resolve) => {
+            const lineElement = document.createElement('div');
+            lineElement.className = 'terminal-line';
+            container.appendChild(lineElement);
+            
+            let charIndex = 0;
+            const typeChar = () => {
+                if (charIndex < text.length) {
+                    lineElement.textContent += text[charIndex];
+                    charIndex++;
+                    setTimeout(typeChar, 25);
+                } else {
+                    resolve();
+                }
+            };
+            
+            typeChar();
+        });
     }
 
     delay(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    // Load wallet counts with DFS
-    async loadWalletCounts(userIndex) {
-        console.log(`📊 Loading wallet counts for user ${userIndex}...`);
+    // Load live balances in background without blocking terminal
+    async loadLiveBalancesBackground(walletAddress) {
+        console.log('🔄 Loading live balances in background...');
         
         try {
-            // Show loading state
-            const leftElement = document.getElementById('left-wallets-count');
-            const rightElement = document.getElementById('right-wallets-count');
-            const totalElement = document.getElementById('total-wallets-count');
-            
-            if (leftElement) leftElement.textContent = 'Loading...';
-            if (rightElement) rightElement.textContent = 'Loading...';
-            if (totalElement) totalElement.textContent = 'Loading...';
-            
-            // Count wallets with DFS
-            const counts = await this.countWalletsInSubtrees(userIndex);
-            
-            console.log('📊 Wallet counts result:', counts);
-            
-            // Update with typewriter effect
-            if (leftElement && counts.leftCount !== undefined) {
-                const leftTypewriter = new TypewriterEffect(leftElement, counts.leftCount.toString(), 30);
-                await leftTypewriter.start();
-            } else if (leftElement) {
-                leftElement.textContent = '0';
+            if (!window.contractConfig || !window.contractConfig.contract) {
+                console.log('⚠️ No contract available for live balances');
+                return;
             }
+
+            const contract = window.contractConfig.contract;
             
-            await this.delay(200);
-            
-            if (rightElement && counts.rightCount !== undefined) {
-                const rightTypewriter = new TypewriterEffect(rightElement, counts.rightCount.toString(), 30);
-                await rightTypewriter.start();
-            } else if (rightElement) {
-                rightElement.textContent = '0';
+            // Get IAM token balance
+            try {
+                const iamBalance = await contract.balanceOf(walletAddress);
+                const formattedIAM = ethers.formatEther(iamBalance);
+                console.log('✅ IAM balance loaded:', formattedIAM);
+                
+                // Update terminal with live balance
+                this.updateTerminalWithLiveBalance('IAM TOKEN', formattedIAM);
+            } catch (error) {
+                console.log('❌ Error loading IAM balance:', error.message);
+                this.updateTerminalWithLiveBalance('IAM TOKEN', 'ERROR');
             }
-            
-            await this.delay(200);
-            
-            if (totalElement && counts.totalCount !== undefined) {
-                const totalTypewriter = new TypewriterEffect(totalElement, counts.totalCount.toString(), 30);
-                await totalTypewriter.start();
-            } else if (totalElement) {
-                totalElement.textContent = '1';
+
+            // Get MATIC balance
+            try {
+                const provider = new ethers.BrowserProvider(window.ethereum);
+                const maticBalance = await provider.getBalance(walletAddress);
+                const formattedMATIC = ethers.formatEther(maticBalance);
+                console.log('✅ MATIC balance loaded:', formattedMATIC);
+                
+                this.updateTerminalWithLiveBalance('MATIC', formattedMATIC);
+            } catch (error) {
+                console.log('❌ Error loading MATIC balance:', error.message);
+                this.updateTerminalWithLiveBalance('MATIC', 'ERROR');
             }
-            
-            console.log('✅ Wallet counts loaded successfully');
-            
+
+            // Get DAI balance (if available)
+            try {
+                // DAI contract address on Polygon
+                const daiAddress = '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063';
+                const daiContract = new ethers.Contract(daiAddress, [
+                    'function balanceOf(address owner) view returns (uint256)',
+                    'function decimals() view returns (uint8)'
+                ], contract.runner);
+                
+                const daiBalance = await daiContract.balanceOf(walletAddress);
+                const decimals = await daiContract.decimals();
+                const formattedDAI = ethers.formatUnits(daiBalance, decimals);
+                console.log('✅ DAI balance loaded:', formattedDAI);
+                
+                this.updateTerminalWithLiveBalance('DAI', formattedDAI);
+            } catch (error) {
+                console.log('❌ Error loading DAI balance:', error.message);
+                this.updateTerminalWithLiveBalance('DAI', 'ERROR');
+            }
+
         } catch (error) {
-            console.error('❌ Error loading wallet counts:', error);
-            
-            // Show error state
-            const leftElement = document.getElementById('left-wallets-count');
-            const rightElement = document.getElementById('right-wallets-count');
-            const totalElement = document.getElementById('total-wallets-count');
-            
-            if (leftElement) leftElement.textContent = 'Error';
-            if (rightElement) rightElement.textContent = 'Error';
-            if (totalElement) totalElement.textContent = 'Error';
+            console.error('❌ Error in background balance loading:', error);
         }
     }
+
+    // Update terminal with live balance
+    updateTerminalWithLiveBalance(token, balance) {
+        const terminalOutput = document.getElementById('terminal-output');
+        if (!terminalOutput) return;
+
+        // Find the loading line and replace it
+        const lines = terminalOutput.querySelectorAll('.terminal-line');
+        for (let line of lines) {
+            if (line.textContent.includes(`${token}: LOADING...`)) {
+                line.textContent = line.textContent.replace('LOADING...', this.formatValue(balance));
+                line.style.color = '#00ff88';
+                break;
+            }
+        }
+    }
+
+
 
     // Search function with 10 billion depth limit
     async searchUserByIndex(index, maxDepth = Infinity) {
@@ -897,112 +859,7 @@ class MobileUserPopup {
         }
     }
 
-    // Count wallets in left and right subtrees with DFS
-    async countWalletsInSubtrees(userIndex, maxDepth = Infinity) {
-        console.log(`📊 Counting wallets in subtrees for user ${userIndex} with depth limit: ${maxDepth}`);
-        
-        if (!window.contractConfig || !window.contractConfig.contract) {
-            console.log('❌ Contract not connected');
-            return { leftCount: 0, rightCount: 0, totalCount: 1 };
-        }
-        
-        try {
-            const contract = window.contractConfig.contract;
-            
-            // Get user's tree structure first
-            const userAddress = await contract.indexToAddress(BigInt(userIndex));
-            console.log(`🔍 User address: ${userAddress}`);
-            
-            const userTree = await contract.getUserTree(userAddress);
-            console.log(`🌳 User tree:`, userTree);
-            
-            let leftCount = 0;
-            let rightCount = 0;
-            
-            // Count left subtree
-            if (userTree && userTree.left && userTree.left !== '0x0000000000000000000000000000000000000000') {
-                console.log(`⬅️ Counting left subtree from: ${userTree.left}`);
-                leftCount = await this.countSubtreeWallets(userTree.left, contract, maxDepth);
-                console.log(`✅ Left count: ${leftCount}`);
-            } else {
-                console.log(`❌ No left child found`);
-            }
-            
-            // Count right subtree
-            if (userTree && userTree.right && userTree.right !== '0x0000000000000000000000000000000000000000') {
-                console.log(`➡️ Counting right subtree from: ${userTree.right}`);
-                rightCount = await this.countSubtreeWallets(userTree.right, contract, maxDepth);
-                console.log(`✅ Right count: ${rightCount}`);
-            } else {
-                console.log(`❌ No right child found`);
-            }
-            
-            const totalCount = leftCount + rightCount + 1; // +1 for the user itself
-            
-            console.log(`✅ Final wallet counts - Left: ${leftCount}, Right: ${rightCount}, Total: ${totalCount}`);
-            
-            return {
-                leftCount: leftCount,
-                rightCount: rightCount,
-                totalCount: totalCount
-            };
-            
-        } catch (error) {
-            console.error('❌ Error counting wallets in subtrees:', error);
-            return { leftCount: 0, rightCount: 0, totalCount: 1 };
-        }
-    }
 
-    // Helper function to count wallets in a subtree
-    async countSubtreeWallets(rootAddress, contract, maxDepth) {
-        const visited = new Set();
-        let count = 0;
-        
-        // DFS function to count wallets
-        const countWalletsDFS = async (address, depth) => {
-            // Check depth limit
-            if (depth > maxDepth) {
-                return 0;
-            }
-            
-            // Skip if already visited
-            if (visited.has(address)) {
-                return 0;
-            }
-            
-            visited.add(address);
-            let localCount = 1; // Count current user
-            
-            try {
-                const tree = await contract.getUserTree(address);
-                
-                // Count left subtree
-                if (tree && tree.left && tree.left !== '0x0000000000000000000000000000000000000000') {
-                    localCount += await countWalletsDFS(tree.left, depth + 1);
-                }
-                
-                // Count right subtree
-                if (tree && tree.right && tree.right !== '0x0000000000000000000000000000000000000000') {
-                    localCount += await countWalletsDFS(tree.right, depth + 1);
-                }
-                
-            } catch (error) {
-                console.warn(`⚠️ Error counting wallets for address ${address}:`, error);
-            }
-            
-            return localCount;
-        };
-        
-        try {
-            count = await countWalletsDFS(rootAddress, 0);
-            console.log(`📊 Subtree count for ${rootAddress}: ${count}`);
-        } catch (error) {
-            console.error(`❌ Error counting subtree for ${rootAddress}:`, error);
-            count = 0;
-        }
-        
-        return count;
-    }
 
     hide() {
         this.popup.style.transform = 'translateY(100%)';
