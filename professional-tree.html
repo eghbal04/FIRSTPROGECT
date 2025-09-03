@@ -161,6 +161,82 @@
             }
         }
         
+        /* Tree container auto-expansion */
+        #tree-view {
+            width: auto !important;
+            height: auto !important;
+            min-width: 100%;
+            min-height: 100%;
+            max-width: none !important;
+            max-height: none !important;
+            overflow: visible !important;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+        
+        /* Tree container responsive sizing */
+        .tree-container {
+            width: auto !important;
+            height: auto !important;
+            min-width: 100%;
+            min-height: 100%;
+            max-width: none !important;
+            max-height: none !important;
+            overflow: visible !important;
+            display: block;
+            position: relative;
+        }
+        
+        /* Mobile responsive tree container */
+        @media (max-width: 768px) {
+            #tree-view {
+                width: auto !important;
+                height: auto !important;
+                min-width: 100vw;
+                min-height: 100vh;
+                max-width: none !important;
+                max-height: none !important;
+                overflow: visible !important;
+                padding: 0.5rem;
+            }
+            
+            .flat-tree-node {
+                width: fit-content;
+                min-width: fit-content;
+                max-width: 90vw;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+            }
+        }
+        
+        /* Tablet responsive tree container */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            #tree-view {
+                width: auto !important;
+                height: auto !important;
+                min-width: 100%;
+                min-height: 100%;
+                max-width: none !important;
+                max-height: none !important;
+                overflow: visible !important;
+                padding: 1rem;
+            }
+        }
+        
+        /* Desktop responsive tree container */
+        @media (min-width: 1025px) {
+            #tree-view {
+                width: auto !important;
+                height: auto !important;
+                min-width: 100%;
+                min-height: 100%;
+                max-width: none !important;
+                max-height: none !important;
+                overflow: visible !important;
+                padding: 2rem;
+            }
+        }
+        
         /* Distinct level-based color system for tree nodes */
         .flat-tree-node {
             transition: all 0.3s ease;
@@ -168,6 +244,9 @@
             margin-bottom: 0.4rem;
             position: relative;
             overflow: hidden;
+            width: fit-content;
+            min-width: fit-content;
+            max-width: none;
         }
         
         /* Level 0 - Root (Bright Cyan) */
@@ -1203,7 +1282,7 @@
             console.log('✅ Root node loaded:', fileManagerData.treeData);
         }
 
-        // Render tree view - Flat structure
+        // Render tree view - Flat structure with auto-expansion
         function renderTreeView() {
             const treeView = document.getElementById('tree-view');
             if (!treeView) return;
@@ -1217,6 +1296,69 @@
             
             // Render all nodes in flat structure
             renderFlatTree(fileManagerData.treeData, treeView, 0);
+            
+            // Auto-expand container after rendering
+            setTimeout(() => {
+                autoExpandTreeContainer();
+            }, 100);
+        }
+        
+        // Auto-expand tree container based on content
+        function autoExpandTreeContainer() {
+            const treeView = document.getElementById('tree-view');
+            if (!treeView) return;
+            
+            // Get all tree nodes
+            const treeNodes = treeView.querySelectorAll('.flat-tree-node');
+            if (treeNodes.length === 0) return;
+            
+            // Calculate required dimensions
+            let maxWidth = 0;
+            let totalHeight = 0;
+            let maxDepth = 0;
+            
+            treeNodes.forEach(node => {
+                const rect = node.getBoundingClientRect();
+                const depth = parseInt(node.getAttribute('data-depth') || '0');
+                
+                // Calculate width including depth offset
+                const nodeWidth = rect.width + (depth * 1.5 * 16); // 1.5rem * 16px
+                maxWidth = Math.max(maxWidth, nodeWidth);
+                
+                // Calculate total height
+                totalHeight += rect.height + 0.4 * 16; // margin-bottom
+                
+                // Track max depth
+                maxDepth = Math.max(maxDepth, depth);
+            });
+            
+            // Add padding and margins
+            const padding = 2 * 16; // 2rem padding
+            const requiredWidth = maxWidth + padding;
+            const requiredHeight = totalHeight + padding;
+            
+            // Apply dynamic sizing
+            treeView.style.width = `${Math.max(requiredWidth, window.innerWidth)}px`;
+            treeView.style.height = `${Math.max(requiredHeight, window.innerHeight)}px`;
+            treeView.style.minWidth = `${requiredWidth}px`;
+            treeView.style.minHeight = `${requiredHeight}px`;
+            
+            console.log(`📏 Tree container resized: ${requiredWidth}x${requiredHeight}px (depth: ${maxDepth})`);
+            
+            // Also resize parent containers
+            const parentContainer = treeView.closest('.expand-content');
+            if (parentContainer) {
+                parentContainer.style.width = 'auto';
+                parentContainer.style.height = 'auto';
+                parentContainer.style.overflow = 'visible';
+            }
+            
+            const expandableContainer = treeView.closest('.expandable-container');
+            if (expandableContainer) {
+                expandableContainer.style.width = 'auto';
+                expandableContainer.style.height = 'auto';
+                expandableContainer.style.overflow = 'visible';
+            }
         }
 
         // Global depth tracking
@@ -1529,6 +1671,146 @@
                 // Small delay
                 await new Promise(resolve => setTimeout(resolve, 100));
             }
+        };
+        
+        // Create unlimited tree manually - bypass all restrictions
+        window.createUnlimitedTree = async function() {
+            console.log('🚀 CREATING UNLIMITED TREE MANUALLY...');
+            
+            if (!window.contractConfig || !window.contractConfig.contract) {
+                console.log('❌ Contract not available');
+                return;
+            }
+            
+            const contract = window.contractConfig.contract;
+            const unlimitedTree = {
+                id: 'unlimited_root',
+                index: '1',
+                address: window.contractConfig.userAddress,
+                type: 'node',
+                expanded: true,
+                children: [],
+                hasChildren: true
+            };
+            
+            // Manually create tree structure up to level 20
+            async function createTreeLevel(parentNode, level, maxLevel = 20) {
+                if (level >= maxLevel) return;
+                
+                console.log(`🌳 Creating level ${level} for node ${parentNode.id}`);
+                
+                const nodeIndex = parseInt(parentNode.index);
+                const leftIndex = nodeIndex * 2;
+                const rightIndex = nodeIndex * 2 + 1;
+                
+                try {
+                    // Get addresses
+                    const leftAddress = await contract.getLeftAddress(nodeIndex);
+                    const rightAddress = await contract.getRightAddress(nodeIndex);
+                    
+                    const leftValid = leftAddress !== '0x0000000000000000000000000000000000000000';
+                    const rightValid = rightAddress !== '0x0000000000000000000000000000000000000000';
+                    
+                    if (leftValid) {
+                        const leftChild = {
+                            id: `unlimited_node_${leftIndex}`,
+                            index: leftIndex.toString(),
+                            address: leftAddress,
+                            type: 'node',
+                            expanded: false,
+                            children: [],
+                            hasChildren: true
+                        };
+                        parentNode.children.push(leftChild);
+                        console.log(`✅ Added left child: ${leftChild.id}`);
+                        
+                        // Recursively create next level
+                        await createTreeLevel(leftChild, level + 1, maxLevel);
+                    }
+                    
+                    if (rightValid) {
+                        const rightChild = {
+                            id: `unlimited_node_${rightIndex}`,
+                            index: rightIndex.toString(),
+                            address: rightAddress,
+                            type: 'node',
+                            expanded: false,
+                            children: [],
+                            hasChildren: true
+                        };
+                        parentNode.children.push(rightChild);
+                        console.log(`✅ Added right child: ${rightChild.id}`);
+                        
+                        // Recursively create next level
+                        await createTreeLevel(rightChild, level + 1, maxLevel);
+                    }
+                    
+                } catch (error) {
+                    console.log(`❌ Error creating level ${level}:`, error.message);
+                }
+            }
+            
+            // Create unlimited tree
+            await createTreeLevel(unlimitedTree, 0, 20);
+            
+            // Replace current tree data
+            fileManagerData.treeData = unlimitedTree;
+            
+            // Force expand all nodes
+            function forceExpandAll(node) {
+                fileManagerData.expandedNodes.add(node.id);
+                if (node.children) {
+                    node.children.forEach(child => forceExpandAll(child));
+                }
+            }
+            forceExpandAll(unlimitedTree);
+            
+            // Render the unlimited tree
+            renderTreeView();
+            
+            console.log('🏁 UNLIMITED TREE CREATED AND RENDERED!');
+            console.log(`📊 Final maximum depth: ${maxDepthReached}`);
+        };
+        
+        // Manual function to expand tree container
+        window.expandTreeContainer = function() {
+            console.log('📏 Manually expanding tree container...');
+            autoExpandTreeContainer();
+        };
+        
+        // Function to reset and re-expand container
+        window.resetTreeContainer = function() {
+            console.log('🔄 Resetting tree container...');
+            const treeView = document.getElementById('tree-view');
+            if (treeView) {
+                treeView.style.width = 'auto';
+                treeView.style.height = 'auto';
+                treeView.style.minWidth = '100%';
+                treeView.style.minHeight = '100%';
+                treeView.style.maxWidth = 'none';
+                treeView.style.maxHeight = 'none';
+                treeView.style.overflow = 'visible';
+            }
+            
+            // Reset parent containers
+            const parentContainer = treeView?.closest('.expand-content');
+            if (parentContainer) {
+                parentContainer.style.width = 'auto';
+                parentContainer.style.height = 'auto';
+                parentContainer.style.overflow = 'visible';
+            }
+            
+            const expandableContainer = treeView?.closest('.expandable-container');
+            if (expandableContainer) {
+                expandableContainer.style.width = 'auto';
+                expandableContainer.style.height = 'auto';
+                expandableContainer.style.overflow = 'visible';
+            }
+            
+            // Re-expand after reset
+            setTimeout(() => {
+                autoExpandTreeContainer();
+            }, 100);
         };
         
         // Render flat tree structure - all nodes in single container
