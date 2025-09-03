@@ -1715,10 +1715,94 @@
             }
         }
         
+        // Simple connect wallet function
+        async function simpleConnectWallet() {
+            try {
+                console.log('🔗 Simple wallet connection...');
+                
+                // Check if MetaMask is available
+                if (!window.ethereum) {
+                    console.log('❌ MetaMask not detected');
+                    alert('Please install MetaMask to connect your wallet');
+                    return false;
+                }
+                
+                // Request account access
+                const accounts = await window.ethereum.request({ 
+                    method: 'eth_requestAccounts' 
+                });
+                
+                if (accounts && accounts.length > 0) {
+                    console.log('✅ Wallet connected:', accounts[0]);
+                    
+                    // Set up contract config
+                    if (!window.contractConfig) {
+                        window.contractConfig = {};
+                    }
+                    window.contractConfig.userAddress = accounts[0];
+                    
+                    // Try to create contract if we have the address and ABI
+                    if (window.IAM_ADDRESS && window.IAM_ABI) {
+                        try {
+                            const provider = new ethers.BrowserProvider(window.ethereum);
+                            const signer = await provider.getSigner();
+                            window.contractConfig.contract = new ethers.Contract(
+                                window.IAM_ADDRESS,
+                                window.IAM_ABI,
+                                signer
+                            );
+                            window.contractConfig.contractAddress = window.IAM_ADDRESS;
+                            window.contractConfig.contractABI = window.IAM_ABI;
+                            console.log('✅ Contract created successfully');
+                        } catch (contractError) {
+                            console.log('⚠️ Contract creation failed:', contractError.message);
+                        }
+                    } else {
+                        console.log('⚠️ IAM_ADDRESS or IAM_ABI not available, using fallback');
+                        // Use fallback contract address if available
+                        const fallbackAddress = '0x63F5a2085906f5fcC206d6589d78038FBc74d2FE'; // IAM contract address
+                        if (fallbackAddress && (window.IAM_ABI || window.CONTRACT_ABI)) {
+                            try {
+                                const provider = new ethers.BrowserProvider(window.ethereum);
+                                const signer = await provider.getSigner();
+                                const abi = window.IAM_ABI || window.CONTRACT_ABI;
+                                window.contractConfig.contract = new ethers.Contract(
+                                    fallbackAddress,
+                                    abi,
+                                    signer
+                                );
+                                window.contractConfig.contractAddress = fallbackAddress;
+                                window.contractConfig.contractABI = abi;
+                                console.log('✅ Fallback contract created successfully');
+                            } catch (contractError) {
+                                console.log('⚠️ Fallback contract creation failed:', contractError.message);
+                            }
+                        }
+                    }
+                    
+                    return true;
+                } else {
+                    console.log('❌ No accounts returned');
+                    return false;
+                }
+            } catch (error) {
+                console.error('❌ Error connecting wallet:', error);
+                if (error.code === 4001) {
+                    console.log('👤 User rejected connection');
+                }
+                return false;
+            }
+        }
+
         // Connect wallet button functionality
         function setupConnectWalletButton() {
             const connectBtn = document.getElementById('connect-wallet-btn');
-            if (!connectBtn) return;
+            if (!connectBtn) {
+                console.log('❌ Connect wallet button not found');
+                return;
+            }
+            
+            console.log('✅ Connect wallet button found, setting up...');
             
             // Update button state
             function updateButtonState(state, text) {
@@ -1742,13 +1826,21 @@
             // Connect wallet function
             async function connectWallet() {
                 try {
+                    console.log('🔄 Connect wallet button clicked');
                     updateButtonState('connecting', '🔄 Connecting...');
                     
-                    const success = await connectWalletAndLoadData();
+                    const success = await simpleConnectWallet();
                     
                     if (success) {
                         checkConnectionState();
                         console.log('✅ Wallet connected successfully via button');
+                        
+                        // Try to render the tree with real data
+                        try {
+                            renderPyramidTree();
+                        } catch (renderError) {
+                            console.log('⚠️ Tree render failed:', renderError.message);
+                        }
                     } else {
                         updateButtonState('error', '❌ Connection Failed');
                         setTimeout(() => {
@@ -1766,6 +1858,7 @@
             
             // Add click event listener
             connectBtn.addEventListener('click', connectWallet);
+            console.log('✅ Click event listener added');
             
             // Check connection state on load
             checkConnectionState();
@@ -1788,8 +1881,28 @@
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('🚀 Pyramid Tree page loaded');
             
+            // Debug wallet connection
+            console.log('🔍 Debug Wallet Connection:');
+            console.log('- window.ethereum:', !!window.ethereum);
+            console.log('- window.IAM_ADDRESS:', window.IAM_ADDRESS);
+            console.log('- window.IAM_ABI:', !!window.IAM_ABI);
+            console.log('- window.contractConfig:', !!window.contractConfig);
+            console.log('- window.connectWallet:', !!window.connectWallet);
+            
             // Setup connect wallet button
             setupConnectWalletButton();
+            
+            // Test function for debugging
+            window.testConnectWallet = async function() {
+                console.log('🧪 Testing connect wallet...');
+                const result = await simpleConnectWallet();
+                console.log('🧪 Test result:', result);
+                return result;
+            };
+            
+            // Make functions globally available for debugging
+            window.simpleConnectWallet = simpleConnectWallet;
+            window.setupConnectWalletButton = setupConnectWalletButton;
             
             // Wait for scripts to load and try multiple times
             let attempts = 0;
