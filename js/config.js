@@ -1,5 +1,28 @@
 // تنظیمات قرارداد IAMPHOENIX
 
+// Helper function for ethers.js compatibility
+function formatUnits(value, decimals = 18) {
+    if (typeof ethers.utils !== 'undefined' && ethers.utils.formatUnits) {
+        return ethers.utils.formatUnits(value, decimals);
+    } else if (typeof ethers.formatUnits !== 'undefined') {
+        return ethers.formatUnits(value, decimals);
+    } else {
+        // Manual conversion
+        return (parseFloat(value.toString()) / Math.pow(10, decimals)).toString();
+    }
+}
+
+function formatEther(value) {
+    if (typeof ethers.utils !== 'undefined' && ethers.utils.formatEther) {
+        return ethers.utils.formatEther(value);
+    } else if (typeof ethers.formatEther !== 'undefined') {
+        return ethers.formatEther(value);
+    } else {
+        // Manual conversion
+        return (parseFloat(value.toString()) / Math.pow(10, 18)).toString();
+    }
+}
+
 const IAM_ADDRESS = '0x63F5a2085906f5fcC206d6589d78038FBc74d2FE';
 window.IAM_ADDRESS = IAM_ADDRESS;
 
@@ -2563,7 +2586,14 @@ async function performWeb3Initialization() {
 			throw new Error('MetaMask is not installed. Please install MetaMask extension.');
 		}
 		
-		const provider = new ethers.BrowserProvider(window.ethereum);
+		let provider;
+		if (typeof ethers.providers !== 'undefined' && ethers.providers.Web3Provider) {
+			provider = new ethers.providers.Web3Provider(window.ethereum);
+		} else if (typeof ethers.BrowserProvider !== 'undefined') {
+			provider = new ethers.BrowserProvider(window.ethereum);
+		} else {
+			throw new Error('Ethers.js provider not available');
+		}
 		let signer;
 		const accounts = await window.ethereum.request({ method: 'eth_accounts' });
 		if (accounts && accounts.length > 0) {
@@ -3455,14 +3485,14 @@ window.getUserProfile = async function() {
 			// محاسبه ارزش دلاری
 			let lvlValueUSD = 0;
 			if (lvlBalance && lvlPriceMatic && lvlBalance > 0n && lvlPriceMatic > 0n) {
-				const lvlPriceFormatted = ethers.formatUnits(lvlPriceMatic, 18);
-				lvlValueUSD = parseFloat(ethers.formatUnits(lvlBalance, 18)) * parseFloat(lvlPriceFormatted);
+				const lvlPriceFormatted = formatUnits(lvlPriceMatic, 18);
+				lvlValueUSD = parseFloat(formatUnits(lvlBalance, 18)) * parseFloat(lvlPriceFormatted);
 			}
 			
 			// محاسبه ارزش دلاری کل POL (POL همیشه 1 دلار است)
 			let polValueUSD = 0;
 			if (polBalance && polBalance > 0n) {
-				polValueUSD = parseFloat(ethers.formatEther(polBalance));
+				polValueUSD = parseFloat(formatEther(polBalance));
 			}
 			
 			// دریافت موجودی DAI
@@ -3480,7 +3510,7 @@ window.getUserProfile = async function() {
 				try {
 					if (typeof val === 'bigint') {
 						if (val === 0n) return '0';
-						return ethers.formatUnits(val, decimals);
+						return formatUnits(val, decimals);
 					}
 					if (typeof val === 'number') return val.toFixed(4);
 					if (typeof val === 'string') return val;
@@ -3533,11 +3563,11 @@ window.getUserProfile = async function() {
 				binaryPoints: user.binaryPoints ? user.binaryPoints.toString() : '0',
 				binaryPointCap: user.binaryPointCap ? user.binaryPointCap.toString() : '0',
 				binaryPointsClaimed: user.binaryPointsClaimed ? user.binaryPointsClaimed.toString() : '0',
-				totalPurchasedMATIC: ethers.formatEther(user.totalPurchasedMATIC || 0n),
+				totalPurchasedMATIC: formatEther(user.totalPurchasedMATIC || 0n),
 				totalPurchasedKind: user.totalPurchasedKind ? user.totalPurchasedKind.toString() : '0',
-				polBalance: ethers.formatEther(polBalance || 0n),
-				maticBalance: ethers.formatEther(polBalance || 0n),
-				lvlBalance: ethers.formatUnits(lvlBalance || 0n, 18),
+				polBalance: formatEther(polBalance || 0n),
+				maticBalance: formatEther(polBalance || 0n),
+				lvlBalance: formatUnits(lvlBalance || 0n, 18),
 				polValueUSD: safeFormat(polValueUSD, 8),
 				lvlValueUSD: safeFormat(lvlValueUSD, 8),
 				daiBalance: daiBalance,
@@ -3586,7 +3616,7 @@ window.getPrices = async function() {
 			if (contract && typeof contract.getTokenPrice === 'function') {
 				try {
 					const price = await contract.getTokenPrice();
-					IAMPriceUSD = window.formatTokenPrice ? window.formatTokenPrice(price) : ethers.formatUnits(price, 18);
+					IAMPriceUSD = window.formatTokenPrice ? window.formatTokenPrice(price) : formatUnits(price, 18);
 				} catch (e) {
 					console.error('Error getting token price:', e);
 				}
@@ -3696,14 +3726,14 @@ window.getContractStats = async function() {
 		const binaryPool = totalPoints;
 		
 		const result = {
-			totalSupply: ethers.formatUnits(totalSupply, 18),
-			circulatingSupply: ethers.formatUnits(circulatingSupply, 18),
-			binaryPool: ethers.formatUnits(binaryPool, 18),
-			totalPoints: totalClaimableBinaryPoints ? ethers.formatUnits(totalClaimableBinaryPoints, 18) : '0',
-			totalClaimableBinaryPoints: totalClaimableBinaryPoints ? ethers.formatUnits(totalClaimableBinaryPoints, 18) : '0',
-			pointValue: ethers.formatUnits(pointValue, 18),
-			rewardPool: ethers.formatEther(contractBalance), // استخر پاداش = موجودی POL قرارداد (نه توکن)
-			contractTokenBalance: ethers.formatUnits(contractTokenBalance, 18) // موجودی توکن قرارداد
+			totalSupply: formatUnits(totalSupply, 18),
+			circulatingSupply: formatUnits(circulatingSupply, 18),
+			binaryPool: formatUnits(binaryPool, 18),
+			totalPoints: totalClaimableBinaryPoints ? formatUnits(totalClaimableBinaryPoints, 18) : '0',
+			totalClaimableBinaryPoints: totalClaimableBinaryPoints ? formatUnits(totalClaimableBinaryPoints, 18) : '0',
+			pointValue: formatUnits(pointValue, 18),
+			rewardPool: formatEther(contractBalance), // استخر پاداش = موجودی POL قرارداد (نه توکن)
+			contractTokenBalance: formatUnits(contractTokenBalance, 18) // موجودی توکن قرارداد
 			
 		};
 		
@@ -4287,9 +4317,9 @@ async function refreshTotalSupply() {
 	const contractBalance = await contract.balanceOf(contract.target); // contract.target = address(this)
 	const tokenPrice = await contract.getTokenPrice();
 
-	const totalSupplyNum = Number(ethers.formatUnits(totalSupply, 18));
-	const contractBalanceNum = Number(ethers.formatUnits(contractBalance, 18));
-			const tokenPriceNum = Number(ethers.formatUnits(tokenPrice, 18)); // قیمت با 18 رقم اعشار (DAI)
+	const totalSupplyNum = Number(formatUnits(totalSupply, 18));
+	const contractBalanceNum = Number(formatUnits(contractBalance, 18));
+			const tokenPriceNum = Number(formatUnits(tokenPrice, 18)); // قیمت با 18 رقم اعشار (DAI)
 
 	const elTotalSupply = document.getElementById('total-supply');
 	if (elTotalSupply) elTotalSupply.innerText = totalSupplyNum.toLocaleString('en-US', {maximumFractionDigits: 4}); // حذف پسوند IAM
@@ -4398,7 +4428,7 @@ window.updateDashboardStats = async function() {
 	  );
 	  
 	  const totalSupply = await Promise.race([totalSupplyPromise, timeoutPromise]);
-	  const formattedSupply = parseFloat(ethers.formatUnits(totalSupply, 18)).toLocaleString('en-US', {maximumFractionDigits: 2});
+	  const formattedSupply = parseFloat(formatUnits(totalSupply, 18)).toLocaleString('en-US', {maximumFractionDigits: 2});
 	  safeUpdate('circulating-supply', formattedSupply); // حذف پسوند IAM
 	  console.log('✅ Total supply updated:', formattedSupply);
 	  
@@ -4406,8 +4436,8 @@ window.updateDashboardStats = async function() {
 	  try {
 		const tokenPrice = await contract.getTokenPrice();
 		if (tokenPrice) {
-		  const tokenPriceNum = parseFloat(ethers.formatUnits(tokenPrice, 18));
-		  const supplyNum = parseFloat(ethers.formatUnits(totalSupply, 18));
+		  const tokenPriceNum = parseFloat(formatUnits(tokenPrice, 18));
+		  const supplyNum = parseFloat(formatUnits(totalSupply, 18));
 		  const daiEquivalent = supplyNum * tokenPriceNum;
 		  const daiFormatted = daiEquivalent.toLocaleString('en-US', {maximumFractionDigits: 2});
 		  safeUpdate('circulating-supply-dai', daiFormatted);
@@ -4435,8 +4465,8 @@ window.updateDashboardStats = async function() {
 	try {
 	  console.log('🎯 Fetching total points...');
 	  const totalPoints = await contract.totalClaimablePoints();
-	  // استفاده از ethers.formatUnits برای تبدیل صحیح BigInt به عدد
-	  const formattedPoints = parseInt(ethers.formatUnits(totalPoints, 0)).toLocaleString('en-US');
+	  // استفاده از formatUnits برای تبدیل صحیح BigInt به عدد
+	  const formattedPoints = parseInt(formatUnits(totalPoints, 0)).toLocaleString('en-US');
 	  safeUpdate('total-points', formattedPoints);
 	  console.log('✅ Total points updated:', formattedPoints);
 
@@ -4449,7 +4479,7 @@ window.updateDashboardStats = async function() {
 	try {
 	  console.log('🏦 Fetching contract token balance...');
 	  const contractTokenBalance = await contract.balanceOf(contract.target);
-	  const formattedBalance = parseFloat(ethers.formatUnits(contractTokenBalance, 18)).toLocaleString('en-US', {maximumFractionDigits: 2});
+	  const formattedBalance = parseFloat(formatUnits(contractTokenBalance, 18)).toLocaleString('en-US', {maximumFractionDigits: 2});
 	  safeUpdate('contract-token-balance', formattedBalance); // حذف پسوند IAM
 	  console.log('✅ Contract token balance updated:', formattedBalance);
 	  
@@ -4457,8 +4487,8 @@ window.updateDashboardStats = async function() {
 	  try {
 		const tokenPrice = await contract.getTokenPrice();
 		if (tokenPrice) {
-		  const tokenPriceNum = parseFloat(ethers.formatUnits(tokenPrice, 18));
-		  const balanceNum = parseFloat(ethers.formatUnits(contractTokenBalance, 18));
+		  const tokenPriceNum = parseFloat(formatUnits(tokenPrice, 18));
+		  const balanceNum = parseFloat(formatUnits(contractTokenBalance, 18));
 		  const daiEquivalent = balanceNum * tokenPriceNum;
 		  const daiFormatted = daiEquivalent.toLocaleString('en-US', {maximumFractionDigits: 2});
 		  safeUpdate('contract-token-balance-dai', daiFormatted);
@@ -4492,7 +4522,7 @@ window.updateDashboardStats = async function() {
 		cashback = 0n;
 	  }
 	  
-	  const formattedCashback = parseFloat(ethers.formatUnits(cashback, 18)).toLocaleString('en-US', {maximumFractionDigits: 2});
+	  const formattedCashback = parseFloat(formatUnits(cashback, 18)).toLocaleString('en-US', {maximumFractionDigits: 2});
 	  safeUpdate('dashboard-cashback-value', formattedCashback); // حذف پسوند IAM
 	  console.log('✅ Cashback updated:', formattedCashback);
 	  
@@ -4500,8 +4530,8 @@ window.updateDashboardStats = async function() {
 	  try {
 		const tokenPrice = await contract.getTokenPrice();
 		if (tokenPrice) {
-		  const tokenPriceNum = parseFloat(ethers.formatUnits(tokenPrice, 18));
-		  const cashbackNum = parseFloat(ethers.formatUnits(cashback, 18));
+		  const tokenPriceNum = parseFloat(formatUnits(tokenPrice, 18));
+		  const cashbackNum = parseFloat(formatUnits(cashback, 18));
 		  const daiEquivalent = cashbackNum * tokenPriceNum;
 		  const daiFormatted = daiEquivalent.toLocaleString('en-US', {maximumFractionDigits: 2});
 		  safeUpdate('dashboard-cashback-value-dai', daiFormatted);
@@ -4541,7 +4571,7 @@ window.updateDashboardStats = async function() {
 	  }
 	  
   // DAI has 18 decimals
-  const formattedDai = parseFloat(ethers.formatUnits(daiBalance, 18)).toLocaleString('en-US', {maximumFractionDigits: 2});
+  const formattedDai = parseFloat(formatUnits(daiBalance, 18)).toLocaleString('en-US', {maximumFractionDigits: 2});
   safeUpdate('dashboard-dai-balance', formattedDai);
   console.log('✅ DAI contract balance updated:', formattedDai);
 
@@ -4563,7 +4593,7 @@ window.updateDashboardStats = async function() {
 	try {
 	  console.log('💎 Fetching point value...');
 	  const pointValue = await contract.getPointValue();
-	  const pointValueNum = parseFloat(ethers.formatUnits(pointValue, 18));
+	  const pointValueNum = parseFloat(formatUnits(pointValue, 18));
 	  const formattedPointValue = pointValueNum.toLocaleString('en-US', {maximumFractionDigits: 6});
 	  safeUpdate('dashboard-point-value', formattedPointValue); // حذف پسوند IAM
 	  console.log('✅ Point value updated:', formattedPointValue);
@@ -4572,7 +4602,7 @@ window.updateDashboardStats = async function() {
 	  try {
 		const tokenPrice = await contract.getTokenPrice();
 		if (tokenPrice) {
-		  const tokenPriceNum = parseFloat(ethers.formatUnits(tokenPrice, 18));
+		  const tokenPriceNum = parseFloat(formatUnits(tokenPrice, 18));
 		  const daiEquivalent = pointValueNum * tokenPriceNum;
 		  const daiFormatted = daiEquivalent.toLocaleString('en-US', {maximumFractionDigits: 2});
 		  safeUpdate('dashboard-point-value-dai', daiFormatted);
@@ -4600,7 +4630,7 @@ window.updateDashboardStats = async function() {
 	try {
 	  console.log('💲 Fetching token price...');
 	  const tokenPrice = await contract.getTokenPrice();
-	  const tokenPriceNum = parseFloat(ethers.formatUnits(tokenPrice, 18));
+	  const tokenPriceNum = parseFloat(formatUnits(tokenPrice, 18));
 	  let formattedTokenPrice;
 	  if (tokenPriceNum < 0.0001) {
 		formattedTokenPrice = tokenPriceNum.toExponential(2);
@@ -4635,7 +4665,7 @@ window.updateDashboardStats = async function() {
 	try {
 	  console.log('🎫 Fetching registration price...');
 	  const registrationPrice = await window.getRegPrice(contract);
-	  const formattedRegPrice = parseFloat(ethers.formatUnits(registrationPrice, 18)).toLocaleString('en-US', {maximumFractionDigits: 0});
+	  const formattedRegPrice = parseFloat(formatUnits(registrationPrice, 18)).toLocaleString('en-US', {maximumFractionDigits: 0});
 	  safeUpdate('dashboard-registration-price', formattedRegPrice); // حذف پسوند IAM
 	  console.log('✅ Registration price updated:', formattedRegPrice);
 
@@ -4643,8 +4673,8 @@ window.updateDashboardStats = async function() {
 	  try {
 		const tokenPrice = await contract.getTokenPrice();
 		if (tokenPrice) {
-		  const tokenPriceNum = parseFloat(ethers.formatUnits(tokenPrice, 18));
-		  const regPriceNum = parseFloat(ethers.formatUnits(registrationPrice, 18));
+		  const tokenPriceNum = parseFloat(formatUnits(tokenPrice, 18));
+		  const regPriceNum = parseFloat(formatUnits(registrationPrice, 18));
 		  const daiEquivalent = regPriceNum * tokenPriceNum;
 		  const daiFormatted = daiEquivalent.toLocaleString('en-US', {maximumFractionDigits: 2});
 		  safeUpdate('dashboard-registration-price-dai', daiFormatted);
@@ -4745,11 +4775,11 @@ async function getContractDAIBalance() {
 	? window.contractConfig.contract.provider
 	: (window.contractConfig && window.contractConfig.provider)
 	  ? window.contractConfig.provider
-	  : (window.ethereum ? new ethers.providers.Web3Provider(window.ethereum) : null);
+	  : (window.ethereum ? (typeof ethers.providers !== 'undefined' && ethers.providers.Web3Provider ? new ethers.providers.Web3Provider(window.ethereum) : new ethers.BrowserProvider(window.ethereum)) : null);
   if (!provider) throw new Error('No provider');
   const daiContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, provider);
   const balanceRaw = await daiContract.balanceOf(IAM_ADDRESS);
-  return ethers.formatUnits(balanceRaw, 18); // DAI has 18 decimals
+  return formatUnits(balanceRaw, 18); // DAI has 18 decimals
 }
 
 // Backward compatibility (keep name on window if referenced elsewhere)
@@ -4763,7 +4793,7 @@ async function getTotalClaimableBinaryPoints() {
 	? window.contractConfig.contract.provider
 	: (window.contractConfig && window.contractConfig.provider)
 	  ? window.contractConfig.provider
-	  : (window.ethereum ? new ethers.providers.Web3Provider(window.ethereum) : null);
+	  : (window.ethereum ? (typeof ethers.providers !== 'undefined' && ethers.providers.Web3Provider ? new ethers.providers.Web3Provider(window.ethereum) : new ethers.BrowserProvider(window.ethereum)) : null);
   if (!provider) throw new Error('No provider');
   const contract = new ethers.Contract(IAM_ADDRESS, IAM_ABI, provider);
   const pointsRaw = await contract.totalClaimablePoints();
@@ -4772,8 +4802,8 @@ async function getTotalClaimableBinaryPoints() {
 // Returns the integer value (no decimals)
 async function getTotalClaimableBinaryPointsInteger() {
   const pointsRaw = await getTotalClaimableBinaryPoints();
-  // استفاده از ethers.formatUnits برای تبدیل صحیح BigInt به عدد
-  return parseInt(ethers.formatUnits(pointsRaw, 0)).toString();
+  // استفاده از formatUnits برای تبدیل صحیح BigInt به عدد
+  return parseInt(formatUnits(pointsRaw, 0)).toString();
 }
 // ... existing code ...
 
@@ -4787,11 +4817,11 @@ async function getContractTokenBalance() {
 	? window.contractConfig.contract.provider
 	: (window.contractConfig && window.contractConfig.provider)
 	  ? window.contractConfig.provider
-	  : (window.ethereum ? new ethers.providers.Web3Provider(window.ethereum) : null);
+	  : (window.ethereum ? (typeof ethers.providers !== 'undefined' && ethers.providers.Web3Provider ? new ethers.providers.Web3Provider(window.ethereum) : new ethers.BrowserProvider(window.ethereum)) : null);
   if (!provider) throw new Error('No provider');
   const contract = new ethers.Contract(IAM_ADDRESS, IAM_ABI, provider);
   const tokenRaw = await contract.balanceOf(IAM_ADDRESS);
-  return ethers.formatUnits(tokenRaw, 18); // returns as string, e.g. '123.456789012345678901'
+  return formatUnits(tokenRaw, 18); // returns as string, e.g. '123.456789012345678901'
 }
 // ... existing code ...
 
@@ -4812,7 +4842,7 @@ async function updateContractStats() {
 	  ? window.contractConfig.contract.provider
 	  : (window.contractConfig && window.contractConfig.provider)
 		? window.contractConfig.provider
-		: (window.ethereum ? new ethers.providers.Web3Provider(window.ethereum) : null);
+		: (window.ethereum ? (typeof ethers.providers !== 'undefined' && ethers.providers.Web3Provider ? new ethers.providers.Web3Provider(window.ethereum) : new ethers.BrowserProvider(window.ethereum)) : null);
 	if (!provider) throw new Error('No provider');
 	const contract = new ethers.Contract(IAM_ADDRESS, IAM_ABI, provider);
 	// Total Points (integer, no decimals)
@@ -4865,7 +4895,7 @@ async function updateTokenPriceDisplay() {
 	// بروزرسانی point-value از قرارداد
 	try {
 	  const pointValue = await contract.getPointValue();
-	  const pointValueNum = parseFloat(ethers.formatUnits(pointValue, 18));
+	  const pointValueNum = parseFloat(formatUnits(pointValue, 18));
 	  const pointValueFormatted = pointValueNum < 0.000001 ? pointValueNum.toExponential(6) : pointValueNum.toFixed(2);
 	  const el2 = document.getElementById('point-value');
 	  if (el2) el2.textContent = pointValueFormatted; // حذف پسوند IAM

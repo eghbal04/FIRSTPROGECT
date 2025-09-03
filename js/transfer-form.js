@@ -1,20 +1,20 @@
 // TransferManager - Independent token transfer management
 // Contract addresses and ABIs
-const IAM_ADDRESS_NEW = '0x63F5a2085906f5fcC206d6589d78038FBc74d2FE'; // New contract
-const IAM_ADDRESS_OLD = '0xd7eDAdcae9073FD69Ae1081B057922F41Adf0607'; // Old contract
-const DAI_ADDRESS = '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063';
+const IAM_ADDRESS_TRANSFER_NEW = '0x63F5a2085906f5fcC206d6589d78038FBc74d2FE'; // New contract
+const IAM_ADDRESS_TRANSFER_OLD = '0xd7eDAdcae9073FD69Ae1081B057922F41Adf0607'; // Old contract
+const DAI_ADDRESS_TRANSFER = '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063';
 const POL_ADDRESS = '0x0000000000000000000000000000000000000000'; // Native MATIC
 
 // Default to new contract
-let IAM_ADDRESS = IAM_ADDRESS_NEW;
+let IAM_ADDRESS_TRANSFER = IAM_ADDRESS_TRANSFER_NEW;
 
-const DAI_ABI = [
+const DAI_ABI_TRANSFER = [
     "function balanceOf(address owner) view returns (uint256)",
     "function transfer(address to, uint256 amount) returns (bool)",
     "function decimals() view returns (uint8)"
 ];
 
-const IAM_ABI = [
+const IAM_ABI_TRANSFER = [
     "function balanceOf(address owner) view returns (uint256)",
     "function transfer(address to, uint256 amount) returns (bool)",
     "function decimals() view returns (uint8)"
@@ -28,52 +28,13 @@ class TransferManager {
         this.contract = null;
         this.daiContract = null;
         this.isRefreshing = false;
-        this.selectedContract = 'new'; // 'new' or 'old'
+
         console.log('✅ TransferManager created');
     }
 
-    // Switch between old and new contracts
-    async switchContract(contractType) {
-        console.log('🔄 Switching contract to:', contractType);
-        
-        if (contractType === 'old') {
-            IAM_ADDRESS = IAM_ADDRESS_OLD;
-            this.selectedContract = 'old';
-        } else {
-            IAM_ADDRESS = IAM_ADDRESS_NEW;
-            this.selectedContract = 'new';
-        }
-        
-        // Recreate contract instance if wallet is connected
-        if (this.signer) {
-            this.contract = new ethers.Contract(IAM_ADDRESS, IAM_ABI, this.signer);
-            console.log('✅ Contract switched to:', IAM_ADDRESS);
-            
-            // Refresh data with new contract
-            await this.loadTransferData();
-        }
-    }
 
-    // Update contract selection UI
-    updateContractSelectionUI() {
-        const contractSelector = document.getElementById('contractSelector');
-        if (contractSelector) {
-            contractSelector.value = this.selectedContract;
-        }
-        
-        const contractInfo = document.getElementById('contractInfo');
-        if (contractInfo) {
-            const contractAddress = this.selectedContract === 'old' ? IAM_ADDRESS_OLD : IAM_ADDRESS_NEW;
-            const contractName = this.selectedContract === 'old' ? 'Old Contract' : 'New Contract';
-            contractInfo.innerHTML = `
-                <div style="background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 8px; padding: 0.8rem; margin-bottom: 1rem;">
-                    <h4 style="color: #00ff88; margin: 0 0 0.5rem 0; font-size: 0.9rem;">📋 Selected Contract</h4>
-                    <p style="margin: 0; color: #ffffff; font-size: 0.8rem;"><strong>${contractName}:</strong></p>
-                    <p style="margin: 0; color: #a786ff; font-family: monospace; font-size: 0.75rem; word-break: break-all;">${contractAddress}</p>
-                </div>
-            `;
-        }
-    }
+
+
 
     async connectWallet() {
         try {
@@ -84,8 +45,8 @@ class TransferManager {
                 console.log('✅ Using existing wallet connection');
                 this.provider = window.contractConfig.provider;
                 this.signer = window.contractConfig.signer;
-                this.contract = new ethers.Contract(IAM_ADDRESS, IAM_ABI, this.signer);
-                this.daiContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, this.signer);
+                this.contract = new ethers.Contract(IAM_ADDRESS_TRANSFER, IAM_ABI_TRANSFER, this.signer);
+                this.daiContract = new ethers.Contract(DAI_ADDRESS_TRANSFER, DAI_ABI_TRANSFER, this.signer);
                 return true;
             }
             
@@ -97,12 +58,18 @@ class TransferManager {
             await window.ethereum.request({ method: 'eth_requestAccounts' });
             
             // Create provider and signer
-            this.provider = new ethers.providers.Web3Provider(window.ethereum);
+            if (typeof ethers.providers !== 'undefined' && ethers.providers.Web3Provider) {
+                this.provider = new ethers.providers.Web3Provider(window.ethereum);
+            } else if (typeof ethers.BrowserProvider !== 'undefined') {
+                this.provider = new ethers.BrowserProvider(window.ethereum);
+            } else {
+                throw new Error('Ethers.js provider not available');
+            }
             this.signer = this.provider.getSigner();
             
             // Create contract instances
-            this.contract = new ethers.Contract(IAM_ADDRESS, IAM_ABI, this.signer);
-            this.daiContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, this.signer);
+            this.contract = new ethers.Contract(IAM_ADDRESS_TRANSFER, IAM_ABI_TRANSFER, this.signer);
+            this.daiContract = new ethers.Contract(DAI_ADDRESS_TRANSFER, DAI_ABI_TRANSFER, this.signer);
             
             console.log('✅ Wallet connected successfully');
             return true;
@@ -119,7 +86,16 @@ class TransferManager {
             const daiBalance = await this.daiContract.balanceOf(address);
             const el = document.getElementById('transfer-dai-balance');
             if (el) {
-                const value = ethers.utils.formatUnits(daiBalance, 18);
+                // Handle different ethers.js versions
+                let value;
+                if (typeof ethers.utils !== 'undefined' && ethers.utils.formatUnits) {
+                    value = ethers.utils.formatUnits(daiBalance, 18);
+                } else if (typeof ethers.formatUnits !== 'undefined') {
+                    value = ethers.formatUnits(daiBalance, 18);
+                } else {
+                    // Manual conversion
+                    value = (parseFloat(daiBalance.toString()) / Math.pow(10, 18)).toString();
+                }
                 el.textContent = parseFloat(value).toFixed(2);
             }
         } catch (e) {
@@ -135,8 +111,17 @@ class TransferManager {
             const iamBalance = await this.contract.balanceOf(address);
             const el = document.getElementById('transfer-IAM-balance');
             if (el) {
-                const value = ethers.utils.formatUnits(iamBalance, 18);
-                el.textContent = parseFloat(value).toFixed(2);
+                // Handle different ethers.js versions
+                let value;
+                if (typeof ethers.utils !== 'undefined' && ethers.utils.formatUnits) {
+                    value = ethers.utils.formatUnits(iamBalance, 18);
+                } else if (typeof ethers.formatUnits !== 'undefined') {
+                    value = ethers.formatUnits(iamBalance, 18);
+                } else {
+                    // Manual conversion
+                    value = (parseFloat(iamBalance.toString()) / Math.pow(10, 18)).toString();
+                }
+                el.textContent = Math.floor(parseFloat(value));
             }
         } catch (e) {
             const el = document.getElementById('transfer-IAM-balance');
@@ -151,7 +136,16 @@ class TransferManager {
             const polBalance = await this.provider.getBalance(address);
             const el = document.getElementById('transfer-poly-balance');
             if (el) {
-                const value = ethers.utils.formatEther(polBalance);
+                // Handle different ethers.js versions
+                let value;
+                if (typeof ethers.utils !== 'undefined' && ethers.utils.formatEther) {
+                    value = ethers.utils.formatEther(polBalance);
+                } else if (typeof ethers.formatEther !== 'undefined') {
+                    value = ethers.formatEther(polBalance);
+                } else {
+                    // Manual conversion
+                    value = (parseFloat(polBalance.toString()) / Math.pow(10, 18)).toString();
+                }
                 el.textContent = parseFloat(value).toFixed(4);
             }
         } catch (e) {
@@ -205,9 +199,8 @@ class TransferManager {
             this.setupEventListeners();
             console.log('✅ Event listeners configured');
             
-            // Update contract selection UI
-            this.updateContractSelectionUI();
-            console.log('✅ Contract selection UI updated');
+            // Contract selection removed - using new contract by default
+            console.log('✅ Using new contract by default');
             
             console.log('✅ TransferManager successfully initialized');
         } catch (error) {
@@ -233,21 +226,7 @@ class TransferManager {
             });
         }
 
-        // Contract selector
-        const contractSelector = document.getElementById('contractSelector');
-        if (contractSelector) {
-            contractSelector.addEventListener('change', async (e) => {
-                console.log('🔄 Contract selector changed to:', e.target.value);
-                try {
-                    await this.switchContract(e.target.value);
-                    this.updateContractSelectionUI();
-                    this.showStatus(`✅ Switched to ${e.target.value === 'old' ? 'Old' : 'New'} contract successfully!`, 'success');
-                } catch (error) {
-                    console.error('❌ Error switching contract:', error);
-                    this.showStatus('Error switching contract: ' + error.message, 'error');
-                }
-            });
-        }
+
     }
 
     // Show status message
@@ -292,20 +271,43 @@ class TransferManager {
             if (token === 'dai') {
                 const address = await this.signer.getAddress();
                 const balance = await this.daiContract.balanceOf(address);
-                const value = ethers.utils.formatUnits(balance, 18);
+                let value;
+                if (typeof ethers.utils !== 'undefined' && ethers.utils.formatUnits) {
+                    value = ethers.utils.formatUnits(balance, 18);
+                } else if (typeof ethers.formatUnits !== 'undefined') {
+                    value = ethers.formatUnits(balance, 18);
+                } else {
+                    value = (parseFloat(balance.toString()) / Math.pow(10, 18)).toString();
+                }
                 amountInput.value = parseFloat(value).toFixed(6);
             } else if (token === 'iam') {
                 const address = await this.signer.getAddress();
                 const balance = await this.contract.balanceOf(address);
-                const value = ethers.utils.formatUnits(balance, 18);
-                amountInput.value = parseFloat(value).toFixed(6);
+                let value;
+                if (typeof ethers.utils !== 'undefined' && ethers.utils.formatUnits) {
+                    value = ethers.utils.formatUnits(balance, 18);
+                } else if (typeof ethers.formatUnits !== 'undefined') {
+                    value = ethers.formatUnits(balance, 18);
+                } else {
+                    value = (parseFloat(balance.toString()) / Math.pow(10, 18)).toString();
+                }
+                // Round down and subtract 100 tokens to be safe
+                const safeAmount = Math.floor(parseFloat(value)) - 100;
+                amountInput.value = safeAmount > 0 ? safeAmount : '0';
             } else if (token === 'pol') {
                 const address = await this.signer.getAddress();
                 const balance = await this.provider.getBalance(address);
-                const value = ethers.utils.formatEther(balance);
-                // Leave some for gas
+                let value;
+                if (typeof ethers.utils !== 'undefined' && ethers.utils.formatEther) {
+                    value = ethers.utils.formatEther(balance);
+                } else if (typeof ethers.formatEther !== 'undefined') {
+                    value = ethers.formatEther(balance);
+                } else {
+                    value = (parseFloat(balance.toString()) / Math.pow(10, 18)).toString();
+                }
+                // Leave some for gas and round down
                 const maxAmount = parseFloat(value) - 0.01;
-                amountInput.value = maxAmount > 0 ? maxAmount.toFixed(6) : '0';
+                amountInput.value = maxAmount > 0 ? Math.floor(maxAmount) : '0';
             }
         } catch (error) {
             console.error('❌ Error setting max amount:', error);
@@ -350,9 +352,17 @@ class TransferManager {
             status.className = 'transfer-status loading';
             
             if (token.toLowerCase() === 'pol') {
+                let value;
+                if (typeof ethers.utils !== 'undefined' && ethers.utils.parseEther) {
+                    value = ethers.utils.parseEther(amount.toString());
+                } else if (typeof ethers.parseEther !== 'undefined') {
+                    value = ethers.parseEther(amount.toString());
+                } else {
+                    value = (parseFloat(amount) * Math.pow(10, 18)).toString();
+                }
                 const tx = await this.signer.sendTransaction({
                     to,
-                    value: ethers.utils.parseEther(amount.toString())
+                    value: value
                 });
                 status.textContent = '⏳ MATIC transfer submitted! Waiting for blockchain confirmation...';
                 status.className = 'transfer-status loading';
@@ -360,7 +370,14 @@ class TransferManager {
                 status.textContent = '🎉 MATIC transfer completed successfully!\nTransaction ID: ' + tx.hash;
                 status.className = 'transfer-status success';
             } else if (token.toLowerCase() === 'dai') {
-                const parsedAmount = ethers.utils.parseUnits(amount.toString(), 18);
+                let parsedAmount;
+                if (typeof ethers.utils !== 'undefined' && ethers.utils.parseUnits) {
+                    parsedAmount = ethers.utils.parseUnits(amount.toString(), 18);
+                } else if (typeof ethers.parseUnits !== 'undefined') {
+                    parsedAmount = ethers.parseUnits(amount.toString(), 18);
+                } else {
+                    parsedAmount = (parseFloat(amount) * Math.pow(10, 18)).toString();
+                }
                 const tx = await this.daiContract.transfer(to, parsedAmount);
                 status.textContent = '⏳ DAI transfer submitted! Waiting for blockchain confirmation...';
                 status.className = 'transfer-status loading';
@@ -368,7 +385,24 @@ class TransferManager {
                 status.textContent = '🎉 DAI transfer completed successfully!\nTransaction ID: ' + tx.hash;
                 status.className = 'transfer-status success';
             } else {
-                const tx = await this.contract.transfer(to, ethers.utils.parseEther(amount.toString()));
+                // IAM Token Transfer
+                let value;
+                if (typeof ethers.utils !== 'undefined' && ethers.utils.parseUnits) {
+                    value = ethers.utils.parseUnits(amount.toString(), 18);
+                } else if (typeof ethers.parseUnits !== 'undefined') {
+                    value = ethers.parseUnits(amount.toString(), 18);
+                } else {
+                    value = (parseFloat(amount) * Math.pow(10, 18)).toString();
+                }
+                
+                console.log('🔄 IAM Transfer Details:', {
+                    to: to,
+                    amount: amount,
+                    value: value.toString(),
+                    contract: this.contract.address
+                });
+                
+                const tx = await this.contract.transfer(to, value);
                 status.textContent = '⏳ IAM transfer submitted! Waiting for blockchain confirmation...';
                 status.className = 'transfer-status loading';
                 await tx.wait();
