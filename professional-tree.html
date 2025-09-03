@@ -77,6 +77,41 @@
             z-index: 1000;
         }
         
+        .connect-wallet-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 10px 20px;
+        }
+        
+        .connect-wallet-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 255, 136, 0.4);
+        }
+        
+        .connect-wallet-btn:active {
+            transform: translateY(0);
+        }
+        
+        .connect-wallet-btn.connected {
+            background: linear-gradient(135deg, #00cc6a, #00ff88);
+            color: #1a202c;
+        }
+        
+        .connect-wallet-btn.connecting {
+            background: linear-gradient(135deg, #ffa500, #ff8c00);
+            color: #1a202c;
+            cursor: not-allowed;
+        }
+        
+        .connect-wallet-btn.error {
+            background: linear-gradient(135deg, #ff4444, #cc0000);
+            color: #ffffff;
+        }
+        
         .file-manager-container {
             margin-top: 2rem;
             backdrop-filter: none;
@@ -92,6 +127,39 @@
             margin-left: 0.5rem;
             font-size: 1.2em;
         }
+        
+        /* Mobile responsive for buttons */
+        @media (max-width: 768px) {
+            .back-btn {
+                top: 10px;
+                left: 10px;
+                padding: 8px 16px;
+                font-size: 12px;
+            }
+            
+            .connect-wallet-btn {
+                top: 10px;
+                right: 10px;
+                padding: 8px 16px;
+                font-size: 12px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .back-btn {
+                top: 5px;
+                left: 5px;
+                padding: 6px 12px;
+                font-size: 11px;
+            }
+            
+            .connect-wallet-btn {
+                top: 5px;
+                right: 5px;
+                padding: 6px 12px;
+                font-size: 11px;
+            }
+        }
     </style>
     
     <!-- Load ethers.js -->
@@ -103,6 +171,11 @@
     <a href="index.html" class="back-btn modern-btn">
         ← Back to Dashboard
     </a>
+    
+    <!-- Connect Wallet Button -->
+    <button id="connect-wallet-btn" class="connect-wallet-btn modern-btn">
+        🔗 Connect Wallet
+    </button>
     
     <div id="main-network" class="page-section expandable-container modern-card" style="width:100vw;max-width:none;margin:0;left:0;right:0;padding:0.5rem 0;">
         <div class="expand-header">
@@ -1642,9 +1715,81 @@
             }
         }
         
+        // Connect wallet button functionality
+        function setupConnectWalletButton() {
+            const connectBtn = document.getElementById('connect-wallet-btn');
+            if (!connectBtn) return;
+            
+            // Update button state
+            function updateButtonState(state, text) {
+                connectBtn.className = `connect-wallet-btn modern-btn ${state}`;
+                connectBtn.textContent = text;
+            }
+            
+            // Check initial connection state
+            function checkConnectionState() {
+                if (window.contractConfig && window.contractConfig.userAddress) {
+                    const shortAddress = window.contractConfig.userAddress.slice(0, 6) + '...' + window.contractConfig.userAddress.slice(-4);
+                    updateButtonState('connected', `✅ ${shortAddress}`);
+                } else if (window.ethereum && window.ethereum.selectedAddress) {
+                    const shortAddress = window.ethereum.selectedAddress.slice(0, 6) + '...' + window.ethereum.selectedAddress.slice(-4);
+                    updateButtonState('connected', `✅ ${shortAddress}`);
+                } else {
+                    updateButtonState('', '🔗 Connect Wallet');
+                }
+            }
+            
+            // Connect wallet function
+            async function connectWallet() {
+                try {
+                    updateButtonState('connecting', '🔄 Connecting...');
+                    
+                    const success = await connectWalletAndLoadData();
+                    
+                    if (success) {
+                        checkConnectionState();
+                        console.log('✅ Wallet connected successfully via button');
+                    } else {
+                        updateButtonState('error', '❌ Connection Failed');
+                        setTimeout(() => {
+                            checkConnectionState();
+                        }, 3000);
+                    }
+                } catch (error) {
+                    console.error('❌ Error connecting wallet:', error);
+                    updateButtonState('error', '❌ Error');
+                    setTimeout(() => {
+                        checkConnectionState();
+                    }, 3000);
+                }
+            }
+            
+            // Add click event listener
+            connectBtn.addEventListener('click', connectWallet);
+            
+            // Check connection state on load
+            checkConnectionState();
+            
+            // Listen for account changes
+            if (window.ethereum) {
+                window.ethereum.on('accountsChanged', (accounts) => {
+                    console.log('🔄 Account changed, updating button state');
+                    checkConnectionState();
+                });
+                
+                window.ethereum.on('chainChanged', () => {
+                    console.log('🔄 Chain changed, updating button state');
+                    checkConnectionState();
+                });
+            }
+        }
+
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('🚀 Pyramid Tree page loaded');
+            
+            // Setup connect wallet button
+            setupConnectWalletButton();
             
             // Wait for scripts to load and try multiple times
             let attempts = 0;
