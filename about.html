@@ -3,8 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>About Us | IAM - PHOENIX</title>
+  <title data-translate="title">About Us | IAM - PHOENIX</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/mobile-responsive.css">
   <script src="js/mobile-navigation.js"></script>
   <script src="js/mobile-optimizer.js"></script>
@@ -18,10 +21,44 @@
       line-height: 1.6;
     }
 
+    .back-button-container {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      z-index: 1000;
+    }
+
+    .back-button {
+      background: linear-gradient(135deg, #00ff88, #a786ff);
+      color: #181c2a;
+      border: none;
+      border-radius: 12px;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .back-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 255, 136, 0.4);
+      background: linear-gradient(135deg, #00e677, #9670ff);
+    }
+
+    .back-button:active {
+      transform: translateY(0);
+    }
+
     .about-container {
       max-width: 1200px;
       margin: 0 auto;
       padding: 2rem 1rem;
+      margin-top: 4rem;
     }
 
     .about-header {
@@ -191,10 +228,22 @@
       word-break: break-all;
       cursor: pointer;
       transition: all 0.2s ease;
+      display: block;
     }
 
     .contract-address:hover {
       background: rgba(0, 255, 136, 0.1);
+      border-color: rgba(0, 255, 136, 0.5);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 255, 136, 0.2);
+    }
+
+    #contract-address-link:hover .contract-address,
+    #dai-address-link:hover .contract-address {
+      background: rgba(0, 255, 136, 0.1);
+      border-color: rgba(0, 255, 136, 0.5);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 255, 136, 0.2);
     }
 
     .copy-btn {
@@ -400,6 +449,77 @@
       }
     }
 
+    /* Language Selector */
+    .language-selector {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1000;
+      background: rgba(35, 41, 70, 0.9);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      border-radius: 12px;
+      padding: 0.5rem;
+      backdrop-filter: blur(10px);
+    }
+
+    .language-selector select {
+      background: transparent;
+      border: none;
+      color: #00ff88;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .language-selector select option {
+      background: #232946;
+      color: #e0e6f7;
+    }
+
+    /* RTL Support */
+    [dir="rtl"] {
+      text-align: right;
+    }
+
+    [dir="rtl"] .about-content {
+      text-align: right;
+    }
+
+    [dir="rtl"] .about-content p {
+      text-align: right;
+    }
+
+    [dir="rtl"] .about-content ul {
+      padding-right: 1.5rem;
+      padding-left: 0;
+    }
+
+    [dir="rtl"] .about-content li {
+      text-align: right;
+    }
+
+    [dir="rtl"] .about-stats {
+      direction: rtl;
+    }
+
+    [dir="rtl"] .about-grid {
+      direction: rtl;
+    }
+
+    /* Font families for different languages */
+    .lang-ar, .lang-fa {
+      font-family: 'Noto Sans Arabic', 'Inter', sans-serif;
+    }
+
+    .lang-zh {
+      font-family: 'Noto Sans SC', 'Inter', sans-serif;
+    }
+
+    .lang-ru, .lang-de, .lang-fr, .lang-en {
+      font-family: 'Inter', sans-serif;
+    }
+
     /* Animation */
     @keyframes fadeInUp {
       from {
@@ -426,92 +546,260 @@
   </style>
 </head>
 <body>
+  <!-- Language Selector -->
+  <div class="language-selector">
+    <select id="language-selector">
+      <option value="en">🇺🇸 English</option>
+      <option value="fa">🇮🇷 فارسی</option>
+      <option value="ru">🇷🇺 Русский</option>
+      <option value="zh">🇨🇳 中文</option>
+      <option value="de">🇩🇪 Deutsch</option>
+      <option value="fr">🇫🇷 Français</option>
+    </select>
+  </div>
+
   <script src="js/config.js"></script>
-  <script src="js/navbar.js"></script>
+
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
+  
+  <!-- Back Button -->
+  <div class="back-button-container">
+    <button class="back-button" onclick="history.back()" data-translate="back_button">
+      ← Back
+    </button>
+  </div>
   
   <div class="about-container">
     <!-- Header Section -->
     <div class="about-header">
-      <h1>🚀 About IAM PHOENIX</h1>
-      <p>A revolutionary Network Marketing platform built on blockchain technology, creating a decentralized ecosystem where transparency, security, and growth are guaranteed by smart contracts.</p>
+      <h1 data-translate="header_title">🚀 About IAM PHOENIX</h1>
+      <p data-translate="header_description">A revolutionary Network Marketing platform built on blockchain technology, creating a decentralized ecosystem where transparency, security, and growth are guaranteed by smart contracts.</p>
     </div>
 
     <!-- Main About Section -->
     <div class="about-section">
-      <h2>🌟 What is IAM PHOENIX?</h2>
+      <h2 data-translate="what_is_iam">🌟 What is IAM PHOENIX?</h2>
       <div class="about-content">
-        <p>
+        <p data-translate="what_is_iam_desc1">
           <strong>IAM PHOENIX</strong> is a cutting-edge Network Marketing platform that leverages blockchain technology and Web3 infrastructure to create a transparent, secure, and decentralized ecosystem. Our platform eliminates traditional intermediaries and creates direct, trustless relationships between participants through smart contracts.
         </p>
-        <p>
+        <p data-translate="what_is_iam_desc2">
           Built on the Polygon blockchain, IAM PHOENIX combines the power of network marketing with the security and transparency of blockchain technology. All network marketing activities, rewards, and commissions are automatically calculated and distributed through audited smart contracts, ensuring complete transparency and eliminating the possibility of fraud or manipulation.
+        </p>
+      </div>
+    </div>
+
+    <!-- Phoenix Team Section -->
+    <div class="about-section">
+      <h2 data-translate="phoenix_team">🔥 Phoenix Team</h2>
+      <div class="about-content">
+        <p data-translate="phoenix_mission">
+          <strong>Hello dear friends,</strong><br><br>
+          We are the Phoenix team. Our mission is to support and develop Type Zero tokens. These tokens are advanced tools that allow people, by purchasing them, to practically support related projects and services. With this support, buyers participate in the growth of the token, while projects receive the financial resources they need to execute their plans.
+        </p>
+        
+        <p data-translate="phoenix_iam_support">
+          Our team, Phoenix, is currently supporting and developing the IAM token, which is built on the Polygon blockchain and backed by the decentralized stablecoin DAI. This stablecoin is fully decentralized, and no organization or authority has access to it. The IAM token itself is an independent project, in fact a startup. It does not support or rely on another startup, but rather aims to introduce and promote itself.
+        </p>
+      </div>
+    </div>
+
+    <!-- Subscription and Point System -->
+    <div class="about-section">
+      <h2 data-translate="subscription_point_system">📊 Subscription and Point System</h2>
+      <div class="about-content">
+        <p data-translate="subscription_mechanism">
+          The IAM token has a subscription mechanism. The distribution of the subscription fee is as follows:
+        </p>
+        <ul>
+          <li data-translate="referral_rewards">10% for referral rewards (inviter)</li>
+          <li data-translate="token_burning">10% for token burning, which increases the token's value</li>
+          <li data-translate="user_distribution">80% is distributed among users based on the points they earn</li>
+        </ul>
+        
+        <p data-translate="point_earning_system">
+          Each person can earn up to 5 points every 12 hours, with a maximum of 10 points per day. Any extra points overflow onto other points, increasing the value of each point.
+        </p>
+      </div>
+    </div>
+
+    <!-- Subscription Refund Mechanism -->
+    <div class="about-section">
+      <h2 data-translate="subscription_refund">💰 Subscription Refund Mechanism</h2>
+      <div class="about-content">
+        <p data-translate="refund_guarantee">
+          People who are unable to earn points need not worry. The full amount they pay for a subscription will be refunded to them in the form of tokens. This refund occurs monthly at a rate of 3% of the amount paid until the full subscription fee is returned.
+        </p>
+      </div>
+    </div>
+
+    <!-- Activities and Rewards -->
+    <div class="about-section">
+      <h2 data-translate="activities_rewards">🎯 Activities and Rewards with the Token</h2>
+      <div class="about-content">
+        <p data-translate="token_activities">
+          All activities, including receiving rewards and commissions, are carried out with the IAM token. Each time a buy or sell transaction is made, the user pays a 2% fee, which is deposited into the token's financial reserve:
+        </p>
+        <ul>
+          <li data-translate="dai_to_iam">Converting DAI to IAM (buy) = token creation</li>
+          <li data-translate="iam_to_dai">Converting IAM to DAI (sell) = tokens are burned</li>
+        </ul>
+        
+        <p data-translate="token_burning_benefits">
+          All these activities result in token burning and increase the token's value. The system also functions as a binary network, where points and rewards are distributed transparently and fairly among users.
+        </p>
+      </div>
+    </div>
+
+    <!-- How to Increase Points -->
+    <div class="about-section">
+      <h2 data-translate="increase_points">📈 How to Increase the Number of Points</h2>
+      <div class="about-content">
+        <p data-translate="additional_points">
+          Users can request to purchase up to two additional points per month to increase their income. To do this, they pay one-third of the subscription fee for each point, and:
+        </p>
+        <ul>
+          <li data-translate="burning_percentage">5% is used for token burning, which increases the token's value</li>
+          <li data-translate="binary_pool">95% is added to the binary pool and distributed among users who have earned points</li>
+        </ul>
+        
+        <p data-translate="point_mechanism">
+          This mechanism ensures that the token always retains its value, and that the distribution of rewards remains fair and valuable. Each subscription can ultimately generate up to 100 points within 12 hours.
+        </p>
+      </div>
+    </div>
+
+    <!-- Deflationary Ecosystem -->
+    <div class="about-section">
+      <h2 data-translate="deflationary_ecosystem">🔥 Deflationary Ecosystem</h2>
+      <div class="about-content">
+        <p data-translate="severe_deflation">
+          <strong>This ecosystem experiences severe negative inflation (deflation).</strong> The token growth logic is fundamentally different from traditional systems - instead of creating more tokens, the system continuously removes tokens from circulation, creating a deflationary pressure that drives price appreciation.
+        </p>
+        
+        <h3 data-translate="token_burning_mechanisms">🔥 Token Burning Mechanisms</h3>
+        <p data-translate="burning_overview">
+          In every major activity within the ecosystem, a portion of tokens is permanently burned (removed from circulation). This creates a continuous reduction in total supply, leading to increased scarcity and value appreciation.
+        </p>
+        
+        <ul>
+          <li data-translate="burning_buy">🛒 <strong>Token Purchase:</strong> During buy transactions, tokens are burned as part of the backing fee mechanism</li>
+          <li data-translate="burning_sell">💰 <strong>Token Sale:</strong> During sell transactions, additional tokens are burned to maintain ecosystem balance</li>
+          <li data-translate="burning_registration">📝 <strong>Paid Registration:</strong> A portion of registration fees is used to burn tokens, reducing total supply</li>
+          <li data-translate="burning_claim">🎯 <strong>Reward Claims:</strong> During reward claiming processes, tokens are burned to maintain deflationary pressure</li>
+          <li data-translate="burning_purchase">🛍️ <strong>Product Purchases:</strong> When purchasing from vendors, tokens are burned as part of the transaction</li>
+          <li data-translate="burning_free_reg">🆓 <strong>Free Registration:</strong> Free registrations require burning tokens equivalent to 23 DAI value</li>
+        </ul>
+        
+        <h3 data-translate="deflationary_impact">📈 Deflationary Impact</h3>
+        <p data-translate="circulation_reduction">
+          <strong>Every transaction removes tokens from circulation.</strong> This continuous reduction in total supply creates a deflationary spiral where:
+        </p>
+        <ul>
+          <li data-translate="scarcity_increase">Scarcity increases with every transaction</li>
+          <li data-translate="value_appreciation">Token value appreciates due to reduced supply</li>
+          <li data-translate="price_pressure">Upward price pressure is maintained continuously</li>
+          <li data-translate="ecosystem_balance">Ecosystem balance is preserved through controlled deflation</li>
+        </ul>
+        
+        <p data-translate="severe_price_increase">
+          <strong>This mechanism causes severe price increases</strong> as the token becomes increasingly scarce. Unlike inflationary systems that dilute value, this deflationary model ensures that every token holder benefits from the continuous reduction in supply.
+        </p>
+      </div>
+    </div>
+
+    <!-- Project Features -->
+    <div class="about-section">
+      <h2 data-translate="project_features">🌟 Project Features</h2>
+      <div class="about-content">
+        <p data-translate="extraordinary_project">
+          This project is extraordinary and operates on a binary network with a lifetime storage system. Even if lower levels up to the 10th level are formed regularly and all participants earn points, in the worst-case scenario for the platform paying commissions, the value of each point will be about 60% of the subscription amount.
+        </p>
+        
+        <p data-translate="point_limitation">
+          The reason is the limitation on the number of points per person and the overflow of extra points, which increases the value of each point.
+        </p>
+        
+        <p data-translate="decentralized_transparent">
+          The project is completely decentralized and transparent, and all funds are distributed among participants. It is a decentralized network that will soon be recognized internationally.
+        </p>
+        
+        <p data-translate="phoenix_goal">
+          Our goal is for people to both earn income and benefit from the growth of the token by participating in this project.
+        </p>
+        
+        <p data-translate="together_success">
+          <strong>Together, we succeed!</strong>
         </p>
       </div>
     </div>
 
     <!-- Contract Information -->
     <div class="about-section">
-      <h2>📋 Smart Contract Information</h2>
+      <h2 data-translate="smart_contract_info">📋 Smart Contract Information</h2>
       <div class="contract-info">
-        <h3>Smart Contract Details</h3>
-        <p><strong>Network:</strong> Polygon Mainnet (ChainId: 137)</p>
-        <p><strong>Reference Token:</strong> DAI (18 decimals)</p>
-        <p><strong>IAM Contract Address:</strong></p>
-        <div class="contract-address" id="contract-address" title="Click to copy">
+        <h3 data-translate="smart_contract_details">Smart Contract Details</h3>
+        <p><strong data-translate="network">Network:</strong> Polygon Mainnet (ChainId: 137)</p>
+        <p><strong data-translate="reference_token">Reference Token:</strong> DAI (18 decimals)</p>
+        <p><strong data-translate="iam_contract_address">IAM Contract Address:</strong></p>
+        <a id="contract-address-link" href="#" target="_blank" style="text-decoration: none;">
+          <div class="contract-address" id="contract-address" title="Click to view on PolygonScan">
           Loading contract address...
         </div>
-        <button class="copy-btn" id="copy-address-btn">📋 Copy Address</button>
-        <p><strong>DAI Token Address:</strong></p>
-        <div class="contract-address" id="dai-address" title="Click to copy">
+        </a>
+        <button class="copy-btn" id="copy-address-btn" data-translate="copy_address">📋 Copy Address</button>
+        <p><strong data-translate="dai_token_address">DAI Token Address:</strong></p>
+        <a id="dai-address-link" href="#" target="_blank" style="text-decoration: none;">
+          <div class="contract-address" id="dai-address" title="Click to view on PolygonScan">
           Loading DAI address...
         </div>
-        <button class="copy-btn" id="copy-dai-btn">📋 Copy DAI Address</button>
-        <p><strong>Blockchain Explorer:</strong> <a id="polygonscan-link" href="#" target="_blank" style="color: #a786ff;">View on Polygonscan</a></p>
+        </a>
+        <button class="copy-btn" id="copy-dai-btn" data-translate="copy_dai_address">📋 Copy DAI Address</button>
+        <p><strong data-translate="blockchain_explorer">Blockchain Explorer:</strong> <a id="polygonscan-link" href="#" target="_blank" style="color: #a786ff;" data-translate="view_on_polygonscan">View on Polygonscan</a></p>
       </div>
     </div>
 
     <!-- Key Features Grid -->
     <div class="about-section">
-      <h2>✨ Key Features</h2>
+      <h2 data-translate="key_features">✨ Key Features</h2>
       <div class="about-grid">
         <div class="about-card">
-          <h3>🔗 Web3 Technology</h3>
+          <h3 data-translate="web3_technology">🔗 Web3 Technology</h3>
           <ul>
-            <li>Built on next-generation internet protocols</li>
-            <li>Decentralized network marketing without intermediaries</li>
-            <li>Smart contract security and automation</li>
-            <li>User sovereignty and asset control</li>
+            <li data-translate="web3_tech_1">Built on next-generation internet protocols</li>
+            <li data-translate="web3_tech_2">Decentralized network marketing without intermediaries</li>
+            <li data-translate="web3_tech_3">Smart contract security and automation</li>
+            <li data-translate="web3_tech_4">User sovereignty and asset control</li>
           </ul>
         </div>
 
         <div class="about-card">
-          <h3>🌐 Network Marketing</h3>
+          <h3 data-translate="network_marketing">🌐 Network Marketing</h3>
           <ul>
-            <li>Binary tree network structure</li>
-            <li>Automated reward distribution</li>
-            <li>Transparent referral tracking</li>
-            <li>Fair commission system</li>
+            <li data-translate="network_marketing_1">Binary tree network structure</li>
+            <li data-translate="network_marketing_2">Automated reward distribution</li>
+            <li data-translate="network_marketing_3">Transparent referral tracking</li>
+            <li data-translate="network_marketing_4">Fair commission system</li>
           </ul>
         </div>
 
         <div class="about-card">
-          <h3>💎 Token Economy</h3>
+          <h3 data-translate="token_economy">💎 Token Economy</h3>
           <ul>
-            <li>IAM tokens as primary currency</li>
-            <li>Dynamic price calculation</li>
-            <li>Token burning mechanism</li>
-            <li>Liquidity and trading support</li>
+            <li data-translate="token_economy_1">IAM tokens as primary currency</li>
+            <li data-translate="token_economy_2">Dynamic price calculation</li>
+            <li data-translate="token_economy_3">Token burning mechanism</li>
+            <li data-translate="token_economy_4">Liquidity and trading support</li>
           </ul>
         </div>
 
         <div class="about-card">
-          <h3>🛍️ Vendor Marketplace</h3>
+          <h3 data-translate="vendor_marketplace">🛍️ Vendor Marketplace</h3>
           <ul>
-            <li>Individual vendor pages</li>
-            <li>IAM token transactions</li>
-            <li>Automated commission system</li>
-            <li>Secure payment processing</li>
+            <li data-translate="vendor_marketplace_1">Individual vendor pages</li>
+            <li data-translate="vendor_marketplace_2">IAM token transactions</li>
+            <li data-translate="vendor_marketplace_3">Automated commission system</li>
+            <li data-translate="vendor_marketplace_4">Secure payment processing</li>
           </ul>
         </div>
       </div>
@@ -519,83 +807,85 @@
 
     <!-- Trading System -->
     <div class="about-section">
-      <h2>💱 Trading System</h2>
+      <h2 data-translate="trading_system">💱 Trading System</h2>
       <div class="about-content">
-        <h3>Buy and Sell Tokens</h3>
+        <h3 data-translate="buy_sell_tokens">Buy and Sell Tokens</h3>
         <div class="feature-highlight">
-          <h4>🛒 Buy Tokens</h4>
+          <h4 data-translate="buy_tokens">🛒 Buy Tokens</h4>
           <ul>
-            <li><strong>Minimum Purchase:</strong> 1 DAI</li>
-            <li><strong>Maximum Purchase:</strong> <span id="about-max-buy">—</span> (Dynamic based on contract balance)</li>
-            <li><strong>Fee:</strong> <span id="about-fee-backing">—</span> (Dynamic based on contract balance)</li>
-            <li><strong>Token Burn:</strong> 5% during purchases</li>
+            <li><strong data-translate="min_purchase">Minimum Purchase:</strong> 1 DAI</li>
+            <li><strong data-translate="max_purchase">Maximum Purchase:</strong> <span id="about-max-buy">—</span> <span data-translate="dynamic_balance">(Dynamic based on contract balance)</span></li>
+            <li><strong data-translate="backing_fee">Backing Fee:</strong> <span id="about-fee-backing">—</span> <span data-translate="dynamic_fee">(Dynamic: 2% if ≤200k DAI, 2.5% if ≤500k DAI, 3% if >500k DAI)</span></li>
+            <li><strong data-translate="user_share">User Share:</strong> <span data-translate="user_share_desc">DAI amount minus backing fee</span></li>
+            <li><strong data-translate="token_minting">Token Minting:</strong> <span data-translate="token_minting_desc">Based on user share at current price</span></li>
           </ul>
         </div>
 
         <div class="feature-highlight">
-          <h4>💰 Sell Tokens</h4>
+          <h4 data-translate="sell_tokens">💰 Sell Tokens</h4>
           <ul>
-            <li><strong>Minimum Sale:</strong> 1 IAM</li>
-            <li><strong>Maximum Sale:</strong> No restriction (sell full balance)</li>
-            <li><strong>Fee:</strong> <span id="about-fee-backing-sell">—</span> (Dynamic based on contract balance)</li>
-            <li><strong>Instant Conversion:</strong> DAI to your wallet</li>
+            <li><strong data-translate="min_sale">Minimum Sale:</strong> 1 IAM</li>
+            <li><strong data-translate="max_sale">Maximum Sale:</strong> <span data-translate="no_restriction">No restriction (sell full balance)</span></li>
+            <li><strong data-translate="backing_fee">Backing Fee:</strong> <span id="about-fee-backing-sell">—</span> <span data-translate="dynamic_fee">(Dynamic: 2% if ≤200k DAI, 2.5% if ≤500k DAI, 3% if >500k DAI)</span></li>
+            <li><strong data-translate="user_share">User Share:</strong> <span data-translate="user_share_desc">Token amount minus backing fee</span></li>
+            <li><strong data-translate="instant_conversion">Instant Conversion:</strong> <span data-translate="instant_conversion_desc">DAI to your wallet</span></li>
           </ul>
         </div>
 
-        <h3>Price Calculation</h3>
-        <p>Token price is calculated dynamically based on contract DAI balance and total supply, ensuring fair and transparent pricing.</p>
+        <h3 data-translate="price_calculation">Price Calculation</h3>
+        <p data-translate="price_calculation_desc">Token price is calculated dynamically based on contract DAI balance and total supply, ensuring fair and transparent pricing.</p>
       </div>
     </div>
 
     <!-- Network Marketing System -->
     <div class="about-section">
-      <h2>🌳 Network Marketing System</h2>
+      <h2 data-translate="network_marketing_system">🌳 Network Marketing System</h2>
       <div class="about-content">
-        <h3>Registration and Activation</h3>
+        <h3 data-translate="registration_activation">Registration and Activation</h3>
         <div class="feature-highlight">
-          <h4>📝 Paid Registration</h4>
+          <h4 data-translate="paid_registration">📝 Paid Registration</h4>
           <ul>
-            <li>Smart contract-based registration</li>
-            <li>Binary tree network structure</li>
-            <li>Dynamic registration pricing based on wallet count</li>
-            <li>10% referral reward from registration fee</li>
+            <li data-translate="paid_registration_desc1">Smart contract-based registration</li>
+            <li data-translate="paid_registration_desc2">Binary tree network structure</li>
+            <li data-translate="paid_registration_desc3">Dynamic registration pricing based on wallet count</li>
+            <li data-translate="paid_registration_desc4">10% referral reward from registration fee</li>
           </ul>
         </div>
 
         <div class="feature-highlight">
-          <h4>🆓 Free Registration</h4>
+          <h4 data-translate="free_registration">🆓 Free Registration</h4>
           <ul>
-            <li>Burn tokens equivalent to 23 DAI</li>
-            <li>No registration fee</li>
-            <li>Same benefits as paid registration</li>
-            <li>Identical network structure</li>
+            <li data-translate="free_registration_desc1">Burn tokens equivalent to 23 DAI</li>
+            <li data-translate="free_registration_desc2">No registration fee</li>
+            <li data-translate="free_registration_desc3">Same benefits as paid registration</li>
+            <li data-translate="free_registration_desc4">Identical network structure</li>
           </ul>
         </div>
 
-        <h3>Registration Pricing</h3>
+        <h3 data-translate="registration_pricing">Registration Pricing</h3>
         <table class="price-table">
           <thead>
             <tr>
-              <th>Wallet Count</th>
-              <th>Registration Price</th>
+              <th data-translate="wallet_count">Wallet Count</th>
+              <th data-translate="registration_price">Registration Price</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>60-100</td>
-              <td>(Count/10) DAI</td>
+              <td>Under 130</td>
+              <td>0.01 DAI (in IAM tokens)</td>
             </tr>
             <tr>
-              <td>100-1000</td>
-              <td>(30 + Count/30) DAI</td>
+              <td>130-1000</td>
+              <td>(30 + Count/30) DAI (in IAM tokens)</td>
             </tr>
             <tr>
               <td>1000-6000</td>
-              <td>(50 + Count/100) DAI</td>
+              <td>(50 + Count/100) DAI (in IAM tokens)</td>
             </tr>
             <tr>
               <td>Over 6000</td>
-              <td>110 DAI</td>
+              <td>110 DAI (in IAM tokens)</td>
             </tr>
           </tbody>
         </table>
@@ -604,83 +894,141 @@
 
     <!-- Binary Points System -->
     <div class="about-section">
-      <h2>🎯 Binary Points System</h2>
+      <h2 data-translate="binary_points_system">🎯 Binary Points System</h2>
       <div class="about-content">
-        <h3>How to Earn Points</h3>
+        <h3 data-translate="how_to_earn_points">How to Earn Points</h3>
         <ul>
-          <li><strong>Maximum Points:</strong> 100 points per user</li>
-          <li><strong>Initial Points:</strong> 5 points for paid registration, 0 for free registration</li>
-          <li><strong>Point Increase:</strong> Maximum 2 points per purchase cycle</li>
-          <li><strong>Time Interval:</strong> 4 weeks between point earnings</li>
+          <li><strong data-translate="max_points">Maximum Points:</strong> <span data-translate="max_points_desc">100 points per user</span></li>
+          <li><strong data-translate="initial_points">Initial Points:</strong> <span data-translate="initial_points_desc">5 points for paid registration, 0 for free registration</span></li>
+          <li><strong data-translate="point_increase">Point Increase:</strong> <span data-translate="point_increase_desc">Maximum 2 points per purchase cycle</span></li>
+          <li><strong data-translate="time_interval">Time Interval:</strong> <span data-translate="time_interval_desc">4 weeks between point earnings</span></li>
         </ul>
 
-        <h3>Point Earning Conditions</h3>
+        <h3 data-translate="point_earning_conditions">Point Earning Conditions</h3>
         <ul>
-          <li>Purchase products from vendors</li>
-          <li>Minimum 30% to 100% payout to vendor</li>
-          <li>Reach purchase threshold (registration price / 3)</li>
-          <li>4 weeks passed since last upgrade</li>
+          <li data-translate="point_earning_condition1">Use the <code>purchase()</code> function to buy from vendors</li>
+          <li data-translate="point_earning_condition2">Minimum 30% to 100% payout to vendor (configurable)</li>
+          <li data-translate="point_earning_condition3">Reach purchase threshold (registration price / 3 for users with cap > 50, or registration price / 3 for others)</li>
+          <li data-translate="point_earning_condition4">4 weeks passed since last upgrade</li>
+          <li data-translate="point_earning_condition5">Points are automatically calculated and distributed</li>
         </ul>
 
-        <h3>Reward Claim System</h3>
+        <h3 data-translate="reward_claim_system">Reward Claim System</h3>
         <ul>
-          <li><strong>Time Interval:</strong> 12 hours between claims</li>
-          <li><strong>Reward Calculation:</strong> Points × Value per point</li>
-          <li><strong>Point Value:</strong> Contract token balance / Total claimable points</li>
-          <li><strong>Fee:</strong> 1% of reward</li>
+          <li><strong data-translate="reward_claim_interval">Time Interval:</strong> <span data-translate="reward_claim_interval_desc">12 hours between claims</span></li>
+          <li><strong data-translate="reward_calculation_desc">Reward Calculation:</strong> <span data-translate="reward_calculation_desc2">Points × Value per point</span></li>
+          <li><strong data-translate="point_value">Point Value:</strong> <span data-translate="point_value_desc">Contract token balance / Total claimable points</span></li>
+          <li><strong data-translate="fee_desc">Fee:</strong> <span data-translate="fee_desc2">2% of reward (added to cashback fund)</span></li>
+          <li><strong data-translate="cashback_repayment">Cashback Repayment:</strong> <span data-translate="cashback_repayment_desc">Previous monthly rewards are repaid first</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Vendor Purchase System -->
+    <div class="about-section">
+      <h2 data-translate="vendor_purchase_system">🛍️ Vendor Purchase System</h2>
+      <div class="about-content">
+        <h3 data-translate="how_to_purchase_vendors">How to Purchase from Vendors</h3>
+        <div class="feature-highlight">
+          <h4 data-translate="purchase_function">🛒 Purchase Function</h4>
+          <ul>
+            <li><strong data-translate="function_name">Function:</strong> <span data-translate="function_name_desc"><code>purchase(amountIAM, payout, seller)</code></span></li>
+            <li><strong data-translate="amount_desc">Amount:</strong> <span data-translate="amount_desc2">IAM tokens to spend (must be > 0)</span></li>
+            <li><strong data-translate="payout_desc">Payout:</strong> <span data-translate="payout_desc2">30% to 100% to vendor (configurable)</span></li>
+            <li><strong data-translate="seller_desc">Seller:</strong> <span data-translate="seller_desc2">Vendor's wallet address</span></li>
+            <li><strong data-translate="token_burn">Token Burn:</strong> <span data-translate="token_burn_desc">5% of tokens are burned</span></li>
+            <li><strong data-translate="binary_points_distribution">Binary Points:</strong> <span data-translate="binary_points_distribution_desc">50% goes to binary pool, 50% to vendor</span></li>
+          </ul>
+        </div>
+
+        <h3 data-translate="purchase_benefits">Purchase Benefits</h3>
+        <ul>
+          <li data-translate="purchase_benefit1">Earn binary points for network growth</li>
+          <li data-translate="purchase_benefit2">Support vendor ecosystem</li>
+          <li data-translate="purchase_benefit3">Automatic point distribution</li>
+          <li data-translate="purchase_benefit4">Transparent transaction recording</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Voting System -->
+    <div class="about-section">
+      <h2 data-translate="community_voting_system">🗳️ Community Voting System</h2>
+      <div class="about-content">
+        <h3 data-translate="user_rating_system">User Rating System</h3>
+        <div class="feature-highlight">
+          <h4 data-translate="vote_on_users">👍👎 Vote on Users</h4>
+          <ul>
+            <li><strong data-translate="vote_function">Function:</strong> <span data-translate="vote_function_desc"><code>voteUser(target, isLike)</code></span></li>
+            <li><strong data-translate="like_dislike">Like/Dislike:</strong> <span data-translate="like_dislike_desc">Vote on any registered user</span></li>
+            <li><strong data-translate="self_voting">Self-Voting:</strong> <span data-translate="self_voting_desc">Cannot vote for yourself</span></li>
+            <li><strong data-translate="change_vote">Change Vote:</strong> <span data-translate="change_vote_desc">Can change your vote anytime</span></li>
+            <li><strong data-translate="public_counts">Public Counts:</strong> <span data-translate="public_counts_desc">Total likes and dislikes visible</span></li>
+          </ul>
+        </div>
+
+        <h3 data-translate="voting_benefits">Voting Benefits</h3>
+        <ul>
+          <li data-translate="voting_benefit1">Community-driven quality control</li>
+          <li data-translate="voting_benefit2">Build reputation in the network</li>
+          <li data-translate="voting_benefit3">Identify trusted members</li>
+          <li data-translate="voting_benefit4">Transparent user feedback system</li>
         </ul>
       </div>
     </div>
 
     <!-- Monthly Rewards -->
     <div class="about-section">
-      <h2>💰 Monthly Rewards</h2>
+      <h2 data-translate="monthly_rewards">💰 Monthly Rewards</h2>
       <div class="about-content">
-        <h3>Eligibility Requirements</h3>
+        <h3 data-translate="eligibility_requirements">Eligibility Requirements</h3>
         <ul>
-          <li>Only users with at least one empty position</li>
-          <li>Minimum 30 days from last claim</li>
-          <li>Maximum reward: deposited amount</li>
+          <li data-translate="eligibility_req1">Only users with at least one empty position</li>
+          <li data-translate="eligibility_req2">Minimum 30 days from last claim</li>
+          <li data-translate="eligibility_req3">Maximum reward: deposited amount</li>
         </ul>
 
-        <h3>Reward Calculation</h3>
+        <h3 data-translate="reward_calculation">Reward Calculation</h3>
         <ul>
-          <li><strong>Reward Rate:</strong> 3% of deposited amount per month for users with at least one empty position. Maximum up to 100% of deposited amount.</li>
-          <li><strong>Source:</strong> Contract cashback fund</li>
-          <li><strong>Repayment:</strong> Previous cashback is repaid first</li>
+          <li><strong data-translate="reward_rate">Reward Rate:</strong> <span data-translate="reward_rate_desc">3% of deposited amount per month for users with at least one empty position. Maximum up to 100% of deposited amount.</span></li>
+          <li><strong data-translate="source">Source:</strong> <span data-translate="source_desc">Contract cashback fund</span></li>
+          <li><strong data-translate="repayment">Repayment:</strong> <span data-translate="repayment_desc">Previous cashback is repaid first</span></li>
         </ul>
       </div>
     </div>
 
     <!-- Security Features -->
     <div class="about-section">
-      <h2>🔒 Security and Protection</h2>
+      <h2 data-translate="security_protection">🔒 Security and Protection</h2>
       <div class="about-content">
         <ul>
-          <li><strong>Smart Contract Security:</strong> All operations secured by audited smart contracts</li>
-          <li><strong>Reentrancy Protection:</strong> Advanced security measures against attacks</li>
-          <li><strong>Automated Operations:</strong> No human intervention in critical functions</li>
-          <li><strong>Transparent Transactions:</strong> All activities visible on blockchain</li>
-          <li><strong>Fund Protection:</strong> Users maintain full control of assets</li>
-          <li><strong>Voting System:</strong> Community-driven quality control</li>
-          <li><strong>Ownership Transfer:</strong> Ability to transfer index to new address</li>
+          <li><strong data-translate="security_feature1">Smart Contract Security:</strong> <span data-translate="security_feature1_desc">All operations secured by audited smart contracts</span></li>
+          <li><strong data-translate="security_feature2">Reentrancy Protection:</strong> <span data-translate="security_feature2_desc">Advanced security measures against attacks</span></li>
+          <li><strong data-translate="security_feature3">Automated Operations:</strong> <span data-translate="security_feature3_desc">No human intervention in critical functions</span></li>
+          <li><strong data-translate="security_feature4">Transparent Transactions:</strong> <span data-translate="security_feature4_desc">All activities visible on blockchain</span></li>
+          <li><strong data-translate="security_feature5">Fund Protection:</strong> <span data-translate="security_feature5_desc">Users maintain full control of assets</span></li>
+          <li><strong data-translate="security_feature6">Voting System:</strong> <span data-translate="security_feature6_desc">Community-driven quality control with like/dislike system</span></li>
+          <li><strong data-translate="security_feature7">Index Transfer:</strong> <span data-translate="security_feature7_desc">Ability to transfer index ownership to new address</span></li>
+          <li><strong data-translate="security_feature8">Dynamic Pricing:</strong> <span data-translate="security_feature8_desc">Fair token pricing based on contract balance</span></li>
+          <li><strong data-translate="security_feature9">Fee Transparency:</strong> <span data-translate="security_feature9_desc">All fees clearly defined and automatically calculated</span></li>
+          <li><strong data-translate="security_feature10">Cashback System:</strong> <span data-translate="security_feature10_desc">Built-in reward mechanism for long-term users</span></li>
         </ul>
       </div>
     </div>
 
     <!-- Live Statistics -->
     <div class="about-section">
-      <h2>📊 Live Statistics</h2>
+      <h2 data-translate="live_statistics">📊 Live Statistics</h2>
       <div class="about-stats">
         <div class="about-stat">
           <div class="icon">👛</div>
           <div class="number" id="about-wallets-count">—</div>
-          <div class="label">Registered Wallets</div>
+          <div class="label" data-translate="registered_wallets">Registered Wallets</div>
         </div>
         <div class="about-stat">
           <div class="icon">💰</div>
           <div class="number" id="about-dai-balance">—</div>
-          <div class="label">Contract DAI Balance</div>
+          <div class="label" data-translate="contract_dai_balance">Contract DAI Balance</div>
         </div>
         <div class="about-stat">
           <div class="icon">💱</div>
@@ -695,72 +1043,62 @@
         <div class="about-stat">
           <div class="icon">🎯</div>
           <div class="number" id="about-binary-points">—</div>
-          <div class="label">Claimable Points</div>
+          <div class="label" data-translate="claimable_points">Claimable Points</div>
         </div>
         <div class="about-stat">
           <div class="icon">💸</div>
           <div class="number" id="about-cashback">—</div>
-          <div class="label">Cashback Fund</div>
+          <div class="label" data-translate="cashback_fund">Cashback Fund</div>
         </div>
       </div>
     </div>
 
     <!-- FAQ Section -->
     <div class="faq-section">
-      <h2>❓ Frequently Asked Questions</h2>
+      <h2 data-translate="faq">❓ Frequently Asked Questions</h2>
       <div class="faq-item">
-        <div class="faq-question">How do I buy IAM tokens?</div>
-        <div class="faq-answer">Use the buyTokens() function with DAI. Minimum 1 DAI required. Dynamic buy cap based on contract balance.</div>
+        <div class="faq-question" data-translate="faq_question1">How do I buy IAM tokens?</div>
+        <div class="faq-answer" data-translate="faq_answer1">Use the buyTokens() function with DAI. Minimum 1 DAI required. Dynamic buy cap based on contract balance.</div>
       </div>
       <div class="faq-item">
-        <div class="faq-question">How do I sell IAM tokens?</div>
-        <div class="faq-answer">Use the sellTokens() function. Minimum 1 IAM required. No sell cap restriction.</div>
+        <div class="faq-question" data-translate="faq_question2">How do I sell IAM tokens?</div>
+        <div class="faq-answer" data-translate="faq_answer2">Use the sellTokens() function. Minimum 1 IAM required. No sell cap restriction.</div>
       </div>
       <div class="faq-item">
-        <div class="faq-question">What are the fees?</div>
-        <div class="faq-answer">0% developer fee + dynamic backing fee (1-2% based on contract balance). Fees are automatically calculated.</div>
+        <div class="faq-question" data-translate="faq_question3">What are the fees?</div>
+        <div class="faq-answer" data-translate="faq_answer3">0% developer fee + dynamic backing fee (1-2% based on contract balance). Fees are automatically calculated.</div>
       </div>
       <div class="faq-item">
-        <div class="faq-question">How do I register in the network?</div>
-        <div class="faq-answer">Use registerAndActivate() with a referrer address. Dynamic registration price based on total wallets.</div>
+        <div class="faq-question" data-translate="faq_question4">How do I register in the network?</div>
+        <div class="faq-answer" data-translate="faq_answer4">Use registerAndActivate() with a referrer address. Dynamic registration price based on total wallets.</div>
       </div>
       <div class="faq-item">
-        <div class="faq-question">Can I register for free?</div>
-        <div class="faq-answer">Yes, use registerFree() by burning tokens equivalent to 23 DAI value.</div>
+        <div class="faq-question" data-translate="faq_question5">Can I register for free?</div>
+        <div class="faq-answer" data-translate="faq_answer5">Yes, use registerFree() by burning tokens equivalent to 23 DAI value.</div>
       </div>
       <div class="faq-item">
-        <div class="faq-question">How do binary points work?</div>
-        <div class="faq-answer">Maximum 2 points per purchase cycle with 4-week cooldown. Maximum 100 points per user.</div>
+        <div class="faq-question" data-translate="faq_question6">How do binary points work?</div>
+        <div class="faq-answer" data-translate="faq_answer6">Maximum 2 points per purchase cycle with 4-week cooldown. Maximum 100 points per user. Initial points: 5 for paid registration, 0 for free registration.</div>
       </div>
       <div class="faq-item">
-        <div class="faq-question">What are monthly rewards?</div>
-        <div class="faq-answer">3% of deposited amount per month for users with at least one empty position. Maximum up to 100% of deposited amount.</div>
+        <div class="faq-question" data-translate="faq_question7">What are monthly rewards?</div>
+        <div class="faq-answer" data-translate="faq_answer7">3% of deposited amount per month for users with at least one empty position. Maximum up to 100% of deposited amount. Previous cashback is repaid first.</div>
       </div>
       <div class="faq-item">
-        <div class="faq-question">Can I transfer index ownership?</div>
-        <div class="faq-answer">Yes, use the transferIndexOwnership() function to transfer index to a new address.</div>
+        <div class="faq-question" data-translate="faq_question8">Can I transfer index ownership?</div>
+        <div class="faq-answer" data-translate="faq_answer8">Yes, use the transferIndexOwnership() function to transfer index to a new address. All user data is transferred including points and history.</div>
       </div>
+      <div class="faq-item">
+        <div class="faq-question" data-translate="faq_question9">How do I purchase from vendors?</div>
+        <div class="faq-answer" data-translate="faq_answer9">Use the purchase() function with amount, payout percentage (30-100%), and seller address. 5% tokens are burned, 50% goes to binary pool, 50% to vendor.</div>
     </div>
+      <div class="faq-item">
+        <div class="faq-question" data-translate="faq_question10">How does the voting system work?</div>
+        <div class="faq-answer" data-translate="faq_answer10">Use voteUser() to like or dislike any registered user. You can change your vote anytime. Total likes and dislikes are publicly visible.</div>
+        </div>
+        </div>
 
-    <!-- Contact Section -->
-    <div class="contact-section">
-      <h2>📞 Contact Us</h2>
-      <p>For questions and support, please contact us through any of the following channels:</p>
-      <div class="contact-info">
-        <div class="contact-item">
-          <span class="icon">📧</span>
-          <span>support@IAMPHOENIX.com</span>
-        </div>
-        <div class="contact-item">
-          <span class="icon">📱</span>
-          <span>@IAMPHOENIX_support</span>
-        </div>
-        <div class="contact-item">
-          <span class="icon">🌐</span>
-          <span>www.IAMPHOENIX.com</span>
-        </div>
-      </div>
-    </div>
+
   </div>
 
   <script src="js/floating-token-card.js"></script>
@@ -796,35 +1134,39 @@
       // Update contract addresses
       const contractAddressElement = document.getElementById('contract-address');
       const daiAddressElement = document.getElementById('dai-address');
+      const contractAddressLink = document.getElementById('contract-address-link');
+      const daiAddressLink = document.getElementById('dai-address-link');
       const copyAddressBtn = document.getElementById('copy-address-btn');
       const copyDaiBtn = document.getElementById('copy-dai-btn');
       
       if (contractAddressElement && typeof IAM_ADDRESS !== 'undefined') {
         contractAddressElement.textContent = IAM_ADDRESS;
         
+        // Set PolygonScan link for IAM contract
+        if (contractAddressLink) {
+          contractAddressLink.href = 'https://polygonscan.com/address/' + IAM_ADDRESS;
+        }
+        
         if (copyAddressBtn) {
           copyAddressBtn.addEventListener('click', function() {
             copyToClipboard(IAM_ADDRESS, 'copy-address-btn');
           });
         }
-        
-        contractAddressElement.addEventListener('click', function() {
-          copyToClipboard(IAM_ADDRESS, 'copy-address-btn');
-        });
       }
 
       if (daiAddressElement && typeof DAI_ADDRESS !== 'undefined') {
         daiAddressElement.textContent = DAI_ADDRESS;
+        
+        // Set PolygonScan link for DAI contract
+        if (daiAddressLink) {
+          daiAddressLink.href = 'https://polygonscan.com/address/' + DAI_ADDRESS;
+        }
         
         if (copyDaiBtn) {
           copyDaiBtn.addEventListener('click', function() {
             copyToClipboard(DAI_ADDRESS, 'copy-dai-btn');
           });
         }
-        
-        daiAddressElement.addEventListener('click', function() {
-          copyToClipboard(DAI_ADDRESS, 'copy-dai-btn');
-        });
       }
 
       // Update Polygonscan link
@@ -887,12 +1229,10 @@
             const maxBuy = daiNum <= 100000 ? 1000 : (daiNum * 0.01);
             document.getElementById('about-max-buy').textContent = maxBuy.toLocaleString(undefined, {maximumFractionDigits: 2}) + ' DAI';
             
-            // Fees
-            const backingFee = daiNum <= 200000 ? 1 : (daiNum <= 500000 ? 1.5 : 2);
-            const totalFee = 0.5 + backingFee;
+            // Fees (based on contract logic)
+            const backingFee = daiNum <= 200000 ? 2 : (daiNum <= 500000 ? 2.5 : 3);
             document.getElementById('about-fee-backing').textContent = backingFee.toFixed(1) + '%';
             document.getElementById('about-fee-backing-sell').textContent = backingFee.toFixed(1) + '%';
-            document.getElementById('about-fee-total').textContent = totalFee.toFixed(1) + '%';
           } catch(e) {}
 
         } catch(e) {
@@ -903,6 +1243,1001 @@
       // Initial update and periodic updates
       updateAboutStats();
       setInterval(updateAboutStats, 60000); // Update every minute
+    });
+
+    // Multi-language support
+    const translations = {
+      en: {
+        title: "About Us | IAM - PHOENIX",
+        header_title: "🚀 About IAM PHOENIX",
+        header_description: "A revolutionary Network Marketing platform built on blockchain technology, creating a decentralized ecosystem where transparency, security, and growth are guaranteed by smart contracts.",
+        what_is_iam: "🌟 What is IAM PHOENIX?",
+        what_is_iam_desc1: "IAM PHOENIX is a cutting-edge Network Marketing platform that leverages blockchain technology and Web3 infrastructure to create a transparent, secure, and decentralized ecosystem. Our platform eliminates traditional intermediaries and creates direct, trustless relationships between participants through smart contracts.",
+        what_is_iam_desc2: "Built on the Polygon blockchain, IAM PHOENIX combines the power of network marketing with the security and transparency of blockchain technology. All network marketing activities, rewards, and commissions are automatically calculated and distributed through audited smart contracts, ensuring complete transparency and eliminating the possibility of fraud or manipulation.",
+        smart_contract_info: "📋 Smart Contract Information",
+        smart_contract_details: "Smart Contract Details",
+        network: "Network:",
+        reference_token: "Reference Token:",
+        iam_contract_address: "IAM Contract Address:",
+        dai_token_address: "DAI Token Address:",
+        blockchain_explorer: "Blockchain Explorer:",
+        view_on_polygonscan: "View on Polygonscan",
+        copy_address: "📋 Copy Address",
+        copy_dai_address: "📋 Copy DAI Address",
+        key_features: "✨ Key Features",
+        web3_technology: "🔗 Web3 Technology",
+        web3_tech_1: "Built on next-generation internet protocols",
+        web3_tech_2: "Decentralized network marketing without intermediaries",
+        web3_tech_3: "Smart contract security and automation",
+        web3_tech_4: "User sovereignty and asset control",
+        network_marketing: "🌐 Network Marketing",
+        network_marketing_1: "Binary tree network structure",
+        network_marketing_2: "Automated reward distribution",
+        network_marketing_3: "Transparent referral tracking",
+        network_marketing_4: "Fair commission system",
+        token_economy: "💎 Token Economy",
+        token_economy_1: "IAM tokens as primary currency",
+        token_economy_2: "Dynamic price calculation",
+        token_economy_3: "Token burning mechanism",
+        token_economy_4: "Liquidity and trading support",
+        vendor_marketplace: "🛍️ Vendor Marketplace",
+        vendor_marketplace_1: "Individual vendor pages",
+        vendor_marketplace_2: "IAM token transactions",
+        vendor_marketplace_3: "Automated commission system",
+        vendor_marketplace_4: "Secure payment processing",
+        trading_system: "💱 Trading System",
+        buy_sell_tokens: "Buy and Sell Tokens",
+        buy_tokens: "🛒 Buy Tokens",
+        sell_tokens: "💰 Sell Tokens",
+        min_purchase: "Minimum Purchase:",
+        max_purchase: "Maximum Purchase:",
+        dynamic_balance: "(Dynamic based on contract balance)",
+        backing_fee: "Backing Fee:",
+        dynamic_fee: "(Dynamic: 2% if ≤200k DAI, 2.5% if ≤500k DAI, 3% if >500k DAI)",
+        user_share: "User Share:",
+        user_share_desc: "DAI amount minus backing fee",
+        token_minting: "Token Minting:",
+        token_minting_desc: "Based on user share at current price",
+        min_sale: "Minimum Sale:",
+        max_sale: "Maximum Sale:",
+        no_restriction: "No restriction (sell full balance)",
+        instant_conversion: "Instant Conversion:",
+        instant_conversion_desc: "DAI to your wallet",
+        price_calculation: "Price Calculation",
+        price_calculation_desc: "Token price is calculated dynamically based on contract DAI balance and total supply, ensuring fair and transparent pricing.",
+        network_marketing_system: "🌳 Network Marketing System",
+        registration_activation: "Registration and Activation",
+        paid_registration: "📝 Paid Registration",
+        free_registration: "🆓 Free Registration",
+        registration_pricing: "Registration Pricing",
+        wallet_count: "Wallet Count",
+        registration_price: "Registration Price",
+        binary_points_system: "🎯 Binary Points System",
+        how_to_earn_points: "How to Earn Points",
+        point_earning_conditions: "Point Earning Conditions",
+        reward_claim_system: "Reward Claim System",
+        vendor_purchase_system: "🛍️ Vendor Purchase System",
+        how_to_purchase_vendors: "How to Purchase from Vendors",
+        purchase_function: "🛒 Purchase Function",
+        purchase_benefits: "Purchase Benefits",
+        community_voting_system: "🗳️ Community Voting System",
+        user_rating_system: "User Rating System",
+        vote_on_users: "👍👎 Vote on Users",
+        voting_benefits: "Voting Benefits",
+        monthly_rewards: "💰 Monthly Rewards",
+        eligibility_requirements: "Eligibility Requirements",
+        reward_calculation: "Reward Calculation",
+        security_protection: "🔒 Security and Protection",
+        live_statistics: "📊 Live Statistics",
+        registered_wallets: "Registered Wallets",
+        contract_dai_balance: "Contract DAI Balance",
+        claimable_points: "Claimable Points",
+        cashback_fund: "Cashback Fund",
+        faq: "❓ Frequently Asked Questions",
+
+        
+        // Phoenix Team Section
+        phoenix_team: "🔥 Phoenix Team",
+        phoenix_mission: "Hello dear friends,<br><br>We are the Phoenix team. Our mission is to support and develop Type Zero tokens. These tokens are advanced tools that allow people, by purchasing them, to practically support related projects and services. With this support, buyers participate in the growth of the token, while projects receive the financial resources they need to execute their plans.",
+        phoenix_iam_support: "Our team, Phoenix, is currently supporting and developing the IAM token, which is built on the Polygon blockchain and backed by the decentralized stablecoin DAI. This stablecoin is fully decentralized, and no organization or authority has access to it. The IAM token itself is an independent project, in fact a startup. It does not support or rely on another startup, but rather aims to introduce and promote itself.",
+        
+        // Subscription and Point System
+        subscription_point_system: "📊 Subscription and Point System",
+        subscription_mechanism: "The IAM token has a subscription mechanism. The distribution of the subscription fee is as follows:",
+        referral_rewards: "10% for referral rewards (inviter)",
+        token_burning: "10% for token burning, which increases the token's value",
+        user_distribution: "80% is distributed among users based on the points they earn",
+        point_earning_system: "Each person can earn up to 5 points every 12 hours, with a maximum of 10 points per day. Any extra points overflow onto other points, increasing the value of each point.",
+        
+        // Subscription Refund Mechanism
+        subscription_refund: "💰 Subscription Refund Mechanism",
+        refund_guarantee: "People who are unable to earn points need not worry. The full amount they pay for a subscription will be refunded to them in the form of tokens. This refund occurs monthly at a rate of 3% of the amount paid until the full subscription fee is returned.",
+        
+        // Activities and Rewards
+        activities_rewards: "🎯 Activities and Rewards with the Token",
+        token_activities: "All activities, including receiving rewards and commissions, are carried out with the IAM token. Each time a buy or sell transaction is made, the user pays a 2% fee, which is deposited into the token's financial reserve:",
+        dai_to_iam: "Converting DAI to IAM (buy) = token creation",
+        iam_to_dai: "Converting IAM to DAI (sell) = tokens are burned",
+        token_burning_benefits: "All these activities result in token burning and increase the token's value. The system also functions as a binary network, where points and rewards are distributed transparently and fairly among users.",
+        
+        // How to Increase Points
+        increase_points: "📈 How to Increase the Number of Points",
+        additional_points: "Users can request to purchase up to two additional points per month to increase their income. To do this, they pay one-third of the subscription fee for each point, and:",
+        burning_percentage: "5% is used for token burning, which increases the token's value",
+        binary_pool: "95% is added to the binary pool and distributed among users who have earned points",
+        point_mechanism: "This mechanism ensures that the token always retains its value, and that the distribution of rewards remains fair and valuable. Each subscription can ultimately generate up to 100 points within 12 hours.",
+        
+        // Project Features
+        project_features: "🌟 Project Features",
+        extraordinary_project: "This project is extraordinary and operates on a binary network with a lifetime storage system. Even if lower levels up to the 10th level are formed regularly and all participants earn points, in the worst-case scenario for the platform paying commissions, the value of each point will be about 60% of the subscription amount.",
+        point_limitation: "The reason is the limitation on the number of points per person and the overflow of extra points, which increases the value of each point.",
+        decentralized_transparent: "The project is completely decentralized and transparent, and all funds are distributed among participants. It is a decentralized network that will soon be recognized internationally.",
+        phoenix_goal: "Our goal is for people to both earn income and benefit from the growth of the token by participating in this project.",
+        together_success: "Together, we succeed!",
+        
+        // Deflationary Ecosystem Section
+        deflationary_ecosystem: "🔥 Deflationary Ecosystem",
+        severe_deflation: "This ecosystem experiences severe negative inflation (deflation). The token growth logic is fundamentally different from traditional systems - instead of creating more tokens, the system continuously removes tokens from circulation, creating a deflationary pressure that drives price appreciation.",
+        token_burning_mechanisms: "🔥 Token Burning Mechanisms",
+        burning_overview: "In every major activity within the ecosystem, a portion of tokens is permanently burned (removed from circulation). This creates a continuous reduction in total supply, leading to increased scarcity and value appreciation.",
+        burning_buy: "🛒 Token Purchase: During buy transactions, tokens are burned as part of the backing fee mechanism",
+        burning_sell: "💰 Token Sale: During sell transactions, additional tokens are burned to maintain ecosystem balance",
+        burning_registration: "📝 Paid Registration: A portion of registration fees is used to burn tokens, reducing total supply",
+        burning_claim: "🎯 Reward Claims: During reward claiming processes, tokens are burned to maintain deflationary pressure",
+        burning_purchase: "🛍️ Product Purchases: When purchasing from vendors, tokens are burned as part of the transaction",
+        burning_free_reg: "🆓 Free Registration: Free registrations require burning tokens equivalent to 23 DAI value",
+        deflationary_impact: "📈 Deflationary Impact",
+        circulation_reduction: "Every transaction removes tokens from circulation. This continuous reduction in total supply creates a deflationary spiral where:",
+        scarcity_increase: "Scarcity increases with every transaction",
+        value_appreciation: "Token value appreciates due to reduced supply",
+        price_pressure: "Upward price pressure is maintained continuously",
+        ecosystem_balance: "Ecosystem balance is preserved through controlled deflation",
+        severe_price_increase: "This mechanism causes severe price increases as the token becomes increasingly scarce. Unlike inflationary systems that dilute value, this deflationary model ensures that every token holder benefits from the continuous reduction in supply.",
+        
+        // Back Button
+        back_button: "← Back"
+      },
+      fa: {
+        title: "درباره ما | IAM - PHOENIX",
+        header_title: "🚀 درباره IAM PHOENIX",
+        header_description: "پلتفرم بازاریابی شبکه‌ای انقلابی که بر روی فناوری بلاک‌چین ساخته شده و اکوسیستم غیرمتمرکزی ایجاد می‌کند که شفافیت، امنیت و رشد توسط قراردادهای هوشمند تضمین می‌شود.",
+        what_is_iam: "🌟 IAM PHOENIX چیست؟",
+        what_is_iam_desc1: "IAM PHOENIX یک پلتفرم بازاریابی شبکه‌ای پیشرفته است که از فناوری بلاک‌چین و زیرساخت Web3 استفاده می‌کند تا یک اکوسیستم شفاف، امن و غیرمتمرکز ایجاد کند. پلتفرم ما واسطه‌های سنتی را حذف می‌کند و روابط مستقیم و بدون اعتماد بین شرکت‌کنندگان از طریق قراردادهای هوشمند ایجاد می‌کند.",
+        what_is_iam_desc2: "ساخته شده بر روی بلاک‌چین Polygon، IAM PHOENIX قدرت بازاریابی شبکه‌ای را با امنیت و شفافیت فناوری بلاک‌چین ترکیب می‌کند. تمام فعالیت‌های بازاریابی شبکه‌ای، پاداش‌ها و کمیسیون‌ها به طور خودکار محاسبه و از طریق قراردادهای هوشمند ممیزی شده توزیع می‌شوند، که شفافیت کامل را تضمین می‌کند و امکان کلاهبرداری یا دستکاری را از بین می‌برد.",
+        smart_contract_info: "📋 اطلاعات قرارداد هوشمند",
+        smart_contract_details: "جزئیات قرارداد هوشمند",
+        network: "شبکه:",
+        reference_token: "توکن مرجع:",
+        iam_contract_address: "آدرس قرارداد IAM:",
+        dai_token_address: "آدرس توکن DAI:",
+        blockchain_explorer: "اکسپلورر بلاک‌چین:",
+        view_on_polygonscan: "مشاهده در Polygonscan",
+        copy_address: "📋 کپی آدرس",
+        copy_dai_address: "📋 کپی آدرس DAI",
+        key_features: "✨ ویژگی‌های کلیدی",
+        web3_technology: "🔗 فناوری Web3",
+        web3_tech_1: "ساخته شده بر روی پروتکل‌های اینترنت نسل بعدی",
+        web3_tech_2: "بازاریابی شبکه‌ای غیرمتمرکز بدون واسطه",
+        web3_tech_3: "امنیت و اتوماسیون قراردادهای هوشمند",
+        web3_tech_4: "حاکمیت کاربر و کنترل دارایی",
+        network_marketing: "🌐 بازاریابی شبکه‌ای",
+        network_marketing_1: "ساختار شبکه درختی باینری",
+        network_marketing_2: "توزیع خودکار پاداش",
+        network_marketing_3: "ردیابی شفاف معرفی",
+        network_marketing_4: "سیستم کمیسیون عادلانه",
+        token_economy: "💎 اقتصاد توکن",
+        token_economy_1: "توکن‌های IAM به عنوان ارز اصلی",
+        token_economy_2: "محاسبه قیمت پویا",
+        token_economy_3: "مکانیزم سوزاندن توکن",
+        token_economy_4: "پشتیبانی از نقدینگی و معاملات",
+        vendor_marketplace: "🛍️ بازار فروشندگان",
+        vendor_marketplace_1: "صفحات فروشندگان فردی",
+        vendor_marketplace_2: "تراکنش‌های توکن IAM",
+        vendor_marketplace_3: "سیستم کمیسیون خودکار",
+        vendor_marketplace_4: "پردازش پرداخت امن",
+        trading_system: "💱 سیستم معاملات",
+        buy_sell_tokens: "خرید و فروش توکن‌ها",
+        buy_tokens: "🛒 خرید توکن‌ها",
+        sell_tokens: "💰 فروش توکن‌ها",
+        min_purchase: "حداقل خرید:",
+        max_purchase: "حداکثر خرید:",
+        dynamic_balance: "(1000 DAI اگر موجودی ≤100k، در غیر این صورت 1% از موجودی DAI قرارداد)",
+        backing_fee: "کارمزد پشتیبانی:",
+        dynamic_fee: "(پویا: 2% اگر ≤200k DAI، 2.5% اگر ≤500k DAI، 3% اگر >500k DAI)",
+        user_share: "سهم کاربر:",
+        user_share_desc: "مقدار DAI منهای کارمزد پشتیبانی",
+        token_minting: "ضرب توکن:",
+        token_minting_desc: "بر اساس سهم کاربر در قیمت فعلی",
+        min_sale: "حداقل فروش:",
+        max_sale: "حداکثر فروش:",
+        no_restriction: "بدون محدودیت (فروش کل موجودی)",
+        instant_conversion: "تبدیل فوری:",
+        instant_conversion_desc: "DAI به کیف پول شما",
+        price_calculation: "محاسبه قیمت",
+        price_calculation_desc: "قیمت توکن به طور پویا بر اساس موجودی DAI قرارداد و کل عرضه محاسبه می‌شود و قیمت‌گذاری عادلانه و شفاف را تضمین می‌کند.",
+        network_marketing_system: "🌳 سیستم بازاریابی شبکه‌ای",
+        registration_activation: "ثبت‌نام و فعال‌سازی",
+        paid_registration: "📝 ثبت‌نام پولی",
+        free_registration: "🆓 ثبت‌نام رایگان",
+        registration_pricing: "قیمت‌گذاری ثبت‌نام",
+        wallet_count: "تعداد کیف پول",
+        registration_price: "قیمت ثبت‌نام",
+        paid_registration_desc1: "ثبت‌نام مبتنی بر قرارداد هوشمند (تابع registerAndActivate)",
+        paid_registration_desc2: "ساختار شبکه درختی باینری",
+        paid_registration_desc3: "قیمت‌گذاری پویای ثبت‌نام بر اساس تعداد کیف پول",
+        paid_registration_desc4: "پاداش معرفی (درصد دقیق از قرارداد) از هزینه ثبت‌نام",
+        free_registration_desc1: "سوزاندن توکن‌های معادل 23 DAI (تابع registerFree)",
+        free_registration_desc2: "بدون هزینه ثبت‌نام",
+        free_registration_desc3: "همان مزایای ثبت‌نام پولی",
+        free_registration_desc4: "ساختار شبکه یکسان",
+        binary_points_system: "🎯 سیستم امتیازات باینری",
+        how_to_earn_points: "نحوه کسب امتیاز",
+        point_earning_conditions: "شرایط کسب امتیاز",
+        reward_claim_system: "سیستم دریافت پاداش (تابع claim)",
+        max_points: "حداکثر امتیاز:",
+        max_points_desc: "حداکثر امتیاز باینری (مقدار دقیق از قرارداد - MAX_BINARY_POINT_CAP)",
+        initial_points: "امتیاز اولیه:",
+        initial_points_desc: "5 امتیاز برای ثبت‌نام پولی، 0 برای ثبت‌نام رایگان",
+        point_increase: "افزایش امتیاز:",
+        point_increase_desc: "حداکثر 2 امتیاز در هر چرخه خرید",
+        time_interval: "فاصله زمانی:",
+        time_interval_desc: "4 هفته بین کسب امتیازات",
+        point_earning_condition1: "از تابع purchase() برای خرید از فروشندگان استفاده کنید",
+        point_earning_condition2: "حداقل 30% تا 100% پرداخت به فروشنده (قابل تنظیم)",
+        point_earning_condition3: "رسیدن به آستانه خرید (قیمت ثبت‌نام / 3 برای کاربران با cap > 50، یا قیمت ثبت‌نام / 3 برای سایرین)",
+        point_earning_condition4: "4 هفته از آخرین ارتقا گذشته باشد",
+        point_earning_condition5: "امتیازات به طور خودکار محاسبه و توزیع می‌شوند",
+        reward_claim_interval: "فاصله زمانی:",
+        reward_claim_interval_desc: "12 ساعت بین درخواست‌ها",
+        reward_calculation_desc: "محاسبه پاداش:",
+        reward_calculation_desc2: "امتیازات × ارزش هر امتیاز",
+        point_value: "ارزش امتیاز:",
+        point_value_desc: "موجودی توکن قرارداد / کل امتیازات قابل دریافت",
+        fee_desc: "کارمزد:",
+        fee_desc2: "2% از پاداش (اضافه شده به صندوق کش‌بک)",
+        cashback_repayment: "بازپرداخت کش‌بک:",
+        cashback_repayment_desc: "پاداش‌های ماهانه قبلی ابتدا بازپرداخت می‌شوند",
+        vendor_purchase_system: "🛍️ سیستم خرید از فروشندگان (تابع purchase)",
+        how_to_purchase_vendors: "نحوه خرید از فروشندگان",
+        purchase_function: "🛒 تابع خرید",
+        purchase_benefits: "مزایای خرید",
+        function_name: "تابع:",
+        function_name_desc: "purchase(amountIAM, payout, seller)",
+        amount_desc: "مقدار:",
+        amount_desc2: "توکن‌های IAM برای خرج کردن (باید > 0 باشد)",
+        payout_desc: "پرداخت:",
+        payout_desc2: "30% تا 100% به فروشنده (قابل تنظیم)",
+        seller_desc: "فروشنده:",
+        seller_desc2: "آدرس کیف پول فروشنده",
+        token_burn: "سوزاندن توکن:",
+        token_burn_desc: "درصد مشخصی از توکن‌ها سوزانده می‌شود (مقدار دقیق از قرارداد)",
+        binary_points_distribution: "توزیع امتیازات باینری:",
+        binary_points_distribution_desc: "توزیع خودکار امتیازات باینری (مقدار دقیق از قرارداد)",
+        purchase_benefit1: "کسب امتیازات باینری برای رشد شبکه",
+        purchase_benefit2: "پشتیبانی از اکوسیستم فروشندگان",
+        purchase_benefit3: "توزیع خودکار امتیازات",
+        purchase_benefit4: "ثبت شفاف تراکنش‌ها",
+        community_voting_system: "🗳️ سیستم رای‌گیری جامعه",
+        user_rating_system: "سیستم امتیازدهی کاربران",
+        vote_on_users: "👍👎 رای دادن به کاربران",
+        voting_benefits: "مزایای رای‌گیری",
+        vote_function: "تابع:",
+        vote_function_desc: "voteUser(voter, target)",
+        like_dislike: "لایک/دیسلایک:",
+        like_dislike_desc: "رای دادن به هر کاربر ثبت شده (تابع getVoteStatus)",
+        self_voting: "رای‌گیری خودی:",
+        self_voting_desc: "نمی‌توانید به خودتان رای دهید",
+        change_vote: "تغییر رای:",
+        change_vote_desc: "می‌توانید هر زمان رای خود را تغییر دهید",
+        public_counts: "شمارش عمومی:",
+        public_counts_desc: "کل لایک‌ها و دیسلایک‌ها قابل مشاهده",
+        voting_benefit1: "کنترل کیفیت مبتنی بر جامعه (تابع voteUser)",
+        voting_benefit2: "ساخت اعتبار در شبکه (تابع getVoteStatus)",
+        voting_benefit3: "شناسایی اعضای مورد اعتماد",
+        voting_benefit4: "سیستم بازخورد شفاف کاربران",
+        monthly_rewards: "💰 پاداش‌های ماهانه (تابع claimMonthlyReward)",
+        eligibility_requirements: "شرایط واجد شرایط بودن",
+        reward_calculation: "محاسبه پاداش",
+        eligibility_req1: "فقط کاربران با هر دو فرزند خالی (leftPoints = 0 و rightPoints = 0)",
+        eligibility_req2: "حداقل 30 روز از آخرین درخواست",
+        eligibility_req3: "حداکثر پاداش: مبلغ سپرده شده",
+        reward_rate: "نرخ پاداش:",
+        reward_rate_desc: "نرخ دقیق پاداش از قرارداد (مقدار دقیق از قرارداد). حداکثر تا 100% از مبلغ سپرده شده.",
+        source: "منبع:",
+        source_desc: "صندوق کش‌بک قرارداد",
+        repayment: "بازپرداخت:",
+        repayment_desc: "کش‌بک قبلی ابتدا بازپرداخت می‌شود",
+        security_protection: "🔒 امنیت و حفاظت (ReentrancyGuard)",
+        security_feature1: "امنیت قرارداد هوشمند:",
+        security_feature1_desc: "تمام عملیات توسط قراردادهای هوشمند ممیزی شده محافظت می‌شوند (ReentrancyGuard)",
+        security_feature2: "محافظت از حملات مجدد:",
+        security_feature2_desc: "اقدامات امنیتی پیشرفته در برابر حملات (ReentrancyGuard)",
+        security_feature3: "عملیات خودکار:",
+        security_feature3_desc: "بدون دخالت انسانی در توابع حیاتی (ERC20)",
+        security_feature4: "تراکنش‌های شفاف:",
+        security_feature4_desc: "تمام فعالیت‌ها در بلاک‌چین قابل مشاهده (PolygonScan)",
+        security_feature5: "محافظت از وجوه:",
+        security_feature5_desc: "کاربران کنترل کامل دارایی‌های خود را حفظ می‌کنند (ERC20)",
+        security_feature6: "سیستم رای‌گیری:",
+        security_feature6_desc: "کنترل کیفیت مبتنی بر جامعه با سیستم لایک/دیسلایک (voteUser/getVoteStatus)",
+        security_feature7: "انتقال ایندکس:",
+        security_feature7_desc: "قابلیت انتقال مالکیت ایندکس به آدرس جدید (transferIndexOwnership)",
+        security_feature8: "قیمت‌گذاری پویا:",
+        security_feature8_desc: "قیمت‌گذاری عادلانه توکن بر اساس موجودی قرارداد (getTokenPrice)",
+        security_feature9: "شفافیت کارمزد:",
+        security_feature9_desc: "تمام کارمزدها به وضوح تعریف شده و به طور خودکار محاسبه می‌شوند (backing fee)",
+        security_feature10: "سیستم کش‌بک:",
+        security_feature10_desc: "مکانیزم پاداش داخلی برای کاربران بلندمدت (cashBack)",
+        live_statistics: "📊 آمار زنده (wallets/totalClaimablePoints/cashBack)",
+        registered_wallets: "کیف پول‌های ثبت شده (wallets)",
+        contract_dai_balance: "موجودی DAI قرارداد",
+        claimable_points: "امتیازات قابل دریافت (totalClaimablePoints)",
+        cashback_fund: "صندوق کش‌بک (cashBack)",
+        faq: "❓ سوالات متداول",
+        faq_question1: "چگونه توکن‌های IAM خریداری کنم؟",
+        faq_answer1: "از تابع buyTokens() با DAI استفاده کنید. حداقل 1 DAI مورد نیاز است. حداکثر خرید پویا بر اساس موجودی قرارداد (1000 DAI اگر ≤100k، در غیر این صورت 1% از موجودی DAI قرارداد).",
+        faq_question2: "چگونه توکن‌های IAM بفروشم؟",
+        faq_answer2: "از تابع sellTokens() استفاده کنید. حداقل 1 IAM مورد نیاز است. بدون محدودیت حداکثر فروش.",
+        faq_question3: "کارمزدها چقدر است؟",
+        faq_answer3: "0% کارمزد توسعه‌دهنده + کارمزد پشتیبانی پویا (2% اگر ≤200k DAI، 2.5% اگر ≤500k DAI، 3% اگر >500k DAI). کارمزدها به طور خودکار محاسبه می‌شوند.",
+        faq_question4: "چگونه در شبکه ثبت‌نام کنم؟",
+        faq_answer4: "از registerAndActivate() با آدرس معرف استفاده کنید. قیمت ثبت‌نام پویا بر اساس کل کیف پول‌ها (getRegPrice).",
+        faq_question5: "آیا می‌توانم رایگان ثبت‌نام کنم؟",
+        faq_answer5: "بله، از registerFree() با سوزاندن توکن‌های معادل 23 DAI استفاده کنید.",
+        faq_question6: "امتیازات باینری چگونه کار می‌کند؟",
+        faq_answer6: "حداکثر 2 امتیاز در هر چرخه خرید با 4 هفته توقف. حداکثر امتیاز باینری (مقدار دقیق از قرارداد - MAX_BINARY_POINT_CAP). امتیاز اولیه: 5 برای ثبت‌نام پولی، 0 برای ثبت‌نام رایگان.",
+        faq_question7: "پاداش‌های ماهانه چیست؟",
+        faq_answer7: "نرخ دقیق پاداش از قرارداد (مقدار دقیق از قرارداد) برای کاربران با هر دو فرزند خالی (leftPoints = 0 و rightPoints = 0). حداکثر تا 100% از مبلغ سپرده شده. کش‌بک قبلی ابتدا بازپرداخت می‌شود.",
+        faq_question8: "آیا می‌توانم مالکیت ایندکس را انتقال دهم؟",
+        faq_answer8: "بله، از تابع transferIndexOwnership() برای انتقال ایندکس به آدرس جدید استفاده کنید. تمام داده‌های کاربر شامل امتیازات و تاریخچه منتقل می‌شود.",
+        faq_question9: "چگونه از فروشندگان خرید کنم؟",
+        faq_answer9: "از تابع purchase() با مقدار، درصد پرداخت (30-100%) و آدرس فروشنده استفاده کنید. درصد مشخصی از توکن‌ها سوزانده می‌شود (مقدار دقیق از قرارداد). توزیع خودکار امتیازات باینری (مقدار دقیق از قرارداد).",
+        faq_question10: "سیستم رای‌گیری چگونه کار می‌کند؟",
+        faq_answer10: "از voteUser(voter, target) برای لایک یا دیسلایک هر کاربر ثبت شده استفاده کنید. می‌توانید هر زمان رای خود را تغییر دهید. کل لایک‌ها و دیسلایک‌ها به صورت عمومی قابل مشاهده است (getVoteStatus).",
+
+        
+        // Phoenix Team Section
+        phoenix_team: "🔥 تیم فینیکس",
+        phoenix_mission: "سلام دوستان عزیز،<br><br>ما تیم فینیکس هستیم. مأموریت ما پشتیبانی و توسعه توکن‌های Type Zero است. این توکن‌ها ابزارهای پیشرفته‌ای هستند که به مردم امکان می‌دهند با خرید آنها، عملاً از پروژه‌ها و خدمات مرتبط پشتیبانی کنند. با این پشتیبانی، خریداران در رشد توکن مشارکت می‌کنند، در حالی که پروژه‌ها منابع مالی مورد نیاز برای اجرای برنامه‌های خود را دریافت می‌کنند.",
+        phoenix_iam_support: "تیم ما، فینیکس، در حال حاضر از توکن IAM پشتیبانی و توسعه می‌کند که بر روی بلاک‌چین Polygon ساخته شده و توسط استیبل‌کوین غیرمتمرکز DAI پشتیبانی می‌شود. این استیبل‌کوین کاملاً غیرمتمرکز است و هیچ سازمان یا مقام رسمی به آن دسترسی ندارد. خود توکن IAM یک پروژه مستقل است، در واقع یک استارتاپ. این توکن از استارتاپ دیگری پشتیبانی نمی‌کند یا به آن وابسته نیست، بلکه هدف آن معرفی و ترویج خود است.",
+        
+        // Subscription and Point System
+        subscription_point_system: "📊 سیستم اشتراک و امتیاز",
+        subscription_mechanism: "توکن IAM دارای مکانیزم اشتراک است. توزیع هزینه اشتراک به شرح زیر است:",
+        referral_rewards: "10% برای پاداش‌های معرفی (معرف)",
+        token_burning: "10% برای سوزاندن توکن که ارزش توکن را افزایش می‌دهد",
+        user_distribution: "80% بین کاربران بر اساس امتیازاتی که کسب می‌کنند توزیع می‌شود",
+        point_earning_system: "هر فرد می‌تواند تا 5 امتیاز در هر 12 ساعت کسب کند، با حداکثر 10 امتیاز در روز. هر امتیاز اضافی به سایر امتیازات سرریز می‌شود و ارزش هر امتیاز را افزایش می‌دهد.",
+        
+        // Subscription Refund Mechanism
+        subscription_refund: "💰 مکانیزم بازپرداخت اشتراک",
+        refund_guarantee: "افرادی که قادر به کسب امتیاز نیستند نگران نباشند. کل مبلغی که برای اشتراک پرداخت می‌کنند به صورت توکن به آنها بازپرداخت خواهد شد. این بازپرداخت ماهانه با نرخ 3% از مبلغ پرداخت شده تا زمانی که کل هزینه اشتراک بازگردانده شود، انجام می‌شود.",
+        
+        // Activities and Rewards
+        activities_rewards: "🎯 فعالیت‌ها و پاداش‌ها با توکن",
+        token_activities: "تمام فعالیت‌ها، از جمله دریافت پاداش‌ها و کمیسیون‌ها، با توکن IAM انجام می‌شود. هر بار که تراکنش خرید یا فروش انجام می‌شود، کاربر 2% کارمزد پرداخت می‌کند که به ذخیره مالی توکن واریز می‌شود:",
+        dai_to_iam: "تبدیل DAI به IAM (خرید) = ایجاد توکن",
+        iam_to_dai: "تبدیل IAM به DAI (فروش) = توکن‌ها سوزانده می‌شوند",
+        token_burning_benefits: "تمام این فعالیت‌ها منجر به سوزاندن توکن و افزایش ارزش توکن می‌شود. سیستم همچنین به عنوان یک شبکه باینری عمل می‌کند که در آن امتیازات و پاداش‌ها به صورت شفاف و عادلانه بین کاربران توزیع می‌شود.",
+        
+        // How to Increase Points
+        increase_points: "📈 نحوه افزایش تعداد امتیازات",
+        additional_points: "کاربران می‌توانند درخواست خرید تا دو امتیاز اضافی در ماه برای افزایش درآمد خود کنند. برای این کار، آنها یک سوم هزینه اشتراک را برای هر امتیاز پرداخت می‌کنند و:",
+        burning_percentage: "5% برای سوزاندن توکن استفاده می‌شود که ارزش توکن را افزایش می‌دهد",
+        binary_pool: "95% به استخر باینری اضافه می‌شود و بین کاربرانی که امتیاز کسب کرده‌اند توزیع می‌شود",
+        point_mechanism: "این مکانیزم تضمین می‌کند که توکن همیشه ارزش خود را حفظ کند و توزیع پاداش‌ها عادلانه و ارزشمند باقی بماند. هر اشتراک در نهایت می‌تواند تا 100 امتیاز در 12 ساعت تولید کند.",
+        
+        // Project Features
+        project_features: "🌟 ویژگی‌های پروژه",
+        extraordinary_project: "این پروژه فوق‌العاده است و بر روی یک شبکه باینری با سیستم ذخیره‌سازی مادام‌العمر عمل می‌کند. حتی اگر سطوح پایین‌تر تا سطح 10 به طور منظم تشکیل شوند و همه شرکت‌کنندگان امتیاز کسب کنند، در بدترین سناریو برای پلتفرم پرداخت کمیسیون، ارزش هر امتیاز حدود 60% از مبلغ اشتراک خواهد بود.",
+        point_limitation: "دلیل این است که محدودیت تعداد امتیازات هر فرد و سرریز امتیازات اضافی، ارزش هر امتیاز را افزایش می‌دهد.",
+        decentralized_transparent: "پروژه کاملاً غیرمتمرکز و شفاف است و تمام وجوه بین شرکت‌کنندگان توزیع می‌شود. این یک شبکه غیرمتمرکز است که به زودی در سطح بین‌المللی شناخته خواهد شد.",
+        phoenix_goal: "هدف ما این است که مردم هم درآمد کسب کنند و هم از رشد توکن با مشارکت در این پروژه بهره‌مند شوند.",
+        together_success: "با هم موفق می‌شویم!",
+        
+        // Deflationary Ecosystem Section
+        deflationary_ecosystem: "🔥 اکوسیستم تورمی منفی",
+        severe_deflation: "این اکوسیستم تورم شدیداً منفی (کاهش تورم) را تجربه می‌کند. منطق رشد توکن اساساً با سیستم‌های سنتی متفاوت است - به جای ایجاد توکن‌های بیشتر، سیستم به طور مداوم توکن‌ها را از چرخه خارج می‌کند و فشار تورمی منفی ایجاد می‌کند که باعث افزایش قیمت می‌شود.",
+        token_burning_mechanisms: "🔥 مکانیزم‌های سوزاندن توکن",
+        burning_overview: "در هر فعالیت مهم در اکوسیستم، بخشی از توکن‌ها به طور دائمی سوزانده می‌شود (از چرخه خارج می‌شود). این باعث کاهش مداوم عرضه کل می‌شود که منجر به افزایش کمیابی و ارزش‌افزایی می‌شود.",
+        burning_buy: "🛒 خرید توکن: در تراکنش‌های خرید، توکن‌ها به عنوان بخشی از مکانیزم کارمزد پشتیبانی سوزانده می‌شوند",
+        burning_sell: "💰 فروش توکن: در تراکنش‌های فروش، توکن‌های اضافی برای حفظ تعادل اکوسیستم سوزانده می‌شوند",
+        burning_registration: "📝 ثبت‌نام پولی: بخشی از هزینه‌های ثبت‌نام برای سوزاندن توکن‌ها استفاده می‌شود و عرضه کل را کاهش می‌دهد",
+        burning_claim: "🎯 دریافت پاداش: در فرآیندهای دریافت پاداش، توکن‌ها برای حفظ فشار تورمی منفی سوزانده می‌شوند",
+        burning_purchase: "🛍️ خرید محصول: هنگام خرید از فروشندگان، توکن‌ها به عنوان بخشی از تراکنش سوزانده می‌شوند",
+        burning_free_reg: "🆓 ثبت‌نام رایگان: ثبت‌نام‌های رایگان نیاز به سوزاندن توکن‌های معادل 23 DAI دارند",
+        deflationary_impact: "📈 تأثیر تورمی منفی",
+        circulation_reduction: "هر تراکنش توکن‌ها را از چرخه خارج می‌کند. این کاهش مداوم عرضه کل یک مارپیچ تورمی منفی ایجاد می‌کند که در آن:",
+        scarcity_increase: "کمیابی با هر تراکنش افزایش می‌یابد",
+        value_appreciation: "ارزش توکن به دلیل کاهش عرضه افزایش می‌یابد",
+        price_pressure: "فشار قیمتی صعودی به طور مداوم حفظ می‌شود",
+        ecosystem_balance: "تعادل اکوسیستم از طریق کاهش تورم کنترل شده حفظ می‌شود",
+        severe_price_increase: "این مکانیزم باعث افزایش شدید قیمت می‌شود زیرا توکن به طور فزاینده‌ای کمیاب می‌شود. برخلاف سیستم‌های تورمی که ارزش را رقیق می‌کنند، این مدل تورمی منفی تضمین می‌کند که هر دارنده توکن از کاهش مداوم عرضه بهره‌مند شود.",
+        
+        // Back Button
+        back_button: "← بازگشت"
+      },
+      ru: {
+        title: "О нас | IAM - PHOENIX",
+        header_title: "🚀 О IAM PHOENIX",
+        header_description: "Революционная платформа сетевого маркетинга, построенная на технологии блокчейн, создающая децентрализованную экосистему, где прозрачность, безопасность и рост гарантированы смарт-контрактами.",
+        what_is_iam: "🌟 Что такое IAM PHOENIX?",
+        what_is_iam_desc1: "IAM PHOENIX - это передовая платформа сетевого маркетинга, использующая технологию блокчейн и инфраструктуру Web3 для создания прозрачной, безопасной и децентрализованной экосистемы. Наша платформа устраняет традиционных посредников и создает прямые, доверительные отношения между участниками через смарт-контракты.",
+        what_is_iam_desc2: "Построенная на блокчейне Polygon, IAM PHOENIX сочетает мощь сетевого маркетинга с безопасностью и прозрачностью технологии блокчейн. Все виды деятельности сетевого маркетинга, вознаграждения и комиссии автоматически рассчитываются и распределяются через аудированные смарт-контракты, обеспечивая полную прозрачность и исключая возможность мошенничества или манипуляций.",
+        smart_contract_info: "📋 Информация о смарт-контракте",
+        smart_contract_details: "Детали смарт-контракта",
+        network: "Сеть:",
+        reference_token: "Референсный токен:",
+        iam_contract_address: "Адрес контракта IAM:",
+        dai_token_address: "Адрес токена DAI:",
+        blockchain_explorer: "Блокчейн-эксплорер:",
+        view_on_polygonscan: "Посмотреть на Polygonscan",
+        copy_address: "📋 Копировать адрес",
+        copy_dai_address: "📋 Копировать адрес DAI",
+        key_features: "✨ Ключевые особенности",
+        web3_technology: "🔗 Технология Web3",
+        web3_tech_1: "Построено на протоколах интернета следующего поколения",
+        web3_tech_2: "Децентрализованный сетевой маркетинг без посредников",
+        web3_tech_3: "Безопасность и автоматизация смарт-контрактов",
+        web3_tech_4: "Суверенитет пользователя и контроль активов",
+        network_marketing: "🌐 Сетевой маркетинг",
+        network_marketing_1: "Бинарная древовидная сетевая структура",
+        network_marketing_2: "Автоматическое распределение вознаграждений",
+        network_marketing_3: "Прозрачное отслеживание рефералов",
+        network_marketing_4: "Справедливая система комиссий",
+        token_economy: "💎 Токен-экономика",
+        token_economy_1: "IAM токены как основная валюта",
+        token_economy_2: "Динамический расчет цены",
+        token_economy_3: "Механизм сжигания токенов",
+        token_economy_4: "Поддержка ликвидности и торговли",
+        vendor_marketplace: "🛍️ Маркетплейс продавцов",
+        vendor_marketplace_1: "Индивидуальные страницы продавцов",
+        vendor_marketplace_2: "Транзакции IAM токенов",
+        vendor_marketplace_3: "Автоматическая система комиссий",
+        vendor_marketplace_4: "Безопасная обработка платежей",
+        trading_system: "💱 Торговая система",
+        buy_sell_tokens: "Покупка и продажа токенов",
+        buy_tokens: "🛒 Покупка токенов",
+        sell_tokens: "💰 Продажа токенов",
+        price_calculation: "Расчет цены",
+        network_marketing_system: "🌳 Система сетевого маркетинга",
+        registration_activation: "Регистрация и активация",
+        paid_registration: "📝 Платная регистрация",
+        free_registration: "🆓 Бесплатная регистрация",
+        registration_pricing: "Ценообразование регистрации",
+        wallet_count: "Количество кошельков",
+        registration_price: "Цена регистрации",
+        binary_points_system: "🎯 Система бинарных очков",
+        how_to_earn_points: "Как зарабатывать очки",
+        point_earning_conditions: "Условия заработка очков",
+        reward_claim_system: "Система получения наград",
+        vendor_purchase_system: "🛍️ Система покупки у продавцов",
+        how_to_purchase_vendors: "Как покупать у продавцов",
+        purchase_function: "🛒 Функция покупки",
+        purchase_benefits: "Преимущества покупки",
+        community_voting_system: "🗳️ Система голосования сообщества",
+        user_rating_system: "Система рейтинга пользователей",
+        vote_on_users: "👍👎 Голосовать за пользователей",
+        voting_benefits: "Преимущества голосования",
+        monthly_rewards: "💰 Ежемесячные награды",
+        eligibility_requirements: "Требования к участию",
+        reward_calculation: "Расчет награды",
+        security_protection: "🔒 Безопасность и защита",
+        live_statistics: "📊 Живая статистика",
+        registered_wallets: "Зарегистрированные кошельки",
+        contract_dai_balance: "Баланс DAI контракта",
+        claimable_points: "Доступные очки",
+        cashback_fund: "Фонд кэшбэка",
+        faq: "❓ Часто задаваемые вопросы",
+
+        
+        // Phoenix Team Section
+        phoenix_team: "🔥 Команда Феникс",
+        phoenix_mission: "Привет, дорогие друзья,<br><br>Мы команда Феникс. Наша миссия - поддерживать и развивать токены Type Zero. Эти токены являются передовыми инструментами, которые позволяют людям, покупая их, практически поддерживать связанные проекты и услуги. При такой поддержке покупатели участвуют в росте токена, а проекты получают необходимые финансовые ресурсы для выполнения своих планов.",
+        phoenix_iam_support: "Наша команда, Феникс, в настоящее время поддерживает и развивает токен IAM, который построен на блокчейне Polygon и обеспечен децентрализованной стейблкоином DAI. Этот стейблкоин полностью децентрализован, и никакая организация или власть не имеет к нему доступа. Сам токен IAM является независимым проектом, фактически стартапом. Он не поддерживает и не полагается на другой стартап, а стремится представить и продвигать себя.",
+        
+        // Subscription and Point System
+        subscription_point_system: "📊 Система подписки и очков",
+        subscription_mechanism: "Токен IAM имеет механизм подписки. Распределение платы за подписку следующее:",
+        referral_rewards: "10% для реферальных вознаграждений (приглашающий)",
+        token_burning: "10% для сжигания токенов, что увеличивает стоимость токена",
+        user_distribution: "80% распределяется среди пользователей на основе заработанных ими очков",
+        point_earning_system: "Каждый человек может заработать до 5 очков каждые 12 часов, максимум 10 очков в день. Любые дополнительные очки переполняются на другие очки, увеличивая стоимость каждого очка.",
+        
+        // Subscription Refund Mechanism
+        subscription_refund: "💰 Механизм возврата подписки",
+        refund_guarantee: "Людям, которые не могут заработать очки, не стоит беспокоиться. Полная сумма, которую они платят за подписку, будет возвращена им в виде токенов. Этот возврат происходит ежемесячно по ставке 3% от уплаченной суммы до полного возврата платы за подписку.",
+        
+        // Activities and Rewards
+        activities_rewards: "🎯 Деятельность и награды с токеном",
+        token_activities: "Вся деятельность, включая получение наград и комиссий, осуществляется с токеном IAM. Каждый раз при совершении сделки покупки или продажи пользователь платит комиссию 2%, которая депонируется в финансовый резерв токена:",
+        dai_to_iam: "Конвертация DAI в IAM (покупка) = создание токена",
+        iam_to_dai: "Конвертация IAM в DAI (продажа) = токены сжигаются",
+        token_burning_benefits: "Вся эта деятельность приводит к сжиганию токенов и увеличению стоимости токена. Система также функционирует как бинарная сеть, где очки и награды распределяются прозрачно и справедливо среди пользователей.",
+        
+        // How to Increase Points
+        increase_points: "📈 Как увеличить количество очков",
+        additional_points: "Пользователи могут запросить покупку до двух дополнительных очков в месяц для увеличения своего дохода. Для этого они платят одну треть от платы за подписку за каждое очко, и:",
+        burning_percentage: "5% используется для сжигания токенов, что увеличивает стоимость токена",
+        binary_pool: "95% добавляется в бинарный пул и распределяется среди пользователей, которые заработали очки",
+        point_mechanism: "Этот механизм гарантирует, что токен всегда сохраняет свою стоимость, и что распределение наград остается справедливым и ценным. Каждая подписка может в конечном итоге генерировать до 100 очков в течение 12 часов.",
+        
+        // Project Features
+        project_features: "🌟 Особенности проекта",
+        extraordinary_project: "Этот проект необыкновенный и работает в бинарной сети с системой пожизненного хранения. Даже если нижние уровни до 10-го уровня формируются регулярно и все участники зарабатывают очки, в худшем сценарии для платформы, выплачивающей комиссии, стоимость каждого очка составит около 60% от суммы подписки.",
+        point_limitation: "Причина в ограничении количества очков на человека и переполнении дополнительных очков, что увеличивает стоимость каждого очка.",
+        decentralized_transparent: "Проект полностью децентрализован и прозрачен, и все средства распределяются среди участников. Это децентрализованная сеть, которая скоро будет признана на международном уровне.",
+        phoenix_goal: "Наша цель - чтобы люди как зарабатывали доход, так и получали выгоду от роста токена, участвуя в этом проекте.",
+        together_success: "Вместе мы добьемся успеха!",
+        
+        // Deflationary Ecosystem Section
+        deflationary_ecosystem: "🔥 Дефляционная экосистема",
+        severe_deflation: "Эта экосистема испытывает сильную отрицательную инфляцию (дефляцию). Логика роста токена принципиально отличается от традиционных систем - вместо создания большего количества токенов, система постоянно удаляет токены из обращения, создавая дефляционное давление, которое стимулирует рост цены.",
+        token_burning_mechanisms: "🔥 Механизмы сжигания токенов",
+        burning_overview: "В каждой крупной активности в экосистеме часть токенов постоянно сжигается (удаляется из обращения). Это создает постоянное сокращение общего предложения, приводя к увеличению дефицита и росту стоимости.",
+        burning_buy: "🛒 Покупка токенов: При покупке токены сжигаются как часть механизма комиссии поддержки",
+        burning_sell: "💰 Продажа токенов: При продаже дополнительные токены сжигаются для поддержания баланса экосистемы",
+        burning_registration: "📝 Платная регистрация: Часть регистрационных сборов используется для сжигания токенов, сокращая общее предложение",
+        burning_claim: "🎯 Получение наград: В процессах получения наград токены сжигаются для поддержания дефляционного давления",
+        burning_purchase: "🛍️ Покупка продуктов: При покупке у продавцов токены сжигаются как часть транзакции",
+        burning_free_reg: "🆓 Бесплатная регистрация: Бесплатные регистрации требуют сжигания токенов эквивалентных 23 DAI",
+        deflationary_impact: "📈 Дефляционное воздействие",
+        circulation_reduction: "Каждая транзакция удаляет токены из обращения. Это постоянное сокращение общего предложения создает дефляционную спираль, где:",
+        scarcity_increase: "Дефицит увеличивается с каждой транзакцией",
+        value_appreciation: "Стоимость токена растет из-за сокращения предложения",
+        price_pressure: "Восходящее ценовое давление поддерживается постоянно",
+        ecosystem_balance: "Баланс экосистемы сохраняется через контролируемую дефляцию",
+        severe_price_increase: "Этот механизм вызывает сильное повышение цен, поскольку токен становится все более дефицитным. В отличие от инфляционных систем, которые разбавляют стоимость, эта дефляционная модель гарантирует, что каждый держатель токенов выигрывает от постоянного сокращения предложения.",
+        
+        // Back Button
+        back_button: "← Назад"
+      },
+      zh: {
+        title: "关于我们 | IAM - PHOENIX",
+        header_title: "🚀 关于 IAM PHOENIX",
+        header_description: "一个基于区块链技术构建的革命性网络营销平台，创建了一个去中心化的生态系统，其中透明度、安全性和增长由智能合约保证。",
+        what_is_iam: "🌟 什么是 IAM PHOENIX？",
+        what_is_iam_desc1: "IAM PHOENIX 是一个尖端的网络营销平台，利用区块链技术和 Web3 基础设施创建透明、安全和去中心化的生态系统。我们的平台消除了传统中介，通过智能合约在参与者之间建立直接、无信任的关系。",
+        what_is_iam_desc2: "构建在 Polygon 区块链上，IAM PHOENIX 将网络营销的力量与区块链技术的安全性和透明度相结合。所有网络营销活动、奖励和佣金都通过审计的智能合约自动计算和分配，确保完全透明并消除欺诈或操纵的可能性。",
+        smart_contract_info: "📋 智能合约信息",
+        smart_contract_details: "智能合约详情",
+        network: "网络：",
+        reference_token: "参考代币：",
+        iam_contract_address: "IAM 合约地址：",
+        dai_token_address: "DAI 代币地址：",
+        blockchain_explorer: "区块链浏览器：",
+        view_on_polygonscan: "在 Polygonscan 上查看",
+        copy_address: "📋 复制地址",
+        copy_dai_address: "📋 复制 DAI 地址",
+        key_features: "✨ 主要功能",
+        web3_technology: "🔗 Web3 技术",
+        web3_tech_1: "基于下一代互联网协议构建",
+        web3_tech_2: "去中心化网络营销，无中介",
+        web3_tech_3: "智能合约安全和自动化",
+        web3_tech_4: "用户主权和资产控制",
+        network_marketing: "🌐 网络营销",
+        network_marketing_1: "二叉树网络结构",
+        network_marketing_2: "自动奖励分配",
+        network_marketing_3: "透明的推荐跟踪",
+        network_marketing_4: "公平的佣金系统",
+        token_economy: "💎 代币经济",
+        token_economy_1: "IAM代币作为主要货币",
+        token_economy_2: "动态价格计算",
+        token_economy_3: "代币销毁机制",
+        token_economy_4: "流动性和交易支持",
+        vendor_marketplace: "🛍️ 供应商市场",
+        vendor_marketplace_1: "个人供应商页面",
+        vendor_marketplace_2: "IAM代币交易",
+        vendor_marketplace_3: "自动佣金系统",
+        vendor_marketplace_4: "安全支付处理",
+        trading_system: "💱 交易系统",
+        buy_sell_tokens: "买卖代币",
+        buy_tokens: "🛒 购买代币",
+        sell_tokens: "💰 出售代币",
+        price_calculation: "价格计算",
+        network_marketing_system: "🌳 网络营销系统",
+        registration_activation: "注册和激活",
+        paid_registration: "📝 付费注册",
+        free_registration: "🆓 免费注册",
+        registration_pricing: "注册定价",
+        wallet_count: "钱包数量",
+        registration_price: "注册价格",
+        binary_points_system: "🎯 二元积分系统",
+        how_to_earn_points: "如何赚取积分",
+        point_earning_conditions: "积分赚取条件",
+        reward_claim_system: "奖励领取系统",
+        vendor_purchase_system: "🛍️ 供应商购买系统",
+        how_to_purchase_vendors: "如何从供应商购买",
+        purchase_function: "🛒 购买功能",
+        purchase_benefits: "购买优势",
+        community_voting_system: "🗳️ 社区投票系统",
+        user_rating_system: "用户评分系统",
+        vote_on_users: "👍👎 对用户投票",
+        voting_benefits: "投票优势",
+        monthly_rewards: "💰 月度奖励",
+        eligibility_requirements: "资格要求",
+        reward_calculation: "奖励计算",
+        security_protection: "🔒 安全和保护",
+        live_statistics: "📊 实时统计",
+        registered_wallets: "注册钱包",
+        contract_dai_balance: "合约 DAI 余额",
+        claimable_points: "可领取积分",
+        cashback_fund: "返现基金",
+        faq: "❓ 常见问题",
+
+        
+        // Phoenix Team Section
+        phoenix_team: "🔥 凤凰团队",
+        phoenix_mission: "亲爱的朋友们，<br><br>我们是凤凰团队。我们的使命是支持和开发Type Zero代币。这些代币是先进的工具，允许人们通过购买它们来实际支持相关项目和服务。通过这种支持，购买者参与代币的增长，而项目获得执行其计划所需的财务资源。",
+        phoenix_iam_support: "我们的团队凤凰目前正在支持和开发IAM代币，该代币构建在Polygon区块链上，由去中心化稳定币DAI支持。这种稳定币是完全去中心化的，任何组织或权威机构都无法访问它。IAM代币本身是一个独立项目，实际上是一个初创公司。它不支持或依赖另一个初创公司，而是旨在介绍和推广自己。",
+        
+        // Subscription and Point System
+        subscription_point_system: "📊 订阅和积分系统",
+        subscription_mechanism: "IAM代币具有订阅机制。订阅费的分配如下：",
+        referral_rewards: "10%用于推荐奖励（邀请者）",
+        token_burning: "10%用于代币销毁，这增加了代币的价值",
+        user_distribution: "80%根据用户获得的积分分配给用户",
+        point_earning_system: "每个人每12小时最多可以获得5个积分，每天最多10个积分。任何额外的积分都会溢出到其他积分上，增加每个积分的价值。",
+        
+        // Subscription Refund Mechanism
+        subscription_refund: "💰 订阅退款机制",
+        refund_guarantee: "无法获得积分的人不必担心。他们为订阅支付的金额将以代币形式全额退还给他们。这种退款每月以支付金额的3%的比率进行，直到全额订阅费被退还。",
+        
+        // Activities and Rewards
+        activities_rewards: "🎯 代币活动和奖励",
+        token_activities: "所有活动，包括接收奖励和佣金，都使用IAM代币进行。每次进行买卖交易时，用户支付2%的费用，该费用存入代币的财务储备：",
+        dai_to_iam: "将DAI转换为IAM（购买）=代币创建",
+        iam_to_dai: "将IAM转换为DAI（出售）=代币被销毁",
+        token_burning_benefits: "所有这些活动都会导致代币销毁并增加代币的价值。该系统还作为二进制网络运行，其中积分和奖励在用户之间透明公平地分配。",
+        
+        // How to Increase Points
+        increase_points: "📈 如何增加积分数量",
+        additional_points: "用户可以请求每月购买最多两个额外积分来增加收入。为此，他们为每个积分支付订阅费的三分之一，并且：",
+        burning_percentage: "5%用于代币销毁，这增加了代币的价值",
+        binary_pool: "95%添加到二进制池中并分配给已获得积分的用户",
+        point_mechanism: "这种机制确保代币始终保持其价值，并且奖励分配保持公平和有价值。每个订阅最终可以在12小时内产生最多100个积分。",
+        
+        // Project Features
+        project_features: "🌟 项目特色",
+        extraordinary_project: "这个项目是非凡的，在具有终身存储系统的二进制网络上运行。即使定期形成到第10级的较低级别并且所有参与者都获得积分，在平台支付佣金的最坏情况下，每个积分的价值将是订阅金额的约60%。",
+        point_limitation: "原因是每个人积分数量的限制和额外积分的溢出，这增加了每个积分的价值。",
+        decentralized_transparent: "该项目完全去中心化和透明，所有资金在参与者之间分配。这是一个去中心化网络，很快将在国际上得到认可。",
+        phoenix_goal: "我们的目标是让人们通过参与这个项目既获得收入，又从代币的增长中受益。",
+        together_success: "我们一起成功！",
+        
+        // Deflationary Ecosystem Section
+        deflationary_ecosystem: "🔥 通缩生态系统",
+        severe_deflation: "这个生态系统经历严重的负通胀（通缩）。代币增长逻辑与传统系统根本不同 - 不是创建更多代币，系统持续从流通中移除代币，创造通缩压力，推动价格上涨。",
+        token_burning_mechanisms: "🔥 代币销毁机制",
+        burning_overview: "在生态系统中的每个主要活动中，一部分代币被永久销毁（从流通中移除）。这创造了总供应量的持续减少，导致稀缺性增加和价值升值。",
+        burning_buy: "🛒 代币购买：在购买交易中，代币作为支持费机制的一部分被销毁",
+        burning_sell: "💰 代币销售：在销售交易中，额外的代币被销毁以维持生态系统平衡",
+        burning_registration: "📝 付费注册：注册费用的一部分用于销毁代币，减少总供应量",
+        burning_claim: "🎯 奖励领取：在奖励领取过程中，代币被销毁以维持通缩压力",
+        burning_purchase: "🛍️ 产品购买：从供应商购买时，代币作为交易的一部分被销毁",
+        burning_free_reg: "🆓 免费注册：免费注册需要销毁相当于23 DAI价值的代币",
+        deflationary_impact: "📈 通缩影响",
+        circulation_reduction: "每笔交易都从流通中移除代币。总供应量的这种持续减少创造了通缩螺旋，其中：",
+        scarcity_increase: "稀缺性随着每笔交易而增加",
+        value_appreciation: "由于供应减少，代币价值升值",
+        price_pressure: "上升的价格压力持续维持",
+        ecosystem_balance: "通过受控通缩保持生态系统平衡",
+        severe_price_increase: "这种机制导致价格严重上涨，因为代币变得越来越稀缺。与稀释价值的通胀系统不同，这种通缩模型确保每个代币持有者都从持续的供应减少中受益。",
+        
+        // Back Button
+        back_button: "← 返回"
+      },
+      de: {
+        title: "Über uns | IAM - PHOENIX",
+        header_title: "🚀 Über IAM PHOENIX",
+        header_description: "Eine revolutionäre Network-Marketing-Plattform, die auf Blockchain-Technologie aufbaut und ein dezentrales Ökosystem schafft, in dem Transparenz, Sicherheit und Wachstum durch Smart Contracts garantiert werden.",
+        what_is_iam: "🌟 Was ist IAM PHOENIX?",
+        what_is_iam_desc1: "IAM PHOENIX ist eine hochmoderne Network-Marketing-Plattform, die Blockchain-Technologie und Web3-Infrastruktur nutzt, um ein transparentes, sicheres und dezentrales Ökosystem zu schaffen. Unsere Plattform eliminiert traditionelle Vermittler und schafft direkte, vertrauenslose Beziehungen zwischen Teilnehmern durch Smart Contracts.",
+        what_is_iam_desc2: "Auf der Polygon-Blockchain aufgebaut, kombiniert IAM PHOENIX die Kraft des Network-Marketings mit der Sicherheit und Transparenz der Blockchain-Technologie. Alle Network-Marketing-Aktivitäten, Belohnungen und Provisionen werden automatisch durch geprüfte Smart Contracts berechnet und verteilt, was vollständige Transparenz gewährleistet und die Möglichkeit von Betrug oder Manipulation ausschließt.",
+        smart_contract_info: "📋 Smart Contract Informationen",
+        smart_contract_details: "Smart Contract Details",
+        network: "Netzwerk:",
+        reference_token: "Referenz-Token:",
+        iam_contract_address: "IAM Contract Adresse:",
+        dai_token_address: "DAI Token Adresse:",
+        blockchain_explorer: "Blockchain Explorer:",
+        view_on_polygonscan: "Auf Polygonscan anzeigen",
+        copy_address: "📋 Adresse kopieren",
+        copy_dai_address: "📋 DAI Adresse kopieren",
+        key_features: "✨ Hauptfunktionen",
+        web3_technology: "🔗 Web3 Technologie",
+        web3_tech_1: "Auf Internetprotokollen der nächsten Generation aufgebaut",
+        web3_tech_2: "Dezentrales Network Marketing ohne Vermittler",
+        web3_tech_3: "Smart Contract Sicherheit und Automatisierung",
+        web3_tech_4: "Benutzersouveränität und Vermögenskontrolle",
+        network_marketing: "🌐 Network Marketing",
+        network_marketing_1: "Binäre Baum-Netzwerkstruktur",
+        network_marketing_2: "Automatische Belohnungsverteilung",
+        network_marketing_3: "Transparente Empfehlungsverfolgung",
+        network_marketing_4: "Faires Provisionssystem",
+        token_economy: "💎 Token-Ökonomie",
+        token_economy_1: "IAM Token als Hauptwährung",
+        token_economy_2: "Dynamische Preisberechnung",
+        token_economy_3: "Token-Verbrennungsmechanismus",
+        token_economy_4: "Liquiditäts- und Handelsunterstützung",
+        vendor_marketplace: "🛍️ Anbieter-Marktplatz",
+        vendor_marketplace_1: "Individuelle Anbieter-Seiten",
+        vendor_marketplace_2: "IAM Token Transaktionen",
+        vendor_marketplace_3: "Automatisches Provisionssystem",
+        vendor_marketplace_4: "Sichere Zahlungsabwicklung",
+        trading_system: "💱 Handelssystem",
+        buy_sell_tokens: "Token kaufen und verkaufen",
+        buy_tokens: "🛒 Token kaufen",
+        sell_tokens: "💰 Token verkaufen",
+        price_calculation: "Preisberechnung",
+        network_marketing_system: "🌳 Network Marketing System",
+        registration_activation: "Registrierung und Aktivierung",
+        paid_registration: "📝 Bezahlte Registrierung",
+        free_registration: "🆓 Kostenlose Registrierung",
+        registration_pricing: "Registrierungspreise",
+        wallet_count: "Wallet-Anzahl",
+        registration_price: "Registrierungspreis",
+        binary_points_system: "🎯 Binäres Punkte-System",
+        how_to_earn_points: "Wie man Punkte verdient",
+        point_earning_conditions: "Punkte-Verdienstbedingungen",
+        reward_claim_system: "Belohnungs-System",
+        vendor_purchase_system: "🛍️ Anbieter-Kaufsystem",
+        how_to_purchase_vendors: "Wie man von Anbietern kauft",
+        purchase_function: "🛒 Kauf-Funktion",
+        purchase_benefits: "Kaufvorteile",
+        community_voting_system: "🗳️ Community-Abstimmungssystem",
+        user_rating_system: "Benutzer-Bewertungssystem",
+        vote_on_users: "👍👎 Für Benutzer abstimmen",
+        voting_benefits: "Abstimmungsvorteile",
+        monthly_rewards: "💰 Monatliche Belohnungen",
+        eligibility_requirements: "Berechtigungsanforderungen",
+        reward_calculation: "Belohnungsberechnung",
+        security_protection: "🔒 Sicherheit und Schutz",
+        live_statistics: "📊 Live-Statistiken",
+        registered_wallets: "Registrierte Wallets",
+        contract_dai_balance: "Contract DAI Guthaben",
+        claimable_points: "Einlösbare Punkte",
+        cashback_fund: "Cashback-Fonds",
+        faq: "❓ Häufig gestellte Fragen",
+
+        
+        // Phoenix Team Section
+        phoenix_team: "🔥 Phoenix Team",
+        phoenix_mission: "Hallo liebe Freunde,<br><br>Wir sind das Phoenix Team. Unsere Mission ist es, Type Zero Token zu unterstützen und zu entwickeln. Diese Token sind fortschrittliche Tools, die es Menschen ermöglichen, durch den Kauf praktisch verwandte Projekte und Dienstleistungen zu unterstützen. Mit dieser Unterstützung nehmen Käufer am Wachstum des Tokens teil, während Projekte die finanziellen Ressourcen erhalten, die sie zur Ausführung ihrer Pläne benötigen.",
+        phoenix_iam_support: "Unser Team, Phoenix, unterstützt und entwickelt derzeit den IAM Token, der auf der Polygon-Blockchain aufbaut und durch den dezentralisierten Stablecoin DAI unterstützt wird. Dieser Stablecoin ist vollständig dezentralisiert, und keine Organisation oder Behörde hat Zugang dazu. Der IAM Token selbst ist ein unabhängiges Projekt, tatsächlich ein Startup. Es unterstützt oder verlässt sich nicht auf ein anderes Startup, sondern zielt darauf ab, sich selbst zu präsentieren und zu fördern.",
+        
+        // Subscription and Point System
+        subscription_point_system: "📊 Abonnement- und Punktesystem",
+        subscription_mechanism: "Der IAM Token hat einen Abonnement-Mechanismus. Die Verteilung der Abonnementgebühr ist wie folgt:",
+        referral_rewards: "10% für Empfehlungsbelohnungen (Einlader)",
+        token_burning: "10% für Token-Verbrennung, was den Token-Wert erhöht",
+        user_distribution: "80% wird unter Benutzern basierend auf den Punkten verteilt, die sie verdienen",
+        point_earning_system: "Jede Person kann alle 12 Stunden bis zu 5 Punkte verdienen, maximal 10 Punkte pro Tag. Alle zusätzlichen Punkte fließen auf andere Punkte über und erhöhen den Wert jedes Punktes.",
+        
+        // Subscription Refund Mechanism
+        subscription_refund: "💰 Abonnement-Rückerstattungsmechanismus",
+        refund_guarantee: "Menschen, die keine Punkte verdienen können, müssen sich keine Sorgen machen. Der volle Betrag, den sie für ein Abonnement zahlen, wird ihnen in Form von Token zurückerstattet. Diese Rückerstattung erfolgt monatlich mit einer Rate von 3% des gezahlten Betrags, bis die volle Abonnementgebühr zurückerstattet wird.",
+        
+        // Activities and Rewards
+        activities_rewards: "🎯 Aktivitäten und Belohnungen mit dem Token",
+        token_activities: "Alle Aktivitäten, einschließlich des Erhalts von Belohnungen und Provisionen, werden mit dem IAM Token durchgeführt. Jedes Mal, wenn eine Kauf- oder Verkaufstransaktion getätigt wird, zahlt der Benutzer eine 2%ige Gebühr, die in die finanzielle Reserve des Tokens eingezahlt wird:",
+        dai_to_iam: "DAI zu IAM konvertieren (kaufen) = Token-Erstellung",
+        iam_to_dai: "IAM zu DAI konvertieren (verkaufen) = Token werden verbrannt",
+        token_burning_benefits: "All diese Aktivitäten führen zu Token-Verbrennung und erhöhen den Token-Wert. Das System fungiert auch als binäres Netzwerk, wo Punkte und Belohnungen transparent und fair unter Benutzern verteilt werden.",
+        
+        // How to Increase Points
+        increase_points: "📈 Wie man die Anzahl der Punkte erhöht",
+        additional_points: "Benutzer können den Kauf von bis zu zwei zusätzlichen Punkten pro Monat beantragen, um ihr Einkommen zu steigern. Dafür zahlen sie ein Drittel der Abonnementgebühr für jeden Punkt, und:",
+        burning_percentage: "5% wird für Token-Verbrennung verwendet, was den Token-Wert erhöht",
+        binary_pool: "95% wird zum binären Pool hinzugefügt und unter Benutzern verteilt, die Punkte verdient haben",
+        point_mechanism: "Dieser Mechanismus stellt sicher, dass der Token immer seinen Wert behält und dass die Verteilung der Belohnungen fair und wertvoll bleibt. Jedes Abonnement kann letztendlich bis zu 100 Punkte innerhalb von 12 Stunden generieren.",
+        
+        // Project Features
+        project_features: "🌟 Projektmerkmale",
+        extraordinary_project: "Dieses Projekt ist außergewöhnlich und arbeitet in einem binären Netzwerk mit einem lebenslangen Speichersystem. Selbst wenn niedrigere Ebenen bis zur 10. Ebene regelmäßig gebildet werden und alle Teilnehmer Punkte verdienen, wird im schlimmsten Fall für die Plattform, die Provisionen zahlt, der Wert jedes Punktes etwa 60% des Abonnementbetrags betragen.",
+        point_limitation: "Der Grund ist die Begrenzung der Anzahl der Punkte pro Person und das Überlaufen zusätzlicher Punkte, was den Wert jedes Punktes erhöht.",
+        decentralized_transparent: "Das Projekt ist vollständig dezentralisiert und transparent, und alle Mittel werden unter den Teilnehmern verteilt. Es ist ein dezentralisiertes Netzwerk, das bald international anerkannt werden wird.",
+        phoenix_goal: "Unser Ziel ist es, dass Menschen sowohl Einkommen verdienen als auch vom Wachstum des Tokens profitieren, indem sie an diesem Projekt teilnehmen.",
+        together_success: "Gemeinsam werden wir erfolgreich!",
+        
+        // Deflationary Ecosystem Section
+        deflationary_ecosystem: "🔥 Deflationäres Ökosystem",
+        severe_deflation: "Dieses Ökosystem erlebt eine schwere negative Inflation (Deflation). Die Token-Wachstumslogik unterscheidet sich grundlegend von traditionellen Systemen - anstatt mehr Token zu erstellen, entfernt das System kontinuierlich Token aus dem Umlauf und schafft deflationären Druck, der Preissteigerungen antreibt.",
+        token_burning_mechanisms: "🔥 Token-Verbrennungsmechanismen",
+        burning_overview: "Bei jeder wichtigen Aktivität im Ökosystem wird ein Teil der Token permanent verbrannt (aus dem Umlauf entfernt). Dies schafft eine kontinuierliche Reduzierung des Gesamtangebots, was zu erhöhter Knappheit und Wertsteigerung führt.",
+        burning_buy: "🛒 Token-Kauf: Bei Kauf-Transaktionen werden Token als Teil des Unterstützungsgebühren-Mechanismus verbrannt",
+        burning_sell: "💰 Token-Verkauf: Bei Verkaufs-Transaktionen werden zusätzliche Token verbrannt, um das Ökosystem-Gleichgewicht zu erhalten",
+        burning_registration: "📝 Bezahlte Registrierung: Ein Teil der Registrierungsgebühren wird verwendet, um Token zu verbrennen und das Gesamtangebot zu reduzieren",
+        burning_claim: "🎯 Belohnungsansprüche: Bei Belohnungsanspruchsprozessen werden Token verbrannt, um deflationären Druck aufrechtzuerhalten",
+        burning_purchase: "🛍️ Produktkäufe: Beim Kauf von Anbietern werden Token als Teil der Transaktion verbrannt",
+        burning_free_reg: "🆓 Kostenlose Registrierung: Kostenlose Registrierungen erfordern das Verbrennen von Token im Wert von 23 DAI",
+        deflationary_impact: "📈 Deflationäre Auswirkungen",
+        circulation_reduction: "Jede Transaktion entfernt Token aus dem Umlauf. Diese kontinuierliche Reduzierung des Gesamtangebots schafft eine deflationäre Spirale, in der:",
+        scarcity_increase: "Die Knappheit nimmt mit jeder Transaktion zu",
+        value_appreciation: "Der Token-Wert steigt aufgrund des reduzierten Angebots",
+        price_pressure: "Aufwärtsdruck auf den Preis wird kontinuierlich aufrechterhalten",
+        ecosystem_balance: "Das Ökosystem-Gleichgewicht wird durch kontrollierte Deflation erhalten",
+        severe_price_increase: "Dieser Mechanismus verursacht starke Preissteigerungen, da der Token zunehmend knapper wird. Im Gegensatz zu inflationären Systemen, die den Wert verwässern, stellt dieses deflationäre Modell sicher, dass jeder Token-Inhaber von der kontinuierlichen Angebotsreduzierung profitiert.",
+        
+        // Back Button
+        back_button: "← Zurück"
+      },
+      fr: {
+        title: "À propos | IAM - PHOENIX",
+        header_title: "🚀 À propos d'IAM PHOENIX",
+        header_description: "Une plateforme de marketing de réseau révolutionnaire construite sur la technologie blockchain, créant un écosystème décentralisé où la transparence, la sécurité et la croissance sont garanties par des contrats intelligents.",
+        what_is_iam: "🌟 Qu'est-ce qu'IAM PHOENIX ?",
+        what_is_iam_desc1: "IAM PHOENIX est une plateforme de marketing de réseau de pointe qui exploite la technologie blockchain et l'infrastructure Web3 pour créer un écosystème transparent, sécurisé et décentralisé. Notre plateforme élimine les intermédiaires traditionnels et crée des relations directes et sans confiance entre les participants grâce aux contrats intelligents.",
+        what_is_iam_desc2: "Construite sur la blockchain Polygon, IAM PHOENIX combine la puissance du marketing de réseau avec la sécurité et la transparence de la technologie blockchain. Toutes les activités de marketing de réseau, récompenses et commissions sont automatiquement calculées et distribuées via des contrats intelligents audités, garantissant une transparence totale et éliminant la possibilité de fraude ou de manipulation.",
+        smart_contract_info: "📋 Informations sur le contrat intelligent",
+        smart_contract_details: "Détails du contrat intelligent",
+        network: "Réseau :",
+        reference_token: "Token de référence :",
+        iam_contract_address: "Adresse du contrat IAM :",
+        dai_token_address: "Adresse du token DAI :",
+        blockchain_explorer: "Explorateur blockchain :",
+        view_on_polygonscan: "Voir sur Polygonscan",
+        copy_address: "📋 Copier l'adresse",
+        copy_dai_address: "📋 Copier l'adresse DAI",
+        key_features: "✨ Fonctionnalités clés",
+        web3_technology: "🔗 Technologie Web3",
+        web3_tech_1: "Construit sur les protocoles Internet de nouvelle génération",
+        web3_tech_2: "Marketing de réseau décentralisé sans intermédiaires",
+        web3_tech_3: "Sécurité et automatisation des contrats intelligents",
+        web3_tech_4: "Souveraineté utilisateur et contrôle des actifs",
+        network_marketing: "🌐 Marketing de réseau",
+        network_marketing_1: "Structure de réseau arborescente binaire",
+        network_marketing_2: "Distribution automatique des récompenses",
+        network_marketing_3: "Suivi transparent des parrainages",
+        network_marketing_4: "Système de commission équitable",
+        token_economy: "💎 Économie de tokens",
+        token_economy_1: "Tokens IAM comme monnaie principale",
+        token_economy_2: "Calcul de prix dynamique",
+        token_economy_3: "Mécanisme de brûlage de tokens",
+        token_economy_4: "Support de liquidité et de trading",
+        vendor_marketplace: "🛍️ Marché des vendeurs",
+        vendor_marketplace_1: "Pages de vendeurs individuels",
+        vendor_marketplace_2: "Transactions de tokens IAM",
+        vendor_marketplace_3: "Système de commission automatique",
+        vendor_marketplace_4: "Traitement sécurisé des paiements",
+        trading_system: "💱 Système de trading",
+        buy_sell_tokens: "Acheter et vendre des tokens",
+        buy_tokens: "🛒 Acheter des tokens",
+        sell_tokens: "💰 Vendre des tokens",
+        price_calculation: "Calcul du prix",
+        network_marketing_system: "🌳 Système de marketing de réseau",
+        registration_activation: "Inscription et activation",
+        paid_registration: "📝 Inscription payante",
+        free_registration: "🆓 Inscription gratuite",
+        registration_pricing: "Tarification d'inscription",
+        wallet_count: "Nombre de portefeuilles",
+        registration_price: "Prix d'inscription",
+        binary_points_system: "🎯 Système de points binaires",
+        how_to_earn_points: "Comment gagner des points",
+        point_earning_conditions: "Conditions de gain de points",
+        reward_claim_system: "Système de réclamation de récompenses",
+        vendor_purchase_system: "🛍️ Système d'achat aux vendeurs",
+        how_to_purchase_vendors: "Comment acheter aux vendeurs",
+        purchase_function: "🛒 Fonction d'achat",
+        purchase_benefits: "Avantages d'achat",
+        community_voting_system: "🗳️ Système de vote communautaire",
+        user_rating_system: "Système de notation des utilisateurs",
+        vote_on_users: "👍👎 Voter pour les utilisateurs",
+        voting_benefits: "Avantages du vote",
+        monthly_rewards: "💰 Récompenses mensuelles",
+        eligibility_requirements: "Exigences d'éligibilité",
+        reward_calculation: "Calcul des récompenses",
+        security_protection: "🔒 Sécurité et protection",
+        live_statistics: "📊 Statistiques en direct",
+        registered_wallets: "Portefeuilles enregistrés",
+        contract_dai_balance: "Solde DAI du contrat",
+        claimable_points: "Points réclamables",
+        cashback_fund: "Fonds de cashback",
+        faq: "❓ Questions fréquemment posées",
+
+        
+        // Phoenix Team Section
+        phoenix_team: "🔥 Équipe Phoenix",
+        phoenix_mission: "Bonjour chers amis,<br><br>Nous sommes l'équipe Phoenix. Notre mission est de soutenir et développer les tokens Type Zero. Ces tokens sont des outils avancés qui permettent aux gens, en les achetant, de soutenir pratiquement des projets et services connexes. Avec ce soutien, les acheteurs participent à la croissance du token, tandis que les projets reçoivent les ressources financières nécessaires pour exécuter leurs plans.",
+        phoenix_iam_support: "Notre équipe, Phoenix, soutient et développe actuellement le token IAM, qui est construit sur la blockchain Polygon et soutenu par le stablecoin décentralisé DAI. Ce stablecoin est entièrement décentralisé, et aucune organisation ou autorité n'y a accès. Le token IAM lui-même est un projet indépendant, en fait une startup. Il ne soutient pas ou ne dépend pas d'une autre startup, mais vise plutôt à se présenter et se promouvoir.",
+        
+        // Subscription and Point System
+        subscription_point_system: "📊 Système d'abonnement et de points",
+        subscription_mechanism: "Le token IAM a un mécanisme d'abonnement. La distribution des frais d'abonnement est la suivante :",
+        referral_rewards: "10% pour les récompenses de parrainage (inviteur)",
+        token_burning: "10% pour la combustion de tokens, ce qui augmente la valeur du token",
+        user_distribution: "80% est distribué parmi les utilisateurs basé sur les points qu'ils gagnent",
+        point_earning_system: "Chaque personne peut gagner jusqu'à 5 points toutes les 12 heures, avec un maximum de 10 points par jour. Tous les points supplémentaires débordent sur d'autres points, augmentant la valeur de chaque point.",
+        
+        // Subscription Refund Mechanism
+        subscription_refund: "💰 Mécanisme de remboursement d'abonnement",
+        refund_guarantee: "Les personnes qui ne peuvent pas gagner de points n'ont pas à s'inquiéter. Le montant total qu'elles paient pour un abonnement leur sera remboursé sous forme de tokens. Ce remboursement se produit mensuellement à un taux de 3% du montant payé jusqu'à ce que les frais d'abonnement complets soient remboursés.",
+        
+        // Activities and Rewards
+        activities_rewards: "🎯 Activités et récompenses avec le token",
+        token_activities: "Toutes les activités, y compris la réception de récompenses et de commissions, sont effectuées avec le token IAM. Chaque fois qu'une transaction d'achat ou de vente est effectuée, l'utilisateur paie des frais de 2%, qui sont déposés dans la réserve financière du token :",
+        dai_to_iam: "Convertir DAI en IAM (achat) = création de token",
+        iam_to_dai: "Convertir IAM en DAI (vente) = les tokens sont brûlés",
+        token_burning_benefits: "Toutes ces activités entraînent la combustion de tokens et augmentent la valeur du token. Le système fonctionne également comme un réseau binaire, où les points et les récompenses sont distribués de manière transparente et équitable parmi les utilisateurs.",
+        
+        // How to Increase Points
+        increase_points: "📈 Comment augmenter le nombre de points",
+        additional_points: "Les utilisateurs peuvent demander d'acheter jusqu'à deux points supplémentaires par mois pour augmenter leurs revenus. Pour ce faire, ils paient un tiers des frais d'abonnement pour chaque point, et :",
+        burning_percentage: "5% est utilisé pour la combustion de tokens, ce qui augmente la valeur du token",
+        binary_pool: "95% est ajouté au pool binaire et distribué parmi les utilisateurs qui ont gagné des points",
+        point_mechanism: "Ce mécanisme garantit que le token conserve toujours sa valeur, et que la distribution des récompenses reste équitable et précieuse. Chaque abonnement peut finalement générer jusqu'à 100 points en 12 heures.",
+        
+        // Project Features
+        project_features: "🌟 Caractéristiques du projet",
+        extraordinary_project: "Ce projet est extraordinaire et fonctionne sur un réseau binaire avec un système de stockage à vie. Même si les niveaux inférieurs jusqu'au 10e niveau sont formés régulièrement et que tous les participants gagnent des points, dans le pire des cas pour la plateforme payant des commissions, la valeur de chaque point sera d'environ 60% du montant de l'abonnement.",
+        point_limitation: "La raison est la limitation du nombre de points par personne et le débordement de points supplémentaires, ce qui augmente la valeur de chaque point.",
+        decentralized_transparent: "Le projet est entièrement décentralisé et transparent, et tous les fonds sont distribués parmi les participants. C'est un réseau décentralisé qui sera bientôt reconnu internationalement.",
+        phoenix_goal: "Notre objectif est que les gens gagnent à la fois des revenus et bénéficient de la croissance du token en participant à ce projet.",
+        together_success: "Ensemble, nous réussissons !",
+        
+        // Deflationary Ecosystem Section
+        deflationary_ecosystem: "🔥 Écosystème déflationniste",
+        severe_deflation: "Cet écosystème connaît une inflation négative sévère (déflation). La logique de croissance des tokens est fondamentalement différente des systèmes traditionnels - au lieu de créer plus de tokens, le système retire continuellement les tokens de la circulation, créant une pression déflationniste qui stimule l'appréciation des prix.",
+        token_burning_mechanisms: "🔥 Mécanismes de combustion des tokens",
+        burning_overview: "Dans chaque activité majeure de l'écosystème, une partie des tokens est brûlée de façon permanente (retirée de la circulation). Cela crée une réduction continue de l'offre totale, conduisant à une rareté accrue et à une appréciation de la valeur.",
+        burning_buy: "🛒 Achat de tokens : Lors des transactions d'achat, les tokens sont brûlés dans le cadre du mécanisme de frais de soutien",
+        burning_sell: "💰 Vente de tokens : Lors des transactions de vente, des tokens supplémentaires sont brûlés pour maintenir l'équilibre de l'écosystème",
+        burning_registration: "📝 Inscription payante : Une partie des frais d'inscription est utilisée pour brûler des tokens, réduisant l'offre totale",
+        burning_claim: "🎯 Réclamations de récompenses : Lors des processus de réclamation de récompenses, les tokens sont brûlés pour maintenir la pression déflationniste",
+        burning_purchase: "🛍️ Achats de produits : Lors de l'achat auprès de vendeurs, les tokens sont brûlés dans le cadre de la transaction",
+        burning_free_reg: "🆓 Inscription gratuite : Les inscriptions gratuites nécessitent de brûler des tokens équivalents à 23 DAI",
+        deflationary_impact: "📈 Impact déflationniste",
+        circulation_reduction: "Chaque transaction retire des tokens de la circulation. Cette réduction continue de l'offre totale crée une spirale déflationniste où :",
+        scarcity_increase: "La rareté augmente avec chaque transaction",
+        value_appreciation: "La valeur des tokens s'apprécie en raison de la réduction de l'offre",
+        price_pressure: "La pression à la hausse des prix est maintenue en continu",
+        ecosystem_balance: "L'équilibre de l'écosystème est préservé par une déflation contrôlée",
+        severe_price_increase: "Ce mécanisme provoque des augmentations de prix sévères car le token devient de plus en plus rare. Contrairement aux systèmes inflationnistes qui diluent la valeur, ce modèle déflationniste garantit que chaque détenteur de tokens bénéficie de la réduction continue de l'offre.",
+        
+        // Back Button
+        back_button: "← Retour"
+      }
+    };
+
+    // Language switching functionality
+    function switchLanguage(lang) {
+      // Update HTML lang and dir attributes
+      document.documentElement.lang = lang;
+      if (lang === 'fa' || lang === 'ar') {
+        document.documentElement.dir = 'rtl';
+        document.body.className = 'lang-' + lang;
+      } else {
+        document.documentElement.dir = 'ltr';
+        document.body.className = 'lang-' + lang;
+      }
+
+      // Update all elements with data-translate attribute
+      const elements = document.querySelectorAll('[data-translate]');
+      elements.forEach(element => {
+        const key = element.getAttribute('data-translate');
+        if (translations[lang] && translations[lang][key]) {
+          element.textContent = translations[lang][key];
+        }
+      });
+
+      // Save language preference
+      localStorage.setItem('preferred-language', lang);
+    }
+
+    // Initialize language
+    document.addEventListener('DOMContentLoaded', function() {
+      const savedLang = localStorage.getItem('preferred-language') || 'en';
+      const languageSelector = document.getElementById('language-selector');
+      
+      if (languageSelector) {
+        languageSelector.value = savedLang;
+        languageSelector.addEventListener('change', function() {
+          switchLanguage(this.value);
+        });
+      }
+      
+      // Apply saved language
+      switchLanguage(savedLang);
     });
   </script>
 </body>
