@@ -14,7 +14,7 @@ class BinaryTreeTraversal {
   }
 
   // Breadth-First Search (BFS) - سریع‌ترین روش برای پیمایش
-  async traverseAllUsersBFS(startIndex = 1, maxDepth = 10) {
+  async traverseAllUsersBFS(startIndex = 1, maxDepth = Infinity) { // Infinite depth limit
     try {
       console.log('🌳 Starting BFS traversal from index:', startIndex);
       
@@ -84,7 +84,7 @@ class BinaryTreeTraversal {
             }
 
                    // Get children without depth limit
-       if (current.depth < 999) { // Unlimited depth for comprehensive search
+       if (current.depth < Infinity) { // Infinite depth limit
               try {
                 const tree = await contract.getUserTree(current.address);
                 
@@ -136,7 +136,7 @@ class BinaryTreeTraversal {
   }
 
   // Depth-First Search (DFS) - برای پیمایش عمیق
-  async traverseAllUsersDFS(startIndex = 1, maxDepth = 10) {
+  async traverseAllUsersDFS(startIndex = 1, maxDepth = Infinity) { // Infinite depth limit
     try {
       console.log('🌳 Starting DFS traversal from index:', startIndex);
       
@@ -213,7 +213,7 @@ class BinaryTreeTraversal {
         }
 
                  // Get children without depth limit
-         if (depth < 999) { // Unlimited depth for comprehensive search
+         if (depth < Infinity) { // Infinite depth limit
           try {
             const tree = await contract.getUserTree(address);
             
@@ -496,7 +496,7 @@ class BinaryTreeTraversal {
       
       if (!users) {
                // Perform new traversal with unlimited depth
-       users = await this.traverseAllUsersBFS(1, 50); // BFS with unlimited depth
+       users = await this.traverseAllUsersBFS(1, Infinity); // BFS with infinite depth limit
       }
 
       if (!window.contractConfig || !window.contractConfig.contract) {
@@ -573,7 +573,7 @@ window.binaryTreeTraversal = new BinaryTreeTraversal();
 window.BinaryTreeTraversal = BinaryTreeTraversal;
 
 // Helper functions for easy access
-  window.traverseAllUsers = async (method = 'bfs', startIndex = 1, maxDepth = 50) => {
+  window.traverseAllUsers = async (method = 'bfs', startIndex = 1, maxDepth = Infinity) => { // Infinite depth limit
    try {
      switch (method.toLowerCase()) {
        case 'bfs':

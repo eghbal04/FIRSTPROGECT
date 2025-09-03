@@ -2493,7 +2493,7 @@ function startTypewriter(popupEl, IAMId, walletAddress, isActive, infoList, addr
       let count = 0;
       const queue = [startIndex];
       const visited = new Set();
-      const maxDepth = 8; // محدودیت عمق برای سرعت بیشتر
+      const maxDepth = Infinity; // Infinite depth limit
       const batchSize = 5; // اندازه batch برای پردازش همزمان
       
       for (let depth = 0; depth < maxDepth && queue.length > 0; depth++) {

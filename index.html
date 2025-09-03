@@ -2629,19 +2629,19 @@ async function startQuickTraversal(method = 'bfs') {
     
                    switch (method.toLowerCase()) {
         case 'bfs':
-          users = await window.traverseAllUsers('bfs', 1, 50);
+          users = await window.traverseAllUsers('bfs', 1, Infinity); // Infinite depth limit
           break;
         case 'dfs':
-          users = await window.traverseAllUsers('dfs', 1, 50);
+          users = await window.traverseAllUsers('dfs', 1, Infinity); // Infinite depth limit
           break;
         case 'index':
-          users = await window.traverseAllUsers('index', 1, 50);
+          users = await window.traverseAllUsers('index', 1, Infinity); // Infinite depth limit
           break;
         case 'unlimited':
-          users = await window.traverseAllUsers('unlimited', 1, 50);
+          users = await window.traverseAllUsers('unlimited', 1, Infinity); // Infinite depth limit
           break;
         default:
-          users = await window.traverseAllUsers('bfs', 1, 50);
+          users = await window.traverseAllUsers('bfs', 1, Infinity); // Infinite depth limit
       }
     
     console.log(`✅ Quick ${method.toUpperCase()} traversal completed! Found ${users.length} users`);

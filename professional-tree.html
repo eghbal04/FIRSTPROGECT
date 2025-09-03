@@ -28,31 +28,93 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=1.1">
+    <link rel="stylesheet" href="css/modern-theme.css">
     <link rel="stylesheet" href="css/mobile-responsive.css">
+    <link rel="stylesheet" href="css/smooth-transitions.css">
     <link rel="stylesheet" href="css/mobile-user-popup.css">
     <link rel="stylesheet" href="css/pyramid-tree.css">
+    
+    <style>
+        /* Professional Tree Theme Overrides */
+        .modern-theme {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            font-family: 'Noto Sans Arabic', sans-serif;
+        }
+        
+        .modern-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modern-btn {
+            background: linear-gradient(135deg, #00ff88, #00cc6a);
+            color: #1a202c;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+        }
+        
+        .modern-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 255, 136, 0.4);
+        }
+        
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+        
+        .file-manager-container {
+            margin-top: 2rem;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+        }
+        
+        .file-manager-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .file-icon {
+            margin-left: 0.5rem;
+            font-size: 1.2em;
+        }
+    </style>
     
     <!-- Load ethers.js -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
 </head>
-<body>
+<body class="modern-theme">
     <!-- Back Button -->
-    <a href="index.html" class="back-btn">
+    <a href="index.html" class="back-btn modern-btn">
         ← Back to Dashboard
     </a>
     
-    <div id="main-network" class="page-section expandable-container" style="width:100vw;max-width:none;margin:0;left:0;right:0;padding:0.5rem 0;">
+    <div id="main-network" class="page-section expandable-container modern-card" style="width:100vw;max-width:none;margin:0;left:0;right:0;padding:0.5rem 0;">
         <div class="expand-header">
-            <h2 style="color: #00ff88; margin: 0;">🌐 Network</h2>
+            <h2 style="color: #00ff88; margin: 0; font-family: 'Montserrat', sans-serif; font-weight: 700;">🌐 Network</h2>
         </div>
         <div class="expand-content">
-            <div class="network-container" style="max-width: 1200px; margin: 0 auto; padding: 1rem;">
+            <div class="network-container modern-card" style="max-width: 1200px; margin: 0 auto; padding: 1rem;">
                 <!-- Network Stats -->
                 <div id="network-stats" class="network-user-info-container"></div>
                 
                 <!-- Wallet Connection Status -->
-                <div id="wallet-status" style="margin-bottom: 1rem; text-align: center;">
+                <div id="wallet-status" class="modern-card" style="margin-bottom: 1rem; text-align: center; padding: 1rem;">
                     <div id="wallet-info" style="color: #00ccff; font-size: 0.9em;">
                         🔄 Connecting to wallet...
                     </div>
@@ -64,27 +126,14 @@
                         <!-- File Manager Header -->
                         <div class="file-manager-header">
                             <div class="file-manager-title">
-                                <span class="file-icon">📁</span>
-                                <span>Network Tree Manager</span>
+                                <span class="file-icon">🌳</span>
+                                <span style="font-family: 'Montserrat', sans-serif; font-weight: 700; color: #00ff88;">Tree Manager</span>
                             </div>
-                            <div class="file-manager-actions">
-                                <button id="expand-all-btn" class="action-btn">📂 Expand All</button>
-                                <button id="collapse-all-btn" class="action-btn">📁 Collapse All</button>
-                                <button id="refresh-tree-btn" class="action-btn">🔄 Refresh</button>
-                            </div>
+
                         </div>
                         
                         <!-- File Manager Content -->
                         <div class="file-manager-content">
-                            <div class="file-manager-sidebar">
-                                <div class="sidebar-section">
-                                    <div class="sidebar-title">🌐 Networks</div>
-                                    <div class="network-list-sidebar" id="network-list-sidebar">
-                                        <!-- Network list will be rendered here -->
-                                    </div>
-                                </div>
-                            </div>
-                            
                             <div class="file-manager-main">
                                 <div class="file-manager-breadcrumb" id="breadcrumb">
                                     <span class="breadcrumb-item active">🏠 Root</span>
@@ -584,86 +633,16 @@
             // Setup event listeners
             setupFileManagerEvents();
             
-            // Initialize sidebar
-            initializeSidebar();
-            
             // Initialize breadcrumb
             updateBreadcrumb();
         }
 
         // Setup file manager event listeners
         function setupFileManagerEvents() {
-            // Expand All button
-            const expandAllBtn = document.getElementById('expand-all-btn');
-            if (expandAllBtn) {
-                expandAllBtn.addEventListener('click', expandAllNodes);
-            }
-            
-            // Collapse All button
-            const collapseAllBtn = document.getElementById('collapse-all-btn');
-            if (collapseAllBtn) {
-                collapseAllBtn.addEventListener('click', collapseAllNodes);
-            }
-            
-            // Refresh button
-            const refreshBtn = document.getElementById('refresh-tree-btn');
-            if (refreshBtn) {
-                refreshBtn.addEventListener('click', refreshTree);
-            }
+            // No action buttons needed
         }
 
-        // Initialize sidebar
-        function initializeSidebar() {
-            const sidebar = document.getElementById('network-list-sidebar');
-            if (!sidebar) return;
-            
-            sidebar.innerHTML = `
-                <div class="network-item-sidebar active" data-network="all">
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <span>🌐</span>
-                        <span>All Networks</span>
-                    </div>
-                </div>
-                <div class="network-item-sidebar" data-network="network1">
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <span>🔷</span>
-                        <span>Network 1</span>
-                    </div>
-                </div>
-                <div class="network-item-sidebar" data-network="network2">
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <span>🔶</span>
-                        <span>Network 2</span>
-                    </div>
-                </div>
-                <div class="network-item-sidebar" data-network="network3">
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <span>🔸</span>
-                        <span>Network 3</span>
-                    </div>
-                </div>
-                <div class="network-item-sidebar" data-network="network4">
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <span>🔹</span>
-                        <span>Network 4</span>
-                    </div>
-                </div>
-            `;
-            
-            // Add click listeners to sidebar items
-            sidebar.querySelectorAll('.network-item-sidebar').forEach(item => {
-                item.addEventListener('click', () => {
-                    // Remove active class from all items
-                    sidebar.querySelectorAll('.network-item-sidebar').forEach(i => i.classList.remove('active'));
-                    // Add active class to clicked item
-                    item.classList.add('active');
-                    
-                    // Load selected network
-                    const network = item.dataset.network;
-                    loadNetworkTree(network);
-                });
-            });
-        }
+
 
         // Update breadcrumb
         function updateBreadcrumb() {
@@ -782,7 +761,7 @@
                     
                     <span class="tree-node-icon">${getNodeIcon(node.type)}</span>
                     <span class="tree-node-label">${node.index}</span>
-                    <span class="tree-node-info">${node.address ? node.address.substring(0, 6) + '...' + node.address.substring(node.address.length - 4) : ''}</span>
+                    <span class="tree-node-info" onclick="copyToClipboard('${node.address}')" title="Click to copy full address">${node.address ? node.address.substring(0, 6) + '...' + node.address.substring(node.address.length - 4) : ''}</span>
                 </div>
             `;
             
@@ -852,15 +831,132 @@
             showNodeDetails(node);
         }
 
-        // Show node details
-        function showNodeDetails(node) {
-            // This could show a popup or sidebar with node details
+        // Copy address to clipboard
+        function copyToClipboard(text) {
+            if (!text) return;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                // Show success message
+                const toast = document.createElement('div');
+                toast.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: linear-gradient(135deg, #00ff88, #00cc6a);
+                    color: #1a202c;
+                    padding: 12px 20px;
+                    border-radius: 8px;
+                    font-weight: bold;
+                    font-size: 14px;
+                    z-index: 10000;
+                    box-shadow: 0 4px 12px rgba(0, 255, 136, 0.3);
+                    animation: slideIn 0.3s ease;
+                `;
+                toast.textContent = 'Address copied to clipboard!';
+                document.body.appendChild(toast);
+                
+                // Remove toast after 3 seconds
+                setTimeout(() => {
+                    toast.style.animation = 'slideOut 0.3s ease';
+                    setTimeout(() => {
+                        document.body.removeChild(toast);
+                    }, 300);
+                }, 3000);
+                
+            }).catch(err => {
+                console.error('Failed to copy address:', err);
+                
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                alert('Address copied to clipboard!');
+            });
+        }
+
+        // Show node details with typewriter effect
+        async function showNodeDetails(node) {
             console.log('📋 Node details:', {
                 index: node.index,
                 address: node.address,
                 type: node.type,
                 hasChildren: node.hasChildren
             });
+            
+            if (!node.address) {
+                console.log('❌ No address available');
+                return;
+            }
+            
+            try {
+                let user = null;
+                let contract = null;
+                
+                // Try to get contract from different sources
+                if (window.contractConfig && window.contractConfig.contract) {
+                    contract = window.contractConfig.contract;
+                    console.log('✅ Using contractConfig contract');
+                } else if (typeof window.connectWallet === 'function') {
+                    try {
+                        const connection = await window.connectWallet();
+                        if (connection && connection.contract) {
+                            contract = connection.contract;
+                            console.log('✅ Using connectWallet contract');
+                        }
+                    } catch (error) {
+                        console.log('❌ connectWallet failed:', error.message);
+                    }
+                }
+                
+                if (!contract) {
+                    console.log('❌ No contract available');
+                    return;
+                }
+                
+                // Get user data from contract
+                console.log('🔄 Fetching user data for address:', node.address);
+                user = await contract.users(node.address);
+                
+                console.log('👤 User data:', user);
+                
+                // Validate user data
+                if (!user || user.index === undefined) {
+                    console.log('❌ Invalid user data received');
+                    return;
+                }
+                
+                // Show mobile user popup with typewriter effect
+                if (window.mobileUserPopup) {
+                    console.log('🔄 Showing mobile user popup...');
+                    await window.mobileUserPopup.show(node.address, user);
+                    console.log('✅ Mobile user popup shown successfully');
+                } else {
+                    console.log('❌ Mobile user popup not available');
+                }
+                
+            } catch (error) {
+                console.error('❌ Error fetching user data:', error);
+                
+                // Show error popup
+                if (window.mobileUserPopup) {
+                    const errorUser = {
+                        index: node.index || 0,
+                        binaryPoints: 0,
+                        binaryPointCap: 0,
+                        totalMonthlyRewarded: 0,
+                        binaryPointsClaimed: 0,
+                        refclimed: 0,
+                        depositedAmount: 0,
+                        leftPoints: 0,
+                        rightPoints: 0
+                    };
+                    await window.mobileUserPopup.show(node.address, errorUser);
+                }
+            }
         }
 
         // Load node children
@@ -932,54 +1028,9 @@
             }
         }
 
-        // Load specific network tree
-        async function loadNetworkTree(network) {
-            console.log(`🌐 Loading network tree: ${network}`);
-            
-            if (network === 'all') {
-                await loadFileManagerTree();
-            } else {
-                // Load specific network (could be expanded later)
-                console.log(`📁 Loading ${network} tree...`);
-                await loadFileManagerTree();
-            }
-        }
 
-        // Expand all nodes
-        function expandAllNodes() {
-            console.log('📂 Expanding all nodes...');
-            
-            // Add all nodes to expanded set
-            function addAllNodes(node) {
-                if (node.hasChildren) {
-                    fileManagerData.expandedNodes.add(node.id);
-                }
-                if (node.children) {
-                    node.children.forEach(child => addAllNodes(child));
-                }
-            }
-            
-            if (fileManagerData.treeData) {
-                addAllNodes(fileManagerData.treeData);
-            }
-            
-            renderTreeView();
-        }
 
-        // Collapse all nodes
-        function collapseAllNodes() {
-            console.log('📁 Collapsing all nodes...');
-            fileManagerData.expandedNodes.clear();
-            renderTreeView();
-        }
 
-        // Refresh tree
-        async function refreshTree() {
-            console.log('🔄 Refreshing tree...');
-            fileManagerData.expandedNodes.clear();
-            fileManagerData.treeData = {};
-            await loadFileManagerTree();
-        }
 
         // Show empty tree state
         function showEmptyTree() {
@@ -1238,12 +1289,12 @@
                 width: 100%;
                 background: linear-gradient(45deg, #00ff88, #00cc6a);
                 color: #1a202c;
-                border: none;
+                            border: none;
                 padding: 0.5rem;
                 border-radius: 6px;
                 font-weight: 600;
-                cursor: pointer;
-                margin-top: 1rem;
+                            cursor: pointer;
+                            margin-top: 1rem;
                 transition: all 0.3s ease;
             `;
             expandButton.innerHTML = '🔄 Expand More';
@@ -1372,7 +1423,7 @@
                 if (children && children.length > 0) {
                     // Add children to the network
                     const container = document.getElementById(`network-${networkNumber}-list`);
-                    if (container) {
+                            if (container) {
                         children.forEach((childIndex, index) => {
                             const childNode = {
                                 index: childIndex.toString(),
@@ -1391,10 +1442,10 @@
                                 container.appendChild(childItem);
                             }
                         });
-                    }
-                }
-                
-            } catch (error) {
+                            }
+                        }
+                        
+                    } catch (error) {
                 console.error(`❌ Error expanding node ${node.index}:`, error);
             }
         }
@@ -1441,7 +1492,7 @@
                     console.log('⚠️ Could not load real data, using default data');
                     renderPyramidTree();
                 }
-                
+
             } catch (error) {
                 console.error('❌ Error loading real data:', error);
                 console.log('⚠️ Using default data');
