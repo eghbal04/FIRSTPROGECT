@@ -166,6 +166,68 @@
             }
         };
 
+        // Detect if running on mobile
+        function isMobile() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                   window.innerWidth <= 768;
+        }
+
+        // Detect MetaMask on mobile
+        function detectMetaMask() {
+            console.log('🔍 Detecting MetaMask...');
+            console.log('📱 Is mobile:', isMobile());
+            
+            // Check for standard ethereum provider
+            if (window.ethereum) {
+                console.log('✅ Standard ethereum provider found');
+                return window.ethereum;
+            }
+            
+            // Check for mobile MetaMask via web3
+            if (window.web3 && window.web3.currentProvider) {
+                console.log('📱 Mobile MetaMask detected via web3.currentProvider');
+                return window.web3.currentProvider;
+            }
+            
+            // Check for mobile MetaMask via web3
+            if (window.web3) {
+                console.log('📱 Mobile MetaMask detected via web3');
+                return window.web3;
+            }
+            
+            // Check for injected provider
+            if (window.ethereum && window.ethereum.isMetaMask) {
+                console.log('✅ MetaMask injected provider found');
+                return window.ethereum;
+            }
+            
+            // Check for mobile-specific providers
+            if (isMobile()) {
+                console.log('📱 Checking mobile-specific providers...');
+                
+                // Check for Trust Wallet
+                if (window.ethereum && window.ethereum.isTrust) {
+                    console.log('✅ Trust Wallet detected');
+                    return window.ethereum;
+                }
+                
+                // Check for Coinbase Wallet
+                if (window.ethereum && window.ethereum.isCoinbaseWallet) {
+                    console.log('✅ Coinbase Wallet detected');
+                    return window.ethereum;
+                }
+                
+                // Check for any ethereum provider
+                if (window.ethereum) {
+                    console.log('✅ Generic ethereum provider found on mobile');
+                    return window.ethereum;
+                }
+            }
+            
+            console.log('❌ No MetaMask detected');
+            return null;
+        }
+
         // Connect to wallet and get real data
         async function connectWalletAndLoadData() {
             try {
@@ -184,10 +246,17 @@
                     return true;
                 }
                 
-                // Check if ethereum is available
-                if (!window.ethereum) {
-                    console.log('❌ Ethereum provider not available');
+                // Detect MetaMask provider
+                const ethereumProvider = detectMetaMask();
+                if (!ethereumProvider) {
+                    console.log('❌ No MetaMask provider detected');
                     return false;
+                }
+                
+                // Set ethereum provider
+                if (!window.ethereum) {
+                    window.ethereum = ethereumProvider;
+                    console.log('✅ Ethereum provider set');
                 }
                 
                 // Try to connect wallet
@@ -208,6 +277,42 @@
                     
                     // Try direct connection
                     try {
+                        console.log('🔄 Attempting direct connection...');
+                        
+                        // Check if already connected
+                        if (window.ethereum.selectedAddress) {
+                            console.log('✅ Wallet already connected:', window.ethereum.selectedAddress);
+                            
+                            // Set up contract config if not exists
+                            if (!window.contractConfig) {
+                                window.contractConfig = {};
+                            }
+                            window.contractConfig.userAddress = window.ethereum.selectedAddress;
+                            
+                            // Try to get contract from other sources
+                            if (window.contractConfig.contract) {
+                                console.log('✅ Contract already available');
+                                return true;
+                            }
+                            
+                            // Try to create contract
+                            if (window.ethereum && window.contractConfig.contractAddress && window.contractConfig.contractABI) {
+                                const provider = new ethers.BrowserProvider(window.ethereum);
+                                const signer = await provider.getSigner();
+                                window.contractConfig.contract = new ethers.Contract(
+                                    window.contractConfig.contractAddress,
+                                    window.contractConfig.contractABI,
+                                    signer
+                                );
+                                console.log('✅ Contract created successfully');
+                                return true;
+                            }
+                            
+                            console.log('⚠️ Contract not available, but wallet connected');
+                            return true;
+                        }
+                        
+                        // Request connection
                         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                         if (accounts && accounts.length > 0) {
                             console.log('✅ Direct wallet connection successful');
@@ -242,6 +347,18 @@
                         }
                     } catch (directError) {
                         console.log('❌ Direct connection failed:', directError.message);
+                        
+                        // Check if it's a user rejection
+                        if (directError.code === 4001 || directError.message.includes('User rejected')) {
+                            console.log('👤 User rejected connection');
+                            return false;
+                        }
+                        
+                        // Check if it's a mobile-specific error
+                        if (directError.message.includes('Please install MetaMask')) {
+                            console.log('📱 MetaMask not installed on mobile');
+                            return false;
+                        }
                     }
                     
                     return false;
@@ -1571,6 +1688,15 @@
                     }
                 }
             };
+            
+            // Debug MetaMask detection
+            console.log('🔍 Debug MetaMask Detection:');
+            console.log('- window.ethereum:', !!window.ethereum);
+            console.log('- window.web3:', !!window.web3);
+            console.log('- window.web3.currentProvider:', !!window.web3?.currentProvider);
+            console.log('- isMobile():', isMobile());
+            console.log('- User Agent:', navigator.userAgent);
+            console.log('- Screen width:', window.innerWidth);
             
             // Start trying to connect
             setTimeout(tryConnectWallet, 200);
