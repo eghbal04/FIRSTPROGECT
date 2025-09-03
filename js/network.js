@@ -7,8 +7,8 @@ let isRenderingTree = false;
 let lastRenderedTime = 0;
 let _networkPopupOpening = false;
 
-// Performance optimization variables
-let maxConcurrentRenders = 10; // Increased concurrent operations for better performance
+// Performance optimization variables - UNLIMITED RENDERING
+let maxConcurrentRenders = Infinity; // Unlimited concurrent operations for unlimited tree depth
 let activeRenders = 0;
 let renderQueue = [];
 let isProcessingQueue = false;
@@ -570,16 +570,8 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
     // No depth limit - render all levels
     // Removed depth limit check for unlimited tree rendering
     
-    // Performance check: Limit concurrent renders
-    if (activeRenders >= maxConcurrentRenders) {
-        console.log(`⚠️ Too many concurrent renders (${activeRenders}/${maxConcurrentRenders}), queuing render`);
-        return new Promise((resolve) => {
-            renderQueue.push({ index, container, level, autoExpand, resolve });
-            if (!isProcessingQueue) {
-                processRenderQueue();
-            }
-        });
-    }
+    // No concurrent render limit - unlimited tree expansion
+    // Removed concurrent render check for unlimited tree depth
     
     activeRenders++;
     console.log(`🔄 renderVerticalNodeLazy called with index: ${index}, level: ${level}, active renders: ${activeRenders}`);
@@ -631,7 +623,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                 // Add timeout to prevent hanging
                 const userPromise = contract.users(address);
                 const timeoutPromise = new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error('User data fetch timeout')), 10000)
+                    setTimeout(() => reject(new Error('User data fetch timeout')), 60000)
                 );
                 user = await Promise.race([userPromise, timeoutPromise]);
             } catch(e) {
@@ -654,7 +646,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                 // Add timeout to prevent hanging
                 const treePromise = contract.getUserTree(address);
                 const timeoutPromise = new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error('User tree fetch timeout')), 10000)
+                    setTimeout(() => reject(new Error('User tree fetch timeout')), 60000)
                 );
                 tree = await Promise.race([treePromise, timeoutPromise]);
             } catch(e) { 
@@ -666,7 +658,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                 try {
                     const leftUserPromise = contract.users(tree.left);
                     const leftTimeoutPromise = new Promise((_, reject) => 
-                        setTimeout(() => reject(new Error('Left user fetch timeout')), 8000)
+                        setTimeout(() => reject(new Error('Left user fetch timeout')), 60000)
                     );
                     leftUser = await Promise.race([leftUserPromise, leftTimeoutPromise]);
                     if (leftUser && leftUser.index && BigInt(leftUser.index) > 0n) { 
@@ -685,7 +677,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                 try {
                     const rightUserPromise = contract.users(tree.right);
                     const rightTimeoutPromise = new Promise((_, reject) => 
-                        setTimeout(() => reject(new Error('Right user fetch timeout')), 8000)
+                        setTimeout(() => reject(new Error('Right user fetch timeout')), 60000)
                     );
                     rightUser = await Promise.race([rightUserPromise, rightTimeoutPromise]);
                     if (rightUser && rightUser.index && BigInt(rightUser.index) > 0n) { 
@@ -1253,30 +1245,8 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
     }
 }
 
-// Helper function to process render queue
-async function processRenderQueue() {
-    if (isProcessingQueue || renderQueue.length === 0) return;
-    
-    isProcessingQueue = true;
-    console.log(`🔄 Processing render queue, ${renderQueue.length} items pending`);
-    
-    while (renderQueue.length > 0 && activeRenders < maxConcurrentRenders) {
-        const item = renderQueue.shift();
-        try {
-            await renderVerticalNodeLazy(item.index, item.container, item.level, item.autoExpand);
-            item.resolve();
-        } catch (error) {
-            console.error('Error processing queued render:', error);
-            item.resolve();
-        }
-    }
-    
-    isProcessingQueue = false;
-    if (renderQueue.length > 0) {
-        console.log(`⏳ ${renderQueue.length} items still in queue, will process when slots available`);
-        setTimeout(processRenderQueue, 100);
-    }
- }
+// Render queue processing removed - unlimited concurrent rendering
+// No queue needed since we have unlimited concurrent operations
  
  // Helper function to render empty slots
  async function renderEmptySlot(index, container, level) {

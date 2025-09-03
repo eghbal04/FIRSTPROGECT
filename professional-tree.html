@@ -161,126 +161,251 @@
             }
         }
         
-        /* Level-based color system for tree nodes */
+        /* Distinct level-based color system for tree nodes */
         .flat-tree-node {
             transition: all 0.3s ease;
-            border-radius: 6px;
-            margin-bottom: 0.3rem;
+            border-radius: 8px;
+            margin-bottom: 0.4rem;
+            position: relative;
+            overflow: hidden;
         }
         
-        /* Level 0 - Root (brightest) */
+        /* Level 0 - Root (Bright Cyan) */
         .flat-tree-node[data-depth="0"] {
-            background: linear-gradient(135deg, rgba(0, 255, 136, 0.15), rgba(0, 255, 136, 0.08));
-            border: 2px solid rgba(0, 255, 136, 0.4);
-            box-shadow: 0 2px 8px rgba(0, 255, 136, 0.2);
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(0, 200, 255, 0.1));
+            border: 3px solid #00ffff;
+            box-shadow: 0 4px 12px rgba(0, 255, 255, 0.3);
+            color: #00ffff;
         }
         
-        /* Level 1 - Very bright */
+        /* Level 1 - Bright Green */
         .flat-tree-node[data-depth="1"] {
-            background: linear-gradient(135deg, rgba(0, 255, 136, 0.12), rgba(0, 255, 136, 0.06));
-            border: 2px solid rgba(0, 255, 136, 0.35);
-            box-shadow: 0 2px 6px rgba(0, 255, 136, 0.15);
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.18), rgba(0, 255, 100, 0.09));
+            border: 3px solid #00ff88;
+            box-shadow: 0 3px 10px rgba(0, 255, 136, 0.25);
+            color: #00ff88;
         }
         
-        /* Level 2 - Bright */
+        /* Level 2 - Bright Yellow */
         .flat-tree-node[data-depth="2"] {
-            background: linear-gradient(135deg, rgba(0, 230, 119, 0.1), rgba(0, 230, 119, 0.05));
-            border: 2px solid rgba(0, 230, 119, 0.3);
-            box-shadow: 0 2px 5px rgba(0, 230, 119, 0.12);
+            background: linear-gradient(135deg, rgba(255, 255, 0, 0.16), rgba(255, 200, 0, 0.08));
+            border: 3px solid #ffff00;
+            box-shadow: 0 3px 8px rgba(255, 255, 0, 0.2);
+            color: #ffff00;
         }
         
-        /* Level 3 - Medium bright */
+        /* Level 3 - Bright Orange */
         .flat-tree-node[data-depth="3"] {
-            background: linear-gradient(135deg, rgba(0, 204, 106, 0.08), rgba(0, 204, 106, 0.04));
-            border: 2px solid rgba(0, 204, 106, 0.25);
-            box-shadow: 0 2px 4px rgba(0, 204, 106, 0.1);
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.14), rgba(255, 140, 0, 0.07));
+            border: 3px solid #ffa500;
+            box-shadow: 0 2px 6px rgba(255, 165, 0, 0.18);
+            color: #ffa500;
         }
         
-        /* Level 4 - Medium */
+        /* Level 4 - Bright Red */
         .flat-tree-node[data-depth="4"] {
-            background: linear-gradient(135deg, rgba(0, 179, 92, 0.06), rgba(0, 179, 92, 0.03));
-            border: 2px solid rgba(0, 179, 92, 0.2);
-            box-shadow: 0 1px 3px rgba(0, 179, 92, 0.08);
+            background: linear-gradient(135deg, rgba(255, 0, 0, 0.12), rgba(255, 50, 50, 0.06));
+            border: 3px solid #ff0000;
+            box-shadow: 0 2px 5px rgba(255, 0, 0, 0.15);
+            color: #ff0000;
         }
         
-        /* Level 5 - Medium dark */
+        /* Level 5 - Bright Magenta */
         .flat-tree-node[data-depth="5"] {
-            background: linear-gradient(135deg, rgba(0, 153, 77, 0.05), rgba(0, 153, 77, 0.025));
-            border: 2px solid rgba(0, 153, 77, 0.18);
-            box-shadow: 0 1px 3px rgba(0, 153, 77, 0.06);
+            background: linear-gradient(135deg, rgba(255, 0, 255, 0.1), rgba(255, 50, 255, 0.05));
+            border: 3px solid #ff00ff;
+            box-shadow: 0 2px 4px rgba(255, 0, 255, 0.12);
+            color: #ff00ff;
         }
         
-        /* Level 6 - Dark */
+        /* Level 6 - Bright Blue */
         .flat-tree-node[data-depth="6"] {
-            background: linear-gradient(135deg, rgba(0, 136, 68, 0.04), rgba(0, 136, 68, 0.02));
-            border: 2px solid rgba(0, 136, 68, 0.15);
-            box-shadow: 0 1px 2px rgba(0, 136, 68, 0.05);
+            background: linear-gradient(135deg, rgba(0, 0, 255, 0.08), rgba(50, 50, 255, 0.04));
+            border: 3px solid #0000ff;
+            box-shadow: 0 1px 3px rgba(0, 0, 255, 0.1);
+            color: #0000ff;
         }
         
-        /* Level 7 - Darker */
+        /* Level 7 - Bright Purple */
         .flat-tree-node[data-depth="7"] {
-            background: linear-gradient(135deg, rgba(0, 119, 58, 0.03), rgba(0, 119, 58, 0.015));
-            border: 2px solid rgba(0, 119, 58, 0.12);
-            box-shadow: 0 1px 2px rgba(0, 119, 58, 0.04);
+            background: linear-gradient(135deg, rgba(128, 0, 255, 0.06), rgba(150, 50, 255, 0.03));
+            border: 3px solid #8000ff;
+            box-shadow: 0 1px 3px rgba(128, 0, 255, 0.08);
+            color: #8000ff;
         }
         
-        /* Level 8 - Very dark */
+        /* Level 8 - Bright Pink */
         .flat-tree-node[data-depth="8"] {
-            background: linear-gradient(135deg, rgba(0, 102, 51, 0.025), rgba(0, 102, 51, 0.012));
-            border: 2px solid rgba(0, 102, 51, 0.1);
-            box-shadow: 0 1px 2px rgba(0, 102, 51, 0.03);
+            background: linear-gradient(135deg, rgba(255, 192, 203, 0.08), rgba(255, 150, 200, 0.04));
+            border: 3px solid #ffc0cb;
+            box-shadow: 0 1px 2px rgba(255, 192, 203, 0.06);
+            color: #ffc0cb;
         }
         
-        /* Level 9 - Darkest */
+        /* Level 9 - Bright Lime */
         .flat-tree-node[data-depth="9"] {
-            background: linear-gradient(135deg, rgba(0, 85, 34, 0.02), rgba(0, 85, 34, 0.01));
-            border: 2px solid rgba(0, 85, 34, 0.08);
-            box-shadow: 0 1px 1px rgba(0, 85, 34, 0.025);
+            background: linear-gradient(135deg, rgba(50, 255, 50, 0.06), rgba(100, 255, 100, 0.03));
+            border: 3px solid #32ff32;
+            box-shadow: 0 1px 2px rgba(50, 255, 50, 0.05);
+            color: #32ff32;
         }
         
-        /* Level 10+ - Very darkest */
-        .flat-tree-node[data-depth="10"],
-        .flat-tree-node[data-depth="11"],
-        .flat-tree-node[data-depth="12"],
-        .flat-tree-node[data-depth="13"],
-        .flat-tree-node[data-depth="14"],
+        /* Level 10 - Bright Teal */
+        .flat-tree-node[data-depth="10"] {
+            background: linear-gradient(135deg, rgba(0, 255, 200, 0.05), rgba(50, 255, 220, 0.025));
+            border: 3px solid #00ffc8;
+            box-shadow: 0 1px 2px rgba(0, 255, 200, 0.04);
+            color: #00ffc8;
+        }
+        
+        /* Level 11 - Bright Gold */
+        .flat-tree-node[data-depth="11"] {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.05), rgba(255, 200, 50, 0.025));
+            border: 3px solid #ffd700;
+            box-shadow: 0 1px 2px rgba(255, 215, 0, 0.04);
+            color: #ffd700;
+        }
+        
+        /* Level 12 - Bright Coral */
+        .flat-tree-node[data-depth="12"] {
+            background: linear-gradient(135deg, rgba(255, 127, 80, 0.05), rgba(255, 150, 100, 0.025));
+            border: 3px solid #ff7f50;
+            box-shadow: 0 1px 2px rgba(255, 127, 80, 0.04);
+            color: #ff7f50;
+        }
+        
+        /* Level 13 - Bright Indigo */
+        .flat-tree-node[data-depth="13"] {
+            background: linear-gradient(135deg, rgba(75, 0, 130, 0.05), rgba(100, 50, 150, 0.025));
+            border: 3px solid #4b0082;
+            box-shadow: 0 1px 2px rgba(75, 0, 130, 0.04);
+            color: #4b0082;
+        }
+        
+        /* Level 14 - Bright Turquoise */
+        .flat-tree-node[data-depth="14"] {
+            background: linear-gradient(135deg, rgba(64, 224, 208, 0.05), rgba(100, 240, 220, 0.025));
+            border: 3px solid #40e0d0;
+            box-shadow: 0 1px 2px rgba(64, 224, 208, 0.04);
+            color: #40e0d0;
+        }
+        
+        /* Level 15 - Bright Violet */
         .flat-tree-node[data-depth="15"] {
-            background: linear-gradient(135deg, rgba(0, 68, 34, 0.015), rgba(0, 68, 34, 0.007));
-            border: 2px solid rgba(0, 68, 34, 0.06);
-            box-shadow: 0 1px 1px rgba(0, 68, 34, 0.02);
+            background: linear-gradient(135deg, rgba(238, 130, 238, 0.05), rgba(255, 150, 255, 0.025));
+            border: 3px solid #ee82ee;
+            box-shadow: 0 1px 2px rgba(238, 130, 238, 0.04);
+            color: #ee82ee;
         }
         
-        /* Level 16+ - Almost invisible */
+        /* Level 16+ - Dynamic colors for deeper levels */
         .flat-tree-node[data-depth="16"],
         .flat-tree-node[data-depth="17"],
         .flat-tree-node[data-depth="18"],
         .flat-tree-node[data-depth="19"],
         .flat-tree-node[data-depth="20"] {
-            background: linear-gradient(135deg, rgba(0, 51, 17, 0.01), rgba(0, 51, 17, 0.005));
-            border: 2px solid rgba(0, 51, 17, 0.04);
-            box-shadow: 0 1px 1px rgba(0, 51, 17, 0.015);
+            background: linear-gradient(135deg, rgba(200, 200, 200, 0.04), rgba(180, 180, 180, 0.02));
+            border: 3px solid #c8c8c8;
+            box-shadow: 0 1px 1px rgba(200, 200, 200, 0.03);
+            color: #c8c8c8;
         }
         
-        /* Level 21+ - Minimal visibility */
+        /* Level 21+ - Minimal visibility with distinct colors */
         .flat-tree-node[data-depth="21"],
         .flat-tree-node[data-depth="22"],
         .flat-tree-node[data-depth="23"],
         .flat-tree-node[data-depth="24"],
         .flat-tree-node[data-depth="25"] {
-            background: linear-gradient(135deg, rgba(0, 34, 0, 0.008), rgba(0, 34, 0, 0.004));
-            border: 2px solid rgba(0, 34, 0, 0.03);
-            box-shadow: 0 1px 1px rgba(0, 34, 0, 0.01);
+            background: linear-gradient(135deg, rgba(150, 150, 150, 0.03), rgba(130, 130, 130, 0.015));
+            border: 3px solid #969696;
+            box-shadow: 0 1px 1px rgba(150, 150, 150, 0.02);
+            color: #969696;
+        }
+        
+        /* Level indicators */
+        .flat-tree-node::before {
+            content: attr(data-depth);
+            position: absolute;
+            top: 2px;
+            right: 6px;
+            font-size: 10px;
+            font-weight: bold;
+            opacity: 0.7;
+            z-index: 1;
         }
         
         /* Hover effects for all levels */
         .flat-tree-node:hover {
-            transform: translateX(2px);
-            box-shadow: 0 4px 12px rgba(0, 255, 136, 0.2);
+            transform: translateX(3px) scale(1.02);
+            box-shadow: 0 6px 16px rgba(0, 255, 136, 0.3);
+            z-index: 10;
         }
         
         /* Active/expanded state */
         .flat-tree-node.expanded {
-            border-left: 4px solid #00ff88;
+            border-left: 6px solid currentColor;
+            transform: translateX(2px);
+        }
+        
+        /* Level separator lines */
+        .flat-tree-node[data-depth="0"]::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #00ffff, transparent);
+        }
+        
+        .flat-tree-node[data-depth="1"]::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #00ff88, transparent);
+        }
+        
+        .flat-tree-node[data-depth="2"]::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #ffff00, transparent);
+        }
+        
+        .flat-tree-node[data-depth="3"]::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #ffa500, transparent);
+        }
+        
+        .flat-tree-node[data-depth="4"]::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #ff0000, transparent);
+        }
+        
+        .flat-tree-node[data-depth="5"]::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #ff00ff, transparent);
         }
     </style>
     
@@ -1094,10 +1219,328 @@
             renderFlatTree(fileManagerData.treeData, treeView, 0);
         }
 
+        // Global depth tracking
+        let maxDepthReached = 0;
+        
+        // Test function to check current depth
+        window.checkTreeDepth = function() {
+            console.log(`📊 Current maximum depth reached: ${maxDepthReached}`);
+            console.log(`📊 Total expanded nodes: ${fileManagerData.expandedNodes.size}`);
+            console.log(`📊 Expanded nodes:`, Array.from(fileManagerData.expandedNodes));
+            return maxDepthReached;
+        };
+        
+        // Test function to expand all nodes to maximum depth
+        window.expandAllNodes = async function() {
+            console.log('🚀 Expanding all nodes to maximum depth...');
+            const startTime = Date.now();
+            
+            // Get all nodes that have children but are not expanded
+            const nodesToExpand = [];
+            function collectExpandableNodes(node) {
+                if (node.hasChildren && !fileManagerData.expandedNodes.has(node.id)) {
+                    nodesToExpand.push(node);
+                }
+                if (node.children) {
+                    node.children.forEach(child => collectExpandableNodes(child));
+                }
+            }
+            
+            if (fileManagerData.treeData) {
+                collectExpandableNodes(fileManagerData.treeData);
+            }
+            
+            console.log(`📋 Found ${nodesToExpand.length} nodes to expand`);
+            
+            // Expand nodes in batches
+            for (let i = 0; i < nodesToExpand.length; i++) {
+                const node = nodesToExpand[i];
+                console.log(`🔄 Expanding node ${node.id} (${i + 1}/${nodesToExpand.length})`);
+                
+                // Add to expanded set
+                fileManagerData.expandedNodes.add(node.id);
+                
+                // Load children if not already loaded
+                if (!node.children || node.children.length === 0) {
+                    await loadNodeChildren(node, 0);
+                }
+                
+                // No delay - unlimited tree expansion speed
+                // Removed delay for faster tree expansion
+            }
+            
+            const endTime = Date.now();
+            console.log(`✅ Expansion completed in ${endTime - startTime}ms`);
+            console.log(`📊 Final maximum depth: ${maxDepthReached}`);
+        };
+        
+        // Test function to check specific node at level 9
+        window.testLevel9Nodes = async function() {
+            console.log('🔍 Testing level 9 nodes...');
+            
+            // Find all nodes at level 9
+            const level9Nodes = [];
+            function findLevel9Nodes(node, depth = 0) {
+                if (depth === 9) {
+                    level9Nodes.push(node);
+                }
+                if (node.children) {
+                    node.children.forEach(child => findLevel9Nodes(child, depth + 1));
+                }
+            }
+            
+            if (fileManagerData.treeData) {
+                findLevel9Nodes(fileManagerData.treeData);
+            }
+            
+            console.log(`📊 Found ${level9Nodes.length} nodes at level 9`);
+            
+            // Test each level 9 node
+            for (let i = 0; i < level9Nodes.length; i++) {
+                const node = level9Nodes[i];
+                console.log(`🧪 Testing node ${node.id} (index: ${node.index}) at level 9`);
+                
+                // Try to load children
+                await loadNodeChildren(node, 9);
+                
+                // Check if children were loaded
+                if (node.children && node.children.length > 0) {
+                    console.log(`✅ Node ${node.id} has ${node.children.length} children`);
+                } else {
+                    console.log(`❌ Node ${node.id} has no children`);
+                }
+                
+                // No delay - unlimited testing speed
+                // Removed delay for faster testing
+            }
+        };
+        
+        // Test function to check contract calls for specific index
+        window.testContractCall = async function(index) {
+            console.log(`🧪 Testing contract call for index ${index}`);
+            
+            if (!window.contractConfig || !window.contractConfig.contract) {
+                console.log('❌ Contract not available');
+                return;
+            }
+            
+            try {
+                const contract = window.contractConfig.contract;
+                const nodeIndex = parseInt(index);
+                
+                console.log(`📞 Calling getLeftAddress(${nodeIndex})...`);
+                const leftAddress = await contract.getLeftAddress(nodeIndex);
+                console.log(`📍 Left address: ${leftAddress}`);
+                
+                console.log(`📞 Calling getRightAddress(${nodeIndex})...`);
+                const rightAddress = await contract.getRightAddress(nodeIndex);
+                console.log(`📍 Right address: ${rightAddress}`);
+                
+                const leftValid = leftAddress !== '0x0000000000000000000000000000000000000000';
+                const rightValid = rightAddress !== '0x0000000000000000000000000000000000000000';
+                
+                console.log(`🔍 Left valid: ${leftValid}, Right valid: ${rightValid}`);
+                
+                if (leftValid) {
+                    console.log(`✅ Left child exists at index ${nodeIndex * 2}`);
+                }
+                if (rightValid) {
+                    console.log(`✅ Right child exists at index ${nodeIndex * 2 + 1}`);
+                }
+                
+            } catch (error) {
+                console.error('❌ Error testing contract call:', error);
+            }
+        };
+        
+        // Test function to check mathematical relationship and depth limits
+        window.testDepthMath = function() {
+            console.log('🧮 Testing mathematical relationship for tree depth...');
+            
+            // Calculate theoretical maximum depth based on index
+            const maxIndex = 1000000; // Test with large number
+            const maxDepth = Math.floor(Math.log2(maxIndex));
+            
+            console.log(`📊 Theoretical maximum depth for index ${maxIndex}: ${maxDepth}`);
+            
+            // Test index calculation for different levels
+            for (let level = 0; level <= 20; level++) {
+                const maxIndexAtLevel = Math.pow(2, level + 1) - 1;
+                const minIndexAtLevel = Math.pow(2, level);
+                
+                console.log(`📊 Level ${level}: Index range ${minIndexAtLevel} - ${maxIndexAtLevel}`);
+                
+                // Check if we're hitting any limits
+                if (maxIndexAtLevel > 1000000) {
+                    console.log(`⚠️ Level ${level} might hit practical limits (index > 1M)`);
+                }
+            }
+            
+            // Test specific indices that might be problematic
+            const testIndices = [512, 1024, 2048, 4096, 8192, 16384, 32768, 65536];
+            testIndices.forEach(index => {
+                const level = Math.floor(Math.log2(index));
+                console.log(`📊 Index ${index} is at level ${level}`);
+            });
+        };
+        
+        // Test function to check if there's a 50% rendering limit
+        window.test50PercentLimit = async function() {
+            console.log('🔍 Testing for 50% rendering limit...');
+            
+            // Find all nodes at different levels
+            const levelCounts = {};
+            function countNodesByLevel(node, depth = 0) {
+                if (!levelCounts[depth]) levelCounts[depth] = 0;
+                levelCounts[depth]++;
+                
+                if (node.children) {
+                    node.children.forEach(child => countNodesByLevel(child, depth + 1));
+                }
+            }
+            
+            if (fileManagerData.treeData) {
+                countNodesByLevel(fileManagerData.treeData);
+            }
+            
+            console.log('📊 Node counts by level:');
+            Object.keys(levelCounts).forEach(level => {
+                const count = levelCounts[level];
+                const expectedCount = Math.pow(2, parseInt(level));
+                const percentage = (count / expectedCount) * 100;
+                
+                console.log(`📊 Level ${level}: ${count} nodes (expected: ${expectedCount}, ${percentage.toFixed(1)}%)`);
+                
+                if (percentage < 50) {
+                    console.log(`⚠️ Level ${level} has less than 50% of expected nodes!`);
+                }
+            });
+        };
+        
+        // Force unlimited expansion - bypass all limits
+        window.forceUnlimitedExpansion = async function() {
+            console.log('🚀 FORCING UNLIMITED EXPANSION - BYPASSING ALL LIMITS...');
+            
+            let expansionCount = 0;
+            let maxIterations = 1000; // Prevent infinite loops
+            
+            while (expansionCount < maxIterations) {
+                expansionCount++;
+                console.log(`🔄 FORCE EXPANSION ITERATION ${expansionCount}`);
+                
+                // Find all nodes that can be expanded
+                const expandableNodes = [];
+                function findExpandableNodes(node) {
+                    if (node.hasChildren && !fileManagerData.expandedNodes.has(node.id)) {
+                        expandableNodes.push(node);
+                    }
+                    if (node.children) {
+                        node.children.forEach(child => findExpandableNodes(child));
+                    }
+                }
+                
+                if (fileManagerData.treeData) {
+                    findExpandableNodes(fileManagerData.treeData);
+                }
+                
+                console.log(`📋 Found ${expandableNodes.length} expandable nodes in iteration ${expansionCount}`);
+                
+                if (expandableNodes.length === 0) {
+                    console.log('✅ No more nodes to expand - tree fully expanded!');
+                    break;
+                }
+                
+                // Force expand all nodes
+                for (let i = 0; i < expandableNodes.length; i++) {
+                    const node = expandableNodes[i];
+                    console.log(`🔥 FORCE EXPANDING node ${node.id} (${i + 1}/${expandableNodes.length})`);
+                    
+                    // Force add to expanded set
+                    fileManagerData.expandedNodes.add(node.id);
+                    
+                    // Force load children
+                    if (!node.children || node.children.length === 0) {
+                        try {
+                            await loadNodeChildren(node, 0);
+                        } catch (error) {
+                            console.log(`⚠️ Error loading children for ${node.id}:`, error.message);
+                        }
+                    }
+                }
+                
+                // Force re-render
+                renderTreeView();
+                
+                // Check current depth
+                console.log(`📊 Current max depth: ${maxDepthReached}`);
+                
+                // Small delay to prevent browser freeze
+                await new Promise(resolve => setTimeout(resolve, 10));
+            }
+            
+            console.log(`🏁 FORCE EXPANSION COMPLETED after ${expansionCount} iterations`);
+            console.log(`📊 Final maximum depth: ${maxDepthReached}`);
+        };
+        
+        // Test blockchain data directly - bypass tree structure
+        window.testBlockchainDataDirectly = async function() {
+            console.log('🔍 TESTING BLOCKCHAIN DATA DIRECTLY...');
+            
+            if (!window.contractConfig || !window.contractConfig.contract) {
+                console.log('❌ Contract not available');
+                return;
+            }
+            
+            const contract = window.contractConfig.contract;
+            
+            // Test specific indices to see if blockchain has data beyond level 9
+            const testIndices = [
+                1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+                32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536
+            ];
+            
+            console.log('🧪 Testing blockchain data for specific indices...');
+            
+            for (let i = 0; i < testIndices.length; i++) {
+                const index = testIndices[i];
+                const level = Math.floor(Math.log2(index));
+                
+                try {
+                    console.log(`📞 Testing index ${index} (level ${level})...`);
+                    
+                    const leftAddress = await contract.getLeftAddress(index);
+                    const rightAddress = await contract.getRightAddress(index);
+                    
+                    const leftValid = leftAddress !== '0x0000000000000000000000000000000000000000';
+                    const rightValid = rightAddress !== '0x0000000000000000000000000000000000000000';
+                    
+                    console.log(`📍 Index ${index} (Level ${level}): Left=${leftValid}, Right=${rightValid}`);
+                    
+                    if (leftValid || rightValid) {
+                        console.log(`✅ Level ${level} has valid data!`);
+                    } else {
+                        console.log(`❌ Level ${level} has no valid data`);
+                    }
+                    
+                } catch (error) {
+                    console.log(`❌ Error testing index ${index}:`, error.message);
+                }
+                
+                // Small delay
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+        };
+        
         // Render flat tree structure - all nodes in single container
         function renderFlatTree(node, container, depth = 0) {
+            // Track maximum depth
+            if (depth > maxDepthReached) {
+                maxDepthReached = depth;
+                console.log(`🏆 New maximum depth reached: ${depth} (node: ${node.id})`);
+            }
+            
             // Debug logging
-            console.log(`🌳 Rendering node ${node.id} at depth ${depth}`);
+            console.log(`🌳 Rendering node ${node.id} at depth ${depth} (max: ${maxDepthReached})`);
             
             // Render current node
             renderFlatNode(node, container, depth);
@@ -1124,13 +1567,30 @@
             
             // Dynamic color generation for very deep levels (26+)
             if (depth >= 26) {
-                const intensity = Math.max(0.001, 0.02 - (depth - 26) * 0.001);
-                const borderIntensity = Math.max(0.01, 0.1 - (depth - 26) * 0.002);
-                const shadowIntensity = Math.max(0.005, 0.05 - (depth - 26) * 0.001);
+                // Generate distinct colors for deeper levels
+                const colors = [
+                    '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57',
+                    '#ff9ff3', '#54a0ff', '#5f27cd', '#00d2d3', '#ff9f43',
+                    '#10ac84', '#ee5a24', '#0984e3', '#6c5ce7', '#a29bfe',
+                    '#fd79a8', '#fdcb6e', '#e17055', '#81ecec', '#74b9ff'
+                ];
                 
-                nodeElement.style.background = `linear-gradient(135deg, rgba(0, 34, 0, ${intensity}), rgba(0, 34, 0, ${intensity * 0.5}))`;
-                nodeElement.style.border = `2px solid rgba(0, 34, 0, ${borderIntensity})`;
-                nodeElement.style.boxShadow = `0 1px 1px rgba(0, 34, 0, ${shadowIntensity})`;
+                const colorIndex = (depth - 26) % colors.length;
+                const selectedColor = colors[colorIndex];
+                
+                // Convert hex to RGB
+                const r = parseInt(selectedColor.slice(1, 3), 16);
+                const g = parseInt(selectedColor.slice(3, 5), 16);
+                const b = parseInt(selectedColor.slice(5, 7), 16);
+                
+                const intensity = Math.max(0.02, 0.08 - (depth - 26) * 0.002);
+                const borderIntensity = Math.max(0.1, 0.3 - (depth - 26) * 0.005);
+                const shadowIntensity = Math.max(0.05, 0.15 - (depth - 26) * 0.003);
+                
+                nodeElement.style.background = `linear-gradient(135deg, rgba(${r}, ${g}, ${b}, ${intensity}), rgba(${r}, ${g}, ${b}, ${intensity * 0.5}))`;
+                nodeElement.style.border = `3px solid rgba(${r}, ${g}, ${b}, ${borderIntensity})`;
+                nodeElement.style.boxShadow = `0 2px 4px rgba(${r}, ${g}, ${b}, ${shadowIntensity})`;
+                nodeElement.style.color = selectedColor;
             }
             
             const isExpanded = fileManagerData.expandedNodes.has(node.id);
@@ -1344,22 +1804,34 @@
             }
         }
 
-        // Load node children for flat structure
+        // Load node children for flat structure - UNLIMITED VERSION
         async function loadNodeChildren(node, depth) {
             try {
+                console.log(`🔄 UNLIMITED LOADING children for node ${node.id} (index: ${node.index}) at depth ${depth}`);
+                
                 const contract = window.contractConfig.contract;
                 const nodeIndex = parseInt(node.index);
                 
-                // Get left and right children
+                // FORCE load children - no timeout limits
+                console.log(`🔥 FORCE CALLING getLeftAddress(${nodeIndex})...`);
                 const leftAddress = await contract.getLeftAddress(nodeIndex);
+                console.log(`🔥 FORCE CALLING getRightAddress(${nodeIndex})...`);
                 const rightAddress = await contract.getRightAddress(nodeIndex);
+                
+                console.log(`📍 Node ${node.id} - Left: ${leftAddress}, Right: ${rightAddress}`);
+                
+                // Check if addresses are valid (not zero address)
+                const leftValid = leftAddress !== '0x0000000000000000000000000000000000000000';
+                const rightValid = rightAddress !== '0x0000000000000000000000000000000000000000';
+                
+                console.log(`🔍 Node ${node.id} - Left valid: ${leftValid}, Right valid: ${rightValid}`);
                 
                 const children = [];
                 
                 // Add left child if exists
-                if (leftAddress !== '0x0000000000000000000000000000000000000000') {
+                if (leftValid) {
                     const leftIndex = (nodeIndex * 2).toString();
-                    children.push({
+                    const leftChild = {
                         id: `node_${leftIndex}`,
                         index: leftIndex,
                         address: leftAddress,
@@ -1367,13 +1839,17 @@
                         expanded: false,
                         children: [],
                         hasChildren: true
-                    });
+                    };
+                    children.push(leftChild);
+                    console.log(`✅ Added left child: ${leftChild.id} (index: ${leftIndex})`);
+                } else {
+                    console.log(`❌ Left child not valid for node ${node.id} (index: ${nodeIndex})`);
                 }
                 
                 // Add right child if exists
-                if (rightAddress !== '0x0000000000000000000000000000000000000000') {
+                if (rightValid) {
                     const rightIndex = (nodeIndex * 2 + 1).toString();
-                    children.push({
+                    const rightChild = {
                         id: `node_${rightIndex}`,
                         index: rightIndex,
                         address: rightAddress,
@@ -1381,12 +1857,18 @@
                         expanded: false,
                         children: [],
                         hasChildren: true
-                    });
+                    };
+                    children.push(rightChild);
+                    console.log(`✅ Added right child: ${rightChild.id} (index: ${rightIndex})`);
+                } else {
+                    console.log(`❌ Right child not valid for node ${node.id} (index: ${nodeIndex})`);
                 }
                 
                 // Update node with children
                 node.children = children;
                 node.hasChildren = children.length > 0;
+                
+                console.log(`🎯 Node ${node.id} now has ${children.length} children`);
                 
                 // Re-render the entire tree to show new children
                 renderTreeView();
