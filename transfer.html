@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transfer - IAM Platform</title>
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/index-custom.css">
+    <link rel="stylesheet" href="css/floating-ai-assistant.css">
+    <link rel="stylesheet" href="css/smooth-transitions.css">
+    <link rel="stylesheet" href="css/modern-theme.css">
+    <link rel="stylesheet" href="css/mobile-responsive.css">
+    <link rel="stylesheet" href="css/transaction-history.css">
+    
+    <style>
+      /* Transfer Page Specific Styles */
+      html, body {
+        height: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
+      }
+      
+      body {
+        background: linear-gradient(135deg, #0a0f1c, #1a1f2e);
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+      }
+      
+      .transfer-page-container {
+        min-height: 100vh;
+      }
+      
+      .transfer-page-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+      }
+      
+      .page-header {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+      
+      .page-header h1 {
+        color: #00ff88;
+        font-size: 2.5rem;
+        margin: 0 0 0.5rem 0;
+        text-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+      }
+      
+      .page-header p {
+        color: #b8c1ec;
+        font-size: 1.1rem;
+        margin: 0;
+      }
+      
+      .back-button {
+        position: fixed;
+        top: 2rem;
+        left: 2rem;
+        background: linear-gradient(135deg, #a786ff, #00ff88);
+        color: #0a0f1c;
+        border: none;
+        padding: 0.8rem 1.5rem;
+        border-radius: 25px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+        z-index: 1000;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      
+      .back-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(167, 134, 255, 0.4);
+      }
+      
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .transfer-page-container {
+          padding: 1rem 0.5rem;
+        }
+        
+        .page-header h1 {
+          font-size: 2rem;
+        }
+        
+        .back-button {
+          top: 1rem;
+          left: 1rem;
+          padding: 0.6rem 1rem;
+          font-size: 0.8rem;
+        }
+      }
+      
+      @media (max-width: 480px) {
+        .page-header h1 {
+          font-size: 1.8rem;
+        }
+        
+        .back-button {
+          top: 0.5rem;
+          left: 0.5rem;
+          padding: 0.5rem 0.8rem;
+          font-size: 0.75rem;
+        }
+      }
+    </style>
+</head>
+<body>
+    <!-- Back Button -->
+    <a href="index.html" class="back-button">
+        ← Back to Dashboard
+    </a>
+
+    <!-- Page Container -->
+    <div class="transfer-page-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>💸 Transfer</h1>
+            <p>Transfer tokens to another wallet</p>
+            
+            <!-- Wallet Status Display -->
+            <div id="walletStatus" style="background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:12px;padding:1rem;margin:1rem auto;max-width:400px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                    <span style="color:#00ff88;font-weight:600;">Wallet Status:</span>
+                    <span id="addressDisplay" style="color:#ffffff;font-family:monospace;font-size:0.9rem;">🔄 Connecting...</span>
+                </div>
+                <div id="connectionStatus" style="display:none;text-align:center;padding:0.5rem;border-radius:8px;font-size:0.85rem;">
+                    <div id="connectionMessage">⚠️ Connecting to wallet...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transfer Section -->
+        <div id="main-transfer" class="page-section expandable-container" style="width:100%;max-width:none;margin:0;left:0;right:0;padding:0.5rem 0;display:block !important;visibility:visible !important;opacity:1 !important;">
+            <div class="expand-content" style="padding:1rem;display:block !important;visibility:visible !important;opacity:1 !important;">
+
+                <!-- Transfer Form -->
+                <div style="background:#1a1f2e;color:#ffffff;padding:2rem 2.4rem;border-radius:20px;margin-bottom:1rem;width:90%;max-width:1200px;margin-left:auto;margin-right:auto;border:4px solid #00ff88;">
+                    <h4 style="color:#00ff88;margin:0 0 0.5rem 0;font-size:0.95rem;">📤 Transfer Form</h4>
+                    
+                    <form id="transferForm" class="messenger-form" style="display:flex;flex-direction:column;gap:0.5rem;">
+                        
+                        <!-- Destination Address -->
+                        <div class="form-group" style="margin-bottom:0.5rem;">
+                            <label for="transferTo" style="display:block;color:#00ff88;margin-bottom:0.3rem;font-weight:600;font-size:0.85rem;">Destination Address:</label>
+                            <input type="text" id="transferTo" placeholder="0x..." required style="width:100%;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;direction:ltr;">
+                            <small style="color:#b8c1ec;font-size:0.75rem;margin-top:0.2rem;display:block;">Enter destination wallet address (42 characters)</small>
+                        </div>
+
+                        <!-- Index to Address Search -->
+                        <div class="form-group" style="margin-bottom:0.5rem;">
+                            <label style="display:block;color:#00ff88;margin-bottom:0.3rem;font-weight:600;font-size:0.85rem;">🔍 Search by Index:</label>
+                            <div style="display:flex;gap:0.5rem;align-items:center;">
+                                <input type="number" id="searchIndex" placeholder="Enter user index" style="flex:1;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;font-family:monospace;">
+                                <button type="button" id="searchIndexBtn" style="background:linear-gradient(135deg,#00ff88,#00cc6a);color:#0a0f1c;border:none;padding:0.8rem 1rem;border-radius:12px;font-weight:600;cursor:pointer;transition:all 0.3s ease;font-size:0.85rem;">🔍 Search</button>
+                            </div>
+                            <div id="searchIndexStatus" style="text-align:center;padding:0.4rem;border-radius:6px;font-size:0.85rem;min-height:1.2em;margin-top:0.3rem;"></div>
+                            <small style="color:#b8c1ec;font-size:0.75rem;margin-top:0.2rem;display:block;">Enter a user index to find their wallet address</small>
+                        </div>
+
+                        <!-- Amount Input -->
+                        <div class="form-group" style="margin-bottom:0.5rem;">
+                            <label for="transferAmount" style="display:block;color:#00ff88;margin-bottom:0.3rem;font-weight:600;font-size:0.85rem;">Amount:</label>
+                            <div class="amount-input-group" style="display:flex;gap:0.5rem;align-items:center;">
+                                <input type="number" id="transferAmount" placeholder="Enter amount" min="0" step="any" required style="flex:1;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
+                                <button type="button" id="maxAmountBtn" class="max-btn" style="background:linear-gradient(135deg,#a786ff,#00ff88);color:#0a0f1c;border:none;padding:0.8rem 1rem;border-radius:12px;font-weight:600;cursor:pointer;transition:all 0.3s ease;white-space:nowrap;font-size:0.85rem;">Max</button>
+                            </div>
+                            <small style="color:#b8c1ec;font-size:0.75rem;margin-top:0.2rem;display:block;">Enter transfer amount or click "Maximum"</small>
+                        </div>
+
+                        <!-- Token Type -->
+                        <div class="form-group" style="margin-bottom:0.5rem;">
+                            <label for="transferToken" style="display:block;color:#00ff88;margin-bottom:0.3rem;font-weight:600;font-size:0.85rem;">Token Type:</label>
+                            <select id="transferToken" required style="width:100%;background:#0a0f1c;border:2px solid #2a3441;color:#e01616;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
+                                <option value="DAI">🟢 DAI (Stable Token)</option>
+                                <option value="POL">🔵 POL (MATIC)</option>
+                                <option value="IAM">🟣 IAM (Platform Token)</option>
+                            </select>
+                            <small style="color:#b8c1ec;font-size:0.75rem;margin-top:0.2rem;display:block;">Select the token type you want to transfer</small>
+                        </div>
+
+                        <!-- USD Converter (for IAM) -->
+                        <div id="usd-converter-row" style="display:none;margin-bottom:0.5rem;">
+                            <label for="transferUsdAmount" style="display:block;color:#00ff88;margin-bottom:0.3rem;font-weight:600;font-size:0.85rem;">💰 Dollar Equivalent:</label>
+                            <div class="usd-converter-container" style="display:flex;gap:0.5rem;align-items:center;">
+                                <span style="color:#00ff88;font-weight:bold;font-size:1rem;"></span>
+                                <input type="number" id="transferUsdAmount" placeholder="5.00" min="0" step="0.01" style="flex:1;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
+                                <button type="button" id="transferUsdToTokenBtn" style="background:linear-gradient(135deg,#00ff88,#a786ff);color:#0a0f1c;border:none;padding:0.8rem 1rem;border-radius:12px;font-weight:600;cursor:pointer;transition:all 0.3s ease;font-size:0.8rem;">🔄</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Balance Display -->
+                        <div class="balance-display" style="background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:12px;padding:1rem;margin-bottom:0.5rem;">
+                            <h4 style="color:#00ff88;margin:0 0 0.5rem 0;font-size:0.9rem;">💰 Your Balances</h4>
+                            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;">
+                                <div style="text-align:center;background:rgba(0,255,136,0.1);border-radius:8px;padding:0.8rem;">
+                                    <div style="color:#00ff88;font-weight:bold;font-size:0.8rem;">DAI</div>
+                                    <div id="transfer-dai-balance" style="color:#ffffff;font-family:monospace;font-size:0.9rem;font-weight:600;">-</div>
+                                </div>
+                                <div style="text-align:center;background:rgba(0,204,255,0.1);border-radius:8px;padding:0.8rem;">
+                                    <div style="color:#00ccff;font-weight:bold;font-size:0.8rem;">POL</div>
+                                    <div id="transfer-poly-balance" style="color:#ffffff;font-family:monospace;font-size:0.9rem;font-weight:600;">-</div>
+                                </div>
+                                <div style="text-align:center;background:rgba(167,134,255,0.1);border-radius:8px;padding:0.8rem;">
+                                    <div style="color:#a786ff;font-weight:bold;font-size:0.8rem;">IAM</div>
+                                    <div id="transfer-IAM-balance" style="color:#ffffff;font-family:monospace;font-size:0.9rem;font-weight:600;">-</div>
+                                    <div id="transfer-IAM-usd" style="color:#a786ff;font-size:0.7rem;margin-top:0.2rem;">-</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Transfer Button -->
+                        <button type="submit" class="transfer-btn" style="width:100%;background:linear-gradient(135deg,#00ff88,#00cc6a);color:#0a0f1c;border:none;border-radius:12px;padding:0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:1rem;margin-top:0.3rem;">📤 Execute Transfer</button>
+                        
+                    </form>
+                </div>
+                        
+                <!-- Transfer Information -->
+                <div style="background:#1a1f2e;color:#ffffff;padding:1rem;border-radius:20px;margin-bottom:0.5rem;max-width:400px;margin-left:auto;margin-right:auto;border:2px solid #a786ff;">
+                    <h4 style="color:#00ff88;margin:0 0 0.5rem 0;font-size:0.95rem;text-align:center;">📋 Transfer Information</h4>
+                    <div style="color:#b8c1ec;margin-bottom:0.5rem;font-size:0.85rem;text-align:center;">🔒 Transfers are irreversible - double-check before sending</div>
+                    <div style="color:#a786ff;margin-bottom:0.5rem;font-size:0.85rem;text-align:center;">⚡ Network fee: ~0.001-0.01 MATIC</div>
+                    <div style="color:#ffc107;font-size:0.8rem;text-align:center;">⏱️ Confirmation: 2-5 seconds</div>
+                </div>
+
+                <!-- Status Message -->
+                <div id="transferStatus" class="transfer-status" style="max-width:80%;margin-bottom:0.5rem;"></div>
+
+                <!-- Transaction History List -->
+                <div id="transactionHistory" style="background:#1a1f2e;color:#ffffff;padding:1.5rem;border-radius:20px;margin-top:1rem;width:90%;max-width:1200px;margin-left:auto;margin-right:auto;border:2px solid #a786ff;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                        <h4 style="color:#00ff88;margin:0;font-size:1.1rem;">📊 Transaction History</h4>
+                        <button id="refreshTransactions" style="background:linear-gradient(135deg,#00ff88,#00cc6a);color:#0a0f1c;border:none;padding:0.4rem 0.8rem;border-radius:15px;font-weight:600;cursor:pointer;transition:all 0.3s ease;font-size:0.8rem;">🔄 Refresh</button>
+                    </div>
+                    
+                    <!-- Filter Buttons -->
+                    <div style="display:flex;gap:0.5rem;margin-bottom:1rem;justify-content:center;flex-wrap:wrap;">
+                        <button id="filterAll" class="filter-btn active" style="background:linear-gradient(135deg,#00ff88,#00cc6a);color:#0a0f1c;border:none;padding:0.5rem 1rem;border-radius:20px;font-weight:600;cursor:pointer;transition:all 0.3s ease;font-size:0.8rem;">All</button>
+                        <button id="filterDAI" class="filter-btn" style="background:#2a3441;color:#00ff88;border:2px solid #00ff88;padding:0.5rem 1rem;border-radius:20px;font-weight:600;cursor:pointer;transition:all 0.3s ease;font-size:0.8rem;">🟢 DAI</button>
+                        <button id="filterPOL" class="filter-btn" style="background:#2a3441;color:#00ff88;border:2px solid #00ff88;padding:0.5rem 1rem;border-radius:20px;font-weight:600;cursor:pointer;transition:all 0.3s ease;font-size:0.8rem;">🔵 POL</button>
+                        <button id="filterIAM" class="filter-btn" style="background:#2a3441;color:#00ff88;border:2px solid #00ff88;padding:0.5rem 1rem;border-radius:20px;font-weight:600;cursor:pointer;transition:all 0.3s ease;font-size:0.8rem;">🟣 IAM</button>
+                    </div>
+                    
+                    <!-- Transaction List Container -->
+                    <div id="transactionList" style="max-height:400px;overflow-y:auto;border-radius:10px;background:#0a0f1c;padding:0.5rem;">
+                        <!-- Sample transactions will be loaded here -->
+                        <div class="transaction-item" style="background:#1a1f2e;border:1px solid #2a3441;border-radius:10px;padding:1rem;margin-bottom:0.5rem;transition:all 0.3s ease;" data-token="DAI">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                                <div style="display:flex;align-items:center;gap:0.5rem;">
+                                    <span style="color:#00ff88;font-weight:bold;">🟢 DAI</span>
+                                    <span style="color:#ffffff;font-size:0.9rem;">Transfer</span>
+                                </div>
+                                <span style="color:#00ff88;font-weight:bold;font-size:0.9rem;">+50.00 DAI</span>
+                            </div>
+                            <div style="color:#b8c1ec;font-size:0.8rem;margin-bottom:0.3rem;">
+                                <strong>To:</strong> 0x1234...5678
+                            </div>
+                            <div style="color:#a786ff;font-size:0.75rem;">
+                                <strong>Time:</strong> 2024-01-15 14:30:25 | <strong>Hash:</strong> 0xabcd...efgh
+                            </div>
+                        </div>
+                        
+                        <div class="transaction-item" style="background:#1a1f2e;border:1px solid #2a3441;border-radius:10px;padding:1rem;margin-bottom:0.5rem;transition:all 0.3s ease;" data-token="POL">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                                <div style="display:flex;align-items:center;gap:0.5rem;">
+                                    <span style="color:#00ff88;font-weight:bold;">🔵 POL</span>
+                                    <span style="color:#ffffff;font-size:0.9rem;">Received</span>
+                                </div>
+                                <span style="color:#ff6b6b;font-weight:bold;font-size:0.9rem;">-25.50 POL</span>
+                            </div>
+                            <div style="color:#b8c1ec;font-size:0.8rem;margin-bottom:0.3rem;">
+                                <strong>From:</strong> 0x9876...4321
+                            </div>
+                            <div style="color:#a786ff;font-size:0.75rem;">
+                                <strong>Time:</strong> 2024-01-15 13:45:12 | <strong>Hash:</strong> 0x1234...5678
+                            </div>
+                        </div>
+                        
+                        <div class="transaction-item" style="background:#1a1f2e;border:1px solid #2a3441;border-radius:10px;padding:1rem;margin-bottom:0.5rem;transition:all 0.3s ease;" data-token="IAM">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                                <div style="display:flex;align-items:center;gap:0.5rem;">
+                                    <span style="color:#00ff88;font-weight:bold;">🟣 IAM</span>
+                                    <span style="color:#ffffff;font-size:0.9rem;">Transfer</span>
+                                </div>
+                                <span style="color:#00ff88;font-weight:bold;font-size:0.9rem;">+1000.00 IAM</span>
+                            </div>
+                            <div style="color:#b8c1ec;font-size:0.8rem;margin-bottom:0.3rem;">
+                                <strong>To:</strong> 0x5555...9999
+                            </div>
+                            <div style="color:#a786ff;font-size:0.75rem;">
+                                <strong>Time:</strong> 2024-01-15 12:20:45 | <strong>Hash:</strong> 0x9999...aaaa
+                            </div>
+                        </div>
+                        
+                        <!-- Empty state -->
+                        <div id="emptyTransactions" style="text-align:center;color:#b8c1ec;padding:2rem;display:none;">
+                            <div style="font-size:2rem;margin-bottom:0.5rem;">📭</div>
+                            <div>No transactions found</div>
+                            <div style="font-size:0.8rem;margin-top:0.3rem;">Your transaction history will appear here</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Load More Button -->
+                    <div style="text-align:center;margin-top:1rem;">
+                        <button id="loadMoreTransactions" style="background:linear-gradient(135deg,#a786ff,#00ff88);color:#0a0f1c;border:none;padding:0.6rem 1.5rem;border-radius:20px;font-weight:600;cursor:pointer;transition:all 0.3s ease;font-size:0.85rem;">Load More Transactions</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script src="js/transfer-form.js"></script>
+    <script src="js/transaction-history.js"></script>
+    
+    <script>
+        // Update wallet button display
+        function updateWalletButton() {
+            const addressDisplay = document.getElementById('addressDisplay');
+            const connectionStatus = document.getElementById('connectionStatus');
+            const connectionMessage = document.getElementById('connectionMessage');
+            
+            console.log('🔄 Updating wallet button display...');
+            console.log('🔍 transferManager exists:', !!window.transferManager);
+            console.log('🔍 signer exists:', !!(window.transferManager && window.transferManager.signer));
+            
+            if (window.transferManager && window.transferManager.signer) {
+                // Wallet is connected
+                console.log('✅ Wallet is connected, updating display...');
+                
+                if (addressDisplay) {
+                    window.transferManager.signer.getAddress().then(address => {
+                        const shortAddress = address.substring(0, 6) + '...' + address.substring(address.length - 4);
+                        addressDisplay.textContent = '🟢 ' + shortAddress;
+                        console.log('✅ Address display updated:', shortAddress);
+                    }).catch(error => {
+                        console.warn('⚠️ Error getting address:', error);
+                        addressDisplay.textContent = '🟢 Connected';
+                    });
+                }
+                
+                // Show connection success message
+                if (connectionStatus && connectionMessage) {
+                    connectionStatus.style.display = 'block';
+                    connectionStatus.style.background = 'rgba(0, 255, 136, 0.1)';
+                    connectionStatus.style.border = '1px solid rgba(0, 255, 136, 0.3)';
+                    connectionStatus.style.color = '#00ff88';
+                    connectionMessage.textContent = '✅ Wallet Connected Successfully! You can now transfer tokens.';
+                }
+            } else {
+                // Wallet is not connected
+                console.log('⚠️ Wallet not connected, showing connecting status...');
+                
+                if (addressDisplay) {
+                    addressDisplay.textContent = '🔄 Connecting...';
+                }
+                
+                // Show connection required message
+                if (connectionStatus && connectionMessage) {
+                    connectionStatus.style.display = 'block';
+                    connectionStatus.style.background = 'rgba(255, 193, 7, 0.1)';
+                    connectionStatus.style.border = '1px solid rgba(255, 193, 7, 0.3)';
+                    connectionStatus.style.color = '#ffc107';
+                    connectionMessage.textContent = '⚠️ Connecting to wallet...';
+                }
+            }
+        }
+        
+        // Initialize page
+        let transferManagerInitialized = false;
+        
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 Transfer page loaded');
+            
+            // Check if ethers is loaded
+            if (typeof ethers === 'undefined') {
+                console.error('❌ Ethers.js not loaded');
+                return;
+            }
+            
+            console.log('✅ Ethers.js loaded');
+            
+            // Wait for transfer-form.js to load
+            let attempts = 0;
+            const maxAttempts = 50;
+            
+            while (attempts < maxAttempts) {
+                if (typeof window.TransferManager !== 'undefined') {
+                    console.log('✅ TransferManager class found');
+                    break;
+                }
+                await new Promise(resolve => setTimeout(resolve, 100));
+                attempts++;
+            }
+            
+            if (typeof window.TransferManager === 'undefined') {
+                console.error('❌ TransferManager class not found - transfer-form.js file not loaded');
+                return;
+            }
+            
+            // Check required elements
+            const requiredElements = [
+                'transferForm', 'transferTo', 'transferAmount', 'transferToken',
+                'transfer-dai-balance', 'transfer-poly-balance', 'transfer-IAM-balance'
+            ];
+            
+            const missingElements = requiredElements.filter(id => !document.getElementById(id));
+            if (missingElements.length > 0) {
+                console.error('❌ Missing required elements:', missingElements);
+                return;
+            }
+            
+            console.log('✅ All required elements are present');
+            
+            if (!transferManagerInitialized) {
+                try {
+                    console.log('🏗️ Creating TransferManager instance...');
+                    
+                    // Create TransferManager instance
+                    window.transferManager = new window.TransferManager();
+                    console.log('✅ TransferManager instance created');
+                    
+                    // Initial setup
+                    await window.transferManager.initializeTransfer();
+                    
+                    console.log('✅ TransferManager initialized successfully');
+                    transferManagerInitialized = true;
+                    
+                    // Update wallet display after successful initialization
+                    updateWalletButton();
+                    
+                } catch (error) {
+                    console.error('❌ Error initializing TransferManager:', error);
+                }
+            } else if (transferManagerInitialized) {
+                console.log('✅ TransferManager already initialized, skipping...');
+            } else {
+                console.error('⚠️ TransferManager is not defined - transfer-form.js file not loaded');
+            }
+        });
+    </script>
+</body>
+</html>

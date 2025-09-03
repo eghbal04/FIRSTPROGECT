@@ -1,5 +1,76 @@
 // swap.js - Professional and principled for DAI ↔ IAM swap
 
+// Contract addresses
+const IAM_ADDRESS = '0x63F5a2085906f5fcC206d6589d78038FBc74d2FE';
+const DAI_ADDRESS = '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063'; // Polygon DAI
+
+// DAI ABI (minimal for swap functionality)
+const DAI_ABI = [
+    {
+        "inputs": [
+            {"internalType": "address", "name": "spender", "type": "address"},
+            {"internalType": "uint256", "name": "value", "type": "uint256"}
+        ],
+        "name": "approve",
+        "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [{"internalType": "address", "name": "account", "type": "address"}],
+        "name": "balanceOf",
+        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {"internalType": "address", "name": "owner", "type": "address"},
+            {"internalType": "address", "name": "spender", "type": "address"}
+        ],
+        "name": "allowance",
+        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+        "stateMutability": "view",
+        "type": "function"
+    }
+];
+
+// IAM ABI (minimal for swap functionality)
+const IAM_ABI = [
+    {
+        "inputs": [{"internalType": "address", "name": "account", "type": "address"}],
+        "name": "balanceOf",
+        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "getTokenPrice",
+        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {"internalType": "uint256", "name": "daiAmount", "type": "uint256"}
+        ],
+        "name": "buyTokens",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {"internalType": "uint256", "name": "tokenAmount", "type": "uint256"}
+        ],
+        "name": "sellTokens",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    }
+];
+
 class SwapManager {
     constructor() {
         console.log('🏗️ Creating SwapManager instance...');
@@ -7,22 +78,57 @@ class SwapManager {
         this.tokenPrice = null;
         this.userBalances = { dai: 0, IAM: 0 };
         this.isSwapping = false;
+        this.isRefreshing = false;
+        this.provider = null;
+        this.signer = null;
+        this.contract = null;
+        this.daiContract = null;
         
         console.log('✅ SwapManager created');
-        
-        // Initial setup removed - now done in index.html
     }
+
+    // Connect to wallet and initialize contracts
+    async connectWallet() {
+        try {
+            if (typeof window.ethereum === 'undefined') {
+                throw new Error('MetaMask not detected');
+            }
+
+            console.log('🔗 Connecting to wallet...');
+            
+            // Request account access
+            await window.ethereum.request({ method: 'eth_requestAccounts' });
+            
+            // Create provider and signer
+            this.provider = new ethers.providers.Web3Provider(window.ethereum);
+            this.signer = await this.provider.getSigner();
+            
+            // Create contracts
+            this.contract = new ethers.Contract(IAM_ADDRESS, IAM_ABI, this.signer);
+            this.daiContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, this.signer);
+            
+            console.log('✅ Wallet connected successfully');
+            return true;
+        } catch (error) {
+            console.error('❌ Error connecting wallet:', error);
+            throw error;
+        }
+    }
+
     // Helper: Reading contract DAI balance as numeric (with decimals)
     async getContractDaiBalanceNum() {
-        const contract = window.contractConfig?.contract;
-        const daiAddress = window.DAI_ADDRESS;
-        const daiAbi = window.DAI_ABI;
-        if (!contract || !daiAddress || !daiAbi) {
-            throw new Error('Contract configuration is incomplete');
+        if (!this.daiContract) {
+            console.warn('⚠️ DAI contract not initialized');
+            return 0;
         }
-        const daiContract = new ethers.Contract(daiAddress, daiAbi, window.contractConfig.signer);
-        const daiBalance = await daiContract.balanceOf(contract.target);
-        return parseFloat(ethers.formatUnits(daiBalance, 18));
+        
+        try {
+            const daiBalance = await this.daiContract.balanceOf(IAM_ADDRESS);
+            return parseFloat(ethers.utils.formatUnits(daiBalance, 18));
+        } catch (error) {
+            console.warn('⚠️ Error getting contract DAI balance:', error);
+            return 0;
+        }
     }
 
     // Helper: Determine backing fee tier based on contract DAI balance
@@ -52,6 +158,10 @@ class SwapManager {
             // Setup event listeners
             this.setupEventListeners();
             console.log('✅ Event listeners configured');
+            
+            // Connect to wallet first
+            await this.connectWallet();
+            console.log('✅ Wallet connected');
             
             // Load data
             await this.loadSwapData();
@@ -88,12 +198,12 @@ class SwapManager {
         
         const usdValue = parseFloat(usdAmount.value);
         if (!usdValue || usdValue <= 0) {
-            this.showStatus('Please enter a valid dollar amount', 'error');
+            this.showStatus('Please enter a valid dollar amount (minimum $0.01)', 'error');
             return;
         }
         
         if (!this.tokenPrice || Number(this.tokenPrice) <= 0) {
-            this.showStatus('Token price not available', 'error');
+            this.showStatus('Token price is currently unavailable. Please try again later.', 'error');
             return;
         }
         
@@ -113,7 +223,7 @@ class SwapManager {
         
         // Update preview
         this.updateSwapPreview();
-        this.showStatus(`✅ Amount ${usdValue} dollars converted to token`, 'success');
+        this.showStatus(`✅ Successfully converted $${usdValue} to token amount. You can now proceed with your transaction.`, 'success');
     }
 
     // Update dollar equivalent when token amount changes
@@ -210,14 +320,11 @@ class SwapManager {
         try {
             console.log('🔄 Loading limit information...');
             
-            const contract = window.contractConfig.contract;
-            const address = window.contractConfig.address;
-            const daiAddress = window.DAI_ADDRESS;
-            const daiAbi = window.DAI_ABI;
-            
-            if (!contract || !address || !daiAddress || !daiAbi) {
-                throw new Error('Contract configuration is incomplete');
+            if (!this.contract || !this.signer) {
+                throw new Error('Contract connection not established');
             }
+            
+            const address = await this.signer.getAddress();
             
             const daiBalanceNum = await this.getContractDaiBalanceNum();
             
@@ -261,7 +368,7 @@ class SwapManager {
             
         } catch (e) {
             console.error('❌ Error loading limit information:', e);
-            html = '<div style="background:00000000;padding:12px;border-radius:8px;border-left:4px solid #f44336;color:#c62828;">Loading limit information...</div>';
+            html = '<div style="background:00000000;padding:12px;border-radius:8px;border-left:4px solid #f44336;color:#c62828;">Unable to load transaction limits. Please refresh the page and try again.</div>';
         }
         
         infoDiv.innerHTML = html;
@@ -328,10 +435,10 @@ class SwapManager {
                     
                     await this.setMaxAmount();
                     await this.updateSwapLimitInfo();
-                    this.showStatus('✅ Maximum amount set successfully', 'success');
+                    this.showStatus('✅ Maximum available amount has been set. You can now proceed with your transaction.', 'success');
                 } catch (error) {
                     console.error('❌ Error in max button click:', error);
-                    this.showStatus('Error setting maximum amount', 'error');
+                    this.showStatus('Unable to set maximum amount. Please enter the amount manually.', 'error');
                 }
             });
             console.log('✅ Max button event listener connected');
@@ -381,55 +488,56 @@ class SwapManager {
         try {
             console.log('🔄 Loading swap data...');
             
-            // Check contract connection
-            if (!window.contractConfig || !window.contractConfig.contract) {
-                console.log('⏳ Waiting for contract connection...');
-                // Try to connect
-                try {
-                    await window.connectWallet();
-                } catch (error) {
-                    console.warn('⚠️ Could not connect to contract:', error);
-                    this.tokenPrice = null;
-                    this.updateSwapRate();
-                    return;
-                }
+            // Check if wallet is connected
+            if (!this.contract || !this.signer) {
+                console.log('⏳ Wallet not connected, connecting now...');
+                await this.connectWallet();
             }
             
-            const contract = window.contractConfig.contract;
-            const address = window.contractConfig.address;
-            
-            if (!address) {
-                console.warn('⚠️ Wallet address not available');
-                this.tokenPrice = null;
-                this.updateSwapRate();
-                return;
-            }
+            const address = await this.signer.getAddress();
             
             console.log('✅ Contract connection established');
 
             // Token price from contract
-            const tokenPrice = await contract.getTokenPrice();
-            this.tokenPrice = ethers.formatUnits(tokenPrice, 18);
-            console.log('✅ Token price received:', this.tokenPrice);
+            console.log('🔄 Fetching token price...');
+            try {
+                const tokenPrice = await Promise.race([
+                    this.contract.getTokenPrice(),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Token price fetch timeout')), 10000))
+                ]);
+                this.tokenPrice = ethers.utils.formatUnits(tokenPrice, 18);
+                console.log('✅ Token price received:', this.tokenPrice);
+                console.log('🔍 this.tokenPrice set to:', this.tokenPrice);
+            } catch (error) {
+                console.warn('⚠️ Error fetching token price:', error);
+                this.tokenPrice = null;
+            }
 
             // IAM balance
-            const IAMBalance = await contract.balanceOf(address);
-            const IAMBalanceFormatted = ethers.formatUnits(IAMBalance, 18);
-            console.log('✅ IAM balance received:', IAMBalanceFormatted);
+            let IAMBalanceFormatted = '0';
+            try {
+                const IAMBalance = await Promise.race([
+                    this.contract.balanceOf(address),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('IAM balance fetch timeout')), 10000))
+                ]);
+                IAMBalanceFormatted = ethers.utils.formatUnits(IAMBalance, 18);
+                console.log('✅ IAM balance received:', IAMBalanceFormatted);
+            } catch (error) {
+                console.warn('⚠️ Error fetching IAM balance:', error);
+            }
 
             // DAI balance
-            const daiAddress = window.DAI_ADDRESS;
-            const daiAbi = window.DAI_ABI;
-            
-            if (!daiAddress || !daiAbi) {
-                console.error('❌ DAI_ADDRESS or DAI_ABI not defined');
-                throw new Error('DAI configuration is incomplete');
+            let daiBalanceFormatted = '0';
+            try {
+                const daiBalance = await Promise.race([
+                    this.daiContract.balanceOf(address),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('DAI balance fetch timeout')), 10000))
+                ]);
+                daiBalanceFormatted = ethers.utils.formatUnits(daiBalance, 18);
+                console.log('✅ DAI balance received:', daiBalanceFormatted);
+            } catch (error) {
+                console.warn('⚠️ Error fetching DAI balance:', error);
             }
-            
-            const daiContract = new ethers.Contract(daiAddress, daiAbi, window.contractConfig.signer);
-            const daiBalance = await daiContract.balanceOf(address);
-            const daiBalanceFormatted = ethers.formatUnits(daiBalance, 18);
-            console.log('✅ DAI balance received:', daiBalanceFormatted);
 
             // Function to shorten large numbers
             function formatLargeNumber(num) {
@@ -476,7 +584,7 @@ class SwapManager {
             this.tokenPrice = null;
             this.userBalances = { IAM: 0, dai: 0 };
             this.updateSwapRate();
-            this.showStatus('Error loading balances: ' + error.message, 'error');
+            this.showStatus('Unable to load wallet balances. Please check your connection and try again.', 'error');
         }
     }
 
@@ -488,16 +596,32 @@ class SwapManager {
             return;
         }
         
+        console.log('🔍 updateSwapRate - tokenPrice:', this.tokenPrice, 'Number(tokenPrice):', Number(this.tokenPrice));
+        
         if (this.tokenPrice && Number(this.tokenPrice) > 0) {
             const price = Number(this.tokenPrice);
+            const daiToIam = 1 / price;
+            const iamToDai = price;
+            
+            // Format numbers properly for very small values
+            const formatNumber = (num) => {
+                if (num < 0.000001) {
+                    return num.toExponential(6);
+                } else if (num < 0.01) {
+                    return num.toFixed(8);
+                } else {
+                    return num.toFixed(6);
+                }
+            };
+            
             rateEl.innerHTML = `<div style="background:00000000;padding:10px;border-radius:6px;text-align:center;margin:10px 0;">
                 <strong>💱 Current Exchange Rate:</strong><br>
-                1 DAI = ${(1/price).toFixed(6)} IAM<br>
-                1 IAM = ${price.toFixed(6)} DAI
+                1 DAI = ${formatNumber(daiToIam)} IAM<br>
+                1 IAM = ${formatNumber(iamToDai)} DAI
             </div>`;
             console.log('✅ Exchange rate updated:', price);
         } else {
-            rateEl.innerHTML = '<div style="background:00000000;padding:10px;border-radius:6px;text-align:center;color:#c62828;">Price not available</div>';
+            rateEl.innerHTML = '<div style="background:00000000;padding:10px;border-radius:6px;text-align:center;color:#c62828;">Token price is currently unavailable. Please refresh the page or try again later.</div>';
             console.warn('⚠️ Token price not available');
         }
     }
@@ -513,7 +637,7 @@ class SwapManager {
         }
         
         if (!this.tokenPrice || Number(this.tokenPrice) <= 0) {
-            preview.innerHTML = '<div style="background:#ffebee;padding:10px;border-radius:6px;text-align:center;color:#c62828;">Price not available</div>';
+            preview.innerHTML = '<div style="background:#ffebee;padding:10px;border-radius:6px;text-align:center;color:#c62828;">Token price is currently unavailable. Please wait for price data to load.</div>';
             return;
         }
         
@@ -649,7 +773,7 @@ class SwapManager {
                 // For DAI to IAM (buying IAM)
                 if (this.userBalances.dai <= 0) {
                     console.warn('⚠️ No DAI balance available');
-                    this.showStatus('No DAI balance available', 'error');
+                    this.showStatus('No DAI balance available. Please add DAI to your wallet to make purchases.', 'error');
                     return;
                 }
                 
@@ -669,7 +793,7 @@ class SwapManager {
                 // For IAM to DAI (selling IAM)
                 if (this.userBalances.IAM <= 0) {
                     console.warn('⚠️ No IAM balance available');
-                    this.showStatus('No IAM balance available', 'error');
+                    this.showStatus('No IAM balance available. Please purchase IAM tokens first to make sales.', 'error');
                     return;
                 }
                 
@@ -734,18 +858,20 @@ class SwapManager {
     getErrorMessage(error) {
         console.log('🔍 Analyzing error:', error);
         
-        if (error.code === 4001) return 'Cancelled by user';
-        if (error.message && error.message.includes('insufficient funds')) return 'Insufficient balance';
-        if (error.message && error.message.includes('exceeds buy limit')) return 'Amount exceeds buy limit';
-        if (error.message && error.message.includes('exceeds sell limit')) return 'Amount exceeds sell limit';
-        if (error.message && error.message.includes('minimum')) return 'Amount is less than minimum allowed';
-        if (error.message && error.message.includes('allowance')) return 'Please approve DAI allowance first';
-        if (error.message && error.message.includes('cooldown')) return 'Please wait a moment and try again';
-        if (error.message && error.message.includes('user rejected')) return 'User rejected the transaction';
-        if (error.message && error.message.includes('network')) return 'Network error - please check your internet connection';
-        if (error.message && error.message.includes('timeout')) return 'Timeout error - please try again';
+        if (error.code === 4001) return 'Transaction cancelled by user. Please try again when ready.';
+        if (error.message && error.message.includes('insufficient funds')) return 'Insufficient balance. Please check your wallet and try again.';
+        if (error.message && error.message.includes('exceeds buy limit')) return 'Purchase amount exceeds daily limit. Please reduce the amount.';
+        if (error.message && error.message.includes('exceeds sell limit')) return 'Sale amount exceeds available liquidity. Please try a smaller amount.';
+        if (error.message && error.message.includes('minimum')) return 'Amount is below minimum threshold. Please increase your transaction amount.';
+        if (error.message && error.message.includes('allowance')) return 'DAI approval required. Please approve DAI spending first.';
+        if (error.message && error.message.includes('cooldown')) return 'Please wait before making another transaction. Cooldown period active.';
+        if (error.message && error.message.includes('user rejected')) return 'Transaction rejected by user. Please confirm the transaction to proceed.';
+        if (error.message && error.message.includes('network')) return 'Network connection error. Please check your internet and try again.';
+        if (error.message && error.message.includes('timeout')) return 'Transaction timeout. Please try again with higher gas fees.';
+        if (error.message && error.message.includes('gas')) return 'Insufficient gas for transaction. Please increase gas limit.';
+        if (error.message && error.message.includes('revert')) return 'Transaction failed. Please check your inputs and try again.';
         
-        return error.message || 'Unknown error';
+        return error.message || 'An unexpected error occurred. Please try again.';
     }
 
     showStatus(message, type = 'info', txHash = null) {
@@ -826,39 +952,39 @@ class SwapManager {
             
             // Check balance
             if (direction.value === 'dai-to-IAM' && value > this.userBalances.dai) {
-                throw new Error(`Insufficient DAI balance. Your balance: ${this.userBalances.dai.toFixed(6)} DAI`);
+                throw new Error(`Insufficient DAI balance. You have ${this.userBalances.dai.toFixed(6)} DAI, but trying to spend ${value.toFixed(6)} DAI. Please reduce the amount.`);
             }
             if (direction.value === 'IAM-to-dai' && value > this.userBalances.IAM) {
-                throw new Error(`Insufficient IAM balance. Your balance: ${this.userBalances.IAM.toFixed(6)} IAM`);
+                throw new Error(`Insufficient IAM balance. You have ${this.userBalances.IAM.toFixed(6)} IAM, but trying to sell ${value.toFixed(6)} IAM. Please reduce the amount.`);
             }
 
             // Validation according to contract
             if (direction.value === 'dai-to-IAM') {
-                if (value <= 1) throw new Error('Minimum purchase is more than 1 DAI');
+                if (value <= 1) throw new Error('Minimum purchase amount is 1.01 DAI. Please increase your purchase amount.');
                 // Dynamic buy limit
                 const daiContractBalance = await this.getContractDaiBalanceNum();
                 const maxBuy = (daiContractBalance <= 100000) ? 1000 : (daiContractBalance * 0.01);
-                if (value > maxBuy) throw new Error(`Amount exceeds buy limit (maximum allowed: ${maxBuy.toFixed(2)} DAI)`);
+                if (value > maxBuy) throw new Error(`Purchase amount exceeds daily limit. Maximum allowed: ${maxBuy.toFixed(2)} DAI. Please reduce your amount.`);
             } else if (direction.value === 'IAM-to-dai') {
-                if (value <= 1) throw new Error('Minimum sale is more than 1 IAM');
+                if (value <= 1) throw new Error('Minimum sale amount is 1.01 IAM. Please increase your sale amount.');
                 // Check DAI pool liquidity according to contract
                 const daiContractBalance = await this.getContractDaiBalanceNum();
                 const price = Number(this.tokenPrice);
                 if (!price || price <= 0) {
-                    throw new Error('Token price not available');
+                    throw new Error('Token price is currently unavailable. Please try again later.');
                 }
                 const backingPct = this.getBackingFeePct(daiContractBalance);
                 const maxIAMByLiquidity = (daiContractBalance / price) / (1 - backingPct);
                 
                 // Check that amount doesn't exceed maximum allowed
                 if (value > maxIAMByLiquidity) {
-                    throw new Error(`Amount exceeds maximum allowed sale (maximum allowed: ${maxIAMByLiquidity.toFixed(6)} IAM)`);
+                    throw new Error(`Sale amount exceeds available liquidity. Maximum allowed: ${maxIAMByLiquidity.toFixed(6)} IAM. Please reduce your amount.`);
                 }
                 
                 // Check DAI liquidity
                 const netDai = value * price * (1 - backingPct);
                 if (netDai > daiContractBalance) {
-                    throw new Error(`Insufficient DAI liquidity. Maximum allowed sale ≈ ${maxIAMByLiquidity.toFixed(6)} IAM`);
+                    throw new Error(`Insufficient DAI liquidity in the pool. Maximum allowed sale: ${maxIAMByLiquidity.toFixed(6)} IAM. Please try a smaller amount.`);
                 }
             }
 
@@ -873,7 +999,7 @@ class SwapManager {
                 throw new Error('Invalid conversion type');
             }
             
-            this.showStatus('✅ Conversion completed successfully!', 'success');
+            this.showStatus('🎉 Transaction completed successfully! Your tokens have been exchanged.', 'success');
             await this.refreshSwapData();
             amount.value = '';
             await this.updateSwapPreview();
@@ -897,38 +1023,29 @@ class SwapManager {
         console.log('🛒 Starting IAM purchase with DAI:', daiAmount);
         
         try {
-            const contract = window.contractConfig.contract;
-            const signer = window.contractConfig.signer;
-            const address = window.contractConfig.address;
-            const daiAddress = window.DAI_ADDRESS;
-            const daiAbi = window.DAI_ABI;
-            
-            if (!contract || !signer || !address) {
+            if (!this.contract || !this.signer || !this.daiContract) {
                 throw new Error('Contract connection not established');
             }
             
-            if (!daiAddress || !daiAbi) {
-                throw new Error('DAI configuration is incomplete');
-            }
+            const address = await this.signer.getAddress();
             
-            const daiContract = new ethers.Contract(daiAddress, daiAbi, signer);
-            const daiAmountWei = ethers.parseUnits(daiAmount.toString(), 18);
+            const daiAmountWei = ethers.utils.parseUnits(daiAmount.toString(), 18);
             
             console.log('🔍 Checking allowance...');
             // Check allowance
-            const allowance = await daiContract.allowance(address, contract.target);
-            console.log('📊 Current allowance:', ethers.formatUnits(allowance, 18));
+            const allowance = await this.daiContract.allowance(address, IAM_ADDRESS);
+            console.log('📊 Current allowance:', ethers.utils.formatUnits(allowance, 18));
             
-            if (allowance < daiAmountWei) {
+            if (allowance.lt(daiAmountWei)) {
                 console.log('🔐 Need to approve DAI allowance...');
-                this.showStatus('🔐 Approving DAI allowance...', 'loading');
+                this.showStatus('🔐 DAI approval required! Please approve DAI spending to continue with your purchase.', 'loading');
                 
-                const approveTx = await daiContract.approve(contract.target, ethers.MaxUint256);
-                this.showStatus('⏳ Waiting for DAI allowance approval...', 'loading', approveTx.hash);
+                const approveTx = await this.daiContract.approve(IAM_ADDRESS, ethers.constants.MaxUint256);
+                this.showStatus('⏳ DAI approval transaction submitted! Waiting for confirmation... This is a one-time setup.', 'loading', approveTx.hash);
                 
                 console.log('⏳ Waiting for approve confirmation...');
                 await approveTx.wait();
-                this.showStatus('✅ DAI allowance approved', 'success');
+                this.showStatus('✅ DAI approval successful! You can now proceed with your purchase.', 'success');
                 console.log('✅ Approve confirmed');
             } else {
                 console.log('✅ Allowance is sufficient');
@@ -936,15 +1053,15 @@ class SwapManager {
             
             // Buy IAM
             console.log('🛒 Starting IAM token purchase...');
-            this.showStatus('🛒 Purchasing IAM tokens...', 'loading');
+            this.showStatus('🛒 Initiating IAM token purchase... Please wait while we process your transaction.', 'loading');
             
-            const tx = await contract.buyTokens(daiAmountWei);
-            this.showStatus('⏳ Waiting for purchase transaction confirmation...', 'loading', tx.hash);
+            const tx = await this.contract.buyTokens(daiAmountWei);
+            this.showStatus('⏳ Transaction submitted! Waiting for blockchain confirmation... This may take a few moments.', 'loading', tx.hash);
             
             console.log('⏳ Waiting for purchase transaction confirmation...');
             await tx.wait();
             
-            this.showStatus('✅ Purchase successful! IAM tokens added to your wallet', 'success', tx.hash);
+            this.showStatus('🎉 Purchase successful! Your IAM tokens have been added to your wallet.', 'success', tx.hash);
             console.log('✅ Purchase completed successfully');
             
         } catch (error) {
@@ -958,24 +1075,22 @@ class SwapManager {
         console.log('💰 Starting IAM sale and DAI receipt:', IAMAmount);
         
         try {
-            const contract = window.contractConfig.contract;
-            
-            if (!contract) {
+            if (!this.contract) {
                 throw new Error('Contract connection not established');
             }
             
-            const IAMAmountWei = ethers.parseUnits(IAMAmount.toString(), 18);
+            const IAMAmountWei = ethers.utils.parseUnits(IAMAmount.toString(), 18);
             
             console.log('💰 Starting IAM token sale...');
-            this.showStatus('💰 Selling IAM tokens...', 'loading');
+            this.showStatus('💰 Processing IAM token sale... Please wait while we execute your transaction.', 'loading');
             
-            const tx = await contract.sellTokens(IAMAmountWei);
-            this.showStatus('⏳ Waiting for sale transaction confirmation...', 'loading', tx.hash);
+            const tx = await this.contract.sellTokens(IAMAmountWei);
+            this.showStatus('⏳ Sale transaction submitted! Waiting for blockchain confirmation... This may take a few moments.', 'loading', tx.hash);
             
             console.log('⏳ Waiting for sale transaction confirmation...');
             await tx.wait();
             
-            this.showStatus('✅ Sale successful! DAI added to your wallet', 'success', tx.hash);
+            this.showStatus('🎉 Sale successful! Your DAI tokens have been added to your wallet.', 'success', tx.hash);
             console.log('✅ Sale completed successfully');
             
         } catch (error) {
@@ -985,6 +1100,13 @@ class SwapManager {
     }
 
     async refreshSwapData() {
+        // Prevent multiple simultaneous refresh calls
+        if (this.isRefreshing) {
+            console.log('🔄 Refresh already in progress, skipping...');
+            return;
+        }
+        
+        this.isRefreshing = true;
         console.log('🔄 Refreshing swap data...');
         
         try {
@@ -996,6 +1118,8 @@ class SwapManager {
             console.log('✅ Swap data refreshed');
         } catch (error) {
             console.error('❌ Error refreshing swap data:', error);
+        } finally {
+            this.isRefreshing = false;
         }
     }
     

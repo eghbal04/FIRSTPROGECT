@@ -1,102 +1,304 @@
-// Token transfer form control
+// TransferManager - Independent token transfer management
+// Contract addresses and ABIs
+const IAM_ADDRESS = '0x8a0c542bA7B084a4e1d4d295D71760b1c8b8B8B8';
+const DAI_ADDRESS = '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063';
+const POL_ADDRESS = '0x0000000000000000000000000000000000000000'; // Native MATIC
 
-document.addEventListener('DOMContentLoaded', function() {
-  async function updateDaiBalance() {
-    if (!window.contractConfig || !window.contractConfig.signer) return;
-    try {
-      // Exactly like swap.js: getting user address from window.contractConfig.address
-      const address = window.contractConfig.address;
-      const daiContract = new ethers.Contract(window.DAI_ADDRESS, window.DAI_ABI, window.contractConfig.signer);
-      const daiBalance = await daiContract.balanceOf(address);
-      const el = document.getElementById('transfer-dai-balance');
-      if (el) {
-        const value = ethers.formatUnits(daiBalance, 18); // like swap.js
-        el.textContent = parseFloat(value).toFixed(2);
-      }
-    } catch (e) {
-      const el = document.getElementById('transfer-dai-balance');
-      if (el) el.textContent = 'Error';
+const DAI_ABI = [
+    "function balanceOf(address owner) view returns (uint256)",
+    "function transfer(address to, uint256 amount) returns (bool)",
+    "function decimals() view returns (uint8)"
+];
+
+const IAM_ABI = [
+    "function balanceOf(address owner) view returns (uint256)",
+    "function transfer(address to, uint256 amount) returns (bool)",
+    "function decimals() view returns (uint8)"
+];
+
+class TransferManager {
+    constructor() {
+        console.log('🏗️ Creating TransferManager instance...');
+        this.provider = null;
+        this.signer = null;
+        this.contract = null;
+        this.daiContract = null;
+        this.isRefreshing = false;
+        console.log('✅ TransferManager created');
     }
-  }
-  updateDaiBalance();
-  // Connect to window for calling from anywhere else (like swap)
-  window.updateTransferDaiBalance = updateDaiBalance;
-  const transferForm = document.getElementById('transferForm');
-  if (!transferForm) return;
-  transferForm.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const transferBtn = transferForm.querySelector('button[type="submit"]');
-    if (transferBtn) {
-      transferBtn.disabled = true;
-      var oldText = transferBtn.textContent;
-      transferBtn.textContent = 'Processing...';
+
+    async connectWallet() {
+        try {
+            console.log('🔗 Connecting to wallet...');
+            
+            if (typeof window.ethereum === 'undefined') {
+                throw new Error('MetaMask not installed');
+            }
+
+            // Request account access
+            await window.ethereum.request({ method: 'eth_requestAccounts' });
+            
+            // Create provider and signer
+            this.provider = new ethers.providers.Web3Provider(window.ethereum);
+            this.signer = this.provider.getSigner();
+            
+            // Create contract instances
+            this.contract = new ethers.Contract(IAM_ADDRESS, IAM_ABI, this.signer);
+            this.daiContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, this.signer);
+            
+            console.log('✅ Wallet connected successfully');
+            return true;
+        } catch (error) {
+            console.error('❌ Error connecting wallet:', error);
+            throw error;
+        }
     }
-    const transferToInput = document.getElementById('transferTo');
-    // استفاده از آدرس کامل اگر در data attribute ذخیره شده باشد
-    const to = transferToInput.getAttribute('data-full-address') || transferToInput.value.trim();
-    const amount = parseFloat(document.getElementById('transferAmount').value);
-    const token = document.getElementById('transferToken').value;
-    const status = document.getElementById('transferStatus');
-    status.textContent = '';
-    status.className = 'transfer-status';
-    if (!to || !amount || amount <= 0) {
-      status.textContent = 'Please enter a valid destination address and amount';
-      status.className = 'transfer-status error';
-      if (transferBtn) { transferBtn.disabled = false; transferBtn.textContent = oldText; }
-      return;
+
+    async updateDaiBalance() {
+        if (!this.signer || !this.daiContract) return;
+        try {
+            const address = await this.signer.getAddress();
+            const daiBalance = await this.daiContract.balanceOf(address);
+            const el = document.getElementById('transfer-dai-balance');
+            if (el) {
+                const value = ethers.utils.formatUnits(daiBalance, 18);
+                el.textContent = parseFloat(value).toFixed(2);
+            }
+        } catch (e) {
+            const el = document.getElementById('transfer-dai-balance');
+            if (el) el.textContent = 'Unable to load';
+        }
     }
-    if (!window.contractConfig || !window.contractConfig.contract || !window.contractConfig.signer) {
-      status.textContent = 'Wallet connection not established';
-      status.className = 'transfer-status error';
-      if (transferBtn) { transferBtn.disabled = false; transferBtn.textContent = oldText; }
-      return;
+
+    async updateIAMBalance() {
+        if (!this.signer || !this.contract) return;
+        try {
+            const address = await this.signer.getAddress();
+            const iamBalance = await this.contract.balanceOf(address);
+            const el = document.getElementById('transfer-IAM-balance');
+            if (el) {
+                const value = ethers.utils.formatUnits(iamBalance, 18);
+                el.textContent = parseFloat(value).toFixed(2);
+            }
+        } catch (e) {
+            const el = document.getElementById('transfer-IAM-balance');
+            if (el) el.textContent = 'Unable to load';
+        }
     }
-    try {
-      status.textContent = 'Sending...';
-      status.className = 'transfer-status loading';
-      if (token === 'pol') {
-        const tx = await window.contractConfig.signer.sendTransaction({
-          to,
-          value: ethers.parseEther(amount.toString())
+
+    async updatePOLBalance() {
+        if (!this.signer) return;
+        try {
+            const address = await this.signer.getAddress();
+            const polBalance = await this.provider.getBalance(address);
+            const el = document.getElementById('transfer-poly-balance');
+            if (el) {
+                const value = ethers.utils.formatEther(polBalance);
+                el.textContent = parseFloat(value).toFixed(4);
+            }
+        } catch (e) {
+            const el = document.getElementById('transfer-poly-balance');
+            if (el) el.textContent = 'Unable to load';
+        }
+    }
+
+    async loadTransferData() {
+        if (this.isRefreshing) return;
+        this.isRefreshing = true;
+        
+        try {
+            console.log('🔄 Loading transfer data...');
+            
+            if (!this.signer) {
+                console.log('⚠️ No signer available');
+                return;
+            }
+            
+            console.log('✅ Contract connection established');
+            
+            // Load all balances
+            await Promise.all([
+                this.updateDaiBalance(),
+                this.updateIAMBalance(),
+                this.updatePOLBalance()
+            ]);
+            
+            console.log('✅ Transfer data loaded');
+        } catch (error) {
+            console.error('❌ Error loading transfer data:', error);
+        } finally {
+            this.isRefreshing = false;
+        }
+    }
+
+    async initializeTransfer() {
+        try {
+            console.log('🔄 Starting TransferManager initialization...');
+            
+            // Connect to wallet
+            await this.connectWallet();
+            console.log('✅ Wallet connected');
+            
+            // Load transfer data
+            await this.loadTransferData();
+            console.log('✅ Transfer data loaded');
+            
+            // Setup event listeners
+            this.setupEventListeners();
+            console.log('✅ Event listeners configured');
+            
+            console.log('✅ TransferManager successfully initialized');
+        } catch (error) {
+            console.error('❌ Error initializing TransferManager:', error);
+            throw error;
+        }
+    }
+
+    setupEventListeners() {
+        const transferForm = document.getElementById('transferForm');
+        if (!transferForm) return;
+
+        transferForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await this.handleTransfer(e);
         });
-        await tx.wait();
-        status.textContent = 'Transfer completed successfully!\nTransaction ID: ' + tx.hash;
-        status.className = 'transfer-status success';
-      } else if (token === 'dai') {
-        const daiContract = new ethers.Contract(window.DAI_ADDRESS, window.DAI_ABI, window.contractConfig.signer);
-        const decimals = 18;
-        const parsedAmount = ethers.parseUnits(amount.toString(), decimals);
-        const tx = await daiContract.transfer(to, parsedAmount);
-        await tx.wait();
-        status.textContent = 'DAI transfer completed successfully!\nTransaction ID: ' + tx.hash;
-        status.className = 'transfer-status success';
-      } else {
-        const contract = window.contractConfig.contract;
-        const tx = await contract.transfer(to, ethers.parseEther(amount.toString()));
-        await tx.wait();
-        status.textContent = 'Transfer completed successfully!\nTransaction ID: ' + tx.hash;
-        status.className = 'transfer-status success';
-      }
-      transferForm.reset();
-      await updateDaiBalance(); // After successful transfer, update DAI balance
-    } catch (error) {
-      let msg = error && error.message ? error.message : error;
-      if (msg.includes('user rejected')) msg = '❌ Transaction cancelled by user.';
-      else if (msg.includes('insufficient funds')) msg = 'Insufficient balance for fee payment or transfer.';
-      else if (msg.includes('insufficient balance')) msg = 'Insufficient balance.';
-      else if (msg.includes('invalid address')) msg = 'Invalid destination address.';
-      else if (msg.includes('not allowed') || msg.includes('only owner')) msg = 'You are not authorized to perform this operation.';
-      else if (msg.includes('already transferred') || msg.includes('already exists')) msg = 'This operation has already been performed or is duplicate.';
-      else if (msg.includes('slippage')) msg = 'Price difference (slippage) is too high. Please change the amount.';
-      else if (msg.includes('price changed')) msg = 'Price has changed. Please try again.';
-      else if (msg.includes('nonce')) msg = 'Error in transaction number. Please try again.';
-      else if (msg.includes('execution reverted')) msg = 'Transaction failed. Please check transfer conditions.';
-      else if (msg.includes('network') || msg.includes('connection')) msg = '❌ Network connection error. Please check your internet connection.';
-      else if (msg.includes('timeout')) msg = 'Transaction time expired. Try again.';
-      else msg = '❌ Transfer error: ' + msg;
-      status.textContent = msg;
-      status.className = 'transfer-status error';
+
+        // Max button
+        const maxBtn = document.getElementById('maxAmountBtn');
+        if (maxBtn) {
+            maxBtn.addEventListener('click', () => {
+                this.setMaxAmount();
+            });
+        }
     }
-    if (transferBtn) { transferBtn.disabled = false; transferBtn.textContent = oldText; }
-  });
-}); 
+
+    async setMaxAmount() {
+        const tokenSelect = document.getElementById('transferToken');
+        const amountInput = document.getElementById('transferAmount');
+        
+        if (!tokenSelect || !amountInput) return;
+        
+        const token = tokenSelect.value.toLowerCase();
+        
+        try {
+            if (token === 'dai') {
+                const address = await this.signer.getAddress();
+                const balance = await this.daiContract.balanceOf(address);
+                const value = ethers.utils.formatUnits(balance, 18);
+                amountInput.value = parseFloat(value).toFixed(6);
+            } else if (token === 'iam') {
+                const address = await this.signer.getAddress();
+                const balance = await this.contract.balanceOf(address);
+                const value = ethers.utils.formatUnits(balance, 18);
+                amountInput.value = parseFloat(value).toFixed(6);
+            } else if (token === 'pol') {
+                const address = await this.signer.getAddress();
+                const balance = await this.provider.getBalance(address);
+                const value = ethers.utils.formatEther(balance);
+                // Leave some for gas
+                const maxAmount = parseFloat(value) - 0.01;
+                amountInput.value = maxAmount > 0 ? maxAmount.toFixed(6) : '0';
+            }
+        } catch (error) {
+            console.error('❌ Error setting max amount:', error);
+        }
+    }
+
+    async handleTransfer(e) {
+        const transferForm = e.target;
+        const transferBtn = transferForm.querySelector('button[type="submit"]');
+        const oldText = transferBtn ? transferBtn.textContent : '';
+        
+        if (transferBtn) {
+            transferBtn.disabled = true;
+            transferBtn.textContent = 'Processing Transfer...';
+        }
+
+        const transferToInput = document.getElementById('transferTo');
+        const to = transferToInput.getAttribute('data-full-address') || transferToInput.value.trim();
+        const amount = parseFloat(document.getElementById('transferAmount').value);
+        const token = document.getElementById('transferToken').value;
+        const status = document.getElementById('transferStatus');
+        
+        status.textContent = '';
+        status.className = 'transfer-status';
+        
+        if (!to || !amount || amount <= 0) {
+            status.textContent = 'Please enter a valid destination address and amount (minimum 0.000001)';
+            status.className = 'transfer-status error';
+            if (transferBtn) { transferBtn.disabled = false; transferBtn.textContent = oldText; }
+            return;
+        }
+        
+        if (!this.signer) {
+            status.textContent = 'Wallet connection not established. Please connect your wallet first.';
+            status.className = 'transfer-status error';
+            if (transferBtn) { transferBtn.disabled = false; transferBtn.textContent = oldText; }
+            return;
+        }
+        
+        try {
+            status.textContent = '🚀 Initiating transfer... Please wait while we process your transaction.';
+            status.className = 'transfer-status loading';
+            
+            if (token.toLowerCase() === 'pol') {
+                const tx = await this.signer.sendTransaction({
+                    to,
+                    value: ethers.utils.parseEther(amount.toString())
+                });
+                status.textContent = '⏳ MATIC transfer submitted! Waiting for blockchain confirmation...';
+                status.className = 'transfer-status loading';
+                await tx.wait();
+                status.textContent = '🎉 MATIC transfer completed successfully!\nTransaction ID: ' + tx.hash;
+                status.className = 'transfer-status success';
+            } else if (token.toLowerCase() === 'dai') {
+                const parsedAmount = ethers.utils.parseUnits(amount.toString(), 18);
+                const tx = await this.daiContract.transfer(to, parsedAmount);
+                status.textContent = '⏳ DAI transfer submitted! Waiting for blockchain confirmation...';
+                status.className = 'transfer-status loading';
+                await tx.wait();
+                status.textContent = '🎉 DAI transfer completed successfully!\nTransaction ID: ' + tx.hash;
+                status.className = 'transfer-status success';
+            } else {
+                const tx = await this.contract.transfer(to, ethers.utils.parseEther(amount.toString()));
+                status.textContent = '⏳ IAM transfer submitted! Waiting for blockchain confirmation...';
+                status.className = 'transfer-status loading';
+                await tx.wait();
+                status.textContent = '🎉 IAM transfer completed successfully!\nTransaction ID: ' + tx.hash;
+                status.className = 'transfer-status success';
+            }
+            
+            transferForm.reset();
+            await this.loadTransferData(); // Refresh balances after successful transfer
+            
+        } catch (error) {
+            let msg = error && error.message ? error.message : error;
+            if (msg.includes('user rejected')) msg = '❌ Transaction cancelled by user. Please try again when ready.';
+            else if (msg.includes('insufficient funds')) msg = '❌ Insufficient balance for gas fees or transfer amount. Please check your wallet balance.';
+            else if (msg.includes('insufficient balance')) msg = '❌ Insufficient token balance. Please check your wallet and try again.';
+            else if (msg.includes('invalid address')) msg = '❌ Invalid destination address. Please enter a valid wallet address.';
+            else if (msg.includes('not allowed') || msg.includes('only owner')) msg = '❌ You are not authorized to perform this operation. Please check your permissions.';
+            else if (msg.includes('already transferred') || msg.includes('already exists')) msg = '❌ This transfer has already been completed or is a duplicate. Please check your transaction history.';
+            else if (msg.includes('slippage')) msg = '❌ Price difference is too high. Please adjust the amount and try again.';
+            else if (msg.includes('price changed')) msg = '❌ Token price has changed. Please refresh and try again.';
+            else if (msg.includes('nonce')) msg = '❌ Transaction sequence error. Please try again in a moment.';
+            else if (msg.includes('execution reverted')) msg = '❌ Transfer failed. Please check the destination address and amount.';
+            else if (msg.includes('network') || msg.includes('connection')) msg = '❌ Network connection error. Please check your internet connection and try again.';
+            else if (msg.includes('timeout')) msg = '❌ Transaction timeout. Please try again with higher gas fees.';
+            else if (msg.includes('gas')) msg = '❌ Insufficient gas for transaction. Please increase gas limit.';
+            else if (msg.includes('revert')) msg = '❌ Transfer failed. Please verify the destination address and try again.';
+            else msg = '❌ Transfer error: ' + msg + '. Please try again.';
+            
+            status.textContent = msg;
+            status.className = 'transfer-status error';
+        }
+        
+        if (transferBtn) { 
+            transferBtn.disabled = false; 
+            transferBtn.textContent = oldText; 
+        }
+    }
+}
+
+// Make TransferManager available globally
+window.TransferManager = TransferManager; 

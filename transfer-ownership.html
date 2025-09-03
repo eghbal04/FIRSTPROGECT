@@ -166,21 +166,60 @@
       .btn-primary { padding: .85rem 1.1rem; }
       .card { padding: .85rem .9rem; }
     }
+    
+    /* Back button */
+    .back-button {
+      position: fixed;
+      top: 2rem;
+      left: 2rem;
+      background: linear-gradient(135deg, #a786ff, #00ff88);
+      color: #0a0f1c;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 25px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+      z-index: 1000;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .back-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(167, 134, 255, 0.4);
+    }
+    
+    @media (max-width: 768px) {
+      .back-button {
+        top: 1rem;
+        left: 1rem;
+        padding: 0.6rem 1rem;
+        font-size: 0.8rem;
+      }
+    }
   </style>
 </head>
 <body class="transfer-ownership-page">
+  <!-- Back Button -->
+  <a href="index.html" class="back-button">
+    ← Back to Dashboard
+  </a>
+
   <div class="transfer-ownership-container">
     <h2 class="page-title">Position Ownership Transfer</h2>
     <div class="subtext">Please carefully enter the new owner's address</div>
 
-    <div class="card balance-card">
-      <b>💰 Your Balances:</b><br>
-      <div class="balance-grid">
-        <span>🪙 IAM: <strong id="user-IAM-balance">-</strong></span>
-        <span>💵 DAI: <strong id="user-dai-balance">-</strong></span>
-        <span>⚡ MATIC: <strong id="user-matic-balance">-</strong></span>
-      </div>
+    <!-- Wallet Connection Status -->
+    <div class="card" id="connectionStatus">
+      <b>🔗 Connection Status:</b><br>
+      <div id="walletConnectionInfo" style="color: #ffc107;">⏳ Checking wallet connection...</div>
     </div>
+
+
 
     <div class="card warning-card">
       <b>Important Warning:</b><br>
@@ -193,6 +232,7 @@
         <label for="newOwnerAddress">New Owner Address</label>
         <div class="input-row">
           <input type="text" id="newOwnerAddress" class="text-input" placeholder="Example: 0x..." autocomplete="off" required>
+        </div>
         <div class="hint" id="addressHint"></div>
       </div>
       <button type="submit" id="transferOwnershipBtn" class="btn-primary" disabled>Transfer Ownership</button>
@@ -219,51 +259,32 @@
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+  <script src="js/walletconnect-handler.js?v=5.7"></script>
+  <script src="js/walletconnect-v1.8.0.js"></script>
   <script src="js/config.js"></script>
   <script>
-         // Auto refresh information function
-     async function autoRefreshBalances() {
+         // Check wallet connection status
+     async function checkWalletConnection() {
        try {
+         const connectionInfoEl = document.getElementById('walletConnectionInfo');
+         
          if (!window.contractConfig || !window.contractConfig.contract || !window.contractConfig.signer) {
-           return;
+           if (connectionInfoEl) {
+             connectionInfoEl.innerHTML = '<span style="color: #ff4444;">❌ Wallet not connected. Please connect your wallet first.</span>';
+           }
+           return false;
          }
          
-         const userAddress = window.contractConfig.address;
-         const contract = window.contractConfig.contract;
-         const signer = window.contractConfig.signer;
-         
-         // Update user information from contract
-         const user = await contract.users(userAddress);
-         const userTree = await contract.getUserTree(userAddress);
-         
-         // Display user information (if elements exist)
-         const updateElement = (id, value) => {
-           const el = document.getElementById(id);
-           if (el) el.textContent = value;
-         };
-         
-         // Update balances
-         try {
-           // IAM balance
-           const IAMBalance = await contract.balanceOf(userAddress);
-           updateElement('user-IAM-balance', parseFloat(ethers.formatEther(IAMBalance)).toFixed(2) + ' IAM');
-           
-           // DAI balance
-           const daiContract = new ethers.Contract(window.DAI_ADDRESS, window.DAI_ABI, signer);
-           const daiBalance = await daiContract.balanceOf(userAddress);
-           updateElement('user-dai-balance', parseFloat(ethers.formatUnits(daiBalance, 18)).toFixed(2) + ' DAI');
-           
-           // MATIC balance
-           const maticBalance = await signer.provider.getBalance(userAddress);
-           updateElement('user-matic-balance', parseFloat(ethers.formatEther(maticBalance)).toFixed(4) + ' MATIC');
-           
-         } catch (balanceError) {
-           console.warn('Error updating balances:', balanceError);
+         if (connectionInfoEl) {
+           connectionInfoEl.innerHTML = '<span style="color: #00ff88;">✅ Wallet connected successfully</span>';
          }
          
-         console.log('✅ Auto information updated');
+         console.log('✅ Wallet connection verified');
+         return true;
        } catch (error) {
-         console.warn('Error in auto refresh:', error);
+         console.warn('Error checking wallet connection:', error);
+         return false;
        }
      }
 
@@ -280,6 +301,11 @@
       statusEl.className = 'status loading';
       statusEl.textContent = '⏳ Transferring ownership...';
       try {
+        // Check if transferIndexOwnership function exists
+        if (typeof window.contractConfig.contract.transferIndexOwnership !== 'function') {
+          throw new Error('Transfer ownership function not available in this contract');
+        }
+        
         const tx = await window.contractConfig.contract.transferIndexOwnership(newOwner);
         statusEl.className = 'status loading';
         statusEl.textContent = '⏳ Waiting for transaction confirmation in your wallet...';
@@ -287,8 +313,8 @@
         statusEl.className = 'status success';
         statusEl.textContent = '✅ Ownership transfer completed successfully!';
         
-        // Update information after successful transfer
-        setTimeout(autoRefreshBalances, 2000);
+        // Check connection after successful transfer
+        setTimeout(checkWalletConnection, 2000);
       } catch (error) {
         let msg = error && error.message ? error.message : error;
         statusEl.className = 'status error';
@@ -302,6 +328,10 @@
           msg = '❌ Destination address is invalid.';
         } else if (msg.includes('not allowed') || msg.includes('only owner')) {
           msg = '❌ Only the current owner can perform the transfer.';
+        } else if (msg.includes('Transfer ownership function not available')) {
+          msg = '❌ Transfer ownership function is not available in this contract version.';
+        } else if (msg.includes('revert')) {
+          msg = '❌ Transaction failed. Please check your permissions and try again.';
         } else {
           msg = '❌ Error in ownership transfer: ' + msg;
         }
@@ -311,119 +341,7 @@
       }
     }
     
-    // Function to copy address
-    async function copyAddressToClipboard() {
-      const addressInput = document.getElementById('newOwnerAddress');
-      const address = addressInput.value.trim();
-      
-      if (!address) {
-        // If no address entered, copy current user address
-        if (window.contractConfig && window.contractConfig.address) {
-          try {
-            await navigator.clipboard.writeText(window.contractConfig.address);
-            showCopyStatus('✅ Your current address copied', 'success');
-          } catch (error) {
-            showCopyStatus('❌ Error copying address', 'error');
-          }
-        } else {
-          showCopyStatus('❌ No address entered and wallet connection not established', 'error');
-        }
-        return;
-      }
-      
-      // Copy entered address
-      try {
-        await navigator.clipboard.writeText(address);
-        showCopyStatus('✅ Address copied', 'success');
-      } catch (error) {
-        showCopyStatus('❌ Error copying address', 'error');
-      }
-    }
-    
-    // Function to paste address from clipboard
-    async function pasteAddressFromClipboard() {
-      try {
-        const clipboardText = await navigator.clipboard.readText();
-        const addressInput = document.getElementById('newOwnerAddress');
-        
-        // Check if copied text is a valid Ethereum address
-        if (clipboardText && /^0x[a-fA-F0-9]{40}$/.test(clipboardText.trim())) {
-          addressInput.value = clipboardText.trim();
-          showCopyStatus('✅ Address pasted from clipboard', 'success');
-        } else {
-          showCopyStatus('❌ Clipboard content is not a valid Ethereum address', 'error');
-        }
-      } catch (error) {
-        showCopyStatus('❌ Error reading from clipboard', 'error');
-      }
-    }
-    
-    // Display copy status
-    function showCopyStatus(message, type) {
-      const statusEl = document.getElementById('transferOwnershipStatus');
-      statusEl.className = `status ${type}`;
-      statusEl.textContent = message;
-      
-      // Clear message after 3 seconds
-      setTimeout(() => {
-        if (statusEl.textContent === message) {
-          statusEl.className = 'status';
-          statusEl.textContent = '';
-        }
-      }, 3000);
-    }
-    
-    // Click event on copy button
-    document.getElementById('copyAddressBtn').addEventListener('click', copyAddressToClipboard);
-    
-    // Function to clear address
-    function clearAddress() {
-      const addressInput = document.getElementById('newOwnerAddress');
-      addressInput.value = '';
-      showCopyStatus('✅ Address field cleared', 'success');
-    }
-    
-    // Function to auto-fill current user address
-    function fillCurrentUserAddress() {
-      if (window.contractConfig && window.contractConfig.address) {
-        const addressInput = document.getElementById('newOwnerAddress');
-        addressInput.value = window.contractConfig.address;
-        showCopyStatus('✅ Your current address placed in field', 'success');
-      }
-    }
-    
-    // Click event on paste button
-    document.getElementById('pasteAddressBtn').addEventListener('click', pasteAddressFromClipboard);
-    
-    // Click event on clear button
-    document.getElementById('clearAddressBtn').addEventListener('click', clearAddress);
-    
-    // Click event on fill current address button
-    document.getElementById('fillCurrentAddressBtn').addEventListener('click', fillCurrentUserAddress);
-    
-    // Keyboard shortcuts
-    document.addEventListener('keydown', function(e) {
-      // Ctrl+V for paste
-      if (e.ctrlKey && e.key === 'v') {
-        e.preventDefault();
-        pasteAddressFromClipboard();
-      }
-      // Ctrl+C for copy
-      if (e.ctrlKey && e.key === 'c') {
-        e.preventDefault();
-        copyAddressToClipboard();
-      }
-      // Ctrl+X for clear
-      if (e.ctrlKey && e.key === 'x') {
-        e.preventDefault();
-        clearAddress();
-      }
-      // Ctrl+F for fill current address
-      if (e.ctrlKey && e.key === 'f') {
-        e.preventDefault();
-        fillCurrentUserAddress();
-      }
-    });
+
     
     // Live address validation and button state management
     const newOwnerInput = document.getElementById('newOwnerAddress');
@@ -506,24 +424,41 @@
     });
 
     // Auto update when page loads
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', async function() {
+      console.log('🚀 Transfer Ownership page loaded');
+      
+      // Try to connect wallet automatically
+      try {
+        if (window.connectWallet) {
+          console.log('🔗 Attempting wallet connection...');
+          await window.connectWallet();
+          console.log('✅ Wallet connected successfully');
+          checkWalletConnection();
+        }
+      } catch (error) {
+        console.warn('⚠️ Wallet connection failed:', error);
+      }
+      
       // Check wallet connection status
       if (window.contractConfig && window.contractConfig.contract) {
-        autoRefreshBalances();
+        checkWalletConnection();
       } else {
         // Wait for wallet connection
         const checkConnection = setInterval(() => {
           if (window.contractConfig && window.contractConfig.contract) {
-            autoRefreshBalances();
+            checkWalletConnection();
             clearInterval(checkConnection);
           }
         }, 1000);
         
-        // Stop checking after 10 seconds
-        setTimeout(() => clearInterval(checkConnection), 10000);
+        // Stop checking after 15 seconds
+        setTimeout(() => clearInterval(checkConnection), 15000);
       }
+      
       // Initial validation
       validateAddressInput();
+      
+      console.log('✅ Transfer Ownership page initialized');
     });
   </script>
   <script src="js/navbar.js"></script>

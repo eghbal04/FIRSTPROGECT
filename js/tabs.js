@@ -196,9 +196,7 @@ window.showTab = async function(tab) {
         if (typeof loadReports === 'function') await loadReports();
         break;
       case 'swap':
-        if (window.swapManager) {
-          await window.swapManager.refreshSwapData();
-        }
+        // Swap functionality moved to separate page
         break;
       case 'transfer':
         break;

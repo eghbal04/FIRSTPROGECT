@@ -22,6 +22,7 @@
     <link rel="stylesheet" href="css/mobile-responsive.css">
 
 
+
     <style>
       /* User Status Bar Animations */
       @keyframes pulse {
@@ -225,6 +226,8 @@
           </div>
         </div>
 
+
+
         <!-- Wallet Address Section -->
         <div class="status-card wallet-card" style="display:flex;align-items:center;gap:0.5rem;flex:1.5;min-width:150px;max-width:280px;background:rgba(167,134,255,0.1);border:1px solid rgba(167,134,255,0.3);border-radius:10px;padding:0.5rem;transition:all 0.4s cubic-bezier(0.4, 0, 0.2, 1);transform:scale(1);box-shadow:0 2px 8px rgba(167,134,255,0.1);" onmouseenter="this.style.transform='scale(1.02)';this.style.boxShadow='0 4px 16px rgba(167,134,255,0.2)'" onmouseleave="this.style.transform='scale(1)';this.style.boxShadow='0 2px 8px rgba(167,134,255,0.1)'">
           <div style="flex:1;min-width:0;">
@@ -249,10 +252,10 @@
 
     <!-- Quick Action Buttons -->
     <div class="quick-action-buttons" style="display:flex;justify-content:center;gap:0.3rem;margin:0.5rem auto;max-width:300px;flex-wrap:nowrap;">
-      <button onclick="showMainSection('main-swap')" style="background:linear-gradient(135deg,#00ff88,#00cc6a);color:#0a0f1c;border:none;border-radius:6px;padding:0.4rem 0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:0.75rem;display:flex;align-items:center;gap:0.2rem;box-shadow:0 2px 6px rgba(0,255,136,0.3);min-width:80px;justify-content:center;flex:1;max-width:120px;" onmouseenter="this.style.transform='translateY(-1px)';this.style.boxShadow='0 3px 10px rgba(0,255,136,0.4)'" onmouseleave="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 6px rgba(0,255,136,0.3)'">
+      <button onclick="window.location.href='swap.html'" style="background:linear-gradient(135deg,#00ff88,#00cc6a);color:#0a0f1c;border:none;border-radius:6px;padding:0.4rem 0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:0.75rem;display:flex;align-items:center;gap:0.2rem;box-shadow:0 2px 6px rgba(0,255,136,0.3);min-width:80px;justify-content:center;flex:1;max-width:120px;" onmouseenter="this.style.transform='translateY(-1px)';this.style.boxShadow='0 3px 10px rgba(0,255,136,0.4)'" onmouseleave="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 6px rgba(0,255,136,0.3)'">
         🔄 Swap
       </button>
-      <button onclick="showMainSection('main-transfer')" style="background:linear-gradient(135deg,#a786ff,#8b5cf6);color:#ffffff;border:none;border-radius:6px;padding:0.4rem 0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:0.75rem;display:flex;align-items:center;gap:0.2rem;box-shadow:0 2px 6px rgba(167,134,255,0.3);min-width:80px;justify-content:center;flex:1;max-width:120px;" onmouseenter="this.style.transform='translateY(-1px)';this.style.boxShadow='0 3px 10px rgba(167,134,255,0.4)'" onmouseleave="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 6px rgba(167,134,255,0.3)'">
+      <button onclick="window.location.href='transfer.html'" style="background:linear-gradient(135deg,#a786ff,#8b5cf6);color:#ffffff;border:none;border-radius:6px;padding:0.4rem 0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:0.75rem;display:flex;align-items:center;gap:0.2rem;box-shadow:0 2px 6px rgba(167,134,255,0.3);min-width:80px;justify-content:center;flex:1;max-width:120px;" onmouseenter="this.style.transform='translateY(-1px)';this.style.boxShadow='0 3px 10px rgba(167,134,255,0.4)'" onmouseleave="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 6px rgba(167,134,255,0.3)'">
         💸 Transfer
       </button>
     </div>
@@ -261,7 +264,7 @@
 
     <style>
       /* Force visibility for main sections */
-      #main-swap, #main-transfer, #main-dashboard {
+      #main-transfer, #main-dashboard {
         display: block !important;
         visibility: visible !important;
         opacity: 1 !important;
@@ -270,7 +273,7 @@
       }
       
       /* Override any collapsed states */
-      #main-swap.expanded, #main-transfer.expanded, #main-dashboard.expanded {
+      #main-transfer.expanded, #main-dashboard.expanded {
         display: block !important;
         visibility: visible !important;
         opacity: 1 !important;
@@ -321,7 +324,7 @@
         console.log('🔍 showMainSection called with:', sectionId);
         
         // Hide all main sections first
-        const allSections = ['main-swap', 'main-transfer', 'main-profile', 'main-dashboard'];
+        const allSections = ['main-transfer', 'main-profile', 'main-dashboard'];
         allSections.forEach(id => {
           const el = document.getElementById(id);
           if (el) {
@@ -368,18 +371,21 @@
       
       // Initialize sections on page load
       document.addEventListener('DOMContentLoaded', function() {
-        // Initially hide swap and transfer sections, show only dashboard
-        const swapSection = document.getElementById('main-swap');
-        const transferSection = document.getElementById('main-transfer');
-        
-        if (swapSection) swapSection.style.display = 'none';
-        if (transferSection) transferSection.style.display = 'none';
-        
         // Show dashboard by default
         const dashboardSection = document.getElementById('main-dashboard');
         if (dashboardSection) dashboardSection.style.display = 'block';
         
         console.log('✅ Navigation initialized');
+        
+        // Initialize dashboard cards update (one-time only)
+        setTimeout(() => {
+          if (window.updateDashboardStats) {
+            console.log('🔄 Loading dashboard values once...');
+            window.updateDashboardStats();
+          }
+        }, 2000);
+        
+
       });
       
 
@@ -507,6 +513,8 @@
 
       </div>
 
+
+
       <!-- Voting System Section (Hidden by default) -->
       <div id="voting-system-section" class="modern-card" style="margin-top: 2rem; padding: 1.5rem; display: none;">
         <div style="text-align: center; margin-bottom: 1.5rem;">
@@ -555,200 +563,6 @@
 
 
 
-
-
-  <!-- Swap Section - Messenger Style -->
-  <div id="main-swap" class="page-section expandable-container" style="width:100vw;max-width:none;margin:0;left:0;right:0;padding:0.5rem 0;">
-    
-    <div id="swap-main-content" style="display:block;">
-    <div class="expand-header" style="padding:0 1.5rem;">
-      <h2 style="margin:0 0 0.5rem 0;font-size:1.4rem;">💬 Exchange Messenger</h2>
-      <p style="margin:0 0 0.5rem 0;font-size:0.85rem;">Exchange between DAI and IAM tokens with messenger interface</p>
-    </div>
-    <div class="expand-content" style="padding:1rem;">
-            
-
-            
-            <!-- Exchange Form -->
-            <div style="background:#1a1f2e;color:#ffffff;padding:2rem 2.4rem;border-radius:20px;margin-bottom:1rem;width:90%;max-width:1200px;margin-left:auto;margin-right:auto;border:4px solid #00ff88;">
-              <h4 style="color:#00ff88;margin:0 0 0.5rem 0;font-size:0.95rem;">📝 Exchange Form</h4>
-              
-              <form id="swapForm" class="messenger-form" style="display:flex;flex-direction:column;gap:0.5rem;">
-                
-                <!-- Exchange Type -->
-                <div class="form-group" style="margin-bottom:0.5rem;">
-                  <label for="swapDirection" style="display:block;color:#00ff88;margin-bottom:0.3rem;font-weight:600;font-size:0.85rem;">Exchange Type:</label>
-                  <select id="swapDirection" required style="width:100%;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
-                    <option value="dai-to-IAM">🟢 DAI → IAM (Buy IAM)</option>
-                    <option value="IAM-to-dai">🔴 IAM → DAI (Sell IAM)</option>
-              </select>
-            </div>
-                
-                <!-- Amount Input -->
-                <div class="form-group" style="margin-bottom:0.5rem;">
-                  <label for="swapAmount" style="display:block;color:#00ff88;margin-bottom:0.3rem;font-weight:600;font-size:0.85rem;">Amount:</label>
-                  <div class="amount-input-group" style="display:flex;gap:0.5rem;align-items:center;">
-                    <input type="number" id="swapAmount" placeholder="Enter amount" min="0" step="any" required style="flex:1;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
-                    <button type="button" id="maxBtn" class="max-btn" style="background:linear-gradient(135deg,#a786ff,#00ff88);color:#0a0f1c;border:none;padding:0.8rem 1rem;border-radius:12px;font-weight:600;cursor:pointer;transition:all 0.3s ease;white-space:nowrap;font-size:0.85rem;">Max</button>
-              </div>
-            </div>
-                
-                <!-- USD Converter -->
-                <div id="swap-usd-converter-row" style="display:none;margin-bottom:0.5rem;">
-                  <label for="swapUsdAmount" style="display:block;color:#00ff88;margin-bottom:0.3rem;font-weight:600;font-size:0.85rem;">💰 Dollar Equivalent:</label>
-            <div class="usd-converter-container" style="display:flex;gap:0.5rem;align-items:center;">
-                    <span style="color:#00ff88;font-weight:bold;font-size:1rem;"></span>
-                    <input type="number" id="swapUsdAmount" placeholder="5.00" min="0" step="0.01" style="flex:1;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
-                    <button type="button" id="swapUsdToTokenBtn" style="background:linear-gradient(135deg,#00ff88,#a786ff);color:#0a0f1c;border:none;padding:0.8rem 1rem;border-radius:12px;font-weight:600;cursor:pointer;transition:all 0.3s ease;font-size:0.8rem;">🔄</button>
-            </div>
-          </div>
-        
-                <!-- Balance Display -->
-                <div class="balance-display" style="background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:12px;padding:1rem;margin-bottom:0.5rem;">
-                  <h4 style="color:#00ff88;margin:0 0 0.5rem 0;font-size:0.9rem;">💰 Your Balances</h4>
-                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-                    <div style="text-align:center;background:rgba(0,255,136,0.1);border-radius:8px;padding:0.8rem;">
-                      <div style="color:#00ff88;font-weight:bold;font-size:0.8rem;">DAI</div>
-                      <div id="daiBalance" style="color:#ffffff;font-family:monospace;font-size:0.9rem;font-weight:600;">-</div>
-            </div>
-                    <div style="text-align:center;background:rgba(167,134,255,0.1);border-radius:8px;padding:0.8rem;">
-                      <div style="color:#a786ff;font-weight:bold;font-size:0.8rem;">IAM</div>
-                      <div id="IAMBalance" style="color:#ffffff;font-family:monospace;font-size:0.9rem;font-weight:600;">-</div>
-                      <div id="IAMUsdValue" style="color:#a786ff;font-size:0.7rem;margin-top:0.2rem;">-</div>
-            </div>
-          </div>
-            </div>
-            
-                <!-- Exchange Button -->
-                <button type="submit" class="exchange-btn" style="width:100%;background:linear-gradient(135deg,#00ff88,#00cc6a);color:#0a0f1c;border:none;border-radius:12px;padding:0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:1rem;margin-top:0.3rem;">💱 Execute Exchange</button>
-                
-              </form>
-          </div>
-          
-            <!-- Exchange Rate Message -->
-            <div class="message received" style="max-width:80%;margin-bottom:0.5rem;animation:messageSlide 0.5s ease-out 0.4s both;">
-              <div class="message-bubble" style="background:#1a1f2e;color:#ffffff;padding:1rem 1.2rem;border-radius:20px;border-bottom-left-radius:5px;">
-                <div class="message-content">
-                  <h4 style="color:#00ff88;margin:0 0 0.5rem 0;font-size:0.95rem;">📊 Exchange Information</h4>
-                  <div id="swapRate" class="swap-rate" style="color:#b8c1ec;margin-bottom:0.5rem;font-size:0.85rem;">Exchange rate: Loading...</div>
-                  <div id="swapPreview" class="swap-preview" style="color:#a786ff;margin-bottom:0.5rem;font-size:0.85rem;"></div>
-                  <div id="swapLimitInfo" class="swap-limit-info" style="color:#ffc107;font-size:0.8rem;"></div>
-          </div>
-        </div>
-      </div>
-            
-            <!-- Status Message -->
-            <div id="swapStatus" class="swap-status" style="max-width:80%;margin-bottom:0.5rem;"></div>
-    </div>
-  </div>
-
-  <!-- Transfer Section -->
-  <div id="main-transfer" class="page-section expandable-container" style="width:100vw;max-width:none;margin:0;left:0;right:0;padding:0.5rem 0;display:block !important;visibility:visible !important;opacity:1 !important;">
-    <div class="expand-header" style="display:block !important;visibility:visible !important;opacity:1 !important;">
-      <h2 style="margin:0 0 0.5rem 0;">💸 Transfer</h2>
-      <p style="margin:0 0 0.5rem 0;">Transfer tokens to another wallet</p>
-    </div>
-    <div class="expand-content" style="padding:1rem;display:block !important;visibility:visible !important;opacity:1 !important;">
-
-            <!-- Transfer Form -->
-            <div style="background:#1a1f2e;color:#ffffff;padding:2rem 2.4rem;border-radius:20px;margin-bottom:1rem;width:90%;max-width:1200px;margin-left:auto;margin-right:auto;border:4px solid #00ff88;">
-              <h4 style="color:#00ff88;margin:0 0 0.5rem 0;font-size:0.95rem;">📤 Transfer Form</h4>
-              
-              <form id="transferForm" class="messenger-form" style="display:flex;flex-direction:column;gap:0.5rem;">
-                
-                <!-- Destination Address -->
-                <div class="form-group" style="margin-bottom:0.5rem;">
-                  <label for="transferTo" style="display:block;color:#00ff88;margin-bottom:0.3rem;font-weight:600;font-size:0.85rem;">Destination Address:</label>
-                  <input type="text" id="transferTo" placeholder="0x..." required style="width:100%;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;direction:ltr;">
-                  <small style="color:#b8c1ec;font-size:0.75rem;margin-top:0.2rem;display:block;">Enter destination wallet address (42 characters)</small>
-          </div>
-
-          <!-- Index to Address Search -->
-                <div class="form-group" style="margin-bottom:0.5rem;">
-                  <label style="display:block;color:#00ff88;margin-bottom:0.3rem;font-weight:600;font-size:0.85rem;">🔍 Search by Index:</label>
-                  <div style="display:flex;gap:0.5rem;align-items:center;">
-                    <input type="number" id="searchIndex" placeholder="Enter user index" style="flex:1;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;font-family:monospace;">
-                    <button type="button" id="searchIndexBtn" style="background:linear-gradient(135deg,#00ff88,#00cc6a);color:#0a0f1c;border:none;padding:0.8rem 1rem;border-radius:12px;font-weight:600;cursor:pointer;transition:all 0.3s ease;font-size:0.85rem;">🔍 Search</button>
-            </div>
-                  <div id="searchIndexStatus" style="text-align:center;padding:0.4rem;border-radius:6px;font-size:0.85rem;min-height:1.2em;margin-top:0.3rem;"></div>
-              <small style="color:#b8c1ec;font-size:0.75rem;margin-top:0.2rem;display:block;">Enter a user index to find their wallet address</small>
-          </div>
-
-                <!-- Amount Input -->
-                <div class="form-group" style="margin-bottom:0.5rem;">
-                  <label for="transferAmount" style="display:block;color:#00ff88;margin-bottom:0.3rem;font-weight:600;font-size:0.85rem;">Amount:</label>
-                  <div class="amount-input-group" style="display:flex;gap:0.5rem;align-items:center;">
-                    <input type="number" id="transferAmount" placeholder="Enter amount" min="0" step="any" required style="flex:1;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
-                    <button type="button" id="maxAmountBtn" class="max-btn" style="background:linear-gradient(135deg,#a786ff,#00ff88);color:#0a0f1c;border:none;padding:0.8rem 1rem;border-radius:12px;font-weight:600;cursor:pointer;transition:all 0.3s ease;white-space:nowrap;font-size:0.85rem;">Max</button>
-          </div>
-                  <small style="color:#b8c1ec;font-size:0.75rem;margin-top:0.2rem;display:block;">Enter transfer amount or click "Maximum"</small>
-          </div>
-
-                <!-- Token Type -->
-                <div class="form-group" style="margin-bottom:0.5rem;">
-                  <label for="transferToken" style="display:block;color:#00ff88;margin-bottom:0.3rem;font-weight:600;font-size:0.85rem;">Token Type:</label>
-                  <select id="transferToken" required style="width:100%;background:#0a0f1c;border:2px solid #2a3441;color:#e01616;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
-                    <option value="DAI">🟢 DAI (Stable Token)</option>
-                    <option value="POL">🔵 POL (MATIC)</option>
-                    <option value="IAM">🟣 IAM (Platform Token)</option>
-              </select>
-                  <small style="color:#b8c1ec;font-size:0.75rem;margin-top:0.2rem;display:block;">Select the token type you want to transfer</small>
-            </div>
-
-                <!-- USD Converter (for IAM) -->
-                <div id="usd-converter-row" style="display:none;margin-bottom:0.5rem;">
-                  <label for="transferUsdAmount" style="display:block;color:#00ff88;margin-bottom:0.3rem;font-weight:600;font-size:0.85rem;">💰 Dollar Equivalent:</label>
-            <div class="usd-converter-container" style="display:flex;gap:0.5rem;align-items:center;">
-                    <span style="color:#00ff88;font-weight:bold;font-size:1rem;"></span>
-                    <input type="number" id="transferUsdAmount" placeholder="5.00" min="0" step="0.01" style="flex:1;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
-                    <button type="button" id="transferUsdToTokenBtn" style="background:linear-gradient(135deg,#00ff88,#a786ff);color:#0a0f1c;border:none;padding:0.8rem 1rem;border-radius:12px;font-weight:600;cursor:pointer;transition:all 0.3s ease;font-size:0.8rem;">🔄</button>
-            </div>
-          </div>
-          
-                <!-- Balance Display -->
-                <div class="balance-display" style="background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:12px;padding:1rem;margin-bottom:0.5rem;">
-                  <h4 style="color:#00ff88;margin:0 0 0.5rem 0;font-size:0.9rem;">💰 Your Balances</h4>
-                  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;">
-                    <div style="text-align:center;background:rgba(0,255,136,0.1);border-radius:8px;padding:0.8rem;">
-                      <div style="color:#00ff88;font-weight:bold;font-size:0.8rem;">DAI</div>
-                      <div id="transfer-dai-balance" style="color:#ffffff;font-family:monospace;font-size:0.9rem;font-weight:600;">-</div>
-              </div>
-                    <div style="text-align:center;background:rgba(0,204,255,0.1);border-radius:8px;padding:0.8rem;">
-                      <div style="color:#00ccff;font-weight:bold;font-size:0.8rem;">POL</div>
-                      <div id="transfer-poly-balance" style="color:#ffffff;font-family:monospace;font-size:0.9rem;font-weight:600;">-</div>
-              </div>
-                    <div style="text-align:center;background:rgba(167,134,255,0.1);border-radius:8px;padding:0.8rem;">
-                      <div style="color:#a786ff;font-weight:bold;font-size:0.8rem;">IAM</div>
-                      <div id="transfer-IAM-balance" style="color:#ffffff;font-family:monospace;font-size:0.9rem;font-weight:600;">-</div>
-                      <div id="transfer-IAM-usd" style="color:#a786ff;font-size:0.7rem;margin-top:0.2rem;">-</div>
-              </div>
-            </div>
-          </div>
-          
-                <!-- Transfer Button -->
-                <button type="submit" class="transfer-btn" style="width:100%;background:linear-gradient(135deg,#00ff88,#00cc6a);color:#0a0f1c;border:none;border-radius:12px;padding:0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:1rem;margin-top:0.3rem;">📤 Execute Transfer</button>
-                
-        </form>
-      </div>
-            
-            <!-- Transfer Information -->
-            <div style="background:#1a1f2e;color:#ffffff;padding:1rem;border-radius:20px;margin-bottom:0.5rem;max-width:400px;margin-left:auto;margin-right:auto;border:2px solid #a786ff;">
-              <h4 style="color:#00ff88;margin:0 0 0.5rem 0;font-size:0.95rem;text-align:center;">📋 Transfer Information</h4>
-              <div style="color:#b8c1ec;margin-bottom:0.5rem;font-size:0.85rem;text-align:center;">🔒 Transfers are irreversible - double-check before sending</div>
-              <div style="color:#a786ff;margin-bottom:0.5rem;font-size:0.85rem;text-align:center;">⚡ Network fee: ~0.001-0.01 MATIC</div>
-              <div style="color:#ffc107;font-size:0.8rem;text-align:center;">⏱️ Confirmation: 2-5 seconds</div>
-    </div>
-
-            <!-- Status Message -->
-            <div id="transferStatus" class="transfer-status" style="max-width:80%;margin-bottom:0.5rem;"></div>
-
-  </div>
-
-  
-
-
-
-
     
     <script src="js/smooth-value-updater.js"></script>
     <script src="js/smart-dashboard-updater.js"></script>
@@ -756,7 +570,7 @@
     <script src="js/test-address-config.js"></script>
     <script src="js/config.js"></script>
     <script>
-      // بررسی لود شدن config.js
+      // Check config.js loading
               console.log('🔍 Checking config.js loading...');
         setTimeout(() => {
           console.log('displayTopUsersRanking available:', typeof window.displayTopUsersRanking);
@@ -928,6 +742,8 @@
       transform: none;
     }
     
+
+    
     /* Responsive Design for Transfer Section */
     @media (max-width: 768px) {
       #main-transfer {
@@ -941,115 +757,39 @@
       
 
       
-      .transfer-container {
-        max-width: 100% !important;
-        padding: 0.8rem !important;
-        margin: 0 !important;
-        width: 100% !important;
-      }
-      
-      .transfer-form {
-        padding: 0.8rem !important;
-        border-radius: 8px !important;
-      }
-      
-      .transfer-row {
-        margin-bottom: 0.8rem !important;
-      }
-      
-      .transfer-row label {
-        font-size: 0.9rem !important;
-        margin-bottom: 0.3rem !important;
-      }
-      
-      .transfer-row input,
-      .transfer-row select {
-        padding: 0.6rem !important;
-        font-size: 0.9rem !important;
-        border-radius: 6px !important;
-      }
-      
-      .transfer-btn {
-        padding: 0.7rem 1.2rem !important;
-        font-size: 0.9rem !important;
-        border-radius: 6px !important;
-      }
-      
-      /* Balance grid responsive */
-      .balance-check {
-        padding: 0.8rem !important;
-        border-radius: 6px !important;
-      }
-      
-      .balance-check .balance-check-grid {
-        grid-template-columns: 1fr !important;
-        gap: 0.6rem !important;
-      }
-      
-      .balance-check h4 {
-        font-size: 1rem !important;
-        margin-bottom: 0.6rem !important;
-      }
-      
-      /* Search index row responsive */
-      .search-index-container {
-        flex-direction: column !important;
-        gap: 0.4rem !important;
-      }
-      
-      .search-index-container input {
-        width: 100% !important;
-        min-width: auto !important;
-      }
-      
-      .search-index-container button {
-        width: 100% !important;
-        min-width: auto !important;
-        padding: 0.5rem !important;
-      }
 
-      /* Index search responsive */
-      #search-index-container {
-        padding: 0.8rem !important;
-        margin-bottom: 0.8rem !important;
-      }
       
-      #search-index-container h4 {
-        font-size: 0.95rem !important;
-        margin-bottom: 0.6rem !important;
-      }
+
       
-      #search-index-container .transfer-row {
-        flex-direction: column !important;
-        gap: 0.4rem !important;
-      }
+
       
-      #search-index-container input {
-        width: 100% !important;
-        padding: 0.6rem !important;
-        font-size: 0.9rem !important;
-      }
+
       
-      #search-index-container button {
-        width: 100% !important;
-        padding: 0.6rem !important;
-        font-size: 0.9rem !important;
-      }
+
       
-      #searchIndexStatus {
-        font-size: 0.8rem !important;
-        padding: 0.4rem !important;
-      }
+
       
-      /* USD converter row responsive */
-      .usd-converter-container {
-        flex-direction: column !important;
-        gap: 0.4rem !important;
-      }
+
       
-      .usd-converter-container input {
-        width: 100% !important;
-      }
+
+      
+
+
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
       
       .usd-converter-container button {
         width: 100% !important;
@@ -1149,6 +889,8 @@
       .transfer-rules h4 {
         font-size: 0.9rem !important;
       }
+      
+
       
       .transfer-rules ul {
         font-size: 0.75rem !important;
@@ -1278,16 +1020,27 @@
     
     /* Responsive Design for Messenger Swap Section */
 
+    /* Messages Below Button Styles */
+    .message.received {
+      margin: 0.8rem 0 !important;
+    }
+    
+    .message-bubble {
+      border-radius: 15px !important;
+      padding: 1rem !important;
+    }
+    
+    .swap-status {
+      margin-top: 0.5rem !important;
+      padding: 0.8rem !important;
+      border-radius: 10px !important;
+      font-size: 0.9rem !important;
+      line-height: 1.4 !important;
+    }
+
+
 
     @media (max-width: 768px) {
-      #main-swap {
-        width: 100% !important;
-        max-width: 100% !important;
-        margin: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        padding: 0.4rem !important;
-      }
       
       .swap-container {
         max-width: 100% !important;
@@ -1298,6 +1051,22 @@
       
       .messenger-swap-interface {
         border-radius: 15px !important;
+      }
+      
+      /* Mobile styles for messages below button */
+      .message.received {
+        margin: 0.6rem 0 !important;
+      }
+      
+      .message-bubble {
+        padding: 0.8rem !important;
+        border-radius: 12px !important;
+      }
+      
+      .swap-status {
+        padding: 0.6rem !important;
+        font-size: 0.8rem !important;
+        border-radius: 8px !important;
       }
       
       .messenger-header {
@@ -1371,9 +1140,7 @@
         gap: 0.4rem !important;
       }
       
-      .usd-converter-container input {
-        width: 100% !important;
-      }
+
       
       .usd-converter-container button {
         width: 100% !important;
@@ -1424,16 +1191,31 @@
     }
     
     @media (max-width: 480px) {
-      #main-swap {
-        padding: 0.2rem !important;
-      }
       
       .swap-container {
         padding: 0.4rem !important;
       }
       
+
+      
       .messenger-swap-interface {
         border-radius: 12px !important;
+      }
+      
+      /* Small mobile styles for messages below button */
+      .message.received {
+        margin: 0.5rem 0 !important;
+      }
+      
+      .message-bubble {
+        padding: 0.6rem !important;
+        border-radius: 10px !important;
+      }
+      
+      .swap-status {
+        padding: 0.5rem !important;
+        font-size: 0.75rem !important;
+        border-radius: 6px !important;
       }
       
       .messenger-header {
@@ -1562,10 +1344,6 @@
     
     /* Extra small devices (phones, 320px and down) */
     @media (max-width: 320px) {
-      #main-swap {
-        padding: 0.1rem !important;
-      }
-      
       .swap-container {
         padding: 0.3rem !important;
       }
@@ -1601,9 +1379,6 @@
     
     /* Small tablets (600px and down) */
     @media (max-width: 600px) and (min-width: 481px) {
-      #main-swap {
-        padding: 0.3rem !important;
-      }
       
       .swap-container {
         padding: 0.5rem !important;
@@ -1781,7 +1556,8 @@
     ];
   </script>
   
-  <script src="js/swap.js?v=5.7"></script>
+
+
   
 
  
@@ -1937,11 +1713,6 @@
 
 
 
-  <div id="custom-footer-div" style="text-align:center; padding:2rem; color:#00ff88; font-size:1.2rem;">
-  <br>  <br>  <br>  <br>  <br>  <br>  <br>
-  </div>
-
-
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       var archiveBtn = Array.from(document.querySelectorAll('button, a')).find(el => el.textContent.includes('Financial Markets Archive'));
@@ -1988,344 +1759,68 @@
         }
       }
 
-    document.addEventListener('DOMContentLoaded', function() {
-      const transferForm = document.getElementById('transferForm');
-      if (!transferForm) return;
 
-              // Auto-update balances when page loads
-      const initTransferBalances = () => {
-        if (window.contractConfig && window.contractConfig.contract) {
-          autoRefreshTransferBalances();
-        } else {
-          // Wait for wallet connection
-          const checkConnection = setInterval(() => {
-            if (window.contractConfig && window.contractConfig.contract) {
-              autoRefreshTransferBalances();
-              clearInterval(checkConnection);
-            }
-          }, 1000);
-          
-          // Stop checking after 15 seconds
-          setTimeout(() => clearInterval(checkConnection), 15000);
-        }
-      };
 
-      // Start updating
-      initTransferBalances();
 
-      // USD Converter functionality
-      const usdConverterRow = document.getElementById('usd-converter-row');
-      const transferUsdAmount = document.getElementById('transferUsdAmount');
-      const usdToIAMBtn = document.getElementById('transferUsdToTokenBtn');
-      
-      console.log('🔍 USD Converter elements:', {
-        usdConverterRow: !!usdConverterRow,
-        transferUsdAmount: !!transferUsdAmount,
-        usdToIAMBtn: !!usdToIAMBtn
-      });
-      
-      // Show/hide USD field based on token type
-      function toggleUsdConverter() {
-        const selectedToken = transferTokenSelect.value;
-        console.log('🔄 Toggling USD converter for token:', selectedToken);
-        if (selectedToken === 'IAM') {
-          usdConverterRow.style.display = 'block';
-          console.log('✅ USD converter shown for IAM');
-        } else {
-          usdConverterRow.style.display = 'none';
-          transferUsdAmount.value = '';
-          console.log('✅ USD converter hidden for', selectedToken);
-        }
-      }
-      
-      // Convert USD to IAM
-      async function convertUsdToIAM() {
-        console.log('🔄 Converting USD to IAM...');
-        const usdAmount = parseFloat(transferUsdAmount.value);
-        console.log('💰 USD amount:', usdAmount);
-        if (isNaN(usdAmount) || usdAmount <= 0) {
-          alert('Please enter a valid dollar amount');
-          return;
-        }
-        
-        try {
-          // Get token price from smart contract
-          const connection = await window.connectWallet();
-          if (!connection || !connection.contract) {
-            alert('Please connect your wallet first');
-            return;
-          }
-          
-          usdToIAMBtn.textContent = '⏳ Calculating...';
-          usdToIAMBtn.disabled = true;
-          
-          const tokenPriceRaw = await connection.contract.getTokenPrice();
-          const tokenPrice = Number(ethers.formatUnits(tokenPriceRaw, 18));
-          
-          // Calculate required IAM amount
-          const IAMAmount = (usdAmount / tokenPrice).toFixed(6);
-          
-          // Set value in main field
-          transferAmountInput.value = IAMAmount;
-          
-          // Show success message
-          const statusDiv = document.getElementById('transferStatus');
-          if (statusDiv) {
-            statusDiv.innerHTML = `✅ $${usdAmount} equals ${parseFloat(IAMAmount).toLocaleString('en-US', {maximumFractionDigits: 6})} IAM`;
-            statusDiv.style.color = '#00ff88';
-            setTimeout(() => {
-              statusDiv.innerHTML = '';
-            }, 3000);
-          }
-          
-        } catch (error) {
-          console.error('Error converting USD to IAM:', error);
-          alert('Conversion error. Please try again.');
-        } finally {
-          usdToIAMBtn.textContent = '🔄 Convert';
-          usdToIAMBtn.disabled = false;
-        }
-      }
-      
-      // Maximum button
-      const maxAmountBtn = document.getElementById('maxAmountBtn');
-      const transferAmountInput = document.getElementById('transferAmount');
-      const transferTokenSelect = document.getElementById('transferToken');
 
-      if (maxAmountBtn && transferAmountInput && transferTokenSelect) {
-        maxAmountBtn.addEventListener('click', function() {
-          const selectedToken = transferTokenSelect.value;
-          let maxAmount = '0';
-          
-          console.log('🔍 Max button clicked for token:', selectedToken);
-          
-          // Get balance based on selected token
-          if (selectedToken === 'DAI') {
-            const daiBalanceEl = document.getElementById('transfer-dai-balance');
-            console.log('💰 DAI balance element:', daiBalanceEl);
-            if (daiBalanceEl && daiBalanceEl.dataset.value) {
-              const raw = parseFloat(daiBalanceEl.dataset.value);
-              console.log('💰 DAI raw balance:', raw);
-              if (!isNaN(raw) && raw > 0) maxAmount = raw.toString();
-            }
-          } else if (selectedToken === 'POL') {
-            const polBalanceEl = document.getElementById('transfer-poly-balance');
-            console.log('💰 POL balance element:', polBalanceEl);
-            if (polBalanceEl && polBalanceEl.dataset.value) {
-              const raw = parseFloat(polBalanceEl.dataset.value);
-              console.log('💰 POL raw balance:', raw);
-              if (!isNaN(raw)) {
-                maxAmount = Math.max(0, raw - 0.01).toString();
-              }
-            }
-          } else if (selectedToken === 'IAM') {
-            const IAMBalanceEl = document.getElementById('transfer-IAM-balance');
-            console.log('💰 IAM balance element:', IAMBalanceEl);
-            if (IAMBalanceEl && IAMBalanceEl.dataset.value) {
-              const raw = parseFloat(IAMBalanceEl.dataset.value);
-              console.log('💰 IAM raw balance:', raw);
-              if (!isNaN(raw) && raw > 0) maxAmount = raw.toString();
-            }
-          }
-          
-          console.log('💰 Final max amount:', maxAmount);
-          
-          // Set value in input field
-          if (parseFloat(maxAmount) > 0) {
-            // For DAI and POL, it's better to use 2 or 4 digits; for IAM up to 6 digits
-            const floorToDecimals = (val, d) => { const m = Math.pow(10, d); return Math.floor(Number(val) * m) / m; };
-            const d = (transferTokenSelect.value === 'IAM') ? 6 : 4;
-            const floored = floorToDecimals(maxAmount, d);
-            transferAmountInput.value = floored.toFixed(d);
-            // Temporarily change button text
-            const originalText = maxAmountBtn.textContent;
-                          maxAmountBtn.textContent = '✓ Set';
-            maxAmountBtn.style.background = 'linear-gradient(135deg,#00ff88,#00cc6a)';
-            setTimeout(() => {
-              maxAmountBtn.textContent = originalText;
-              maxAmountBtn.style.background = 'linear-gradient(135deg,#a786ff,#00ff88)';
-            }, 1500);
-          } else {
-            // Show error message
-            maxAmountBtn.textContent = '❌ Insufficient balance';
-            maxAmountBtn.style.background = 'linear-gradient(135deg,#ff6b6b,#ee5a52)';
-            setTimeout(() => {
-              maxAmountBtn.textContent = 'Max';
-              maxAmountBtn.style.background = 'linear-gradient(135deg,#a786ff,#00ff88)';
-            }, 2000);
-          }
-        });
-      }
-      
-      // Event listeners for USD converter
-      if (transferTokenSelect) {
-        // Change token type
-        transferTokenSelect.addEventListener('change', toggleUsdConverter);
-        console.log('✅ Transfer token select event listener added');
-        
-        // Initial execution to set initial state
-        toggleUsdConverter();
-      } else {
-        console.error('❌ Transfer token select not found');
-      }
-      
-      if (usdToIAMBtn) {
-        // Convert button click
-        usdToIAMBtn.addEventListener('click', convertUsdToIAM);
-        console.log('✅ USD converter button event listener added');
-      } else {
-        console.error('❌ USD converter button not found');
-      }
-      
-      if (transferUsdAmount) {
-        // Enter key in USD field
-        transferUsdAmount.addEventListener('keypress', function(e) {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            convertUsdToIAM();
-          }
-        });
-        
-        // Real-time calculation when user types
-        let usdTimeout;
-        transferUsdAmount.addEventListener('input', function() {
-          clearTimeout(usdTimeout);
-          usdTimeout = setTimeout(async () => {
-            const usdAmount = parseFloat(transferUsdAmount.value);
-            if (!isNaN(usdAmount) && usdAmount > 0) {
-              try {
-                const connection = await window.connectWallet();
-                if (connection && connection.contract) {
-                  const tokenPriceRaw = await connection.contract.getTokenPrice();
-                  const tokenPrice = Number(ethers.formatUnits(tokenPriceRaw, 18));
-                  const IAMAmount = (usdAmount / tokenPrice).toFixed(6);
-                  
-                  // Show preview in placeholder
-                  transferAmountInput.placeholder = `≈ ${parseFloat(IAMAmount).toLocaleString('en-US', {maximumFractionDigits: 6})} IAM`;
-                }
-              } catch (e) {
-                // Error in real-time - ignore
-              }
-            } else {
-              transferAmountInput.placeholder = 'Enter amount';
-            }
-          }, 500); // 500ms delay to prevent too many calls
-        });
-      }
-      
-      // Real-time calculation of dollar equivalent when IAM amount changes
-      if (transferAmountInput) {
-        let IAMTimeout;
-        transferAmountInput.addEventListener('input', function() {
-          if (transferTokenSelect.value === 'IAM') {
-            clearTimeout(IAMTimeout);
-            IAMTimeout = setTimeout(async () => {
-              const IAMAmount = parseFloat(transferAmountInput.value);
-              if (!isNaN(IAMAmount) && IAMAmount > 0) {
-                try {
-                  const connection = await window.connectWallet();
-                  if (connection && connection.contract) {
-                    const tokenPriceRaw = await connection.contract.getTokenPrice();
-                    const tokenPrice = Number(ethers.formatUnits(tokenPriceRaw, 18));
-                    const usdValue = (IAMAmount * tokenPrice).toFixed(2);
-                    
-                    // Show dollar equivalent in USD field
-                    if (transferUsdAmount) {
-                      transferUsdAmount.placeholder = `≈ $${parseFloat(usdValue).toLocaleString('en-US', {maximumFractionDigits: 2})}`;
-                    }
-                  }
-                } catch (e) {
-                  // Error in real-time - ignore
-                }
-              } else {
-                if (transferUsdAmount) {
-                  transferUsdAmount.placeholder = '5.00';
-                }
-              }
-            }, 500);
-          }
-        });
-      }
 
-      transferForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const transferBtn = transferForm.querySelector('button[type="submit"]');
-        if (transferBtn) {
-          transferBtn.disabled = true;
-          var oldText = transferBtn.textContent;
-                      transferBtn.textContent = 'Processing...';
-        }
-        const transferToInput = document.getElementById('transferTo');
-                      // استفاده از آدرس کامل اگر در data attribute ذخیره شده باشد
-              const to = transferToInput.getAttribute('data-full-address') || transferToInput.value.trim();
-        const amount = parseFloat(document.getElementById('transferAmount').value);
-        const token = document.getElementById('transferToken').value;
-        const status = document.getElementById('transferStatus');
-        status.textContent = '';
-        status.className = 'transfer-status';
-        if (!to || !amount || amount <= 0) {
-                      status.textContent = 'Please enter valid destination address and amount';
-          status.className = 'transfer-status error';
-          if (transferBtn) { transferBtn.disabled = false; transferBtn.textContent = oldText; }
-          return;
-        }
-        if (!window.contractConfig || !window.contractConfig.contract || !window.contractConfig.signer) {
-                      status.textContent = 'Wallet connection not established';
-          status.className = 'transfer-status error';
-          if (transferBtn) { transferBtn.disabled = false; transferBtn.textContent = oldText; }
-          return;
-        }
-        try {
-                      status.textContent = 'Sending...';
-          status.className = 'transfer-status loading';
-          if (token === 'pol') {
-            // Transfer MATIC/POL
-            const tx = await window.contractConfig.signer.sendTransaction({
-              to,
-              value: ethers.parseEther(amount.toString())
-            });
-            await tx.wait();
-            status.textContent = 'Transfer completed successfully!\nTransaction hash: ' + tx.hash;
-            status.className = 'transfer-status success';
-          } else if (token === 'dai') {
-            // Transfer DAI - fix decimal to 18
-            const daiContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, window.contractConfig.signer);
-            const decimals = 18; // DAI has 18 decimals, not 6
-            const parsedAmount = ethers.parseUnits(amount.toString(), decimals);
-            const tx = await daiContract.transfer(to, parsedAmount);
-            await tx.wait();
-            status.textContent = 'DAI transfer completed successfully!\nTransaction hash: ' + tx.hash;
-            status.className = 'transfer-status success';
-          } else {
-            // Transfer IAM
-            const contract = window.contractConfig.contract;
-            const tx = await contract.transfer(to, ethers.parseEther(amount.toString()));
-            await tx.wait();
-            status.textContent = 'Transfer completed successfully!\nTransaction hash: ' + tx.hash;
-            status.className = 'transfer-status success';
-          }
-          transferForm.reset();
-          
-          // Update balances after successful transfer
-          setTimeout(autoRefreshTransferBalances, 2000);
-        } catch (error) {
-          let msg = error && error.message ? error.message : error;
-          if (msg.includes('user rejected')) msg = 'Transaction cancelled by user';
-          else if (msg.includes('insufficient funds')) msg = 'Insufficient balance';
-          else if (msg.includes('invalid address')) msg = 'Invalid destination address';
-          else if (msg.includes('nonce')) msg = 'Transaction number error. Please try again';
-          else if (msg.includes('execution reverted')) msg = 'Transaction failed. Please check conditions';
-          else msg = 'Transfer error: ' + msg;
-          status.textContent = msg;
-          status.className = 'transfer-status error';
-        }
-        if (transferBtn) { transferBtn.disabled = false; transferBtn.textContent = oldText; }
-      });
-    });
+
+      
+
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
+
+      
+
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   </script>
 
   <script>
-    // تابع کوتاه کردن آدرس
+    // Function to shorten address
     function shortenAddress(address) {
       if (address && address.length === 42 && address.startsWith('0x')) {
         return `${address.substring(0, 6)}...${address.substring(38)}`;
@@ -2333,7 +1828,7 @@
       return address;
     }
 
-    // Event listener برای کوتاه کردن آدرس‌های وارد شده دستی
+    // Event listener for shortening manually entered addresses
     document.addEventListener('DOMContentLoaded', function() {
       console.log('Manual address shortening script loaded');
       const transferToInput = document.getElementById('transferTo');
@@ -2344,9 +1839,9 @@
           const value = this.value.trim();
           console.log('Input value:', value, 'Length:', value.length, 'Starts with 0x:', value.startsWith('0x'));
           if (value && value.length === 42 && value.startsWith('0x')) {
-            // ذخیره آدرس کامل
+            // Store full address
             this.setAttribute('data-full-address', value);
-            // نمایش آدرس کوتاه شده
+            // Display shortened address
             this.value = shortenAddress(value);
           }
         });
@@ -2383,8 +1878,6 @@
 
     document.addEventListener('DOMContentLoaded', function() {
       restoreExpandableStates();
-      
-      
     });
   </script>
 
@@ -2471,73 +1964,15 @@
 
   <script src="js/navbar.js"></script>
   
-      <!-- SwapManager initialization -->
   <script>
-    document.addEventListener('DOMContentLoaded', async function() {
-      console.log('🚀 Starting SwapManager initialization...');
-      
-              // Ensure swap.js is loaded
-      if (typeof SwapManager !== 'undefined') {
-        try {
-          console.log('✅ SwapManager class found');
-          
-          // Wait a bit for DOM to fully load
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          
-          // Check for required elements
-          const requiredElements = ['swapForm', 'swapDirection', 'swapAmount', 'maxBtn', 'swapRate', 'swapPreview', 'swapLimitInfo', 'swapStatus'];
-          const missingElements = requiredElements.filter(id => !document.getElementById(id));
-          
-          if (missingElements.length > 0) {
-            console.warn('⚠️ The following elements were not found:', missingElements);
-            return;
-          }
-          
-          console.log('✅ All required elements are present');
-          
-          // Check for required variables
-          if (!window.DAI_ADDRESS || !window.DAI_ABI) {
-            console.error('❌ DAI_ADDRESS or DAI_ABI variables are not defined');
-            return;
-          }
-          
-          console.log('✅ DAI variables are present');
-          
-          // Create SwapManager instance
-          window.swapManager = new SwapManager();
-          console.log('✅ SwapManager instance created');
-          
-          // Initial setup
-          await window.swapManager.initializeSwap();
-          console.log('✅ SwapManager initialized successfully');
-          
-        } catch (error) {
-          console.error('❌ Error initializing SwapManager:', error);
-        }
-      } else {
-        console.warn('⚠️ SwapManager is not defined - swap.js file not loaded');
-      }
-      
-
-    });
-    
     // Re-initialization after wallet connection
     if (window.connectWallet) {
       const originalConnectWallet = window.connectWallet;
       window.connectWallet = async function() {
         const result = await originalConnectWallet();
         
-        // Re-initialize SwapManager after connection
+        // Update status bars after connection
         setTimeout(async () => {
-          if (window.swapManager && typeof window.swapManager.refreshSwapData === 'function') {
-            try {
-              console.log('🔄 Refreshing SwapManager after wallet connection...');
-              await window.swapManager.refreshSwapData();
-              console.log('✅ SwapManager refreshed');
-            } catch (error) {
-              console.warn('⚠️ Error refreshing SwapManager:', error);
-            }
-          }
                   // Update index dashboard status bar
         try { if (typeof window.indexStatusTryUpdate === 'function') window.indexStatusTryUpdate(); } catch(_) {}
         
@@ -2548,10 +1983,6 @@
         return result;
       };
     }
-  </script>
-
-
-
   </script>
   </div>
 
@@ -2731,7 +2162,7 @@ div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:
     gap: 0.8rem !important;
     justify-content: center !important;
   }
-  /* خود کارت‌ها داخل ظرف بالا */
+  /* Cards inside the container above */
   div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] > div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] {
     min-width: 0 !important;
     max-width: 100% !important;
@@ -2749,7 +2180,7 @@ div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:
     gap: 1rem !important;
     justify-content: center !important;
   }
-  /* خود کارت‌ها داخل ظرف بالا */
+  /* Cards inside the container above */
   div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] > div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] {
     min-width: 0 !important;
     max-width: 100% !important;
@@ -3432,12 +2863,12 @@ async function voteForPopularIndex(isLike) {
     const contract = window.contractConfig.contract;
     
     if (!contract) {
-      throw new Error('قرارداد متصل نیست');
+      throw new Error('Contract is not connected');
     }
     
     // Check wallet connection
     if (!window.contractConfig.signer) {
-      throw new Error('کیف پول متصل نیست');
+      throw new Error('Wallet is not connected');
     }
     
     // Get user address from index
@@ -3513,13 +2944,13 @@ window.refreshPopularIndexes = refreshPopularIndexes;
 
 </script>
 
-<!-- Floating Token Growth Card - کارت شناور رشد توکن -->
+<!-- Floating Token Growth Card -->
 <script src="js/floating-token-card.js"></script>
 
-<!-- اعمال تم مدرن -->
+<!-- Apply modern theme -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('🎨 اعمال تم مدرن نارنجی و بنفش...');
+  console.log('🎨 Applying modern orange and purple theme...');
   
   // Apply modern-card class to all existing cards
   const cards = document.querySelectorAll('.dashboard-card');
@@ -3545,9 +2976,29 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
   
-  console.log('✅ تم مدرن نارنجی و بنفش اعمال شد');
+  console.log('✅ Modern orange and purple theme applied');
 });
-</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 <!-- Most Popular Indexes Section - Always Expanded at Bottom -->
 <div id="popular-indexes-section" class="modern-card" style="margin-top: 2rem; margin-bottom: 2rem; padding: 1.5rem; border: 2px solid rgba(0,255,136,0.3); border-radius: 15px; background: linear-gradient(135deg, rgba(26,31,46,0.9), rgba(42,47,62,0.9));">
@@ -3623,5 +3074,4 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 </body>
-</html>
 </html>
