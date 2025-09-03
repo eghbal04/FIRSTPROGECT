@@ -221,7 +221,9 @@ class TransferManager {
         // Max button
         const maxBtn = document.getElementById('maxAmountBtn');
         if (maxBtn) {
-            maxBtn.addEventListener('click', () => {
+            maxBtn.addEventListener('click', (e) => {
+                e.preventDefault(); // Prevent default button behavior
+                e.stopPropagation(); // Stop event bubbling
                 this.setMaxAmount();
             });
         }

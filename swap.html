@@ -35,61 +35,30 @@
     </script>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <a href="index.html">🏛️ IAMPHOENIX</a>
-            </div>
-            <div class="nav-menu">
-                <a href="index.html" class="nav-link">🏠 Home</a>
-                <a href="swap.html" class="nav-link active">🔄 Swap</a>
-                <a href="transfer.html" class="nav-link">💸 Transfer</a>
-                <a href="profile.html" class="nav-link">👤 Profile</a>
-                <a href="reports.html" class="nav-link">📊 Reports</a>
-            </div>
-            <div class="wallet-connect-container" style="margin-left: auto;">
-                <div id="walletAddress" style="color: #00ff88; font-size: 0.9rem; padding: 0.6rem;">
-                    <span id="addressDisplay">🔄 Connecting...</span>
-                </div>
-            </div>
-        </div>
-    </nav>
+    <!-- Back Button -->
+    <a href="index.html" class="back-btn">← Back</a>
 
     <!-- Main Content -->
     <div class="main-container">
-        <!-- Swap Section - Messenger Style -->
+        <!-- Swap Section -->
         <div id="main-swap" class="page-section expandable-container" style="width:100%;max-width:none;margin:0;padding:0.5rem 0;">
             
             <div id="swap-main-content" style="display:block;">
-            <div class="expand-header" style="padding:0 1.5rem;">
-                <h2 style="margin:0 0 0.5rem 0;font-size:1.4rem;">💬 Exchange Messenger</h2>
-                <p style="margin:0 0 0.5rem 0;font-size:0.85rem;">Exchange between DAI and IAM tokens with messenger interface</p>
-                <div style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); border-radius: 8px; padding: 0.8rem; margin: 0.5rem 0; font-size: 0.8rem;">
-                    <p style="margin: 0; color: #ffc107;"><strong>💡 Contract Selection:</strong> Choose between the new contract (default) or the old contract if you have tokens there that you want to convert.</p>
-                </div>
-                
-                <!-- Connection Status -->
-                <div id="connectionStatus" style="margin-top: 1rem; padding: 0.8rem; border-radius: 8px; text-align: center; display: none;">
-                    <span id="connectionMessage"></span>
-                </div>
-            </div>
             <div class="expand-content" style="padding:1rem;">
                     
 
                     
                     <!-- Exchange Form -->
-                    <div style="background:#1a1f2e;color:#ffffff;padding:2rem 2.4rem;border-radius:20px;margin-bottom:1rem;width:90%;max-width:1200px;margin-left:auto;margin-right:auto;border:4px solid #00ff88;">
-                        <h4 style="color:#00ff88;margin:0 0 0.5rem 0;font-size:0.95rem;">📝 Exchange Form</h4>
+                    <div style="background:#1a1f2e;color:#ffffff;padding:1.5rem;border-radius:15px;margin-bottom:1rem;width:90%;max-width:800px;margin-left:auto;margin-right:auto;border:2px solid #00ff88;">
                         
-                        <form id="swapForm" class="messenger-form" style="display:flex;flex-direction:column;gap:0.5rem;">
+                        <form id="swapForm" class="messenger-form" style="display:flex;flex-direction:column;gap:0.3rem;">
                             
                             <!-- Contract Selection -->
-                            <div class="form-group" style="margin-bottom:0.5rem;">
-                                <label for="contractSelector" style="display:block;color:#00ff88;margin-bottom:0.3rem;font-weight:600;font-size:0.85rem;">📋 Select Contract:</label>
+                            <div class="form-group" style="margin-bottom:0.3rem;">
+                                <label for="contractSelector" style="display:block;color:#00ff88;margin-bottom:0.2rem;font-weight:600;font-size:0.85rem;">Contract:</label>
                                 <select id="contractSelector" required style="width:100%;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
-                                    <option value="new">🆕 New Contract (0x63F5...d2FE)</option>
-                                    <option value="old">🔄 Old Contract (0xd7eD...0607)</option>
+                                    <option value="new">New Contract</option>
+                                    <option value="old">Old Contract</option>
                                 </select>
                             </div>
                             
@@ -97,17 +66,17 @@
                             <div id="contractInfo"></div>
                             
                             <!-- Exchange Type -->
-                            <div class="form-group" style="margin-bottom:0.5rem;">
-                                <label for="swapDirection" style="display:block;color:#00ff88;margin-bottom:0.3rem;font-weight:600;font-size:0.85rem;">Exchange Type:</label>
+                            <div class="form-group" style="margin-bottom:0.3rem;">
+                                <label for="swapDirection" style="display:block;color:#00ff88;margin-bottom:0.2rem;font-weight:600;font-size:0.85rem;">Type:</label>
                                 <select id="swapDirection" required style="width:100%;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
-                                    <option value="dai-to-IAM">🟢 DAI → IAM (Buy IAM)</option>
-                                    <option value="IAM-to-dai">🔴 IAM → DAI (Sell IAM)</option>
+                                    <option value="dai-to-IAM">DAI → IAM</option>
+                                    <option value="IAM-to-dai">IAM → DAI</option>
                                 </select>
                             </div>
                             
                             <!-- Amount Input -->
-                            <div class="form-group" style="margin-bottom:0.5rem;">
-                                <label for="swapAmount" style="display:block;color:#00ff88;margin-bottom:0.3rem;font-weight:600;font-size:0.85rem;">Amount:</label>
+                            <div class="form-group" style="margin-bottom:0.3rem;">
+                                <label for="swapAmount" style="display:block;color:#00ff88;margin-bottom:0.2rem;font-weight:600;font-size:0.85rem;">Amount:</label>
                                 <div class="amount-input-group" style="display:flex;gap:0.5rem;align-items:center;">
                                     <input type="number" id="swapAmount" placeholder="Enter amount" min="0" step="any" required style="flex:1;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
                                     <button type="button" id="maxBtn" class="max-btn" style="background:linear-gradient(135deg,#a786ff,#00ff88);color:#0a0f1c;border:none;padding:0.8rem 1rem;border-radius:12px;font-weight:600;cursor:pointer;transition:all 0.3s ease;white-space:nowrap;font-size:0.85rem;">Max</button>
@@ -115,50 +84,36 @@
                             </div>
                             
                             <!-- USD Converter -->
-                            <div id="swap-usd-converter-row" style="display:none;margin-bottom:0.5rem;">
-                                <label for="swapUsdAmount" style="display:block;color:#00ff88;margin-bottom:0.3rem;font-weight:600;font-size:0.85rem;">💰 Dollar Equivalent:</label>
+                            <div id="swap-usd-converter-row" style="display:none;margin-bottom:0.3rem;">
+                                <label for="swapUsdAmount" style="display:block;color:#00ff88;margin-bottom:0.2rem;font-weight:600;font-size:0.85rem;">USD:</label>
                                 <div class="usd-converter-container" style="display:flex;gap:0.5rem;align-items:center;">
-                                    <span style="color:#00ff88;font-weight:bold;font-size:1rem;"></span>
                                     <input type="number" id="swapUsdAmount" placeholder="5.00" min="0" step="0.01" style="flex:1;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
                                     <button type="button" id="swapUsdToTokenBtn" style="background:linear-gradient(135deg,#00ff88,#a786ff);color:#0a0f1c;border:none;padding:0.8rem 1rem;border-radius:12px;font-weight:600;cursor:pointer;transition:all 0.3s ease;font-size:0.8rem;">🔄</button>
                                 </div>
                             </div>
                         
                             <!-- Balance Display -->
-                            <div class="balance-display" style="background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:12px;padding:1rem;margin-bottom:0.5rem;">
-                                <h4 style="color:#00ff88;margin:0 0 0.5rem 0;font-size:0.9rem;">💰 Your Balances</h4>
-                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-                                    <div style="text-align:center;background:rgba(0,255,136,0.1);border-radius:8px;padding:0.8rem;">
-                                        <div style="color:#00ff88;font-weight:bold;font-size:0.8rem;">DAI</div>
-                                        <div id="daiBalance" style="color:#ffffff;font-family:monospace;font-size:0.9rem;font-weight:600;">-</div>
+                            <div class="balance-display" style="background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:8px;padding:0.6rem;margin-bottom:0.3rem;">
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;">
+                                    <div style="text-align:center;background:rgba(0,255,136,0.1);border-radius:6px;padding:0.5rem;">
+                                        <div style="color:#00ff88;font-weight:bold;font-size:0.75rem;">DAI</div>
+                                        <div id="daiBalance" style="color:#ffffff;font-family:monospace;font-size:0.8rem;font-weight:600;">-</div>
                                     </div>
-                                    <div style="text-align:center;background:rgba(167,134,255,0.1);border-radius:8px;padding:0.8rem;">
-                                        <div style="color:#a786ff;font-weight:bold;font-size:0.8rem;">IAM</div>
-                                        <div id="IAMBalance" style="color:#ffffff;font-family:monospace;font-size:0.9rem;font-weight:600;">-</div>
-                                        <div id="IAMUsdValue" style="color:#a786ff;font-size:0.7rem;margin-top:0.2rem;">-</div>
+                                    <div style="text-align:center;background:rgba(167,134,255,0.1);border-radius:6px;padding:0.5rem;">
+                                        <div style="color:#a786ff;font-weight:bold;font-size:0.75rem;">IAM</div>
+                                        <div id="IAMBalance" style="color:#ffffff;font-family:monospace;font-size:0.8rem;font-weight:600;">-</div>
+                                        <div id="IAMUsdValue" style="color:#a786ff;font-size:0.65rem;margin-top:0.1rem;">-</div>
                                     </div>
                                 </div>
                             </div>
                             
                             <!-- Exchange Button -->
-                            <button type="submit" class="exchange-btn" style="width:100%;background:linear-gradient(135deg,#00ff88,#00cc6a);color:#0a0f1c;border:none;border-radius:12px;padding:0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:1rem;margin-top:0.3rem;">💱 Execute Exchange</button>
+                            <button type="submit" class="exchange-btn" style="width:100%;background:linear-gradient(135deg,#00ff88,#00cc6a);color:#0a0f1c;border:none;border-radius:10px;padding:0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:0.9rem;margin-top:0.2rem;">💱 Swap</button>
                             
                         </form>
                     </div>
                     
-                    <!-- Exchange Information and Status Messages Below Button -->
-                    <div style="margin-top:1rem;padding:0 1rem;">
-                        <!-- Exchange Rate Message -->
-                        <div class="message received" style="max-width:100%;margin-bottom:0.8rem;animation:messageSlide 0.5s ease-out 0.4s both;">
-                            <div class="message-bubble" style="background:#1a1f2e;color:#ffffff;padding:1rem 1.2rem;border-radius:20px;border-bottom-left-radius:5px;">
-                                <div class="message-content">
-                                    <h4 style="color:#00ff88;margin:0 0 0.5rem 0;font-size:0.95rem;">📊 Exchange Information</h4>
-                                    <div id="swapRate" class="swap-rate" style="color:#b8c1ec;margin-bottom:0.5rem;font-size:0.85rem;">Exchange rate: Loading...</div>
-                                    <div id="swapPreview" class="swap-preview" style="color:#a786ff;margin-bottom:0.5rem;font-size:0.85rem;"></div>
-                                    <div id="swapLimitInfo" class="swap-limit-info" style="color:#ffc107;font-size:0.8rem;"></div>
-                            </div>
-                        </div>
-                    </div>
+
                             
                     <!-- Status Message -->
                     <div id="swapStatus" class="swap-status" style="max-width:100%;margin-bottom:0.5rem;"></div>
@@ -176,55 +131,16 @@
     
     <!-- Wallet Connection and SwapManager Initialization -->
     <script>
-        // Update wallet button display
+        // Update wallet connection status (no display needed)
         function updateWalletButton() {
-            const addressDisplay = document.getElementById('addressDisplay');
-            const connectionStatus = document.getElementById('connectionStatus');
-            const connectionMessage = document.getElementById('connectionMessage');
-            
-            console.log('🔄 Updating wallet button display...');
+            console.log('🔄 Checking wallet connection...');
             console.log('🔍 swapManager exists:', !!window.swapManager);
             console.log('🔍 signer exists:', !!(window.swapManager && window.swapManager.signer));
             
             if (window.swapManager && window.swapManager.signer) {
-                // Wallet is connected
-                console.log('✅ Wallet is connected, updating display...');
-                
-                if (addressDisplay) {
-                    window.swapManager.signer.getAddress().then(address => {
-                        const shortAddress = address.substring(0, 6) + '...' + address.substring(address.length - 4);
-                        addressDisplay.textContent = '🟢 ' + shortAddress;
-                        console.log('✅ Address display updated:', shortAddress);
-                    }).catch(error => {
-                        console.warn('⚠️ Error getting address:', error);
-                        addressDisplay.textContent = '🟢 Connected';
-                    });
-                }
-                
-                // Show connection success message
-                if (connectionStatus && connectionMessage) {
-                    connectionStatus.style.display = 'block';
-                    connectionStatus.style.background = 'rgba(0, 255, 136, 0.1)';
-                    connectionStatus.style.border = '1px solid rgba(0, 255, 136, 0.3)';
-                    connectionStatus.style.color = '#00ff88';
-                    connectionMessage.textContent = '✅ Wallet Connected Successfully! You can now swap tokens.';
-                }
+                console.log('✅ Wallet is connected');
             } else {
-                // Wallet is not connected
-                console.log('⚠️ Wallet not connected, showing connecting status...');
-                
-                if (addressDisplay) {
-                    addressDisplay.textContent = '🔄 Connecting...';
-                }
-                
-                // Show connection required message
-                if (connectionStatus && connectionMessage) {
-                    connectionStatus.style.display = 'block';
-                    connectionStatus.style.background = 'rgba(255, 193, 7, 0.1)';
-                    connectionStatus.style.border = '1px solid rgba(255, 193, 7, 0.3)';
-                    connectionStatus.style.color = '#ffc107';
-                    connectionMessage.textContent = '⚠️ Connecting to wallet...';
-                }
+                console.log('⚠️ Wallet not connected');
             }
         }
         
@@ -245,15 +161,23 @@
                     console.log('✅ SwapManager class found');
                     
                     // Wait for DOM to fully load
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                    await new Promise(resolve => setTimeout(resolve, 1000));
                     
-                    // Check for required elements
-                    const requiredElements = ['swapForm', 'swapDirection', 'swapAmount', 'maxBtn', 'swapRate', 'swapPreview', 'swapLimitInfo', 'swapStatus'];
+                    // Check for required elements (updated list without removed elements)
+                    const requiredElements = ['swapForm', 'swapDirection', 'swapAmount', 'maxBtn', 'swapStatus'];
                     const missingElements = requiredElements.filter(id => !document.getElementById(id));
                     
                     if (missingElements.length > 0) {
                         console.warn('⚠️ The following elements were not found:', missingElements);
-                        return;
+                        console.log('🔄 Waiting additional time for DOM elements...');
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        
+                        // Check again
+                        const stillMissing = requiredElements.filter(id => !document.getElementById(id));
+                        if (stillMissing.length > 0) {
+                            console.error('❌ Still missing elements after additional wait:', stillMissing);
+                            return;
+                        }
                     }
                     
                     console.log('✅ All required elements are present');
@@ -282,6 +206,11 @@
                     
                 } catch (error) {
                     console.error('❌ Error initializing SwapManager:', error);
+                    // Show user-friendly error message
+                    const statusEl = document.getElementById('swapStatus');
+                    if (statusEl) {
+                        statusEl.innerHTML = '<div style="color: #ff4444; padding: 1rem; background: rgba(255, 68, 68, 0.1); border-radius: 8px;">⚠️ Failed to initialize swap functionality. Please refresh the page.</div>';
+                    }
                 }
             } else if (swapManagerInitialized) {
                 console.log('✅ SwapManager already initialized, skipping...');
@@ -294,6 +223,28 @@
     </script>
 
     <style>
+        /* Back Button */
+        .back-btn {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            background: linear-gradient(135deg, #a786ff, #00ff88);
+            color: #0a0f1c;
+            border: none;
+            padding: 0.6rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.9rem;
+            z-index: 1000;
+        }
+        
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(167, 134, 255, 0.3);
+        }
+        
         /* Fix scrolling issue */
         html, body {
             overflow-x: hidden;
@@ -308,50 +259,7 @@
             overflow-y: auto;
         }
         
-        /* Navbar styles */
-        .navbar {
-            background: #0a0f1c;
-            padding: 1rem;
-            border-bottom: 2px solid #00ff88;
-        }
-        
-        .nav-container {
-            display: flex;
-            align-items: center;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        .nav-logo a {
-            color: #00ff88;
-            text-decoration: none;
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-        
-        .nav-menu {
-            display: flex;
-            gap: 1.5rem;
-            margin-left: 2rem;
-        }
-        
-        .nav-link {
-            color: #ffffff;
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-        
-        .nav-link:hover,
-        .nav-link.active {
-            background: rgba(0, 255, 136, 0.1);
-            color: #00ff88;
-        }
-        
-        .wallet-connect-container {
-            margin-left: auto;
-        }
+
         
         /* Swap specific styles */
         .swap-status {

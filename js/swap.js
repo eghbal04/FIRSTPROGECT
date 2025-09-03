@@ -123,8 +123,20 @@ class SwapManager {
 
             console.log('🔗 Connecting to wallet...');
             
-            // Request account access
-            await window.ethereum.request({ method: 'eth_requestAccounts' });
+            // Request account access with error handling
+            try {
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
+            } catch (rpcError) {
+                // Handle specific RPC errors gracefully
+                if (rpcError.code === 4001) {
+                    throw new Error('User rejected the connection request');
+                } else if (rpcError.message && rpcError.message.includes('isDefaultWallet')) {
+                    console.warn('⚠️ MetaMask RPC method not available, continuing...');
+                    // Continue with connection attempt
+                } else {
+                    throw rpcError;
+                }
+            }
             
             // Create provider and signer
             this.provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -172,12 +184,21 @@ class SwapManager {
             console.log('🔄 Starting SwapManager initialization...');
             
             // Ensure DOM elements exist
-            const requiredElements = ['swapForm', 'swapDirection', 'swapAmount', 'maxBtn', 'swapRate', 'swapPreview', 'swapLimitInfo', 'swapStatus'];
+            const requiredElements = ['swapForm', 'swapDirection', 'swapAmount', 'maxBtn', 'swapStatus'];
             const missingElements = requiredElements.filter(id => !document.getElementById(id));
             
             if (missingElements.length > 0) {
                 console.warn('⚠️ The following elements were not found:', missingElements);
-                return;
+                console.log('🔄 Waiting for DOM elements to load...');
+                // Wait a bit more for DOM to load
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Check again
+                const stillMissing = requiredElements.filter(id => !document.getElementById(id));
+                if (stillMissing.length > 0) {
+                    console.error('❌ Still missing elements after wait:', stillMissing);
+                    return;
+                }
             }
             
             console.log('✅ All DOM elements exist');
@@ -195,9 +216,6 @@ class SwapManager {
             console.log('✅ Swap data loaded');
             
             // Update UI
-            this.updateSwapRate();
-            await this.updateSwapPreview();
-            await this.updateSwapLimitInfo();
             this.updateMaxAmount();
             this.updateContractSelectionUI();
             
@@ -249,8 +267,6 @@ class SwapManager {
             console.log('✅ USD converted to IAM:', IAMAmount);
         }
         
-        // Update preview
-        this.updateSwapPreview();
         this.showStatus(`✅ Successfully converted $${usdValue} to token amount. You can now proceed with your transaction.`, 'success');
     }
 
@@ -327,80 +343,10 @@ class SwapManager {
         if (direction.value === 'IAM-to-dai') {
             const IAMAmount = usdValue / tokenPrice;
             swapAmount.value = IAMAmount.toFixed(6);
-            this.updateSwapPreview();
         }
     }
 
-    async updateSwapLimitInfo() {
-        const infoDiv = document.getElementById('swapLimitInfo');
-        if (!infoDiv) {
-            console.warn('⚠️ swapLimitInfo element not found');
-            return;
-        }
-        
-        const direction = document.getElementById('swapDirection');
-        if (!direction) {
-            console.warn('⚠️ swapDirection element not found');
-            return;
-        }
-        
-        let html = '';
-        try {
-            console.log('🔄 Loading limit information...');
-            
-            if (!this.contract || !this.signer) {
-                throw new Error('Contract connection not established');
-            }
-            
-            const address = await this.signer.getAddress();
-            
-            const daiBalanceNum = await this.getContractDaiBalanceNum();
-            
-            console.log('📊 Contract DAI balance:', daiBalanceNum);
-            
-            if (direction.value === 'dai-to-IAM') {
-                // Buy limits (according to contract)
-                let maxBuy;
-                if (daiBalanceNum <= 100000) {
-                    maxBuy = 1000;
-                } else {
-                    maxBuy = daiBalanceNum * 0.01;
-                }
-                const backingPct = this.getBackingFeePct(daiBalanceNum);
-                const userSharePct = 1 - backingPct;
-                html += `<div style="background:00000000;padding:12px;border-radius:8px;border-left:4px solidrgb(84, 211, 88);margin-bottom:10px;">
-                    <h4 style="margin:0 0 8px 0;color:#2e7d32;">🛒 Buy IAM with DAI</h4>
-                    <p style="margin:5px 0;color:#555;"><strong>Minimum purchase:</strong> More than 1 DAI</p>
-                    <p style="margin:5px 0;color:#555;"><strong>Current buy limit:</strong> ${maxBuy.toLocaleString('en-US', {maximumFractionDigits:2})} DAI</p>
-                    <p style="margin:5px 0;color:#555;"><strong>Purchase fee:</strong> ${(backingPct*100).toFixed(1)}%</p>
-                    <ul style="margin:5px 0;padding-left:20px;color:#555;">
-                        <li>${(backingPct*100).toFixed(1)}% for contract backing</li>
-                    </ul>
-                    <p style="margin:5px 0;color:#2e7d32;"><strong>Your share: ${(userSharePct*100).toFixed(1)}% of purchase amount converts to tokens</strong></p>
-                </div>`;
-            } else if (direction.value === 'IAM-to-dai') {
-                const backingPct = this.getBackingFeePct(daiBalanceNum);
-                const userSharePct = 1 - backingPct;
-                html += `<div style="background:00000000;padding:12px;border-radius:8px;border-left:4px solid #ff9800;margin-bottom:10px;">
-                    <h4 style="margin:0 0 8px 0;color:#e65100;">💰 Sell IAM and receive DAI</h4>
-                    <p style="margin:5px 0;color:#555;"><strong>Minimum sale:</strong> More than 1 IAM token</p>
-                    <p style="margin:5px 0;color:#555;"><strong>Sale fee:</strong> ${(backingPct*100).toFixed(1)}% (from tokens)</p>
-                    <ul style="margin:5px 0;padding-left:20px;color:#555;">
-                        <li>${(backingPct*100).toFixed(1)}% for contract backing</li>
-                    </ul>
-                    <p style="margin:5px 0;color:#e65100;"><strong>Your share: ${(userSharePct*100).toFixed(1)}% of tokens convert to DAI</strong></p>
-                </div>`;
-            }
-            
-            console.log('✅ Limit information loaded');
-            
-        } catch (e) {
-            console.error('❌ Error loading limit information:', e);
-            html = '<div style="background:00000000;padding:12px;border-radius:8px;border-left:4px solid #f44336;color:#c62828;">Unable to load transaction limits. Please refresh the page and try again.</div>';
-        }
-        
-        infoDiv.innerHTML = html;
-    }
+
 
     // Update contract selection UI
     updateContractSelectionUI() {
@@ -411,13 +357,10 @@ class SwapManager {
         
         const contractInfo = document.getElementById('contractInfo');
         if (contractInfo) {
-            const contractAddress = this.selectedContract === 'old' ? IAM_ADDRESS_OLD : IAM_ADDRESS_NEW;
             const contractName = this.selectedContract === 'old' ? 'Old Contract' : 'New Contract';
             contractInfo.innerHTML = `
-                <div style="background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 8px; padding: 0.8rem; margin-bottom: 1rem;">
-                    <h4 style="color: #00ff88; margin: 0 0 0.5rem 0; font-size: 0.9rem;">📋 Selected Contract</h4>
-                    <p style="margin: 0; color: #ffffff; font-size: 0.8rem;"><strong>${contractName}:</strong></p>
-                    <p style="margin: 0; color: #a786ff; font-family: monospace; font-size: 0.75rem; word-break: break-all;">${contractAddress}</p>
+                <div style="background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 6px; padding: 0.4rem; margin-bottom: 0.3rem;">
+                    <p style="margin: 0; color: #00ff88; font-size: 0.75rem;"><strong>${contractName}</strong></p>
                 </div>
             `;
         }
@@ -446,10 +389,7 @@ class SwapManager {
         if (swapDirection) {
             swapDirection.addEventListener('change', async () => {
                 console.log('🔄 Swap direction changed:', swapDirection.value);
-                this.updateSwapRate();
-                await this.updateSwapPreview();
                 this.updateMaxAmount();
-                await this.updateSwapLimitInfo();
                 
                 // Show/hide USD field based on swap direction
                 this.toggleSwapUsdConverter();
@@ -462,8 +402,6 @@ class SwapManager {
         if (swapAmount) {
             swapAmount.addEventListener('input', async () => {
                 console.log('📝 Swap amount changed:', swapAmount.value);
-                await this.updateSwapPreview();
-                await this.updateSwapLimitInfo();
                 
                 // Real-time calculation of dollar equivalent when token amount changes
                 this.updateSwapUsdValue();
@@ -474,7 +412,9 @@ class SwapManager {
         }
         
         if (maxBtn) {
-            maxBtn.addEventListener('click', async () => {
+            maxBtn.addEventListener('click', async (e) => {
+                e.preventDefault(); // Prevent default button behavior
+                e.stopPropagation(); // Stop event bubbling
                 console.log('🔢 Max button clicked');
                 try {
                     // Check if balances are loaded
@@ -484,8 +424,8 @@ class SwapManager {
                     }
                     
                     await this.setMaxAmount();
-                    await this.updateSwapLimitInfo();
-                    this.showStatus('✅ Maximum available amount has been set. You can now proceed with your transaction.', 'success');
+                    // Don't show status message to avoid scrolling to Exchange Information section
+                    // this.showStatus('✅ Maximum available amount has been set. You can now proceed with your transaction.', 'success');
                 } catch (error) {
                     console.error('❌ Error in max button click:', error);
                     this.showStatus('Unable to set maximum amount. Please enter the amount manually.', 'error');
@@ -643,117 +583,19 @@ class SwapManager {
             
             console.log('✅ User balances saved:', this.userBalances);
             
-            this.updateSwapRate();
-            await this.updateSwapLimitInfo();
+
             
         } catch (error) {
             console.error('❌ Error loading swap data:', error);
             this.tokenPrice = null;
             this.userBalances = { IAM: 0, dai: 0 };
-            this.updateSwapRate();
             this.showStatus('Unable to load wallet balances. Please check your connection and try again.', 'error');
         }
     }
 
-    updateSwapRate() {
-        const rateEl = document.getElementById('swapRate');
-        
-        if (!rateEl) {
-            console.warn('⚠️ swapRate element not found');
-            return;
-        }
-        
-        console.log('🔍 updateSwapRate - tokenPrice:', this.tokenPrice, 'Number(tokenPrice):', Number(this.tokenPrice));
-        
-        if (this.tokenPrice && Number(this.tokenPrice) > 0) {
-            const price = Number(this.tokenPrice);
-            const daiToIam = 1 / price;
-            const iamToDai = price;
-            
-            // Format numbers properly for very small values
-            const formatNumber = (num) => {
-                if (num < 0.000001) {
-                    return num.toExponential(6);
-                } else if (num < 0.01) {
-                    return num.toFixed(8);
-                } else {
-                    return num.toFixed(6);
-                }
-            };
-            
-            rateEl.innerHTML = `<div style="background:00000000;padding:10px;border-radius:6px;text-align:center;margin:10px 0;">
-                <strong>💱 Current Exchange Rate:</strong><br>
-                1 DAI = ${formatNumber(daiToIam)} IAM<br>
-                1 IAM = ${formatNumber(iamToDai)} DAI
-            </div>`;
-            console.log('✅ Exchange rate updated:', price);
-        } else {
-            rateEl.innerHTML = '<div style="background:00000000;padding:10px;border-radius:6px;text-align:center;color:#c62828;">Token price is currently unavailable. Please refresh the page or try again later.</div>';
-            console.warn('⚠️ Token price not available');
-        }
-    }
 
-    async updateSwapPreview() {
-        const amount = document.getElementById('swapAmount');
-        const direction = document.getElementById('swapDirection');
-        const preview = document.getElementById('swapPreview');
-        
-        if (!amount || !direction || !preview) {
-            console.warn('⚠️ Required elements for preview not found');
-            return;
-        }
-        
-        if (!this.tokenPrice || Number(this.tokenPrice) <= 0) {
-            preview.innerHTML = '<div style="background:#ffebee;padding:10px;border-radius:6px;text-align:center;color:#c62828;">Token price is currently unavailable. Please wait for price data to load.</div>';
-            return;
-        }
-        
-        const value = parseFloat(amount.value) || 0;
-        let result = 0;
-        let previewHtml = '';
-        
-        console.log('📊 Calculating preview:', {
-            direction: direction.value,
-            amount: value,
-            tokenPrice: this.tokenPrice
-        });
-        
-        if (direction.value === 'dai-to-IAM') {
-            result = value / Number(this.tokenPrice);
-            // Dynamic fee based on contract DAI balance (no developer fee)
-            const daiBalanceNum = await this.getContractDaiBalanceNum();
-            const backingPct = this.getBackingFeePct(daiBalanceNum);
-            const fees = value * backingPct;
-            const netAmount = value - fees;
-            const netTokens = netAmount / Number(this.tokenPrice);
-            
-            previewHtml = `<div style=\"background:00000000;padding:12px;border-radius:6px;margin:10px 0;\">
-                <h4 style=\"margin:0 0 8px 0;color:#2e7d32;\">📊 Purchase Preview</h4>
-                <p style=\"margin:5px 0;color:#555;\"><strong>Input Amount:</strong> ${value.toFixed(2)} DAI</p>
-                <p style=\"margin:5px 0;color:#555;\"><strong>Fee (${(backingPct*100).toFixed(1)}%):</strong> ${fees.toFixed(2)} DAI</p>
-                <p style=\"margin:5px 0;color:#555;\"><strong>Net Amount:</strong> ${netAmount.toFixed(2)} DAI</p>
-                <p style=\"margin:5px 0;color:#2e7d32;\"><strong>Tokens Received:</strong> ${netTokens.toFixed(6)} IAM</p>
-            </div>`;
-        } else if (direction.value === 'IAM-to-dai') {
-            result = value * Number(this.tokenPrice);
-            // Dynamic fee based on contract DAI balance (no developer fee)
-            const daiBalanceNum = await this.getContractDaiBalanceNum();
-            const backingPct = this.getBackingFeePct(daiBalanceNum);
-            const fees = result * backingPct;
-            const netDai = result - fees;
-            
-            previewHtml = `<div style=\"background:#fff3e0;padding:12px;border-radius:6px;margin:10px 0;\">
-                <h4 style=\"margin:0 0 8px 0;color:#e65100;\">📊 Sale Preview</h4>
-                <p style=\"margin:5px 0;color:#555;\"><strong>Input Tokens:</strong> ${value.toFixed(6)} IAM</p>
-                <p style=\"margin:5px 0;color:#555;\"><strong>Total Value:</strong> ${result.toFixed(6)} DAI</p>
-                <p style=\"margin:5px 0;color:#555;\"><strong>Fee (${(backingPct*100).toFixed(1)}%):</strong> ${fees.toFixed(6)} DAI</p>
-                <p style=\"margin:5px 0;color:#e65100;\"><strong>DAI Received:</strong> ${netDai.toFixed(6)} DAI</p>
-            </div>`;
-        }
-        
-        preview.innerHTML = previewHtml;
-        console.log('✅ Preview updated');
-    }
+
+
 
     updateMaxAmount() {
         const direction = document.getElementById('swapDirection');
@@ -765,10 +607,12 @@ class SwapManager {
         }
         
             if (direction.value === 'dai-to-IAM') {
-        // Always calculate one cent less for maximum DAI amount
-        const maxDai = Math.max(0, this.userBalances.dai - 0.01);
+        // Limit maximum amount to $1000 (assuming 1 DAI = 1 USD)
+        const maxAllowedDai = 1000;
+        const userBalanceMinusOneCent = Math.max(0, this.userBalances.dai - 0.01);
+        const maxDai = Math.min(userBalanceMinusOneCent, maxAllowedDai);
         amount.max = maxDai;
-        console.log('✅ Maximum DAI amount set (1 cent less):', maxDai);
+        console.log('✅ Maximum DAI amount set (limited to $1000):', maxDai);
                  } else if (direction.value === 'IAM-to-dai') {
              // Maximum sale based on pool liquidity and dynamic fee
              amount.max = '';
@@ -844,15 +688,22 @@ class SwapManager {
                     return;
                 }
                 
-                // Simple approach: use 95% of available balance
-                let maxAmount = this.userBalances.dai * 0.95;
+                // Limit maximum amount to $1000 (assuming 1 DAI = 1 USD)
+                const maxAllowedDai = 1000;
+                const userBalance95Percent = this.userBalances.dai * 0.95;
+                
+                // Use the smaller of: 95% of user balance or $1000 limit
+                let maxAmount = Math.min(userBalance95Percent, maxAllowedDai);
                 maxAmount = floorToDecimals(maxAmount, 2);
-                maxAmount = Math.max(0.01, maxAmount); // Minimum 0.01 DAI
+                
+                // Subtract 100 DAI from maximum amount
+                maxAmount = Math.max(0.01, maxAmount - 100);
                 
                 amount.value = maxAmount.toFixed(2);
                 
-                console.log('✅ Maximum DAI amount set:', {
+                console.log('✅ Maximum DAI amount set (100 DAI less):', {
                     userBalance: this.userBalances.dai.toFixed(2),
+                    maxAllowedDai: maxAllowedDai,
                     maxAmount: maxAmount.toFixed(2)
                 });
                 
@@ -867,34 +718,33 @@ class SwapManager {
                 // Simple approach: use 95% of available balance
                 let maxIAM = this.userBalances.IAM * 0.95;
                 maxIAM = floorToDecimals(maxIAM, 6);
-                maxIAM = Math.max(0.000001, maxIAM); // Minimum 0.000001 IAM
+                
+                // Subtract 100 IAM tokens from maximum amount
+                maxIAM = Math.max(0.000001, maxIAM - 100);
                 
                 amount.value = maxIAM.toFixed(6);
                 
-                console.log('✅ Maximum IAM amount set:', {
+                console.log('✅ Maximum IAM amount set (100 IAM less):', {
                     userBalance: this.userBalances.IAM.toFixed(6),
                     maxAmount: maxIAM.toFixed(6)
                 });
             }
             
-            // Update preview after setting amount
-            await this.updateSwapPreview();
-            console.log('✅ Preview updated after setting maximum amount');
+            console.log('✅ Maximum amount set successfully');
             
         } catch (error) {
             console.error('❌ Error setting maximum amount:', error);
             this.showStatus('Error setting maximum amount: ' + error.message, 'error');
             
-            // Fallback: set to 90% of balance
+            // Fallback: set to 90% of balance minus 100 tokens
             try {
                 if (direction.value === 'dai-to-IAM' && this.userBalances.dai > 0) {
-                    const fallbackMax = Math.max(0.01, this.userBalances.dai * 0.9);
+                    const fallbackMax = Math.max(0.01, (this.userBalances.dai * 0.9) - 100);
                     amount.value = fallbackMax.toFixed(2);
                 } else if (direction.value === 'IAM-to-dai' && this.userBalances.IAM > 0) {
-                    const fallbackMax = Math.max(0.000001, this.userBalances.IAM * 0.9);
+                    const fallbackMax = Math.max(0.000001, (this.userBalances.IAM * 0.9) - 100);
                     amount.value = fallbackMax.toFixed(6);
                 }
-                await this.updateSwapPreview();
             } catch (fallbackError) {
                 console.error('❌ Fallback also failed:', fallbackError);
             }
@@ -941,7 +791,7 @@ class SwapManager {
         return error.message || 'An unexpected error occurred. Please try again.';
     }
 
-    showStatus(message, type = 'info', txHash = null) {
+    showStatus(message, type = 'info', txHash = null, scrollToMessage = true) {
         console.log('📢 Displaying message:', { message, type, txHash });
         
         const statusEl = document.getElementById('swapStatus');
@@ -979,8 +829,10 @@ class SwapManager {
         statusEl.className = className;
         statusEl.innerHTML = html;
         
-        // Scroll to message
-        statusEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        // Scroll to message only if requested
+        if (scrollToMessage) {
+            statusEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
         
         console.log('✅ Message displayed');
     }
@@ -1028,7 +880,14 @@ class SwapManager {
             // Validation according to contract
             if (direction.value === 'dai-to-IAM') {
                 if (value <= 1) throw new Error('Minimum purchase amount is 1.01 DAI. Please increase your purchase amount.');
-                // Dynamic buy limit
+                
+                // Enforce $1000 maximum limit for DAI to token conversion
+                const maxAllowedDai = 1000;
+                if (value > maxAllowedDai) {
+                    throw new Error(`Purchase amount exceeds maximum limit. Maximum allowed: ${maxAllowedDai} DAI ($1000). Please reduce your amount.`);
+                }
+                
+                // Dynamic buy limit from contract
                 const daiContractBalance = await this.getContractDaiBalanceNum();
                 const maxBuy = (daiContractBalance <= 100000) ? 1000 : (daiContractBalance * 0.01);
                 if (value > maxBuy) throw new Error(`Purchase amount exceeds daily limit. Maximum allowed: ${maxBuy.toFixed(2)} DAI. Please reduce your amount.`);
@@ -1069,7 +928,6 @@ class SwapManager {
             this.showStatus('🎉 Transaction completed successfully! Your tokens have been exchanged.', 'success');
             await this.refreshSwapData();
             amount.value = '';
-            await this.updateSwapPreview();
             
             // Save active tab
             localStorage.setItem('activeTab', 'swap');
@@ -1178,9 +1036,6 @@ class SwapManager {
         
         try {
             await this.loadSwapData();
-            this.updateSwapRate();
-            await this.updateSwapPreview();
-            await this.updateSwapLimitInfo();
             
             console.log('✅ Swap data refreshed');
         } catch (error) {

@@ -200,7 +200,7 @@ class SmoothValueUpdater {
 }
 
 // ایجاد نمونه سراسری
-window.smoothValueUpdater = new window.smoothValueUpdater?.constructor() || new SmoothValueUpdater();
+window.smoothValueUpdater = window.smoothValueUpdater || new SmoothValueUpdater();
 
 // تابع سراسری برای سادگی استفاده
 window.updateValueSmoothly = function(element, value, options) {
