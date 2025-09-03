@@ -1,22 +1,72 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="en" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>Register</title>
-  <link rel="stylesheet" href="css/style.css">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Register - IAMPHOENIX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=1.1">
   <link rel="stylesheet" href="css/mobile-responsive.css">
+  <link rel="stylesheet" href="css/modern-theme.css">
   <script src="js/mobile-optimizer.js"></script>
   <style>
     body {
-      background: #181c2a !important;
+      background: linear-gradient(135deg, #0a0f1c, #1a1f2e);
+      min-height: 100vh;
+      margin: 0;
+      padding: 1rem;
+      font-family: 'Noto Sans Arabic', sans-serif;
     }
+    .main-container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: #1a1f2e;
+      border-radius: 15px;
+      padding: 1rem;
+      border: 2px solid #00ff88;
+      margin-top: 4rem;
+    }
+    
     .register-form {
       background: linear-gradient(135deg, #232946 80%, #181c2a 100%) !important;
       color: #fff !important;
       border-radius: 16px;
       box-shadow: 0 8px 32px #00000033, 0 1.5px 6px #00ff8840;
-      padding: 20px 16px 16px 16px;
+      padding: 16px 12px 12px 12px;
+    }
+    
+    /* Back Button Styles */
+    .back-btn {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      background: linear-gradient(135deg, #a786ff, #00ff88);
+      color: #0a0f1c;
+      border: none;
+      padding: 0.6rem 1rem;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(167, 134, 255, 0.3);
+      z-index: 1000;
+    }
+    
+    .back-btn:hover {
+      background: linear-gradient(135deg, #00ff88, #a786ff);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(167, 134, 255, 0.4);
     }
     .register-form label,
     .register-form-title {
@@ -85,29 +135,45 @@
       color: #fff !important;
     }
     .form-group {
-       margin-bottom: 8px !important;
+       margin-bottom: 4px;
     }
     .form-group label {
-       margin-bottom: 2px !important;
-       font-size: 0.85rem !important;
+       margin-bottom: 1px;
+       font-size: 0.7rem;
     }
     .register-form-input {
-       padding: 6px 10px !important;
-       font-size: 0.85rem !important;
+       padding: 4px 6px;
+       font-size: 0.7rem;
+    }
+    
+    /* Index Input - Full Width */
+    .index-input {
+      width: 100%;
+      margin-bottom: 4px;
+      padding: 10px 12px;
+      font-size: 1rem;
+      font-weight: bold;
+    }
+    
+    .apply-btn {
+      width: auto;
+      padding: 3px 6px;
+      font-size: 0.6rem;
+      margin-bottom: 3px;
     }
     .avatar-row {
-       margin-bottom: 6px !important;
+       margin-bottom: 3px;
     }
     .avatar-choice {
-       font-size: 1.3rem !important;
-       padding: 3px !important;
+       font-size: 1rem;
+       padding: 1px;
      }
      .register-form {
-       padding: 16px 14px 12px 14px !important;
+       padding: 12px 8px 8px 8px;
      }
      .register-form-title {
-       margin-bottom: 8px !important;
-       font-size: 1.2rem !important;
+       margin-bottom: 4px;
+       font-size: 1rem;
     }
     
     /* Register Status Styles */
@@ -141,23 +207,23 @@
   </style>
 </head>
 <body>
-  <script src="js/navbar.js"></script>
-  <main style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--ios-background);">
-         <form class="register-form" autocomplete="off" style="max-width:430px;width:100%;margin:0 auto;">
+  <!-- Back Button -->
+  <a href="index.html" class="back-btn">← Back</a>
+
+  <!-- Main Content -->
+  <div class="main-container">
+         <form class="register-form" autocomplete="off">
                <!-- Registration tabs -->
-        <div style="display: flex; margin-bottom: 16px; background: rgba(35, 41, 70, 0.5); border-radius: 8px; padding: 4px;">
-          <button type="button" id="normal-tab" class="tab-btn active" style="flex: 1; padding: 8px 12px; background: linear-gradient(90deg,#00ff88,#00cc66); color: #232946; border: none; border-radius: 6px; font-weight: bold; font-size: 0.9rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0, 255, 136, 0.3); position: relative;">Normal Registration <span style="position: absolute; top: -8px; right: -8px; background: #00ff88; color: #232946; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">⭐</span></button>
-          <button type="button" id="free-tab" class="tab-btn" style="flex: 1; padding: 6px 10px; background: rgba(255, 215, 0, 0.1); color: #ffd700; border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 6px; font-weight: bold; font-size: 0.8rem; cursor: pointer; opacity: 0.7;">Reserve <span style="font-size: 0.7rem; margin-left: 2px;">⚠️</span></button>
+        <div style="display: flex; margin-bottom: 4px; background: rgba(35, 41, 70, 0.5); border-radius: 8px; padding: 2px;">
+          <button type="button" id="normal-tab" class="tab-btn active" style="flex: 3; padding: 8px 12px; background: linear-gradient(90deg,#00ff88,#00cc66); color: #232946; border: none; border-radius: 6px; font-weight: bold; font-size: 0.9rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0, 255, 136, 0.3); position: relative;">Normal Registration <span style="position: absolute; top: -8px; right: -8px; background: #00ff88; color: #232946; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">⭐</span></button>
+          <button type="button" id="free-tab" class="tab-btn" style="flex: 1; padding: 6px 8px; background: rgba(255, 215, 0, 0.1); color: #ffd700; border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 6px; font-weight: bold; font-size: 0.7rem; cursor: pointer; opacity: 0.7;">Reserve <span style="font-size: 0.6rem; margin-left: 2px;">⚠️</span></button>
         </div>
        
-               <!-- Recommendation message -->
-        <div id="registration-recommendation" style="margin-bottom: 12px; padding: 8px 12px; background: linear-gradient(90deg, rgba(0, 255, 136, 0.1), rgba(167, 134, 255, 0.1)); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 6px; text-align: center; font-size: 0.85rem; color: #00ff88;">
-          <span style="font-weight: bold;">💡 Recommendation:</span> Choose normal registration to activate immediately and benefit from all advantages
-        </div>
+
         
 
        
-       <h2 class="register-form-title" style="text-align:center;margin-bottom:8px;font-size:1.2rem;">Register Form</h2>
+
       
 
       
@@ -168,28 +234,21 @@
       <div class="register-form-status warning" id="register-suggestion" style="display:none;"></div>
       <div class="form-group">
                  <label for="index-search">Index</label>
-                                                                       <div style="font-size:0.7rem;color:#a786ff;margin-bottom:4px;background:rgba(167,134,255,0.1);padding:4px;border-radius:3px;border:1px solid rgba(167,134,255,0.3);">
-            ⚠️ <strong>Limit:</strong> You can only register for indexes in your subtree. Referrer must have at least one empty child position.
-         </div>
-                 <input type="text" id="index-search" class="register-form-input" placeholder="e.g. 123" autocomplete="off" value="refferer ID : IAM00000" style="width: 100%; margin-bottom: 6px;">
-         <button type="button" id="apply-index-btn" class="register-btn" style="width: 100%; padding: 6px 12px; font-size: 0.85rem;">Apply</button>
+          <input type="text" id="index-search" class="register-form-input index-input" placeholder="e.g. 123" autocomplete="off" value="refferer ID : IAM00000">
+          <button type="button" id="apply-index-btn" class="register-btn apply-btn">Apply</button>
       </div>
       <div class="form-group">
                  <label for="referrer-address">Referrer Address (Parent)</label>
-                 <div style="font-size:0.65rem;color:#718096;margin-bottom:3px;background:rgba(113,128,150,0.1);padding:3px;border-radius:3px;">
-           🔗 This field is automatically filled based on the selected index. Referrer must be active.
-      </div>
+
         <input type="text" id="referrer-address" class="register-form-input" placeholder="0x..." autocomplete="off" value="root">
       </div>
       <div class="form-group">
         <label for="new-user-address">New User Address</label>
-                 <div style="font-size:0.65rem;color:#718096;margin-bottom:3px;background:rgba(113,128,150,0.1);padding:3px;border-radius:3px;">
-           👤 Wallet address of the user you want to register. This address should not be previously registered.
-         </div>
+
                  <input type="text" id="new-user-address" class="register-form-input" placeholder="0x..." autocomplete="off">
       </div>
        
-                       <button class="register-btn buy-btn" id="register-btn" type="button" style="width:100%;margin-top:8px;">Register</button>
+                       <button class="register-btn buy-btn" id="register-btn" type="button" style="width:100%;margin-top:6px;">Register</button>
       
       <script>
          // Function to display general messages
@@ -471,32 +530,15 @@
            });
          });
        </script>
-             <div class="info-box" id="register-info" style="background:rgba(28,28,40,0.97);color:#fff;font-weight:bold;font-size:0.85rem;box-shadow:0 2px 8px #a786ff22;margin-bottom:8px;padding:8px;">
-        <div style="margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid rgba(167,134,255,0.3);">
-           <div style="color:#a786ff;font-size:0.75rem;margin-bottom:2px;">📊 Registration Info:</div>
+             <div class="info-box" id="register-info" style="background:rgba(28,28,40,0.97);color:#fff;font-size:0.8rem;box-shadow:0 2px 8px #a786ff22;margin-bottom:6px;padding:6px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+          <span>Cost: <b id="register-cost" style="color:#00ff88;">...</b></span>
+          <span>Type: <b id="registration-type" style="color:#a786ff;">Normal</b></span>
         </div>
-        <div style="margin-bottom:3px;">🎯 Referrer Index: <b id="parent-index">...</b></div>
-         <div style="margin-bottom:3px;">📍 New Position Index: <b id="empty-index">...</b></div>
-         <div style="margin-bottom:3px;">🔄 New User Position: <b id="position-info">...</b></div>
-         <div style="margin-bottom:3px;">💰 Registration Cost:<br><b id="register-cost" style="display:inline-block;margin-top:1px;font-size:0.9rem;color:#00ff88;">...</b></div>
-         <div style="margin-bottom:3px;">🎯 Registration Type: <b id="registration-type" style="color:#a786ff;">Normal</b></div>
-        
-        <div style="margin-top:6px;padding-top:4px;border-top:1px solid rgba(167,134,255,0.3);">
-           <div style="color:#a786ff;font-size:0.75rem;margin-bottom:4px;">💳 Wallet Balance:</div>
-          <div style="display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;">
-                                          <span style="display:flex;align-items:center;gap:4px;">
-              <span style="color:#8247E5;font-size:16px;">🔷</span>
-              <span>MATIC Balance: <b id="matic-balance">...</b></span>
-            </span>
-            <span style="display:flex;align-items:center;gap:4px;">
-              <span style="color:#00ff88;font-size:16px;">💎</span>
-              <span>IAM Balance: <b id="IAM-balance">...</b></span>
-            </span>
-          </div>
-                     <div style="font-size:0.65rem;color:#718096;margin-top:4px;text-align:center;background:rgba(113,128,150,0.1);padding:3px;border-radius:3px;">
-             💡 <span id="registration-hint">For normal registration you need regPrice IAM tokens</span>
+        <div style="display:flex;justify-content:space-between;font-size:0.75rem;">
+          <span>MATIC: <b id="matic-balance">...</b></span>
+          <span>IAM: <b id="IAM-balance">...</b></span>
         </div>
-      </div>
              </div>
               <div class="avatar-row" style="margin-bottom:0.3em;">
         <span class="avatar-choice selected" data-avatar="man">👨‍💼</span>
@@ -506,12 +548,21 @@
       </div>
       <div class="register-form-status" id="status-message"></div>
       
-                                                             <div style="margin-top:8px;padding:6px;background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3);border-radius:5px;text-align:center;font-size:0.75rem;color:#ffc107;">
-          ⚠️ You need sufficient IAM and MATIC balance for registration
-       </div>
+
     </form>
-  </main>
+  </div>
+  <!-- Web3 and Ethers.js - Load first -->
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
+  
+  <!-- Ensure ethers is loaded -->
+  <script>
+      if (typeof ethers === 'undefined') {
+          console.error('❌ Ethers.js not loaded properly');
+      } else {
+          console.log('✅ Ethers.js loaded:', ethers.version);
+      }
+  </script>
+  
   <script src="js/config.js"></script>
   <script>
     let selectedAvatar = 'man';
@@ -612,8 +663,10 @@
                // Change tab appearance using CSS classes
         document.getElementById('normal-tab').classList.add('active');
         document.getElementById('normal-tab').innerHTML = 'Normal Registration <span style="position: absolute; top: -8px; right: -8px; background: #00ff88; color: #232946; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">⭐</span>';
+        document.getElementById('normal-tab').style.flex = '3';
         document.getElementById('free-tab').classList.remove('active');
-        document.getElementById('free-tab').innerHTML = 'Reserve <span style="font-size: 0.7rem; margin-left: 2px;">⚠️</span>';
+        document.getElementById('free-tab').innerHTML = 'Reserve <span style="font-size: 0.6rem; margin-left: 2px;">⚠️</span>';
+        document.getElementById('free-tab').style.flex = '1';
        
                // Change button text
         document.getElementById('register-btn').textContent = 'Register';
@@ -622,14 +675,9 @@
        // Change information
        document.getElementById('registration-type').textContent = 'Normal';
        document.getElementById('registration-type').style.color = '#00ff88';
-       document.getElementById('registration-hint').textContent = 'For normal registration you need regPrice IAM tokens';
+
        
-               // Show recommendation for normal registration
-        document.getElementById('registration-recommendation').style.display = 'block';
-        document.getElementById('registration-recommendation').style.background = 'linear-gradient(90deg, rgba(0, 255, 136, 0.1), rgba(167, 134, 255, 0.1))';
-        document.getElementById('registration-recommendation').style.border = '1px solid rgba(0, 255, 136, 0.3)';
-        document.getElementById('registration-recommendation').style.color = '#00ff88';
-        document.getElementById('registration-recommendation').innerHTML = '<span style="font-weight: bold;">💡 Recommendation:</span> Choose normal registration to activate immediately and benefit from all advantages';
+
        
        // Update cost
        updateRegistrationCost();
@@ -641,9 +689,11 @@
        
        // Change tab appearance using CSS classes
        document.getElementById('free-tab').classList.add('active');
-       document.getElementById('free-tab').innerHTML = 'Reserve <span style="font-size: 0.7rem; margin-left: 2px;">⚠️</span>';
+       document.getElementById('free-tab').innerHTML = 'Reserve <span style="font-size: 0.6rem; margin-left: 2px;">⚠️</span>';
+       document.getElementById('free-tab').style.flex = '1';
        document.getElementById('normal-tab').classList.remove('active');
        document.getElementById('normal-tab').innerHTML = 'Normal Registration <span style="position: absolute; top: -8px; right: -8px; background: #00ff88; color: #232946; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">⭐</span>';
+       document.getElementById('normal-tab').style.flex = '3';
        
                // Change button text
         document.getElementById('register-btn').textContent = 'Register Reserve';
@@ -652,17 +702,10 @@
        // Change information
        document.getElementById('registration-type').textContent = 'Reserve';
        document.getElementById('registration-type').style.color = '#ff6b6b';
-       document.getElementById('registration-hint').textContent = 'For reserve registration you need equivalent $23 IAM tokens';
+
        
        // Display message box with reserve information
        showReserveInfoMessage();
-       
-               // Show warning for reserve registration
-        document.getElementById('registration-recommendation').style.display = 'block';
-        document.getElementById('registration-recommendation').style.background = 'linear-gradient(90deg, rgba(255, 165, 0, 0.1), rgba(255, 140, 0, 0.1))';
-        document.getElementById('registration-recommendation').style.border = '1px solid rgba(255, 165, 0, 0.3)';
-        document.getElementById('registration-recommendation').style.color = '#ffa500';
-        document.getElementById('registration-recommendation').innerHTML = '<span style="font-weight: bold;">⚠️ Warning:</span> Reserve registration requires additional payment for activation';
        
        // Update cost
        updateRegistrationCost();
@@ -749,7 +792,10 @@
          window.currentUserAddress = myAddress; // Save address for use in other functions
          isConnected = true;
         connStatus.textContent = '';
-        document.getElementById('register-info').style.display = '';
+        const registerInfoElement = document.getElementById('register-info');
+        if (registerInfoElement) {
+          registerInfoElement.style.display = '';
+        }
         document.getElementById('register-btn').disabled = false;
         document.querySelectorAll('input').forEach(i=>i.disabled=false);
                  // Initialize referrer (parent) and parent-index only after user initialization
@@ -796,7 +842,10 @@
           refInput.value = 'root';
            parentIndex = '...';
          }
-        document.getElementById('parent-index').textContent = parentIndex;
+        const parentIndexElement = document.getElementById('parent-index');
+        if (parentIndexElement) {
+          parentIndexElement.textContent = parentIndex;
+        }
         
         
         
@@ -813,7 +862,10 @@
              emptyIndex = 'Full';
             }
          }
-         document.getElementById('empty-index').textContent = emptyIndex;
+         const emptyIndexElement = document.getElementById('empty-index');
+         if (emptyIndexElement) {
+           emptyIndexElement.textContent = emptyIndex;
+         }
         
                  // Update registration cost
          await updateRegistrationCost();
@@ -828,7 +880,10 @@
             maticBalance = '0.00';
           }
         }
-        document.getElementById('matic-balance').textContent = maticBalance;
+        const maticBalanceElement = document.getElementById('matic-balance');
+        if (maticBalanceElement) {
+          maticBalanceElement.textContent = maticBalance;
+        }
                  // IAM balance
         let IAMBalance = '...';
         if (isConnected && contract && myAddress && typeof contract.balanceOf === 'function') {
@@ -886,7 +941,10 @@
             IAMBalance = '0.00';
           }
         }
-        document.getElementById('IAM-balance').textContent = IAMBalance;
+        const IAMBalanceElement = document.getElementById('IAM-balance');
+        if (IAMBalanceElement) {
+          IAMBalanceElement.textContent = IAMBalance;
+        }
       } catch (e) {
         isConnected = false;
         console.error('Connection error in loadRegisterInfo:', e);
@@ -905,7 +963,10 @@
            connStatus.textContent = '❌ Failed to connect wallet: ' + (e.message || e);
          }
          
-        document.getElementById('register-info').style.display = 'none';
+        const registerInfoElement = document.getElementById('register-info');
+        if (registerInfoElement) {
+          registerInfoElement.style.display = 'none';
+        }
         document.getElementById('register-btn').disabled = true;
         document.querySelectorAll('input').forEach(i=>i.disabled=true);
       }
@@ -1086,18 +1147,33 @@
                      positionInfo = 'No empty position';
                    }
                    
-                   document.getElementById('empty-index').textContent = emptyIndex;
-                   document.getElementById('position-info').textContent = positionInfo;
+                   const emptyIndexElement = document.getElementById('empty-index');
+                   if (emptyIndexElement) {
+                     emptyIndexElement.textContent = emptyIndex;
+                   }
+                   const positionInfoElement = document.getElementById('position-info');
+                   if (positionInfoElement) {
+                     positionInfoElement.textContent = positionInfo;
+                   }
                  } else {
                    // Both children are occupied
                    showIndexCheckMessage('This referrer is full. Please enter a different index with available positions.', 'warning');
-                   document.getElementById('empty-index').textContent = 'Full';
-                   document.getElementById('position-info').textContent = 'No empty position';
+                   const emptyIndexElement = document.getElementById('empty-index');
+                   if (emptyIndexElement) {
+                     emptyIndexElement.textContent = 'Full';
+                   }
+                   const positionInfoElement = document.getElementById('position-info');
+                   if (positionInfoElement) {
+                     positionInfoElement.textContent = 'No empty position';
+                   }
                    return;
                  }
                } catch (error) {
                  console.log('Error calculating position info:', error);
-                 document.getElementById('position-info').textContent = 'Error calculating';
+                 const positionInfoElement = document.getElementById('position-info');
+                 if (positionInfoElement) {
+                   positionInfoElement.textContent = 'Error calculating';
+                 }
                }
              }
                         } else {
@@ -1126,11 +1202,20 @@
                      positionInfo = 'No empty position';
                    }
                    
-                   document.getElementById('empty-index').textContent = emptyIndex;
-                   document.getElementById('position-info').textContent = positionInfo;
+                   const emptyIndexElement = document.getElementById('empty-index');
+                   if (emptyIndexElement) {
+                     emptyIndexElement.textContent = emptyIndex;
+                   }
+                   const positionInfoElement = document.getElementById('position-info');
+                   if (positionInfoElement) {
+                     positionInfoElement.textContent = positionInfo;
+                   }
                  } catch (error) {
                    console.log('Error calculating position info:', error);
-                   document.getElementById('position-info').textContent = 'Error calculating';
+                   const positionInfoElement = document.getElementById('position-info');
+                   if (positionInfoElement) {
+                     positionInfoElement.textContent = 'Error calculating';
+                   }
                  }
                } else {
                  console.log(`⚠️ User not active or no index:`, currentUser);
