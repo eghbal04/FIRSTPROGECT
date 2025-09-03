@@ -1,6 +1,6 @@
 // تنظیمات قرارداد IAMPHOENIX
 
-const IAM_ADDRESS = '0xd7eDAdcae9073FD69Ae1081B057922F41Adf0607';
+const IAM_ADDRESS = '0x63F5a2085906f5fcC206d6589d78038FBc74d2FE';
 window.IAM_ADDRESS = IAM_ADDRESS;
 
 // آدرس DAI (Polygon)
@@ -2616,7 +2616,11 @@ async function performWeb3Initialization() {
 
 		window.contractConfig = {
 			...window.contractConfig,
-			...connectionData
+			provider: provider,
+			signer: signer,
+			contract: contract,
+			address: address,
+			initializeWeb3: initializeWeb3
 		};
 
 		// Cache the connection
@@ -2910,10 +2914,7 @@ window.refreshNetworkAfterConnection = async function(connection) {
 			await window.updateTransferBalancesOnConnect();
 		}
 		
-		// رفرش داده‌های سواپ
-		if (window.swapManager && typeof window.swapManager.refreshSwapData === 'function') {
-			await window.swapManager.refreshSwapData();
-		}
+		// Swap functionality moved to separate page
 		
 	} catch (error) {
 		console.warn('Error refreshing network data:', error);
@@ -4426,7 +4427,7 @@ window.updateDashboardStats = async function() {
 		code: e.code,
 		stack: e.stack
 	  });
-	  safeUpdate('circulating-supply', 'خطا در دریافت مقدار');
+	  safeUpdate('circulating-supply', '-');
 	  safeUpdate('circulating-supply-dai', '-');
 	}
 
@@ -4744,7 +4745,7 @@ async function getContractDAIBalance() {
 	? window.contractConfig.contract.provider
 	: (window.contractConfig && window.contractConfig.provider)
 	  ? window.contractConfig.provider
-	  : (window.ethereum ? new ethers.BrowserProvider(window.ethereum) : null);
+	  : (window.ethereum ? new ethers.providers.Web3Provider(window.ethereum) : null);
   if (!provider) throw new Error('No provider');
   const daiContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, provider);
   const balanceRaw = await daiContract.balanceOf(IAM_ADDRESS);
@@ -4762,7 +4763,7 @@ async function getTotalClaimableBinaryPoints() {
 	? window.contractConfig.contract.provider
 	: (window.contractConfig && window.contractConfig.provider)
 	  ? window.contractConfig.provider
-	  : (window.ethereum ? new ethers.BrowserProvider(window.ethereum) : null);
+	  : (window.ethereum ? new ethers.providers.Web3Provider(window.ethereum) : null);
   if (!provider) throw new Error('No provider');
   const contract = new ethers.Contract(IAM_ADDRESS, IAM_ABI, provider);
   const pointsRaw = await contract.totalClaimablePoints();
@@ -4786,7 +4787,7 @@ async function getContractTokenBalance() {
 	? window.contractConfig.contract.provider
 	: (window.contractConfig && window.contractConfig.provider)
 	  ? window.contractConfig.provider
-	  : (window.ethereum ? new ethers.BrowserProvider(window.ethereum) : null);
+	  : (window.ethereum ? new ethers.providers.Web3Provider(window.ethereum) : null);
   if (!provider) throw new Error('No provider');
   const contract = new ethers.Contract(IAM_ADDRESS, IAM_ABI, provider);
   const tokenRaw = await contract.balanceOf(IAM_ADDRESS);
@@ -4811,7 +4812,7 @@ async function updateContractStats() {
 	  ? window.contractConfig.contract.provider
 	  : (window.contractConfig && window.contractConfig.provider)
 		? window.contractConfig.provider
-		: (window.ethereum ? new ethers.BrowserProvider(window.ethereum) : null);
+		: (window.ethereum ? new ethers.providers.Web3Provider(window.ethereum) : null);
 	if (!provider) throw new Error('No provider');
 	const contract = new ethers.Contract(IAM_ADDRESS, IAM_ABI, provider);
 	// Total Points (integer, no decimals)
@@ -5073,6 +5074,190 @@ window.getIndexByAddress = async function(contract, address) {
         }
     } catch {}
     return 0n;
+};
+
+// Helper: دریافت آدرس از روی ایندکس
+window.getAddressByIndex = async function(contract, index) {
+    try {
+        if (!contract || index == null) return null;
+        
+        // تبدیل ایندکس به BigInt
+        const indexBigInt = BigInt(index);
+        
+        // استفاده از indexToAddress اگر موجود باشد
+        if (typeof contract.indexToAddress === 'function') {
+            const address = await window.retryRpcOperation(() => contract.indexToAddress(indexBigInt), 2).catch(() => null);
+            if (address && address !== '0x0000000000000000000000000000000000000000') {
+                return address;
+            }
+        }
+        
+        // تلاش با سایر توابع ممکن
+        if (typeof contract.getAddressByIndex === 'function') {
+            const address = await window.retryRpcOperation(() => contract.getAddressByIndex(indexBigInt), 2).catch(() => null);
+            if (address && address !== '0x0000000000000000000000000000000000000000') {
+                return address;
+            }
+        }
+        
+        console.warn('⚠️ No indexToAddress function found in contract');
+        return null;
+    } catch (error) {
+        console.error('❌ Error in getAddressByIndex:', error);
+        return null;
+    }
+};
+
+// تابع تطبیق دقیق ایندکس و آدرس
+window.validateIndexAddressMatch = async function(contract, index, expectedAddress) {
+    try {
+        console.log(`🔍 Validating index ${index} matches address ${expectedAddress}`);
+        
+        // دریافت آدرس از روی ایندکس
+        const actualAddress = await window.getAddressByIndex(contract, index);
+        console.log(`📍 Address from index ${index}:`, actualAddress);
+        
+        if (!actualAddress) {
+            console.error('❌ Could not get address for index:', index);
+            return false;
+        }
+        
+        // مقایسه آدرس‌ها (case-insensitive)
+        const match = actualAddress.toLowerCase() === expectedAddress.toLowerCase();
+        
+        if (match) {
+            console.log(`✅ Index ${index} matches address ${expectedAddress}`);
+        } else {
+            console.log(`❌ Index ${index} does NOT match address ${expectedAddress}`);
+            console.log(`   Expected: ${expectedAddress}`);
+            console.log(`   Actual:   ${actualAddress}`);
+        }
+        
+        return match;
+    } catch (error) {
+        console.error('❌ Error validating index-address match:', error);
+        return false;
+    }
+};
+
+// تابع ثبت نام با تطبیق دقیق ایندکس و آدرس
+window.registerWithIndexValidation = async function(contract, userAddress, targetIndex, referrerAddress = null) {
+    try {
+        console.log(`🚀 Starting registration with index validation...`);
+        console.log(`   User Address: ${userAddress}`);
+        console.log(`   Target Index: ${targetIndex}`);
+        console.log(`   Referrer: ${referrerAddress || 'None'}`);
+        
+        // مرحله 1: بررسی اینکه آیا ایندکس مورد نظر خالی است
+        const existingAddress = await window.getAddressByIndex(contract, targetIndex);
+        
+        if (existingAddress && existingAddress !== '0x0000000000000000000000000000000000000000') {
+            console.error(`❌ Index ${targetIndex} is already occupied by ${existingAddress}`);
+            throw new Error(`ایندکس ${targetIndex} قبلاً توسط آدرس دیگری اشغال شده است.`);
+        }
+        
+        console.log(`✅ Index ${targetIndex} is available`);
+        
+        // مرحله 2: بررسی اینکه آیا کاربر قبلاً ثبت نام کرده
+        const currentIndex = await window.getIndexByAddress(contract, userAddress);
+        
+        if (currentIndex && currentIndex > 0n) {
+            console.error(`❌ User ${userAddress} is already registered with index ${currentIndex}`);
+            throw new Error(`شما قبلاً با ایندکس ${currentIndex} ثبت نام کرده‌اید.`);
+        }
+        
+        console.log(`✅ User ${userAddress} is not registered yet`);
+        
+        // مرحله 3: انجام ثبت نام
+        console.log(`📝 Performing registration...`);
+        
+        let tx;
+        if (referrerAddress && referrerAddress !== '0x0000000000000000000000000000000000000000') {
+            // ثبت نام با referrer
+            console.log(`📋 Registering with referrer: ${referrerAddress}`);
+            
+            // بررسی صحت referrer
+            const referrerIndex = await window.getIndexByAddress(contract, referrerAddress);
+            if (!referrerIndex || referrerIndex === 0n) {
+                console.warn(`⚠️ Invalid referrer ${referrerAddress}, proceeding without referrer`);
+                tx = await contract.register();
+            } else {
+                console.log(`✅ Valid referrer found with index: ${referrerIndex}`);
+                tx = await contract.registerWithReferrer(referrerAddress);
+            }
+        } else {
+            // ثبت نام بدون referrer
+            console.log(`📋 Registering without referrer`);
+            tx = await contract.register();
+        }
+        
+        console.log(`⏳ Transaction submitted: ${tx.hash}`);
+        
+        // انتظار برای تأیید تراکنش
+        const receipt = await tx.wait();
+        console.log(`✅ Transaction confirmed in block: ${receipt.blockNumber}`);
+        
+        // مرحله 4: تأیید نهایی - بررسی اینکه ثبت نام با ایندکس درست انجام شده
+        console.log(`🔍 Validating final registration...`);
+        
+        // کمی صبر کنیم تا blockchain update شود
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        
+        const finalIndex = await window.getIndexByAddress(contract, userAddress);
+        const finalAddress = await window.getAddressByIndex(contract, finalIndex);
+        
+        console.log(`📊 Final validation results:`);
+        console.log(`   User Address: ${userAddress}`);
+        console.log(`   Assigned Index: ${finalIndex}`);
+        console.log(`   Address from Index: ${finalAddress}`);
+        
+        if (finalIndex == targetIndex) {
+            console.log(`🎉 SUCCESS: User registered with correct index ${targetIndex}`);
+            return {
+                success: true,
+                index: finalIndex,
+                address: userAddress,
+                txHash: tx.hash,
+                blockNumber: receipt.blockNumber,
+                message: `ثبت نام با موفقیت انجام شد! ایندکس شما: ${finalIndex}`
+            };
+        } else {
+            console.warn(`⚠️ Registration successful but index mismatch:`);
+            console.warn(`   Expected: ${targetIndex}`);
+            console.warn(`   Actual: ${finalIndex}`);
+            return {
+                success: true,
+                index: finalIndex,
+                address: userAddress,
+                txHash: tx.hash,
+                blockNumber: receipt.blockNumber,
+                message: `ثبت نام انجام شد اما ایندکس متفاوت است. ایندکس واقعی: ${finalIndex}`
+            };
+        }
+        
+    } catch (error) {
+        console.error('❌ Error in registerWithIndexValidation:', error);
+        
+        // پیام‌های خطای کاربرپسند
+        let userMessage = 'خطا در ثبت نام: ';
+        if (error.message.includes('already occupied')) {
+            userMessage += 'ایندکس مورد نظر قبلاً اشغال شده است.';
+        } else if (error.message.includes('already registered')) {
+            userMessage += 'شما قبلاً ثبت نام کرده‌اید.';
+        } else if (error.message.includes('insufficient')) {
+            userMessage += 'موجودی کافی ندارید.';
+        } else if (error.message.includes('user rejected')) {
+            userMessage += 'تراکنش توسط کاربر لغو شد.';
+        } else {
+            userMessage += error.message;
+        }
+        
+        return {
+            success: false,
+            error: error.message,
+            message: userMessage
+        };
+    }
 };
 
 // پیام‌های خطا و راهنمایی برای اتصال متامسک

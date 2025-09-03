@@ -727,16 +727,41 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
          
          const IAMId = window.generateIAMId ? window.generateIAMId(user.index) : user.index;
          const formattedIAMId = `IAM${String(IAMId).padStart(5, '0')}`;
-         nodeDiv.style.padding = '0.6em 1.2em';
-        nodeDiv.style.width = 'auto';
-        nodeDiv.style.minWidth = 'unset';
-        nodeDiv.style.maxWidth = 'none';
-        nodeDiv.style.height = 'auto';
-        nodeDiv.style.minHeight = 'unset';
-        nodeDiv.style.maxHeight = 'none';
+         // Responsive node sizing - Larger, more visible sizes
+        const isMobile = window.innerWidth <= 480;
+        const isTablet = window.innerWidth <= 768;
+        
+        if (isMobile) {
+            nodeDiv.style.padding = '0.3em 0.6em';
+            nodeDiv.style.width = 'auto';
+            nodeDiv.style.minWidth = '80px';
+            nodeDiv.style.maxWidth = '120px';
+            nodeDiv.style.height = '35px';
+            nodeDiv.style.minHeight = '35px';
+            nodeDiv.style.maxHeight = '35px';
+            nodeDiv.style.fontSize = '0.8em';
+        } else if (isTablet) {
+            nodeDiv.style.padding = '0.4em 0.8em';
+            nodeDiv.style.width = 'auto';
+            nodeDiv.style.minWidth = '100px';
+            nodeDiv.style.maxWidth = '150px';
+            nodeDiv.style.height = '40px';
+            nodeDiv.style.minHeight = '40px';
+            nodeDiv.style.maxHeight = '40px';
+            nodeDiv.style.fontSize = '0.9em';
+        } else {
+            nodeDiv.style.padding = '0.5em 1em';
+            nodeDiv.style.width = 'auto';
+            nodeDiv.style.minWidth = '120px';
+            nodeDiv.style.maxWidth = '180px';
+            nodeDiv.style.height = '45px';
+            nodeDiv.style.minHeight = '45px';
+            nodeDiv.style.maxHeight = '45px';
+            nodeDiv.style.fontSize = '1em';
+        }
+        
         nodeDiv.style.color = '#00ff88';
         nodeDiv.style.fontFamily = 'monospace';
-        nodeDiv.style.fontSize = '1.08em';
         nodeDiv.style.boxShadow = '0 4px 16px rgba(0,255,136,0.10)';
         nodeDiv.style.cursor = 'pointer';
         nodeDiv.title = 'Click to view user information';
@@ -760,40 +785,113 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
 
         
                           // Expand/collapse button for ALL REGISTERED NODES - LAZY LOADING FOR ALL NODES
-         let expandBtn = null;
+         // let expandBtn = null; // Removed - using const expandBtn below
          let childrenDiv = null;
          // Add expand button for ALL registered nodes (not just those with directs)
-         expandBtn = document.createElement('button');
-         expandBtn.textContent = '▸';
-         expandBtn.style.transform = autoExpand ? 'rotate(90deg)' : 'rotate(0deg)';
-         // Store expansion state on the button itself
-         expandBtn.setAttribute('data-expanded', autoExpand ? 'true' : 'false');
-         expandBtn.style.padding = '0';
-         expandBtn.style.background = 'transparent';
-         expandBtn.style.border = 'none';
-         expandBtn.style.outline = 'none';
-         expandBtn.style.color = '#ffffff';
-         expandBtn.style.fontSize = '1.2em';
-         expandBtn.style.lineHeight = '1';
-         expandBtn.style.cursor = 'pointer';
-         expandBtn.style.verticalAlign = 'middle';
-         expandBtn.style.fontWeight = '700';
-         expandBtn.style.marginInlineEnd = '0.6em';
-         expandBtn.style.padding = '4px 6px';
-         expandBtn.style.borderRadius = '6px';
-         expandBtn.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-         expandBtn.style.transform = 'rotate(0deg)';
-         expandBtn.style.background = 'rgba(255, 255, 255, 0.1)';
-         expandBtn.style.border = '1px solid rgba(255, 255, 255, 0.2)';
-         expandBtn.style.backdropFilter = 'blur(5px)';
-         expandBtn.style.webkitBackdropFilter = 'blur(5px)';
-         expandBtn.setAttribute('aria-label', 'Expand/Collapse');
-         nodeDiv.prepend(expandBtn);
+                 // Expand button removed - just show content area
+        
+        // Create two-part button: expand + index
+        const buttonContainer = document.createElement('div');
+        buttonContainer.style.display = 'flex';
+        buttonContainer.style.alignItems = 'stretch';
+        buttonContainer.style.width = 'auto';
+        buttonContainer.style.minWidth = isMobile ? '80px' : isTablet ? '100px' : '120px';
+        buttonContainer.style.height = isMobile ? '35px' : isTablet ? '40px' : '45px';
+        buttonContainer.style.borderRadius = isMobile ? '6px' : isTablet ? '8px' : '10px';
+        buttonContainer.style.overflow = 'hidden';
+        buttonContainer.style.cursor = 'pointer';
+        buttonContainer.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        buttonContainer.style.boxShadow = '0 4px 16px rgba(255, 193, 7, 0.3)';
+        
+        // Part 1: Expand button (small part)
+        const expandBtn = document.createElement('button');
+        expandBtn.textContent = '▸';
+        expandBtn.style.width = isMobile ? '20px' : isTablet ? '25px' : '30px';
+        expandBtn.style.height = '100%';
+        expandBtn.style.background = 'linear-gradient(135deg, #ffc107, #ff8f00)';
+        expandBtn.style.border = 'none';
+        expandBtn.style.borderRight = '1px solid rgba(255, 255, 255, 0.2)';
+        expandBtn.style.color = '#000';
+        expandBtn.style.fontSize = isMobile ? '0.7em' : isTablet ? '0.8em' : '0.9em';
+        expandBtn.style.fontWeight = 'bold';
+        expandBtn.style.cursor = 'pointer';
+        expandBtn.style.display = 'flex';
+        expandBtn.style.alignItems = 'center';
+        expandBtn.style.justifyContent = 'center';
+        expandBtn.style.outline = 'none';
+        expandBtn.style.transition = 'all 0.3s ease';
+        expandBtn.setAttribute('data-expanded', 'false');
+        
+        // Part 2: Index display (large part)
+        const indexDisplay = document.createElement('div');
+        indexDisplay.textContent = formattedIAMId;
+        indexDisplay.style.flex = '1';
+        indexDisplay.style.padding = isMobile ? '0.3em 0.6em' : isTablet ? '0.4em 0.8em' : '0.5em 1em';
+        indexDisplay.style.background = 'linear-gradient(135deg, #ffc107, #ff8f00)';
+        indexDisplay.style.color = '#000';
+        indexDisplay.style.fontFamily = 'monospace';
+        indexDisplay.style.fontSize = isMobile ? '0.8em' : isTablet ? '0.9em' : '1em';
+        indexDisplay.style.fontWeight = 'bold';
+        indexDisplay.style.display = 'flex';
+        indexDisplay.style.alignItems = 'center';
+        indexDisplay.style.justifyContent = 'center';
+        indexDisplay.style.overflow = 'hidden';
+        indexDisplay.style.textOverflow = 'ellipsis';
+        indexDisplay.style.whiteSpace = 'nowrap';
+        
+        // Assemble the button
+        buttonContainer.appendChild(expandBtn);
+        buttonContainer.appendChild(indexDisplay);
+        
+        // Add hover effects
+        buttonContainer.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateZ(0) scale(1.05)';
+            this.style.boxShadow = '0 8px 32px rgba(255, 193, 7, 0.5), 0 4px 16px rgba(0, 0, 0, 0.2)';
+        });
+        
+        buttonContainer.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateZ(0) scale(1)';
+            this.style.boxShadow = '0 4px 16px rgba(255, 193, 7, 0.3)';
+        });
+        
+        // Add click handler for expand button
+        expandBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            
+            // Toggle expand/collapse state
+            const isExpanded = this.getAttribute('data-expanded') === 'true';
+            
+            if (isExpanded) {
+                // Collapse
+                this.textContent = '▸';
+                this.setAttribute('data-expanded', 'false');
+                buttonContainer.style.background = 'linear-gradient(135deg, #ffc107, #ff8f00)';
+                console.log('Node collapsed:', formattedIAMId);
+            } else {
+                // Expand
+                this.textContent = '▾';
+                this.setAttribute('data-expanded', 'true');
+                buttonContainer.style.background = 'linear-gradient(135deg, #ff8f00, #ffc107)';
+                console.log('Node expanded:', formattedIAMId);
+            }
+        });
+        
+        // Add click handler for index display
+        indexDisplay.addEventListener('click', function(e) {
+            e.stopPropagation();
+            console.log('Index clicked:', formattedIAMId);
+            if (window.showUserPopup) {
+                window.showUserPopup(user.address, user);
+            }
+        });
+        
+        nodeDiv.prepend(buttonContainer);
         
                  // Remove + button completely - no + buttons on any nodes
          console.log(`🔍 Node ${index}: leftActive=${leftActive}, rightActive=${rightActive}, hasDirects=${hasDirects}`);
          console.log(`❌ No + button for node ${index} - + buttons removed from all nodes`);
-        // Add click event listener to the expand button directly
+        // Expand button functionality removed
+        /*
         if (expandBtn) {
             expandBtn.addEventListener('click', async function(e) {
                 e.preventDefault();
@@ -1029,15 +1127,10 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                 }
             });
         }
+        */
         
         // Add click event listener to the node div for user info
         nodeDiv.addEventListener('click', function(e) {
-            // Don't trigger user info popup if clicking on expand button or its children
-            if (expandBtn && (e.target === expandBtn || expandBtn.contains(e.target) || e.target.closest('button'))) {
-                e.stopPropagation();
-                return;
-            }
-
             // Make the entire node clickable to show user info
             if (typeof window.networkShowUserPopup === 'function') {
                 window.networkShowUserPopup(address, user);
