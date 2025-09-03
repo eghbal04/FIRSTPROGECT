@@ -95,22 +95,35 @@ class TransactionHistoryManager {
     console.log('📥 Loading real transaction history from blockchain...');
     
     try {
-      // Check if wallet is connected
-      if (!window.contractConfig || !window.contractConfig.signer) {
-        console.warn('⚠️ Wallet not connected, showing sample data');
-        this.showSampleData();
+      // Check if wallet is connected (try both contractConfig and transferManager)
+      let signer, provider;
+      
+      if (window.contractConfig && window.contractConfig.signer) {
+        signer = window.contractConfig.signer;
+        provider = window.contractConfig.provider;
+        console.log('✅ Using contractConfig for wallet connection');
+      } else if (window.transferManager && window.transferManager.signer) {
+        signer = window.transferManager.signer;
+        provider = window.transferManager.provider;
+        console.log('✅ Using transferManager for wallet connection');
+      } else {
+        console.warn('⚠️ Wallet not connected, showing loading state');
+        this.showLoadingState();
         return;
       }
 
-      const userAddress = await window.contractConfig.signer.getAddress();
+      const userAddress = await signer.getAddress();
       console.log('🔍 Fetching transactions for address:', userAddress);
+
+      // Hide loading state
+      this.hideLoadingState();
 
       // Fetch real transactions from blockchain
       await this.fetchRealTransactions(userAddress);
       
     } catch (error) {
       console.error('❌ Error loading transaction history:', error);
-      this.showSampleData();
+      this.showErrorState();
     }
   }
 
@@ -118,11 +131,27 @@ class TransactionHistoryManager {
     console.log('🔍 Fetching real transactions from blockchain...');
     
     try {
+      // Get provider from contractConfig or transferManager
+      let provider;
+      if (window.contractConfig && window.contractConfig.provider) {
+        provider = window.contractConfig.provider;
+      } else if (window.transferManager && window.transferManager.provider) {
+        provider = window.transferManager.provider;
+      } else {
+        console.warn(`⚠️ Provider not found for fetching real transactions`);
+        this.showErrorState();
+        return;
+      }
+
       // Get current block number
-      const currentBlock = await window.contractConfig.provider.getBlockNumber();
+      const currentBlock = await provider.getBlockNumber();
       const fromBlock = Math.max(0, currentBlock - 10000); // Last ~10k blocks
       
       console.log(`📊 Scanning blocks ${fromBlock} to ${currentBlock}`);
+
+      // Clear existing transactions
+      this.clearTransactions();
+      this.transactions = [];
 
       // Fetch DAI transactions
       await this.fetchTokenTransactions('DAI', userAddress, fromBlock, currentBlock);
@@ -133,11 +162,17 @@ class TransactionHistoryManager {
       // Fetch IAM transactions
       await this.fetchTokenTransactions('IAM', userAddress, fromBlock, currentBlock);
       
-      console.log('✅ Real transaction history loaded');
+      // Check if any transactions were found
+      if (this.transactions.length === 0) {
+        console.log('📭 No transactions found, showing empty state');
+        this.showEmptyState();
+      } else {
+        console.log(`✅ Real transaction history loaded: ${this.transactions.length} transactions`);
+      }
       
     } catch (error) {
       console.error('❌ Error fetching real transactions:', error);
-      this.showSampleData();
+      this.showErrorState();
     }
   }
 
@@ -151,7 +186,15 @@ class TransactionHistoryManager {
         contractAddress = '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063'; // DAI on Polygon
         decimals = 18;
       } else if (tokenSymbol === 'IAM') {
-        contractAddress = window.contractConfig?.contract?.address;
+        // Use the current contract address from transfer manager or contractConfig
+        if (window.transferManager && window.transferManager.contract) {
+          contractAddress = window.transferManager.contract.address;
+        } else if (window.contractConfig && window.contractConfig.contract) {
+          contractAddress = window.contractConfig.contract.address;
+        } else {
+          console.warn(`⚠️ IAM contract address not found`);
+          return;
+        }
         decimals = 18;
       } else {
         return;
@@ -164,10 +207,21 @@ class TransactionHistoryManager {
 
       console.log(`🔍 Fetching ${tokenSymbol} transactions from contract:`, contractAddress);
 
+      // Use the provider from contractConfig or transferManager
+      let provider;
+      if (window.contractConfig && window.contractConfig.provider) {
+        provider = window.contractConfig.provider;
+      } else if (window.transferManager && window.transferManager.provider) {
+        provider = window.transferManager.provider;
+      } else {
+        console.warn(`⚠️ Provider not found for ${tokenSymbol} transactions`);
+        return;
+      }
+
       // Create contract instance
       const contract = new ethers.Contract(contractAddress, [
         "event Transfer(address indexed from, address indexed to, uint256 value)"
-      ], window.contractConfig.provider);
+      ], provider);
 
       // Get Transfer events
       const filter = contract.filters.Transfer(null, null);
@@ -195,8 +249,19 @@ class TransactionHistoryManager {
     try {
       console.log('🔍 Fetching POL (MATIC) transactions...');
 
+      // Use the provider from contractConfig or transferManager
+      let provider;
+      if (window.contractConfig && window.contractConfig.provider) {
+        provider = window.contractConfig.provider;
+      } else if (window.transferManager && window.transferManager.provider) {
+        provider = window.transferManager.provider;
+      } else {
+        console.warn(`⚠️ Provider not found for POL transactions`);
+        return;
+      }
+
       // Get transaction history for native MATIC
-      const transactions = await window.contractConfig.provider.getHistory(userAddress, fromBlock, toBlock);
+      const transactions = await provider.getHistory(userAddress, fromBlock, toBlock);
       
       console.log(`📊 Found ${transactions.length} POL transactions`);
 
@@ -243,7 +308,18 @@ class TransactionHistoryManager {
       
       if (parseFloat(amount) === 0) return; // Skip zero value transactions
       
-      const block = await window.contractConfig.provider.getBlock(tx.blockNumber);
+      // Use the provider from contractConfig or transferManager
+      let provider;
+      if (window.contractConfig && window.contractConfig.provider) {
+        provider = window.contractConfig.provider;
+      } else if (window.transferManager && window.transferManager.provider) {
+        provider = window.transferManager.provider;
+      } else {
+        console.warn(`⚠️ Provider not found for processing native transaction`);
+        return;
+      }
+      
+      const block = await provider.getBlock(tx.blockNumber);
       
       const transactionData = {
         token: 'POL',
@@ -261,9 +337,52 @@ class TransactionHistoryManager {
     }
   }
 
-  showSampleData() {
-    console.log('📊 Showing sample data (wallet not connected)');
-    // Keep existing sample transactions in HTML
+  showLoadingState() {
+    console.log('📊 Showing loading state');
+    const loadingEl = document.getElementById('loadingTransactions');
+    const emptyEl = document.getElementById('emptyTransactions');
+    
+    if (loadingEl) {
+      loadingEl.style.display = 'block';
+    }
+    if (emptyEl) {
+      emptyEl.style.display = 'none';
+    }
+  }
+
+  hideLoadingState() {
+    console.log('📊 Hiding loading state');
+    const loadingEl = document.getElementById('loadingTransactions');
+    if (loadingEl) {
+      loadingEl.style.display = 'none';
+    }
+  }
+
+  showErrorState() {
+    console.log('📊 Showing error state');
+    const loadingEl = document.getElementById('loadingTransactions');
+    const emptyEl = document.getElementById('emptyTransactions');
+    
+    if (loadingEl) {
+      loadingEl.innerHTML = `
+        <div style="font-size:2rem;margin-bottom:0.5rem;">❌</div>
+        <div>Error loading transactions</div>
+        <div style="font-size:0.8rem;margin-top:0.3rem;">Please check your wallet connection and try again</div>
+      `;
+    }
+  }
+
+  showEmptyState() {
+    console.log('📊 Showing empty state');
+    const loadingEl = document.getElementById('loadingTransactions');
+    const emptyEl = document.getElementById('emptyTransactions');
+    
+    if (loadingEl) {
+      loadingEl.style.display = 'none';
+    }
+    if (emptyEl) {
+      emptyEl.style.display = 'block';
+    }
   }
 
   async loadMoreTransactions() {
@@ -352,9 +471,9 @@ class TransactionHistoryManager {
   addRealTransaction(transactionData) {
     const { token, type, amount, address, time, hash } = transactionData;
     
-    // Clear existing sample data if this is the first real transaction
+    // Hide loading state when first real transaction is added
     if (this.transactions.length === 0) {
-      this.clearTransactions();
+      this.hideLoadingState();
     }
     
     // Add to internal transactions array

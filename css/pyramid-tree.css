@@ -381,3 +381,306 @@
         margin: 0.2rem 0;
     }
 }
+
+/* File Manager Tree Styles */
+#file-manager-tree {
+    width: 100%;
+    height: 100%;
+    background: rgba(24, 28, 42, 0.95);
+    border-radius: 12px;
+    border: 2px solid rgba(167, 134, 255, 0.3);
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+}
+
+.file-manager-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 600px;
+}
+
+/* File Manager Header */
+.file-manager-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(167, 134, 255, 0.1));
+    border-bottom: 2px solid rgba(167, 134, 255, 0.3);
+}
+
+.file-manager-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #00ff88;
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.file-icon {
+    font-size: 1.5rem;
+}
+
+.file-manager-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.action-btn {
+    background: linear-gradient(135deg, #00ff88, #00cc6a);
+    color: #1a202c;
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.action-btn:hover {
+    background: linear-gradient(135deg, #00cc6a, #00ff88);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 255, 136, 0.3);
+}
+
+/* File Manager Content */
+.file-manager-content {
+    display: flex;
+    flex: 1;
+    min-height: 500px;
+}
+
+/* Sidebar */
+.file-manager-sidebar {
+    width: 250px;
+    background: rgba(0, 0, 0, 0.3);
+    border-right: 2px solid rgba(167, 134, 255, 0.3);
+    padding: 1rem;
+    overflow-y: auto;
+}
+
+.sidebar-section {
+    margin-bottom: 1.5rem;
+}
+
+.sidebar-title {
+    color: #00ff88;
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 0.8rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(167, 134, 255, 0.3);
+}
+
+.network-list-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.network-item-sidebar {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(167, 134, 255, 0.2);
+    border-radius: 8px;
+    padding: 0.8rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #ffffff;
+    font-size: 0.9rem;
+}
+
+.network-item-sidebar:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(167, 134, 255, 0.4);
+    transform: translateX(5px);
+}
+
+.network-item-sidebar.active {
+    background: linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(167, 134, 255, 0.2));
+    border-color: rgba(0, 255, 136, 0.5);
+}
+
+/* Main Content */
+.file-manager-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+/* Breadcrumb */
+.file-manager-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid rgba(167, 134, 255, 0.3);
+    direction: rtl;
+    text-align: right;
+}
+
+.breadcrumb-item {
+    color: #a786ff;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.breadcrumb-item:hover {
+    color: #00ff88;
+}
+
+.breadcrumb-item.active {
+    color: #00ff88;
+    font-weight: 600;
+}
+
+.breadcrumb-separator {
+    color: #a786ff;
+    margin: 0 0.3rem;
+}
+
+/* Tree View */
+.file-manager-tree-view {
+    flex: 1;
+    padding: 1rem 1.5rem;
+    overflow-y: auto;
+    direction: rtl;
+    text-align: right;
+}
+
+.tree-node {
+    margin-bottom: 0.5rem;
+}
+
+.tree-node-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid transparent;
+}
+
+.tree-node-content:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(167, 134, 255, 0.3);
+}
+
+.tree-node-content.expanded {
+    background: rgba(0, 255, 136, 0.1);
+    border-color: rgba(0, 255, 136, 0.3);
+}
+
+.tree-expand-btn {
+    background: linear-gradient(135deg, #00ff88, #00cc6a);
+    color: #1a202c;
+    border: none;
+    border-radius: 4px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.tree-expand-btn:hover {
+    background: linear-gradient(135deg, #00cc6a, #00ff88);
+    transform: scale(1.1);
+}
+
+.tree-expand-btn.expanded {
+    background: linear-gradient(135deg, #ff6b6b, #ff4757);
+}
+
+.tree-node-icon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.tree-node-label {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.9rem;
+    flex: 1;
+    font-family: 'Courier New', monospace;
+}
+
+.tree-node-info {
+    color: #a786ff;
+    font-size: 0.8rem;
+    background: rgba(167, 134, 255, 0.1);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+}
+
+.tree-children {
+    margin-right: 2rem;
+    margin-top: 0.5rem;
+    border-right: 2px solid rgba(167, 134, 255, 0.2);
+    padding-right: 1rem;
+}
+
+/* Loading states */
+.tree-loading {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #a786ff;
+    font-size: 0.9rem;
+    padding: 1rem;
+}
+
+/* Empty state */
+.tree-empty {
+    text-align: center;
+    color: #a786ff;
+    padding: 2rem;
+    font-size: 0.9rem;
+}
+
+/* File Manager Responsive Design */
+@media (max-width: 768px) {
+    .file-manager-content {
+        flex-direction: column;
+    }
+    
+    .file-manager-sidebar {
+        width: 100%;
+        height: 200px;
+        border-right: none;
+        border-bottom: 2px solid rgba(167, 134, 255, 0.3);
+    }
+    
+    .file-manager-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+    
+    .file-manager-actions {
+        justify-content: center;
+    }
+    
+    .action-btn {
+        flex: 1;
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+    }
+    
+    .tree-children {
+        margin-right: 1rem;
+    }
+}

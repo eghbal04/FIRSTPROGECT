@@ -296,60 +296,18 @@
                     
                     <!-- Transaction List Container -->
                     <div id="transactionList" style="max-height:400px;overflow-y:auto;border-radius:10px;background:#0a0f1c;padding:0.5rem;">
-                        <!-- Sample transactions will be loaded here -->
-                        <div class="transaction-item" style="background:#1a1f2e;border:1px solid #2a3441;border-radius:10px;padding:1rem;margin-bottom:0.5rem;transition:all 0.3s ease;" data-token="DAI">
-                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
-                                <div style="display:flex;align-items:center;gap:0.5rem;">
-                                    <span style="color:#00ff88;font-weight:bold;">🟢 DAI</span>
-                                    <span style="color:#ffffff;font-size:0.9rem;">Transfer</span>
-                                </div>
-                                <span style="color:#00ff88;font-weight:bold;font-size:0.9rem;">+50.00 DAI</span>
-                            </div>
-                            <div style="color:#b8c1ec;font-size:0.8rem;margin-bottom:0.3rem;">
-                                <strong>To:</strong> 0x1234...5678
-                            </div>
-                            <div style="color:#a786ff;font-size:0.75rem;">
-                                <strong>Time:</strong> 2024-01-15 14:30:25 | <strong>Hash:</strong> 0xabcd...efgh
-                            </div>
-                        </div>
-                        
-                        <div class="transaction-item" style="background:#1a1f2e;border:1px solid #2a3441;border-radius:10px;padding:1rem;margin-bottom:0.5rem;transition:all 0.3s ease;" data-token="POL">
-                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
-                                <div style="display:flex;align-items:center;gap:0.5rem;">
-                                    <span style="color:#00ff88;font-weight:bold;">🔵 POL</span>
-                                    <span style="color:#ffffff;font-size:0.9rem;">Received</span>
-                                </div>
-                                <span style="color:#ff6b6b;font-weight:bold;font-size:0.9rem;">-25.50 POL</span>
-                            </div>
-                            <div style="color:#b8c1ec;font-size:0.8rem;margin-bottom:0.3rem;">
-                                <strong>From:</strong> 0x9876...4321
-                            </div>
-                            <div style="color:#a786ff;font-size:0.75rem;">
-                                <strong>Time:</strong> 2024-01-15 13:45:12 | <strong>Hash:</strong> 0x1234...5678
-                            </div>
-                        </div>
-                        
-                        <div class="transaction-item" style="background:#1a1f2e;border:1px solid #2a3441;border-radius:10px;padding:1rem;margin-bottom:0.5rem;transition:all 0.3s ease;" data-token="IAM">
-                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
-                                <div style="display:flex;align-items:center;gap:0.5rem;">
-                                    <span style="color:#00ff88;font-weight:bold;">🟣 IAM</span>
-                                    <span style="color:#ffffff;font-size:0.9rem;">Transfer</span>
-                                </div>
-                                <span style="color:#00ff88;font-weight:bold;font-size:0.9rem;">+1000.00 IAM</span>
-                            </div>
-                            <div style="color:#b8c1ec;font-size:0.8rem;margin-bottom:0.3rem;">
-                                <strong>To:</strong> 0x5555...9999
-                            </div>
-                            <div style="color:#a786ff;font-size:0.75rem;">
-                                <strong>Time:</strong> 2024-01-15 12:20:45 | <strong>Hash:</strong> 0x9999...aaaa
-                            </div>
+                        <!-- Real transactions will be loaded here from blockchain -->
+                        <div id="loadingTransactions" style="text-align:center;color:#a786ff;padding:2rem;">
+                            <div style="font-size:2rem;margin-bottom:0.5rem;">🔄</div>
+                            <div>Loading real transactions from blockchain...</div>
+                            <div style="font-size:0.8rem;margin-top:0.3rem;">Please wait while we fetch your transaction history</div>
                         </div>
                         
                         <!-- Empty state -->
                         <div id="emptyTransactions" style="text-align:center;color:#b8c1ec;padding:2rem;display:none;">
                             <div style="font-size:2rem;margin-bottom:0.5rem;">📭</div>
                             <div>No transactions found</div>
-                            <div style="font-size:0.8rem;margin-top:0.3rem;">Your transaction history will appear here</div>
+                            <div style="font-size:0.8rem;margin-top:0.3rem;">Your real transaction history will appear here</div>
                         </div>
                     </div>
                     
@@ -483,6 +441,12 @@
                     
                     // Update wallet display after successful initialization
                     updateWalletButton();
+                    
+                    // Load real transaction history
+                    if (window.transactionHistoryManager) {
+                        console.log('🔄 Loading real transaction history...');
+                        await window.transactionHistoryManager.loadTransactionHistory();
+                    }
                     
                 } catch (error) {
                     console.error('❌ Error initializing TransferManager:', error);

@@ -58,43 +58,40 @@
                     </div>
                 </div>
                 
-                <!-- 2x2 Grid Tree Display -->
-                <div id="pyramid-tree">
-                    <div id="tree-display" class="pyramid-container">
-                        <div class="tree-table">
-                            <!-- Top row - merged cell for connected account -->
-                            <div class="tree-cell merged-cell" id="connected-account-cell">
-                                <div id="connected-account-info">
-                                    🔄 Loading connected account...
+                <!-- File Manager Style Tree Display -->
+                <div id="file-manager-tree">
+                    <div class="file-manager-container">
+                        <!-- File Manager Header -->
+                        <div class="file-manager-header">
+                            <div class="file-manager-title">
+                                <span class="file-icon">📁</span>
+                                <span>Network Tree Manager</span>
+                            </div>
+                            <div class="file-manager-actions">
+                                <button id="expand-all-btn" class="action-btn">📂 Expand All</button>
+                                <button id="collapse-all-btn" class="action-btn">📁 Collapse All</button>
+                                <button id="refresh-tree-btn" class="action-btn">🔄 Refresh</button>
+                            </div>
+                        </div>
+                        
+                        <!-- File Manager Content -->
+                        <div class="file-manager-content">
+                            <div class="file-manager-sidebar">
+                                <div class="sidebar-section">
+                                    <div class="sidebar-title">🌐 Networks</div>
+                                    <div class="network-list-sidebar" id="network-list-sidebar">
+                                        <!-- Network list will be rendered here -->
+                                    </div>
                                 </div>
                             </div>
                             
-                            <!-- 2x2 Grid for 4 networks -->
-                            <div class="tree-cell network-cell-1">
-                                <div class="column-header">🌐 Network 1</div>
-                                <div class="network-list" id="network-1-list">
-                                    <!-- Network 1 will be rendered here -->
+                            <div class="file-manager-main">
+                                <div class="file-manager-breadcrumb" id="breadcrumb">
+                                    <span class="breadcrumb-item active">🏠 Root</span>
                                 </div>
-                            </div>
-                            
-                            <div class="tree-cell network-cell-2">
-                                <div class="column-header">🌐 Network 2</div>
-                                <div class="network-list" id="network-2-list">
-                                    <!-- Network 2 will be rendered here -->
-                                </div>
-                            </div>
-                            
-                            <div class="tree-cell network-cell-3">
-                                <div class="column-header">🌐 Network 3</div>
-                                <div class="network-list" id="network-3-list">
-                                    <!-- Network 3 will be rendered here -->
-                                </div>
-                            </div>
-                            
-                            <div class="tree-cell network-cell-4">
-                                <div class="column-header">🌐 Network 4</div>
-                                <div class="network-list" id="network-4-list">
-                                    <!-- Network 4 will be rendered here -->
+                                
+                                <div class="file-manager-tree-view" id="tree-view">
+                                    <!-- Tree structure will be rendered here -->
                                 </div>
                             </div>
                         </div>
@@ -561,45 +558,459 @@
             return null;
         }
 
-        // Render table-based tree
+        // Render file manager tree
         function renderPyramidTree() {
-            console.log('🔄 Rendering table-based tree...');
+            console.log('🔄 Rendering file manager tree...');
             
-            // Update connected account info
-            updateConnectedAccountInfo();
+            // Initialize file manager
+            initializeFileManager();
             
-            // Render network lists
-            renderNetworkLists();
+            // Load tree data
+            loadFileManagerTree();
         }
 
-        // Update connected account information
-        function updateConnectedAccountInfo() {
-            const connectedAccountInfo = document.getElementById('connected-account-info');
-            if (!connectedAccountInfo) return;
+        // File Manager Data
+        let fileManagerData = {
+            currentPath: ['root'],
+            expandedNodes: new Set(),
+            treeData: {},
+            networks: []
+        };
+
+        // Initialize file manager
+        function initializeFileManager() {
+            console.log('🔧 Initializing file manager...');
             
-            if (window.contractConfig && window.contractConfig.userAddress) {
-                const userAddress = window.contractConfig.userAddress;
-                const userIndex = pyramidData.root.index;
-                
-                connectedAccountInfo.innerHTML = `
-                    <div style="display: flex; align-items: center; justify-content: center; gap: 1rem;">
-                        <div style="font-size: 1.5em;">👤</div>
-                        <div>
-                            <div style="font-size: 1.1em; margin-bottom: 0.2rem;">Connected Account</div>
-                            <div style="font-size: 0.9em; color: #a786ff; font-family: monospace;">
-                                Index: ${userIndex} | Address: ${userAddress.substring(0, 6)}...${userAddress.substring(userAddress.length - 4)}
-                            </div>
-                        </div>
+            // Setup event listeners
+            setupFileManagerEvents();
+            
+            // Initialize sidebar
+            initializeSidebar();
+            
+            // Initialize breadcrumb
+            updateBreadcrumb();
+        }
+
+        // Setup file manager event listeners
+        function setupFileManagerEvents() {
+            // Expand All button
+            const expandAllBtn = document.getElementById('expand-all-btn');
+            if (expandAllBtn) {
+                expandAllBtn.addEventListener('click', expandAllNodes);
+            }
+            
+            // Collapse All button
+            const collapseAllBtn = document.getElementById('collapse-all-btn');
+            if (collapseAllBtn) {
+                collapseAllBtn.addEventListener('click', collapseAllNodes);
+            }
+            
+            // Refresh button
+            const refreshBtn = document.getElementById('refresh-tree-btn');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', refreshTree);
+            }
+        }
+
+        // Initialize sidebar
+        function initializeSidebar() {
+            const sidebar = document.getElementById('network-list-sidebar');
+            if (!sidebar) return;
+            
+            sidebar.innerHTML = `
+                <div class="network-item-sidebar active" data-network="all">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span>🌐</span>
+                        <span>All Networks</span>
                     </div>
+                </div>
+                <div class="network-item-sidebar" data-network="network1">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span>🔷</span>
+                        <span>Network 1</span>
+                    </div>
+                </div>
+                <div class="network-item-sidebar" data-network="network2">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span>🔶</span>
+                        <span>Network 2</span>
+                    </div>
+                </div>
+                <div class="network-item-sidebar" data-network="network3">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span>🔸</span>
+                        <span>Network 3</span>
+                    </div>
+                </div>
+                <div class="network-item-sidebar" data-network="network4">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span>🔹</span>
+                        <span>Network 4</span>
+                    </div>
+                </div>
+            `;
+            
+            // Add click listeners to sidebar items
+            sidebar.querySelectorAll('.network-item-sidebar').forEach(item => {
+                item.addEventListener('click', () => {
+                    // Remove active class from all items
+                    sidebar.querySelectorAll('.network-item-sidebar').forEach(i => i.classList.remove('active'));
+                    // Add active class to clicked item
+                    item.classList.add('active');
+                    
+                    // Load selected network
+                    const network = item.dataset.network;
+                    loadNetworkTree(network);
+                });
+            });
+        }
+
+        // Update breadcrumb
+        function updateBreadcrumb() {
+            const breadcrumb = document.getElementById('breadcrumb');
+            if (!breadcrumb) return;
+            
+            const path = fileManagerData.currentPath;
+            breadcrumb.innerHTML = path.map((item, index) => {
+                const isLast = index === path.length - 1;
+                return `
+                    <span class="breadcrumb-item ${isLast ? 'active' : ''}" data-path="${path.slice(0, index + 1).join('/')}">
+                        ${index === 0 ? '🏠' : '📁'} ${item}
+                    </span>
+                    ${!isLast ? '<span class="breadcrumb-separator">/</span>' : ''}
                 `;
+            }).join('');
+            
+            // Add click listeners to breadcrumb items
+            breadcrumb.querySelectorAll('.breadcrumb-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const newPath = item.dataset.path.split('/');
+                    navigateToPath(newPath);
+                });
+            });
+        }
+
+        // Navigate to specific path
+        function navigateToPath(path) {
+            fileManagerData.currentPath = path;
+            updateBreadcrumb();
+            renderTreeView();
+        }
+
+        // Load file manager tree data
+        async function loadFileManagerTree() {
+            console.log('📁 Loading file manager tree data...');
+            
+            try {
+                if (!window.contractConfig || !window.contractConfig.contract) {
+                    console.log('⚠️ No contract connection, showing empty state');
+                    showEmptyTree();
+                    return;
+                }
+                
+                // Load root node
+                await loadRootNode();
+                
+                // Render tree view
+                renderTreeView();
+                
+            } catch (error) {
+                console.error('❌ Error loading file manager tree:', error);
+                showErrorTree();
+            }
+        }
+
+        // Load root node
+        async function loadRootNode() {
+            const contract = window.contractConfig.contract;
+            const userAddress = window.contractConfig.userAddress;
+            
+            if (!userAddress) {
+                throw new Error('No user address available');
+            }
+            
+            // Get user info
+            const user = await contract.users(userAddress);
+            const userIndex = user.index ? user.index.toString() : '1';
+            
+            // Create root node
+            fileManagerData.treeData = {
+                id: 'root',
+                index: userIndex,
+                address: userAddress,
+                type: 'root',
+                expanded: false,
+                children: [],
+                hasChildren: true
+            };
+            
+            console.log('✅ Root node loaded:', fileManagerData.treeData);
+        }
+
+        // Render tree view
+        function renderTreeView() {
+            const treeView = document.getElementById('tree-view');
+            if (!treeView) return;
+            
+            if (!fileManagerData.treeData || Object.keys(fileManagerData.treeData).length === 0) {
+                showEmptyTree();
+                return;
+            }
+            
+            treeView.innerHTML = '';
+            
+            // Render root node
+            renderTreeNode(fileManagerData.treeData, treeView, 0);
+        }
+
+        // Render individual tree node
+        function renderTreeNode(node, container, depth = 0) {
+            const nodeElement = document.createElement('div');
+            nodeElement.className = 'tree-node';
+            nodeElement.style.marginRight = `${depth * 1.5}rem`;
+            
+            const isExpanded = fileManagerData.expandedNodes.has(node.id);
+            const hasChildren = node.hasChildren || (node.children && node.children.length > 0);
+            
+            nodeElement.innerHTML = `
+                <div class="tree-node-content ${isExpanded ? 'expanded' : ''}" data-node-id="${node.id}">
+                    ${hasChildren ? `
+                        <button class="tree-expand-btn ${isExpanded ? 'expanded' : ''}" data-node-id="${node.id}">
+                            ${isExpanded ? '−' : '+'}
+                        </button>
+                    ` : '<div style="width: 20px;"></div>'}
+                    
+                    <span class="tree-node-icon">${getNodeIcon(node.type)}</span>
+                    <span class="tree-node-label">${node.index}</span>
+                    <span class="tree-node-info">${node.address ? node.address.substring(0, 6) + '...' + node.address.substring(node.address.length - 4) : ''}</span>
+                </div>
+            `;
+            
+            container.appendChild(nodeElement);
+            
+            // Add click listeners
+            const expandBtn = nodeElement.querySelector('.tree-expand-btn');
+            if (expandBtn) {
+                expandBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleNodeExpansion(node.id);
+                });
+            }
+            
+            const nodeContent = nodeElement.querySelector('.tree-node-content');
+            nodeContent.addEventListener('click', () => {
+                selectNode(node);
+            });
+            
+            // Render children if expanded
+            if (isExpanded && hasChildren) {
+                const childrenContainer = document.createElement('div');
+                childrenContainer.className = 'tree-children';
+                nodeElement.appendChild(childrenContainer);
+                
+                if (node.children && node.children.length > 0) {
+                    node.children.forEach(child => {
+                        renderTreeNode(child, childrenContainer, depth + 1);
+                    });
+                } else {
+                    // Load children if not loaded yet
+                    loadNodeChildren(node, childrenContainer, depth + 1);
+                }
+            }
+        }
+
+        // Get node icon based on type
+        function getNodeIcon(type) {
+            switch (type) {
+                case 'root': return '🏠';
+                case 'network': return '🌐';
+                case 'node': return '👤';
+                default: return '📁';
+            }
+        }
+
+        // Toggle node expansion
+        async function toggleNodeExpansion(nodeId) {
+            if (fileManagerData.expandedNodes.has(nodeId)) {
+                fileManagerData.expandedNodes.delete(nodeId);
             } else {
-                connectedAccountInfo.innerHTML = `
-                    <div style="display: flex; align-items: center; justify-content: center; gap: 1rem;">
-                        <div style="font-size: 1.5em;">❌</div>
-                        <div style="font-size: 1.1em;">Wallet Not Connected</div>
-                    </div>
+                fileManagerData.expandedNodes.add(nodeId);
+            }
+            
+            renderTreeView();
+        }
+
+        // Select node
+        function selectNode(node) {
+            console.log('🎯 Node selected:', node);
+            
+            // Update breadcrumb
+            fileManagerData.currentPath = ['root', node.index];
+            updateBreadcrumb();
+            
+            // Show node details (could be expanded later)
+            showNodeDetails(node);
+        }
+
+        // Show node details
+        function showNodeDetails(node) {
+            // This could show a popup or sidebar with node details
+            console.log('📋 Node details:', {
+                index: node.index,
+                address: node.address,
+                type: node.type,
+                hasChildren: node.hasChildren
+            });
+        }
+
+        // Load node children
+        async function loadNodeChildren(node, container, depth) {
+            // Show loading state
+            const loadingElement = document.createElement('div');
+            loadingElement.className = 'tree-loading';
+            loadingElement.innerHTML = `
+                <div class="loading-spinner"></div>
+                <span>Loading children...</span>
+            `;
+            container.appendChild(loadingElement);
+            
+            try {
+                const contract = window.contractConfig.contract;
+                const nodeIndex = parseInt(node.index);
+                
+                // Get left and right children
+                const leftAddress = await contract.getLeftAddress(nodeIndex);
+                const rightAddress = await contract.getRightAddress(nodeIndex);
+                
+                const children = [];
+                
+                // Add left child if exists
+                if (leftAddress !== '0x0000000000000000000000000000000000000000') {
+                    const leftIndex = (nodeIndex * 2).toString();
+                    children.push({
+                        id: `node_${leftIndex}`,
+                        index: leftIndex,
+                        address: leftAddress,
+                        type: 'node',
+                        expanded: false,
+                        children: [],
+                        hasChildren: true
+                    });
+                }
+                
+                // Add right child if exists
+                if (rightAddress !== '0x0000000000000000000000000000000000000000') {
+                    const rightIndex = (nodeIndex * 2 + 1).toString();
+                    children.push({
+                        id: `node_${rightIndex}`,
+                        index: rightIndex,
+                        address: rightAddress,
+                        type: 'node',
+                        expanded: false,
+                        children: [],
+                        hasChildren: true
+                    });
+                }
+                
+                // Remove loading element
+                loadingElement.remove();
+                
+                // Update node with children
+                node.children = children;
+                node.hasChildren = children.length > 0;
+                
+                // Render children
+                children.forEach(child => {
+                    renderTreeNode(child, container, depth);
+                });
+                
+            } catch (error) {
+                console.error('❌ Error loading node children:', error);
+                loadingElement.innerHTML = `
+                    <span style="color: #ff6b6b;">❌ Error loading children</span>
                 `;
             }
+        }
+
+        // Load specific network tree
+        async function loadNetworkTree(network) {
+            console.log(`🌐 Loading network tree: ${network}`);
+            
+            if (network === 'all') {
+                await loadFileManagerTree();
+            } else {
+                // Load specific network (could be expanded later)
+                console.log(`📁 Loading ${network} tree...`);
+                await loadFileManagerTree();
+            }
+        }
+
+        // Expand all nodes
+        function expandAllNodes() {
+            console.log('📂 Expanding all nodes...');
+            
+            // Add all nodes to expanded set
+            function addAllNodes(node) {
+                if (node.hasChildren) {
+                    fileManagerData.expandedNodes.add(node.id);
+                }
+                if (node.children) {
+                    node.children.forEach(child => addAllNodes(child));
+                }
+            }
+            
+            if (fileManagerData.treeData) {
+                addAllNodes(fileManagerData.treeData);
+            }
+            
+            renderTreeView();
+        }
+
+        // Collapse all nodes
+        function collapseAllNodes() {
+            console.log('📁 Collapsing all nodes...');
+            fileManagerData.expandedNodes.clear();
+            renderTreeView();
+        }
+
+        // Refresh tree
+        async function refreshTree() {
+            console.log('🔄 Refreshing tree...');
+            fileManagerData.expandedNodes.clear();
+            fileManagerData.treeData = {};
+            await loadFileManagerTree();
+        }
+
+        // Show empty tree state
+        function showEmptyTree() {
+            const treeView = document.getElementById('tree-view');
+            if (!treeView) return;
+            
+            treeView.innerHTML = `
+                <div class="tree-empty">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">📁</div>
+                    <div>No tree data available</div>
+                    <div style="font-size: 0.8rem; margin-top: 0.5rem; color: #a786ff;">
+                        Connect your wallet to load the network tree
+                    </div>
+                </div>
+            `;
+        }
+
+        // Show error tree state
+        function showErrorTree() {
+            const treeView = document.getElementById('tree-view');
+            if (!treeView) return;
+            
+            treeView.innerHTML = `
+                <div class="tree-empty">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">❌</div>
+                    <div>Error loading tree data</div>
+                    <div style="font-size: 0.8rem; margin-top: 0.5rem; color: #ff6b6b;">
+                        Please try refreshing the page
+                    </div>
+                </div>
+            `;
         }
 
         // Render all networks in 4 columns with fast traversal

@@ -155,24 +155,11 @@
           <span style="font-weight: bold;">💡 Recommendation:</span> Choose normal registration to activate immediately and benefit from all advantages
         </div>
         
-        <!-- Contract Selection Info -->
-        <div style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); border-radius: 6px; padding: 8px 12px; margin-bottom: 12px; text-align: center; font-size: 0.8rem; color: #ffc107;">
-          <span style="font-weight: bold;">💡 Contract Selection:</span> Choose between the new contract (default) or the old contract if you want to register in the old network.
-        </div>
+
        
        <h2 class="register-form-title" style="text-align:center;margin-bottom:8px;font-size:1.2rem;">Register Form</h2>
       
-      <!-- Contract Selection -->
-      <div class="form-group" style="margin-bottom:0.5rem;">
-        <label for="contractSelector" style="display:block;color:#a786ff;margin-bottom:0.3rem;font-weight:600;font-size:0.85rem;">📋 Select Contract:</label>
-        <select id="contractSelector" required style="width:100%;background:#232946;border:1.5px solid #444;color:#fff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
-          <option value="new">🆕 New Contract (0x63F5...d2FE)</option>
-          <option value="old">🔄 Old Contract (0xd7eD...0607)</option>
-        </select>
-      </div>
-      
-      <!-- Contract Info Display -->
-      <div id="contractInfo"></div>
+
       
       <div class="register-form-status info" id="connection-status"></div>
        <div class="register-form-status warning" id="metamask-status" style="display:none;background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3);color:#ffc107;">
@@ -529,11 +516,9 @@
   <script>
     let selectedAvatar = 'man';
     let isConnected = false;
-    let selectedContract = 'new'; // 'new' or 'old'
     
     // Contract addresses
     const IAM_ADDRESS_NEW = '0x63F5a2085906f5fcC206d6589d78038FBc74d2FE'; // New contract
-    const IAM_ADDRESS_OLD = '0xd7eDAdcae9073FD69Ae1081B057922F41Adf0607'; // Old contract
     
     // Default to new contract (override global if exists)
     window.IAM_ADDRESS = IAM_ADDRESS_NEW;
@@ -544,51 +529,7 @@
      const newUserInput = document.getElementById('new-user-address');
     const defaultGuide = 'refferer ID : IAM00000';
     
-    // Switch between old and new contracts
-    async function switchContract(contractType) {
-        console.log('🔄 Switching contract to:', contractType);
-        
-        if (contractType === 'old') {
-            window.IAM_ADDRESS = IAM_ADDRESS_OLD;
-            selectedContract = 'old';
-        } else {
-            window.IAM_ADDRESS = IAM_ADDRESS_NEW;
-            selectedContract = 'new';
-        }
-        
-        // Update global config if it exists
-        if (window.contractConfig && window.contractConfig.contract) {
-            // Recreate contract instance with new address
-            const signer = window.contractConfig.signer;
-            const provider = window.contractConfig.provider;
-            window.contractConfig.contract = new ethers.Contract(window.IAM_ADDRESS, window.IAM_ABI, signer);
-            console.log('✅ Contract switched to:', window.IAM_ADDRESS);
-            
-            // Refresh data with new contract
-            await loadRegisterInfo();
-        }
-    }
 
-    // Update contract selection UI
-    function updateContractSelectionUI() {
-        const contractSelector = document.getElementById('contractSelector');
-        if (contractSelector) {
-            contractSelector.value = selectedContract;
-        }
-        
-        const contractInfo = document.getElementById('contractInfo');
-        if (contractInfo) {
-            const contractAddress = selectedContract === 'old' ? IAM_ADDRESS_OLD : IAM_ADDRESS_NEW;
-            const contractName = selectedContract === 'old' ? 'Old Contract' : 'New Contract';
-            contractInfo.innerHTML = `
-                <div style="background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 8px; padding: 0.8rem; margin-bottom: 1rem;">
-                    <h4 style="color: #00ff88; margin: 0 0 0.5rem 0; font-size: 0.9rem;">📋 Selected Contract</h4>
-                    <p style="margin: 0; color: #ffffff; font-size: 0.8rem;"><strong>${contractName}:</strong></p>
-                    <p style="margin: 0; color: #a786ff; font-family: monospace; font-size: 0.75rem; word-break: break-all;">${contractAddress}</p>
-                </div>
-            `;
-        }
-    }
 
     // Show status message
     function showStatus(message, type = 'info') {
@@ -773,26 +714,7 @@
        }
      }
 
-    // Setup contract selector event listener
-    document.addEventListener('DOMContentLoaded', function() {
-        const contractSelector = document.getElementById('contractSelector');
-        if (contractSelector) {
-            contractSelector.addEventListener('change', async (e) => {
-                console.log('🔄 Contract selector changed to:', e.target.value);
-                try {
-                    await switchContract(e.target.value);
-                    updateContractSelectionUI();
-                    showStatus(`✅ Switched to ${e.target.value === 'old' ? 'Old' : 'New'} contract successfully!`, 'success');
-                } catch (error) {
-                    console.error('❌ Error switching contract:', error);
-                    showStatus('Error switching contract: ' + error.message, 'error');
-                }
-            });
-        }
-        
-        // Initialize contract selection UI
-        updateContractSelectionUI();
-    });
+
 
          // Initialize information
     async function loadRegisterInfo() {

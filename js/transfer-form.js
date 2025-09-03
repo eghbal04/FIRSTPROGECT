@@ -79,6 +79,16 @@ class TransferManager {
         try {
             console.log('🔗 Connecting to wallet...');
             
+            // Use existing contractConfig if available
+            if (window.contractConfig && window.contractConfig.signer) {
+                console.log('✅ Using existing wallet connection');
+                this.provider = window.contractConfig.provider;
+                this.signer = window.contractConfig.signer;
+                this.contract = new ethers.Contract(IAM_ADDRESS, IAM_ABI, this.signer);
+                this.daiContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, this.signer);
+                return true;
+            }
+            
             if (typeof window.ethereum === 'undefined') {
                 throw new Error('MetaMask not installed');
             }
