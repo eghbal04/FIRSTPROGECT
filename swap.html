@@ -65,6 +65,9 @@
             <div class="expand-header" style="padding:0 1.5rem;">
                 <h2 style="margin:0 0 0.5rem 0;font-size:1.4rem;">💬 Exchange Messenger</h2>
                 <p style="margin:0 0 0.5rem 0;font-size:0.85rem;">Exchange between DAI and IAM tokens with messenger interface</p>
+                <div style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); border-radius: 8px; padding: 0.8rem; margin: 0.5rem 0; font-size: 0.8rem;">
+                    <p style="margin: 0; color: #ffc107;"><strong>💡 Contract Selection:</strong> Choose between the new contract (default) or the old contract if you have tokens there that you want to convert.</p>
+                </div>
                 
                 <!-- Connection Status -->
                 <div id="connectionStatus" style="margin-top: 1rem; padding: 0.8rem; border-radius: 8px; text-align: center; display: none;">
@@ -80,6 +83,18 @@
                         <h4 style="color:#00ff88;margin:0 0 0.5rem 0;font-size:0.95rem;">📝 Exchange Form</h4>
                         
                         <form id="swapForm" class="messenger-form" style="display:flex;flex-direction:column;gap:0.5rem;">
+                            
+                            <!-- Contract Selection -->
+                            <div class="form-group" style="margin-bottom:0.5rem;">
+                                <label for="contractSelector" style="display:block;color:#00ff88;margin-bottom:0.3rem;font-weight:600;font-size:0.85rem;">📋 Select Contract:</label>
+                                <select id="contractSelector" required style="width:100%;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
+                                    <option value="new">🆕 New Contract (0x63F5...d2FE)</option>
+                                    <option value="old">🔄 Old Contract (0xd7eD...0607)</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Contract Info Display -->
+                            <div id="contractInfo"></div>
                             
                             <!-- Exchange Type -->
                             <div class="form-group" style="margin-bottom:0.5rem;">

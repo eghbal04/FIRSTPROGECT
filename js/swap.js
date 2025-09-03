@@ -1,8 +1,12 @@
 // swap.js - Professional and principled for DAI ↔ IAM swap
 
 // Contract addresses
-const IAM_ADDRESS = '0x63F5a2085906f5fcC206d6589d78038FBc74d2FE';
+const IAM_ADDRESS_NEW = '0x63F5a2085906f5fcC206d6589d78038FBc74d2FE'; // New contract
+const IAM_ADDRESS_OLD = '0xd7eDAdcae9073FD69Ae1081B057922F41Adf0607'; // Old contract
 const DAI_ADDRESS = '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063'; // Polygon DAI
+
+// Default to new contract
+let IAM_ADDRESS = IAM_ADDRESS_NEW;
 
 // DAI ABI (minimal for swap functionality)
 const DAI_ABI = [
@@ -83,8 +87,31 @@ class SwapManager {
         this.signer = null;
         this.contract = null;
         this.daiContract = null;
+        this.selectedContract = 'new'; // 'new' or 'old'
         
         console.log('✅ SwapManager created');
+    }
+
+    // Switch between old and new contracts
+    async switchContract(contractType) {
+        console.log('🔄 Switching contract to:', contractType);
+        
+        if (contractType === 'old') {
+            IAM_ADDRESS = IAM_ADDRESS_OLD;
+            this.selectedContract = 'old';
+        } else {
+            IAM_ADDRESS = IAM_ADDRESS_NEW;
+            this.selectedContract = 'new';
+        }
+        
+        // Recreate contract instance if wallet is connected
+        if (this.signer) {
+            this.contract = new ethers.Contract(IAM_ADDRESS, IAM_ABI, this.signer);
+            console.log('✅ Contract switched to:', IAM_ADDRESS);
+            
+            // Refresh data with new contract
+            await this.refreshSwapData();
+        }
     }
 
     // Connect to wallet and initialize contracts
@@ -172,6 +199,7 @@ class SwapManager {
             await this.updateSwapPreview();
             await this.updateSwapLimitInfo();
             this.updateMaxAmount();
+            this.updateContractSelectionUI();
             
             console.log('✅ SwapManager successfully initialized');
             
@@ -374,6 +402,27 @@ class SwapManager {
         infoDiv.innerHTML = html;
     }
 
+    // Update contract selection UI
+    updateContractSelectionUI() {
+        const contractSelector = document.getElementById('contractSelector');
+        if (contractSelector) {
+            contractSelector.value = this.selectedContract;
+        }
+        
+        const contractInfo = document.getElementById('contractInfo');
+        if (contractInfo) {
+            const contractAddress = this.selectedContract === 'old' ? IAM_ADDRESS_OLD : IAM_ADDRESS_NEW;
+            const contractName = this.selectedContract === 'old' ? 'Old Contract' : 'New Contract';
+            contractInfo.innerHTML = `
+                <div style="background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 8px; padding: 0.8rem; margin-bottom: 1rem;">
+                    <h4 style="color: #00ff88; margin: 0 0 0.5rem 0; font-size: 0.9rem;">📋 Selected Contract</h4>
+                    <p style="margin: 0; color: #ffffff; font-size: 0.8rem;"><strong>${contractName}:</strong></p>
+                    <p style="margin: 0; color: #a786ff; font-family: monospace; font-size: 0.75rem; word-break: break-all;">${contractAddress}</p>
+                </div>
+            `;
+        }
+    }
+
     // Call updateSwapLimitInfo on direction/amount change
     setupEventListeners() {
         console.log('🔄 Setting up event listeners...');
@@ -382,6 +431,7 @@ class SwapManager {
         const swapDirection = document.getElementById('swapDirection');
         const swapAmount = document.getElementById('swapAmount');
         const maxBtn = document.getElementById('maxBtn');
+        const contractSelector = document.getElementById('contractSelector');
 
         if (swapForm) {
             swapForm.addEventListener('submit', (e) => {
@@ -446,6 +496,23 @@ class SwapManager {
             console.warn('⚠️ Max button not found');
         }
         
+        if (contractSelector) {
+            contractSelector.addEventListener('change', async (e) => {
+                console.log('🔄 Contract selector changed to:', e.target.value);
+                try {
+                    await this.switchContract(e.target.value);
+                    this.updateContractSelectionUI();
+                    this.showStatus(`✅ Switched to ${e.target.value === 'old' ? 'Old' : 'New'} contract successfully!`, 'success');
+                } catch (error) {
+                    console.error('❌ Error switching contract:', error);
+                    this.showStatus('Error switching contract: ' + error.message, 'error');
+                }
+            });
+            console.log('✅ Contract selector event listener connected');
+        } else {
+            console.warn('⚠️ Contract selector not found');
+        }
+        
         // Event listeners for USD converter
         const swapUsdConverterRow = document.getElementById('swap-usd-converter-row');
         const swapUsdAmount = document.getElementById('swapUsdAmount');
@@ -506,7 +573,7 @@ class SwapManager {
                     new Promise((_, reject) => setTimeout(() => reject(new Error('Token price fetch timeout')), 10000))
                 ]);
                 this.tokenPrice = ethers.utils.formatUnits(tokenPrice, 18);
-                console.log('✅ Token price received:', this.tokenPrice);
+            console.log('✅ Token price received:', this.tokenPrice);
                 console.log('🔍 this.tokenPrice set to:', this.tokenPrice);
             } catch (error) {
                 console.warn('⚠️ Error fetching token price:', error);
@@ -521,7 +588,7 @@ class SwapManager {
                     new Promise((_, reject) => setTimeout(() => reject(new Error('IAM balance fetch timeout')), 10000))
                 ]);
                 IAMBalanceFormatted = ethers.utils.formatUnits(IAMBalance, 18);
-                console.log('✅ IAM balance received:', IAMBalanceFormatted);
+            console.log('✅ IAM balance received:', IAMBalanceFormatted);
             } catch (error) {
                 console.warn('⚠️ Error fetching IAM balance:', error);
             }

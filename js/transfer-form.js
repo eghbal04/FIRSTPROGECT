@@ -1,8 +1,12 @@
 // TransferManager - Independent token transfer management
 // Contract addresses and ABIs
-const IAM_ADDRESS = '0x8a0c542bA7B084a4e1d4d295D71760b1c8b8B8B8';
+const IAM_ADDRESS_NEW = '0x63F5a2085906f5fcC206d6589d78038FBc74d2FE'; // New contract
+const IAM_ADDRESS_OLD = '0xd7eDAdcae9073FD69Ae1081B057922F41Adf0607'; // Old contract
 const DAI_ADDRESS = '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063';
 const POL_ADDRESS = '0x0000000000000000000000000000000000000000'; // Native MATIC
+
+// Default to new contract
+let IAM_ADDRESS = IAM_ADDRESS_NEW;
 
 const DAI_ABI = [
     "function balanceOf(address owner) view returns (uint256)",
@@ -24,7 +28,51 @@ class TransferManager {
         this.contract = null;
         this.daiContract = null;
         this.isRefreshing = false;
+        this.selectedContract = 'new'; // 'new' or 'old'
         console.log('✅ TransferManager created');
+    }
+
+    // Switch between old and new contracts
+    async switchContract(contractType) {
+        console.log('🔄 Switching contract to:', contractType);
+        
+        if (contractType === 'old') {
+            IAM_ADDRESS = IAM_ADDRESS_OLD;
+            this.selectedContract = 'old';
+        } else {
+            IAM_ADDRESS = IAM_ADDRESS_NEW;
+            this.selectedContract = 'new';
+        }
+        
+        // Recreate contract instance if wallet is connected
+        if (this.signer) {
+            this.contract = new ethers.Contract(IAM_ADDRESS, IAM_ABI, this.signer);
+            console.log('✅ Contract switched to:', IAM_ADDRESS);
+            
+            // Refresh data with new contract
+            await this.loadTransferData();
+        }
+    }
+
+    // Update contract selection UI
+    updateContractSelectionUI() {
+        const contractSelector = document.getElementById('contractSelector');
+        if (contractSelector) {
+            contractSelector.value = this.selectedContract;
+        }
+        
+        const contractInfo = document.getElementById('contractInfo');
+        if (contractInfo) {
+            const contractAddress = this.selectedContract === 'old' ? IAM_ADDRESS_OLD : IAM_ADDRESS_NEW;
+            const contractName = this.selectedContract === 'old' ? 'Old Contract' : 'New Contract';
+            contractInfo.innerHTML = `
+                <div style="background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 8px; padding: 0.8rem; margin-bottom: 1rem;">
+                    <h4 style="color: #00ff88; margin: 0 0 0.5rem 0; font-size: 0.9rem;">📋 Selected Contract</h4>
+                    <p style="margin: 0; color: #ffffff; font-size: 0.8rem;"><strong>${contractName}:</strong></p>
+                    <p style="margin: 0; color: #a786ff; font-family: monospace; font-size: 0.75rem; word-break: break-all;">${contractAddress}</p>
+                </div>
+            `;
+        }
     }
 
     async connectWallet() {
@@ -147,6 +195,10 @@ class TransferManager {
             this.setupEventListeners();
             console.log('✅ Event listeners configured');
             
+            // Update contract selection UI
+            this.updateContractSelectionUI();
+            console.log('✅ Contract selection UI updated');
+            
             console.log('✅ TransferManager successfully initialized');
         } catch (error) {
             console.error('❌ Error initializing TransferManager:', error);
@@ -170,6 +222,52 @@ class TransferManager {
                 this.setMaxAmount();
             });
         }
+
+        // Contract selector
+        const contractSelector = document.getElementById('contractSelector');
+        if (contractSelector) {
+            contractSelector.addEventListener('change', async (e) => {
+                console.log('🔄 Contract selector changed to:', e.target.value);
+                try {
+                    await this.switchContract(e.target.value);
+                    this.updateContractSelectionUI();
+                    this.showStatus(`✅ Switched to ${e.target.value === 'old' ? 'Old' : 'New'} contract successfully!`, 'success');
+                } catch (error) {
+                    console.error('❌ Error switching contract:', error);
+                    this.showStatus('Error switching contract: ' + error.message, 'error');
+                }
+            });
+        }
+    }
+
+    // Show status message
+    showStatus(message, type = 'info') {
+        const statusEl = document.getElementById('transferStatus');
+        if (!statusEl) return;
+        
+        let className = 'transfer-status';
+        let icon = '';
+        
+        switch(type) {
+            case 'success':
+                className += ' success';
+                icon = '✅ ';
+                break;
+            case 'error':
+                className += ' error';
+                icon = '❌ ';
+                break;
+            case 'loading':
+                className += ' loading';
+                icon = '⏳ ';
+                break;
+            default:
+                className += ' info';
+                icon = 'ℹ️ ';
+        }
+        
+        statusEl.className = className;
+        statusEl.textContent = icon + message;
     }
 
     async setMaxAmount() {

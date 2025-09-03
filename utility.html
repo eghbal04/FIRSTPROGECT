@@ -9,7 +9,6 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/hamburger-menu.css">
   <link rel="stylesheet" href="css/mobile-responsive.css">
-  <script src="js/mobile-navigation.js"></script>
   <script src="js/mobile-optimizer.js"></script>
   
   <!-- Load ethers.js version 6 from CDN -->
@@ -233,9 +232,41 @@
         font-size: 2rem;
       }
     }
+    
+    /* Animation keyframes */
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100%); opacity: 0; }
+    }
   </style>
 </head>
 <body>
+
+    <!-- Contract Selection -->
+    <div class="utility-card" style="margin-bottom: 2rem;">
+      <h3><span class="icon">📋</span>Contract Selection</h3>
+      <p>Choose between the new contract (default) or the old contract for utility operations</p>
+      
+      <div style="margin-bottom: 1rem;">
+        <label for="contractSelector" style="display: block; color: #00ff88; margin-bottom: 0.5rem; font-weight: 600;">Select Contract:</label>
+        <select id="contractSelector" style="width: 100%; padding: 0.8rem; border: 1px solid rgba(0,255,136,0.3); border-radius: 8px; background: rgba(26,32,44,0.8); color: #e2e8f0; font-size: 1rem;">
+          <option value="new">🆕 New Contract (0x63F5...d2FE)</option>
+          <option value="old">🔄 Old Contract (0xd7eD...0607)</option>
+        </select>
+      </div>
+      
+      <!-- Contract Info Display -->
+      <div id="contractInfo"></div>
+      
+      <!-- Contract Selection Info -->
+      <div style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); border-radius: 8px; padding: 0.8rem; margin-top: 1rem; font-size: 0.9rem; color: #ffc107;">
+        <strong>💡 Contract Selection:</strong> Choose between the new contract (default) or the old contract if you want to use utility tools with the old network.
+      </div>
+    </div>
 
     <div class="utility-grid">      <!-- Address and Index Conversion -->
        <div class="utility-card">
@@ -270,7 +301,93 @@
 
 
   <script>
+    // Contract addresses
+    const IAM_ADDRESS_NEW = '0x63F5a2085906f5fcC206d6589d78038FBc74d2FE'; // New contract
+    const IAM_ADDRESS_OLD = '0xd7eDAdcae9073FD69Ae1081B057922F41Adf0607'; // Old contract
     
+    // Default to new contract (override global if exists)
+    window.IAM_ADDRESS = IAM_ADDRESS_NEW;
+    let selectedContract = 'new'; // 'new' or 'old'
+
+    // Switch between old and new contracts
+    async function switchContract(contractType) {
+        console.log('🔄 Switching contract to:', contractType);
+        
+        if (contractType === 'old') {
+            window.IAM_ADDRESS = IAM_ADDRESS_OLD;
+            selectedContract = 'old';
+        } else {
+            window.IAM_ADDRESS = IAM_ADDRESS_NEW;
+            selectedContract = 'new';
+        }
+        
+        // Update global config if it exists
+        if (window.contractConfig && window.contractConfig.contract) {
+            // Recreate contract instance with new address
+            const signer = window.contractConfig.signer;
+            const provider = window.contractConfig.provider;
+            window.contractConfig.contract = new ethers.Contract(window.IAM_ADDRESS, window.IAM_ABI, signer);
+            console.log('✅ Contract switched to:', window.IAM_ADDRESS);
+        }
+        
+        updateContractSelectionUI();
+        showStatus(`✅ Switched to ${contractType === 'old' ? 'Old' : 'New'} contract successfully!`, 'success');
+    }
+
+    // Update contract selection UI
+    function updateContractSelectionUI() {
+        const contractSelector = document.getElementById('contractSelector');
+        if (contractSelector) {
+            contractSelector.value = selectedContract;
+        }
+        
+        const contractInfo = document.getElementById('contractInfo');
+        if (contractInfo) {
+            const contractAddress = selectedContract === 'old' ? IAM_ADDRESS_OLD : IAM_ADDRESS_NEW;
+            const contractName = selectedContract === 'old' ? 'Old Contract' : 'New Contract';
+            contractInfo.innerHTML = `
+                <div style="background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 8px; padding: 0.8rem; margin-bottom: 1rem;">
+                    <h4 style="color: #00ff88; margin: 0 0 0.5rem 0; font-size: 0.9rem;">📋 Selected Contract</h4>
+                    <p style="margin: 0; color: #ffffff; font-size: 0.8rem;"><strong>${contractName}:</strong></p>
+                    <p style="margin: 0; color: #a786ff; font-family: monospace; font-size: 0.75rem; word-break: break-all;">${contractAddress}</p>
+                </div>
+            `;
+        }
+    }
+
+    // Show status message
+    function showStatus(message, type = 'info') {
+        // Create a temporary status message
+        const statusEl = document.createElement('div');
+        statusEl.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${type === 'success' ? 'rgba(0, 255, 136, 0.9)' : type === 'error' ? 'rgba(255, 68, 68, 0.9)' : 'rgba(167, 134, 255, 0.9)'};
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            z-index: 9999;
+            font-size: 13px;
+            max-width: 300px;
+            backdrop-filter: blur(8px);
+            border: 1px solid ${type === 'success' ? 'rgba(0, 255, 136, 0.3)' : type === 'error' ? 'rgba(255, 68, 68, 0.3)' : 'rgba(167, 134, 255, 0.3)'};
+            animation: slideIn 0.3s ease;
+        `;
+        
+        const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+        statusEl.innerHTML = `${icon} ${message}`;
+        
+        document.body.appendChild(statusEl);
+        
+        setTimeout(() => {
+            if (statusEl.parentElement) {
+                statusEl.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => statusEl.remove(), 300);
+            }
+        }, 3000);
+    }
 
          // Convert index to address
      async function convertIndexToAddress() {
@@ -290,8 +407,10 @@
          if (window.connectWallet && typeof window.connectWallet === 'function') {
            await window.connectWallet();
            if (window.contractConfig && window.contractConfig.contract) {
+             // Use selected contract
+             const contract = new ethers.Contract(window.IAM_ADDRESS, window.IAM_ABI, window.contractConfig.signer);
              // Use ABI mapping to convert index to address
-             const address = await window.contractConfig.contract.indexToAddress(index);
+             const address = await contract.indexToAddress(index);
              resultDiv.innerHTML = `
                <strong>Result:</strong><br>
                Index: ${index}<br>
@@ -330,9 +449,11 @@
          if (window.connectWallet && typeof window.connectWallet === 'function') {
            await window.connectWallet();
            if (window.contractConfig && window.contractConfig.contract) {
+             // Use selected contract
+             const contract = new ethers.Contract(window.IAM_ADDRESS, window.IAM_ABI, window.contractConfig.signer);
              // Use ABI mapping to convert address to index
              // First get user data from users mapping
-             const userData = await window.contractConfig.contract.users(address);
+             const userData = await contract.users(address);
              const index = userData.index;
              
              if (index && index > 0) {
@@ -457,6 +578,23 @@
            card.style.transform = 'translateY(0)';
          }, index * 100);
        });
+       
+       // Setup contract selector event listener
+       const contractSelector = document.getElementById('contractSelector');
+       if (contractSelector) {
+         contractSelector.addEventListener('change', async (e) => {
+           console.log('🔄 Contract selector changed to:', e.target.value);
+           try {
+             await switchContract(e.target.value);
+           } catch (error) {
+             console.error('❌ Error switching contract:', error);
+             showStatus('Error switching contract: ' + error.message, 'error');
+           }
+         });
+       }
+       
+       // Initialize contract selection UI
+       updateContractSelectionUI();
        
        updateStatusTime();
        setInterval(updateStatusTime, 60000); // Update every minute

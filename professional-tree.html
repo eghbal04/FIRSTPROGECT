@@ -58,10 +58,46 @@
                     </div>
                 </div>
                 
-                <!-- Pyramid Tree Display -->
+                <!-- 2x2 Grid Tree Display -->
                 <div id="pyramid-tree">
                     <div id="tree-display" class="pyramid-container">
-                        <!-- Tree will be rendered here -->
+                        <div class="tree-table">
+                            <!-- Top row - merged cell for connected account -->
+                            <div class="tree-cell merged-cell" id="connected-account-cell">
+                                <div id="connected-account-info">
+                                    🔄 Loading connected account...
+                                </div>
+                            </div>
+                            
+                            <!-- 2x2 Grid for 4 networks -->
+                            <div class="tree-cell network-cell-1">
+                                <div class="column-header">🌐 Network 1</div>
+                                <div class="network-list" id="network-1-list">
+                                    <!-- Network 1 will be rendered here -->
+                                </div>
+                            </div>
+                            
+                            <div class="tree-cell network-cell-2">
+                                <div class="column-header">🌐 Network 2</div>
+                                <div class="network-list" id="network-2-list">
+                                    <!-- Network 2 will be rendered here -->
+                                </div>
+                            </div>
+                            
+                            <div class="tree-cell network-cell-3">
+                                <div class="column-header">🌐 Network 3</div>
+                                <div class="network-list" id="network-3-list">
+                                    <!-- Network 3 will be rendered here -->
+                                </div>
+                            </div>
+                            
+                            <div class="tree-cell network-cell-4">
+                                <div class="column-header">🌐 Network 4</div>
+                                <div class="network-list" id="network-4-list">
+                                    <!-- Network 4 will be rendered here -->
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -330,7 +366,9 @@
                 }
                 
                 node.expanded = !node.expanded;
-                renderPyramidTree();
+                
+                // Re-render the network lists to show/hide children
+                renderNetworkLists();
             }
         }
 
@@ -523,13 +561,431 @@
             return null;
         }
 
-        // Render pyramid tree
+        // Render table-based tree
         function renderPyramidTree() {
-            const treeDisplay = document.getElementById('tree-display');
-            if (!treeDisplay) return;
+            console.log('🔄 Rendering table-based tree...');
             
-            treeDisplay.innerHTML = '';
-            treeDisplay.appendChild(createPyramidNode(pyramidData.root));
+            // Update connected account info
+            updateConnectedAccountInfo();
+            
+            // Render network lists
+            renderNetworkLists();
+        }
+
+        // Update connected account information
+        function updateConnectedAccountInfo() {
+            const connectedAccountInfo = document.getElementById('connected-account-info');
+            if (!connectedAccountInfo) return;
+            
+            if (window.contractConfig && window.contractConfig.userAddress) {
+                const userAddress = window.contractConfig.userAddress;
+                const userIndex = pyramidData.root.index;
+                
+                connectedAccountInfo.innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 1rem;">
+                        <div style="font-size: 1.5em;">👤</div>
+                        <div>
+                            <div style="font-size: 1.1em; margin-bottom: 0.2rem;">Connected Account</div>
+                            <div style="font-size: 0.9em; color: #a786ff; font-family: monospace;">
+                                Index: ${userIndex} | Address: ${userAddress.substring(0, 6)}...${userAddress.substring(userAddress.length - 4)}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                connectedAccountInfo.innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 1rem;">
+                        <div style="font-size: 1.5em;">❌</div>
+                        <div style="font-size: 1.1em;">Wallet Not Connected</div>
+                    </div>
+                `;
+            }
+        }
+
+        // Render all networks in 4 columns with fast traversal
+        async function renderNetworkLists() {
+            console.log('🚀 Starting fast network traversal...');
+            
+            // Get all network lists
+            const network1List = document.getElementById('network-1-list');
+            const network2List = document.getElementById('network-2-list');
+            const network3List = document.getElementById('network-3-list');
+            const network4List = document.getElementById('network-4-list');
+            
+            if (!network1List || !network2List || !network3List || !network4List) return;
+            
+            // Clear existing content
+            network1List.innerHTML = '';
+            network2List.innerHTML = '';
+            network3List.innerHTML = '';
+            network4List.innerHTML = '';
+            
+            // Show loading state
+            const loadingHtml = '<div style="text-align: center; color: #00ff88; padding: 1rem;">🔄 Loading network...</div>';
+            network1List.innerHTML = loadingHtml;
+            network2List.innerHTML = loadingHtml;
+            network3List.innerHTML = loadingHtml;
+            network4List.innerHTML = loadingHtml;
+            
+            try {
+                // Get all networks using fast traversal
+                const allNetworks = await getAllNetworksFast();
+                console.log('✅ All networks loaded:', allNetworks);
+                
+                // Render each network in its column
+                renderNetworkInColumn(network1List, allNetworks.network1, 'Network 1', 1);
+                renderNetworkInColumn(network2List, allNetworks.network2, 'Network 2', 2);
+                renderNetworkInColumn(network3List, allNetworks.network3, 'Network 3', 3);
+                renderNetworkInColumn(network4List, allNetworks.network4, 'Network 4', 4);
+                
+            } catch (error) {
+                console.error('❌ Error loading networks:', error);
+                const errorHtml = '<div style="text-align: center; color: #ff4757; padding: 1rem;">❌ Error loading network</div>';
+                network1List.innerHTML = errorHtml;
+                network2List.innerHTML = errorHtml;
+                network3List.innerHTML = errorHtml;
+                network4List.innerHTML = errorHtml;
+            }
+        }
+
+        // Fast traversal to get all networks
+        async function getAllNetworksFast() {
+            if (!window.contractConfig || !window.contractConfig.contract) {
+                throw new Error('Contract not available');
+            }
+
+            const contract = window.contractConfig.contract;
+            const userAddress = window.contractConfig.userAddress;
+            
+            if (!userAddress) {
+                throw new Error('User address not available');
+            }
+
+            console.log('📡 Starting fast traversal for user:', userAddress);
+            
+            // Get user's index
+            const userIndex = await window.getIndexByAddress(contract, userAddress);
+            console.log('✅ User index:', userIndex.toString());
+            
+            const allNetworks = {
+                network1: [],
+                network2: [],
+                network3: [],
+                network4: []
+            };
+            
+            // Get root children first
+            const rootChildren = await getNodeChildrenFast(contract, userIndex);
+            console.log('✅ Root children:', rootChildren);
+            
+            if (rootChildren.length === 0) {
+                return allNetworks;
+            }
+            
+            // Process each root child and its descendants
+            const promises = [];
+            
+            if (rootChildren.length > 0) {
+                promises.push(traverseNetworkFast(contract, rootChildren[0], allNetworks.network1, 'Network 1'));
+            }
+            if (rootChildren.length > 1) {
+                promises.push(traverseNetworkFast(contract, rootChildren[1], allNetworks.network2, 'Network 2'));
+            }
+            if (rootChildren.length > 2) {
+                promises.push(traverseNetworkFast(contract, rootChildren[2], allNetworks.network3, 'Network 3'));
+            }
+            if (rootChildren.length > 3) {
+                promises.push(traverseNetworkFast(contract, rootChildren[3], allNetworks.network4, 'Network 4'));
+            }
+            
+            // Wait for all networks to be traversed
+            await Promise.all(promises);
+            
+            console.log('✅ Fast traversal completed:', allNetworks);
+            return allNetworks;
+        }
+
+        // Fast traversal for a single network
+        async function traverseNetworkFast(contract, rootIndex, networkArray, networkName) {
+            console.log(`🔄 Traversing ${networkName} starting from index:`, rootIndex.toString());
+            
+            const queue = [rootIndex];
+            const visited = new Set();
+            let maxDepth = 0;
+            const maxNodes = 100; // Limit to prevent hanging
+            
+            while (queue.length > 0 && networkArray.length < maxNodes) {
+                const currentIndex = queue.shift();
+                
+                if (visited.has(currentIndex.toString())) continue;
+                visited.add(currentIndex.toString());
+                
+                // Add current node to network
+                networkArray.push({
+                    index: currentIndex.toString(),
+                    depth: maxDepth,
+                    expanded: false,
+                    children: []
+                });
+                
+                // Get children for current node
+                try {
+                    const children = await getNodeChildrenFast(contract, currentIndex);
+                    
+                    if (children && children.length > 0) {
+                        // Add children to queue for next level
+                        queue.push(...children);
+                        maxDepth++;
+                    }
+                } catch (error) {
+                    console.warn(`⚠️ Could not get children for index ${currentIndex}:`, error);
+                    // Continue with next node
+                }
+                
+                // Small delay to prevent overwhelming the contract
+                await new Promise(resolve => setTimeout(resolve, 10));
+            }
+            
+            console.log(`✅ ${networkName} traversal completed: ${networkArray.length} nodes`);
+        }
+
+        // Fast method to get node children
+        async function getNodeChildrenFast(contract, nodeIndex) {
+            try {
+                // Convert index to address
+                const nodeAddress = await window.getAddressByIndex(contract, nodeIndex);
+                if (!nodeAddress || nodeAddress === '0x0000000000000000000000000000000000000000') {
+                    return [];
+                }
+                
+                // Get user tree
+                const userTree = await contract.getUserTree(nodeAddress);
+                const leftAddress = userTree[0];
+                const rightAddress = userTree[1];
+                const activated = userTree[2];
+                
+                const children = [];
+                
+                if (activated) {
+                    if (leftAddress && leftAddress !== '0x0000000000000000000000000000000000000000') {
+                        const leftIndex = await window.getIndexByAddress(contract, leftAddress);
+                        if (leftIndex && leftIndex > 0n) {
+                            children.push(leftIndex);
+                        }
+                    }
+                    
+                    if (rightAddress && rightAddress !== '0x0000000000000000000000000000000000000000') {
+                        const rightIndex = await window.getIndexByAddress(contract, rightAddress);
+                        if (rightIndex && rightIndex > 0n) {
+                            children.push(rightIndex);
+                        }
+                    }
+                }
+                
+                return children;
+            } catch (error) {
+                console.warn(`⚠️ Error getting children for index ${nodeIndex}:`, error);
+                return [];
+            }
+        }
+
+        // Render network in a specific column
+        function renderNetworkInColumn(container, networkData, networkName, networkNumber) {
+            console.log(`🔄 Rendering ${networkName}:`, networkData.length, 'nodes');
+            
+            if (networkData.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #a0aec0; padding: 2rem;">No data available</div>';
+                return;
+            }
+            
+            // Clear container
+            container.innerHTML = '';
+            
+            // Add network stats
+            const statsDiv = document.createElement('div');
+            statsDiv.style.cssText = `
+                background: rgba(0, 0, 0, 0.2);
+                border-radius: 6px;
+                padding: 0.5rem;
+                margin-bottom: 1rem;
+                text-align: center;
+                font-size: 0.9em;
+                color: #00ff88;
+            `;
+            statsDiv.innerHTML = `📊 ${networkData.length} nodes found`;
+            container.appendChild(statsDiv);
+            
+            // Render all nodes in the network
+            networkData.forEach((node, index) => {
+                const networkItem = createNetworkItem(node, networkName, networkNumber);
+                container.appendChild(networkItem);
+            });
+            
+            // Add expand button for manual expansion if needed
+            const expandButton = document.createElement('button');
+            expandButton.style.cssText = `
+                width: 100%;
+                background: linear-gradient(45deg, #00ff88, #00cc6a);
+                color: #1a202c;
+                border: none;
+                padding: 0.5rem;
+                border-radius: 6px;
+                font-weight: 600;
+                cursor: pointer;
+                margin-top: 1rem;
+                transition: all 0.3s ease;
+            `;
+            expandButton.innerHTML = '🔄 Expand More';
+            expandButton.onclick = () => expandNetworkManually(networkNumber, networkData);
+            container.appendChild(expandButton);
+        }
+
+        // Manual expansion for a network
+        async function expandNetworkManually(networkNumber, currentNetworkData) {
+            console.log(`🔄 Manual expansion for Network ${networkNumber}`);
+            
+            const container = document.getElementById(`network-${networkNumber}-list`);
+            if (!container) return;
+            
+            // Show loading
+            const expandButton = container.querySelector('button');
+            if (expandButton) {
+                expandButton.innerHTML = '🔄 Expanding...';
+                expandButton.disabled = true;
+            }
+            
+            try {
+                // Get more nodes for this network
+                const newNodes = await getMoreNodesForNetwork(networkNumber, currentNetworkData);
+                
+                if (newNodes.length > 0) {
+                    // Add new nodes to the network
+                    newNodes.forEach(node => {
+                        const networkItem = createNetworkItem(node, `Network ${networkNumber}`, networkNumber);
+                        container.insertBefore(networkItem, expandButton);
+                    });
+                    
+                    // Update stats
+                    const statsDiv = container.querySelector('div');
+                    if (statsDiv) {
+                        const totalNodes = currentNetworkData.length + newNodes.length;
+                        statsDiv.innerHTML = `📊 ${totalNodes} nodes found`;
+                    }
+                }
+                
+            } catch (error) {
+                console.error(`❌ Error expanding Network ${networkNumber}:`, error);
+            } finally {
+                // Reset button
+                if (expandButton) {
+                    expandButton.innerHTML = '🔄 Expand More';
+                    expandButton.disabled = false;
+                }
+            }
+        }
+
+        // Get more nodes for a specific network
+        async function getMoreNodesForNetwork(networkNumber, currentNetworkData) {
+            // This is a simplified version - in reality, you'd implement more sophisticated expansion logic
+            const newNodes = [];
+            
+            // For now, just return some dummy data or implement based on your specific needs
+            console.log(`📡 Getting more nodes for Network ${networkNumber}`);
+            
+            return newNodes;
+        }
+
+        // Create a network item for the list
+        function createNetworkItem(node, networkName, networkNumber) {
+            const networkItem = document.createElement('div');
+            networkItem.className = 'network-item';
+            
+            // Determine odd/even for styling
+            const nodeIndex = parseInt(node.index);
+            networkItem.classList.add(nodeIndex % 2 === 0 ? 'even' : 'odd');
+            
+            // Create expand button (for manual expansion)
+            const expandBtn = document.createElement('button');
+            expandBtn.className = 'expand-btn';
+            expandBtn.textContent = '▶';
+            expandBtn.onclick = () => expandNodeManually(node, networkNumber);
+            
+            // Create index display
+            const indexDisplay = document.createElement('span');
+            indexDisplay.className = 'index-display';
+            indexDisplay.textContent = node.index;
+            indexDisplay.style.cursor = 'pointer';
+            indexDisplay.onclick = (e) => {
+                e.stopPropagation();
+                showUserPopup(node);
+            };
+            
+            // Create depth indicator
+            const depthIndicator = document.createElement('span');
+            depthIndicator.style.cssText = `
+                font-size: 0.7em;
+                color: #a0aec0;
+                margin-left: 0.5rem;
+                background: rgba(0, 0, 0, 0.3);
+                padding: 0.2rem 0.4rem;
+                border-radius: 4px;
+            `;
+            depthIndicator.textContent = `D${node.depth || 0}`;
+            
+            // Create button container
+            const buttonContainer = document.createElement('div');
+            buttonContainer.className = 'pyramid-button';
+            buttonContainer.appendChild(expandBtn);
+            buttonContainer.appendChild(indexDisplay);
+            buttonContainer.appendChild(depthIndicator);
+            
+            networkItem.appendChild(buttonContainer);
+            
+            return networkItem;
+        }
+
+        // Manual expansion for a specific node
+        async function expandNodeManually(node, networkNumber) {
+            console.log(`🔄 Manual expansion for node ${node.index} in Network ${networkNumber}`);
+            
+            try {
+                if (!window.contractConfig || !window.contractConfig.contract) {
+                    throw new Error('Contract not available');
+                }
+
+                const contract = window.contractConfig.contract;
+                
+                // Get children for this node
+                const children = await getNodeChildrenFast(contract, BigInt(node.index));
+                
+                if (children && children.length > 0) {
+                    // Add children to the network
+                    const container = document.getElementById(`network-${networkNumber}-list`);
+                    if (container) {
+                        children.forEach((childIndex, index) => {
+                            const childNode = {
+                                index: childIndex.toString(),
+                                depth: (node.depth || 0) + 1,
+                                expanded: false,
+                                children: []
+                            };
+                            
+                            const childItem = createNetworkItem(childNode, `Network ${networkNumber}`, networkNumber);
+                            
+                            // Insert after the current node
+                            const currentItem = container.querySelector(`[data-node-index="${node.index}"]`);
+                            if (currentItem) {
+                                currentItem.insertAdjacentElement('afterend', childItem);
+                            } else {
+                                container.appendChild(childItem);
+                            }
+                        });
+                    }
+                }
+                
+            } catch (error) {
+                console.error(`❌ Error expanding node ${node.index}:`, error);
+            }
         }
 
 
@@ -582,14 +1038,14 @@
                 renderPyramidTree();
             }
         }
-
+        
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('🚀 Pyramid Tree page loaded');
             
             // Wait a bit for other scripts to load
-            setTimeout(async () => {
-                try {
+                setTimeout(async () => {
+                    try {
                     // Try to connect wallet automatically
                     console.log('🔄 Attempting to connect wallet automatically...');
                     const walletConnected = await connectWalletAndLoadData();
@@ -597,17 +1053,17 @@
                     if (walletConnected) {
                         console.log('✅ Wallet connected automatically, loading real data...');
                         await loadRealDataAndRender();
-                    } else {
+                        } else {
                         console.log('⚠️ Could not connect wallet automatically, showing default data');
                         updateWalletStatus();
                         renderPyramidTree();
                     }
-                } catch (error) {
+                    } catch (error) {
                     console.error('❌ Error in automatic wallet connection:', error);
                     updateWalletStatus();
                     renderPyramidTree();
-                }
-            }, 1000);
+                    }
+                }, 1000);
         });
     </script>
     

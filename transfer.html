@@ -112,6 +112,35 @@
           font-size: 0.75rem;
         }
       }
+
+      /* Transfer Status Styles */
+      .transfer-status {
+        margin-top: 1rem;
+        padding: 0.8rem;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        text-align: center;
+        font-weight: 500;
+        transition: all 0.3s ease;
+      }
+      
+      .transfer-status.success {
+        background: rgba(0, 255, 136, 0.1);
+        color: #00ff88;
+        border: 1px solid rgba(0, 255, 136, 0.3);
+      }
+      
+      .transfer-status.error {
+        background: rgba(255, 68, 68, 0.1);
+        color: #ff4444;
+        border: 1px solid rgba(255, 68, 68, 0.3);
+      }
+      
+      .transfer-status.loading {
+        background: rgba(167, 134, 255, 0.1);
+        color: #a786ff;
+        border: 1px solid rgba(167, 134, 255, 0.3);
+      }
     </style>
 </head>
 <body>
@@ -126,6 +155,9 @@
         <div class="page-header">
             <h1>💸 Transfer</h1>
             <p>Transfer tokens to another wallet</p>
+            <div style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); border-radius: 8px; padding: 0.8rem; margin: 0.5rem auto; max-width: 600px; font-size: 0.8rem;">
+                <p style="margin: 0; color: #ffc107;"><strong>💡 Contract Selection:</strong> Choose between the new contract (default) or the old contract if you want to transfer tokens from there.</p>
+            </div>
             
             <!-- Wallet Status Display -->
             <div id="walletStatus" style="background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:12px;padding:1rem;margin:1rem auto;max-width:400px;">
@@ -148,6 +180,18 @@
                     <h4 style="color:#00ff88;margin:0 0 0.5rem 0;font-size:0.95rem;">📤 Transfer Form</h4>
                     
                     <form id="transferForm" class="messenger-form" style="display:flex;flex-direction:column;gap:0.5rem;">
+                        
+                        <!-- Contract Selection -->
+                        <div class="form-group" style="margin-bottom:0.5rem;">
+                            <label for="contractSelector" style="display:block;color:#00ff88;margin-bottom:0.3rem;font-weight:600;font-size:0.85rem;">📋 Select Contract:</label>
+                            <select id="contractSelector" required style="width:100%;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
+                                <option value="new">🆕 New Contract (0x63F5...d2FE)</option>
+                                <option value="old">🔄 Old Contract (0xd7eD...0607)</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Contract Info Display -->
+                        <div id="contractInfo"></div>
                         
                         <!-- Destination Address -->
                         <div class="form-group" style="margin-bottom:0.5rem;">

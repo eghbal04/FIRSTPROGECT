@@ -8,8 +8,7 @@ let lastRenderedTime = 0;
 let _networkPopupOpening = false;
 
 // Performance optimization variables
-let renderDepthLimit = 10; // Limit rendering depth to prevent hanging (increased from 5 to 10)
-let maxConcurrentRenders = 3; // Limit concurrent async operations
+let maxConcurrentRenders = 10; // Increased concurrent operations for better performance
 let activeRenders = 0;
 let renderQueue = [];
 let isProcessingQueue = false;
@@ -568,12 +567,8 @@ window.networkShowUserPopup = async function(address, user) {
 
 // New function: Simple vertical render with lazy loading - ALL NODES CAN EXPAND
 async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = false) {
-    // Performance check: Limit depth to prevent hanging
-    if (level >= renderDepthLimit) {
-        console.log(`⚠️ Depth limit reached (${level}/${renderDepthLimit}), rendering simplified node`);
-        renderSimplifiedNode(index, container, level);
-        return;
-    }
+    // No depth limit - render all levels
+    // Removed depth limit check for unlimited tree rendering
     
     // Performance check: Limit concurrent renders
     if (activeRenders >= maxConcurrentRenders) {
@@ -733,7 +728,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         
         if (isMobile) {
             nodeDiv.style.padding = '0.3em 0.6em';
-            nodeDiv.style.width = 'auto';
+        nodeDiv.style.width = 'auto';
             nodeDiv.style.minWidth = '80px';
             nodeDiv.style.maxWidth = '120px';
             nodeDiv.style.height = '35px';
@@ -805,16 +800,16 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         
         // Part 1: Expand button (small part)
         const expandBtn = document.createElement('button');
-        expandBtn.textContent = '▸';
+         expandBtn.textContent = '▸';
         expandBtn.style.width = isMobile ? '20px' : isTablet ? '25px' : '30px';
         expandBtn.style.height = '100%';
         expandBtn.style.background = 'linear-gradient(135deg, #ffc107, #ff8f00)';
-        expandBtn.style.border = 'none';
+         expandBtn.style.border = 'none';
         expandBtn.style.borderRight = '1px solid rgba(255, 255, 255, 0.2)';
         expandBtn.style.color = '#000';
         expandBtn.style.fontSize = isMobile ? '0.7em' : isTablet ? '0.8em' : '0.9em';
         expandBtn.style.fontWeight = 'bold';
-        expandBtn.style.cursor = 'pointer';
+         expandBtn.style.cursor = 'pointer';
         expandBtn.style.display = 'flex';
         expandBtn.style.alignItems = 'center';
         expandBtn.style.justifyContent = 'center';
@@ -1350,49 +1345,7 @@ async function processRenderQueue() {
      container.appendChild(emptySlotDiv);
  }
  
- // Helper function to render simplified nodes at depth limit
-function renderSimplifiedNode(index, container, level) {
-    console.log(`📝 Rendering simplified node for index: ${index} at level: ${level}`);
-    
-    const simplifiedNode = document.createElement('div');
-    simplifiedNode.className = 'simplified-node';
-    simplifiedNode.setAttribute('data-index', index);
-    simplifiedNode.style.display = 'inline-flex';
-    simplifiedNode.style.alignItems = 'center';
-    simplifiedNode.style.justifyContent = 'center';
-    simplifiedNode.style.marginRight = '0px';
-    simplifiedNode.style.marginBottom = '0.9em';
-    simplifiedNode.style.background = getNodeColorByLevel(level, true);
-    simplifiedNode.style.borderRadius = '8px';
-    simplifiedNode.style.padding = '0.4em 0.8em';
-    simplifiedNode.style.color = '#00ff88';
-    simplifiedNode.style.fontFamily = 'monospace';
-    simplifiedNode.style.fontSize = '0.9em';
-    simplifiedNode.style.boxShadow = '0 2px 8px rgba(0,255,136,0.10)';
-
-    simplifiedNode.style.opacity = '0.7';
-    simplifiedNode.innerHTML = `
-        <span style="white-space: nowrap; font-size: 0.9em; display: flex; align-items: center; justify-content: center; font-weight: bold;">
-            ${window.generateIAMId ? window.generateIAMId(index) : index}
-        </span>
-    `;
-
-    
-    simplifiedNode.onmouseover = function() { 
-        this.style.background = '#232946'; 
-        this.style.boxShadow = '0 4px 16px #00ff8840'; 
-        this.style.opacity = '1';
-    };
-    simplifiedNode.onmouseout = function() { 
-        this.style.background = getNodeColorByLevel(level, true); 
-        this.style.boxShadow = '0 2px 8px rgba(0,255,136,0.10)'; 
-        this.style.opacity = '0.7';
-    };
-    
-
-    
-    container.appendChild(simplifiedNode);
-}
+ // renderSimplifiedNode function removed - no depth limits anymore
 // Function renderEmptyNodeVertical removed - empty slots are now handled by + buttons on parent nodes
 // Replace main tree render with vertical model
 window.renderSimpleBinaryTree = async function() {

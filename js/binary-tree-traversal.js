@@ -84,7 +84,7 @@ class BinaryTreeTraversal {
             }
 
                    // Get children without depth limit
-       if (current.depth < 50) { // Increased depth limit for comprehensive search
+       if (current.depth < 999) { // Unlimited depth for comprehensive search
               try {
                 const tree = await contract.getUserTree(current.address);
                 
@@ -213,7 +213,7 @@ class BinaryTreeTraversal {
         }
 
                  // Get children without depth limit
-         if (depth < 50) { // Increased depth limit for comprehensive search
+         if (depth < 999) { // Unlimited depth for comprehensive search
           try {
             const tree = await contract.getUserTree(address);
             
