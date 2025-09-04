@@ -403,6 +403,11 @@ class SwapManager {
             swapAmount.addEventListener('input', async () => {
                 console.log('📝 Swap amount changed:', swapAmount.value);
                 
+                // Remove any decimal points to enforce whole numbers
+                if (swapAmount.value.includes('.')) {
+                    swapAmount.value = swapAmount.value.split('.')[0];
+                }
+                
                 // Real-time calculation of dollar equivalent when token amount changes
                 this.updateSwapUsdValue();
             });
@@ -607,56 +612,17 @@ class SwapManager {
         }
         
             if (direction.value === 'dai-to-IAM') {
-        // Limit maximum amount to $1000 (assuming 1 DAI = 1 USD)
-        const maxAllowedDai = 1000;
-        const userBalanceMinusOneCent = Math.max(0, this.userBalances.dai - 0.01);
-        const maxDai = Math.min(userBalanceMinusOneCent, maxAllowedDai);
-        amount.max = maxDai;
-        console.log('✅ Maximum DAI amount set (limited to $1000):', maxDai);
-                 } else if (direction.value === 'IAM-to-dai') {
-             // Maximum sale based on pool liquidity and dynamic fee
-             amount.max = '';
-             (async () => {
-                 try {
-                     const daiContractBalance = await this.getContractDaiBalanceNum();
-                     const price = Number(this.tokenPrice) || 0;
-                     if (!price) {
-                         amount.max = this.userBalances.IAM;
-                         return;
-                     }
-                     const backingPct = this.getBackingFeePct(daiContractBalance);
-                     const maxByLiquidity = (daiContractBalance / price) / (1 - backingPct);
-                     
-                     // Helper function to round down
-                     const floorToDecimals = (val, decimals) => {
-                         const m = Math.pow(10, decimals);
-                         const floored = Math.floor(Number(val) * m) / m;
-                         // Always one smallest unit less
-                         const smallestUnit = 1 / m;
-                         return Math.max(0, floored - smallestUnit);
-                     };
-                     
-                     // Choose minimum between user balance and liquidity
-                     let finalMax = Math.min(this.userBalances.IAM, maxByLiquidity);
-                     
-                     // Ensure amount is at least 1 IAM
-                     if (finalMax < 1) {
-                         finalMax = Math.min(this.userBalances.IAM, 1);
-                     }
-                     
-                     // Always one smallest unit less (0.000001) and one cent worth less
-                     const safeMax = floorToDecimals(finalMax, 6);
-                     const oneCentWorth = 0.01 / price; // Convert 1 cent to IAM tokens
-                     const finalSafeMax = Math.max(0, safeMax - oneCentWorth);
-                     amount.max = finalSafeMax;
-                     console.log('✅ Maximum IAM amount set (1 cent worth less):', finalSafeMax);
-                } catch (e) {
-                    console.warn('⚠️ Error calculating maximum sale:', e);
-                    // In case of error, use user balance
-                    amount.max = this.userBalances.IAM;
-                }
-            })();
-        }
+                // Strict 1000 DAI maximum limit for input field
+                const maxAllowedDai = 1000;
+                const userBalanceMinusOne = Math.max(0, this.userBalances.dai - 1);
+                const maxDai = Math.min(userBalanceMinusOne, maxAllowedDai);
+                amount.max = Math.floor(maxDai);
+                console.log('✅ Maximum DAI amount set (limited to 1000 DAI):', Math.floor(maxDai));
+            } else if (direction.value === 'IAM-to-dai') {
+                // No limits for IAM to DAI - remove all restrictions
+                amount.max = '';
+                console.log('✅ No limits set for IAM to DAI conversion');
+            }
     }
 
     async setMaxAmount() {
@@ -688,43 +654,43 @@ class SwapManager {
                     return;
                 }
                 
-                // Limit maximum amount to $1000 (assuming 1 DAI = 1 USD)
+                // Strict 1000 DAI maximum limit
                 const maxAllowedDai = 1000;
                 const userBalance95Percent = this.userBalances.dai * 0.95;
                 
-                // Use the smaller of: 95% of user balance or $1000 limit
+                // Use the smaller of: 95% of user balance or 1000 DAI limit
                 let maxAmount = Math.min(userBalance95Percent, maxAllowedDai);
                 maxAmount = floorToDecimals(maxAmount, 2);
                 
-                // Subtract 100 DAI from maximum amount
-                maxAmount = Math.max(0.01, maxAmount - 100);
+                // Keep a small buffer (1 DAI) for gas fees
+                maxAmount = Math.max(1, maxAmount - 1);
                 
-                amount.value = maxAmount.toFixed(2);
+                amount.value = Math.floor(maxAmount).toString();
                 
-                console.log('✅ Maximum DAI amount set (100 DAI less):', {
+                console.log('✅ Maximum DAI amount set (1000 DAI limit):', {
                     userBalance: this.userBalances.dai.toFixed(2),
                     maxAllowedDai: maxAllowedDai,
                     maxAmount: maxAmount.toFixed(2)
                 });
                 
             } else if (direction.value === 'IAM-to-dai') {
-                // For IAM to DAI (selling IAM)
+                // For IAM to DAI (selling IAM) - No limits, use full balance
                 if (this.userBalances.IAM <= 0) {
                     console.warn('⚠️ No IAM balance available');
                     this.showStatus('No IAM balance available. Please purchase IAM tokens first to make sales.', 'error');
                     return;
                 }
                 
-                // Simple approach: use 95% of available balance
-                let maxIAM = this.userBalances.IAM * 0.95;
+                // Use full available balance (no limits)
+                let maxIAM = this.userBalances.IAM;
                 maxIAM = floorToDecimals(maxIAM, 6);
                 
-                // Subtract 100 IAM tokens from maximum amount
-                maxIAM = Math.max(0.000001, maxIAM - 100);
+                // Keep a small buffer (1 IAM) for precision
+                maxIAM = Math.max(1, maxIAM - 1);
                 
-                amount.value = maxIAM.toFixed(6);
+                amount.value = Math.floor(maxIAM).toString();
                 
-                console.log('✅ Maximum IAM amount set (100 IAM less):', {
+                console.log('✅ Maximum IAM amount set (full balance, no limits):', {
                     userBalance: this.userBalances.IAM.toFixed(6),
                     maxAmount: maxIAM.toFixed(6)
                 });
@@ -736,14 +702,18 @@ class SwapManager {
             console.error('❌ Error setting maximum amount:', error);
             this.showStatus('Error setting maximum amount: ' + error.message, 'error');
             
-            // Fallback: set to 90% of balance minus 100 tokens
+            // Fallback: set to 90% of balance with small buffer
             try {
                 if (direction.value === 'dai-to-IAM' && this.userBalances.dai > 0) {
-                    const fallbackMax = Math.max(0.01, (this.userBalances.dai * 0.9) - 100);
-                    amount.value = fallbackMax.toFixed(2);
+                    // Apply 1000 DAI limit even in fallback
+                    const maxAllowedDai = 1000;
+                    const userBalance90Percent = this.userBalances.dai * 0.9;
+                    const fallbackMax = Math.max(1, Math.min(userBalance90Percent, maxAllowedDai) - 1);
+                    amount.value = Math.floor(fallbackMax).toString();
                 } else if (direction.value === 'IAM-to-dai' && this.userBalances.IAM > 0) {
-                    const fallbackMax = Math.max(0.000001, (this.userBalances.IAM * 0.9) - 100);
-                    amount.value = fallbackMax.toFixed(6);
+                    // No limits for IAM to DAI, use full balance
+                    const fallbackMax = Math.max(1, this.userBalances.IAM - 1);
+                    amount.value = Math.floor(fallbackMax).toString();
                 }
             } catch (fallbackError) {
                 console.error('❌ Fallback also failed:', fallbackError);
@@ -863,6 +833,11 @@ class SwapManager {
                 throw new Error('Invalid amount - please enter a positive value');
             }
             
+            // Check if the value is a whole number
+            if (!Number.isInteger(value)) {
+                throw new Error('Please enter a whole number only (no decimals)');
+            }
+            
             console.log('📊 Swap information:', {
                 direction: direction.value,
                 amount: value,
@@ -879,39 +854,16 @@ class SwapManager {
 
             // Validation according to contract
             if (direction.value === 'dai-to-IAM') {
-                if (value <= 1) throw new Error('Minimum purchase amount is 1.01 DAI. Please increase your purchase amount.');
+                if (value < 1) throw new Error('Minimum purchase amount is 1 DAI. Please increase your purchase amount.');
                 
-                // Enforce $1000 maximum limit for DAI to token conversion
+                // Enforce strict 1000 DAI maximum limit
                 const maxAllowedDai = 1000;
                 if (value > maxAllowedDai) {
-                    throw new Error(`Purchase amount exceeds maximum limit. Maximum allowed: ${maxAllowedDai} DAI ($1000). Please reduce your amount.`);
+                    throw new Error(`Purchase amount exceeds maximum limit. Maximum allowed: ${maxAllowedDai} DAI. Please reduce your amount.`);
                 }
-                
-                // Dynamic buy limit from contract
-                const daiContractBalance = await this.getContractDaiBalanceNum();
-                const maxBuy = (daiContractBalance <= 100000) ? 1000 : (daiContractBalance * 0.01);
-                if (value > maxBuy) throw new Error(`Purchase amount exceeds daily limit. Maximum allowed: ${maxBuy.toFixed(2)} DAI. Please reduce your amount.`);
             } else if (direction.value === 'IAM-to-dai') {
-                if (value <= 1) throw new Error('Minimum sale amount is 1.01 IAM. Please increase your sale amount.');
-                // Check DAI pool liquidity according to contract
-                const daiContractBalance = await this.getContractDaiBalanceNum();
-                const price = Number(this.tokenPrice);
-                if (!price || price <= 0) {
-                    throw new Error('Token price is currently unavailable. Please try again later.');
-                }
-                const backingPct = this.getBackingFeePct(daiContractBalance);
-                const maxIAMByLiquidity = (daiContractBalance / price) / (1 - backingPct);
-                
-                // Check that amount doesn't exceed maximum allowed
-                if (value > maxIAMByLiquidity) {
-                    throw new Error(`Sale amount exceeds available liquidity. Maximum allowed: ${maxIAMByLiquidity.toFixed(6)} IAM. Please reduce your amount.`);
-                }
-                
-                // Check DAI liquidity
-                const netDai = value * price * (1 - backingPct);
-                if (netDai > daiContractBalance) {
-                    throw new Error(`Insufficient DAI liquidity in the pool. Maximum allowed sale: ${maxIAMByLiquidity.toFixed(6)} IAM. Please try a smaller amount.`);
-                }
+                if (value < 1) throw new Error('Minimum sale amount is 1 IAM. Please increase your sale amount.');
+                // No other limits for IAM to DAI conversion - removed all liquidity checks
             }
 
             // Execute swap operation
