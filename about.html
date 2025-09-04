@@ -968,12 +968,12 @@
   <!-- Language Selector -->
   <div class="language-selector">
     <select id="language-selector">
-      <option value="en">🇺🇸 English</option>
-      <option value="fa">🇮🇷 فارسی</option>
-      <option value="ru">🇷🇺 Русский</option>
-      <option value="zh">🇨🇳 中文</option>
-      <option value="de">🇩🇪 Deutsch</option>
-      <option value="fr">🇫🇷 Français</option>
+      <option value="en" data-translate="language_english">🇺🇸 English</option>
+      <option value="fa" data-translate="language_persian">🇮🇷 فارسی</option>
+      <option value="ru" data-translate="language_russian">🇷🇺 Русский</option>
+      <option value="zh" data-translate="language_chinese">🇨🇳 中文</option>
+      <option value="de" data-translate="language_german">🇩🇪 Deutsch</option>
+      <option value="fr" data-translate="language_french">🇫🇷 Français</option>
     </select>
   </div>
 
@@ -1540,7 +1540,7 @@
           console.error('Error copying: ', err);
           const btn = document.getElementById(buttonId);
           if (btn) {
-            btn.textContent = '❌ خطا';
+            btn.textContent = '❌ Error';
             btn.style.background = 'linear-gradient(135deg, #ff4444, #ff4444)';
             setTimeout(() => {
               btn.textContent = '📋 Copy Address';
@@ -1727,7 +1727,15 @@
         network_marketing_system: "🌳 Network Marketing System",
         registration_activation: "Registration and Activation",
         paid_registration: "📝 Paid Registration",
+        paid_registration_desc1: "Smart contract-based registration",
+        paid_registration_desc2: "Binary tree network structure",
+        paid_registration_desc3: "Dynamic registration pricing based on wallet count",
+        paid_registration_desc4: "10% referral reward from registration fee",
         free_registration: "🆓 Free Registration",
+        free_registration_desc1: "Burn tokens equivalent to 23 DAI",
+        free_registration_desc2: "No registration fee",
+        free_registration_desc3: "Same benefits as paid registration",
+        free_registration_desc4: "Identical network structure",
         registration_pricing: "Registration Pricing",
         wallet_count: "Wallet Count",
         registration_price: "Registration Price",
@@ -1735,24 +1743,82 @@
         how_to_earn_points: "How to Earn Points",
         point_earning_conditions: "Point Earning Conditions",
         reward_claim_system: "Reward Claim System",
+        max_points: "Maximum Points:",
+        max_points_desc: "Maximum binary points (exact value from contract - MAX_BINARY_POINT_CAP)",
+        initial_points: "Initial Points:",
+        initial_points_desc: "5 points for paid registration, 0 for free registration",
+        point_increase: "Point Increase:",
+        point_increase_desc: "Maximum 2 points per purchase cycle",
+        time_interval: "Time Interval:",
+        time_interval_desc: "4 weeks between point earnings",
+        fee_desc: "Fee:",
+        fee_desc2: "2% of reward (added to cashback fund)",
+        cashback_repayment: "Cashback Repayment:",
+        cashback_repayment_desc: "Previous monthly rewards are repaid first",
         vendor_purchase_system: "🛍️ Vendor Purchase System",
         how_to_purchase_vendors: "How to Purchase from Vendors",
         purchase_function: "🛒 Purchase Function",
         purchase_benefits: "Purchase Benefits",
+        purchase_benefit1: "Earn binary points for network growth",
+        purchase_benefit2: "Support vendor ecosystem",
+        purchase_benefit3: "Automatic point distribution",
+        purchase_benefit4: "Transparent transaction recording",
         community_voting_system: "🗳️ Community Voting System",
         user_rating_system: "User Rating System",
         vote_on_users: "👍👎 Vote on Users",
         voting_benefits: "Voting Benefits",
+        voting_benefit1: "Community-driven quality control",
+        voting_benefit2: "Build reputation in the network",
+        voting_benefit3: "Identify trusted members",
+        voting_benefit4: "Transparent user feedback system",
         monthly_rewards: "💰 Monthly Rewards",
         eligibility_requirements: "Eligibility Requirements",
         reward_calculation: "Reward Calculation",
         security_protection: "🔒 Security and Protection",
+        security_feature1: "Smart Contract Security:",
+        security_feature1_desc: "All operations secured by audited smart contracts",
+        security_feature2: "Reentrancy Protection:",
+        security_feature2_desc: "Advanced security measures against attacks",
+        security_feature3: "Automated Operations:",
+        security_feature3_desc: "No human intervention in critical functions",
+        security_feature4: "Transparent Transactions:",
+        security_feature4_desc: "All activities visible on blockchain",
+        security_feature5: "Fund Protection:",
+        security_feature5_desc: "Users maintain full control of assets",
+        security_feature6: "Voting System:",
+        security_feature6_desc: "Community-driven quality control with like/dislike system",
+        security_feature7: "Index Transfer:",
+        security_feature7_desc: "Ability to transfer index ownership to new address",
+        security_feature8: "Dynamic Pricing:",
+        security_feature8_desc: "Fair token pricing based on contract balance",
+        security_feature9: "Fee Transparency:",
+        security_feature9_desc: "All fees clearly defined and automatically calculated",
         live_statistics: "📊 Live Statistics",
         registered_wallets: "Registered Wallets",
         contract_dai_balance: "Contract DAI Balance",
         claimable_points: "Claimable Points",
         cashback_fund: "Cashback Fund",
         faq: "❓ Frequently Asked Questions",
+        faq_question1: "How do I buy IAM tokens?",
+        faq_question2: "How do I sell IAM tokens?",
+        faq_question3: "What are the fees?",
+        faq_question4: "How do I register in the network?",
+        faq_question5: "Can I register for free?",
+        faq_question6: "How do binary points work?",
+        faq_question7: "What are monthly rewards?",
+        faq_question8: "Can I transfer index ownership?",
+        faq_question9: "How do I purchase from vendors?",
+        faq_question10: "How does the voting system work?",
+        faq_answer1: "Use the buyTokens() function with DAI amount. You need to approve DAI spending first.",
+        faq_answer2: "Use the sellTokens() function with IAM token amount. Tokens will be burned and you'll receive DAI.",
+        faq_answer3: "2% backing fee on all transactions. Dynamic fee based on contract balance: 2% if ≤200k DAI, 2.5% if ≤500k DAI, 3% if >500k DAI.",
+        faq_answer4: "Use registerAndActivate() function with registration fee. Dynamic pricing based on wallet count.",
+        faq_answer5: "Yes, use registerFree() function by burning tokens equivalent to 23 DAI value.",
+        faq_answer6: "Maximum 2 points per purchase cycle with 4 weeks interval. Maximum binary points (exact value from contract - MAX_BINARY_POINT_CAP). Initial points: 5 for paid registration, 0 for free registration.",
+        faq_answer7: "Exact reward rate from contract (exact value from contract) for users with both children empty (leftPoints = 0 and rightPoints = 0). Maximum up to 100% of deposited amount. Previous cashback is repaid first.",
+        faq_answer8: "Yes, use transferIndexOwnership() function to transfer index to new address. All user data including points and history will be transferred.",
+        faq_answer9: "Use purchase() function with amount, payment percentage (30-100%), and vendor address. Specific percentage of tokens will be burned (exact value from contract). Automatic binary points distribution (exact value from contract).",
+        faq_answer10: "Use voteUser(voter, target) to like or dislike any registered user. You can change your vote anytime. Total likes and dislikes are publicly visible (getVoteStatus).",
 
         
         // Phoenix Team Section
@@ -1814,7 +1880,15 @@
         severe_price_increase: "This mechanism causes severe price increases as the token becomes increasingly scarce. Unlike inflationary systems that dilute value, this deflationary model ensures that every token holder benefits from the continuous reduction in supply.",
         
         // Back Button
-        back_button: "← Back"
+        back_button: "← Back",
+        
+        // Language Selector
+        language_english: "🇺🇸 English",
+        language_persian: "🇮🇷 فارسی",
+        language_russian: "🇷🇺 Русский",
+        language_chinese: "🇨🇳 中文",
+        language_german: "🇩🇪 Deutsch",
+        language_french: "🇫🇷 Français"
       },
       fa: {
         title: "درباره ما | IAM - PHOENIX",
@@ -2074,7 +2148,15 @@
         severe_price_increase: "این مکانیزم باعث افزایش شدید قیمت می‌شود زیرا توکن به طور فزاینده‌ای کمیاب می‌شود. برخلاف سیستم‌های تورمی که ارزش را رقیق می‌کنند، این مدل تورمی منفی تضمین می‌کند که هر دارنده توکن از کاهش مداوم عرضه بهره‌مند شود.",
         
         // Back Button
-        back_button: "← بازگشت"
+        back_button: "← بازگشت",
+        
+        // Language Selector
+        language_english: "🇺🇸 English",
+        language_persian: "🇮🇷 فارسی",
+        language_russian: "🇷🇺 Русский",
+        language_chinese: "🇨🇳 中文",
+        language_german: "🇩🇪 Deutsch",
+        language_french: "🇫🇷 Français"
       },
       ru: {
         title: "О нас | IAM - PHOENIX",
@@ -2209,7 +2291,15 @@
         severe_price_increase: "Этот механизм вызывает сильное повышение цен, поскольку токен становится все более дефицитным. В отличие от инфляционных систем, которые разбавляют стоимость, эта дефляционная модель гарантирует, что каждый держатель токенов выигрывает от постоянного сокращения предложения.",
         
         // Back Button
-        back_button: "← Назад"
+        back_button: "← Назад",
+        
+        // Language Selector
+        language_english: "🇺🇸 English",
+        language_persian: "🇮🇷 فارسی",
+        language_russian: "🇷🇺 Русский",
+        language_chinese: "🇨🇳 中文",
+        language_german: "🇩🇪 Deutsch",
+        language_french: "🇫🇷 Français"
       },
       zh: {
         title: "关于我们 | IAM - PHOENIX",
@@ -2344,7 +2434,15 @@
         severe_price_increase: "这种机制导致价格严重上涨，因为代币变得越来越稀缺。与稀释价值的通胀系统不同，这种通缩模型确保每个代币持有者都从持续的供应减少中受益。",
         
         // Back Button
-        back_button: "← 返回"
+        back_button: "← 返回",
+        
+        // Language Selector
+        language_english: "🇺🇸 English",
+        language_persian: "🇮🇷 فارسی",
+        language_russian: "🇷🇺 Русский",
+        language_chinese: "🇨🇳 中文",
+        language_german: "🇩🇪 Deutsch",
+        language_french: "🇫🇷 Français"
       },
       de: {
         title: "Über uns | IAM - PHOENIX",
@@ -2479,7 +2577,15 @@
         severe_price_increase: "Dieser Mechanismus verursacht starke Preissteigerungen, da der Token zunehmend knapper wird. Im Gegensatz zu inflationären Systemen, die den Wert verwässern, stellt dieses deflationäre Modell sicher, dass jeder Token-Inhaber von der kontinuierlichen Angebotsreduzierung profitiert.",
         
         // Back Button
-        back_button: "← Zurück"
+        back_button: "← Zurück",
+        
+        // Language Selector
+        language_english: "🇺🇸 English",
+        language_persian: "🇮🇷 فارسی",
+        language_russian: "🇷🇺 Русский",
+        language_chinese: "🇨🇳 中文",
+        language_german: "🇩🇪 Deutsch",
+        language_french: "🇫🇷 Français"
       },
       fr: {
         title: "À propos | IAM - PHOENIX",
@@ -2614,7 +2720,15 @@
         severe_price_increase: "Ce mécanisme provoque des augmentations de prix sévères car le token devient de plus en plus rare. Contrairement aux systèmes inflationnistes qui diluent la valeur, ce modèle déflationniste garantit que chaque détenteur de tokens bénéficie de la réduction continue de l'offre.",
         
         // Back Button
-        back_button: "← Retour"
+        back_button: "← Retour",
+        
+        // Language Selector
+        language_english: "🇺🇸 English",
+        language_persian: "🇮🇷 فارسی",
+        language_russian: "🇷🇺 Русский",
+        language_chinese: "🇨🇳 中文",
+        language_german: "🇩🇪 Deutsch",
+        language_french: "🇫🇷 Français"
       }
     };
 
