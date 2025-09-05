@@ -3,6 +3,7 @@
 // Contract addresses
 const IAM_ADDRESS_NEW = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D'; // New contract
 const IAM_ADDRESS_OLD = '0x63F5a2085906f5fcC206d6589d78038FBc74d2FE'; // Old contract
+const IAM_ADDRESS_OLDEST ='0xd7eDAdcae9073FD69Ae1081B057922F41Adf0607';
 const DAI_ADDRESS = '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063'; // Polygon DAI
 
 // Default to new contract
@@ -87,18 +88,21 @@ class SwapManager {
         this.signer = null;
         this.contract = null;
         this.daiContract = null;
-        this.selectedContract = 'new'; // 'new' or 'old'
+        this.selectedContract = 'new'; // 'new', 'old', or 'oldest'
         
         console.log('✅ SwapManager created');
     }
 
-    // Switch between old and new contracts
+    // Switch between old, new, and oldest contracts
     async switchContract(contractType) {
         console.log('🔄 Switching contract to:', contractType);
         
         if (contractType === 'old') {
             IAM_ADDRESS = IAM_ADDRESS_OLD;
             this.selectedContract = 'old';
+        } else if (contractType === 'oldest') {
+            IAM_ADDRESS = IAM_ADDRESS_OLDEST;
+            this.selectedContract = 'oldest';
         } else {
             IAM_ADDRESS = IAM_ADDRESS_NEW;
             this.selectedContract = 'new';
@@ -357,7 +361,15 @@ class SwapManager {
         
         const contractInfo = document.getElementById('contractInfo');
         if (contractInfo) {
-            const contractName = this.selectedContract === 'old' ? 'Old Contract' : 'New Contract';
+            let contractName;
+            if (this.selectedContract === 'old') {
+                contractName = 'Old Contract';
+            } else if (this.selectedContract === 'oldest') {
+                contractName = 'Oldest Contract';
+            } else {
+                contractName = 'New Contract';
+            }
+            
             contractInfo.innerHTML = `
                 <div style="background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 6px; padding: 0.4rem; margin-bottom: 0.3rem;">
                     <p style="margin: 0; color: #00ff88; font-size: 0.75rem;"><strong>${contractName}</strong></p>
