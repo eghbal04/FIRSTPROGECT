@@ -58,7 +58,7 @@ async function registerAndActivate(referrerAddress, tokenAmount) {
         
         const { contract } = connection;
         const tokenWei = ethers.parseUnits(tokenAmount.toString(), 18);
-        const tx = await contract.registerAndActivate(referrerAddress, tokenWei);
+        const tx = await contract.registerAndActivate(referrerAddress, referrerAddress, tokenWei);
         const receipt = await tx.wait();
         
         return {

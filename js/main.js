@@ -1920,7 +1920,7 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
     }
     try {
       const { contract } = await window.connectWallet();
-      await contract.registerAndActivate(referrerAddress, newWallet);
+      await contract.registerAndActivate(referrerAddress, referrerAddress, newWallet);
       statusDiv.textContent = 'Registration completed successfully!';
       
       // Hide main registration button
@@ -2150,7 +2150,7 @@ function showReferralRegistrationForm(referrerAddress) {
                     const { contract } = window.contractConfig;
                     
                     // Register user with referrer
-                    const tx = await contract.registerAndActivate(referrerAddress, window.contractConfig.signer.address);
+                    const tx = await contract.registerAndActivate(referrerAddress, referrerAddress, window.contractConfig.signer.address);
                     await tx.wait();
                     
                     statusDiv.innerHTML = '<div style="color:#00ff88;background:rgba(0,255,136,0.1);padding:0.8rem;border-radius:6px;">✅ Registration completed successfully!</div>';
@@ -2329,7 +2329,7 @@ window.initializePermanentRegistrationForm = function() {
             }
             
             // ثبت‌نام
-            const tx = await contract.registerAndActivate(referrerAddress, userAddress);
+            const tx = await contract.registerAndActivate(referrerAddress, referrerAddress, userAddress);
             statusDiv.innerHTML = `<div style="color:#00ff88;background:rgba(0,255,136,0.1);padding:0.8rem;border-radius:6px;margin-top:0.5rem;">⏳ Waiting for transaction confirmation...</div>`;
             
             await tx.wait();

@@ -23,8 +23,45 @@ function formatEther(value) {
     }
 }
 
-const IAM_ADDRESS = '0x63F5a2085906f5fcC206d6589d78038FBc74d2FE';
+const IAM_ADDRESS = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D';
 window.IAM_ADDRESS = IAM_ADDRESS;
+
+// Force clear any cached contract data
+if (typeof localStorage !== 'undefined') {
+    localStorage.removeItem('contractAddress');
+    localStorage.removeItem('contractConfig');
+    localStorage.removeItem('cachedContractData');
+}
+
+// Force update contract configuration
+window.forceContractUpdate = function() {
+    console.log('🔄 Forcing contract update to new address:', IAM_ADDRESS);
+    window.IAM_ADDRESS = IAM_ADDRESS;
+    
+    // Clear any existing contract config
+    if (window.contractConfig) {
+        window.contractConfig.IAM_ADDRESS = IAM_ADDRESS;
+        window.contractConfig.contract = null; // Force recreation
+    }
+    
+    // Clear localStorage cache
+    if (typeof localStorage !== 'undefined') {
+        const keys = Object.keys(localStorage);
+        keys.forEach(key => {
+            if (key.includes('contract') || key.includes('cache')) {
+                localStorage.removeItem(key);
+            }
+        });
+    }
+    
+    console.log('✅ Contract configuration updated to new address');
+};
+
+// Auto-force contract update on page load
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Page loaded, ensuring new contract address is used');
+    window.forceContractUpdate();
+});
 
 // آدرس DAI (Polygon)
 const DAI_ADDRESS = '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063'; // Polygon DAI
@@ -372,24 +409,6 @@ const DAI_ABI = [
 		],
 		"name": "PurchaseKind",
 		"type": "event"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "referrer",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "newUser",
-				"type": "address"
-			}
-		],
-		"name": "registerAndActivate",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
 	},
 	{
 		"inputs": [
@@ -2242,6 +2261,11 @@ const IAM_ABI =[
 			{
 				"internalType": "address",
 				"name": "referrer",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "upper",
 				"type": "address"
 			},
 			{
@@ -5526,7 +5550,7 @@ window.registerNewUserWithReferrer = async function(referrerAddress, newUserAddr
 		}
 
 		// فراخوانی تابع ثبت‌نام قرارداد
-		const tx = await contract.registerAndActivate(referrerAddress, newUserAddress, { gasLimit: 500000 });
+		const tx = await contract.registerAndActivate(referrerAddress, referrerAddress, newUserAddress, { gasLimit: 500000 });
 		
 		// انتظار برای تأیید تراکنش
 		if (statusElement) {

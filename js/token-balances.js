@@ -71,11 +71,11 @@ window.TokenBalances = {
 
         try {
             // IAM Balance
-            if (window.CONTRACT_ADDRESS && window.CONTRACT_ABI) {
+            if (window.IAM_ADDRESS && window.IAM_ABI) {
                 const IAMBalance = await this.getTokenBalance(
                     address,
-                    window.CONTRACT_ADDRESS,
-                    window.CONTRACT_ABI
+                    window.IAM_ADDRESS,
+                    window.IAM_ABI
                 );
                 if (IAMBalance) balances.IAM = Number(IAMBalance).toFixed(2);
             }

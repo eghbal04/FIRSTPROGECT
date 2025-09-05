@@ -241,13 +241,13 @@ async function performRegistrationForNewUser() {
 
         // Approve logic before registration:
         const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, window.contractConfig.signer);
-        const allowance = await usdcContract.allowance(address, CONTRACT_ADDRESS);
+        const allowance = await usdcContract.allowance(address, window.IAM_ADDRESS);
         if (allowance < regprice) {
-          const approveTx = await usdcContract.approve(CONTRACT_ADDRESS, regprice);
+          const approveTx = await usdcContract.approve(window.IAM_ADDRESS, regprice);
           await approveTx.wait();
         }
         
-        const tx = await contract.registerAndActivate(referrerAddress, userAddress);
+        const tx = await contract.registerAndActivate(referrerAddress, referrerAddress, userAddress);
         await tx.wait();
         showRegisterSuccess("Registration completed successfully!");
         
@@ -443,13 +443,13 @@ async function performRegistration() {
             
             // Approve logic before registration:
             const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, window.contractConfig.signer);
-            const allowance = await usdcContract.allowance(address, CONTRACT_ADDRESS);
+            const allowance = await usdcContract.allowance(address, window.IAM_ADDRESS);
             if (allowance < regprice) {
-              const approveTx = await usdcContract.approve(CONTRACT_ADDRESS, regprice);
+              const approveTx = await usdcContract.approve(window.IAM_ADDRESS, regprice);
               await approveTx.wait();
             }
             
-            const tx = await contract.registerAndActivate(referrerAddress, userAddress);
+            const tx = await contract.registerAndActivate(referrerAddress, referrerAddress, userAddress);
             await tx.wait();
             showRegisterSuccess("Subordinate registration completed successfully!");
         } else {
@@ -465,12 +465,12 @@ async function performRegistration() {
 
             // Approve logic before registration:
             const usdcContract = new ethers.Contract(USDC_ADDRESS, USDC_ABI, window.contractConfig.signer);
-            const allowance = await usdcContract.allowance(address, CONTRACT_ADDRESS);
+            const allowance = await usdcContract.allowance(address, window.IAM_ADDRESS);
             if (allowance < regprice) {
-              const approveTx = await usdcContract.approve(CONTRACT_ADDRESS, regprice);
+              const approveTx = await usdcContract.approve(window.IAM_ADDRESS, regprice);
               await approveTx.wait();
             }
-            const tx = await contract.registerAndActivate(referrerAddress, address);
+            const tx = await contract.registerAndActivate(referrerAddress, referrerAddress, address);
             await tx.wait();
             showRegisterSuccess("Registration completed successfully!");
         }
@@ -959,7 +959,7 @@ window.showRegistrationForm = async function() {
       registerBtn.disabled = true;
       registerBtn.textContent = 'Registering...';
       try {
-        await contract.registerAndActivate(referrer, targetUserAddress);
+        await contract.registerAndActivate(referrer, referrer, targetUserAddress);
         showRegisterSuccess('Registration completed successfully!');
         registerBtn.style.display = 'none';
       } catch (e) {
@@ -1012,7 +1012,7 @@ window.showRegistrationForm = async function() {
                 const userData = await contract.users(userAddr);
                 if (userData && userData.index && BigInt(userData.index) > 0n) throw new Error('This address is already registered');
                 // ثبت‌نام نفر جدید (با ولت فعلی)
-                const tx = await contract.registerAndActivate(refAddr, userAddr);
+                const tx = await contract.registerAndActivate(refAddr, refAddr, userAddr);
                 await tx.wait();
                 showRegisterSuccess('New user registration completed successfully!');
                 setTimeout(() => location.reload(), 1200);
@@ -1031,7 +1031,7 @@ async function registerUser(referrer, requiredTokenAmount, targetUserAddress) {
     if (!contract || !address) throw new Error('Wallet not connected');
     // Convert amount to wei (integer)
     const amountInWei = ethers.parseUnits(requiredTokenAmount, 18);
-    await contract.registerAndActivate(referrer, targetUserAddress);
+    await contract.registerAndActivate(referrer, referrer, targetUserAddress);
 }
 
     // Manage display of new registration form and new person registration
@@ -1079,7 +1079,7 @@ window.addEventListener('DOMContentLoaded', function() {
                 const userData = await contract.users(userAddr);
                 if (userData && userData.index && BigInt(userData.index) > 0n) throw new Error('This address is already registered');
                 // ثبت‌نام نفر جدید (با ولت فعلی)
-                const tx = await contract.registerAndActivate(refAddr, userAddr);
+                const tx = await contract.registerAndActivate(refAddr, refAddr, userAddr);
                 await tx.wait();
                 statusDiv.textContent = 'New user registration completed!';
                 statusDiv.className = 'profile-status success';
@@ -1123,7 +1123,7 @@ window.registerNewUserWithReferrer = async function(referrer, newUserAddress, st
         const userData = await contract.users(newUserAddress);
         if (userData && userData.index && BigInt(userData.index) > 0n) throw new Error('This address is already registered');
         // ثبت‌نام نفر جدید (با ولت فعلی)
-        const tx = await contract.registerAndActivate(referrer, newUserAddress);
+        const tx = await contract.registerAndActivate(referrer, referrer, newUserAddress);
         await tx.wait();
         
         // مخفی کردن دکمه ثبت‌نام اصلی

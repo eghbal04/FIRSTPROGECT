@@ -296,15 +296,72 @@
     
     <!-- Contract Configuration -->
     <script>
-        // Contract Configuration
-        window.IAM_ADDRESS = '0x63F5a2085906f5fcC206d6589d78038FBc74d2FE';
-        window.IAM_ABI = [
-            "function getUserAddress(uint256 index) view returns (address)",
-            "function indexToAddress(uint256 index) view returns (address)",
-            "function getTotalUsers() view returns (uint256)",
-            "function isUserRegistered(address user) view returns (bool)",
-            "function wallets(uint256 index) view returns (address)"
-        ];
+        // Contract Configuration - Updated to new contract
+        window.IAM_ADDRESS = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D';
+        
+        // Use the full ABI from config.js instead of limited ABI
+        // The full ABI will be loaded from config.js
+        console.log('🔄 Transfer page: Setting contract address to:', window.IAM_ADDRESS);
+        
+        // Ensure ABI is loaded from config.js
+        if (window.IAM_ABI) {
+            console.log('✅ ABI loaded from config.js');
+        } else {
+            console.log('⚠️ ABI not loaded, waiting for config.js...');
+            // Wait for config.js to load
+            setTimeout(() => {
+                if (window.IAM_ABI) {
+                    console.log('✅ ABI loaded after delay');
+                } else {
+                    console.error('❌ ABI still not available');
+                }
+            }, 1000);
+        }
+        
+        // Force contract connection with new address
+        window.ensureContractConnection = async function() {
+            console.log('🔗 Ensuring contract connection...');
+            console.log('Contract Address:', window.IAM_ADDRESS);
+            console.log('ABI Available:', !!window.IAM_ABI);
+            console.log('Config Available:', !!window.contractConfig);
+            
+            if (window.contractConfig && window.contractConfig.contract) {
+                console.log('✅ Contract already connected');
+                return window.contractConfig.contract;
+            }
+            
+            if (window.ethereum && window.IAM_ADDRESS && window.IAM_ABI) {
+                try {
+                    const provider = new ethers.BrowserProvider(window.ethereum);
+                    const signer = await provider.getSigner();
+                    const contract = new ethers.Contract(window.IAM_ADDRESS, window.IAM_ABI, signer);
+                    
+                    console.log('✅ Contract connected successfully');
+                    return contract;
+                } catch (error) {
+                    console.error('❌ Contract connection failed:', error);
+                    return null;
+                }
+            } else {
+                console.error('❌ Missing requirements for contract connection');
+                return null;
+            }
+        };
+        
+        // Auto-connect to new contract on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Transfer page loaded, ensuring new contract connection');
+            
+            // Force contract update
+            if (typeof window.forceContractUpdate === 'function') {
+                window.forceContractUpdate();
+            }
+            
+            // Ensure contract connection
+            setTimeout(() => {
+                window.ensureContractConnection();
+            }, 1000);
+        });
     </script>
     
     <script>
@@ -506,13 +563,20 @@
                 const signer = await provider.getSigner();
                 console.log('✅ Provider and signer created');
                 
-                if (!window.IAM_ADDRESS || !window.IAM_ABI) {
-                    throw new Error('Contract configuration not available');
+                if (!window.IAM_ADDRESS) {
+                    throw new Error('Contract address not available');
                 }
                 
                 console.log('✅ Contract config available:', window.IAM_ADDRESS);
                 
-                const contract = new ethers.Contract(window.IAM_ADDRESS, window.IAM_ABI, signer);
+                // Use ABI from config.js
+                const abi = window.IAM_ABI || window.CONTRACT_ABI;
+                if (!abi) {
+                    throw new Error('Contract ABI not available');
+                }
+                
+                console.log('✅ Using ABI from config.js');
+                const contract = new ethers.Contract(window.IAM_ADDRESS, abi, signer);
                 console.log('✅ Contract instance created');
                 
                 // First check total users to validate index

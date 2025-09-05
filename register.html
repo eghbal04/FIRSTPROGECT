@@ -569,7 +569,7 @@
     let isConnected = false;
     
     // Contract addresses
-    const IAM_ADDRESS_NEW = '0x63F5a2085906f5fcC206d6589d78038FBc74d2FE'; // New contract
+    const IAM_ADDRESS_NEW = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D'; // New contract
     
     // Default to new contract (override global if exists)
     window.IAM_ADDRESS = IAM_ADDRESS_NEW;
@@ -1599,7 +1599,9 @@
          if (currentRegistrationType === 'free') {
            tx = await contract.registerFree(referrer, newUser);
         } else {
-           tx = await contract.registerAndActivate(referrer, newUser);
+           // For registerAndActivate, we need 3 parameters: referrer, upper, newUser
+           // In this case, referrer and upper are the same (the parent in binary tree)
+           tx = await contract.registerAndActivate(referrer, referrer, newUser);
            }
           
          showTempMessage('Waiting for network transaction confirmation...', 'info');

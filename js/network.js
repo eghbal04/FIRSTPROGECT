@@ -2709,7 +2709,7 @@ async function showRegistrationModal(parentIndex, emptyIndex, position) {
         
         try {
             const { contract, address: myAddress } = await window.connectWallet();
-            const tx = await contract.registerAndActivate(myAddress, newAddress);
+            const tx = await contract.registerAndActivate(myAddress, myAddress, newAddress);
             await tx.wait();
             
             statusDiv.textContent = '✅ ثبت نام با موفقیت انجام شد!';

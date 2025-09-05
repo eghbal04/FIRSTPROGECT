@@ -1,8 +1,8 @@
 // swap.js - Professional and principled for DAI ↔ IAM swap
 
 // Contract addresses
-const IAM_ADDRESS_NEW = '0x63F5a2085906f5fcC206d6589d78038FBc74d2FE'; // New contract
-const IAM_ADDRESS_OLD = '0xd7eDAdcae9073FD69Ae1081B057922F41Adf0607'; // Old contract
+const IAM_ADDRESS_NEW = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D'; // New contract
+const IAM_ADDRESS_OLD = '0x63F5a2085906f5fcC206d6589d78038FBc74d2FE'; // Old contract
 const DAI_ADDRESS = '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063'; // Polygon DAI
 
 // Default to new contract
