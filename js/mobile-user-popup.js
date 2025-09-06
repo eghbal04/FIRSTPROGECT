@@ -503,17 +503,13 @@ class MobileUserPopup {
                 !info.label.toLowerCase().includes('status')
             );
 
-            // Terminal-style information display
+            // Terminal-style information display (without USER STATISTICS title)
             const terminalLines = [
                 '┌─────────────────────────────────────┐',
                 '│           USER INFORMATION          │',
                 '└─────────────────────────────────────┘',
                 '',
                 `> USER ID: ${IAMId}`,
-                '',
-                '┌─────────────────────────────────────┐',
-                '│            USER STATISTICS          │',
-                '└─────────────────────────────────────┘',
                 '',
                 ...filteredInfoList.map(info => `> ${info.label.toUpperCase()}: ${this.formatValue(info.val)}`),
                 '',

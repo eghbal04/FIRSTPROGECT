@@ -227,6 +227,33 @@
          </div>
        </div>
 
+       <!-- Single User Lookup -->
+       <div class="utility-card">
+         <h3><span class="icon">👤</span>Single User Lookup</h3>
+         <div class="calculator-section">
+           <div style="margin-bottom: 1rem;">
+             <h5 style="color: #a786ff; margin-bottom: 0.5rem;">📊 Enter User Index</h5>
+             <input type="number" class="calculator-input" id="user-index-input" placeholder="Enter user index number" min="1">
+             <button class="utility-btn" onclick="showSingleUser()" style="width: 100%;">Show User Info</button>
+             <div class="calculator-result" id="user-result" style="display: none;"></div>
+           </div>
+         </div>
+       </div>
+
+       <!-- Downline Users with Unclaimed Points -->
+       <div class="utility-card">
+         <h3><span class="icon">🌳</span>Downline Users with Unclaimed Points</h3>
+         <div class="calculator-section">
+           <div style="margin-bottom: 1rem;">
+             <h5 style="color: #a786ff; margin-bottom: 0.5rem;">📊 Find Users with Unclaimed Points</h5>
+             <p style="color: #a0aec0; font-size: 0.9rem; margin-bottom: 1rem;">
+               This will find all users in your downline who have unclaimed binary points
+             </p>
+             <button class="utility-btn" onclick="findDownlineUnclaimedUsers()" style="width: 100%;">Find Unclaimed Users</button>
+             <div class="calculator-result" id="downline-result" style="display: none;"></div>
+           </div>
+         </div>
+       </div>
 
     </div>
 
@@ -371,7 +398,265 @@
        }
      }
 
-    
+    // Show single user by index
+    window.showSingleUser = async function() {
+       const userIndex = parseInt(document.getElementById('user-index-input').value);
+       
+       if (!userIndex || userIndex < 1) {
+         alert('Please enter a valid index (minimum 1)');
+         return;
+       }
+       
+       const resultDiv = document.getElementById('user-result');
+       resultDiv.innerHTML = 'Loading user...';
+       resultDiv.style.display = 'block';
+       
+       try {
+         if (window.connectWallet && typeof window.connectWallet === 'function') {
+           await window.connectWallet();
+           if (window.contractConfig && window.contractConfig.contract) {
+             const contract = new ethers.Contract(window.IAM_ADDRESS, window.IAM_ABI, window.contractConfig.signer);
+             
+             console.log(`🔄 Fetching user at index ${userIndex}...`);
+             
+             // Get user address by index
+             const address = await contract.indexToAddress(userIndex);
+             
+             if (!address || address === '0x0000000000000000000000000000000000000000') {
+               resultDiv.innerHTML = `
+                 <strong>User Not Found:</strong><br>
+                 No user found at index ${userIndex}<br>
+                 <small style="color: #a0aec0;">This index may not exist yet</small>
+               `;
+               return;
+             }
+             
+             console.log(`✅ User found at index ${userIndex}: ${address}`);
+             
+             // Check if current user is in the downline of the target user
+             console.log('🔄 Checking if current user is in downline...');
+             const isInDownline = await checkIfInDownline(contract, address);
+             
+             if (!isInDownline) {
+               resultDiv.innerHTML = `
+                 <div style="color: #ff6b6b; text-align: center; padding: 1rem;">
+                   ❌ Access Denied<br>
+                   <strong>This user is not part of your downline</strong><br>
+                   <small style="color: #a0aec0;">You can only view users who are in your referral network</small>
+                 </div>
+               `;
+               return;
+             }
+             
+             console.log('✅ User is in downline, proceeding to show popup...');
+             
+             // Get user data for fallback
+             const userData = await contract.users(address);
+             const balance = await contract.balanceOf(address);
+             const voteStatus = await contract.getVoteStatus(address);
+             
+             // Show mobile user popup directly
+             console.log('🔄 About to call showMobileUserPopup...');
+             await showMobileUserPopup(address, userIndex);
+             console.log('✅ showMobileUserPopup completed');
+             
+             // Show popup properly after a short delay
+             setTimeout(() => {
+               showPopupProperly();
+               console.log('✅ Popup should now be visible');
+             }, 500);
+             
+             // Update result div to show success
+             resultDiv.innerHTML = `
+               <div style="color: #00ff88; text-align: center; padding: 1rem;">
+                 ✅ User popup displayed for index ${userIndex}<br>
+                 <small style="color: #a0aec0;">This user is part of your downline</small>
+               </div>
+             `;
+             
+           } else {
+             throw new Error('Contract not available');
+           }
+         } else {
+           throw new Error('Wallet not connected');
+         }
+       } catch (error) {
+         console.error('Error fetching user:', error);
+         resultDiv.innerHTML = `
+           <strong>Error:</strong><br>
+           ${error.message}<br>
+           <small style="color: #a0aec0;">To use this feature, please connect your wallet</small>
+         `;
+       }
+     }
+
+    // Show mobile user popup using existing system
+    window.showMobileUserPopup = async function(address, index) {
+       console.log('🔄 showMobileUserPopup called with:', { address, index });
+       
+       try {
+         if (window.connectWallet && typeof window.connectWallet === 'function') {
+           console.log('🔄 Connecting wallet...');
+           await window.connectWallet();
+           
+           if (window.contractConfig && window.contractConfig.contract) {
+             console.log('🔄 Getting contract...');
+             const contract = new ethers.Contract(window.IAM_ADDRESS, window.IAM_ABI, window.contractConfig.signer);
+             
+             console.log('🔄 Fetching user data...');
+             // Get user data
+             const userData = await contract.users(address);
+             const balance = await contract.balanceOf(address);
+             const voteStatus = await contract.getVoteStatus(address);
+             
+             console.log('📊 User data:', userData);
+             
+             // Check if mobile user popup is available
+             if (window.mobileUserPopup && typeof window.mobileUserPopup.show === 'function') {
+               console.log('🔄 Using mobile user popup...');
+               
+               // Prepare user object for mobile popup
+               const user = {
+                 index: index,
+                 binaryPoints: userData.binaryPoints || 0,
+                 binaryPointCap: userData.binaryPointCap || 0,
+                 totalMonthlyRewarded: userData.totalMonthlyRewarded || 0,
+                 binaryPointsClaimed: userData.binaryPointsClaimed || 0,
+                 refclimed: userData.refclimed || '0',
+                 depositedAmount: userData.depositedAmount || '0',
+                 leftPoints: userData.leftPoints || 0,
+                 rightPoints: userData.rightPoints || 0
+               };
+               
+               console.log('👤 Prepared user object:', user);
+               await window.mobileUserPopup.show(address, user);
+               console.log('✅ Mobile user popup should be visible now');
+               
+             } else {
+               console.log('⚠️ Mobile user popup not available, using fallback popup...');
+               showFallbackPopup(address, index, userData, balance, voteStatus);
+             }
+             
+           } else {
+             throw new Error('Contract not available');
+           }
+         } else {
+           throw new Error('Wallet not connected');
+         }
+       } catch (error) {
+         console.error('❌ Error in showMobileUserPopup:', error);
+         alert('Error loading user data: ' + error.message);
+       }
+     }
+
+    // Fallback popup function
+    function showFallbackPopup(address, index, userData, balance, voteStatus) {
+       console.log('🔄 Creating fallback popup...');
+       
+       const balanceFormatted = parseFloat(ethers.formatUnits(balance, 18)).toFixed(6);
+       
+       // Create popup modal
+       const popup = document.createElement('div');
+       popup.style.cssText = `
+         position: fixed;
+         top: 0;
+         left: 0;
+         width: 100%;
+         height: 100%;
+         background: rgba(0, 0, 0, 0.8);
+         display: flex;
+         justify-content: center;
+         align-items: center;
+         z-index: 10000;
+         backdrop-filter: blur(5px);
+       `;
+       
+       popup.innerHTML = `
+         <div style="
+           background: linear-gradient(135deg, rgba(35,41,70,0.95), rgba(24,28,42,0.95));
+           border: 1px solid rgba(167, 134, 255, 0.3);
+           border-radius: 20px;
+           padding: 2rem;
+           max-width: 500px;
+           width: 90%;
+           max-height: 80vh;
+           overflow-y: auto;
+           box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+           position: relative;
+         ">
+           <button onclick="this.closest('.popup').remove()" style="
+             position: absolute;
+             top: 1rem;
+             right: 1rem;
+             background: rgba(255, 71, 87, 0.2);
+             border: 1px solid rgba(255, 71, 87, 0.3);
+             color: #ff4757;
+             border-radius: 50%;
+             width: 30px;
+             height: 30px;
+             cursor: pointer;
+             font-size: 1.2rem;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+           ">×</button>
+           
+           <div style="text-align: center; margin-bottom: 2rem;">
+             <div style="font-size: 3rem; margin-bottom: 1rem;">👤</div>
+             <h3 style="color: #00ff88; margin: 0; font-size: 1.5rem;">User Information</h3>
+           </div>
+           
+           <div style="space-y: 1rem;">
+             <div style="background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.2); border-radius: 10px; padding: 1rem; margin-bottom: 1rem;">
+               <div style="color: #00ff88; font-weight: bold; margin-bottom: 0.5rem;">Index</div>
+               <div style="color: #e2e8f0; font-family: monospace; font-size: 1.2rem;">${index}</div>
+             </div>
+             
+             <div style="background: rgba(167, 134, 255, 0.1); border: 1px solid rgba(167, 134, 255, 0.2); border-radius: 10px; padding: 1rem; margin-bottom: 1rem;">
+               <div style="color: #a786ff; font-weight: bold; margin-bottom: 0.5rem;">Wallet Address</div>
+               <div style="color: #e2e8f0; font-family: monospace; font-size: 0.9rem; word-break: break-all;">${address}</div>
+               <button onclick="copyToClipboard('${address}')" style="
+                 background: #a786ff;
+                 color: white;
+                 border: none;
+                 padding: 0.5rem 1rem;
+                 border-radius: 5px;
+                 cursor: pointer;
+                 margin-top: 0.5rem;
+                 font-size: 0.8rem;
+               ">Copy Address</button>
+             </div>
+             
+             <div style="background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.2); border-radius: 10px; padding: 1rem; margin-bottom: 1rem;">
+               <div style="color: #00ff88; font-weight: bold; margin-bottom: 0.5rem;">IAM Balance</div>
+               <div style="color: #e2e8f0; font-family: monospace; font-size: 1.2rem;">${balanceFormatted} IAM</div>
+             </div>
+             
+             <div style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.2); border-radius: 10px; padding: 1rem; margin-bottom: 1rem;">
+               <div style="color: #ffc107; font-weight: bold; margin-bottom: 0.5rem;">Referrer</div>
+               <div style="color: #e2e8f0; font-family: monospace; font-size: 0.9rem; word-break: break-all;">${userData.referrer || 'No referrer'}</div>
+             </div>
+             
+             <div style="background: ${voteStatus ? 'rgba(0, 255, 136, 0.1)' : 'rgba(255, 71, 87, 0.1)'}; border: 1px solid ${voteStatus ? 'rgba(0, 255, 136, 0.2)' : 'rgba(255, 71, 87, 0.2)'}; border-radius: 10px; padding: 1rem;">
+               <div style="color: ${voteStatus ? '#00ff88' : '#ff4757'}; font-weight: bold; margin-bottom: 0.5rem;">Vote Status</div>
+               <div style="color: #e2e8f0; font-size: 1.1rem;">${voteStatus ? '✅ Yes' : '❌ No'}</div>
+             </div>
+           </div>
+         </div>
+       `;
+       
+       popup.className = 'popup';
+       document.body.appendChild(popup);
+       
+       // Close popup when clicking outside
+       popup.addEventListener('click', function(e) {
+         if (e.target === popup) {
+           popup.remove();
+         }
+       });
+       
+       console.log('✅ Fallback popup created and should be visible now');
+     }
 
     // Copy to clipboard
     window.copyToClipboard = function(text) {
@@ -393,7 +678,10 @@
     window.updateStatusTime = function() {
        const now = new Date();
        const timeString = now.toLocaleString('en-US');
-       document.getElementById('status-time').textContent = timeString;
+       const statusTimeElement = document.getElementById('status-time');
+       if (statusTimeElement) {
+         statusTimeElement.textContent = timeString;
+       }
      }
 
     // Wallet connection function for utility page
@@ -473,13 +761,645 @@
        
        // Check wallet connection status
        setTimeout(checkWalletConnection, 1000);
+     
+     // Test mobile user popup availability
+     setTimeout(() => {
+       console.log('🔍 Testing mobile user popup availability...');
+       console.log('window.mobileUserPopup:', !!window.mobileUserPopup);
+       if (window.mobileUserPopup) {
+         console.log('✅ Mobile user popup is available');
+         // Hide popup initially
+         hidePopupInitially();
+       } else {
+         console.log('❌ Mobile user popup is not available');
+       }
+     }, 2000);
+   });
+   
+   // Test function for mobile user popup
+   window.testMobilePopup = function() {
+     console.log('🧪 Testing mobile user popup...');
+     
+     if (!window.mobileUserPopup) {
+       console.log('❌ Mobile user popup not available');
+       alert('Mobile user popup not loaded');
+       return;
+     }
+     
+     // Test with sample data
+     const testAddress = '0x1234567890123456789012345678901234567890';
+     const testUser = {
+       index: 1,
+       binaryPoints: 1000000,
+       binaryPointCap: 2000000,
+       totalMonthlyRewarded: 500000,
+       binaryPointsClaimed: 750000,
+       refclimed: '1000000000000000000000',
+       depositedAmount: '5000000000000000000000',
+       leftPoints: 800000,
+       rightPoints: 700000
+     };
+     
+     console.log('🔄 Showing test popup...');
+     window.mobileUserPopup.show(testAddress, testUser);
+     
+     // Fix popup positioning after showing
+     setTimeout(() => {
+       fixPopupPositioning();
+     }, 1000);
+     
+     console.log('✅ Test popup should be visible now');
+   };
+   
+   // Function to fix popup positioning
+   window.fixPopupPositioning = function() {
+     console.log('🔧 Fixing popup positioning...');
+     
+     const popup = document.getElementById('user-popup');
+     if (popup) {
+       popup.style.maxHeight = '90vh';
+       popup.style.overflowY = 'auto';
+       popup.style.position = 'fixed';
+       popup.style.bottom = '0';
+       popup.style.left = '0';
+       popup.style.right = '0';
+       popup.style.top = '10vh';
+       popup.style.transform = 'translateY(0)';
+       popup.style.zIndex = '10000';
+       popup.style.borderRadius = '20px 20px 0 0';
+       
+       // Make sure content is scrollable
+       const terminalOutput = popup.querySelector('.terminal-output');
+       if (terminalOutput) {
+         terminalOutput.style.maxHeight = 'calc(90vh - 150px)';
+         terminalOutput.style.overflowY = 'auto';
+       }
+       
+       console.log('✅ Popup positioning fixed');
+     } else {
+       console.log('❌ Popup not found');
+     }
+   };
+   
+   // Test popup directly
+   window.testPopupDirectly = function() {
+     console.log('🧪 Testing popup directly...');
+     
+     // Create a simple test popup
+     const popup = document.createElement('div');
+     popup.id = 'test-popup';
+     popup.style.cssText = `
+       position: fixed;
+       top: 0;
+       left: 0;
+       width: 100%;
+       height: 100%;
+       background: rgba(0, 0, 0, 0.8);
+       display: flex;
+       justify-content: center;
+       align-items: center;
+       z-index: 10000;
+       backdrop-filter: blur(5px);
+     `;
+     
+     popup.innerHTML = `
+       <div style="
+         background: linear-gradient(135deg, rgba(35,41,70,0.95), rgba(24,28,42,0.95));
+         border: 1px solid rgba(167, 134, 255, 0.3);
+         border-radius: 20px;
+         padding: 2rem;
+         max-width: 500px;
+         width: 90%;
+         max-height: 80vh;
+         overflow-y: auto;
+         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+         position: relative;
+       ">
+         <button onclick="this.closest('#test-popup').remove()" style="
+           position: absolute;
+           top: 1rem;
+           right: 1rem;
+           background: rgba(255, 71, 87, 0.2);
+           border: 1px solid rgba(255, 71, 87, 0.3);
+           color: #ff4757;
+           border-radius: 50%;
+           width: 30px;
+           height: 30px;
+           cursor: pointer;
+           font-size: 1.2rem;
+           display: flex;
+           align-items: center;
+           justify-content: center;
+         ">×</button>
+         
+         <div style="text-align: center; margin-bottom: 2rem;">
+           <div style="font-size: 3rem; margin-bottom: 1rem;">🧪</div>
+           <h3 style="color: #00ff88; margin: 0; font-size: 1.5rem;">Test Popup</h3>
+         </div>
+         
+         <div style="color: #e2e8f0; text-align: center;">
+           <p>This is a test popup to verify that popups work on this page.</p>
+           <p style="color: #a786ff; margin-top: 1rem;">If you can see this, the popup system is working!</p>
+         </div>
+       </div>
+     `;
+     
+     document.body.appendChild(popup);
+     
+     // Close popup when clicking outside
+     popup.addEventListener('click', function(e) {
+       if (e.target === popup) {
+         popup.remove();
+       }
      });
+     
+     console.log('✅ Test popup created');
+   };
+   
+   // Hide popup initially
+   window.hidePopupInitially = function() {
+     console.log('🔧 Hiding popup initially...');
+     
+     const popup = document.getElementById('user-popup');
+     if (popup) {
+       popup.style.display = 'none';
+       popup.style.visibility = 'hidden';
+       popup.style.opacity = '0';
+       popup.style.transform = 'translateY(100%)';
+       popup.classList.remove('active');
+       console.log('✅ Popup hidden initially');
+     }
+     
+     const backdrop = document.querySelector('.popup-backdrop');
+     if (backdrop) {
+       backdrop.style.display = 'none';
+       backdrop.style.opacity = '0';
+     }
+   };
+   
+   // Show popup properly
+   window.showPopupProperly = function() {
+     console.log('🔧 Showing popup properly...');
+     
+     const popup = document.getElementById('user-popup');
+     if (popup) {
+       popup.style.display = 'block';
+       popup.style.visibility = 'visible';
+       popup.style.opacity = '1';
+       popup.style.transform = 'translateY(0)';
+       popup.classList.add('active');
+       console.log('✅ Popup shown properly');
+     }
+     
+     const backdrop = document.querySelector('.popup-backdrop');
+     if (backdrop) {
+       backdrop.style.display = 'block';
+       backdrop.style.opacity = '0.5';
+     }
+   };
+   
+   // Manual function to check and fix popup visibility
+   window.checkPopupVisibility = function() {
+     console.log('🔍 Checking popup visibility...');
+     
+     const popup = document.getElementById('user-popup');
+     if (popup) {
+       const rect = popup.getBoundingClientRect();
+       console.log('📍 Popup position:', rect);
+       console.log('📍 Popup styles:', {
+         display: popup.style.display,
+         visibility: popup.style.visibility,
+         opacity: popup.style.opacity,
+         transform: popup.style.transform,
+         zIndex: popup.style.zIndex,
+         position: popup.style.position
+       });
+       
+       // Force visibility
+       popup.style.display = 'block';
+       popup.style.visibility = 'visible';
+       popup.style.opacity = '1';
+       popup.style.transform = 'translateY(0)';
+       popup.style.zIndex = '99999';
+       popup.style.position = 'fixed';
+       popup.style.bottom = '0';
+       popup.style.left = '0';
+       popup.style.right = '0';
+       popup.style.top = '20vh';
+       popup.style.height = '80vh';
+       popup.style.maxHeight = '80vh';
+       popup.style.overflowY = 'auto';
+       popup.style.background = 'linear-gradient(135deg, #232946 0%, #181c2a 100%)';
+       popup.style.borderRadius = '20px 20px 0 0';
+       popup.style.boxShadow = '0 -8px 32px rgba(0, 0, 0, 0.3)';
+       popup.classList.add('active');
+       
+       console.log('✅ Popup visibility forced');
+       
+       // Scroll to popup
+       popup.scrollIntoView({ behavior: 'smooth', block: 'end' });
+       
+     } else {
+       console.log('❌ No popup found');
+     }
+   };
   </script>
   
   <!-- Load navbar -->
   <script src="js/navbar.js"></script>
   
+  <!-- Mobile User Popup -->
+  <script src="js/mobile-user-popup.js"></script>
+  
+  <!-- Fix mobile popup positioning -->
+  <style>
+    #user-popup {
+      height: 80vh !important;
+      max-height: 80vh !important;
+      overflow-y: auto !important;
+      position: fixed !important;
+      bottom: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      top: 20vh !important;
+      transform: translateY(100%) !important;
+      z-index: 99999 !important;
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      background: linear-gradient(135deg, #232946 0%, #181c2a 100%) !important;
+      border-radius: 20px 20px 0 0 !important;
+      box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.3) !important;
+      transition: all 0.3s ease !important;
+    }
+    
+    #user-popup.active {
+      transform: translateY(0) !important;
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+    }
+    
+    .popup-content {
+      max-height: calc(90vh - 80px) !important;
+      overflow-y: auto !important;
+    }
+    
+    .terminal-container {
+      height: 100% !important;
+      max-height: 100% !important;
+      overflow-y: auto !important;
+      display: flex !important;
+      flex-direction: column !important;
+    }
+    
+    .terminal-body {
+      height: calc(100% - 60px) !important;
+      max-height: calc(100% - 60px) !important;
+      overflow-y: auto !important;
+      flex: 1 !important;
+    }
+    
+    .terminal-output {
+      height: calc(100% - 40px) !important;
+      max-height: calc(100% - 40px) !important;
+      overflow-y: auto !important;
+    }
+    
+    /* Ensure popup is always visible */
+    @media (max-width: 768px) {
+      #user-popup {
+        max-height: 95vh !important;
+        top: 5vh !important;
+        bottom: 0 !important;
+        transform: translateY(0) !important;
+        z-index: 99999 !important;
+      }
+    }
+    
+    /* Force popup visibility */
+    #user-popup.active {
+      transform: translateY(0) !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+      display: block !important;
+    }
+  </style>
+  
   <!-- Floating Token Growth Card -->
   <script src="js/floating-token-card.js"></script>
+  
+  <script>
+    // Function to find all downline users with unclaimed points
+    window.findDownlineUnclaimedUsers = async function() {
+      const resultDiv = document.getElementById('downline-result');
+      resultDiv.innerHTML = 'Loading downline users...';
+      resultDiv.style.display = 'block';
+      
+      try {
+        if (window.connectWallet && typeof window.connectWallet === 'function') {
+          await window.connectWallet();
+          if (window.contractConfig && window.contractConfig.contract) {
+            const contract = new ethers.Contract(window.IAM_ADDRESS, window.IAM_ABI, window.contractConfig.signer);
+            
+            // Get current user's index
+            const currentAddress = window.contractConfig.signer.address;
+            const currentUserData = await contract.users(currentAddress);
+            const currentUserIndex = currentUserData.index;
+            
+            if (!currentUserIndex || currentUserIndex === 0n) {
+              resultDiv.innerHTML = `
+                <div style="color: #ff6b6b; text-align: center; padding: 1rem;">
+                  ❌ User Not Registered<br>
+                  <small style="color: #a0aec0;">You need to be registered to view downline users</small>
+                </div>
+              `;
+              return;
+            }
+            
+            console.log('🔍 Current user index:', currentUserIndex.toString());
+            
+            // Get total users count
+            const totalUsers = await contract.wallets();
+            console.log('📊 Total users:', totalUsers.toString());
+            
+            resultDiv.innerHTML = `
+              <div style="color: #00ff88; text-align: center; padding: 1rem;">
+                🔍 DFS Scanning tree for unclaimed points...<br>
+                <small style="color: #a0aec0;">Max depth: 10,000,000 levels | Traversing until empty nodes found</small>
+              </div>
+            `;
+            
+            const unclaimedUsers = [];
+            const maxLevel = 10000000; // 10 million level limit
+            let scannedCount = 0;
+            const visited = new Set(); // برای جلوگیری از بازدید مجدد
+            
+            console.log('🌳 Starting DFS traversal from user', currentUserIndex.toString());
+            
+            // تابع پیمایش DFS صحیح (از migration.js)
+            async function dfsTraversalRecursive(currentIndex, path = []) {
+              // محدودیت عمق
+              if (currentIndex <= 0 || currentIndex > 1000000) {
+                return;
+              }
+              
+              // اگر قبلاً این ایندکس را دیده‌ایم، برگرد
+              if (visited.has(currentIndex)) {
+                return;
+              }
+              
+              visited.add(currentIndex);
+              scannedCount++;
+              
+              try {
+                console.log(`🔍 DFS بررسی ایندکس ${currentIndex}... (${unclaimedUsers.length} found) مسیر: [${path.join(' → ')}]`);
+                
+                const userAddress = await contract.indexToAddress(currentIndex);
+                
+                // Check if user address is zero (empty node)
+                if (userAddress === '0x0000000000000000000000000000000000000000') {
+                  console.log(`⭕ ایندکس ${currentIndex}: خالی → برگشت`);
+                  return;
+                }
+                
+                console.log(`✅ ایندکس ${currentIndex}: ${userAddress.slice(0, 6)}...${userAddress.slice(-4)} → بررسی می‌شود`);
+                
+                const userData = await contract.users(userAddress);
+                
+                // Check if user has unclaimed points
+                const binaryPoints = userData.binaryPoints;
+                const binaryPointsClaimed = userData.binaryPointsClaimed;
+                
+                if (binaryPoints > 0n && binaryPoints > binaryPointsClaimed) {
+                  const unclaimedAmount = binaryPoints - binaryPointsClaimed;
+                  unclaimedUsers.push({
+                    index: Number(currentIndex),
+                    address: userAddress,
+                    binaryPoints: binaryPoints.toString(),
+                    claimed: binaryPointsClaimed.toString(),
+                    unclaimed: unclaimedAmount.toString(),
+                    level: path.length
+                  });
+                  console.log(`✅ Found unclaimed points: ${unclaimedAmount.toString()} for user ${currentIndex.toString()}`);
+                }
+                
+                const leftChild = currentIndex * 2;
+                const rightChild = currentIndex * 2 + 1;
+                
+                // اولویت با فرزند چپ
+                console.log(`📍 اولویت چپ: بررسی فرزند چپ ${currentIndex} → ${leftChild}`);
+                await dfsTraversalRecursive(leftChild, [...path, currentIndex, 'L']);
+                
+                // برگشت به رفرر و بررسی فرزند راست
+                console.log(`📍 برگشت به رفرر: بررسی فرزند راست ${currentIndex} → ${rightChild}`);
+                await dfsTraversalRecursive(rightChild, [...path, currentIndex, 'R']);
+                
+              } catch (error) {
+                console.log(`❌ خطا در DFS ایندکس ${currentIndex}: ${error.message}`);
+                return;
+              }
+            }
+            
+            // تست ساده - بررسی چند کاربر
+            console.log(`🧪 تست ساده - بررسی کاربران...`);
+            
+            // بررسی کاربر متصل
+            try {
+              const userAddress = await contract.indexToAddress(Number(currentUserIndex));
+              console.log(`👤 کاربر متصل ${currentUserIndex}: ${userAddress}`);
+              
+              if (userAddress !== '0x0000000000000000000000000000000000000000') {
+                const userData = await contract.users(userAddress);
+                console.log(`📊 اطلاعات کاربر:`, userData);
+                
+                const binaryPoints = userData.binaryPoints;
+                const binaryPointsClaimed = userData.binaryPointsClaimed;
+                
+                if (binaryPoints > 0n && binaryPoints > binaryPointsClaimed) {
+                  const unclaimedAmount = binaryPoints - binaryPointsClaimed;
+                  unclaimedUsers.push({
+                    index: Number(currentUserIndex),
+                    address: userAddress,
+                    binaryPoints: binaryPoints.toString(),
+                    claimed: binaryPointsClaimed.toString(),
+                    unclaimed: unclaimedAmount.toString(),
+                    level: 0
+                  });
+                  console.log(`✅ کاربر متصل پوینت دریافت نشده دارد: ${unclaimedAmount.toString()}`);
+                }
+              }
+            } catch (error) {
+              console.log(`❌ خطا در بررسی کاربر متصل:`, error);
+            }
+            
+            // بررسی فرزندان
+            const leftChild = Number(currentUserIndex) * 2;
+            const rightChild = Number(currentUserIndex) * 2 + 1;
+            
+            console.log(`👶 فرزند چپ: ${leftChild}, فرزند راست: ${rightChild}`);
+            
+            // شروع پیمایش DFS از کاربر متصل
+            console.log(`🌱 شروع DFS از کاربر متصل (ایندکس ${currentUserIndex})`);
+            await dfsTraversalRecursive(Number(currentUserIndex), []);
+            
+            console.log(`📊 DFS کامل شد: ${unclaimedUsers.length} کاربر پیدا شده`);
+            
+            // Display results
+            if (unclaimedUsers.length === 0) {
+              resultDiv.innerHTML = `
+                <div style="color: #a786ff; text-align: center; padding: 1rem;">
+                  ✅ No Unclaimed Points Found<br>
+                  <small style="color: #a0aec0;">All users in your downline have claimed their points</small>
+                </div>
+              `;
+            } else {
+              let resultHTML = `
+                <div style="color: #00ff88; text-align: center; padding: 1rem; margin-bottom: 1rem;">
+                  ✅ Found ${unclaimedUsers.length} Users with Unclaimed Points
+                </div>
+                <div style="max-height: 400px; overflow-y: auto; border: 1px solid rgba(167, 134, 255, 0.3); border-radius: 10px; padding: 1rem;">
+              `;
+              
+              unclaimedUsers.forEach((user, index) => {
+                resultHTML += `
+                  <div style="
+                    background: rgba(167, 134, 255, 0.1);
+                    border: 1px solid rgba(167, 134, 255, 0.2);
+                    border-radius: 8px;
+                    padding: 1rem;
+                    margin-bottom: 0.5rem;
+                    font-size: 0.9rem;
+                  ">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                      <strong style="color: #00ff88;">User #${user.index}</strong>
+                      <span style="color: #a786ff;">${user.unclaimed} unclaimed points</span>
+                    </div>
+                    <div style="color: #a0aec0; font-size: 0.8rem;">
+                      <div>Address: ${user.address.substring(0, 10)}...${user.address.substring(38)}</div>
+                      <div>Total Points: ${user.binaryPoints} | Claimed: ${user.claimed}</div>
+                      <div style="color: #ffd700; margin-top: 0.25rem;">Level: ${user.level}</div>
+                    </div>
+                  </div>
+                `;
+              });
+              
+              resultHTML += `</div>`;
+              resultDiv.innerHTML = resultHTML;
+            }
+            
+          } else {
+            throw new Error('Contract not available');
+          }
+        } else {
+          throw new Error('Wallet not connected');
+        }
+      } catch (error) {
+        console.error('❌ Error finding downline users:', error);
+        resultDiv.innerHTML = `
+          <div style="color: #ff6b6b; text-align: center; padding: 1rem;">
+            ❌ Error: ${error.message}<br>
+            <small style="color: #a0aec0;">Please try again</small>
+          </div>
+        `;
+      }
+    };
+
+    // Helper function to check if a user is in downline using binary tree traversal
+    window.isUserInDownline = async function(contract, targetIndex, currentIndex) {
+      if (targetIndex <= currentIndex) {
+        return false;
+      }
+      
+      let checkIndex = targetIndex;
+      const maxDepth = 100;
+      let depth = 0;
+      
+      while (checkIndex > currentIndex && depth < maxDepth) {
+        checkIndex = checkIndex / 2n;
+        depth++;
+        
+        if (checkIndex === currentIndex) {
+          return true;
+        }
+      }
+      
+      return false;
+    };
+
+    // Function to check if current user is in the downline of target user
+    window.checkIfInDownline = async function(contract, targetAddress) {
+      try {
+        // Get current user's address
+        const currentAddress = window.contractConfig.signer.address;
+        console.log('🔍 Current user address:', currentAddress);
+        console.log('🔍 Target user address:', targetAddress);
+        
+        // If same address, allow access
+        if (currentAddress.toLowerCase() === targetAddress.toLowerCase()) {
+          console.log('✅ Same user, allowing access');
+          return true;
+        }
+        
+        // Get current user's data
+        const currentUserData = await contract.users(currentAddress);
+        const currentUserIndex = currentUserData.index;
+        
+        if (!currentUserIndex || currentUserIndex === 0n) {
+          console.log('❌ Current user not registered');
+          return false;
+        }
+        
+        // Get target user's data
+        const targetUserData = await contract.users(targetAddress);
+        const targetUserIndex = targetUserData.index;
+        
+        if (!targetUserIndex || targetUserIndex === 0n) {
+          console.log('❌ Target user not registered');
+          return false;
+        }
+        
+        console.log('🔍 Current user index:', currentUserIndex.toString());
+        console.log('🔍 Target user index:', targetUserIndex.toString());
+        
+        // Check if current user is in the downline of target user using binary tree traversal
+        // The target index must be greater than current user index
+        if (targetUserIndex <= currentUserIndex) {
+          console.log('❌ Target index must be greater than current user index');
+          return false;
+        }
+        
+        console.log('🔍 Using binary tree traversal to check downline...');
+        console.log('🔍 Current user index:', currentUserIndex.toString());
+        console.log('🔍 Target user index:', targetUserIndex.toString());
+        
+        // Binary tree traversal: divide target index by 2 until we reach current user index
+        let checkIndex = targetUserIndex;
+        const maxDepth = 100; // Prevent infinite loops
+        let depth = 0;
+        
+        while (checkIndex > currentUserIndex && depth < maxDepth) {
+          // Divide by 2 (integer division)
+          checkIndex = checkIndex / 2n;
+          depth++;
+          
+          console.log(`🔍 Level ${depth}: checking index ${checkIndex.toString()}`);
+          
+          // If we found current user index in the path, user is in downline
+          if (checkIndex === currentUserIndex) {
+            console.log('✅ Current user is in downline of target user');
+            return true;
+          }
+        }
+        
+        console.log('❌ Current user is not in downline of target user');
+        return false;
+        
+      } catch (error) {
+        console.error('❌ Error checking downline:', error);
+        return false;
+      }
+    };
+  </script>
 </body>
 </html> 
