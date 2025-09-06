@@ -622,6 +622,9 @@
         <a href="profile.html" class="IAM-navbar-link">
           <span class="link-icon">👤</span>Profile
         </a>
+        <a href="sales.html" class="IAM-navbar-link">
+          <span class="link-icon">🛍️</span>My Store
+        </a>
         <a href="utility.html" class="IAM-navbar-link">
           <span class="link-icon">🛠️</span>Utilities
         </a>
