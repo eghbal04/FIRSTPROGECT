@@ -503,6 +503,13 @@
                     <input type="number" id="product-price" class="form-input" step="0.001" min="0" required>
                 </div>
                 <div class="form-group">
+                    <label class="form-label" for="product-payout">Payout (%)</label>
+                    <input type="number" id="product-payout" class="form-input" min="0" max="100" value="100" required>
+                    <small style="color: #a786ff; font-size: 0.8rem; margin-top: 5px; display: block;">
+                        Percentage of payment that goes to the seller (0-100%)
+                    </small>
+                </div>
+                <div class="form-group">
                     <label class="form-label" for="product-image">Product Icon (Emoji)</label>
                     <input type="text" id="product-image" class="form-input" placeholder="🎁" maxlength="2">
                 </div>

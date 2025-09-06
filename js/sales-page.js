@@ -128,6 +128,7 @@ class SalesPageManager {
                         name: 'Digital Art NFT',
                         description: 'Unique digital artwork created by AI - perfect for collectors',
                         price: 10.5,
+                        payout: 100,
                         image: '🎨',
                         sales: 0,
                         createdAt: new Date().toISOString()
@@ -137,6 +138,7 @@ class SalesPageManager {
                         name: 'Premium Course',
                         description: 'Complete blockchain development course with certification',
                         price: 25.0,
+                        payout: 100,
                         image: '📚',
                         sales: 0,
                         createdAt: new Date().toISOString()
@@ -146,6 +148,7 @@ class SalesPageManager {
                         name: 'Custom Software',
                         description: 'Tailored web application development service',
                         price: 50.0,
+                        payout: 100,
                         image: '💻',
                         sales: 0,
                         createdAt: new Date().toISOString()
@@ -189,6 +192,9 @@ class SalesPageManager {
                 <h4 class="product-title">${product.name}</h4>
                 <p class="product-description">${product.description}</p>
                 <div class="product-price">${product.price} IAM</div>
+                <div style="color: #a786ff; font-size: 0.9rem; margin-bottom: 15px;">
+                    Payout: ${product.payout || 100}%
+                </div>
                 <div class="product-actions">
                     <button class="buy-btn disabled" disabled>
                         Buy (${product.price} IAM)
@@ -242,6 +248,7 @@ class SalesPageManager {
         document.getElementById('modal-title').textContent = 'Add New Product';
         document.getElementById('product-form').reset();
         document.getElementById('product-image').value = '🎁';
+        document.getElementById('product-payout').value = '100';
         document.getElementById('product-modal').style.display = 'block';
     }
     
@@ -261,6 +268,7 @@ class SalesPageManager {
         document.getElementById('product-name').value = product.name;
         document.getElementById('product-description').value = product.description;
         document.getElementById('product-price').value = product.price;
+        document.getElementById('product-payout').value = product.payout || 100;
         document.getElementById('product-image').value = product.image;
         document.getElementById('product-modal').style.display = 'block';
     }
@@ -280,10 +288,11 @@ class SalesPageManager {
         const name = document.getElementById('product-name').value.trim();
         const description = document.getElementById('product-description').value.trim();
         const price = parseFloat(document.getElementById('product-price').value);
+        const payout = parseFloat(document.getElementById('product-payout').value);
         const image = document.getElementById('product-image').value.trim() || '🎁';
         
-        if (!name || !description || isNaN(price) || price <= 0) {
-            this.showError('Please fill in all fields correctly');
+        if (!name || !description || isNaN(price) || price <= 0 || isNaN(payout) || payout < 0 || payout > 100) {
+            this.showError('Please fill in all fields correctly. Payout must be between 0-100%');
             return;
         }
         
@@ -296,6 +305,7 @@ class SalesPageManager {
                     name,
                     description,
                     price,
+                    payout,
                     image
                 };
             }
@@ -306,6 +316,7 @@ class SalesPageManager {
                 name,
                 description,
                 price,
+                payout,
                 image,
                 sales: 0,
                 createdAt: new Date().toISOString()
