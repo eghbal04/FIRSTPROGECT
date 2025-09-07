@@ -16,7 +16,8 @@ const DAI_ABI_TRANSFER = [
 const IAM_ABI_TRANSFER = [
     "function balanceOf(address owner) view returns (uint256)",
     "function transfer(address to, uint256 amount) returns (bool)",
-    "function decimals() view returns (uint8)"
+    "function decimals() view returns (uint8)",
+    "function getTokenPrice() view returns (uint256)"
 ];
 
 class TransferManager {
@@ -121,10 +122,52 @@ class TransferManager {
                     value = (parseFloat(iamBalance.toString()) / Math.pow(10, 18)).toString();
                 }
                 el.textContent = Math.floor(parseFloat(value));
+                
+                // Update USD equivalent
+                await this.updateIAMUsdValue(parseFloat(value));
             }
         } catch (e) {
             const el = document.getElementById('transfer-IAM-balance');
             if (el) el.textContent = 'Unable to load';
+        }
+    }
+
+    async updateIAMUsdValue(iamAmount) {
+        try {
+            // Get token price from contract
+            let tokenPrice = 0;
+            if (this.contract && typeof this.contract.getTokenPrice === 'function') {
+                const tokenPriceRaw = await this.contract.getTokenPrice();
+                if (typeof ethers.utils !== 'undefined' && ethers.utils.formatUnits) {
+                    tokenPrice = parseFloat(ethers.utils.formatUnits(tokenPriceRaw, 18));
+                } else if (typeof ethers.formatUnits !== 'undefined') {
+                    tokenPrice = parseFloat(ethers.formatUnits(tokenPriceRaw, 18));
+                } else {
+                    tokenPrice = parseFloat(tokenPriceRaw.toString()) / Math.pow(10, 18);
+                }
+            }
+            
+            const usdValue = iamAmount * tokenPrice;
+            const usdEl = document.getElementById('transfer-IAM-usd');
+            const toggleBtn = document.getElementById('toggle-iam-usd');
+            
+            if (usdEl && toggleBtn) {
+                if (tokenPrice > 0) {
+                    usdEl.textContent = `$${usdValue.toFixed(2)}`;
+                    toggleBtn.style.display = 'block';
+                } else {
+                    usdEl.textContent = 'Price unavailable';
+                    toggleBtn.style.display = 'block';
+                }
+            }
+        } catch (e) {
+            console.log('Error updating IAM USD value:', e);
+            const usdEl = document.getElementById('transfer-IAM-usd');
+            const toggleBtn = document.getElementById('toggle-iam-usd');
+            if (usdEl && toggleBtn) {
+                usdEl.textContent = 'Price unavailable';
+                toggleBtn.style.display = 'block';
+            }
         }
     }
 
@@ -167,12 +210,11 @@ class TransferManager {
             
             console.log('✅ Contract connection established');
             
-            // Load all balances
-            await Promise.all([
-                this.updateDaiBalance(),
-                this.updateIAMBalance(),
-                this.updatePOLBalance()
-            ]);
+            // Load selected token balance based on current selection
+            const tokenSelect = document.getElementById('transferToken');
+            if (tokenSelect) {
+                this.showSelectedTokenBalance(tokenSelect.value);
+            }
             
             console.log('✅ Transfer data loaded');
         } catch (error) {
@@ -198,6 +240,10 @@ class TransferManager {
             this.setupEventListeners();
             console.log('✅ Event listeners configured');
             
+            // Initialize USD converter visibility
+            this.initializeUsdConverter();
+            console.log('✅ USD converter initialized');
+            
             // Contract selection removed - using new contract by default
             console.log('✅ Using new contract by default');
             
@@ -205,6 +251,14 @@ class TransferManager {
         } catch (error) {
             console.error('❌ Error initializing TransferManager:', error);
             throw error;
+        }
+    }
+
+    // Initialize USD converter visibility
+    initializeUsdConverter() {
+        const tokenSelect = document.getElementById('transferToken');
+        if (tokenSelect) {
+            this.handleTokenTypeChange(tokenSelect.value);
         }
     }
 
@@ -227,7 +281,328 @@ class TransferManager {
             });
         }
 
+        // USD toggle button for selected token
+        const usdToggleBtn = document.getElementById('selected-token-usd-toggle');
+        if (usdToggleBtn) {
+            usdToggleBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.toggleSelectedTokenUsdDisplay();
+            });
+        }
 
+        // Token type change handler
+        const tokenSelect = document.getElementById('transferToken');
+        if (tokenSelect) {
+            tokenSelect.addEventListener('change', (e) => {
+                this.handleTokenTypeChange(e.target.value);
+            });
+        }
+
+        // USD to token conversion
+        const convertUsdBtn = document.getElementById('convertUsdToTokenBtn');
+        if (convertUsdBtn) {
+            convertUsdBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.convertUsdToToken();
+            });
+        }
+
+        // USD amount input change handler
+        const usdAmountInput = document.getElementById('transferUsdAmount');
+        if (usdAmountInput) {
+            usdAmountInput.addEventListener('input', () => {
+                this.updateUsdConversionStatus();
+            });
+            
+            // Add Enter key support for conversion
+            usdAmountInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.convertUsdToToken();
+                }
+            });
+        }
+
+
+    }
+
+    // Handle token type change
+    handleTokenTypeChange(tokenType) {
+        const usdConverter = document.getElementById('transfer-usd-converter');
+        const usdAmountInput = document.getElementById('transferUsdAmount');
+        const conversionStatus = document.getElementById('usdConversionStatus');
+        const selectedBalanceContainer = document.getElementById('selected-token-balance');
+        
+        // Show/hide USD converter for IAM
+        if (tokenType === 'IAM') {
+            usdConverter.style.display = 'block';
+            usdAmountInput.value = '';
+            conversionStatus.textContent = '';
+            conversionStatus.className = '';
+        } else {
+            usdConverter.style.display = 'none';
+            usdAmountInput.value = '';
+            conversionStatus.textContent = '';
+            conversionStatus.className = '';
+        }
+        
+        // Show selected token balance
+        this.showSelectedTokenBalance(tokenType);
+    }
+
+    // Show selected token balance
+    showSelectedTokenBalance(tokenType) {
+        const selectedBalanceContainer = document.getElementById('selected-token-balance');
+        const selectedTokenName = document.getElementById('selected-token-name');
+        const selectedTokenAmount = document.getElementById('selected-token-amount');
+        const selectedTokenUsd = document.getElementById('selected-token-usd');
+        const selectedTokenUsdToggle = document.getElementById('selected-token-usd-toggle');
+        
+        if (!selectedBalanceContainer || !selectedTokenName || !selectedTokenAmount) {
+            return;
+        }
+        
+        // Show the balance container
+        selectedBalanceContainer.style.display = 'flex';
+        
+        // Update token name and get balance
+        switch (tokenType) {
+            case 'DAI':
+                selectedTokenName.textContent = '🟢 DAI';
+                this.updateSelectedTokenBalance('dai');
+                selectedTokenUsd.style.display = 'none';
+                selectedTokenUsdToggle.style.display = 'none';
+                break;
+            case 'POL':
+                selectedTokenName.textContent = '🔵 POL (MATIC)';
+                this.updateSelectedTokenBalance('pol');
+                selectedTokenUsd.style.display = 'none';
+                selectedTokenUsdToggle.style.display = 'none';
+                break;
+            case 'IAM':
+                selectedTokenName.textContent = '🟣 IAM';
+                this.updateSelectedTokenBalance('iam');
+                // USD functionality will be handled by updateIAMUsdValue
+                break;
+            default:
+                selectedBalanceContainer.style.display = 'none';
+        }
+    }
+
+    // Update selected token balance
+    async updateSelectedTokenBalance(tokenType) {
+        const selectedTokenAmount = document.getElementById('selected-token-amount');
+        const selectedTokenUsd = document.getElementById('selected-token-usd');
+        const selectedTokenUsdToggle = document.getElementById('selected-token-usd-toggle');
+        
+        if (!selectedTokenAmount) return;
+        
+        try {
+            let balance = '-';
+            let usdValue = null;
+            
+            if (tokenType === 'dai' && this.daiContract) {
+                const address = await this.signer.getAddress();
+                const daiBalance = await this.daiContract.balanceOf(address);
+                let value;
+                if (typeof ethers.utils !== 'undefined' && ethers.utils.formatUnits) {
+                    value = ethers.utils.formatUnits(daiBalance, 18);
+                } else if (typeof ethers.formatUnits !== 'undefined') {
+                    value = ethers.formatUnits(daiBalance, 18);
+                } else {
+                    value = (parseFloat(daiBalance.toString()) / Math.pow(10, 18)).toString();
+                }
+                balance = parseFloat(value).toFixed(2);
+            } else if (tokenType === 'pol' && this.signer) {
+                const address = await this.signer.getAddress();
+                const polBalance = await this.provider.getBalance(address);
+                let value;
+                if (typeof ethers.utils !== 'undefined' && ethers.utils.formatEther) {
+                    value = ethers.utils.formatEther(polBalance);
+                } else if (typeof ethers.formatEther !== 'undefined') {
+                    value = ethers.formatEther(polBalance);
+                } else {
+                    value = (parseFloat(polBalance.toString()) / Math.pow(10, 18)).toString();
+                }
+                balance = parseFloat(value).toFixed(4);
+            } else if (tokenType === 'iam' && this.contract) {
+                const address = await this.signer.getAddress();
+                const iamBalance = await this.contract.balanceOf(address);
+                let value;
+                if (typeof ethers.utils !== 'undefined' && ethers.utils.formatUnits) {
+                    value = ethers.utils.formatUnits(iamBalance, 18);
+                } else if (typeof ethers.formatUnits !== 'undefined') {
+                    value = ethers.formatUnits(iamBalance, 18);
+                } else {
+                    value = (parseFloat(iamBalance.toString()) / Math.pow(10, 18)).toString();
+                }
+                balance = Math.floor(parseFloat(value));
+                
+                // Update USD equivalent for IAM
+                await this.updateSelectedTokenUsdValue(parseFloat(value));
+            }
+            
+            selectedTokenAmount.textContent = balance;
+            
+        } catch (error) {
+            console.error(`Error updating ${tokenType} balance:`, error);
+            selectedTokenAmount.textContent = 'Unable to load';
+        }
+    }
+
+    // Update selected token USD value (for IAM)
+    async updateSelectedTokenUsdValue(iamAmount) {
+        const selectedTokenUsd = document.getElementById('selected-token-usd');
+        const selectedTokenUsdToggle = document.getElementById('selected-token-usd-toggle');
+        
+        try {
+            // Get token price from contract
+            let tokenPrice = 0;
+            if (this.contract && typeof this.contract.getTokenPrice === 'function') {
+                const tokenPriceRaw = await this.contract.getTokenPrice();
+                if (typeof ethers.utils !== 'undefined' && ethers.utils.formatUnits) {
+                    tokenPrice = parseFloat(ethers.utils.formatUnits(tokenPriceRaw, 18));
+                } else if (typeof ethers.formatUnits !== 'undefined') {
+                    tokenPrice = parseFloat(ethers.formatUnits(tokenPriceRaw, 18));
+                } else {
+                    tokenPrice = parseFloat(tokenPriceRaw.toString()) / Math.pow(10, 18);
+                }
+            }
+            
+            if (selectedTokenUsd && selectedTokenUsdToggle) {
+                if (tokenPrice > 0) {
+                    const usdValue = iamAmount * tokenPrice;
+                    selectedTokenUsd.textContent = `$${usdValue.toFixed(2)}`;
+                    selectedTokenUsd.style.display = 'none'; // Initially hidden
+                    selectedTokenUsdToggle.style.display = 'block';
+                } else {
+                    selectedTokenUsd.textContent = 'Price unavailable';
+                    selectedTokenUsd.style.display = 'none';
+                    selectedTokenUsdToggle.style.display = 'block';
+                }
+            }
+        } catch (e) {
+            console.log('Error updating selected token USD value:', e);
+            if (selectedTokenUsd && selectedTokenUsdToggle) {
+                selectedTokenUsd.textContent = 'Price unavailable';
+                selectedTokenUsd.style.display = 'none';
+                selectedTokenUsdToggle.style.display = 'block';
+            }
+        }
+    }
+
+    // Convert USD to token amount
+    async convertUsdToToken() {
+        const usdAmountInput = document.getElementById('transferUsdAmount');
+        const transferAmountInput = document.getElementById('transferAmount');
+        const conversionStatus = document.getElementById('usdConversionStatus');
+        
+        if (!usdAmountInput || !transferAmountInput || !conversionStatus) {
+            return;
+        }
+        
+        const usdValue = parseFloat(usdAmountInput.value);
+        
+        if (!usdValue || usdValue <= 0) {
+            this.showUsdConversionStatus('Please enter a valid USD amount (minimum $0.01)', 'error');
+            return;
+        }
+        
+        try {
+            // Get token price from contract
+            let tokenPrice = 0;
+            if (this.contract && typeof this.contract.getTokenPrice === 'function') {
+                const tokenPriceRaw = await this.contract.getTokenPrice();
+                if (typeof ethers.utils !== 'undefined' && ethers.utils.formatUnits) {
+                    tokenPrice = parseFloat(ethers.utils.formatUnits(tokenPriceRaw, 18));
+                } else if (typeof ethers.formatUnits !== 'undefined') {
+                    tokenPrice = parseFloat(ethers.formatUnits(tokenPriceRaw, 18));
+                } else {
+                    tokenPrice = parseFloat(tokenPriceRaw.toString()) / Math.pow(10, 18);
+                }
+            }
+            
+            if (tokenPrice <= 0) {
+                this.showUsdConversionStatus('Token price is currently unavailable. Please try again later.', 'error');
+                return;
+            }
+            
+            // Convert USD to IAM tokens
+            const iamAmount = usdValue / tokenPrice;
+            transferAmountInput.value = iamAmount.toFixed(6);
+            
+            this.showUsdConversionStatus(`✅ Converted $${usdValue.toFixed(2)} to ${iamAmount.toFixed(6)} IAM tokens`, 'success');
+            
+        } catch (error) {
+            console.error('Error converting USD to token:', error);
+            this.showUsdConversionStatus('Error getting token price. Please try again.', 'error');
+        }
+    }
+
+    // Update USD conversion status
+    updateUsdConversionStatus() {
+        const usdAmountInput = document.getElementById('transferUsdAmount');
+        const conversionStatus = document.getElementById('usdConversionStatus');
+        
+        if (!usdAmountInput || !conversionStatus) {
+            return;
+        }
+        
+        const usdValue = parseFloat(usdAmountInput.value);
+        
+        if (usdValue && usdValue > 0) {
+            conversionStatus.textContent = `Ready to convert $${usdValue.toFixed(2)}`;
+            conversionStatus.className = 'usd-conversion-status ready';
+            conversionStatus.style.background = 'rgba(0, 255, 136, 0.1)';
+            conversionStatus.style.color = '#00ff88';
+            conversionStatus.style.border = '1px solid rgba(0, 255, 136, 0.3)';
+        } else {
+            conversionStatus.textContent = '';
+            conversionStatus.className = '';
+        }
+    }
+
+    // Show USD conversion status
+    showUsdConversionStatus(message, type) {
+        const conversionStatus = document.getElementById('usdConversionStatus');
+        if (!conversionStatus) return;
+        
+        conversionStatus.textContent = message;
+        conversionStatus.className = `usd-conversion-status ${type}`;
+        
+        switch (type) {
+            case 'success':
+                conversionStatus.style.background = 'rgba(0, 255, 136, 0.1)';
+                conversionStatus.style.color = '#00ff88';
+                conversionStatus.style.border = '1px solid rgba(0, 255, 136, 0.3)';
+                break;
+            case 'error':
+                conversionStatus.style.background = 'rgba(255, 68, 68, 0.1)';
+                conversionStatus.style.color = '#ff4444';
+                conversionStatus.style.border = '1px solid rgba(255, 68, 68, 0.3)';
+                break;
+            case 'loading':
+                conversionStatus.style.background = 'rgba(255, 165, 0, 0.1)';
+                conversionStatus.style.color = '#ffa500';
+                conversionStatus.style.border = '1px solid rgba(255, 165, 0, 0.3)';
+                break;
+        }
+    }
+
+    // Toggle selected token USD display
+    toggleSelectedTokenUsdDisplay() {
+        const usdEl = document.getElementById('selected-token-usd');
+        const toggleBtn = document.getElementById('selected-token-usd-toggle');
+        
+        if (usdEl && toggleBtn) {
+            if (usdEl.style.display === 'none') {
+                usdEl.style.display = 'block';
+                toggleBtn.textContent = '💲 Hide USD';
+            } else {
+                usdEl.style.display = 'none';
+                toggleBtn.textContent = '💲 USD';
+            }
+        }
     }
 
     // Show status message
@@ -310,6 +685,10 @@ class TransferManager {
                 const maxAmount = parseFloat(value) - 0.01;
                 amountInput.value = maxAmount > 0 ? Math.floor(maxAmount) : '0';
             }
+            
+            // Refresh the selected token balance display
+            this.showSelectedTokenBalance(tokenSelect.value);
+            
         } catch (error) {
             console.error('❌ Error setting max amount:', error);
         }

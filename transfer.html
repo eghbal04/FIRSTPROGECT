@@ -23,20 +23,20 @@
         max-width: 600px;
         margin: 0 auto;
         background: #1a1f2e;
-        border-radius: 15px;
-        padding: 1rem;
+        border-radius: 12px;
+        padding: 0.8rem;
         border: 2px solid #00ff88;
       }
       
       .header {
         text-align: center;
-        margin-bottom: 1rem;
+        margin-bottom: 0.8rem;
       }
       
       .header h1 {
         color: #00ff88;
-        font-size: 2rem;
-        margin: 0 0 0.25rem 0;
+        font-size: 1.8rem;
+        margin: 0 0 0.2rem 0;
       }
       
       .back-btn {
@@ -55,14 +55,15 @@
       }
       
       .form-group {
-        margin-bottom: 0.75rem;
+        margin-bottom: 0.5rem;
       }
       
       .form-group label {
         display: block;
         color: #00ff88;
-        margin-bottom: 0.25rem;
+        margin-bottom: 0.15rem;
         font-weight: 600;
+        font-size: 0.9rem;
       }
       
       .form-group input, .form-group select {
@@ -70,10 +71,10 @@
         background: #0a0f1c;
         border: 2px solid #2a3441;
         color: #ffffff;
-        padding: 0.8rem;
-        border-radius: 8px;
+        padding: 0.6rem;
+        border-radius: 6px;
         outline: none;
-        font-size: 1rem;
+        font-size: 0.9rem;
       }
       
       .form-group input:focus, .form-group select:focus {
@@ -82,7 +83,7 @@
       
       .search-row {
         display: flex;
-        gap: 0.5rem;
+        gap: 0.4rem;
         align-items: center;
       }
       
@@ -94,39 +95,94 @@
         background: linear-gradient(135deg, #00ff88, #00cc6a);
         color: #0a0f1c;
         border: none;
-        padding: 0.8rem 1rem;
-        border-radius: 8px;
+        padding: 0.6rem 0.8rem;
+        border-radius: 6px;
         font-weight: 600;
         cursor: pointer;
         white-space: nowrap;
+        font-size: 0.85rem;
+      }
+      
+      .balance-container {
+        margin: 0.4rem 0;
+        display: flex;
+        justify-content: center;
       }
       
       .balance-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-        gap: 0.4rem;
-        margin: 0.5rem 0;
+        gap: 0.3rem;
+        margin: 0.4rem 0;
       }
       
       .balance-card {
         background: rgba(0, 255, 136, 0.1);
         border: 1px solid rgba(0, 255, 136, 0.3);
         border-radius: 6px;
-        padding: 0.5rem;
+        padding: 0.4rem;
         text-align: center;
       }
       
       .balance-card h4 {
         color: #00ff88;
-        margin: 0 0 0.15rem 0;
-        font-size: 0.8rem;
+        margin: 0 0 0.1rem 0;
+        font-size: 0.75rem;
       }
       
       .balance-card .amount {
         color: #ffffff;
-        font-size: 1rem;
+        font-size: 0.9rem;
         font-weight: 600;
         font-family: monospace;
+      }
+      
+      .balance-card .usd-amount {
+        color: #00ff88;
+        font-size: 0.7rem;
+        font-weight: 500;
+        font-family: monospace;
+        margin-top: 0.15rem;
+      }
+      
+      .balance-card .usd-toggle-btn {
+        background: rgba(0, 255, 136, 0.2);
+        color: #00ff88;
+        border: 1px solid rgba(0, 255, 136, 0.4);
+        border-radius: 4px;
+        padding: 0.2rem 0.4rem;
+        font-size: 0.65rem;
+        cursor: pointer;
+        margin-top: 0.15rem;
+        transition: all 0.3s ease;
+      }
+      
+      .balance-card .usd-toggle-btn:hover {
+        background: rgba(0, 255, 136, 0.3);
+        border-color: rgba(0, 255, 136, 0.6);
+      }
+      
+      #transfer-usd-converter {
+        background: rgba(0, 255, 136, 0.05);
+        border: 1px solid rgba(0, 255, 136, 0.2);
+        border-radius: 6px;
+        padding: 0.5rem;
+        margin-top: 0.3rem;
+      }
+      
+      #transfer-usd-converter label {
+        color: #00ff88;
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+        font-size: 0.85rem;
+      }
+      
+      #usdConversionStatus {
+        font-size: 0.8rem;
+        font-weight: 500;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+        padding: 0.4rem;
       }
       
       .transfer-btn {
@@ -134,20 +190,21 @@
         background: linear-gradient(135deg, #00ff88, #00cc6a);
         color: #0a0f1c;
         border: none;
-        border-radius: 8px;
-        padding: 0.75rem;
+        border-radius: 6px;
+        padding: 0.6rem;
         font-weight: bold;
         cursor: pointer;
-        font-size: 1.1rem;
-        margin-top: 0.5rem;
+        font-size: 1rem;
+        margin-top: 0.4rem;
       }
       
       .status {
-        margin-top: 0.5rem;
-        padding: 0.6rem;
-        border-radius: 8px;
+        margin-top: 0.4rem;
+        padding: 0.5rem;
+        border-radius: 6px;
         text-align: center;
         font-weight: 500;
+        font-size: 0.9rem;
       }
       
       .status.success {
@@ -171,10 +228,11 @@
       .wallet-status {
         background: rgba(0, 255, 136, 0.1);
         border: 1px solid rgba(0, 255, 136, 0.3);
-        border-radius: 8px;
-        padding: 0.75rem;
-        margin-bottom: 0.75rem;
+        border-radius: 6px;
+        padding: 0.5rem;
+        margin-bottom: 0.5rem;
         text-align: center;
+        font-size: 0.9rem;
       }
       
 
@@ -189,21 +247,44 @@
           font-size: 1.5rem;
         }
         
+        .balance-container {
+          margin: 0.3rem 0;
+        }
+        
         .balance-grid {
           grid-template-columns: 1fr;
           gap: 0.25rem;
         }
         
         .balance-card {
-          padding: 0.4rem;
+          padding: 0.3rem;
         }
         
         .balance-card h4 {
-          font-size: 0.75rem;
+          font-size: 0.7rem;
         }
         
         .balance-card .amount {
-          font-size: 0.9rem;
+          font-size: 0.85rem;
+        }
+        
+        .balance-card .usd-amount {
+          font-size: 0.65rem;
+        }
+        
+        .balance-card .usd-toggle-btn {
+          font-size: 0.55rem;
+          padding: 0.15rem 0.3rem;
+        }
+        
+        #transfer-usd-converter {
+          padding: 0.4rem;
+          margin-top: 0.2rem;
+        }
+        
+        #usdConversionStatus {
+          font-size: 0.7rem;
+          padding: 0.3rem;
         }
       }
     </style>
@@ -254,6 +335,16 @@
                 </div>
             </div>
 
+            <!-- USD Converter (for IAM token) -->
+            <div id="transfer-usd-converter" class="form-group" style="display: none;">
+                <label for="transferUsdAmount">💲 USD Amount</label>
+                <div class="search-row">
+                    <input type="number" id="transferUsdAmount" placeholder="Enter USD amount" min="0" step="0.01">
+                    <button type="button" id="convertUsdToTokenBtn">🔄 Convert</button>
+                </div>
+                <div id="usdConversionStatus" style="text-align:center;padding:0.5rem;margin-top:0.5rem;border-radius:6px;"></div>
+            </div>
+
             <!-- Token Type -->
             <div class="form-group">
                 <label for="transferToken">Token Type</label>
@@ -264,19 +355,13 @@
                 </select>
             </div>
 
-            <!-- Balances -->
-            <div class="balance-grid">
-                <div class="balance-card">
-                    <h4>🟢 DAI</h4>
-                    <div id="transfer-dai-balance" class="amount">-</div>
-                </div>
-                <div class="balance-card">
-                    <h4>🔵 POL</h4>
-                    <div id="transfer-poly-balance" class="amount">-</div>
-                </div>
-                <div class="balance-card">
-                    <h4>🟣 IAM</h4>
-                    <div id="transfer-IAM-balance" class="amount">-</div>
+            <!-- Selected Token Balance -->
+            <div id="selected-token-balance" class="balance-container" style="display: none;">
+                <div class="balance-card" id="selected-balance-card">
+                    <h4 id="selected-token-name">🟢 DAI</h4>
+                    <div id="selected-token-amount" class="amount">-</div>
+                    <div id="selected-token-usd" class="usd-amount" style="display: none;">-</div>
+                    <button id="selected-token-usd-toggle" class="usd-toggle-btn" style="display: none;">💲 USD</button>
                 </div>
             </div>
 
