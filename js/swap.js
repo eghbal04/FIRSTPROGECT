@@ -623,18 +623,9 @@ class SwapManager {
             return;
         }
         
-            if (direction.value === 'dai-to-IAM') {
-                // Strict 1000 DAI maximum limit for input field
-                const maxAllowedDai = 1000;
-                const userBalanceMinusOne = Math.max(0, this.userBalances.dai - 1);
-                const maxDai = Math.min(userBalanceMinusOne, maxAllowedDai);
-                amount.max = Math.floor(maxDai);
-                console.log('✅ Maximum DAI amount set (limited to 1000 DAI):', Math.floor(maxDai));
-            } else if (direction.value === 'IAM-to-dai') {
-                // No limits for IAM to DAI - remove all restrictions
-                amount.max = '';
-                console.log('✅ No limits set for IAM to DAI conversion');
-            }
+        // Remove all input field restrictions - allow unlimited input
+        amount.max = '';
+        console.log('✅ No input restrictions - unlimited amounts allowed');
     }
 
     async setMaxAmount() {
@@ -650,14 +641,6 @@ class SwapManager {
             console.log('🔢 Setting maximum amount for direction:', direction.value);
             console.log('💰 Current user balances:', this.userBalances);
             
-            // Helper function to floor to decimals
-            const floorToDecimals = (val, decimals) => {
-                const m = Math.pow(10, decimals);
-                const floored = Math.floor(Number(val) * m) / m;
-                const smallestUnit = 1 / m;
-                return Math.max(0, floored - smallestUnit);
-            };
-            
             if (direction.value === 'dai-to-IAM') {
                 // For DAI to IAM (buying IAM)
                 if (this.userBalances.dai <= 0) {
@@ -666,66 +649,49 @@ class SwapManager {
                     return;
                 }
                 
-                // Strict 1000 DAI maximum limit
-                const maxAllowedDai = 1000;
-                const userBalance95Percent = this.userBalances.dai * 0.95;
+                // Use 99.9% of DAI balance (no decimals)
+                const safeDaiAmount = Math.floor(parseFloat(this.userBalances.dai.toFixed(2)) * 0.999);
+                amount.value = safeDaiAmount.toString();
                 
-                // Use the smaller of: 95% of user balance or 1000 DAI limit
-                let maxAmount = Math.min(userBalance95Percent, maxAllowedDai);
-                maxAmount = floorToDecimals(maxAmount, 2);
-                
-                // Keep a small buffer (1 DAI) for gas fees
-                maxAmount = Math.max(1, maxAmount - 1);
-                
-                amount.value = Math.floor(maxAmount).toString();
-                
-                console.log('✅ Maximum DAI amount set (1000 DAI limit):', {
+                console.log('✅ Safe DAI amount set from balance card (99.9%):', {
                     userBalance: this.userBalances.dai.toFixed(2),
-                    maxAllowedDai: maxAllowedDai,
-                    maxAmount: maxAmount.toFixed(2)
+                    maxAmount: safeDaiAmount
                 });
                 
             } else if (direction.value === 'IAM-to-dai') {
-                // For IAM to DAI (selling IAM) - No limits, use full balance
+                // For IAM to DAI (selling IAM) - Use 99.9% of balance
                 if (this.userBalances.IAM <= 0) {
                     console.warn('⚠️ No IAM balance available');
                     this.showStatus('No IAM balance available. Please purchase IAM tokens first to make sales.', 'error');
                     return;
                 }
                 
-                // Use full available balance (no limits)
-                let maxIAM = this.userBalances.IAM;
-                maxIAM = floorToDecimals(maxIAM, 6);
+                // Use 99.9% of IAM balance to ensure transaction succeeds (leave small buffer)
+                const safeIAMAmount = Math.floor(parseFloat(this.userBalances.IAM.toFixed(6)) * 0.999);
+                amount.value = safeIAMAmount.toString();
                 
-                // Keep a small buffer (1 IAM) for precision
-                maxIAM = Math.max(1, maxIAM - 1);
-                
-                amount.value = Math.floor(maxIAM).toString();
-                
-                console.log('✅ Maximum IAM amount set (full balance, no limits):', {
+                console.log('✅ Safe IAM amount set from balance card (99.9%):', {
                     userBalance: this.userBalances.IAM.toFixed(6),
-                    maxAmount: maxIAM.toFixed(6)
+                    maxAmount: safeIAMAmount
                 });
             }
             
-            console.log('✅ Maximum amount set successfully');
+            console.log('✅ Exact maximum amount set successfully');
             
         } catch (error) {
             console.error('❌ Error setting maximum amount:', error);
             this.showStatus('Error setting maximum amount: ' + error.message, 'error');
             
-            // Fallback: set to 90% of balance with small buffer
+            // Fallback: set to safe balance amounts
             try {
                 if (direction.value === 'dai-to-IAM' && this.userBalances.dai > 0) {
-                    // Apply 1000 DAI limit even in fallback
-                    const maxAllowedDai = 1000;
-                    const userBalance90Percent = this.userBalances.dai * 0.9;
-                    const fallbackMax = Math.max(1, Math.min(userBalance90Percent, maxAllowedDai) - 1);
-                    amount.value = Math.floor(fallbackMax).toString();
+                    // Use 99.9% of DAI balance to ensure transaction succeeds
+                    const safeDaiAmount = Math.floor(parseFloat(this.userBalances.dai.toFixed(2)) * 0.999);
+                    amount.value = safeDaiAmount.toString();
                 } else if (direction.value === 'IAM-to-dai' && this.userBalances.IAM > 0) {
-                    // No limits for IAM to DAI, use full balance
-                    const fallbackMax = Math.max(1, this.userBalances.IAM - 1);
-                    amount.value = Math.floor(fallbackMax).toString();
+                    // Use 99.9% of IAM balance to ensure transaction succeeds
+                    const safeIAMAmount = Math.floor(parseFloat(this.userBalances.IAM.toFixed(6)) * 0.999);
+                    amount.value = safeIAMAmount.toString();
                 }
             } catch (fallbackError) {
                 console.error('❌ Fallback also failed:', fallbackError);
@@ -867,12 +833,7 @@ class SwapManager {
             // Validation according to contract
             if (direction.value === 'dai-to-IAM') {
                 if (value < 1) throw new Error('Minimum purchase amount is 1 DAI. Please increase your purchase amount.');
-                
-                // Enforce strict 1000 DAI maximum limit
-                const maxAllowedDai = 1000;
-                if (value > maxAllowedDai) {
-                    throw new Error(`Purchase amount exceeds maximum limit. Maximum allowed: ${maxAllowedDai} DAI. Please reduce your amount.`);
-                }
+                // No maximum limits - allow unlimited DAI purchases
             } else if (direction.value === 'IAM-to-dai') {
                 if (value < 1) throw new Error('Minimum sale amount is 1 IAM. Please increase your sale amount.');
                 // No other limits for IAM to DAI conversion - removed all liquidity checks
