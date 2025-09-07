@@ -3074,5 +3074,267 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
+<!-- Floating Binary Points Card -->
+<div id="floating-binary-points-card" class="floating-binary-points-card" style="display: none;">
+  <div class="binary-points-content">
+    <div class="binary-points-icon">🎯</div>
+    <div class="binary-points-info">
+      <div class="binary-points-label">Binary Points</div>
+      <div class="binary-points-amount" id="binary-points-amount">0</div>
+    </div>
+    <button class="claim-binary-points-btn" id="claim-binary-points-btn">
+      Claim
+    </button>
+  </div>
+</div>
+
+<style>
+  .floating-binary-points-card {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: linear-gradient(135deg, #232946, #181c2a);
+    border: 2px solid #00ff88;
+    border-radius: 15px;
+    padding: 15px;
+    box-shadow: 0 8px 32px rgba(0, 255, 136, 0.3);
+    z-index: 1000;
+    min-width: 200px;
+    animation: cardFloat 3s ease-in-out infinite;
+    backdrop-filter: blur(10px);
+  }
+  
+  .binary-points-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .binary-points-icon {
+    font-size: 24px;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  
+  .binary-points-info {
+    flex: 1;
+  }
+  
+  .binary-points-label {
+    color: #00ff88;
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 4px;
+  }
+  
+  .binary-points-amount {
+    color: #fff;
+    font-size: 18px;
+    font-weight: bold;
+    font-family: monospace;
+  }
+  
+  .claim-binary-points-btn {
+    background: linear-gradient(135deg, #00ff88, #00cc6a);
+    color: #0a0f1c;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: bold;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 255, 136, 0.3);
+  }
+  
+  .claim-binary-points-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 255, 136, 0.4);
+  }
+  
+  .claim-binary-points-btn:active {
+    transform: translateY(0);
+  }
+  
+  .claim-binary-points-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+  
+  @media (max-width: 768px) {
+    .floating-binary-points-card {
+      bottom: 10px;
+      left: 10px;
+      min-width: 180px;
+      padding: 12px;
+    }
+    
+    .binary-points-amount {
+      font-size: 16px;
+    }
+    
+    .claim-binary-points-btn {
+      padding: 6px 12px;
+      font-size: 11px;
+    }
+  }
+</style>
+
+<script>
+// Binary Points Management
+class BinaryPointsManager {
+  constructor() {
+    this.points = 0;
+    this.isClaiming = false;
+    this.init();
+  }
+  
+  async init() {
+    await this.loadBinaryPoints();
+    this.setupEventListeners();
+    this.showCard();
+  }
+  
+  async loadBinaryPoints() {
+    try {
+      if (!window.contractConfig || !window.contractConfig.contract) {
+        console.log('Contract not available for binary points');
+        return;
+      }
+      
+      const contract = window.contractConfig.contract;
+      const userAddress = await window.contractConfig.signer.getAddress();
+      
+      // Get user's binary points
+      const binaryPoints = await contract.getBinaryPoints(userAddress);
+      this.points = parseFloat(ethers.formatEther(binaryPoints));
+      
+      this.updateDisplay();
+    } catch (error) {
+      console.log('Error loading binary points:', error);
+      this.points = 0;
+      this.updateDisplay();
+    }
+  }
+  
+  updateDisplay() {
+    const amountElement = document.getElementById('binary-points-amount');
+    const cardElement = document.getElementById('floating-binary-points-card');
+    
+    if (amountElement) {
+      amountElement.textContent = this.points.toFixed(2);
+    }
+    
+    if (cardElement) {
+      if (this.points > 0) {
+        cardElement.style.display = 'block';
+      } else {
+        cardElement.style.display = 'none';
+      }
+    }
+  }
+  
+  setupEventListeners() {
+    const claimBtn = document.getElementById('claim-binary-points-btn');
+    if (claimBtn) {
+      claimBtn.addEventListener('click', () => this.claimBinaryPoints());
+    }
+  }
+  
+  async claimBinaryPoints() {
+    if (this.isClaiming || this.points <= 0) return;
+    
+    try {
+      this.isClaiming = true;
+      const claimBtn = document.getElementById('claim-binary-points-btn');
+      
+      if (claimBtn) {
+        claimBtn.disabled = true;
+        claimBtn.textContent = 'Claiming...';
+      }
+      
+      if (!window.contractConfig || !window.contractConfig.contract) {
+        throw new Error('Contract not available');
+      }
+      
+      const contract = window.contractConfig.contract;
+      
+      // Call claimBinaryPoints function
+      const tx = await contract.claimBinaryPoints();
+      
+      // Wait for transaction confirmation
+      await tx.wait();
+      
+      // Update points after successful claim
+      await this.loadBinaryPoints();
+      
+      // Show success message
+      this.showMessage('Binary points claimed successfully!', 'success');
+      
+    } catch (error) {
+      console.error('Error claiming binary points:', error);
+      this.showMessage('Error claiming binary points: ' + error.message, 'error');
+    } finally {
+      this.isClaiming = false;
+      const claimBtn = document.getElementById('claim-binary-points-btn');
+      if (claimBtn) {
+        claimBtn.disabled = false;
+        claimBtn.textContent = 'Claim';
+      }
+    }
+  }
+  
+  showMessage(message, type) {
+    // Create temporary message element
+    const messageEl = document.createElement('div');
+    messageEl.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: ${type === 'success' ? 'rgba(0, 255, 136, 0.9)' : 'rgba(255, 68, 68, 0.9)'};
+      color: ${type === 'success' ? '#0a0f1c' : '#fff'};
+      padding: 15px 25px;
+      border-radius: 10px;
+      font-weight: bold;
+      z-index: 10000;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+    `;
+    messageEl.textContent = message;
+    
+    document.body.appendChild(messageEl);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+      if (messageEl.parentNode) {
+        messageEl.parentNode.removeChild(messageEl);
+      }
+    }, 3000);
+  }
+  
+  showCard() {
+    const cardElement = document.getElementById('floating-binary-points-card');
+    if (cardElement && this.points > 0) {
+      cardElement.style.display = 'block';
+    }
+  }
+}
+
+// Initialize binary points manager when page loads
+document.addEventListener('DOMContentLoaded', function() {
+  // Wait for contract to be available
+  const checkContract = setInterval(() => {
+    if (window.contractConfig && window.contractConfig.contract) {
+      window.binaryPointsManager = new BinaryPointsManager();
+      clearInterval(checkContract);
+    }
+  }, 1000);
+  
+  // Stop checking after 30 seconds
+  setTimeout(() => clearInterval(checkContract), 30000);
+});
+</script>
+
 </body>
 </html>
