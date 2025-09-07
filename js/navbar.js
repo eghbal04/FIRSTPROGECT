@@ -609,7 +609,7 @@
           <span class="link-icon">🏠</span>Home
         </a>
         <a href="professional-tree.html" class="IAM-navbar-link" id="navbar-network-link-mobile">
-          <span class="link-icon">🌐</span>Network
+          <span class="link-icon">🤝</span>Partners
         </a>
         <a href="register.html" class="IAM-navbar-link">
           <span class="link-icon">📝</span>Register
