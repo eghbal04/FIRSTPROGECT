@@ -122,7 +122,11 @@ function updateProfileUI(profile) {
     const linkEl = document.getElementById('profile-referral-link');
     if (linkEl) {
         if (profile.address) {
-            const fullLink = window.location.origin + '/?ref=' + profile.address;
+            // Use index if available, otherwise fall back to address
+            const referralId = profile.userStruct && profile.userStruct.index && BigInt(profile.userStruct.index) > 0n 
+                ? profile.userStruct.index.toString() 
+                : profile.address;
+            const fullLink = window.location.origin + '/?ref=' + referralId;
             linkEl.href = fullLink;
             linkEl.textContent = fullLink;
             linkEl.style.pointerEvents = 'auto';
@@ -140,7 +144,11 @@ function updateProfileUI(profile) {
         copyBtn.onclick = async () => {
             try {
                 if (profile.address) {
-                    const fullLink = window.location.origin + '/?ref=' + profile.address;
+                    // Use index if available, otherwise fall back to address
+                    const referralId = profile.userStruct && profile.userStruct.index && BigInt(profile.userStruct.index) > 0n 
+                        ? profile.userStruct.index.toString() 
+                        : profile.address;
+                    const fullLink = window.location.origin + '/?ref=' + referralId;
                     
                     // تلاش برای کپی کردن
                     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -341,7 +349,10 @@ function setupReferralCopy() {
                     throw new Error('آدرس کیف پول در دسترس نیست');
                 }
                 
-                const referralLink = `${window.location.origin}/?ref=${address}`;
+                // Get user profile to get index
+                const profile = await loadUserProfileOnce();
+                const referralId = profile.index ? profile.index : address;
+                const referralLink = `${window.location.origin}/?ref=${referralId}`;
                 
                 // تلاش برای کپی کردن
                 if (navigator.clipboard && navigator.clipboard.writeText) {

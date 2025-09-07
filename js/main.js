@@ -1093,7 +1093,9 @@ window.copyReferralLink = async function() {
     try {
         const profile = await loadUserProfileOnce();
         const currentUrl = window.location.origin + window.location.pathname;
-        const referralLink = `${currentUrl}?ref=${profile.address}`;
+        
+        // Use user index instead of wallet address
+        const referralLink = profile.index ? `${currentUrl}?ref=${profile.index}` : `${currentUrl}?ref=${profile.address}`;
         
         await navigator.clipboard.writeText(referralLink);
         
@@ -1346,9 +1348,15 @@ function shortWallet(address) {
 }
 
 // تابع کپی کردن لینک رفرال
-window.copyReferralLink = function(address) {
-    const referralLink = `${window.location.origin}${window.location.pathname}?ref=${address}`;
-    navigator.clipboard.writeText(referralLink).then(() => {
+window.copyReferralLink = async function(address) {
+    try {
+        // Get user profile to get index
+        const profile = await loadUserProfileOnce();
+        const referralId = profile.index ? profile.index : address;
+        const referralLink = `${window.location.origin}${window.location.pathname}?ref=${referralId}`;
+        
+        await navigator.clipboard.writeText(referralLink);
+        
         // نمایش پیام موفقیت
         const button = event.target;
         const originalText = button.textContent;
@@ -1358,9 +1366,13 @@ window.copyReferralLink = function(address) {
             button.textContent = originalText;
             button.style.background = '#a786ff';
         }, 2000);
-    }).catch(err => {
+    } catch (err) {
         console.error('خطا در کپی کردن لینک:', err);
         // روش جایگزین برای مرورگرهای قدیمی
+        const profile = await loadUserProfileOnce();
+        const referralId = profile.index ? profile.index : address;
+        const referralLink = `${window.location.origin}${window.location.pathname}?ref=${referralId}`;
+        
         const textArea = document.createElement('textarea');
         textArea.value = referralLink;
         document.body.appendChild(textArea);
@@ -1376,7 +1388,7 @@ window.copyReferralLink = function(address) {
             button.textContent = originalText;
             button.style.background = '#a786ff';
         }, 2000);
-    });
+    }
 };
 
 window.networkRendered = false;
@@ -1388,8 +1400,48 @@ function shortWallet(address) {
 }
 
 // تابع کپی کردن لینک رفرال
-window.copyReferralLink = function(address) {
-    const referralLink = `${window.location.origin}${window.location.pathname}?ref=${address}`;
+window.copyReferralLink = async function(address) {
+    try {
+        // Get user profile to get index
+        const profile = await loadUserProfileOnce();
+        const referralId = profile.index ? profile.index : address;
+        const referralLink = `${window.location.origin}${window.location.pathname}?ref=${referralId}`;
+        
+        await navigator.clipboard.writeText(referralLink);
+        
+        // نمایش پیام موفقیت
+        const button = event.target;
+        const originalText = button.textContent;
+        button.textContent = 'کپی شد!';
+        button.style.background = '#4ade80';
+        setTimeout(() => {
+            button.textContent = originalText;
+            button.style.background = '#a786ff';
+        }, 2000);
+    } catch (err) {
+        console.error('خطا در کپی کردن لینک:', err);
+        // روش جایگزین برای مرورگرهای قدیمی
+        const profile = await loadUserProfileOnce();
+        const referralId = profile.index ? profile.index : address;
+        const referralLink = `${window.location.origin}${window.location.pathname}?ref=${referralId}`;
+        
+        const textArea = document.createElement('textarea');
+        textArea.value = referralLink;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        const button = event.target;
+        const originalText = button.textContent;
+        button.textContent = 'کپی شد!';
+        button.style.background = '#4ade80';
+        setTimeout(() => {
+            button.textContent = originalText;
+            button.style.background = '#a786ff';
+        }, 2000);
+    }
+};
     navigator.clipboard.writeText(referralLink).then(() => {
         // نمایش پیام موفقیت
         const button = event.target;
@@ -1981,6 +2033,31 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 });
 
+// Function to convert referral ID (index or address) to address
+async function getReferrerAddressFromId(referrerId) {
+    try {
+        // If it's a number (index), convert to address
+        if (/^\d+$/.test(referrerId)) {
+            const index = BigInt(referrerId);
+            if (window.contractConfig && window.contractConfig.contract) {
+                const address = await window.contractConfig.contract.getAddressByIndex(index);
+                console.log(`✅ Converted index ${referrerId} to address: ${address}`);
+                return address;
+            }
+        }
+        // If it's already an address, return as is
+        else if (/^0x[a-fA-F0-9]{40}$/.test(referrerId)) {
+            console.log(`✅ Referrer is already an address: ${referrerId}`);
+            return referrerId;
+        }
+        
+        throw new Error('Invalid referrer format');
+    } catch (error) {
+        console.error('Error converting referrer ID to address:', error);
+        return null;
+    }
+}
+
 // New function to display registration form for inactive users - ONLY FOR REFERRAL LINKS
 window.showRegistrationFormForInactiveUser = async function() {
     console.log('=== showRegistrationFormForInactiveUser: Checking for referral link ===');
@@ -1989,8 +2066,15 @@ window.showRegistrationFormForInactiveUser = async function() {
     const urlParams = new URLSearchParams(window.location.search);
     const referrer = urlParams.get('ref') || urlParams.get('referrer') || urlParams.get('r');
     
-    if (referrer && /^0x[a-fA-F0-9]{40}$/.test(referrer)) {
+    if (referrer && (/^0x[a-fA-F0-9]{40}$/.test(referrer) || /^\d+$/.test(referrer))) {
         console.log('✅ Referral link detected:', referrer);
+        
+        // Convert referrer ID to address
+        const referrerAddress = await getReferrerAddressFromId(referrer);
+        if (!referrerAddress) {
+            console.log('❌ Could not convert referrer ID to address');
+            return;
+        }
         
         // Check if user is not already registered
         try {
@@ -2000,7 +2084,7 @@ window.showRegistrationFormForInactiveUser = async function() {
                 
                 if (!isActive) {
                     console.log('✅ User is not registered, showing registration form for referral link');
-                    showReferralRegistrationForm(referrer);
+                    showReferralRegistrationForm(referrerAddress);
                 } else {
                     console.log('❌ User is already registered, not showing registration form');
                 }
@@ -2147,13 +2231,82 @@ function showReferralRegistrationForm(referrerAddress) {
                     registerBtn.textContent = 'Registering...';
                     registerBtn.disabled = true;
                     
-                    const { contract } = window.contractConfig;
+                    const { contract, signer } = window.contractConfig;
+                    const userAddress = await signer.getAddress();
                     
-                    // Register user with referrer
-                    const tx = await contract.registerAndActivate(referrerAddress, referrerAddress, window.contractConfig.signer.address);
+                    // Get registration parameters from config
+                    let regPrice = 0;
+                    let tokenAddress = '';
+                    let tokenABI = [];
+                    
+                    try {
+                        // Get registration price from contract
+                        regPrice = await contract.regPrice();
+                        regPrice = ethers.formatUnits(regPrice, 18);
+                        console.log('Registration price:', regPrice);
+                        
+                        // Get token configuration for approval
+                        if (window.USDC_ADDRESS && window.USDC_ABI) {
+                            tokenAddress = window.USDC_ADDRESS;
+                            tokenABI = window.USDC_ABI;
+                        } else if (window.DAI_ADDRESS && window.DAI_ABI) {
+                            tokenAddress = window.DAI_ADDRESS;
+                            tokenABI = window.DAI_ABI;
+                        }
+                        
+                        console.log('Token config:', { tokenAddress, hasABI: tokenABI.length > 0 });
+                        
+                    } catch (configError) {
+                        console.warn('Could not get config parameters:', configError);
+                        regPrice = '100'; // Default fallback
+                    }
+                    
+                    // Handle token approval if needed
+                    if (tokenAddress && tokenABI && regPrice > 0) {
+                        try {
+                            statusDiv.innerHTML = `
+                                <div style="color: #ffc107; background: rgba(255,193,7,0.1); padding: 0.8rem; border-radius: 6px; margin-bottom: 0.5rem;">
+                                    ⏳ Approving ${regPrice} tokens... Please wait
+                                </div>
+                            `;
+                            
+                            const tokenContract = new ethers.Contract(tokenAddress, tokenABI, signer);
+                            const allowance = await tokenContract.allowance(userAddress, contract.target);
+                            const requiredAmount = ethers.parseUnits(regPrice, 18);
+                            
+                            if (allowance < requiredAmount) {
+                                const approveTx = await tokenContract.approve(contract.target, requiredAmount);
+                                await approveTx.wait();
+                                console.log('Token approval completed');
+                            }
+                            
+                            statusDiv.innerHTML = `
+                                <div style="color: #00ff88; background: rgba(0,255,136,0.1); padding: 0.8rem; border-radius: 6px; margin-bottom: 0.5rem;">
+                                    ✅ Tokens approved! Proceeding with registration...
+                                </div>
+                            `;
+                            
+                        } catch (approvalError) {
+                            console.warn('Token approval failed:', approvalError);
+                            statusDiv.innerHTML = `
+                                <div style="color: #ffc107; background: rgba(255,193,7,0.1); padding: 0.8rem; border-radius: 6px; margin-bottom: 0.5rem;">
+                                    ⚠️ Token approval failed, proceeding anyway...
+                                </div>
+                            `;
+                        }
+                    }
+                    
+                    // Register user with referrer using correct registerAndActivate parameters
+                    // registerAndActivate(referrer, upper, newUser)
+                    const tx = await contract.registerAndActivate(referrerAddress, referrerAddress, userAddress);
                     await tx.wait();
                     
-                    statusDiv.innerHTML = '<div style="color:#00ff88;background:rgba(0,255,136,0.1);padding:0.8rem;border-radius:6px;">✅ Registration completed successfully!</div>';
+                    statusDiv.innerHTML = `
+                        <div style="color:#00ff88;background:rgba(0,255,136,0.1);padding:0.8rem;border-radius:6px;">
+                            ✅ Registration completed successfully!<br>
+                            <small style="color: #ccc; font-size: 0.8rem;">Transaction: ${tx.hash}</small>
+                        </div>
+                    `;
                     
                     // Close modal after 3 seconds
                     setTimeout(() => {
@@ -2163,7 +2316,11 @@ function showReferralRegistrationForm(referrerAddress) {
                     
                 } catch (error) {
                     console.error('Registration error:', error);
-                    statusDiv.innerHTML = `<div style="color:#ff4444;background:rgba(255,68,68,0.1);padding:0.8rem;border-radius:6px;">Registration error: ${error.message}</div>`;
+                    statusDiv.innerHTML = `
+                        <div style="color:#ff4444;background:rgba(255,68,68,0.1);padding:0.8rem;border-radius:6px;">
+                            ❌ Registration error: ${error.message}
+                        </div>
+                    `;
                     registerBtn.textContent = '🚀 Register in Network';
                     registerBtn.disabled = false;
                 }
