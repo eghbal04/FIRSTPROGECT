@@ -232,6 +232,7 @@
         <label for="newOwnerAddress">New Owner Address</label>
         <div class="input-row">
           <input type="text" id="newOwnerAddress" class="text-input" placeholder="Example: 0x..." autocomplete="off" required>
+          <button type="button" id="pasteAddressBtn" class="btn-icon">📋 Paste</button>
         </div>
         <div class="hint" id="addressHint"></div>
       </div>
@@ -249,7 +250,10 @@
        <p class="modal-warning">This operation is irreversible</p>
        <div class="form-group">
          <label for="confirmAddressInput">To confirm, please re-enter the destination address</label>
-         <input type="text" id="confirmAddressInput" class="text-input" placeholder="0x..." autocomplete="off">
+         <div class="input-row">
+           <input type="text" id="confirmAddressInput" class="text-input" placeholder="0x..." autocomplete="off">
+           <button type="button" id="pasteConfirmBtn" class="btn-icon">📋 Paste</button>
+         </div>
          <div class="hint" id="confirmHint"></div>
        </div>
        <div class="modal-actions">
@@ -369,6 +373,27 @@
     }
     newOwnerInput.addEventListener('input', validateAddressInput);
 
+    // Paste button functionality
+    const pasteAddressBtn = document.getElementById('pasteAddressBtn');
+    pasteAddressBtn.addEventListener('click', async function() {
+      try {
+        const clipboardText = await navigator.clipboard.readText();
+        if (clipboardText && clipboardText.trim()) {
+          newOwnerInput.value = clipboardText.trim();
+          validateAddressInput(); // Trigger validation
+          addressHint.textContent = '✅ Address pasted successfully';
+          addressHint.className = 'hint valid';
+        } else {
+          addressHint.textContent = '❌ No text found in clipboard';
+          addressHint.className = 'hint error';
+        }
+      } catch (error) {
+        console.log('Error reading clipboard:', error);
+        addressHint.textContent = '❌ Unable to access clipboard. Please paste manually.';
+        addressHint.className = 'hint error';
+      }
+    });
+
     // Confirmation modal
     let pendingTargetAddress = null;
     const modal = document.getElementById('confirmModal');
@@ -377,6 +402,7 @@
     const confirmHint = document.getElementById('confirmHint');
     const cancelConfirmBtn = document.getElementById('cancelConfirmBtn');
     const confirmTransferBtn = document.getElementById('confirmTransferBtn');
+    const pasteConfirmBtn = document.getElementById('pasteConfirmBtn');
 
     function openConfirmModal(targetAddress) {
       pendingTargetAddress = targetAddress;
@@ -393,6 +419,26 @@
       modal.setAttribute('aria-hidden', 'true');
     }
     cancelConfirmBtn.addEventListener('click', closeConfirmModal);
+    
+    // Paste button for confirmation modal
+    pasteConfirmBtn.addEventListener('click', async function() {
+      try {
+        const clipboardText = await navigator.clipboard.readText();
+        if (clipboardText && clipboardText.trim()) {
+          confirmInput.value = clipboardText.trim();
+          confirmHint.textContent = '✅ Address pasted successfully';
+          confirmHint.className = 'hint valid';
+        } else {
+          confirmHint.textContent = '❌ No text found in clipboard';
+          confirmHint.className = 'hint error';
+        }
+      } catch (error) {
+        console.log('Error reading clipboard:', error);
+        confirmHint.textContent = '❌ Unable to access clipboard. Please paste manually.';
+        confirmHint.className = 'hint error';
+      }
+    });
+    
     confirmTransferBtn.addEventListener('click', async function() {
       const entered = (confirmInput.value || '').trim();
       if (!pendingTargetAddress) return;

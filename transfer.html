@@ -132,9 +132,11 @@
       
       .balance-card .amount {
         color: #ffffff;
-        font-size: 0.9rem;
+        font-size: 0.75rem;
         font-weight: 600;
         font-family: monospace;
+        word-break: break-all;
+        line-height: 1.2;
       }
       
       .balance-card .usd-amount {
@@ -225,6 +227,13 @@
         border: 1px solid rgba(167, 134, 255, 0.3);
       }
       
+      #searchIndexStatus {
+        font-size: 0.75rem;
+        word-break: break-all;
+        line-height: 1.3;
+        font-family: monospace;
+      }
+      
       .wallet-status {
         background: rgba(0, 255, 136, 0.1);
         border: 1px solid rgba(0, 255, 136, 0.3);
@@ -265,7 +274,9 @@
         }
         
         .balance-card .amount {
-          font-size: 0.85rem;
+          font-size: 0.7rem;
+          word-break: break-all;
+          line-height: 1.1;
         }
         
         .balance-card .usd-amount {
@@ -285,6 +296,12 @@
         #usdConversionStatus {
           font-size: 0.7rem;
           padding: 0.3rem;
+        }
+        
+        #searchIndexStatus {
+          font-size: 0.65rem;
+          word-break: break-all;
+          line-height: 1.2;
         }
       }
     </style>
@@ -565,7 +582,7 @@
                     
                     if (address && address !== '0x0000000000000000000000000000000000000000') {
                         transferToInput.value = address;
-                        showSearchStatus(`✅ Found: ${address.slice(0, 6)}...${address.slice(-4)}`, 'success');
+                        showSearchStatus(`✅ Found: ${address}`, 'success');
                     } else {
                         showSearchStatus('❌ User not found for this index', 'error');
                     }
