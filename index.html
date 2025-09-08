@@ -194,7 +194,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
     <!-- Loading WalletConnect Handler -->
     <script src="js/walletconnect-handler.js?v=5.7"></script>
-    <script src="js/mobile-navigation.js"></script>
     <script src="js/mobile-optimizer.js"></script>
 
 
@@ -204,7 +203,6 @@
   <!-- Binary Tree Traversal System -->
   <script src="js/binary-tree-traversal.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
-  <script src="js/auth-redirect.js"></script>
   <script src="js/modern-theme-variables.js"></script>
   
 </head>
@@ -589,7 +587,6 @@
 
     <script src="js/search-index.js"></script>
   <script src="js/network.js?v=5.7"></script>
-  <script src="js/network-database.js?v=5.8"></script>
   
   <script src="js/profile.js?v=5.7"></script>
   
@@ -1940,7 +1937,6 @@
     }
   </script>
   <script src="js/token-price.js"></script>
-  <script src="js/remove-archive-btn.js"></script>
 
 
 
@@ -2344,13 +2340,12 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Main page codes
 });
-
-
+</script>
 
 // End of main scripts
+</script>
 
-
-
+<script>
 // Voting Functions for Main Section
 async function voteForIndexMain(isLike) {
   try {
@@ -3205,9 +3200,9 @@ class BinaryPointsManager {
       const contract = window.contractConfig.contract;
       const userAddress = await window.contractConfig.signer.getAddress();
       
-      // Get user's binary points
-      const binaryPoints = await contract.getBinaryPoints(userAddress);
-      this.points = parseFloat(ethers.formatEther(binaryPoints));
+      // Get user's binary points from getUserTree
+      const userTree = await contract.getUserTree(userAddress);
+      this.points = parseFloat(ethers.formatEther(userTree.binaryPoints));
       
       this.updateDisplay();
     } catch (error) {

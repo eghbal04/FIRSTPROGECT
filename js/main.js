@@ -400,6 +400,23 @@ async function updateNavbarBasedOnUserStatus() {
     }
 }
 
+// Function to reset status display when user is not connected
+function resetStatusDisplay() {
+    // Reset main status display (User ID section)
+    const userStatusIdValue = document.getElementById('user-status-id-value');
+    if (userStatusIdValue) {
+        userStatusIdValue.textContent = 'Not Connected';
+        userStatusIdValue.style.color = '#e0e6f7';
+    }
+    
+    // Reset wallet address display
+    const userStatusWallet = document.getElementById('user-status-wallet');
+    if (userStatusWallet) {
+        userStatusWallet.textContent = 'Not Connected';
+        userStatusWallet.style.color = '#e0e6f7';
+    }
+}
+
 // Function to change navbar for active users
 function updateNavbarForActiveUser() {
     // Change in desktop navbar
@@ -419,6 +436,9 @@ function updateNavbarForActiveUser() {
 
 // Function to reset navbar to default state
 function resetNavbarToDefault() {
+    // Reset status display
+    resetStatusDisplay();
+    
     // Reset desktop navbar
     const desktopRegisterLink = document.querySelector('.desktop-nav a[href="#main-register"]');
     if (desktopRegisterLink) {
@@ -1441,7 +1461,7 @@ window.copyReferralLink = async function(address) {
             button.style.background = '#a786ff';
         }, 2000);
     }
-};
+    
     navigator.clipboard.writeText(referralLink).then(() => {
         // نمایش پیام موفقیت
         const button = event.target;
@@ -2004,6 +2024,20 @@ document.addEventListener('DOMContentLoaded', async function() {
     // First apply locks
     await lockTabsForDeactivatedUsers();
     
+    // Check for referral links immediately
+    const urlParams = new URLSearchParams(window.location.search);
+    const referrer = urlParams.get('ref') || urlParams.get('referrer') || urlParams.get('r');
+    
+    if (referrer && (/^0x[a-fA-F0-9]{40}$/.test(referrer) || /^\d+$/.test(referrer))) {
+        console.log('🎯 Referral link detected on page load:', referrer);
+        // Show registration form immediately for referral links
+        setTimeout(() => {
+            if (typeof window.showRegistrationFormForInactiveUser === 'function') {
+                window.showRegistrationFormForInactiveUser();
+            }
+        }, 1000);
+    }
+    
     // Check user status without showing registration form
     try {
         if (window.getUserProfile) {
@@ -2069,11 +2103,42 @@ window.showRegistrationFormForInactiveUser = async function() {
     if (referrer && (/^0x[a-fA-F0-9]{40}$/.test(referrer) || /^\d+$/.test(referrer))) {
         console.log('✅ Referral link detected:', referrer);
         
-        // Convert referrer ID to address
-        const referrerAddress = await getReferrerAddressFromId(referrer);
-        if (!referrerAddress) {
-            console.log('❌ Could not convert referrer ID to address');
-            return;
+        // For address format, use directly
+        let referrerAddress = referrer;
+        
+        // For index format, try to convert to address
+        if (/^\d+$/.test(referrer)) {
+            try {
+                // Wait for contract to be available
+                let attempts = 0;
+                const maxAttempts = 10;
+                
+                while (attempts < maxAttempts) {
+                    if (window.contractConfig && window.contractConfig.contract) {
+                        const index = BigInt(referrer);
+                        const address = await window.contractConfig.contract.getAddressByIndex(index);
+                        if (address && address !== '0x0000000000000000000000000000000000000000') {
+                            referrerAddress = address;
+                            console.log(`✅ Converted index ${referrer} to address: ${address}`);
+                            break;
+                        }
+                    }
+                    
+                    // Wait 500ms before trying again
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    attempts++;
+                }
+                
+                if (attempts >= maxAttempts) {
+                    console.log('❌ Could not convert referrer index to address after multiple attempts');
+                    // Still show the form with the index as referrer
+                    referrerAddress = referrer;
+                }
+            } catch (error) {
+                console.error('Error converting referrer index to address:', error);
+                // Still show the form with the index as referrer
+                referrerAddress = referrer;
+            }
         }
         
         // Check if user is not already registered
@@ -2088,9 +2153,16 @@ window.showRegistrationFormForInactiveUser = async function() {
                 } else {
                     console.log('❌ User is already registered, not showing registration form');
                 }
+            } else {
+                // If getUserProfile is not available, assume user is not registered and show form
+                console.log('✅ getUserProfile not available, showing registration form for referral link');
+                showReferralRegistrationForm(referrerAddress);
             }
         } catch (error) {
             console.log('Error checking user status for referral registration:', error);
+            // If there's an error checking user status, still show the form
+            console.log('✅ Error checking user status, showing registration form for referral link');
+            showReferralRegistrationForm(referrerAddress);
         }
     } else {
         console.log('❌ No valid referral link found in URL');
@@ -3126,6 +3198,20 @@ function displayIAMIdInCorner(index) {
 // Function to update ID display in all sections
 function updateIAMIdDisplay(index) {
     const IAMId = generateIAMId(index);
+    
+    // Update main status display (User ID section)
+    const userStatusIdValue = document.getElementById('user-status-id-value');
+    if (userStatusIdValue) {
+        userStatusIdValue.textContent = IAMId;
+        userStatusIdValue.style.color = '#00ff88';
+    }
+    
+    // Update wallet address display
+    const userStatusWallet = document.getElementById('user-status-wallet');
+    if (userStatusWallet && window.contractConfig && window.contractConfig.address) {
+        userStatusWallet.textContent = shortenAddress(window.contractConfig.address);
+        userStatusWallet.style.color = '#e0e6f7';
+    }
     
     // Update in profile
     const profileIndexEl = document.getElementById('profile-index');

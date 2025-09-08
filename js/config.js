@@ -5063,6 +5063,21 @@ window.displayIAMIdInCorner = function(index) {
 // تابع به‌روزرسانی نمایش ID در تمام بخش‌ها
 window.updateIAMIdDisplay = function(index) {
 	const IAMId = window.generateIAMId(index);
+	const isActive = (typeof index !== 'undefined' && index !== null && BigInt(index) > 0n);
+	
+	// به‌روزرسانی نمایش اصلی وضعیت (بخش User ID)
+	const userStatusIdValue = document.getElementById('user-status-id-value');
+	if (userStatusIdValue) {
+		userStatusIdValue.textContent = IAMId;
+		userStatusIdValue.style.color = '#00ff88';
+	}
+	
+	// به‌روزرسانی نمایش آدرس کیف پول
+	const userStatusWallet = document.getElementById('user-status-wallet');
+	if (userStatusWallet && window.contractConfig && window.contractConfig.address) {
+		userStatusWallet.textContent = window.shortenAddress ? window.shortenAddress(window.contractConfig.address) : window.contractConfig.address.substring(0, 6) + '...' + window.contractConfig.address.substring(38);
+		userStatusWallet.style.color = '#e0e6f7';
+	}
 	
 	// به‌روزرسانی در پروفایل
 	const profileIndexEl = document.getElementById('profile-index');
