@@ -371,7 +371,7 @@
 
       <!-- Upper Address with Index -->
       <div class="form-group">
-        <label for="upper-index">Upper Index</label>
+        <label for="upper-index" id="upper-label">Upper Index</label>
         <div class="input-with-button">
           <input type="text" id="upper-index" class="register-form-input" placeholder="e.g. 123" autocomplete="off">
           <button type="button" id="apply-upper-index-btn" class="paste-btn-inside">Apply</button>
@@ -918,8 +918,28 @@
        document.getElementById('registration-type').textContent = 'Normal';
        document.getElementById('registration-type').style.color = '#00ff88';
 
+       // Change upper label for normal registration
+       document.getElementById('upper-label').textContent = 'Upper Index';
+       document.getElementById('upper-index').placeholder = 'e.g. 123';
+       document.getElementById('upper-address').placeholder = '0x...';
        
+       // Enable upper fields for normal registration
+       document.getElementById('upper-index').disabled = false;
+       document.getElementById('upper-address').disabled = false;
+       document.getElementById('apply-upper-index-btn').disabled = false;
+       document.getElementById('apply-upper-index-btn').style.opacity = '1';
+       document.getElementById('apply-upper-index-btn').style.cursor = 'pointer';
+       
+       // Clear placement info
+       document.getElementById('placement-info').style.display = 'none';
+       document.getElementById('upper-validation-status').style.display = 'none';
 
+       // Update placement info for reserve
+       if (window.contractConfig && window.contractConfig.contract) {
+         setTimeout(async () => {
+           await validateUpperAgainstReferrer();
+         }, 100);
+       }
        
        // Update cost
        updateRegistrationCost();
@@ -945,6 +965,28 @@
        document.getElementById('registration-type').textContent = 'Reserve';
        document.getElementById('registration-type').style.color = '#ff6b6b';
 
+       // Change upper label for reserve registration
+       document.getElementById('upper-label').textContent = 'Upper Address (Auto-filled)';
+       document.getElementById('upper-index').placeholder = 'Auto-calculated';
+       document.getElementById('upper-address').placeholder = 'Auto-filled from connected wallet';
+       
+       // Disable upper fields for reserve (read-only)
+       document.getElementById('upper-index').disabled = true;
+       document.getElementById('upper-address').disabled = true;
+       document.getElementById('apply-upper-index-btn').disabled = true;
+       document.getElementById('apply-upper-index-btn').style.opacity = '0.5';
+       document.getElementById('apply-upper-index-btn').style.cursor = 'not-allowed';
+       
+       // Clear placement info
+       document.getElementById('placement-info').style.display = 'none';
+       document.getElementById('upper-validation-status').style.display = 'none';
+
+       // Update placement info for reserve
+       if (window.contractConfig && window.contractConfig.contract) {
+         setTimeout(async () => {
+           await validateUpperAgainstReferrer();
+         }, 100);
+       }
        
        // Display message box with reserve information
        showReserveInfoMessage();
@@ -1068,15 +1110,28 @@
             refInput.setAttribute('data-full-address', myAddress);
             updateAddressDisplay(refInput);
             
-            upperInput.value = myAddress; // Set upper address same as referrer initially
-            upperInput.setAttribute('data-full-address', myAddress);
-            updateAddressDisplay(upperInput);
+            // Set upper address based on registration type
+            if (currentRegistrationType === 'normal') {
+              upperInput.value = myAddress; // Set upper address same as referrer initially
+              upperInput.setAttribute('data-full-address', myAddress);
+              updateAddressDisplay(upperInput);
+            } else if (currentRegistrationType === 'free') {
+              // For reserve, upper is the connected wallet (parent for placement calculation)
+              upperInput.value = myAddress;
+              upperInput.setAttribute('data-full-address', myAddress);
+              updateAddressDisplay(upperInput);
+              
+              // Set upper index for reserve
+              const upperIndex = user.index.toString();
+              upperIndexInput.value = upperIndex;
+            }
           } else if (!(user.index && BigInt(user.index) > 0n) && (!refInput.value || refInput.value === myAddress)) {
             refInput.value = 'root';
             refInput.removeAttribute('data-full-address');
             
             upperInput.value = 'root';
             upperInput.removeAttribute('data-full-address');
+            upperIndexInput.value = '';
           }
                      // Initialize parent-index
           parentIndex = user.index ? user.index.toString() : '...';
@@ -1309,6 +1364,7 @@
      refInput.addEventListener('change', async function() {
        await checkAddressValidity(refInput, 'referrer');
        await validateUpperAgainstReferrer();
+       await calculatePlacementForNewUser();
      });
      
      upperInput.addEventListener('change', async function() {
@@ -1357,21 +1413,15 @@
       const placementEl = document.getElementById('placement-info');
       if (!statusEl || !placementEl) return;
       
-      if (currentRegistrationType !== 'normal') {
-        statusEl.style.display = 'none';
-        placementEl.style.display = 'none';
-        return;
-      }
-      
       const referrer = refInput.getAttribute('data-full-address') || refInput.value.trim();
       const upper = upperInput.getAttribute('data-full-address') || upperInput.value.trim();
       
-      if (!referrer || !upper || referrer === 'root' || upper === 'root') {
+      if (!referrer || referrer === 'root') {
         statusEl.style.display = 'none';
         placementEl.style.display = 'none';
         return;
       }
-      if (!/^0x[a-fA-F0-9]{40}$/.test(referrer) || !/^0x[a-fA-F0-9]{40}$/.test(upper)) {
+      if (!/^0x[a-fA-F0-9]{40}$/.test(referrer)) {
         statusEl.style.display = 'none';
         placementEl.style.display = 'none';
         return;
@@ -1381,21 +1431,131 @@
         if (!window.contractConfig || !window.contractConfig.contract) return;
         const contract = window.contractConfig.contract;
         
-        await validateReferrerUpperRelationship(contract, referrer, upper);
-        statusEl.className = 'register-form-status success';
-        statusEl.textContent = '✅ Upper address is valid for this referrer';
-        statusEl.style.display = '';
-        
-        // Show placement information
-        await showPlacementInfo(contract, upper);
-        
-        showTempMessage('Upper address is valid for this referrer', 'success');
+        if (currentRegistrationType === 'normal') {
+          // Normal registration: validate upper against referrer
+          if (!upper || upper === 'root' || !/^0x[a-fA-F0-9]{40}$/.test(upper)) {
+            statusEl.style.display = 'none';
+            placementEl.style.display = 'none';
+            return;
+          }
+          
+          await validateReferrerUpperRelationship(contract, referrer, upper);
+          statusEl.className = 'register-form-status success';
+          statusEl.textContent = '✅ Upper address is valid for this referrer';
+          statusEl.style.display = '';
+          
+          // Show placement information
+          await showPlacementInfo(contract, upper);
+          
+          showTempMessage('Upper address is valid for this referrer', 'success');
+        } else if (currentRegistrationType === 'free') {
+          // Reserve registration: show placement info based on upper (connected wallet)
+          statusEl.style.display = 'none';
+          await showReservePlacementInfo(contract, upper);
+          showTempMessage('Reserve placement calculated based on connected wallet', 'success');
+        }
       } catch (error) {
         statusEl.className = 'register-form-status error';
         statusEl.textContent = '❌ ' + error.message;
         statusEl.style.display = '';
         placementEl.style.display = 'none';
         showTempMessage(error.message, 'error');
+      }
+    }
+    
+    // Function to show placement info for reserve registration (registerFree algorithm)
+    async function showReservePlacementInfo(contract, upperAddress) {
+      const placementEl = document.getElementById('placement-info');
+      if (!placementEl) return;
+      
+      try {
+        // Get upper user data (connected wallet)
+        const upperUser = await contract.users(upperAddress);
+        if (!upperUser || !(upperUser.index && BigInt(upperUser.index) > 0n)) {
+          placementEl.style.display = 'none';
+          return;
+        }
+        
+        let parentIndex = Number(upperUser.index);
+        let parentAddr = upperAddress;
+        let found = false;
+        let isLeft = false;
+        let path = [parentIndex]; // Track the path taken
+        
+        // Simulate the exact registerFree algorithm
+        while (!found) {
+          const leftAddress = await contract.getLeftAddress(parentIndex);
+          const rightAddress = await contract.getRightAddress(parentIndex);
+          
+          if (leftAddress === '0x0000000000000000000000000000000000000000') {
+            // Left position is available
+            isLeft = true;
+            found = true;
+            path.push(parentIndex * 2);
+          } else if (rightAddress === '0x0000000000000000000000000000000000000000') {
+            // Right position is available
+            isLeft = false;
+            found = true;
+            path.push(parentIndex * 2 + 1);
+          } else {
+            // Both positions are occupied, need to find the path with fewer points
+            try {
+              const leftChildIndex = parentIndex * 2;
+              const rightChildIndex = parentIndex * 2 + 1;
+              
+              const leftChildAddress = await contract.indexToAddress(leftChildIndex);
+              const rightChildAddress = await contract.indexToAddress(rightChildIndex);
+              
+              if (leftChildAddress === '0x0000000000000000000000000000000000000000' || 
+                  rightChildAddress === '0x0000000000000000000000000000000000000000') {
+                // One of the children doesn't exist, this shouldn't happen
+                throw new Error('Invalid tree structure');
+              }
+              
+              const leftUser = await contract.users(leftChildAddress);
+              const rightUser = await contract.users(rightChildAddress);
+              
+              const leftCount = Number(leftUser.leftPoints) + Number(leftUser.rightPoints);
+              const rightCount = Number(rightUser.leftPoints) + Number(rightUser.rightPoints);
+              
+              if (leftCount <= rightCount) {
+                parentIndex = leftChildIndex;
+                parentAddr = leftChildAddress;
+                path.push(leftChildIndex);
+              } else {
+                parentIndex = rightChildIndex;
+                parentAddr = rightChildAddress;
+                path.push(rightChildIndex);
+              }
+            } catch (error) {
+              console.error('Error in tree traversal:', error);
+              placementEl.className = 'register-form-status error';
+              placementEl.textContent = '❌ Error calculating placement position';
+              placementEl.style.display = '';
+              return;
+            }
+          }
+        }
+        
+        const userIndex = isLeft ? parentIndex * 2 : parentIndex * 2 + 1;
+        const position = isLeft ? 'LEFT' : 'RIGHT';
+        
+        // Show placement information for reserve (exact registerFree algorithm)
+        placementEl.className = 'register-form-status info';
+        placementEl.innerHTML = `
+          <div style="margin-bottom: 2px;">📍 Reserve user will be placed as <strong>${position}</strong> child</div>
+          <div style="font-size: 0.65rem; opacity: 0.8; margin-bottom: 2px;">Final Index: <strong>${userIndex}</strong></div>
+          <div style="font-size: 0.6rem; opacity: 0.7; margin-bottom: 2px;">Parent: ${parentAddr.substring(0, 6)}...${parentAddr.substring(38)} (Index: ${parentIndex})</div>
+          <div style="font-size: 0.6rem; opacity: 0.7;">Path: ${path.slice(0, -1).join(' → ')} → <strong>${userIndex}</strong></div>
+          <div style="font-size: 0.6rem; opacity: 0.6; margin-top: 2px; color: #ff6b6b;">⚠️ Reserve: User will be inactive (binaryPointCap = 0)</div>
+        `;
+        placementEl.style.display = '';
+        
+      } catch (error) {
+        console.error('Error getting reserve placement info:', error);
+        placementEl.className = 'register-form-status error';
+        placementEl.textContent = '❌ Error calculating placement position';
+        placementEl.style.display = '';
       }
     }
     
@@ -1502,11 +1662,13 @@
        // اضافه کردن event listener برای input
        newUserInput.addEventListener('input', async function() {
          await checkNewUserAddress();
+         await calculatePlacementForNewUser();
        });
        
        newUserInput.addEventListener('paste', async function() {
          setTimeout(async () => {
            await checkNewUserAddress();
+           await calculatePlacementForNewUser();
          }, 100);
        });
        
@@ -1590,6 +1752,86 @@
            }
          } catch (e) {
            showTempMessage('Error checking address: ' + (e.message || e), 'error');
+         }
+       }
+       
+       // Function to calculate placement for new user when both referrer and new user are provided
+       async function calculatePlacementForNewUser() {
+         const newUserAddress = newUserInput.value.trim();
+         const referrerAddress = refInput.getAttribute('data-full-address') || refInput.value.trim();
+         
+         // Only calculate if both addresses are valid and different
+         if (!newUserAddress || !referrerAddress || 
+             !/^0x[a-fA-F0-9]{40}$/.test(newUserAddress) || 
+             !/^0x[a-fA-F0-9]{40}$/.test(referrerAddress) ||
+             newUserAddress.toLowerCase() === referrerAddress.toLowerCase()) {
+           return;
+         }
+         
+         try {
+           if (!window.contractConfig || !window.contractConfig.contract) return;
+           const contract = window.contractConfig.contract;
+           
+           // Get current user info
+           let myAddress = null;
+           let myUser = null;
+           try {
+             if (window.currentUserAddress) {
+               myAddress = window.currentUserAddress;
+               myUser = await contract.users(myAddress);
+             } else {
+               myAddress = contract.signer ? await contract.signer.getAddress() : null;
+               if (myAddress) {
+                 myUser = await contract.users(myAddress);
+                 window.currentUserAddress = myAddress;
+               }
+             }
+           } catch (e) {
+             console.log('Error getting current user:', e);
+             return;
+           }
+           
+           // Only show placement if current user is active
+           if (!myUser || !(myUser.index && BigInt(myUser.index) > 0n)) {
+             return;
+           }
+           
+           // Calculate placement based on registration type
+           if (currentRegistrationType === 'normal') {
+             const upperAddress = upperInput.getAttribute('data-full-address') || upperInput.value.trim();
+             if (upperAddress && upperAddress !== 'root' && /^0x[a-fA-F0-9]{40}$/.test(upperAddress)) {
+               await showPlacementInfo(contract, upperAddress);
+             }
+           } else if (currentRegistrationType === 'free') {
+             // For reserve, use current user as upper
+             await showReservePlacementInfo(contract, myAddress);
+             
+             // Show additional message for reserve registration
+             const placementEl = document.getElementById('placement-info');
+             if (placementEl && placementEl.style.display !== 'none') {
+               const additionalInfo = document.createElement('div');
+               additionalInfo.style.cssText = `
+                 font-size: 0.6rem;
+                 opacity: 0.8;
+                 margin-top: 4px;
+                 padding: 4px 8px;
+                 background: rgba(255, 165, 0, 0.1);
+                 border: 1px solid rgba(255, 165, 0, 0.3);
+                 border-radius: 4px;
+                 color: #ff8c00;
+               `;
+               additionalInfo.innerHTML = `
+                 <strong>💡 Registration Info:</strong><br>
+                 • You are registering: ${newUserAddress.substring(0, 6)}...${newUserAddress.substring(38)}<br>
+                 • Referrer: ${referrerAddress.substring(0, 6)}...${referrerAddress.substring(38)}<br>
+                 • You can change wallet if you want to register with different account
+               `;
+               placementEl.appendChild(additionalInfo);
+             }
+           }
+           
+         } catch (error) {
+           console.error('Error calculating placement for new user:', error);
          }
        }
       
