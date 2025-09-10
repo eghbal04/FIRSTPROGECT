@@ -377,15 +377,14 @@
           <button type="button" id="apply-upper-index-btn" class="paste-btn-inside">Apply</button>
         </div>
         <input type="text" id="upper-address" class="register-form-input address-field" placeholder="0x..." autocomplete="off" value="root" readonly>
+        <div id="upper-validation-status" class="register-form-status" style="display:none; margin-top: 4px; font-size: 0.7rem;"></div>
+        <div id="placement-info" class="register-form-status" style="display:none; margin-top: 4px; font-size: 0.7rem; background: rgba(167, 134, 255, 0.1); border: 1px solid rgba(167, 134, 255, 0.3); color: #a786ff;"></div>
       </div>
 
       <!-- New User Address -->
       <div class="form-group">
         <label for="new-user-address">New User Address</label>
-        <div class="input-with-button">
-          <input type="text" id="new-user-address" class="register-form-input" placeholder="0x..." autocomplete="off">
-          <button type="button" id="paste-new-user-btn" class="paste-btn-inside">Past</button>
-        </div>
+        <input type="text" id="new-user-address" class="register-form-input index-input" placeholder="0x..." autocomplete="off">
       </div>
        
                        <button class="register-btn buy-btn" id="register-btn" type="button" style="width:100%;margin-top:6px;">Register</button>
@@ -653,24 +652,6 @@
            const upperInput = document.getElementById('upper-address');
            const upperIndexInput = document.getElementById('upper-index');
            
-          // When user clicks on new user input
-           newUserInput.addEventListener('click', async function() {
-               try {
-              // Read clipboard content
-                 const clipboardText = await navigator.clipboard.readText();
-                 
-              // Check if copied text looks like Ethereum address
-                 if (clipboardText.match(/^0x[a-fA-F0-9]{40}$/)) {
-                   newUserInput.value = clipboardText;
-                
-                                 // Display success message (optional)
-                 alert('Address copied from clipboard successfully!');
-                 }
-               } catch (err) {
-                           console.error('Error accessing clipboard:', err);
-             // If needed, you can display an error message to user
-             }
-           });
            
           // When user clicks on referrer input
            referrerInput.addEventListener('click', async function() {
@@ -860,6 +841,48 @@
             console.log(`❌ Not in subtree`);
             return false;
                     }
+
+    // Function to validate referrer and upper relationship
+    async function validateReferrerUpperRelationship(contract, referrer, upper) {
+      console.log(`🔍 Validating referrer-upper relationship: referrer=${referrer}, upper=${upper}`);
+      
+      // If referrer and upper are the same, it's valid
+      if (referrer.toLowerCase() === upper.toLowerCase()) {
+        console.log(`✅ Referrer and upper are the same - valid`);
+        return;
+      }
+      
+      try {
+        // Get referrer user data
+        const referrerUser = await contract.users(referrer);
+        if (!referrerUser || !(referrerUser.index && BigInt(referrerUser.index) > 0n)) {
+          throw new Error('Referrer is not active or does not exist');
+        }
+        
+        // Get upper user data
+        const upperUser = await contract.users(upper);
+        if (!upperUser || !(upperUser.index && BigInt(upperUser.index) > 0n)) {
+          throw new Error('Upper address is not active or does not exist');
+        }
+        
+        const referrerIndex = Number(referrerUser.index);
+        const upperIndex = Number(upperUser.index);
+        
+        console.log(`🔍 Referrer index: ${referrerIndex}, Upper index: ${upperIndex}`);
+        
+        // Check if upper is in referrer's subtree
+        if (isIndexInUserSubtree(upperIndex, referrerIndex)) {
+          console.log(`✅ Upper address is in referrer's subtree - valid`);
+          return;
+        } else {
+          throw new Error('Upper address must be either the same as referrer or a descendant of referrer in the tree structure');
+        }
+        
+      } catch (error) {
+        console.error(`❌ Validation error:`, error);
+        throw error;
+      }
+    }
       
 
       
@@ -1213,26 +1236,6 @@
       await applyIndexToAddress(upperIndexInput, upperInput, 'upper');
     });
     
-    // New user address paste button
-    document.getElementById('paste-new-user-btn').addEventListener('click', async function() {
-      try {
-        const clipboardText = await navigator.clipboard.readText();
-        if (clipboardText && clipboardText.trim()) {
-          const fullAddress = clipboardText.trim();
-          newUserInput.value = fullAddress;
-          newUserInput.setAttribute('data-full-address', fullAddress);
-          updateAddressDisplay(newUserInput);
-          // Trigger validation
-          await checkNewUserAddress();
-          showTempMessage('Address pasted successfully', 'success');
-        } else {
-          showTempMessage('No text found in clipboard', 'warning');
-        }
-      } catch (error) {
-        console.log('Error reading clipboard:', error);
-        showTempMessage('Unable to access clipboard. Please paste manually.', 'error');
-      }
-    });
     
     // Enter key support for index inputs
 
@@ -1290,6 +1293,11 @@
         showTempMessage(`${type} address set successfully`, 'success');
         console.log(`✅ ${type} address set: ${address}`);
         
+        // If this is upper address, validate against referrer and show placement info
+        if (type === 'upper') {
+          await validateUpperAgainstReferrer();
+        }
+        
       } catch (error) {
         console.error(`Error applying ${type} index:`, error);
         showTempMessage(`Error applying ${type} index: ${error.message}`, 'error');
@@ -1300,10 +1308,12 @@
          // Address field event listeners (for manual editing)
      refInput.addEventListener('change', async function() {
        await checkAddressValidity(refInput, 'referrer');
+       await validateUpperAgainstReferrer();
      });
      
      upperInput.addEventListener('change', async function() {
        await checkAddressValidity(upperInput, 'upper');
+       await validateUpperAgainstReferrer();
      });
      
     // Function to truncate address for display
@@ -1340,6 +1350,145 @@
         showTempMessage(`Error checking ${type} address: ${e.message}`, 'error');
       }
     }
+    
+    // Function to validate upper address against referrer in real-time
+    async function validateUpperAgainstReferrer() {
+      const statusEl = document.getElementById('upper-validation-status');
+      const placementEl = document.getElementById('placement-info');
+      if (!statusEl || !placementEl) return;
+      
+      if (currentRegistrationType !== 'normal') {
+        statusEl.style.display = 'none';
+        placementEl.style.display = 'none';
+        return;
+      }
+      
+      const referrer = refInput.getAttribute('data-full-address') || refInput.value.trim();
+      const upper = upperInput.getAttribute('data-full-address') || upperInput.value.trim();
+      
+      if (!referrer || !upper || referrer === 'root' || upper === 'root') {
+        statusEl.style.display = 'none';
+        placementEl.style.display = 'none';
+        return;
+      }
+      if (!/^0x[a-fA-F0-9]{40}$/.test(referrer) || !/^0x[a-fA-F0-9]{40}$/.test(upper)) {
+        statusEl.style.display = 'none';
+        placementEl.style.display = 'none';
+        return;
+      }
+      
+      try {
+        if (!window.contractConfig || !window.contractConfig.contract) return;
+        const contract = window.contractConfig.contract;
+        
+        await validateReferrerUpperRelationship(contract, referrer, upper);
+        statusEl.className = 'register-form-status success';
+        statusEl.textContent = '✅ Upper address is valid for this referrer';
+        statusEl.style.display = '';
+        
+        // Show placement information
+        await showPlacementInfo(contract, upper);
+        
+        showTempMessage('Upper address is valid for this referrer', 'success');
+      } catch (error) {
+        statusEl.className = 'register-form-status error';
+        statusEl.textContent = '❌ ' + error.message;
+        statusEl.style.display = '';
+        placementEl.style.display = 'none';
+        showTempMessage(error.message, 'error');
+      }
+    }
+    
+    // Function to show where new user will be placed (using smart contract algorithm)
+    async function showPlacementInfo(contract, upperAddress) {
+      const placementEl = document.getElementById('placement-info');
+      if (!placementEl) return;
+      
+      try {
+        // Get upper user data
+        const upperUser = await contract.users(upperAddress);
+        if (!upperUser || !(upperUser.index && BigInt(upperUser.index) > 0n)) {
+          placementEl.style.display = 'none';
+          return;
+        }
+        
+        let parentIndex = Number(upperUser.index);
+        let found = false;
+        let isLeft = false;
+        let path = [parentIndex]; // Track the path taken
+        
+        // Simulate the smart contract algorithm
+        while (!found) {
+          const leftAddress = await contract.getLeftAddress(parentIndex);
+          const rightAddress = await contract.getRightAddress(parentIndex);
+          
+          if (leftAddress === '0x0000000000000000000000000000000000000000') {
+            // Left position is available
+            isLeft = true;
+            found = true;
+            path.push(parentIndex * 2);
+          } else if (rightAddress === '0x0000000000000000000000000000000000000000') {
+            // Right position is available
+            isLeft = false;
+            found = true;
+            path.push(parentIndex * 2 + 1);
+          } else {
+            // Both positions are occupied, need to find the path with fewer points
+            try {
+              const leftChildIndex = parentIndex * 2;
+              const rightChildIndex = parentIndex * 2 + 1;
+              
+              const leftChildAddress = await contract.indexToAddress(leftChildIndex);
+              const rightChildAddress = await contract.indexToAddress(rightChildIndex);
+              
+              if (leftChildAddress === '0x0000000000000000000000000000000000000000' || 
+                  rightChildAddress === '0x0000000000000000000000000000000000000000') {
+                // One of the children doesn't exist, this shouldn't happen
+                throw new Error('Invalid tree structure');
+              }
+              
+              const leftUser = await contract.users(leftChildAddress);
+              const rightUser = await contract.users(rightChildAddress);
+              
+              const leftCount = Number(leftUser.leftPoints) + Number(leftUser.rightPoints);
+              const rightCount = Number(rightUser.leftPoints) + Number(rightUser.rightPoints);
+              
+              if (leftCount <= rightCount) {
+                parentIndex = leftChildIndex;
+                path.push(leftChildIndex);
+              } else {
+                parentIndex = rightChildIndex;
+                path.push(rightChildIndex);
+              }
+            } catch (error) {
+              console.error('Error in tree traversal:', error);
+              placementEl.className = 'register-form-status error';
+              placementEl.textContent = '❌ Error calculating placement position';
+              placementEl.style.display = '';
+              return;
+            }
+          }
+        }
+        
+        const finalIndex = isLeft ? parentIndex * 2 : parentIndex * 2 + 1;
+        const position = isLeft ? 'LEFT' : 'RIGHT';
+        
+        // Show placement information
+        placementEl.className = 'register-form-status info';
+        placementEl.innerHTML = `
+          <div style="margin-bottom: 2px;">📍 New user will be placed as <strong>${position}</strong> child</div>
+          <div style="font-size: 0.65rem; opacity: 0.8; margin-bottom: 2px;">Final Index: <strong>${finalIndex}</strong></div>
+          <div style="font-size: 0.6rem; opacity: 0.7;">Path: ${path.slice(0, -1).join(' → ')} → <strong>${finalIndex}</strong></div>
+        `;
+        placementEl.style.display = '';
+        
+      } catch (error) {
+        console.error('Error getting placement info:', error);
+        placementEl.className = 'register-form-status error';
+        placementEl.textContent = '❌ Error calculating placement position';
+        placementEl.style.display = '';
+      }
+    }
      
 
      
@@ -1350,23 +1499,13 @@
          await checkNewUserAddress();
        });
        
-       // اضافه کردن event listener برای input و paste
+       // اضافه کردن event listener برای input
        newUserInput.addEventListener('input', async function() {
-         const fullAddress = newUserInput.value.trim();
-         if (fullAddress && fullAddress.length > 10) {
-           newUserInput.setAttribute('data-full-address', fullAddress);
-           updateAddressDisplay(newUserInput);
-         }
          await checkNewUserAddress();
        });
        
        newUserInput.addEventListener('paste', async function() {
          setTimeout(async () => {
-           const fullAddress = newUserInput.value.trim();
-           if (fullAddress && fullAddress.length > 10) {
-             newUserInput.setAttribute('data-full-address', fullAddress);
-             updateAddressDisplay(newUserInput);
-           }
            await checkNewUserAddress();
          }, 100);
        });
@@ -1478,7 +1617,7 @@
         // Get full addresses for registration (not truncated display)
         const referrer = refInput.getAttribute('data-full-address') || refInput.value.trim();
         const upper = upperInput.getAttribute('data-full-address') || upperInput.value.trim();
-        const newUser = newUserInput.getAttribute('data-full-address') || newUserInput.value.trim();
+        const newUser = newUserInput.value.trim();
         
         // Validate inputs
         if (!/^0x[a-fA-F0-9]{40}$/.test(referrer)) throw new Error('Invalid referrer address. Please enter a valid address.');
@@ -1491,6 +1630,11 @@
             contract = new ethers.Contract(window.IAM_ADDRESS, window.IAM_ABI, window.contractConfig.signer);
         } else {
             throw new Error('Contract connection failed. Please try again.');
+        }
+        
+        // Validate referrer and upper relationship for normal registration
+        if (currentRegistrationType === 'normal') {
+          await validateReferrerUpperRelationship(contract, referrer, upper);
         }
         let myAddress = null, user = null;
                  try {
