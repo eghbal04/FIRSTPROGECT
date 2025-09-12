@@ -4075,9 +4075,10 @@ window.showUpdatedRegisterForm = async function(referrerAddress, userAddress, pr
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0.7rem;
+    padding: 1rem;
     box-sizing: border-box;
     font-family: 'Montserrat', 'Arial', sans-serif;
+    overflow-y: auto;
   `;
 
   modal.innerHTML = `
@@ -4085,32 +4086,35 @@ window.showUpdatedRegisterForm = async function(referrerAddress, userAddress, pr
       background: linear-gradient(135deg, #1a1f2e, #2a3441);
       border: 2px solid #a786ff;
       border-radius: 15px;
-      padding: 2rem;
+      padding: 1.5rem;
       max-width: 500px;
       width: 100%;
       color: #ffffff;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      margin: auto;
+      max-height: 90vh;
+      overflow-y: auto;
     ">
-      <div style="text-align: center; margin-bottom: 1.5rem;">
-        <h2 style="color: #a786ff; margin: 0 0 0.5rem 0; font-size: 1.5rem;">🚀 Complete Your Registration</h2>
-        <p style="color: #ccc; margin: 0; font-size: 0.9rem;">Join our platform and unlock exclusive features, rewards, and earning opportunities</p>
+      <div style="text-align: center; margin-bottom: 1rem;">
+        <h2 style="color: #a786ff; margin: 0 0 0.5rem 0; font-size: 1.3rem;">🚀 Complete Registration</h2>
+        <p style="color: #ccc; margin: 0; font-size: 0.85rem; line-height: 1.3;">Join our platform and unlock exclusive features</p>
       </div>
       
-      <div style="background: rgba(167, 134, 255, 0.1); border: 1px solid rgba(167, 134, 255, 0.3); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
-        <h4 style="color: #a786ff; margin: 0 0 0.5rem 0; font-size: 1rem;">📋 Registration Information</h4>
-        <div style="font-size: 0.85rem; line-height: 1.4;">
-          <div style="margin-bottom: 0.3rem;"><strong>Your Wallet:</strong> <span style="color: #00ff88; font-family: monospace; font-size: 0.8rem;">${userAddress}</span></div>
-          <div style="margin-bottom: 0.3rem;"><strong>Referrer:</strong> <span style="color: #a786ff; font-family: monospace; font-size: 0.8rem;">${referrerAddress}</span></div>
-          <div style="margin-bottom: 0.3rem;"><strong>Blockchain:</strong> Polygon Network</div>
-          <div style="margin-bottom: 0.3rem;"><strong>Registration Price:</strong> <span style="color: #ffd700;">${regPrice.toFixed(2)} IAM</span></div>
+      <div style="background: rgba(167, 134, 255, 0.1); border: 1px solid rgba(167, 134, 255, 0.3); border-radius: 8px; padding: 0.8rem; margin-bottom: 1rem;">
+        <h4 style="color: #a786ff; margin: 0 0 0.4rem 0; font-size: 0.9rem;">📋 Registration Info</h4>
+        <div style="font-size: 0.8rem; line-height: 1.3;">
+          <div style="margin-bottom: 0.2rem;"><strong>Wallet:</strong> <span style="color: #00ff88; font-family: monospace; font-size: 0.75rem;">${userAddress.substring(0, 6)}...${userAddress.substring(38)}</span></div>
+          <div style="margin-bottom: 0.2rem;"><strong>Referrer:</strong> <span style="color: #a786ff; font-family: monospace; font-size: 0.75rem;">${referrerAddress.substring(0, 6)}...${referrerAddress.substring(38)}</span></div>
+          <div style="margin-bottom: 0.2rem;"><strong>Network:</strong> Polygon</div>
+          <div style="margin-bottom: 0.2rem;"><strong>Price:</strong> <span style="color: #ffd700;">${regPrice.toFixed(2)} IAM</span></div>
         </div>
       </div>
       
-      <div style="background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
-        <h4 style="color: #00ff88; margin: 0 0 0.5rem 0; font-size: 1rem;">✅ Ready to Register</h4>
-        <div style="font-size: 0.9rem; line-height: 1.4; color: #aaffaa;">
-          <div style="margin-bottom: 0.3rem;">Registration will cost <strong>${regPrice.toFixed(2)} IAM</strong> (current market price)</div>
-          <div style="margin-bottom: 0.3rem;">Click the button below to complete your registration</div>
+      <div style="background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 8px; padding: 0.8rem; margin-bottom: 1rem;">
+        <h4 style="color: #00ff88; margin: 0 0 0.4rem 0; font-size: 0.9rem;">✅ Ready to Register</h4>
+        <div style="font-size: 0.8rem; line-height: 1.3; color: #aaffaa;">
+          <div style="margin-bottom: 0.2rem;">Cost: <strong>${regPrice.toFixed(2)} IAM</strong> (market price)</div>
+          <div style="margin-bottom: 0.2rem;">Click below to complete registration</div>
         </div>
       </div>
       
@@ -4123,30 +4127,30 @@ window.showUpdatedRegisterForm = async function(referrerAddress, userAddress, pr
         display: none;
       "></div>
       
-      <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+      <div style="display: flex; gap: 0.8rem; flex-direction: column;">
         <button id="confirm-registration" style="
-          flex: 1;
-          min-width: 120px;
+          width: 100%;
           background: linear-gradient(135deg, #a786ff, #00ff88);
           color: #ffffff;
           border: none;
-          padding: 0.8rem 1.5rem;
+          padding: 0.9rem 1rem;
           border-radius: 8px;
           font-weight: 600;
           cursor: pointer;
           font-size: 0.9rem;
+          min-height: 48px;
         ">🚀 Register Now</button>
         <button id="cancel-registration" style="
-          flex: 1;
-          min-width: 120px;
+          width: 100%;
           background: linear-gradient(135deg, #666, #888);
           color: #ffffff;
           border: none;
-          padding: 0.8rem 1.5rem;
+          padding: 0.9rem 1rem;
           border-radius: 8px;
           font-weight: 600;
           cursor: pointer;
           font-size: 0.9rem;
+          min-height: 48px;
         ">❌ Cancel</button>
       </div>
     </div>
