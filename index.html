@@ -3688,8 +3688,50 @@ class FloatingReferralCard {
   
   async updateReferralLink() {
     try {
-      if (window.ethereum && window.ethereum.selectedAddress) {
-        const address = window.ethereum.selectedAddress;
+      console.log('🔍 updateReferralLink called');
+      console.log('🔍 window.ethereum:', !!window.ethereum);
+      console.log('🔍 selectedAddress:', window.ethereum?.selectedAddress);
+      
+      // Check wallet connection with better mobile support
+      let isWalletConnected = false;
+      let address = null;
+      
+      if (window.ethereum) {
+        try {
+          // Try to get accounts first (better for mobile)
+          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+          if (accounts && accounts.length > 0) {
+            address = accounts[0];
+            isWalletConnected = true;
+            console.log('✅ Wallet connected via eth_accounts:', address);
+          } else if (window.ethereum.selectedAddress) {
+            address = window.ethereum.selectedAddress;
+            isWalletConnected = true;
+            console.log('✅ Wallet connected via selectedAddress:', address);
+          }
+        } catch (error) {
+          console.log('⚠️ Error checking wallet connection:', error);
+          // Fallback to selectedAddress
+          if (window.ethereum.selectedAddress) {
+            address = window.ethereum.selectedAddress;
+            isWalletConnected = true;
+            console.log('✅ Wallet connected via fallback:', address);
+          }
+        }
+      }
+      
+      // Additional check using our custom method
+      if (!isWalletConnected) {
+        const customAddress = await this.checkWalletConnection();
+        if (customAddress) {
+          address = customAddress;
+          isWalletConnected = true;
+          console.log('✅ Wallet connected via custom method:', address);
+        }
+      }
+      
+      if (isWalletConnected && address) {
+        console.log('✅ Processing connected wallet:', address);
         
         // Check if user is registered before showing referral card
         try {
@@ -3768,6 +3810,7 @@ class FloatingReferralCard {
           this.showCard();
         }
       } else {
+        console.log('⚠️ Wallet not connected');
         // Wallet not connected - show appropriate message
         if (this.linkDisplay) {
           this.linkDisplay.textContent = 'Connect Wallet First';
@@ -3845,6 +3888,22 @@ class FloatingReferralCard {
     }
   }
   
+  // Additional method to check wallet connection for mobile
+  async checkWalletConnection() {
+    try {
+      if (window.ethereum) {
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        if (accounts && accounts.length > 0) {
+          return accounts[0];
+        }
+      }
+      return null;
+    } catch (error) {
+      console.log('Error checking wallet connection:', error);
+      return null;
+    }
+  }
+  
   showCard() {
     console.log('🔍 showCard called, card element:', this.card);
     if (this.card) {
@@ -3909,41 +3968,61 @@ document.addEventListener('DOMContentLoaded', function() {
   // Check for referral link in URL
   checkReferralLink();
   
+  // Initialize floating referral card immediately
+  window.floatingReferralCard = new FloatingReferralCard();
+  
   // Wait for wallet connection and then check registration status
   setTimeout(async () => {
-    // Initialize floating referral card first
-    window.floatingReferralCard = new FloatingReferralCard();
-    
     // Wait a bit more for wallet to be fully connected
     setTimeout(async () => {
       // Check if user needs registration (for non-referral users)
       checkUserRegistrationStatus();
       
-      // Check if user is registered and update referral card accordingly
+      // Update referral card regardless of connection status
       try {
-        if (window.ethereum && window.ethereum.selectedAddress) {
-          const connection = await window.connectWallet();
-          const { contract, address } = connection;
-          
-          const userData = await contract.users(address);
-          const isRegistered = userData && userData.index && BigInt(userData.index) > 0n;
-        
-          if (isRegistered) {
-            console.log('✅ User is registered - showing referral card');
-            window.floatingReferralCard.updateReferralLink();
-          } else {
-            console.log('ℹ️ User is not registered - hiding referral card');
-            window.floatingReferralCard.hideCard();
-          }
-        }
+        await window.floatingReferralCard.updateReferralLink();
+        console.log('✅ Floating Referral Card updated');
       } catch (error) {
-        console.error('Error checking registration status on load:', error);
-        window.floatingReferralCard.hideCard();
+        console.error('Error updating referral card:', error);
       }
-      
-      console.log('✅ Floating Referral Card initialized');
     }, 1000);
   }, 1000);
+  
+  // Additional check for mobile wallet connection
+  setTimeout(async () => {
+    try {
+      await window.floatingReferralCard.updateReferralLink();
+    } catch (error) {
+      console.error('Error in mobile wallet check:', error);
+    }
+  }, 3000);
+  
+  // Listen for wallet connection events (mobile support)
+  if (window.ethereum) {
+    // Listen for account changes
+    window.ethereum.on('accountsChanged', async (accounts) => {
+      console.log('🔄 Wallet accounts changed (mobile):', accounts);
+      setTimeout(async () => {
+        try {
+          await window.floatingReferralCard.updateReferralLink();
+        } catch (error) {
+          console.error('Error updating referral card after account change:', error);
+        }
+      }, 1000);
+    });
+    
+    // Listen for chain changes
+    window.ethereum.on('chainChanged', async (chainId) => {
+      console.log('🔄 Wallet chain changed (mobile):', chainId);
+      setTimeout(async () => {
+        try {
+          await window.floatingReferralCard.updateReferralLink();
+        } catch (error) {
+          console.error('Error updating referral card after chain change:', error);
+        }
+      }, 1000);
+    });
+  }
 });
 
 // Function to check if user needs registration
