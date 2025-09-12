@@ -3081,19 +3081,25 @@ document.addEventListener('DOMContentLoaded', function() {
   font-size: 1rem;
   cursor: pointer;
   padding: 0;
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
   transition: all 0.3s ease;
+  min-width: 20px;
+  min-height: 20px;
 }
 
 .close-btn:hover {
   background: rgba(255, 68, 68, 0.2);
   color: #ff4444;
   transform: scale(1.1);
+}
+
+.close-btn:active {
+  transform: scale(0.95);
 }
 
 .floating-card-content {
@@ -3233,6 +3239,14 @@ document.addEventListener('DOMContentLoaded', function() {
   .floating-card-header h4 {
     font-size: 0.7rem;
   }
+  
+  .close-btn {
+    width: 18px;
+    height: 18px;
+    font-size: 0.9rem;
+    min-width: 18px;
+    min-height: 18px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -3254,6 +3268,14 @@ document.addEventListener('DOMContentLoaded', function() {
     font-size: 0.5rem;
     padding: 0.25rem;
     min-height: 20px;
+  }
+  
+  .close-btn {
+    width: 16px;
+    height: 16px;
+    font-size: 0.8rem;
+    min-width: 16px;
+    min-height: 16px;
   }
   
   .copy-btn {
@@ -3786,11 +3808,12 @@ document.addEventListener('DOMContentLoaded', function() {
   // Check for referral link in URL
   checkReferralLink();
   
-  // Check if user needs registration (for non-referral users)
-  checkUserRegistrationStatus();
-  
-  // Wait a bit for other components to load
+  // Wait for wallet connection and then check registration status
   setTimeout(async () => {
+    // Check if user needs registration (for non-referral users)
+    checkUserRegistrationStatus();
+    
+    // Initialize floating referral card after wallet connection
     window.floatingReferralCard = new FloatingReferralCard();
     
     // Check if user is registered and update referral card accordingly
