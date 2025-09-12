@@ -1891,8 +1891,7 @@
           // ...
         }
       } catch (error) {
-        const el = document.getElementById('chart-lvl-usd');
-                    if (el) el.textContent = 'Loading error';
+        // Error handling without showing loading message
       }
     }
     // ... existing code ...
@@ -2708,7 +2707,6 @@ function togglePopularIndexes() {
 async function loadPopularIndexes() {
   try {
     const listContainer = document.getElementById('popular-indexes-list');
-    listContainer.innerHTML = '<div style="text-align: center; color: #888; font-size: 0.9rem; padding: 2rem;">Loading most popular indexes...</div>';
     
     if (!window.contractConfig || !window.contractConfig.contract) {
       listContainer.innerHTML = '<div style="text-align: center; color: #ff4444; font-size: 0.9rem; padding: 2rem;">Please connect your wallet first</div>';
@@ -2980,9 +2978,6 @@ document.addEventListener('DOMContentLoaded', function() {
           <h4 style="color: #00ff88; font-size: 1.1rem; font-weight: bold; margin: 0;">🏆 Most Popular Rankings</h4>
         </div>
         <div id="popular-indexes-list" style="max-height: 300px; overflow-y: auto;">
-          <div style="text-align: center; color: #888; font-size: 0.9rem; padding: 2rem;">
-            Loading most popular indexes...
-          </div>
         </div>
       </div>
       
@@ -3037,110 +3032,8 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<!-- Floating Binary Points Card -->
-<div id="floating-binary-points-card" class="floating-binary-points-card" style="display: none;">
-  <div class="binary-points-content">
-    <div class="binary-points-icon">🎯</div>
-    <div class="binary-points-info">
-      <div class="binary-points-label">Binary Points</div>
-      <div class="binary-points-amount" id="binary-points-amount">0</div>
-    </div>
-    <button class="claim-binary-points-btn" id="claim-binary-points-btn">
-      Claim
-    </button>
-  </div>
-</div>
 
 <style>
-  .floating-binary-points-card {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    background: linear-gradient(135deg, #232946, #181c2a);
-    border: 2px solid #00ff88;
-    border-radius: 15px;
-    padding: 15px;
-    box-shadow: 0 8px 32px rgba(0, 255, 136, 0.3);
-    z-index: 1000;
-    min-width: 200px;
-    animation: cardFloat 3s ease-in-out infinite;
-    backdrop-filter: blur(10px);
-  }
-  
-  .binary-points-content {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  
-  .binary-points-icon {
-    font-size: 24px;
-    animation: pulse 2s ease-in-out infinite;
-  }
-  
-  .binary-points-info {
-    flex: 1;
-  }
-  
-  .binary-points-label {
-    color: #00ff88;
-    font-size: 12px;
-    font-weight: bold;
-    margin-bottom: 4px;
-  }
-  
-  .binary-points-amount {
-    color: #fff;
-    font-size: 18px;
-    font-weight: bold;
-    font-family: monospace;
-  }
-  
-  .claim-binary-points-btn {
-    background: linear-gradient(135deg, #00ff88, #00cc6a);
-    color: #0a0f1c;
-    border: none;
-    border-radius: 8px;
-    padding: 8px 16px;
-    font-weight: bold;
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(0, 255, 136, 0.3);
-  }
-  
-  .claim-binary-points-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0, 255, 136, 0.4);
-  }
-  
-  .claim-binary-points-btn:active {
-    transform: translateY(0);
-  }
-  
-  .claim-binary-points-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-  }
-  
-  @media (max-width: 768px) {
-    .floating-binary-points-card {
-      bottom: 10px;
-      left: 10px;
-      min-width: 180px;
-      padding: 12px;
-    }
-    
-    .binary-points-amount {
-      font-size: 16px;
-    }
-    
-    .claim-binary-points-btn {
-      padding: 6px 12px;
-      font-size: 11px;
-    }
-  }
 </style>
 
 <script>
@@ -3155,7 +3048,6 @@ class BinaryPointsManager {
   async init() {
     await this.loadBinaryPoints();
     this.setupEventListeners();
-    this.showCard();
     this.startAutoRefresh();
   }
   
@@ -3205,26 +3097,6 @@ class BinaryPointsManager {
   }
   
   updateDisplay() {
-    const amountElement = document.getElementById('binary-points-amount');
-    const cardElement = document.getElementById('floating-binary-points-card');
-    
-    console.log('🔄 Updating display - Points:', this.points, 'Amount element:', amountElement, 'Card element:', cardElement);
-    
-    if (amountElement) {
-      amountElement.textContent = this.points.toFixed(2);
-      console.log('✅ Amount updated to:', this.points.toFixed(2));
-    }
-    
-    if (cardElement) {
-      if (this.points > 0) {
-        cardElement.style.display = 'block';
-        console.log('✅ Card shown - Points > 0');
-      } else {
-        cardElement.style.display = 'none';
-        console.log('❌ Card hidden - Points = 0');
-      }
-    }
-    
     // Update main claim button
     this.updateMainClaimButton();
   }
@@ -3274,75 +3146,9 @@ class BinaryPointsManager {
   }
   
   setupEventListeners() {
-    const claimBtn = document.getElementById('claim-binary-points-btn');
-    if (claimBtn) {
-      claimBtn.addEventListener('click', () => this.claimBinaryPoints());
-    }
+    // No floating card button to setup
   }
   
-  async claimBinaryPoints() {
-    if (this.isClaiming || this.points <= 0) {
-      console.log('❌ Cannot claim - isClaiming:', this.isClaiming, 'points:', this.points);
-      return;
-    }
-    
-    try {
-      this.isClaiming = true;
-      const claimBtn = document.getElementById('claim-binary-points-btn');
-      
-      if (claimBtn) {
-        claimBtn.disabled = true;
-        claimBtn.textContent = 'Claiming...';
-      }
-      
-      if (!window.contractConfig || !window.contractConfig.contract) {
-        throw new Error('Contract not available');
-      }
-      
-      const contract = window.contractConfig.contract;
-      
-      console.log('🔄 Calling claim function...');
-      
-      // Call claim function
-      const tx = await contract.claim();
-      
-      console.log('⏳ Waiting for transaction confirmation...');
-      // Wait for transaction confirmation
-      await tx.wait();
-      
-      console.log('✅ Transaction confirmed, updating points...');
-      // Update points after successful claim
-      await this.loadBinaryPoints();
-      
-      // Show success message
-      this.showMessage('امتیازات با موفقیت دریافت شد!', 'success');
-      
-    } catch (error) {
-      console.error('Error claiming binary points:', error);
-      
-      let errorMessage = 'خطا در دریافت امتیازات';
-      if (error.code === 4001) {
-        errorMessage = 'تراکنش توسط کاربر لغو شد';
-      } else if (error.message && error.message.includes('insufficient funds')) {
-        errorMessage = 'موجودی کافی برای پرداخت کارمزد تراکنش ندارید';
-      } else if (error.message && error.message.includes('user denied')) {
-        errorMessage = 'تراکنش توسط کاربر رد شد';
-      } else if (error.message && error.message.includes('revert')) {
-        errorMessage = 'تراکنش ناموفق بود. لطفاً دوباره تلاش کنید';
-      } else if (error.message) {
-        errorMessage = `خطا: ${error.message}`;
-      }
-      
-      this.showMessage(errorMessage, 'error');
-    } finally {
-      this.isClaiming = false;
-      const claimBtn = document.getElementById('claim-binary-points-btn');
-      if (claimBtn) {
-        claimBtn.disabled = false;
-        claimBtn.textContent = 'Claim';
-      }
-    }
-  }
   
   showMessage(message, type) {
     // Create temporary message element
@@ -3378,18 +3184,6 @@ class BinaryPointsManager {
     }, 4000);
   }
   
-  showCard() {
-    const cardElement = document.getElementById('floating-binary-points-card');
-    console.log('🔄 showCard called - Points:', this.points, 'Card element:', cardElement);
-    
-    if (cardElement && this.points > 0) {
-      cardElement.style.display = 'block';
-      console.log('✅ Card shown - User has binary points');
-    } else {
-      cardElement.style.display = 'none';
-      console.log('❌ Card hidden - No binary points or element not found');
-    }
-  }
 }
 
 // Global function to show Persian messages
@@ -3432,9 +3226,7 @@ window.showPersianMessage = function(message, type) {
 document.addEventListener('DOMContentLoaded', function() {
   console.log('🔄 DOMContentLoaded - Initializing binary points manager');
   
-  // Check if card element exists
-  const cardElement = document.getElementById('floating-binary-points-card');
-  console.log('🔍 Card element exists:', !!cardElement);
+  // Floating card removed - only main claim button remains
   
   // Wait for contract to be available
   const checkContract = setInterval(() => {
@@ -3453,6 +3245,52 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('⏰ Contract check timeout - Binary points manager not initialized');
   }, 30000);
 });
+
+// Function to perform the actual claim
+async function performClaim() {
+  try {
+    if (!window.contractConfig || !window.contractConfig.contract) {
+      throw new Error('Contract not available');
+    }
+    
+    const contract = window.contractConfig.contract;
+    
+    console.log('🔄 Calling claim function...');
+    
+    // Call claim function
+    const tx = await contract.claim();
+    
+    console.log('⏳ Waiting for transaction confirmation...');
+    await tx.wait();
+    
+    console.log('✅ Transaction confirmed, updating points...');
+    
+    // Update points after successful claim
+    await window.binaryPointsManager.loadBinaryPoints();
+    
+    // Show success message
+    showPersianMessage('🎉 امتیازات با موفقیت دریافت شد!', 'success');
+    
+  } catch (error) {
+    console.error('Error claiming binary points:', error);
+    
+    let errorMessage = 'خطا در دریافت امتیازات';
+    if (error.code === 4001) {
+      errorMessage = 'تراکنش توسط کاربر لغو شد';
+    } else if (error.message && error.message.includes('insufficient funds')) {
+      errorMessage = 'موجودی کافی برای پرداخت کارمزد تراکنش ندارید';
+    } else if (error.message && error.message.includes('user denied')) {
+      errorMessage = 'تراکنش توسط کاربر رد شد';
+    } else if (error.message && error.message.includes('revert')) {
+      errorMessage = 'تراکنش ناموفق بود. لطفاً دوباره تلاش کنید';
+    } else if (error.message) {
+      errorMessage = `خطا: ${error.message}`;
+    }
+    
+    showPersianMessage(errorMessage, 'error');
+    throw error; // Re-throw to be handled by the main function
+  }
+}
 
 // Global function for main claim button
 window.claimBinaryPointsFromMain = async function() {
@@ -3478,7 +3316,7 @@ window.claimBinaryPointsFromMain = async function() {
 
     // Check if user has points to claim
     if (window.binaryPointsManager.points <= 0) {
-      showPersianMessage('شما امتیازی برای دریافت ندارید', 'warning');
+      showPersianMessage('⚠️ شما امتیازی برای دریافت ندارید', 'warning');
       return;
     }
 
@@ -3489,26 +3327,15 @@ window.claimBinaryPointsFromMain = async function() {
       mainClaimBtn.style.opacity = '0.7';
     }
 
-    // Call the claim function
-    await window.binaryPointsManager.claimBinaryPoints();
+    // Show processing message
+    showPersianMessage('🚀 در حال شروع دریافت امتیازات...', 'loading');
+
+    // Call the claim function directly
+    await performClaim();
 
   } catch (error) {
     console.error('Error claiming from main button:', error);
-    
-    let errorMessage = 'خطا در دریافت امتیازات';
-    if (error.code === 4001) {
-      errorMessage = 'تراکنش توسط کاربر لغو شد';
-    } else if (error.message && error.message.includes('insufficient funds')) {
-      errorMessage = 'موجودی کافی برای پرداخت کارمزد تراکنش ندارید';
-    } else if (error.message && error.message.includes('user denied')) {
-      errorMessage = 'تراکنش توسط کاربر رد شد';
-    } else if (error.message && error.message.includes('revert')) {
-      errorMessage = 'تراکنش ناموفق بود. لطفاً دوباره تلاش کنید';
-    } else if (error.message) {
-      errorMessage = `خطا: ${error.message}`;
-    }
-    
-    showPersianMessage(errorMessage, 'error');
+    // Error messages are already handled in performClaim function
   } finally {
     // Reset button state and update based on current points
     if (window.binaryPointsManager) {
