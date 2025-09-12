@@ -699,9 +699,12 @@ class TransferManager {
         const transferBtn = transferForm.querySelector('button[type="submit"]');
         const oldText = transferBtn ? transferBtn.textContent : '';
         
+        // Disable button and show loading state
         if (transferBtn) {
             transferBtn.disabled = true;
-            transferBtn.textContent = 'Processing Transfer...';
+            transferBtn.textContent = '⏳ Processing...';
+            transferBtn.style.opacity = '0.7';
+            transferBtn.style.cursor = 'not-allowed';
         }
 
         const transferToInput = document.getElementById('transferTo');
@@ -714,22 +717,20 @@ class TransferManager {
         status.className = 'transfer-status';
         
         if (!to || !amount || amount <= 0) {
-            status.textContent = 'Please enter a valid destination address and amount (minimum 0.000001)';
-            status.className = 'transfer-status error';
-            if (transferBtn) { transferBtn.disabled = false; transferBtn.textContent = oldText; }
+            this.showEnglishPopup('Please enter a valid destination address and amount (minimum 0.000001)', 'error');
+            this.resetTransferButton(transferBtn, oldText);
             return;
         }
         
         if (!this.signer) {
-            status.textContent = 'Wallet connection not established. Please connect your wallet first.';
-            status.className = 'transfer-status error';
-            if (transferBtn) { transferBtn.disabled = false; transferBtn.textContent = oldText; }
+            this.showEnglishPopup('Wallet connection not established. Please connect your wallet first', 'error');
+            this.resetTransferButton(transferBtn, oldText);
             return;
         }
         
         try {
-            status.textContent = '🚀 Initiating transfer... Please wait while we process your transaction.';
-            status.className = 'transfer-status loading';
+            // Show initial processing message
+            this.showEnglishPopup('🚀 Starting transfer... Please wait', 'loading');
             
             if (token.toLowerCase() === 'pol') {
                 let value;
@@ -740,15 +741,27 @@ class TransferManager {
                 } else {
                     value = (parseFloat(amount) * Math.pow(10, 18)).toString();
                 }
+                
+                // Update button to show confirmation waiting
+                if (transferBtn) {
+                    transferBtn.textContent = '⏳ Waiting for blockchain confirmation...';
+                }
+                
                 const tx = await this.signer.sendTransaction({
                     to,
                     value: value
                 });
-                status.textContent = '⏳ MATIC transfer submitted! Waiting for blockchain confirmation...';
-                status.className = 'transfer-status loading';
+                
+                this.showEnglishPopup('⏳ MATIC transfer submitted! Waiting for blockchain confirmation...', 'loading');
                 await tx.wait();
-                status.textContent = '🎉 MATIC transfer completed successfully!\nTransaction ID: ' + tx.hash;
-                status.className = 'transfer-status success';
+                
+                this.showEnglishPopup(`🎉 MATIC transfer completed successfully!`, 'success', {
+                    hash: tx.hash,
+                    recipient: to,
+                    amount: amount,
+                    token: 'MATIC'
+                });
+                
             } else if (token.toLowerCase() === 'dai') {
                 let parsedAmount;
                 if (typeof ethers.utils !== 'undefined' && ethers.utils.parseUnits) {
@@ -758,12 +771,24 @@ class TransferManager {
                 } else {
                     parsedAmount = (parseFloat(amount) * Math.pow(10, 18)).toString();
                 }
+                
+                // Update button to show confirmation waiting
+                if (transferBtn) {
+                    transferBtn.textContent = '⏳ Waiting for blockchain confirmation...';
+                }
+                
                 const tx = await this.daiContract.transfer(to, parsedAmount);
-                status.textContent = '⏳ DAI transfer submitted! Waiting for blockchain confirmation...';
-                status.className = 'transfer-status loading';
+                
+                this.showEnglishPopup('⏳ DAI transfer submitted! Waiting for blockchain confirmation...', 'loading');
                 await tx.wait();
-                status.textContent = '🎉 DAI transfer completed successfully!\nTransaction ID: ' + tx.hash;
-                status.className = 'transfer-status success';
+                
+                this.showEnglishPopup(`🎉 DAI transfer completed successfully!`, 'success', {
+                    hash: tx.hash,
+                    recipient: to,
+                    amount: amount,
+                    token: 'DAI'
+                });
+                
             } else {
                 // IAM Token Transfer
                 let value;
@@ -782,42 +807,173 @@ class TransferManager {
                     contract: this.contract.address
                 });
                 
+                // Update button to show confirmation waiting
+                if (transferBtn) {
+                    transferBtn.textContent = '⏳ Waiting for blockchain confirmation...';
+                }
+                
                 const tx = await this.contract.transfer(to, value);
-                status.textContent = '⏳ IAM transfer submitted! Waiting for blockchain confirmation...';
-                status.className = 'transfer-status loading';
+                
+                this.showEnglishPopup('⏳ IAM transfer submitted! Waiting for blockchain confirmation...', 'loading');
                 await tx.wait();
-                status.textContent = '🎉 IAM transfer completed successfully!\nTransaction ID: ' + tx.hash;
-                status.className = 'transfer-status success';
+                
+                this.showEnglishPopup(`🎉 IAM transfer completed successfully!`, 'success', {
+                    hash: tx.hash,
+                    recipient: to,
+                    amount: amount,
+                    token: 'IAM'
+                });
             }
             
             transferForm.reset();
             await this.loadTransferData(); // Refresh balances after successful transfer
             
         } catch (error) {
-            let msg = error && error.message ? error.message : error;
-            if (msg.includes('user rejected')) msg = '❌ Transaction cancelled by user. Please try again when ready.';
-            else if (msg.includes('insufficient funds')) msg = '❌ Insufficient balance for gas fees or transfer amount. Please check your wallet balance.';
-            else if (msg.includes('insufficient balance')) msg = '❌ Insufficient token balance. Please check your wallet and try again.';
-            else if (msg.includes('invalid address')) msg = '❌ Invalid destination address. Please enter a valid wallet address.';
-            else if (msg.includes('not allowed') || msg.includes('only owner')) msg = '❌ You are not authorized to perform this operation. Please check your permissions.';
-            else if (msg.includes('already transferred') || msg.includes('already exists')) msg = '❌ This transfer has already been completed or is a duplicate. Please check your transaction history.';
-            else if (msg.includes('slippage')) msg = '❌ Price difference is too high. Please adjust the amount and try again.';
-            else if (msg.includes('price changed')) msg = '❌ Token price has changed. Please refresh and try again.';
-            else if (msg.includes('nonce')) msg = '❌ Transaction sequence error. Please try again in a moment.';
-            else if (msg.includes('execution reverted')) msg = '❌ Transfer failed. Please check the destination address and amount.';
-            else if (msg.includes('network') || msg.includes('connection')) msg = '❌ Network connection error. Please check your internet connection and try again.';
-            else if (msg.includes('timeout')) msg = '❌ Transaction timeout. Please try again with higher gas fees.';
-            else if (msg.includes('gas')) msg = '❌ Insufficient gas for transaction. Please increase gas limit.';
-            else if (msg.includes('revert')) msg = '❌ Transfer failed. Please verify the destination address and try again.';
-            else msg = '❌ Transfer error: ' + msg + '. Please try again.';
-            
-            status.textContent = msg;
-            status.className = 'transfer-status error';
+            let englishMsg = this.getEnglishErrorMessage(error);
+            this.showEnglishPopup(englishMsg, 'error');
         }
         
+        // Always reset button state
+        this.resetTransferButton(transferBtn, oldText);
+    }
+
+    // Show English popup message
+    showEnglishPopup(message, type, transactionDetails = null) {
+        // Remove existing popup if any
+        const existingPopup = document.getElementById('transfer-popup');
+        if (existingPopup) {
+            existingPopup.remove();
+        }
+
+        // Create popup element
+        const popup = document.createElement('div');
+        popup.id = 'transfer-popup';
+        popup.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: ${type === 'success' ? 'rgba(0, 255, 136, 0.95)' : type === 'error' ? 'rgba(255, 68, 68, 0.95)' : type === 'loading' ? 'rgba(255, 193, 7, 0.95)' : 'rgba(167, 134, 255, 0.95)'};
+            color: ${type === 'success' ? '#0a0f1c' : type === 'error' ? '#fff' : type === 'loading' ? '#0a0f1c' : '#fff'};
+            padding: 25px 35px;
+            border-radius: 12px;
+            font-weight: bold;
+            z-index: 10000;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            text-align: center;
+            min-width: 350px;
+            max-width: 600px;
+            font-size: 14px;
+            line-height: 1.5;
+            border: 2px solid ${type === 'success' ? 'rgba(0, 255, 136, 0.3)' : type === 'error' ? 'rgba(255, 68, 68, 0.3)' : type === 'loading' ? 'rgba(255, 193, 7, 0.3)' : 'rgba(167, 134, 255, 0.3)'};
+        `;
+        
+        // Build popup content
+        let popupContent = `
+            <div style="margin-bottom: 15px; font-size: 18px;">
+                ${type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'loading' ? '⏳' : 'ℹ️'}
+            </div>
+            <div style="margin-bottom: 20px;">${message}</div>
+        `;
+        
+        // Add transaction details for success popups
+        if (type === 'success' && transactionDetails) {
+            const shortHash = transactionDetails.hash.substring(0, 10) + '...' + transactionDetails.hash.substring(transactionDetails.hash.length - 8);
+            const shortRecipient = transactionDetails.recipient.substring(0, 6) + '...' + transactionDetails.recipient.substring(transactionDetails.recipient.length - 4);
+            
+            popupContent += `
+                <div style="background: rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 15px; margin: 15px 0; text-align: left;">
+                    <div style="margin-bottom: 10px; font-size: 13px; opacity: 0.8;">Transaction Details:</div>
+                    <div style="margin-bottom: 8px; font-size: 12px;">
+                        <strong>Token:</strong> ${transactionDetails.token}
+                    </div>
+                    <div style="margin-bottom: 8px; font-size: 12px;">
+                        <strong>Amount:</strong> ${transactionDetails.amount} ${transactionDetails.token}
+                    </div>
+                    <div style="margin-bottom: 8px; font-size: 12px;">
+                        <strong>Recipient:</strong> ${shortRecipient}
+                    </div>
+                    <div style="margin-bottom: 8px; font-size: 12px;">
+                        <strong>Transaction Hash:</strong> ${shortHash}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Add buttons
+        popupContent += `
+            <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+        `;
+        
+        // Add copy hash button for success popups with transaction details
+        if (type === 'success' && transactionDetails) {
+            popupContent += `
+                <button onclick="navigator.clipboard.writeText('${transactionDetails.hash}').then(() => { this.textContent = 'Copied!'; setTimeout(() => { this.textContent = 'Copy Hash'; }, 2000); })" style="
+                    background: rgba(255, 255, 255, 0.2);
+                    color: ${type === 'success' || type === 'loading' ? '#0a0f1c' : '#fff'};
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    border-radius: 6px;
+                    padding: 8px 16px;
+                    cursor: pointer;
+                    font-weight: bold;
+                    font-size: 12px;
+                    transition: all 0.3s ease;
+                " onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">Copy Hash</button>
+            `;
+        }
+        
+        // Add close button
+        popupContent += `
+                <button onclick="this.parentElement.parentElement.remove()" style="
+                    background: rgba(255, 255, 255, 0.2);
+                    color: ${type === 'success' || type === 'loading' ? '#0a0f1c' : '#fff'};
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    border-radius: 6px;
+                    padding: 8px 16px;
+                    cursor: pointer;
+                    font-weight: bold;
+                    font-size: 12px;
+                    transition: all 0.3s ease;
+                " onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">Close</button>
+            </div>
+        `;
+        
+        popup.innerHTML = popupContent;
+        document.body.appendChild(popup);
+        
+        // No auto-remove - popup stays open until user clicks close button
+    }
+
+    // Get English error message
+    getEnglishErrorMessage(error) {
+        const msg = error && error.message ? error.message : error.toString();
+        
+        if (msg.includes('user rejected')) return '❌ Transaction cancelled by user. Please try again when ready.';
+        else if (msg.includes('insufficient funds')) return '❌ Insufficient balance for gas fees or transfer amount. Please check your wallet balance.';
+        else if (msg.includes('insufficient balance')) return '❌ Insufficient token balance. Please check your wallet and try again.';
+        else if (msg.includes('invalid address')) return '❌ Invalid destination address. Please enter a valid wallet address.';
+        else if (msg.includes('not allowed') || msg.includes('only owner')) return '❌ You are not authorized to perform this operation. Please check your permissions.';
+        else if (msg.includes('already transferred') || msg.includes('already exists')) return '❌ This transfer has already been completed or is a duplicate. Please check your transaction history.';
+        else if (msg.includes('slippage')) return '❌ Price difference is too high. Please adjust the amount and try again.';
+        else if (msg.includes('price changed')) return '❌ Token price has changed. Please refresh and try again.';
+        else if (msg.includes('nonce')) return '❌ Transaction sequence error. Please try again in a moment.';
+        else if (msg.includes('execution reverted')) return '❌ Transfer failed. Please check the destination address and amount.';
+        else if (msg.includes('network') || msg.includes('connection')) return '❌ Network connection error. Please check your internet connection and try again.';
+        else if (msg.includes('timeout')) return '❌ Transaction timeout. Please try again with higher gas fees.';
+        else if (msg.includes('gas')) return '❌ Insufficient gas for transaction. Please increase gas limit.';
+        else if (msg.includes('revert')) return '❌ Transfer failed. Please verify the destination address and try again.';
+        else return `❌ Transfer error: ${msg}. Please try again.`;
+    }
+
+    // Reset transfer button state
+    resetTransferButton(transferBtn, oldText) {
         if (transferBtn) { 
             transferBtn.disabled = false; 
-            transferBtn.textContent = oldText; 
+            transferBtn.textContent = oldText || '📤 Execute Transfer';
+            transferBtn.style.opacity = '1';
+            transferBtn.style.cursor = 'pointer';
         }
     }
 }

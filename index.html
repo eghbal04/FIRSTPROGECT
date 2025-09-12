@@ -257,7 +257,7 @@
       <button onclick="window.location.href='transfer.html'" style="background:linear-gradient(135deg,#a786ff,#8b5cf6);color:#ffffff;border:none;border-radius:6px;padding:0.4rem 0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:0.75rem;display:flex;align-items:center;gap:0.2rem;box-shadow:0 2px 6px rgba(167,134,255,0.3);min-width:80px;justify-content:center;flex:1;max-width:120px;" onmouseenter="this.style.transform='translateY(-1px)';this.style.boxShadow='0 3px 10px rgba(167,134,255,0.4)'" onmouseleave="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 6px rgba(167,134,255,0.3)'">
         💸 Transfer
       </button>
-      <button id="main-claim-btn" onclick="claimBinaryPointsFromMain()" style="background:linear-gradient(135deg,#ff6b35,#ff8e53);color:#ffffff;border:none;border-radius:6px;padding:0.4rem 0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:0.75rem;display:flex;align-items:center;gap:0.2rem;box-shadow:0 2px 6px rgba(255,107,51,0.3);min-width:80px;justify-content:center;flex:1;max-width:120px;" onmouseenter="this.style.transform='translateY(-1px)';this.style.boxShadow='0 3px 10px rgba(255,107,51,0.4)'" onmouseleave="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 6px rgba(255,107,51,0.3)'">
+      <button id="main-claim-btn" onclick="claimBinaryPointsFromMain()" disabled style="background:linear-gradient(135deg,#666,#888);color:#ffffff;border:none;border-radius:6px;padding:0.4rem 0.8rem;font-weight:bold;cursor:not-allowed;transition:all 0.3s ease;font-size:0.75rem;display:flex;align-items:center;gap:0.2rem;box-shadow:0 2px 6px rgba(0,0,0,0.2);min-width:80px;justify-content:center;flex:1;max-width:120px;opacity:0.4;" onmouseenter="if(!this.disabled) {this.style.transform='translateY(-1px)';this.style.boxShadow='0 3px 10px rgba(255,107,51,0.4)'}" onmouseleave="if(!this.disabled) {this.style.transform='translateY(0)';this.style.boxShadow='0 2px 6px rgba(255,107,51,0.3)'}">
         🎯 Claim <span id="claim-points-count">0</span>
       </button>
     </div>
@@ -1785,38 +1785,6 @@
 
       
 
-      
-
-      
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   </script>
 
@@ -3286,13 +3254,21 @@ class BinaryPointsManager {
       pointsCount.textContent = this.points.toFixed(0);
       
       if (this.points > 0) {
+        // Enable button when points are available
         mainClaimBtn.disabled = false;
         mainClaimBtn.style.opacity = '1';
         mainClaimBtn.style.cursor = 'pointer';
+        mainClaimBtn.style.background = 'linear-gradient(135deg,#ff6b35,#ff8e53)';
+        mainClaimBtn.style.boxShadow = '0 2px 6px rgba(255,107,51,0.3)';
+        mainClaimBtn.title = 'دریافت امتیازات موجود';
       } else {
+        // Disable button when no points available
         mainClaimBtn.disabled = true;
-        mainClaimBtn.style.opacity = '0.6';
+        mainClaimBtn.style.opacity = '0.4';
         mainClaimBtn.style.cursor = 'not-allowed';
+        mainClaimBtn.style.background = 'linear-gradient(135deg,#666,#888)';
+        mainClaimBtn.style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)';
+        mainClaimBtn.title = 'هیچ امتیازی برای دریافت وجود ندارد';
       }
     }
   }
@@ -3339,20 +3315,22 @@ class BinaryPointsManager {
       await this.loadBinaryPoints();
       
       // Show success message
-      this.showMessage('Binary points claimed successfully!', 'success');
+      this.showMessage('امتیازات با موفقیت دریافت شد!', 'success');
       
     } catch (error) {
       console.error('Error claiming binary points:', error);
       
-      let errorMessage = 'Error claiming binary points';
+      let errorMessage = 'خطا در دریافت امتیازات';
       if (error.code === 4001) {
-        errorMessage = 'Transaction was cancelled by user';
+        errorMessage = 'تراکنش توسط کاربر لغو شد';
       } else if (error.message && error.message.includes('insufficient funds')) {
-        errorMessage = 'Insufficient funds for transaction fee';
+        errorMessage = 'موجودی کافی برای پرداخت کارمزد تراکنش ندارید';
       } else if (error.message && error.message.includes('user denied')) {
-        errorMessage = 'Transaction was rejected by user';
+        errorMessage = 'تراکنش توسط کاربر رد شد';
+      } else if (error.message && error.message.includes('revert')) {
+        errorMessage = 'تراکنش ناموفق بود. لطفاً دوباره تلاش کنید';
       } else if (error.message) {
-        errorMessage = error.message;
+        errorMessage = `خطا: ${error.message}`;
       }
       
       this.showMessage(errorMessage, 'error');
@@ -3374,25 +3352,30 @@ class BinaryPointsManager {
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background: ${type === 'success' ? 'rgba(0, 255, 136, 0.9)' : 'rgba(255, 68, 68, 0.9)'};
-      color: ${type === 'success' ? '#0a0f1c' : '#fff'};
+      background: ${type === 'success' ? 'rgba(0, 255, 136, 0.9)' : type === 'warning' ? 'rgba(255, 193, 7, 0.9)' : 'rgba(255, 68, 68, 0.9)'};
+      color: ${type === 'success' ? '#0a0f1c' : type === 'warning' ? '#0a0f1c' : '#fff'};
       padding: 15px 25px;
       border-radius: 10px;
       font-weight: bold;
       z-index: 10000;
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
       backdrop-filter: blur(10px);
+      font-family: 'Tahoma', 'Arial', sans-serif;
+      direction: rtl;
+      text-align: center;
+      min-width: 250px;
+      max-width: 400px;
     `;
     messageEl.textContent = message;
     
     document.body.appendChild(messageEl);
     
-    // Remove after 3 seconds
+    // Remove after 4 seconds for Persian messages (longer for better readability)
     setTimeout(() => {
       if (messageEl.parentNode) {
         messageEl.parentNode.removeChild(messageEl);
       }
-    }, 3000);
+    }, 4000);
   }
   
   showCard() {
@@ -3408,6 +3391,42 @@ class BinaryPointsManager {
     }
   }
 }
+
+// Global function to show Persian messages
+window.showPersianMessage = function(message, type) {
+  // Create temporary message element
+  const messageEl = document.createElement('div');
+  messageEl.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: ${type === 'success' ? 'rgba(0, 255, 136, 0.9)' : type === 'warning' ? 'rgba(255, 193, 7, 0.9)' : 'rgba(255, 68, 68, 0.9)'};
+    color: ${type === 'success' ? '#0a0f1c' : type === 'warning' ? '#0a0f1c' : '#fff'};
+    padding: 15px 25px;
+    border-radius: 10px;
+    font-weight: bold;
+    z-index: 10000;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    font-family: 'Tahoma', 'Arial', sans-serif;
+    direction: rtl;
+    text-align: center;
+    min-width: 250px;
+    max-width: 400px;
+    font-size: 14px;
+  `;
+  messageEl.textContent = message;
+  
+  document.body.appendChild(messageEl);
+  
+  // Remove after 4 seconds for Persian messages (longer for better readability)
+  setTimeout(() => {
+    if (messageEl.parentNode) {
+      messageEl.parentNode.removeChild(messageEl);
+    }
+  }, 4000);
+};
 
 // Initialize binary points manager when page loads
 document.addEventListener('DOMContentLoaded', function() {
@@ -3438,15 +3457,74 @@ document.addEventListener('DOMContentLoaded', function() {
 // Global function for main claim button
 window.claimBinaryPointsFromMain = async function() {
   try {
-    if (window.binaryPointsManager) {
-      await window.binaryPointsManager.claimBinaryPoints();
-    } else {
-      console.log('❌ Binary points manager not available');
-      alert('Binary points manager not available. Please refresh the page.');
+    // Check if button is disabled
+    const mainClaimBtn = document.getElementById('main-claim-btn');
+    if (mainClaimBtn && mainClaimBtn.disabled) {
+      return; // Exit silently if button is disabled
     }
+
+    // Check if wallet is connected
+    if (!window.ethereum || !window.ethereum.selectedAddress) {
+      showPersianMessage('لطفاً ابتدا کیف پول خود را متصل کنید', 'error');
+      return;
+    }
+
+    // Check if binary points manager is available
+    if (!window.binaryPointsManager) {
+      console.log('❌ Binary points manager not available');
+      showPersianMessage('سیستم امتیازدهی در دسترس نیست. لطفاً صفحه را تازه کنید', 'error');
+      return;
+    }
+
+    // Check if user has points to claim
+    if (window.binaryPointsManager.points <= 0) {
+      showPersianMessage('شما امتیازی برای دریافت ندارید', 'warning');
+      return;
+    }
+
+    // Show loading state
+    if (mainClaimBtn) {
+      mainClaimBtn.disabled = true;
+      mainClaimBtn.innerHTML = '⏳ در حال پردازش...';
+      mainClaimBtn.style.opacity = '0.7';
+    }
+
+    // Call the claim function
+    await window.binaryPointsManager.claimBinaryPoints();
+
   } catch (error) {
     console.error('Error claiming from main button:', error);
-    alert('Error claiming binary points: ' + error.message);
+    
+    let errorMessage = 'خطا در دریافت امتیازات';
+    if (error.code === 4001) {
+      errorMessage = 'تراکنش توسط کاربر لغو شد';
+    } else if (error.message && error.message.includes('insufficient funds')) {
+      errorMessage = 'موجودی کافی برای پرداخت کارمزد تراکنش ندارید';
+    } else if (error.message && error.message.includes('user denied')) {
+      errorMessage = 'تراکنش توسط کاربر رد شد';
+    } else if (error.message && error.message.includes('revert')) {
+      errorMessage = 'تراکنش ناموفق بود. لطفاً دوباره تلاش کنید';
+    } else if (error.message) {
+      errorMessage = `خطا: ${error.message}`;
+    }
+    
+    showPersianMessage(errorMessage, 'error');
+  } finally {
+    // Reset button state and update based on current points
+    if (window.binaryPointsManager) {
+      window.binaryPointsManager.updateMainClaimButton();
+    } else {
+      // Fallback if manager is not available
+      const mainClaimBtn = document.getElementById('main-claim-btn');
+      if (mainClaimBtn) {
+        mainClaimBtn.disabled = true;
+        mainClaimBtn.innerHTML = '🎯 Claim <span id="claim-points-count">0</span>';
+        mainClaimBtn.style.opacity = '0.4';
+        mainClaimBtn.style.background = 'linear-gradient(135deg,#666,#888)';
+        mainClaimBtn.style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)';
+        mainClaimBtn.title = 'هیچ امتیازی برای دریافت وجود ندارد';
+      }
+    }
   }
 };
 </script>
