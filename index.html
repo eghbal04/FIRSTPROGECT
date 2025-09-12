@@ -3628,11 +3628,17 @@ class FloatingReferralCard {
     // Listen for wallet connection changes
     if (window.ethereum) {
       window.ethereum.on('accountsChanged', () => {
-        this.updateReferralLink();
+        // Small delay to ensure wallet connection is established
+        setTimeout(() => {
+          this.updateReferralLink();
+        }, 500);
       });
       
       window.ethereum.on('chainChanged', () => {
-        this.updateReferralLink();
+        // Small delay to ensure wallet connection is established
+        setTimeout(() => {
+          this.updateReferralLink();
+        }, 500);
       });
     }
   }
@@ -3642,23 +3648,42 @@ class FloatingReferralCard {
       if (window.ethereum && window.ethereum.selectedAddress) {
         const address = window.ethereum.selectedAddress;
         
-        // Use the full wallet address as referral code
-        this.referralCode = address;
-        
-        // Create referral link with full address
-        const referralLink = `${this.baseUrl}?ref=${this.referralCode}`;
-        
-        // Display a shortened version for better UI, but keep full link for copying
-        const shortAddress = `${address.substring(0, 6)}...${address.substring(38)}`;
-        this.linkDisplay.textContent = `${this.baseUrl}?ref=${shortAddress}`;
-        this.linkDisplay.title = `Full link: ${referralLink}`;
-        this.statusDisplay.textContent = 'Connected';
-        this.statusDisplay.style.color = '#00ff88';
-        this.earningsDisplay.textContent = '5% Commission';
-        this.earningsDisplay.style.color = '#00ff88';
-        
-        // Show the card
-        this.showCard();
+        // Check if user is registered before showing referral card
+        try {
+          const connection = await window.connectWallet();
+          const { contract } = connection;
+          
+          // Check if user is registered
+          const userData = await contract.users(address);
+          const isRegistered = userData && userData.index && BigInt(userData.index) > 0n;
+          
+          if (isRegistered) {
+            // User is registered - show referral card
+            this.referralCode = address;
+            
+            // Create referral link with full address
+            const referralLink = `${this.baseUrl}?ref=${this.referralCode}`;
+            
+            // Display a shortened version for better UI, but keep full link for copying
+            const shortAddress = `${address.substring(0, 6)}...${address.substring(38)}`;
+            this.linkDisplay.textContent = `${this.baseUrl}?ref=${shortAddress}`;
+            this.linkDisplay.title = `Full link: ${referralLink}`;
+            this.statusDisplay.textContent = 'Connected';
+            this.statusDisplay.style.color = '#00ff88';
+            this.earningsDisplay.textContent = '10% Commission';
+            this.earningsDisplay.style.color = '#00ff88';
+            
+            // Show the card
+            this.showCard();
+          } else {
+            // User is not registered - hide the card
+            this.hideCard();
+          }
+        } catch (error) {
+          console.error('Error checking registration status:', error);
+          // Hide card if we can't check registration status
+          this.hideCard();
+        }
       } else {
         this.linkDisplay.textContent = 'Not Connected';
         this.statusDisplay.textContent = 'Disconnected';
@@ -3676,6 +3701,9 @@ class FloatingReferralCard {
       this.statusDisplay.style.color = '#ff4444';
       this.earningsDisplay.textContent = 'Error';
       this.earningsDisplay.style.color = '#ff4444';
+      
+      // Hide card on error
+      this.hideCard();
     }
   }
   
@@ -3762,8 +3790,31 @@ document.addEventListener('DOMContentLoaded', function() {
   checkUserRegistrationStatus();
   
   // Wait a bit for other components to load
-  setTimeout(() => {
+  setTimeout(async () => {
     window.floatingReferralCard = new FloatingReferralCard();
+    
+    // Check if user is registered and update referral card accordingly
+    try {
+      if (window.ethereum && window.ethereum.selectedAddress) {
+        const connection = await window.connectWallet();
+        const { contract, address } = connection;
+        
+        const userData = await contract.users(address);
+        const isRegistered = userData && userData.index && BigInt(userData.index) > 0n;
+        
+        if (isRegistered) {
+          console.log('✅ User is registered - showing referral card');
+          window.floatingReferralCard.updateReferralLink();
+    } else {
+          console.log('ℹ️ User is not registered - hiding referral card');
+          window.floatingReferralCard.hideCard();
+        }
+      }
+    } catch (error) {
+      console.error('Error checking registration status on load:', error);
+      window.floatingReferralCard.hideCard();
+    }
+    
     console.log('✅ Floating Referral Card initialized');
   }, 1000);
 });
@@ -3784,7 +3835,7 @@ async function checkUserRegistrationStatus() {
       // Wait a bit for contract to be available
       setTimeout(async () => {
         try {
-          if (window.contractConfig && window.contractConfig.contract) {
+    if (window.contractConfig && window.contractConfig.contract) {
             const address = window.ethereum.selectedAddress;
             const contract = window.contractConfig.contract;
             
@@ -4114,7 +4165,7 @@ window.showUpdatedRegisterForm = async function(referrerAddress, userAddress, pr
       statusDiv.textContent = '✅ Registration completed successfully!';
       
       // Close modal after success
-      setTimeout(() => {
+  setTimeout(() => {
         modal.remove();
         showMessage('Registration completed successfully!', 'success');
         
@@ -4187,7 +4238,7 @@ function showReferralDetectedMessage(referralCode) {
       <h4 style="color: #a786ff; margin: 0 0 0.5rem 0; font-size: 1rem;">Referral Information</h4>
       <div style="font-size: 0.9rem; line-height: 1.4;">
         <div style="margin-bottom: 0.3rem;"><strong>Referral Code:</strong> <span style="color: #00ff88; font-family: monospace;">${referralCode}</span></div>
-        <div style="margin-bottom: 0.3rem;"><strong>Referrer Benefits:</strong> 5% Commission</div>
+        <div style="margin-bottom: 0.3rem;"><strong>Referrer Benefits:</strong> 10% Commission</div>
         <div style="margin-bottom: 0.3rem;"><strong>Your Benefits:</strong> Welcome Bonus</div>
       </div>
     </div>
@@ -4258,7 +4309,7 @@ function showReferralDetectedMessage(referralCode) {
             const referrerAddress = await getReferrerAddressFromCode(referralCode, contract);
             if (referrerAddress) {
               window.showUpdatedRegisterForm(referrerAddress, address, provider, contract);
-            } else {
+    } else {
               // Fallback to direct registration if we can't resolve the referrer
               showMessage('Could not resolve referrer address. Using direct registration.', 'warning');
               if (typeof window.showDirectRegistrationForm === 'function') {
@@ -4270,8 +4321,8 @@ function showReferralDetectedMessage(referralCode) {
           }
         } else {
           showMessage('You are already registered!', 'success');
-        }
-      } catch (error) {
+    }
+  } catch (error) {
         console.error('Error showing registration form:', error);
         showMessage('Error opening registration form. Please try again.', 'error');
       }
@@ -4378,7 +4429,7 @@ document.head.appendChild(style);
             </div>
             <div class="info-item">
                 <span class="info-label">Earnings:</span>
-                <span class="info-value" id="referral-earnings">0% Commission</span>
+                <span class="info-value" id="referral-earnings">10% Commission</span>
             </div>
         </div>
     </div>
