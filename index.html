@@ -1940,11 +1940,11 @@
         
         // Update status bars after connection
         setTimeout(async () => {
-                  // Update index dashboard status bar
-        try { if (typeof window.indexStatusTryUpdate === 'function') window.indexStatusTryUpdate(); } catch(_) {}
-        
-        // Update user status bar
-        try { if (typeof window.updateUserStatusBar === 'function') window.updateUserStatusBar(); } catch(_) {}
+          // Update index dashboard status bar
+          try { if (typeof window.indexStatusTryUpdate === 'function') window.indexStatusTryUpdate(); } catch(_) {}
+          
+          // Update user status bar
+          try { if (typeof window.updateUserStatusBar === 'function') window.updateUserStatusBar(); } catch(_) {}
         }, 1000);
         
         return result;
@@ -3618,6 +3618,21 @@ window.claimBinaryPointsFromMain = async function() {
 // Floating Referral Link Card Management
 class FloatingReferralCard {
   constructor() {
+    this.baseUrl = window.location.origin + window.location.pathname;
+    this.referralCode = null;
+    this.isUserRegistered = false;
+    
+    // Wait for DOM to be ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        this.initializeElements();
+      });
+    } else {
+      this.initializeElements();
+    }
+  }
+  
+  initializeElements() {
     this.card = document.getElementById('floating-referral-card');
     this.linkDisplay = document.getElementById('referral-link-display');
     this.statusDisplay = document.getElementById('referral-status');
@@ -3625,9 +3640,14 @@ class FloatingReferralCard {
     this.copyBtn = document.getElementById('copy-referral-link');
     this.closeBtn = document.getElementById('close-referral-card');
     
-    this.baseUrl = window.location.origin + window.location.pathname;
-    this.referralCode = null;
-    this.isUserRegistered = false;
+    console.log('🔍 Floating Referral Card elements:', {
+      card: !!this.card,
+      linkDisplay: !!this.linkDisplay,
+      statusDisplay: !!this.statusDisplay,
+      earningsDisplay: !!this.earningsDisplay,
+      copyBtn: !!this.copyBtn,
+      closeBtn: !!this.closeBtn
+    });
     
     this.setupEventListeners();
     this.updateReferralLink();
@@ -3688,59 +3708,118 @@ class FloatingReferralCard {
           
           // Display a shortened version for better UI, but keep full link for copying
           const shortAddress = `${address.substring(0, 6)}...${address.substring(38)}`;
-          this.linkDisplay.textContent = `${this.baseUrl}?ref=${shortAddress}`;
-          this.linkDisplay.title = `Full link: ${referralLink}`;
+          if (this.linkDisplay) {
+            this.linkDisplay.textContent = `${this.baseUrl}?ref=${shortAddress}`;
+            this.linkDisplay.title = `Full link: ${referralLink}`;
+            console.log('✅ Referral link updated:', this.linkDisplay.textContent);
+          } else {
+            console.log('❌ linkDisplay element not found');
+          }
           
           if (isRegistered) {
-            this.statusDisplay.textContent = 'Connected';
-            this.statusDisplay.style.color = '#00ff88';
-            this.earningsDisplay.textContent = '10% Commission';
-            this.earningsDisplay.style.color = '#00ff88';
+            if (this.statusDisplay) {
+              this.statusDisplay.textContent = 'Connected';
+              this.statusDisplay.style.color = '#00ff88';
+            }
+            if (this.earningsDisplay) {
+              this.earningsDisplay.textContent = '10% Commission';
+              this.earningsDisplay.style.color = '#00ff88';
+            }
           } else {
-            this.statusDisplay.textContent = 'Not Registered';
-            this.statusDisplay.style.color = '#ffaa00';
-            this.earningsDisplay.textContent = 'Register First';
-            this.earningsDisplay.style.color = '#ffaa00';
+            if (this.statusDisplay) {
+              this.statusDisplay.textContent = 'Not Registered';
+              this.statusDisplay.style.color = '#ffaa00';
+            }
+            if (this.earningsDisplay) {
+              this.earningsDisplay.textContent = 'Register First';
+              this.earningsDisplay.style.color = '#ffaa00';
+            }
           }
           
           // Always show the card
           this.showCard();
+          
+          // Disable copy button if wallet not connected
+          if (this.copyBtn) {
+            if (window.ethereum && window.ethereum.selectedAddress) {
+              this.copyBtn.disabled = false;
+              this.copyBtn.style.opacity = '1';
+              this.copyBtn.style.cursor = 'pointer';
+            } else {
+              this.copyBtn.disabled = true;
+              this.copyBtn.style.opacity = '0.5';
+              this.copyBtn.style.cursor = 'not-allowed';
+            }
+          }
         } catch (error) {
           console.error('Error checking registration status:', error);
           // Show card with error status
-          this.linkDisplay.textContent = 'Error';
-          this.statusDisplay.textContent = 'Error';
-          this.statusDisplay.style.color = '#ff4444';
-          this.earningsDisplay.textContent = 'Check Connection';
-          this.earningsDisplay.style.color = '#ff4444';
+          if (this.linkDisplay) {
+            this.linkDisplay.textContent = 'Error';
+          }
+          if (this.statusDisplay) {
+            this.statusDisplay.textContent = 'Error';
+            this.statusDisplay.style.color = '#ff4444';
+          }
+          if (this.earningsDisplay) {
+            this.earningsDisplay.textContent = 'Check Connection';
+            this.earningsDisplay.style.color = '#ff4444';
+          }
           this.showCard();
         }
       } else {
-        this.linkDisplay.textContent = 'Not Connected';
-        this.statusDisplay.textContent = 'Disconnected';
-        this.statusDisplay.style.color = '#ff4444';
-        this.earningsDisplay.textContent = 'Connect Wallet';
-        this.earningsDisplay.style.color = '#ff4444';
+        // Wallet not connected - show appropriate message
+        if (this.linkDisplay) {
+          this.linkDisplay.textContent = 'Connect Wallet First';
+        }
+        if (this.statusDisplay) {
+          this.statusDisplay.textContent = 'Not Connected';
+          this.statusDisplay.style.color = '#ff4444';
+        }
+        if (this.earningsDisplay) {
+          this.earningsDisplay.textContent = 'Connect to Continue';
+          this.earningsDisplay.style.color = '#ff4444';
+        }
         
-        // Always show the card
+        // Show the card with connect wallet message
         this.showCard();
+        
+        // Disable copy button when wallet not connected
+        if (this.copyBtn) {
+          this.copyBtn.disabled = true;
+          this.copyBtn.style.opacity = '0.5';
+          this.copyBtn.style.cursor = 'not-allowed';
+        }
       }
     } catch (error) {
       console.error('Error updating referral link:', error);
-      this.linkDisplay.textContent = 'Error';
-      this.statusDisplay.textContent = 'Error';
-      this.statusDisplay.style.color = '#ff4444';
-      this.earningsDisplay.textContent = 'Check Connection';
-      this.earningsDisplay.style.color = '#ff4444';
+      if (this.linkDisplay) {
+        this.linkDisplay.textContent = 'Error';
+      }
+      if (this.statusDisplay) {
+        this.statusDisplay.textContent = 'Error';
+        this.statusDisplay.style.color = '#ff4444';
+      }
+      if (this.earningsDisplay) {
+        this.earningsDisplay.textContent = 'Check Connection';
+        this.earningsDisplay.style.color = '#ff4444';
+      }
       
       // Always show the card
       this.showCard();
+      
+      // Disable copy button on error
+      if (this.copyBtn) {
+        this.copyBtn.disabled = true;
+        this.copyBtn.style.opacity = '0.5';
+        this.copyBtn.style.cursor = 'not-allowed';
+      }
     }
   }
   
   async copyReferralLink() {
     try {
-      if (this.referralCode && this.referralCode !== 'Not Connected' && this.referralCode !== 'Error') {
+      if (this.referralCode && this.referralCode !== 'Not Connected' && this.referralCode !== 'Error' && this.referralCode !== 'Connect Wallet First') {
         // Copy the full link with complete address
         const fullLink = `${this.baseUrl}?ref=${this.referralCode}`;
         await navigator.clipboard.writeText(fullLink);
@@ -3758,7 +3837,7 @@ class FloatingReferralCard {
         // Show success message
         this.showMessage('Referral link copied to clipboard!', 'success');
       } else {
-        this.showMessage('No referral link to copy', 'error');
+        this.showMessage('Please connect your wallet first', 'error');
       }
     } catch (error) {
       console.error('Error copying referral link:', error);
@@ -3767,18 +3846,31 @@ class FloatingReferralCard {
   }
   
   showCard() {
+    console.log('🔍 showCard called, card element:', this.card);
     if (this.card) {
+      console.log('✅ Showing referral card');
       this.card.style.display = 'block';
+      this.card.style.visibility = 'visible';
+      this.card.style.opacity = '1';
       this.card.style.animation = 'slideInFromRight 0.5s ease-out';
+    } else {
+      console.log('❌ Card element not found for showing');
     }
   }
   
   hideCard() {
+    console.log('🔍 hideCard called, card element:', this.card);
     if (this.card) {
+      console.log('✅ Hiding referral card');
       this.card.style.animation = 'slideOutToRight 0.3s ease-in';
       setTimeout(() => {
         this.card.style.display = 'none';
+        this.card.style.visibility = 'hidden';
+        this.card.style.opacity = '0';
+        console.log('✅ Referral card hidden');
       }, 300);
+    } else {
+      console.log('❌ Card element not found for hiding');
     }
   }
   
@@ -3836,20 +3928,21 @@ document.addEventListener('DOMContentLoaded', function() {
           const userData = await contract.users(address);
           const isRegistered = userData && userData.index && BigInt(userData.index) > 0n;
         
-        if (isRegistered) {
-          console.log('✅ User is registered - showing referral card');
-          window.floatingReferralCard.updateReferralLink();
-    } else {
-          console.log('ℹ️ User is not registered - hiding referral card');
-          window.floatingReferralCard.hideCard();
+          if (isRegistered) {
+            console.log('✅ User is registered - showing referral card');
+            window.floatingReferralCard.updateReferralLink();
+          } else {
+            console.log('ℹ️ User is not registered - hiding referral card');
+            window.floatingReferralCard.hideCard();
+          }
         }
+      } catch (error) {
+        console.error('Error checking registration status on load:', error);
+        window.floatingReferralCard.hideCard();
       }
-    } catch (error) {
-      console.error('Error checking registration status on load:', error);
-      window.floatingReferralCard.hideCard();
-    }
-    
-    console.log('✅ Floating Referral Card initialized');
+      
+      console.log('✅ Floating Referral Card initialized');
+    }, 1000);
   }, 1000);
 });
 
