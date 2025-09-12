@@ -4051,10 +4051,10 @@ window.showUpdatedRegisterForm = async function(referrerAddress, userAddress, pr
   const existingModal = document.getElementById('updated-register-form-modal');
   if (existingModal) existingModal.remove();
 
-  // Get registration price
+  // Get registration price using getRegPrice function
   let regPrice = 0;
   try {
-    regPrice = await contract.regPrice();
+    regPrice = await contract.getRegPrice();
     regPrice = parseFloat(ethers.formatUnits(regPrice, 18));
     console.log('Registration Price:', regPrice);
   } catch (error) {
