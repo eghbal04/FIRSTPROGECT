@@ -3627,6 +3627,7 @@ class FloatingReferralCard {
     
     this.baseUrl = window.location.origin + window.location.pathname;
     this.referralCode = null;
+    this.isUserRegistered = false;
     
     this.setupEventListeners();
     this.updateReferralLink();
@@ -3679,53 +3680,61 @@ class FloatingReferralCard {
           const userData = await contract.users(address);
           const isRegistered = userData && userData.index && BigInt(userData.index) > 0n;
           
+          // Always show the card regardless of registration status
+          this.referralCode = address;
+          
+          // Create referral link with full address
+          const referralLink = `${this.baseUrl}?ref=${this.referralCode}`;
+          
+          // Display a shortened version for better UI, but keep full link for copying
+          const shortAddress = `${address.substring(0, 6)}...${address.substring(38)}`;
+          this.linkDisplay.textContent = `${this.baseUrl}?ref=${shortAddress}`;
+          this.linkDisplay.title = `Full link: ${referralLink}`;
+          
           if (isRegistered) {
-            // User is registered - show referral card
-            this.referralCode = address;
-            
-            // Create referral link with full address
-            const referralLink = `${this.baseUrl}?ref=${this.referralCode}`;
-            
-            // Display a shortened version for better UI, but keep full link for copying
-            const shortAddress = `${address.substring(0, 6)}...${address.substring(38)}`;
-            this.linkDisplay.textContent = `${this.baseUrl}?ref=${shortAddress}`;
-            this.linkDisplay.title = `Full link: ${referralLink}`;
             this.statusDisplay.textContent = 'Connected';
             this.statusDisplay.style.color = '#00ff88';
             this.earningsDisplay.textContent = '10% Commission';
             this.earningsDisplay.style.color = '#00ff88';
-            
-            // Show the card
-            this.showCard();
           } else {
-            // User is not registered - hide the card
-            this.hideCard();
+            this.statusDisplay.textContent = 'Not Registered';
+            this.statusDisplay.style.color = '#ffaa00';
+            this.earningsDisplay.textContent = 'Register First';
+            this.earningsDisplay.style.color = '#ffaa00';
           }
+          
+          // Always show the card
+          this.showCard();
         } catch (error) {
           console.error('Error checking registration status:', error);
-          // Hide card if we can't check registration status
-          this.hideCard();
+          // Show card with error status
+          this.linkDisplay.textContent = 'Error';
+          this.statusDisplay.textContent = 'Error';
+          this.statusDisplay.style.color = '#ff4444';
+          this.earningsDisplay.textContent = 'Check Connection';
+          this.earningsDisplay.style.color = '#ff4444';
+          this.showCard();
         }
       } else {
         this.linkDisplay.textContent = 'Not Connected';
         this.statusDisplay.textContent = 'Disconnected';
         this.statusDisplay.style.color = '#ff4444';
-        this.earningsDisplay.textContent = '0% Commission';
+        this.earningsDisplay.textContent = 'Connect Wallet';
         this.earningsDisplay.style.color = '#ff4444';
         
-        // Hide the card when not connected
-        this.hideCard();
+        // Always show the card
+        this.showCard();
       }
     } catch (error) {
       console.error('Error updating referral link:', error);
       this.linkDisplay.textContent = 'Error';
       this.statusDisplay.textContent = 'Error';
       this.statusDisplay.style.color = '#ff4444';
-      this.earningsDisplay.textContent = 'Error';
+      this.earningsDisplay.textContent = 'Check Connection';
       this.earningsDisplay.style.color = '#ff4444';
       
-      // Hide card on error
-      this.hideCard();
+      // Always show the card
+      this.showCard();
     }
   }
   
@@ -3810,20 +3819,22 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Wait for wallet connection and then check registration status
   setTimeout(async () => {
-    // Check if user needs registration (for non-referral users)
-    checkUserRegistrationStatus();
-    
-    // Initialize floating referral card after wallet connection
+    // Initialize floating referral card first
     window.floatingReferralCard = new FloatingReferralCard();
     
-    // Check if user is registered and update referral card accordingly
-    try {
-      if (window.ethereum && window.ethereum.selectedAddress) {
-        const connection = await window.connectWallet();
-        const { contract, address } = connection;
-        
-        const userData = await contract.users(address);
-        const isRegistered = userData && userData.index && BigInt(userData.index) > 0n;
+    // Wait a bit more for wallet to be fully connected
+    setTimeout(async () => {
+      // Check if user needs registration (for non-referral users)
+      checkUserRegistrationStatus();
+      
+      // Check if user is registered and update referral card accordingly
+      try {
+        if (window.ethereum && window.ethereum.selectedAddress) {
+          const connection = await window.connectWallet();
+          const { contract, address } = connection;
+          
+          const userData = await contract.users(address);
+          const isRegistered = userData && userData.index && BigInt(userData.index) > 0n;
         
         if (isRegistered) {
           console.log('✅ User is registered - showing referral card');
