@@ -3654,10 +3654,30 @@ class FloatingReferralCard {
   }
   
   setupEventListeners() {
-    // Copy button functionality
+    // Copy button functionality with mobile support
     if (this.copyBtn) {
-      this.copyBtn.addEventListener('click', () => {
+      // Use both click and touch events for better mobile support
+      this.copyBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         this.copyReferralLink();
+      });
+      
+      this.copyBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.copyReferralLink();
+      });
+      
+      // Add visual feedback on touch start
+      this.copyBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        this.copyBtn.style.transform = 'scale(0.95)';
+      });
+      
+      this.copyBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        this.copyBtn.style.transform = 'scale(1)';
       });
     }
     
@@ -3865,26 +3885,103 @@ class FloatingReferralCard {
       if (this.referralCode && this.referralCode !== 'Not Connected' && this.referralCode !== 'Error' && this.referralCode !== 'Connect Wallet First') {
         // Copy the full link with complete address
         const fullLink = `${this.baseUrl}?ref=${this.referralCode}`;
-        await navigator.clipboard.writeText(fullLink);
         
-        // Visual feedback
-        const originalText = this.copyBtn.textContent;
-        this.copyBtn.textContent = '✅ Copied!';
-        this.copyBtn.style.background = 'linear-gradient(135deg, #00ff88, #00cc6a)';
+        // Try mobile Web Share API first (for mobile devices)
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        if (isMobile) {
+          const mobileShared = await this.copyReferralLinkMobile();
+          if (mobileShared) {
+            return; // Successfully shared via mobile API
+          }
+        }
         
-        setTimeout(() => {
-          this.copyBtn.textContent = originalText;
-          this.copyBtn.style.background = 'linear-gradient(135deg, #a786ff, #00ff88)';
-        }, 2000);
+        // Try modern clipboard API
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          try {
+            await navigator.clipboard.writeText(fullLink);
+            console.log('✅ Copied using modern clipboard API');
+            
+            // Visual feedback
+            const originalText = this.copyBtn.textContent;
+            this.copyBtn.textContent = '✅ Copied!';
+            this.copyBtn.style.background = 'linear-gradient(135deg, #00ff88, #00cc6a)';
+            
+            setTimeout(() => {
+              this.copyBtn.textContent = originalText;
+              this.copyBtn.style.background = 'linear-gradient(135deg, #a786ff, #00ff88)';
+            }, 2000);
+            
+            // Show success message
+            this.showMessage('Referral link copied to clipboard!', 'success');
+            return;
+          } catch (clipboardError) {
+            console.log('⚠️ Modern clipboard failed, trying fallback:', clipboardError);
+            throw clipboardError; // This will trigger the fallback
+          }
+        } else {
+          console.log('⚠️ Modern clipboard not available, using fallback');
+          throw new Error('Clipboard API not available');
+        }
         
-        // Show success message
-        this.showMessage('Referral link copied to clipboard!', 'success');
       } else {
         this.showMessage('Please connect your wallet first', 'error');
       }
     } catch (error) {
       console.error('Error copying referral link:', error);
-      this.showMessage('Failed to copy referral link', 'error');
+      
+      // Fallback method for mobile and older browsers
+      try {
+        const fullLink = `${this.baseUrl}?ref=${this.referralCode}`;
+        
+        // Create a temporary textarea element
+        const textArea = document.createElement('textarea');
+        textArea.value = fullLink;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        textArea.style.opacity = '0';
+        textArea.style.pointerEvents = 'none';
+        document.body.appendChild(textArea);
+        
+        // Select and copy
+        textArea.focus();
+        textArea.select();
+        textArea.setSelectionRange(0, 99999); // For mobile devices
+        
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        if (successful) {
+          console.log('✅ Copied using fallback method');
+          
+          // Visual feedback
+          const originalText = this.copyBtn.textContent;
+          this.copyBtn.textContent = '✅ Copied!';
+          this.copyBtn.style.background = 'linear-gradient(135deg, #00ff88, #00cc6a)';
+          
+          setTimeout(() => {
+            this.copyBtn.textContent = originalText;
+            this.copyBtn.style.background = 'linear-gradient(135deg, #a786ff, #00ff88)';
+          }, 2000);
+          
+          // Show success message
+          this.showMessage('Referral link copied to clipboard!', 'success');
+        } else {
+          throw new Error('Fallback copy failed');
+        }
+      } catch (fallbackError) {
+        console.error('Fallback copy also failed:', fallbackError);
+        
+        // Show the link in a prompt for manual copying
+        const fullLink = `${this.baseUrl}?ref=${this.referralCode}`;
+        const userConfirmed = confirm(`Copy this link manually:\n\n${fullLink}\n\nClick OK to continue`);
+        
+        if (userConfirmed) {
+          this.showMessage('Please copy the link manually', 'warning');
+        } else {
+          this.showMessage('Copy cancelled', 'info');
+        }
+      }
     }
   }
   
@@ -3901,6 +3998,35 @@ class FloatingReferralCard {
     } catch (error) {
       console.log('Error checking wallet connection:', error);
       return null;
+    }
+  }
+  
+  // Mobile-specific copy method using Web Share API
+  async copyReferralLinkMobile() {
+    try {
+      const fullLink = `${this.baseUrl}?ref=${this.referralCode}`;
+      
+      // Check if Web Share API is available (mobile browsers)
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: 'My Referral Link',
+            text: 'Check out this referral link',
+            url: fullLink
+          });
+          console.log('✅ Shared using Web Share API');
+          this.showMessage('Referral link shared!', 'success');
+          return true;
+        } catch (shareError) {
+          console.log('⚠️ Web Share API failed:', shareError);
+          // Fall through to other methods
+        }
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('Error in mobile copy method:', error);
+      return false;
     }
   }
   
