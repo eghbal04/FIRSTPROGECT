@@ -4051,30 +4051,15 @@ window.showUpdatedRegisterForm = async function(referrerAddress, userAddress, pr
   const existingModal = document.getElementById('updated-register-form-modal');
   if (existingModal) existingModal.remove();
 
-  // Check IAM balance and registration price
-  let iamBalance = 0;
+  // Get registration price
   let regPrice = 0;
-  let canRegisterFree = false;
-  let balanceStatus = '';
-
   try {
-    // Get IAM token balance
-    const balanceRaw = await contract.balanceOf(userAddress);
-    iamBalance = parseFloat(ethers.formatUnits(balanceRaw, 18));
-    
-    // Get registration price
     regPrice = await contract.regPrice();
     regPrice = parseFloat(ethers.formatUnits(regPrice, 18));
-    
-    canRegisterFree = iamBalance >= regPrice;
-    balanceStatus = canRegisterFree ? 'sufficient' : 'insufficient';
-    
-    console.log('IAM Balance:', iamBalance);
     console.log('Registration Price:', regPrice);
-    console.log('Can Register Free:', canRegisterFree);
   } catch (error) {
-    console.error('Error checking balance:', error);
-    balanceStatus = 'error';
+    console.error('Error getting registration price:', error);
+    regPrice = 0;
   }
 
   const modal = document.createElement('div');
@@ -4118,28 +4103,16 @@ window.showUpdatedRegisterForm = async function(referrerAddress, userAddress, pr
           <div style="margin-bottom: 0.3rem;"><strong>Referrer:</strong> <span style="color: #a786ff; font-family: monospace; font-size: 0.8rem;">${referrerAddress}</span></div>
           <div style="margin-bottom: 0.3rem;"><strong>Blockchain:</strong> Polygon Network</div>
           <div style="margin-bottom: 0.3rem;"><strong>Registration Price:</strong> <span style="color: #ffd700;">${regPrice.toFixed(2)} IAM</span></div>
-          <div style="margin-bottom: 0.3rem;"><strong>Your IAM Balance:</strong> <span style="color: ${canRegisterFree ? '#00ff88' : '#ff4444'};">${iamBalance.toFixed(2)} IAM</span></div>
         </div>
       </div>
       
-      ${!canRegisterFree ? `
-      <div style="background: rgba(255, 165, 0, 0.1); border: 1px solid rgba(255, 165, 0, 0.3); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
-        <h4 style="color: #ffa500; margin: 0 0 0.5rem 0; font-size: 1rem;">💰 Paid Registration Required</h4>
-        <div style="font-size: 0.9rem; line-height: 1.4; color: #ffccaa;">
-          <div style="margin-bottom: 0.3rem;">You need <strong>${regPrice.toFixed(2)} IAM</strong> for free registration (23 USD equivalent)</div>
-          <div style="margin-bottom: 0.3rem;">You currently have <strong>${iamBalance.toFixed(2)} IAM</strong></div>
-          <div style="margin-bottom: 0.3rem;">Registration will cost <strong>${regPrice.toFixed(2)} IAM</strong> (current market price)</div>
-        </div>
-      </div>
-      ` : `
       <div style="background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
-        <h4 style="color: #00ff88; margin: 0 0 0.5rem 0; font-size: 1rem;">✅ Free Registration Available</h4>
+        <h4 style="color: #00ff88; margin: 0 0 0.5rem 0; font-size: 1rem;">✅ Ready to Register</h4>
         <div style="font-size: 0.9rem; line-height: 1.4; color: #aaffaa;">
-          <div style="margin-bottom: 0.3rem;">You have sufficient IAM balance for free registration!</div>
-          <div style="margin-bottom: 0.3rem;">Registration will cost <strong>${regPrice.toFixed(2)} IAM</strong> (23 USD equivalent)</div>
+          <div style="margin-bottom: 0.3rem;">Registration will cost <strong>${regPrice.toFixed(2)} IAM</strong> (current market price)</div>
+          <div style="margin-bottom: 0.3rem;">Click the button below to complete your registration</div>
         </div>
       </div>
-      `}
       
       <div id="registration-status" style="
         padding: 0.8rem;
@@ -4154,7 +4127,7 @@ window.showUpdatedRegisterForm = async function(referrerAddress, userAddress, pr
         <button id="confirm-registration" style="
           flex: 1;
           min-width: 120px;
-          background: ${canRegisterFree ? 'linear-gradient(135deg, #a786ff, #00ff88)' : 'linear-gradient(135deg, #ff6b6b, #ffa500)'};
+          background: linear-gradient(135deg, #a786ff, #00ff88);
           color: #ffffff;
           border: none;
           padding: 0.8rem 1.5rem;
@@ -4162,7 +4135,7 @@ window.showUpdatedRegisterForm = async function(referrerAddress, userAddress, pr
           font-weight: 600;
           cursor: pointer;
           font-size: 0.9rem;
-        ">${canRegisterFree ? '🚀 Register for Free (23 USD)' : '💰 Register with IAM (Market Price)'}</button>
+        ">🚀 Register Now</button>
         <button id="cancel-registration" style="
           flex: 1;
           min-width: 120px;
@@ -4193,20 +4166,14 @@ window.showUpdatedRegisterForm = async function(referrerAddress, userAddress, pr
       statusDiv.style.background = 'rgba(167, 134, 255, 0.1)';
       statusDiv.style.color = '#a786ff';
       statusDiv.style.border = '1px solid rgba(167, 134, 255, 0.3)';
-      statusDiv.textContent = canRegisterFree ? '⏳ Processing free registration (23 USD equivalent)...' : '⏳ Processing paid registration (market price)...';
+      statusDiv.textContent = '⏳ Processing registration...';
       
       confirmBtn.disabled = true;
       confirmBtn.textContent = 'Registering...';
       cancelBtn.disabled = true;
 
-      let tx;
-      if (canRegisterFree) {
-        // Call registerFree for free registration (23 USD equivalent)
-        tx = await contract.registerFree(referrerAddress, userAddress);
-    } else {
-        // Call registerAndActivate for paid registration (market price)
-        tx = await contract.registerAndActivate(referrerAddress, referrerAddress, userAddress);
-      }
+      // Call registerAndActivate for registration
+      const tx = await contract.registerAndActivate(referrerAddress, referrerAddress, userAddress);
       
       statusDiv.style.background = 'rgba(167, 134, 255, 0.1)';
       statusDiv.style.color = '#a786ff';
@@ -4218,17 +4185,12 @@ window.showUpdatedRegisterForm = async function(referrerAddress, userAddress, pr
       statusDiv.style.background = 'rgba(0, 255, 136, 0.1)';
       statusDiv.style.color = '#00ff88';
       statusDiv.style.border = '1px solid rgba(0, 255, 136, 0.3)';
-      statusDiv.textContent = canRegisterFree ? 
-        '🎉 Free registration completed successfully! Welcome to the platform!' : 
-        '🎉 Paid registration completed successfully! Welcome to the platform!';
+      statusDiv.textContent = '🎉 Registration completed successfully! Welcome to the platform!';
       
       // Close modal after success
-  setTimeout(() => {
+      setTimeout(() => {
         modal.remove();
-        const successMessage = canRegisterFree ? 
-          '🎉 Free registration completed successfully! Welcome to the platform!' : 
-          '🎉 Paid registration completed successfully! Welcome to the platform!';
-        showMessage(successMessage, 'success');
+        showMessage('🎉 Registration completed successfully! Welcome to the platform!', 'success');
         
         // Refresh the page to update the UI
         setTimeout(() => {
@@ -4245,7 +4207,7 @@ window.showUpdatedRegisterForm = async function(referrerAddress, userAddress, pr
       statusDiv.textContent = `❌ Registration failed: ${error.message || error}. Please check your wallet connection and try again.`;
       
       confirmBtn.disabled = false;
-      confirmBtn.textContent = canRegisterFree ? '🚀 Register for Free (23 USD)' : '💰 Register with IAM (Market Price)';
+      confirmBtn.textContent = '🚀 Register Now';
       cancelBtn.disabled = false;
     }
   });
