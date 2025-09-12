@@ -250,12 +250,15 @@
     </div>
 
     <!-- Quick Action Buttons -->
-    <div class="quick-action-buttons" style="display:flex;justify-content:center;gap:0.3rem;margin:0.5rem auto;max-width:300px;flex-wrap:nowrap;">
+    <div class="quick-action-buttons" style="display:flex;justify-content:center;gap:0.3rem;margin:0.5rem auto;max-width:400px;flex-wrap:nowrap;">
       <button onclick="window.location.href='swap.html'" style="background:linear-gradient(135deg,#00ff88,#00cc6a);color:#0a0f1c;border:none;border-radius:6px;padding:0.4rem 0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:0.75rem;display:flex;align-items:center;gap:0.2rem;box-shadow:0 2px 6px rgba(0,255,136,0.3);min-width:80px;justify-content:center;flex:1;max-width:120px;" onmouseenter="this.style.transform='translateY(-1px)';this.style.boxShadow='0 3px 10px rgba(0,255,136,0.4)'" onmouseleave="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 6px rgba(0,255,136,0.3)'">
         🔄 Swap
       </button>
       <button onclick="window.location.href='transfer.html'" style="background:linear-gradient(135deg,#a786ff,#8b5cf6);color:#ffffff;border:none;border-radius:6px;padding:0.4rem 0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:0.75rem;display:flex;align-items:center;gap:0.2rem;box-shadow:0 2px 6px rgba(167,134,255,0.3);min-width:80px;justify-content:center;flex:1;max-width:120px;" onmouseenter="this.style.transform='translateY(-1px)';this.style.boxShadow='0 3px 10px rgba(167,134,255,0.4)'" onmouseleave="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 6px rgba(167,134,255,0.3)'">
         💸 Transfer
+      </button>
+      <button id="main-claim-btn" onclick="claimBinaryPointsFromMain()" style="background:linear-gradient(135deg,#ff6b35,#ff8e53);color:#ffffff;border:none;border-radius:6px;padding:0.4rem 0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:0.75rem;display:flex;align-items:center;gap:0.2rem;box-shadow:0 2px 6px rgba(255,107,51,0.3);min-width:80px;justify-content:center;flex:1;max-width:120px;" onmouseenter="this.style.transform='translateY(-1px)';this.style.boxShadow='0 3px 10px rgba(255,107,51,0.4)'" onmouseleave="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 6px rgba(255,107,51,0.3)'">
+        🎯 Claim <span id="claim-points-count">0</span>
       </button>
     </div>
     
@@ -2341,10 +2344,6 @@ document.addEventListener('DOMContentLoaded', function() {
   // Main page codes
 });
 </script>
-
-// End of main scripts
-</script>
-
 <script>
 // Voting Functions for Main Section
 async function voteForIndexMain(isLike) {
@@ -2974,6 +2973,7 @@ document.addEventListener('DOMContentLoaded', function() {
   
   console.log('✅ Modern orange and purple theme applied');
 });
+</script>
 
 
 
@@ -3188,6 +3188,7 @@ class BinaryPointsManager {
     await this.loadBinaryPoints();
     this.setupEventListeners();
     this.showCard();
+    this.startAutoRefresh();
   }
   
   async loadBinaryPoints() {
@@ -3200,9 +3201,32 @@ class BinaryPointsManager {
       const contract = window.contractConfig.contract;
       const userAddress = await window.contractConfig.signer.getAddress();
       
-      // Get user's binary points from getUserTree
-      const userTree = await contract.getUserTree(userAddress);
-      this.points = parseFloat(ethers.formatEther(userTree.binaryPoints));
+      console.log('🔄 Loading binary points for address:', userAddress);
+      
+      // Try to get user data from users function first
+      let userData;
+      try {
+        userData = await contract.users(userAddress);
+        console.log('📊 User data from users():', userData);
+        
+        if (userData && userData.binaryPoints) {
+          this.points = parseFloat(ethers.formatEther(userData.binaryPoints));
+          console.log('🎯 Binary points from users():', this.points);
+        } else {
+          // Fallback to getUserTree
+          const userTree = await contract.getUserTree(userAddress);
+          console.log('📊 User tree data:', userTree);
+          this.points = parseFloat(ethers.formatEther(userTree.binaryPoints));
+          console.log('🎯 Binary points from getUserTree():', this.points);
+        }
+      } catch (error) {
+        console.log('Error getting user data, trying getUserTree:', error);
+        // Fallback to getUserTree
+        const userTree = await contract.getUserTree(userAddress);
+        console.log('📊 User tree data:', userTree);
+        this.points = parseFloat(ethers.formatEther(userTree.binaryPoints));
+        console.log('🎯 Binary points from getUserTree():', this.points);
+      }
       
       this.updateDisplay();
     } catch (error) {
@@ -3216,15 +3240,59 @@ class BinaryPointsManager {
     const amountElement = document.getElementById('binary-points-amount');
     const cardElement = document.getElementById('floating-binary-points-card');
     
+    console.log('🔄 Updating display - Points:', this.points, 'Amount element:', amountElement, 'Card element:', cardElement);
+    
     if (amountElement) {
       amountElement.textContent = this.points.toFixed(2);
+      console.log('✅ Amount updated to:', this.points.toFixed(2));
     }
     
     if (cardElement) {
       if (this.points > 0) {
         cardElement.style.display = 'block';
+        console.log('✅ Card shown - Points > 0');
       } else {
         cardElement.style.display = 'none';
+        console.log('❌ Card hidden - Points = 0');
+      }
+    }
+    
+    // Update main claim button
+    this.updateMainClaimButton();
+  }
+  
+  // Function to refresh binary points
+  async refreshBinaryPoints() {
+    console.log('🔄 Refreshing binary points...');
+    await this.loadBinaryPoints();
+  }
+  
+  // Function to start auto-refresh
+  startAutoRefresh() {
+    // Refresh every 30 seconds
+    setInterval(() => {
+      if (window.contractConfig && window.contractConfig.contract) {
+        this.refreshBinaryPoints();
+      }
+    }, 30000);
+  }
+  
+  // Function to update main claim button
+  updateMainClaimButton() {
+    const mainClaimBtn = document.getElementById('main-claim-btn');
+    const pointsCount = document.getElementById('claim-points-count');
+    
+    if (mainClaimBtn && pointsCount) {
+      pointsCount.textContent = this.points.toFixed(0);
+      
+      if (this.points > 0) {
+        mainClaimBtn.disabled = false;
+        mainClaimBtn.style.opacity = '1';
+        mainClaimBtn.style.cursor = 'pointer';
+      } else {
+        mainClaimBtn.disabled = true;
+        mainClaimBtn.style.opacity = '0.6';
+        mainClaimBtn.style.cursor = 'not-allowed';
       }
     }
   }
@@ -3237,7 +3305,10 @@ class BinaryPointsManager {
   }
   
   async claimBinaryPoints() {
-    if (this.isClaiming || this.points <= 0) return;
+    if (this.isClaiming || this.points <= 0) {
+      console.log('❌ Cannot claim - isClaiming:', this.isClaiming, 'points:', this.points);
+      return;
+    }
     
     try {
       this.isClaiming = true;
@@ -3254,12 +3325,16 @@ class BinaryPointsManager {
       
       const contract = window.contractConfig.contract;
       
-      // Call claimBinaryPoints function
-      const tx = await contract.claimBinaryPoints();
+      console.log('🔄 Calling claim function...');
       
+      // Call claim function
+      const tx = await contract.claim();
+      
+      console.log('⏳ Waiting for transaction confirmation...');
       // Wait for transaction confirmation
       await tx.wait();
       
+      console.log('✅ Transaction confirmed, updating points...');
       // Update points after successful claim
       await this.loadBinaryPoints();
       
@@ -3268,7 +3343,19 @@ class BinaryPointsManager {
       
     } catch (error) {
       console.error('Error claiming binary points:', error);
-      this.showMessage('Error claiming binary points: ' + error.message, 'error');
+      
+      let errorMessage = 'Error claiming binary points';
+      if (error.code === 4001) {
+        errorMessage = 'Transaction was cancelled by user';
+      } else if (error.message && error.message.includes('insufficient funds')) {
+        errorMessage = 'Insufficient funds for transaction fee';
+      } else if (error.message && error.message.includes('user denied')) {
+        errorMessage = 'Transaction was rejected by user';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      this.showMessage(errorMessage, 'error');
     } finally {
       this.isClaiming = false;
       const claimBtn = document.getElementById('claim-binary-points-btn');
@@ -3310,26 +3397,61 @@ class BinaryPointsManager {
   
   showCard() {
     const cardElement = document.getElementById('floating-binary-points-card');
+    console.log('🔄 showCard called - Points:', this.points, 'Card element:', cardElement);
+    
     if (cardElement && this.points > 0) {
       cardElement.style.display = 'block';
+      console.log('✅ Card shown - User has binary points');
+    } else {
+      cardElement.style.display = 'none';
+      console.log('❌ Card hidden - No binary points or element not found');
     }
   }
 }
 
 // Initialize binary points manager when page loads
 document.addEventListener('DOMContentLoaded', function() {
+  console.log('🔄 DOMContentLoaded - Initializing binary points manager');
+  
+  // Check if card element exists
+  const cardElement = document.getElementById('floating-binary-points-card');
+  console.log('🔍 Card element exists:', !!cardElement);
+  
   // Wait for contract to be available
   const checkContract = setInterval(() => {
     if (window.contractConfig && window.contractConfig.contract) {
+      console.log('✅ Contract available - Creating BinaryPointsManager');
       window.binaryPointsManager = new BinaryPointsManager();
       clearInterval(checkContract);
+    } else {
+      console.log('⏳ Waiting for contract...');
     }
   }, 1000);
   
   // Stop checking after 30 seconds
-  setTimeout(() => clearInterval(checkContract), 30000);
+  setTimeout(() => {
+    clearInterval(checkContract);
+    console.log('⏰ Contract check timeout - Binary points manager not initialized');
+  }, 30000);
 });
+
+// Global function for main claim button
+window.claimBinaryPointsFromMain = async function() {
+  try {
+    if (window.binaryPointsManager) {
+      await window.binaryPointsManager.claimBinaryPoints();
+    } else {
+      console.log('❌ Binary points manager not available');
+      alert('Binary points manager not available. Please refresh the page.');
+    }
+  } catch (error) {
+    console.error('Error claiming from main button:', error);
+    alert('Error claiming binary points: ' + error.message);
+  }
+};
 </script>
+
+</div>
 
 </body>
 </html>

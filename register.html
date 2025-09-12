@@ -1806,28 +1806,22 @@
              // For reserve, use current user as upper
              await showReservePlacementInfo(contract, myAddress);
              
-             // Show additional message for reserve registration
-             const placementEl = document.getElementById('placement-info');
-             if (placementEl && placementEl.style.display !== 'none') {
-               const additionalInfo = document.createElement('div');
-               additionalInfo.style.cssText = `
-                 font-size: 0.6rem;
-                 opacity: 0.8;
-                 margin-top: 4px;
-                 padding: 4px 8px;
-                 background: rgba(255, 165, 0, 0.1);
-                 border: 1px solid rgba(255, 165, 0, 0.3);
-                 border-radius: 4px;
-                 color: #ff8c00;
-               `;
-               additionalInfo.innerHTML = `
-                 <strong>💡 Registration Info:</strong><br>
-                 • You are registering: ${newUserAddress.substring(0, 6)}...${newUserAddress.substring(38)}<br>
-                 • Referrer: ${referrerAddress.substring(0, 6)}...${referrerAddress.substring(38)}<br>
-                 • You can change wallet if you want to register with different account
-               `;
-               placementEl.appendChild(additionalInfo);
-             }
+                // Show simple additional message for reserve registration
+                const placementEl = document.getElementById('placement-info');
+                if (placementEl && placementEl.style.display !== 'none') {
+                  const additionalText = `Registering: ${newUserAddress.substring(0, 6)}...${newUserAddress.substring(38)} | Referrer: ${referrerAddress.substring(0, 6)}...${referrerAddress.substring(38)} | Change wallet if needed`;
+                  
+                  // Typewriter effect for additional info
+                  let j = 0;
+                  const additionalTypewriter = setInterval(() => {
+                    if (j < additionalText.length) {
+                      placementEl.textContent += additionalText.charAt(j);
+                      j++;
+                    } else {
+                      clearInterval(additionalTypewriter);
+                    }
+                  }, 30);
+                }
            }
            
          } catch (error) {

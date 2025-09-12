@@ -5565,6 +5565,8 @@ window.registerNewUserWithReferrer = async function(referrerAddress, newUserAddr
 		}
 
 		// فراخوانی تابع ثبت‌نام قرارداد
+		// registerAndActivate(referrer, upper, newUser)
+		// در سیستم رفرال، referrer و upper یکسان هستند
 		const tx = await contract.registerAndActivate(referrerAddress, referrerAddress, newUserAddress, { gasLimit: 500000 });
 		
 		// انتظار برای تأیید تراکنش

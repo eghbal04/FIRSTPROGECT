@@ -548,7 +548,7 @@
                      </div>
                      <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; background: rgba(167,134,255,0.08); border-radius: 6px; padding: 8px; border: 1px solid #a786ff22;">
                          <div style="display: flex; align-items: center; gap: 8px; width: 100%; flex-wrap: wrap;">
-                             <span class="profile-value" id="profile-referral-link" style="flex: 1; min-width: 200px; word-break: break-all; font-size: 0.85em; color: #a786ff; font-family: monospace; background: rgba(0,0,0,0.1); padding: 4px 6px; border-radius: 4px;">${window.location.origin}/?ref=${user.index ? user.index : address}</span>
+                             <span class="profile-value" id="profile-referral-link" style="flex: 1; min-width: 200px; word-break: break-all; font-size: 0.85em; color: #a786ff; font-family: monospace; background: rgba(0,0,0,0.1); padding: 4px 6px; border-radius: 4px;">${window.location.origin}/?ref=${user.index && BigInt(user.index) > 0n ? user.index : address}</span>
                              <button id="copyProfileReferral" style="background: linear-gradient(90deg,#00ff88,#a786ff); color: #181c2a; border: none; border-radius: 4px; padding: 6px 12px; font-size: 0.8em; cursor: pointer; font-weight: bold; white-space: nowrap; transition: all 0.2s; min-width: 60px; flex-shrink: 0;">Copy</button>
                          </div>
                          <div style="font-size: 0.75em; color: #a786ff; opacity: 0.8; text-align: center; margin-top: 4px;">
@@ -762,6 +762,43 @@
                          // Setup referral link copy button
              if (typeof setupReferralCopy === 'function') {
                  setupReferralCopy();
+             }
+             
+             // Direct setup for copy button
+             const copyBtn = document.getElementById('copyProfileReferral');
+             if (copyBtn) {
+                 copyBtn.addEventListener('click', async () => {
+                     try {
+                         const linkElement = document.getElementById('profile-referral-link');
+                         if (linkElement) {
+                             const referralLink = linkElement.textContent;
+                             
+                             // Try modern clipboard API first
+                             if (navigator.clipboard && navigator.clipboard.writeText) {
+                                 await navigator.clipboard.writeText(referralLink);
+                                 copyBtn.textContent = 'کپی شد!';
+                                 setTimeout(() => copyBtn.textContent = 'Copy', 1500);
+                             } else {
+                                 // Fallback for older browsers
+                                 const textArea = document.createElement('textarea');
+                                 textArea.value = referralLink;
+                                 document.body.appendChild(textArea);
+                                 textArea.select();
+                                 document.execCommand('copy');
+                                 document.body.removeChild(textArea);
+                                 copyBtn.textContent = 'کپی شد!';
+                                 setTimeout(() => copyBtn.textContent = 'Copy', 1500);
+                             }
+                         } else {
+                             copyBtn.textContent = 'خطا: لینک یافت نشد';
+                             setTimeout(() => copyBtn.textContent = 'Copy', 1500);
+                         }
+                     } catch (error) {
+                         console.error('Copy error:', error);
+                         copyBtn.textContent = 'خطا در کپی';
+                         setTimeout(() => copyBtn.textContent = 'Copy', 1500);
+                     }
+                 });
              }
              
              // Calculate and display left and right wallet counts

@@ -2368,23 +2368,46 @@ function showReferralRegistrationForm(referrerAddress) {
                         }
                     }
                     
-                    // Register user with referrer using correct registerAndActivate parameters
-                    // registerAndActivate(referrer, upper, newUser)
-                    const tx = await contract.registerAndActivate(referrerAddress, referrerAddress, userAddress);
-                    await tx.wait();
-                    
+                    // Register user with referrer using config.js function
                     statusDiv.innerHTML = `
-                        <div style="color:#00ff88;background:rgba(0,255,136,0.1);padding:0.8rem;border-radius:6px;">
-                            ✅ Registration completed successfully!<br>
-                            <small style="color: #ccc; font-size: 0.8rem;">Transaction: ${tx.hash}</small>
+                        <div style="color: #ffc107; background: rgba(255,193,7,0.1); padding: 0.8rem; border-radius: 6px; margin-bottom: 0.5rem;">
+                            ⏳ Registering user with referrer... Please wait
                         </div>
                     `;
                     
-                    // Close modal after 3 seconds
-                    setTimeout(() => {
-                        closeReferralRegistrationModal();
-                        window.location.reload();
-                    }, 3000);
+                    // Use the centralized registration function from config.js
+                    console.log('🔄 Calling registerNewUserWithReferrer with:', { referrerAddress, userAddress });
+                    
+                    // Check if function is available
+                    if (typeof window.registerNewUserWithReferrer !== 'function') {
+                        throw new Error('registerNewUserWithReferrer function not available. Please refresh the page.');
+                    }
+                    
+                    const registrationSuccess = await window.registerNewUserWithReferrer(referrerAddress, userAddress, statusDiv);
+                    console.log('📋 Registration result:', registrationSuccess);
+                    
+                    if (registrationSuccess) {
+                        statusDiv.innerHTML = `
+                            <div style="color:#00ff88;background:rgba(0,255,136,0.1);padding:0.8rem;border-radius:6px;">
+                                ✅ Registration completed successfully!<br>
+                                <small style="color: #ccc; font-size: 0.8rem;">User registered and activated in the network</small>
+                            </div>
+                        `;
+                        
+                        // Close modal after 3 seconds
+                        setTimeout(() => {
+                            closeReferralRegistrationModal();
+                            window.location.reload();
+                        }, 3000);
+                    } else {
+                        statusDiv.innerHTML = `
+                            <div style="color:#ff4444;background:rgba(255,68,68,0.1);padding:0.8rem;border-radius:6px;">
+                                ❌ Registration failed. Please try again.
+                            </div>
+                        `;
+                        registerBtn.textContent = '🚀 Register in Network';
+                        registerBtn.disabled = false;
+                    }
                     
                 } catch (error) {
                     console.error('Registration error:', error);

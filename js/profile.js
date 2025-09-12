@@ -344,6 +344,35 @@ function setupReferralCopy() {
         
         newCopyBtn.addEventListener('click', async () => {
             try {
+                console.log('🔄 Copy button clicked');
+                
+                // First try to get the link from the displayed element
+                const linkElement = document.getElementById('profile-referral-link');
+                if (linkElement && linkElement.textContent) {
+                    const referralLink = linkElement.textContent;
+                    console.log('📋 Copying link from element:', referralLink);
+                    
+                    // تلاش برای کپی کردن
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        await navigator.clipboard.writeText(referralLink);
+                        newCopyBtn.textContent = 'کپی شد!';
+                        setTimeout(() => newCopyBtn.textContent = 'Copy', 1500);
+                        return;
+                    } else {
+                        // روش جایگزین برای مرورگرهای قدیمی
+                        const textArea = document.createElement('textarea');
+                        textArea.value = referralLink;
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        newCopyBtn.textContent = 'کپی شد!';
+                        setTimeout(() => newCopyBtn.textContent = 'Copy', 1500);
+                        return;
+                    }
+                }
+                
+                // Fallback: generate link from wallet connection
                 const { address } = await window.connectWallet();
                 if (!address) {
                     throw new Error('آدرس کیف پول در دسترس نیست');
@@ -351,14 +380,16 @@ function setupReferralCopy() {
                 
                 // Get user profile to get index
                 const profile = await loadUserProfileOnce();
-                const referralId = profile.index ? profile.index : address;
+                const referralId = profile.index && BigInt(profile.index) > 0n ? profile.index : address;
                 const referralLink = `${window.location.origin}/?ref=${referralId}`;
+                
+                console.log('📋 Generated link:', referralLink);
                 
                 // تلاش برای کپی کردن
                 if (navigator.clipboard && navigator.clipboard.writeText) {
                     await navigator.clipboard.writeText(referralLink);
                     newCopyBtn.textContent = 'کپی شد!';
-                    setTimeout(() => newCopyBtn.textContent = 'کپی', 1500);
+                    setTimeout(() => newCopyBtn.textContent = 'Copy', 1500);
                 } else {
                     // روش جایگزین برای مرورگرهای قدیمی
                     const textArea = document.createElement('textarea');
@@ -368,10 +399,12 @@ function setupReferralCopy() {
                     document.execCommand('copy');
                     document.body.removeChild(textArea);
                     newCopyBtn.textContent = 'کپی شد!';
-                    setTimeout(() => newCopyBtn.textContent = 'کپی', 1500);
+                    setTimeout(() => newCopyBtn.textContent = 'Copy', 1500);
                 }
             } catch (error) {
-                showProfileError('خطا در کپی کردن لینک دعوت: ' + error.message);
+                console.error('❌ Copy error:', error);
+                newCopyBtn.textContent = 'خطا در کپی';
+                setTimeout(() => newCopyBtn.textContent = 'Copy', 1500);
             }
         });
     }
@@ -477,6 +510,44 @@ if (!window.checkConnection) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Setup copy button for referral link
+    const copyBtn = document.getElementById('copyProfileReferral');
+    if (copyBtn) {
+        copyBtn.addEventListener('click', async () => {
+            try {
+                console.log('🔄 Copy button clicked (DOMContentLoaded)');
+                
+                const linkElement = document.getElementById('profile-referral-link');
+                if (linkElement && linkElement.textContent) {
+                    const referralLink = linkElement.textContent;
+                    console.log('📋 Copying link:', referralLink);
+                    
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        await navigator.clipboard.writeText(referralLink);
+                        copyBtn.textContent = 'کپی شد!';
+                        setTimeout(() => copyBtn.textContent = 'Copy', 1500);
+                    } else {
+                        const textArea = document.createElement('textarea');
+                        textArea.value = referralLink;
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        copyBtn.textContent = 'کپی شد!';
+                        setTimeout(() => copyBtn.textContent = 'Copy', 1500);
+                    }
+                } else {
+                    copyBtn.textContent = 'خطا: لینک یافت نشد';
+                    setTimeout(() => copyBtn.textContent = 'Copy', 1500);
+                }
+            } catch (error) {
+                console.error('❌ Copy error:', error);
+                copyBtn.textContent = 'خطا در کپی';
+                setTimeout(() => copyBtn.textContent = 'Copy', 1500);
+            }
+        });
+    }
+    
     const claimBtn = document.getElementById('profile-claim-btn');
     const claimStatus = document.getElementById('profile-claim-status');
     if (claimBtn && claimStatus) {
