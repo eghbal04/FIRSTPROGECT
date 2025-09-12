@@ -3903,18 +3903,19 @@ function showUnregisteredUserPrompt() {
   
   modalContent.innerHTML = `
     <div style="font-size: 2rem; margin-bottom: 1rem;">🚀</div>
-    <h2 style="color: #a786ff; margin: 0 0 1rem 0; font-size: 1.5rem;">Welcome to IAMPHOENIX!</h2>
+    <h2 style="color: #a786ff; margin: 0 0 1rem 0; font-size: 1.5rem;">🎉 Welcome to IAMPHOENIX!</h2>
     <p style="color: #ccc; margin-bottom: 1.5rem; font-size: 0.9rem;">
-      Your wallet is not registered yet. Complete registration to access all features and start earning.
+      Your wallet is not registered yet. Complete registration to unlock exclusive features, earn rewards, and join our thriving community!
     </p>
     
     <div style="background: rgba(167, 134, 255, 0.1); border: 1px solid rgba(167, 134, 255, 0.3); border-radius: 8px; padding: 1rem; margin: 1rem 0; text-align: left;">
-      <h4 style="color: #a786ff; margin: 0 0 0.5rem 0; font-size: 1rem;">Registration Benefits</h4>
+      <h4 style="color: #a786ff; margin: 0 0 0.5rem 0; font-size: 1rem;">🌟 Registration Benefits</h4>
       <div style="font-size: 0.9rem; line-height: 1.4;">
-        <div style="margin-bottom: 0.3rem;">• Access to all platform features</div>
-        <div style="margin-bottom: 0.3rem;">• Earn rewards and commissions</div>
-        <div style="margin-bottom: 0.3rem;">• Join the referral program</div>
-        <div style="margin-bottom: 0.3rem;">• Participate in voting system</div>
+        <div style="margin-bottom: 0.3rem;">• <strong>Full Platform Access:</strong> All features unlocked</div>
+        <div style="margin-bottom: 0.3rem;">• <strong>Earning Opportunities:</strong> Rewards & commissions</div>
+        <div style="margin-bottom: 0.3rem;">• <strong>Referral Program:</strong> Earn 10% on referrals</div>
+        <div style="margin-bottom: 0.3rem;">• <strong>Welcome Bonus:</strong> Start earning immediately</div>
+        <div style="margin-bottom: 0.3rem;">• <strong>Free Registration:</strong> No fees required</div>
       </div>
     </div>
     
@@ -3929,7 +3930,7 @@ function showUnregisteredUserPrompt() {
         font-weight: 600;
         cursor: pointer;
         font-size: 0.9rem;
-      ">Register Now</button>
+      ">🚀 Register Now</button>
       <button id="dismissRegistrationPrompt" style="
         flex: 1;
         background: linear-gradient(135deg, #666, #888);
@@ -3940,7 +3941,7 @@ function showUnregisteredUserPrompt() {
         font-weight: 600;
         cursor: pointer;
         font-size: 0.9rem;
-      ">Maybe Later</button>
+      ">⏰ Maybe Later</button>
     </div>
   `;
   
@@ -4080,16 +4081,17 @@ window.showUpdatedRegisterForm = async function(referrerAddress, userAddress, pr
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     ">
       <div style="text-align: center; margin-bottom: 1.5rem;">
-        <h2 style="color: #a786ff; margin: 0 0 0.5rem 0; font-size: 1.5rem;">Complete Registration</h2>
-        <p style="color: #ccc; margin: 0; font-size: 0.9rem;">Register your wallet to access all features</p>
+        <h2 style="color: #a786ff; margin: 0 0 0.5rem 0; font-size: 1.5rem;">🚀 Complete Your Registration</h2>
+        <p style="color: #ccc; margin: 0; font-size: 0.9rem;">Join our platform and unlock exclusive features, rewards, and earning opportunities</p>
       </div>
       
       <div style="background: rgba(167, 134, 255, 0.1); border: 1px solid rgba(167, 134, 255, 0.3); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
-        <h4 style="color: #a786ff; margin: 0 0 0.5rem 0; font-size: 1rem;">Registration Details</h4>
+        <h4 style="color: #a786ff; margin: 0 0 0.5rem 0; font-size: 1rem;">📋 Registration Information</h4>
         <div style="font-size: 0.85rem; line-height: 1.4;">
-          <div style="margin-bottom: 0.3rem;"><strong>Your Address:</strong> <span style="color: #00ff88; font-family: monospace; font-size: 0.8rem;">${userAddress}</span></div>
+          <div style="margin-bottom: 0.3rem;"><strong>Your Wallet:</strong> <span style="color: #00ff88; font-family: monospace; font-size: 0.8rem;">${userAddress}</span></div>
           <div style="margin-bottom: 0.3rem;"><strong>Referrer:</strong> <span style="color: #a786ff; font-family: monospace; font-size: 0.8rem;">${referrerAddress}</span></div>
-          <div style="margin-bottom: 0.3rem;"><strong>Network:</strong> Polygon</div>
+          <div style="margin-bottom: 0.3rem;"><strong>Blockchain:</strong> Polygon Network</div>
+          <div style="margin-bottom: 0.3rem;"><strong>Registration Fee:</strong> <span style="color: #ffd700;">Free</span></div>
         </div>
       </div>
       
@@ -4113,7 +4115,7 @@ window.showUpdatedRegisterForm = async function(referrerAddress, userAddress, pr
           font-weight: 600;
           cursor: pointer;
           font-size: 0.9rem;
-        ">Register Now</button>
+        ">🚀 Start Registration</button>
         <button id="cancel-registration" style="
           flex: 1;
           background: linear-gradient(135deg, #666, #888);
@@ -4124,7 +4126,7 @@ window.showUpdatedRegisterForm = async function(referrerAddress, userAddress, pr
           font-weight: 600;
           cursor: pointer;
           font-size: 0.9rem;
-        ">Cancel</button>
+        ">❌ Cancel</button>
       </div>
     </div>
   `;
@@ -4162,12 +4164,12 @@ window.showUpdatedRegisterForm = async function(referrerAddress, userAddress, pr
       statusDiv.style.background = 'rgba(0, 255, 136, 0.1)';
       statusDiv.style.color = '#00ff88';
       statusDiv.style.border = '1px solid rgba(0, 255, 136, 0.3)';
-      statusDiv.textContent = '✅ Registration completed successfully!';
+      statusDiv.textContent = '🎉 Registration completed successfully! Welcome to the platform!';
       
       // Close modal after success
   setTimeout(() => {
         modal.remove();
-        showMessage('Registration completed successfully!', 'success');
+        showMessage('🎉 Registration completed successfully! Welcome to the platform!', 'success');
         
         // Refresh the page to update the UI
         setTimeout(() => {
@@ -4181,10 +4183,10 @@ window.showUpdatedRegisterForm = async function(referrerAddress, userAddress, pr
       statusDiv.style.background = 'rgba(255, 68, 68, 0.1)';
       statusDiv.style.color = '#ff4444';
       statusDiv.style.border = '1px solid rgba(255, 68, 68, 0.3)';
-      statusDiv.textContent = `❌ Registration failed: ${error.message || error}`;
+      statusDiv.textContent = `❌ Registration failed: ${error.message || error}. Please check your wallet connection and try again.`;
       
       confirmBtn.disabled = false;
-      confirmBtn.textContent = 'Register Now';
+      confirmBtn.textContent = '🚀 Start Registration';
       cancelBtn.disabled = false;
     }
   });
@@ -4229,17 +4231,18 @@ function showReferralDetectedMessage(referralCode) {
   
   modalContent.innerHTML = `
     <div style="font-size: 2rem; margin-bottom: 1rem;">🎉</div>
-    <h2 style="color: #a786ff; margin: 0 0 1rem 0; font-size: 1.5rem;">Referral Link Detected!</h2>
+    <h2 style="color: #a786ff; margin: 0 0 1rem 0; font-size: 1.5rem;">🎯 Referral Link Detected!</h2>
     <p style="color: #ccc; margin-bottom: 1.5rem; font-size: 0.9rem;">
-      You've been referred by someone! Complete registration to get started.
+      You've been referred by someone! Complete registration to unlock exclusive benefits and start earning.
     </p>
     
     <div style="background: rgba(167, 134, 255, 0.1); border: 1px solid rgba(167, 134, 255, 0.3); border-radius: 8px; padding: 1rem; margin: 1rem 0; text-align: left;">
-      <h4 style="color: #a786ff; margin: 0 0 0.5rem 0; font-size: 1rem;">Referral Information</h4>
+      <h4 style="color: #a786ff; margin: 0 0 0.5rem 0; font-size: 1rem;">🎯 Referral Program</h4>
       <div style="font-size: 0.9rem; line-height: 1.4;">
         <div style="margin-bottom: 0.3rem;"><strong>Referral Code:</strong> <span style="color: #00ff88; font-family: monospace;">${referralCode}</span></div>
-        <div style="margin-bottom: 0.3rem;"><strong>Referrer Benefits:</strong> 10% Commission</div>
-        <div style="margin-bottom: 0.3rem;"><strong>Your Benefits:</strong> Welcome Bonus</div>
+        <div style="margin-bottom: 0.3rem;"><strong>Referrer Rewards:</strong> <span style="color: #00ff88;">10% Commission on all referrals</span></div>
+        <div style="margin-bottom: 0.3rem;"><strong>Your Benefits:</strong> <span style="color: #ffd700;">Welcome Bonus + Access to all features</span></div>
+        <div style="margin-bottom: 0.3rem;"><strong>Earning Potential:</strong> <span style="color: #a786ff;">Unlimited referrals = Unlimited earnings</span></div>
       </div>
     </div>
     
@@ -4254,7 +4257,7 @@ function showReferralDetectedMessage(referralCode) {
         font-weight: 600;
         cursor: pointer;
         font-size: 0.9rem;
-      ">Continue with Referral</button>
+      ">🎯 Continue with Referral</button>
       <button id="dismissReferral" style="
         flex: 1;
         background: linear-gradient(135deg, #666, #888);
@@ -4265,7 +4268,7 @@ function showReferralDetectedMessage(referralCode) {
         font-weight: 600;
         cursor: pointer;
         font-size: 0.9rem;
-      ">Skip Referral</button>
+      ">⏭️ Skip Referral</button>
     </div>
   `;
   
