@@ -3367,7 +3367,7 @@ class BinaryPointsManager {
         mainClaimBtn.style.cursor = 'pointer';
         mainClaimBtn.style.background = 'linear-gradient(135deg,#ff6b35,#ff8e53)';
         mainClaimBtn.style.boxShadow = '0 2px 6px rgba(255,107,51,0.3)';
-        mainClaimBtn.title = 'دریافت امتیازات موجود';
+        mainClaimBtn.title = 'Claim Available Points';
       } else {
         // Disable button when no points available
         mainClaimBtn.disabled = true;
@@ -3375,7 +3375,7 @@ class BinaryPointsManager {
         mainClaimBtn.style.cursor = 'not-allowed';
         mainClaimBtn.style.background = 'linear-gradient(135deg,#666,#888)';
         mainClaimBtn.style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)';
-        mainClaimBtn.title = 'هیچ امتیازی برای دریافت وجود ندارد';
+        mainClaimBtn.title = 'No Points Available to Claim';
       }
     }
   }
@@ -3504,22 +3504,22 @@ async function performClaim() {
     await window.binaryPointsManager.loadBinaryPoints();
       
       // Show success message
-    showPersianMessage('🎉 امتیازات با موفقیت دریافت شد!', 'success');
+    showPersianMessage('🎉 Points claimed successfully!', 'success');
       
     } catch (error) {
       console.error('Error claiming binary points:', error);
       
-    let errorMessage = 'خطا در دریافت امتیازات';
+    let errorMessage = 'Error claiming points';
       if (error.code === 4001) {
-      errorMessage = 'تراکنش توسط کاربر لغو شد';
+      errorMessage = 'Transaction cancelled by user';
       } else if (error.message && error.message.includes('insufficient funds')) {
-      errorMessage = 'موجودی کافی برای پرداخت کارمزد تراکنش ندارید';
+      errorMessage = 'Insufficient funds to pay transaction fee';
       } else if (error.message && error.message.includes('user denied')) {
-      errorMessage = 'تراکنش توسط کاربر رد شد';
+      errorMessage = 'Transaction rejected by user';
     } else if (error.message && error.message.includes('revert')) {
-      errorMessage = 'تراکنش ناموفق بود. لطفاً دوباره تلاش کنید';
+      errorMessage = 'Transaction failed. Please try again';
       } else if (error.message) {
-      errorMessage = `خطا: ${error.message}`;
+      errorMessage = `Error: ${error.message}`;
     }
     
     showPersianMessage(errorMessage, 'error');
@@ -3538,32 +3538,32 @@ window.claimBinaryPointsFromMain = async function() {
 
     // Check if wallet is connected
     if (!window.ethereum || !window.ethereum.selectedAddress) {
-      showPersianMessage('لطفاً ابتدا کیف پول خود را متصل کنید', 'error');
+      showPersianMessage('Please connect your wallet first', 'error');
       return;
     }
 
     // Check if binary points manager is available
     if (!window.binaryPointsManager) {
       console.log('❌ Binary points manager not available');
-      showPersianMessage('سیستم امتیازدهی در دسترس نیست. لطفاً صفحه را تازه کنید', 'error');
+      showPersianMessage('Points system not available. Please refresh the page', 'error');
       return;
     }
 
     // Check if user has points to claim
     if (window.binaryPointsManager.points <= 0) {
-      showPersianMessage('⚠️ شما امتیازی برای دریافت ندارید', 'warning');
+      showPersianMessage('⚠️ You have no points to claim', 'warning');
       return;
     }
 
     // Show loading state
     if (mainClaimBtn) {
       mainClaimBtn.disabled = true;
-      mainClaimBtn.innerHTML = '⏳ در حال پردازش...';
+      mainClaimBtn.innerHTML = '⏳ Processing...';
       mainClaimBtn.style.opacity = '0.7';
     }
 
     // Show processing message
-    showPersianMessage('🚀 در حال شروع دریافت امتیازات...', 'loading');
+    showPersianMessage('🚀 Starting points claim...', 'loading');
 
     // Call the claim function directly
     await performClaim();
@@ -3584,7 +3584,7 @@ window.claimBinaryPointsFromMain = async function() {
         mainClaimBtn.style.opacity = '0.4';
         mainClaimBtn.style.background = 'linear-gradient(135deg,#666,#888)';
         mainClaimBtn.style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)';
-        mainClaimBtn.title = 'هیچ امتیازی برای دریافت وجود ندارد';
+        mainClaimBtn.title = 'No Points Available to Claim';
       }
     }
   }
@@ -4045,11 +4045,37 @@ async function getReferrerAddressFromCode(referralCode, contract) {
   }
 }
 
-// Updated registration form function that works with new registerAndActivate
+// Updated registration form function with dual registration logic
 window.showUpdatedRegisterForm = async function(referrerAddress, userAddress, provider, contract) {
   // Remove any existing modal
   const existingModal = document.getElementById('updated-register-form-modal');
   if (existingModal) existingModal.remove();
+
+  // Check IAM balance and registration price
+  let iamBalance = 0;
+  let regPrice = 0;
+  let canRegisterFree = false;
+  let balanceStatus = '';
+
+  try {
+    // Get IAM token balance
+    const balanceRaw = await contract.balanceOf(userAddress);
+    iamBalance = parseFloat(ethers.formatUnits(balanceRaw, 18));
+    
+    // Get registration price
+    regPrice = await contract.regPrice();
+    regPrice = parseFloat(ethers.formatUnits(regPrice, 18));
+    
+    canRegisterFree = iamBalance >= regPrice;
+    balanceStatus = canRegisterFree ? 'sufficient' : 'insufficient';
+    
+    console.log('IAM Balance:', iamBalance);
+    console.log('Registration Price:', regPrice);
+    console.log('Can Register Free:', canRegisterFree);
+  } catch (error) {
+    console.error('Error checking balance:', error);
+    balanceStatus = 'error';
+  }
 
   const modal = document.createElement('div');
   modal.id = 'updated-register-form-modal';
@@ -4091,9 +4117,29 @@ window.showUpdatedRegisterForm = async function(referrerAddress, userAddress, pr
           <div style="margin-bottom: 0.3rem;"><strong>Your Wallet:</strong> <span style="color: #00ff88; font-family: monospace; font-size: 0.8rem;">${userAddress}</span></div>
           <div style="margin-bottom: 0.3rem;"><strong>Referrer:</strong> <span style="color: #a786ff; font-family: monospace; font-size: 0.8rem;">${referrerAddress}</span></div>
           <div style="margin-bottom: 0.3rem;"><strong>Blockchain:</strong> Polygon Network</div>
-          <div style="margin-bottom: 0.3rem;"><strong>Registration Fee:</strong> <span style="color: #ffd700;">Free</span></div>
+          <div style="margin-bottom: 0.3rem;"><strong>Registration Price:</strong> <span style="color: #ffd700;">${regPrice.toFixed(2)} IAM</span></div>
+          <div style="margin-bottom: 0.3rem;"><strong>Your IAM Balance:</strong> <span style="color: ${canRegisterFree ? '#00ff88' : '#ff4444'};">${iamBalance.toFixed(2)} IAM</span></div>
         </div>
       </div>
+      
+      ${!canRegisterFree ? `
+      <div style="background: rgba(255, 165, 0, 0.1); border: 1px solid rgba(255, 165, 0, 0.3); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+        <h4 style="color: #ffa500; margin: 0 0 0.5rem 0; font-size: 1rem;">💰 Paid Registration Required</h4>
+        <div style="font-size: 0.9rem; line-height: 1.4; color: #ffccaa;">
+          <div style="margin-bottom: 0.3rem;">You need <strong>${regPrice.toFixed(2)} IAM</strong> for free registration (23 USD equivalent)</div>
+          <div style="margin-bottom: 0.3rem;">You currently have <strong>${iamBalance.toFixed(2)} IAM</strong></div>
+          <div style="margin-bottom: 0.3rem;">Registration will cost <strong>${regPrice.toFixed(2)} IAM</strong> (current market price)</div>
+        </div>
+      </div>
+      ` : `
+      <div style="background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+        <h4 style="color: #00ff88; margin: 0 0 0.5rem 0; font-size: 1rem;">✅ Free Registration Available</h4>
+        <div style="font-size: 0.9rem; line-height: 1.4; color: #aaffaa;">
+          <div style="margin-bottom: 0.3rem;">You have sufficient IAM balance for free registration!</div>
+          <div style="margin-bottom: 0.3rem;">Registration will cost <strong>${regPrice.toFixed(2)} IAM</strong> (23 USD equivalent)</div>
+        </div>
+      </div>
+      `}
       
       <div id="registration-status" style="
         padding: 0.8rem;
@@ -4104,20 +4150,22 @@ window.showUpdatedRegisterForm = async function(referrerAddress, userAddress, pr
         display: none;
       "></div>
       
-      <div style="display: flex; gap: 1rem;">
+      <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
         <button id="confirm-registration" style="
           flex: 1;
-          background: linear-gradient(135deg, #a786ff, #00ff88);
-          color: #0a0f1c;
+          min-width: 120px;
+          background: ${canRegisterFree ? 'linear-gradient(135deg, #a786ff, #00ff88)' : 'linear-gradient(135deg, #ff6b6b, #ffa500)'};
+          color: #ffffff;
           border: none;
           padding: 0.8rem 1.5rem;
           border-radius: 8px;
           font-weight: 600;
           cursor: pointer;
           font-size: 0.9rem;
-        ">🚀 Start Registration</button>
+        ">${canRegisterFree ? '🚀 Register for Free (23 USD)' : '💰 Register with IAM (Market Price)'}</button>
         <button id="cancel-registration" style="
           flex: 1;
+          min-width: 120px;
           background: linear-gradient(135deg, #666, #888);
           color: #ffffff;
           border: none;
@@ -4145,14 +4193,20 @@ window.showUpdatedRegisterForm = async function(referrerAddress, userAddress, pr
       statusDiv.style.background = 'rgba(167, 134, 255, 0.1)';
       statusDiv.style.color = '#a786ff';
       statusDiv.style.border = '1px solid rgba(167, 134, 255, 0.3)';
-      statusDiv.textContent = '⏳ Processing registration...';
+      statusDiv.textContent = canRegisterFree ? '⏳ Processing free registration (23 USD equivalent)...' : '⏳ Processing paid registration (market price)...';
       
       confirmBtn.disabled = true;
       confirmBtn.textContent = 'Registering...';
       cancelBtn.disabled = true;
 
-      // Call registerAndActivate with correct parameters
-      const tx = await contract.registerAndActivate(referrerAddress, referrerAddress, userAddress);
+      let tx;
+      if (canRegisterFree) {
+        // Call registerFree for free registration (23 USD equivalent)
+        tx = await contract.registerFree(referrerAddress, userAddress);
+    } else {
+        // Call registerAndActivate for paid registration (market price)
+        tx = await contract.registerAndActivate(referrerAddress, referrerAddress, userAddress);
+      }
       
       statusDiv.style.background = 'rgba(167, 134, 255, 0.1)';
       statusDiv.style.color = '#a786ff';
@@ -4164,12 +4218,17 @@ window.showUpdatedRegisterForm = async function(referrerAddress, userAddress, pr
       statusDiv.style.background = 'rgba(0, 255, 136, 0.1)';
       statusDiv.style.color = '#00ff88';
       statusDiv.style.border = '1px solid rgba(0, 255, 136, 0.3)';
-      statusDiv.textContent = '🎉 Registration completed successfully! Welcome to the platform!';
+      statusDiv.textContent = canRegisterFree ? 
+        '🎉 Free registration completed successfully! Welcome to the platform!' : 
+        '🎉 Paid registration completed successfully! Welcome to the platform!';
       
       // Close modal after success
   setTimeout(() => {
         modal.remove();
-        showMessage('🎉 Registration completed successfully! Welcome to the platform!', 'success');
+        const successMessage = canRegisterFree ? 
+          '🎉 Free registration completed successfully! Welcome to the platform!' : 
+          '🎉 Paid registration completed successfully! Welcome to the platform!';
+        showMessage(successMessage, 'success');
         
         // Refresh the page to update the UI
         setTimeout(() => {
@@ -4186,10 +4245,11 @@ window.showUpdatedRegisterForm = async function(referrerAddress, userAddress, pr
       statusDiv.textContent = `❌ Registration failed: ${error.message || error}. Please check your wallet connection and try again.`;
       
       confirmBtn.disabled = false;
-      confirmBtn.textContent = '🚀 Start Registration';
+      confirmBtn.textContent = canRegisterFree ? '🚀 Register for Free (23 USD)' : '💰 Register with IAM (Market Price)';
       cancelBtn.disabled = false;
     }
   });
+
 
   document.getElementById('cancel-registration').addEventListener('click', () => {
     modal.remove();
