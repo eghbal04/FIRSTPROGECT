@@ -3642,13 +3642,16 @@ class FloatingReferralCard {
       if (window.ethereum && window.ethereum.selectedAddress) {
         const address = window.ethereum.selectedAddress;
         
-        // Generate referral code from address (first 8 characters)
-        this.referralCode = address.substring(2, 10).toUpperCase();
+        // Use the full wallet address as referral code
+        this.referralCode = address;
         
-        // Create referral link
+        // Create referral link with full address
         const referralLink = `${this.baseUrl}?ref=${this.referralCode}`;
         
-        this.linkDisplay.textContent = referralLink;
+        // Display a shortened version for better UI, but keep full link for copying
+        const shortAddress = `${address.substring(0, 6)}...${address.substring(38)}`;
+        this.linkDisplay.textContent = `${this.baseUrl}?ref=${shortAddress}`;
+        this.linkDisplay.title = `Full link: ${referralLink}`;
         this.statusDisplay.textContent = 'Connected';
         this.statusDisplay.style.color = '#00ff88';
         this.earningsDisplay.textContent = '5% Commission';
@@ -3678,9 +3681,10 @@ class FloatingReferralCard {
   
   async copyReferralLink() {
     try {
-      const link = this.linkDisplay.textContent;
-      if (link && link !== 'Not Connected' && link !== 'Error') {
-        await navigator.clipboard.writeText(link);
+      if (this.referralCode && this.referralCode !== 'Not Connected' && this.referralCode !== 'Error') {
+        // Copy the full link with complete address
+        const fullLink = `${this.baseUrl}?ref=${this.referralCode}`;
+        await navigator.clipboard.writeText(fullLink);
         
         // Visual feedback
         const originalText = this.copyBtn.textContent;
@@ -3961,12 +3965,15 @@ function checkReferralLink() {
 // Function to convert referral code to address
 async function getReferrerAddressFromCode(referralCode, contract) {
   try {
-    // If it's already an address (42 characters starting with 0x)
+    // If it's already a valid Ethereum address (42 characters starting with 0x)
     if (referralCode && referralCode.length === 42 && referralCode.startsWith('0x')) {
-      return referralCode;
+      // Validate that it's a proper Ethereum address format
+      if (/^0x[a-fA-F0-9]{40}$/.test(referralCode)) {
+        return referralCode;
+      }
     }
     
-    // If it's a referral code (8 characters), we need to find the corresponding address
+    // If it's a short referral code (8 characters), we need to find the corresponding address
     if (referralCode && referralCode.length === 8) {
       // For now, we'll use a simple mapping or the deployer address
       // In a real implementation, you might have a mapping contract
