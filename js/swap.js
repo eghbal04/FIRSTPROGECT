@@ -707,7 +707,9 @@ class SwapManager {
         
         if (submitBtn) {
             submitBtn.disabled = busy;
-            submitBtn.textContent = busy ? 'Processing...' : 'Convert';
+            submitBtn.textContent = busy ? '⏳ Processing...' : '💱 Swap';
+            submitBtn.style.opacity = busy ? '0.7' : '1';
+            submitBtn.style.cursor = busy ? 'not-allowed' : 'pointer';
             console.log('✅ Submit button configured');
         } else {
             console.warn('⚠️ Submit button not found');
@@ -785,6 +787,202 @@ class SwapManager {
         console.log('✅ Message displayed');
     }
 
+    // Show English popup with transaction details
+    showEnglishPopup(message, type, transactionDetails = null) {
+        console.log('📢 Showing English popup:', { message, type, transactionDetails });
+        
+        // Remove any existing popup
+        const existingPopup = document.querySelector('.swap-popup-overlay');
+        if (existingPopup) {
+            existingPopup.remove();
+        }
+        
+        // Create popup overlay
+        const popupOverlay = document.createElement('div');
+        popupOverlay.className = 'swap-popup-overlay';
+        popupOverlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            font-family: 'Montserrat', 'Arial', sans-serif;
+        `;
+        
+        // Create popup content
+        const popupContent = document.createElement('div');
+        popupContent.style.cssText = `
+            background: linear-gradient(135deg, #1a1f2e, #2a3441);
+            border: 2px solid ${type === 'success' ? '#00ff88' : type === 'error' ? '#ff4444' : '#a786ff'};
+            border-radius: 15px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            color: #ffffff;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            animation: popupSlideIn 0.3s ease-out;
+        `;
+        
+        // Add animation keyframes
+        if (!document.querySelector('#swap-popup-animations')) {
+            const style = document.createElement('style');
+            style.id = 'swap-popup-animations';
+            style.textContent = `
+                @keyframes popupSlideIn {
+                    from {
+                        opacity: 0;
+                        transform: translateY(-50px) scale(0.9);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0) scale(1);
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Set icon and color based on type
+        let icon = '';
+        let titleColor = '';
+        switch(type) {
+            case 'success':
+                icon = '✅';
+                titleColor = '#00ff88';
+                break;
+            case 'error':
+                icon = '❌';
+                titleColor = '#ff4444';
+                break;
+            case 'loading':
+                icon = '⏳';
+                titleColor = '#a786ff';
+                break;
+            default:
+                icon = 'ℹ️';
+                titleColor = '#a786ff';
+        }
+        
+        // Create popup HTML
+        let popupHTML = `
+            <div style="font-size: 2rem; margin-bottom: 1rem;">${icon}</div>
+            <h3 style="color: ${titleColor}; margin: 0 0 1rem 0; font-size: 1.2rem; font-weight: 600;">${message}</h3>
+        `;
+        
+        // Add transaction details for success popups
+        if (type === 'success' && transactionDetails) {
+            popupHTML += `
+                <div style="background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 8px; padding: 1rem; margin: 1rem 0; text-align: left;">
+                    <h4 style="color: #00ff88; margin: 0 0 0.5rem 0; font-size: 1rem;">Transaction Details</h4>
+                    <div style="font-size: 0.9rem; line-height: 1.4;">
+                        <div style="margin-bottom: 0.3rem;"><strong>Type:</strong> ${transactionDetails.type}</div>
+                        <div style="margin-bottom: 0.3rem;"><strong>Amount:</strong> ${transactionDetails.amount}</div>
+                        <div style="margin-bottom: 0.3rem;"><strong>Direction:</strong> ${transactionDetails.direction}</div>
+                        <div style="margin-bottom: 0.3rem;"><strong>Transaction Hash:</strong> 
+                            <span style="font-family: monospace; color: #a786ff;">${transactionDetails.hash.substring(0, 10)}...${transactionDetails.hash.substring(transactionDetails.hash.length - 8)}</span>
+                        </div>
+                    </div>
+                    <button id="copySwapHashBtn" style="
+                        background: linear-gradient(135deg, #a786ff, #00ff88);
+                        color: #0a0f1c;
+                        border: none;
+                        padding: 0.5rem 1rem;
+                        border-radius: 6px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        margin-top: 0.5rem;
+                        font-size: 0.8rem;
+                    ">Copy Hash</button>
+                </div>
+            `;
+        }
+        
+        // Add close button
+        popupHTML += `
+            <button id="closeSwapPopupBtn" style="
+                background: linear-gradient(135deg, #ff4444, #cc3333);
+                color: #ffffff;
+                border: none;
+                padding: 0.8rem 2rem;
+                border-radius: 8px;
+                font-weight: 600;
+                cursor: pointer;
+                font-size: 0.9rem;
+                margin-top: 1rem;
+            ">Close</button>
+        `;
+        
+        popupContent.innerHTML = popupHTML;
+        popupOverlay.appendChild(popupContent);
+        document.body.appendChild(popupOverlay);
+        
+        // Add event listeners
+        const closeBtn = document.getElementById('closeSwapPopupBtn');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                popupOverlay.remove();
+            });
+        }
+        
+        // Add copy hash functionality for success popups
+        if (type === 'success' && transactionDetails) {
+            const copyBtn = document.getElementById('copySwapHashBtn');
+            if (copyBtn) {
+                copyBtn.addEventListener('click', async () => {
+                    try {
+                        await navigator.clipboard.writeText(transactionDetails.hash);
+                        copyBtn.textContent = 'Copied!';
+                        copyBtn.style.background = 'linear-gradient(135deg, #00ff88, #00cc6a)';
+                        setTimeout(() => {
+                            copyBtn.textContent = 'Copy Hash';
+                            copyBtn.style.background = 'linear-gradient(135deg, #a786ff, #00ff88)';
+                        }, 2000);
+                    } catch (error) {
+                        console.error('Failed to copy hash:', error);
+                    }
+                });
+            }
+        }
+        
+        console.log('✅ English popup displayed');
+    }
+
+    // Get English error message
+    getEnglishErrorMessage(error) {
+        console.log('🔍 Analyzing error for English message:', error);
+        
+        if (error.code === 4001) return 'Transaction cancelled by user. Please try again when ready.';
+        if (error.message && error.message.includes('insufficient funds')) return 'Insufficient balance. Please check your wallet and try again.';
+        if (error.message && error.message.includes('exceeds buy limit')) return 'Purchase amount exceeds daily limit. Please reduce the amount.';
+        if (error.message && error.message.includes('exceeds sell limit')) return 'Sale amount exceeds available liquidity. Please try a smaller amount.';
+        if (error.message && error.message.includes('minimum')) return 'Amount is below minimum threshold. Please increase your transaction amount.';
+        if (error.message && error.message.includes('allowance')) return 'DAI approval required. Please approve DAI spending first.';
+        if (error.message && error.message.includes('cooldown')) return 'Please wait before making another transaction. Cooldown period active.';
+        if (error.message && error.message.includes('user rejected')) return 'Transaction rejected by user. Please confirm the transaction to proceed.';
+        if (error.message && error.message.includes('network')) return 'Network connection error. Please check your internet and try again.';
+        if (error.message && error.message.includes('timeout')) return 'Transaction timeout. Please try again with higher gas fees.';
+        if (error.message && error.message.includes('gas')) return 'Insufficient gas for transaction. Please increase gas limit.';
+        if (error.message && error.message.includes('revert')) return 'Transaction failed. Please check your inputs and try again.';
+        
+        return error.message || 'An unexpected error occurred. Please try again.';
+    }
+
+    // Reset swap button state
+    resetSwapButton(swapBtn, oldText) {
+        if (swapBtn) {
+            swapBtn.disabled = false;
+            swapBtn.textContent = oldText;
+            swapBtn.style.opacity = '1';
+            swapBtn.style.cursor = 'pointer';
+        }
+    }
+
     // Main swap function
     async handleSwap(e) {
         e.preventDefault();
@@ -795,8 +993,11 @@ class SwapManager {
             return;
         }
         
+        // Get swap button and store original text
+        const swapBtn = document.querySelector('#swapForm button[type="submit"]');
+        const originalText = swapBtn ? swapBtn.textContent : '💱 Swap';
+        
         this.isSwapping = true;
-        this.setUIBusy(true);
         
         try {
             const amount = document.getElementById('swapAmount');
@@ -839,18 +1040,45 @@ class SwapManager {
                 // No other limits for IAM to DAI conversion - removed all liquidity checks
             }
 
+            // Disable button and show processing message
+            if (swapBtn) {
+                swapBtn.disabled = true;
+                swapBtn.textContent = '⏳ Processing...';
+                swapBtn.style.opacity = '0.7';
+                swapBtn.style.cursor = 'not-allowed';
+            }
+
+            // Show processing popup
+            this.showEnglishPopup('🚀 Starting swap transaction...', 'loading');
+
             // Execute swap operation
+            let transactionHash = null;
+            let transactionType = '';
+            let transactionDirection = '';
+            
             if (direction.value === 'dai-to-IAM') {
                 console.log('🛒 Starting IAM purchase with DAI...');
-                await this.buyTokensWithDAI(value);
+                transactionType = 'Token Purchase';
+                transactionDirection = 'DAI → IAM';
+                transactionHash = await this.buyTokensWithDAI(value);
             } else if (direction.value === 'IAM-to-dai') {
                 console.log('💰 Starting IAM sale and DAI receipt...');
-                await this.sellTokensForDAI(value);
+                transactionType = 'Token Sale';
+                transactionDirection = 'IAM → DAI';
+                transactionHash = await this.sellTokensForDAI(value);
             } else {
                 throw new Error('Invalid conversion type');
             }
             
-            this.showStatus('🎉 Transaction completed successfully! Your tokens have been exchanged.', 'success');
+            // Show success popup with transaction details
+            const transactionDetails = {
+                hash: transactionHash,
+                amount: `${value} ${direction.value === 'dai-to-IAM' ? 'DAI' : 'IAM'}`,
+                type: transactionType,
+                direction: transactionDirection
+            };
+            
+            this.showEnglishPopup('🎉 Swap completed successfully!', 'success', transactionDetails);
             await this.refreshSwapData();
             amount.value = '';
             
@@ -861,9 +1089,11 @@ class SwapManager {
             
         } catch (error) {
             console.error('❌ Error in swap operation:', error);
-            this.showStatus(this.getErrorMessage(error), 'error');
+            const errorMessage = this.getEnglishErrorMessage(error);
+            this.showEnglishPopup(errorMessage, 'error');
         } finally {
-            this.setUIBusy(false);
+            // Reset button state
+            this.resetSwapButton(swapBtn, originalText);
             this.isSwapping = false;
         }
     }
@@ -888,14 +1118,14 @@ class SwapManager {
             
             if (allowance.lt(daiAmountWei)) {
                 console.log('🔐 Need to approve DAI allowance...');
-                this.showStatus('🔐 DAI approval required! Please approve DAI spending to continue with your purchase.', 'loading');
+                this.showEnglishPopup('🔐 DAI approval required! Please approve DAI spending to continue with your purchase.', 'loading');
                 
                 const approveTx = await this.daiContract.approve(IAM_ADDRESS, ethers.constants.MaxUint256);
-                this.showStatus('⏳ DAI approval transaction submitted! Waiting for confirmation... This is a one-time setup.', 'loading', approveTx.hash);
+                this.showEnglishPopup('⏳ DAI approval transaction submitted! Waiting for confirmation... This is a one-time setup.', 'loading');
                 
                 console.log('⏳ Waiting for approve confirmation...');
                 await approveTx.wait();
-                this.showStatus('✅ DAI approval successful! You can now proceed with your purchase.', 'success');
+                this.showEnglishPopup('✅ DAI approval successful! You can now proceed with your purchase.', 'success');
                 console.log('✅ Approve confirmed');
             } else {
                 console.log('✅ Allowance is sufficient');
@@ -903,16 +1133,16 @@ class SwapManager {
             
             // Buy IAM
             console.log('🛒 Starting IAM token purchase...');
-            this.showStatus('🛒 Initiating IAM token purchase... Please wait while we process your transaction.', 'loading');
+            this.showEnglishPopup('🛒 Initiating IAM token purchase... Please wait while we process your transaction.', 'loading');
             
             const tx = await this.contract.buyTokens(daiAmountWei);
-            this.showStatus('⏳ Transaction submitted! Waiting for blockchain confirmation... This may take a few moments.', 'loading', tx.hash);
+            this.showEnglishPopup('⏳ Transaction submitted! Waiting for blockchain confirmation... This may take a few moments.', 'loading');
             
             console.log('⏳ Waiting for purchase transaction confirmation...');
             await tx.wait();
             
-            this.showStatus('🎉 Purchase successful! Your IAM tokens have been added to your wallet.', 'success', tx.hash);
             console.log('✅ Purchase completed successfully');
+            return tx.hash; // Return transaction hash
             
         } catch (error) {
             console.error('❌ Error purchasing IAM:', error);
@@ -932,16 +1162,16 @@ class SwapManager {
             const IAMAmountWei = ethers.utils.parseUnits(IAMAmount.toString(), 18);
             
             console.log('💰 Starting IAM token sale...');
-            this.showStatus('💰 Processing IAM token sale... Please wait while we execute your transaction.', 'loading');
+            this.showEnglishPopup('💰 Processing IAM token sale... Please wait while we execute your transaction.', 'loading');
             
             const tx = await this.contract.sellTokens(IAMAmountWei);
-            this.showStatus('⏳ Sale transaction submitted! Waiting for blockchain confirmation... This may take a few moments.', 'loading', tx.hash);
+            this.showEnglishPopup('⏳ Sale transaction submitted! Waiting for blockchain confirmation... This may take a few moments.', 'loading');
             
             console.log('⏳ Waiting for sale transaction confirmation...');
             await tx.wait();
             
-            this.showStatus('🎉 Sale successful! Your DAI tokens have been added to your wallet.', 'success', tx.hash);
             console.log('✅ Sale completed successfully');
+            return tx.hash; // Return transaction hash
             
         } catch (error) {
             console.error('❌ Error selling IAM:', error);
