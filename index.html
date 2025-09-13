@@ -208,6 +208,36 @@
 </head>
 <body>
 
+  <!-- Referral Popup Overlay -->
+  <div id="referral-popup-overlay" class="referral-popup-overlay" onclick="hideReferralPopup()"></div>
+  
+  <!-- Referral Popup -->
+  <div id="referral-popup" class="referral-popup" style="display: none;">
+    <div class="referral-popup-content">
+      <div class="referral-popup-header">
+        <h3>🔗 Your Referral Link</h3>
+        <button class="referral-close-btn" onclick="hideReferralPopup()">&times;</button>
+      </div>
+      <div class="referral-popup-body">
+        <div class="wallet-address-section">
+          <label>Your Wallet Address:</label>
+          <div class="wallet-address-display" id="wallet-address-display">Connect Wallet First</div>
+        </div>
+        <div class="referral-link-section">
+          <label>Referral Link:</label>
+          <div class="referral-link-display" id="referral-link-display">Not Available</div>
+        </div>
+        <div class="referral-actions">
+          <button class="copy-wallet-btn" onclick="copyWalletAddress()">📋 Copy Address</button>
+          <button class="copy-link-btn" onclick="copyReferralLink()">🔗 Copy Link</button>
+        </div>
+        <div class="referral-info">
+          <p>Share your referral link to earn 10% commission on all referrals!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="main-dashboard" class="page-section" style="position:relative;overflow:visible;">
 
     <!-- User Status Bar -->
@@ -250,12 +280,15 @@
     </div>
 
     <!-- Quick Action Buttons -->
-    <div class="quick-action-buttons" style="display:flex;justify-content:center;gap:0.3rem;margin:0.5rem auto;max-width:400px;flex-wrap:nowrap;">
+    <div class="quick-action-buttons" style="display:flex;justify-content:center;gap:0.3rem;margin:0.5rem auto;max-width:500px;flex-wrap:nowrap;">
       <button onclick="window.location.href='swap.html'" style="background:linear-gradient(135deg,#00ff88,#00cc6a);color:#0a0f1c;border:none;border-radius:6px;padding:0.4rem 0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:0.75rem;display:flex;align-items:center;gap:0.2rem;box-shadow:0 2px 6px rgba(0,255,136,0.3);min-width:80px;justify-content:center;flex:1;max-width:120px;" onmouseenter="this.style.transform='translateY(-1px)';this.style.boxShadow='0 3px 10px rgba(0,255,136,0.4)'" onmouseleave="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 6px rgba(0,255,136,0.3)'">
         🔄 Swap
       </button>
       <button onclick="window.location.href='transfer.html'" style="background:linear-gradient(135deg,#a786ff,#8b5cf6);color:#ffffff;border:none;border-radius:6px;padding:0.4rem 0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:0.75rem;display:flex;align-items:center;gap:0.2rem;box-shadow:0 2px 6px rgba(167,134,255,0.3);min-width:80px;justify-content:center;flex:1;max-width:120px;" onmouseenter="this.style.transform='translateY(-1px)';this.style.boxShadow='0 3px 10px rgba(167,134,255,0.4)'" onmouseleave="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 6px rgba(167,134,255,0.3)'">
         💸 Transfer
+      </button>
+      <button onclick="showReferralPopup()" style="background:linear-gradient(135deg,#ff6b35,#ff8c42);color:#ffffff;border:none;border-radius:6px;padding:0.4rem 0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:0.75rem;display:flex;align-items:center;gap:0.2rem;box-shadow:0 2px 6px rgba(255,107,51,0.3);min-width:80px;justify-content:center;flex:1;max-width:120px;" onmouseenter="this.style.transform='translateY(-1px)';this.style.boxShadow='0 3px 10px rgba(255,107,51,0.4)'" onmouseleave="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 6px rgba(255,107,51,0.3)'">
+        🔗 Referral
       </button>
       <button id="main-claim-btn" onclick="claimBinaryPointsFromMain()" disabled style="background:linear-gradient(135deg,#666,#888);color:#ffffff;border:none;border-radius:6px;padding:0.4rem 0.8rem;font-weight:bold;cursor:not-allowed;transition:all 0.3s ease;font-size:0.75rem;display:flex;align-items:center;gap:0.2rem;box-shadow:0 2px 6px rgba(0,0,0,0.2);min-width:80px;justify-content:center;flex:1;max-width:120px;opacity:0.4;" onmouseenter="if(!this.disabled) {this.style.transform='translateY(-1px)';this.style.boxShadow='0 3px 10px rgba(255,107,51,0.4)'}" onmouseleave="if(!this.disabled) {this.style.transform='translateY(0)';this.style.boxShadow='0 2px 6px rgba(255,107,51,0.3)'}">
         🎯 Claim <span id="claim-points-count">0</span>
@@ -265,6 +298,337 @@
 
 
     <style>
+      /* Floating Referral Link Styles */
+      .floating-referral-link {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1000;
+        background: linear-gradient(135deg, rgba(0, 255, 136, 0.95), rgba(167, 134, 255, 0.95));
+        border: 2px solid rgba(0, 255, 136, 0.5);
+        border-radius: 20px;
+        padding: 20px 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(10px);
+        text-align: center;
+        font-family: 'Arial', sans-serif;
+        color: #0a0f1c;
+        font-weight: bold;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        animation: floatPulse 2s ease-in-out infinite;
+        max-width: 300px;
+        min-width: 250px;
+      }
+
+      .floating-referral-link:hover {
+        transform: translate(-50%, -50%) scale(1.05);
+        box-shadow: 0 15px 40px rgba(0, 255, 136, 0.4);
+        background: linear-gradient(135deg, rgba(0, 255, 136, 1), rgba(167, 134, 255, 1));
+      }
+
+      .floating-referral-link .referral-title {
+        font-size: 18px;
+        margin-bottom: 10px;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      }
+
+      .floating-referral-link .referral-url {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 10px;
+        padding: 8px 12px;
+        margin: 10px 0;
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+        word-break: break-all;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+      }
+
+      .floating-referral-link .copy-button {
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-top: 8px;
+      }
+
+      .floating-referral-link .copy-button:hover {
+        background: rgba(0, 0, 0, 1);
+        transform: translateY(-1px);
+      }
+
+      .floating-referral-link .close-button {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: rgba(0, 0, 0, 0.3);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+      }
+
+      .floating-referral-link .close-button:hover {
+        background: rgba(0, 0, 0, 0.6);
+        transform: scale(1.1);
+      }
+
+      @keyframes floatPulse {
+        0%, 100% {
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        50% {
+          box-shadow: 0 15px 35px rgba(0, 255, 136, 0.2);
+        }
+      }
+
+      /* Referral Popup Styles */
+      .referral-popup-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 9998;
+        display: none;
+        backdrop-filter: blur(3px);
+        transition: opacity 0.3s ease;
+      }
+
+      .referral-popup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 9999;
+        background: linear-gradient(135deg, #1a1f2e, #2a3441);
+        border: 2px solid #a786ff;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(10px);
+        max-width: 500px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+        font-family: 'Arial', sans-serif;
+        color: #ffffff;
+        animation: popupSlideIn 0.3s ease-out;
+      }
+
+      .referral-popup-content {
+        padding: 0;
+      }
+
+      .referral-popup-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem 2rem 1rem;
+        border-bottom: 1px solid rgba(167, 134, 255, 0.3);
+        background: linear-gradient(135deg, rgba(167, 134, 255, 0.1), rgba(0, 255, 136, 0.1));
+      }
+
+      .referral-popup-header h3 {
+        margin: 0;
+        color: #a786ff;
+        font-size: 1.3rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .referral-close-btn {
+        background: none;
+        border: none;
+        color: #888;
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+      }
+
+      .referral-close-btn:hover {
+        background: rgba(255, 68, 68, 0.2);
+        color: #ff4444;
+        transform: scale(1.1);
+      }
+
+      .referral-popup-body {
+        padding: 2rem;
+      }
+
+      .wallet-address-section,
+      .referral-link-section {
+        margin-bottom: 1.5rem;
+      }
+
+      .wallet-address-section label,
+      .referral-link-section label {
+        display: block;
+        color: #a786ff;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+
+      .wallet-address-display,
+      .referral-link-display {
+        background: rgba(167, 134, 255, 0.1);
+        border: 1px solid rgba(167, 134, 255, 0.3);
+        border-radius: 8px;
+        padding: 1rem;
+        font-family: 'Courier New', monospace;
+        font-size: 0.85rem;
+        color: #ffffff;
+        word-break: break-all;
+        min-height: 50px;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s ease;
+        line-height: 1.4;
+      }
+
+      .wallet-address-display:hover,
+      .referral-link-display:hover {
+        background: rgba(167, 134, 255, 0.15);
+        border-color: rgba(167, 134, 255, 0.5);
+      }
+
+      .referral-actions {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .copy-wallet-btn,
+      .copy-link-btn {
+        flex: 1;
+        background: linear-gradient(135deg, #a786ff, #00ff88);
+        color: #0a0f1c;
+        border: none;
+        border-radius: 8px;
+        padding: 0.8rem 1rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+
+      .copy-wallet-btn:hover,
+      .copy-link-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(167, 134, 255, 0.4);
+      }
+
+      .copy-wallet-btn:active,
+      .copy-link-btn:active {
+        transform: translateY(0);
+      }
+
+      .referral-info {
+        background: rgba(0, 255, 136, 0.1);
+        border: 1px solid rgba(0, 255, 136, 0.3);
+        border-radius: 8px;
+        padding: 1rem;
+        text-align: center;
+      }
+
+      .referral-info p {
+        margin: 0;
+        color: #00ff88;
+        font-size: 0.9rem;
+        font-weight: 500;
+      }
+
+      @keyframes popupSlideIn {
+        from {
+          opacity: 0;
+          transform: translate(-50%, -50%) scale(0.8);
+        }
+        to {
+          opacity: 1;
+          transform: translate(-50%, -50%) scale(1);
+        }
+      }
+
+      /* Mobile Responsive */
+      @media (max-width: 768px) {
+        .referral-popup {
+          width: 95%;
+          max-width: 400px;
+        }
+        
+        .referral-popup-header {
+          padding: 1rem 1.5rem 0.8rem;
+        }
+        
+        .referral-popup-header h3 {
+          font-size: 1.1rem;
+        }
+        
+        .referral-popup-body {
+          padding: 1.5rem;
+        }
+        
+        .referral-actions {
+          flex-direction: column;
+          gap: 0.8rem;
+        }
+        
+        .copy-wallet-btn,
+        .copy-link-btn {
+          padding: 0.7rem 1rem;
+          font-size: 0.85rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .referral-popup {
+          width: 98%;
+          max-width: 350px;
+        }
+        
+        .referral-popup-header {
+          padding: 0.8rem 1rem 0.6rem;
+        }
+        
+        .referral-popup-body {
+          padding: 1rem;
+        }
+        
+        .wallet-address-display,
+        .referral-link-display {
+          font-size: 0.75rem;
+          padding: 0.8rem;
+          min-height: 40px;
+        }
+      }
+
       /* Force visibility for main sections */
       #main-transfer, #main-dashboard {
         display: block !important;
@@ -590,10 +954,385 @@
 
     <script src="js/search-index.js"></script>
   <script src="js/network.js?v=5.7"></script>
+
+  <!-- Floating Referral Link JavaScript -->
+  <script>
+    // Generate referral link based on user ID or wallet address
+    function generateReferralLink() {
+      // Try to get user ID from various sources
+      let userId = '';
+      
+      // Check if user ID exists in localStorage
+      if (localStorage.getItem('user_id')) {
+        userId = localStorage.getItem('user_id');
+      }
+      // Check if wallet address exists
+      else if (window.ethereum && window.ethereum.selectedAddress) {
+        userId = window.ethereum.selectedAddress.slice(0, 8);
+      }
+      // Check if there's a user ID in the DOM
+      else {
+        const userElement = document.querySelector('[data-user-id]');
+        if (userElement) {
+          userId = userElement.getAttribute('data-user-id');
+        }
+      }
+      
+      // Fallback to a random code if no user ID found
+      if (!userId) {
+        userId = Math.random().toString(36).substring(2, 8).toUpperCase();
+      }
+      
+      // Generate the referral link
+      const baseUrl = window.location.origin;
+      return `${baseUrl}?ref=${userId}`;
+    }
+
+    // Show floating referral link
+    function showFloatingReferral() {
+      const floatingLink = document.getElementById('floating-referral-link');
+      const urlDisplay = document.getElementById('referral-url-display');
+      
+      if (floatingLink && urlDisplay) {
+        // Generate and display the referral link
+        const referralUrl = generateReferralLink();
+        urlDisplay.textContent = referralUrl;
+        
+        // Show the floating link with animation
+        floatingLink.style.display = 'block';
+        floatingLink.style.opacity = '0';
+        floatingLink.style.transform = 'translate(-50%, -50%) scale(0.8)';
+        
+        // Animate in
+        setTimeout(() => {
+          floatingLink.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+          floatingLink.style.opacity = '1';
+          floatingLink.style.transform = 'translate(-50%, -50%) scale(1)';
+        }, 10);
+      }
+    }
+
+    // Hide floating referral link
+    function hideFloatingReferral() {
+      const floatingLink = document.getElementById('floating-referral-link');
+      
+      if (floatingLink) {
+        // Animate out
+        floatingLink.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        floatingLink.style.opacity = '0';
+        floatingLink.style.transform = 'translate(-50%, -50%) scale(0.8)';
+        
+        // Hide after animation
+        setTimeout(() => {
+          floatingLink.style.display = 'none';
+        }, 300);
+      }
+    }
+
+    // Copy referral link to clipboard
+    function copyReferralLink() {
+      const urlDisplay = document.getElementById('referral-url-display');
+      const copyButton = document.querySelector('.copy-button');
+      
+      if (urlDisplay && copyButton) {
+        const referralUrl = urlDisplay.textContent;
+        
+        // Use modern clipboard API if available
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(referralUrl).then(() => {
+            showCopySuccess(copyButton);
+          }).catch(() => {
+            fallbackCopyTextToClipboard(referralUrl, copyButton);
+          });
+        } else {
+          fallbackCopyTextToClipboard(referralUrl, copyButton);
+        }
+      }
+    }
+
+    // Fallback copy method for older browsers
+    function fallbackCopyTextToClipboard(text, button) {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      
+      try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+          showCopySuccess(button);
+        } else {
+          showCopyError(button);
+        }
+      } catch (err) {
+        showCopyError(button);
+      }
+      
+      document.body.removeChild(textArea);
+    }
+
+    // Show copy success feedback
+    function showCopySuccess(button) {
+      const originalText = button.textContent;
+      button.textContent = '✅ کپی شد!';
+      button.style.background = 'rgba(0, 255, 136, 0.8)';
+      button.style.color = '#0a0f1c';
+      
+      setTimeout(() => {
+        button.textContent = originalText;
+        button.style.background = 'rgba(0, 0, 0, 0.8)';
+        button.style.color = 'white';
+      }, 2000);
+    }
+
+    // Show copy error feedback
+    function showCopyError(button) {
+      const originalText = button.textContent;
+      button.textContent = '❌ خطا!';
+      button.style.background = 'rgba(255, 0, 0, 0.8)';
+      button.style.color = 'white';
+      
+      setTimeout(() => {
+        button.textContent = originalText;
+        button.style.background = 'rgba(0, 0, 0, 0.8)';
+        button.style.color = 'white';
+      }, 2000);
+    }
+
+    // Close floating link when clicking outside
+    document.addEventListener('click', function(event) {
+      const floatingLink = document.getElementById('floating-referral-link');
+      const referralButton = event.target.closest('[onclick="showFloatingReferral()"]');
+      
+      if (floatingLink && floatingLink.style.display === 'block' && 
+          !floatingLink.contains(event.target) && !referralButton) {
+        hideFloatingReferral();
+      }
+    });
+
+    // Close floating link with Escape key
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        hideFloatingReferral();
+      }
+    });
+  </script>
   
   <script src="js/profile.js?v=5.7"></script>
   
   <script src="js/homepage.js?v=5.8"></script>
+
+  <!-- Referral Popup JavaScript -->
+  <script>
+    // Show referral popup
+    function showReferralPopup() {
+      const popup = document.getElementById('referral-popup');
+      const overlay = document.getElementById('referral-popup-overlay');
+      const walletDisplay = document.getElementById('wallet-address-display');
+      const linkDisplay = document.getElementById('referral-link-display');
+      
+      if (popup && overlay && walletDisplay && linkDisplay) {
+        // Get wallet address
+        getWalletAddress().then(address => {
+          if (address) {
+            walletDisplay.textContent = address;
+            // Generate referral link
+            const baseUrl = window.location.origin + window.location.pathname;
+            const referralLink = `${baseUrl}?ref=${address}`;
+            linkDisplay.textContent = referralLink;
+          } else {
+            walletDisplay.textContent = 'Connect Wallet First';
+            linkDisplay.textContent = 'Not Available';
+          }
+        });
+        
+        // Show popup with animation
+        overlay.style.display = 'block';
+        overlay.style.opacity = '0';
+        popup.style.display = 'block';
+        popup.style.opacity = '0';
+        popup.style.transform = 'translate(-50%, -50%) scale(0.8)';
+        
+        // Animate in
+        setTimeout(() => {
+          overlay.style.transition = 'opacity 0.3s ease';
+          overlay.style.opacity = '1';
+          
+          popup.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+          popup.style.opacity = '1';
+          popup.style.transform = 'translate(-50%, -50%) scale(1)';
+        }, 10);
+      }
+    }
+
+    // Hide referral popup
+    function hideReferralPopup() {
+      const popup = document.getElementById('referral-popup');
+      const overlay = document.getElementById('referral-popup-overlay');
+      
+      if (popup && overlay) {
+        // Animate out
+        popup.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        popup.style.opacity = '0';
+        popup.style.transform = 'translate(-50%, -50%) scale(0.8)';
+        
+        overlay.style.transition = 'opacity 0.3s ease';
+        overlay.style.opacity = '0';
+        
+        // Hide after animation
+        setTimeout(() => {
+          popup.style.display = 'none';
+          overlay.style.display = 'none';
+        }, 300);
+      }
+    }
+
+    // Get wallet address
+    async function getWalletAddress() {
+      try {
+        if (window.ethereum) {
+          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+          if (accounts && accounts.length > 0) {
+            return accounts[0];
+          }
+        }
+        
+        // Fallback to selectedAddress
+        if (window.ethereum && window.ethereum.selectedAddress) {
+          return window.ethereum.selectedAddress;
+        }
+        
+        return null;
+      } catch (error) {
+        console.error('Error getting wallet address:', error);
+        return null;
+      }
+    }
+
+    // Copy wallet address to clipboard
+    async function copyWalletAddress() {
+      const walletDisplay = document.getElementById('wallet-address-display');
+      const button = document.querySelector('.copy-wallet-btn');
+      
+      if (walletDisplay && walletDisplay.textContent !== 'Connect Wallet First') {
+        const address = walletDisplay.textContent;
+        
+        try {
+          if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(address);
+            showCopySuccess(button, 'Address copied!');
+          } else {
+            fallbackCopyTextToClipboard(address, button, 'Address copied!');
+          }
+        } catch (error) {
+          console.error('Error copying wallet address:', error);
+          showCopyError(button, 'Failed to copy address');
+        }
+      } else {
+        showCopyError(button, 'Connect wallet first');
+      }
+    }
+
+    // Copy referral link to clipboard
+    async function copyReferralLink() {
+      const linkDisplay = document.getElementById('referral-link-display');
+      const button = document.querySelector('.copy-link-btn');
+      
+      if (linkDisplay && linkDisplay.textContent !== 'Not Available') {
+        const link = linkDisplay.textContent;
+        
+        try {
+          if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(link);
+            showCopySuccess(button, 'Link copied!');
+          } else {
+            fallbackCopyTextToClipboard(link, button, 'Link copied!');
+          }
+        } catch (error) {
+          console.error('Error copying referral link:', error);
+          showCopyError(button, 'Failed to copy link');
+        }
+      } else {
+        showCopyError(button, 'Link not available');
+      }
+    }
+
+    // Fallback copy method for older browsers
+    function fallbackCopyTextToClipboard(text, button, successMessage) {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      
+      try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+          showCopySuccess(button, successMessage);
+        } else {
+          showCopyError(button, 'Failed to copy');
+        }
+      } catch (err) {
+        showCopyError(button, 'Failed to copy');
+      }
+      
+      document.body.removeChild(textArea);
+    }
+
+    // Show copy success feedback
+    function showCopySuccess(button, message) {
+      const originalText = button.textContent;
+      button.textContent = '✅ ' + message;
+      button.style.background = 'linear-gradient(135deg, #00ff88, #00cc6a)';
+      button.style.color = '#0a0f1c';
+      
+      setTimeout(() => {
+        button.textContent = originalText;
+        button.style.background = 'linear-gradient(135deg, #a786ff, #00ff88)';
+        button.style.color = '#0a0f1c';
+      }, 2000);
+    }
+
+    // Show copy error feedback
+    function showCopyError(button, message) {
+      const originalText = button.textContent;
+      button.textContent = '❌ ' + message;
+      button.style.background = 'linear-gradient(135deg, #ff4444, #ff6666)';
+      button.style.color = '#ffffff';
+      
+      setTimeout(() => {
+        button.textContent = originalText;
+        button.style.background = 'linear-gradient(135deg, #a786ff, #00ff88)';
+        button.style.color = '#0a0f1c';
+      }, 2000);
+    }
+
+    // Close popup when clicking outside
+    document.addEventListener('click', function(event) {
+      const popup = document.getElementById('referral-popup');
+      const overlay = document.getElementById('referral-popup-overlay');
+      const referralButton = event.target.closest('[onclick="showReferralPopup()"]');
+      
+      if (popup && popup.style.display === 'block' && 
+          !popup.contains(event.target) && !referralButton) {
+        hideReferralPopup();
+      }
+    });
+
+    // Close popup with Escape key
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        hideReferralPopup();
+      }
+    });
+  </script>
 
   <style>
     /* Fix for chart width issues */
@@ -3034,263 +3773,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 <style>
-/* Floating Referral Address Card Styles */
-.floating-referral-card {
-    position: fixed;
-  top: 20px;
-  right: 20px;
-  width: 200px;
-  background: linear-gradient(135deg, #1a1f2e, #2a3441);
-  border: 1px solid #a786ff;
-  border-radius: 10px;
-  box-shadow: 0 5px 20px rgba(167, 134, 255, 0.2);
-    z-index: 1000;
-  font-family: 'Montserrat', 'Arial', sans-serif;
-  animation: slideInFromRight 0.3s ease-out;
-  backdrop-filter: blur(5px);
-  transition: all 0.3s ease;
-}
-
-.floating-referral-card:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 25px rgba(167, 134, 255, 0.3);
-}
-
-.floating-card-header {
-    display: flex;
-  justify-content: space-between;
-    align-items: center;
-  padding: 0.5rem 0.7rem 0.4rem;
-  border-bottom: 1px solid rgba(167, 134, 255, 0.2);
-}
-
-.floating-card-header h4 {
-  margin: 0;
-  color: #a786ff;
-  font-size: 0.8rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  color: #888;
-  font-size: 1rem;
-  cursor: pointer;
-  padding: 0;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: all 0.3s ease;
-  min-width: 20px;
-  min-height: 20px;
-}
-
-.close-btn:hover {
-  background: rgba(255, 68, 68, 0.2);
-  color: #ff4444;
-  transform: scale(1.1);
-}
-
-.close-btn:active {
-  transform: scale(0.95);
-}
-
-.floating-card-content {
-  padding: 0.6rem;
-}
-
-.referral-link-display {
-  margin-bottom: 0.6rem;
-}
-
-.link-label {
-  color: #a786ff;
-  font-size: 0.65rem;
-  font-weight: 600;
-  margin-bottom: 0.3rem;
-  display: block;
-}
-
-.link-value {
-  background: rgba(167, 134, 255, 0.1);
-  border: 1px solid rgba(167, 134, 255, 0.3);
-  border-radius: 6px;
-  padding: 0.4rem;
-  font-family: 'Fira Mono', monospace;
-  font-size: 0.6rem;
-  color: #ffffff;
-  word-break: break-all;
-  margin-bottom: 0.5rem;
-  min-height: 30px;
-  display: flex;
-  align-items: center;
-  transition: all 0.3s ease;
-  line-height: 1.2;
-}
-
-.link-value:hover {
-  background: rgba(167, 134, 255, 0.15);
-  border-color: rgba(167, 134, 255, 0.5);
-}
-
-.copy-btn {
-  width: 100%;
-  background: linear-gradient(135deg, #a786ff, #00ff88);
-    color: #0a0f1c;
-    border: none;
-  border-radius: 6px;
-  padding: 0.4rem;
-  font-weight: 600;
-  font-size: 0.65rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.3rem;
-}
-
-.copy-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 3px 10px rgba(167, 134, 255, 0.4);
-}
-
-.copy-btn:active {
-    transform: translateY(0);
-  }
-  
-.referral-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-
-.info-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.2rem 0;
-  border-bottom: 1px solid rgba(167, 134, 255, 0.1);
-}
-
-.info-item:last-child {
-  border-bottom: none;
-}
-
-.info-label {
-  color: #888;
-  font-size: 0.6rem;
-  font-weight: 500;
-}
-
-.info-value {
-  color: #ffffff;
-  font-size: 0.6rem;
-  font-weight: 600;
-  font-family: 'Fira Mono', monospace;
-}
-
-/* Animation */
-@keyframes slideInFromRight {
-  from {
-    opacity: 0;
-    transform: translateX(50px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-/* Mobile Responsive */
-  @media (max-width: 768px) {
-  .floating-referral-card {
-    top: 10px;
-    right: 10px;
-    width: 180px;
-  }
-  
-  .floating-card-header {
-    padding: 0.4rem 0.6rem 0.3rem;
-  }
-  
-  .floating-card-content {
-    padding: 0.5rem;
-  }
-  
-  .link-value {
-    font-size: 0.55rem;
-    padding: 0.3rem;
-    min-height: 25px;
-  }
-  
-  .copy-btn {
-    padding: 0.3rem;
-    font-size: 0.6rem;
-  }
-  
-  .floating-card-header h4 {
-    font-size: 0.7rem;
-  }
-  
-  .close-btn {
-    width: 18px;
-    height: 18px;
-    font-size: 0.9rem;
-    min-width: 18px;
-    min-height: 18px;
-  }
-}
-
-@media (max-width: 480px) {
-  .floating-referral-card {
-    top: 5px;
-    right: 5px;
-    width: 160px;
-  }
-  
-  .floating-card-header {
-    padding: 0.3rem 0.5rem 0.2rem;
-  }
-  
-  .floating-card-content {
-    padding: 0.4rem;
-  }
-  
-  .link-value {
-    font-size: 0.5rem;
-    padding: 0.25rem;
-    min-height: 20px;
-  }
-  
-  .close-btn {
-    width: 16px;
-    height: 16px;
-    font-size: 0.8rem;
-    min-width: 16px;
-    min-height: 16px;
-  }
-  
-  .copy-btn {
-    padding: 0.25rem;
-    font-size: 0.55rem;
-  }
-  
-  .floating-card-header h4 {
-    font-size: 0.65rem;
-  }
-  
-  .info-label, .info-value {
-    font-size: 0.55rem;
-    }
-  }
 </style>
 
 <script>
@@ -3615,8 +4097,7 @@ window.claimBinaryPointsFromMain = async function() {
 
 <!-- Floating Referral Address Card JavaScript -->
 <script>
-// Floating Referral Link Card Management
-class FloatingReferralCard {
+// Floating Referral Link Card Management - REMOVED
   constructor() {
     this.baseUrl = window.location.origin + window.location.pathname;
     this.referralCode = null;
@@ -4087,15 +4568,14 @@ class FloatingReferralCard {
   }
 }
 
-// Initialize floating referral card when page loads
+// Initialize floating referral card when page loads - REMOVED
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('🔄 Initializing Floating Referral Card...');
+  console.log('🔄 Initializing Floating Referral Card... - REMOVED');
   
   // Check for referral link in URL
   checkReferralLink();
   
-  // Initialize floating referral card immediately
-  window.floatingReferralCard = new FloatingReferralCard();
+  // Initialize floating referral card immediately - REMOVED
   
   // Wait for wallet connection and then check registration status
   setTimeout(async () => {
@@ -4771,30 +5251,6 @@ style.textContent = `
 document.head.appendChild(style);
 </script>
 
-<!-- Floating Referral Link Card -->
-<div id="floating-referral-card" class="floating-referral-card">
-    <div class="floating-card-header">
-        <h4>🔗 Referral Link</h4>
-        <button id="close-referral-card" class="close-btn">×</button>
-    </div>
-    <div class="floating-card-content">
-        <div class="referral-link-display">
-            <div class="link-label">Your Referral Link:</div>
-            <div class="link-value" id="referral-link-display">Not Connected</div>
-            <button id="copy-referral-link" class="copy-btn">📋 Copy Link</button>
-        </div>
-        <div class="referral-info">
-            <div class="info-item">
-                <span class="info-label">Status:</span>
-                <span class="info-value" id="referral-status">Disconnected</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">Earnings:</span>
-                <span class="info-value" id="referral-earnings">10% Commission</span>
-            </div>
-        </div>
-    </div>
-</div>
 
 </div>
 
