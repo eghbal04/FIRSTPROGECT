@@ -281,17 +281,26 @@
 
     <!-- Quick Action Buttons -->
     <div class="quick-action-buttons" style="display:flex;justify-content:center;gap:0.3rem;margin:0.5rem auto;max-width:500px;flex-wrap:nowrap;">
-      <button onclick="window.location.href='swap.html'" style="background:linear-gradient(135deg,#00ff88,#00cc6a);color:#0a0f1c;border:none;border-radius:6px;padding:0.4rem 0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:0.75rem;display:flex;align-items:center;gap:0.2rem;box-shadow:0 2px 6px rgba(0,255,136,0.3);min-width:80px;justify-content:center;flex:1;max-width:120px;" onmouseenter="this.style.transform='translateY(-1px)';this.style.boxShadow='0 3px 10px rgba(0,255,136,0.4)'" onmouseleave="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 6px rgba(0,255,136,0.3)'">
-        🔄 Swap
+      <button id="swap-btn" class="action-btn swap-btn" onclick="handleSwapClick()" style="background:linear-gradient(135deg,#00ff88,#00cc6a);color:#0a0f1c;border:none;border-radius:6px;padding:0.4rem 0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:0.75rem;display:flex;align-items:center;gap:0.2rem;box-shadow:0 2px 6px rgba(0,255,136,0.3);min-width:80px;justify-content:center;flex:1;max-width:120px;" onmouseenter="this.style.transform='translateY(-1px)';this.style.boxShadow='0 3px 10px rgba(0,255,136,0.4)'" onmouseleave="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 6px rgba(0,255,136,0.3)'">
+        <span class="btn-icon">🔄</span>
+        <span class="btn-text">Swap</span>
+        <span class="btn-status" id="swap-status"></span>
       </button>
-      <button onclick="window.location.href='transfer.html'" style="background:linear-gradient(135deg,#a786ff,#8b5cf6);color:#ffffff;border:none;border-radius:6px;padding:0.4rem 0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:0.75rem;display:flex;align-items:center;gap:0.2rem;box-shadow:0 2px 6px rgba(167,134,255,0.3);min-width:80px;justify-content:center;flex:1;max-width:120px;" onmouseenter="this.style.transform='translateY(-1px)';this.style.boxShadow='0 3px 10px rgba(167,134,255,0.4)'" onmouseleave="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 6px rgba(167,134,255,0.3)'">
-        💸 Transfer
+      <button id="transfer-btn" class="action-btn transfer-btn" onclick="handleTransferClick()" style="background:linear-gradient(135deg,#a786ff,#8b5cf6);color:#ffffff;border:none;border-radius:6px;padding:0.4rem 0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:0.75rem;display:flex;align-items:center;gap:0.2rem;box-shadow:0 2px 6px rgba(167,134,255,0.3);min-width:80px;justify-content:center;flex:1;max-width:120px;" onmouseenter="this.style.transform='translateY(-1px)';this.style.boxShadow='0 3px 10px rgba(167,134,255,0.4)'" onmouseleave="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 6px rgba(167,134,255,0.3)'">
+        <span class="btn-icon">💸</span>
+        <span class="btn-text">Transfer</span>
+        <span class="btn-status" id="transfer-status"></span>
       </button>
-      <button onclick="showReferralPopup()" style="background:linear-gradient(135deg,#ff6b35,#ff8c42);color:#ffffff;border:none;border-radius:6px;padding:0.4rem 0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:0.75rem;display:flex;align-items:center;gap:0.2rem;box-shadow:0 2px 6px rgba(255,107,51,0.3);min-width:80px;justify-content:center;flex:1;max-width:120px;" onmouseenter="this.style.transform='translateY(-1px)';this.style.boxShadow='0 3px 10px rgba(255,107,51,0.4)'" onmouseleave="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 6px rgba(255,107,51,0.3)'">
-        🔗 Referral
+      <button id="referral-btn" class="action-btn referral-btn" onclick="handleReferralClick()" style="background:linear-gradient(135deg,#ff6b35,#ff8c42);color:#ffffff;border:none;border-radius:6px;padding:0.4rem 0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:0.75rem;display:flex;align-items:center;gap:0.2rem;box-shadow:0 2px 6px rgba(255,107,51,0.3);min-width:80px;justify-content:center;flex:1;max-width:120px;" onmouseenter="this.style.transform='translateY(-1px)';this.style.boxShadow='0 3px 10px rgba(255,107,51,0.4)'" onmouseleave="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 6px rgba(255,107,51,0.3)'">
+        <span class="btn-icon">🔗</span>
+        <span class="btn-text">Referral</span>
+        <span class="btn-status" id="referral-status"></span>
       </button>
-      <button id="main-claim-btn" onclick="claimBinaryPointsFromMain()" disabled style="background:linear-gradient(135deg,#666,#888);color:#ffffff;border:none;border-radius:6px;padding:0.4rem 0.8rem;font-weight:bold;cursor:not-allowed;transition:all 0.3s ease;font-size:0.75rem;display:flex;align-items:center;gap:0.2rem;box-shadow:0 2px 6px rgba(0,0,0,0.2);min-width:80px;justify-content:center;flex:1;max-width:120px;opacity:0.4;" onmouseenter="if(!this.disabled) {this.style.transform='translateY(-1px)';this.style.boxShadow='0 3px 10px rgba(255,107,51,0.4)'}" onmouseleave="if(!this.disabled) {this.style.transform='translateY(0)';this.style.boxShadow='0 2px 6px rgba(255,107,51,0.3)'}">
-        🎯 Claim <span id="claim-points-count">0</span>
+      <button id="claim-btn" class="action-btn claim-btn" onclick="handleClaimClick()" disabled style="background:linear-gradient(135deg,#666,#888);color:#ffffff;border:none;border-radius:6px;padding:0.4rem 0.8rem;font-weight:bold;cursor:not-allowed;transition:all 0.3s ease;font-size:0.75rem;display:flex;align-items:center;gap:0.2rem;box-shadow:0 2px 6px rgba(0,0,0,0.2);min-width:80px;justify-content:center;flex:1;max-width:120px;opacity:0.4;" onmouseenter="if(!this.disabled) {this.style.transform='translateY(-1px)';this.style.boxShadow='0 3px 10px rgba(255,107,51,0.4)'}" onmouseleave="if(!this.disabled) {this.style.transform='translateY(0)';this.style.boxShadow='0 2px 6px rgba(255,107,51,0.3)'}">
+        <span class="btn-icon">🎯</span>
+        <span class="btn-text">Claim</span>
+        <span class="btn-count" id="claim-points-count">0</span>
+        <span class="btn-status" id="claim-status"></span>
       </button>
     </div>
     
@@ -576,6 +585,115 @@
         }
       }
 
+      /* Dynamic Button Styles */
+      .action-btn {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .btn-icon {
+        font-size: 0.8rem;
+        transition: transform 0.3s ease;
+      }
+
+      .btn-text {
+        font-weight: 600;
+        transition: all 0.3s ease;
+      }
+
+      .btn-count {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+        padding: 0.1rem 0.3rem;
+        font-size: 0.65rem;
+        font-weight: bold;
+        min-width: 20px;
+        text-align: center;
+        transition: all 0.3s ease;
+      }
+
+      .btn-status {
+        position: absolute;
+        top: -2px;
+        right: -2px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #00ff88;
+        opacity: 0;
+        transition: all 0.3s ease;
+        animation: pulse 2s infinite;
+      }
+
+      .btn-status.connected {
+        opacity: 1;
+        background: #00ff88;
+      }
+
+      .btn-status.disconnected {
+        opacity: 1;
+        background: #ff4444;
+      }
+
+      .btn-status.loading {
+        opacity: 1;
+        background: #ffaa00;
+        animation: spin 1s linear infinite;
+      }
+
+      .btn-status.available {
+        opacity: 1;
+        background: #a786ff;
+      }
+
+      .btn-status.unavailable {
+        opacity: 1;
+        background: #666;
+      }
+
+      @keyframes pulse {
+        0%, 100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        50% {
+          transform: scale(1.2);
+          opacity: 0.7;
+        }
+      }
+
+      @keyframes spin {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Button States */
+      .action-btn.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: linear-gradient(135deg, #666, #888) !important;
+      }
+
+      .action-btn.loading {
+        cursor: wait;
+      }
+
+      .action-btn.loading .btn-icon {
+        animation: spin 1s linear infinite;
+      }
+
+      .action-btn.connected {
+        box-shadow: 0 4px 12px rgba(0, 255, 136, 0.4) !important;
+      }
+
+      .action-btn.available {
+        box-shadow: 0 4px 12px rgba(167, 134, 255, 0.4) !important;
+      }
+
       /* Mobile Responsive */
       @media (max-width: 768px) {
         .referral-popup {
@@ -668,6 +786,13 @@
           min-width: 70px !important;
           max-width: 100px !important;
         }
+        
+        .btn-status {
+          width: 6px;
+          height: 6px;
+          top: -1px;
+          right: -1px;
+        }
       }
       
       @media (max-width: 480px) {
@@ -680,6 +805,11 @@
           font-size: 0.65rem !important;
           min-width: 60px !important;
           max-width: 90px !important;
+        }
+        
+        .btn-count {
+          font-size: 0.6rem;
+          padding: 0.05rem 0.2rem;
         }
       }
     </style>
@@ -1331,6 +1461,292 @@
       if (event.key === 'Escape') {
         hideReferralPopup();
       }
+    });
+  </script>
+
+  <!-- Dynamic Buttons JavaScript -->
+  <script>
+    // Dynamic Button Manager
+    class DynamicButtonManager {
+      constructor() {
+        this.buttons = {
+          swap: document.getElementById('swap-btn'),
+          transfer: document.getElementById('transfer-btn'),
+          referral: document.getElementById('referral-btn'),
+          claim: document.getElementById('claim-btn')
+        };
+        this.statusElements = {
+          swap: document.getElementById('swap-status'),
+          transfer: document.getElementById('transfer-status'),
+          referral: document.getElementById('referral-status'),
+          claim: document.getElementById('claim-status')
+        };
+        this.init();
+      }
+
+      init() {
+        this.updateAllButtons();
+        this.setupEventListeners();
+        this.startPeriodicUpdates();
+      }
+
+      setupEventListeners() {
+        // Listen for wallet connection changes
+        if (window.ethereum) {
+          window.ethereum.on('accountsChanged', () => {
+            setTimeout(() => this.updateAllButtons(), 500);
+          });
+          
+          window.ethereum.on('chainChanged', () => {
+            setTimeout(() => this.updateAllButtons(), 500);
+          });
+        }
+      }
+
+      startPeriodicUpdates() {
+        // Update buttons every 30 seconds
+        setInterval(() => {
+          this.updateAllButtons();
+        }, 30000);
+      }
+
+      async updateAllButtons() {
+        await Promise.all([
+          this.updateSwapButton(),
+          this.updateTransferButton(),
+          this.updateReferralButton(),
+          this.updateClaimButton()
+        ]);
+      }
+
+      async updateSwapButton() {
+        const button = this.buttons.swap;
+        const status = this.statusElements.swap;
+        
+        try {
+          const isConnected = await this.checkWalletConnection();
+          if (isConnected) {
+            this.setButtonState(button, status, 'connected', 'Swap Available');
+            button.onclick = () => window.location.href = 'swap.html';
+          } else {
+            this.setButtonState(button, status, 'disconnected', 'Connect Wallet');
+            button.onclick = () => this.showConnectWalletMessage();
+          }
+        } catch (error) {
+          this.setButtonState(button, status, 'disconnected', 'Error');
+          button.onclick = () => this.showConnectWalletMessage();
+        }
+      }
+
+      async updateTransferButton() {
+        const button = this.buttons.transfer;
+        const status = this.statusElements.transfer;
+        
+        try {
+          const isConnected = await this.checkWalletConnection();
+          if (isConnected) {
+            const balance = await this.getWalletBalance();
+            if (balance > 0) {
+              this.setButtonState(button, status, 'available', `Balance: ${balance.toFixed(4)} ETH`);
+              button.onclick = () => window.location.href = 'transfer.html';
+            } else {
+              this.setButtonState(button, status, 'unavailable', 'No Balance');
+              button.onclick = () => this.showNoBalanceMessage();
+            }
+          } else {
+            this.setButtonState(button, status, 'disconnected', 'Connect Wallet');
+            button.onclick = () => this.showConnectWalletMessage();
+          }
+        } catch (error) {
+          this.setButtonState(button, status, 'disconnected', 'Error');
+          button.onclick = () => this.showConnectWalletMessage();
+        }
+      }
+
+      async updateReferralButton() {
+        const button = this.buttons.referral;
+        const status = this.statusElements.referral;
+        
+        try {
+          const isConnected = await this.checkWalletConnection();
+          if (isConnected) {
+            const isRegistered = await this.checkUserRegistration();
+            if (isRegistered) {
+              this.setButtonState(button, status, 'available', 'Referral Ready');
+              button.onclick = () => showReferralPopup();
+            } else {
+              this.setButtonState(button, status, 'unavailable', 'Register First');
+              button.onclick = () => this.showRegistrationMessage();
+            }
+          } else {
+            this.setButtonState(button, status, 'disconnected', 'Connect Wallet');
+            button.onclick = () => this.showConnectWalletMessage();
+          }
+        } catch (error) {
+          this.setButtonState(button, status, 'disconnected', 'Error');
+          button.onclick = () => this.showConnectWalletMessage();
+        }
+      }
+
+      async updateClaimButton() {
+        const button = this.buttons.claim;
+        const status = this.statusElements.claim;
+        const countElement = document.getElementById('claim-points-count');
+        
+        try {
+          const isConnected = await this.checkWalletConnection();
+          if (isConnected) {
+            const points = await this.getBinaryPoints();
+            if (points > 0) {
+              this.setButtonState(button, status, 'available', `Claim ${points}`);
+              button.disabled = false;
+              button.style.opacity = '1';
+              button.style.cursor = 'pointer';
+              button.style.background = 'linear-gradient(135deg,#ff6b35,#ff8c42)';
+              if (countElement) countElement.textContent = points;
+              button.onclick = () => claimBinaryPointsFromMain();
+            } else {
+              this.setButtonState(button, status, 'unavailable', 'No Points');
+              button.disabled = true;
+              button.style.opacity = '0.4';
+              button.style.cursor = 'not-allowed';
+              button.style.background = 'linear-gradient(135deg,#666,#888)';
+              if (countElement) countElement.textContent = '0';
+              button.onclick = null;
+            }
+          } else {
+            this.setButtonState(button, status, 'disconnected', 'Connect Wallet');
+            button.disabled = true;
+            button.style.opacity = '0.4';
+            button.style.cursor = 'not-allowed';
+            button.style.background = 'linear-gradient(135deg,#666,#888)';
+            if (countElement) countElement.textContent = '0';
+            button.onclick = null;
+          }
+        } catch (error) {
+          this.setButtonState(button, status, 'disconnected', 'Error');
+          button.disabled = true;
+          button.style.opacity = '0.4';
+          button.style.cursor = 'not-allowed';
+          button.style.background = 'linear-gradient(135deg,#666,#888)';
+          if (countElement) countElement.textContent = '0';
+          button.onclick = null;
+        }
+      }
+
+      setButtonState(button, statusElement, state, tooltip) {
+        // Remove all state classes
+        button.classList.remove('connected', 'disconnected', 'loading', 'available', 'unavailable', 'disabled');
+        statusElement.classList.remove('connected', 'disconnected', 'loading', 'available', 'unavailable');
+        
+        // Add new state class
+        button.classList.add(state);
+        statusElement.classList.add(state);
+        
+        // Set tooltip
+        button.title = tooltip;
+        
+        // Update status element text if it exists
+        if (statusElement) {
+          statusElement.textContent = '';
+        }
+      }
+
+      async checkWalletConnection() {
+        try {
+          if (window.ethereum) {
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            return accounts && accounts.length > 0;
+          }
+          return false;
+        } catch (error) {
+          return false;
+        }
+      }
+
+      async getWalletBalance() {
+        try {
+          if (window.ethereum) {
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            if (accounts && accounts.length > 0) {
+              const balance = await window.ethereum.request({
+                method: 'eth_getBalance',
+                params: [accounts[0], 'latest']
+              });
+              return parseFloat(ethers.formatEther(balance));
+            }
+          }
+          return 0;
+        } catch (error) {
+          return 0;
+        }
+      }
+
+      async checkUserRegistration() {
+        try {
+          if (window.contractConfig && window.contractConfig.contract) {
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            if (accounts && accounts.length > 0) {
+              const userData = await window.contractConfig.contract.users(accounts[0]);
+              return userData && userData.index && BigInt(userData.index) > 0n;
+            }
+          }
+          return false;
+        } catch (error) {
+          return false;
+        }
+      }
+
+      async getBinaryPoints() {
+        try {
+          if (window.contractConfig && window.contractConfig.contract) {
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            if (accounts && accounts.length > 0) {
+              const userData = await window.contractConfig.contract.users(accounts[0]);
+              if (userData && userData.binaryPoints) {
+                return parseFloat(ethers.formatEther(userData.binaryPoints));
+              }
+            }
+          }
+          return 0;
+        } catch (error) {
+          return 0;
+        }
+      }
+
+      showConnectWalletMessage() {
+        alert('Please connect your wallet first to use this feature.');
+      }
+
+      showNoBalanceMessage() {
+        alert('You need ETH balance to make transfers.');
+      }
+
+      showRegistrationMessage() {
+        alert('Please register first to use referral features.');
+      }
+    }
+
+    // Button click handlers
+    function handleSwapClick() {
+      // This will be handled by the dynamic button manager
+    }
+
+    function handleTransferClick() {
+      // This will be handled by the dynamic button manager
+    }
+
+    function handleReferralClick() {
+      // This will be handled by the dynamic button manager
+    }
+
+    function handleClaimClick() {
+      // This will be handled by the dynamic button manager
+    }
+
+    // Initialize dynamic button manager when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      window.dynamicButtonManager = new DynamicButtonManager();
     });
   </script>
 
