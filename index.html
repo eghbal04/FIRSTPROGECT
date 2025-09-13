@@ -1324,16 +1324,24 @@
     // Get wallet address
     async function getWalletAddress() {
       try {
+        // Use the same wallet connection logic as the rest of the app
+        if (window.connectWallet) {
+          const connection = await window.connectWallet();
+          if (connection && connection.address) {
+            return connection.address;
+          }
+        }
+        
+        // Fallback to direct ethereum check
         if (window.ethereum) {
           const accounts = await window.ethereum.request({ method: 'eth_accounts' });
           if (accounts && accounts.length > 0) {
             return accounts[0];
           }
-        }
-        
-        // Fallback to selectedAddress
-        if (window.ethereum && window.ethereum.selectedAddress) {
-          return window.ethereum.selectedAddress;
+          
+          if (window.ethereum.selectedAddress) {
+            return window.ethereum.selectedAddress;
+          }
         }
         
         return null;
@@ -1494,13 +1502,26 @@
         // Listen for wallet connection changes
         if (window.ethereum) {
           window.ethereum.on('accountsChanged', () => {
-            setTimeout(() => this.updateAllButtons(), 500);
+            console.log('Account changed, updating dynamic buttons...');
+            setTimeout(() => this.updateAllButtons(), 1000);
           });
           
           window.ethereum.on('chainChanged', () => {
-            setTimeout(() => this.updateAllButtons(), 500);
+            console.log('Chain changed, updating dynamic buttons...');
+            setTimeout(() => this.updateAllButtons(), 1000);
           });
         }
+        
+        // Also listen for custom wallet connection events
+        document.addEventListener('walletConnected', () => {
+          console.log('Wallet connected event, updating dynamic buttons...');
+          setTimeout(() => this.updateAllButtons(), 500);
+        });
+        
+        document.addEventListener('walletDisconnected', () => {
+          console.log('Wallet disconnected event, updating dynamic buttons...');
+          setTimeout(() => this.updateAllButtons(), 500);
+        });
       }
 
       startPeriodicUpdates() {
@@ -1654,55 +1675,62 @@
 
       async checkWalletConnection() {
         try {
-          if (window.ethereum) {
-            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-            return accounts && accounts.length > 0;
+          // Use the same wallet connection logic as the rest of the app
+          if (window.connectWallet) {
+            const connection = await window.connectWallet();
+            return connection && connection.address;
           }
           return false;
         } catch (error) {
+          console.log('Wallet connection check failed:', error);
           return false;
         }
       }
 
       async getWalletBalance() {
         try {
-          if (window.ethereum) {
-            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-            if (accounts && accounts.length > 0) {
+          // Use the same wallet connection logic as the rest of the app
+          if (window.connectWallet) {
+            const connection = await window.connectWallet();
+            if (connection && connection.address) {
               const balance = await window.ethereum.request({
                 method: 'eth_getBalance',
-                params: [accounts[0], 'latest']
+                params: [connection.address, 'latest']
               });
               return parseFloat(ethers.formatEther(balance));
             }
           }
           return 0;
         } catch (error) {
+          console.log('Balance check failed:', error);
           return 0;
         }
       }
 
       async checkUserRegistration() {
         try {
-          if (window.contractConfig && window.contractConfig.contract) {
-            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-            if (accounts && accounts.length > 0) {
-              const userData = await window.contractConfig.contract.users(accounts[0]);
+          // Use the same wallet connection logic as the rest of the app
+          if (window.connectWallet) {
+            const connection = await window.connectWallet();
+            if (connection && connection.contract && connection.address) {
+              const userData = await connection.contract.users(connection.address);
               return userData && userData.index && BigInt(userData.index) > 0n;
             }
           }
           return false;
         } catch (error) {
+          console.log('Registration check failed:', error);
           return false;
         }
       }
 
       async getBinaryPoints() {
         try {
-          if (window.contractConfig && window.contractConfig.contract) {
-            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-            if (accounts && accounts.length > 0) {
-              const userData = await window.contractConfig.contract.users(accounts[0]);
+          // Use the same wallet connection logic as the rest of the app
+          if (window.connectWallet) {
+            const connection = await window.connectWallet();
+            if (connection && connection.contract && connection.address) {
+              const userData = await connection.contract.users(connection.address);
               if (userData && userData.binaryPoints) {
                 return parseFloat(ethers.formatEther(userData.binaryPoints));
               }
@@ -1710,6 +1738,7 @@
           }
           return 0;
         } catch (error) {
+          console.log('Binary points check failed:', error);
           return 0;
         }
       }
@@ -3100,6 +3129,9 @@
           
           // Update user status bar
           try { if (typeof window.updateUserStatusBar === 'function') window.updateUserStatusBar(); } catch(_) {}
+          
+          // Update dynamic buttons
+          try { if (window.dynamicButtonManager) window.dynamicButtonManager.updateAllButtons(); } catch(_) {}
         }, 1000);
         
         return result;
@@ -4511,233 +4543,10 @@ window.claimBinaryPointsFromMain = async function() {
 };
 </script>
 
-<!-- Floating Referral Address Card JavaScript -->
-<script>
-// Floating Referral Link Card Management - REMOVED
-  constructor() {
-    this.baseUrl = window.location.origin + window.location.pathname;
-    this.referralCode = null;
-    this.isUserRegistered = false;
-    
-    // Wait for DOM to be ready
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => {
-        this.initializeElements();
-      });
-    } else {
-      this.initializeElements();
-    }
-  }
-  
-  initializeElements() {
-    this.card = document.getElementById('floating-referral-card');
-    this.linkDisplay = document.getElementById('referral-link-display');
-    this.statusDisplay = document.getElementById('referral-status');
-    this.earningsDisplay = document.getElementById('referral-earnings');
-    this.copyBtn = document.getElementById('copy-referral-link');
-    this.closeBtn = document.getElementById('close-referral-card');
-    
-    console.log('🔍 Floating Referral Card elements:', {
-      card: !!this.card,
-      linkDisplay: !!this.linkDisplay,
-      statusDisplay: !!this.statusDisplay,
-      earningsDisplay: !!this.earningsDisplay,
-      copyBtn: !!this.copyBtn,
-      closeBtn: !!this.closeBtn
-    });
-    
-    this.setupEventListeners();
-    this.updateReferralLink();
-  }
-  
-  setupEventListeners() {
-    // Copy button functionality with mobile support
-    if (this.copyBtn) {
-      // Use both click and touch events for better mobile support
-      this.copyBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        this.copyReferralLink();
-      });
-      
-      this.copyBtn.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        this.copyReferralLink();
-      });
-      
-      // Add visual feedback on touch start
-      this.copyBtn.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        this.copyBtn.style.transform = 'scale(0.95)';
-      });
-      
-      this.copyBtn.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        this.copyBtn.style.transform = 'scale(1)';
-      });
-    }
-    
-    // Close button functionality
-    if (this.closeBtn) {
-      this.closeBtn.addEventListener('click', () => {
-        this.hideCard();
-      });
-    }
-    
-    // Listen for wallet connection changes
-    if (window.ethereum) {
-      window.ethereum.on('accountsChanged', () => {
-        // Small delay to ensure wallet connection is established
-        setTimeout(() => {
-          this.updateReferralLink();
-        }, 500);
-      });
-      
-      window.ethereum.on('chainChanged', () => {
-        // Small delay to ensure wallet connection is established
-        setTimeout(() => {
-          this.updateReferralLink();
-        }, 500);
-      });
-    }
-  }
-  
-  async updateReferralLink() {
-    try {
-      console.log('🔍 updateReferralLink called');
-      console.log('🔍 window.ethereum:', !!window.ethereum);
-      console.log('🔍 selectedAddress:', window.ethereum?.selectedAddress);
-      
-      // Check wallet connection with better mobile support
-      let isWalletConnected = false;
-      let address = null;
-      
-      if (window.ethereum) {
-        try {
-          // Try to get accounts first (better for mobile)
-          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-          if (accounts && accounts.length > 0) {
-            address = accounts[0];
-            isWalletConnected = true;
-            console.log('✅ Wallet connected via eth_accounts:', address);
-          } else if (window.ethereum.selectedAddress) {
-            address = window.ethereum.selectedAddress;
-            isWalletConnected = true;
-            console.log('✅ Wallet connected via selectedAddress:', address);
-          }
-        } catch (error) {
-          console.log('⚠️ Error checking wallet connection:', error);
-          // Fallback to selectedAddress
-          if (window.ethereum.selectedAddress) {
-            address = window.ethereum.selectedAddress;
-            isWalletConnected = true;
-            console.log('✅ Wallet connected via fallback:', address);
-          }
-        }
-      }
-      
-      // Additional check using our custom method
-      if (!isWalletConnected) {
-        const customAddress = await this.checkWalletConnection();
-        if (customAddress) {
-          address = customAddress;
-          isWalletConnected = true;
-          console.log('✅ Wallet connected via custom method:', address);
-        }
-      }
-      
-      if (isWalletConnected && address) {
-        console.log('✅ Processing connected wallet:', address);
-        
-        // Check if user is registered before showing referral card
-        try {
-          const connection = await window.connectWallet();
-          const { contract } = connection;
-          
-          // Check if user is registered
-          const userData = await contract.users(address);
-          const isRegistered = userData && userData.index && BigInt(userData.index) > 0n;
-          
-          // Always show the card regardless of registration status
-          this.referralCode = address;
-          
-          // Create referral link with full address
-          const referralLink = `${this.baseUrl}?ref=${this.referralCode}`;
-          
-          // Display a shortened version for better UI, but keep full link for copying
-          const shortAddress = `${address.substring(0, 6)}...${address.substring(38)}`;
-          if (this.linkDisplay) {
-            this.linkDisplay.textContent = `${this.baseUrl}?ref=${shortAddress}`;
-            this.linkDisplay.title = `Full link: ${referralLink}`;
-            console.log('✅ Referral link updated:', this.linkDisplay.textContent);
-          } else {
-            console.log('❌ linkDisplay element not found');
-          }
-          
-          if (isRegistered) {
-            if (this.statusDisplay) {
-              this.statusDisplay.textContent = 'Connected';
-              this.statusDisplay.style.color = '#00ff88';
-            }
-            if (this.earningsDisplay) {
-              this.earningsDisplay.textContent = '10% Commission';
-              this.earningsDisplay.style.color = '#00ff88';
-            }
-          } else {
-            if (this.statusDisplay) {
-              this.statusDisplay.textContent = 'Not Registered';
-              this.statusDisplay.style.color = '#ffaa00';
-            }
-            if (this.earningsDisplay) {
-              this.earningsDisplay.textContent = 'Register First';
-              this.earningsDisplay.style.color = '#ffaa00';
-            }
-          }
-          
-          // Always show the card
-          this.showCard();
-          
-          // Disable copy button if wallet not connected
-          if (this.copyBtn) {
-            if (window.ethereum && window.ethereum.selectedAddress) {
-              this.copyBtn.disabled = false;
-              this.copyBtn.style.opacity = '1';
-              this.copyBtn.style.cursor = 'pointer';
-            } else {
-              this.copyBtn.disabled = true;
-              this.copyBtn.style.opacity = '0.5';
-              this.copyBtn.style.cursor = 'not-allowed';
-            }
-          }
-        } catch (error) {
-          console.error('Error checking registration status:', error);
-          // Show card with error status
-          if (this.linkDisplay) {
-            this.linkDisplay.textContent = 'Error';
-          }
-          if (this.statusDisplay) {
-            this.statusDisplay.textContent = 'Error';
-            this.statusDisplay.style.color = '#ff4444';
-          }
-          if (this.earningsDisplay) {
-            this.earningsDisplay.textContent = 'Check Connection';
-            this.earningsDisplay.style.color = '#ff4444';
-          }
-          this.showCard();
-        }
-      } else {
-        console.log('⚠️ Wallet not connected');
-        // Wallet not connected - show appropriate message
-        if (this.linkDisplay) {
-          this.linkDisplay.textContent = 'Connect Wallet First';
-        }
-        if (this.statusDisplay) {
-          this.statusDisplay.textContent = 'Not Connected';
-          this.statusDisplay.style.color = '#ff4444';
-        }
-        if (this.earningsDisplay) {
-          this.earningsDisplay.textContent = 'Connect to Continue';
+<!-- Floating Referral Address Card JavaScript - REMOVED -->
+
+<style>
+/* File cleaned - new CSS is at the end */
           this.earningsDisplay.style.color = '#ff4444';
         }
         
