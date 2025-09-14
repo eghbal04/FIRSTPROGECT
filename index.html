@@ -1,878 +1,1748 @@
 <!DOCTYPE html>
+
 <html lang="fa" dir="rtl">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+
     <meta http-equiv="Pragma" content="no-cache">
+
     <meta http-equiv="Expires" content="0">
+
     <title>IAMPHOENIX</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
+
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
+
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700&display=swap" rel="stylesheet">
+
     <link href="https://fonts.googleapis.com/css2?family=Fira+Mono&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="css/style.css?v=1.1">
+
     <link rel="stylesheet" href="css/index-custom.css">
+
     <link rel="stylesheet" href="css/floating-ai-assistant.css">
+
     <link rel="stylesheet" href="css/smooth-transitions.css">
 
+
+
     <link rel="stylesheet" href="css/modern-theme.css">
+
     <link rel="stylesheet" href="css/mobile-responsive.css">
 
 
 
+
+
+
+
     <style>
+
       /* User Status Bar Animations */
+
       @keyframes pulse {
+
         0% { opacity: 1; transform: scale(1); }
+
         50% { opacity: 0.5; transform: scale(1.1); }
+
         100% { opacity: 1; transform: scale(1); }
+
       }
+
+
 
       @keyframes cardGlow {
+
         0%, 100% { box-shadow: 0 2px 8px rgba(0,255,136,0.1); }
+
         50% { box-shadow: 0 4px 16px rgba(0,255,136,0.3); }
+
       }
+
       
+
       @keyframes cardFloat {
+
         0%, 100% { transform: translateY(0px); }
+
         50% { transform: translateY(-2px); }
+
       }
+
       
+
       @keyframes shimmer {
+
         0% { transform: translateX(-100%); }
+
         100% { transform: translateX(100%); }
+
       }
+
       
+
       /* Dynamic Card Styles */
+
       .status-card {
+
         position: relative;
+
         overflow: hidden;
+
         cursor: pointer;
+
       }
+
       
+
       .status-card::before {
+
         content: '';
+
         position: absolute;
+
         top: 0;
+
         left: -100%;
+
         width: 100%;
+
         height: 100%;
+
         background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+
         transition: left 0.5s;
+
         z-index: 1;
+
       }
+
       
+
       .status-card:hover::before {
+
         left: 100%;
+
       }
+
       
+
       .status-card:hover {
+
         animation: cardFloat 0.6s ease-in-out;
+
       }
+
       
+
       .user-id-card:hover {
+
         animation: cardGlow 2s infinite;
+
       }
+
       
+
       .wallet-card:hover {
+
         animation: cardGlow 2s infinite;
+
       }
+
       
+
       .likes-card:hover {
+
         animation: cardGlow 2s infinite;
+
       }
+
       
+
       .dislikes-card:hover {
+
         animation: cardGlow 2s infinite;
+
       }
+
       
+
       /* Content-based sizing */
+
       .status-card[data-content-length="short"] {
+
         max-width: 120px !important;
+
       }
+
       
+
       .status-card[data-content-length="medium"] {
+
         max-width: 200px !important;
+
       }
+
       
+
       .status-card[data-content-length="long"] {
+
         max-width: 300px !important;
+
       }
+
       
+
       .status-card[data-content-length="very-long"] {
+
         max-width: 400px !important;
+
       }
+
+
 
       /* Mobile Responsive for User Status Bar */
+
       @media (max-width: 768px) {
+
         .user-status-container {
+
           padding: 0.8rem !important;
+
         }
+
         
+
         .user-status-container > div:first-child {
+
           gap: 0.5rem !important;
+
           overflow-x: auto !important;
+
           padding-bottom: 0.5rem !important;
+
         }
+
         
+
         .user-status-container > div:first-child > div {
+
           min-width: 100px !important;
+
           flex-shrink: 0 !important;
+
         }
+
         
+
         .status-card {
+
           margin-bottom: 0.5rem;
+
         }
+
         
+
         .status-card:hover {
+
           transform: scale(1.01) !important;
+
         }
+
         
+
         /* Star rating responsive */
+
         #user-star-rating {
+
           top: 0.3rem !important;
+
           left: 0.3rem !important;
+
           padding: 0.2rem 0.4rem !important;
+
         }
+
         
+
         #user-star-count {
+
           font-size: 0.7rem !important;
+
         }
+
       }
+
+
 
       @media (max-width: 480px) {
+
         .user-status-container {
+
           padding: 0.6rem !important;
+
         }
+
         
+
         .user-status-container > div:first-child {
+
           gap: 0.4rem !important;
+
         }
+
         
+
         .user-status-container > div:first-child > div {
+
           min-width: 80px !important;
+
           padding: 0.4rem !important;
+
         }
+
         
+
         .status-card {
+
           padding: 0.4rem !important;
+
           min-width: 100px !important;
+
         }
+
         
+
         .status-card > div {
+
           font-size: 0.7rem !important;
+
         }
+
         
+
         .user-status-container > div:first-child > div > div:first-child {
+
           font-size: 0.8rem !important;
+
         }
+
         
+
         /* Star rating responsive for small screens */
+
         #user-star-rating {
+
           top: 0.2rem !important;
+
           left: 0.2rem !important;
+
           padding: 0.15rem 0.3rem !important;
+
           gap: 0.1rem !important;
+
         }
+
         
+
         #user-star-count {
+
           font-size: 0.6rem !important;
+
         }
+
         
+
         #user-star-rating span:last-child {
+
           font-size: 0.6rem !important;
+
         }
+
       }
+
     </style>
 
+
+
     <!-- Loading ethers.js version 6 from CDN -->
+
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
+
     <!-- Loading WalletConnect Provider from official CDN -->
+
     <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+
     <!-- Loading WalletConnect Handler -->
-    <script src="js/walletconnect-handler.js?v=5.7"></script>
-    <script src="js/mobile-optimizer.js"></script>
+
+    <!-- Removed walletconnect-handler.js for faster loading -->
+
+    <!-- Removed mobile-optimizer.js for faster loading -->
+
+
+
 
 
       <!-- Loading WalletConnect UMD locally -->
-  <script src="js/walletconnect-v1.8.0.js"></script>
+
+  <!-- Removed walletconnect-v1.8.0.js for faster loading -->
+
   
+
   <!-- Binary Tree Traversal System -->
-  <script src="js/binary-tree-traversal.js"></script>
+
+  <!-- Removed binary-tree-traversal.js for faster loading -->
+
   <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
-  <script src="js/modern-theme-variables.js"></script>
+
+  <!-- Removed modern-theme-variables.js for faster loading -->
+
   
+
 </head>
+
 <body>
 
+
+
   <!-- Referral Popup Overlay -->
+
   <div id="referral-popup-overlay" class="referral-popup-overlay" onclick="hideReferralPopup()"></div>
+
   
+
   <!-- Referral Popup -->
+
   <div id="referral-popup" class="referral-popup" style="display: none;">
+
     <div class="referral-popup-content">
+
       <div class="referral-popup-header">
+
         <h3>🔗 Your Referral Link</h3>
+
         <button class="referral-close-btn" onclick="hideReferralPopup()">&times;</button>
+
       </div>
+
       <div class="referral-popup-body">
+
         <div class="wallet-address-section">
+
           <label>Your Wallet Address:</label>
+
           <div class="wallet-address-display" id="wallet-address-display">Connect Wallet First</div>
+
         </div>
+
         <div class="referral-link-section">
+
           <label>Referral Link:</label>
+
           <div class="referral-link-display" id="referral-link-display">Not Available</div>
+
         </div>
+
         <div class="referral-actions">
+
           <button class="copy-wallet-btn" onclick="copyWalletAddress()">📋 Copy Address</button>
+
           <button class="copy-link-btn" onclick="copyReferralLink()">🔗 Copy Link</button>
+
         </div>
+
         <div class="referral-info">
+
           <p>Share your referral link to earn 10% commission on all referrals!</p>
+
         </div>
+
       </div>
+
     </div>
+
   </div>
+
+
 
   <div id="main-dashboard" class="page-section" style="position:relative;overflow:visible;">
 
+
+
     <!-- User Status Bar -->
+
     <div id="user-status-bar" class="user-status-container" style="display:block;background:linear-gradient(135deg,rgba(35,41,70,0.95),rgba(24,28,42,0.95));border:1px solid rgba(0,255,136,0.2);border-radius:16px;padding:1rem;margin:1rem auto;max-width:1400px;backdrop-filter:blur(10px);box-shadow:0 8px 32px rgba(0,0,0,0.3);position:relative;">
+
      
 
+
+
       
+
       <div style="display:flex;flex-wrap:nowrap;gap:0.8rem;align-items:center;justify-content:space-between;overflow-x:auto;">
+
         <!-- User ID Section -->
+
                         <div class="status-card user-id-card" style="display:flex;align-items:center;gap:0.5rem;flex:1;min-width:120px;max-width:250px;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:10px;padding:0.6rem;transition:all 0.4s cubic-bezier(0.4, 0, 0.2, 1);transform:scale(1);box-shadow:0 2px 8px rgba(0,255,136,0.1);" onmouseenter="this.style.transform='scale(1.02)';this.style.boxShadow='0 4px 16px rgba(0,255,136,0.2)'" onmouseleave="this.style.transform='scale(1)';this.style.boxShadow='0 2px 8px rgba(0,255,136,0.1)'">
+
           <div style="flex:1;min-width:0;">
+
             <div style="color:#00ff88;font-size:0.7rem;font-weight:600;margin-bottom:0.1rem;white-space:nowrap;">User ID</div>
+
             <div style="color:#e0e6f7;font-size:0.8rem;font-weight:bold;font-family:monospace;word-break:break-all;overflow:hidden;text-overflow:ellipsis;" id="user-status-id-value">Not Connected</div>
+
           </div>
+
         </div>
+
+
+
+
 
 
 
         <!-- Wallet Address Section -->
+
         <div class="status-card wallet-card" style="display:flex;align-items:center;gap:0.5rem;flex:1.5;min-width:150px;max-width:280px;background:rgba(167,134,255,0.1);border:1px solid rgba(167,134,255,0.3);border-radius:10px;padding:0.5rem;transition:all 0.4s cubic-bezier(0.4, 0, 0.2, 1);transform:scale(1);box-shadow:0 2px 8px rgba(167,134,255,0.1);" onmouseenter="this.style.transform='scale(1.02)';this.style.boxShadow='0 4px 16px rgba(167,134,255,0.2)'" onmouseleave="this.style.transform='scale(1)';this.style.boxShadow='0 2px 8px rgba(167,134,255,0.1)'">
+
           <div style="flex:1;min-width:0;">
+
             <div style="color:#a786ff;font-size:0.6rem;font-weight:600;margin-bottom:0.1rem;white-space:nowrap;">Wallet Address</div>
+
             <div style="color:#e0e6f7;font-size:0.65rem;font-family:monospace;word-break:break-all;padding:0.1rem;border-radius:4px;overflow:hidden;text-overflow:ellipsis;cursor:pointer;" id="user-status-wallet" title="Click to copy">Not Connected</div>
+
           </div>
+
         </div>
+
+
+
 
 
         <!-- Likes Section -->
+
         <div class="status-card likes-card" style="display:flex;flex-direction:column;align-items:center;gap:0.15rem;flex:1;min-width:60px;max-width:100px;background:rgba(40,167,69,0.1);border:1px solid rgba(40,167,69,0.3);border-radius:8px;padding:0.4rem;text-align:center;transition:all 0.4s cubic-bezier(0.4, 0, 0.2, 1);transform:scale(1);box-shadow:0 2px 8px rgba(40,167,69,0.1);" onmouseenter="this.style.transform='scale(1.02)';this.style.boxShadow='0 4px 16px rgba(40,167,69,0.2)'" onmouseleave="this.style.transform='scale(1)';this.style.boxShadow='0 2px 8px rgba(40,167,69,0.1)'">
+
           <div style="color:#28a745;font-size:0.65rem;font-weight:bold;font-family:monospace;overflow:hidden;text-overflow:ellipsis;" id="user-status-likes">0</div>
+
           <div style="color:#28a745;font-size:0.8rem;flex-shrink:0;">👍</div>
+
         </div>
+
+
 
         <!-- Dislikes Section -->
+
         <div class="status-card dislikes-card" style="display:flex;flex-direction:column;align-items:center;gap:0.15rem;flex:1;min-width:60px;max-width:100px;background:rgba(220,53,69,0.1);border:1px solid rgba(220,53,69,0.3);border-radius:8px;padding:0.4rem;text-align:center;transition:all 0.4s cubic-bezier(0.4, 0, 0.2, 1);transform:scale(1);box-shadow:0 2px 8px rgba(220,53,69,0.1);" onmouseenter="this.style.transform='scale(1.02)';this.style.boxShadow='0 4px 16px rgba(220,53,69,0.2)'" onmouseleave="this.style.transform='scale(1)';this.style.boxShadow='0 2px 8px rgba(220,53,69,0.1)'">
+
           <div style="color:#dc3545;font-size:0.65rem;font-weight:bold;font-family:monospace;overflow:hidden;text-overflow:ellipsis;" id="user-status-dislikes">0</div>
+
           <div style="color:#dc3545;font-size:0.8rem;flex-shrink:0;">👎</div>
+
         </div>
+
       </div>
+
     </div>
 
+
+
     <!-- Quick Action Buttons -->
+
     <div class="quick-action-buttons" style="display:flex;justify-content:center;gap:0.3rem;margin:0.5rem auto;max-width:500px;flex-wrap:nowrap;">
+
       <button id="swap-btn" class="action-btn swap-btn" onclick="handleSwapClick()" style="background:linear-gradient(135deg,#00ff88,#00cc6a);color:#0a0f1c;border:none;border-radius:6px;padding:0.4rem 0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:0.75rem;display:flex;align-items:center;gap:0.2rem;box-shadow:0 2px 6px rgba(0,255,136,0.3);min-width:80px;justify-content:center;flex:1;max-width:120px;" onmouseenter="this.style.transform='translateY(-1px)';this.style.boxShadow='0 3px 10px rgba(0,255,136,0.4)'" onmouseleave="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 6px rgba(0,255,136,0.3)'">
+
         <span class="btn-icon">🔄</span>
+
         <span class="btn-text">Swap</span>
+
         <span class="btn-status" id="swap-status"></span>
+
       </button>
+
       <button id="transfer-btn" class="action-btn transfer-btn" onclick="handleTransferClick()" style="background:linear-gradient(135deg,#a786ff,#8b5cf6);color:#ffffff;border:none;border-radius:6px;padding:0.4rem 0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:0.75rem;display:flex;align-items:center;gap:0.2rem;box-shadow:0 2px 6px rgba(167,134,255,0.3);min-width:80px;justify-content:center;flex:1;max-width:120px;" onmouseenter="this.style.transform='translateY(-1px)';this.style.boxShadow='0 3px 10px rgba(167,134,255,0.4)'" onmouseleave="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 6px rgba(167,134,255,0.3)'">
+
         <span class="btn-icon">💸</span>
+
         <span class="btn-text">Transfer</span>
+
         <span class="btn-status" id="transfer-status"></span>
+
       </button>
+
       <button id="referral-btn" class="action-btn referral-btn" onclick="showReferralPopup(event)" style="background:linear-gradient(135deg,#ff6b35,#ff8c42);color:#ffffff;border:none;border-radius:6px;padding:0.4rem 0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:0.75rem;display:flex;align-items:center;gap:0.2rem;box-shadow:0 2px 6px rgba(255,107,51,0.3);min-width:80px;justify-content:center;flex:1;max-width:120px;" onmouseenter="this.style.transform='translateY(-1px)';this.style.boxShadow='0 3px 10px rgba(255,107,51,0.4)'" onmouseleave="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 6px rgba(255,107,51,0.3)'">
+
         <span class="btn-icon">🔗</span>
+
         <span class="btn-text">Referral</span>
+
         <span class="btn-status" id="referral-status"></span>
+
       </button>
+
       <button id="claim-btn" class="action-btn claim-btn" onclick="handleClaimClick()" disabled style="background:linear-gradient(135deg,#666,#888);color:#ffffff;border:none;border-radius:6px;padding:0.4rem 0.8rem;font-weight:bold;cursor:not-allowed;transition:all 0.3s ease;font-size:0.75rem;display:flex;align-items:center;gap:0.2rem;box-shadow:0 2px 6px rgba(0,0,0,0.2);min-width:80px;justify-content:center;flex:1;max-width:120px;opacity:0.4;" onmouseenter="if(!this.disabled) {this.style.transform='translateY(-1px)';this.style.boxShadow='0 3px 10px rgba(255,107,51,0.4)'}" onmouseleave="if(!this.disabled) {this.style.transform='translateY(0)';this.style.boxShadow='0 2px 6px rgba(255,107,51,0.3)'}">
+
         <span class="btn-icon">🎯</span>
+
         <span class="btn-text">Claim</span>
+
         <span class="btn-count" id="claim-points-count">0</span>
+
         <span class="btn-status" id="claim-status"></span>
+
       </button>
+
     </div>
+
     
 
 
+
+
+
     <style>
+
       /* Floating Referral Link Styles */
+
       .floating-referral-link {
+
         position: fixed;
+
         top: 50%;
+
         left: 50%;
+
         transform: translate(-50%, -50%);
+
         z-index: 1000;
+
         background: linear-gradient(135deg, rgba(0, 255, 136, 0.95), rgba(167, 134, 255, 0.95));
+
         border: 2px solid rgba(0, 255, 136, 0.5);
+
         border-radius: 20px;
+
         padding: 20px 30px;
+
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+
         backdrop-filter: blur(10px);
+
         text-align: center;
+
         font-family: 'Arial', sans-serif;
+
         color: #0a0f1c;
+
         font-weight: bold;
+
         font-size: 16px;
+
         cursor: pointer;
+
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
         animation: floatPulse 2s ease-in-out infinite;
+
         max-width: 300px;
+
         min-width: 250px;
+
       }
+
+
 
       .floating-referral-link:hover {
+
         transform: translate(-50%, -50%) scale(1.05);
+
         box-shadow: 0 15px 40px rgba(0, 255, 136, 0.4);
+
         background: linear-gradient(135deg, rgba(0, 255, 136, 1), rgba(167, 134, 255, 1));
+
       }
+
+
 
       .floating-referral-link .referral-title {
+
         font-size: 18px;
+
         margin-bottom: 10px;
+
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+
       }
+
+
 
       .floating-referral-link .referral-url {
+
         background: rgba(255, 255, 255, 0.9);
+
         border-radius: 10px;
+
         padding: 8px 12px;
+
         margin: 10px 0;
+
         font-family: 'Courier New', monospace;
+
         font-size: 14px;
+
         word-break: break-all;
+
         border: 1px solid rgba(0, 0, 0, 0.1);
+
       }
+
+
 
       .floating-referral-link .copy-button {
+
         background: rgba(0, 0, 0, 0.8);
+
         color: white;
+
         border: none;
+
         border-radius: 8px;
+
         padding: 8px 16px;
+
         font-size: 12px;
+
         cursor: pointer;
+
         transition: all 0.2s ease;
+
         margin-top: 8px;
+
       }
+
+
 
       .floating-referral-link .copy-button:hover {
+
         background: rgba(0, 0, 0, 1);
+
         transform: translateY(-1px);
+
       }
+
+
 
       .floating-referral-link .close-button {
+
         position: absolute;
+
         top: 8px;
+
         right: 8px;
+
         background: rgba(0, 0, 0, 0.3);
+
         color: white;
+
         border: none;
+
         border-radius: 50%;
+
         width: 24px;
+
         height: 24px;
+
         cursor: pointer;
+
         font-size: 14px;
+
         display: flex;
+
         align-items: center;
+
         justify-content: center;
+
         transition: all 0.2s ease;
+
       }
+
+
 
       .floating-referral-link .close-button:hover {
+
         background: rgba(0, 0, 0, 0.6);
+
         transform: scale(1.1);
+
       }
+
+
 
       @keyframes floatPulse {
+
         0%, 100% {
+
           box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+
         }
+
         50% {
+
           box-shadow: 0 15px 35px rgba(0, 255, 136, 0.2);
+
         }
+
       }
+
+
 
       /* Referral Popup Styles */
+
       .referral-popup-overlay {
+
         position: fixed;
+
         top: 0;
+
         left: 0;
+
         width: 100%;
+
         height: 100%;
+
         background: rgba(0, 0, 0, 0.6);
+
         z-index: 9998;
+
         display: none;
+
         backdrop-filter: blur(3px);
+
         transition: opacity 0.3s ease;
+
       }
+
+
 
       .referral-popup {
+
         position: fixed;
+
         top: 50%;
+
         left: 50%;
+
         transform: translate(-50%, -50%);
+
         z-index: 9999;
+
         background: linear-gradient(135deg, #1a1f2e, #2a3441);
+
         border: 2px solid #a786ff;
+
         border-radius: 16px;
+
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+
         backdrop-filter: blur(10px);
+
         max-width: 500px;
+
         width: 90%;
+
         max-height: 80vh;
+
         overflow-y: auto;
+
         font-family: 'Arial', sans-serif;
+
         color: #ffffff;
+
         animation: popupSlideIn 0.3s ease-out;
+
       }
+
+
 
       .referral-popup-content {
+
         padding: 0;
+
       }
+
+
 
       .referral-popup-header {
+
         display: flex;
+
         justify-content: space-between;
+
         align-items: center;
+
         padding: 1.5rem 2rem 1rem;
+
         border-bottom: 1px solid rgba(167, 134, 255, 0.3);
+
         background: linear-gradient(135deg, rgba(167, 134, 255, 0.1), rgba(0, 255, 136, 0.1));
+
       }
+
+
 
       .referral-popup-header h3 {
+
         margin: 0;
+
         color: #a786ff;
+
         font-size: 1.3rem;
+
         font-weight: 600;
+
         display: flex;
+
         align-items: center;
+
         gap: 0.5rem;
+
       }
+
+
 
       .referral-close-btn {
+
         background: none;
+
         border: none;
+
         color: #888;
+
         font-size: 1.5rem;
+
         cursor: pointer;
+
         padding: 0;
+
         width: 30px;
+
         height: 30px;
+
         display: flex;
+
         align-items: center;
+
         justify-content: center;
+
         border-radius: 50%;
+
         transition: all 0.3s ease;
+
       }
+
+
 
       .referral-close-btn:hover {
+
         background: rgba(255, 68, 68, 0.2);
+
         color: #ff4444;
+
         transform: scale(1.1);
+
       }
+
+
 
       .referral-popup-body {
+
         padding: 2rem;
+
       }
+
+
 
       .wallet-address-section,
+
       .referral-link-section {
+
         margin-bottom: 1.5rem;
+
       }
+
+
 
       .wallet-address-section label,
+
       .referral-link-section label {
+
         display: block;
+
         color: #a786ff;
+
         font-size: 0.9rem;
+
         font-weight: 600;
+
         margin-bottom: 0.5rem;
+
       }
+
+
 
       .wallet-address-display,
+
       .referral-link-display {
+
         background: rgba(167, 134, 255, 0.1);
+
         border: 1px solid rgba(167, 134, 255, 0.3);
+
         border-radius: 8px;
+
         padding: 1rem;
+
         font-family: 'Courier New', monospace;
+
         font-size: 0.85rem;
+
         color: #ffffff;
+
         word-break: break-all;
+
         min-height: 50px;
+
         display: flex;
+
         align-items: center;
+
         transition: all 0.3s ease;
+
         line-height: 1.4;
+
       }
+
+
 
       .wallet-address-display:hover,
+
       .referral-link-display:hover {
+
         background: rgba(167, 134, 255, 0.15);
+
         border-color: rgba(167, 134, 255, 0.5);
+
       }
+
+
 
       .referral-actions {
+
         display: flex;
+
         gap: 1rem;
+
         margin-bottom: 1.5rem;
+
       }
+
+
 
       .copy-wallet-btn,
+
       .copy-link-btn {
+
         flex: 1;
+
         background: linear-gradient(135deg, #a786ff, #00ff88);
+
         color: #0a0f1c;
+
         border: none;
+
         border-radius: 8px;
+
         padding: 0.8rem 1rem;
+
         font-weight: 600;
+
         font-size: 0.9rem;
+
         cursor: pointer;
+
         transition: all 0.3s ease;
+
         display: flex;
+
         align-items: center;
+
         justify-content: center;
+
         gap: 0.5rem;
+
       }
+
+
 
       .copy-wallet-btn:hover,
+
       .copy-link-btn:hover {
+
         transform: translateY(-2px);
+
         box-shadow: 0 5px 15px rgba(167, 134, 255, 0.4);
+
       }
+
+
 
       .copy-wallet-btn:active,
+
       .copy-link-btn:active {
+
         transform: translateY(0);
+
       }
+
+
 
       .referral-info {
+
         background: rgba(0, 255, 136, 0.1);
+
         border: 1px solid rgba(0, 255, 136, 0.3);
+
         border-radius: 8px;
+
         padding: 1rem;
+
         text-align: center;
+
       }
+
+
 
       .referral-info p {
+
         margin: 0;
+
         color: #00ff88;
+
         font-size: 0.9rem;
+
         font-weight: 500;
+
       }
+
+
 
       @keyframes popupSlideIn {
+
         from {
+
           opacity: 0;
+
           transform: translate(-50%, -50%) scale(0.8);
+
         }
+
         to {
+
           opacity: 1;
+
           transform: translate(-50%, -50%) scale(1);
+
         }
+
       }
+
+
 
       /* Dynamic Button Styles */
+
       .action-btn {
+
         position: relative;
+
         overflow: hidden;
+
       }
+
+
 
       .btn-icon {
+
         font-size: 0.8rem;
+
         transition: transform 0.3s ease;
+
       }
+
+
 
       .btn-text {
+
         font-weight: 600;
+
         transition: all 0.3s ease;
+
       }
+
+
 
       .btn-count {
+
         background: rgba(255, 255, 255, 0.2);
+
         border-radius: 10px;
+
         padding: 0.1rem 0.3rem;
+
         font-size: 0.65rem;
+
         font-weight: bold;
+
         min-width: 20px;
+
         text-align: center;
+
         transition: all 0.3s ease;
+
       }
+
+
 
       .btn-status {
+
         position: absolute;
+
         top: -2px;
+
         right: -2px;
+
         width: 8px;
+
         height: 8px;
+
         border-radius: 50%;
+
         background: #00ff88;
+
         opacity: 0;
+
         transition: all 0.3s ease;
+
         animation: pulse 2s infinite;
+
       }
+
+
 
       .btn-status.connected {
+
         opacity: 1;
+
         background: #00ff88;
+
       }
+
+
 
       .btn-status.disconnected {
+
         opacity: 1;
+
         background: #ff4444;
+
       }
+
+
 
       .btn-status.loading {
+
         opacity: 1;
+
         background: #ffaa00;
+
         animation: spin 1s linear infinite;
+
       }
+
+
 
       .btn-status.available {
+
         opacity: 1;
+
         background: #a786ff;
+
       }
+
+
 
       .btn-status.unavailable {
+
         opacity: 1;
+
         background: #666;
+
       }
+
+
 
       @keyframes pulse {
+
         0%, 100% {
+
           transform: scale(1);
+
           opacity: 1;
+
         }
+
         50% {
+
           transform: scale(1.2);
+
           opacity: 0.7;
+
         }
+
       }
+
+
 
       @keyframes spin {
+
         from {
+
           transform: rotate(0deg);
+
         }
+
         to {
+
           transform: rotate(360deg);
+
         }
+
       }
+
+
 
       /* Button States */
+
       .action-btn.disabled {
+
         opacity: 0.5;
+
         cursor: not-allowed;
+
         background: linear-gradient(135deg, #666, #888) !important;
+
       }
+
+
 
       .action-btn.loading {
+
         cursor: wait;
+
       }
+
+
 
       .action-btn.loading .btn-icon {
+
         animation: spin 1s linear infinite;
+
       }
+
+
 
       .action-btn.connected {
+
         box-shadow: 0 4px 12px rgba(0, 255, 136, 0.4) !important;
+
       }
+
+
 
       .action-btn.available {
+
         box-shadow: 0 4px 12px rgba(167, 134, 255, 0.4) !important;
+
       }
+
+
 
       /* Mobile Responsive */
+
       @media (max-width: 768px) {
+
         .referral-popup {
+
           width: 95%;
+
           max-width: 400px;
+
         }
+
         
+
         .referral-popup-header {
+
           padding: 1rem 1.5rem 0.8rem;
+
         }
+
         
+
         .referral-popup-header h3 {
+
           font-size: 1.1rem;
+
         }
+
         
+
         .referral-popup-body {
+
           padding: 1.5rem;
+
         }
+
         
+
         .referral-actions {
+
           flex-direction: column;
+
           gap: 0.8rem;
+
         }
+
         
+
         .copy-wallet-btn,
+
         .copy-link-btn {
+
           padding: 0.7rem 1rem;
+
           font-size: 0.85rem;
+
         }
+
       }
 
+
+
       @media (max-width: 480px) {
+
         .referral-popup {
+
           width: 98%;
+
           max-width: 350px;
+
         }
+
         
+
         .referral-popup-header {
+
           padding: 0.8rem 1rem 0.6rem;
+
         }
+
         
+
         .referral-popup-body {
+
           padding: 1rem;
+
         }
+
         
+
         .wallet-address-display,
+
         .referral-link-display {
+
           font-size: 0.75rem;
+
           padding: 0.8rem;
+
           min-height: 40px;
+
         }
+
       }
+
+
 
       /* Force visibility for main sections */
+
       #main-transfer, #main-dashboard {
+
         display: block !important;
+
         visibility: visible !important;
+
         opacity: 1 !important;
+
         position: relative !important;
+
         z-index: 1 !important;
+
       }
+
       
+
       /* Override any collapsed states */
+
       #main-transfer.expanded, #main-dashboard.expanded {
+
         display: block !important;
+
         visibility: visible !important;
+
         opacity: 1 !important;
+
         height: auto !important;
+
         overflow: visible !important;
+
       }
+
       
+
       /* Ensure expandable content is visible */
+
       .expandable-container.expanded .expand-content {
+
         display: block !important;
+
         visibility: visible !important;
+
         opacity: 1 !important;
+
         height: auto !important;
+
         overflow: visible !important;
+
       }
+
       
+
       @media (max-width: 768px) {
+
         .quick-action-buttons {
+
           flex-direction: row !important;
+
           gap: 0.3rem !important;
+
           max-width: 280px !important;
+
         }
+
         .quick-action-buttons button {
+
           padding: 0.3rem 0.6rem !important;
+
           font-size: 0.7rem !important;
+
           min-width: 70px !important;
+
           max-width: 100px !important;
+
         }
+
         
+
         .btn-status {
+
           width: 6px;
+
           height: 6px;
+
           top: -1px;
+
           right: -1px;
+
         }
+
       }
+
       
+
       @media (max-width: 480px) {
+
         .quick-action-buttons {
+
           gap: 0.2rem !important;
+
           max-width: 250px !important;
+
         }
+
         .quick-action-buttons button {
+
           padding: 0.25rem 0.5rem !important;
+
           font-size: 0.65rem !important;
+
           min-width: 60px !important;
+
           max-width: 90px !important;
+
         }
+
         
+
         .btn-count {
+
           font-size: 0.6rem;
+
           padding: 0.05rem 0.2rem;
+
         }
+
       }
+
     </style>
 
+
+
     <script>
+
       // Enhanced navigation function
+
       function showMainSection(sectionId) {
+
         console.log('🔍 showMainSection called with:', sectionId);
+
         
+
         // Hide all main sections first
+
         const allSections = ['main-transfer', 'main-profile', 'main-dashboard'];
+
         allSections.forEach(id => {
+
           const el = document.getElementById(id);
+
           if (el) {
+
             el.style.display = 'none';
+
             el.style.visibility = 'hidden';
+
             el.style.opacity = '0';
+
             el.classList.remove('collapsed');
+
           }
+
         });
+
         
+
         // Show the target section
+
         const target = document.getElementById(sectionId);
+
         if (target) {
+
           target.style.display = 'block';
+
           target.style.visibility = 'visible';
+
           target.style.opacity = '1';
+
           target.classList.remove('collapsed');
+
           target.classList.add('expanded');
+
           console.log('✅ Section displayed:', sectionId);
+
           
+
           // Force visibility for all child elements
+
           const allChildren = target.querySelectorAll('*');
+
           allChildren.forEach(child => {
+
             if (child.style.display === 'none') {
+
               child.style.display = '';
+
             }
+
             if (child.style.visibility === 'hidden') {
+
               child.style.visibility = 'visible';
+
             }
+
             if (child.style.opacity === '0') {
+
               child.style.opacity = '1';
+
             }
+
             child.classList.remove('collapsed');
+
           });
+
           
+
           // Scroll to the section
+
           setTimeout(() => {
+
             target.scrollIntoView({behavior:'smooth',block:'start'});
+
           }, 100);
+
         } else {
+
           console.error('❌ Section not found:', sectionId);
+
         }
+
       }
+
       
-      // Initialize sections on page load
-      document.addEventListener('DOMContentLoaded', function() {
-        // Show dashboard by default
-        const dashboardSection = document.getElementById('main-dashboard');
-        if (dashboardSection) dashboardSection.style.display = 'block';
+
+      // Initialize sections on page load - Simplified
+      // Removed redundant DOMContentLoaded listener
+
+        // Dashboard section initialization moved to main.js
+
         
+
         console.log('✅ Navigation initialized');
+
         
+
         // Initialize dashboard cards update (one-time only) - wait for contract to be ready
         setTimeout(async () => {
           // Wait for contract to be available
@@ -883,1111 +1753,2100 @@
             if (window.contractConfig && window.contractConfig.contract) {
               console.log('✅ Contract ready, updating dashboard stats...');
           if (window.updateDashboardStats) {
+
                 await window.updateDashboardStats();
               }
               break;
             }
             
             console.log(`⏳ Waiting for contract... (attempt ${attempts + 1}/${maxAttempts})`);
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise(resolve => setTimeout(resolve, 500));
             attempts++;
           }
           
           if (attempts >= maxAttempts) {
             console.log('⚠️ Contract not ready after 10 seconds, updating dashboard anyway...');
           if (window.updateDashboardStats) {
+
               await window.updateDashboardStats();
           }
+
           }
         }, 3000);
         
         
 
+
+
       });
+
       
 
+
+
     </script>
+
+
 
     <div class="dashboard-cards" style="display:flex;justify-content:center;flex-wrap:wrap;gap:1rem;max-width:1400px;margin:0 auto;">
+
       <!-- AI Assistant will be inserted here by JavaScript -->
 
+
+
       <!-- Blockchain Information Cards -->
+
       <div class="modern-card dashboard-card" style="min-width:100%;max-width:100%;margin:1rem 0;width:100%;padding:1.5rem;position:relative;overflow:hidden;">
+
         <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#00ff88,#a786ff,#00ff88);animation:shimmer 2s linear infinite;"></div>
+
         
+
         <div style="text-align:center;margin-bottom:1.5rem;">
+
                 <!-- Star Rating - Top Left Corner -->
+
       <div id="user-star-rating" style="position:absolute;top:0.5rem;left:0.5rem;background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.3);border-radius:8px;padding:0.3rem 0.5rem;display:flex;align-items:center;gap:0.2rem;z-index:10;">
+
           <span style="color:#ffd700;font-size:0.8rem;font-weight:bold;" id="user-star-count">0</span>
+
           </div>
+
           <h3 style="color:#00ff88;font-size:1.2rem;font-weight:bold;margin:0;font-family:monospace;">IAMPHOENIX</h3>
+
         </div>
-        
 
         
+
+
+
+        
+
         <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;">
+
           <!-- 1. Total Supply - First Priority -->
+
           <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(0,255,136,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
+
             <div style="color:#00ff88;font-size:1.2rem;margin-bottom:0.3rem;">💰</div>
+
                           <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">Total Supply</div>
+
             <div style="color:#00ff88;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="circulating-supply" class="dashboard-value smooth-value-transition numeric-value">-</div>
+
             <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">IAM Tokens</div>
+
             <div style="color:#f7931e;font-size:0.7rem;font-family:monospace;font-weight:bold;margin-top:0.2rem;" id="circulating-supply-dai">-</div>
+
             <div style="color:#888;font-size:0.6rem;margin-top:0.1rem;">≈ DAI</div>
+
           </div>
+
           
+
           <!-- 2. IAM Binary Pool - Second Priority -->
+
           <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(255,193,7,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
+
             <div style="color:#ffc107;font-size:1.2rem;margin-bottom:0.3rem;">🏦</div>
+
             <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">Binary Pool</div>
+
             <div style="color:#ffc107;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="contract-token-balance" class="dashboard-value smooth-value-transition numeric-value">-</div>
+
             <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">IAM in Binary Pool</div>
+
             <div style="color:#f7931e;font-size:0.7rem;font-family:monospace;font-weight:bold;margin-top:0.2rem;" id="contract-token-balance-dai">-</div>
+
             <div style="color:#888;font-size:0.6rem;margin-top:0.1rem;">≈ DAI</div>
+
           </div>
+
           
+
           <!-- 3. DAI Baking Pool - Third Priority -->
+
           <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(0,123,255,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
+
             <div style="color:#007bff;font-size:1.2rem;margin-bottom:0.3rem;">💵</div>
+
             <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">Baking Pool</div>
+
             <div style="color:#007bff;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="dashboard-dai-balance" class="dashboard-value smooth-value-transition numeric-value">-</div>
+
             <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">DAI in Baking Pool</div>
+
           </div>
+
           
+
           <!-- 4. Token Price - Fourth Priority -->
+
           <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(0,255,136,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
+
             <div style="color:#00ff88;font-size:1.2rem;margin-bottom:0.3rem;">💲</div>
+
             <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">IAM Token Price</div>
+
             <div style="color:#00ff88;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="dashboard-token-price" class="dashboard-value smooth-value-transition numeric-value">-</div>
+
             <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">DAI per IAM</div>
+
           </div>
+
           
+
           <!-- 5. Registration Price - Fifth Priority -->
+
           <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(138,43,226,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
+
             <div style="color:#8a2be2;font-size:1.2rem;margin-bottom:0.3rem;">🎫</div>
+
             <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">Registration Price</div>
+
             <div style="color:#8a2be2;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="dashboard-registration-price" class="dashboard-value smooth-value-transition numeric-value">-</div>
+
             <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">IAM per Registration</div>
+
             <div style="color:#f7931e;font-size:0.7rem;font-family:monospace;font-weight:bold;margin-top:0.2rem;" id="dashboard-registration-price-dai">-</div>
+
             <div style="color:#888;font-size:0.6rem;margin-top:0.1rem;">≈ DAI</div>
+
           </div>
+
           
+
           <!-- Other Cards -->
+
           
+
           <!-- Total Points Card -->
+
           <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(167,134,255,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
+
             <div style="color:#a786ff;font-size:1.2rem;margin-bottom:0.3rem;">🎯</div>
+
             <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">Total Points</div>
+
             <div style="color:#a786ff;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="total-points" class="dashboard-value smooth-value-transition numeric-value">-</div>
+
             <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">Binary Points</div>
+
           </div>
+
           
+
           <!-- Point Value Card -->
+
           <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(0,255,136,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
+
             <div style="color:#00ff88;font-size:1.2rem;margin-bottom:0.3rem;">💎</div>
+
             <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">Point Value</div>
+
             <div style="color:#00ff88;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="dashboard-point-value" class="dashboard-value smooth-value-transition numeric-value">-</div>
+
             <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">IAM per Point</div>
+
             <div style="color:#f7931e;font-size:0.7rem;font-family:monospace;font-weight:bold;margin-top:0.2rem;" id="dashboard-point-value-dai">-</div>
+
             <div style="color:#888;font-size:0.6rem;margin-top:0.1rem;">≈ DAI</div>
+
           </div>
+
           
+
           <!-- Help Fund Card -->
+
           <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(220,53,69,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
+
             <div style="color:#dc3545;font-size:1.2rem;margin-bottom:0.3rem;">💝</div>
+
             <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">Help Fund</div>
+
             <div style="color:#dc3545;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="dashboard-cashback-value">-</div>
+
             <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">Cashback Pool</div>
+
             <div style="color:#f7931e;font-size:0.7rem;font-family:monospace;font-weight:bold;margin-top:0.2rem;" id="dashboard-cashback-value-dai">-</div>
+
             <div style="color:#888;font-size:0.6rem;margin-top:0.1rem;">≈ DAI</div>
+
           </div>
+
           
+
           <!-- Wallet Count Card -->
+
           <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(255,165,0,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
+
             <div style="color:#ffa500;font-size:1.2rem;margin-bottom:0.3rem;">👛</div>
+
             <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">Wallet Count</div>
+
             <div style="color:#ffa500;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="dashboard-wallets-count" class="dashboard-value smooth-value-transition numeric-value">-</div>
+
             <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">Connected Wallets</div>
+
           </div>
+
           
+
           <!-- Network Status Card -->
+
           <div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid rgba(40,167,69,0.2);text-align:center;min-width:140px;flex:1;max-width:180px;">
+
             <div style="color:#28a745;font-size:1.2rem;margin-bottom:0.3rem;">🌐</div>
+
             <div style="color:#fff;font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;">Network Status</div>
+
             <div style="color:#28a745;font-size:0.9rem;font-family:monospace;font-weight:bold;" id="network-status">Polygon</div>
+
             <div style="color:#888;font-size:0.7rem;margin-top:0.2rem;">Active</div>
+
           </div>
+
         </div>
+
         
+
         <!-- Last Update Info -->
+
         <div style="text-align:center;margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.1);">
+
           <div style="color:#888;font-size:0.8rem;font-family:monospace;margin-bottom:0.5rem;">
+
             Last Update: <span id="blockchain-last-update">-</span>
+
           </div>
+
           <!-- Update button removed -->
+
         </div>
+
         
+
+
 
       </div>
 
 
 
-      <!-- Voting System Section (Hidden by default) -->
-      <div id="voting-system-section" class="modern-card" style="margin-top: 2rem; padding: 1.5rem; display: none;">
-        <div style="text-align: center; margin-bottom: 1.5rem;">
-          <h3 style="color: #00ff88; font-size: 1.3rem; font-weight: bold; margin: 0; margin-bottom: 0.5rem;">🗳️ Voting System</h3>
-          <p style="color: #ccc; font-size: 0.9rem; margin: 0;">Vote for other users in the network (self-voting not allowed)</p>
-        </div>
-        
-        <div style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; align-items: center; margin-bottom: 1rem;">
-          <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
-            <div style="color: #00ff88; font-size: 0.9rem; font-weight: bold;">Vote for Index:</div>
-            <input type="number" id="vote-index-input-main" placeholder="Enter index" 
-                   style="background: rgba(0,0,0,0.3); border: 1px solid rgba(0,255,136,0.3); border-radius: 8px; padding: 0.5rem; color: #fff; text-align: center; width: 120px; font-size: 0.9rem; font-family: monospace;">
-          </div>
-          
-          <div style="display: flex; flex-direction: column; gap: 0.3rem;">
-            <button onclick="voteForIndexMain(true)" 
-                    style="background: linear-gradient(135deg,#00ff88,#00cc6a); color: #1a1f2e; border: none; border-radius: 8px; padding: 0.5rem 1rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; font-size: 0.9rem; min-width: 80px;">
-              👍 Like
-            </button>
-            <button onclick="voteForIndexMain(false)" 
-                    style="background: linear-gradient(135deg,#ff4444,#cc3333); color: #fff; border: none; border-radius: 8px; padding: 0.5rem 1rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; font-size: 0.9rem; min-width: 80px;">
-              👎 Dislike
-            </button>
-          </div>
-          
-          <div style="display: flex; flex-direction: column; gap: 0.3rem;">
-            <button onclick="voteForSelfMain(true)" 
-                    style="background: linear-gradient(135deg,#666,#444); color: #ccc; border: none; border-radius: 8px; padding: 0.5rem 1rem; font-weight: bold; cursor: not-allowed; transition: all 0.3s ease; font-size: 0.9rem; min-width: 80px;" disabled>
-              👍 Vote Self (Disabled)
-            </button>
-            <button onclick="voteForSelfMain(false)" 
-                    style="background: linear-gradient(135deg,#666,#444); color: #ccc; border: none; border-radius: 8px; padding: 0.5rem 1rem; font-weight: bold; cursor: not-allowed; transition: all 0.3s ease; font-size: 0.9rem; min-width: 80px;" disabled>
-              👎 Dislike Self (Disabled)
-            </button>
-          </div>
-        </div>
-        
-        <div id="vote-result-main" style="text-align: center; margin-top: 1rem; padding: 0.5rem; border-radius: 8px; font-size: 0.9rem; min-height: 1.5em;"></div>
-        
-        <div style="text-align: center; margin-top: 1rem;">
-          <div style="color: #ccc; font-size: 0.8rem; margin-bottom: 0.5rem;">Your Vote Status:</div>
-          <div id="user-vote-status-main" style="color: #00ff88; font-size: 0.9rem; font-weight: bold;">Not voted yet</div>
-        </div>
-      </div>
+
+
+
+
+      <!-- Voting System moved to utility.html -->
+
 
 
 
 
     
-    <script src="js/smooth-value-updater.js"></script>
-    <script src="js/smart-dashboard-updater.js"></script>
-    <script src="js/central-dashboard-updater.js"></script>
-    <script src="js/test-address-config.js"></script>
-    <script src="js/config.js"></script>
-    <script>
-      // Check config.js loading
-              console.log('🔍 Checking config.js loading...');
-        setTimeout(() => {
-          console.log('displayTopUsersRanking available:', typeof window.displayTopUsersRanking);
-          console.log('voteForIndex available:', typeof window.voteForIndex);
-          if (typeof window.displayTopUsersRanking !== 'function') {
-            console.error('❌ config.js not loaded properly!');
-          } else {
-            console.log('✅ config.js loaded successfully');
-          }
-        }, 1000);
-    </script>
-  <script src="js/reports.js"></script>
-  <script src="js/web3-interactions.js"></script>
-      <script src="js/main.js"></script>
 
-    <script src="js/search-index.js"></script>
-  <script src="js/network.js?v=5.7"></script>
+    <!-- Removed unnecessary dashboard updater scripts for faster loading -->
+
+    <script src="js/config.js"></script>
+
+    <script>
+
+      // Check config.js loading with reduced timeout
+              console.log('🔍 Checking config.js loading...');
+
+        setTimeout(() => {
+
+          console.log('displayTopUsersRanking available:', typeof window.displayTopUsersRanking);
+
+          console.log('voteForIndex available:', typeof window.voteForIndex);
+
+          if (typeof window.displayTopUsersRanking !== 'function') {
+
+            console.error('❌ config.js not loaded properly!');
+
+          } else {
+
+            console.log('✅ config.js loaded successfully');
+
+          }
+
+      }, 500); // Reduced from 1000ms to 500ms
+    </script>
+
+  <!-- Removed web3-interactions.js and search-index.js for faster loading -->
+
+  
+  <script src="js/main.js"></script>
+  <!-- Removed network.js for faster loading -->
+
+  
+  <!-- Main initialization script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('🚀 Starting main page initialization...');
+      
+      // Initialize all components with delays to prevent conflicts
+      setTimeout(() => {
+        if (typeof initializeMobileOptimization === 'function') {
+          initializeMobileOptimization();
+        }
+      }, 100);
+      
+      setTimeout(() => {
+        if (typeof initializeModernTheme === 'function') {
+          initializeModernTheme();
+        }
+      }, 200);
+      
+      setTimeout(() => {
+        if (typeof initializeDynamicButtonManager === 'function') {
+          initializeDynamicButtonManager();
+        }
+      }, 300);
+      
+      setTimeout(() => {
+        if (typeof removeArchiveButton === 'function') {
+          removeArchiveButton();
+        }
+      }, 400);
+      
+      console.log('✅ Main initialization completed');
+    });
+  </script>
+
 
   <!-- Floating Referral Link JavaScript -->
+
   <script>
+
     // Generate referral link based on user ID or wallet address
+
     function generateReferralLink() {
+
       // Try to get user ID from various sources
+
       let userId = '';
+
       
+
       // Check if user ID exists in localStorage
+
       if (localStorage.getItem('user_id')) {
+
         userId = localStorage.getItem('user_id');
+
       }
+
       // Check if wallet address exists
+
       else if (window.ethereum && window.ethereum.selectedAddress) {
+
         userId = window.ethereum.selectedAddress.slice(0, 8);
+
       }
+
       // Check if there's a user ID in the DOM
+
       else {
+
         const userElement = document.querySelector('[data-user-id]');
+
         if (userElement) {
+
           userId = userElement.getAttribute('data-user-id');
+
         }
+
       }
+
       
+
       // Fallback to a random code if no user ID found
+
       if (!userId) {
+
         userId = Math.random().toString(36).substring(2, 8).toUpperCase();
+
       }
+
       
+
       // Generate the referral link
+
       const baseUrl = window.location.origin;
+
       return `${baseUrl}?ref=${userId}`;
+
     }
+
+
 
     // Show floating referral link
+
     function showFloatingReferral() {
+
       const floatingLink = document.getElementById('floating-referral-link');
+
       const urlDisplay = document.getElementById('referral-url-display');
+
       
+
       if (floatingLink && urlDisplay) {
+
         // Generate and display the referral link
+
         const referralUrl = generateReferralLink();
+
         urlDisplay.textContent = referralUrl;
+
         
+
         // Show the floating link with animation
+
         floatingLink.style.display = 'block';
+
         floatingLink.style.opacity = '0';
+
         floatingLink.style.transform = 'translate(-50%, -50%) scale(0.8)';
+
         
+
         // Animate in
+
         setTimeout(() => {
+
           floatingLink.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+
           floatingLink.style.opacity = '1';
+
           floatingLink.style.transform = 'translate(-50%, -50%) scale(1)';
+
         }, 10);
+
       }
+
     }
+
+
 
     // Hide floating referral link
+
     function hideFloatingReferral() {
+
       const floatingLink = document.getElementById('floating-referral-link');
+
       
+
       if (floatingLink) {
+
         // Animate out
+
         floatingLink.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+
         floatingLink.style.opacity = '0';
+
         floatingLink.style.transform = 'translate(-50%, -50%) scale(0.8)';
+
         
+
         // Hide after animation
+
         setTimeout(() => {
+
           floatingLink.style.display = 'none';
+
         }, 300);
+
       }
+
     }
+
+
 
     // Copy referral link to clipboard
+
     function copyReferralLink() {
+
       const urlDisplay = document.getElementById('referral-url-display');
+
       const copyButton = document.querySelector('.copy-button');
+
       
+
       if (urlDisplay && copyButton) {
+
         const referralUrl = urlDisplay.textContent;
+
         
+
         // Use modern clipboard API if available
+
         if (navigator.clipboard && window.isSecureContext) {
+
           navigator.clipboard.writeText(referralUrl).then(() => {
+
             showCopySuccess(copyButton);
+
           }).catch(() => {
+
             fallbackCopyTextToClipboard(referralUrl, copyButton);
+
           });
+
         } else {
+
           fallbackCopyTextToClipboard(referralUrl, copyButton);
+
         }
+
       }
+
     }
+
+
 
     // Fallback copy method for older browsers
+
     function fallbackCopyTextToClipboard(text, button) {
+
       const textArea = document.createElement('textarea');
+
       textArea.value = text;
+
       textArea.style.position = 'fixed';
+
       textArea.style.left = '-999999px';
+
       textArea.style.top = '-999999px';
+
       document.body.appendChild(textArea);
+
       textArea.focus();
+
       textArea.select();
+
       
+
       try {
+
         const successful = document.execCommand('copy');
+
         if (successful) {
+
           showCopySuccess(button);
+
         } else {
+
           showCopyError(button);
+
         }
+
       } catch (err) {
+
         showCopyError(button);
+
       }
+
       
+
       document.body.removeChild(textArea);
+
     }
+
+
 
     // Show copy success feedback
+
     function showCopySuccess(button) {
+
       const originalText = button.textContent;
+
       button.textContent = '✅ کپی شد!';
+
       button.style.background = 'rgba(0, 255, 136, 0.8)';
+
       button.style.color = '#0a0f1c';
+
       
+
       setTimeout(() => {
+
         button.textContent = originalText;
+
         button.style.background = 'rgba(0, 0, 0, 0.8)';
+
         button.style.color = 'white';
+
       }, 2000);
+
     }
 
+
+
     // Show copy error feedback
+
     function showCopyError(button) {
+
       const originalText = button.textContent;
+
       button.textContent = '❌ خطا!';
+
       button.style.background = 'rgba(255, 0, 0, 0.8)';
+
       button.style.color = 'white';
+
       
+
       setTimeout(() => {
+
         button.textContent = originalText;
+
         button.style.background = 'rgba(0, 0, 0, 0.8)';
+
         button.style.color = 'white';
+
       }, 2000);
+
     }
+
+
 
     // Close floating link when clicking outside
+
     document.addEventListener('click', function(event) {
+
       const floatingLink = document.getElementById('floating-referral-link');
+
       const referralButton = event.target.closest('[onclick="showFloatingReferral()"]');
+
       
+
       if (floatingLink && floatingLink.style.display === 'block' && 
+
           !floatingLink.contains(event.target) && !referralButton) {
+
         hideFloatingReferral();
+
       }
+
     });
+
+
 
     // Close floating link with Escape key
+
     document.addEventListener('keydown', function(event) {
+
       if (event.key === 'Escape') {
+
         hideFloatingReferral();
+
       }
+
     });
+
+  </script>
+
+  
+
+  <!-- Lazy load profile.js when profile section is accessed -->
+  <script>
+    function loadProfile() {
+      if (!window.profileLoaded) {
+        const script = document.createElement('script');
+        script.src = 'js/profile.js?v=5.7';
+        document.head.appendChild(script);
+        window.profileLoaded = true;
+      }
+    }
   </script>
   
-  <script src="js/profile.js?v=5.7"></script>
-  
+
   <script src="js/homepage.js?v=5.8"></script>
 
+
+
   <!-- Referral Popup JavaScript -->
+
   <script>
+
     // Show referral popup
+
     function showReferralPopup(event) {
+
       // Prevent event bubbling to avoid immediate closing
+
       if (event) {
+
         event.stopPropagation();
+
         event.preventDefault();
+
       }
+
       
+
       const popup = document.getElementById('referral-popup');
+
       const overlay = document.getElementById('referral-popup-overlay');
+
       const walletDisplay = document.getElementById('wallet-address-display');
+
       const linkDisplay = document.getElementById('referral-link-display');
+
       
+
       if (popup && overlay && walletDisplay && linkDisplay) {
+
         // Get wallet address
+
         getWalletAddress().then(address => {
+
           if (address) {
+
             walletDisplay.textContent = address;
+
             // Generate referral link
+
             const baseUrl = window.location.origin + window.location.pathname;
+
             const referralLink = `${baseUrl}?ref=${address}`;
+
             linkDisplay.textContent = referralLink;
+
           } else {
+
             walletDisplay.textContent = 'Connect Wallet First';
+
             linkDisplay.textContent = 'Not Available';
+
           }
+
         });
+
         
+
         // Show popup with animation
+
         overlay.style.display = 'block';
+
         overlay.style.opacity = '0';
+
         popup.style.display = 'block';
+
         popup.style.opacity = '0';
+
         popup.style.transform = 'translate(-50%, -50%) scale(0.8)';
+
         
+
         // Animate in with longer delay to prevent immediate closing
+
         setTimeout(() => {
+
           overlay.style.transition = 'opacity 0.3s ease';
+
           overlay.style.opacity = '1';
+
           
+
           popup.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+
           popup.style.opacity = '1';
+
           popup.style.transform = 'translate(-50%, -50%) scale(1)';
+
         }, 100); // Increased delay to prevent immediate closing
+
       }
+
     }
+
+
 
     // Hide referral popup
+
     function hideReferralPopup() {
+
       const popup = document.getElementById('referral-popup');
+
       const overlay = document.getElementById('referral-popup-overlay');
+
       
+
       if (popup && overlay) {
+
         // Animate out
+
         popup.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+
         popup.style.opacity = '0';
+
         popup.style.transform = 'translate(-50%, -50%) scale(0.8)';
+
         
+
         overlay.style.transition = 'opacity 0.3s ease';
+
         overlay.style.opacity = '0';
+
         
+
         // Hide after animation
+
         setTimeout(() => {
+
           popup.style.display = 'none';
+
           overlay.style.display = 'none';
+
         }, 300);
+
       }
+
     }
+
+
 
     // Get wallet address
+
     async function getWalletAddress() {
+
       try {
+
         // Use the same wallet connection logic as the rest of the app
+
         if (window.connectWallet) {
+
           const connection = await window.connectWallet();
+
           if (connection && connection.address) {
+
             return connection.address;
+
           }
+
         }
+
         
+
         // Fallback to direct ethereum check
+
         if (window.ethereum) {
+
           const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+
           if (accounts && accounts.length > 0) {
+
             return accounts[0];
+
           }
+
           
+
           if (window.ethereum.selectedAddress) {
+
             return window.ethereum.selectedAddress;
+
           }
+
         }
+
         
+
         return null;
+
       } catch (error) {
+
         console.error('Error getting wallet address:', error);
+
         return null;
+
       }
+
     }
+
+
 
     // Copy wallet address to clipboard
+
     async function copyWalletAddress() {
+
       const walletDisplay = document.getElementById('wallet-address-display');
+
       const button = document.querySelector('.copy-wallet-btn');
+
       
+
       if (walletDisplay && walletDisplay.textContent !== 'Connect Wallet First') {
+
         const address = walletDisplay.textContent;
+
         
+
         try {
+
           if (navigator.clipboard && window.isSecureContext) {
+
             await navigator.clipboard.writeText(address);
+
             showCopySuccess(button, 'Address copied!');
+
           } else {
+
             fallbackCopyTextToClipboard(address, button, 'Address copied!');
+
           }
+
         } catch (error) {
+
           console.error('Error copying wallet address:', error);
+
           showCopyError(button, 'Failed to copy address');
+
         }
+
       } else {
+
         showCopyError(button, 'Connect wallet first');
+
       }
+
     }
+
+
 
     // Copy referral link to clipboard
+
     async function copyReferralLink() {
+
       const linkDisplay = document.getElementById('referral-link-display');
+
       const button = document.querySelector('.copy-link-btn');
+
       
+
       if (linkDisplay && linkDisplay.textContent !== 'Not Available') {
+
         const link = linkDisplay.textContent;
+
         
+
         try {
+
           if (navigator.clipboard && window.isSecureContext) {
+
             await navigator.clipboard.writeText(link);
+
             showCopySuccess(button, 'Link copied!');
+
           } else {
+
             fallbackCopyTextToClipboard(link, button, 'Link copied!');
+
           }
+
         } catch (error) {
+
           console.error('Error copying referral link:', error);
+
           showCopyError(button, 'Failed to copy link');
+
         }
+
       } else {
+
         showCopyError(button, 'Link not available');
+
       }
+
     }
+
+
 
     // Fallback copy method for older browsers
+
     function fallbackCopyTextToClipboard(text, button, successMessage) {
+
       const textArea = document.createElement('textarea');
+
       textArea.value = text;
+
       textArea.style.position = 'fixed';
+
       textArea.style.left = '-999999px';
+
       textArea.style.top = '-999999px';
+
       document.body.appendChild(textArea);
+
       textArea.focus();
+
       textArea.select();
+
       
+
       try {
+
         const successful = document.execCommand('copy');
+
         if (successful) {
+
           showCopySuccess(button, successMessage);
+
         } else {
+
           showCopyError(button, 'Failed to copy');
+
         }
+
       } catch (err) {
+
         showCopyError(button, 'Failed to copy');
+
       }
+
       
+
       document.body.removeChild(textArea);
+
     }
+
+
 
     // Show copy success feedback
+
     function showCopySuccess(button, message) {
+
       const originalText = button.textContent;
+
       button.textContent = '✅ ' + message;
+
       button.style.background = 'linear-gradient(135deg, #00ff88, #00cc6a)';
+
       button.style.color = '#0a0f1c';
+
       
+
       setTimeout(() => {
+
         button.textContent = originalText;
+
         button.style.background = 'linear-gradient(135deg, #a786ff, #00ff88)';
+
         button.style.color = '#0a0f1c';
+
       }, 2000);
+
     }
+
+
 
     // Show copy error feedback
+
     function showCopyError(button, message) {
+
       const originalText = button.textContent;
+
       button.textContent = '❌ ' + message;
+
       button.style.background = 'linear-gradient(135deg, #ff4444, #ff6666)';
+
       button.style.color = '#ffffff';
+
       
+
       setTimeout(() => {
+
         button.textContent = originalText;
+
         button.style.background = 'linear-gradient(135deg, #a786ff, #00ff88)';
+
         button.style.color = '#0a0f1c';
+
       }, 2000);
+
     }
+
+
 
     // Close popup when clicking outside
+
     document.addEventListener('click', function(event) {
+
       const popup = document.getElementById('referral-popup');
+
       const overlay = document.getElementById('referral-popup-overlay');
+
       const referralButton = event.target.closest('[onclick="showReferralPopup()"]');
+
       const referralBtn = event.target.closest('#referral-btn');
+
       
+
       // Only close if popup is visible and click is outside popup and not on referral button
+
       if (popup && popup.style.display === 'block' && 
+
           !popup.contains(event.target) && 
+
           !referralButton && 
+
           !referralBtn &&
+
           event.target !== overlay) {
+
         hideReferralPopup();
+
       }
+
     });
+
+
 
     // Close popup with Escape key
+
     document.addEventListener('keydown', function(event) {
+
       if (event.key === 'Escape') {
+
         hideReferralPopup();
+
       }
+
     });
+
   </script>
+
+
 
   <!-- Dynamic Buttons JavaScript -->
+
   <script>
+
     // Dynamic Button Manager
+
     class DynamicButtonManager {
+
       constructor() {
+
         this.buttons = {
+
           swap: document.getElementById('swap-btn'),
+
           transfer: document.getElementById('transfer-btn'),
+
           referral: document.getElementById('referral-btn'),
+
           claim: document.getElementById('claim-btn')
+
         };
+
         this.statusElements = {
+
           swap: document.getElementById('swap-status'),
+
           transfer: document.getElementById('transfer-status'),
+
           referral: document.getElementById('referral-status'),
+
           claim: document.getElementById('claim-status')
+
         };
+
         this.init();
+
       }
+
+
 
       init() {
+
         this.updateAllButtons();
+
         this.setupEventListeners();
+
         this.startPeriodicUpdates();
+
       }
+
+
 
       setupEventListeners() {
+
         // Listen for wallet connection changes
+
         if (window.ethereum) {
+
           window.ethereum.on('accountsChanged', () => {
+
             console.log('Account changed, updating dynamic buttons...');
-            setTimeout(() => this.updateAllButtons(), 1000);
+
+            setTimeout(() => this.updateAllButtons(), 300);
           });
+
           
+
           window.ethereum.on('chainChanged', () => {
+
             console.log('Chain changed, updating dynamic buttons...');
-            setTimeout(() => this.updateAllButtons(), 1000);
+
+            setTimeout(() => this.updateAllButtons(), 300);
           });
+
         }
+
         
+
         // Also listen for custom wallet connection events
+
         document.addEventListener('walletConnected', () => {
+
           console.log('Wallet connected event, updating dynamic buttons...');
+
           setTimeout(() => this.updateAllButtons(), 500);
+
         });
+
         
+
         document.addEventListener('walletDisconnected', () => {
+
           console.log('Wallet disconnected event, updating dynamic buttons...');
+
           setTimeout(() => this.updateAllButtons(), 500);
+
         });
+
       }
+
+
 
       startPeriodicUpdates() {
+
         // Update buttons every 30 seconds
+
         setInterval(() => {
+
           this.updateAllButtons();
+
         }, 30000);
+
       }
+
+
 
       async updateAllButtons() {
+
         await Promise.all([
+
           this.updateSwapButton(),
+
           this.updateTransferButton(),
+
           this.updateReferralButton(),
+
           this.updateClaimButton()
+
         ]);
+
       }
+
+
 
       async updateSwapButton() {
+
         const button = this.buttons.swap;
+
         const status = this.statusElements.swap;
+
         
+
         try {
+
           const isConnected = await this.checkWalletConnection();
+
           if (isConnected) {
+
             this.setButtonState(button, status, 'connected', 'Swap Available');
+
             button.onclick = () => window.location.href = 'swap.html';
+
           } else {
+
             this.setButtonState(button, status, 'disconnected', 'Connect Wallet');
+
             button.onclick = () => this.showConnectWalletMessage();
+
           }
+
         } catch (error) {
+
           this.setButtonState(button, status, 'disconnected', 'Error');
+
           button.onclick = () => this.showConnectWalletMessage();
+
         }
+
       }
+
+
 
       async updateTransferButton() {
+
         const button = this.buttons.transfer;
+
         const status = this.statusElements.transfer;
+
         
+
         try {
+
           const isConnected = await this.checkWalletConnection();
+
           if (isConnected) {
+
             const balance = await this.getWalletBalance();
+
             if (balance > 0) {
+
               this.setButtonState(button, status, 'available', `Balance: ${balance.toFixed(4)} ETH`);
+
               button.onclick = () => window.location.href = 'transfer.html';
+
             } else {
+
               this.setButtonState(button, status, 'unavailable', 'No Balance');
+
               button.onclick = () => this.showNoBalanceMessage();
+
             }
+
           } else {
+
             this.setButtonState(button, status, 'disconnected', 'Connect Wallet');
+
             button.onclick = () => this.showConnectWalletMessage();
+
           }
+
         } catch (error) {
+
           this.setButtonState(button, status, 'disconnected', 'Error');
+
           button.onclick = () => this.showConnectWalletMessage();
+
         }
+
       }
+
+
 
       async updateReferralButton() {
+
         const button = this.buttons.referral;
+
         const status = this.statusElements.referral;
+
         
+
         try {
+
           const isConnected = await this.checkWalletConnection();
+
           if (isConnected) {
+
             const isRegistered = await this.checkUserRegistration();
+
             if (isRegistered) {
+
               this.setButtonState(button, status, 'available', 'Referral Ready');
+
               button.onclick = (event) => showReferralPopup(event);
+
             } else {
+
               this.setButtonState(button, status, 'unavailable', 'Register First');
+
               button.onclick = () => this.showRegistrationMessage();
+
             }
+
           } else {
+
             this.setButtonState(button, status, 'disconnected', 'Connect Wallet');
+
             button.onclick = () => this.showConnectWalletMessage();
+
           }
+
         } catch (error) {
+
           this.setButtonState(button, status, 'disconnected', 'Error');
+
           button.onclick = () => this.showConnectWalletMessage();
+
         }
+
       }
+
+
 
       async updateClaimButton() {
+
         const button = this.buttons.claim;
+
         const status = this.statusElements.claim;
+
         const countElement = document.getElementById('claim-points-count');
+
         
+
         try {
+
           const isConnected = await this.checkWalletConnection();
+
           if (isConnected) {
+
             const points = await this.getBinaryPoints();
+
             if (points > 0) {
+
               this.setButtonState(button, status, 'available', `Claim ${points}`);
+
               button.disabled = false;
+
               button.style.opacity = '1';
+
               button.style.cursor = 'pointer';
+
               button.style.background = 'linear-gradient(135deg,#ff6b35,#ff8c42)';
+
               if (countElement) countElement.textContent = points;
+
               button.onclick = () => claimBinaryPointsFromMain();
+
             } else {
+
               this.setButtonState(button, status, 'unavailable', 'No Points');
+
               button.disabled = true;
+
               button.style.opacity = '0.4';
+
               button.style.cursor = 'not-allowed';
+
               button.style.background = 'linear-gradient(135deg,#666,#888)';
+
               if (countElement) countElement.textContent = '0';
+
               button.onclick = null;
+
             }
+
           } else {
+
             this.setButtonState(button, status, 'disconnected', 'Connect Wallet');
+
             button.disabled = true;
+
             button.style.opacity = '0.4';
+
             button.style.cursor = 'not-allowed';
+
             button.style.background = 'linear-gradient(135deg,#666,#888)';
+
             if (countElement) countElement.textContent = '0';
+
             button.onclick = null;
+
           }
+
         } catch (error) {
+
           this.setButtonState(button, status, 'disconnected', 'Error');
+
           button.disabled = true;
+
           button.style.opacity = '0.4';
+
           button.style.cursor = 'not-allowed';
+
           button.style.background = 'linear-gradient(135deg,#666,#888)';
+
           if (countElement) countElement.textContent = '0';
+
           button.onclick = null;
+
         }
+
       }
+
+
 
       setButtonState(button, statusElement, state, tooltip) {
+
         // Remove all state classes
+
         button.classList.remove('connected', 'disconnected', 'loading', 'available', 'unavailable', 'disabled');
+
         statusElement.classList.remove('connected', 'disconnected', 'loading', 'available', 'unavailable');
+
         
+
         // Add new state class
+
         button.classList.add(state);
+
         statusElement.classList.add(state);
+
         
+
         // Set tooltip
+
         button.title = tooltip;
+
         
+
         // Update status element text if it exists
+
         if (statusElement) {
+
           statusElement.textContent = '';
+
         }
+
       }
+
+
 
       async checkWalletConnection() {
+
         try {
+
           // Use the same wallet connection logic as the rest of the app
+
           if (window.connectWallet) {
+
             const connection = await window.connectWallet();
+
             return connection && connection.address;
+
           }
+
           return false;
+
         } catch (error) {
+
           console.log('Wallet connection check failed:', error);
+
           return false;
+
         }
+
       }
+
+
 
       async getWalletBalance() {
+
         try {
+
           // Use the same wallet connection logic as the rest of the app
+
           if (window.connectWallet) {
+
             const connection = await window.connectWallet();
+
             if (connection && connection.address) {
+
               const balance = await window.ethereum.request({
+
                 method: 'eth_getBalance',
+
                 params: [connection.address, 'latest']
+
               });
+
               return parseFloat(ethers.formatEther(balance));
+
             }
+
           }
+
           return 0;
+
         } catch (error) {
+
           console.log('Balance check failed:', error);
+
           return 0;
+
         }
+
       }
+
+
 
       async checkUserRegistration() {
+
         try {
+
           // Use the same wallet connection logic as the rest of the app
+
           if (window.connectWallet) {
+
             const connection = await window.connectWallet();
+
             if (connection && connection.contract && connection.address) {
+
               const userData = await connection.contract.users(connection.address);
+
               return userData && userData.index && BigInt(userData.index) > 0n;
+
             }
+
           }
+
           return false;
+
         } catch (error) {
+
           console.log('Registration check failed:', error);
+
           return false;
+
         }
+
       }
+
+
 
       async getBinaryPoints() {
+
         try {
+
           // Use the same wallet connection logic as the rest of the app
+
           if (window.connectWallet) {
+
             const connection = await window.connectWallet();
+
             if (connection && connection.contract && connection.address) {
+
               const userData = await connection.contract.users(connection.address);
+
               if (userData && userData.binaryPoints) {
+
                 return parseFloat(ethers.formatEther(userData.binaryPoints));
+
               }
+
             }
+
           }
+
           return 0;
+
         } catch (error) {
+
           console.log('Binary points check failed:', error);
+
           return 0;
+
         }
+
       }
+
+
 
       showConnectWalletMessage() {
+
         alert('Please connect your wallet first to use this feature.');
+
       }
+
+
 
       showNoBalanceMessage() {
+
         alert('You need ETH balance to make transfers.');
+
       }
+
+
 
       showRegistrationMessage() {
+
         alert('Please register first to use referral features.');
+
       }
+
     }
+
+
 
     // Button click handlers
+
     function handleSwapClick() {
+
       // This will be handled by the dynamic button manager
+
     }
+
+
 
     function handleTransferClick() {
+
       // This will be handled by the dynamic button manager
+
     }
+
+
 
     function handleReferralClick() {
+
       // This will be handled by the dynamic button manager
+
     }
+
+
 
     function handleClaimClick() {
+
       // This will be handled by the dynamic button manager
+
     }
 
-    // Initialize dynamic button manager when page loads
-    document.addEventListener('DOMContentLoaded', function() {
+
+
+    // Initialize dynamic button manager (moved to main initialization)
+    function initializeDynamicButtonManager() {
       window.dynamicButtonManager = new DynamicButtonManager();
-    });
+
+    }
   </script>
+
+
 
   <style>
+
     /* Fix for chart width issues */
+
     #price-chart-section {
+
       width: 100% !important;
+
       max-width: 100% !important;
+
       overflow-x: hidden !important;
+
     }
+
     
+
     #price-chart-canvas,
+
     #point-chart-canvas {
+
       width: 100% !important;
+
       max-width: 100% !important;
+
       height: 150px !important;
+
       box-sizing: border-box !important;
+
     }
+
     
+
     @media (max-width: 768px) {
+
       #price-chart-canvas,
+
       #point-chart-canvas {
+
         height: 120px !important;
+
       }
+
     }
+
     
+
     /* Transfer Status Styles */
+
     .transfer-status {
+
       margin-top: 1rem;
+
       padding: 0.8rem;
+
       border-radius: 8px;
+
       font-size: 0.9rem;
+
       text-align: center;
+
       font-weight: 500;
+
       transition: all 0.3s ease;
+
     }
+
     
+
     .transfer-status.success {
+
       background: rgba(0, 255, 136, 0.1);
+
       color: #00ff88;
+
       border: 1px solid rgba(0, 255, 136, 0.3);
+
     }
+
     
+
     .transfer-status.error {
+
       background: rgba(255, 68, 68, 0.1);
+
       color: #ff4444;
+
       border: 1px solid rgba(255, 68, 68, 0.3);
+
     }
+
     
+
     .transfer-status.loading {
+
       background: rgba(167, 134, 255, 0.1);
+
       color: #a786ff;
+
       border: 1px solid rgba(167, 134, 255, 0.3);
+
     }
+
+
 
     /* Index Search Styles */
+
     #search-index-container {
+
       transition: all 0.3s ease;
+
     }
+
     
+
     #search-index-container:hover {
+
       background: rgba(0, 255, 136, 0.15) !important;
+
       border-color: rgba(0, 255, 136, 0.4) !important;
+
     }
+
     
+
     #searchIndexStatus {
+
       transition: all 0.3s ease;
+
     }
+
     
+
     #searchIndexStatus.success {
+
       background: rgba(0, 255, 136, 0.1);
+
       color: #00ff88;
+
       border: 1px solid rgba(0, 255, 136, 0.3);
+
     }
+
     
+
     #searchIndexStatus.error {
+
       background: rgba(255, 68, 68, 0.1);
+
       color: #ff4444;
+
       border: 1px solid rgba(255, 68, 68, 0.3);
+
     }
+
     
+
     #searchIndexStatus.loading {
+
       background: rgba(167, 134, 255, 0.1);
+
       color: #a786ff;
+
       border: 1px solid rgba(167, 134, 255, 0.3);
+
     }
+
     
+
     /* Transfer Form Improvements */
+
     .transfer-form {
+
       background: linear-gradient(135deg, #232946, #181c2a);
+
       border-radius: 12px;
+
       padding: 1.5rem;
+
       border: 2px solid #a786ff;
+
     }
+
     
+
     .transfer-row {
+
       margin-bottom: 1.5rem;
+
     }
+
     
+
     .transfer-row label {
+
       display: block;
+
       color: #a786ff;
+
       font-weight: bold;
+
       margin-bottom: 0.5rem;
+
       font-size: 0.95rem;
+
     }
+
     
+
     .transfer-row input,
+
     .transfer-row select {
+
       width: 100%;
+
       padding: 0.8rem;
+
       border-radius: 8px;
+
       border: 2px solid #a786ff;
+
       background: rgba(0, 0, 0, 0.2);
+
       color: #fff;
+
       font-size: 0.95rem;
+
       transition: border-color 0.3s ease;
+
       box-sizing: border-box;
+
     }
+
     
+
     .transfer-row input:focus,
+
     .transfer-row select:focus {
+
       outline: none;
+
       border-color: #00ff88;
+
     }
+
     
+
     .transfer-btn {
+
       background: linear-gradient(90deg, #00ff88, #a786ff);
+
       color: #181c2a;
+
       font-weight: bold;
+
       border: none;
+
       border-radius: 8px;
+
       padding: 1rem 2rem;
+
       font-size: 1rem;
+
       cursor: pointer;
+
       transition: all 0.3s ease;
+
       width: 100%;
+
       margin-top: 1rem;
+
     }
+
     
+
     .transfer-btn:hover {
+
       transform: translateY(-2px);
+
       box-shadow: 0 4px 12px rgba(0, 255, 136, 0.3);
+
     }
+
     
+
     .transfer-btn:disabled {
+
       opacity: 0.6;
+
       cursor: not-allowed;
+
       transform: none;
+
     }
-    
 
     
+
+
+
+    
+
     /* Responsive Design for Transfer Section */
+
     @media (max-width: 768px) {
+
       #main-transfer {
+
         width: 100% !important;
+
         max-width: 100% !important;
+
         margin: 0 !important;
+
         left: 0 !important;
+
         right: 0 !important;
+
         padding: 0.5rem !important;
+
       }
-      
-
-      
-
-      
-
-      
-
-      
-
-      
-
-      
-
-      
-
-      
 
       
 
@@ -1995,985 +3854,2008 @@
 
       
 
-      
+
 
       
 
-      
+
 
       
 
-      
+
 
       
 
+
+
       
+
+
+
+      
+
+
+
+      
+
+
+
+      
+
+
+
+      
+
+
+
+
+
+
+
+      
+
+
+
+      
+
+
+
+      
+
+
+
+      
+
+
+
+      
+
+
+
+      
+
+
+
+      
+
+
+
+      
+
       .usd-converter-container button {
+
         width: 100% !important;
+
         padding: 0.5rem !important;
+
       }
+
       
+
       /* Rules section responsive */
+
       .transfer-rules {
+
         padding: 0.8rem !important;
+
         border-radius: 8px !important;
+
         margin-bottom: 1rem !important;
+
       }
+
       
+
       .transfer-rules h3 {
+
         font-size: 1.1rem !important;
+
         margin-bottom: 0.8rem !important;
+
       }
+
       
+
       .transfer-rules h4 {
+
         font-size: 0.95rem !important;
+
         margin-bottom: 0.4rem !important;
+
       }
+
       
+
       .transfer-rules ul {
+
         font-size: 0.8rem !important;
+
         line-height: 1.4 !important;
+
         padding-right: 0.8rem !important;
+
       }
+
       
+
       .transfer-rules li {
+
         margin-bottom: 0.3rem !important;
+
       }
+
       
+
       /* Small text responsive */
+
       .transfer-row small {
+
         font-size: 0.75rem !important;
+
         margin-top: 0.2rem !important;
+
       }
+
       
+
       /* Max amount button responsive */
+
       #maxAmountBtn {
+
         padding: 0.4rem 0.8rem !important;
+
         font-size: 0.8rem !important;
+
         margin-top: 0.4rem !important;
+
         width: 100% !important;
+
       }
+
     }
+
     
+
     @media (max-width: 480px) {
+
       #main-transfer {
+
         padding: 0.3rem !important;
+
       }
-      
 
       
+
+
+
+      
+
       .transfer-container {
+
         padding: 0.6rem !important;
+
         margin: 0 !important;
+
         width: 100% !important;
+
       }
-      
-      .transfer-form {
-        padding: 0.6rem !important;
-      }
-      
-      .transfer-row {
-        margin-bottom: 0.6rem !important;
-      }
-      
-      .transfer-row label {
-        font-size: 0.85rem !important;
-      }
-      
-      .transfer-row input,
-      .transfer-row select {
-        padding: 0.5rem !important;
-        font-size: 0.85rem !important;
-      }
-      
-      .transfer-btn {
-        padding: 0.6rem 1rem !important;
-        font-size: 0.85rem !important;
-      }
-      
-      .balance-check {
-        padding: 0.6rem !important;
-      }
-      
-      .transfer-rules {
-        padding: 0.6rem !important;
-      }
-      
-      .transfer-rules h3 {
-        font-size: 1rem !important;
-      }
-      
-      .transfer-rules h4 {
-        font-size: 0.9rem !important;
-      }
-      
 
       
-      .transfer-rules ul {
-        font-size: 0.75rem !important;
+
+      .transfer-form {
+
+        padding: 0.6rem !important;
+
       }
+
+      
+
+      .transfer-row {
+
+        margin-bottom: 0.6rem !important;
+
+      }
+
+      
+
+      .transfer-row label {
+
+        font-size: 0.85rem !important;
+
+      }
+
+      
+
+      .transfer-row input,
+
+      .transfer-row select {
+
+        padding: 0.5rem !important;
+
+        font-size: 0.85rem !important;
+
+      }
+
+      
+
+      .transfer-btn {
+
+        padding: 0.6rem 1rem !important;
+
+        font-size: 0.85rem !important;
+
+      }
+
+      
+
+      .balance-check {
+
+        padding: 0.6rem !important;
+
+      }
+
+      
+
+      .transfer-rules {
+
+        padding: 0.6rem !important;
+
+      }
+
+      
+
+      .transfer-rules h3 {
+
+        font-size: 1rem !important;
+
+      }
+
+      
+
+      .transfer-rules h4 {
+
+        font-size: 0.9rem !important;
+
+      }
+
+      
+
+
+
+      
+
+      .transfer-rules ul {
+
+        font-size: 0.75rem !important;
+
+      }
+
     }
+
     
+
     @media (min-width: 769px) and (max-width: 1024px) {
 
-      
-      .transfer-container {
-        max-width: 90% !important;
-        padding: 1.2rem !important;
-        margin: 0 auto !important;
-      }
-      
-      .transfer-form {
-        padding: 1.2rem !important;
-      }
-      
-      .balance-check .balance-check-grid {
-        grid-template-columns: 1fr 1fr !important;
-        gap: 1rem !important;
-      }
-    }
-    
-    @media (min-width: 1025px) {
+
 
       
+
       .transfer-container {
-        max-width: 700px !important;
-        padding: 1.5rem !important;
+
+        max-width: 90% !important;
+
+        padding: 1.2rem !important;
+
         margin: 0 auto !important;
+
       }
+
       
+
       .transfer-form {
-        padding: 1.5rem !important;
+
+        padding: 1.2rem !important;
+
       }
+
       
-      .transfer-row {
-        margin-bottom: 1.5rem !important;
-      }
-      
+
       .balance-check .balance-check-grid {
-        grid-template-columns: 1fr 1fr 1fr !important;
+
+        grid-template-columns: 1fr 1fr !important;
+
         gap: 1rem !important;
+
       }
+
     }
+
     
+
+    @media (min-width: 1025px) {
+
+
+
+      
+
+      .transfer-container {
+
+        max-width: 700px !important;
+
+        padding: 1.5rem !important;
+
+        margin: 0 auto !important;
+
+      }
+
+      
+
+      .transfer-form {
+
+        padding: 1.5rem !important;
+
+      }
+
+      
+
+      .transfer-row {
+
+        margin-bottom: 1.5rem !important;
+
+      }
+
+      
+
+      .balance-check .balance-check-grid {
+
+        grid-template-columns: 1fr 1fr 1fr !important;
+
+        gap: 1rem !important;
+
+      }
+
+    }
+
+    
+
     /* Messenger Style Swap Interface */
+
     .messenger-swap-interface {
+
       position: relative;
+
       overflow: hidden;
+
     }
+
     
+
     .messenger-swap-interface::before {
+
       content: '';
+
       position: absolute;
+
       top: 0;
+
       left: -100%;
+
       width: 100%;
+
       height: 100%;
+
       background: linear-gradient(90deg, transparent, rgba(0,255,136,0.1), transparent);
+
       transition: left 0.8s;
+
       z-index: 1;
+
       pointer-events: none;
+
     }
+
     
+
     .messenger-swap-interface:hover::before {
+
       left: 100%;
+
     }
+
     
+
     .messenger-header {
+
       position: relative;
+
       z-index: 2;
+
     }
+
     
+
     .messenger-messages {
+
       position: relative;
+
       z-index: 2;
+
     }
+
     
+
     .messenger-input-area {
+
       position: relative;
+
       z-index: 2;
+
     }
+
     
+
     /* Message animations */
+
     @keyframes messageSlide {
+
       from {
+
         opacity: 0;
+
         transform: translateY(20px);
+
       }
+
       to {
+
         opacity: 1;
+
         transform: translateY(0);
+
       }
+
     }
+
     
+
     @keyframes pulse {
+
       0%, 100% { 
+
         opacity: 1; 
+
         transform: scale(1); 
+
       }
+
       50% { 
+
         opacity: 0.7; 
+
         transform: scale(1.1); 
+
       }
+
     }
+
     
+
     /* Form styling */
+
     .messenger-form .form-group input:focus,
+
     .messenger-form .form-group select:focus {
+
       border-color: #00ff88 !important;
+
       box-shadow: 0 0 0 2px rgba(0,255,136,0.2) !important;
+
     }
+
     
+
     .exchange-btn:hover {
+
       transform: translateY(-2px) !important;
+
       box-shadow: 0 8px 25px rgba(0,255,136,0.3) !important;
+
     }
+
     
+
          .refresh-btn:hover {
+
        transform: rotate(180deg) scale(1.1) !important;
+
      }
+
      
+
      
+
     
+
     /* Responsive Design for Messenger Swap Section */
 
+
+
     /* Messages Below Button Styles */
+
     .message.received {
+
       margin: 0.8rem 0 !important;
+
     }
+
     
+
     .message-bubble {
+
       border-radius: 15px !important;
+
       padding: 1rem !important;
+
     }
+
     
+
     .swap-status {
+
       margin-top: 0.5rem !important;
+
       padding: 0.8rem !important;
+
       border-radius: 10px !important;
+
       font-size: 0.9rem !important;
+
       line-height: 1.4 !important;
+
     }
+
+
+
+
 
 
 
     @media (max-width: 768px) {
+
       
+
       .swap-container {
+
         max-width: 100% !important;
+
         padding: 0.6rem !important;
+
         margin: 0 !important;
+
         width: 100% !important;
+
       }
+
       
+
       .messenger-swap-interface {
+
         border-radius: 15px !important;
+
       }
+
       
+
       /* Mobile styles for messages below button */
+
       .message.received {
+
         margin: 0.6rem 0 !important;
+
       }
+
       
+
       .message-bubble {
+
         padding: 0.8rem !important;
+
         border-radius: 12px !important;
+
       }
+
       
+
       .swap-status {
+
         padding: 0.6rem !important;
+
         font-size: 0.8rem !important;
+
         border-radius: 8px !important;
+
       }
+
       
+
       .messenger-header {
+
         padding: 1rem !important;
+
         flex-direction: column !important;
+
         gap: 0.8rem !important;
+
         text-align: center !important;
+
       }
+
       
+
       .messenger-avatar {
+
         width: 40px !important;
+
         height: 40px !important;
+
         font-size: 1.2rem !important;
+
       }
+
       
+
       .messenger-info h3 {
+
         font-size: 1rem !important;
+
       }
+
       
+
       .messenger-info p {
+
         font-size: 0.8rem !important;
+
       }
+
       
+
       .messenger-messages {
+
         height: 350px !important;
+
         padding: 1rem !important;
+
       }
+
       
+
       .message {
+
         max-width: 95% !important;
+
       }
+
       
+
       .message-bubble {
+
         padding: 0.8rem 1rem !important;
+
         border-radius: 15px !important;
+
       }
+
       
+
       .messenger-form .form-group {
+
         margin-bottom: 0.8rem !important;
+
       }
+
       
+
       .messenger-form .form-group label {
+
         font-size: 0.9rem !important;
+
         margin-bottom: 0.4rem !important;
+
       }
+
       
+
       .messenger-form .form-group input,
+
       .messenger-form .form-group select {
+
         padding: 0.7rem !important;
+
         font-size: 0.9rem !important;
+
         border-radius: 10px !important;
+
       }
+
       
+
       .amount-input-group {
+
         flex-direction: column !important;
+
         gap: 0.4rem !important;
+
       }
+
       
+
       .amount-input-group input {
+
         width: 100% !important;
+
       }
+
       
+
       .amount-input-group .max-btn {
+
         width: 100% !important;
+
         padding: 0.7rem !important;
+
         font-size: 0.9rem !important;
+
       }
+
       
+
       .usd-converter-container {
+
         flex-direction: column !important;
+
         gap: 0.4rem !important;
+
       }
-      
 
       
+
+
+
+      
+
       .usd-converter-container button {
+
         width: 100% !important;
+
         padding: 0.7rem !important;
+
       }
+
       
+
       .balance-display {
+
         padding: 0.8rem !important;
+
         border-radius: 10px !important;
+
       }
+
       
+
       .balance-display h4 {
+
         font-size: 0.9rem !important;
+
         margin-bottom: 0.6rem !important;
+
       }
+
       
+
       .balance-display > div > div {
+
         grid-template-columns: 1fr !important;
+
         gap: 0.6rem !important;
+
       }
+
       
+
       .exchange-btn {
+
         padding: 0.8rem !important;
+
         font-size: 1rem !important;
+
         border-radius: 10px !important;
+
       }
+
       
+
       .messenger-input-area {
+
         padding: 0.8rem 1rem !important;
+
       }
+
       
+
       .input-container {
+
         flex-direction: column !important;
+
         gap: 0.5rem !important;
+
         padding: 0.8rem !important;
+
       }
+
       
+
       .input-container > div {
+
         text-align: center !important;
+
         font-size: 0.8rem !important;
+
       }
+
       
+
       .refresh-btn {
+
         width: 35px !important;
+
         height: 35px !important;
+
         font-size: 1rem !important;
+
       }
+
     }
+
     
+
     @media (max-width: 480px) {
+
       
+
       .swap-container {
+
         padding: 0.4rem !important;
+
       }
-      
 
       
-      .messenger-swap-interface {
-        border-radius: 12px !important;
-      }
+
+
+
       
+
+      .messenger-swap-interface {
+
+        border-radius: 12px !important;
+
+      }
+
+      
+
       /* Small mobile styles for messages below button */
+
       .message.received {
+
         margin: 0.5rem 0 !important;
+
       }
+
       
+
       .message-bubble {
+
         padding: 0.6rem !important;
+
         border-radius: 10px !important;
+
       }
+
       
+
       .swap-status {
+
         padding: 0.5rem !important;
+
         font-size: 0.75rem !important;
+
         border-radius: 6px !important;
+
       }
+
       
+
       .messenger-header {
+
         padding: 0.8rem !important;
+
         gap: 0.6rem !important;
+
       }
+
       
+
       .messenger-avatar {
+
         width: 35px !important;
+
         height: 35px !important;
+
         font-size: 1rem !important;
+
       }
+
       
+
       .messenger-info h3 {
+
         font-size: 0.9rem !important;
+
       }
+
       
+
       .messenger-info p {
+
         font-size: 0.75rem !important;
+
       }
+
       
+
       .messenger-messages {
+
         height: 300px !important;
+
         padding: 0.8rem !important;
+
       }
+
       
+
       .message {
+
         max-width: 98% !important;
+
       }
+
       
+
       .message-bubble {
+
         padding: 0.6rem 0.8rem !important;
+
         border-radius: 12px !important;
+
       }
+
       
+
       .message-bubble h4 {
+
         font-size: 0.9rem !important;
+
         margin-bottom: 0.4rem !important;
+
       }
+
       
+
       .message-bubble p {
+
         font-size: 0.8rem !important;
+
         line-height: 1.3 !important;
+
       }
+
       
+
       .message-bubble ul {
+
         font-size: 0.75rem !important;
+
         padding-right: 0.6rem !important;
+
       }
+
       
+
       .messenger-form .form-group {
+
         margin-bottom: 0.6rem !important;
+
       }
+
       
+
       .messenger-form .form-group label {
+
         font-size: 0.8rem !important;
+
         margin-bottom: 0.3rem !important;
+
       }
+
       
+
       .messenger-form .form-group input,
+
       .messenger-form .form-group select {
+
         padding: 0.6rem !important;
+
         font-size: 0.8rem !important;
+
         border-radius: 8px !important;
+
       }
+
       
+
       .amount-input-group .max-btn {
+
         padding: 0.6rem !important;
+
         font-size: 0.8rem !important;
+
       }
+
       
+
       .usd-converter-container button {
+
         padding: 0.6rem !important;
+
         font-size: 0.8rem !important;
+
       }
+
       
+
       .balance-display {
+
         padding: 0.6rem !important;
+
         border-radius: 8px !important;
+
       }
+
       
+
       .balance-display h4 {
+
         font-size: 0.8rem !important;
+
         margin-bottom: 0.5rem !important;
+
       }
+
       
+
       .balance-display > div > div > div {
+
         padding: 0.6rem !important;
+
         border-radius: 6px !important;
+
       }
+
       
+
       .balance-display > div > div > div > div:first-child {
+
         font-size: 0.8rem !important;
+
       }
+
       
+
       .balance-display > div > div > div > div:nth-child(2) {
+
         font-size: 0.9rem !important;
+
       }
+
       
+
       .exchange-btn {
+
         padding: 0.7rem !important;
+
         font-size: 0.9rem !important;
+
         border-radius: 8px !important;
+
       }
+
       
+
       .messenger-input-area {
+
         padding: 0.6rem 0.8rem !important;
+
       }
+
       
+
       .input-container {
+
         padding: 0.6rem !important;
+
         gap: 0.4rem !important;
+
       }
+
       
+
       .input-container > div {
+
         font-size: 0.75rem !important;
+
         padding: 0 0.8rem !important;
+
       }
+
       
+
       .refresh-btn {
+
         width: 30px !important;
+
         height: 30px !important;
+
         font-size: 0.9rem !important;
+
       }
+
     }
+
     
+
     /* Extra small devices (phones, 320px and down) */
+
     @media (max-width: 320px) {
+
       .swap-container {
+
         padding: 0.3rem !important;
+
       }
+
       
+
       .swap-form {
+
         padding: 0.3rem !important;
+
         gap: 0.5rem !important;
+
       }
+
       
+
       .swap-row {
+
         margin-bottom: 0.4rem !important;
+
       }
+
       
+
       .swap-row label {
+
         font-size: 0.7rem !important;
+
       }
+
       
+
       .swap-row input,
+
       .swap-row select {
+
         padding: 0.3rem !important;
+
         font-size: 0.7rem !important;
+
       }
+
       
+
       .swap-btn {
+
         padding: 0.4rem 0.6rem !important;
+
         font-size: 0.7rem !important;
+
       }
+
       
+
       .swap-row small {
+
         font-size: 0.65rem !important;
+
       }
+
     }
+
     
+
     /* Small tablets (600px and down) */
+
     @media (max-width: 600px) and (min-width: 481px) {
+
       
+
       .swap-container {
+
         padding: 0.5rem !important;
+
       }
+
       
+
       .swap-form {
+
         padding: 0.5rem !important;
+
         gap: 0.7rem !important;
+
       }
+
       
+
       .swap-row {
+
         margin-bottom: 0.6rem !important;
+
       }
+
       
+
       .swap-row label {
+
         font-size: 0.8rem !important;
+
       }
+
       
+
       .swap-row input,
+
       .swap-row select {
+
         padding: 0.5rem !important;
+
         font-size: 0.8rem !important;
+
       }
+
       
+
       .swap-btn {
+
         padding: 0.6rem 1rem !important;
+
         font-size: 0.8rem !important;
+
       }
+
     }
+
     
+
     @media (min-width: 769px) and (max-width: 1024px) {
+
       .swap-container {
+
         max-width: 90% !important;
+
         padding: 1.2rem !important;
+
         margin: 0 auto !important;
+
       }
+
       
+
       .messenger-swap-interface {
+
         border-radius: 18px !important;
+
       }
+
       
+
       .messenger-header {
+
         padding: 1.3rem !important;
+
       }
+
       
+
       .messenger-messages {
+
         height: 450px !important;
+
         padding: 1.3rem !important;
+
       }
+
       
+
       .message {
+
         max-width: 85% !important;
+
       }
+
       
+
       .balance-display > div > div {
+
         grid-template-columns: 1fr 1fr !important;
+
         gap: 1rem !important;
+
       }
+
     }
+
     
+
     @media (min-width: 1025px) {
+
       .swap-container {
+
         max-width: 900px !important;
+
         padding: 1.5rem !important;
+
         margin: 0 auto !important;
+
       }
+
       
+
       .messenger-swap-interface {
+
         border-radius: 20px !important;
+
       }
+
       
+
       .messenger-header {
+
         padding: 1.5rem !important;
+
       }
+
       
+
       .messenger-messages {
+
         height: 500px !important;
+
         padding: 1.5rem !important;
+
       }
+
       
+
       .message {
+
         max-width: 80% !important;
+
       }
+
       
+
       .messenger-form .form-group {
+
         margin-bottom: 1rem !important;
+
       }
+
       
+
       .balance-display > div > div {
+
         grid-template-columns: 1fr 1fr !important;
+
         gap: 1.2rem !important;
+
       }
+
       
+
       .exchange-btn:hover {
+
         transform: translateY(-3px) !important;
+
         box-shadow: 0 12px 35px rgba(0,255,136,0.4) !important;
+
       }
+
     }
+
   </style>
+
   
+
       <!-- Define required variables for swap -->
+
   <script>
+
     // DAI contract address in Polygon network
+
     window.DAI_ADDRESS = '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063';
+
     
+
     // Simple ABI for DAI
+
     window.DAI_ABI = [
+
       {
+
         "inputs": [
+
           {
+
             "internalType": "address",
+
             "name": "spender",
+
             "type": "address"
+
           },
+
           {
+
             "internalType": "uint256",
+
             "name": "value",
+
             "type": "uint256"
+
           }
+
         ],
+
         "name": "approve",
+
         "outputs": [
+
           {
+
             "internalType": "bool",
+
             "name": "",
+
             "type": "bool"
+
           }
+
         ],
+
         "stateMutability": "nonpayable",
+
         "type": "function"
+
       },
+
       {
+
         "inputs": [
+
           {
+
             "internalType": "address",
+
             "name": "owner",
+
             "type": "address"
+
           },
+
           {
+
             "internalType": "address",
+
             "name": "spender",
+
             "type": "address"
+
           }
+
         ],
+
         "name": "allowance",
+
         "outputs": [
+
           {
+
             "internalType": "uint256",
+
             "name": "",
+
             "type": "uint256"
+
           }
+
         ],
+
         "stateMutability": "view",
+
         "type": "function"
+
       },
+
       {
+
         "inputs": [
+
           {
+
             "internalType": "address",
+
             "name": "account",
+
             "type": "address"
+
           }
+
         ],
+
         "name": "balanceOf",
+
         "outputs": [
+
           {
+
             "internalType": "uint256",
+
             "name": "",
+
             "type": "uint256"
+
           }
+
         ],
+
         "stateMutability": "view",
+
         "type": "function"
+
       }
+
     ];
+
   </script>
+
   
 
 
+
+
+
   
+
+
 
  
+
   <!-- Charts removed -->
+
   
+
   <script>
+
     // Safe, no-op placeholder to avoid unhandled users(address) calls
+
     (async () => {
+
       try {
+
         await window.connectWallet();
+
         // Intentionally skip direct contract.users(address) call to avoid provider decode issues
+
       } catch (e) {
+
         // ignore
+
       }
+
     })();
+
   </script>
 
+
+
   <script>
+
     async function updateAboutWalletsCount() {
+
       try {
+
         if (!window.contractConfig || !window.contractConfig.contract) {
+
           await window.connectWallet();
+
         }
+
         const contract = window.contractConfig.contract;
+
         if (contract && contract.wallets) {
+
           const walletsCount = await contract.wallets();
+
           document.getElementById('about-wallets-count').innerText = walletsCount.toString();
+
         } else {
+
           document.getElementById('about-wallets-count').innerText = '-';
+
         }
+
       } catch (e) {
+
         document.getElementById('about-wallets-count').innerText = '-';
+
       }
+
     }
+
     // Hook into tab switching
+
     const aboutBtn = document.getElementById('tab-about-btn');
+
     if (aboutBtn) {
+
       aboutBtn.addEventListener('click', updateAboutWalletsCount);
+
     }
+
   </script>
 
+
+
   <script>
+
     function toggleDashboardChart(chartId, btn) {
+
       const chartDiv = document.getElementById(chartId);
+
       if (!chartDiv) return;
+
       const isOpen = chartDiv.style.display === 'block';
+
       chartDiv.style.display = isOpen ? 'none' : 'block';
+
       btn.textContent = isOpen ? '▼' : '▲';
+
       // Placeholder: Here you can load/render the chart if needed
+
     }
+
   </script>
+
   <!-- Add/Edit Sub-Admin Modal -->
+
   <div class="sub-admin-modal" id="sub-admin-modal">
+
     <div class="sub-admin-modal-content">
+
       <h3 id="modal-title">Add New Sub-Admin</h3>
+
       <form class="sub-admin-form" id="sub-admin-form">
+
         <div class="form-group">
+
           <label for="sub-admin-name">Sub-Admin Name:</label>
+
           <input type="text" id="sub-admin-name" placeholder="Full name of sub-admin" required>
+
         </div>
+
         
+
         <div class="form-group">
+
           <label for="sub-admin-address">Wallet Address:</label>
+
           <input type="text" id="sub-admin-address" placeholder="0x..." required>
+
         </div>
+
         
+
         <div class="form-group">
+
           <label for="sub-admin-role">Role:</label>
+
           <select id="sub-admin-role" required>
+
             <option value="">Select Role</option>
+
             <option value="moderator">Content Manager</option>
+
             <option value="support">Support</option>
+
             <option value="analyst">Analyst</option>
+
             <option value="teacher">Teacher</option>
+
             <option value="custom">Custom</option>
+
           </select>
+
         </div>
+
         
+
         <div class="form-group">
+
           <label for="sub-admin-description">Description:</label>
+
           <textarea id="sub-admin-description" placeholder="Additional descriptions..." rows="3"></textarea>
+
         </div>
+
         
+
         <div class="permissions-group">
+
           <h5>🔐 Sub-Admin Permissions</h5>
+
           
+
           <div class="permission-item">
+
             <input type="checkbox" id="perm-stream-control" name="permissions">
+
             <label for="perm-stream-control">Live Stream Control</label>
+
           </div>
+
           
+
           <div class="permission-item">
+
             <input type="checkbox" id="perm-chat-moderate" name="permissions">
+
             <label for="perm-chat-moderate">Chat Management</label>
+
           </div>
+
           
+
           <div class="permission-item">
+
             <input type="checkbox" id="perm-ban-users" name="permissions">
+
             <label for="perm-ban-users">Ban Users</label>
+
           </div>
+
           
+
           <div class="permission-item">
+
             <input type="checkbox" id="perm-view-reports" name="permissions">
+
             <label for="perm-view-reports">View Reports</label>
+
           </div>
+
           
+
           <div class="permission-item">
+
             <input type="checkbox" id="perm-manage-content" name="permissions">
+
             <label for="perm-manage-content">Content Management</label>
+
           </div>
+
           
+
           <div class="permission-item">
+
             <input type="checkbox" id="perm-view-analytics" name="permissions">
+
             <label for="perm-view-analytics">View Analytics</label>
+
           </div>
+
           
+
           <div class="permission-item">
+
             <input type="checkbox" id="perm-edit-products" name="permissions">
+
             <label for="perm-edit-products">Edit Products</label>
+
           </div>
+
           
+
           <div class="permission-item">
+
             <input type="checkbox" id="perm-view-orders" name="permissions">
+
             <label for="perm-view-orders">View Orders</label>
+
           </div>
+
         </div>
+
         
+
         <div class="modal-buttons">
+
           <button type="submit" class="modal-btn primary" id="save-sub-admin-btn">💾 Save</button>
+
           <button type="button" class="modal-btn secondary" id="cancel-sub-admin-btn">❌ Cancel</button>
+
         </div>
+
       </form>
+
     </div>
+
   </div>
+
+
 
   <!-- Delete Confirmation Modal -->
+
   <div class="sub-admin-modal" id="delete-confirm-modal">
+
     <div class="sub-admin-modal-content">
+
       <h3>⚠️ Confirm Deletion</h3>
+
       <p style="color: #ccc; text-align: center; margin-bottom: 1.5rem;">
+
         Are you sure you want to delete this sub-admin?
+
       </p>
+
       <div style="background: #181c2a; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+
         <p style="color: #fff; margin: 0;"><strong>Name:</strong> <span id="delete-admin-name"></span></p>
+
         <p style="color: #888; margin: 0.5rem 0 0 0;"><strong>Address:</strong> <span id="delete-admin-address"></span></p>
+
       </div>
+
       <div class="modal-buttons">
+
         <button class="modal-btn danger" id="confirm-delete-btn">🗑️ Delete</button>
+
         <button class="modal-btn secondary" id="cancel-delete-btn">❌ Cancel</button>
+
       </div>
+
     </div>
+
   </div>
 
 
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      var archiveBtn = Array.from(document.querySelectorAll('button, a')).find(el => el.textContent.includes('Financial Markets Archive'));
-      if (archiveBtn) archiveBtn.remove();
-      
-      // Restore active tab from localStorage
-      const savedTab = localStorage.getItem('currentActiveTab');
-      if (savedTab && savedTab !== 'network' && typeof window.showTab === 'function') {
-        // Wait a bit for the page to fully load
-        setTimeout(() => {
-          window.showTab(savedTab);
-        }, 1000);
-      }
-    });
-  </script>
+
+
+
 
   <script>
-  (async function() {
-    if (window.getUserProfile) {
-      const profile = await window.getUserProfile();
-      if (!(profile.index && BigInt(profile.index) > 0n)) {
-        // Lock only the reports section
-        const reportsSection = document.getElementById('main-reports');
-        if (reportsSection) {
-          reportsSection.innerHTML = '<div style="color:#ff6b6b;text-align:center;padding:3rem;font-size:1.5rem;">Access to this section is only allowed for active users.<br>🔒</div>';
-          reportsSection.style.background = '#181c2a';
-        }
-      }
+
+    // Remove archive button (moved to main initialization)
+    function removeArchiveButton() {
+      var archiveBtn = Array.from(document.querySelectorAll('button, a')).find(el => el.textContent.includes('Financial Markets Archive'));
+
+      if (archiveBtn) archiveBtn.remove();
+
     }
-  })();
+      
+
+      // Restore active tab from localStorage
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const savedTab = localStorage.getItem('currentActiveTab');
+
+      if (savedTab && savedTab !== 'network' && typeof window.showTab === 'function') {
+
+        // Wait a bit for the page to fully load
+
+        setTimeout(() => {
+
+          window.showTab(savedTab);
+
+        }, 1000);
+
+      }
+
+    });
+
   </script>
+
+
+
+  <script>
+
+  (async function() {
+
+    if (window.getUserProfile) {
+
+      const profile = await window.getUserProfile();
+
+      if (!(profile.index && BigInt(profile.index) > 0n)) {
+
+        // Lock only the reports section
+
+        const reportsSection = document.getElementById('main-reports');
+
+        if (reportsSection) {
+
+          reportsSection.innerHTML = '<div style="color:#ff6b6b;text-align:center;padding:3rem;font-size:1.5rem;">Access to this section is only allowed for active users.<br>🔒</div>';
+
+          reportsSection.style.background = '#181c2a';
+
+        }
+
+      }
+
+    }
+
+  })();
+
+  </script>
+
+
 
   <!-- Control display of destination address input -->
+
   <script>
+
           // Auto-refresh transfer balances function
+
       async function autoRefreshTransferBalances() {
+
         try {
+
           if (window.updateTransferBalancesOnConnect) {
+
             await window.updateTransferBalancesOnConnect();
+
             console.log('✅ Transfer balances auto-refreshed');
+
           }
+
         } catch (error) {
+
           console.warn('Error in auto-refreshing transfer balances:', error);
+
         }
+
       }
 
 
@@ -2982,15 +5864,6 @@
 
 
 
-      
-
-      
-
-
-
-
-
-
 
 
 
@@ -3000,904 +5873,1340 @@
 
 
       
+
+
+
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
+
+
+
 
 
   </script>
 
+
+
   <script>
+
     // Function to shorten address
+
     function shortenAddress(address) {
+
       if (address && address.length === 42 && address.startsWith('0x')) {
+
         return `${address.substring(0, 6)}...${address.substring(38)}`;
+
       }
+
       return address;
+
     }
 
-    // Event listener for shortening manually entered addresses
-    document.addEventListener('DOMContentLoaded', function() {
-      console.log('Manual address shortening script loaded');
-      const transferToInput = document.getElementById('transferTo');
-      console.log('TransferTo input found:', !!transferToInput);
-      if (transferToInput) {
-        transferToInput.addEventListener('blur', function() {
-          console.log('TransferTo input blur event triggered');
-          const value = this.value.trim();
-          console.log('Input value:', value, 'Length:', value.length, 'Starts with 0x:', value.startsWith('0x'));
-          if (value && value.length === 42 && value.startsWith('0x')) {
-            // Store full address
-            this.setAttribute('data-full-address', value);
-            // Display shortened address
-            this.value = shortenAddress(value);
-          }
-        });
-      }
-    });
+
+
+    // Event listener for shortening manually entered addresses - Removed for simplification
+    // Address shortening functionality removed to reduce complexity
+
+    // Address shortening functionality removed for simplification
+
   </script>
 
 
 
+
+
+
+
   <script>
+
     // Function to expand/collapse expandable sections
+
     function toggleExpandable(containerId) {
+
       const container = document.getElementById(containerId);
+
       if (container) {
+
         container.classList.toggle('collapsed');
+
         
+
         // Save state in localStorage
+
         const isCollapsed = container.classList.contains('collapsed');
+
         localStorage.setItem(`expandable_${containerId}`, isCollapsed ? 'collapsed' : 'expanded');
+
       }
+
     }
+
+
 
     // Restore expandable sections state from localStorage
+
     function restoreExpandableStates() {
+
       const expandableContainers = document.querySelectorAll('.expandable-container');
+
       expandableContainers.forEach(container => {
+
         const containerId = container.id;
+
         const savedState = localStorage.getItem(`expandable_${containerId}`);
+
         if (savedState === 'collapsed') {
+
           container.classList.add('collapsed');
+
         }
+
       });
+
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
-      restoreExpandableStates();
-    });
+
+
+    // Expandable states functionality removed for simplification
+
   </script>
 
+
+
   <script>
+
     window.formatTokenPrice = function(priceWei) {
+
       if (!priceWei || priceWei === '0') return '0';
+
       let priceString = priceWei.toString();
+
       while (priceString.length < 18) priceString = '0' + priceString;
+
       if (priceString.length > 18) priceString = priceString.slice(-18);
+
       const result = '0.' + priceString;
+
       const numResult = parseFloat(result);
+
       if (numResult < 0.000001) {
+
         return numResult.toExponential(6);
+
       }
+
       return result;
+
     }
+
+
 
     // Function to update price display
+
     async function updateTokenPriceDisplay() {
+
       try {
+
         if (!window.contractConfig || !window.contractConfig.contract) {
+
           await window.connectWallet();
+
           if (!window.contractConfig || !window.contractConfig.contract) {
+
             const el = document.getElementById('chart-lvl-usd');
+
             if (el) el.textContent = 'Connection failed';
+
             return;
+
           }
+
         }
+
         const contract = window.contractConfig.contract;
+
         const tokenPrice = await contract.getTokenPrice();
+
         const priceFormatted = window.formatTokenPrice(tokenPrice);
+
         const el = document.getElementById('chart-lvl-usd');
+
         if (el) el.textContent = priceFormatted;
+
         // Update point-value from contract
+
         try {
+
           const pointValue = await contract.getPointValue();
+
           const pointValueNum = parseFloat(ethers.formatUnits(pointValue, 18));
+
           const pointValueFormatted = pointValueNum < 0.000001 ? pointValueNum.toExponential(6) : pointValueNum.toFixed(2);
+
           const el2 = document.getElementById('point-value');
+
           if (el2) el2.textContent = pointValueFormatted; // Remove IAM suffix
+
         } catch (error) {
+
           // ...
+
         }
+
       } catch (error) {
+
         // Error handling without showing loading message
+
       }
+
     }
+
     // ... existing code ...
+
   </script>
 
+
+
   <script>
+
     if (window.loadUserProfile) {
+
       const origLoadUserProfile = window.loadUserProfile;
+
       window.loadUserProfile = async function() {
+
         await origLoadUserProfile.apply(this, arguments);
+
         await updateProfileReferrer(); // Here with await and without delay
+
       };
+
     }
+
   </script>
+
   <script src="js/token-price.js"></script>
 
 
 
+
+
+
+
   <script>
+
   document.addEventListener('DOMContentLoaded', function() {
+
     const btn = document.getElementById('connectProfileWalletBtn');
+
     if (btn) {
+
       btn.addEventListener('click', async function() {
+
         try {
+
           if (window.connectWallet) {
+
             await window.connectWallet();
+
             // After connecting, reload profile
+
             if (typeof loadUserProfile === 'function') loadUserProfile();
+
           }
+
         } catch (e) {
+
           alert('Wallet connection error: ' + (e.message || e));
+
         }
+
       });
+
     }
+
   });
+
   </script>
+
+
 
   <script src="js/navbar.js"></script>
+
   
+
   <script>
+
     // Re-initialization after wallet connection
+
     if (window.connectWallet) {
+
       const originalConnectWallet = window.connectWallet;
+
       window.connectWallet = async function() {
+
         const result = await originalConnectWallet();
+
         
+
         // Update status bars after connection
+
         setTimeout(async () => {
+
           // Update index dashboard status bar
+
           try { if (typeof window.indexStatusTryUpdate === 'function') window.indexStatusTryUpdate(); } catch(_) {}
+
           
+
           // Update user status bar
+
           try { if (typeof window.updateUserStatusBar === 'function') window.updateUserStatusBar(); } catch(_) {}
+
           
+
           // Update dynamic buttons
+
           try { if (window.dynamicButtonManager) window.dynamicButtonManager.updateAllButtons(); } catch(_) {}
+
         }, 1000);
+
         
+
         return result;
+
       };
+
     }
+
   </script>
+
   </div>
 
+
+
 <style>
+
 /* File cleaned - new CSS is at the end */
 
+
+
 /* === All cards fixed width on mobile === */
+
 @media (max-width: 768px) {
+
   /* Main cards container */
+
   div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] {
+
     display: flex !important;
+
     flex-direction: column !important;
+
     gap: 0.8rem !important;
+
     width: 100% !important;
+
     padding: 0 0.5rem !important;
+
   }
+
   
+
   /* All cards fixed full width */
+
   div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] {
+
     width: 100% !important;
+
     min-width: 100% !important;
+
     max-width: 100% !important;
+
     flex: none !important;
+
     padding: 1.2rem !important;
+
     margin: 0 !important;
+
     margin-bottom: 0.8rem !important;
+
     border-radius: 12px !important;
+
     box-shadow: 0 4px 16px rgba(0,0,0,0.3) !important;
+
     backdrop-filter: blur(6px) !important;
+
     border: 1.5px solid rgba(255,255,255,0.15) !important;
+
     box-sizing: border-box !important;
+
     overflow: hidden !important;
+
   }
+
   
+
   /* Card icons */
+
   div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] > div[style*="font-size:1.2rem;margin-bottom:0.3rem;"] {
+
     font-size: 1.8rem !important;
+
     margin-bottom: 0.6rem !important;
+
     text-align: center !important;
+
   }
+
   
+
   /* Card titles */
+
   div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] > div[style*="font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;"] {
+
     font-size: 1rem !important;
+
     margin-bottom: 0.4rem !important;
+
     letter-spacing: 0.3px !important;
+
     text-align: center !important;
+
     white-space: nowrap !important;
+
     overflow: hidden !important;
+
     text-overflow: ellipsis !important;
+
   }
+
   
+
   /* Card values - fix overflow */
+
   div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] > div[style*="font-size:0.9rem;font-family:monospace;font-weight:bold;"] {
+
     font-size: 1.1rem !important;
+
     margin: 0.6rem 0 !important;
+
     letter-spacing: 0.2px !important;
+
     text-shadow: 0 1px 2px rgba(0,0,0,0.4) !important;
+
     text-align: center !important;
+
     word-break: break-all !important;
+
     overflow-wrap: break-word !important;
+
     max-width: 100% !important;
+
     box-sizing: border-box !important;
+
   }
+
   
+
   /* Card descriptions */
+
   div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] > div[style*="font-size:0.7rem;margin-top:0.2rem;"] {
+
     font-size: 0.8rem !important;
+
     margin-top: 0.4rem !important;
+
     opacity: 0.7 !important;
+
     text-align: center !important;
+
     white-space: nowrap !important;
+
     overflow: hidden !important;
+
     text-overflow: ellipsis !important;
+
   }
+
   
+
   /* Special cards - special sizes */
+
   
+
   /* Total supply card */
+
   div[style*="border:1px solid rgba(0,255,136,0.2)"] {
+
     border: 3px solid rgba(0,255,136,0.4) !important;
+
     background: rgba(0,255,136,0.1) !important;
+
   }
+
   
+
   /* IAM contract balance card */
+
   div[style*="border:1px solid rgba(255,193,7,0.2)"] {
+
     border: 3px solid rgba(255,193,7,0.4) !important;
+
     background: rgba(255,193,7,0.1) !important;
+
   }
+
   
+
   /* DAI balance card */
+
   div[style*="border:1px solid rgba(0,123,255,0.2)"] {
+
     border: 3px solid rgba(0,123,255,0.4) !important;
+
     background: rgba(0,123,255,0.1) !important;
+
   }
+
   
+
   /* Registration price card */
+
   div[style*="border:1px solid rgba(138,43,226,0.2)"] {
+
     border: 3px solid rgba(138,43,226,0.4) !important;
+
     background: rgba(138,43,226,0.1) !important;
+
   }
+
   
+
   /* Card Entry Animation */
+
   div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] {
+
     animation: slideUpMobile 0.6s ease-out !important;
+
     animation-delay: calc(var(--card-index, 0) * 0.1s) !important;
+
   }
+
 }
+
+
 
 /* Card Entry Animation on Mobile */
+
 @keyframes slideUpMobile {
+
   from {
+
     opacity: 0;
+
     transform: translateY(30px) scale(0.9);
+
   }
+
   to {
+
     opacity: 1;
+
     transform: translateY(0) scale(1);
+
   }
+
 }
+
+
 
 /* For very small screens */
+
 @media (max-width: 480px) {
+
   /* Cards container */
+
   div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] {
+
     padding: 0 0.3rem !important;
+
     gap: 0.6rem !important;
+
   }
+
   
+
   /* Cards */
+
   div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] {
+
     padding: 1rem !important;
+
     margin-bottom: 0.6rem !important;
+
     border-radius: 10px !important;
+
   }
+
   
+
   /* Icons */
+
   div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] > div[style*="font-size:1.2rem;margin-bottom:0.3rem;"] {
+
     font-size: 1.5rem !important;
+
     margin-bottom: 0.5rem !important;
+
   }
+
   
+
   /* Titles */
+
   div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] > div[style*="font-size:0.8rem;font-weight:bold;margin-bottom:0.2rem;"] {
+
     font-size: 0.9rem !important;
+
     margin-bottom: 0.3rem !important;
+
   }
+
   
+
   /* Values */
+
   div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] > div[style*="font-size:0.9rem;font-family:monospace;font-weight:bold;"] {
+
     font-size: 1rem !important;
+
     margin: 0.5rem 0 !important;
+
     line-height: 1.2 !important;
+
   }
+
   
+
   /* Descriptions */
+
   div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] > div[style*="font-size:0.7rem;margin-top:0.2rem;"] {
+
     font-size: 0.75rem !important;
+
     margin-top: 0.3rem !important;
+
   }
+
 }
+
+
 
 /* Prevent long numbers from overflowing out of cards (in all sizes) */
+
 div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] > div[style*="font-size:0.9rem;font-family:monospace;font-weight:bold;"] {
+
   word-break: break-all !important;
+
   overflow-wrap: anywhere !important;
+
   white-space: normal !important;
+
   max-width: 100% !important;
+
 }
+
+
 
 /* Responsive Layout for Dashboard Metric Cards on Tablet and Desktop */
+
 @media (min-width: 769px) and (max-width: 1023px) {
+
   /* Cards container → 2 columns per row */
+
   div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] {
+
     display: grid !important;
+
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+
     gap: 0.8rem !important;
+
     justify-content: center !important;
+
   }
+
   /* Cards inside the container above */
+
   div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] > div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] {
+
     min-width: 0 !important;
+
     max-width: 100% !important;
+
     width: 100% !important;
+
     flex: none !important;
+
     box-sizing: border-box !important;
+
   }
+
 }
+
+
 
 @media (min-width: 1024px) {
+
   /* Cards container → 3 columns per row */
+
   div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] {
+
     display: grid !important;
+
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+
     gap: 1rem !important;
+
     justify-content: center !important;
+
   }
+
   /* Cards inside the container above */
+
   div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] > div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] {
+
     min-width: 0 !important;
+
     max-width: 100% !important;
+
     width: 100% !important;
+
     flex: none !important;
+
     box-sizing: border-box !important;
+
   }
+
 }
+
+
 
 /* Dynamic Width Mode for Dashboard Metric Cards on Tablet/Desktop
+
    This block overrides the grid rules above to make cards expand to content width */
+
 @media (min-width: 769px) {
+
   /* Cards container: flex and wrappable */
+
   div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] {
+
     display: flex !important;
+
     flex-wrap: wrap !important;
+
     gap: 0.8rem !important;
+
     justify-content: center !important;
+
     align-items: stretch !important;
+
   }
+
   /* Cards themselves: width based on content */
+
   div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] > div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] {
+
     flex: 0 0 auto !important;
+
     width: auto !important;
+
     min-width: auto !important;
+
     max-width: none !important;
+
     box-sizing: border-box !important;
+
   }
+
   /* Values: stay single-line so card expands */
+
   div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] > div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] > div[style*="font-size:0.9rem;font-family:monospace;font-weight:bold;"] {
+
     white-space: nowrap !important;
+
     word-break: normal !important;
+
     overflow-wrap: normal !important;
+
   }
+
 }
+
+
 
 /* Dynamic Width Mode for Dashboard Metric Cards on Mobile */
+
 @media (max-width: 768px) {
+
   /* Cards container: flex, active wrapping, row layout, horizontal scroll if needed */
+
   div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] {
+
     display: flex !important;
+
     flex-direction: row !important;
+
     flex-wrap: wrap !important;
+
     justify-content: flex-start !important;
+
     align-items: stretch !important;
+
     gap: 0.6rem !important;
+
     width: 100% !important;
+
     padding: 0 0.5rem !important;
+
     overflow-x: auto !important;
+
     -webkit-overflow-scrolling: touch !important;
+
   }
+
   /* Cards: width based on content, prevent stretching to 100% */
+
   div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] > div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] {
+
     flex: 0 0 auto !important;
+
     width: auto !important;
+
     min-width: max-content !important;
+
     max-width: none !important;
+
     box-sizing: border-box !important;
+
     margin: 0 !important;
+
   }
+
   /* Values: single-line to increase card width */
+
   div[style*="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;justify-content:center;"] > div[style*="background:rgba(0,0,0,0.3);border-radius:12px;padding:0.8rem;border:1px solid"] > div[style*="font-size:0.9rem;font-family:monospace;font-weight:bold;"] {
+
     white-space: nowrap !important;
+
     word-break: normal !important;
+
     overflow-wrap: normal !important;
+
   }
+
 }
+
 </style>
 
+
+
 <script>
+
 // Manage cards and values on mobile
+
 function optimizeCardsForMobile() {
+
   if (window.innerWidth <= 768) {
+
     // Find all cards
+
     const cards = document.querySelectorAll('div[style*="background:rgba(0,0,0,0.3)"]');
+
     
+
     cards.forEach((card, index) => {
+
       // Fix width
+
       card.style.width = '100%';
+
       card.style.maxWidth = '100%';
+
       card.style.minWidth = '100%';
+
       card.style.boxSizing = 'border-box';
+
       card.style.overflow = 'hidden';
+
       
+
       // Entry Animation
+
       card.style.setProperty('--card-index', index.toString());
+
       card.style.opacity = '0';
+
       card.style.transform = 'translateY(20px)';
+
       
+
       // Delay for animation
+
       setTimeout(() => {
+
         card.style.transition = 'all 0.4s ease';
+
         card.style.opacity = '1';
+
         card.style.transform = 'translateY(0)';
+
       }, index * 80);
+
       
+
       // Optimize values inside card
+
       const valueElements = card.querySelectorAll('div[style*="font-family:monospace"]');
+
       valueElements.forEach(valueEl => {
+
         valueEl.style.wordBreak = 'break-all';
+
         valueEl.style.overflowWrap = 'break-word';
+
         valueEl.style.maxWidth = '100%';
+
         valueEl.style.textAlign = 'center';
+
         
+
         // If value is too long, make font smaller
+
         const text = valueEl.textContent || '';
+
         if (text.length > 15) {
+
           valueEl.style.fontSize = '0.9rem';
+
           valueEl.style.lineHeight = '1.2';
+
         }
+
         if (text.length > 25) {
+
           valueEl.style.fontSize = '0.8rem';
+
           valueEl.style.lineHeight = '1.1';
+
         }
+
       });
+
     });
+
     
+
     // Optimize main container
+
     const container = document.querySelector('div[style*="display:flex;flex-wrap:wrap"]');
+
     if (container) {
+
       container.style.width = '100%';
+
       container.style.padding = '0 0.5rem';
+
       container.style.boxSizing = 'border-box';
+
     }
+
   }
+
 }
 
-// Manage mobile refresh button
-document.addEventListener('DOMContentLoaded', function() {
+
+
+// Mobile optimization (moved to main initialization)
+function initializeMobileOptimization() {
   // Optimize cards for mobile
+
   setTimeout(() => {
+
     optimizeCardsForMobile();
-  }, 800);
+
+  }, 300); // Reduced timeout
   
+
   // Re-optimize when page size changes
+
   let resizeTimeout;
+
   window.addEventListener('resize', () => {
+
     clearTimeout(resizeTimeout);
+
     resizeTimeout = setTimeout(() => {
+
       optimizeCardsForMobile();
+
     }, 300);
+
   });
+
   
+
   // Re-optimize when values update
+
   const observer = new MutationObserver(() => {
+
     if (window.innerWidth <= 768) {
+
       setTimeout(optimizeCardsForMobile, 200);
+
     }
+
   });
+
   
+
   // Monitor changes in cards
+
   const targetNode = document.querySelector('div[style*="display:flex;flex-wrap:wrap"]');
+
   if (targetNode) {
+
     observer.observe(targetNode, {
+
       childList: true,
+
       subtree: true,
+
       characterData: true
+
     });
+
   }
+
   
+
   // Main page codes
-});
+
 </script>
+
+
 <script>
-// Voting Functions for Main Section
-async function voteForIndexMain(isLike) {
-  try {
-    const indexInput = document.getElementById('vote-index-input-main');
-    const voteResult = document.getElementById('vote-result-main');
-
-    if (!indexInput) {
-      throw new Error('Index input field not found');
-    }
-
-    const index = parseInt(indexInput.value.trim());
-
-    if (!index || index <= 0) {
-      voteResult.innerHTML = '<span style="color: #ff4444;">⚠️ Please enter a valid index</span>';
-      return;
-    }
-
-    if (!window.contractConfig || !window.contractConfig.contract) {
-      await window.connectWallet();
-    }
-    const contract = window.contractConfig.contract;
-
-    if (!contract) {
-      throw new Error('Contract not connected');
-    }
-
-    // Check wallet connection
-    if (!window.contractConfig.signer) {
-      throw new Error('Wallet not connected');
-    }
-
-    // Get user address from index
-    const userAddress = await contract.indexToAddress(index);
-
-    if (userAddress === '0x0000000000000000000000000000000000000000') {
-      voteResult.innerHTML = '<span style="color: #ff4444;">⚠️ No user found with this index</span>';
-      return;
-    }
-
-    // Check if user is trying to vote for themselves
-    const currentUserAddress = window.contractConfig.signer.address;
-    if (userAddress.toLowerCase() === currentUserAddress.toLowerCase()) {
-      voteResult.innerHTML = '<span style="color: #ff4444;">❌ Cannot vote for yourself</span>';
-      return;
-    }
-
-    // Show processing message
-    voteResult.innerHTML = '<span style="color: #a786ff;">⏳ Sending vote...</span>';
-
-    // Send voting transaction
-    const tx = await contract.voteUser(userAddress, isLike);
-
-    // Wait for transaction confirmation
-    const receipt = await tx.wait();
-
-    // Show success message
-    const successMessage = isLike ? '✅ Like successfully registered' : '✅ Dislike successfully registered';
-    voteResult.innerHTML = `<span style="color: #00ff88;">${successMessage}</span>`;
-    
-    // Show alert too
-    alert(successMessage);
-
-    // Update user vote status
-    updateUserVoteStatus();
-
-    // Update ranking after 2 seconds
-    setTimeout(() => {
-      if (typeof window.displayTopUsersRanking === 'function') {
-        const rankingContainer = document.getElementById('top-users-ranking');
-        if (rankingContainer) {
-          window.displayTopUsersRanking('top-users-ranking');
-        }
-      }
-    }, 2000);
-
-    return {
-      success: true,
-      transactionHash: receipt.transactionHash,
-      userAddress: userAddress,
-      voteType: isLike ? 'like' : 'dislike'
-    };
-
-  } catch (error) {
-    console.error('❌ Error voting for index:', error);
-    const voteResult = document.getElementById('vote-result');
-    if (voteResult) {
-      voteResult.innerHTML = `<span style="color: #ff4444;">❌ Error: ${error.message}</span>`;
-    }
-    return {
-      success: false,
-      error: error.message
-    };
-  }
-}
-
-async function voteForSelfMain(isLike) {
-  try {
-    const voteResult = document.getElementById('vote-result-main');
-    
-    // Show error message immediately since self-voting is not allowed
-    voteResult.innerHTML = '<span style="color: #ff4444;">❌ Self-voting is not allowed by the smart contract</span>';
-    
-    // Show alert
-    alert('❌ Self-voting is not allowed by the smart contract');
-    
-    return {
-      success: false,
-      error: 'Self-voting is not allowed by the smart contract'
-    };
-
-  } catch (error) {
-    console.error('❌ Error voting for self:', error);
-    const voteResult = document.getElementById('vote-result-main');
-    if (voteResult) {
-      voteResult.innerHTML = `<span style="color: #ff4444;">❌ Error: ${error.message}</span>`;
-    }
-    return {
-      success: false,
-      error: error.message
-    };
-  }
-}
-
-async function voteForSelf(isLike) {
-  try {
-    const voteResult = document.getElementById('vote-result');
-
-    // Show error message immediately since self-voting is not allowed
-    voteResult.innerHTML = '<span style="color: #ff4444;">❌ Self-voting is not allowed by the smart contract</span>';
-    
-    // Show alert
-    alert('❌ Self-voting is not allowed by the smart contract');
-
-    return {
-      success: false,
-      error: 'Self-voting is not allowed by the smart contract'
-    };
-
-  } catch (error) {
-    console.error('❌ Error voting for self:', error);
-    const voteResult = document.getElementById('vote-result');
-    if (voteResult) {
-      voteResult.innerHTML = `<span style="color: #ff4444;">❌ Error: ${error.message}</span>`;
-    }
-    return {
-      success: false,
-      error: error.message
-    };
-  }
-}
-
-async function updateUserVoteStatusMain() {
-  try {
-    if (!window.contractConfig || !window.contractConfig.contract) {
-      return;
-    }
-
-    const contract = window.contractConfig.contract;
-    const currentUserAddress = window.contractConfig.signer?.address;
-
-    if (!currentUserAddress) {
-      return;
-    }
-
-    const voteStatus = await contract.getVoteStatus(currentUserAddress);
-    const statusElement = document.getElementById('user-vote-status-main');
-    
-    if (statusElement) {
-      const myVote = Number(voteStatus[2]); // 0: no vote, 1: like, 2: dislike
-      if (myVote == 1) {
-        statusElement.innerHTML = '<span style="color: #00ff88;">✓ Self-liked</span>';
-      } else if (myVote == 2) {
-        statusElement.innerHTML = '<span style="color: #ff4444;">✗ Self-disliked</span>';
-      } else {
-        statusElement.innerHTML = '<span style="color: #ccc;">Not voted yet</span>';
-      }
-    }
-  } catch (error) {
-    console.warn('⚠️ Error updating user vote status:', error);
-  }
-}
-
-async function updateUserVoteStatus() {
-  try {
-    if (!window.contractConfig || !window.contractConfig.contract) {
-      return;
-    }
-
-    const contract = window.contractConfig.contract;
-    const currentUserAddress = window.contractConfig.signer?.address;
-
-    if (!currentUserAddress) {
-      return;
-    }
-
-    const voteStatus = await contract.getVoteStatus(currentUserAddress);
-    const statusElement = document.getElementById('user-vote-status');
-    
-    if (statusElement) {
-      const myVote = Number(voteStatus[2]); // 0: no vote, 1: like, 2: dislike
-      if (myVote == 1) {
-        statusElement.innerHTML = '<span style="color: #00ff88;">✓ Self-liked</span>';
-      } else if (myVote == 2) {
-        statusElement.innerHTML = '<span style="color: #ff4444;">✗ Self-disliked</span>';
-      } else {
-        statusElement.innerHTML = '<span style="color: #ccc;">Not voted yet</span>';
-      }
-    }
-  } catch (error) {
-    console.warn('⚠️ Error updating user vote status:', error);
-  }
-}
-
-// Make voting functions globally available
-window.voteForIndex = voteForIndex;
-window.voteForSelf = voteForSelf;
-window.updateUserVoteStatus = updateUserVoteStatus;
-
-// Update vote status when wallet connects
-document.addEventListener('DOMContentLoaded', function() {
-  // Check vote status after wallet connection
-  if (window.contractConfig && window.contractConfig.signer) {
-    setTimeout(updateUserVoteStatus, 2000);
-  }
-  
-
-});
-
+// Voting Functions moved to utility.html
 // Quick traversal functions
+
 async function startQuickTraversal(method = 'bfs') {
+
   try {
+
     console.log(`🚀 Starting quick ${method.toUpperCase()} traversal...`);
+
     
+
     const progressElement = document.getElementById('traversal-progress');
+
     const statusElement = document.getElementById('traversal-status');
+
     
+
     if (progressElement) {
+
       progressElement.style.display = 'block';
+
     }
+
     
+
     if (statusElement) {
+
       statusElement.textContent = `Starting ${method.toUpperCase()} traversal...`;
+
     }
+
     
+
     // Add event listener for progress updates
+
     const progressHandler = (event) => {
+
       const { totalFound, currentIndex, isComplete } = event.detail;
+
       
+
       if (statusElement) {
+
         if (method === 'index') {
+
           statusElement.textContent = `Processed ${currentIndex} indices, found ${totalFound} users`;
+
         } else {
+
           statusElement.textContent = `Found ${totalFound} users so far...`;
+
         }
+
       }
+
       
+
       if (isComplete) {
+
         if (statusElement) {
+
           statusElement.textContent = `✅ Traversal completed! Found ${totalFound} users`;
+
         }
+
         
+
         // Hide progress after 3 seconds
+
         setTimeout(() => {
+
           if (progressElement) {
+
             progressElement.style.display = 'none';
+
           }
+
         }, 3000);
+
         
+
         // Remove event listener
+
         document.removeEventListener('traversalProgress', progressHandler);
+
       }
+
     };
+
     
+
     document.addEventListener('traversalProgress', progressHandler);
+
     
+
     let users;
+
     
+
                    switch (method.toLowerCase()) {
+
         case 'bfs':
+
           users = await window.traverseAllUsers('bfs', 1, Infinity); // Infinite depth limit
+
           break;
+
         case 'dfs':
+
           users = await window.traverseAllUsers('dfs', 1, Infinity); // Infinite depth limit
+
           break;
+
         case 'index':
+
           users = await window.traverseAllUsers('index', 1, Infinity); // Infinite depth limit
+
           break;
+
         case 'unlimited':
+
           users = await window.traverseAllUsers('unlimited', 1, Infinity); // Infinite depth limit
+
           break;
+
         default:
+
           users = await window.traverseAllUsers('bfs', 1, Infinity); // Infinite depth limit
+
       }
+
     
+
     console.log(`✅ Quick ${method.toUpperCase()} traversal completed! Found ${users.length} users`);
+
     
+
     // Show success message
+
     if (statusElement) {
+
       statusElement.innerHTML = `<span style="color: #00ff88;">✅ Found ${users.length} users! Results cached.</span>`;
+
     }
+
     
+
     // Update ranking with new data
+
     setTimeout(() => {
+
       if (typeof window.displayTopUsersRanking === 'function') {
+
         const rankingContainer = document.getElementById('top-users-ranking');
+
         if (rankingContainer) {
+
           window.displayTopUsersRanking('top-users-ranking');
+
         }
+
       }
+
     }, 2000);
+
     
+
     return users;
+
     
+
   } catch (error) {
+
     console.error('❌ Error in quick traversal:', error);
+
     
+
     const statusElement = document.getElementById('traversal-status');
+
     if (statusElement) {
+
       statusElement.innerHTML = `<span style="color: #ff4444;">❌ Error: ${error.message}</span>`;
+
     }
+
     
+
     // Hide progress after 5 seconds
+
     setTimeout(() => {
+
       const progressElement = document.getElementById('traversal-progress');
+
       if (progressElement) {
+
         progressElement.style.display = 'none';
+
       }
+
     }, 5000);
+
     
+
     throw error;
+
   }
+
 }
+
+
 
 function stopQuickTraversal() {
+
   try {
+
     window.stopTraversal();
+
     
+
     const statusElement = document.getElementById('traversal-status');
+
     if (statusElement) {
+
       statusElement.innerHTML = `<span style="color: #ffaa00;">⏹️ Traversal stopped by user</span>`;
+
     }
+
     
+
     // Hide progress after 3 seconds
+
     setTimeout(() => {
+
       const progressElement = document.getElementById('traversal-progress');
+
       if (progressElement) {
+
         progressElement.style.display = 'none';
+
       }
+
     }, 3000);
+
     
+
     console.log('⏹️ Quick traversal stopped by user');
+
     
+
   } catch (error) {
+
     console.error('❌ Error stopping traversal:', error);
+
   }
+
 }
+
+
 
 // Make functions globally available
+
 window.startQuickTraversal = startQuickTraversal;
+
 window.stopQuickTraversal = stopQuickTraversal;
 
+
+
 // Toggle voting section visibility
+
 function toggleVotingSection() {
+
   console.log('❌ Voting section not found');
+
 }
 
+
+
 // Make toggle function globally available
+
 window.toggleVotingSection = toggleVotingSection;
 
 
@@ -3906,258 +7215,517 @@ window.toggleVotingSection = toggleVotingSection;
 
 
 
+
+
+
+
+
+
+
+
 // Popular Indexes Functions
+
 function togglePopularIndexes() {
+
   const content = document.getElementById('popular-indexes-content');
+
   const toggleBtn = document.getElementById('popular-indexes-toggle');
+
   
+
   if (content.style.display === 'none' || !content.style.display) {
+
     content.style.display = 'block';
+
     toggleBtn.innerHTML = '📊 Hide Most Popular';
+
     toggleBtn.style.background = 'linear-gradient(135deg,#ff4444,#cc3333)';
+
     loadPopularIndexes();
+
   } else {
+
     content.style.display = 'none';
+
     toggleBtn.innerHTML = '📊 Show Most Popular';
+
     toggleBtn.style.background = 'linear-gradient(135deg,#00ff88,#00cc6a)';
+
   }
+
 }
+
+
 
 async function loadPopularIndexes() {
+
   try {
+
     const listContainer = document.getElementById('popular-indexes-list');
+
     
+
     if (!window.contractConfig || !window.contractConfig.contract) {
+
       listContainer.innerHTML = '<div style="text-align: center; color: #ff4444; font-size: 0.9rem; padding: 2rem;">Please connect your wallet first</div>';
+
       return;
+
     }
+
     
+
     const contract = window.contractConfig.contract;
+
     
+
     // Get top users (we'll use the existing ranking function if available)
+
     if (typeof window.displayTopUsersRanking === 'function') {
+
       // Use existing ranking function
+
       const popularUsers = await getTopUsersByLikes(10);
+
       displayPopularIndexes(popularUsers);
+
     } else {
+
       // Fallback: show a simple list
+
       listContainer.innerHTML = '<div style="text-align: center; color: #888; font-size: 0.9rem; padding: 2rem;">Ranking system not available</div>';
+
     }
+
     
+
   } catch (error) {
+
     console.error('❌ Error loading popular indexes:', error);
+
     const listContainer = document.getElementById('popular-indexes-list');
+
     listContainer.innerHTML = `<div style="text-align: center; color: #ff4444; font-size: 0.9rem; padding: 2rem;">Error loading: ${error.message}</div>`;
+
   }
+
 }
+
+
 
 async function getTopUsersByLikes(limit = 10) {
+
   try {
+
     const contract = window.contractConfig.contract;
+
     const users = [];
+
     
+
     // Check first 50 users for likes
+
     for (let i = 1; i <= 50; i++) {
+
       try {
+
         const userAddress = await contract.indexToAddress(i);
+
         if (userAddress && userAddress !== '0x0000000000000000000000000000000000000000') {
+
           const likeCount = await contract.likeCount(userAddress);
+
           
+
           if (Number(likeCount) > 0) {
+
             users.push({
+
               index: i,
+
               address: userAddress,
+
               likeCount: Number(likeCount)
+
             });
+
           }
+
         }
+
       } catch (error) {
+
         console.log(`Error getting user ${i}:`, error.message);
+
         continue;
+
       }
+
     }
+
     
+
     // Sort by like count (descending)
+
     users.sort((a, b) => b.likeCount - a.likeCount);
+
     
+
     return users.slice(0, limit);
+
     
+
   } catch (error) {
+
     console.error('❌ Error getting top users:', error);
+
     return [];
+
   }
+
 }
+
+
 
 function displayPopularIndexes(users) {
+
   const listContainer = document.getElementById('popular-indexes-list');
+
   
+
   if (!users || users.length === 0) {
+
     listContainer.innerHTML = '<div style="text-align: center; color: #888; font-size: 0.9rem; padding: 2rem;">No users found</div>';
+
     return;
+
   }
+
   
+
   let html = '';
+
   users.forEach((user, index) => {
+
     const rank = index + 1;
+
     const rankEmoji = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+
     const shortAddress = user.address.substring(0, 6) + '...' + user.address.substring(user.address.length - 4);
+
     
+
     html += `
+
       <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.8rem; margin-bottom: 0.5rem; background: rgba(0,255,136,0.1); border-radius: 8px; border: 1px solid rgba(0,255,136,0.2);">
+
         <div style="display: flex; align-items: center; gap: 0.8rem;">
+
           <div style="color: #00ff88; font-weight: bold; font-size: 1.1rem;">${rankEmoji}</div>
+
           <div>
+
             <div style="color: #fff; font-weight: bold; font-size: 0.9rem;">Index ${user.index}</div>
+
             <div style="color: #ccc; font-size: 0.8rem; font-family: monospace;">${shortAddress}</div>
+
           </div>
+
         </div>
+
         <div style="text-align: right;">
+
           <div style="color: #00ff88; font-weight: bold; font-size: 0.9rem;">👍 ${user.likeCount}</div>
+
         </div>
+
       </div>
+
     `;
+
   });
+
   
+
   listContainer.innerHTML = html;
+
 }
+
+
 
 async function voteForPopularIndex(isLike) {
+
   try {
+
     const indexInput = document.getElementById('popular-vote-index');
+
     const voteResult = document.getElementById('popular-vote-result');
+
     
+
     if (!indexInput) {
+
       throw new Error('Index input field not found');
+
     }
+
     
+
     const index = parseInt(indexInput.value.trim());
+
     
+
     if (!index || index <= 0) {
+
       voteResult.innerHTML = '<span style="color: #ff4444;">⚠️ Please enter a valid index</span>';
+
       return;
+
     }
+
     
+
     if (!window.contractConfig || !window.contractConfig.contract) {
+
       await window.connectWallet();
+
     }
+
     const contract = window.contractConfig.contract;
+
     
+
     if (!contract) {
+
       throw new Error('Contract is not connected');
+
     }
+
     
+
     // Check wallet connection
+
     if (!window.contractConfig.signer) {
+
       throw new Error('Wallet is not connected');
+
     }
+
     
+
     // Get user address from index
+
     const userAddress = await contract.indexToAddress(index);
+
     
+
     if (userAddress === '0x0000000000000000000000000000000000000000') {
+
       voteResult.innerHTML = '<span style="color: #ff4444;">⚠️ No user found with this index</span>';
+
       return;
+
     }
+
     
+
     // Check if user is trying to vote for themselves
+
     const currentUserAddress = window.contractConfig.signer.address;
+
     if (userAddress.toLowerCase() === currentUserAddress.toLowerCase()) {
+
       voteResult.innerHTML = '<span style="color: #ff4444;">❌ You cannot vote for yourself</span>';
+
       return;
+
     }
+
     
+
     // Show processing message
+
     voteResult.innerHTML = '<span style="color: #a786ff;">⏳ Sending vote...</span>';
+
     
+
     // Send voting transaction
+
     const tx = await contract.voteUser(userAddress, isLike);
+
     
+
     // Wait for transaction confirmation
+
     const receipt = await tx.wait();
+
     
+
     // Show success message
+
     const successMessage = isLike ? '✅ Like successfully registered' : '✅ Dislike successfully registered';
+
     voteResult.innerHTML = `<span style="color: #00ff88;">${successMessage}</span>`;
+
     
+
     // Clear input
+
     indexInput.value = '';
+
     
+
     // Show alert too
+
     alert(successMessage);
+
     
+
     // Refresh popular indexes list after 2 seconds
+
     setTimeout(() => {
+
       loadPopularIndexes();
+
     }, 2000);
+
     
+
     return {
+
       success: true,
+
       transactionHash: receipt.transactionHash,
+
       userAddress: userAddress,
+
       voteType: isLike ? 'like' : 'dislike'
+
     };
+
     
+
   } catch (error) {
+
     console.error('❌ Error voting for popular index:', error);
+
     const voteResult = document.getElementById('popular-vote-result');
+
     if (voteResult) {
+
       voteResult.innerHTML = `<span style="color: #ff4444;">❌ Error: ${error.message}</span>`;
+
     }
+
     return {
+
       success: false,
+
       error: error.message
+
     };
+
   }
+
 }
+
+
 
 function refreshPopularIndexes() {
+
   loadPopularIndexes();
+
 }
 
+
+
 // Make popular indexes functions globally available
+
 window.togglePopularIndexes = togglePopularIndexes;
+
 window.loadPopularIndexes = loadPopularIndexes;
+
 window.voteForPopularIndex = voteForPopularIndex;
+
 window.refreshPopularIndexes = refreshPopularIndexes;
 
 
 
+
+
+
+
 </script>
+
+
 
 <!-- Floating Token Growth Card -->
+
 <script src="js/floating-token-card.js"></script>
 
+
+
 <!-- Apply modern theme -->
+
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+
+// Modern theme application (moved to main initialization)
+function initializeModernTheme() {
   console.log('🎨 Applying modern orange and purple theme...');
+
   
+
   // Apply modern-card class to all existing cards
+
   const cards = document.querySelectorAll('.dashboard-card');
+
   cards.forEach(card => {
+
     if (!card.classList.contains('modern-card')) {
+
       card.classList.add('modern-card');
+
     }
+
   });
+
   
+
   // Apply modern-btn class to all buttons
+
   const buttons = document.querySelectorAll('button');
+
   buttons.forEach(button => {
+
     if (!button.classList.contains('modern-btn')) {
+
       button.classList.add('modern-btn', 'modern-btn-primary');
+
     }
+
   });
+
   
+
   // Apply modern-input class to all input fields
+
   const inputs = document.querySelectorAll('input');
+
   inputs.forEach(input => {
+
     if (!input.classList.contains('modern-input')) {
+
       input.classList.add('modern-input');
+
     }
+
   });
+
   
+
   console.log('✅ Modern orange and purple theme applied');
-});
+
+}
 </script>
 
 
@@ -4181,995 +7749,1892 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-<!-- Most Popular Indexes Section - Always Expanded at Bottom -->
-<div id="popular-indexes-section" class="modern-card" style="margin-top: 2rem; margin-bottom: 2rem; padding: 1.5rem; border: 2px solid rgba(0,255,136,0.3); border-radius: 15px; background: linear-gradient(135deg, rgba(26,31,46,0.9), rgba(42,47,62,0.9));">
-  <div style="text-align: center; margin-bottom: 1.5rem;">
-    <h3 style="color: #00ff88; font-size: 1.3rem; font-weight: bold; margin: 0; margin-bottom: 0.5rem;">🌟 Most Popular Indexes</h3>
-    <p style="color: #ccc; font-size: 0.9rem; margin: 0;">List of most popular network users based on positive votes</p>
-  </div>
-  
-  <!-- Always Visible Content -->
-  <div id="popular-indexes-content" style="display: block;">
-    <div style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin-bottom: 1.5rem;">
-      <!-- Popular Indexes List -->
-      <div style="flex: 1; min-width: 300px; background: rgba(0,0,0,0.3); border-radius: 12px; padding: 1rem; border: 1px solid rgba(0,255,136,0.2);">
-        <div style="text-align: center; margin-bottom: 1rem;">
-          <h4 style="color: #00ff88; font-size: 1.1rem; font-weight: bold; margin: 0;">🏆 Most Popular Rankings</h4>
-        </div>
-        <div id="popular-indexes-list" style="max-height: 300px; overflow-y: auto;">
-        </div>
-      </div>
-      
-      <!-- Voting Section -->
-      <div style="flex: 1; min-width: 300px; background: rgba(0,0,0,0.3); border-radius: 12px; padding: 1rem; border: 1px solid rgba(167,134,255,0.2);">
-        <div style="text-align: center; margin-bottom: 1rem;">
-          <h4 style="color: #a786ff; font-size: 1.1rem; font-weight: bold; margin: 0;">🗳️ Voting</h4>
-        </div>
-        
-        <div style="display: flex; flex-direction: column; gap: 1rem;">
-          <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-            <label style="color: #ccc; font-size: 0.9rem; font-weight: bold;">Target Index:</label>
-            <input type="number" id="popular-vote-index" placeholder="Enter index number" 
-                   style="background: rgba(0,0,0,0.3); border: 1px solid rgba(167,134,255,0.3); border-radius: 8px; padding: 0.8rem; color: #fff; text-align: center; font-size: 0.9rem; font-family: monospace;">
-          </div>
-          
-          <div style="display: flex; gap: 0.5rem; justify-content: center;">
-            <button onclick="voteForPopularIndex(true)" 
-                    style="background: linear-gradient(135deg,#00ff88,#00cc6a); color: #1a1f2e; border: none; border-radius: 8px; padding: 0.8rem 1.2rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; font-size: 0.9rem; flex: 1;">
-              👍 Like
-            </button>
-            <button onclick="voteForPopularIndex(false)" 
-                    style="background: linear-gradient(135deg,#ff4444,#cc3333); color: #fff; border: none; border-radius: 8px; padding: 0.8rem 1.2rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; font-size: 0.9rem; flex: 1;">
-              👎 Dislike
-            </button>
-          </div>
-          
-          <div id="popular-vote-result" style="text-align: center; padding: 0.5rem; border-radius: 8px; font-size: 0.9rem; min-height: 1.5em;"></div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Refresh Button -->
-    <div style="text-align: center;">
-      <button onclick="refreshPopularIndexes()" 
-              style="background: linear-gradient(135deg,#a786ff,#8a6fff); color: #fff; border: none; border-radius: 8px; padding: 0.8rem 1.5rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; font-size: 0.9rem;">
-        🔄 Refresh List
-      </button>
-    </div>
-  </div>
-</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 <!-- Auto-load popular indexes when page loads -->
+
 <script>
+
 document.addEventListener('DOMContentLoaded', function() {
+
   // Auto-load popular indexes after a short delay
+
   setTimeout(() => {
+
     if (typeof loadPopularIndexes === 'function') {
+
       loadPopularIndexes();
+
     }
+
   }, 2000);
+
 });
+
 </script>
+
+
+
 
 
 <style>
+
 </style>
 
+
+
 <script>
+
 // Binary Points Management
+
 class BinaryPointsManager {
+
   constructor() {
+
     this.points = 0;
+
     this.isClaiming = false;
+
     this.init();
+
   }
+
   
+
   async init() {
+
     await this.loadBinaryPoints();
+
     this.setupEventListeners();
+
     this.startAutoRefresh();
+
   }
+
   
+
   async loadBinaryPoints() {
+
     try {
+
       if (!window.contractConfig || !window.contractConfig.contract) {
+
         console.log('Contract not available for binary points');
+
         return;
+
       }
+
       
+
       const contract = window.contractConfig.contract;
+
       const userAddress = await window.contractConfig.signer.getAddress();
+
       
+
       console.log('🔄 Loading binary points for address:', userAddress);
+
       
+
       // Try to get user data from users function first
+
       let userData;
+
       try {
+
         userData = await contract.users(userAddress);
+
         console.log('📊 User data from users():', userData);
+
         
+
         if (userData && userData.binaryPoints) {
+
           this.points = parseFloat(ethers.formatEther(userData.binaryPoints));
+
           console.log('🎯 Binary points from users():', this.points);
+
         } else {
+
           // Fallback to getUserTree
+
           const userTree = await contract.getUserTree(userAddress);
+
           console.log('📊 User tree data:', userTree);
+
           this.points = parseFloat(ethers.formatEther(userTree.binaryPoints));
+
           console.log('🎯 Binary points from getUserTree():', this.points);
+
         }
+
       } catch (error) {
+
         console.log('Error getting user data, trying getUserTree:', error);
+
         // Fallback to getUserTree
+
         const userTree = await contract.getUserTree(userAddress);
+
         console.log('📊 User tree data:', userTree);
+
         this.points = parseFloat(ethers.formatEther(userTree.binaryPoints));
+
         console.log('🎯 Binary points from getUserTree():', this.points);
+
       }
+
       
+
       this.updateDisplay();
+
     } catch (error) {
+
       console.log('Error loading binary points:', error);
+
       this.points = 0;
+
       this.updateDisplay();
+
     }
+
   }
+
   
+
   updateDisplay() {
+
     // Update main claim button
+
     this.updateMainClaimButton();
+
   }
+
   
+
   // Function to refresh binary points
+
   async refreshBinaryPoints() {
+
     console.log('🔄 Refreshing binary points...');
+
     await this.loadBinaryPoints();
+
   }
+
   
+
   // Function to start auto-refresh
+
   startAutoRefresh() {
+
     // Refresh every 30 seconds
+
     setInterval(() => {
+
       if (window.contractConfig && window.contractConfig.contract) {
+
         this.refreshBinaryPoints();
+
       }
+
     }, 30000);
+
   }
+
   
+
   // Function to update main claim button
+
   updateMainClaimButton() {
+
     const mainClaimBtn = document.getElementById('main-claim-btn');
+
     const pointsCount = document.getElementById('claim-points-count');
+
     
+
     if (mainClaimBtn && pointsCount) {
+
       pointsCount.textContent = this.points.toFixed(0);
+
       
+
       if (this.points > 0) {
+
         // Enable button when points are available
+
         mainClaimBtn.disabled = false;
+
         mainClaimBtn.style.opacity = '1';
+
         mainClaimBtn.style.cursor = 'pointer';
+
         mainClaimBtn.style.background = 'linear-gradient(135deg,#ff6b35,#ff8e53)';
+
         mainClaimBtn.style.boxShadow = '0 2px 6px rgba(255,107,51,0.3)';
+
         mainClaimBtn.title = 'Claim Available Points';
+
       } else {
+
         // Disable button when no points available
+
         mainClaimBtn.disabled = true;
+
         mainClaimBtn.style.opacity = '0.4';
+
         mainClaimBtn.style.cursor = 'not-allowed';
+
         mainClaimBtn.style.background = 'linear-gradient(135deg,#666,#888)';
+
         mainClaimBtn.style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)';
+
         mainClaimBtn.title = 'No Points Available to Claim';
+
       }
+
     }
+
   }
+
   
+
   setupEventListeners() {
+
     // No floating card button to setup
+
   }
+
   
+
   
+
   showMessage(message, type) {
+
     // Create temporary message element
+
     const messageEl = document.createElement('div');
+
     messageEl.style.cssText = `
+
       position: fixed;
+
       top: 50%;
+
       left: 50%;
+
       transform: translate(-50%, -50%);
+
       background: ${type === 'success' ? 'rgba(0, 255, 136, 0.9)' : type === 'warning' ? 'rgba(255, 193, 7, 0.9)' : 'rgba(255, 68, 68, 0.9)'};
+
       color: ${type === 'success' ? '#0a0f1c' : type === 'warning' ? '#0a0f1c' : '#fff'};
+
       padding: 15px 25px;
+
       border-radius: 10px;
+
       font-weight: bold;
+
       z-index: 10000;
+
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+
       backdrop-filter: blur(10px);
+
       font-family: 'Tahoma', 'Arial', sans-serif;
+
       direction: rtl;
+
       text-align: center;
+
       min-width: 250px;
+
       max-width: 400px;
+
     `;
+
     messageEl.textContent = message;
+
     
+
     document.body.appendChild(messageEl);
+
     
+
     // Remove after 4 seconds for Persian messages (longer for better readability)
+
     setTimeout(() => {
+
       if (messageEl.parentNode) {
+
         messageEl.parentNode.removeChild(messageEl);
+
       }
+
     }, 4000);
+
   }
+
   
+
 }
+
+
 
 // Global function to show Persian messages
+
 window.showPersianMessage = function(message, type) {
+
   // Create temporary message element
+
   const messageEl = document.createElement('div');
+
   messageEl.style.cssText = `
+
     position: fixed;
+
     top: 50%;
+
     left: 50%;
+
     transform: translate(-50%, -50%);
+
     background: ${type === 'success' ? 'rgba(0, 255, 136, 0.9)' : type === 'warning' ? 'rgba(255, 193, 7, 0.9)' : 'rgba(255, 68, 68, 0.9)'};
+
     color: ${type === 'success' ? '#0a0f1c' : type === 'warning' ? '#0a0f1c' : '#fff'};
+
     padding: 15px 25px;
+
     border-radius: 10px;
+
     font-weight: bold;
+
     z-index: 10000;
+
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+
     backdrop-filter: blur(10px);
+
     font-family: 'Tahoma', 'Arial', sans-serif;
+
     direction: rtl;
+
     text-align: center;
+
     min-width: 250px;
+
     max-width: 400px;
+
     font-size: 14px;
+
   `;
+
   messageEl.textContent = message;
+
   
+
   document.body.appendChild(messageEl);
+
   
+
   // Remove after 4 seconds for Persian messages (longer for better readability)
+
   setTimeout(() => {
+
     if (messageEl.parentNode) {
+
       messageEl.parentNode.removeChild(messageEl);
+
     }
+
   }, 4000);
+
 };
+
+
 
 // Initialize binary points manager when page loads
+
 document.addEventListener('DOMContentLoaded', function() {
+
   console.log('🔄 DOMContentLoaded - Initializing binary points manager');
+
   
+
   // Floating card removed - only main claim button remains
+
   
+
   // Wait for contract to be available
+
   const checkContract = setInterval(() => {
+
     if (window.contractConfig && window.contractConfig.contract) {
+
       console.log('✅ Contract available - Creating BinaryPointsManager');
+
       window.binaryPointsManager = new BinaryPointsManager();
+
       clearInterval(checkContract);
+
     } else {
+
       console.log('⏳ Waiting for contract...');
+
     }
+
   }, 1000);
+
   
+
   // Stop checking after 30 seconds
+
   setTimeout(() => {
+
     clearInterval(checkContract);
+
     console.log('⏰ Contract check timeout - Binary points manager not initialized');
+
   }, 30000);
+
 });
 
+
+
 // Function to perform the actual claim
+
 async function performClaim() {
+
   try {
+
       if (!window.contractConfig || !window.contractConfig.contract) {
+
         throw new Error('Contract not available');
+
       }
+
       
+
       const contract = window.contractConfig.contract;
+
       
+
       console.log('🔄 Calling claim function...');
+
       
+
       // Call claim function
+
       const tx = await contract.claim();
+
       
+
       console.log('⏳ Waiting for transaction confirmation...');
+
       await tx.wait();
+
       
+
       console.log('✅ Transaction confirmed, updating points...');
+
     
+
       // Update points after successful claim
+
     await window.binaryPointsManager.loadBinaryPoints();
+
       
+
       // Show success message
+
     showPersianMessage('🎉 Points claimed successfully!', 'success');
+
       
+
     } catch (error) {
+
       console.error('Error claiming binary points:', error);
+
       
+
     let errorMessage = 'Error claiming points';
+
       if (error.code === 4001) {
+
       errorMessage = 'Transaction cancelled by user';
+
       } else if (error.message && error.message.includes('insufficient funds')) {
+
       errorMessage = 'Insufficient funds to pay transaction fee';
+
       } else if (error.message && error.message.includes('user denied')) {
+
       errorMessage = 'Transaction rejected by user';
+
     } else if (error.message && error.message.includes('revert')) {
+
       errorMessage = 'Transaction failed. Please try again';
+
       } else if (error.message) {
+
       errorMessage = `Error: ${error.message}`;
+
     }
+
     
+
     showPersianMessage(errorMessage, 'error');
+
     throw error; // Re-throw to be handled by the main function
+
   }
+
 }
 
+
+
 // Global function for main claim button
+
 window.claimBinaryPointsFromMain = async function() {
+
   try {
+
     // Check if button is disabled
+
     const mainClaimBtn = document.getElementById('main-claim-btn');
+
     if (mainClaimBtn && mainClaimBtn.disabled) {
+
       return; // Exit silently if button is disabled
+
     }
+
+
 
     // Check if wallet is connected
+
     if (!window.ethereum || !window.ethereum.selectedAddress) {
+
       showPersianMessage('Please connect your wallet first', 'error');
+
       return;
+
     }
+
+
 
     // Check if binary points manager is available
+
     if (!window.binaryPointsManager) {
+
       console.log('❌ Binary points manager not available');
+
       showPersianMessage('Points system not available. Please refresh the page', 'error');
+
       return;
+
     }
+
+
 
     // Check if user has points to claim
+
     if (window.binaryPointsManager.points <= 0) {
+
       showPersianMessage('⚠️ You have no points to claim', 'warning');
+
       return;
+
     }
+
+
 
     // Show loading state
+
     if (mainClaimBtn) {
+
       mainClaimBtn.disabled = true;
+
       mainClaimBtn.innerHTML = '⏳ Processing...';
+
       mainClaimBtn.style.opacity = '0.7';
+
     }
+
+
 
     // Show processing message
+
     showPersianMessage('🚀 Starting points claim...', 'loading');
 
+
+
     // Call the claim function directly
+
     await performClaim();
 
+
+
   } catch (error) {
+
     console.error('Error claiming from main button:', error);
+
     // Error messages are already handled in performClaim function
+
     } finally {
+
     // Reset button state and update based on current points
+
     if (window.binaryPointsManager) {
+
       window.binaryPointsManager.updateMainClaimButton();
+
     } else {
+
       // Fallback if manager is not available
+
       const mainClaimBtn = document.getElementById('main-claim-btn');
+
       if (mainClaimBtn) {
+
         mainClaimBtn.disabled = true;
+
         mainClaimBtn.innerHTML = '🎯 Claim <span id="claim-points-count">0</span>';
+
         mainClaimBtn.style.opacity = '0.4';
+
         mainClaimBtn.style.background = 'linear-gradient(135deg,#666,#888)';
+
         mainClaimBtn.style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)';
+
         mainClaimBtn.title = 'No Points Available to Claim';
+
       }
+
     }
+
   }
+
 };
+
 </script>
+
+
 
 <!-- Floating Referral Address Card JavaScript - REMOVED -->
 
-<style>
-/* File cleaned - new CSS is at the end */
+
+
+<script>
+// Check user registration status
+function checkUserRegistrationStatus() {
+  try {
+    if (window.getUserProfile) {
+      setTimeout(async () => {
+        try {
+          const profile = await window.getUserProfile();
+          if (!(profile.index && BigInt(profile.index) > 0n)) {
               showUnregisteredUserPrompt();
-            }
+
           }
+
         } catch (error) {
+
           console.error('Error checking user registration status:', error);
+
         }
+
       }, 3000); // Wait 3 seconds for everything to load
+
     }
+
   } catch (error) {
+
     console.error('Error in checkUserRegistrationStatus:', error);
+
   }
+
 }
+
+
 
 // Function to show registration prompt for unregistered users
+
 function showUnregisteredUserPrompt() {
+
   // Check if already shown
+
   if (localStorage.getItem('registrationPromptShown') === 'true') {
+
     return;
+
   }
+
   
+
   // Create modal overlay
+
   const modalOverlay = document.createElement('div');
+
   modalOverlay.style.cssText = `
+
     position: fixed;
+
     top: 0;
+
     left: 0;
+
     width: 100%;
+
     height: 100%;
+
     background: rgba(0, 0, 0, 0.8);
+
     display: flex;
+
     justify-content: center;
+
     align-items: center;
+
     z-index: 10001;
+
     font-family: 'Montserrat', 'Arial', sans-serif;
+
   `;
+
   
+
   // Create modal content
+
   const modalContent = document.createElement('div');
+
   modalContent.style.cssText = `
+
     background: linear-gradient(135deg, #1a1f2e, #2a3441);
+
     border: 2px solid #a786ff;
+
     border-radius: 15px;
+
     padding: 2rem;
+
     max-width: 500px;
+
     width: 90%;
+
     text-align: center;
+
     color: #ffffff;
+
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+
     animation: modalSlideIn 0.3s ease-out;
+
   `;
+
   
+
   modalContent.innerHTML = `
+
     <div style="font-size: 2rem; margin-bottom: 1rem;">🚀</div>
+
     <h2 style="color: #a786ff; margin: 0 0 1rem 0; font-size: 1.5rem;">🎉 Welcome to IAMPHOENIX!</h2>
+
     <p style="color: #ccc; margin-bottom: 1.5rem; font-size: 0.9rem;">
+
       Your wallet is not registered yet. Complete registration to unlock exclusive features, earn rewards, and join our thriving community!
+
     </p>
+
     
+
     <div style="background: rgba(167, 134, 255, 0.1); border: 1px solid rgba(167, 134, 255, 0.3); border-radius: 8px; padding: 1rem; margin: 1rem 0; text-align: left;">
+
       <h4 style="color: #a786ff; margin: 0 0 0.5rem 0; font-size: 1rem;">🌟 Registration Benefits</h4>
+
       <div style="font-size: 0.9rem; line-height: 1.4;">
+
         <div style="margin-bottom: 0.3rem;">• <strong>Full Platform Access:</strong> All features unlocked</div>
+
         <div style="margin-bottom: 0.3rem;">• <strong>Earning Opportunities:</strong> Rewards & commissions</div>
+
         <div style="margin-bottom: 0.3rem;">• <strong>Referral Program:</strong> Earn 10% on referrals</div>
+
         <div style="margin-bottom: 0.3rem;">• <strong>Welcome Bonus:</strong> Start earning immediately</div>
+
         <div style="margin-bottom: 0.3rem;">• <strong>Free Registration:</strong> No fees required</div>
+
       </div>
+
     </div>
+
     
+
     <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+
       <button id="proceedToRegistration" style="
+
         flex: 1;
+
         background: linear-gradient(135deg, #a786ff, #00ff88);
+
         color: #0a0f1c;
+
         border: none;
+
         padding: 0.8rem 1.5rem;
+
         border-radius: 8px;
+
         font-weight: 600;
+
         cursor: pointer;
+
         font-size: 0.9rem;
+
       ">🚀 Register Now</button>
+
       <button id="dismissRegistrationPrompt" style="
+
         flex: 1;
+
         background: linear-gradient(135deg, #666, #888);
+
         color: #ffffff;
+
         border: none;
+
         padding: 0.8rem 1.5rem;
+
         border-radius: 8px;
+
         font-weight: 600;
+
         cursor: pointer;
+
         font-size: 0.9rem;
+
       ">⏰ Maybe Later</button>
+
     </div>
+
   `;
+
   
+
   modalOverlay.appendChild(modalContent);
+
   document.body.appendChild(modalOverlay);
+
   
+
   // Add event listeners
+
   document.getElementById('proceedToRegistration').addEventListener('click', async () => {
+
     // Mark as shown
+
     localStorage.setItem('registrationPromptShown', 'true');
+
     
+
     // Close modal
+
     modalOverlay.remove();
+
     
+
     // Show registration form
+
     try {
+
       // Connect to wallet first
+
       const connection = await window.connectWallet();
+
       const { contract, address, provider } = connection;
+
       
+
       // Get deployer address as referrer for direct users
+
       let referrerAddress;
+
       try {
+
         referrerAddress = await contract.deployer();
+
       } catch (e) {
+
         referrerAddress = address; // fallback to connected address
+
       }
+
       
+
       if (typeof window.showUpdatedRegisterForm === 'function') {
+
         window.showUpdatedRegisterForm(referrerAddress, address, provider, contract);
+
       } else if (typeof window.showDirectRegistrationForm === 'function') {
+
         await window.showDirectRegistrationForm();
+
       } else if (typeof window.showTab === 'function') {
+
         window.showTab('register');
+
       }
+
     } catch (error) {
+
       console.error('Error showing registration form:', error);
+
       showMessage('Error opening registration form. Please try again.', 'error');
+
     }
+
   });
+
   
+
   document.getElementById('dismissRegistrationPrompt').addEventListener('click', () => {
+
     // Mark as shown
+
     localStorage.setItem('registrationPromptShown', 'true');
+
     
+
     // Close modal
+
     modalOverlay.remove();
+
     
+
     console.log('User dismissed registration prompt');
+
   });
+
 }
+
+
 
 // Function to check for referral link in URL
+
 function checkReferralLink() {
+
   const urlParams = new URLSearchParams(window.location.search);
+
   const referralCode = urlParams.get('ref');
+
   
+
   if (referralCode) {
+
     console.log('🔗 Referral code detected:', referralCode);
+
     
+
     // Store referral code in localStorage
+
     localStorage.setItem('referralCode', referralCode);
+
     
+
     // Show referral detected message
+
     showReferralDetectedMessage(referralCode);
+
     
+
     // Clean URL (remove ref parameter)
+
     const newUrl = window.location.origin + window.location.pathname;
+
     window.history.replaceState({}, document.title, newUrl);
+
   }
+
 }
+
+
 
 // Function to convert referral code to address
+
 async function getReferrerAddressFromCode(referralCode, contract) {
+
   try {
+
     // If it's already a valid Ethereum address (42 characters starting with 0x)
+
     if (referralCode && referralCode.length === 42 && referralCode.startsWith('0x')) {
+
       // Validate that it's a proper Ethereum address format
+
       if (/^0x[a-fA-F0-9]{40}$/.test(referralCode)) {
+
         return referralCode;
+
       }
+
     }
+
     
+
     // If it's a short referral code (8 characters), we need to find the corresponding address
+
     if (referralCode && referralCode.length === 8) {
+
       // For now, we'll use a simple mapping or the deployer address
+
       // In a real implementation, you might have a mapping contract
+
       try {
+
         const deployerAddress = await contract.deployer();
+
         return deployerAddress;
+
       } catch (e) {
+
         console.warn('Could not get deployer address, using fallback');
+
         return null;
+
       }
+
     }
+
     
+
     return null;
+
   } catch (error) {
+
     console.error('Error getting referrer address from code:', error);
+
     return null;
+
   }
+
 }
 
+
+
 // Updated registration form function with dual registration logic
+
 window.showUpdatedRegisterForm = async function(referrerAddress, userAddress, provider, contract) {
+
   // Remove any existing modal
+
   const existingModal = document.getElementById('updated-register-form-modal');
+
   if (existingModal) existingModal.remove();
 
+
+
   // Get registration price using getRegPrice function
+
   let regPrice = 0;
+
   try {
+
     regPrice = await contract.getRegPrice();
+
     regPrice = parseFloat(ethers.formatUnits(regPrice, 18));
+
     console.log('Registration Price:', regPrice);
+
   } catch (error) {
+
     console.error('Error getting registration price:', error);
+
     regPrice = 0;
+
   }
 
+
+
   const modal = document.createElement('div');
+
   modal.id = 'updated-register-form-modal';
+
   modal.style.cssText = `
+
     position: fixed;
+
     z-index: 3000;
+
     top: 0;
+
     left: 0;
+
     width: 100vw;
+
     height: 100vh;
+
     background: rgba(0,0,0,0.8);
+
     display: flex;
+
     align-items: center;
+
     justify-content: center;
+
     padding: 1rem;
+
     box-sizing: border-box;
+
     font-family: 'Montserrat', 'Arial', sans-serif;
+
     overflow-y: auto;
+
   `;
 
+
+
   modal.innerHTML = `
+
     <div style="
+
       background: linear-gradient(135deg, #1a1f2e, #2a3441);
+
       border: 2px solid #a786ff;
+
       border-radius: 15px;
+
       padding: 1.5rem;
+
       max-width: 500px;
+
       width: 100%;
+
       color: #ffffff;
+
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+
       margin: auto;
+
       max-height: 90vh;
+
       overflow-y: auto;
+
     ">
+
       <div style="text-align: center; margin-bottom: 1rem;">
+
         <h2 style="color: #a786ff; margin: 0 0 0.5rem 0; font-size: 1.3rem;">🚀 Complete Registration</h2>
+
         <p style="color: #ccc; margin: 0; font-size: 0.85rem; line-height: 1.3;">Join our platform and unlock exclusive features</p>
+
       </div>
+
       
+
       <div style="background: rgba(167, 134, 255, 0.1); border: 1px solid rgba(167, 134, 255, 0.3); border-radius: 8px; padding: 0.8rem; margin-bottom: 1rem;">
+
         <h4 style="color: #a786ff; margin: 0 0 0.4rem 0; font-size: 0.9rem;">📋 Registration Info</h4>
+
         <div style="font-size: 0.8rem; line-height: 1.3;">
+
           <div style="margin-bottom: 0.2rem;"><strong>Wallet:</strong> <span style="color: #00ff88; font-family: monospace; font-size: 0.75rem;">${userAddress.substring(0, 6)}...${userAddress.substring(38)}</span></div>
+
           <div style="margin-bottom: 0.2rem;"><strong>Referrer:</strong> <span style="color: #a786ff; font-family: monospace; font-size: 0.75rem;">${referrerAddress.substring(0, 6)}...${referrerAddress.substring(38)}</span></div>
+
           <div style="margin-bottom: 0.2rem;"><strong>Network:</strong> Polygon</div>
+
           <div style="margin-bottom: 0.2rem;"><strong>Price:</strong> <span style="color: #ffd700;">${regPrice.toFixed(2)} IAM</span></div>
+
         </div>
+
       </div>
+
       
+
       <div style="background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 8px; padding: 0.8rem; margin-bottom: 1rem;">
+
         <h4 style="color: #00ff88; margin: 0 0 0.4rem 0; font-size: 0.9rem;">✅ Ready to Register</h4>
+
         <div style="font-size: 0.8rem; line-height: 1.3; color: #aaffaa;">
+
           <div style="margin-bottom: 0.2rem;">Cost: <strong>${regPrice.toFixed(2)} IAM</strong> (market price)</div>
+
           <div style="margin-bottom: 0.2rem;">Click below to complete registration</div>
+
         </div>
+
       </div>
+
       
+
       <div id="registration-status" style="
+
         padding: 0.8rem;
+
         border-radius: 8px;
+
         margin-bottom: 1rem;
+
         font-size: 0.9rem;
+
         text-align: center;
+
         display: none;
+
       "></div>
+
       
+
       <div style="display: flex; gap: 0.8rem; flex-direction: column;">
+
         <button id="confirm-registration" style="
+
           width: 100%;
+
           background: linear-gradient(135deg, #a786ff, #00ff88);
+
           color: #ffffff;
+
           border: none;
+
           padding: 0.9rem 1rem;
+
           border-radius: 8px;
+
           font-weight: 600;
+
           cursor: pointer;
+
           font-size: 0.9rem;
+
           min-height: 48px;
+
         ">🚀 Register Now</button>
+
         <button id="cancel-registration" style="
+
           width: 100%;
+
           background: linear-gradient(135deg, #666, #888);
+
           color: #ffffff;
+
           border: none;
+
           padding: 0.9rem 1rem;
+
           border-radius: 8px;
+
           font-weight: 600;
+
           cursor: pointer;
+
           font-size: 0.9rem;
+
           min-height: 48px;
+
         ">❌ Cancel</button>
+
       </div>
+
     </div>
+
   `;
+
+
 
   document.body.appendChild(modal);
 
+
+
   // Add event listeners
+
   document.getElementById('confirm-registration').addEventListener('click', async () => {
+
     const statusDiv = document.getElementById('registration-status');
+
     const confirmBtn = document.getElementById('confirm-registration');
+
     const cancelBtn = document.getElementById('cancel-registration');
+
     
+
     try {
+
       // Show loading state
+
       statusDiv.style.display = 'block';
+
       statusDiv.style.background = 'rgba(167, 134, 255, 0.1)';
+
       statusDiv.style.color = '#a786ff';
+
       statusDiv.style.border = '1px solid rgba(167, 134, 255, 0.3)';
+
       statusDiv.textContent = '⏳ Processing registration...';
+
       
+
       confirmBtn.disabled = true;
+
       confirmBtn.textContent = 'Registering...';
+
       cancelBtn.disabled = true;
 
+
+
       // Call registerAndActivate for registration
+
       const tx = await contract.registerAndActivate(referrerAddress, referrerAddress, userAddress);
+
       
+
       statusDiv.style.background = 'rgba(167, 134, 255, 0.1)';
+
       statusDiv.style.color = '#a786ff';
+
       statusDiv.textContent = '⏳ Waiting for transaction confirmation...';
+
       
+
       await tx.wait();
+
       
+
       // Success
+
       statusDiv.style.background = 'rgba(0, 255, 136, 0.1)';
+
       statusDiv.style.color = '#00ff88';
+
       statusDiv.style.border = '1px solid rgba(0, 255, 136, 0.3)';
+
       statusDiv.textContent = '🎉 Registration completed successfully! Welcome to the platform!';
+
       
+
       // Close modal after success
+
       setTimeout(() => {
+
         modal.remove();
+
         showMessage('🎉 Registration completed successfully! Welcome to the platform!', 'success');
+
         
+
         // Refresh the page to update the UI
+
         setTimeout(() => {
+
           window.location.reload();
+
         }, 1000);
+
       }, 2000);
+
       
+
     } catch (error) {
+
       console.error('Registration error:', error);
+
       
+
       statusDiv.style.background = 'rgba(255, 68, 68, 0.1)';
+
       statusDiv.style.color = '#ff4444';
+
       statusDiv.style.border = '1px solid rgba(255, 68, 68, 0.3)';
+
       statusDiv.textContent = `❌ Registration failed: ${error.message || error}. Please check your wallet connection and try again.`;
+
       
+
       confirmBtn.disabled = false;
+
       confirmBtn.textContent = '🚀 Register Now';
+
       cancelBtn.disabled = false;
+
     }
+
   });
+
+
+
 
 
   document.getElementById('cancel-registration').addEventListener('click', () => {
+
     modal.remove();
+
   });
+
 };
 
+
+
 // Function to show referral registration form
+
 function showReferralDetectedMessage(referralCode) {
+
   // Create modal overlay
+
   const modalOverlay = document.createElement('div');
+
   modalOverlay.style.cssText = `
+
     position: fixed;
+
     top: 0;
+
     left: 0;
+
     width: 100%;
+
     height: 100%;
+
     background: rgba(0, 0, 0, 0.8);
+
     display: flex;
+
     justify-content: center;
+
     align-items: center;
+
     z-index: 10001;
+
     font-family: 'Montserrat', 'Arial', sans-serif;
+
   `;
+
   
+
   // Create modal content
+
   const modalContent = document.createElement('div');
+
   modalContent.style.cssText = `
+
     background: linear-gradient(135deg, #1a1f2e, #2a3441);
+
     border: 2px solid #a786ff;
+
     border-radius: 15px;
+
     padding: 2rem;
+
     max-width: 500px;
+
     width: 90%;
+
     text-align: center;
+
     color: #ffffff;
+
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+
     animation: modalSlideIn 0.3s ease-out;
+
   `;
+
   
+
   modalContent.innerHTML = `
+
     <div style="font-size: 2rem; margin-bottom: 1rem;">🎉</div>
+
     <h2 style="color: #a786ff; margin: 0 0 1rem 0; font-size: 1.5rem;">🎯 Referral Link Detected!</h2>
+
     <p style="color: #ccc; margin-bottom: 1.5rem; font-size: 0.9rem;">
+
       You've been referred by someone! Complete registration to unlock exclusive benefits and start earning.
+
     </p>
+
     
+
     <div style="background: rgba(167, 134, 255, 0.1); border: 1px solid rgba(167, 134, 255, 0.3); border-radius: 8px; padding: 1rem; margin: 1rem 0; text-align: left;">
+
       <h4 style="color: #a786ff; margin: 0 0 0.5rem 0; font-size: 1rem;">🎯 Referral Program</h4>
+
       <div style="font-size: 0.9rem; line-height: 1.4;">
+
         <div style="margin-bottom: 0.3rem;"><strong>Referral Code:</strong> <span style="color: #00ff88; font-family: monospace;">${referralCode}</span></div>
+
         <div style="margin-bottom: 0.3rem;"><strong>Referrer Rewards:</strong> <span style="color: #00ff88;">10% Commission on all referrals</span></div>
+
         <div style="margin-bottom: 0.3rem;"><strong>Your Benefits:</strong> <span style="color: #ffd700;">Welcome Bonus + Access to all features</span></div>
+
         <div style="margin-bottom: 0.3rem;"><strong>Earning Potential:</strong> <span style="color: #a786ff;">Unlimited referrals = Unlimited earnings</span></div>
+
       </div>
+
     </div>
+
     
+
     <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+
       <button id="proceedWithReferral" style="
+
         flex: 1;
+
         background: linear-gradient(135deg, #a786ff, #00ff88);
+
         color: #0a0f1c;
+
         border: none;
+
         padding: 0.8rem 1.5rem;
+
         border-radius: 8px;
+
         font-weight: 600;
+
         cursor: pointer;
+
         font-size: 0.9rem;
+
       ">🎯 Continue with Referral</button>
+
       <button id="dismissReferral" style="
+
         flex: 1;
+
         background: linear-gradient(135deg, #666, #888);
+
         color: #ffffff;
+
         border: none;
+
         padding: 0.8rem 1.5rem;
+
         border-radius: 8px;
+
         font-weight: 600;
+
         cursor: pointer;
+
         font-size: 0.9rem;
+
       ">⏭️ Skip Referral</button>
+
     </div>
+
   `;
+
   
+
   modalOverlay.appendChild(modalContent);
+
   document.body.appendChild(modalOverlay);
+
   
+
   // Add event listeners
+
   document.getElementById('proceedWithReferral').addEventListener('click', async () => {
+
     // Store referral acceptance
+
     localStorage.setItem('referralAccepted', 'true');
+
     localStorage.setItem('referralCode', referralCode);
+
     
+
     // Show success message
+
     showMessage('Referral accepted! Opening registration form...', 'success');
+
     
+
     // Close modal
+
     modalOverlay.remove();
+
     
+
     // Wait a moment then show registration form
+
     setTimeout(async () => {
+
       try {
+
         // Connect to wallet first
+
         const connection = await window.connectWallet();
+
         const { contract, address, provider } = connection;
+
         
+
         // Check if user is already registered
+
         let isRegistered = false;
+
         try {
+
           if (contract && address) {
+
             const userData = await contract.users(address);
+
             isRegistered = userData && userData.activated;
+
           }
+
         } catch (e) {
+
           isRegistered = false;
+
         }
+
         
+
         if (!isRegistered) {
+
           // Show registration form with referral code
+
           if (typeof window.showUpdatedRegisterForm === 'function') {
+
             // Convert referral code to address
+
             const referrerAddress = await getReferrerAddressFromCode(referralCode, contract);
+
             if (referrerAddress) {
+
               window.showUpdatedRegisterForm(referrerAddress, address, provider, contract);
+
     } else {
+
               // Fallback to direct registration if we can't resolve the referrer
+
               showMessage('Could not resolve referrer address. Using direct registration.', 'warning');
+
               if (typeof window.showDirectRegistrationForm === 'function') {
+
                 window.showDirectRegistrationForm();
+
               }
+
             }
+
           } else if (typeof window.showDirectRegistrationForm === 'function') {
+
             window.showDirectRegistrationForm();
+
           }
+
         } else {
+
           showMessage('You are already registered!', 'success');
+
     }
+
   } catch (error) {
+
         console.error('Error showing registration form:', error);
+
         showMessage('Error opening registration form. Please try again.', 'error');
+
       }
+
     }, 1000);
+
     
+
     console.log('User accepted referral:', referralCode);
+
   });
+
   
+
   document.getElementById('dismissReferral').addEventListener('click', () => {
+
     // Clear referral data
+
     localStorage.removeItem('referralCode');
+
     localStorage.setItem('referralAccepted', 'false');
+
     
+
     // Close modal
+
     modalOverlay.remove();
+
     
+
     console.log('User dismissed referral');
+
   });
+
 }
+
+
 
 // Function to show success/error messages
+
 function showMessage(message, type) {
+
   const messageEl = document.createElement('div');
+
   messageEl.style.cssText = `
+
     position: fixed;
+
     top: 20px;
+
     left: 50%;
+
     transform: translateX(-50%);
+
     background: ${type === 'success' ? 'linear-gradient(135deg, #00ff88, #00cc6a)' : 'linear-gradient(135deg, #ff4444, #cc3333)'};
+
     color: #0a0f1c;
+
     padding: 1rem 2rem;
+
     border-radius: 10px;
+
     font-weight: 600;
+
     font-size: 0.9rem;
+
     z-index: 10002;
+
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+
     animation: messageSlideIn 0.3s ease-out;
+
     text-align: center;
+
   `;
+
   
+
   messageEl.textContent = message;
+
   document.body.appendChild(messageEl);
+
   
+
   setTimeout(() => {
+
     messageEl.remove();
+
   }, 3000);
+
 }
 
+
+
 // Add slide out animation
+
 const style = document.createElement('style');
+
 style.textContent = `
+
   @keyframes slideOutToRight {
+
     from {
+
       opacity: 1;
+
       transform: translateX(0);
+
     }
+
     to {
+
       opacity: 0;
+
       transform: translateX(100px);
+
     }
+
   }
+
   
+
   @keyframes messageSlideIn {
+
     from {
+
       opacity: 0;
+
       transform: translate(-50%, -50%) scale(0.8);
+
     }
+
     to {
+
       opacity: 1;
+
       transform: translate(-50%, -50%) scale(1);
+
     }
+
   }
+
   
+
   @keyframes modalSlideIn {
+
     from {
+
       opacity: 0;
+
       transform: translateY(-50px) scale(0.9);
+
     }
+
     to {
+
       opacity: 1;
+
       transform: translateY(0) scale(1);
+
     }
+
   }
+
 `;
+
 document.head.appendChild(style);
+
 </script>
+
 
 
 </div>
 
+
+
 </body>
+
 </html>

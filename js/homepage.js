@@ -11,6 +11,8 @@ const DASHBOARD_UPDATE_INTERVAL = 30000; // 30 seconds between dashboard updates
 
 // Global variables
 let isDashboardLoading = false;
+let dashboardLoadPromise = null; // Track the current loading promise
+let lastDashboardCall = 0; // Track last call time for debouncing
 
 // Function to update connection status
 function updateConnectionStatus(type, message) {
@@ -141,7 +143,7 @@ function stopDashboardAutoUpdate() {
 // Function to wait for wallet connection
 async function waitForWalletConnection() {
     let attempts = 0;
-    const maxAttempts = 10; // Increased to 10 attempts (10 seconds)
+    const maxAttempts = 2; // Reduced to 2 attempts (2 seconds) for faster loading
     
     while (attempts < maxAttempts) {
         try {
@@ -152,31 +154,70 @@ async function waitForWalletConnection() {
                     return result;
                 }
             } else {
-                // If checkConnection function doesn't exist, wait
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                // If checkConnection function doesn't exist, wait briefly
+                await new Promise(resolve => setTimeout(resolve, 500));
             }
         } catch (error) {
             console.warn('Wallet connection attempt failed:', error);
             // Ignore error and continue
         }
         
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 500)); // Reduced from 1000ms to 500ms
         attempts++;
     }
     
-    // Instead of throwing error, return false
+    // Instead of throwing error, return false quickly
     console.warn('Dashboard: Timeout waiting for wallet connection - continuing without wallet');
     return { connected: false, error: 'Timeout waiting for wallet connection' };
 }
 
 // Function to load dashboard data
 async function loadDashboardData() {
+    const now = Date.now();
+    
+    // Debounce: prevent calls within 2 seconds of each other
+    if (now - lastDashboardCall < 2000) {
+        console.log('⚠️ Dashboard call debounced (too soon after last call)');
+        return;
+    }
+    lastDashboardCall = now;
+    
+    // If there's already a loading promise, wait for it instead of starting a new one
+    if (dashboardLoadPromise) {
+        console.log('⚠️ Dashboard already loading, waiting for existing promise...');
+        return await dashboardLoadPromise;
+    }
+    
     if (isDashboardLoading) {
         console.log('⚠️ Dashboard already loading, skipping...');
         return;
     }
     
+    // Add a small delay to prevent rapid successive calls
+    await new Promise(resolve => setTimeout(resolve, 200));
+    
+    if (isDashboardLoading || dashboardLoadPromise) {
+        console.log('⚠️ Dashboard loading started during delay, skipping...');
+        return;
+    }
+    
     isDashboardLoading = true;
+    
+    // Create and store the promise
+    dashboardLoadPromise = performDashboardLoad();
+    
+    try {
+        const result = await dashboardLoadPromise;
+        return result;
+    } finally {
+        // Clear the promise when done
+        dashboardLoadPromise = null;
+        isDashboardLoading = false;
+    }
+}
+
+// Separate function for the actual loading logic
+async function performDashboardLoad() {
     
     try {
         // Check wallet connection with timeout
@@ -276,8 +317,6 @@ async function loadDashboardData() {
         if (window.dashboardLoadingManager) {
             window.dashboardLoadingManager.setDashboardLoading(false);
         }
-    } finally {
-        isDashboardLoading = false;
     }
 }
 
@@ -498,7 +537,7 @@ async function disconnectWallet() {
         if (typeof window.updateUserStatusBar === 'function') {
             setTimeout(() => {
                 window.updateUserStatusBar();
-            }, 500);
+            }, 1000);
         }
         
     } catch (error) {
@@ -727,7 +766,7 @@ async function handleWalletConnectSuccess(walletConnectProvider) {
         if (typeof window.updateUserStatusBar === 'function') {
             setTimeout(() => {
                 window.updateUserStatusBar();
-            }, 1000);
+            }, 2000);
         }
         
         const address = await signer.getAddress();

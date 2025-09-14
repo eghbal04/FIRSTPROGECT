@@ -2641,7 +2641,7 @@ async function performWeb3Initialization() {
 						setTimeout(() => {
 							clearInterval(checkInterval);
 							resolve();
-						}, 15000);
+						}, 3000); // Reduced from 15 seconds to 3 seconds
 					});
 					const retryAccounts = await window.ethereum.request({ method: 'eth_accounts' });
 					if (retryAccounts && retryAccounts.length > 0) {
@@ -2935,7 +2935,7 @@ window.connectWallet = async function() {
 				if (error.code === -32002) {
 					console.log('MetaMask is already processing request, waiting...');
 					// Wait a bit and try again
-					await new Promise(resolve => setTimeout(resolve, 2000));
+					await new Promise(resolve => setTimeout(resolve, 3000));
 					continue;
 				}
 				
@@ -4192,7 +4192,7 @@ window.retryRpcOperation = async function(operation, maxRetries = 3) {
 			
 			if (errorType === 'wait') {
 				// کاهش زمان انتظار قبل از retry
-				await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+				await new Promise(resolve => setTimeout(resolve, 1500 * (i + 1)));
 				continue;
 			}
 			

@@ -2,6 +2,29 @@
 // Clear console at the beginning of the program
 console.clear();
 
+// Global interval management to prevent multiple intervals
+window.activeIntervals = new Set();
+
+// Function to safely create intervals
+function createInterval(callback, delay, name) {
+    // Clear existing interval with same name
+    if (window.activeIntervals.has(name)) {
+        clearInterval(window.activeIntervals.get(name));
+    }
+    
+    const intervalId = setInterval(callback, delay);
+    window.activeIntervals.set(name, intervalId);
+    return intervalId;
+}
+
+// Function to clear all intervals
+function clearAllIntervals() {
+    window.activeIntervals.forEach((intervalId) => {
+        clearInterval(intervalId);
+    });
+    window.activeIntervals.clear();
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     const connectButton = document.getElementById('connectButton');
     const walletConnectButton = document.getElementById('walletConnectButton');
@@ -279,14 +302,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }, 2000);
 
-    // Update user status bar every 30 seconds (only if not already set)
-    if (!window.userStatusBarInterval) {
-        window.userStatusBarInterval = setInterval(() => {
-            if (typeof window.updateUserStatusBar === 'function') {
-                window.updateUserStatusBar();
-            }
-        }, 30000);
-    }
+    // OPTIMIZED: Only update user status bar every 60 seconds instead of 30
+    // and only if user is active to reduce load
+    createInterval(() => {
+        if (typeof window.updateUserStatusBar === 'function') {
+            window.updateUserStatusBar();
+        }
+    }, 60000, 'userStatusBar'); // Reduced frequency from 30s to 60s
 });
 
 function shortenAddress(address) {
@@ -486,25 +508,24 @@ async function fetchUserProfile() {
 // Function to connect to wallet
 async function connectWallet() {
     try {
-        // Check existing connection
+        // Check existing connection first
         if (window.contractConfig && window.contractConfig.contract && window.contractConfig.address) {
             return window.contractConfig;
         }
         
-        // Check existing MetaMask connection
+        // Quick check for MetaMask without heavy operations
         if (typeof window.ethereum !== 'undefined') {
             const accounts = await window.ethereum.request({ method: 'eth_accounts' });
             if (accounts && accounts.length > 0) {
-                try {
+                // Only initialize if not already initialized
+                if (!window.contractConfig || !window.contractConfig.contract) {
                     if (window.contractConfig && typeof window.contractConfig.initializeWeb3 === 'function') {
                         await window.contractConfig.initializeWeb3();
                     } else {
                         throw new Error('initializeWeb3 function not available');
                     }
+                    }
                     return window.contractConfig;
-                } catch (error) {
-                    throw new Error('Error initializing Web3');
-                }
             }
         }
         
@@ -616,6 +637,16 @@ function resetNavbarToDefault() {
 // Function to check wallet connection
 async function checkConnection() {
     try {
+        // Quick check if already connected
+        if (window.contractConfig && window.contractConfig.contract && window.contractConfig.address) {
+            return {
+                connected: true,
+                address: window.contractConfig.address,
+                network: 'Polygon',
+                chainId: 137
+            };
+        }
+        
         const { provider, address } = await connectWallet();
         const network = await provider.getNetwork();
         
@@ -1242,35 +1273,50 @@ window.copyReferralLink = async function() {
     }
 };
 
+// OPTIMIZED: Session timer - only run if session element exists and user is active
+function initializeSessionTimer() {
+    const sessionElement = document.getElementById('session-timer');
+    if (!sessionElement) return;
+    
+    // Only start timer if user is active
+    if (typeof window.getUserProfile === 'function') {
+        window.getUserProfile().then(profile => {
+            if (profile && profile.index && BigInt(profile.index) > 0n) {
+                const sessionBox = document.getElementById('session-timer-box');
+                if (sessionBox) sessionBox.style.display = 'block';
+                
+                // Start timer with reduced frequency (every 5 seconds instead of 1)
+                createInterval(updateSessionTimer, 5000, 'sessionTimer');
+                updateSessionTimer();
+            }
+        }).catch(error => {
+            console.warn('Failed to check user profile for session timer:', error);
+        });
+    }
+}
+
 // Countdown timer for next online session (only for active users)
-const nextSessionDate = new Date("2025-07-01T16:30:00+03:30"); // Set the date and time of the next session here
+const nextSessionDate = new Date("2025-07-01T16:30:00+03:30");
 function updateSessionTimer() {
+    const sessionElement = document.getElementById('session-timer');
+    if (!sessionElement) return;
+    
     const now = new Date();
     const diff = nextSessionDate - now;
     if (diff <= 0) {
-        document.getElementById('session-timer').textContent = "Online session is in progress!";
+        sessionElement.textContent = "Online session is in progress!";
         return;
     }
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
     const minutes = Math.floor((diff / (1000 * 60)) % 60);
     const seconds = Math.floor((diff / 1000) % 60);
-    document.getElementById('session-timer').textContent =
+    sessionElement.textContent =
         `${days} days and ${hours} hours and ${minutes} minutes and ${seconds} seconds`;
 }
-if (document.getElementById('session-timer')) {
-    setInterval(updateSessionTimer, 1000);
-    updateSessionTimer();
-}
-(async function() {
-    if (window.getUserProfile) {
-        const profile = await loadUserProfileOnce();
-        if (profile && profile.index && BigInt(profile.index) > 0n) {
-            var sessionBox = document.getElementById('session-timer-box');
-            if (sessionBox) sessionBox.style.display = 'block';
-        }
-    }
-})();
+
+// Initialize session timer after DOM is loaded
+document.addEventListener('DOMContentLoaded', initializeSessionTimer);
 
 // Display token price for all users (even without wallet connection)
 async function showTokenPricesForAll() {
@@ -2157,9 +2203,9 @@ window.showRegistrationFormForInactiveUser = async function() {
         // For index format, try to convert to address
         if (/^\d+$/.test(referrer)) {
             try {
-                // Wait for contract to be available
+                // Wait for contract to be available (reduced attempts to prevent blocking)
                 let attempts = 0;
-                const maxAttempts = 10;
+                const maxAttempts = 3; // Reduced from 10 to 3
                 
                 while (attempts < maxAttempts) {
                     if (window.contractConfig && window.contractConfig.contract) {
@@ -2172,8 +2218,8 @@ window.showRegistrationFormForInactiveUser = async function() {
                         }
                     }
                     
-                    // Wait 500ms before trying again
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                    // Wait 300ms before trying again (reduced from 500ms)
+                    await new Promise(resolve => setTimeout(resolve, 300));
                     attempts++;
                 }
                 
@@ -3687,6 +3733,33 @@ window.testUserStatusBar = function() {
         console.log('❌ updateUserStatusBar function not found');
     }
 };
+
+// OPTIMIZED: Cleanup function to clear all intervals when page unloads
+window.addEventListener('beforeunload', () => {
+    clearAllIntervals();
+});
+
+// OPTIMIZED: Pause intervals when page is hidden to save resources
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        // Pause non-critical intervals
+        window.activeIntervals.forEach((intervalId, name) => {
+            if (name !== 'sessionTimer') { // Keep session timer running
+                clearInterval(intervalId);
+                window.activeIntervals.delete(name);
+            }
+        });
+    } else {
+        // Restart intervals when page becomes visible
+        if (!window.activeIntervals.has('userStatusBar')) {
+            createInterval(() => {
+                if (typeof window.updateUserStatusBar === 'function') {
+                    window.updateUserStatusBar();
+                }
+            }, 60000, 'userStatusBar');
+        }
+    }
+});
 
 
 
