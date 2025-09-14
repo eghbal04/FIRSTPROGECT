@@ -291,7 +291,7 @@
         <span class="btn-text">Transfer</span>
         <span class="btn-status" id="transfer-status"></span>
       </button>
-      <button id="referral-btn" class="action-btn referral-btn" onclick="handleReferralClick()" style="background:linear-gradient(135deg,#ff6b35,#ff8c42);color:#ffffff;border:none;border-radius:6px;padding:0.4rem 0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:0.75rem;display:flex;align-items:center;gap:0.2rem;box-shadow:0 2px 6px rgba(255,107,51,0.3);min-width:80px;justify-content:center;flex:1;max-width:120px;" onmouseenter="this.style.transform='translateY(-1px)';this.style.boxShadow='0 3px 10px rgba(255,107,51,0.4)'" onmouseleave="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 6px rgba(255,107,51,0.3)'">
+      <button id="referral-btn" class="action-btn referral-btn" onclick="showReferralPopup(event)" style="background:linear-gradient(135deg,#ff6b35,#ff8c42);color:#ffffff;border:none;border-radius:6px;padding:0.4rem 0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:0.75rem;display:flex;align-items:center;gap:0.2rem;box-shadow:0 2px 6px rgba(255,107,51,0.3);min-width:80px;justify-content:center;flex:1;max-width:120px;" onmouseenter="this.style.transform='translateY(-1px)';this.style.boxShadow='0 3px 10px rgba(255,107,51,0.4)'" onmouseleave="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 6px rgba(255,107,51,0.3)'">
         <span class="btn-icon">🔗</span>
         <span class="btn-text">Referral</span>
         <span class="btn-status" id="referral-status"></span>
@@ -873,13 +873,34 @@
         
         console.log('✅ Navigation initialized');
         
-        // Initialize dashboard cards update (one-time only)
-        setTimeout(() => {
+        // Initialize dashboard cards update (one-time only) - wait for contract to be ready
+        setTimeout(async () => {
+          // Wait for contract to be available
+          let attempts = 0;
+          const maxAttempts = 10;
+          
+          while (attempts < maxAttempts) {
+            if (window.contractConfig && window.contractConfig.contract) {
+              console.log('✅ Contract ready, updating dashboard stats...');
           if (window.updateDashboardStats) {
-            console.log('🔄 Loading dashboard values once...');
-            window.updateDashboardStats();
+                await window.updateDashboardStats();
+              }
+              break;
+            }
+            
+            console.log(`⏳ Waiting for contract... (attempt ${attempts + 1}/${maxAttempts})`);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            attempts++;
           }
-        }, 2000);
+          
+          if (attempts >= maxAttempts) {
+            console.log('⚠️ Contract not ready after 10 seconds, updating dashboard anyway...');
+          if (window.updateDashboardStats) {
+              await window.updateDashboardStats();
+          }
+          }
+        }, 3000);
+        
         
 
       });
@@ -1259,7 +1280,13 @@
   <!-- Referral Popup JavaScript -->
   <script>
     // Show referral popup
-    function showReferralPopup() {
+    function showReferralPopup(event) {
+      // Prevent event bubbling to avoid immediate closing
+      if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+      }
+      
       const popup = document.getElementById('referral-popup');
       const overlay = document.getElementById('referral-popup-overlay');
       const walletDisplay = document.getElementById('wallet-address-display');
@@ -1287,7 +1314,7 @@
         popup.style.opacity = '0';
         popup.style.transform = 'translate(-50%, -50%) scale(0.8)';
         
-        // Animate in
+        // Animate in with longer delay to prevent immediate closing
         setTimeout(() => {
           overlay.style.transition = 'opacity 0.3s ease';
           overlay.style.opacity = '1';
@@ -1295,7 +1322,7 @@
           popup.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
           popup.style.opacity = '1';
           popup.style.transform = 'translate(-50%, -50%) scale(1)';
-        }, 10);
+        }, 100); // Increased delay to prevent immediate closing
       }
     }
 
@@ -1457,9 +1484,14 @@
       const popup = document.getElementById('referral-popup');
       const overlay = document.getElementById('referral-popup-overlay');
       const referralButton = event.target.closest('[onclick="showReferralPopup()"]');
+      const referralBtn = event.target.closest('#referral-btn');
       
+      // Only close if popup is visible and click is outside popup and not on referral button
       if (popup && popup.style.display === 'block' && 
-          !popup.contains(event.target) && !referralButton) {
+          !popup.contains(event.target) && 
+          !referralButton && 
+          !referralBtn &&
+          event.target !== overlay) {
         hideReferralPopup();
       }
     });
@@ -1594,7 +1626,7 @@
             const isRegistered = await this.checkUserRegistration();
             if (isRegistered) {
               this.setButtonState(button, status, 'available', 'Referral Ready');
-              button.onclick = () => showReferralPopup();
+              button.onclick = (event) => showReferralPopup(event);
             } else {
               this.setButtonState(button, status, 'unavailable', 'Register First');
               button.onclick = () => this.showRegistrationMessage();
@@ -4547,346 +4579,6 @@ window.claimBinaryPointsFromMain = async function() {
 
 <style>
 /* File cleaned - new CSS is at the end */
-          this.earningsDisplay.style.color = '#ff4444';
-        }
-        
-        // Show the card with connect wallet message
-        this.showCard();
-        
-        // Disable copy button when wallet not connected
-        if (this.copyBtn) {
-          this.copyBtn.disabled = true;
-          this.copyBtn.style.opacity = '0.5';
-          this.copyBtn.style.cursor = 'not-allowed';
-        }
-      }
-    } catch (error) {
-      console.error('Error updating referral link:', error);
-      if (this.linkDisplay) {
-        this.linkDisplay.textContent = 'Error';
-      }
-      if (this.statusDisplay) {
-        this.statusDisplay.textContent = 'Error';
-        this.statusDisplay.style.color = '#ff4444';
-      }
-      if (this.earningsDisplay) {
-        this.earningsDisplay.textContent = 'Check Connection';
-        this.earningsDisplay.style.color = '#ff4444';
-      }
-      
-      // Always show the card
-      this.showCard();
-      
-      // Disable copy button on error
-      if (this.copyBtn) {
-        this.copyBtn.disabled = true;
-        this.copyBtn.style.opacity = '0.5';
-        this.copyBtn.style.cursor = 'not-allowed';
-      }
-    }
-  }
-  
-  async copyReferralLink() {
-    try {
-      if (this.referralCode && this.referralCode !== 'Not Connected' && this.referralCode !== 'Error' && this.referralCode !== 'Connect Wallet First') {
-        // Copy the full link with complete address
-        const fullLink = `${this.baseUrl}?ref=${this.referralCode}`;
-        
-        // Try mobile Web Share API first (for mobile devices)
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        if (isMobile) {
-          const mobileShared = await this.copyReferralLinkMobile();
-          if (mobileShared) {
-            return; // Successfully shared via mobile API
-          }
-        }
-        
-        // Try modern clipboard API
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          try {
-            await navigator.clipboard.writeText(fullLink);
-            console.log('✅ Copied using modern clipboard API');
-            
-            // Visual feedback
-            const originalText = this.copyBtn.textContent;
-            this.copyBtn.textContent = '✅ Copied!';
-            this.copyBtn.style.background = 'linear-gradient(135deg, #00ff88, #00cc6a)';
-            
-            setTimeout(() => {
-              this.copyBtn.textContent = originalText;
-              this.copyBtn.style.background = 'linear-gradient(135deg, #a786ff, #00ff88)';
-            }, 2000);
-            
-            // Show success message
-            this.showMessage('Referral link copied to clipboard!', 'success');
-            return;
-          } catch (clipboardError) {
-            console.log('⚠️ Modern clipboard failed, trying fallback:', clipboardError);
-            throw clipboardError; // This will trigger the fallback
-          }
-        } else {
-          console.log('⚠️ Modern clipboard not available, using fallback');
-          throw new Error('Clipboard API not available');
-        }
-        
-      } else {
-        this.showMessage('Please connect your wallet first', 'error');
-      }
-    } catch (error) {
-      console.error('Error copying referral link:', error);
-      
-      // Fallback method for mobile and older browsers
-      try {
-        const fullLink = `${this.baseUrl}?ref=${this.referralCode}`;
-        
-        // Create a temporary textarea element
-        const textArea = document.createElement('textarea');
-        textArea.value = fullLink;
-        textArea.style.position = 'fixed';
-        textArea.style.left = '-999999px';
-        textArea.style.top = '-999999px';
-        textArea.style.opacity = '0';
-        textArea.style.pointerEvents = 'none';
-        document.body.appendChild(textArea);
-        
-        // Select and copy
-        textArea.focus();
-        textArea.select();
-        textArea.setSelectionRange(0, 99999); // For mobile devices
-        
-        const successful = document.execCommand('copy');
-        document.body.removeChild(textArea);
-        
-        if (successful) {
-          console.log('✅ Copied using fallback method');
-          
-          // Visual feedback
-          const originalText = this.copyBtn.textContent;
-          this.copyBtn.textContent = '✅ Copied!';
-          this.copyBtn.style.background = 'linear-gradient(135deg, #00ff88, #00cc6a)';
-          
-          setTimeout(() => {
-            this.copyBtn.textContent = originalText;
-            this.copyBtn.style.background = 'linear-gradient(135deg, #a786ff, #00ff88)';
-          }, 2000);
-          
-          // Show success message
-          this.showMessage('Referral link copied to clipboard!', 'success');
-        } else {
-          throw new Error('Fallback copy failed');
-        }
-      } catch (fallbackError) {
-        console.error('Fallback copy also failed:', fallbackError);
-        
-        // Show the link in a prompt for manual copying
-        const fullLink = `${this.baseUrl}?ref=${this.referralCode}`;
-        const userConfirmed = confirm(`Copy this link manually:\n\n${fullLink}\n\nClick OK to continue`);
-        
-        if (userConfirmed) {
-          this.showMessage('Please copy the link manually', 'warning');
-        } else {
-          this.showMessage('Copy cancelled', 'info');
-        }
-      }
-    }
-  }
-  
-  // Additional method to check wallet connection for mobile
-  async checkWalletConnection() {
-    try {
-      if (window.ethereum) {
-        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-        if (accounts && accounts.length > 0) {
-          return accounts[0];
-        }
-      }
-      return null;
-    } catch (error) {
-      console.log('Error checking wallet connection:', error);
-      return null;
-    }
-  }
-  
-  // Mobile-specific copy method using Web Share API
-  async copyReferralLinkMobile() {
-    try {
-      const fullLink = `${this.baseUrl}?ref=${this.referralCode}`;
-      
-      // Check if Web Share API is available (mobile browsers)
-      if (navigator.share) {
-        try {
-          await navigator.share({
-            title: 'My Referral Link',
-            text: 'Check out this referral link',
-            url: fullLink
-          });
-          console.log('✅ Shared using Web Share API');
-          this.showMessage('Referral link shared!', 'success');
-          return true;
-        } catch (shareError) {
-          console.log('⚠️ Web Share API failed:', shareError);
-          // Fall through to other methods
-        }
-      }
-      
-      return false;
-    } catch (error) {
-      console.error('Error in mobile copy method:', error);
-      return false;
-    }
-  }
-  
-  showCard() {
-    console.log('🔍 showCard called, card element:', this.card);
-    if (this.card) {
-      console.log('✅ Showing referral card');
-      this.card.style.display = 'block';
-      this.card.style.visibility = 'visible';
-      this.card.style.opacity = '1';
-      this.card.style.animation = 'slideInFromRight 0.5s ease-out';
-    } else {
-      console.log('❌ Card element not found for showing');
-    }
-  }
-  
-  hideCard() {
-    console.log('🔍 hideCard called, card element:', this.card);
-    if (this.card) {
-      console.log('✅ Hiding referral card');
-      this.card.style.animation = 'slideOutToRight 0.3s ease-in';
-      setTimeout(() => {
-        this.card.style.display = 'none';
-        this.card.style.visibility = 'hidden';
-        this.card.style.opacity = '0';
-        console.log('✅ Referral card hidden');
-      }, 300);
-    } else {
-      console.log('❌ Card element not found for hiding');
-    }
-  }
-  
-  showMessage(message, type) {
-    // Create temporary message element
-    const messageEl = document.createElement('div');
-    messageEl.style.cssText = `
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: ${type === 'success' ? 'linear-gradient(135deg, #00ff88, #00cc6a)' : 'linear-gradient(135deg, #ff4444, #cc3333)'};
-      color: #0a0f1c;
-      padding: 1rem 2rem;
-      border-radius: 10px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      z-index: 10001;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-      animation: messageSlideIn 0.3s ease-out;
-    `;
-    
-    messageEl.textContent = message;
-    document.body.appendChild(messageEl);
-    
-    setTimeout(() => {
-      messageEl.remove();
-    }, 3000);
-  }
-}
-
-// Initialize floating referral card when page loads - REMOVED
-document.addEventListener('DOMContentLoaded', function() {
-  console.log('🔄 Initializing Floating Referral Card... - REMOVED');
-  
-  // Check for referral link in URL
-  checkReferralLink();
-  
-  // Initialize floating referral card immediately - REMOVED
-  
-  // Wait for wallet connection and then check registration status
-  setTimeout(async () => {
-    // Wait a bit more for wallet to be fully connected
-    setTimeout(async () => {
-      // Check if user needs registration (for non-referral users)
-      checkUserRegistrationStatus();
-      
-      // Update referral card regardless of connection status
-      try {
-        await window.floatingReferralCard.updateReferralLink();
-        console.log('✅ Floating Referral Card updated');
-      } catch (error) {
-        console.error('Error updating referral card:', error);
-      }
-    }, 1000);
-  }, 1000);
-  
-  // Additional check for mobile wallet connection
-  setTimeout(async () => {
-    try {
-      await window.floatingReferralCard.updateReferralLink();
-    } catch (error) {
-      console.error('Error in mobile wallet check:', error);
-    }
-  }, 3000);
-  
-  // Listen for wallet connection events (mobile support)
-  if (window.ethereum) {
-    // Listen for account changes
-    window.ethereum.on('accountsChanged', async (accounts) => {
-      console.log('🔄 Wallet accounts changed (mobile):', accounts);
-      setTimeout(async () => {
-        try {
-          await window.floatingReferralCard.updateReferralLink();
-        } catch (error) {
-          console.error('Error updating referral card after account change:', error);
-        }
-      }, 1000);
-    });
-    
-    // Listen for chain changes
-    window.ethereum.on('chainChanged', async (chainId) => {
-      console.log('🔄 Wallet chain changed (mobile):', chainId);
-      setTimeout(async () => {
-        try {
-          await window.floatingReferralCard.updateReferralLink();
-        } catch (error) {
-          console.error('Error updating referral card after chain change:', error);
-        }
-      }, 1000);
-    });
-  }
-});
-
-// Function to check if user needs registration
-async function checkUserRegistrationStatus() {
-  // Only check if no referral link was detected
-  const urlParams = new URLSearchParams(window.location.search);
-  const referralCode = urlParams.get('ref');
-  
-  if (referralCode) {
-    return; // Skip if referral link was detected
-  }
-  
-  try {
-    // Wait for wallet connection
-    if (window.ethereum && window.ethereum.selectedAddress) {
-      // Wait a bit for contract to be available
-      setTimeout(async () => {
-        try {
-    if (window.contractConfig && window.contractConfig.contract) {
-            const address = window.ethereum.selectedAddress;
-            const contract = window.contractConfig.contract;
-            
-            // Check if user is registered
-            let isRegistered = false;
-            try {
-              const userData = await contract.users(address);
-              isRegistered = userData && userData.activated;
-            } catch (e) {
-              isRegistered = false;
-            }
-            
-            if (!isRegistered) {
-              // Show registration prompt for unregistered users
               showUnregisteredUserPrompt();
             }
           }

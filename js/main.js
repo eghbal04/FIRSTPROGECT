@@ -128,6 +128,165 @@ document.addEventListener('DOMContentLoaded', async () => {
         totalPointsEl.textContent = '-';
       }
     }
+
+    // === Additional initialization code moved from separate listeners ===
+    
+    // Initialize price chart after a short delay
+    setTimeout(async () => {
+        try {
+            if (window.priceChart && window.priceChart.initialize) {
+                await window.priceChart.initialize();
+            }
+        } catch (error) {
+            // Silent error handling
+        }
+    }, 1000);
+
+    // Show token prices after delay
+    setTimeout(showTokenPricesForAll, 1200);
+
+    // Show user balance box after delay
+    setTimeout(showUserBalanceBox, 1500);
+
+    // User status check
+    console.log('=== DOMContentLoaded: Starting user status check ===');
+    
+    // First apply locks
+    await lockTabsForDeactivatedUsers();
+    
+    // Then check if user is not active
+    try {
+        if (window.getUserProfile) {
+            console.log('getUserProfile function is available');
+            const profile = await loadUserProfileOnce();
+            console.log('User profile loaded on page load:', profile);
+            console.log('Profile type:', typeof profile);
+            console.log('Profile activated:', profile?.activated);
+            console.log('Profile index:', profile?.index);
+            console.log('Profile index type:', typeof profile?.index);
+            
+            // More detailed user status check
+            const hasIndex = profile && profile.index && BigInt(profile.index) > 0n;
+            const isActivated = profile && profile.activated;
+            const isActive = isActivated && hasIndex;
+            
+            console.log('User status breakdown:');
+            console.log('- hasIndex:', hasIndex);
+            console.log('- isActivated:', isActivated);
+            console.log('- isActive:', isActive);
+            
+            if (isActive) {
+                console.log('User is active');
+            } else {
+                console.log('User is not active (registration form removed as requested)');
+            }
+        } else {
+            console.log('getUserProfile function is NOT available');
+        }
+    } catch (error) {
+        console.log('Could not check user status on load:', error);
+        console.log('Error details:', error.message);
+        console.log('Error stack:', error.stack);
+    }
+    
+    // Restore active tab from localStorage
+    const savedTab = localStorage.getItem('currentActiveTab');
+    if (savedTab && typeof window.showTab === 'function') {
+        // Wait a bit for page to fully load
+        setTimeout(() => {
+            window.showTab(savedTab);
+        }, 500);
+    }
+    
+    console.log('=== DOMContentLoaded: User status check completed ===');
+
+    // Check for referral links
+    const urlParams = new URLSearchParams(window.location.search);
+    const referrer = urlParams.get('ref') || urlParams.get('referrer') || urlParams.get('r');
+    
+    if (referrer && (/^0x[a-fA-F0-9]{40}$/.test(referrer) || /^\d+$/.test(referrer))) {
+        console.log('🎯 Referral link detected on page load:', referrer);
+        // Show registration form immediately for referral links
+        setTimeout(() => {
+            if (typeof window.showRegistrationFormForInactiveUser === 'function') {
+                window.showRegistrationFormForInactiveUser();
+            }
+        }, 1000);
+    }
+
+    // Initialize permanent registration form
+    if (typeof window.initializePermanentRegistrationForm === 'function') {
+        window.initializePermanentRegistrationForm();
+    }
+
+    // Transfer balances update
+    if (window.contractConfig && window.contractConfig.contract) {
+        setTimeout(() => {
+            window.updateTransferBalancesOnConnect();
+        }, 1000);
+    }
+
+    // Transfer event listeners
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.onclick && e.target.onclick.toString().includes('connectWallet()')) {
+            // If wallet connect button clicked, update balances after connection
+            setTimeout(() => {
+                if (window.updateTransferBalancesOnConnect) {
+                    window.updateTransferBalancesOnConnect();
+                }
+            }, 2000);
+        }
+    });
+    
+    // Remove floating index button on page load
+    setTimeout(() => {
+        if (window.removeFloatingIAMId) {
+            window.removeFloatingIAMId();
+        }
+    }, 1000);
+
+    // Initialize user status bar
+    console.log('🔍 DOMContentLoaded: Initializing user status bar...');
+    
+    // Check if elements exist
+    const userStatusBar = document.getElementById('user-status-bar');
+    const userStatusIdValue = document.getElementById('user-status-id-value');
+    const userStatusWallet = document.getElementById('user-status-wallet');
+    const userStatusLikes = document.getElementById('user-status-likes');
+    const userStatusDislikes = document.getElementById('user-status-dislikes');
+    
+    console.log('🔍 User status bar elements found:', {
+        userStatusBar: !!userStatusBar,
+        userStatusIdValue: !!userStatusIdValue,
+        userStatusWallet: !!userStatusWallet,
+        userStatusLikes: !!userStatusLikes,
+        userStatusDislikes: !!userStatusDislikes
+    });
+    
+    // Update user status bar immediately
+    if (typeof window.updateUserStatusBar === 'function') {
+        console.log('✅ updateUserStatusBar function found, calling it...');
+        window.updateUserStatusBar();
+    } else {
+        console.log('❌ updateUserStatusBar function not found');
+    }
+    
+    // Update user status bar after a short delay (only once)
+    setTimeout(() => {
+        if (typeof window.updateUserStatusBar === 'function') {
+            console.log('🔄 Calling updateUserStatusBar after 2 seconds...');
+            window.updateUserStatusBar();
+        }
+    }, 2000);
+
+    // Update user status bar every 30 seconds (only if not already set)
+    if (!window.userStatusBarInterval) {
+        window.userStatusBarInterval = setInterval(() => {
+            if (typeof window.updateUserStatusBar === 'function') {
+                window.updateUserStatusBar();
+            }
+        }, 30000);
+    }
 });
 
 function shortenAddress(address) {
@@ -474,18 +633,7 @@ async function checkConnection() {
     }
 }
 
-// Initialize price chart when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize price chart after a short delay to ensure all modules are loaded
-    setTimeout(async () => {
-        try {
-            if (window.priceChart && window.priceChart.initialize) {
-                await window.priceChart.initialize();
-            }
-        } catch (error) {
-        }
-    }, 1000);
-});
+// Price chart initialization moved to main DOMContentLoaded listener
 
 // Cache for user profile
 let userProfileCache = null;
@@ -697,58 +845,7 @@ window.showDirectRegistrationForm = async function() {
     }
 };
 
-document.addEventListener('DOMContentLoaded', async function() {
-    console.log('=== DOMContentLoaded: Starting user status check ===');
-    
-    // First apply locks
-    await lockTabsForDeactivatedUsers();
-    
-    // Then check if user is not active
-    try {
-        if (window.getUserProfile) {
-            console.log('getUserProfile function is available');
-            const profile = await loadUserProfileOnce();
-            console.log('User profile loaded on page load:', profile);
-            console.log('Profile type:', typeof profile);
-            console.log('Profile activated:', profile?.activated);
-            console.log('Profile index:', profile?.index);
-            console.log('Profile index type:', typeof profile?.index);
-            
-            // More detailed user status check
-            const hasIndex = profile && profile.index && BigInt(profile.index) > 0n;
-            const isActivated = profile && profile.activated;
-            const isActive = isActivated && hasIndex;
-            
-            console.log('User status breakdown:');
-            console.log('- hasIndex:', hasIndex);
-            console.log('- isActivated:', isActivated);
-            console.log('- isActive:', isActive);
-            
-            if (isActive) {
-                console.log('User is active');
-            } else {
-                console.log('User is not active (registration form removed as requested)');
-            }
-        } else {
-            console.log('getUserProfile function is NOT available');
-        }
-    } catch (error) {
-        console.log('Could not check user status on load:', error);
-        console.log('Error details:', error.message);
-        console.log('Error stack:', error.stack);
-    }
-    
-    // Restore active tab from localStorage
-    const savedTab = localStorage.getItem('currentActiveTab');
-    if (savedTab && typeof window.showTab === 'function') {
-        // Wait a bit for page to fully load
-        setTimeout(() => {
-            window.showTab(savedTab);
-        }, 500);
-    }
-    
-    console.log('=== DOMContentLoaded: User status check completed ===');
-});
+// User status check moved to main DOMContentLoaded listener
 
 // Function to test lock status - removed
 
@@ -1196,9 +1293,7 @@ async function showTokenPricesForAll() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(showTokenPricesForAll, 1200);
-});
+// Token prices initialization moved to main DOMContentLoaded listener
 
 // Display balance and dollar value only with wallet connection
 async function showUserBalanceBox() {
@@ -1226,9 +1321,7 @@ async function showUserBalanceBox() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(showUserBalanceBox, 1500);
-});
+// User balance box initialization moved to main DOMContentLoaded listener
 
 // Function to display information of a network node in your balance box
 window.updateUserBalanceBoxWithNode = async function(address, userData) {
@@ -2020,52 +2113,7 @@ function showUserPopup(address, user) {
   // No-op fallback
 }
 
-document.addEventListener('DOMContentLoaded', async function() {
-    // First apply locks
-    await lockTabsForDeactivatedUsers();
-    
-    // Check for referral links immediately
-    const urlParams = new URLSearchParams(window.location.search);
-    const referrer = urlParams.get('ref') || urlParams.get('referrer') || urlParams.get('r');
-    
-    if (referrer && (/^0x[a-fA-F0-9]{40}$/.test(referrer) || /^\d+$/.test(referrer))) {
-        console.log('🎯 Referral link detected on page load:', referrer);
-        // Show registration form immediately for referral links
-        setTimeout(() => {
-            if (typeof window.showRegistrationFormForInactiveUser === 'function') {
-                window.showRegistrationFormForInactiveUser();
-            }
-        }, 1000);
-    }
-    
-    // Check user status without showing registration form
-    try {
-        if (window.getUserProfile) {
-            const profile = await loadUserProfileOnce();
-            console.log('User profile loaded on page load:', profile);
-            
-            // Check user status (for logging only)
-            const isActive = profile && profile.activated && profile.index && BigInt(profile.index) > 0n;
-            
-            if (isActive) {
-                console.log('User is active');
-            } else {
-                console.log('User is not active (registration form removed as requested)');
-            }
-        }
-    } catch (error) {
-        console.log('Could not check user status on load:', error);
-    }
-    
-    // Restore active tab from localStorage
-    const savedTab = localStorage.getItem('currentActiveTab');
-    if (savedTab && typeof window.showTab === 'function') {
-        // کمی صبر کن تا صفحه کاملاً لود شود
-        setTimeout(() => {
-            window.showTab(savedTab);
-        }, 500);
-    }
-});
+// Referral link check and user status moved to main DOMContentLoaded listener
 
 // Function to convert referral ID (index or address) to address
 async function getReferrerAddressFromId(referrerId) {
@@ -2781,12 +2829,7 @@ async function updatePermanentRegistrationForm(connection) {
     }
 }
 
-// Initialize permanent registration form on page load
-document.addEventListener('DOMContentLoaded', function() {
-    if (typeof window.initializePermanentRegistrationForm === 'function') {
-        window.initializePermanentRegistrationForm();
-    }
-});
+// Permanent registration form initialization moved to main DOMContentLoaded listener
 
 // Function to load transfer tab
 window.loadTransferTab = async function() {
@@ -3081,36 +3124,7 @@ window.updateTransferBalancesOnConnect = async function() {
     }
 };
 
-// فراخوانی تابع به‌روزرسانی موجودی‌های ترنسفر در زمان اتصال کیف پول
-document.addEventListener('DOMContentLoaded', function() {
-    // بررسی اتصال کیف پول و به‌روزرسانی موجودی‌های ترنسفر
-    if (window.contractConfig && window.contractConfig.contract) {
-        setTimeout(() => {
-            window.updateTransferBalancesOnConnect();
-        }, 1000);
-    }
-    
-    // دکمه بروزرسانی دستی حذف شد - اکنون بروزرسانی خودکار است
-    
-    // اضافه کردن event listener برای دکمه اتصال کیف پول در تب ترنسفر
-    document.addEventListener('click', function(e) {
-        if (e.target && e.target.onclick && e.target.onclick.toString().includes('connectWallet()')) {
-            // اگر دکمه اتصال کیف پول کلیک شد، بعد از اتصال موجودی‌ها را به‌روزرسانی کن
-            setTimeout(() => {
-                if (window.updateTransferBalancesOnConnect) {
-                    window.updateTransferBalancesOnConnect();
-                }
-            }, 2000);
-        }
-    });
-    
-    // حذف دکمه شناور ایندکس در زمان بارگذاری صفحه
-    setTimeout(() => {
-        if (window.removeFloatingIAMId) {
-            window.removeFloatingIAMId();
-        }
-    }, 1000);
-});
+// Transfer balances update and event listeners moved to main DOMContentLoaded listener
 
 // تابع به‌روزرسانی خودکار موجودی‌های ترنسفر
 window.startTransferBalanceAutoRefresh = function() {
@@ -3423,8 +3437,17 @@ async function updateContractStats() {
     }
 }
 
+// Debounce mechanism for updateUserStatusBar
+let updateUserStatusBarTimeout = null;
+
 // Function to update user status bar
 window.updateUserStatusBar = async function() {
+    // Debounce to prevent multiple rapid calls
+    if (updateUserStatusBarTimeout) {
+        clearTimeout(updateUserStatusBarTimeout);
+    }
+    
+    updateUserStatusBarTimeout = setTimeout(async () => {
     console.log('🔄 updateUserStatusBar function called');
     try {
         const userStatusBar = document.getElementById('user-status-bar');
@@ -3606,6 +3629,7 @@ window.updateUserStatusBar = async function() {
             userStatusBar.style.display = 'block';
         }
     }
+    }, 100); // Debounce delay of 100ms
 };
 
 // Function to update card sizes based on content
@@ -3644,48 +3668,7 @@ function updateCardSizes() {
     } catch (error) { console.warn('Error updating card sizes:', error); }
 }
 
-// Initialize user status bar on page load
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🔍 DOMContentLoaded: Initializing user status bar...');
-    
-    // Check if elements exist
-    const userStatusBar = document.getElementById('user-status-bar');
-    const userStatusIdValue = document.getElementById('user-status-id-value');
-    const userStatusWallet = document.getElementById('user-status-wallet');
-    const userStatusLikes = document.getElementById('user-status-likes');
-    const userStatusDislikes = document.getElementById('user-status-dislikes');
-    
-    console.log('🔍 User status bar elements found:', {
-        userStatusBar: !!userStatusBar,
-        userStatusIdValue: !!userStatusIdValue,
-        userStatusWallet: !!userStatusWallet,
-        userStatusLikes: !!userStatusLikes,
-        userStatusDislikes: !!userStatusDislikes
-    });
-    
-    // Update user status bar immediately
-    if (typeof window.updateUserStatusBar === 'function') {
-        console.log('✅ updateUserStatusBar function found, calling it...');
-        window.updateUserStatusBar();
-    } else {
-        console.log('❌ updateUserStatusBar function not found');
-    }
-    
-    // Update user status bar after a short delay
-    setTimeout(() => {
-        if (typeof window.updateUserStatusBar === 'function') {
-            console.log('🔄 Calling updateUserStatusBar after 2 seconds...');
-            window.updateUserStatusBar();
-        }
-    }, 2000);
-
-    // Update user status bar every 30 seconds
-    setInterval(() => {
-        if (typeof window.updateUserStatusBar === 'function') {
-            window.updateUserStatusBar();
-        }
-    }, 30000);
-});
+// User status bar initialization moved to main DOMContentLoaded listener
 
 // Add test function to window for debugging
 window.testUserStatusBar = function() {

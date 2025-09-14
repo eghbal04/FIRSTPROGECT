@@ -742,7 +742,7 @@
 
       function shortenAddress(addr){ if (!addr) return '--'; return addr.slice(0,6) + '...' + addr.slice(-4); }
 
-      function withTimeout(promise, ms=3500) {
+      function withTimeout(promise, ms=20000) {
         return Promise.race([
           promise,
           new Promise((_, reject)=>setTimeout(()=>reject(new Error('timeout')), ms))
@@ -753,7 +753,7 @@
         try {
           if (window.contractConfig && window.contractConfig.address) return window.contractConfig.address;
           if (window.ethereum && typeof window.ethereum.request === 'function') {
-            const acc = await withTimeout(window.ethereum.request({ method: 'eth_accounts' }), 1500);
+            const acc = await withTimeout(window.ethereum.request({ method: 'eth_accounts' }), 5000);
             if (acc && acc[0]) return acc[0];
           }
         } catch {}

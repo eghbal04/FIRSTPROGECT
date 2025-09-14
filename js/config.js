@@ -2786,6 +2786,25 @@ function debounce(key, func, delay = 1000) {
 		}, delay);
 		
 		debounceTimers.set(key, timer);
+		
+		// Add timeout to prevent hanging
+		const timeout = setTimeout(() => {
+			clearTimeout(timer);
+			debounceTimers.delete(key);
+			reject(new Error(`Debounce timeout for ${key}`));
+		}, delay + 30000); // 30 seconds timeout
+		
+		// Clear timeout when promise resolves
+		const originalResolve = resolve;
+		const originalReject = reject;
+		resolve = (value) => {
+			clearTimeout(timeout);
+			originalResolve(value);
+		};
+		reject = (error) => {
+			clearTimeout(timeout);
+			originalReject(error);
+		};
 	});
 }
 
@@ -3283,7 +3302,7 @@ window.addEventListener('unhandledrejection', function(event) {
 // تابع جلوگیری از فراخوانی همزمان توابع
 const functionCallCache = new Map();
 
-async function preventConcurrentCalls(functionName, operation, cacheTime = 10000) {
+async function preventConcurrentCalls(functionName, operation, cacheTime = 30000) {
 	const cacheKey = `${functionName}_${Date.now()}`;
 	
 	// Check if there's already a pending call for this function
@@ -4445,10 +4464,10 @@ window.updateDashboardStats = async function() {
 	try {
 	  console.log('📊 Fetching total supply...');
 	  
-	  // افزایش timeout از ۵ ثانیه به ۷ ثانیه
+	  // افزایش timeout از ۷ ثانیه به ۱۵ ثانیه
 	  const totalSupplyPromise = contract.totalSupply();
 	  const timeoutPromise = new Promise((_, reject) => 
-		setTimeout(() => reject(new Error('Total supply fetch timeout')), 7000)
+		setTimeout(() => reject(new Error('Total supply fetch timeout')), 15000)
 	  );
 	  
 	  const totalSupply = await Promise.race([totalSupplyPromise, timeoutPromise]);

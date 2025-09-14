@@ -84,6 +84,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         cached.prices, cached.stats, cached.additionalStats, cached.tradingVolume, cached.priceChanges
       );
     }
+    
     // Then start background update
     try {
         // Update wallet button display
@@ -94,23 +95,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Start connection monitoring
         startConnectionMonitoring();
         
-        // Wait for wallet connection
+        // Wait for wallet connection with timeout
         const walletConnected = await waitForWalletConnection();
         
         if (walletConnected.connected) {
-            // Load dashboard data
-            await loadDashboardData();
+            // Load dashboard data only if not already loading
+            if (!isDashboardLoading) {
+                await loadDashboardData();
+            }
             dashboardInitialized = true;
 
             // Central system starts automatically
             console.log('✅ Wallet connected - Central system manages updates');
         } else {
-            // Start connection monitoring
-            startConnectionMonitoring();
+            // If wallet not connected, still try to load basic data
+            console.log('⚠️ Wallet not connected - loading basic dashboard data');
+            if (!isDashboardLoading) {
+                await loadDashboardData();
+            }
         }
 
     } catch (error) {
-        // console.error("Error in homepage:", error);
+        console.error("Error in homepage:", error);
+        // Remove loading state on error
+        if (window.dashboardLoadingManager) {
+            window.dashboardLoadingManager.setDashboardLoading(false);
+        }
     }
 });
 
@@ -131,7 +141,7 @@ function stopDashboardAutoUpdate() {
 // Function to wait for wallet connection
 async function waitForWalletConnection() {
     let attempts = 0;
-    const maxAttempts = 5; // Reduced to 5 seconds
+    const maxAttempts = 10; // Increased to 10 attempts (10 seconds)
     
     while (attempts < maxAttempts) {
         try {
@@ -162,28 +172,41 @@ async function waitForWalletConnection() {
 // Function to load dashboard data
 async function loadDashboardData() {
     if (isDashboardLoading) {
+        console.log('⚠️ Dashboard already loading, skipping...');
         return;
     }
     
     isDashboardLoading = true;
     
     try {
-        // Check wallet connection
+        // Check wallet connection with timeout
         const walletConnected = await waitForWalletConnection();
         
         if (walletConnected.connected) {
             // Get data in parallel - without fallback values
             const [prices, stats, additionalStats, tradingVolume] = await Promise.all([
-                window.getPrices(),
-                window.getContractStats(),
-                getAdditionalStats(),
-                getTradingVolume()
+                window.getPrices().catch(err => {
+                    console.warn('Error getting prices:', err);
+                    return { IAMPriceUSD: null, IAMPriceMatic: null };
+                }),
+                window.getContractStats().catch(err => {
+                    console.warn('Error getting contract stats:', err);
+                    return {};
+                }),
+                getAdditionalStats().catch(err => {
+                    console.warn('Error getting additional stats:', err);
+                    return { wallets: null, helpFund: null };
+                }),
+                getTradingVolume().catch(err => {
+                    console.warn('Error getting trading volume:', err);
+                    return '0';
+                })
             ]);
             
             // Calculate price changes
             const priceChanges = await calculatePriceChanges();
             
-            // Load network statistics
+            // Load network statistics (non-blocking)
             try {
                 await window.autoLoadNetworkStats();
             } catch (error) {
@@ -238,11 +261,21 @@ async function loadDashboardData() {
             };
             
             await updateDashboardUI(emptyData.prices, emptyData.stats, emptyData.additionalStats, emptyData.tradingVolume, emptyData.priceChanges);
+            
+            // Remove loading state
+            if (window.dashboardLoadingManager) {
+                window.dashboardLoadingManager.setDashboardLoading(false);
+            }
         }
         
     } catch (error) {
         console.warn('Dashboard: Error loading data:', error);
         updateConnectionStatus('error', 'Error loading dashboard data');
+        
+        // Remove loading state on error
+        if (window.dashboardLoadingManager) {
+            window.dashboardLoadingManager.setDashboardLoading(false);
+        }
     } finally {
         isDashboardLoading = false;
     }
@@ -576,7 +609,7 @@ function startConnectionMonitoring() {
                     }, 2000);
                     
                     // بارگذاری داشبورد اگر آماده است
-                    if (!dashboardLoading) {
+                    if (!isDashboardLoading) {
                         await loadDashboardData();
                     }
                 } catch (error) {
@@ -609,7 +642,7 @@ function startConnectionMonitoring() {
                     }, 2000);
                     
                     // بارگذاری داشبورد اگر آماده است
-                    if (!dashboardLoading) {
+                    if (!isDashboardLoading) {
                         await loadDashboardData();
                     }
                 } catch (error) {
@@ -709,7 +742,7 @@ async function handleWalletConnectSuccess(walletConnectProvider) {
         updateWalletButtonVisibility();
         
         // بارگذاری داده‌های داشبورد فقط اگر waiting نیست
-        if (!dashboardLoading) {
+        if (!isDashboardLoading) {
             if (!dashboardInitialized) {
                 dashboardInitialized = true;
             }

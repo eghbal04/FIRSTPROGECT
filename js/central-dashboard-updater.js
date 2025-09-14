@@ -509,7 +509,7 @@ class CentralDashboardUpdater {
 // Create global instance
 window.centralDashboardUpdater = new CentralDashboardUpdater();
 
-// Auto-start disabled
+// Auto-start disabled - only manual updates
 // document.addEventListener('DOMContentLoaded', function() {
 //     // Delay to ensure complete loading
 //     setTimeout(() => {
