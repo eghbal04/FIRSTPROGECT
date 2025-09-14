@@ -7,7 +7,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/hamburger-menu.css">
   <link rel="stylesheet" href="css/mobile-responsive.css">
   <script src="js/mobile-optimizer.js"></script>
   
@@ -33,6 +32,27 @@
       margin: 0;
       padding: 0;
       min-height: 100vh;
+    }
+    
+    .back-btn {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      background: linear-gradient(135deg, #a786ff, #00ff88);
+      color: #181c2a;
+      text-decoration: none;
+      padding: 0.7rem 1.2rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(167, 134, 255, 0.3);
+      transition: all 0.3s ease;
+    }
+    
+    .back-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(167, 134, 255, 0.3);
     }
     
     .utility-container {
@@ -1005,11 +1025,6 @@
    };
   </script>
   
-  <!-- Load navbar -->
-  <script src="js/navbar.js"></script>
-  
-  <!-- Mobile User Popup -->
-  <script src="js/mobile-user-popup.js"></script>
   
   <!-- Fix mobile popup positioning -->
   <style>

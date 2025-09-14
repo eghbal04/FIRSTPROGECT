@@ -1,0 +1,113 @@
+/* Navigation Bar Styles */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: rgba(15, 15, 35, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+    z-index: 1000;
+    padding: 0;
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 60px;
+}
+
+.menu-btn {
+    background: none;
+    border: none;
+    color: #00ff88;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.menu-btn:hover {
+    background: rgba(0, 255, 136, 0.1);
+    transform: scale(1.1);
+}
+
+.nav-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: rgba(15, 15, 35, 0.98);
+    backdrop-filter: blur(15px);
+    border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+    flex-direction: column;
+    padding: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.nav-menu.active {
+    display: flex;
+}
+
+.nav-link {
+    color: #e4e6ea;
+    text-decoration: none;
+    padding: 10px 16px;
+    margin: 3px 0;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.nav-link:hover {
+    background: rgba(0, 255, 136, 0.1);
+    color: #00ff88;
+    transform: translateX(5px);
+}
+
+.nav-link.active {
+    background: rgba(0, 255, 136, 0.2);
+    color: #00ff88;
+    border: 1px solid rgba(0, 255, 136, 0.3);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .nav-container {
+        padding: 0 15px;
+    }
+    
+    .nav-menu {
+        padding: 15px;
+    }
+    
+    .nav-link {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav-container {
+        padding: 0 10px;
+    }
+    
+    .nav-menu {
+        padding: 10px;
+    }
+    
+    .nav-link {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
+}

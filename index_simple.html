@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IAM Token - Dashboard</title>
+    
+    <!-- Essential Scripts Only -->
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/homepage.js?v=5.8"></script>
+    <script src="js/token-price.js"></script>
+    <script src="js/floating-token-card.js"></script>
+    <script src="js/navbar.js"></script>
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #0f0f17 0%, #181c2a 50%, #232946 100%);
+            color: #fff;
+            font-family: 'Vazirmatn', 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: rgba(35, 41, 70, 0.8);
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .card h3 {
+            color: #00ff88;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        
+        .value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #fff;
+            margin: 10px 0;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #00ff88, #a786ff);
+            border: none;
+            color: #181c2a;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 255, 136, 0.3);
+        }
+        
+        .status-bar {
+            background: linear-gradient(135deg, rgba(35, 41, 70, 0.95), rgba(24, 28, 42, 0.95));
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .status-item {
+            display: inline-block;
+            margin-right: 20px;
+            padding: 8px 16px;
+            background: rgba(0, 255, 136, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+        
+        .status-label {
+            font-size: 0.9rem;
+            color: #a786ff;
+            margin-bottom: 5px;
+        }
+        
+        .status-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #00ff88;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-item">
+                <div class="status-label">User ID</div>
+                <div class="status-value" id="user-status-id-value">--</div>
+            </div>
+            <div class="status-item">
+                <div class="status-label">Wallet</div>
+                <div class="status-value" id="user-status-wallet">--</div>
+            </div>
+            <div class="status-item">
+                <div class="status-label">Likes</div>
+                <div class="status-value" id="user-status-likes">--</div>
+            </div>
+            <div class="status-item">
+                <div class="status-label">Dislikes</div>
+                <div class="status-value" id="user-status-dislikes">--</div>
+            </div>
+        </div>
+        
+        <!-- Dashboard Cards -->
+        <div class="dashboard-grid">
+            <div class="card">
+                <h3>Total Supply</h3>
+                <div class="value" id="total-supply">Loading...</div>
+            </div>
+            
+            <div class="card">
+                <h3>Total Points</h3>
+                <div class="value" id="total-points">Loading...</div>
+            </div>
+            
+            <div class="card">
+                <h3>Token Price (USD)</h3>
+                <div class="value" id="token-price-usd">Loading...</div>
+            </div>
+            
+            <div class="card">
+                <h3>Token Price (MATIC)</h3>
+                <div class="value" id="token-price-matic">Loading...</div>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="buttons">
+            <a href="swap.html" class="btn">🔄 Swap</a>
+            <a href="transfer.html" class="btn">💸 Transfer</a>
+            <a href="referral.html" class="btn">🔗 Referral</a>
+            <a href="claim.html" class="btn">💰 Claim</a>
+        </div>
+    </div>
+    
+    <!-- Minimal initialization -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Simple index page loaded');
+            
+            // Initialize basic functionality
+            if (typeof window.updateUserStatusBar === 'function') {
+                window.updateUserStatusBar();
+            }
+            
+            if (typeof window.updateDashboardStats === 'function') {
+                window.updateDashboardStats();
+            }
+        });
+    </script>
+</body>
+</html>
