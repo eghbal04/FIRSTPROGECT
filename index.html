@@ -161,6 +161,14 @@
             text-shadow: 0 0 10px rgba(66, 165, 245, 0.3);
         }
         
+        .balance-usd {
+            font-size: 0.85rem;
+            font-weight: 400;
+            color: #888;
+            margin-top: 0.2rem;
+            opacity: 0.8;
+        }
+        
         .stars-container {
             background: rgba(35, 41, 70, 0.8);
             border: 1px solid rgba(0, 255, 136, 0.2);
@@ -512,14 +520,17 @@
             <div class="balance-item">
                 <div class="balance-label">IAM Token</div>
                 <div class="balance-value" id="iam-balance">--</div>
+                <div class="balance-usd" id="iam-balance-usd">--</div>
             </div>
             <div class="balance-item">
                 <div class="balance-label">MATIC</div>
                 <div class="balance-value" id="matic-balance">--</div>
+                <div class="balance-usd" id="matic-balance-usd">--</div>
             </div>
             <div class="balance-item">
                 <div class="balance-label">DAI</div>
                 <div class="balance-value" id="dai-balance">--</div>
+                <div class="balance-usd" id="dai-balance-usd">--</div>
             </div>
         </div>
 
@@ -1006,6 +1017,10 @@
             const maticBalanceElement = document.getElementById('matic-balance');
             const daiBalanceElement = document.getElementById('dai-balance');
             
+            const iamUsdElement = document.getElementById('iam-balance-usd');
+            const maticUsdElement = document.getElementById('matic-balance-usd');
+            const daiUsdElement = document.getElementById('dai-balance-usd');
+            
             if (iamBalanceElement) {
                 iamBalanceElement.textContent = '--';
             }
@@ -1014,6 +1029,16 @@
             }
             if (daiBalanceElement) {
                 daiBalanceElement.textContent = '--';
+            }
+            
+            if (iamUsdElement) {
+                iamUsdElement.textContent = '--';
+            }
+            if (maticUsdElement) {
+                maticUsdElement.textContent = '--';
+            }
+            if (daiUsdElement) {
+                daiUsdElement.textContent = '--';
             }
         }
         
@@ -1044,12 +1069,16 @@
             }
         }
 
-        function updateTokenBalances(iamBalance, maticBalance, daiBalance) {
+        async function updateTokenBalances(iamBalance, maticBalance, daiBalance) {
             console.log('💰 updateTokenBalances called with:', { iamBalance, maticBalance, daiBalance });
             
             const iamBalanceElement = document.getElementById('iam-balance');
             const maticBalanceElement = document.getElementById('matic-balance');
             const daiBalanceElement = document.getElementById('dai-balance');
+            
+            const iamUsdElement = document.getElementById('iam-balance-usd');
+            const maticUsdElement = document.getElementById('matic-balance-usd');
+            const daiUsdElement = document.getElementById('dai-balance-usd');
             
             console.log('💰 Balance elements found:', {
                 iam: !!iamBalanceElement,
@@ -1057,12 +1086,24 @@
                 dai: !!daiBalanceElement
             });
             
+            // Get token prices for USD calculation
+            const prices = await getTokenPrices();
+            
             if (iamBalanceElement) {
                 iamBalanceElement.textContent = iamBalance.toLocaleString('en-US', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2
                 });
                 console.log('✅ IAM balance updated to:', iamBalanceElement.textContent);
+                
+                // Update USD equivalent
+                if (iamUsdElement) {
+                    const usdValue = iamBalance * prices.iam;
+                    iamUsdElement.textContent = `$${usdValue.toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    })}`;
+                }
             }
             
             if (maticBalanceElement) {
@@ -1071,6 +1112,15 @@
                     maximumFractionDigits: 4
                 });
                 console.log('✅ MATIC balance updated to:', maticBalanceElement.textContent);
+                
+                // Update USD equivalent
+                if (maticUsdElement) {
+                    const usdValue = maticBalance * prices.matic;
+                    maticUsdElement.textContent = `$${usdValue.toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    })}`;
+                }
             }
             
             if (daiBalanceElement) {
@@ -1079,6 +1129,15 @@
                     maximumFractionDigits: 2
                 });
                 console.log('✅ DAI balance updated to:', daiBalanceElement.textContent);
+                
+                // Update USD equivalent
+                if (daiUsdElement) {
+                    const usdValue = daiBalance * prices.dai;
+                    daiUsdElement.textContent = `$${usdValue.toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    })}`;
+                }
             }
         }
         
@@ -1230,6 +1289,44 @@
             } catch (error) {
                 console.log('❌ Error getting user balance from contract:', error);
                 return { points: 0, balance: 0 };
+            }
+        }
+        
+        // Function to get token prices for USD calculation
+        async function getTokenPrices() {
+            try {
+                // Get IAM token price from contract
+                let iamPrice = 0;
+                if (window.contractConfig && window.contractConfig.contract) {
+                    try {
+                        const price = await window.contractConfig.contract.getTokenPrice();
+                        iamPrice = parseFloat(ethers.formatEther(price));
+                    } catch (e) {
+                        console.log('❌ Error getting IAM price from contract:', e);
+                    }
+                }
+                
+                // Get MATIC price from CoinGecko API
+                let maticPrice = 0;
+                try {
+                    const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=matic-network&vs_currencies=usd');
+                    const data = await response.json();
+                    maticPrice = data['matic-network']?.usd || 0;
+                } catch (e) {
+                    console.log('❌ Error getting MATIC price:', e);
+                }
+                
+                // DAI is approximately $1 USD
+                const daiPrice = 1;
+                
+                return {
+                    iam: iamPrice,
+                    matic: maticPrice,
+                    dai: daiPrice
+                };
+            } catch (error) {
+                console.log('❌ Error getting token prices:', error);
+                return { iam: 0, matic: 0, dai: 1 };
             }
         }
         
