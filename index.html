@@ -390,6 +390,15 @@
             word-break: break-all;
         }
         
+        .info-usd {
+            color: #888;
+            font-weight: 400;
+            font-size: 0.8rem;
+            margin-top: 0.1rem;
+            opacity: 0.8;
+            text-align: right;
+        }
+        
         .buttons-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -584,62 +593,55 @@
             <div class="info-grid">
                 <div class="info-item">
                     <span class="info-label">Total Supply:</span>
-                    <span class="info-value">2,950,496,467,971,858,000 IAM</span>
+                    <span class="info-value" id="dashboard-total-supply">--</span>
+                    <span class="info-usd" id="dashboard-total-supply-usd">--</span>
                 </div>
                 
                 <div class="info-item">
                     <span class="info-label">Total Points:</span>
-                    <span class="info-value">7 Points</span>
+                    <span class="info-value" id="dashboard-total-points">--</span>
                 </div>
                 
                 <div class="info-item">
                     <span class="info-label">Token Price (USD):</span>
-                    <span class="info-value">$0.00000118</span>
+                    <span class="info-value" id="dashboard-token-price-usd">--</span>
                 </div>
                 
-                <div class="info-item">
-                    <span class="info-label">Token Price (MATIC):</span>
-                    <span class="info-value">0.0000000014 MATIC</span>
-                </div>
                 
                 <div class="info-item">
                     <span class="info-label">Contract Balance:</span>
-                    <span class="info-value">76,026,625,270,933,010 IAM</span>
+                    <span class="info-value" id="dashboard-contract-balance">--</span>
+                    <span class="info-usd" id="dashboard-contract-balance-usd">--</span>
                 </div>
                 
-                <div class="info-item">
-                    <span class="info-label">DAI Equivalent:</span>
-                    <span class="info-value">3,496.34 DAI</span>
-                </div>
                 
-                <div class="info-item">
-                    <span class="info-label">Trading Volume:</span>
-                    <span class="info-value">0 IAM</span>
-                </div>
                 
                 <div class="info-item">
                     <span class="info-label">Active Wallets:</span>
-                    <span class="info-value">146 Wallets</span>
+                    <span class="info-value" id="dashboard-active-wallets">--</span>
                 </div>
                 
                 <div class="info-item">
                     <span class="info-label">Cashback:</span>
-                    <span class="info-value">21,541,221,595,864,520 IAM</span>
+                    <span class="info-value" id="dashboard-cashback">--</span>
+                    <span class="info-usd" id="dashboard-cashback-usd">--</span>
                 </div>
                 
                 <div class="info-item">
                     <span class="info-label">Point Value:</span>
-                    <span class="info-value">10,860,946,467,276,144 IAM</span>
+                    <span class="info-value" id="dashboard-point-value">--</span>
+                    <span class="info-usd" id="dashboard-point-value-usd">--</span>
                 </div>
                 
                 <div class="info-item">
                     <span class="info-label">Registration Price:</span>
-                    <span class="info-value">28,691,983,122,362,868 IAM</span>
+                    <span class="info-value" id="dashboard-registration-price">--</span>
+                    <span class="info-usd" id="dashboard-registration-price-usd">--</span>
                 </div>
                 
                 <div class="info-item">
                     <span class="info-label">DAI Contract Balance:</span>
-                    <span class="info-value">3,497.94 DAI</span>
+                    <span class="info-value" id="dashboard-dai-contract-balance">--</span>
                 </div>
             </div>
         </div>
@@ -1228,6 +1230,12 @@
             updateAssetsFromConfig();
         };
         
+        // Manual trigger for dashboard update
+        window.triggerDashboardUpdate = function() {
+            console.log('🔄 Manually triggering dashboard update...');
+            updateDashboardInfo();
+        };
+        
         // Debug function to check contract connection
         window.debugContract = function() {
             console.log('🔍 Contract Debug Info:');
@@ -1289,6 +1297,86 @@
             } catch (error) {
                 console.log('❌ Error getting user balance from contract:', error);
                 return { points: 0, balance: 0 };
+            }
+        }
+        
+        // Function to update dashboard information with real contract data
+        async function updateDashboardInfo() {
+            try {
+                // Wait for contract to be available
+                let attempts = 0;
+                while ((!window.contractConfig || !window.contractConfig.contract) && attempts < 20) {
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                    attempts++;
+                }
+                
+                if (!window.contractConfig || !window.contractConfig.contract) {
+                    console.log('❌ Contract not available for dashboard update');
+                    return;
+                }
+                
+                const contract = window.contractConfig.contract;
+                
+                // Get all dashboard data in parallel
+                const [
+                    totalSupply,
+                    totalPoints,
+                    tokenPrice,
+                    pointValue,
+                    walletsCount,
+                    registrationPrice,
+                    contractBalance,
+                    cashback
+                ] = await Promise.all([
+                    contract.totalSupply().catch(() => 0),
+                    contract.totalClaimableBinaryPoints().catch(() => 0),
+                    contract.getTokenPrice().catch(() => 0),
+                    contract.getPointValue().catch(() => 0),
+                    contract.wallets().catch(() => 0),
+                    contract.getRegPrice().catch(() => 0),
+                    contract.balanceOf(CONTRACT_ADDRESS).catch(() => 0),
+                    contract.cashback().catch(() => 0)
+                ]);
+                
+                // Calculate derived values
+                const tokenPriceUsd = parseFloat(ethers.formatEther(tokenPrice));
+                const daiContractBalance = tokenPriceUsd > 0 ? parseFloat(ethers.formatEther(contractBalance)) * tokenPriceUsd : 0;
+                
+                // Calculate USD equivalents
+                const totalSupplyUsd = parseFloat(ethers.formatEther(totalSupply)) * tokenPriceUsd;
+                const contractBalanceUsd = parseFloat(ethers.formatEther(contractBalance)) * tokenPriceUsd;
+                const cashbackUsd = parseFloat(ethers.formatEther(cashback)) * tokenPriceUsd;
+                const pointValueUsd = parseFloat(ethers.formatEther(pointValue)) * tokenPriceUsd;
+                const registrationPriceUsd = parseFloat(ethers.formatEther(registrationPrice)) * tokenPriceUsd;
+                
+                // Update dashboard elements
+                updateDashboardElement('dashboard-total-supply', `${parseFloat(ethers.formatEther(totalSupply)).toLocaleString('en-US', {maximumFractionDigits: 0})} IAM`);
+                updateDashboardElement('dashboard-total-supply-usd', `$${totalSupplyUsd.toLocaleString('en-US', {maximumFractionDigits: 2})}`);
+                updateDashboardElement('dashboard-total-points', `${parseInt(totalPoints)} Points`);
+                updateDashboardElement('dashboard-token-price-usd', `$${tokenPriceUsd.toExponential(4)}`);
+                updateDashboardElement('dashboard-contract-balance', `${parseFloat(ethers.formatEther(contractBalance)).toLocaleString('en-US', {maximumFractionDigits: 0})} IAM`);
+                updateDashboardElement('dashboard-contract-balance-usd', `$${contractBalanceUsd.toLocaleString('en-US', {maximumFractionDigits: 2})}`);
+                updateDashboardElement('dashboard-active-wallets', `${parseInt(walletsCount)} Wallets`);
+                updateDashboardElement('dashboard-cashback', `${parseFloat(ethers.formatEther(cashback)).toLocaleString('en-US', {maximumFractionDigits: 0})} IAM`);
+                updateDashboardElement('dashboard-cashback-usd', `$${cashbackUsd.toLocaleString('en-US', {maximumFractionDigits: 2})}`);
+                updateDashboardElement('dashboard-point-value', `${parseFloat(ethers.formatEther(pointValue)).toLocaleString('en-US', {maximumFractionDigits: 0})} IAM`);
+                updateDashboardElement('dashboard-point-value-usd', `$${pointValueUsd.toLocaleString('en-US', {maximumFractionDigits: 2})}`);
+                updateDashboardElement('dashboard-registration-price', `${parseFloat(ethers.formatEther(registrationPrice)).toLocaleString('en-US', {maximumFractionDigits: 0})} IAM`);
+                updateDashboardElement('dashboard-registration-price-usd', `$${registrationPriceUsd.toLocaleString('en-US', {maximumFractionDigits: 2})}`);
+                updateDashboardElement('dashboard-dai-contract-balance', `${daiContractBalance.toFixed(2)} DAI`);
+                
+                console.log('✅ Dashboard information updated successfully');
+                
+            } catch (error) {
+                console.log('❌ Error updating dashboard information:', error);
+            }
+        }
+        
+        // Helper function to update dashboard elements
+        function updateDashboardElement(elementId, value) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = value;
             }
         }
         
@@ -1620,6 +1708,13 @@
           } catch (e) {
             console.log('❌ Error getting wallet balances from contract:', e);
           }
+        }
+        
+        // Update dashboard information
+        try {
+          await updateDashboardInfo();
+        } catch (e) {
+          console.log('❌ Error updating dashboard info:', e);
         }
       } else {
         console.log('❌ Contract config not available');
