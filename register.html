@@ -1126,19 +1126,19 @@
               upperIndexInput.value = upperIndex;
             }
           } else if (!(user.index && BigInt(user.index) > 0n) && (!refInput.value || refInput.value === myAddress)) {
-            refInput.value = 'root';
+            refInput.value = '';
             refInput.removeAttribute('data-full-address');
             
-            upperInput.value = 'root';
+            upperInput.value = '';
             upperInput.removeAttribute('data-full-address');
             upperIndexInput.value = '';
           }
                      // Initialize parent-index
-          parentIndex = user.index ? user.index.toString() : '...';
+          parentIndex = user.index ? user.index.toString() : '';
                  } catch (e) {
-          // If we had an error, keep default root and guide values
-          refInput.value = 'root';
-           parentIndex = '...';
+          // If we had an error, keep empty values
+          refInput.value = '';
+           parentIndex = '';
          }
         const parentIndexElement = document.getElementById('parent-index');
         if (parentIndexElement) {

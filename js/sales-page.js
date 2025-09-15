@@ -120,42 +120,7 @@ class SalesPageManager {
                 this.products = JSON.parse(savedProducts);
             }
             
-            // If no products or we cleared Persian ones, add English defaults
-            if (this.products.length === 0) {
-                this.products = [
-                    {
-                        id: 1,
-                        name: 'Digital Art NFT',
-                        description: 'Unique digital artwork created by AI - perfect for collectors',
-                        price: 10.5,
-                        payout: 100,
-                        image: '🎨',
-                        sales: 0,
-                        createdAt: new Date().toISOString()
-                    },
-                    {
-                        id: 2,
-                        name: 'Premium Course',
-                        description: 'Complete blockchain development course with certification',
-                        price: 25.0,
-                        payout: 100,
-                        image: '📚',
-                        sales: 0,
-                        createdAt: new Date().toISOString()
-                    },
-                    {
-                        id: 3,
-                        name: 'Custom Software',
-                        description: 'Tailored web application development service',
-                        price: 50.0,
-                        payout: 100,
-                        image: '💻',
-                        sales: 0,
-                        createdAt: new Date().toISOString()
-                    }
-                ];
-                this.saveProducts();
-            }
+            // No default products - start with empty array
             
             this.renderProducts();
             

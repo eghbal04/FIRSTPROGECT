@@ -208,17 +208,24 @@
         }
         
         .bottom-menu-btn {
-            width: 48px;
-            height: 48px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             background: linear-gradient(45deg, #00ff88, #00d4ff);
             border: none;
             color: #000;
-            font-size: 20px;
+            font-size: 18px;
             cursor: pointer;
-            box-shadow: 0 4px 20px rgba(0, 255, 136, 0.3);
+            box-shadow: 0 3px 15px rgba(0, 255, 136, 0.3);
             transition: all 0.3s ease;
-            opacity: 0.5;
+            opacity: 0.6;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
         }
         
         .bottom-menu-btn:hover {
@@ -226,17 +233,22 @@
             box-shadow: 0 6px 25px rgba(0, 255, 136, 0.4);
         }
         
+        .bottom-menu-btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 10px rgba(0, 255, 136, 0.5);
+        }
+        
         .bottom-nav-menu {
             position: absolute;
-            bottom: 80px;
+            bottom: 70px;
             left: 0;
-            background: rgba(35, 41, 70, 0.95);
-            border-radius: 15px;
-            padding: 20px;
+            background: rgba(35, 41, 70, 0.6);
+            border-radius: 12px;
+            padding: 12px;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(0, 255, 136, 0.2);
             display: none;
-            min-width: 200px;
+            min-width: 160px;
         }
         
         .bottom-nav-menu.show {
@@ -247,15 +259,68 @@
             display: block;
             color: #fff;
             text-decoration: none;
-            padding: 10px 15px;
-      border-radius: 8px;
-            margin: 5px 0;
-      transition: all 0.3s ease;
-    }
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin: 3px 0;
+            transition: all 0.3s ease;
+            min-height: 36px;
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+        }
     
         .nav-item:hover {
             background: rgba(0, 255, 136, 0.1);
             color: #00ff88;
+        }
+        
+        .nav-item:active {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+            transform: scale(0.98);
+        }
+        
+        /* iOS Touch Support */
+        @media (max-width: 768px) {
+            .bottom-menu-btn {
+                width: 48px;
+                height: 48px;
+                font-size: 20px;
+                opacity: 0.6;
+            }
+            
+            .nav-item {
+                padding: 10px 14px;
+                min-height: 40px;
+                font-size: 0.9rem;
+            }
+            
+            .bottom-nav-menu {
+                min-width: 180px;
+                padding: 10px;
+            }
+        }
+        
+        /* iOS Safari specific fixes */
+        @supports (-webkit-touch-callout: none) {
+            .bottom-menu-btn {
+                -webkit-appearance: none;
+                -webkit-border-radius: 50%;
+                border-radius: 50%;
+            }
+            
+            .nav-item {
+                -webkit-appearance: none;
+                -webkit-border-radius: 8px;
+                border-radius: 8px;
+            }
         }
         
         /* Responsive */
@@ -318,36 +383,36 @@
             <div class="status-balances">
                 <div class="status-balance-item">
                     <div class="status-balance-label">IAM</div>
-                    <div class="status-balance-value" id="iam-balance">0.00</div>
-                    <div class="status-balance-usd" id="iam-balance-usd">$0.00</div>
+                    <div class="status-balance-value" id="iam-balance"></div>
+                    <div class="status-balance-usd" id="iam-balance-usd"></div>
             </div>
                 <div class="status-balance-item">
                     <div class="status-balance-label">MATIC</div>
-                    <div class="status-balance-value" id="matic-balance">0.0000</div>
-                    <div class="status-balance-usd" id="matic-balance-usd">$0.00</div>
+                    <div class="status-balance-value" id="matic-balance"></div>
+                    <div class="status-balance-usd" id="matic-balance-usd"></div>
         </div>
                 <div class="status-balance-item">
                     <div class="status-balance-label">DAI</div>
-                    <div class="status-balance-value" id="dai-balance">0.00</div>
-                    <div class="status-balance-usd" id="dai-balance-usd">$0.00</div>
+                    <div class="status-balance-value" id="dai-balance"></div>
+                    <div class="status-balance-usd" id="dai-balance-usd"></div>
             </div>
         </div>
             <div class="status-info-row" id="userStatusBar">
                 <div class="status-info-item">
                     <div class="info-label">ID</div>
-                    <div class="info-value" id="userStatusIdValue">--</div>
+                    <div class="info-value" id="userStatusIdValue"></div>
             </div>
                 <div class="status-info-item">
                     <div class="info-label">👍</div>
-                    <div class="info-value" id="userStatusLikes">--</div>
+                    <div class="info-value" id="userStatusLikes"></div>
             </div>
                 <div class="status-info-item">
                     <div class="info-label">👎</div>
-                    <div class="info-value" id="userStatusDislikes">--</div>
+                    <div class="info-value" id="userStatusDislikes"></div>
             </div>
                 <div class="status-info-item">
                     <div class="info-label"></div>
-                    <div class="info-value" id="userStatusLevel">--</div>
+                    <div class="info-value" id="userStatusLevel"></div>
         </div>
             </div>
             </div>
@@ -358,7 +423,7 @@
         <div class="main-content">
             <h1 class="main-title">IAM Ecosystem</h1>
             <div id="contract-address" style="text-align:center;margin-top:4px;font-size:12px;color:#a0aec0;">
-                Contract: <a id="contract-link" href="#" target="_blank" rel="noopener" style="color:#00e0ff;text-decoration:none;font-family:monospace;">loading...</a>
+                Contract: <a id="contract-link" href="#" target="_blank" rel="noopener" style="color:#00e0ff;text-decoration:none;font-family:monospace;"></a>
             </div>
             
             <!-- Dashboard -->
@@ -366,7 +431,7 @@
                 <div class="dashboard-card">
                     <div class="card-icon">💰</div>
                     <div class="card-title">Supply</div>
-                    <div class="card-value" id="total-supply">0</div>
+                    <div class="card-value" id="total-supply"></div>
                     <div class="card-subtitle"></div>
                     <div class="card-subtitle" id="total-supply-usd"></div>
         </div>
@@ -374,28 +439,28 @@
                 <div class="dashboard-card">
                     <div class="card-icon">👥</div>
                     <div class="card-title">Users</div>
-                    <div class="card-value" id="total-users">0</div>
+                    <div class="card-value" id="total-users"></div>
                     <div class="card-subtitle">Wallets</div>
                 </div>
                 
                 <div class="dashboard-card">
                     <div class="card-icon">💎</div>
                     <div class="card-title">Token Price</div>
-                    <div class="card-value" id="token-price">$0.00</div>
+                    <div class="card-value" id="token-price"></div>
                     <div class="card-subtitle">Token Price</div>
                 </div>
                 
                 <div class="dashboard-card">
                     <div class="card-icon">🎯</div>
                     <div class="card-title">Points</div>
-                    <div class="card-value" id="total-points">0</div>
+                    <div class="card-value" id="total-points"></div>
                     <div class="card-subtitle">Claimable</div>
                 </div>
                 
                 <div class="dashboard-card">
                     <div class="card-icon">💵</div>
                     <div class="card-title">Point Value</div>
-                    <div class="card-value" id="point-value">$0.00</div>
+                    <div class="card-value" id="point-value"></div>
                     <div class="card-subtitle">Per Point</div>
                     <div class="card-subtitle" id="point-value-usd"></div>
                 </div>
@@ -403,14 +468,14 @@
                 <div class="dashboard-card">
                     <div class="card-icon">🏦</div>
                     <div class="card-title">Backing Pool</div>
-                    <div class="card-value" id="contract-balance">0</div>
+                    <div class="card-value" id="contract-balance"></div>
                     <div class="card-subtitle">DAI</div>
                 </div>
                 
                 <div class="dashboard-card">
                     <div class="card-icon">🪙</div>
                     <div class="card-title">Binary Pool</div>
-                    <div class="card-value" id="contract-iam-balance">0</div>
+                    <div class="card-value" id="contract-iam-balance"></div>
                     <div class="card-subtitle">IAM</div>
                     <div class="card-subtitle" id="contract-iam-balance-usd"></div>
                 </div>
@@ -418,7 +483,7 @@
                 <div class="dashboard-card">
                     <div class="card-icon">📝</div>
                     <div class="card-title">Reg Price</div>
-                    <div class="card-value" id="reg-price">0</div>
+                    <div class="card-value" id="reg-price"></div>
                     <div class="card-subtitle">Registration</div>
                     <div class="card-subtitle" id="reg-price-usd"></div>
                 </div>
@@ -426,7 +491,7 @@
                 <div class="dashboard-card">
                     <div class="card-icon">🔁</div>
                     <div class="card-title">Support Pool</div>
-                    <div class="card-value" id="cashback">0%</div>
+                    <div class="card-value" id="cashback"></div>
                     <div class="card-subtitle">Read-only</div>
                     <div class="card-subtitle" id="cashback-usd"></div>
                 </div>
@@ -457,12 +522,9 @@
     <script src="js/floating-token-card.js"></script>
     
   <script>
-        // Initialize activeIntervals as Map for main.js
-        window.activeIntervals = new Map();
-        
-        // Status bar update function
+        // Status bar update function - runs only once on page load
         function updateStatusBar() {
-            console.log('🔄 Updating status bar...');
+            console.log('🔄 Updating status bar on page load...');
             
             if (window.contractConfig && window.contractConfig.address) {
                 console.log('✅ Main system available, updating status bar');
@@ -501,7 +563,7 @@
                     // Update User ID
                     const userIdElement = document.getElementById('userStatusIdValue');
                     if (userIdElement) {
-                        userIdElement.textContent = userData[0] ? userData[0].toString() : '--';
+                        userIdElement.textContent = userData[0] ? userData[0].toString() : '';
                     }
                     
                     // Update User Stars based on Level
@@ -513,7 +575,7 @@
                         if (stars > 0) {
                             levelElement.textContent = '⭐'.repeat(stars);
                 } else {
-                            levelElement.textContent = '--';
+                            levelElement.textContent = '';
                         }
                     }
                     
@@ -526,17 +588,17 @@
                         const dislikesElement = document.getElementById('userStatusDislikes');
                         
                         if (likesElement) {
-                            likesElement.textContent = voteStatus ? (voteStatus.totalLikes || '0') : '0';
+                            likesElement.textContent = voteStatus ? (voteStatus.totalLikes || '') : '';
                         }
                         if (dislikesElement) {
-                            dislikesElement.textContent = voteStatus ? (voteStatus.totalDislikes || '0') : '0';
+                            dislikesElement.textContent = voteStatus ? (voteStatus.totalDislikes || '') : '';
                         }
                     } catch (error) {
                         console.log('Error fetching vote status:', error);
                         const likesElement = document.getElementById('userStatusLikes');
                         const dislikesElement = document.getElementById('userStatusDislikes');
-                        if (likesElement) likesElement.textContent = '0';
-                        if (dislikesElement) dislikesElement.textContent = '0';
+                        if (likesElement) likesElement.textContent = '';
+                        if (dislikesElement) dislikesElement.textContent = '';
                     }
                     
                     // Update token balances
@@ -606,19 +668,19 @@
             const daiBalanceElement = document.getElementById('dai-balance');
             
             if (iamBalanceElement) {
-                        iamBalanceElement.textContent = formatTokenBalance(iamBalance, 2);
+                        iamBalanceElement.textContent = iamBalance > 0 ? formatTokenBalance(iamBalance, 2) : '';
             }
                     
             if (maticBalanceElement) {
-                        maticBalanceElement.textContent = (Number.isFinite(maticBalance) ? maticBalance : 0).toFixed(2);
+                        maticBalanceElement.textContent = (Number.isFinite(maticBalance) && maticBalance > 0) ? maticBalance.toFixed(2) : '';
             }
                     
             if (daiBalanceElement) {
-                        daiBalanceElement.textContent = (Number.isFinite(daiBalance) ? daiBalance : 0).toFixed(2);
+                        daiBalanceElement.textContent = (Number.isFinite(daiBalance) && daiBalance > 0) ? daiBalance.toFixed(2) : '';
                     }
                     
                     // Get IAM token price from contract
-                    let iamTokenPrice = 0.001; // Default fallback price
+                    let iamTokenPrice = 0;
                     try {
                         if (window.contractConfig && window.contractConfig.contract) {
                             const tokenPrice = await window.contractConfig.contract.getTokenPrice();
@@ -636,7 +698,7 @@
             
                 if (iamUsdElement) {
                         const iamUsdValue = iamBalance * iamTokenPrice;
-                        iamUsdElement.textContent = '$' + formatTokenBalance(iamUsdValue, 2);
+                        iamUsdElement.textContent = (iamUsdValue > 0) ? '$' + formatTokenBalance(iamUsdValue, 2) : '';
                     }
                     
                 if (maticUsdElement) {
@@ -654,14 +716,29 @@
             }
         }
         
-        // Bottom navigation toggle
+        // Bottom navigation toggle with iOS touch support
         function setupBottomNavigation() {
             const menuBtn = document.getElementById('bottom-menu-btn');
             const menu = document.getElementById('bottom-nav-menu');
             
             if (menuBtn && menu) {
-                menuBtn.addEventListener('click', function() {
+                // Add both click and touchstart events for better iOS support
+                function toggleMenu(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
                     menu.classList.toggle('show');
+                }
+                
+                // Use touchstart for better iOS responsiveness
+                menuBtn.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    toggleMenu(e);
+                }, { passive: false });
+                
+                // Keep click for desktop compatibility
+                menuBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    toggleMenu(e);
                 });
                 
                 // Close menu when clicking outside
@@ -670,12 +747,28 @@
                         menu.classList.remove('show');
                     }
                 });
+                
+                // Close menu when touching outside on mobile
+                document.addEventListener('touchstart', function(event) {
+                    if (!menuBtn.contains(event.target) && !menu.contains(event.target)) {
+                        menu.classList.remove('show');
+                    }
+                });
+                
+                // Add touch support for nav items
+                const navItems = menu.querySelectorAll('.nav-item');
+                navItems.forEach(item => {
+                    item.addEventListener('touchstart', function(e) {
+                        e.preventDefault();
+                        this.click();
+                    }, { passive: false });
+                });
             }
         }
         
-        // Initialize when page loads
+        // Initialize when page loads - only once
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Page loaded, initializing...');
+            console.log('🚀 Page loaded, initializing once...');
             
             setupBottomNavigation();
 
@@ -694,29 +787,28 @@
                     linkEl.textContent = addr;
                     linkEl.href = 'https://polygonscan.com/address/' + addr;
                 } else if (linkEl) {
-                    linkEl.textContent = 'not available';
+                    linkEl.textContent = '';
                     linkEl.removeAttribute('href');
                 }
             } catch (_) {}
             
-            // Listen for wallet connection events
-            window.addEventListener('walletConnected', function(event) {
-                console.log('Wallet connected event received');
-                updateStatusBar();
-            });
-            
-            // Check if wallet is already connected
+            // Update status bar only once on page load
             if (window.contractConfig && window.contractConfig.address) {
-                console.log('Wallet already connected, updating status bar');
+                console.log('Wallet already connected, updating status bar once');
                 updateStatusBar();
             } else {
                 console.log('Waiting for wallet connection...');
+                // Listen for wallet connection events - only once
+                window.addEventListener('walletConnected', function(event) {
+                    console.log('Wallet connected event received - updating once');
+                    updateStatusBar();
+                }, { once: true }); // Only listen once
             }
         });
         
-        // Global function for main.js to call
+        // Global function for main.js to call - only once
         window.updateUserStatusBar = function() {
-            console.log('🔄 updateUserStatusBar called from main.js');
+            console.log('🔄 updateUserStatusBar called from main.js - one time only');
             updateStatusBar();
         };
         
@@ -771,43 +863,43 @@
                     const pointValueNum = parseFloat(ethers.formatEther(pointValue));
                     const daiBalanceNum = parseFloat(ethers.formatEther(daiContractBalance));
 
-                    // Update UI elements (main values)
-                    updateDashboardElement('total-supply', formatNumber(totalSupplyNum));
-                    updateDashboardElement('total-users', formatNumber(totalUsersNum, true));
+                    // Update UI elements (main values) - only show if > 0
+                    updateDashboardElement('total-supply', totalSupplyNum > 0 ? formatNumber(totalSupplyNum) : '');
+                    updateDashboardElement('total-users', totalUsersNum > 0 ? formatNumber(totalUsersNum, true) : '');
                     // Token price: scientific/compressed for small values
-                    updateDashboardElement('token-price', '$' + formatTokenBalance(tokenPriceNum, 6));
-                    updateDashboardElement('total-points', formatNumber(totalPointsNum, true));
+                    updateDashboardElement('token-price', tokenPriceNum > 0 ? '$' + formatTokenBalance(tokenPriceNum, 6) : '');
+                    updateDashboardElement('total-points', totalPointsNum > 0 ? formatNumber(totalPointsNum, true) : '');
                     // Point Value as token amount (compressed/scientific)
-                    updateDashboardElement('point-value', formatTokenBalance(pointValueNum, 2));
+                    updateDashboardElement('point-value', pointValueNum > 0 ? formatTokenBalance(pointValueNum, 2) : '');
                     // Backing Pool: show full value with two decimals (no K/M/B)
-                    updateDashboardElement('contract-balance', (Number.isFinite(daiBalanceNum) ? daiBalanceNum : 0).toFixed(2));
+                    updateDashboardElement('contract-balance', (Number.isFinite(daiBalanceNum) && daiBalanceNum > 0) ? daiBalanceNum.toFixed(2) : '');
 
-                    // Update USD sublines
-                    updateDashboardElement('total-supply-usd', '$' + formatNumber(totalSupplyNum * tokenPriceNum));
-                    updateDashboardElement('contract-balance-usd', '$' + (Number.isFinite(daiBalanceNum) ? daiBalanceNum : 0).toFixed(2));
+                    // Update USD sublines - only show if > 0
+                    updateDashboardElement('total-supply-usd', (totalSupplyNum * tokenPriceNum) > 0 ? '$' + formatNumber(totalSupplyNum * tokenPriceNum) : '');
+                    updateDashboardElement('contract-balance-usd', (Number.isFinite(daiBalanceNum) && daiBalanceNum > 0) ? '$' + daiBalanceNum.toFixed(2) : '');
                     
                     // Contract IAM balance
                     const contractIAMNum = parseFloat(ethers.formatEther(contractIAMBalanace || 0));
-                    updateDashboardElement('contract-iam-balance', formatTokenBalance(contractIAMNum, 2));
-                    updateDashboardElement('contract-iam-balance-usd', '$' + formatNumber(contractIAMNum * tokenPriceNum));
+                    updateDashboardElement('contract-iam-balance', contractIAMNum > 0 ? formatTokenBalance(contractIAMNum, 2) : '');
+                    updateDashboardElement('contract-iam-balance-usd', (contractIAMNum * tokenPriceNum) > 0 ? '$' + formatNumber(contractIAMNum * tokenPriceNum) : '');
                     
-                    // Read-only extras
+                    // Read-only extras - only show if > 0
                     const regPriceValue = parseFloat(ethers.formatEther(regPrice || 0));
                     // Reg Price main: token amount (compressed)
-                    updateDashboardElement('reg-price', formatTokenBalance(regPriceValue, 2));
+                    updateDashboardElement('reg-price', regPriceValue > 0 ? formatTokenBalance(regPriceValue, 2) : '');
                     // Reg Price USD: tokens × IAM USD price
                     const regPriceUsd = regPriceValue * tokenPriceNum;
-                    updateDashboardElement('reg-price-usd', '$' + formatNumber(regPriceUsd));
+                    updateDashboardElement('reg-price-usd', regPriceUsd > 0 ? '$' + formatNumber(regPriceUsd) : '');
                     
                     // Cashback as token amount (assume IAM tokens)
                     const cashBackTokenNum = parseFloat(ethers.formatEther(cashBack || 0));
-                    updateDashboardElement('cashback', formatTokenBalance(cashBackTokenNum, 2));
+                    updateDashboardElement('cashback', cashBackTokenNum > 0 ? formatTokenBalance(cashBackTokenNum, 2) : '');
                     const cashbackUsd = cashBackTokenNum * tokenPriceNum;
-                    updateDashboardElement('cashback-usd', '$' + formatNumber(cashbackUsd));
+                    updateDashboardElement('cashback-usd', cashbackUsd > 0 ? '$' + formatNumber(cashbackUsd) : '');
 
                     // Point Value USD (IAM tokens × IAM USD price)
                     const pointValueUsd = pointValueNum * tokenPriceNum;
-                    updateDashboardElement('point-value-usd', '$' + formatNumber(pointValueUsd));
+                    updateDashboardElement('point-value-usd', pointValueUsd > 0 ? '$' + formatNumber(pointValueUsd) : '');
 
                     
                     

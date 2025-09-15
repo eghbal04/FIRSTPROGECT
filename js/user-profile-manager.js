@@ -35,10 +35,10 @@ class UserProfileManager {
     createUserProfile(address, data = {}) {
         const profile = {
             address: address,
-            name: data.name || 'کاربر ناشناس',
+            name: data.name || '',
             bio: data.bio || '',
-            avatar: data.avatar || '👤',
-            joinDate: data.joinDate || new Date().toISOString(),
+            avatar: data.avatar || '',
+            joinDate: data.joinDate || '',
             socialLinks: data.socialLinks || {},
             stats: data.stats || {
                 totalPurchases: 0,

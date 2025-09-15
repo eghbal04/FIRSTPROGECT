@@ -325,10 +325,8 @@ class FloatingTokenGrowthCard {
       });
     }
     
-    // Update every 5 seconds for reliability
-    this.updateInterval = setInterval(() => {
-      this.updateGrowthData();
-    }, 5000);
+    // Update only once on page load - no intervals
+    this.updateGrowthData();
   }
   
   // Public function for manual update
@@ -337,10 +335,7 @@ class FloatingTokenGrowthCard {
   }
   
   stopUpdates() {
-    if (this.updateInterval) {
-      clearInterval(this.updateInterval);
-      this.updateInterval = null;
-    }
+    // No intervals to stop - updates only happen on page load
   }
   
   destroy() {

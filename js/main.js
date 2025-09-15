@@ -2,28 +2,7 @@
 // Clear console at the beginning of the program
 console.clear();
 
-// Global interval management to prevent multiple intervals
-window.activeIntervals = new Set();
-
-// Function to safely create intervals
-function createInterval(callback, delay, name) {
-    // Clear existing interval with same name
-    if (window.activeIntervals.has(name)) {
-        clearInterval(window.activeIntervals.get(name));
-    }
-    
-    const intervalId = setInterval(callback, delay);
-    window.activeIntervals.set(name, intervalId);
-    return intervalId;
-}
-
-// Function to clear all intervals
-function clearAllIntervals() {
-    window.activeIntervals.forEach((intervalId) => {
-        clearInterval(intervalId);
-    });
-    window.activeIntervals.clear();
-}
+// No interval management needed - all updates happen only on page load
 
 document.addEventListener('DOMContentLoaded', async () => {
     const connectButton = document.getElementById('connectButton');
@@ -89,7 +68,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           const el = document.getElementById(id); 
           if (el) {
             const num = Number(val) / Math.pow(10, decimals);
-            const formatted = num.toLocaleString('en-US', {maximumFractionDigits: 2}) + suffix;
+            const formatted = num > 0 ? num.toLocaleString('en-US', {maximumFractionDigits: 2}) + suffix : '';
             el.textContent = formatted;
           } 
         };
@@ -302,13 +281,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }, 2000);
 
-    // OPTIMIZED: Only update user status bar every 60 seconds instead of 30
-    // and only if user is active to reduce load
-    createInterval(() => {
-        if (typeof window.updateUserStatusBar === 'function') {
-            window.updateUserStatusBar();
-        }
-    }, 60000, 'userStatusBar'); // Reduced frequency from 30s to 60s
+    // Status bar will be updated only once on page load - no intervals
 });
 
 function shortenAddress(address) {
@@ -464,7 +437,7 @@ async function fetchUserProfile() {
         // Get balances
         const provider = contract.provider;
         const signer = contract.signer || (provider && provider.getSigner ? await provider.getSigner() : null);
-        let daiBalance = '0';
+        let daiBalance = '';
         if (signer && typeof window.DAI_ADDRESS !== 'undefined' && typeof window.DAI_ABI !== 'undefined') {
           const daiContract = new ethers.Contract(window.DAI_ADDRESS, window.DAI_ABI, signer);
           const daiRaw = await window.retryRpcOperation(() => daiContract.balanceOf(address), 2);
@@ -1285,8 +1258,7 @@ function initializeSessionTimer() {
                 const sessionBox = document.getElementById('session-timer-box');
                 if (sessionBox) sessionBox.style.display = 'block';
                 
-                // Start timer with reduced frequency (every 5 seconds instead of 1)
-                createInterval(updateSessionTimer, 5000, 'sessionTimer');
+                // Update session timer only once on page load
                 updateSessionTimer();
             }
         }).catch(error => {
@@ -2036,10 +2008,10 @@ window.showRegisterForm = async function(referrerAddress, defaultNewWallet, conn
             let priceValue = parseFloat(window.ethers.formatUnits(regPrice, 18));
             requiredDai = Math.round(priceValue) + ' IAM'; // Round without decimals
           } else {
-            requiredDai = '...';
+            requiredDai = '';
           }
         } catch (e) {
-          requiredDai = 'Error';
+          requiredDai = '';
         }
       }
       document.getElementById('register-matic-balance').textContent = matic;
@@ -2424,7 +2396,7 @@ function showReferralRegistrationForm(referrerAddress) {
                         
                     } catch (configError) {
                         console.warn('Could not get config parameters:', configError);
-                        regPrice = '100'; // Default fallback
+                        regPrice = 0; // No default fallback
                     }
                     
                     // Handle token approval if needed
@@ -3525,10 +3497,10 @@ window.updateUserStatusBar = async function() {
             });
             // Set default values for available elements
             if (userStatusBar) userStatusBar.style.display = 'block';
-            if (userStatusIdValue) userStatusIdValue.textContent = 'Not Connected';
-            if (userStatusWallet) userStatusWallet.textContent = 'Not Connected';
-            if (userStatusLikes) userStatusLikes.textContent = '0';
-            if (userStatusDislikes) userStatusDislikes.textContent = '0';
+            if (userStatusIdValue) userStatusIdValue.textContent = '';
+            if (userStatusWallet) userStatusWallet.textContent = '';
+            if (userStatusLikes) userStatusLikes.textContent = '';
+            if (userStatusDislikes) userStatusDislikes.textContent = '';
             return;
         }
 
@@ -3536,10 +3508,10 @@ window.updateUserStatusBar = async function() {
             console.log('🔍 Wallet not connected, showing default values');
             // Show status bar even when wallet is not connected, but with default values
             if (userStatusBar) userStatusBar.style.display = 'block';
-            if (userStatusIdValue) userStatusIdValue.textContent = 'Not Connected';
-            if (userStatusWallet) userStatusWallet.textContent = 'Not Connected';
-            if (userStatusLikes) userStatusLikes.textContent = '0';
-            if (userStatusDislikes) userStatusDislikes.textContent = '0';
+            if (userStatusIdValue) userStatusIdValue.textContent = '';
+            if (userStatusWallet) userStatusWallet.textContent = '';
+            if (userStatusLikes) userStatusLikes.textContent = '';
+            if (userStatusDislikes) userStatusDislikes.textContent = '';
             const userStarRating = document.getElementById('user-star-rating');
             if (userStarRating) userStarRating.style.display = 'none';
             return;
@@ -3649,9 +3621,9 @@ window.updateUserStatusBar = async function() {
                 }
                 updateCardSizes();
             } else {
-                if (userStatusIdValue) userStatusIdValue.textContent = 'Not Registered';
-                if (userStatusLikes) userStatusLikes.textContent = '0';
-                if (userStatusDislikes) userStatusDislikes.textContent = '0';
+                if (userStatusIdValue) userStatusIdValue.textContent = '';
+                if (userStatusLikes) userStatusLikes.textContent = '';
+                if (userStatusDislikes) userStatusDislikes.textContent = '';
                 const userStarRating = document.getElementById('user-star-rating');
                 if (userStarRating) userStarRating.style.display = 'none';
                 // User is registered but not active
@@ -3660,9 +3632,9 @@ window.updateUserStatusBar = async function() {
         } catch (error) {
             console.warn('Error getting user data:', error);
             console.warn('❌ Error getting user data:', error);
-            if (userStatusIdValue) userStatusIdValue.textContent = 'Error';
-            if (userStatusLikes) userStatusLikes.textContent = '0';
-            if (userStatusDislikes) userStatusDislikes.textContent = '0';
+            if (userStatusIdValue) userStatusIdValue.textContent = '';
+            if (userStatusLikes) userStatusLikes.textContent = '';
+            if (userStatusDislikes) userStatusDislikes.textContent = '';
         }
 
         console.log('✅ User status bar updated successfully');
@@ -3734,32 +3706,9 @@ window.testUserStatusBar = function() {
     }
 };
 
-// OPTIMIZED: Cleanup function to clear all intervals when page unloads
-window.addEventListener('beforeunload', () => {
-    clearAllIntervals();
-});
+// No cleanup needed - no intervals to clear
 
-// OPTIMIZED: Pause intervals when page is hidden to save resources
-document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-        // Pause non-critical intervals
-        window.activeIntervals.forEach((intervalId, name) => {
-            if (name !== 'sessionTimer') { // Keep session timer running
-                clearInterval(intervalId);
-                window.activeIntervals.delete(name);
-            }
-        });
-    } else {
-        // Restart intervals when page becomes visible
-        if (!window.activeIntervals.has('userStatusBar')) {
-            createInterval(() => {
-                if (typeof window.updateUserStatusBar === 'function') {
-                    window.updateUserStatusBar();
-                }
-            }, 60000, 'userStatusBar');
-        }
-    }
-});
+// No intervals - all updates happen only on page load
 
 
 
