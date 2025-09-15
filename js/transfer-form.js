@@ -1,11 +1,10 @@
 // TransferManager - Independent token transfer management
 // Contract addresses and ABIs
-const IAM_ADDRESS_TRANSFER_NEW = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D'; // New contract
 const DAI_ADDRESS_TRANSFER = '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063';
 const POL_ADDRESS = '0x0000000000000000000000000000000000000000'; // Native MATIC
 
-// Default to new contract
-let IAM_ADDRESS_TRANSFER = IAM_ADDRESS_TRANSFER_NEW;
+// Use the contract address from config.js
+let IAM_ADDRESS_TRANSFER = window.IAM_ADDRESS || '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D';
 
 const DAI_ABI_TRANSFER = [
     "function balanceOf(address owner) view returns (uint256)",
@@ -13,12 +12,8 @@ const DAI_ABI_TRANSFER = [
     "function decimals() view returns (uint8)"
 ];
 
-const IAM_ABI_TRANSFER = [
-    "function balanceOf(address owner) view returns (uint256)",
-    "function transfer(address to, uint256 amount) returns (bool)",
-    "function decimals() view returns (uint8)",
-    "function getTokenPrice() view returns (uint256)"
-];
+// Use the full ABI from config.js instead of limited ABI
+// The full ABI will be loaded from config.js
 
 class TransferManager {
     constructor() {
@@ -40,12 +35,25 @@ class TransferManager {
         try {
             console.log('🔗 Connecting to wallet...');
             
+            // Wait for ABI to be available
+            if (!window.IAM_ABI) {
+                console.log('⏳ Waiting for ABI to load...');
+                let attempts = 0;
+                while (!window.IAM_ABI && attempts < 50) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    attempts++;
+                }
+                if (!window.IAM_ABI) {
+                    throw new Error('ABI not available after waiting');
+                }
+            }
+            
             // Use existing contractConfig if available
             if (window.contractConfig && window.contractConfig.signer) {
                 console.log('✅ Using existing wallet connection');
                 this.provider = window.contractConfig.provider;
                 this.signer = window.contractConfig.signer;
-                this.contract = new ethers.Contract(IAM_ADDRESS_TRANSFER, IAM_ABI_TRANSFER, this.signer);
+                this.contract = new ethers.Contract(IAM_ADDRESS_TRANSFER, window.IAM_ABI, this.signer);
                 this.daiContract = new ethers.Contract(DAI_ADDRESS_TRANSFER, DAI_ABI_TRANSFER, this.signer);
                 return true;
             }
@@ -57,18 +65,20 @@ class TransferManager {
             // Request account access
             await window.ethereum.request({ method: 'eth_requestAccounts' });
             
-            // Create provider and signer
+            // Create provider and signer (using ethers.js v5 syntax)
             if (typeof ethers.providers !== 'undefined' && ethers.providers.Web3Provider) {
                 this.provider = new ethers.providers.Web3Provider(window.ethereum);
+                this.signer = this.provider.getSigner();
             } else if (typeof ethers.BrowserProvider !== 'undefined') {
+                // Fallback for ethers.js v6
                 this.provider = new ethers.BrowserProvider(window.ethereum);
+                this.signer = await this.provider.getSigner();
             } else {
                 throw new Error('Ethers.js provider not available');
             }
-            this.signer = this.provider.getSigner();
             
             // Create contract instances
-            this.contract = new ethers.Contract(IAM_ADDRESS_TRANSFER, IAM_ABI_TRANSFER, this.signer);
+            this.contract = new ethers.Contract(IAM_ADDRESS_TRANSFER, window.IAM_ABI, this.signer);
             this.daiContract = new ethers.Contract(DAI_ADDRESS_TRANSFER, DAI_ABI_TRANSFER, this.signer);
             
             console.log('✅ Wallet connected successfully');
@@ -804,7 +814,9 @@ class TransferManager {
                     to: to,
                     amount: amount,
                     value: value.toString(),
-                    contract: this.contract.address
+                    contract: this.contract.address,
+                    contractMethods: Object.keys(this.contract.interface.functions),
+                    hasTransferMethod: typeof this.contract.transfer === 'function'
                 });
                 
                 // Update button to show confirmation waiting

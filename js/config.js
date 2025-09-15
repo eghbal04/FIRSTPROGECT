@@ -2769,11 +2769,16 @@ window.contractConfig = {
 const debounceTimers = new Map();
 
 function debounce(key, func, delay = 1000) {
+	// If there's already a pending promise for this key, return it
 	if (debounceTimers.has(key)) {
-		clearTimeout(debounceTimers.get(key));
+		const existingPromise = debounceTimers.get(key);
+		if (existingPromise && typeof existingPromise.then === 'function') {
+			return existingPromise;
+		}
+		clearTimeout(existingPromise);
 	}
 	
-	return new Promise((resolve, reject) => {
+	const promise = new Promise((resolve, reject) => {
 		const timer = setTimeout(async () => {
 			try {
 				const result = await func();
@@ -2792,7 +2797,7 @@ function debounce(key, func, delay = 1000) {
 			clearTimeout(timer);
 			debounceTimers.delete(key);
 			reject(new Error(`Debounce timeout for ${key}`));
-		}, delay + 30000); // 30 seconds timeout
+		}, delay + 60000); // 60 seconds timeout
 		
 		// Clear timeout when promise resolves
 		const originalResolve = resolve;
@@ -2806,6 +2811,11 @@ function debounce(key, func, delay = 1000) {
 			originalReject(error);
 		};
 	});
+	
+	// Store the promise instead of just the timer
+	debounceTimers.set(key, promise);
+	
+	return promise;
 }
 
 // RPC retry mechanism for handling "missing revert data" errors
@@ -4814,6 +4824,14 @@ async function updatePriceChart() {
 // Returns the DAI balance of the main contract (IAM_ADDRESS) as a string in DAI units (18 decimals)
 async function getContractDAIBalance() {
   if (typeof ethers === 'undefined') throw new Error('ethers.js not loaded');
+  
+  // Ensure IAM_ADDRESS is available
+  const contractAddress = window.IAM_ADDRESS || IAM_ADDRESS;
+  if (!contractAddress) {
+    console.error('❌ IAM_ADDRESS not available for DAI balance check');
+    return '0';
+  }
+  
   const provider = (window.contractConfig && window.contractConfig.contract && window.contractConfig.contract.provider)
 	? window.contractConfig.contract.provider
 	: (window.contractConfig && window.contractConfig.provider)
@@ -4821,7 +4839,7 @@ async function getContractDAIBalance() {
 	  : (window.ethereum ? (typeof ethers.providers !== 'undefined' && ethers.providers.Web3Provider ? new ethers.providers.Web3Provider(window.ethereum) : new ethers.BrowserProvider(window.ethereum)) : null);
   if (!provider) throw new Error('No provider');
   const daiContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, provider);
-  const balanceRaw = await daiContract.balanceOf(IAM_ADDRESS);
+  const balanceRaw = await daiContract.balanceOf(contractAddress);
   return formatUnits(balanceRaw, 18); // DAI has 18 decimals
 }
 
@@ -4856,14 +4874,22 @@ async function getTotalClaimableBinaryPointsInteger() {
 // Returns the IAM token balance of the contract using balanceOf(IAM_ADDRESS)
 async function getContractTokenBalance() {
   if (typeof ethers === 'undefined') throw new Error('ethers.js not loaded');
+  
+  // Ensure IAM_ADDRESS is available
+  const contractAddress = window.IAM_ADDRESS || IAM_ADDRESS;
+  if (!contractAddress) {
+    console.error('❌ IAM_ADDRESS not available');
+    return '0';
+  }
+  
   const provider = (window.contractConfig && window.contractConfig.contract && window.contractConfig.contract.provider)
 	? window.contractConfig.contract.provider
 	: (window.contractConfig && window.contractConfig.provider)
 	  ? window.contractConfig.provider
 	  : (window.ethereum ? (typeof ethers.providers !== 'undefined' && ethers.providers.Web3Provider ? new ethers.providers.Web3Provider(window.ethereum) : new ethers.BrowserProvider(window.ethereum)) : null);
   if (!provider) throw new Error('No provider');
-  const contract = new ethers.Contract(IAM_ADDRESS, IAM_ABI, provider);
-  const tokenRaw = await contract.balanceOf(IAM_ADDRESS);
+  const contract = new ethers.Contract(contractAddress, IAM_ABI, provider);
+  const tokenRaw = await contract.balanceOf(contractAddress);
   return formatUnits(tokenRaw, 18); // returns as string, e.g. '123.456789012345678901'
 }
 // ... existing code ...

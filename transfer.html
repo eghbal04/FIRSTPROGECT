@@ -434,8 +434,9 @@
             
             if (window.ethereum && window.IAM_ADDRESS && window.IAM_ABI) {
                 try {
-                    const provider = new ethers.BrowserProvider(window.ethereum);
-                    const signer = await provider.getSigner();
+                    // Use ethers.js v5 syntax for compatibility
+                    const provider = new ethers.providers.Web3Provider(window.ethereum);
+                    const signer = provider.getSigner();
                     const contract = new ethers.Contract(window.IAM_ADDRESS, window.IAM_ABI, signer);
                     
                     console.log('✅ Contract connected successfully');
