@@ -607,7 +607,7 @@
             }
                     
             if (maticBalanceElement) {
-                        maticBalanceElement.textContent = formatTokenBalance(maticBalance, 4);
+                        maticBalanceElement.textContent = (Number.isFinite(maticBalance) ? maticBalance : 0).toFixed(2);
             }
                     
             if (daiBalanceElement) {
