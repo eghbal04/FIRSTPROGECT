@@ -363,10 +363,15 @@
          ⚠️ MetaMask is required. Please install MetaMask extension and refresh the page.
        </div>
       <div class="register-form-status warning" id="register-suggestion" style="display:none;"></div>
-      <!-- Referrer Address (Read-only) -->
+      <!-- Referrer Index -->
       <div class="form-group">
-        <label for="referrer-address">Referrer Address</label>
-        <input type="text" id="referrer-address" class="register-form-input address-field" placeholder="0x..." autocomplete="off" value="root" readonly>
+        <label for="referrer-index">Referrer Index</label>
+        <div class="input-with-button">
+          <input type="text" id="referrer-index" class="register-form-input" placeholder="e.g. 123 or IAM123" autocomplete="off">
+          <button type="button" id="apply-referrer-index-btn" class="paste-btn-inside">Apply</button>
+        </div>
+        <input type="text" id="referrer-address-display" class="register-form-input address-field" placeholder="0x..." autocomplete="off" readonly>
+        <div id="referrer-validation-status" class="register-form-status" style="display:none; margin-top: 4px; font-size: 0.7rem;"></div>
       </div>
 
       <!-- Upper Address with Index -->
@@ -385,6 +390,7 @@
       <div class="form-group">
         <label for="new-user-address">New User Address</label>
         <input type="text" id="new-user-address" class="register-form-input index-input" placeholder="0x..." autocomplete="off">
+        <div id="new-user-address-info" class="register-form-status" style="display:none; margin-top: 4px; font-size: 0.7rem; background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); color: #00ff88;"></div>
       </div>
        
                        <button class="register-btn buy-btn" id="register-btn" type="button" style="width:100%;margin-top:6px;">Register</button>
@@ -648,49 +654,66 @@
 
          document.addEventListener('DOMContentLoaded', function() {
            const newUserInput = document.getElementById('new-user-address');
-           const referrerInput = document.getElementById('referrer-address');
+           const referrerDisplay = document.getElementById('referrer-address-display');
+           const referrerIndexInput = document.getElementById('referrer-index');
            const upperInput = document.getElementById('upper-address');
            const upperIndexInput = document.getElementById('upper-index');
            
+           // Set up all event listeners here
+           setupEventListeners();
            
-          // When user clicks on referrer input
-           referrerInput.addEventListener('click', async function() {
-               try {
-              // Read clipboard content
-                 const clipboardText = await navigator.clipboard.readText();
-                 
-              // Check if copied text looks like Ethereum address
-                 if (clipboardText.match(/^0x[a-fA-F0-9]{40}$/)) {
-                   referrerInput.value = clipboardText;
-                
-                                 // Display success message (optional)
-                 alert('Referrer address copied from clipboard successfully!');
-                 }
-               } catch (err) {
-                           console.error('Error accessing clipboard:', err);
-             // If needed, you can display an error message to user
-             }
-           });
-           
-          // When user clicks on upper input
-           upperInput.addEventListener('click', async function() {
-               try {
-              // Read clipboard content
-                 const clipboardText = await navigator.clipboard.readText();
-                 
-              // Check if copied text looks like Ethereum address
-                 if (clipboardText.match(/^0x[a-fA-F0-9]{40}$/)) {
-                   upperInput.value = clipboardText;
-                
-                                 // Display success message (optional)
-                 alert('Upper address copied from clipboard successfully!');
-                 }
-               } catch (err) {
-                           console.error('Error accessing clipboard:', err);
-             // If needed, you can display an error message to user
-             }
-           });
+           function setupEventListeners() {
+             // Referrer index application
+             document.getElementById('apply-referrer-index-btn').addEventListener('click', async function() {
+               await applyIndexToAddress(referrerIndexInput, referrerDisplay, 'referrer');
+             });
+             
+             // Upper index application
+             document.getElementById('apply-upper-index-btn').addEventListener('click', async function() {
+               await applyIndexToAddress(upperIndexInput, upperInput, 'upper');
+             });
+             
+             // Enter key support for referrer index field
+             referrerIndexInput.addEventListener('keypress', async function(e) {
+               if (e.key === 'Enter') {
+                 e.preventDefault();
+                 document.getElementById('apply-referrer-index-btn').click();
+               }
+             });
 
+             // Enter key support for upper index
+             upperIndexInput.addEventListener('keypress', async function(e) {
+               if (e.key === 'Enter') {
+                 e.preventDefault();
+                 document.getElementById('apply-upper-index-btn').click();
+               }
+             });
+             
+             // Address field event listeners (for manual editing)
+             refDisplay.addEventListener('change', async function() {
+               await checkAddressValidity(refDisplay, 'referrer');
+               await validateUpperAgainstReferrer();
+               await calculatePlacementForNewUser();
+             });
+             
+             referrerIndexInput.addEventListener('change', async function() {
+               // Only validate if it's a valid index format
+               const value = this.value.trim();
+               if (value && (value.match(/^\d+$/) || value.match(/^IAM\d+$/))) {
+                 await checkAddressValidity(referrerIndexInput, 'referrer');
+                 await validateUpperAgainstReferrer();
+                 await calculatePlacementForNewUser();
+               }
+             });
+             
+             upperInput.addEventListener('change', async function() {
+               await checkAddressValidity(upperInput, 'upper');
+               await validateUpperAgainstReferrer();
+             });
+           }
+           
+           
+           
           // When user clicks on referrer index input
            referrerIndexInput.addEventListener('click', async function() {
                try {
@@ -703,6 +726,25 @@
                 
                                  // Display success message (optional)
                  alert('Referrer index copied from clipboard successfully!');
+                 }
+               } catch (err) {
+                           console.error('Error accessing clipboard:', err);
+             // If needed, you can display an error message to user
+             }
+           });
+
+          // When user clicks on upper input
+           upperInput.addEventListener('click', async function() {
+               try {
+              // Read clipboard content
+                 const clipboardText = await navigator.clipboard.readText();
+                 
+              // Check if copied text looks like Ethereum address
+                 if (clipboardText.match(/^0x[a-fA-F0-9]{40}$/)) {
+                   upperInput.value = clipboardText;
+                
+                                 // Display success message (optional)
+                 alert('Upper address copied from clipboard successfully!');
                  }
                } catch (err) {
                            console.error('Error accessing clipboard:', err);
@@ -923,6 +965,13 @@
        document.getElementById('upper-index').placeholder = 'e.g. 123';
        document.getElementById('upper-address').placeholder = '0x...';
        
+       // Enable referrer index field for normal registration
+       document.getElementById('referrer-index').disabled = false;
+       document.getElementById('referrer-index').placeholder = 'e.g. 123 or IAM123';
+       document.getElementById('apply-referrer-index-btn').disabled = false;
+       document.getElementById('apply-referrer-index-btn').style.opacity = '1';
+       document.getElementById('apply-referrer-index-btn').style.cursor = 'pointer';
+       
        // Enable upper fields for normal registration
        document.getElementById('upper-index').disabled = false;
        document.getElementById('upper-address').disabled = false;
@@ -969,6 +1018,13 @@
        document.getElementById('upper-label').textContent = 'Upper Address (Auto-filled)';
        document.getElementById('upper-index').placeholder = 'Auto-calculated';
        document.getElementById('upper-address').placeholder = 'Auto-filled from connected wallet';
+       
+       // Disable referrer index field for reserve (read-only)
+       document.getElementById('referrer-index').disabled = true;
+       document.getElementById('referrer-index').placeholder = 'Auto-filled from connected wallet';
+       document.getElementById('apply-referrer-index-btn').disabled = true;
+       document.getElementById('apply-referrer-index-btn').style.opacity = '0.5';
+       document.getElementById('apply-referrer-index-btn').style.cursor = 'not-allowed';
        
        // Disable upper fields for reserve (read-only)
        document.getElementById('upper-index').disabled = true;
@@ -1083,32 +1139,59 @@
         document.getElementById('register-btn').disabled = false;
         document.querySelectorAll('input').forEach(i=>i.disabled=false);
                  // Initialize referrer (parent) and parent-index only after user initialization
-        const refInput = document.getElementById('referrer-address');
+        const refDisplay = document.getElementById('referrer-address-display');
         const upperInput = document.getElementById('upper-address');
         let user;
         let parentIndex = '...';
         try {
           user = await contract.users(myAddress);
-                     console.log(`🔍 User status:`, user);
-                     // If user is not active, show registration suggestion message
-            const suggestionDiv = document.getElementById('register-suggestion');
-                     if (user && !(user.index && BigInt(user.index) > 0n)) {
-             console.log(`⚠️ User registered but not active`);
-             suggestionDiv.style.display = '';
-             suggestionDiv.textContent = 'You have not registered yet. Please do a reserve registration.';
-           } else if (!user) {
-             console.log(`⚠️ User not registered at all`);
-             suggestionDiv.style.display = '';
-             suggestionDiv.textContent = 'You have not registered yet. Please do a reserve registration.';
-           } else {
-             console.log(`✅ User is active: index=${user.index}`);
-             suggestionDiv.style.display = 'none';
-           }
-                     // If wallet is active and current value is root or empty, change value to connected wallet address
-          if ((!refInput.value || refInput.value === 'root') && (user.index && BigInt(user.index) > 0n)) {
-            refInput.value = myAddress;
-            refInput.setAttribute('data-full-address', myAddress);
-            updateAddressDisplay(refInput);
+          console.log(`🔍 User status:`, user);
+          console.log(`🔍 myAddress: ${myAddress}`);
+          console.log(`🔍 User index:`, user ? user.index : 'No user data');
+          
+          // If user is not active, show registration suggestion message
+          const suggestionDiv = document.getElementById('register-suggestion');
+          if (user && !(user.index && BigInt(user.index) > 0n)) {
+            console.log(`⚠️ User registered but not active`);
+            suggestionDiv.style.display = '';
+            suggestionDiv.textContent = 'You have not registered yet. Please do a reserve registration.';
+          } else if (!user) {
+            console.log(`⚠️ User not registered at all`);
+            suggestionDiv.style.display = '';
+            suggestionDiv.textContent = 'You have not registered yet. Please do a reserve registration.';
+          } else {
+            console.log(`✅ User is active: index=${user.index}`);
+            suggestionDiv.style.display = 'none';
+          }
+                     
+          // Handle referrer and upper based on user registration status
+          const isUserActive = user && user.index && BigInt(user.index) > 0n;
+          console.log(`🔍 isUserActive: ${isUserActive}`);
+          
+          if (isUserActive) {
+            // User is registered and active - set referrer to connected wallet
+            console.log(`✅ User is active, setting referrer to connected wallet`);
+            refDisplay.value = myAddress;
+            refDisplay.setAttribute('data-full-address', myAddress);
+            updateAddressDisplay(refDisplay);
+            
+            // For registered users, set new user address to their wallet (self-registration)
+            const newUserInputElement = document.getElementById('new-user-address');
+            if (newUserInputElement) {
+              newUserInputElement.value = myAddress;
+              newUserInputElement.style.backgroundColor = '#232946';
+              newUserInputElement.style.color = '#fff';
+              newUserInputElement.style.opacity = '0.8';
+              
+              // Show info message for registered users
+              const newUserInfo = document.getElementById('new-user-address-info');
+              if (newUserInfo) {
+                newUserInfo.style.display = '';
+                newUserInfo.textContent = '✅ Set to your wallet address (you can change this to register others)';
+              }
+              
+              console.log(`✅ Set new user address to registered user's wallet: ${myAddress}`);
+            }
             
             // Set upper address based on registration type
             if (currentRegistrationType === 'normal') {
@@ -1125,19 +1208,81 @@
               const upperIndex = user.index.toString();
               upperIndexInput.value = upperIndex;
             }
-          } else if (!(user.index && BigInt(user.index) > 0n) && (!refInput.value || refInput.value === myAddress)) {
-            refInput.value = '';
-            refInput.removeAttribute('data-full-address');
+          } else {
+            // User is not registered - clear fields and allow manual input
+            console.log(`⚠️ User not registered, clearing fields for manual input`);
+            console.log(`🔍 About to set new user address - myAddress: ${myAddress}`);
+            
+            refDisplay.value = '';
+            refDisplay.removeAttribute('data-full-address');
+            referrerIndexInput.value = '';
             
             upperInput.value = '';
             upperInput.removeAttribute('data-full-address');
             upperIndexInput.value = '';
+            
+            // Set new user address to connected wallet for unregistered users
+            const newUserInputElement = document.getElementById('new-user-address');
+            console.log(`🔍 newUserInputElement:`, newUserInputElement);
+            
+            if (myAddress && newUserInputElement) {
+              console.log(`🔍 Setting new user address to: ${myAddress}`);
+              
+              // Try to set immediately first
+              newUserInputElement.value = myAddress;
+              newUserInputElement.style.backgroundColor = '#232946';
+              newUserInputElement.style.color = '#fff';
+              newUserInputElement.style.opacity = '0.8';
+              
+              // Also try with setTimeout as fallback
+              setTimeout(() => {
+                newUserInputElement.value = myAddress;
+                newUserInputElement.style.backgroundColor = '#232946';
+                newUserInputElement.style.color = '#fff';
+                newUserInputElement.style.opacity = '0.8';
+                
+                console.log(`🔍 After timeout - Final value in input: ${newUserInputElement.value}`);
+              }, 100);
+              
+              // Show info message
+              const newUserInfo = document.getElementById('new-user-address-info');
+              if (newUserInfo) {
+                newUserInfo.style.display = '';
+                newUserInfo.textContent = '✅ Auto-filled with your connected wallet address (for self-registration)';
+                console.log(`🔍 Info message shown`);
+              }
+              
+              console.log(`✅ Set new user address to connected wallet: ${myAddress}`);
+              console.log(`🔍 Immediate value in input: ${newUserInputElement.value}`);
+            } else {
+              console.log(`❌ Cannot set new user address - myAddress: ${myAddress}, element exists: ${!!newUserInputElement}`);
+            }
+            
+            // Enable referrer index field for unregistered users
+            document.getElementById('referrer-index').disabled = false;
+            document.getElementById('referrer-index').placeholder = 'e.g. 123 or IAM123';
+            document.getElementById('apply-referrer-index-btn').disabled = false;
+            document.getElementById('apply-referrer-index-btn').style.opacity = '1';
+            document.getElementById('apply-referrer-index-btn').style.cursor = 'pointer';
           }
                      // Initialize parent-index
           parentIndex = user.index ? user.index.toString() : '';
                  } catch (e) {
           // If we had an error, keep empty values
-          refInput.value = '';
+          refDisplay.value = '';
+          referrerIndexInput.value = '';
+          
+          const newUserInputElement = document.getElementById('new-user-address');
+          if (newUserInputElement) {
+            newUserInputElement.value = '';
+          }
+          
+          // Hide info message
+          const newUserInfo = document.getElementById('new-user-address-info');
+          if (newUserInfo) {
+            newUserInfo.style.display = 'none';
+          }
+          
            parentIndex = '';
          }
         const parentIndexElement = document.getElementById('parent-index');
@@ -1285,22 +1430,7 @@
          
 
     // --- Manual index application with button ---
-
-    // Upper index application
-    document.getElementById('apply-upper-index-btn').addEventListener('click', async function() {
-      await applyIndexToAddress(upperIndexInput, upperInput, 'upper');
-    });
-    
-    
-    // Enter key support for index inputs
-
-    // Enter key support for upper index
-    upperIndexInput.addEventListener('keypress', async function(e) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        document.getElementById('apply-upper-index-btn').click();
-      }
-    });
+    // Event listeners are now set up in the main DOMContentLoaded function
 
     // Function to apply index to address field
     async function applyIndexToAddress(indexInput, addressInput, type) {
@@ -1345,6 +1475,16 @@
         // Update display with truncated address
         updateAddressDisplay(addressInput);
         
+        // For referrer, also update the display field
+        if (type === 'referrer') {
+          referrerDisplay.value = address;
+          referrerDisplay.setAttribute('data-full-address', address);
+          updateAddressDisplay(referrerDisplay);
+          
+          // Clear the index input after successful conversion
+          referrerIndexInput.value = '';
+        }
+        
         showTempMessage(`${type} address set successfully`, 'success');
         console.log(`✅ ${type} address set: ${address}`);
         
@@ -1360,17 +1500,7 @@
     }
      
 
-         // Address field event listeners (for manual editing)
-     refInput.addEventListener('change', async function() {
-       await checkAddressValidity(refInput, 'referrer');
-       await validateUpperAgainstReferrer();
-       await calculatePlacementForNewUser();
-     });
-     
-     upperInput.addEventListener('change', async function() {
-       await checkAddressValidity(upperInput, 'upper');
-       await validateUpperAgainstReferrer();
-     });
+         // Address field event listeners are now set up in setupEventListeners function
      
     // Function to truncate address for display
     function truncateAddress(address) {
@@ -1413,7 +1543,7 @@
       const placementEl = document.getElementById('placement-info');
       if (!statusEl || !placementEl) return;
       
-      const referrer = refInput.getAttribute('data-full-address') || refInput.value.trim();
+      const referrer = refDisplay.getAttribute('data-full-address') || refDisplay.value.trim();
       const upper = upperInput.getAttribute('data-full-address') || upperInput.value.trim();
       
       if (!referrer || referrer === 'root') {
@@ -1758,7 +1888,7 @@
        // Function to calculate placement for new user when both referrer and new user are provided
        async function calculatePlacementForNewUser() {
          const newUserAddress = newUserInput.value.trim();
-         const referrerAddress = refInput.getAttribute('data-full-address') || refInput.value.trim();
+         const referrerAddress = refDisplay.getAttribute('data-full-address') || refDisplay.value.trim();
          
          // Only calculate if both addresses are valid and different
          if (!newUserAddress || !referrerAddress || 
@@ -1851,7 +1981,7 @@
         }
         
         // Get full addresses for registration (not truncated display)
-        const referrer = refInput.getAttribute('data-full-address') || refInput.value.trim();
+        const referrer = refDisplay.getAttribute('data-full-address') || refDisplay.value.trim();
         const upper = upperInput.getAttribute('data-full-address') || upperInput.value.trim();
         const newUser = newUserInput.value.trim();
         

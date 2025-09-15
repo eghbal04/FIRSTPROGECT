@@ -904,12 +904,18 @@
                 
                 // Get user's index (IAM ID)
                 const userIndex = await window.getIndexByAddress(contract, currentUserAddress);
-                console.log('✅ User Index:', userIndex.toString());
+                console.log('🔍 Raw userIndex:', userIndex);
+                console.log('🔍 userIndex type:', typeof userIndex);
+                console.log('🔍 userIndex === 0n:', userIndex === 0n);
+                console.log('🔍 userIndex == 0:', userIndex == 0);
+                console.log('🔍 !userIndex:', !userIndex);
                 
-                if (!userIndex || userIndex === 0n) {
-                    console.log('❌ User not registered');
+                if (!userIndex || userIndex === 0n || userIndex == 0 || userIndex.toString() === '0') {
+                    console.log('❌ User not registered - returning null');
                     return null;
                 }
+                
+                console.log('✅ User is registered with index:', userIndex.toString());
                 
                 // Get user's children using getUserTree
                 let children = [];
@@ -1271,8 +1277,13 @@
             // Initialize file manager
             initializeFileManager();
             
-            // Load tree data
-            loadFileManagerTree();
+            // Only load tree data if wallet is connected and registration check is complete
+            if (window.contractConfig && window.contractConfig.contract && window.contractConfig.userAddress && registrationCheckComplete) {
+                loadFileManagerTree();
+            } else {
+                console.log('⚠️ Wallet not connected or registration check not complete, showing empty state');
+                showEmptyTree();
+            }
         }
 
         // File Manager Data
@@ -1282,6 +1293,9 @@
             treeData: {},
             networks: []
         };
+        
+        // Registration check flag
+        let registrationCheckComplete = false;
 
         // Initialize file manager
         function initializeFileManager() {
@@ -1344,6 +1358,34 @@
                     return;
                 }
                 
+                // Check if user is registered first
+                const userAddress = window.contractConfig.userAddress;
+                if (!userAddress) {
+                    console.log('❌ No user address available');
+                    showEmptyTree();
+                    return;
+                }
+                
+                // Check if user is registered
+                const contract = window.contractConfig.contract;
+                console.log('🔍 Checking user registration for address:', userAddress);
+                const userIndex = await window.getIndexByAddress(contract, userAddress);
+                console.log('🔍 User index result:', userIndex);
+                console.log('🔍 userIndex type:', typeof userIndex);
+                console.log('🔍 userIndex === 0n:', userIndex === 0n);
+                console.log('🔍 userIndex == 0:', userIndex == 0);
+                console.log('🔍 !userIndex:', !userIndex);
+                
+                if (!userIndex || userIndex === 0n || userIndex == 0 || userIndex.toString() === '0') {
+                    console.log('❌ User not registered, showing registration message');
+                    registrationCheckComplete = true;
+                    showUnregisteredUserMessage();
+                    return;
+                }
+                
+                console.log('✅ User is registered, loading tree...');
+                registrationCheckComplete = true;
+                
                 // Load root node
                 await loadRootNode();
                 
@@ -1352,7 +1394,9 @@
                 
             } catch (error) {
                 console.error('❌ Error loading file manager tree:', error);
-                showErrorTree();
+                console.log('🔍 Error details:', error.message);
+                registrationCheckComplete = true;
+                showUnregisteredUserMessage(); // Show unregistered message instead of error
             }
         }
 
@@ -2574,6 +2618,25 @@
                 </div>
             `;
         }
+        
+        // Show unregistered user message
+        function showUnregisteredUserMessage() {
+            const treeView = document.getElementById('tree-view');
+            if (!treeView) return;
+            
+            treeView.innerHTML = `
+                <div class="tree-empty">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">🚫</div>
+                    <div>Access Denied</div>
+                    <div style="font-size: 0.9rem; margin-top: 0.5rem; color: #ff6b6b;">
+                        You need to be registered to view the network tree
+                    </div>
+                    <div style="font-size: 0.8rem; margin-top: 0.5rem; color: #a786ff;">
+                        Please register first to access this feature
+                    </div>
+                </div>
+            `;
+        }
 
         // Show error tree state
         function showErrorTree() {
@@ -2985,18 +3048,22 @@
         async function loadRealDataAndRender() {
             try {
                 console.log('🔄 Loading real wallet data...');
+                console.log('🔍 Contract config:', window.contractConfig);
+                console.log('🔍 User address:', window.contractConfig?.userAddress);
                 
 
                 
                 // Check if wallet is connected
                 if (!window.contractConfig || !window.contractConfig.contract) {
-                    console.log('⚠️ Wallet not connected, using default data');
-                    renderPyramidTree();
+                    console.log('⚠️ Wallet not connected, showing empty state');
+                    showEmptyTree();
                     return;
                 }
                 
                 // Get real wallet data
                 const realData = await getRealWalletData();
+                console.log('🔍 Real data result:', realData);
+                
                 if (realData) {
                     console.log('✅ Real data loaded, rendering tree...');
                     
@@ -3008,9 +3075,10 @@
                         connectBtn.textContent = `✅ ${shortAddress}`;
                     }
                     
-                    renderPyramidTree();
+                    // Load the file manager tree directly
+                    await loadFileManagerTree();
                 } else {
-                    console.log('⚠️ Could not load real data, using default data');
+                    console.log('⚠️ Could not load real data, showing unregistered message');
                     
                     // Update button state for failed data load
                     const connectBtn = document.getElementById('connect-wallet-btn');
@@ -3029,13 +3097,14 @@
                         }, 3000);
                     }
                     
-                    renderPyramidTree();
+                    // Show unregistered user message
+                    showUnregisteredUserMessage();
                 }
 
             } catch (error) {
                 console.error('❌ Error loading real data:', error);
-                console.log('⚠️ Using default data');
-                renderPyramidTree();
+                console.log('⚠️ Error occurred, showing unregistered message');
+                showUnregisteredUserMessage();
             }
         }
         
@@ -3164,9 +3233,9 @@
                         checkConnectionState();
                         console.log('✅ Wallet connected successfully via button');
                         
-                        // Try to render the tree with real data
+                        // Load real data and render tree
                         try {
-                            renderPyramidTree();
+                            await loadRealDataAndRender();
                         } catch (renderError) {
                             console.log('⚠️ Tree render failed:', renderError.message);
                         }
@@ -3282,7 +3351,7 @@
                             return;
                         } else {
                             console.log('❌ MetaMask not available after max attempts');
-                            renderPyramidTree();
+                            showEmptyTree();
                             return;
                         }
                     }
@@ -3352,15 +3421,15 @@
                             connectBtn.textContent = '🔗 Connect Wallet';
                         }
                         
-                        renderPyramidTree();
+                        showEmptyTree();
                     }
             } catch (error) {
                     console.error(`❌ Error in auto-connection attempt ${attempts}:`, error);
                     if (attempts < maxAttempts) {
                         setTimeout(tryConnectWallet, 1000);
                     } else {
-                        console.log('❌ Max auto-connection attempts reached, showing default data');
-                        renderPyramidTree();
+                        console.log('❌ Max auto-connection attempts reached, showing empty state');
+                        showEmptyTree();
                     }
                 }
             };
@@ -3382,7 +3451,7 @@
             }
             
             // Start trying to connect
-            setTimeout(tryConnectWallet, 200);
+            setTimeout(tryConnectWallet, 500);
             
             // Listen for account changes
             if (window.ethereum) {
@@ -3394,7 +3463,7 @@
                         }
                         await loadRealDataAndRender();
                     } else {
-                        renderPyramidTree();
+                        showEmptyTree();
                     }
                 });
                 
