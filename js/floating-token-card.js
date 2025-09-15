@@ -50,6 +50,7 @@ class FloatingTokenGrowthCard {
         transition: all 0.3s ease;
         border: 3px solid rgba(255, 255, 255, 0.2);
         backdrop-filter: blur(10px);
+        opacity: 0.5;
       ">
         <div style="
           color: #1a1f2e;

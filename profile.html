@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Profile</title>
     <link rel="stylesheet" href="css/mobile-responsive.css">
-    <script src="js/mobile-navigation.js"></script>
+    <!-- Removed missing script: js/mobile-navigation.js -->
     <script src="js/mobile-optimizer.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap');
@@ -18,13 +18,14 @@
             color: #e0e6f7;
         }
         .container {
-            max-width: 600px;
-            margin: 20px auto;
-            background: rgba(35,41,70,0.98);
-            border-radius: 12px;
-            box-shadow: 0 2px 12px #0005;
-            padding: 20px 16px 16px 16px;
-            border: 1px solid #a786ff33;
+            max-width: 560px;
+            margin: 16px auto;
+            background: rgba(35,41,70,0.75);
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+            padding: 14px;
+            border: 1px solid rgba(167,134,255,0.25);
+            backdrop-filter: blur(12px);
         }
         
         /* Responsive Design for different screen sizes */
@@ -36,14 +37,10 @@
                 font-size: 0.8rem;
             }
             
-            .container {
-                max-width: 98%;
-                margin: 10px auto;
-                padding: 16px 12px 12px 12px;
-            }
+            .container { max-width: 96%; margin: 8px auto; padding: 12px; }
             h1 {
-                font-size: 1.5em;
-                margin-bottom: 12px;
+                font-size: 1.35em;
+                margin-bottom: 8px;
             }
             .balance-box {
                 flex-direction: column;
@@ -103,11 +100,7 @@
             .balance-value {
                 font-size: 0.85em;
             }
-            .profile-row {
-                font-size: 0.85em;
-                padding: 4px 0;
-                gap: 2px;
-            }
+            .profile-row { font-size: 0.9em; padding: 6px 8px; gap: 6px; }
             .profile-value {
                 font-size: 0.8em;
             }
@@ -149,30 +142,38 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid #2d3250;
+            padding: 6px 8px;
+            margin: 4px 0;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0));
             font-size: 0.95em;
+            transition: box-shadow .2s, border-color .2s;
         }
+        .profile-row:hover{border-color:#a786ff33; box-shadow:0 6px 16px rgba(167,134,255,0.08)}
         .profile-row:last-child { border-bottom: none; }
-        .profile-label { color: #a786ff; font-weight: bold; }
+        .profile-label { color: #aeb4d4; font-weight: 600; letter-spacing: .2px; }
         .profile-value { color: #e0e6f7; font-family: monospace; }
         .balance-box {
             background: #181c2a;
-            border-radius: 8px;
+            border-radius: 12px;
             margin: 12px 0 16px 0;
-            box-shadow: 0 1px 4px #a786ff11;
-            padding: 12px 10px 8px 10px;
-            display: flex;
-            flex-wrap: wrap;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            padding: 12px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
             gap: 12px;
-            justify-content: space-between;
         }
         .balance-item {
-            flex: 1 1 100px;
-            min-width: 100px;
-            margin: 0 4px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0));
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 10px 12px;
             text-align: center;
+            box-shadow: 0 4px 14px rgba(167,134,255,0.08);
+            transition: border-color .2s, box-shadow .2s, transform .2s;
         }
+        .balance-item:hover { border-color:#a786ff33; box-shadow:0 8px 20px rgba(167,134,255,0.12); transform: translateY(-1px); }
         .balance-label { color: #00ff88; font-weight: bold; font-size: 0.9em; }
         .balance-value { color: #fff; font-size: 1em; font-family: monospace; margin-top: 2px; display: block; }
         
@@ -252,6 +253,35 @@
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
     <script src="js/config.js"></script>
     <script src="js/profile.js"></script>
+    <script>
+    // Disable/hide floating token card on profile page
+    (function(){
+      const hideFloatingCard = () => {
+        try {
+          const el = document.getElementById('floating-token-growth-card');
+          if (el) el.remove();
+          if (window.floatingTokenGrowthCard && typeof window.floatingTokenGrowthCard.destroy === 'function') {
+            window.floatingTokenGrowthCard.destroy();
+            window.floatingTokenGrowthCard = null;
+          }
+        } catch(_) {}
+      };
+      // Try immediately and with a few delays in case it appears later
+      hideFloatingCard();
+      document.addEventListener('DOMContentLoaded', hideFloatingCard);
+      window.addEventListener('load', () => {
+        hideFloatingCard();
+        setTimeout(hideFloatingCard, 300);
+        setTimeout(hideFloatingCard, 1500);
+      });
+      // Fallback: observe DOM for unexpected insertions
+      try {
+        const obs = new MutationObserver(hideFloatingCard);
+        obs.observe(document.documentElement, {childList:true, subtree:true});
+        setTimeout(()=>obs.disconnect(), 4000);
+      } catch(_) {}
+    })();
+    </script>
     <script>
     function formatDateTime(ts) {
         if (!ts || ts == 0) return '-';
@@ -485,7 +515,7 @@
                 </div>
                 <div class="withdrawal-buttons" style="display:flex;gap:0.8rem;justify-content:center;margin-bottom:1rem;flex-wrap:wrap;">
                   <button id="claim-btn" title="Commission withdrawal is only possible once every 12 hours and if you have points to withdraw. If you don't have points or 12 hours haven't passed yet, withdrawal is not possible." style="background:linear-gradient(90deg,#00ff88,#a786ff);color:#181c2a;font-weight:bold;border:none;border-radius:8px;padding:0.7em 1.5em;font-size:0.95em;cursor:pointer;box-shadow:0 1px 4px #00ff8840;display:inline-flex;align-items:center;gap:0.4em;transition:box-shadow 0.2s,transform 0.2s;"><span style='font-size:1em;'>💸</span> Withdraw Commission <span id="claim-timer" style="font-size:0.8em;margin-right:0.3em;"></span></button>
-                  ${canMonthlyCashback ? `<button id="monthly-cashback-btn" title="Cashback withdrawal is only possible once every 30 days, with at least one empty child position and up to the deposit limit. If both positions are full or 30 days haven't passed or the cashback limit is reached, withdrawal is not possible." style="background:linear-gradient(90deg,#a786ff,#00ff88);color:#181c2a;font-weight:bold;border:none;border-radius:8px;padding:0.7em 1.5em;font-size:0.95em;cursor:pointer;box-shadow:0 1px 4px #a786ff40;display:inline-flex;align-items:center;gap:0.4em;transition:box-shadow 0.2s,transform 0.2s;"><span style='font-size:1em;'>📆</span> Cashback <span id="cashback-timer" style="font-size:0.8em;margin-right:0.3em;"></span></button>` : ''}
+                  <button id="monthly-cashback-btn" title="Cashback withdrawal is only possible once every 30 days, with at least one empty child position and up to the deposit limit. If both positions are full or 30 days haven't passed or the cashback limit is reached, withdrawal is not possible." style="background:linear-gradient(90deg,#a786ff,#00ff88);color:#181c2a;font-weight:bold;border:none;border-radius:8px;padding:0.7em 1.5em;font-size:0.95em;cursor:pointer;box-shadow:0 1px 4px #a786ff40;display:inline-flex;align-items:center;gap:0.4em;transition:box-shadow 0.2s,transform 0.2s;"><span style='font-size:1em;'>📆</span> Cashback <span id="cashback-timer" style="font-size:0.8em;margin-right:0.3em;"></span></button>
                   <button id="upgrade-cap-btn" title="Upgrade binary points cap using IAM tokens. The more you upgrade, the higher your points cap becomes." style="background:linear-gradient(90deg,#ff6b35,#ff8e53);color:#181c2a;font-weight:bold;border:none;border-radius:8px;padding:0.7em 1.5em;font-size:0.95em;cursor:pointer;box-shadow:0 1px 4px #ff6b3540;display:inline-flex;align-items:center;gap:0.4em;transition:box-shadow 0.2s,transform 0.2s;"><span style='font-size:1em;'>📈</span> Upgrade Cap <span id="upgrade-timer" style="font-size:0.8em;margin-right:0.3em;"></span></button>
                 </div>
                 ${!canMonthlyCashback && monthlyMsg ? `<div style="background:rgba(167,134,255,0.08);border:1.5px solid #a786ff;border-radius:10px;padding:1em 1.2em;margin-bottom:1.5rem;text-align:center;font-size:1.07em;color:#a786ff;box-shadow:0 2px 8px #a786ff22;"><span style='font-size:1.2em;'>📆</span> <b>Cashback Not Available:</b><br>${monthlyMsg}</div>` : ''}
@@ -502,6 +532,7 @@
                           <div style="margin-bottom:1.5rem;">
                               <label style="display:block;color:#a786ff;margin-bottom:0.5rem;font-weight:bold;">IAM Amount for Upgrade:</label>
                               <input type="number" id="upgrade-cap-amount" placeholder="Enter IAM amount" style="width:100%;padding:0.8rem;border:2px solid #ff6b3333;border-radius:8px;background:rgba(255,107,51,0.1);color:#fff;font-size:1rem;box-sizing:border-box;">
+                              <div id="upgrade-cap-amount-usd" style="margin-top:6px;color:#a786ff;font-size:0.9em;">≈ $0.00</div>
                               <div style="margin-top:0.5rem;font-size:0.9em;color:#ccc;">
                                   <span>Current Balance: </span>
                                   <span id="upgrade-cap-balance" style="color:#00ff88;font-weight:bold;">Loading...</span>
@@ -527,7 +558,7 @@
                 <div class="profile-row"><span class="profile-label">Binary Points:</span><span class="profile-value">${user.binaryPoints}</span></div>
                 <div class="profile-row"><span class="profile-label">Binary Points Cap:</span><span class="profile-value">${user.binaryPointCap}</span></div>
                 <div class="profile-row"><span class="profile-label">Claimed Points:</span><span class="profile-value">${user.binaryPointsClaimed}</span></div>
-                <div class="profile-row"><span class="profile-label">Total Purchases:</span><span class="profile-value">${user.totalPurchasedKind}</span></div>
+                <div class="profile-row"><span class="profile-label">Total Purchases:</span><span class="profile-value"><span id="profile-purchased-kind">--</span><div id="profile-purchased-kind-usd" style="font-size:0.9em;color:#a786ff;margin-top:2px;"></div></span></div>
                 <div class="profile-row"><span class="profile-label">Upgrade Time:</span><span class="profile-value">${formatDateTime(user.upgradeTime)}</span></div>
                 <div class="profile-row"><span class="profile-label">Last Points Withdrawal:</span><span class="profile-value">${formatDateTime(user.lastClaimTime)}</span></div>
                 <div class="profile-row"><span class="profile-label">Left Points:</span><span class="profile-value">${user.leftPoints}</span></div>
@@ -540,23 +571,65 @@
                                  <div class="profile-row" style="flex-direction: column; align-items: flex-start; gap: 8px;">
                      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                          <span class="profile-label">Referral Reward:</span>
-                         <span class="profile-value">${Number(user.refclimed.toString())/1e18|0} IAM</span>
+                         <span class="profile-value" id="profile-refclimed">-- IAM</span>
                      </div>
                      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                          <span class="profile-label">USD Value:</span>
                          <span class="profile-value">$${formatLargeNumber(Number(user.refclimed.toString())/1e18 * tokenPrice)}</span>
                      </div>
-                     <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; background: rgba(167,134,255,0.08); border-radius: 6px; padding: 8px; border: 1px solid #a786ff22;">
-                         <div style="display: flex; align-items: center; gap: 8px; width: 100%; flex-wrap: wrap;">
-                             <span class="profile-value" id="profile-referral-link" style="flex: 1; min-width: 200px; word-break: break-all; font-size: 0.85em; color: #a786ff; font-family: monospace; background: rgba(0,0,0,0.1); padding: 4px 6px; border-radius: 4px;">${window.location.origin}/?ref=${user.index && BigInt(user.index) > 0n ? user.index : address}</span>
-                             <button id="copyProfileReferral" style="background: linear-gradient(90deg,#00ff88,#a786ff); color: #181c2a; border: none; border-radius: 4px; padding: 6px 12px; font-size: 0.8em; cursor: pointer; font-weight: bold; white-space: nowrap; transition: all 0.2s; min-width: 60px; flex-shrink: 0;">Copy</button>
-                         </div>
-                         <div style="font-size: 0.75em; color: #a786ff; opacity: 0.8; text-align: center; margin-top: 4px;">
-                             Share this link to earn referral rewards (10% of registration fee)
-                         </div>
-                     </div>
+                     
                  </div>
             `;
+
+            // Fill Total Purchases and Referral Reward values (scientific/compact)
+            (function(){
+                function sci3(n){
+                    const v = Number(n);
+                    if(!isFinite(v) || v===0) return '0';
+                    const a = Math.abs(v);
+                    if(a >= 1e6 || a < 1e-2) return v.toExponential(2).replace('e','E');
+                    return Number(v.toPrecision(3)).toString();
+                }
+                try {
+                    const tpEl = document.getElementById('profile-purchased-kind');
+                    const tpUsdEl = document.getElementById('profile-purchased-kind-usd');
+                    const rrEl = document.getElementById('profile-refclimed');
+                    const cashbackBtn = document.getElementById('monthly-cashback-btn');
+                    if (tpEl) {
+                        const tpVal = Number((user.totalPurchasedKind||0).toString())/1e18;
+                        tpEl.textContent = sci3(tpVal) + ' IAM';
+                        if (tpUsdEl) {
+                            const usd = (typeof tokenPrice==='number' ? tokenPrice : 0) * tpVal;
+                            tpUsdEl.textContent = '≈ $' + (usd?Number(usd.toPrecision(3)).toString():'0');
+                        }
+                    }
+                    if (rrEl) {
+                        const rrVal = Number((user.refclimed||0).toString())/1e18;
+                        rrEl.textContent = sci3(rrVal) + ' IAM';
+                    }
+                    // Disable cashback when both children are filled
+                    if (cashbackBtn && user.index && BigInt(user.index) > 0n && typeof contract.getLeftAddress === 'function' && typeof contract.getRightAddress === 'function') {
+                        Promise.all([
+                            contract.getLeftAddress(user.index),
+                            contract.getRightAddress(user.index)
+                        ]).then(([leftAddr, rightAddr]) => {
+                            const ZERO = '0x0000000000000000000000000000000000000000';
+                            const hasEmptyChild = (leftAddr === ZERO) || (rightAddr === ZERO);
+                            const now = Math.floor(Date.now()/1000);
+                            const lastMonthly = Number(user.lastMonthlyClaim||0);
+                            const timeOk = (now - lastMonthly) >= (30*24*3600);
+                            const eligible = hasEmptyChild && timeOk;
+                            cashbackBtn.disabled = !eligible;
+                            cashbackBtn.style.opacity = eligible ? '1' : '0.5';
+                            cashbackBtn.style.cursor = eligible ? 'pointer' : 'not-allowed';
+                            if (!eligible) {
+                                cashbackBtn.title = hasEmptyChild ? 'Cooldown: wait 30 days since last monthly withdrawal' : 'Not eligible: both child positions are filled';
+                            }
+                        }).catch(()=>{});
+                    }
+                } catch(_) {}
+            })();
+
             setTimeout(function() {
               const cashbackBtn = document.getElementById('monthly-cashback-btn');
               const cashbackMsg = document.getElementById('monthly-cashback-msg');

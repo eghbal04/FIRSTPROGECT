@@ -189,16 +189,41 @@ function updateProfileUI(profile) {
         }
     }
 
+    // Helper for scientific/compact display (3 significant digits)
+    function formatScientificDisplay(value) {
+        const n = Number(value);
+        if (!isFinite(n) || n === 0) return '0';
+        const abs = Math.abs(n);
+        if (abs >= 1e6 || abs < 1e-2) {
+            return n.toExponential(2).replace('e', 'E');
+        }
+        return Number(n.toPrecision(3)).toString();
+    }
+
     const purchasedKindEl = document.getElementById('profile-purchased-kind');
+    const purchasedKindUsdEl = document.getElementById('profile-purchased-kind-usd');
     if (purchasedKindEl) {
-        let rawValue = Number(profile.userStruct.totalPurchasedKind) / 1e18;
-        let lvlDisplay = rawValue.toLocaleString('en-US', { maximumFractionDigits: 5, minimumFractionDigits: 0 });
-        lvlDisplay += ' IAM';
-        purchasedKindEl.textContent = lvlDisplay;
+        const rawValue = Number(profile.userStruct.totalPurchasedKind || 0) / 1e18;
+        purchasedKindEl.textContent = formatScientificDisplay(rawValue) + ' IAM';
+        if (purchasedKindUsdEl) {
+            purchasedKindUsdEl.textContent = '≈ $--';
+            try {
+                if (window.contractConfig && window.contractConfig.contract && typeof window.contractConfig.contract.getTokenPrice === 'function') {
+                    window.contractConfig.contract.getTokenPrice().then((tpRaw) => {
+                        const tokenPrice = Number(ethers.formatUnits(tpRaw, 18));
+                        const usdValue = rawValue * tokenPrice;
+                        purchasedKindUsdEl.textContent = '≈ $' + Number(usdValue.toPrecision(3)).toString();
+                    }).catch(() => {});
+                }
+            } catch (_) {}
+        }
     }
 
     const refclimedEl = document.getElementById('profile-refclimed');
-    if (refclimedEl) refclimedEl.textContent = profile.userStruct.refclimed ? Math.floor(Number(profile.userStruct.refclimed) / 1e18) + ' IAM' : '۰';
+    if (refclimedEl) {
+        const refVal = Number(profile.userStruct.refclimed || 0) / 1e18;
+        refclimedEl.textContent = formatScientificDisplay(refVal) + ' IAM';
+    }
 
     // مدیریت وضعیت دکمه کلایم بر اساس پوینت‌های باینری
     const claimBtn = document.getElementById('profile-claim-btn');
@@ -224,21 +249,21 @@ function updateProfileUI(profile) {
     const rightPointsEl = document.getElementById('profile-rightPoints');
     if (rightPointsEl) rightPointsEl.textContent = profile.userStruct.rightPoints || '۰';
     
-    // مدیریت وضعیت دکمه پاداش ماهانه بر اساس خالی بودن فرزندان
-    const claimMonthlyBtn = document.getElementById('profile-claim-monthly-btn');
+    // مدیریت وضعیت دکمه پاداش ماهانه: فعال اگر حداقل یکی از فرزندان خالی باشد
+    const claimMonthlyBtn = document.getElementById('monthly-cashback-btn');
     if (claimMonthlyBtn) {
         const leftPoints = Number(profile.userStruct.leftPoints || 0);
         const rightPoints = Number(profile.userStruct.rightPoints || 0);
-        const bothChildrenEmpty = leftPoints === 0 && rightPoints === 0;
-        
-        if (bothChildrenEmpty) {
-            // نمایش دکمه اگر هر دو فرزند خالی هستند
+        const atLeastOneEmpty = (leftPoints === 0) || (rightPoints === 0);
+
+        if (atLeastOneEmpty) {
+            // نمایش و فعال‌سازی دکمه وقتی حداقل یکی خالی است
             claimMonthlyBtn.style.display = 'block';
             claimMonthlyBtn.disabled = false;
             claimMonthlyBtn.style.opacity = '1';
             claimMonthlyBtn.style.cursor = 'pointer';
         } else {
-            // مخفی کردن دکمه اگر حداقل یکی از فرزندان خالی نیست
+            // عدم نمایش وقتی هر دو پر هستند
             claimMonthlyBtn.style.display = 'none';
         }
     }
@@ -585,18 +610,21 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // دکمه برداشت پاداش ماهانه
-    const claimMonthlyBtn = document.getElementById('profile-claim-monthly-btn');
-    const claimMonthlyStatus = document.getElementById('profile-claim-monthly-status');
+    const claimMonthlyBtn = document.getElementById('monthly-cashback-btn');
+    const claimMonthlyStatus = document.getElementById('monthly-cashback-msg');
     if (claimMonthlyBtn && claimMonthlyStatus) {
         claimMonthlyBtn.onclick = async function() {
             claimMonthlyBtn.disabled = true;
+            claimMonthlyStatus.style.display = 'block';
             claimMonthlyStatus.textContent = 'در حال برداشت پاداش ماهانه...';
             claimMonthlyStatus.className = 'profile-status loading';
             try {
                 const result = await window.claimMonthlyReward();
+                claimMonthlyStatus.style.display = 'block';
                 claimMonthlyStatus.textContent = 'برداشت ماهانه با موفقیت انجام شد!\nکد تراکنش: ' + result.transactionHash;
                 claimMonthlyStatus.className = 'profile-status success';
-                setTimeout(() => location.reload(), 1200);
+                // پیام را مدت بیشتری نگه داریم و سپس (اختیاری) رفرش کنیم
+                // setTimeout(() => location.reload(), 5000);
             } catch (e) {
                 let msg = e && e.message ? e.message : e;
                 if (e.code === 4001 || (msg && msg.includes('user denied'))) {
@@ -616,10 +644,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     msg = '❌ خطا در برداشت ماهانه: ' + (msg || 'خطای ناشناخته');
                 }
+                claimMonthlyStatus.style.display = 'block';
                 claimMonthlyStatus.textContent = msg;
                 claimMonthlyStatus.className = 'profile-status error';
             }
-            claimMonthlyBtn.disabled = false;
+            // اجازه می‌دهیم کاربر پیام را ببیند؛ دکمه پس از چند ثانیه دوباره فعال شود
+            setTimeout(() => { claimMonthlyBtn.disabled = false; }, 4000);
         };
     }
 
@@ -770,79 +800,79 @@ async function updateWalletCountsDisplay() {
     }
 }
 
-// تابع ارتقاع سقف با استفاده از purchaseEBAConfig
+// Upgrade cap with purchaseEBAConfig (English messages)
 async function purchaseEBAConfig(amount, payout = 100, seller = '0x0000000000000000000000000000000000000000') {
     try {
-        console.log('🔄 شروع ارتقاع سقف با مقدار:', amount, 'payout:', payout, 'seller:', seller);
+        console.log('🔄 Starting upgrade cap with amount:', amount, 'payout:', payout, 'seller:', seller);
         
         if (!window.connectWallet) {
-            throw new Error('اتصال کیف پول فعال نیست');
+            throw new Error('Wallet connection is not active');
         }
         
         const { contract, address } = await window.connectWallet();
         if (!contract || !address) {
-            throw new Error('اتصال کیف پول برقرار نشد');
+            throw new Error('Wallet connection failed');
         }
         
-        // بررسی اینکه کاربر ثبت‌نام شده باشد
+        // Ensure user is registered
         const user = await contract.users(address);
         if (!user || !user.index || BigInt(user.index) === 0n) {
-            throw new Error('ابتدا باید ثبت‌نام کنید');
+            throw new Error('You must register first');
         }
         
         // تبدیل مقدار به wei
         const amountInWei = ethers.parseUnits(amount.toString(), 18);
         
-        // بررسی موجودی کاربر
+        // Check user balance
         const userBalance = await contract.balanceOf(address);
         if (userBalance < amountInWei) {
-            throw new Error('موجودی کافی برای ارتقاع ندارید');
+            throw new Error('Insufficient IAM balance for upgrade');
         }
         
-        // اعتبارسنجی payout (باید بین 30 تا 100 باشد)
+        // Validate payout (must be between 30 and 100)
         if (payout <= 30 || payout > 100) {
-            throw new Error('درصد payout باید بین 30 تا 100 باشد');
+            throw new Error('Payout percent must be between 30 and 100');
         }
         
-        console.log('⏳ ارسال تراکنش ارتقاع سقف...');
+        console.log('⏳ Submitting upgrade transaction...');
         
-        // انجام تراکنش ارتقاع با پارامترهای صحیح
+        // Send transaction
         const tx = await contract.purchase(amountInWei, payout, seller);
         
-        console.log('⏳ منتظر تایید تراکنش...');
+        console.log('⏳ Waiting for transaction confirmation...');
         await tx.wait();
         
-        console.log('✅ ارتقاع سقف با موفقیت انجام شد');
+        console.log('✅ Upgrade cap completed successfully');
         
         return {
             success: true,
             transactionHash: tx.hash,
-            message: 'ارتقاع سقف با موفقیت انجام شد!'
+            message: 'Upgrade cap completed successfully!'
         };
         
     } catch (error) {
-        console.error('❌ خطا در ارتقاع سقف:', error);
+        console.error('❌ Upgrade cap error:', error);
         
-        let errorMessage = 'خطا در ارتقاع سقف';
+        let errorMessage = 'Upgrade cap error';
         
         if (error.code === 4001) {
-            errorMessage = 'تراکنش توسط کاربر لغو شد';
+            errorMessage = 'Transaction cancelled by user';
         } else if (error.message && error.message.includes('insufficient funds')) {
-            errorMessage = 'موجودی کافی برای ارتقاع ندارید';
+            errorMessage = 'Insufficient IAM balance for upgrade';
         } else if (error.message && error.message.includes('user denied')) {
-            errorMessage = 'تراکنش توسط کاربر رد شد';
+            errorMessage = 'Transaction rejected by user';
         } else if (error.message && error.message.includes('network')) {
-            errorMessage = 'خطای شبکه - لطفاً اتصال اینترنت خود را بررسی کنید';
+            errorMessage = 'Network error - please check your internet or blockchain network';
         } else if (error.message && error.message.includes('execution reverted')) {
-            errorMessage = 'تراکنش ناموفق بود - شرایط ارتقاع را بررسی کنید';
+            errorMessage = 'Transaction failed - check upgrade conditions';
         } else if (error.message && error.message.includes('not registered')) {
-            errorMessage = 'ابتدا باید ثبت‌نام کنید';
+            errorMessage = 'You must register first';
         } else if (error.message && error.message.includes('Amount must be greater than 0')) {
-            errorMessage = 'مقدار باید بیشتر از صفر باشد';
+            errorMessage = 'Amount must be greater than 0';
         } else if (error.message && error.message.includes('Invalid payout percent')) {
-            errorMessage = 'درصد payout نامعتبر است (باید بین 30 تا 100 باشد)';
+            errorMessage = 'Invalid payout percent (must be between 30 and 100)';
         } else {
-            errorMessage = error.message || 'خطای نامشخص در ارتقاع سقف';
+            errorMessage = error.message || 'Unknown upgrade cap error';
         }
         
         throw new Error(errorMessage);
@@ -854,6 +884,7 @@ function setupUpgradeCapButton(user, contract, address) {
     const upgradeBtn = document.getElementById('upgrade-cap-btn');
     const modal = document.getElementById('upgrade-cap-modal');
     const amountInput = document.getElementById('upgrade-cap-amount');
+    const amountUsdEl = document.getElementById('upgrade-cap-amount-usd');
     const balanceEl = document.getElementById('upgrade-cap-balance');
     const currentCapEl = document.getElementById('upgrade-cap-current');
     const confirmBtn = document.getElementById('upgrade-cap-confirm');
@@ -894,6 +925,7 @@ function setupUpgradeCapButton(user, contract, address) {
             
             // محاسبه اطلاعات ارتقاع طبق قرارداد
             await calculateUpgradeInfo();
+            if (amountUsdEl) updateAmountUsdPreview();
             
         } catch (error) {
             console.error('خطا در بارگذاری اطلاعات ارتقاع:', error);
@@ -941,9 +973,26 @@ function setupUpgradeCapButton(user, contract, address) {
             });
             
         } catch (error) {
-            console.error('خطا در محاسبه اطلاعات ارتقاع:', error);
+            console.error('Error calculating upgrade info:', error);
         }
     }
+    
+    // USD preview for entered IAM amount
+    function updateAmountUsdPreview() {
+        try {
+            if (!amountUsdEl) return;
+            const val = parseFloat(amountInput && amountInput.value ? amountInput.value : '');
+            if (!val || val <= 0) { amountUsdEl.textContent = '≈ $0.00'; return; }
+            if (typeof contract.getTokenPrice === 'function') {
+                contract.getTokenPrice().then((tpRaw) => {
+                    const price = Number(ethers.formatUnits(tpRaw, 18));
+                    const usd = val * price;
+                    amountUsdEl.textContent = '≈ $' + usd.toLocaleString('en-US', { maximumFractionDigits: 2, minimumFractionDigits: 2 });
+                }).catch(() => { amountUsdEl.textContent = '≈ $—'; });
+            }
+        } catch (_) {}
+    }
+    if (amountInput && amountUsdEl) { amountInput.addEventListener('input', updateAmountUsdPreview); }
     
     // به‌روزرسانی UI ارتقاع
     function updateUpgradeUI(info) {
@@ -956,21 +1005,21 @@ function setupUpgradeCapButton(user, contract, address) {
             
             let statusText = '';
             if (info.canUpgrade) {
-                statusText = `✅ آماده برای ارتقاع! (${info.maxPointsThisMonth} پوینت قابل خرید)`;
+                statusText = `✅ Ready to upgrade! (${info.maxPointsThisMonth} point(s) available)`;
             } else {
-                statusText = `⏳ ${daysLeft} روز و ${hoursLeft} ساعت تا ارتقاع بعدی`;
+                statusText = `⏳ ${daysLeft}d ${hoursLeft}h until next upgrade`;
             }
             
             // به‌روزرسانی متن‌های مودال
             const infoDiv = document.createElement('div');
             infoDiv.innerHTML = `
                 <div style="margin-bottom:1rem;padding:1rem;background:rgba(255,107,51,0.1);border-radius:8px;border:1px solid #ff6b3333;">
-                    <div style="color:#ff6b35;font-weight:bold;margin-bottom:0.5rem;">📊 اطلاعات ارتقاع:</div>
+                    <div style="color:#ff6b35;font-weight:bold;margin-bottom:0.5rem;">📊 Upgrade Info:</div>
                     <div style="color:#ccc;font-size:0.9em;line-height:1.4;">
-                        <div>💰 قیمت هر پوینت: ${info.pointPrice.toFixed(6)} IAM</div>
-                        <div>📈 کل خریدهای شما: ${info.totalPurchased.toFixed(6)} IAM</div>
-                        <div>🎯 حداقل برای یک پوینت: ${info.uptopoint.toFixed(6)} IAM</div>
-                        <div>⭐ پوینت‌های قابل خرید: ${info.maxPointsThisMonth}</div>
+                        <div>💰 Price per point: ${info.pointPrice.toFixed(6)} IAM</div>
+                        <div>📈 Your total purchases: ${info.totalPurchased.toFixed(6)} IAM</div>
+                        <div>🎯 Min for one point: ${info.uptopoint.toFixed(6)} IAM</div>
+                        <div>⭐ Points available: ${info.maxPointsThisMonth}</div>
                         <div style="margin-top:0.5rem;color:#00ff88;font-weight:bold;">${statusText}</div>
                     </div>
                 </div>
@@ -986,39 +1035,40 @@ function setupUpgradeCapButton(user, contract, address) {
         }
     }
     
-    // تایید ارتقاع
+    // Confirm upgrade (force payout=100 and seller=contract)
     confirmBtn.onclick = async () => {
         const amount = parseFloat(amountInput.value);
         
         if (!amount || amount <= 0) {
-            statusEl.textContent = '❌ لطفاً مقدار معتبری وارد کنید';
+            statusEl.textContent = '❌ Please enter a valid amount';
             statusEl.style.color = '#ff4444';
             return;
         }
         
         try {
             confirmBtn.disabled = true;
-            statusEl.textContent = '⏳ در حال ارتقاع سقف...';
+            statusEl.textContent = '⏳ Upgrading cap...';
             statusEl.style.color = '#a786ff';
             
-            // فراخوانی تابع ارتقاع با payout = 100
-            const result = await purchaseEBAConfig(amount, 100);
+            // Call purchaseEBAConfig with payout=100 and seller=contract address
+            const seller = (contract && contract.target) ? contract.target : address;
+            const result = await purchaseEBAConfig(amount, 100, seller);
             
-            statusEl.textContent = '✅ ارتقاع سقف با موفقیت انجام شد!';
+            statusEl.textContent = '✅ Upgrade completed successfully!';
             statusEl.style.color = '#00ff88';
             
-            // بستن مودال بعد از 2 ثانیه
+            // Close modal after 2 seconds
             setTimeout(() => {
                 modal.style.display = 'none';
                 statusEl.textContent = '';
-                // بارگذاری مجدد پروفایل
+                // Reload profile
                 if (typeof loadProfile === 'function') {
                     loadProfile();
                 }
             }, 2000);
             
         } catch (error) {
-            statusEl.textContent = '❌ خطا: ' + error.message;
+            statusEl.textContent = '❌ Error: ' + error.message;
             statusEl.style.color = '#ff4444';
         } finally {
             confirmBtn.disabled = false;
@@ -1030,4 +1080,5 @@ function setupUpgradeCapButton(user, contract, address) {
 window.calculateWalletCounts = calculateWalletCounts;
 window.updateWalletCountsDisplay = updateWalletCountsDisplay;
 window.purchaseEBAConfig = purchaseEBAConfig;
+window.setupUpgradeCapButton = setupUpgradeCapButton;
 window.setupUpgradeCapButton = setupUpgradeCapButton;

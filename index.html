@@ -208,16 +208,17 @@
         }
         
         .bottom-menu-btn {
-            width: 60px;
-            height: 60px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             background: linear-gradient(45deg, #00ff88, #00d4ff);
             border: none;
             color: #000;
-            font-size: 24px;
+            font-size: 20px;
             cursor: pointer;
             box-shadow: 0 4px 20px rgba(0, 255, 136, 0.3);
             transition: all 0.3s ease;
+            opacity: 0.5;
         }
         
         .bottom-menu-btn:hover {
@@ -319,43 +320,46 @@
                     <div class="status-balance-label">IAM</div>
                     <div class="status-balance-value" id="iam-balance">0.00</div>
                     <div class="status-balance-usd" id="iam-balance-usd">$0.00</div>
-                </div>
+            </div>
                 <div class="status-balance-item">
                     <div class="status-balance-label">MATIC</div>
                     <div class="status-balance-value" id="matic-balance">0.0000</div>
                     <div class="status-balance-usd" id="matic-balance-usd">$0.00</div>
-                </div>
+        </div>
                 <div class="status-balance-item">
                     <div class="status-balance-label">DAI</div>
                     <div class="status-balance-value" id="dai-balance">0.00</div>
                     <div class="status-balance-usd" id="dai-balance-usd">$0.00</div>
-                </div>
             </div>
+        </div>
             <div class="status-info-row" id="userStatusBar">
                 <div class="status-info-item">
                     <div class="info-label">ID</div>
                     <div class="info-value" id="userStatusIdValue">--</div>
-                </div>
+            </div>
                 <div class="status-info-item">
                     <div class="info-label">👍</div>
                     <div class="info-value" id="userStatusLikes">--</div>
-                </div>
+            </div>
                 <div class="status-info-item">
                     <div class="info-label">👎</div>
                     <div class="info-value" id="userStatusDislikes">--</div>
-                </div>
+            </div>
                 <div class="status-info-item">
                     <div class="info-label"></div>
                     <div class="info-value" id="userStatusLevel">--</div>
-                </div>
+        </div>
+            </div>
             </div>
         </div>
-    </div>
         
     <!-- Main Content -->
     <div class="container">
         <div class="main-content">
             <h1 class="main-title">IAM Ecosystem</h1>
+            <div id="contract-address" style="text-align:center;margin-top:4px;font-size:12px;color:#a0aec0;">
+                Contract: <a id="contract-link" href="#" target="_blank" rel="noopener" style="color:#00e0ff;text-decoration:none;font-family:monospace;">loading...</a>
+            </div>
             
             <!-- Dashboard -->
             <div class="dashboard">
@@ -365,8 +369,8 @@
                     <div class="card-value" id="total-supply">0</div>
                     <div class="card-subtitle"></div>
                     <div class="card-subtitle" id="total-supply-usd"></div>
-                </div>
-                
+        </div>
+        
                 <div class="dashboard-card">
                     <div class="card-icon">👥</div>
                     <div class="card-title">Users</div>
@@ -426,9 +430,9 @@
                     <div class="card-subtitle">Read-only</div>
                     <div class="card-subtitle" id="cashback-usd"></div>
                 </div>
+                </div>
             </div>
         </div>
-    </div>
         
     <!-- Bottom Navigation -->
     <div class="bottom-nav-container">
@@ -444,9 +448,9 @@
             <a href="professional-tree.html" class="nav-item">Professional Tree</a>
             <a href="transfer-ownership.html" class="nav-item">Transfer Ownership</a>
             <a href="about.html" class="nav-item">About</a>
+            </div>
         </div>
-    </div>
-    
+        
     <!-- Scripts -->
     <script src="js/config.js"></script>
     <script src="js/main.js"></script>
@@ -674,6 +678,26 @@
             console.log('🚀 Page loaded, initializing...');
             
             setupBottomNavigation();
+
+            // Set contract link to Polygonscan
+            try {
+                const linkEl = document.getElementById('contract-link');
+                let addr = '';
+                if (window.contractConfig && window.contractConfig.IAM_ADDRESS) {
+                    addr = window.contractConfig.IAM_ADDRESS;
+                } else if (window.contractConfig && window.contractConfig.contract && window.contractConfig.contract.target) {
+                    addr = window.contractConfig.contract.target;
+                } else if (typeof IAM_ADDRESS !== 'undefined') {
+                    addr = IAM_ADDRESS;
+                }
+                if (linkEl && addr) {
+                    linkEl.textContent = addr;
+                    linkEl.href = 'https://polygonscan.com/address/' + addr;
+                } else if (linkEl) {
+                    linkEl.textContent = 'not available';
+                    linkEl.removeAttribute('href');
+                }
+            } catch (_) {}
             
             // Listen for wallet connection events
             window.addEventListener('walletConnected', function(event) {
@@ -811,10 +835,10 @@
                     return Math.floor(num / 1000000) + 'M';
                 } else if (num >= 1000) {
                     return Math.floor(num / 1000) + 'K';
-                } else {
+            } else {
                     return Math.floor(num).toString();
                 }
-            } else {
+    } else {
                 if (num >= 1000000000) {
                     return (num / 1000000000).toFixed(2) + 'B';
                 } else if (num >= 1000000) {
