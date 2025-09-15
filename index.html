@@ -3,16 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IAM Token - Clean Dashboard</title>
+    <title>Binary Pool - Dashboard</title>
     
     <!-- Web3.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
-    
-    <!-- Navbar CSS -->
-    <link rel="stylesheet" href="css/navbar.css">
-    
-    <!-- Navbar JavaScript -->
-    <script src="js/navbar.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
 
     <style>
         * {
@@ -26,1349 +21,776 @@
             background: linear-gradient(135deg, #0f0f17 0%, #181c2a 50%, #232946 100%);
             color: #fff;
             min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-            padding: 20px;
+            padding: 0;
             margin: 0;
         }
         
+        /* Status Bar */
+        .status-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(35, 41, 70, 0.95);
+            border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 8px 15px;
+        }
         
-        .container {
-        text-align: center;
-            max-width: 800px;
-            width: 100%;
-            padding-top: 80px;
-      }
-
-        .logo {
-            font-size: 4rem;
+        .status-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1200px;
+            margin: 0 auto;
+            gap: 10px;
+        }
+        
+        .status-logo {
+            font-size: 18px;
             font-weight: bold;
         color: #00ff88;
-            margin-bottom: 20px;
-            text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
         }
         
-        .title {
-            font-size: 2.5rem;
-            color: #a786ff;
-            margin-bottom: 30px;
-            font-weight: 300;
+        .status-balances {
+            display: flex;
+            gap: 15px;
+            align-items: center;
         }
         
-        .subtitle {
-            font-size: 1.2rem;
-            color: #b8c1ec;
-            margin-bottom: 40px;
-            line-height: 1.6;
-        }
-        
-        .wallet-section {
+        .status-balance-item {
             text-align: center;
-            margin-bottom: 30px;
         }
         
-        .connect-wallet-btn {
-            background: linear-gradient(135deg, #00ff88, #00cc6a);
-            color: #000;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 25px;
-            font-size: 1.1rem;
-        font-weight: 600;
-            cursor: pointer;
-        transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
-            margin-bottom: 15px;
+        .status-balance-label {
+            font-size: 10px;
+            color: #888;
+            margin-bottom: 1px;
         }
         
-        .connect-wallet-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 255, 136, 0.4);
+        .status-balance-value {
+            font-size: 14px;
+            font-weight: bold;
+            color: #fff;
         }
         
-        .connect-wallet-btn:disabled {
-        background: #666;
-        cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        
-        .wallet-status {
-            color: #ff6b6b;
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-        
-        .wallet-status.connected {
+        .status-balance-usd {
+            font-size: 10px;
             color: #00ff88;
         }
         
-        .balances-container {
+        .status-balance-usd:empty {
+            display: none;
+        }
+        
+        
+        .status-info-row {
             display: flex;
             justify-content: center;
             gap: 20px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
+            margin-top: 0;
+            padding-top: 0;
+            border-top: none;
+            flex-wrap: nowrap;
         }
         
-        .balance-item {
-            background: rgba(35, 41, 70, 0.8);
-            border: 1px solid rgba(0, 255, 136, 0.2);
-            border-radius: 12px;
-            padding: 20px;
-            min-width: 150px;
+        .status-info-item {
             text-align: center;
+        }
+        
+        .info-label {
+            font-size: 9px;
+            color: #888;
+            margin-bottom: 1px;
+        }
+        
+        .info-value {
+            font-size: 11px;
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        /* Stars styling */
+        #userStatusLevel {
+            font-size: 12px;
+            color: #ffd700;
+            line-height: 1.2;
+            word-spacing: -2px;
+        }
+        
+        /* Likes/Dislikes styling */
+        .status-info-item .info-label {
+            font-size: 12px;
+        }
+        
+        #userStatusLikes, #userStatusDislikes {
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 160px 20px 20px;
+        }
+        
+        .main-content {
+            text-align: center;
+            padding: 40px 0;
+        }
+        
+        .main-title {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #00ff88, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Dashboard Styles */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .dashboard-card {
+            background: rgba(35, 41, 70, 0.8);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(0, 255, 136, 0.2);
             backdrop-filter: blur(10px);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
             transition: all 0.3s ease;
         }
         
-        .balance-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-            border-color: rgba(0, 255, 136, 0.4);
+        .dashboard-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 255, 136, 0.1);
         }
         
-        .balance-label {
-            color: #a786ff;
-            font-size: 0.9rem;
+        .card-title {
+            font-size: 12px;
+            color: #888;
             margin-bottom: 8px;
-            font-weight: 500;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
         
-        .balance-value {
-            color: #00ff88;
-            font-size: 1.4rem;
-            font-weight: 700;
-            text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+        .card-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 4px;
         }
         
-        .balance-item:nth-child(1) .balance-value {
-            color: #ff6b6b;
-            text-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
-        }
-        
-        .balance-item:nth-child(2) .balance-value {
-            color: #ffa726;
-            text-shadow: 0 0 10px rgba(255, 167, 38, 0.3);
-        }
-        
-        .balance-item:nth-child(3) .balance-value {
-            color: #42a5f5;
-            text-shadow: 0 0 10px rgba(66, 165, 245, 0.3);
-        }
-        
-        .balance-usd {
-            font-size: 0.85rem;
-            font-weight: 400;
-            color: #888;
-            margin-top: 0.2rem;
-            opacity: 0.8;
-        }
-        
-        .stars-container {
-            background: rgba(35, 41, 70, 0.8);
-            border: 1px solid rgba(0, 255, 136, 0.2);
-            border-radius: 16px;
-            padding: 25px;
-            margin-bottom: 30px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            text-align: center;
-        }
-        
-        .stars-title {
-            color: #00ff88;
-            font-size: 1.3rem;
-            margin-bottom: 15px;
-            font-weight: 600;
-        }
-        
-        .stars-display {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: 15px;
-        }
-        
-        .star {
-            font-size: 2rem;
-            opacity: 0.3;
-            transition: all 0.3s ease;
-            filter: grayscale(100%);
-        }
-        
-        .star.active {
-            opacity: 1;
-            filter: grayscale(0%);
-            transform: scale(1.1);
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-        }
-        
-        .star.level-1.active {
-            color: #ff6b6b;
-        }
-        
-        .star.level-2.active {
-            color: #ffa726;
-        }
-        
-        .star.level-3.active {
-            color: #ffeb3b;
-        }
-        
-        .star.level-4.active {
-            color: #66bb6a;
-        }
-        
-        .star.level-5.active {
-            color: #42a5f5;
-        }
-        
-        .stars-info {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .points-display {
-            color: #a786ff;
-            font-size: 1.1rem;
-            font-weight: 600;
-            padding: 8px 16px;
-            background: rgba(167, 134, 255, 0.1);
-            border-radius: 8px;
-            border: 1px solid rgba(167, 134, 255, 0.2);
-        }
-        
-        .level-display {
-            color: #00ff88;
-            font-size: 1.1rem;
-            font-weight: 600;
-            padding: 8px 16px;
-            background: rgba(0, 255, 136, 0.1);
-            border-radius: 8px;
-            border: 1px solid rgba(0, 255, 136, 0.2);
-        }
-        
-        .section {
-            background: rgba(35, 41, 70, 0.8);
-            border: 1px solid rgba(0, 255, 136, 0.2);
-            border-radius: 16px;
-            padding: 30px;
-            margin-bottom: 30px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
-        
-        .section-title {
-            color: #00ff88;
-            font-size: 1.5rem;
-            margin-bottom: 25px;
-            font-weight: 600;
-        }
-        
-        .contract-address {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 20px;
-            padding: 15px;
-            background: rgba(0, 255, 136, 0.05);
-            border-radius: 8px;
-            border: 1px solid rgba(0, 255, 136, 0.1);
-        }
-        
-        .contract-label {
-            color: #a786ff;
-      font-size: 0.9rem;
-            margin-bottom: 8px;
-      font-weight: 500;
-    }
-    
-        .contract-link {
+        .card-subtitle {
+            font-size: 11px;
       color: #00ff88;
-            text-decoration: none;
-            font-family: 'Courier New', monospace;
-            font-size: 0.85rem;
-            font-weight: 600;
-            word-break: break-all;
-            text-align: center;
-            padding: 8px 12px;
-            background: rgba(0, 255, 136, 0.1);
-            border-radius: 6px;
-            border: 1px solid rgba(0, 255, 136, 0.2);
-      transition: all 0.3s ease;
-    }
-    
-        .contract-link:hover {
-            background: rgba(0, 255, 136, 0.2);
-            border-color: rgba(0, 255, 136, 0.4);
-            transform: scale(1.02);
-            box-shadow: 0 4px 12px rgba(0, 255, 136, 0.2);
         }
         
-        .contract-actions {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
+        .card-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+            opacity: 0.7;
         }
         
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            padding: 10px 20px;
-      background: rgba(0, 255, 136, 0.1);
-      border: 1px solid rgba(0, 255, 136, 0.3);
-            border-radius: 8px;
-            color: #00ff88;
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            cursor: pointer;
+        /* Bottom Navigation */
+        .bottom-nav-container {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1000;
         }
         
-        .btn:hover {
-            background: rgba(0, 255, 136, 0.2);
-            border-color: rgba(0, 255, 136, 0.5);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 255, 136, 0.2);
-        }
-        
-        .copy-btn {
-      background: rgba(167, 134, 255, 0.1);
-            border-color: rgba(167, 134, 255, 0.3);
-      color: #a786ff;
-        }
-        
-        .copy-btn:hover {
-            background: rgba(167, 134, 255, 0.2);
-            border-color: rgba(167, 134, 255, 0.5);
-            box-shadow: 0 4px 12px rgba(167, 134, 255, 0.2);
-        }
-        
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 15px;
-        }
-        
-        .info-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 16px;
-            background: rgba(0, 255, 136, 0.05);
-            border: 1px solid rgba(0, 255, 136, 0.1);
-      border-radius: 8px;
-      transition: all 0.3s ease;
-    }
-    
-        .info-item:hover {
-            background: rgba(0, 255, 136, 0.1);
-            border-color: rgba(0, 255, 136, 0.3);
-      transform: translateY(-2px);
-        }
-        
-        .info-label {
-            color: #a786ff;
-            font-weight: 500;
-            font-size: 0.95rem;
-        }
-        
-        .info-value {
-            color: #00ff88;
-            font-weight: 600;
-            font-size: 0.9rem;
-            text-align: right;
-            word-break: break-all;
-        }
-        
-        .info-usd {
-            color: #888;
-            font-weight: 400;
-            font-size: 0.8rem;
-            margin-top: 0.1rem;
-            opacity: 0.8;
-            text-align: right;
-        }
-        
-        .buttons-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-        
-        .action-btn {
-            display: flex;
-            align-items: center;
-            padding: 20px;
-            background: rgba(0, 255, 136, 0.05);
-            border: 1px solid rgba(0, 255, 136, 0.2);
-            border-radius: 12px;
-            text-decoration: none;
-            color: inherit;
-            transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-    }
-    
-        .action-btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.1), transparent);
-            transition: left 0.5s ease;
-        }
-        
-        .action-btn:hover::before {
-      left: 100%;
-    }
-    
-        .action-btn:hover {
-            background: rgba(0, 255, 136, 0.1);
-            border-color: rgba(0, 255, 136, 0.4);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0, 255, 136, 0.2);
-        }
-        
-        .btn-icon {
-            font-size: 2.5rem;
-            margin-right: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .bottom-menu-btn {
             width: 60px;
             height: 60px;
-            background: rgba(0, 255, 136, 0.1);
             border-radius: 50%;
-            border: 1px solid rgba(0, 255, 136, 0.3);
+            background: linear-gradient(45deg, #00ff88, #00d4ff);
+            border: none;
+            color: #000;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0, 255, 136, 0.3);
+            transition: all 0.3s ease;
         }
         
-        .btn-text {
-            flex: 1;
-        }
-        
-        .btn-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: #00ff88;
-            margin-bottom: 5px;
-        }
-        
-        .btn-subtitle {
-            font-size: 0.9rem;
-            color: #a786ff;
-            opacity: 0.8;
-        }
-        
-        .swap-btn:hover .btn-icon {
-            background: rgba(0, 255, 136, 0.2);
-            transform: rotate(180deg);
-        }
-        
-        .transfer-btn:hover .btn-icon {
-            background: rgba(167, 134, 255, 0.2);
+        .bottom-menu-btn:hover {
             transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(0, 255, 136, 0.4);
         }
         
-        .footer {
-            margin-top: 40px;
-            font-size: 0.9rem;
-            color: #666;
+        .bottom-nav-menu {
+            position: absolute;
+            bottom: 80px;
+            left: 0;
+            background: rgba(35, 41, 70, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            display: none;
+            min-width: 200px;
+        }
+        
+        .bottom-nav-menu.show {
+            display: block;
+        }
+        
+        .nav-item {
+            display: block;
+            color: #fff;
+            text-decoration: none;
+            padding: 10px 15px;
+      border-radius: 8px;
+            margin: 5px 0;
+      transition: all 0.3s ease;
+    }
+    
+        .nav-item:hover {
+            background: rgba(0, 255, 136, 0.1);
+            color: #00ff88;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .status-content {
+                flex-direction: row;
+                gap: 12px;
+                flex-wrap: nowrap;
+            }
+            
+            .status-balances {
+                gap: 12px;
+            }
+            
+            .status-info-row {
+                gap: 12px;
+                flex-wrap: nowrap;
+            }
+            
+            .main-title {
+                font-size: 32px;
+            }
+            
+            .container {
+                padding: 140px 15px 20px;
+            }
+            
+            .dashboard {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 12px;
+            }
+            
+            .dashboard-card {
+                padding: 12px;
+            }
+            
+            .card-value {
+                font-size: 18px;
+            }
+            
+            .card-title {
+                font-size: 11px;
+            }
+            
+            .card-subtitle {
+                font-size: 10px;
+            }
+            
+            .card-icon {
+                font-size: 20px;
+                margin-bottom: 8px;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Navigation Bar -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <button class="menu-btn" id="menu-btn">
-                <span class="menu-icon">☰</span>
-            </button>
-            <div class="nav-menu" id="nav-menu">
-                <a href="index.html" class="nav-link active">Home</a>
-                <a href="profile.html" class="nav-link">Profile</a>
-                <a href="swap.html" class="nav-link">Swap</a>
-                <a href="transfer.html" class="nav-link">Transfer</a>
-                <a href="utility.html" class="nav-link">Utility</a>
-                <a href="register.html" class="nav-link">Register</a>
-                <a href="sales.html" class="nav-link">Sales</a>
-                <a href="transfer-ownership.html" class="nav-link">Transfer Ownership</a>
-                <a href="professional-tree.html" class="nav-link">Professional Tree</a>
-                <a href="about.html" class="nav-link">About</a>
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <div class="status-content">
+            <div class="status-balances">
+                <div class="status-balance-item">
+                    <div class="status-balance-label">IAM</div>
+                    <div class="status-balance-value" id="iam-balance">0.00</div>
+                    <div class="status-balance-usd" id="iam-balance-usd">$0.00</div>
+                </div>
+                <div class="status-balance-item">
+                    <div class="status-balance-label">MATIC</div>
+                    <div class="status-balance-value" id="matic-balance">0.0000</div>
+                    <div class="status-balance-usd" id="matic-balance-usd">$0.00</div>
+                </div>
+                <div class="status-balance-item">
+                    <div class="status-balance-label">DAI</div>
+                    <div class="status-balance-value" id="dai-balance">0.00</div>
+                    <div class="status-balance-usd" id="dai-balance-usd">$0.00</div>
+                </div>
+            </div>
+            <div class="status-info-row" id="userStatusBar">
+                <div class="status-info-item">
+                    <div class="info-label">ID</div>
+                    <div class="info-value" id="userStatusIdValue">--</div>
+                </div>
+                <div class="status-info-item">
+                    <div class="info-label">👍</div>
+                    <div class="info-value" id="userStatusLikes">--</div>
+                </div>
+                <div class="status-info-item">
+                    <div class="info-label">👎</div>
+                    <div class="info-value" id="userStatusDislikes">--</div>
+                </div>
+                <div class="status-info-item">
+                    <div class="info-label"></div>
+                    <div class="info-value" id="userStatusLevel">--</div>
+                </div>
             </div>
         </div>
-    </nav>
-
+    </div>
+        
+    <!-- Main Content -->
     <div class="container">
-        <div class="logo">IAM</div>
-        <h1 class="title">Token Dashboard</h1>
-        
-        <!-- Wallet Connection - Hidden -->
-        <div class="wallet-section" style="display: none;">
-            <button class="connect-wallet-btn" id="connect-wallet-btn">
-                Connect Wallet
-            </button>
-            <div class="wallet-status" id="wallet-status">
-                Not Connected
-            </div>
-        </div>
-
-        <!-- User Balances -->
-        <div class="balances-container" id="balances-container">
-            <div class="balance-item">
-                <div class="balance-label">IAM Token</div>
-                <div class="balance-value" id="iam-balance">--</div>
-                <div class="balance-usd" id="iam-balance-usd">--</div>
-            </div>
-            <div class="balance-item">
-                <div class="balance-label">MATIC</div>
-                <div class="balance-value" id="matic-balance">--</div>
-                <div class="balance-usd" id="matic-balance-usd">--</div>
-            </div>
-            <div class="balance-item">
-                <div class="balance-label">DAI</div>
-                <div class="balance-value" id="dai-balance">--</div>
-                <div class="balance-usd" id="dai-balance-usd">--</div>
-            </div>
-        </div>
-
-        <!-- User Stars System -->
-        <div class="stars-container">
-            <div class="stars-title">Your Level</div>
-            <div class="stars-display" id="user-stars">
-                <div class="star">⭐</div>
-                <div class="star">⭐</div>
-                <div class="star">⭐</div>
-                <div class="star">⭐</div>
-                <div class="star">⭐</div>
-            </div>
-            <div class="stars-info">
-                <span class="points-display" id="user-points">-- Points</span>
-                <span class="level-display" id="user-level">Level --</span>
-            </div>
-        </div>
-        
-        <p class="subtitle">
-            Welcome to IAM Token platform.<br>
-            Clean and simple interface without external dependencies.
-        </p>
-        
-        <!-- Contract Address -->
-        <div class="section">
-            <h3 class="section-title">Contract Address</h3>
-            <div class="contract-address">
-                <span class="contract-label">IAM Token Contract:</span>
-                <a href="https://polygonscan.com/address/0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D" 
-                   target="_blank" 
-                   class="contract-link">
-                    0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D
-                </a>
-            </div>
-            <div class="contract-actions">
-                <a href="https://polygonscan.com/address/0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D" 
-                   target="_blank" 
-                   class="btn">
-                    🔍 View on PolygonScan
-                </a>
-                <button onclick="copyContractAddress()" class="btn copy-btn">
-                    📋 Copy Address
-                </button>
-            </div>
-        </div>
-        
-        <!-- Dashboard Information -->
-        <div class="section">
-            <h3 class="section-title">Dashboard Information</h3>
-            <div class="info-grid">
-                <div class="info-item">
-                    <span class="info-label">Total Supply:</span>
-                    <span class="info-value" id="dashboard-total-supply">--</span>
-                    <span class="info-usd" id="dashboard-total-supply-usd">--</span>
+        <div class="main-content">
+            <h1 class="main-title">IAM Ecosystem</h1>
+            
+            <!-- Dashboard -->
+            <div class="dashboard">
+                <div class="dashboard-card">
+                    <div class="card-icon">💰</div>
+                    <div class="card-title">Supply</div>
+                    <div class="card-value" id="total-supply">0</div>
+                    <div class="card-subtitle">Binary Pool</div>
+                    <div class="card-subtitle" id="total-supply-usd"></div>
                 </div>
                 
-                <div class="info-item">
-                    <span class="info-label">Total Points:</span>
-                    <span class="info-value" id="dashboard-total-points">--</span>
+                <div class="dashboard-card">
+                    <div class="card-icon">👥</div>
+                    <div class="card-title">Users</div>
+                    <div class="card-value" id="total-users">0</div>
+                    <div class="card-subtitle">Wallets</div>
                 </div>
                 
-                <div class="info-item">
-                    <span class="info-label">Token Price (USD):</span>
-                    <span class="info-value" id="dashboard-token-price-usd">--</span>
+                <div class="dashboard-card">
+                    <div class="card-icon">💎</div>
+                    <div class="card-title">Token Price</div>
+                    <div class="card-value" id="token-price">$0.00</div>
+                    <div class="card-subtitle">Token Price</div>
                 </div>
                 
-                
-                <div class="info-item">
-                    <span class="info-label">Contract Balance:</span>
-                    <span class="info-value" id="dashboard-contract-balance">--</span>
-                    <span class="info-usd" id="dashboard-contract-balance-usd">--</span>
+                <div class="dashboard-card">
+                    <div class="card-icon">🎯</div>
+                    <div class="card-title">Points</div>
+                    <div class="card-value" id="total-points">0</div>
+                    <div class="card-subtitle">Claimable</div>
                 </div>
                 
-                
-                
-                <div class="info-item">
-                    <span class="info-label">Active Wallets:</span>
-                    <span class="info-value" id="dashboard-active-wallets">--</span>
+                <div class="dashboard-card">
+                    <div class="card-icon">💵</div>
+                    <div class="card-title">Point Value</div>
+                    <div class="card-value" id="point-value">$0.00</div>
+                    <div class="card-subtitle">Per Point</div>
+                    <div class="card-subtitle" id="point-value-usd"></div>
                 </div>
                 
-                <div class="info-item">
-                    <span class="info-label">Cashback:</span>
-                    <span class="info-value" id="dashboard-cashback">--</span>
-                    <span class="info-usd" id="dashboard-cashback-usd">--</span>
+                <div class="dashboard-card">
+                    <div class="card-icon">🏦</div>
+                    <div class="card-title">Backing Pool</div>
+                    <div class="card-value" id="contract-balance">0</div>
+                    <div class="card-subtitle">DAI</div>
+                    <div class="card-subtitle" id="contract-balance-usd"></div>
                 </div>
                 
-                <div class="info-item">
-                    <span class="info-label">Point Value:</span>
-                    <span class="info-value" id="dashboard-point-value">--</span>
-                    <span class="info-usd" id="dashboard-point-value-usd">--</span>
+                <div class="dashboard-card">
+                    <div class="card-icon">🪙</div>
+                    <div class="card-title">Binary Pool</div>
+                    <div class="card-value" id="contract-iam-balance">0</div>
+                    <div class="card-subtitle">IAM</div>
+                    <div class="card-subtitle" id="contract-iam-balance-usd"></div>
                 </div>
                 
-                <div class="info-item">
-                    <span class="info-label">Registration Price:</span>
-                    <span class="info-value" id="dashboard-registration-price">--</span>
-                    <span class="info-usd" id="dashboard-registration-price-usd">--</span>
+                <div class="dashboard-card">
+                    <div class="card-icon">📝</div>
+                    <div class="card-title">Reg Price</div>
+                    <div class="card-value" id="reg-price">0</div>
+                    <div class="card-subtitle">Registration</div>
+                    <div class="card-subtitle" id="reg-price-usd"></div>
                 </div>
                 
-                <div class="info-item">
-                    <span class="info-label">DAI Contract Balance:</span>
-                    <span class="info-value" id="dashboard-dai-contract-balance">--</span>
+                <div class="dashboard-card">
+                    <div class="card-icon">🔁</div>
+                    <div class="card-title">Support Pool</div>
+                    <div class="card-value" id="cashback">0%</div>
+                    <div class="card-subtitle">Read-only</div>
+                    <div class="card-subtitle" id="cashback-usd"></div>
                 </div>
             </div>
         </div>
+    </div>
         
-        <!-- Action Buttons -->
-        <div class="section">
-            <h3 class="section-title">Quick Actions</h3>
-            <div class="buttons-grid">
-                <a href="swap.html" class="action-btn swap-btn">
-                    <div class="btn-icon">🔄</div>
-                    <div class="btn-text">
-                        <div class="btn-title">Swap</div>
-                        <div class="btn-subtitle">Exchange Tokens</div>
-                    </div>
-                </a>
-                
-                <a href="transfer.html" class="action-btn transfer-btn">
-                    <div class="btn-icon">💸</div>
-                    <div class="btn-text">
-                        <div class="btn-title">Transfer</div>
-                        <div class="btn-subtitle">Send Tokens</div>
-                    </div>
-                </a>
-            </div>
-        </div>
-        
-        <div class="footer">
-            No external scripts loaded • Clean console • No errors
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav-container">
+        <button class="bottom-menu-btn" id="bottom-menu-btn">☰</button>
+        <div class="bottom-nav-menu" id="bottom-nav-menu">
+            <a href="index.html" class="nav-item">Home</a>
+            <a href="register.html" class="nav-item">Register</a>
+            <a href="profile.html" class="nav-item">Profile</a>
+            <a href="transfer.html" class="nav-item">Transfer</a>
+            <a href="swap.html" class="nav-item">Swap</a>
+            <a href="sales.html" class="nav-item">Sales</a>
+            <a href="utility.html" class="nav-item">Utility</a>
+            <a href="professional-tree.html" class="nav-item">Professional Tree</a>
+            <a href="transfer-ownership.html" class="nav-item">Transfer Ownership</a>
+            <a href="about.html" class="nav-item">About</a>
         </div>
     </div>
     
-    <!-- Contract ABI and Connection -->
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/floating-token-card.js"></script>
+    
   <script>
-        // Contract ABI Configuration - Based on actual contract
-        const CONTRACT_ABI = [
-            {
-                "inputs": [],
-                "name": "totalSupply",
-                "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "totalClaimableBinaryPoints",
-                "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-                "stateMutability": "view",
-        "type": "function"
-      },
-      {
-                "inputs": [{"internalType": "address", "name": "account", "type": "address"}],
-                "name": "balanceOf",
-                "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [{"internalType": "address", "name": "user", "type": "address"}],
-                "name": "users",
-        "outputs": [
-                    {"internalType": "uint256", "name": "index", "type": "uint256"},
-                    {"internalType": "uint256", "name": "binaryPoints", "type": "uint256"},
-                    {"internalType": "uint256", "name": "binaryPointCap", "type": "uint256"},
-                    {"internalType": "uint256", "name": "binaryPointsClaimed", "type": "uint256"},
-                    {"internalType": "uint256", "name": "totalPurchasedKind", "type": "uint256"},
-                    {"internalType": "uint256", "name": "upgradeTime", "type": "uint256"},
-                    {"internalType": "uint256", "name": "lastClaimTime", "type": "uint256"},
-                    {"internalType": "uint256", "name": "leftPoints", "type": "uint256"},
-                    {"internalType": "uint256", "name": "rightPoints", "type": "uint256"},
-                    {"internalType": "uint256", "name": "lastMonthlyClaim", "type": "uint256"},
-                    {"internalType": "uint256", "name": "totalMonthlyRewarded", "type": "uint256"},
-                    {"internalType": "uint256", "name": "refclimed", "type": "uint256"},
-                    {"internalType": "uint256", "name": "depositedAmount", "type": "uint256"}
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [{"internalType": "address", "name": "user", "type": "address"}],
-                "name": "getUserTree",
-                "outputs": [
-                    {"internalType": "address", "name": "left", "type": "address"},
-                    {"internalType": "address", "name": "right", "type": "address"},
-                    {"internalType": "uint256", "name": "binaryPoints", "type": "uint256"},
-                    {"internalType": "uint256", "name": "binaryPointCap", "type": "uint256"},
-                    {"internalType": "uint256", "name": "depositedAmount", "type": "uint256"},
-                    {"internalType": "uint256", "name": "lastMonthlyClaim", "type": "uint256"},
-                    {"internalType": "uint256", "name": "totalMonthlyRewarded", "type": "uint256"},
-                    {"internalType": "uint256", "name": "refclimed", "type": "uint256"}
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-                "inputs": [],
-                "name": "getTokenPrice",
-                "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "getPointValue",
-                "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-                "stateMutability": "view",
-                "type": "function"
+        // Initialize activeIntervals as Map for main.js
+        window.activeIntervals = new Map();
+        
+        // Status bar update function
+        function updateStatusBar() {
+            console.log('🔄 Updating status bar...');
+            
+            if (window.contractConfig && window.contractConfig.address) {
+                console.log('✅ Main system available, updating status bar');
+                
+                // Update wallet address
+                const walletElement = document.getElementById('userStatusWallet');
+                if (walletElement) {
+                    const address = window.contractConfig.address;
+                    walletElement.textContent = `${address.slice(0, 6)}...${address.slice(-4)}`;
+                }
+                
+                // Update wallet status
+                const statusElement = document.getElementById('wallet-status');
+                if (statusElement) {
+                    statusElement.textContent = `Connected: ${window.contractConfig.address.slice(0, 6)}...${window.contractConfig.address.slice(-4)}`;
+                    statusElement.className = 'status-wallet connected';
+                }
+                
+                // Update user data, token balances, and dashboard
+                updateUserData();
+                updateDashboard();
+                } else {
+                console.log('⚠️ Main system not available');
             }
-        ];
-
-        // ERC-20 ABI for token balances
-        const ERC20_ABI = [
-            {
-                "inputs": [{"internalType": "address", "name": "account", "type": "address"}],
-        "name": "balanceOf",
-                "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "inputs": [],
-                "name": "decimals",
-                "outputs": [{"internalType": "uint8", "name": "", "type": "uint8"}],
-        "stateMutability": "view",
-        "type": "function"
-      }
-    ];
-
-        // Contract Configuration
-        const CONTRACT_ADDRESS = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D';
-        const POLYGON_RPC_URL = 'https://polygon-rpc.com';
+        }
         
-        // Token Addresses on Polygon
-        const TOKEN_ADDRESSES = {
-            IAM: '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D', // IAM Token
-            MATIC: '0x0000000000000000000000000000000000001010', // Native MATIC
-            DAI: '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063'  // DAI on Polygon
-        };
-        
-        // Alternative RPC endpoints
-        const RPC_ENDPOINTS = [
-            'https://polygon-rpc.com',
-            'https://rpc-mainnet.maticvigil.com',
-            'https://polygon-mainnet.chainstacklabs.com',
-            'https://polygon-mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'
-        ];
-        
-        // Web3 and Contract instances
-        let web3;
-        let contract;
-        let userAccount;
-
-        // Initialize Web3 and Contract
-        async function initializeWeb3() {
+        // Update user data from contract
+        async function updateUserData() {
             try {
-                if (typeof window.ethereum !== 'undefined') {
-                    // Use MetaMask provider for wallet connection
-                    web3 = new Web3(window.ethereum);
-                    const accounts = await web3.eth.getAccounts();
-                    if (accounts.length > 0) {
-                        userAccount = accounts[0];
-                        
-                        // Try to create contract with fallback RPC
-                        try {
-                            contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
-                            // Test contract connection
-                            await contract.methods.totalSupply().call();
-                        } catch (contractError) {
-                            // Use direct RPC for contract calls
-                            web3 = new Web3(RPC_ENDPOINTS[0]);
-                            contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+                if (window.contractConfig && window.contractConfig.contract && window.contractConfig.address) {
+                    console.log('🔄 Fetching user data from contract...');
+                    
+                    const userData = await window.contractConfig.contract.users(window.contractConfig.address);
+                    console.log('📊 User data:', userData);
+                    
+                    // Update User ID
+                    const userIdElement = document.getElementById('userStatusIdValue');
+                    if (userIdElement) {
+                        userIdElement.textContent = userData[0] ? userData[0].toString() : '--';
+                    }
+                    
+                    // Update User Stars based on Level
+                    const levelElement = document.getElementById('userStatusLevel');
+                    if (levelElement) {
+                        const binaryPointsClaimed = parseInt(userData[3] || 0);
+                        const level = Math.floor(binaryPointsClaimed / 10) + 1;
+                        const stars = Math.min(level, 10); // Max 10 stars
+                        if (stars > 0) {
+                            levelElement.textContent = '⭐'.repeat(stars);
+                } else {
+                            levelElement.textContent = '--';
                         }
+                    }
+                    
+                    // Update Likes and Dislikes
+                    try {
+                        const voteStatus = await window.contractConfig.contract.getVoteStatus(window.contractConfig.address);
+                        console.log('📊 Vote status:', voteStatus);
                         
-                        updateWalletStatus(true);
-                        return true;
+                        const likesElement = document.getElementById('userStatusLikes');
+                        const dislikesElement = document.getElementById('userStatusDislikes');
+                        
+                        if (likesElement) {
+                            likesElement.textContent = voteStatus ? (voteStatus.totalLikes || '0') : '0';
+                        }
+                        if (dislikesElement) {
+                            dislikesElement.textContent = voteStatus ? (voteStatus.totalDislikes || '0') : '0';
+                        }
+                    } catch (error) {
+                        console.log('Error fetching vote status:', error);
+                        const likesElement = document.getElementById('userStatusLikes');
+                        const dislikesElement = document.getElementById('userStatusDislikes');
+                        if (likesElement) likesElement.textContent = '0';
+                        if (dislikesElement) dislikesElement.textContent = '0';
                     }
-                }
-                updateWalletStatus(false);
-                return false;
-            } catch (error) {
-                updateWalletStatus(false);
-                return false;
-            }
-        }
-
-        // Connect wallet function
-        async function connectWallet() {
-            try {
-                if (typeof window.ethereum !== 'undefined') {
-                    await window.ethereum.request({ method: 'eth_requestAccounts' });
-                    const accounts = await web3.eth.getAccounts();
-                    userAccount = accounts[0];
                     
-                    contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
-                    updateWalletStatus(true);
-                    await fetchContractData();
-                } else {
-                    alert('MetaMask not detected. Please install MetaMask.');
-          }
-        } catch (error) {
-                alert('Failed to connect wallet. Please try again.');
-            }
-        }
-
-        // Update wallet status UI
-        function updateWalletStatus(connected) {
-            const statusElement = document.getElementById('wallet-status');
-            const connectBtn = document.getElementById('connect-wallet-btn');
-            
-            if (connected) {
-                statusElement.textContent = `Connected: ${userAccount ? userAccount.slice(0, 6) + '...' + userAccount.slice(-4) : 'Unknown'}`;
-                statusElement.className = 'wallet-status connected';
-                connectBtn.textContent = 'Connected';
-                connectBtn.disabled = true;
-            } else {
-                statusElement.textContent = 'Not Connected';
-                statusElement.className = 'wallet-status';
-                connectBtn.textContent = 'Connect Wallet';
-                connectBtn.disabled = false;
-            }
-        }
-
-        // Show/hide balances - removed as balances are always visible now
-
-        // Fetch token balance
-        async function getTokenBalance(tokenAddress, userAddress, decimals = 18) {
-            try {
-                if (tokenAddress === TOKEN_ADDRESSES.MATIC) {
-                    // For native MATIC
-                    const balance = await web3.eth.getBalance(userAddress);
-                    return web3.utils.fromWei(balance, 'ether');
-                } else {
-                    // For ERC-20 tokens
-                    const tokenContract = new web3.eth.Contract(ERC20_ABI, tokenAddress);
-                    const balance = await tokenContract.methods.balanceOf(userAddress).call();
-                    const tokenDecimals = await tokenContract.methods.decimals().call();
-                    return web3.utils.fromWei(balance, 'ether');
+                    // Update token balances
+                    await updateTokenBalances();
                 }
             } catch (error) {
-                return '0';
+                console.log('Error updating user data:', error);
             }
         }
-
-        // Fetch real data from contract
-        async function fetchContractData() {
-            if (!web3 || !userAccount) {
-                updateUserBalances();
-                return;
-            }
-
+        
+        // Update token balances
+        async function updateTokenBalances() {
             try {
-                // Fetch token balances, total points received, and token price
-                const [iamBalance, maticBalance, daiBalance, totalPointsReceived, tokenPrice] = await Promise.all([
-                    getTokenBalance(TOKEN_ADDRESSES.IAM, userAccount),
-                    getTokenBalance(TOKEN_ADDRESSES.MATIC, userAccount),
-                    getTokenBalance(TOKEN_ADDRESSES.DAI, userAccount),
-                    getTotalPointsReceived(),
-                    getTokenPrice()
-                ]);
-
-                // Update UI with real data from wallet
-                updateTokenBalances(
-                    parseFloat(iamBalance),
-                    parseFloat(maticBalance),
-                    parseFloat(daiBalance)
-                );
-
-                // Update stars based on binary points claimed from contract
-                updateStarsWithPoints(parseInt(totalPointsReceived));
-
-                // Update price history manager with token price
-                if (tokenPrice && window.priceHistoryManager) {
-                    window.priceHistoryManager.addTokenPrice(parseFloat(tokenPrice));
-                }
-
-            } catch (error) {
-                updateUserBalances();
-            }
-        }
-
-        // Stars System - Based on Binary Points Claimed from User Struct
-        // Level 1: 1-9 binaryPointsClaimed (1 star)
-        // Level 2: 10-99 binaryPointsClaimed (2 stars) 
-        // Level 3: 100-999 binaryPointsClaimed (3 stars)
-        // Level 4: 1000-9999 binaryPointsClaimed (4 stars)
-        // Level 5: 10000+ binaryPointsClaimed (5 stars)
-        function calculateUserLevel(points) {
-            if (points >= 10000) return 5;
-            if (points >= 1000) return 4;
-            if (points >= 100) return 3;
-            if (points >= 10) return 2;
-            if (points >= 1) return 1;
-            return 0;
-        }
-        
-        function updateStarsDisplay(points) {
-            const level = calculateUserLevel(points);
-            const stars = document.querySelectorAll('.star');
-            const pointsDisplay = document.getElementById('user-points');
-            const levelDisplay = document.getElementById('user-level');
-            
-            // Reset all stars
-            stars.forEach((star, index) => {
-                star.classList.remove('active', 'level-1', 'level-2', 'level-3', 'level-4', 'level-5');
-                if (index < level) {
-                    star.classList.add('active', `level-${level}`);
-                }
-            });
-            
-            // Update displays - only show if points > 0
-            if (points > 0) {
-                pointsDisplay.textContent = `${points} Points`;
-                levelDisplay.textContent = `Level ${level}`;
-            } else {
-                pointsDisplay.textContent = '-- Points';
-                levelDisplay.textContent = 'Level --';
-            }
-        }
-        
-        // Initialize with binary points claimed data from contract
-        async function initializeStars() {
-            if (contract && userAccount) {
-                try {
-                    const userData = await getUserData();
-                    if (userData) {
-                        const userPoints = parseInt(userData.binaryPointsClaimed);
-                        updateStarsDisplay(userPoints);
-                    } else {
-                        // Show empty state
-                        const pointsDisplay = document.getElementById('user-points');
-                        const levelDisplay = document.getElementById('user-level');
-                        if (pointsDisplay) pointsDisplay.textContent = '-- Points';
-                        if (levelDisplay) levelDisplay.textContent = 'Level --';
+                if (window.contractConfig && window.contractConfig.provider && window.contractConfig.address) {
+                    console.log('🔄 Fetching token balances...');
+                    
+                    const userAddress = window.contractConfig.address;
+                    const provider = window.contractConfig.provider;
+                    
+                    // Token addresses
+                    const IAM_ADDRESS = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D';
+                    const DAI_ADDRESS = '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063';
+                    
+                    // ERC20 ABI for token balances
+                    const ERC20_ABI = [
+                        {
+                            "inputs": [{"internalType": "address", "name": "account", "type": "address"}],
+                            "name": "balanceOf",
+                            "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+                            "stateMutability": "view",
+                            "type": "function"
+                        }
+                    ];
+                    
+                    // Get IAM balance
+                    let iamBalance = 0;
+                    try {
+                        const iamContract = new ethers.Contract(IAM_ADDRESS, ERC20_ABI, provider);
+                        const balance = await iamContract.balanceOf(userAddress);
+                        iamBalance = parseFloat(ethers.formatEther(balance));
+                    } catch (e) {
+                        console.log('Error getting IAM balance:', e);
                     }
-                } catch (error) {
-                    // Show empty state instead of 0
-                    const pointsDisplay = document.getElementById('user-points');
-                    const levelDisplay = document.getElementById('user-level');
-                    if (pointsDisplay) pointsDisplay.textContent = '-- Points';
-                    if (levelDisplay) levelDisplay.textContent = 'Level --';
-                }
-            } else {
-                // Show empty state instead of 0
-                const pointsDisplay = document.getElementById('user-points');
-                const levelDisplay = document.getElementById('user-level');
-                if (pointsDisplay) pointsDisplay.textContent = '-- Points';
-                if (levelDisplay) levelDisplay.textContent = 'Level --';
-            }
-        }
-        
-        // Function to update stars from binary points claimed
-        async function updateStarsFromClaimedPoints() {
-            if (contract && userAccount) {
-                try {
-                    const userData = await getUserData();
-                    if (userData) {
-                        const userPoints = parseInt(userData.binaryPointsClaimed);
-                        updateStarsDisplay(userPoints);
+                    
+                    // Get MATIC balance
+                    let maticBalance = 0;
+                    try {
+                        const balance = await provider.getBalance(userAddress);
+                        maticBalance = parseFloat(ethers.formatEther(balance));
+                    } catch (e) {
+                        console.log('Error getting MATIC balance:', e);
                     }
-                } catch (error) {
-                    // Silent fail
-                }
-            }
-        }
-        
-        // Manual function to update stars with specific points
-        function updateStarsWithPoints(points) {
-            console.log('⭐ updateStarsWithPoints called with:', points);
-            updateStarsDisplay(points);
-        }
-        
-        // Balance update functions
-        function updateUserBalances() {
-            // No default values - only show real data from wallet
+                    
+                    // Get DAI balance
+                    let daiBalance = 0;
+                    try {
+                        const daiContract = new ethers.Contract(DAI_ADDRESS, ERC20_ABI, provider);
+                        const balance = await daiContract.balanceOf(userAddress);
+                        daiBalance = parseFloat(ethers.formatEther(balance));
+                    } catch (e) {
+                        console.log('Error getting DAI balance:', e);
+                    }
+                    
+                    // Update UI with formatted balances
             const iamBalanceElement = document.getElementById('iam-balance');
             const maticBalanceElement = document.getElementById('matic-balance');
             const daiBalanceElement = document.getElementById('dai-balance');
             
-            const iamUsdElement = document.getElementById('iam-balance-usd');
-            const maticUsdElement = document.getElementById('matic-balance-usd');
-            const daiUsdElement = document.getElementById('dai-balance-usd');
-            
             if (iamBalanceElement) {
-                iamBalanceElement.textContent = '--';
+                        iamBalanceElement.textContent = formatTokenBalance(iamBalance, 2);
             }
+                    
             if (maticBalanceElement) {
-                maticBalanceElement.textContent = '--';
+                        maticBalanceElement.textContent = formatTokenBalance(maticBalance, 4);
             }
+                    
             if (daiBalanceElement) {
-                daiBalanceElement.textContent = '--';
-            }
-            
-            if (iamUsdElement) {
-                iamUsdElement.textContent = '--';
-            }
-            if (maticUsdElement) {
-                maticUsdElement.textContent = '--';
-            }
-            if (daiUsdElement) {
-                daiUsdElement.textContent = '--';
-            }
-        }
-        
-        function updateBalanceWithData(iamBalance, binaryBalance, claimedBalance) {
-            const iamBalanceElement = document.getElementById('iam-balance');
-            const binaryBalanceElement = document.getElementById('binary-balance');
-            const claimedBalanceElement = document.getElementById('claimed-balance');
-            
-            if (iamBalanceElement) {
-                iamBalanceElement.textContent = iamBalance.toLocaleString('en-US', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                });
-            }
-            
-            if (binaryBalanceElement) {
-                binaryBalanceElement.textContent = binaryBalance.toLocaleString('en-US', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                });
-            }
-            
-            if (claimedBalanceElement) {
-                claimedBalanceElement.textContent = claimedBalance.toLocaleString('en-US', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                });
-            }
-        }
+                        daiBalanceElement.textContent = (Number.isFinite(daiBalance) ? daiBalance : 0).toFixed(2);
+                    }
+                    
+                    // Get IAM token price from contract
+                    let iamTokenPrice = 0.001; // Default fallback price
+                    try {
+                        if (window.contractConfig && window.contractConfig.contract) {
+                            const tokenPrice = await window.contractConfig.contract.getTokenPrice();
+                            iamTokenPrice = parseFloat(ethers.formatEther(tokenPrice));
+                            console.log('✅ IAM token price from contract:', iamTokenPrice);
+                        }
+                    } catch (error) {
+                        console.log('❌ Error getting IAM token price:', error);
+                    }
 
-        async function updateTokenBalances(iamBalance, maticBalance, daiBalance) {
-            console.log('💰 updateTokenBalances called with:', { iamBalance, maticBalance, daiBalance });
-            
-            const iamBalanceElement = document.getElementById('iam-balance');
-            const maticBalanceElement = document.getElementById('matic-balance');
-            const daiBalanceElement = document.getElementById('dai-balance');
-            
+                    // Update USD values with real prices
             const iamUsdElement = document.getElementById('iam-balance-usd');
             const maticUsdElement = document.getElementById('matic-balance-usd');
             const daiUsdElement = document.getElementById('dai-balance-usd');
             
-            console.log('💰 Balance elements found:', {
-                iam: !!iamBalanceElement,
-                matic: !!maticBalanceElement,
-                dai: !!daiBalanceElement
-            });
-            
-            // Get token prices for USD calculation
-            const prices = await getTokenPrices();
-            
-            if (iamBalanceElement) {
-                iamBalanceElement.textContent = iamBalance.toLocaleString('en-US', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                });
-                console.log('✅ IAM balance updated to:', iamBalanceElement.textContent);
-                
-                // Update USD equivalent
                 if (iamUsdElement) {
-                    const usdValue = iamBalance * prices.iam;
-                    iamUsdElement.textContent = `$${usdValue.toLocaleString('en-US', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    })}`;
-                }
-            }
-            
-            if (maticBalanceElement) {
-                maticBalanceElement.textContent = maticBalance.toLocaleString('en-US', {
-                    minimumFractionDigits: 4,
-                    maximumFractionDigits: 4
-                });
-                console.log('✅ MATIC balance updated to:', maticBalanceElement.textContent);
-                
-                // Update USD equivalent
+                        const iamUsdValue = iamBalance * iamTokenPrice;
+                        iamUsdElement.textContent = '$' + formatTokenBalance(iamUsdValue, 2);
+                    }
+                    
                 if (maticUsdElement) {
-                    const usdValue = maticBalance * prices.matic;
-                    maticUsdElement.textContent = `$${usdValue.toLocaleString('en-US', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    })}`;
-                }
-            }
-            
-            if (daiBalanceElement) {
-                daiBalanceElement.textContent = daiBalance.toLocaleString('en-US', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                });
-                console.log('✅ DAI balance updated to:', daiBalanceElement.textContent);
-                
-                // Update USD equivalent
+                        maticUsdElement.textContent = ''; // No USD value needed
+                    }
+                    
                 if (daiUsdElement) {
-                    const usdValue = daiBalance * prices.dai;
-                    daiUsdElement.textContent = `$${usdValue.toLocaleString('en-US', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    })}`;
+                        daiUsdElement.textContent = ''; // No USD value needed
+                    }
+                    
+                    console.log('✅ Token balances updated:', { iamBalance, maticBalance, daiBalance });
                 }
-            }
-        }
-        
-        // Function to get binary points claimed
-        async function getBinaryPointsClaimed() {
-            const userData = await getUserData();
-            if (userData) {
-                return userData.binaryPointsClaimed;
-            }
-            return 0;
-        }
-
-        // Function to get user data from contract
-        async function getUserData() {
-            if (!contract || !userAccount) {
-                return null;
-            }
-
-            try {
-                const userData = await contract.methods.users(userAccount).call();
-    return {
-                    index: userData[0],
-                    binaryPoints: userData[1],
-                    binaryPointCap: userData[2],
-                    binaryPointsClaimed: userData[3],
-                    totalPurchasedKind: userData[4],
-                    upgradeTime: userData[5],
-                    lastClaimTime: userData[6],
-                    leftPoints: userData[7],
-                    rightPoints: userData[8],
-                    lastMonthlyClaim: userData[9],
-                    totalMonthlyRewarded: userData[10],
-                    refclimed: userData[11],
-                    depositedAmount: userData[12]
-                };
   } catch (error) {
-                return null;
+                console.log('Error updating token balances:', error);
             }
         }
-
-        // Function to get token price from contract
-        async function getTokenPrice() {
-            if (!contract) {
-                return null;
-            }
-
-            try {
-                const tokenPrice = await contract.methods.getTokenPrice().call();
-                // Convert from Wei to Ether (18 decimals)
-                const priceInEther = parseFloat(tokenPrice) / Math.pow(10, 18);
-                return priceInEther;
-            } catch (error) {
-                return null;
-            }
-        }
-
-        // Function to get binary points claimed by user
-        async function getTotalPointsReceived() {
-            const userData = await getUserData();
-            if (userData) {
-                return userData.binaryPointsClaimed;
-            }
-            return 0;
-        }
-
-        // Function to refresh all wallet data
-        async function refreshWalletData() {
-            if (contract && userAccount) {
-                await fetchContractData();
-                await updateStarsFromClaimedPoints();
-            }
-        }
-
-        // Function to manually update floating token card
-        async function updateFloatingTokenCard() {
-            if (window.floatingTokenGrowthCard) {
-                await window.floatingTokenGrowthCard.updateGrowthData();
-            }
-        }
-
-        // Make essential functions globally available
-        window.updateFloatingTokenCard = updateFloatingTokenCard;
         
-        
-        // Manual trigger for integration
-        window.triggerAssetUpdate = function() {
-            console.log('🔄 Manually triggering asset update...');
-            updateAssetsFromConfig();
-        };
-        
-        // Manual trigger for dashboard update
-        window.triggerDashboardUpdate = function() {
-            console.log('🔄 Manually triggering dashboard update...');
-            updateDashboardInfo();
-        };
-        
-        // Debug function to check contract connection
-        window.debugContract = function() {
-            console.log('🔍 Contract Debug Info:');
-            console.log('- window.ethereum:', !!window.ethereum);
-            console.log('- selectedAddress:', window.ethereum?.selectedAddress);
-            console.log('- web3 available:', typeof web3 !== 'undefined');
-            console.log('- contractConfig:', !!window.contractConfig);
-            console.log('- contract available:', !!window.contractConfig?.contract);
-            console.log('- TOKEN_ADDRESSES:', TOKEN_ADDRESSES);
+        // Bottom navigation toggle
+        function setupBottomNavigation() {
+            const menuBtn = document.getElementById('bottom-menu-btn');
+            const menu = document.getElementById('bottom-nav-menu');
             
-            if (window.contractConfig && window.contractConfig.contract) {
-                console.log('✅ Contract is available');
-                // Test a simple contract call
-                window.contractConfig.contract.methods.totalSupply().call()
-                    .then(result => console.log('✅ Contract call successful:', result))
-                    .catch(error => console.log('❌ Contract call failed:', error));
+            if (menuBtn && menu) {
+                menuBtn.addEventListener('click', function() {
+                    menu.classList.toggle('show');
+                });
+                
+                // Close menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!menuBtn.contains(event.target) && !menu.contains(event.target)) {
+                        menu.classList.remove('show');
+                    }
+                });
+            }
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Page loaded, initializing...');
+            
+            setupBottomNavigation();
+            
+            // Listen for wallet connection events
+            window.addEventListener('walletConnected', function(event) {
+                console.log('Wallet connected event received');
+                updateStatusBar();
+            });
+            
+            // Check if wallet is already connected
+            if (window.contractConfig && window.contractConfig.address) {
+                console.log('Wallet already connected, updating status bar');
+                updateStatusBar();
             } else {
-                console.log('❌ Contract not available');
+                console.log('Waiting for wallet connection...');
             }
+        });
+        
+        // Global function for main.js to call
+        window.updateUserStatusBar = function() {
+            console.log('🔄 updateUserStatusBar called from main.js');
+            updateStatusBar();
         };
         
+        // Test function
+        window.testStatusBar = function() {
+            console.log('🧪 Testing status bar...');
+            updateStatusBar();
+        };
         
-        // Function to get user balance and points from contract
-        async function getUserBalanceFromContract() {
-            if (!window.ethereum || !window.ethereum.selectedAddress) {
-                return { points: 0, balance: 0 };
-            }
-            
-            const userAddress = window.ethereum.selectedAddress;
-            
+        // Test token balances function
+        window.testTokenBalances = function() {
+            console.log('🧪 Testing token balances...');
+            updateTokenBalances();
+        };
+        
+        // Update dashboard with contract data
+        async function updateDashboard() {
             try {
-                // Wait for contract to be available
-                let attempts = 0;
-                while ((!window.contractConfig || !window.contractConfig.contract) && attempts < 20) {
-                    await new Promise(resolve => setTimeout(resolve, 200));
-                    attempts++;
-                }
-                
                 if (window.contractConfig && window.contractConfig.contract) {
-                    const contract = window.contractConfig.contract;
-                    
-                    // Get user data from contract using ethers.js
-                    const userData = await contract.users(userAddress);
-                    
-                    // Extract binary points claimed (index 3) and other relevant data
-                    const binaryPointsClaimed = parseInt(userData[3] || 0);
-                    const binaryPoints = parseInt(userData[1] || 0);
-                    const depositedAmount = parseInt(userData[12] || 0);
-                    
-                    return {
-                        points: binaryPointsClaimed,
-                        balance: depositedAmount,
-                        binaryPoints: binaryPoints
-                    };
-                } else {
-                    console.log('❌ Contract not available after waiting');
-                    return { points: 0, balance: 0 };
-                }
-            } catch (error) {
-                console.log('❌ Error getting user balance from contract:', error);
-                return { points: 0, balance: 0 };
-            }
-        }
-        
-        // Function to update dashboard information with real contract data
-        async function updateDashboardInfo() {
-            try {
-                // Wait for contract to be available
-                let attempts = 0;
-                while ((!window.contractConfig || !window.contractConfig.contract) && attempts < 20) {
-                    await new Promise(resolve => setTimeout(resolve, 200));
-                    attempts++;
-                }
-                
-                if (!window.contractConfig || !window.contractConfig.contract) {
-                    console.log('❌ Contract not available for dashboard update');
-                    return;
-                }
+                    console.log('🔄 Updating dashboard...');
                 
                 const contract = window.contractConfig.contract;
                 
-                // Get all dashboard data in parallel
+                    // Fetch dashboard data (only existing cards)
                 const [
                     totalSupply,
-                    totalPoints,
+                    totalUsers,
                     tokenPrice,
+                    totalPoints,
                     pointValue,
-                    walletsCount,
-                    registrationPrice,
-                    contractBalance,
-                    cashback
+                    daiContractBalance,
+                    regPrice,
+                    cashBack,
+                    contractIAMBalanace
                 ] = await Promise.all([
                     contract.totalSupply().catch(() => 0),
-                    contract.totalClaimableBinaryPoints().catch(() => 0),
-                    contract.getTokenPrice().catch(() => 0),
-                    contract.getPointValue().catch(() => 0),
                     contract.wallets().catch(() => 0),
-                    contract.getRegPrice().catch(() => 0),
-                    contract.balanceOf(CONTRACT_ADDRESS).catch(() => 0),
-                    contract.cashback().catch(() => 0)
+                    contract.getTokenPrice().catch(() => 0),
+                    contract.totalClaimableBinaryPoints().catch(() => 0),
+                    contract.getPointValue().catch(() => 0),
+                    contract.getContractdaiBalance().catch(() => 0),
+                    (contract.getRegPrice ? contract.getRegPrice() : Promise.resolve(0)).catch(() => 0),
+                    (contract.cashBack ? contract.cashBack() : Promise.resolve(0)).catch(() => 0),
+                    (contract.balanceOf ? contract.balanceOf(contract.target) : Promise.resolve(0)).catch(() => 0)
                 ]);
-                
-                // Calculate derived values
-                const tokenPriceUsd = parseFloat(ethers.formatEther(tokenPrice));
-                const daiContractBalance = tokenPriceUsd > 0 ? parseFloat(ethers.formatEther(contractBalance)) * tokenPriceUsd : 0;
-                
-                // Calculate USD equivalents
-                const totalSupplyUsd = parseFloat(ethers.formatEther(totalSupply)) * tokenPriceUsd;
-                const contractBalanceUsd = parseFloat(ethers.formatEther(contractBalance)) * tokenPriceUsd;
-                const cashbackUsd = parseFloat(ethers.formatEther(cashback)) * tokenPriceUsd;
-                const pointValueUsd = parseFloat(ethers.formatEther(pointValue)) * tokenPriceUsd;
-                const registrationPriceUsd = parseFloat(ethers.formatEther(registrationPrice)) * tokenPriceUsd;
-                
-                // Update dashboard elements
-                updateDashboardElement('dashboard-total-supply', `${parseFloat(ethers.formatEther(totalSupply)).toLocaleString('en-US', {maximumFractionDigits: 0})} IAM`);
-                updateDashboardElement('dashboard-total-supply-usd', `$${totalSupplyUsd.toLocaleString('en-US', {maximumFractionDigits: 2})}`);
-                updateDashboardElement('dashboard-total-points', `${parseInt(totalPoints)} Points`);
-                updateDashboardElement('dashboard-token-price-usd', `$${tokenPriceUsd.toExponential(4)}`);
-                updateDashboardElement('dashboard-contract-balance', `${parseFloat(ethers.formatEther(contractBalance)).toLocaleString('en-US', {maximumFractionDigits: 0})} IAM`);
-                updateDashboardElement('dashboard-contract-balance-usd', `$${contractBalanceUsd.toLocaleString('en-US', {maximumFractionDigits: 2})}`);
-                updateDashboardElement('dashboard-active-wallets', `${parseInt(walletsCount)} Wallets`);
-                updateDashboardElement('dashboard-cashback', `${parseFloat(ethers.formatEther(cashback)).toLocaleString('en-US', {maximumFractionDigits: 0})} IAM`);
-                updateDashboardElement('dashboard-cashback-usd', `$${cashbackUsd.toLocaleString('en-US', {maximumFractionDigits: 2})}`);
-                updateDashboardElement('dashboard-point-value', `${parseFloat(ethers.formatEther(pointValue)).toLocaleString('en-US', {maximumFractionDigits: 0})} IAM`);
-                updateDashboardElement('dashboard-point-value-usd', `$${pointValueUsd.toLocaleString('en-US', {maximumFractionDigits: 2})}`);
-                updateDashboardElement('dashboard-registration-price', `${parseFloat(ethers.formatEther(registrationPrice)).toLocaleString('en-US', {maximumFractionDigits: 0})} IAM`);
-                updateDashboardElement('dashboard-registration-price-usd', `$${registrationPriceUsd.toLocaleString('en-US', {maximumFractionDigits: 2})}`);
-                updateDashboardElement('dashboard-dai-contract-balance', `${daiContractBalance.toFixed(2)} DAI`);
-                
-                console.log('✅ Dashboard information updated successfully');
-                
+                    
+                    // Parse numeric values once
+                    const totalSupplyNum = parseFloat(ethers.formatEther(totalSupply));
+                    const totalUsersNum = parseInt(totalUsers);
+                    const tokenPriceNum = parseFloat(ethers.formatEther(tokenPrice));
+                    const totalPointsNum = parseInt(totalPoints);
+                    const pointValueNum = parseFloat(ethers.formatEther(pointValue));
+                    const daiBalanceNum = parseFloat(ethers.formatEther(daiContractBalance));
+
+                    // Update UI elements (main values)
+                    updateDashboardElement('total-supply', formatNumber(totalSupplyNum));
+                    updateDashboardElement('total-users', formatNumber(totalUsersNum, true));
+                    // Token price: scientific/compressed for small values
+                    updateDashboardElement('token-price', '$' + formatTokenBalance(tokenPriceNum, 6));
+                    updateDashboardElement('total-points', formatNumber(totalPointsNum, true));
+                    // Point Value as token amount (compressed/scientific)
+                    updateDashboardElement('point-value', formatTokenBalance(pointValueNum, 2));
+                    updateDashboardElement('contract-balance', formatNumber(daiBalanceNum, true));
+
+                    // Update USD sublines
+                    updateDashboardElement('total-supply-usd', '$' + formatNumber(totalSupplyNum * tokenPriceNum));
+                    updateDashboardElement('contract-balance-usd', '$' + formatNumber(daiBalanceNum));
+                    
+                    // Contract IAM balance
+                    const contractIAMNum = parseFloat(ethers.formatEther(contractIAMBalanace || 0));
+                    updateDashboardElement('contract-iam-balance', formatTokenBalance(contractIAMNum, 2));
+                    updateDashboardElement('contract-iam-balance-usd', '$' + formatNumber(contractIAMNum * tokenPriceNum));
+                    
+                    // Read-only extras
+                    const regPriceValue = parseFloat(ethers.formatEther(regPrice || 0));
+                    // Reg Price main: token amount (compressed)
+                    updateDashboardElement('reg-price', formatTokenBalance(regPriceValue, 2));
+                    // Reg Price USD: tokens × IAM USD price
+                    const regPriceUsd = regPriceValue * tokenPriceNum;
+                    updateDashboardElement('reg-price-usd', '$' + formatNumber(regPriceUsd));
+                    
+                    // Cashback as token amount (assume IAM tokens)
+                    const cashBackTokenNum = parseFloat(ethers.formatEther(cashBack || 0));
+                    updateDashboardElement('cashback', formatTokenBalance(cashBackTokenNum, 2));
+                    const cashbackUsd = cashBackTokenNum * tokenPriceNum;
+                    updateDashboardElement('cashback-usd', '$' + formatNumber(cashbackUsd));
+
+                    // Point Value USD (IAM tokens × IAM USD price)
+                    const pointValueUsd = pointValueNum * tokenPriceNum;
+                    updateDashboardElement('point-value-usd', '$' + formatNumber(pointValueUsd));
+
+                    
+                    
+                    console.log('✅ Dashboard updated successfully');
+                }
             } catch (error) {
-                console.log('❌ Error updating dashboard information:', error);
+                console.log('Error updating dashboard:', error);
             }
         }
         
@@ -1380,380 +802,101 @@
             }
         }
         
-        // Function to get token prices for USD calculation
-        async function getTokenPrices() {
-            try {
-                // Get IAM token price from contract
-                let iamPrice = 0;
-                if (window.contractConfig && window.contractConfig.contract) {
-                    try {
-                        const price = await window.contractConfig.contract.getTokenPrice();
-                        iamPrice = parseFloat(ethers.formatEther(price));
-                    } catch (e) {
-                        console.log('❌ Error getting IAM price from contract:', e);
-                    }
+        // Helper function to format numbers
+        function formatNumber(num, isInteger = false) {
+            if (isInteger) {
+                if (num >= 1000000000) {
+                    return Math.floor(num / 1000000000) + 'B';
+                } else if (num >= 1000000) {
+                    return Math.floor(num / 1000000) + 'M';
+                } else if (num >= 1000) {
+                    return Math.floor(num / 1000) + 'K';
+                } else {
+                    return Math.floor(num).toString();
                 }
-                
-                // Get MATIC price from CoinGecko API
-                let maticPrice = 0;
-                try {
-                    const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=matic-network&vs_currencies=usd');
-                    const data = await response.json();
-                    maticPrice = data['matic-network']?.usd || 0;
-                } catch (e) {
-                    console.log('❌ Error getting MATIC price:', e);
-                }
-                
-                // DAI is approximately $1 USD
-                const daiPrice = 1;
-                
-                return {
-                    iam: iamPrice,
-                    matic: maticPrice,
-                    dai: daiPrice
-                };
-            } catch (error) {
-                console.log('❌ Error getting token prices:', error);
-                return { iam: 0, matic: 0, dai: 1 };
-            }
-        }
-        
-        // Function to get token balances from wallet using ethers.js
-        async function getWalletTokenBalances() {
-            // Check if we have the necessary components
-            if (!window.ethereum || !window.ethereum.selectedAddress) {
-                return { iam: 0, matic: 0, dai: 0 };
-            }
-            
-            const userAddress = window.ethereum.selectedAddress;
-            
-            try {
-                // Wait for contract config to be available
-                let attempts = 0;
-                while ((!window.contractConfig || !window.contractConfig.provider) && attempts < 20) {
-                    await new Promise(resolve => setTimeout(resolve, 200));
-                    attempts++;
-                }
-                
-                if (!window.contractConfig || !window.contractConfig.provider) {
-                    console.log('❌ No provider available after waiting');
-                    return { iam: 0, matic: 0, dai: 0 };
-                }
-                
-                const provider = window.contractConfig.provider;
-                
-                // Get IAM token balance using ethers.js
-                let iamBalance = 0;
-                try {
-                    const iamContract = new ethers.Contract(TOKEN_ADDRESSES.IAM, ERC20_ABI, provider);
-                    const balance = await iamContract.balanceOf(userAddress);
-                    iamBalance = parseFloat(ethers.formatEther(balance));
-                } catch (e) {
-                    console.log('❌ Error getting IAM balance:', e);
-                }
-                
-                // Get MATIC balance (native token)
-                let maticBalance = 0;
-                try {
-                    const balance = await provider.getBalance(userAddress);
-                    maticBalance = parseFloat(ethers.formatEther(balance));
-                } catch (e) {
-                    console.log('❌ Error getting MATIC balance:', e);
-                }
-                
-                // Get DAI balance using ethers.js
-                let daiBalance = 0;
-                try {
-                    const daiContract = new ethers.Contract(TOKEN_ADDRESSES.DAI, ERC20_ABI, provider);
-                    const balance = await daiContract.balanceOf(userAddress);
-                    daiBalance = parseFloat(ethers.formatEther(balance));
-                } catch (e) {
-                    console.log('❌ Error getting DAI balance:', e);
-                }
-                
-                return { iam: iamBalance, matic: maticBalance, dai: daiBalance };
-            } catch (error) {
-                console.log('❌ Error in getWalletTokenBalances:', error);
-                return { iam: 0, matic: 0, dai: 0 };
-            }
-        }
-        
-        
-        // Initialize everything when page loads
-        document.addEventListener('DOMContentLoaded', async function() {
-            setupStarsObserver();
-            
-            // Setup wallet connection button (hidden)
-            const connectBtn = document.getElementById('connect-wallet-btn');
-            if (connectBtn) {
-                connectBtn.addEventListener('click', connectWallet);
-            }
-            
-            // Always show balances (empty state)
-            updateUserBalances();
-            await initializeStars();
-            
-            // Try to connect to contract in background
-            const web3Connected = await initializeWeb3();
-            if (web3Connected) {
-                await fetchContractData();
             } else {
-                updateUserBalances();
-            }
-        });
-        
-        // Setup observer to watch for changes in claimed points
-        function setupStarsObserver() {
-            const claimedPointsElement = document.getElementById('claimed-points');
-            if (claimedPointsElement) {
-                const observer = new MutationObserver(function(mutations) {
-                    mutations.forEach(function(mutation) {
-                        if (mutation.type === 'childList' || mutation.type === 'characterData') {
-                            updateStarsFromClaimedPoints();
-                        }
-                    });
-                });
-                
-                observer.observe(claimedPointsElement, {
-                    childList: true,
-                    characterData: true,
-                    subtree: true
-                });
+                if (num >= 1000000000) {
+                    return (num / 1000000000).toFixed(2) + 'B';
+                } else if (num >= 1000000) {
+                    return (num / 1000000).toFixed(2) + 'M';
+                } else if (num >= 1000) {
+                    return (num / 1000).toFixed(2) + 'K';
+                } else {
+                    return num.toFixed(2);
+                }
             }
         }
         
+        // Helper: format with 3 significant digits and suffixes (K/M/B/T). For <1 use scientific (E)
+        function formatTokenBalance(num, _decimalsIgnored = 3) {
+            const value = Number(num);
+            if (!isFinite(value) || value === 0) return '0';
+            const abs = Math.abs(value);
+            const suffixes = [
+                { v: 1e12, s: 'T' },
+                { v: 1e9,  s: 'B' },
+                { v: 1e6,  s: 'M' },
+                { v: 1e3,  s: 'K' }
+            ];
+            const trim = (str) => str.replace(/\.0+$|(?<=\.[0-9]*?)0+$/g, '');
+            for (const { v, s } of suffixes) {
+                if (abs >= v) {
+                    const scaled = value / v;
+                    return trim(Number(scaled.toPrecision(3)).toString()) + s;
+                }
+            }
+            if (abs >= 1) {
+                return trim(Number(value.toPrecision(3)).toString());
+            }
+            // < 1 → scientific with 3 sig digits (1 leading + 2 fractional)
+            return value.toExponential(2).replace('e', 'E');
+        }
         
-        function copyContractAddress() {
-            const contractAddress = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D';
+        // Test dashboard function
+        window.testDashboard = function() {
+            console.log('🧪 Testing dashboard...');
+            updateDashboard();
+        };
+        
+        // Test stars function
+        window.testStars = function() {
+            console.log('🧪 Testing stars...');
+            const levelElement = document.getElementById('userStatusLevel');
+            if (levelElement) {
+                // Test with different level counts (1-10 stars)
+                const testLevel = Math.floor(Math.random() * 10) + 1; // 1-10 levels
+                const testStars = Math.min(testLevel, 10);
+                levelElement.textContent = '⭐'.repeat(testStars);
+                console.log('✅ Stars updated:', testStars, 'for level:', testLevel);
+            }
+        };
+        
+        // Test likes/dislikes function
+        window.testLikesDislikes = function() {
+            console.log('🧪 Testing likes/dislikes...');
+            const likesElement = document.getElementById('userStatusLikes');
+            const dislikesElement = document.getElementById('userStatusDislikes');
             
-            // Try to copy to clipboard
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(contractAddress).then(() => {
-                    showCopySuccess();
-                }).catch(() => {
-                    fallbackCopy(contractAddress);
-                });
-    } else {
-                fallbackCopy(contractAddress);
-            }
-        }
-        
-        function fallbackCopy(text) {
-            const textArea = document.createElement('textarea');
-            textArea.value = text;
-            textArea.style.position = 'fixed';
-            textArea.style.left = '-999999px';
-            textArea.style.top = '-999999px';
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            
-            try {
-                document.execCommand('copy');
-                showCopySuccess();
-            } catch (err) {
-                showCopyError();
+            if (likesElement) {
+                const testLikes = Math.floor(Math.random() * 100);
+                likesElement.textContent = testLikes;
             }
             
-            document.body.removeChild(textArea);
-        }
-        
-        function showCopySuccess() {
-            const btn = document.querySelector('.copy-btn');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '✅ Copied!';
-            btn.style.background = 'rgba(0, 255, 136, 0.3)';
-            btn.style.borderColor = 'rgba(0, 255, 136, 0.6)';
+            if (dislikesElement) {
+                const testDislikes = Math.floor(Math.random() * 50);
+                dislikesElement.textContent = testDislikes;
+            }
             
-      setTimeout(() => {
-                btn.innerHTML = originalText;
-                btn.style.background = 'rgba(167, 134, 255, 0.1)';
-                btn.style.borderColor = 'rgba(167, 134, 255, 0.3)';
-      }, 2000);
-        }
+            console.log('✅ Likes/Dislikes updated');
+        };
         
-        function showCopyError() {
-            const btn = document.querySelector('.copy-btn');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '❌ Error!';
-            btn.style.background = 'rgba(255, 0, 0, 0.3)';
-            btn.style.borderColor = 'rgba(255, 0, 0, 0.6)';
-  
-  setTimeout(() => {
-                btn.innerHTML = originalText;
-                btn.style.background = 'rgba(167, 134, 255, 0.1)';
-                btn.style.borderColor = 'rgba(167, 134, 255, 0.3)';
-            }, 2000);
-        }
-  </script>
-  
-  <!-- Required libraries -->
-  <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
-  
-  <!-- Initialize required globals -->
-  <script>
-    // Initialize activeIntervals as Map (not Set) for main.js compatibility
-    window.activeIntervals = new Map();
-  </script>
-  
-  <!-- Required scripts for floating token card -->
-  <script src="js/config.js"></script>
-  <script src="js/main.js"></script>
-  
-  <!-- Price History Manager -->
-  <script>
-    // Simple Price History Manager for floating token card
-    window.priceHistoryManager = {
-      tokenHistory: [],
-      pointHistory: [],
-      
-      addTokenPrice: function(price) {
-        this.tokenHistory.push({
-          price: price,
-          timestamp: new Date().toISOString()
-        });
-        // Keep only last 100 entries
-        if (this.tokenHistory.length > 100) {
-          this.tokenHistory = this.tokenHistory.slice(-100);
-        }
-        // Save to localStorage
-        localStorage.setItem('tokenPriceHistory', JSON.stringify(this.tokenHistory));
-      },
-      
-      addPointPrice: function(price) {
-        this.pointHistory.push({
-          price: price,
-          timestamp: new Date().toISOString()
-        });
-        // Keep only last 100 entries
-        if (this.pointHistory.length > 100) {
-          this.pointHistory = this.pointHistory.slice(-100);
-        }
-        // Save to localStorage
-        localStorage.setItem('pointPriceHistory', JSON.stringify(this.pointHistory));
-      },
-      
-      getHistoryStats: function(type, period) {
-        const history = type === 'token' ? this.tokenHistory : this.pointHistory;
-        if (history.length === 0) return null;
-        
-        const now = new Date();
-        const periodMs = period === 'day' ? 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000;
-        const recentHistory = history.filter(entry => 
-          (now - new Date(entry.timestamp)) <= periodMs
-        );
-        
-        if (recentHistory.length === 0) return null;
-        
-        const prices = recentHistory.map(entry => entry.price);
-        const min = Math.min(...prices);
-        const max = Math.max(...prices);
-        const avg = prices.reduce((a, b) => a + b, 0) / prices.length;
-        
-        return { min, max, avg, count: recentHistory.length };
-      },
-      
-      clearHistory: function() {
-        this.tokenHistory = [];
-        this.pointHistory = [];
-        localStorage.removeItem('tokenPriceHistory');
-        localStorage.removeItem('pointPriceHistory');
-      }
-    };
-    
-    // Load existing history from localStorage
-    try {
-      const savedTokenHistory = localStorage.getItem('tokenPriceHistory');
-      if (savedTokenHistory) {
-        window.priceHistoryManager.tokenHistory = JSON.parse(savedTokenHistory);
-      }
-      
-      const savedPointHistory = localStorage.getItem('pointPriceHistory');
-      if (savedPointHistory) {
-        window.priceHistoryManager.pointHistory = JSON.parse(savedPointHistory);
-      }
-    } catch (e) {
-      // Silent fail
-    }
-  </script>
-  
-  <!-- Floating Token Growth Card -->
-  <script src="js/floating-token-card.js"></script>
-  
-  <!-- Integration with config.js system -->
-  <script>
-    // Function to update assets from contract data
-    async function updateAssetsFromConfig() {
-      // Wait for config.js to be ready
-      if (window.contractConfig && window.contractConfig.contract) {
-        // Get user data directly from contract
-        try {
-          const userData = await getUserBalanceFromContract();
-          
-          // Update stars based on binary points claimed from contract
-          if (window.updateStarsWithPoints) {
-            window.updateStarsWithPoints(userData.points);
-          }
-        } catch (e) {
-          console.log('❌ Error getting user data from contract:', e);
-        }
-        
-        // Get token balances from wallet using contract connection
-        if (window.ethereum && window.ethereum.selectedAddress) {
-          try {
-            const balances = await getWalletTokenBalances();
-            if (window.updateTokenBalances) {
-              window.updateTokenBalances(balances.iam, balances.matic, balances.dai);
-            }
-          } catch (e) {
-            console.log('❌ Error getting wallet balances from contract:', e);
-          }
-        }
-        
-        // Update dashboard information
-        try {
-          await updateDashboardInfo();
-        } catch (e) {
-          console.log('❌ Error updating dashboard info:', e);
-        }
-      } else {
-        console.log('❌ Contract config not available');
-      }
-    }
-    
-    // Initialize floating card when page loads
-    window.addEventListener('load', function() {
-      setTimeout(() => {
-        if (window.updateFloatingTokenCard) {
-          window.updateFloatingTokenCard();
-        }
-        
-        // Try to get token price and add to history
-        if (window.getTokenPrice && window.priceHistoryManager) {
-          window.getTokenPrice().then(price => {
-            if (price) {
-              window.priceHistoryManager.addTokenPrice(price);
-              if (window.updateFloatingTokenCard) {
-                window.updateFloatingTokenCard();
-              }
-            }
-          }).catch(error => {
-            // Silent fail
-          });
-        }
-        
-        // Update assets from config.js data
-        updateAssetsFromConfig();
-      }, 3000); // Wait longer for config.js to complete
-    });
-    
-    // Also try to update when config.js finishes loading
-    const checkConfigReady = setInterval(() => {
-      if (window.contractConfig && window.contractConfig.contract) {
-        updateAssetsFromConfig();
-        clearInterval(checkConfigReady);
-      }
-    }, 1000);
+        // Test all status bar elements
+        window.testAllStatusBar = function() {
+            console.log('🧪 Testing all status bar elements...');
+            window.testStars();
+            window.testLikesDislikes();
+            console.log('✅ All status bar elements tested');
+        };
   </script>
 </body>
 </html>
