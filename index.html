@@ -38,13 +38,17 @@
             padding: 8px 15px;
         }
         
+        /* Compressed Navigation Bar */
+        
         .status-content {
             display: flex;
+            flex-direction: row;
             align-items: center;
             justify-content: space-between;
             max-width: 1200px;
             margin: 0 auto;
-            gap: 10px;
+            gap: 8px;
+            padding: 8px 10px;
         }
         
         .status-logo {
@@ -53,10 +57,64 @@
         color: #00ff88;
         }
         
+        .status-left-section {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content: flex-start;
+        }
+        
         .status-balances {
             display: flex;
-            gap: 15px;
+            gap: 8px;
             align-items: center;
+            justify-content: flex-end;
+        }
+        
+        .status-stars-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .status-nav-buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 3px;
+            justify-content: center;
+            padding: 6px 10px;
+            border-top: 1px solid rgba(0, 255, 136, 0.1);
+        }
+        
+        .status-nav-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 8px;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            border-radius: 3px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            text-align: center;
+            min-height: 28px;
+        }
+        
+        .status-nav-item:hover {
+            background: rgba(0, 255, 136, 0.2);
+            border-color: #00ff88;
+            color: #00ff88;
+        }
+        
+        .status-nav-item.active {
+            background: rgba(0, 255, 136, 0.3);
+            border-color: #00ff88;
+            color: #00ff88;
         }
         
         .status-balance-item {
@@ -64,19 +122,19 @@
         }
         
         .status-balance-label {
-            font-size: 10px;
+            font-size: 9px;
             color: #888;
             margin-bottom: 1px;
         }
         
         .status-balance-value {
-            font-size: 14px;
+            font-size: 12px;
             font-weight: bold;
             color: #fff;
         }
         
         .status-balance-usd {
-            font-size: 10px;
+            font-size: 9px;
             color: #00ff88;
         }
         
@@ -85,47 +143,48 @@
         }
         
         
-        .status-info-row {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 0;
-            padding-top: 0;
-            border-top: none;
-            flex-wrap: nowrap;
-        }
         
         .status-info-item {
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
         
         .info-label {
-            font-size: 9px;
+            font-size: 8px;
             color: #888;
             margin-bottom: 1px;
         }
         
         .info-value {
-            font-size: 11px;
+            font-size: 10px;
             font-weight: bold;
             color: #fff;
         }
         
         /* Stars styling */
         #userStatusLevel {
-            font-size: 12px;
+            font-size: 11px;
             color: #ffd700;
             line-height: 1.2;
             word-spacing: -2px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            width: 100%;
+            min-height: 15px;
         }
         
         /* Likes/Dislikes styling */
         .status-info-item .info-label {
-            font-size: 12px;
+            font-size: 9px;
         }
         
         #userStatusLikes, #userStatusDislikes {
-            font-size: 12px;
+            font-size: 10px;
             font-weight: bold;
         }
         
@@ -133,7 +192,7 @@
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 160px 20px 20px;
+            padding: 120px 20px 20px;
         }
         
         .main-content {
@@ -327,17 +386,37 @@
         @media (max-width: 768px) {
             .status-content {
                 flex-direction: row;
-                gap: 12px;
-                flex-wrap: nowrap;
+                gap: 6px;
+                padding: 6px;
+                flex-wrap: wrap;
+            }
+            
+            .status-left-section {
+                gap: 6px;
+                justify-content: center;
             }
             
             .status-balances {
-                gap: 12px;
+                gap: 6px;
+                justify-content: center;
             }
             
-            .status-info-row {
-                gap: 12px;
-                flex-wrap: nowrap;
+            .status-stars-section {
+                gap: 3px;
+                justify-content: center;
+            }
+            
+            .status-nav-buttons {
+                grid-template-columns: repeat(5, 1fr);
+                grid-template-rows: repeat(2, 1fr);
+                gap: 2px;
+                padding: 4px 8px;
+            }
+            
+            .status-nav-item {
+                padding: 5px 6px;
+                font-size: 10px;
+                min-height: 24px;
             }
             
             .main-title {
@@ -373,6 +452,23 @@
                 font-size: 20px;
                 margin-bottom: 8px;
             }
+            
+            .status-content {
+                gap: 15px;
+            }
+            
+            .status-balances {
+                gap: 12px;
+            }
+            
+            .status-stars-section {
+                gap: 8px;
+            }
+            
+            .status-info-row {
+                gap: 12px;
+            }
+            
         }
     </style>
 </head>
@@ -380,43 +476,65 @@
     <!-- Status Bar -->
     <div class="status-bar">
         <div class="status-content">
+            <!-- Left side: ID, Likes, Dislikes -->
+            <div class="status-left-section">
+                <div class="status-info-item">
+                    <div class="info-label">ID</div>
+                    <div class="info-value" id="userStatusIdValue"></div>
+                </div>
+                <div class="status-info-item">
+                    <div class="info-label">👍</div>
+                    <div class="info-value" id="userStatusLikes"></div>
+                </div>
+                <div class="status-info-item">
+                    <div class="info-label">👎</div>
+                    <div class="info-value" id="userStatusDislikes"></div>
+                </div>
+            </div>
+            
+            <!-- Center: Stars -->
+            <div class="status-stars-section">
+                <div class="status-info-item">
+                    <div class="info-label"></div>
+                    <div class="info-value" id="userStatusLevel"></div>
+                </div>
+            </div>
+            
+            <!-- Right side: IAM, DAI, MATIC -->
             <div class="status-balances">
                 <div class="status-balance-item">
                     <div class="status-balance-label">IAM</div>
                     <div class="status-balance-value" id="iam-balance"></div>
                     <div class="status-balance-usd" id="iam-balance-usd"></div>
-            </div>
-                <div class="status-balance-item">
-                    <div class="status-balance-label">MATIC</div>
-                    <div class="status-balance-value" id="matic-balance"></div>
-                    <div class="status-balance-usd" id="matic-balance-usd"></div>
-        </div>
+                </div>
                 <div class="status-balance-item">
                     <div class="status-balance-label">DAI</div>
                     <div class="status-balance-value" id="dai-balance"></div>
                     <div class="status-balance-usd" id="dai-balance-usd"></div>
+                </div>
+                <div class="status-balance-item">
+                    <div class="status-balance-label">MATIC</div>
+                    <div class="status-balance-value" id="matic-balance"></div>
+                    <div class="status-balance-usd" id="matic-balance-usd"></div>
+                </div>
             </div>
         </div>
-            <div class="status-info-row" id="userStatusBar">
-                <div class="status-info-item">
-                    <div class="info-label">ID</div>
-                    <div class="info-value" id="userStatusIdValue"></div>
-            </div>
-                <div class="status-info-item">
-                    <div class="info-label">👍</div>
-                    <div class="info-value" id="userStatusLikes"></div>
-            </div>
-                <div class="status-info-item">
-                    <div class="info-label">👎</div>
-                    <div class="info-value" id="userStatusDislikes"></div>
-            </div>
-                <div class="status-info-item">
-                    <div class="info-label"></div>
-                    <div class="info-value" id="userStatusLevel"></div>
+        
+        <!-- Navigation Buttons in Status Bar -->
+        <div class="status-nav-buttons">
+            <a href="index.html" class="status-nav-item active">Home</a>
+            <a href="register.html" class="status-nav-item">Register</a>
+            <a href="profile.html" class="status-nav-item">Profile</a>
+            <a href="transfer.html" class="status-nav-item">Transfer</a>
+            <a href="swap.html" class="status-nav-item">Swap</a>
+            <a href="sales.html" class="status-nav-item">Sales</a>
+            <a href="utility.html" class="status-nav-item">Utility</a>
+            <a href="professional-tree.html" class="status-nav-item">Tree</a>
+            <a href="transfer-ownership.html" class="status-nav-item">Ownership</a>
+            <a href="about.html" class="status-nav-item">About</a>
         </div>
-            </div>
-            </div>
-        </div>
+    </div>
+        
         
     <!-- Main Content -->
     <div class="container">
@@ -766,11 +884,28 @@
             }
         }
         
+        // Setup compressed navigation
+        
+        function setupCompressedNavigation() {
+            const navItems = document.querySelectorAll('.status-nav-item');
+            const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+            
+            navItems.forEach(item => {
+                const href = item.getAttribute('href');
+                if (href === currentPage) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+        
         // Initialize when page loads - only once
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 Page loaded, initializing once...');
             
             setupBottomNavigation();
+            setupCompressedNavigation();
 
             // Set contract link to Polygonscan
             try {
