@@ -476,6 +476,100 @@
             height: 2px;
             background: linear-gradient(90deg, #ff00ff, transparent);
         }
+
+        /* ===== Modern theme enhancements (non-intrusive, CSS-only) ===== */
+        :root {
+            --iam-bg-1: #0a0a0f;
+            --iam-bg-2: #121229;
+            --iam-accent: #00ff88;
+            --iam-accent-2: #00d4ff;
+            --iam-surface: rgba(255,255,255,0.06);
+            --iam-border: rgba(0,255,136,0.25);
+            --iam-shadow: 0 8px 32px rgba(0,0,0,0.35);
+        }
+
+        .modern-theme {
+            background: radial-gradient(1200px 800px at 20% -10%, rgba(0,212,255,0.12), transparent 60%),
+                        radial-gradient(1000px 700px at 110% 10%, rgba(0,255,136,0.10), transparent 55%),
+                        linear-gradient(135deg, var(--iam-bg-1) 0%, var(--iam-bg-2) 100%);
+            min-height: 100vh;
+        }
+
+        /* Subtle animated accent glow */
+        @keyframes ambientGlow {
+            0% { box-shadow: 0 0 0 rgba(0,255,136,0.15); }
+            50% { box-shadow: 0 0 24px rgba(0,255,136,0.18); }
+            100% { box-shadow: 0 0 0 rgba(0,255,136,0.15); }
+        }
+
+        .modern-card {
+            background: var(--iam-surface);
+            border: 1px solid var(--iam-border);
+            box-shadow: var(--iam-shadow);
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+        .modern-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 40px rgba(0,0,0,0.45);
+            border-color: rgba(0,255,136,0.4);
+        }
+
+        /* Buttons */
+        .modern-btn {
+            background: linear-gradient(135deg, var(--iam-accent), #00cc6a);
+            color: #0f1720;
+            letter-spacing: 0.2px;
+        }
+        .modern-btn:focus { outline: none; box-shadow: 0 0 0 3px rgba(0,255,136,0.25); }
+
+        /* Tree nodes visual refresh without changing structure */
+        .tree-node.flat-tree-node {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
+            backdrop-filter: blur(6px);
+        }
+        .tree-node-content {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+        .tree-node-content:hover {
+            background: rgba(0,255,136,0.06);
+            transform: translateX(2px);
+        }
+        .tree-expand-btn {
+            background: linear-gradient(135deg, rgba(0,255,136,0.85), rgba(0,212,255,0.85));
+            border: none;
+            color: #0b1320;
+            width: 22px;
+            height: 22px;
+            line-height: 22px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .tree-expand-btn:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(0,255,136,0.25); }
+
+        .index-display {
+            font-weight: 700;
+            color: var(--iam-accent);
+            text-shadow: 0 0 8px rgba(0,255,136,0.2);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { height: 10px; width: 10px; }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(0,255,136,0.5), rgba(0,212,255,0.5)); border-radius: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
+
+        /* Modal polish */
+        #user-typewriter-modal > div {
+            animation: ambientGlow 4s ease-in-out infinite;
+        }
+        #user-typewriter-title { letter-spacing: 0.3px; }
+        #user-typewriter-content { color: #cfeee2; }
     </style>
     
     <!-- Load ethers.js -->
@@ -483,6 +577,26 @@
     <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
 </head>
 <body class="modern-theme">
+    <!-- User Typewriter Modal -->
+    <div id="user-typewriter-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:2000;align-items:center;justify-content:center;">
+        <div style="width:90%;max-width:680px;background:rgba(10,10,10,0.9);border:1px solid rgba(0,255,136,0.25);border-radius:12px;backdrop-filter:blur(8px);padding:16px;color:#e6fff5;box-shadow:0 10px 30px rgba(0,0,0,0.4);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                <div id="user-typewriter-title" style="font-weight:700;color:#00ff88;text-align:left;">User Details</div>
+                <button id="user-typewriter-close" style="background:transparent;border:none;color:#00ff88;font-size:20px;cursor:pointer;">✕</button>
+            </div>
+            <div id="user-typewriter-content" style="font-family:monospace;font-size:13px;line-height:1.5;white-space:pre-wrap;min-height:140px;text-align:left;direction:ltr;"></div>
+            <style>
+                /* Color only the values (after colon) in green */
+                #user-typewriter-content .kv { color: #00ff88; }
+                #user-typewriter-content .key { color: #e6fff5; }
+                @media (max-width: 768px) {
+                    #user-typewriter-content { font-size: 11px; line-height: 1.4; }
+                    #user-typewriter-title { font-size: 14px; }
+                    #user-typewriter-modal > div { width: 95%; padding: 12px; }
+                }
+            </style>
+        </div>
+    </div>
     <!-- Back Button -->
     <a href="index.html" class="back-btn modern-btn">
         ← Back to Dashboard
@@ -897,7 +1011,7 @@
             // Index display
             const indexDisplay = document.createElement('span');
             indexDisplay.className = 'index-display';
-            indexDisplay.textContent = node.index;
+            indexDisplay.textContent = 'IAM ' + node.index;
             indexDisplay.style.cursor = 'pointer';
             indexDisplay.onclick = (e) => {
                 e.stopPropagation();
@@ -1073,12 +1187,7 @@
         // Show user popup for a specific node
         async function showUserPopup(node) {
             try {
-                if (!window.mobileUserPopup) {
-                    console.log('❌ Mobile user popup not available');
-                    return;
-                }
-
-                console.log('🔄 Showing user popup for node:', node.index);
+                console.log('🔄 Showing user details for node:', node.index);
 
                 // Get user address by index
                 let userAddress = null;
@@ -1095,48 +1204,50 @@
                 let userData = null;
                 if (userAddress && window.contractConfig && window.contractConfig.contract) {
                     try {
-                        userData = await window.contractConfig.contract.getUserByAddress(userAddress);
+                        const contract = window.contractConfig.contract;
+                        if (typeof contract.getUserByAddress === 'function') {
+                            userData = await contract.getUserByAddress(userAddress);
+                        } else if (typeof contract.users === 'function') {
+                            userData = await contract.users(userAddress);
+                        }
                         console.log('✅ User data found:', userData);
                     } catch (error) {
                         console.warn('⚠️ Could not get user data for address:', userAddress, error);
                     }
                 }
 
-                // Create user object for popup
-                const user = {
-                    index: node.index,
-                    binaryPoints: userData ? userData.binaryPoints : 0,
-                    binaryPointCap: userData ? userData.binaryPointCap : 0,
-                    totalMonthlyRewarded: userData ? userData.totalMonthlyRewarded : 0,
-                    binaryPointsClaimed: userData ? userData.binaryPointsClaimed : 0,
-                    refclimed: userData ? userData.refclimed : '0',
-                    depositedAmount: userData ? userData.depositedAmount : '0',
-                    leftPoints: userData ? userData.leftPoints : 0,
-                    rightPoints: userData ? userData.rightPoints : 0
-                };
+                const details = buildUserDetails(userData, node.index, userAddress);
+                showTypewriterUserModal(details);
+                // append USD lines for token fields (raw userData preferred for precision)
+                buildUserUsdLines(details).then(lines => { if (lines.length) appendTypewriterLines(lines); });
+                // Append placeholders immediately so we can update them reliably
+                appendTypewriterLines([
+                    'IAM >> <span class="key">leftAddress:</span> <span class="kv">⏳ waiting...</span>',
+                    'IAM >> <span class="key">rightAddress:</span> <span class="kv">⏳ waiting...</span>',
+                    'IAM >> <span class="key">leftWalletsCount:</span> <span class="kv">⏳ calculating...</span>',
+                    'IAM >> <span class="key">rightWalletsCount:</span> <span class="kv">⏳ calculating...</span>'
+                ]);
+                if (window.contractConfig && window.contractConfig.contract) {
+                    // Defer heavy calls to allow UI to render placeholders first
+                    setTimeout(async () => {
+                        try {
+                            const rootIdx = parseInt(node.index, 10);
+                            const { leftAddress, rightAddress } = await getChildAddresses(window.contractConfig.contract, rootIdx);
+                            if (leftAddress) updateTypewriterLineStartsWith('IAM >> <span class="key">leftAddress:</span>', `IAM >> <span class=\"key\">leftAddress:</span> <span class=\"kv\">${shortenAddress(leftAddress)}</span>`);
+                            if (rightAddress) updateTypewriterLineStartsWith('IAM >> <span class="key">rightAddress:</span>', `IAM >> <span class=\"key\">rightAddress:</span> <span class=\"kv\">${shortenAddress(rightAddress)}</span>`);
 
-                // Show popup
-                window.mobileUserPopup.show(userAddress, user);
+                            const { leftCount, rightCount } = await computeLeftRightCounts(window.contractConfig.contract, rootIdx);
+                            updateTypewriterLineStartsWith('IAM >> <span class="key">leftWalletsCount:</span>', `IAM >> <span class=\"key\">leftWalletsCount:</span> <span class=\"kv\">${leftCount}</span>`);
+                            updateTypewriterLineStartsWith('IAM >> <span class="key">rightWalletsCount:</span>', `IAM >> <span class=\"key\">rightWalletsCount:</span> <span class=\"kv\">${rightCount}</span>`);
+                        } catch (_) {}
+                    }, 0);
+                }
 
             } catch (error) {
                 console.error('❌ Error showing user popup:', error);
                 
-                // Show popup with minimal data if there's an error
-                const fallbackUser = {
-                    index: node.index,
-                    binaryPoints: 0,
-                    binaryPointCap: 0,
-                    totalMonthlyRewarded: 0,
-                    binaryPointsClaimed: 0,
-                    refclimed: '0',
-                    depositedAmount: '0',
-                    leftPoints: 0,
-                    rightPoints: 0
-                };
-                
-                if (window.mobileUserPopup) {
-                    window.mobileUserPopup.show(null, fallbackUser);
-                }
+                const fallback = { 'IAM Index': String(node.index || 0), Note: 'No data available' };
+                showTypewriterUserModal(fallback);
             }
         }
 
@@ -1877,7 +1988,7 @@
                     ` : '<div style="width: 14px;"></div>'}
                     
 
-                    <span class="tree-node-label">${node.index}</span>
+                    <span class="tree-node-label">IAM ${node.index}</span>
                     ${!isMobile() ? `<span class="tree-node-info" onclick="copyToClipboard('${node.address}')" title="Click to copy full address">${node.address ? node.address.substring(0, 6) + '...' + node.address.substring(node.address.length - 4) : ''}</span>` : ''}
                 </div>
             `;
@@ -1895,7 +2006,8 @@
             
             const nodeContent = nodeElement.querySelector('.tree-node-content');
             nodeContent.addEventListener('click', () => {
-                selectNode(node);
+                // On click, show typewriter modal with full user details
+                showNodeDetails(node);
             });
         }
 
@@ -1921,6 +2033,296 @@
             
             // Re-render the entire tree
             renderTreeView();
+        }
+
+        // =============== Typewriter User Modal ===============
+        function formatScientificFromIntegerString(intString, significantDigits = 3) {
+            // intString: base-10 integer as string (no decimals). Returns scientific like 1.23e+6
+            if (!intString) return '0';
+            const s = String(intString).replace(/^0+/, '');
+            if (s.length === 0) return '0';
+            if (s.length === 1) return s; // single digit
+            const exponent = s.length - 1;
+            const mantissaRaw = s[0] + (s.slice(1, significantDigits));
+            const mantissa = mantissaRaw.length > 1 ? mantissaRaw[0] + '.' + mantissaRaw.slice(1) : mantissaRaw;
+            return `${mantissa}e+${exponent}`;
+        }
+
+        function shortenAddress(address) {
+            if (!address || typeof address !== 'string') return '';
+            if (address.length <= 12) return address;
+            return address.slice(0, 6) + '...' + address.slice(-4);
+        }
+
+        // Compute USD = (tokenAmount(wei) * price(wei)) / 1e18, return as $x.xx
+        function bigIntToDecimalString(valueBigInt, decimals) {
+            const negative = valueBigInt < 0n;
+            let v = negative ? -valueBigInt : valueBigInt;
+            const base = 10n ** BigInt(decimals);
+            const intPart = v / base;
+            let fracPart = (v % base).toString().padStart(decimals, '0');
+            // trim trailing zeros
+            fracPart = fracPart.replace(/0+$/, '');
+            return (negative ? '-' : '') + intPart.toString() + (fracPart ? ('.' + fracPart) : '');
+        }
+
+        function formatUsdFromWei(productWei, fractionDigits = 2) {
+            // productWei has 18 decimals
+            const s = bigIntToDecimalString(productWei, 18);
+            const n = Number(s);
+            if (!isFinite(n)) return '$0.00';
+            return '$' + n.toFixed(fractionDigits);
+        }
+
+        function formatDateTimeFromSeconds(intString) {
+            try {
+                const s = String(intString || '0').trim();
+                if (!s || s === '0') return '-';
+                const sec = parseInt(s, 10);
+                if (!Number.isFinite(sec) || sec <= 0) return '-';
+                const d = new Date(sec * 1000);
+                if (isNaN(d.getTime())) return '-';
+                // Format: YYYY-MM-DD HH:MM:SS (24h)
+                const pad = (n) => String(n).padStart(2, '0');
+                const yyyy = d.getFullYear();
+                const mm = pad(d.getMonth() + 1);
+                const dd = pad(d.getDate());
+                const HH = pad(d.getHours());
+                const MM = pad(d.getMinutes());
+                const SS = pad(d.getSeconds());
+                return `${yyyy}-${mm}-${dd} ${HH}:${MM}:${SS}`;
+            } catch (_) {
+                return '-';
+            }
+        }
+
+        async function buildUserUsdLines(details) {
+            try {
+                if (!window.contractConfig || !window.contractConfig.contract) return [];
+                const contract = window.contractConfig.contract;
+                if (typeof contract.getTokenPrice !== 'function') return [];
+                const price = await contract.getTokenPrice(); // wei per token
+                const usdLines = [];
+                const tokenKeys = ['totalPurchasedKind','depositedAmount','totalMonthlyRewarded','refclimed'];
+                for (const key of tokenKeys) {
+                    if (!details[key]) continue;
+                    const raw = String(details[key]).replace(/[^0-9]/g, '') || '0';
+                    const amountWei = BigInt(raw); // assume already wei-like big integer string
+                    const product = amountWei * BigInt(price);
+                    const usd = formatUsdFromWei(product, 2);
+                    usdLines.push(`IAM >> <span class=\"key\">${key} USD:</span> <span class=\"kv\">${usd}</span>`);
+                }
+                return usdLines;
+            } catch(_) { return []; }
+        }
+
+        function buildUserDetails(userData, iamIndex, address) {
+            const toText = (v) => {
+                try {
+                    if (typeof v === 'bigint') return v.toString();
+                    if (v === undefined || v === null) return '0';
+                    if (typeof v.toString === 'function') return v.toString();
+                    return String(v);
+                } catch (e) { return String(v); }
+            };
+
+            const d = {};
+            d['IAM Index'] = iamIndex?.toString?.() || String(iamIndex ?? '');
+            d['Address'] = shortenAddress(address || '');
+            d['index'] = toText(userData?.index);
+            d['binaryPoints'] = toText(userData?.binaryPoints);
+            d['binaryPointCap'] = toText(userData?.binaryPointCap);
+            d['binaryPointsClaimed'] = toText(userData?.binaryPointsClaimed);
+            d['totalPurchasedKind'] = toText(userData?.totalPurchasedKind);
+            d['upgradeTime'] = toText(userData?.upgradeTime);
+            d['lastClaimTime'] = toText(userData?.lastClaimTime);
+            d['leftPoints'] = toText(userData?.leftPoints);
+            d['rightPoints'] = toText(userData?.rightPoints);
+            d['lastMonthlyClaim'] = toText(userData?.lastMonthlyClaim);
+            d['totalMonthlyRewarded'] = toText(userData?.totalMonthlyRewarded);
+            d['refclimed'] = toText(userData?.refclimed);
+            d['depositedAmount'] = toText(userData?.depositedAmount);
+
+            // Fields that represent token amounts: format to scientific
+            const scientificKeys = new Set([
+                'totalPurchasedKind',
+                'depositedAmount',
+                'totalMonthlyRewarded',
+                'refclimed'
+            ]);
+            for (const key of Object.keys(d)) {
+                if (scientificKeys.has(key)) {
+                    const raw = String(d[key] ?? '0').replace(/\D/g, '') || '0';
+                    d[key] = formatScientificFromIntegerString(raw, 3);
+                }
+            }
+
+            // Human-readable dates for timestamp fields
+            const dateKeys = ['upgradeTime', 'lastClaimTime', 'lastMonthlyClaim'];
+            for (const k of dateKeys) {
+                d[k] = formatDateTimeFromSeconds(d[k]);
+            }
+            return d;
+        }
+
+        // =============== DFS subtree counting (left/right) ===============
+        async function getChildAddresses(contract, nodeIndex) {
+            try {
+                const idx = (typeof nodeIndex === 'bigint') ? nodeIndex : BigInt(nodeIndex);
+                const [leftAddress, rightAddress] = await Promise.all([
+                    contract.getLeftAddress(idx),
+                    contract.getRightAddress(idx)
+                ]);
+                return { leftAddress, rightAddress };
+            } catch (e) {
+                return { leftAddress: '0x0000000000000000000000000000000000000000', rightAddress: '0x0000000000000000000000000000000000000000' };
+            }
+        }
+
+        async function countSubtreeDFS(contract, startIndex, maxDepth = 1000000) {
+            try {
+                if (!startIndex || startIndex <= 0) return 0;
+                const start = (typeof startIndex === 'bigint') ? startIndex : BigInt(startIndex);
+                const stack = [{ index: start, depth: 1 }];
+                let count = 0;
+                while (stack.length > 0) {
+                    const { index, depth } = stack.pop();
+                    if (depth > maxDepth) continue;
+                    try {
+                        const { leftAddress, rightAddress } = await getChildAddresses(contract, index);
+                        if (leftAddress && leftAddress !== '0x0000000000000000000000000000000000000000') {
+                            const leftIndex = index * 2n;
+                            count++;
+                            stack.push({ index: leftIndex, depth: depth + 1 });
+                        }
+                        if (rightAddress && rightAddress !== '0x0000000000000000000000000000000000000000') {
+                            const rightIndex = index * 2n + 1n;
+                            count++;
+                            stack.push({ index: rightIndex, depth: depth + 1 });
+                        }
+                    } catch (e) {
+                        // ignore and continue
+                    }
+                    if (count % 200 === 0) {
+                        await new Promise(r => setTimeout(r, 0));
+                    }
+                }
+                return count;
+            } catch (_) {
+                return 0;
+            }
+        }
+
+        async function computeLeftRightCounts(contract, rootIndex) {
+            try {
+                const root = (typeof rootIndex === 'bigint') ? rootIndex : BigInt(rootIndex);
+                const { leftAddress, rightAddress } = await getChildAddresses(contract, root);
+                const leftIndex = leftAddress && leftAddress !== '0x0000000000000000000000000000000000000000' ? root * 2n : 0n;
+                const rightIndex = rightAddress && rightAddress !== '0x0000000000000000000000000000000000000000' ? root * 2n + 1n : 0n;
+                const [leftCount, rightCount] = await Promise.all([
+                    countSubtreeDFS(contract, leftIndex),
+                    countSubtreeDFS(contract, rightIndex)
+                ]);
+                return { leftCount, rightCount };
+            } catch (e) {
+                return { leftCount: 0, rightCount: 0 };
+            }
+        }
+
+        function showTypewriterUserModal(details) {
+            const modal = document.getElementById('user-typewriter-modal');
+            const title = document.getElementById('user-typewriter-title');
+            const content = document.getElementById('user-typewriter-content');
+            const closeBtn = document.getElementById('user-typewriter-close');
+
+            if (!modal || !content) return;
+
+            title.textContent = 'User Details';
+            content.textContent = '';
+            modal.style.display = 'flex';
+
+            const lines = Object.keys(details).map((k) => `IAM >> <span class="key">${k}:</span> <span class="kv">${details[k] ?? ''}</span>`);
+
+            typewriter(content, lines, 4);
+
+            const close = () => { modal.style.display = 'none'; };
+            if (closeBtn) closeBtn.onclick = close;
+            modal.onclick = (e) => { if (e.target === modal) close(); };
+        }
+
+        function typewriter(targetEl, lines, charsPerFrame = 6) {
+            let lineIdx = 0;
+            let charIdx = 0;
+            targetEl.innerHTML = '';
+
+            function step() {
+                if (lineIdx >= lines.length) return;
+                const current = lines[lineIdx];
+                charIdx = Math.min(charIdx + charsPerFrame, current.length);
+                const currentTyped = current.slice(0, charIdx);
+
+                const completed = lines.slice(0, lineIdx).join('<br>');
+                targetEl.innerHTML = completed + (completed ? '<br>' : '') + currentTyped + '▌';
+
+                if (charIdx >= current.length) {
+                    targetEl.innerHTML = completed + (completed ? '<br>' : '') + current + '<br>';
+                    lineIdx++;
+                    charIdx = 0;
+                }
+
+                if (lineIdx < lines.length) {
+                    requestAnimationFrame(step);
+                }
+            }
+
+            requestAnimationFrame(step);
+        }
+
+        // Append more lines to an already opened modal using the same typewriter effect
+        function appendTypewriterLines(extraLines) {
+            const modal = document.getElementById('user-typewriter-modal');
+            const content = document.getElementById('user-typewriter-content');
+            if (!modal || !content || modal.style.display === 'none') return;
+
+            const existing = content.innerHTML.replace(/▌$/,'');
+            const currentLines = existing ? existing.split('<br>') : [];
+            const newLines = extraLines || [];
+            const all = currentLines.concat(newLines);
+
+            // Clear and replay quickly only for new lines
+            const startIdx = currentLines.length;
+            let lineIdx = startIdx;
+            let charIdx = 0;
+            function step() {
+                if (lineIdx >= all.length) return;
+                const completed = all.slice(0, lineIdx).join('<br>');
+                const current = all[lineIdx];
+                charIdx = Math.min(charIdx + 6, current.length);
+                const currentTyped = current.slice(0, charIdx);
+                content.innerHTML = (completed ? completed + '<br>' : '') + currentTyped + '▌';
+                if (charIdx >= current.length) {
+                    content.innerHTML = (completed ? completed + '<br>' : '') + current + '<br>';
+                    lineIdx++;
+                    charIdx = 0;
+                }
+                if (lineIdx < all.length) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        }
+
+        // Update a rendered line that starts with a prefix
+        function updateTypewriterLineStartsWith(prefix, newLine) {
+            const modal = document.getElementById('user-typewriter-modal');
+            const content = document.getElementById('user-typewriter-content');
+            if (!modal || !content || modal.style.display === 'none') return;
+            const lines = content.innerHTML.split('<br>');
+            const idx = lines.findIndex(l => l.startsWith(prefix));
+            if (idx === -1) return;
+            lines[idx] = newLine;
+            // keep trailing cursor if present
+            const hasCursor = /▌$/.test(content.innerHTML);
+            const rebuilt = lines.join('<br>') + (hasCursor ? '▌' : '<br>');
+            content.innerHTML = rebuilt;
         }
 
         // Find node in tree structure
@@ -2046,33 +2448,36 @@
                     return;
                 }
                 
-                // Show mobile user popup with typewriter effect
-                if (window.mobileUserPopup) {
-                    console.log('🔄 Showing mobile user popup...');
-                    await window.mobileUserPopup.show(node.address, user);
-                    console.log('✅ Mobile user popup shown successfully');
-                } else {
-                    console.log('❌ Mobile user popup not available');
+                // Build details and show in typewriter modal
+                const details = buildUserDetails(user, node.index, node.address);
+                showTypewriterUserModal(details);
+                buildUserUsdLines(details).then(lines => { if (lines.length) appendTypewriterLines(lines); });
+                appendTypewriterLines([
+                    'IAM >> <span class="key">leftAddress:</span> <span class="kv">⏳ waiting...</span>',
+                    'IAM >> <span class="key">rightAddress:</span> <span class="kv">⏳ waiting...</span>',
+                    'IAM >> <span class="key">leftWalletsCount:</span> <span class="kv">⏳ calculating...</span>',
+                    'IAM >> <span class="key">rightWalletsCount:</span> <span class="kv">⏳ calculating...</span>'
+                ]);
+                if (window.contractConfig && window.contractConfig.contract) {
+                    setTimeout(async () => {
+                        try {
+                            const rootIdx = parseInt(node.index, 10);
+                            const { leftAddress, rightAddress } = await getChildAddresses(window.contractConfig.contract, rootIdx);
+                            if (leftAddress) updateTypewriterLineStartsWith('IAM >> <span class="key">leftAddress:</span>', `IAM >> <span class=\"key\">leftAddress:</span> <span class=\"kv\">${shortenAddress(leftAddress)}</span>`);
+                            if (rightAddress) updateTypewriterLineStartsWith('IAM >> <span class="key">rightAddress:</span>', `IAM >> <span class=\"key\">rightAddress:</span> <span class=\"kv\">${shortenAddress(rightAddress)}</span>`);
+
+                            const { leftCount, rightCount } = await computeLeftRightCounts(window.contractConfig.contract, rootIdx);
+                            updateTypewriterLineStartsWith('IAM >> <span class="key">leftWalletsCount:</span>', `IAM >> <span class=\"key\">leftWalletsCount:</span> <span class=\"kv\">${leftCount}</span>`);
+                            updateTypewriterLineStartsWith('IAM >> <span class="key">rightWalletsCount:</span>', `IAM >> <span class=\"key\">rightWalletsCount:</span> <span class=\"kv\">${rightCount}</span>`);
+                        } catch (_) {}
+                    }, 0);
                 }
                 
             } catch (error) {
                 console.error('❌ Error fetching user data:', error);
                 
-                // Show error popup
-                if (window.mobileUserPopup) {
-                    const errorUser = {
-                        index: node.index || 0,
-                        binaryPoints: 0,
-                        binaryPointCap: 0,
-                        totalMonthlyRewarded: 0,
-                        binaryPointsClaimed: 0,
-                        refclimed: 0,
-                        depositedAmount: 0,
-                        leftPoints: 0,
-                        rightPoints: 0
-                    };
-                    await window.mobileUserPopup.show(node.address, errorUser);
-                }
+                const fallback = { 'IAM Index': String(node.index || 0), Address: node.address || '', Note: 'Failed to fetch user' };
+                showTypewriterUserModal(fallback);
             }
         }
 
@@ -2497,7 +2902,7 @@
             // Create index display
             const indexDisplay = document.createElement('span');
             indexDisplay.className = 'index-display';
-            indexDisplay.textContent = node.index;
+            indexDisplay.textContent = 'IAM ' + node.index;
             indexDisplay.style.cursor = 'pointer';
             indexDisplay.onclick = (e) => {
                 e.stopPropagation();
