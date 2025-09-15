@@ -363,7 +363,7 @@
                     <div class="card-icon">💰</div>
                     <div class="card-title">Supply</div>
                     <div class="card-value" id="total-supply">0</div>
-                    <div class="card-subtitle">Binary Pool</div>
+                    <div class="card-subtitle"></div>
                     <div class="card-subtitle" id="total-supply-usd"></div>
                 </div>
                 
@@ -756,11 +756,12 @@
                     updateDashboardElement('total-points', formatNumber(totalPointsNum, true));
                     // Point Value as token amount (compressed/scientific)
                     updateDashboardElement('point-value', formatTokenBalance(pointValueNum, 2));
-                    updateDashboardElement('contract-balance', formatNumber(daiBalanceNum, true));
+                    // Backing Pool: show full value with two decimals (no K/M/B)
+                    updateDashboardElement('contract-balance', (Number.isFinite(daiBalanceNum) ? daiBalanceNum : 0).toFixed(2));
 
                     // Update USD sublines
                     updateDashboardElement('total-supply-usd', '$' + formatNumber(totalSupplyNum * tokenPriceNum));
-                    updateDashboardElement('contract-balance-usd', '$' + formatNumber(daiBalanceNum));
+                    updateDashboardElement('contract-balance-usd', '$' + (Number.isFinite(daiBalanceNum) ? daiBalanceNum : 0).toFixed(2));
                     
                     // Contract IAM balance
                     const contractIAMNum = parseFloat(ethers.formatEther(contractIAMBalanace || 0));
