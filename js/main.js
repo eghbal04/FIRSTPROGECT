@@ -558,14 +558,16 @@ function resetStatusDisplay() {
     // Reset main status display (User ID section)
     const userStatusIdValue = document.getElementById('user-status-id-value');
     if (userStatusIdValue) {
-        userStatusIdValue.textContent = 'Not Connected';
+        // Remove default placeholder text
+        userStatusIdValue.textContent = '';
         userStatusIdValue.style.color = '#e0e6f7';
     }
     
     // Reset wallet address display
     const userStatusWallet = document.getElementById('user-status-wallet');
     if (userStatusWallet) {
-        userStatusWallet.textContent = 'Not Connected';
+        // Remove default placeholder text
+        userStatusWallet.textContent = '';
         userStatusWallet.style.color = '#e0e6f7';
     }
 }

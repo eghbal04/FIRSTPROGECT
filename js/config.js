@@ -4270,10 +4270,7 @@ async function refreshTotalSupply() {
 	document.getElementById('supply-diff').innerText = (totalSupplyNum - contractBalanceNum).toLocaleString('en-US', {maximumFractionDigits: 4}); // حذف پسوند IAM
 	document.getElementById('total-supply-value').innerText = (totalSupplyNum * tokenPriceNum).toLocaleString('en-US', {maximumFractionDigits: 2}); // حذف پسوند DAI
   } catch (e) {
-	document.getElementById('total-supply').innerText = 'خطا';
-	document.getElementById('contract-balance').innerText = 'خطا';
-	document.getElementById('supply-diff').innerText = 'خطا';
-	document.getElementById('total-supply-value').innerText = 'خطا';
+	// Removed default error writes to avoid placeholder values on UI
   }
 }
 
@@ -4649,7 +4646,7 @@ window.updateDashboardStats = async function() {
 	const elements = ['circulating-supply', 'total-points', 'contract-token-balance', 'dashboard-cashback-value', 'dashboard-dai-balance', 'dashboard-wallets-count', 'dashboard-registration-price'];
 	elements.forEach(id => {
 	  const el = document.getElementById(id);
-	  if (el) el.innerText = 'Error';
+	  // Removed default error write to prevent placeholder values
 	});
   } finally {
 	// Always clear the progress flag
