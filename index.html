@@ -20,7 +20,7 @@
         /* Top section */
         .status-bar { background: #151823; border-bottom: 1px solid #2a2e3f; }
         .status-content {
-            display: grid; grid-template-columns: 1fr auto 1fr;
+            display: grid; grid-template-columns: 1fr 1fr;
             align-items: center; gap: 6px; padding: 6px 8px;
         }
         .status-left-section, .status-stars-section { display: flex; gap: 6px; align-items: center; }
@@ -40,6 +40,10 @@
         /* remove smaller override to keep doubled size */
         /* .iam-index-combined .info-value { font-size: 12px; } */
         #userStatusLevel { font-size: 14px; }
+        /* Place stars in a second row under the left section */
+        .status-bar { display: grid; grid-template-rows: auto auto auto; }
+        .status-content { grid-column: 1 / -1; }
+        .status-stars-section { grid-column: 1 / 2; justify-content: flex-start; padding: 4px 8px; }
 
         /* Extra compact on very small screens */
         @media (max-width: 400px) {
@@ -517,40 +521,50 @@
             resetDashboardPlaceholders();
             setupCompressedNavigation();
 
-            // Set contract link to Polygonscan
-            try {
-                const linkEl = document.getElementById('contract-link');
-                let addr = '';
-                if (window.contractConfig && window.contractConfig.IAM_ADDRESS) {
-                    addr = window.contractConfig.IAM_ADDRESS;
-                } else if (window.contractConfig && window.contractConfig.contract && window.contractConfig.contract.target) {
-                    addr = window.contractConfig.contract.target;
-                } else if (typeof IAM_ADDRESS !== 'undefined') {
-                    addr = IAM_ADDRESS;
-                }
-                if (linkEl && addr) {
-                    linkEl.textContent = addr;
-                    linkEl.href = 'https://polygonscan.com/address/' + addr;
-                } else if (linkEl) {
-                    linkEl.textContent = '';
-                    linkEl.removeAttribute('href');
-                }
-            } catch (_) {}
-            
-            // Update status bar only once on page load
-            if (window.contractConfig && window.contractConfig.address) {
-                updateStatusBar();
-            } else {
-                // Listen for wallet connection events - only once
-                window.addEventListener('walletConnected', function(event) {
-                    updateStatusBar();
-                }, { once: true }); // Only listen once
-            }
+            // Add simple blocking loader
+            var loader = document.createElement('div');
+            loader.id = 'initial-loading';
+            loader.style.cssText = 'position:fixed;inset:0;background:#0f0f14;display:flex;align-items:center;justify-content:center;z-index:2000;color:#e7e7e7;font-weight:600;';
+            loader.textContent = 'Loading...';
+            document.body.appendChild(loader);
 
-            // Start in-memory refresh every 10s; render draws from cache
-            setInterval(function(){ refreshDashboardCache(); }, 10000);
-            // Initial prime
-            refreshDashboardCache();
+            (async function loadAllOnce(){
+                try {
+                    // Ensure wallet/contract is available
+                    if (!(window.contractConfig && window.contractConfig.contract)) {
+                        if (typeof window.connectWallet === 'function') {
+                            try { await window.connectWallet(); } catch(_) {}
+                        }
+                    }
+
+                    // Set contract link to Polygonscan after contract known
+                    try {
+                        const linkEl = document.getElementById('contract-link');
+                        let addr = '';
+                        if (window.contractConfig && window.contractConfig.IAM_ADDRESS) {
+                            addr = window.contractConfig.IAM_ADDRESS;
+                        } else if (window.contractConfig && window.contractConfig.contract && window.contractConfig.contract.target) {
+                            addr = window.contractConfig.contract.target;
+                        } else if (typeof IAM_ADDRESS !== 'undefined') {
+                            addr = IAM_ADDRESS;
+                        }
+                        if (linkEl && addr) {
+                            linkEl.textContent = addr;
+                            linkEl.href = 'https://polygonscan.com/address/' + addr;
+                        } else if (linkEl) {
+                            linkEl.textContent = '';
+                            linkEl.removeAttribute('href');
+                        }
+                    } catch (_) {}
+
+                    // Fetch user data and dashboard in sequence and wait
+                    await updateStatusBar();
+                    await refreshDashboardCache();
+                } finally {
+                    // Remove loader regardless of success to avoid trapping user
+                    try { var el = document.getElementById('initial-loading'); if (el) el.remove(); } catch(_){}
+                }
+            })();
         });
         
         // Global function for main.js to call - only once
