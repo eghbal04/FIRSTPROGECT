@@ -768,23 +768,23 @@
         function renderDashboardFromCache() {
             if (!dashboardCache) return;
             const c = dashboardCache;
-            updateDashboardElement('total-supply', c.totalSupplyNum > 0 ? formatNumber(c.totalSupplyNum) : '');
+            updateDashboardElement('total-supply', Number.isFinite(c.totalSupplyNum) ? Math.floor(c.totalSupplyNum).toString() : '0');
             updateDashboardElement('total-users', c.totalUsersNum > 0 ? formatNumber(c.totalUsersNum, true) : '');
-            updateDashboardElement('token-price', c.tokenPriceNum > 0 ? '$' + formatTokenBalance(c.tokenPriceNum, 6) : '');
+            updateDashboardElement('token-price', Number.isFinite(c.tokenPriceNum) ? ('$' + Math.floor(c.tokenPriceNum).toString()) : '$0');
             updateDashboardElement('total-points', c.totalPointsNum > 0 ? formatNumber(c.totalPointsNum, true) : '');
-            updateDashboardElement('point-value', c.pointValueNum > 0 ? formatTokenBalance(c.pointValueNum, 2) : '');
+            updateDashboardElement('point-value', Number.isFinite(c.pointValueNum) ? Math.floor(c.pointValueNum).toString() : '0');
             updateDashboardElement('contract-balance', (Number.isFinite(c.daiBalanceNum) && c.daiBalanceNum > 0) ? c.daiBalanceNum.toFixed(2) : '');
             updateDashboardElement('total-supply-usd', (c.totalSupplyNum * c.tokenPriceNum) > 0 ? '$' + formatNumber(c.totalSupplyNum * c.tokenPriceNum) : '');
             updateDashboardElement('contract-balance-usd', (Number.isFinite(c.daiBalanceNum) && c.daiBalanceNum > 0) ? '$' + c.daiBalanceNum.toFixed(2) : '');
-            updateDashboardElement('contract-iam-balance', c.contractIAMNum > 0 ? formatTokenBalance(c.contractIAMNum, 2) : '');
+            updateDashboardElement('contract-iam-balance', Number.isFinite(c.contractIAMNum) ? Math.floor(c.contractIAMNum).toString() : '0');
             const contractIamUsdPref = (typeof c.usdFromContractIAM === 'number' && c.usdFromContractIAM > 0)
                 ? c.usdFromContractIAM : (c.contractIAMNum * c.tokenPriceNum);
             updateDashboardElement('contract-iam-balance-usd', contractIamUsdPref > 0 ? '$' + formatNumber(contractIamUsdPref) : '');
-            updateDashboardElement('reg-price', c.regPriceValue > 0 ? formatTokenBalance(c.regPriceValue, 2) : '');
+            updateDashboardElement('reg-price', Number.isFinite(c.regPriceValue) ? Math.floor(c.regPriceValue).toString() : '0');
             const regPriceUsd = (typeof c.usdFromRegPrice === 'number' && c.usdFromRegPrice > 0)
                 ? c.usdFromRegPrice : (c.regPriceValue * c.tokenPriceNum);
                     updateDashboardElement('reg-price-usd', regPriceUsd > 0 ? '$' + formatNumber(regPriceUsd) : '');
-            updateDashboardElement('cashback', c.cashBackTokenNum > 0 ? formatTokenBalance(c.cashBackTokenNum, 2) : '');
+            updateDashboardElement('cashback', Number.isFinite(c.cashBackTokenNum) ? Math.floor(c.cashBackTokenNum).toString() : '0');
             const cashbackUsd = (typeof c.usdFromCashback === 'number' && c.usdFromCashback > 0)
                 ? c.usdFromCashback : (c.cashBackTokenNum * c.tokenPriceNum);
                     updateDashboardElement('cashback-usd', cashbackUsd > 0 ? '$' + formatNumber(cashbackUsd) : '');
