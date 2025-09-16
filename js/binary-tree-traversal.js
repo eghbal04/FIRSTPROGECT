@@ -314,44 +314,14 @@ class BinaryTreeTraversal {
     }
   }
 
-  // Cache traversal results
+  // No caching - always fetch live data
   cacheTraversalResults(users) {
-    try {
-      const cacheData = {
-        users: users,
-        timestamp: Date.now(),
-        totalUsers: users.length
-      };
-      
-      localStorage.setItem('binaryTreeTraversalCache', JSON.stringify(cacheData));
-      console.log('💾 Traversal results cached successfully');
-    } catch (error) {
-      console.warn('⚠️ Error caching traversal results:', error);
-    }
+    // No caching needed
   }
 
-  // Get cached traversal results
+  // No caching - always fetch live data
   getCachedTraversalResults() {
-    try {
-      const cached = localStorage.getItem('binaryTreeTraversalCache');
-      if (cached) {
-        const data = JSON.parse(cached);
-        const cacheAge = Date.now() - data.timestamp;
-        
-        // Cache is valid for 1 hour
-        if (cacheAge < 3600000) {
-          console.log('📋 Using cached traversal results');
-          return data.users;
-        } else {
-          console.log('⏰ Cache expired, will perform new traversal');
-          localStorage.removeItem('binaryTreeTraversalCache');
-        }
-      }
-      return null;
-    } catch (error) {
-      console.warn('⚠️ Error reading cached traversal results:', error);
-      return null;
-    }
+    return null;
   }
 
   // Update traversal progress

@@ -1,10 +1,8 @@
 // Profile Module - فقط توابع مخصوص پروفایل
 
-window.cachedUserProfile = window.cachedUserProfile || null;
+// No caching - always fetch live data
 async function loadUserProfileOnce() {
-    if (window.cachedUserProfile) return window.cachedUserProfile;
-    window.cachedUserProfile = await window.getUserProfile();
-    return window.cachedUserProfile;
+    return await window.getUserProfile();
 }
 
 // تابع انتظار برای اتصال کیف پول

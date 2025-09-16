@@ -3428,74 +3428,19 @@ window.getUserProfile = async function() {
 			address = addr;
 			console.log('getUserProfile: Starting for address:', address);
 			
-			// بررسی cache برای جلوگیری از فراخوانی مکرر
-			const cacheKey = `userProfile_${address}`;
-			const cached = sessionStorage.getItem(cacheKey);
-			if (cached) {
-				const parsed = JSON.parse(cached);
-				const cacheTime = parsed.timestamp || 0;
-				// اگر کمتر از 30 ثانیه از آخرین درخواست گذشته، از cache استفاده کن
-				if (Date.now() - cacheTime < 30000) {
-					console.log('getUserProfile: Using cached user profile');
-					return parsed.data;
-				}
-			}
+			// No caching - always fetch live data
 			
-			// دریافت اطلاعات کاربر از قرارداد
-			let user = {
-				activated: false,
-				index: 0n,
-				referrer: '0x0000000000000000000000000000000000000000',
-				activationTime: 0n,
-				lastClaimTime: 0n,
-				lastClaimLevel: 0n,
-				lastCashbackClaim: 0n,
-				totalCommission: 0n,
-				leftChild: '0x0000000000000000000000000000000000000000',
-				rightChild: '0x0000000000000000000000000000000000000000',
-				level: 0n
-			};
+			// دریافت اطلاعات کاربر از قرارداد - بدون مقادیر پیش‌فرض
+			let user;
 
-			// تلاش برای دریافت واقعی user از قرارداد
+			// دریافت اطلاعات کاربر از قرارداد
 			try {
 				console.log('getUserProfile: Attempting contract.users...');
-				// ابتدا از تابع users استفاده کن
-				const userData = await contract.users(address);
-				console.log('getUserProfile: Raw userData from contract.users:', userData);
-				console.log('getUserProfile: userData.activated:', userData?.activated);
-				console.log('getUserProfile: userData.index:', userData?.index);
-				
-				if (userData && userData.activated) {
-					user = userData;
-					console.log('getUserProfile: User profile loaded from contract.users:', user);
-				} else {
-					console.log('getUserProfile: User not activated via contract.users, trying getIndexByAddress...');
-					// اگر از users نتوانستیم، از getIndexByAddress استفاده کن
-				const idx = await window.getIndexByAddress(contract, address);
-					console.log('getUserProfile: Index from getIndexByAddress:', idx);
-				if (idx && idx > 0n) {
-					user.index = idx;
-					user.activated = true;
-						console.log('getUserProfile: User index found via getIndexByAddress:', idx);
-					} else {
-						console.log('getUserProfile: User is not registered or activated');
-					}
-				}
+				user = await contract.users(address);
+				console.log('getUserProfile: Raw userData from contract.users:', user);
 			} catch (error) {
-				console.warn('getUserProfile: Error fetching user data, user may not be registered:', error?.message || error);
-				// تلاش نهایی با getIndexByAddress
-				try {
-					console.log('getUserProfile: Fallback to getIndexByAddress...');
-					const idx = await window.getIndexByAddress(contract, address);
-					console.log('getUserProfile: Fallback index result:', idx);
-					if (idx && idx > 0n) {
-						user.index = idx;
-						user.activated = true;
-						console.log('getUserProfile: User index found via getIndexByAddress (fallback):', idx);
-					}
-				} catch (fallbackError) {
-					console.warn('getUserProfile: getIndexByAddress also failed:', fallbackError?.message || fallbackError);
-				}
+				console.error('getUserProfile: Error fetching user data from contract:', error?.message || error);
+				throw new Error('Failed to fetch user data from contract');
 			}
 			
 			console.log('getUserProfile: Final user object:', user);
@@ -3635,15 +3580,7 @@ window.getUserProfile = async function() {
 				depositedAmount: user.depositedAmount ? user.depositedAmount.toString() : '0'
 			};
 			
-			// ذخیره در cache
-			try {
-				sessionStorage.setItem(cacheKey, JSON.stringify({
-					data: profile,
-					timestamp: Date.now()
-				}));
-			} catch (e) {
-				console.warn('Could not cache user profile:', e);
-			}
+			// No caching - data is always fresh
 			
 			return profile;
 		} catch (error) {

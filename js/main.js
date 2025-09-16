@@ -639,25 +639,11 @@ async function checkConnection() {
 
 // Price chart initialization moved to main DOMContentLoaded listener
 
-// Cache for user profile
-let userProfileCache = null;
-let userProfileCacheTime = 0;
-const CACHE_DURATION = 30000; // 30 seconds
-
+// No caching - always fetch live data
 async function loadUserProfileOnce() {
-    const now = Date.now();
-    
-    // If cache is valid, use it
-    if (userProfileCache && (now - userProfileCacheTime) < CACHE_DURATION) {
-        return userProfileCache;
-    }
-    
     try {
-        // Get new profile
         if (window.getUserProfile) {
-            userProfileCache = await window.getUserProfile();
-            userProfileCacheTime = now;
-            return userProfileCache;
+            return await window.getUserProfile();
         } else {
             console.warn('getUserProfile function not available');
             return null;
@@ -668,11 +654,10 @@ async function loadUserProfileOnce() {
     }
 }
 
-// Function to clear profile cache
+// Function to clear profile cache (no-op since no caching)
 function clearUserProfileCache() {
-    userProfileCache = null;
-    userProfileCacheTime = 0;
-    console.log('User profile cache cleared');
+    // No caching to clear
+    console.log('No cache to clear - always using live data');
 }
 
 // Export for use in other files

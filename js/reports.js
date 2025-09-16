@@ -50,88 +50,13 @@ function formatNumber(value, decimals = 18) {
     } catch { return '0'; }
 }
 
-// جمع‌آوری همه ایونت‌ها
+// جمع‌آوری همه ایونت‌ها - بدون کش
 window.fetchReports = async function(address) {
-    // 1) تلاش برای خواندن گزارش‌های کش‌شده فوری
-    try {
-        const cachedKey = 'reports_cache_v1';
-        // IndexedDB اول
-        let cached = null;
-        if (typeof indexedDB !== 'undefined') {
-            try {
-                const db = await new Promise((resolve, reject) => {
-                    const req = indexedDB.open('IAM-reports-cache', 1);
-                    req.onupgradeneeded = function() {
-                        const dbi = req.result;
-                        if (!dbi.objectStoreNames.contains('reports')) dbi.createObjectStore('reports', { keyPath: 'key' });
-                    };
-                    req.onsuccess = () => resolve(req.result);
-                    req.onerror = () => reject(req.error);
-                });
-                cached = await new Promise((resolve, reject) => {
-                    const tx = db.transaction(['reports'], 'readonly');
-                    const store = tx.objectStore('reports');
-                    const r = store.get(cachedKey);
-                    r.onsuccess = () => resolve(r.result ? r.result.value : null);
-                    r.onerror = () => reject(r.error);
-                });
-            } catch (e) {
-                console.warn('⚠️ IndexedDB reports cache error, fallback to localStorage:', e);
-            }
-        }
-        if (!cached) {
-            const ls = localStorage.getItem(cachedKey);
-            if (ls) cached = JSON.parse(ls);
-        }
-        if (cached && Array.isArray(cached.reports)) {
-            // UI را سریع پر کن، و در پس‌زمینه به‌روزرسانی کن
-            setTimeout(async () => {
-                try {
-                    const fresh = await window._fetchReportsFresh(address);
-                    if (fresh && fresh.length) {
-                        // ذخیره در کش
-                        await window._saveReportsCache(fresh);
-                        // اگر لازم است اینجا UI را به‌روزرسانی کنیم می‌توانیم تریگر رویداد بفرستیم
-                    }
-                } catch (e) { console.warn('⚠️ refresh reports failed:', e); }
-            }, 0);
-            return cached.reports;
-        }
-    } catch (e) { console.warn('⚠️ read reports cache failed:', e); }
-
-    // اگر کش نبود، مستقیم تازه بگیر
-    const fresh = await window._fetchReportsFresh(address);
-    await window._saveReportsCache(fresh);
-    return fresh;
+    // No caching - always fetch live data
+    return await window._fetchReportsFresh(address);
 };
 
-// تابع کمکی: کش‌کردن گزارش‌ها (IndexedDB + localStorage)
-window._saveReportsCache = async function(reports) {
-    try {
-        const payload = { key: 'reports_cache_v1', value: { reports, savedAt: Date.now() } };
-        if (typeof indexedDB !== 'undefined') {
-            try {
-                const db = await new Promise((resolve, reject) => {
-                    const req = indexedDB.open('IAM-reports-cache', 1);
-                    req.onupgradeneeded = function() {
-                        const dbi = req.result;
-                        if (!dbi.objectStoreNames.contains('reports')) dbi.createObjectStore('reports', { keyPath: 'key' });
-                    };
-                    req.onsuccess = () => resolve(req.result);
-                    req.onerror = () => reject(req.error);
-                });
-                await new Promise((resolve, reject) => {
-                    const tx = db.transaction(['reports'], 'readwrite');
-                    const store = tx.objectStore('reports');
-                    store.put(payload);
-                    tx.oncomplete = () => resolve(true);
-                    tx.onerror = () => reject(tx.error);
-                });
-            } catch (e) { console.warn('⚠️ save reports to IDB failed:', e); }
-        }
-        localStorage.setItem('reports_cache_v1', JSON.stringify(payload.value));
-    } catch (e) { console.warn('⚠️ save reports cache failed:', e); }
-};
+// No caching functions needed
 
 // نسخه «فقط تازه» برای استفاده داخلی
 window._fetchReportsFresh = async function(address) {

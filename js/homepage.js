@@ -29,24 +29,7 @@ function updateConnectionStatus(type, message) {
     }
 }
 
-// --- Dashboard cache: save and retrieve ---
-function cacheDashboardData(data) {
-  try {
-    localStorage.setItem('dashboardCache', JSON.stringify({
-      data,
-      timestamp: Date.now()
-    }));
-  } catch (e) { /* ignore */ }
-}
-function getCachedDashboardData() {
-  const cached = localStorage.getItem('dashboardCache');
-  if (cached) {
-    try {
-      return JSON.parse(cached).data;
-    } catch { return null; }
-  }
-  return null;
-}
+// No caching - always fetch live data
 // --- Smooth effect for value update - Smart update ---
 function animateValueChange(el, newValue) {
   if (!el) return;
@@ -79,13 +62,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.dashboardLoadingManager.setDashboardLoading(true);
     }
     
-    // Display cached data immediately
-    const cached = getCachedDashboardData();
-    if (cached) {
-      await updateDashboardUI(
-        cached.prices, cached.stats, cached.additionalStats, cached.tradingVolume, cached.priceChanges
-      );
-    }
+    // No cached data - always fetch live data
     
     // Then start background update
     try {
@@ -266,7 +243,7 @@ async function performDashboardLoad() {
                 await updateDAIContractBalance();
                 
                 // Save new data to cache
-                cacheDashboardData(newDashboardData);
+                // No caching - data is always fresh
                 
                 // Remove loading state after update completion
                 if (window.dashboardLoadingManager) {

@@ -582,32 +582,15 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         if (!contract) throw new Error('No contract connection available');
         console.log('✅ Contract connection obtained');
         
-        // Try to read from cache for faster performance
-        let cachedNode = null;
-        if (window.getCachedNetworkNodeByIndex) {
-            try { cachedNode = window.getCachedNetworkNodeByIndex(index); } catch {}
-        }
-        let address = cachedNode && cachedNode.address ? cachedNode.address : null;
-        if (!address) {
-            console.log(`🔄 Getting address for index: ${index}`);
-            try {
+        // No caching - always fetch fresh data
+        // Always fetch fresh data - no caching
+        console.log(`🔄 Getting address for index: ${index}`);
+        let address = null;
+        try {
             address = await contract.indexToAddress(index);
-                // Cache the address immediately
-                if (address && window.saveOrUpdateNetworkNode) {
-                    try {
-                        await window.saveOrUpdateNetworkNode({
-                            index: index.toString(),
-                            address: address,
-                            level: level
-                        });
-                    } catch (e) {
-                        console.warn('Failed to cache address:', e);
-                    }
-                }
-            } catch (error) {
-                console.error('Error getting address for index:', index, error);
-                address = null;
-            }
+        } catch (error) {
+            console.error('Error getting address for index:', index, error);
+            address = null;
         }
         console.log('✅ Address obtained:', address);
         
@@ -617,19 +600,17 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         }
         
         console.log('🔄 Getting user data for address:', address);
-        let user = cachedNode && cachedNode.userData ? cachedNode.userData : null;
-        if (!user) {
-            try {
-                // Add timeout to prevent hanging
-                const userPromise = contract.users(address);
-                const timeoutPromise = new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error('User data fetch timeout')), 60000)
-                );
-                user = await Promise.race([userPromise, timeoutPromise]);
-            } catch(e) {
-                console.warn('Error getting user data, using fallback:', e);
-                user = { index:0n, activated:false, binaryPoints:0n, binaryPointCap:0n, binaryPointsClaimed:0n, totalMonthlyRewarded:0n, refclimed:0n, depositedAmount:0n, leftPoints:0n, rightPoints:0n };
-            }
+        let user = null;
+        try {
+            // Add timeout to prevent hanging
+            const userPromise = contract.users(address);
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('User data fetch timeout')), 60000)
+            );
+            user = await Promise.race([userPromise, timeoutPromise]);
+        } catch(e) {
+            console.error('Error getting user data:', e);
+            throw new Error('Failed to fetch user data from contract');
         }
         console.log('✅ User data obtained:', user);
         

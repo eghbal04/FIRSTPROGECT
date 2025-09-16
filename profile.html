@@ -398,6 +398,15 @@
     async function loadProfile() {
         const content = document.getElementById('profile-content');
         content.innerHTML = '<div class="loading">Loading information...</div>';
+        
+        // Clear any existing caches to ensure fresh data
+        if (window.clearUserProfileCache) {
+            window.clearUserProfileCache();
+        }
+        if (window.cachedUserProfile) {
+            window.cachedUserProfile = null;
+        }
+        
         try {
             if (!window.connectWallet) throw new Error('Wallet connection is not active');
             const { contract, address, provider } = await window.connectWallet();
@@ -407,23 +416,8 @@
                 try {
                     return await contract.users(addr);
                 } catch (e) {
-                    console.warn('users(address) decode failed, using defaults:', e);
-                    return {
-                        index: 0n,
-                        binaryPoints: 0n,
-                        binaryPointCap: 0n,
-                        binaryPointsClaimed: 0n,
-                        activated: false,
-                        totalPurchasedKind: 0n,
-                        upgradeTime: 0n,
-                        lastClaimTime: 0n,
-                        leftPoints: 0n,
-                        rightPoints: 0n,
-                        lastMonthlyClaim: 0n,
-                        totalMonthlyRewarded: 0n,
-                        refclimed: 0n,
-                        depositedAmount: 0n
-                    };
+                    console.error('users(address) call failed:', e);
+                    throw new Error('Failed to fetch user data from contract');
                 }
             }
             const user = await fetchUserSafe(address);
