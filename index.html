@@ -289,7 +289,7 @@
     
   <script>
         // Status bar update function - runs only once on page load
-        function updateStatusBar() {
+        async function updateStatusBar() {
             if (window.contractConfig && window.contractConfig.address) {
                 
                 // Update wallet address
@@ -307,8 +307,8 @@
                 }
                 
                 // Update user data, token balances, and dashboard
-                updateUserData();
-                updateDashboard();
+                await updateUserData();
+                await updateDashboard();
                 }
         }
         
@@ -321,7 +321,8 @@
                     // Update User IAM
                     const userIdElement = document.getElementById('userStatusIdValue');
                     if (userIdElement) {
-                        const rawId = (userData && typeof userData[0] !== 'undefined') ? String(userData[0]) : '';
+                        const idx = (userData && (userData.index ?? userData[0] ?? userData[1]));
+                        const rawId = (typeof idx !== 'undefined' && idx !== null) ? String(idx) : '';
                         userIdElement.textContent = rawId ? ('IAM ' + rawId) : '';
                     }
                     
@@ -352,24 +353,20 @@
                         }
                     }
                     
-                    // Update Likes and Dislikes (no defaults on failure)
+                    // Update Likes and Dislikes (use tuple indices)
                     try {
                         const voteStatus = await window.contractConfig.contract.getVoteStatus(window.contractConfig.address);
                         const likesElement = document.getElementById('userStatusLikes');
                         const dislikesElement = document.getElementById('userStatusDislikes');
-                        if (likesElement) {
-                            const v = voteStatus && typeof voteStatus.totalLikes !== 'undefined' ? String(voteStatus.totalLikes) : '';
-                            if (likesElement.textContent !== v) likesElement.textContent = v;
-                        }
-                        if (dislikesElement) {
-                            const v2 = voteStatus && typeof voteStatus.totalDislikes !== 'undefined' ? String(voteStatus.totalDislikes) : '';
-                            if (dislikesElement.textContent !== v2) dislikesElement.textContent = v2;
-                        }
+                        const likesVal = Array.isArray(voteStatus) ? String(voteStatus[0] ?? '') : (voteStatus?.totalLikes != null ? String(voteStatus.totalLikes) : '');
+                        const dislikesVal = Array.isArray(voteStatus) ? String(voteStatus[1] ?? '') : (voteStatus?.totalDislikes != null ? String(voteStatus.totalDislikes) : '');
+                        if (likesElement && likesElement.textContent !== likesVal) likesElement.textContent = likesVal;
+                        if (dislikesElement && dislikesElement.textContent !== dislikesVal) dislikesElement.textContent = dislikesVal;
                     } catch (error) {
                         const likesElement = document.getElementById('userStatusLikes');
                         const dislikesElement = document.getElementById('userStatusDislikes');
-                        if (likesElement) { if (likesElement.textContent !== '') likesElement.textContent = ''; }
-                        if (dislikesElement) { if (dislikesElement.textContent !== '') dislikesElement.textContent = ''; }
+                        if (likesElement) { if (likesElement.textContent !== '') likesElement.textContent = '0'; }
+                        if (dislikesElement) { if (dislikesElement.textContent !== '') dislikesElement.textContent = '0'; }
                     }
                     
                     // Update token balances
@@ -438,15 +435,15 @@
             const daiBalanceElement = document.getElementById('dai-balance');
             
             if (iamBalanceElement) {
-                        iamBalanceElement.textContent = iamBalance > 0 ? formatTokenBalance(iamBalance, 2) : '';
+                        iamBalanceElement.textContent = Number.isFinite(iamBalance) ? (iamBalance > 0 ? formatTokenBalance(iamBalance, 2) : '0') : '';
             }
                     
             if (maticBalanceElement) {
-                        maticBalanceElement.textContent = (Number.isFinite(maticBalance) && maticBalance > 0) ? maticBalance.toFixed(2) : '';
+                        maticBalanceElement.textContent = Number.isFinite(maticBalance) ? (maticBalance > 0 ? maticBalance.toFixed(2) : '0') : '';
             }
                     
             if (daiBalanceElement) {
-                        daiBalanceElement.textContent = (Number.isFinite(daiBalance) && daiBalance > 0) ? daiBalance.toFixed(2) : '';
+                        daiBalanceElement.textContent = Number.isFinite(daiBalance) ? (daiBalance > 0 ? daiBalance.toFixed(2) : '0') : '';
                     }
                     
                     // Get IAM token price from contract
@@ -466,8 +463,8 @@
             const daiUsdElement = document.getElementById('dai-balance-usd');
             
                 if (iamUsdElement) {
-                        const iamUsdValue = iamBalance * iamTokenPrice;
-                        iamUsdElement.textContent = (iamUsdValue > 0) ? '$' + formatTokenBalance(iamUsdValue, 2) : '';
+                        const iamUsdValue = (Number.isFinite(iamBalance) && Number.isFinite(iamTokenPrice)) ? (iamBalance * iamTokenPrice) : 0;
+                        iamUsdElement.textContent = '$' + (iamUsdValue > 0 ? formatTokenBalance(iamUsdValue, 2) : '0');
                     }
                     
                 if (maticUsdElement) {
