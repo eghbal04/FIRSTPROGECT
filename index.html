@@ -91,6 +91,12 @@
             padding: 6px 10px;
             border-top: 1px solid rgba(0, 255, 136, 0.1);
         }
+
+        /* Progress Bar */
+        .load-progress { position: fixed; top: 44px; left: 0; right: 0; z-index: 1001; padding: 4px 12px; }
+        .load-progress-inner { height: 6px; background: rgba(255,255,255,0.08); border: 1px solid rgba(0,255,136,0.25); border-radius: 999px; overflow: hidden; }
+        .load-progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg,#a786ff,#00ff88); transition: width .25s ease; }
+        .load-progress-text { margin-top: 4px; font-size: 11px; color: #a0aec0; text-align: right; }
         
         .status-nav-item {
             display: flex;
@@ -464,6 +470,12 @@
             <a href="about.html" class="status-nav-item">About</a>
         </div>
     </div>
+
+    <!-- Loading Progress -->
+    <div class="load-progress" id="load-progress" style="display:none;">
+        <div class="load-progress-inner"><div class="load-progress-bar" id="load-progress-bar"></div></div>
+        <div class="load-progress-text" id="load-progress-text">0%</div>
+    </div>
         
         
     <!-- Main Content -->
@@ -832,33 +844,44 @@
         var dashboardCache = null;
         var dashboardRefreshing = false;
 
+        function setLoadProgress(percent, label){
+            try {
+                var wrap = document.getElementById('load-progress');
+                var bar = document.getElementById('load-progress-bar');
+                var txt = document.getElementById('load-progress-text');
+                if (!wrap || !bar || !txt) return;
+                if (percent <= 0) { bar.style.width = '0%'; txt.textContent = '0%'; wrap.style.display = 'block'; return; }
+                var p = Math.max(0, Math.min(100, Math.round(percent)));
+                bar.style.width = p + '%';
+                txt.textContent = (label ? label + ' · ' : '') + p + '%';
+                wrap.style.display = 'block';
+                if (p === 100) {
+                    setTimeout(function(){ wrap.style.display = 'none'; }, 800);
+                }
+            } catch(_){}
+        }
+
         async function refreshDashboardCache() {
             if (dashboardRefreshing) return;
             if (!(window.contractConfig && window.contractConfig.contract)) return;
             dashboardRefreshing = true;
             try {
                 const contract = window.contractConfig.contract;
-                const [
-                    totalSupply,
-                    totalUsers,
-                    tokenPrice,
-                    totalPoints,
-                    pointValue,
-                    daiContractBalance,
-                    regPrice,
-                    cashBack,
-                    contractIAMBalanace
-                ] = await Promise.all([
-                    contract.totalSupply().catch(() => 0),
-                    contract.wallets().catch(() => 0),
-                    contract.getTokenPrice().catch(() => 0),
-                    contract.totalClaimableBinaryPoints().catch(() => 0),
-                    contract.getPointValue().catch(() => 0),
-                    contract.getContractdaiBalance().catch(() => 0),
-                    (contract.getRegPrice ? contract.getRegPrice() : Promise.resolve(0)).catch(() => 0),
-                    (contract.cashBack ? contract.cashBack() : Promise.resolve(0)).catch(() => 0),
-                    (contract.balanceOf ? contract.balanceOf(contract.target) : Promise.resolve(0)).catch(() => 0)
-                ]);
+                // Progress setup
+                const totalSteps = 13; // 9 core reads + 4 estimateSell
+                let done = 0;
+                const step = (label) => { done++; setLoadProgress((done/totalSteps)*100, label); };
+                setLoadProgress(1,'Starting');
+                // Sequential fetch with progress updates
+                const totalSupply = await contract.totalSupply().catch(()=>0); step('totalSupply');
+                const totalUsers = await contract.wallets().catch(()=>0); step('wallets');
+                const tokenPrice = await contract.getTokenPrice().catch(()=>0); step('tokenPrice');
+                const totalPoints = await contract.totalClaimableBinaryPoints().catch(()=>0); step('totalPoints');
+                const pointValue = await contract.getPointValue().catch(()=>0); step('pointValue');
+                const daiContractBalance = await contract.getContractdaiBalance().catch(()=>0); step('daiBalance');
+                const regPrice = (contract.getRegPrice ? await contract.getRegPrice().catch(()=>0) : 0); step('regPrice');
+                const cashBack = (contract.cashBack ? await contract.cashBack().catch(()=>0) : 0); step('cashBack');
+                const contractIAMBalanace = (contract.balanceOf ? await contract.balanceOf(contract.target).catch(()=>0) : 0); step('contractIAM');
 
                 dashboardCache = {
                     ts: Date.now(),
@@ -881,20 +904,19 @@
                 // Use on-chain estimators for more accurate DAI equivalents where applicable
                 try {
                     const toWei = (v) => ethers.parseUnits(String(v), 18);
-                    const [usdFromRegPriceWei, usdFromCashbackWei, usdFromContractIAMWei, usdFromPointValueWei] = await Promise.all([
-                        (dashboardCache.regPriceValue > 0 && typeof contract.estimateSell === 'function')
-                            ? contract.estimateSell(toWei(dashboardCache.regPriceValue)).catch(()=>0)
-                            : Promise.resolve(0),
-                        (dashboardCache.cashBackTokenNum > 0 && typeof contract.estimateSell === 'function')
-                            ? contract.estimateSell(toWei(dashboardCache.cashBackTokenNum)).catch(()=>0)
-                            : Promise.resolve(0),
-                        (dashboardCache.contractIAMNum > 0 && typeof contract.estimateSell === 'function')
-                            ? contract.estimateSell(toWei(dashboardCache.contractIAMNum)).catch(()=>0)
-                            : Promise.resolve(0),
-                        (dashboardCache.pointValueNum > 0 && typeof contract.estimateSell === 'function')
-                            ? contract.estimateSell(toWei(dashboardCache.pointValueNum)).catch(()=>0)
-                            : Promise.resolve(0)
-                    ]);
+                    let usdFromRegPriceWei = 0, usdFromCashbackWei = 0, usdFromContractIAMWei = 0, usdFromPointValueWei = 0;
+                    if (dashboardCache.regPriceValue > 0 && typeof contract.estimateSell === 'function') {
+                        usdFromRegPriceWei = await contract.estimateSell(toWei(dashboardCache.regPriceValue)).catch(()=>0); step('estRegPrice');
+                    } else { step('estRegPrice'); }
+                    if (dashboardCache.cashBackTokenNum > 0 && typeof contract.estimateSell === 'function') {
+                        usdFromCashbackWei = await contract.estimateSell(toWei(dashboardCache.cashBackTokenNum)).catch(()=>0); step('estCashback');
+                    } else { step('estCashback'); }
+                    if (dashboardCache.contractIAMNum > 0 && typeof contract.estimateSell === 'function') {
+                        usdFromContractIAMWei = await contract.estimateSell(toWei(dashboardCache.contractIAMNum)).catch(()=>0); step('estContractIAM');
+                    } else { step('estContractIAM'); }
+                    if (dashboardCache.pointValueNum > 0 && typeof contract.estimateSell === 'function') {
+                        usdFromPointValueWei = await contract.estimateSell(toWei(dashboardCache.pointValueNum)).catch(()=>0); step('estPointValue');
+                    } else { step('estPointValue'); }
                     dashboardCache.usdFromRegPrice = parseFloat(ethers.formatEther(usdFromRegPriceWei || 0));
                     dashboardCache.usdFromCashback = parseFloat(ethers.formatEther(usdFromCashbackWei || 0));
                     dashboardCache.usdFromContractIAM = parseFloat(ethers.formatEther(usdFromContractIAMWei || 0));
@@ -902,6 +924,7 @@
                 } catch(_) {}
 
                 renderDashboardFromCache();
+                setLoadProgress(100,'Done');
             } catch (e) {
                 // silent
             } finally {
