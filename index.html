@@ -574,6 +574,104 @@
                             window.addEventListener('focus', tick);
                         }
                     } catch(_){}
+
+                    // Background per-card refresh every 5s with freeze-on-stable behavior
+                    try {
+                        if (!window.__iam_card_refresh_set) {
+                            window.__iam_card_refresh_set = true;
+                            window.__iam_frozen_cards = new Set();
+
+                            const fetchSnapshot = async () => {
+                                const contract = window.contractConfig && window.contractConfig.contract;
+                                if (!contract) return null;
+                                const withTimeout = async (p, ms=12000) => Promise.race([p, new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')), ms))]);
+                                const safe = async (fn) => { try { return await fn; } catch(_) { return 0; } };
+                                const [
+                                    totalSupply, totalUsers, tokenPrice, totalPoints, pointValue,
+                                    daiContractBalance, regPrice, cashBack, contractIAMBalanace
+                                ] = await Promise.allSettled([
+                                    safe(withTimeout(contract.totalSupply())),
+                                    safe(withTimeout(contract.wallets())),
+                                    safe(withTimeout(contract.getTokenPrice())),
+                                    safe(withTimeout(contract.totalClaimableBinaryPoints())),
+                                    safe(withTimeout(contract.getPointValue())),
+                                    safe(withTimeout(contract.getContractdaiBalance())) ,
+                                    contract.getRegPrice ? safe(withTimeout(contract.getRegPrice())) : 0,
+                                    contract.cashBack ? safe(withTimeout(contract.cashBack())) : 0,
+                                    contract.balanceOf ? safe(withTimeout(contract.balanceOf(contract.target))) : 0
+                                ]).then(res => res.map(r => r.status==='fulfilled'? r.value : 0));
+                                return {
+                                    totalSupplyNum: parseFloat(ethers.formatEther(totalSupply || 0)),
+                                    totalUsersNum: parseInt(totalUsers || 0),
+                                    tokenPriceNum: parseFloat(ethers.formatEther(tokenPrice || 0)),
+                                    totalPointsNum: parseInt(totalPoints || 0),
+                                    pointValueNum: parseFloat(ethers.formatEther(pointValue || 0)),
+                                    daiBalanceNum: parseFloat(ethers.formatEther(daiContractBalance || 0)),
+                                    regPriceValue: parseFloat(ethers.formatEther(regPrice || 0)),
+                                    cashBackTokenNum: parseFloat(ethers.formatEther(cashBack || 0)),
+                                    contractIAMNum: parseFloat(ethers.formatEther(contractIAMBalanace || 0))
+                                };
+                            };
+
+                            const fmt = {
+                                num: (n, isInt=false) => {
+                                    if (!Number.isFinite(n)) return '';
+                                    if (isInt) return Math.floor(n).toString();
+                                    return n.toFixed(2);
+                                },
+                                token: (n, d=2) => {
+                                    const v = Number(n);
+                                    if (!isFinite(v) || v === 0) return '0';
+                                    const abs = Math.abs(v);
+                                    const suf = [[1e12,'T'],[1e9,'B'],[1e6,'M'],[1e3,'K']];
+                                    for (const [vv,s] of suf){ if (abs>=vv) return (v/vv).toPrecision(3).replace(/\.0+$|(?<=\.[0-9]*?)0+$/,'')+s; }
+                                    return v.toPrecision(3).replace(/\.0+$|(?<=\.[0-9]*?)0+$/,'');
+                                }
+                            };
+
+                            const computeStrings = (c) => ({
+                                'total-supply': c.totalSupplyNum>0 ? fmt.token(c.totalSupplyNum) : '0',
+                                'total-users': c.totalUsersNum>0 ? fmt.num(c.totalUsersNum,true) : '0',
+                                'token-price': c.tokenPriceNum>0 ? '$'+fmt.token(c.tokenPriceNum,6) : '$0',
+                                'total-points': c.totalPointsNum>0 ? fmt.num(c.totalPointsNum,true) : '0',
+                                'point-value': c.pointValueNum>0 ? fmt.token(c.pointValueNum,2) : '0',
+                                'contract-balance': (Number.isFinite(c.daiBalanceNum)) ? fmt.num(c.daiBalanceNum) : '',
+                                'total-supply-usd': (c.totalSupplyNum*c.tokenPriceNum)>0 ? '$'+fmt.token(c.totalSupplyNum*c.tokenPriceNum) : '$0',
+                                'contract-balance-usd': (Number.isFinite(c.daiBalanceNum)) ? '$'+fmt.num(c.daiBalanceNum) : '$0',
+                                'contract-iam-balance': c.contractIAMNum>0 ? fmt.token(c.contractIAMNum,2) : '0',
+                                'contract-iam-balance-usd': (c.contractIAMNum*c.tokenPriceNum)>0 ? '$'+fmt.token(c.contractIAMNum*c.tokenPriceNum) : '$0',
+                                'reg-price': c.regPriceValue>0 ? fmt.token(c.regPriceValue,2) : '0',
+                                'reg-price-usd': (c.regPriceValue*c.tokenPriceNum)>0 ? '$'+fmt.token(c.regPriceValue*c.tokenPriceNum) : '$0',
+                                'cashback': c.cashBackTokenNum>0 ? fmt.token(c.cashBackTokenNum,2) : '0',
+                                'cashback-usd': (c.cashBackTokenNum*c.tokenPriceNum)>0 ? '$'+fmt.token(c.cashBackTokenNum*c.tokenPriceNum) : '$0',
+                                'point-value-usd': (c.pointValueNum*c.tokenPriceNum)>0 ? '$'+fmt.token(c.pointValueNum*c.tokenPriceNum) : '$0'
+                            });
+
+                            const cardTick = async () => {
+                                if (document.visibilityState !== 'visible') return;
+                                const snap = await fetchSnapshot();
+                                if (!snap) return;
+                                const strs = computeStrings(snap);
+                                for (const id in strs) {
+                                    if (window.__iam_frozen_cards.has(id)) continue;
+                                    const el = document.getElementById(id);
+                                    if (!el) continue;
+                                    const next = strs[id];
+                                    const prev = el.textContent || '';
+                                    if (prev === next && prev !== '') {
+                                        // Freeze this card (no further updates)
+                                        window.__iam_frozen_cards.add(id);
+                                        continue;
+                                    }
+                                    if (prev !== next) {
+                                        el.textContent = next;
+                                    }
+                                }
+                            };
+
+                            window.__iam_card_int = setInterval(cardTick, 5000);
+                        }
+                    } catch(_){}
                 } finally {
                     // Remove loader regardless of success to avoid trapping user
                     try { var el = document.getElementById('initial-loading'); if (el) el.remove(); } catch(_){}
