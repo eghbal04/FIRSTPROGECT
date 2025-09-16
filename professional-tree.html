@@ -2502,6 +2502,10 @@
                     'IAM >> <span class="key">leftWalletsCount:</span> <span class="kv">⏳ calculating...</span>',
                     'IAM >> <span class="key">rightWalletsCount:</span> <span class="kv">⏳ calculating...</span>'
                 ]);
+                // Voting line placeholder
+                appendTypewriterLines([
+                    'IAM >> <span class="key">votes:</span> <span class="kv">⏳ loading...</span>'
+                ]);
                 if (window.contractConfig && window.contractConfig.contract) {
                     setTimeout(async () => {
                         try {
@@ -2513,6 +2517,18 @@
                             const { leftCount, rightCount } = await computeLeftRightCounts(window.contractConfig.contract, rootIdx);
                             updateTypewriterLineStartsWith('IAM >> <span class="key">leftWalletsCount:</span>', `IAM >> <span class=\"key\">leftWalletsCount:</span> <span class=\"kv\">${leftCount}</span>`);
                             updateTypewriterLineStartsWith('IAM >> <span class="key">rightWalletsCount:</span>', `IAM >> <span class=\"key\">rightWalletsCount:</span> <span class=\"kv\">${rightCount}</span>`);
+                            // Load vote status and render controls
+                            try {
+                                const vs = await window.contractConfig.contract.getVoteStatus(node.address);
+                                const likes = Number(vs[0] ?? 0);
+                                const dislikes = Number(vs[1] ?? 0);
+                                const myVote = Number(vs[2] ?? 0);
+                                const myVoteText = myVote === 1 ? 'Liked' : myVote === 2 ? 'Disliked' : 'No vote';
+                                const votesHtml = `IAM >> <span class=\"key\">votes:</span> <span class=\"kv\"><div style=\"display:flex;gap:8px;align-items:center;flex-wrap:wrap;\"><span>👍 ${likes}</span><span>👎 ${dislikes}</span><span>• ${myVoteText}</span><button style=\"background:#00ff88;color:#0a0f1c;border:none;padding:4px 8px;border-radius:6px;cursor:pointer;\" onclick=\"window.voteFromTree('${node.address}', true)\">👍 Like</button><button style=\"background:#a786ff;color:#fff;border:none;padding:4px 8px;border-radius:6px;cursor:pointer;\" onclick=\"window.voteFromTree('${node.address}', false)\">👎 Dislike</button></div></span>`;
+                                updateTypewriterLineStartsWith('IAM >> <span class="key">votes:</span>', votesHtml);
+                            } catch (_) {
+                                updateTypewriterLineStartsWith('IAM >> <span class="key">votes:</span>', 'IAM >> <span class=\"key\">votes:</span> <span class=\"kv\">-</span>');
+                            }
                         } catch (_) {}
                     }, 0);
                 }
@@ -2525,6 +2541,37 @@
             }
         }
 
+        // Voting from tree modal
+        window.voteFromTree = async function(address, isLike){
+            try {
+                if (!window.contractConfig || !window.contractConfig.contract) {
+                    await window.connectWallet();
+                }
+                const current = window.contractConfig?.signer?.address;
+                if (current && current.toLowerCase() === address.toLowerCase()) {
+                    alert('You cannot vote for yourself');
+                    return;
+                }
+                if (typeof window.voteForUser === 'function') {
+                    await window.voteForUser(address, isLike);
+                } else {
+                    const tx = await window.contractConfig.contract.voteUser(address, isLike);
+                    await tx.wait();
+                }
+                // Refresh votes line
+                try {
+                    const vs = await window.contractConfig.contract.getVoteStatus(address);
+                    const likes = Number(vs[0] ?? 0);
+                    const dislikes = Number(vs[1] ?? 0);
+                    const myVote = Number(vs[2] ?? 0);
+                    const myVoteText = myVote === 1 ? 'Liked' : myVote === 2 ? 'Disliked' : 'No vote';
+                    const votesHtml = `IAM >> <span class=\"key\">votes:</span> <span class=\"kv\"><div style=\"display:flex;gap:8px;align-items:center;flex-wrap:wrap;\"><span>👍 ${likes}</span><span>👎 ${dislikes}</span><span>• ${myVoteText}</span></div></span>`;
+                    updateTypewriterLineStartsWith('IAM >> <span class="key">votes:</span>', votesHtml);
+                } catch(_){}
+            } catch (e) {
+                alert('Voting failed: ' + (e?.message || 'Unknown error'));
+            }
+        }
         // Load node children for flat structure - UNLIMITED VERSION
         async function loadNodeChildren(node, depth) {
             try {

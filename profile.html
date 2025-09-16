@@ -561,7 +561,7 @@
                 <div class="profile-row"><span class="profile-label">Right Wallets Count:</span><span class="profile-value" id="profile-right-wallets">Calculating...</span></div>
                 <div class="profile-row"><span class="profile-label">Last Monthly Withdrawal:</span><span class="profile-value">${formatDateTime(user.lastMonthlyClaim)}</span></div>
                 <div class="profile-row"><span class="profile-label">Total Monthly Rewards:</span><span class="profile-value">${user.totalMonthlyRewarded}</span></div>
-                <div class="profile-row"><span class="profile-label">Deposit:</span><span class="profile-value">${Number(user.depositedAmount.toString())/1e18|0}</span></div>
+                <div class="profile-row"><span class="profile-label">Deposit:</span><span class="profile-value" title="${ethers.formatUnits(user.depositedAmount.toString(), 18).split('.')[0]}">${ethers.formatUnits(user.depositedAmount.toString(), 18).split('.')[0]}</span></div>
                                  <div class="profile-row" style="flex-direction: column; align-items: flex-start; gap: 8px;">
                      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                          <span class="profile-label">Referral Reward:</span>
@@ -590,16 +590,17 @@
                     const rrEl = document.getElementById('profile-refclimed');
                     const cashbackBtn = document.getElementById('monthly-cashback-btn');
                     if (tpEl) {
-                        const tpVal = Number((user.totalPurchasedKind||0).toString())/1e18;
-                        tpEl.textContent = sci3(tpVal) + ' IAM';
+                        const tpFull = ethers.formatUnits((user.totalPurchasedKind||0).toString(), 18).split('.')[0];
+                        tpEl.textContent = tpFull + ' IAM';
                         if (tpUsdEl) {
-                            const usd = (typeof tokenPrice==='number' ? tokenPrice : 0) * tpVal;
-                            tpUsdEl.textContent = '≈ $' + (usd?Number(usd.toPrecision(3)).toString():'0');
+                            const usd = (typeof tokenPrice==='number' ? tokenPrice : 0) * Number(tpFull);
+                            tpUsdEl.textContent = '≈ $' + (usd?Math.round(usd).toString():'0');
                         }
                     }
                     if (rrEl) {
-                        const rrVal = Number((user.refclimed||0).toString())/1e18;
-                        rrEl.textContent = sci3(rrVal) + ' IAM';
+                        const rrFullInt = ethers.formatUnits((user.refclimed||0).toString(), 18).split('.')[0];
+                        rrEl.textContent = rrFullInt + ' IAM';
+                        rrEl.title = rrFullInt + ' IAM';
                     }
                     // Disable cashback when both children are filled
                     if (cashbackBtn && user.index && BigInt(user.index) > 0n && typeof contract.getLeftAddress === 'function' && typeof contract.getRightAddress === 'function') {
