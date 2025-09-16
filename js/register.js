@@ -1094,28 +1094,50 @@ window.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Auto-resolve numeric ref in URL to wallet address on register page
+// Auto-fill referrer and upper from URL (?ref=) on register page
 document.addEventListener('DOMContentLoaded', function() {
+    function fillRefAndUpper(addr) {
+        try {
+            var refInput = document.getElementById('referrer-address');
+            var refDisplay = document.getElementById('referrer-address-display');
+            var upperInput = document.getElementById('upper-address');
+            if (refInput) refInput.value = addr;
+            if (refDisplay) {
+                if (refDisplay.tagName === 'INPUT') refDisplay.value = addr; else refDisplay.textContent = addr;
+            }
+            if (upperInput) {
+                upperInput.value = addr;
+                upperInput.setAttribute('data-full-address', addr);
+            }
+        } catch(_) {}
+    }
+
     try {
         var params = new URLSearchParams(window.location.search);
         var ref = params.get('ref') || params.get('referrer');
-        if (!ref || !/^\d+$/.test(ref)) return;
-        (async function(){
-            try {
-                if (!window.connectWallet) return;
-                const { contract } = await window.connectWallet();
-                if (!contract || typeof contract.indexToAddress !== 'function') return;
-                const addr = await contract.indexToAddress(ref);
-                if (addr && addr !== '0x0000000000000000000000000000000000000000') {
-                    // Update URL silently
-                    var url = window.location.origin + window.location.pathname + '?ref=' + addr;
-                    window.history.replaceState({}, '', url);
-                    // Fill input if present
-                    var input = document.getElementById('referrer-address');
-                    if (input) input.value = addr;
-                }
-            } catch (_) {}
-        })();
+        if (!ref) return;
+        // If address, fill directly
+        if (/^0x[a-fA-F0-9]{40}$/.test(ref)) {
+            fillRefAndUpper(ref);
+            return;
+        }
+        // If numeric, resolve to address
+        if (/^\d+$/.test(ref)) {
+            (async function(){
+                try {
+                    if (!window.connectWallet) return;
+                    const { contract } = await window.connectWallet();
+                    if (!contract || typeof contract.indexToAddress !== 'function') return;
+                    const addr = await contract.indexToAddress(ref);
+                    if (addr && addr !== '0x0000000000000000000000000000000000000000') {
+                        // Update URL silently
+                        var url = window.location.origin + window.location.pathname + '?ref=' + addr;
+                        window.history.replaceState({}, '', url);
+                        fillRefAndUpper(addr);
+                    }
+                } catch (_) {}
+            })();
+        }
     } catch (_) {}
 });
 
