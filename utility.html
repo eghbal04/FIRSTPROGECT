@@ -260,7 +260,84 @@
          </div>
        </div>
 
-       <!-- Downline Users with Unclaimed Points -->
+      <!-- IAM ↔ DAI Converter (on-chain estimate) -->
+      <div class="utility-card" dir="ltr">
+        <h3><span class="icon">💱</span>IAM ↔ DAI Converter (on-chain estimate)</h3>
+        <div class="calculator-section">
+          <div style="display:flex; flex-direction:column; gap:.75rem;">
+            <div style="flex:1; min-width:220px;">
+              <label for="conv-iam" style="color:#a0aec0; font-size:.9rem;">IAM</label>
+              <input id="conv-iam" type="number" inputmode="decimal" class="calculator-input" placeholder="Enter IAM amount" min="0" step="0.000000000000000001" style="direction:ltr; text-align:left;">
+            </div>
+            <div style="flex:1; min-width:220px;">
+              <label for="conv-dai" style="color:#a0aec0; font-size:.9rem;">DAI</label>
+              <input id="conv-dai" type="number" inputmode="decimal" class="calculator-input" placeholder="Enter DAI amount" min="0" step="0.000000000000000001" style="direction:ltr; text-align:left;">
+            </div>
+          </div>
+          <div class="calculator-result" id="conv-result" style="display:none; text-align:left;"></div>
+          <small style="color:#a0aec0; display:block; margin-top:.5rem;">
+            Uses contract estimateBuy/estimateSell for accuracy. Connect wallet if required.
+          </small>
+        </div>
+      </div>
+
+      <!-- Voting System for Indexes -->
+      <div class="utility-card" dir="ltr">
+        <h3><span class="icon">🗳️</span>Vote by Index</h3>
+        <div class="calculator-section">
+          <div style="display:flex; flex-direction:column; gap:.75rem; align-items:stretch;">
+            <div style="flex:1; min-width:220px;">
+              <label for="vote-index-input" style="color:#a0aec0; font-size:.9rem;">User Index</label>
+              <input id="vote-index-input" type="number" inputmode="numeric" class="calculator-input" placeholder="e.g. 123" min="1" step="1" style="direction:ltr; text-align:left;">
+            </div>
+            <div style="display:flex; flex-direction:column; gap:.5rem; width:100%;">
+              <button class="utility-btn" onclick="window.voteForIndex(true)">👍 Like</button>
+              <button class="utility-btn secondary" onclick="window.voteForIndex(false)">👎 Dislike</button>
+            </div>
+          </div>
+          <div class="calculator-result" id="vote-result" style="display:none; text-align:right;"></div>
+          <small style="color:#a0aec0; display:block; margin-top:.5rem;">Connect your wallet to vote. You cannot vote for yourself.</small>
+        </div>
+      </div>
+
+      <!-- Voting System by Address -->
+      <div class="utility-card" dir="ltr">
+        <h3><span class="icon">🗳️</span>Vote by Address</h3>
+        <div class="calculator-section">
+          <div style="display:flex; flex-direction:column; gap:.75rem; align-items:stretch;">
+            <div style="flex:1; min-width:260px;">
+              <label for="vote-address-input" style="color:#a0aec0; font-size:.9rem;">User Address (0x...)</label>
+              <input id="vote-address-input" type="text" class="calculator-input" placeholder="0x..." style="direction:ltr; text-align:left;">
+            </div>
+            <div style="display:flex; flex-direction:column; gap:.5rem; width:100%;">
+              <button class="utility-btn" onclick="window.voteFromAddressCard(true)">👍 Like</button>
+              <button class="utility-btn secondary" onclick="window.voteFromAddressCard(false)">👎 Dislike</button>
+            </div>
+          </div>
+          <div class="calculator-result" id="vote-address-result" style="display:none; text-align:right;"></div>
+          <small style="color:#a0aec0; display:block; margin-top:.5rem;">Address must be valid and wallet connected.</small>
+        </div>
+      </div>
+
+      <!-- Vote Status Viewer -->
+      <div class="utility-card" dir="ltr">
+        <h3><span class="icon">📊</span>User Vote Status</h3>
+        <div class="calculator-section">
+          <div style="display:flex; flex-direction:column; gap:.75rem; align-items:stretch;">
+            <div style="flex:1; min-width:260px;">
+              <label for="vote-status-input" style="color:#a0aec0; font-size:.9rem;">Index or Address</label>
+              <input id="vote-status-input" type="text" class="calculator-input" placeholder="e.g. 123 or 0x..." style="direction:ltr; text-align:left;">
+            </div>
+            <div style="width:100%;">
+              <button class="utility-btn" style="width:100%;" onclick="window.showVoteStatus()">Show Status</button>
+            </div>
+          </div>
+          <div class="calculator-result" id="vote-status-result" style="display:none; text-align:right;"></div>
+          <small style="color:#a0aec0; display:block; margin-top:.5rem;">Displays likes, dislikes, your vote, and net score.</small>
+        </div>
+      </div>
+
+      <!-- Downline Users with Unclaimed Points -->
        <div class="utility-card">
          <h3><span class="icon">🌳</span>Downline Users with Unclaimed Points</h3>
          <div class="calculator-section">
@@ -794,7 +871,15 @@
          console.log('❌ Mobile user popup is not available');
        }
      }, 2000);
-   });
+  
+      // Initialize IAM ↔ DAI converter
+      try {
+        setupIamDaiConverter();
+        console.log('✅ IAM ↔ DAI converter initialized');
+      } catch (e) {
+        console.warn('⚠️ Failed to initialize IAM ↔ DAI converter:', e);
+      }
+  });
    
    // Test function for mobile user popup
    window.testMobilePopup = function() {
@@ -1415,6 +1500,212 @@
         return false;
       }
     };
+
+    // ===== IAM ↔ DAI Converter (on-chain) =====
+    function debounce(fn, ms){ let t; return function(){ clearTimeout(t); const a=arguments; t=setTimeout(()=>fn.apply(this,a), ms); } }
+
+    async function getReadonlyContract() {
+      try {
+        if (window.contractConfig && window.contractConfig.contract) return window.contractConfig.contract;
+        if (typeof window.ethereum !== 'undefined') {
+          const provider = new ethers.BrowserProvider(window.ethereum, 'any');
+          const net = await provider.getNetwork().catch(()=>null);
+          const runner = provider; // runner is enough for read-only
+          if (window.IAM_ADDRESS && window.IAM_ABI) {
+            return new ethers.Contract(window.IAM_ADDRESS, window.IAM_ABI, runner);
+          }
+        }
+        // Fallback: public RPC (readonly). Replace with your network RPC if needed.
+        const rpc = (window.RPC_URL) ? window.RPC_URL : 'https://polygon-rpc.com';
+        const provider = new ethers.JsonRpcProvider(rpc);
+        return new ethers.Contract(window.IAM_ADDRESS, window.IAM_ABI, provider);
+      } catch (_) {
+        throw new Error('No provider available');
+      }
+    }
+
+    async function ensureContract() {
+      // Prefer connected contract; otherwise use readonly
+      try { return await getReadonlyContract(); } catch (e) { throw e; }
+    }
+
+    async function estimateDaiFromIamAmount(iamStr){
+      const contract = await ensureContract();
+      let iamWei;
+      try { iamWei = ethers.parseUnits(String(iamStr||'0').trim() || '0', 18); } catch { iamWei = 0n; }
+      if (iamWei <= 0n) return '0';
+      try {
+        if (typeof contract.estimateSell === 'function') {
+          const daiWei = await contract.estimateSell(iamWei);
+          return ethers.formatUnits(daiWei, 18);
+        }
+      } catch (_) {}
+      try {
+        const priceWei = await contract.getTokenPrice();
+        const daiWei = (iamWei * priceWei) / 10n**18n;
+        return ethers.formatUnits(daiWei, 18);
+      } catch (e) {
+        throw new Error('Price fetch failed');
+      }
+    }
+
+    async function estimateIamFromDaiAmount(daiStr){
+      const contract = await ensureContract();
+      let daiWei;
+      try { daiWei = ethers.parseUnits(String(daiStr||'0').trim() || '0', 18); } catch { daiWei = 0n; }
+      if (daiWei <= 0n) return '0';
+      try {
+        if (typeof contract.estimateBuy === 'function') {
+          const iamWei = await contract.estimateBuy(daiWei);
+          return ethers.formatUnits(iamWei, 18);
+        }
+      } catch (_) {}
+      try {
+        const priceWei = await contract.getTokenPrice();
+        const iamWei = (daiWei * 10n**18n) / priceWei;
+        return ethers.formatUnits(iamWei, 18);
+      } catch (e) {
+        throw new Error('Price fetch failed');
+      }
+    }
+
+    function setupIamDaiConverter(){
+      const iamInput = document.getElementById('conv-iam');
+      const daiInput = document.getElementById('conv-dai');
+      const result = document.getElementById('conv-result');
+      const btnIamToDai = document.getElementById('btn-iam-to-dai');
+      const btnDaiToIam = document.getElementById('btn-dai-to-iam');
+      if (!iamInput || !daiInput || !result) return;
+
+      const setResult = (msg, ok=true)=>{
+        result.style.display = msg ? 'block' : 'none';
+        result.style.background = ok ? 'rgba(0,255,136,0.1)' : 'rgba(255,68,68,0.1)';
+        result.style.borderColor = ok ? 'rgba(0,255,136,0.2)' : 'rgba(255,68,68,0.2)';
+        result.textContent = msg;
+      };
+
+      const setResultLines = (inLabel, inValue, outLabel, outValue, ok=true) => {
+        const hasContent = (inValue !== '' && outValue !== '');
+        result.style.display = hasContent ? 'block' : 'none';
+        result.style.background = ok ? 'rgba(0,255,136,0.1)' : 'rgba(255,68,68,0.1)';
+        result.style.borderColor = ok ? 'rgba(0,255,136,0.2)' : 'rgba(255,68,68,0.2)';
+        result.innerHTML = hasContent ? `<div>${inLabel}: ${inValue}</div><div>${outLabel}: ${outValue}</div>` : '';
+      };
+
+      const onIamChange = debounce(async ()=>{
+        const v = iamInput.value.trim();
+        if (!v){ setResult(''); return; }
+        try {
+          const out = await estimateDaiFromIamAmount(v);
+          if (document.activeElement !== daiInput) daiInput.value = out;
+          setResultLines('IAM', v, 'DAI', out, true);
+        } catch(e){ setResult(e.message||'Conversion error', false); }
+      }, 250);
+
+      const onDaiChange = debounce(async ()=>{
+        const v = daiInput.value.trim();
+        if (!v){ setResult(''); return; }
+        try {
+          const out = await estimateIamFromDaiAmount(v);
+          if (document.activeElement !== iamInput) iamInput.value = out;
+          setResultLines('DAI', v, 'IAM', out, true);
+        } catch(e){ setResult(e.message||'Conversion error', false); }
+      }, 250);
+
+      iamInput.addEventListener('input', onIamChange);
+      daiInput.addEventListener('input', onDaiChange);
+
+      if (btnIamToDai) btnIamToDai.onclick = async ()=>{
+        const v = iamInput.value.trim();
+        if (!v){ setResult(''); return; }
+        try { const out = await estimateDaiFromIamAmount(v); daiInput.value = out; setResultLines('IAM', v, 'DAI', out, true); }
+        catch(e){ setResult(e.message||'Conversion error', false); }
+      };
+      if (btnDaiToIam) btnDaiToIam.onclick = async ()=>{
+        const v = daiInput.value.trim();
+        if (!v){ setResult(''); return; }
+        try { const out = await estimateIamFromDaiAmount(v); iamInput.value = out; setResultLines('DAI', v, 'IAM', out, true); }
+        catch(e){ setResult(e.message||'Conversion error', false); }
+      };
+    }
+
+    // Voting helpers for utility page
+    window.voteFromAddressCard = async function(isLike){
+      const input = document.getElementById('vote-address-input');
+      const res = document.getElementById('vote-address-result');
+      if (!input || !res) return;
+      const address = (input.value||'').trim();
+      if (!address || !address.startsWith('0x') || address.length < 42){
+        res.style.display='block';
+        res.style.background='rgba(255,68,68,0.1)';
+        res.style.borderColor='rgba(255,68,68,0.2)';
+        res.textContent='⚠️ Please enter a valid address';
+        return;
+      }
+      try{
+        res.style.display='block';
+        res.style.background='rgba(167,134,255,0.1)';
+        res.style.borderColor='rgba(167,134,255,0.2)';
+        res.textContent='⏳ Sending vote...';
+        if (typeof window.voteForUser === 'function'){
+          await window.voteForUser(address, isLike);
+        } else if (window.contractConfig?.contract){
+          const tx = await window.contractConfig.contract.voteUser(address, isLike);
+          await tx.wait();
+        } else {
+          await window.connectWallet();
+          const tx = await window.contractConfig.contract.voteUser(address, isLike);
+          await tx.wait();
+        }
+        res.style.background='rgba(0,255,136,0.1)';
+        res.style.borderColor='rgba(0,255,136,0.2)';
+        res.textContent = isLike ? '✅ Like registered' : '✅ Dislike registered';
+      }catch(e){
+        res.style.display='block';
+        res.style.background='rgba(255,68,68,0.1)';
+        res.style.borderColor='rgba(255,68,68,0.2)';
+        res.textContent='❌ Error: ' + (e?.message||'Voting error');
+      }
+    }
+
+    window.showVoteStatus = async function(){
+      const input = document.getElementById('vote-status-input');
+      const res = document.getElementById('vote-status-result');
+      if (!input || !res) return;
+      const raw = (input.value||'').trim();
+      if (!raw){ res.style.display='none'; return; }
+      try{
+        if (!window.contractConfig || !window.contractConfig.contract){
+          await window.connectWallet();
+        }
+        const contract = window.contractConfig.contract;
+        // Determine if raw is index or address
+        let address = raw;
+        if (!raw.startsWith('0x')){
+          const idx = parseInt(raw, 10);
+          if (!idx || idx <= 0) throw new Error('Invalid index');
+          address = await contract.indexToAddress(idx);
+        }
+        if (!address || address === '0x0000000000000000000000000000000000000000'){
+          throw new Error('No user found for this input');
+        }
+        const vs = await contract.getVoteStatus(address);
+        const totalLikes = (vs[0] ?? 0).toString();
+        const totalDislikes = (vs[1] ?? 0).toString();
+        const myVote = Number(vs[2] ?? 0);
+        const myVoteText = myVote === 1 ? 'Liked' : myVote === 2 ? 'Disliked' : 'No vote';
+        const net = (Number(totalLikes) - Number(totalDislikes)).toString();
+        res.style.display='block';
+        res.style.background='rgba(0,255,136,0.1)';
+        res.style.borderColor='rgba(0,255,136,0.2)';
+        res.innerHTML = `<div>Address: ${address}</div><div>Likes: ${totalLikes} | Dislikes: ${totalDislikes}</div><div>Your vote: ${myVoteText}</div><div>Net score: ${net}</div>`;
+      }catch(e){
+        res.style.display='block';
+        res.style.background='rgba(255,68,68,0.1)';
+        res.style.borderColor='rgba(255,68,68,0.2)';
+        res.textContent='❌ Error: ' + (e?.message||'Status error');
+      }
+    }
   </script>
 </body>
 </html> 

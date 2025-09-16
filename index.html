@@ -231,10 +231,20 @@
         /* Dashboard Styles */
         .dashboard {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: 1fr;
             gap: 15px;
             margin-top: 30px;
         }
+
+        /* Low-end device optimizations */
+        .low-end .dashboard-card {
+            box-shadow: none;
+            backdrop-filter: none;
+            transition: none;
+        }
+        .low-end .card-icon { display: none; }
+        .low-end .card-value { font-size: 18px; }
+        .low-end .card-title { font-size: 11px; }
         .dashboard.hidden { visibility: hidden; }
         
         .dashboard-card {
@@ -369,6 +379,37 @@
     </style>
 </head>
 <body>
+    <script>
+        (function(){
+            try {
+                const navMem = (navigator.deviceMemory || 0);
+                const cores = (navigator.hardwareConcurrency || 1);
+                const isLowMem = navMem && navMem <= 2;
+                const isLowCore = cores <= 4;
+                const isSlowConn = (navigator.connection && (navigator.connection.saveData || /2g/.test(navigator.connection.effectiveType||'')));
+                const lowEnd = isLowMem || isLowCore || isSlowConn;
+                if (lowEnd) {
+                    document.documentElement.classList.add('low-end');
+                    window.addEventListener('DOMContentLoaded', function(){
+                        const root = document.getElementById('dashboard-root');
+                        if (!root) return;
+                        const cards = root.querySelectorAll('.dashboard-card');
+                        for (let i = 4; i < cards.length; i++) {
+                            cards[i].style.display = 'none';
+                        }
+                        const btn = document.createElement('button');
+                        btn.textContent = 'Show more';
+                        btn.style.cssText = 'margin-top:10px;background:#232946;color:#fff;border:1px solid rgba(0,255,136,0.3);padding:8px 12px;border-radius:8px;';
+                        btn.onclick = () => {
+                            for (let i = 4; i < cards.length; i++) { cards[i].style.display = ''; }
+                            btn.remove();
+                        };
+                        root.parentElement.insertBefore(btn, root.nextSibling);
+                    });
+                }
+            } catch (_) {}
+        })();
+    </script>
     <!-- Status Bar -->
     <div class="status-bar">
         <div class="status-content">
@@ -887,14 +928,14 @@
             updateDashboardElement('reg-price', c.regPriceValue > 0 ? formatTokenBalance(c.regPriceValue, 2) : '');
             const regPriceUsd = (typeof c.usdFromRegPrice === 'number' && c.usdFromRegPrice > 0)
                 ? c.usdFromRegPrice : (c.regPriceValue * c.tokenPriceNum);
-            updateDashboardElement('reg-price-usd', regPriceUsd > 0 ? '$' + formatNumber(regPriceUsd) : '');
+                    updateDashboardElement('reg-price-usd', regPriceUsd > 0 ? '$' + formatNumber(regPriceUsd) : '');
             updateDashboardElement('cashback', c.cashBackTokenNum > 0 ? formatTokenBalance(c.cashBackTokenNum, 2) : '');
             const cashbackUsd = (typeof c.usdFromCashback === 'number' && c.usdFromCashback > 0)
                 ? c.usdFromCashback : (c.cashBackTokenNum * c.tokenPriceNum);
-            updateDashboardElement('cashback-usd', cashbackUsd > 0 ? '$' + formatNumber(cashbackUsd) : '');
+                    updateDashboardElement('cashback-usd', cashbackUsd > 0 ? '$' + formatNumber(cashbackUsd) : '');
             const pointValueUsd = (typeof c.usdFromPointValue === 'number' && c.usdFromPointValue > 0)
                 ? c.usdFromPointValue : (c.pointValueNum * c.tokenPriceNum);
-            updateDashboardElement('point-value-usd', pointValueUsd > 0 ? '$' + formatNumber(pointValueUsd) : '');
+                    updateDashboardElement('point-value-usd', pointValueUsd > 0 ? '$' + formatNumber(pointValueUsd) : '');
             // Reveal dashboard after first successful render
             try { var root = document.getElementById('dashboard-root'); if (root) root.classList.remove('hidden'); } catch(_){}
         }
@@ -920,7 +961,7 @@
         }
 
         // Background staggered updates disabled per request; cards load once via updateDashboard()
-
+        
         // Helper function to update dashboard elements
         function updateDashboardElement(elementId, value) {
             const element = document.getElementById(elementId);
