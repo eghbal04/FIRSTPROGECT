@@ -92,11 +92,6 @@
             border-top: 1px solid rgba(0, 255, 136, 0.1);
         }
 
-        /* Progress Bar */
-        .load-progress { position: fixed; top: 44px; left: 0; right: 0; z-index: 1001; padding: 4px 12px; }
-        .load-progress-inner { height: 6px; background: rgba(255,255,255,0.08); border: 1px solid rgba(0,255,136,0.25); border-radius: 999px; overflow: hidden; }
-        .load-progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg,#a786ff,#00ff88); transition: width .25s ease; }
-        .load-progress-text { margin-top: 4px; font-size: 11px; color: #a0aec0; text-align: right; }
         
         .status-nav-item {
             display: flex;
@@ -472,11 +467,6 @@
         </div>
     </div>
 
-    <!-- Loading Progress -->
-    <div class="load-progress" id="load-progress" style="display:none;">
-        <div class="load-progress-inner"><div class="load-progress-bar" id="load-progress-bar"></div></div>
-        <div class="load-progress-text" id="load-progress-text">0%</div>
-    </div>
         
         
     <!-- Main Content -->
@@ -845,22 +835,7 @@
         var dashboardCache = null;
         var dashboardRefreshing = false;
 
-        function setLoadProgress(percent, label){
-            try {
-                var wrap = document.getElementById('load-progress');
-                var bar = document.getElementById('load-progress-bar');
-                var txt = document.getElementById('load-progress-text');
-                if (!wrap || !bar || !txt) return;
-                if (percent <= 0) { bar.style.width = '0%'; txt.textContent = '0%'; wrap.style.display = 'block'; return; }
-                var p = Math.max(0, Math.min(100, Math.round(percent)));
-                bar.style.width = p + '%';
-                txt.textContent = (label ? label + ' · ' : '') + p + '%';
-                wrap.style.display = 'block';
-                if (p === 100) {
-                    setTimeout(function(){ wrap.style.display = 'none'; }, 800);
-                }
-            } catch(_){}
-        }
+        // Progress removed
 
         async function refreshDashboardCache() {
             if (dashboardRefreshing) return;
@@ -869,10 +844,8 @@
             try {
                 const contract = window.contractConfig.contract;
                 // Progress setup
-                const totalSteps = 13; // 9 core reads + 4 estimateSell
-                let done = 0;
-                const step = (label) => { done++; setLoadProgress((done/totalSteps)*100, label); };
-                setLoadProgress(1,'Starting');
+                // Progress removed
+                const step = function(){};
                 // Sequential fetch with progress updates
                 const totalSupply = await contract.totalSupply().catch(()=>0); step('totalSupply');
                 const totalUsers = await contract.wallets().catch(()=>0); step('wallets');
@@ -925,7 +898,7 @@
                 } catch(_) {}
 
                 renderDashboardFromCache();
-                setLoadProgress(100,'Done');
+                // Progress removed
             } catch (e) {
                 // silent
             } finally {
