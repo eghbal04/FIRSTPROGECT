@@ -242,6 +242,7 @@
             gap: 15px;
             margin-top: 30px;
         }
+        .dashboard.hidden { visibility: hidden; }
         
         .dashboard-card {
             background: rgba(35, 41, 70, 0.8);
@@ -487,7 +488,7 @@
             </div>
             
             <!-- Dashboard -->
-            <div class="dashboard">
+            <div class="dashboard hidden" id="dashboard-root">
                 <div class="dashboard-card">
                     <div class="card-icon">💰</div>
                     <div class="card-title">Supply</div>
@@ -958,6 +959,8 @@
             const pointValueUsd = (typeof c.usdFromPointValue === 'number' && c.usdFromPointValue > 0)
                 ? c.usdFromPointValue : (c.pointValueNum * c.tokenPriceNum);
             updateDashboardElement('point-value-usd', pointValueUsd > 0 ? '$' + formatNumber(pointValueUsd) : '');
+            // Reveal dashboard after first successful render
+            try { var root = document.getElementById('dashboard-root'); if (root) root.classList.remove('hidden'); } catch(_){}
         }
 
         // Backwards-compatible alias if other scripts call updateDashboard()
