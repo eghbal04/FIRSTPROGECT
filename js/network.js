@@ -584,13 +584,13 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         
         // No caching - always fetch fresh data
         // Always fetch fresh data - no caching
-        console.log(`🔄 Getting address for index: ${index}`);
+            console.log(`🔄 Getting address for index: ${index}`);
         let address = null;
-        try {
+            try {
             address = await contract.indexToAddress(index);
-        } catch (error) {
-            console.error('Error getting address for index:', index, error);
-            address = null;
+            } catch (error) {
+                console.error('Error getting address for index:', index, error);
+                address = null;
         }
         console.log('✅ Address obtained:', address);
         
@@ -601,14 +601,14 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
         
         console.log('🔄 Getting user data for address:', address);
         let user = null;
-        try {
-            // Add timeout to prevent hanging
-            const userPromise = contract.users(address);
-            const timeoutPromise = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('User data fetch timeout')), 60000)
-            );
-            user = await Promise.race([userPromise, timeoutPromise]);
-        } catch(e) {
+            try {
+                // Add timeout to prevent hanging
+                const userPromise = contract.users(address);
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('User data fetch timeout')), 60000)
+                );
+                user = await Promise.race([userPromise, timeoutPromise]);
+            } catch(e) {
             console.error('Error getting user data:', e);
             throw new Error('Failed to fetch user data from contract');
         }
