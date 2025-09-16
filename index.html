@@ -5,378 +5,99 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IMPHOENIX</title>
     <script src="js/compat.js"></script>
-    
+    <style>
+        /* Lightweight, mobile-first styles for broad device support */
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+            background: #0f0f14;
+            color: #f5f5f5;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        /* Top section */
+        .status-bar { background: #151823; border-bottom: 1px solid #2a2e3f; }
+        .status-content {
+            display: grid; grid-template-columns: 1fr auto 1fr;
+            align-items: center; gap: 6px; padding: 6px 8px;
+        }
+        .status-left-section, .status-stars-section { display: flex; gap: 6px; align-items: center; }
+        .status-balances { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; align-items: center; }
+        .status-left-section { justify-content: flex-start; min-width: 0; }
+        .status-stars-section { justify-content: center; }
+        .status-balances { justify-content: flex-end; min-width: 0; }
+        .spacer-4ch { width: 2ch; }
+        .status-info-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; line-height: 1.1; }
+        .status-balance-item { display: flex; flex-direction: column; align-items: center; min-width: 0; }
+        .info-label { color: #9aa3b2; font-size: 10px; }
+        .info-value { font-weight: 600; font-size: 12px; color: #ffffff; }
+        .iam-index-combined .info-value { font-size: 16px; }
+        #userStatusLikes, #userStatusDislikes { font-size: 20px; }
+        .status-balance-value { font-weight: 700; font-size: 12px; color: #ffffff; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+        .status-balance-usd { color: #3ddc97; font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+        /* remove smaller override to keep doubled size */
+        /* .iam-index-combined .info-value { font-size: 12px; } */
+        #userStatusLevel { font-size: 14px; }
+
+        /* Extra compact on very small screens */
+        @media (max-width: 400px) {
+            .status-content { gap: 4px; padding: 4px 6px; }
+            .status-left-section { gap: 4px; }
+            .status-balances { gap: 4px; }
+            .status-info-item { font-size: 10px; }
+            .info-value { font-size: 11px; }
+            .status-balance-value { font-size: 11px; }
+            .status-balance-usd { font-size: 9px; }
+            #userStatusLevel { font-size: 13px; }
+        }
+
+        /* Nav */
+        .status-nav-buttons { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 8px 10px; border-top: 1px solid #2a2e3f; }
+        .status-nav-item {
+            display: block;
+            width: 100%;
+            text-align: center;
+            text-decoration: none;
+            color: #e7e7e7;
+            background: #1a1f2e;
+            border: 1px solid #2c3347;
+            border-radius: 6px;
+            padding: 10px 12px;
+            font-size: 14px;
+        }
+        .status-nav-item.active { border-color: #3ddc97; color: #3ddc97; }
+
+        /* Main container */
+        .container { max-width: 720px; margin: 0 auto; padding: 16px 12px; }
+        .main-content { text-align: center; }
+        .main-title { font-size: 22px; margin: 8px 0 12px; font-weight: 700; }
+
+        /* Dashboard as a simple list */
+        .dashboard { display: block; margin-top: 12px; }
+        .dashboard.hidden { visibility: hidden; }
+        .dashboard-card { background: #151a26; border: 1px solid #262c3b; border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+        .card-title { color: #9aa3b2; font-size: 12px; margin-bottom: 4px; text-transform: uppercase; }
+        .card-value { font-size: 18px; font-weight: 700; color: #ffffff; }
+        .card-subtitle { color: #3ddc97; font-size: 12px; }
+        .card-icon { display: none; }
+
+        /* Small screens */
+        @media (min-width: 768px) {
+            .main-title { font-size: 26px; }
+            .container { padding: 20px 16px; }
+        }
+
+        /* Accessibility */
+        @media (prefers-reduced-motion: reduce) {
+            * { animation: none !important; transition: none !important; }
+        }
+    </style>
     <!-- Ethers only (lighter) -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js" defer></script>
 
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-        font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #0f0f17 0%, #181c2a 50%, #232946 100%);
-            color: #fff;
-            min-height: 100vh;
-            padding: 0;
-            margin: 0;
-        }
-        
-        /* Status Bar */
-        .status-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: #1b2033;
-            border-bottom: 1px solid rgba(0, 255, 136, 0.2);
-            z-index: 1000;
-            padding: 8px 15px;
-        }
-        
-        /* Compressed Navigation Bar */
-        
-        .status-content {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: space-between;
-            max-width: 1200px;
-            margin: 0 auto;
-            gap: 8px;
-            padding: 8px 10px;
-        }
-        
-        .status-logo {
-            font-size: 18px;
-            font-weight: bold;
-        color: #00ff88;
-        }
-        
-        .status-left-section {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            justify-content: flex-start;
-        }
-        
-        .status-left-section .iam-index-combined {
-            margin-right: 12px;
-        }
-        
-        .status-balances {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            justify-content: flex-end;
-        }
-        
-        .status-stars-section {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .status-nav-buttons {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            grid-template-rows: repeat(2, 1fr);
-            gap: 3px;
-            justify-content: center;
-            padding: 6px 10px;
-            border-top: 1px solid rgba(0, 255, 136, 0.1);
-        }
-
-        
-        .status-nav-item {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 6px 8px;
-            background: rgba(0, 255, 136, 0.1);
-            border: 1px solid rgba(0, 255, 136, 0.2);
-            border-radius: 3px;
-            color: #fff;
-            text-decoration: none;
-            font-size: 12px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            white-space: nowrap;
-            text-align: center;
-            min-height: 28px;
-        }
-        
-        .status-nav-item:hover {
-            background: rgba(0, 255, 136, 0.2);
-            border-color: #00ff88;
-            color: #00ff88;
-        }
-        
-        .status-nav-item.active {
-            background: rgba(0, 255, 136, 0.3);
-            border-color: #00ff88;
-            color: #00ff88;
-        }
-        
-        .status-balance-item {
-            text-align: center;
-        }
-        
-        .status-balance-label {
-            font-size: 10px;
-            color: #888;
-            margin-bottom: 1px;
-        }
-        
-        .status-balance-value {
-            font-size: 13px;
-            font-weight: bold;
-            color: #fff;
-        }
-        
-        .status-balance-usd {
-            font-size: 9px;
-            color: #00ff88;
-        }
-        
-        .status-balance-usd:empty {
-            display: none;
-        }
-        
-        
-        
-        .status-info-item {
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .info-label {
-            font-size: 12px;
-            color: #888;
-            margin-bottom: 2px;
-        }
-        
-        .info-value {
-            font-size: 14px;
-            font-weight: bold;
-            color: #fff;
-        }
-        
-        /* Stars styling */
-        #userStatusLevel {
-            font-size: 18px;
-            color: #ffd700;
-            line-height: 1.2;
-            word-spacing: -2px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            width: 100%;
-            min-height: 15px;
-        }
-        
-        /* Likes/Dislikes styling */
-        .status-info-item .info-label {
-            font-size: 13px;
-        }
-        
-        /* IAM + Index combined styling */
-        .iam-index-combined .info-value {
-            font-size: 18px;
-            font-weight: bold;
-            color: #fff;
-        }
-        
-        .iam-index-combined .info-value::before {
-            content: "IAM";
-            color: #888;
-            font-size: 16px;
-            margin-right: 3px;
-        }
-        
-        #userStatusLikes, #userStatusDislikes {
-            font-size: 13px;
-            font-weight: bold;
-        }
-        
-        /* Main Container */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 120px 20px 20px;
-        }
-        
-        .main-content {
-            text-align: center;
-            padding: 40px 0;
-        }
-        
-        .main-title {
-            font-size: 48px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            background: linear-gradient(45deg, #00ff88, #00d4ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        /* Dashboard Styles */
-        .dashboard {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
-            margin-top: 30px;
-        }
-
-        /* Low-end device optimizations */
-        .low-end .dashboard-card {
-            box-shadow: none;
-            backdrop-filter: none;
-            transition: none;
-        }
-        .low-end .card-icon { display: none; }
-        .low-end .card-value { font-size: 18px; }
-        .low-end .card-title { font-size: 11px; }
-        .dashboard.hidden { visibility: hidden; }
-        
-        .dashboard-card {
-            background: #232946;
-            border-radius: 12px;
-            padding: 15px;
-            border: 1px solid rgba(0, 255, 136, 0.2);
-            transition: opacity 0.2s ease;
-        }
-        .dashboard-card:hover { opacity: .98; }
-        
-        .card-title {
-            font-size: 12px;
-            color: #888;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .card-value {
-            font-size: 20px;
-            font-weight: bold;
-            color: #fff;
-            margin-bottom: 4px;
-        }
-        
-        .card-subtitle {
-            font-size: 11px;
-      color: #00ff88;
-        }
-        
-        .card-icon { font-size: 24px; margin-bottom: 10px; }
-        
-        
-        
-        
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            .status-content {
-                flex-direction: row;
-                gap: 4px;
-                padding: 4px 6px;
-                flex-wrap: wrap;
-            }
-            
-            .status-left-section { gap: 4px; justify-content: center; }
-            
-            .status-balances { gap: 4px; justify-content: center; }
-            
-            .status-stars-section {
-                gap: 3px;
-                justify-content: center;
-            }
-            
-            .status-nav-buttons { grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(2, 1fr); gap: 2px; padding: 2px 6px; }
-            
-            .status-nav-item { padding: 4px 5px; font-size: 10px; min-height: 22px; }
-            
-            .status-balance-label {
-                font-size: 9px;
-            }
-            
-            .status-balance-value {
-                font-size: 11px;
-            }
-            
-            .info-label {
-                font-size: 10px;
-            }
-            
-            .info-value {
-                font-size: 12px;
-            }
-            
-            .status-info-item .info-label {
-                font-size: 11px;
-            }
-            
-            .iam-index-combined .info-value {
-                font-size: 16px;
-            }
-            
-            .iam-index-combined .info-value::before {
-                font-size: 14px;
-            }
-            
-            #userStatusLevel {
-                font-size: 16px;
-            }
-            
-            .main-title { font-size: 28px; }
-            
-            .container { padding: 120px 10px 16px; }
-            
-            .dashboard { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
-            
-            .dashboard-card { padding: 12px; }
-            
-            .card-value { font-size: 18px; }
-            
-            .card-title {
-                font-size: 11px;
-            }
-            
-            .card-subtitle {
-                font-size: 10px;
-            }
-            
-            .card-icon {
-                font-size: 20px;
-                margin-bottom: 8px;
-            }
-            
-            .status-content {
-                gap: 15px;
-            }
-            
-            .status-balances {
-                gap: 12px;
-            }
-            
-            .status-stars-section {
-                gap: 8px;
-            }
-            
-            .status-info-row {
-                gap: 12px;
-            }
-            
-        }
-    </style>
+    
 </head>
 <body>
     <script>
@@ -418,10 +139,12 @@
                 <div class="status-info-item iam-index-combined">
                     <div class="info-value" id="userStatusIdValue"></div>
                 </div>
+                <div class="spacer-4ch"></div>
                 <div class="status-info-item">
                     <div class="info-label">👍</div>
                     <div class="info-value" id="userStatusLikes"></div>
                 </div>
+                <div class="spacer-4ch"></div>
                 <div class="status-info-item">
                     <div class="info-label">👎</div>
                     <div class="info-value" id="userStatusDislikes"></div>
@@ -594,7 +317,8 @@
                     // Update User IAM
                     const userIdElement = document.getElementById('userStatusIdValue');
                     if (userIdElement) {
-                        userIdElement.textContent = userData[0] ? userData[0].toString() : '';
+                        const rawId = (userData && typeof userData[0] !== 'undefined') ? String(userData[0]) : '';
+                        userIdElement.textContent = rawId ? ('IAM ' + rawId) : '';
                     }
                     
                     // Update User Stars based on Binary Points
