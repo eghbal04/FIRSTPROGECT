@@ -6,9 +6,8 @@
     <title>IMPHOENIX</title>
     <script src="js/compat.js"></script>
     
-    <!-- Web3.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
+    <!-- Ethers only (lighter) -->
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js" defer></script>
 
     <style>
         * {
@@ -32,9 +31,8 @@
             top: 0;
             left: 0;
             right: 0;
-            background: rgba(35, 41, 70, 0.95);
+            background: #1b2033;
             border-bottom: 1px solid rgba(0, 255, 136, 0.2);
-            backdrop-filter: blur(10px);
             z-index: 1000;
             padding: 8px 15px;
         }
@@ -240,18 +238,13 @@
         .dashboard.hidden { visibility: hidden; }
         
         .dashboard-card {
-            background: rgba(35, 41, 70, 0.8);
+            background: #232946;
             border-radius: 12px;
             padding: 15px;
             border: 1px solid rgba(0, 255, 136, 0.2);
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
+            transition: opacity 0.2s ease;
         }
-        
-        .dashboard-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0, 255, 136, 0.1);
-        }
+        .dashboard-card:hover { opacity: .98; }
         
         .card-title {
             font-size: 12px;
@@ -273,11 +266,7 @@
       color: #00ff88;
         }
         
-        .card-icon {
-            font-size: 24px;
-            margin-bottom: 10px;
-            opacity: 0.7;
-        }
+        .card-icon { font-size: 24px; margin-bottom: 10px; }
         
         
         
@@ -287,38 +276,23 @@
         @media (max-width: 768px) {
             .status-content {
                 flex-direction: row;
-                gap: 6px;
-                padding: 6px;
+                gap: 4px;
+                padding: 4px 6px;
                 flex-wrap: wrap;
             }
             
-            .status-left-section {
-                gap: 6px;
-                justify-content: center;
-            }
+            .status-left-section { gap: 4px; justify-content: center; }
             
-            .status-balances {
-                gap: 6px;
-                justify-content: center;
-            }
+            .status-balances { gap: 4px; justify-content: center; }
             
             .status-stars-section {
                 gap: 3px;
                 justify-content: center;
             }
             
-            .status-nav-buttons {
-                grid-template-columns: repeat(5, 1fr);
-                grid-template-rows: repeat(2, 1fr);
-                gap: 2px;
-                padding: 4px 8px;
-            }
+            .status-nav-buttons { grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(2, 1fr); gap: 2px; padding: 2px 6px; }
             
-            .status-nav-item {
-                padding: 5px 6px;
-                font-size: 10px;
-                min-height: 24px;
-            }
+            .status-nav-item { padding: 4px 5px; font-size: 10px; min-height: 22px; }
             
             .status-balance-label {
                 font-size: 9px;
@@ -352,26 +326,15 @@
                 font-size: 16px;
             }
             
-            .main-title {
-                font-size: 32px;
-            }
+            .main-title { font-size: 28px; }
             
-            .container {
-                padding: 140px 15px 20px;
-            }
+            .container { padding: 120px 10px 16px; }
             
-            .dashboard {
-                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-                gap: 12px;
-            }
+            .dashboard { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
             
-            .dashboard-card {
-                padding: 12px;
-            }
+            .dashboard-card { padding: 12px; }
             
-            .card-value {
-                font-size: 18px;
-            }
+            .card-value { font-size: 18px; }
             
             .card-title {
                 font-size: 11px;
