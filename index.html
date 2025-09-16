@@ -697,28 +697,38 @@
             dashboardRefreshing = true;
             try {
                 const contract = window.contractConfig.contract;
-                const withTimeout = async (p, ms=12000) => {
-                    return await Promise.race([
-                        p,
-                        new Promise((_, rej)=>setTimeout(()=>rej(new Error('timeout')), ms))
-                    ]);
+                const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
+                const withTimeout = async (p, ms=12000) => Promise.race([p, new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')), ms))]);
+                const alwaysRetryOnChain = async (fnFactory) => {
+                    // Keep trying until a successful response is returned
+                    // No mock/default assignment here
+                    while (true) {
+                        try {
+                            const v = await withTimeout(fnFactory(), 15000);
+                            return v;
+                        } catch (_) {
+                            await sleep(1000);
+                        }
+                    }
                 };
-                const safe = async (fn) => { try { return await fn; } catch(_) { return 0; } };
-                // Parallel fetch core metrics
+                // Build promises only for methods that exist (on-chain only)
+                const pTotalSupply = (typeof contract.totalSupply === 'function') ? alwaysRetryOnChain(()=>contract.totalSupply()) : Promise.resolve(0);
+                const pWallets = (typeof contract.wallets === 'function') ? alwaysRetryOnChain(()=>contract.wallets()) : Promise.resolve(0);
+                const pTokenPrice = (typeof contract.getTokenPrice === 'function') ? alwaysRetryOnChain(()=>contract.getTokenPrice()) : Promise.resolve(0);
+                const pTotalPoints = (typeof contract.totalClaimableBinaryPoints === 'function') ? alwaysRetryOnChain(()=>contract.totalClaimableBinaryPoints()) : Promise.resolve(0);
+                const pPointValue = (typeof contract.getPointValue === 'function') ? alwaysRetryOnChain(()=>contract.getPointValue()) : Promise.resolve(0);
+                const pDaiBalance = (typeof contract.getContractdaiBalance === 'function') ? alwaysRetryOnChain(()=>contract.getContractdaiBalance()) : Promise.resolve(0);
+                const pRegPrice = (typeof contract.getRegPrice === 'function') ? alwaysRetryOnChain(()=>contract.getRegPrice()) : Promise.resolve(0);
+                const pCashBack = (typeof contract.cashBack === 'function') ? alwaysRetryOnChain(()=>contract.cashBack()) : Promise.resolve(0);
+                const pContractIAM = (typeof contract.balanceOf === 'function' && contract.target) ? alwaysRetryOnChain(()=>contract.balanceOf(contract.target)) : Promise.resolve(0);
+
                 const [
                     totalSupply, totalUsers, tokenPrice, totalPoints, pointValue,
                     daiContractBalance, regPrice, cashBack, contractIAMBalanace
-                ] = await Promise.allSettled([
-                    safe(withTimeout(contract.totalSupply())),
-                    safe(withTimeout(contract.wallets())),
-                    safe(withTimeout(contract.getTokenPrice())),
-                    safe(withTimeout(contract.totalClaimableBinaryPoints())),
-                    safe(withTimeout(contract.getPointValue())),
-                    safe(withTimeout(contract.getContractdaiBalance())),
-                    contract.getRegPrice ? safe(withTimeout(contract.getRegPrice())) : Promise.resolve(0),
-                    contract.cashBack ? safe(withTimeout(contract.cashBack())) : Promise.resolve(0),
-                    contract.balanceOf ? safe(withTimeout(contract.balanceOf(contract.target))) : Promise.resolve(0)
-                ]).then(res => res.map(r => r.status==='fulfilled'? r.value : 0));
+                ] = await Promise.all([
+                    pTotalSupply, pWallets, pTokenPrice, pTotalPoints, pPointValue,
+                    pDaiBalance, pRegPrice, pCashBack, pContractIAM
+                ]);
 
                 dashboardCache = {
                     ts: Date.now(),
@@ -742,17 +752,15 @@
                 try {
                     const toWei = (v) => ethers.parseUnits(String(v || 0), 18);
                     if (typeof contract.estimateSell === 'function') {
-                        const [a,b,c,d] = await Promise.allSettled([
-                            dashboardCache.regPriceValue>0 ? safe(withTimeout(contract.estimateSell(toWei(dashboardCache.regPriceValue)))) : 0,
-                            dashboardCache.cashBackTokenNum>0 ? safe(withTimeout(contract.estimateSell(toWei(dashboardCache.cashBackTokenNum)))) : 0,
-                            dashboardCache.contractIAMNum>0 ? safe(withTimeout(contract.estimateSell(toWei(dashboardCache.contractIAMNum)))) : 0,
-                            dashboardCache.pointValueNum>0 ? safe(withTimeout(contract.estimateSell(toWei(dashboardCache.pointValueNum)))) : 0
-                        ]);
-                        const val = (r)=> r && r.status==='fulfilled' ? r.value : 0;
-                        dashboardCache.usdFromRegPrice = parseFloat(ethers.formatEther(val(a)));
-                        dashboardCache.usdFromCashback = parseFloat(ethers.formatEther(val(b)));
-                        dashboardCache.usdFromContractIAM = parseFloat(ethers.formatEther(val(c)));
-                        dashboardCache.usdFromPointValue = parseFloat(ethers.formatEther(val(d)));
+                        const eReg = dashboardCache.regPriceValue>0 ? alwaysRetryOnChain(()=>contract.estimateSell(toWei(dashboardCache.regPriceValue))) : Promise.resolve(0);
+                        const eCash = dashboardCache.cashBackTokenNum>0 ? alwaysRetryOnChain(()=>contract.estimateSell(toWei(dashboardCache.cashBackTokenNum))) : Promise.resolve(0);
+                        const eIAM = dashboardCache.contractIAMNum>0 ? alwaysRetryOnChain(()=>contract.estimateSell(toWei(dashboardCache.contractIAMNum))) : Promise.resolve(0);
+                        const ePoint = dashboardCache.pointValueNum>0 ? alwaysRetryOnChain(()=>contract.estimateSell(toWei(dashboardCache.pointValueNum))) : Promise.resolve(0);
+                        const [a,b,c,d] = await Promise.all([eReg,eCash,eIAM,ePoint]);
+                        dashboardCache.usdFromRegPrice = parseFloat(ethers.formatEther(a || 0));
+                        dashboardCache.usdFromCashback = parseFloat(ethers.formatEther(b || 0));
+                        dashboardCache.usdFromContractIAM = parseFloat(ethers.formatEther(c || 0));
+                        dashboardCache.usdFromPointValue = parseFloat(ethers.formatEther(d || 0));
                     }
                 } catch(_) {}
 
