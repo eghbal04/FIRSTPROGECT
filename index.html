@@ -617,24 +617,24 @@
                         }
                     }
                     
-                    // Update Likes and Dislikes
+                    // Update Likes and Dislikes (no defaults on failure)
                     try {
                         const voteStatus = await window.contractConfig.contract.getVoteStatus(window.contractConfig.address);
-                        
                         const likesElement = document.getElementById('userStatusLikes');
                         const dislikesElement = document.getElementById('userStatusDislikes');
-                        
                         if (likesElement) {
-                            likesElement.textContent = voteStatus ? (voteStatus.totalLikes || '0') : '0';
+                            const v = voteStatus && typeof voteStatus.totalLikes !== 'undefined' ? String(voteStatus.totalLikes) : '';
+                            if (likesElement.textContent !== v) likesElement.textContent = v;
                         }
                         if (dislikesElement) {
-                            dislikesElement.textContent = voteStatus ? (voteStatus.totalDislikes || '0') : '0';
+                            const v2 = voteStatus && typeof voteStatus.totalDislikes !== 'undefined' ? String(voteStatus.totalDislikes) : '';
+                            if (dislikesElement.textContent !== v2) dislikesElement.textContent = v2;
                         }
                     } catch (error) {
                         const likesElement = document.getElementById('userStatusLikes');
                         const dislikesElement = document.getElementById('userStatusDislikes');
-                        if (likesElement) likesElement.textContent = '0';
-                        if (dislikesElement) dislikesElement.textContent = '0';
+                        if (likesElement) { if (likesElement.textContent !== '') likesElement.textContent = ''; }
+                        if (dislikesElement) { if (dislikesElement.textContent !== '') dislikesElement.textContent = ''; }
                     }
                     
                     // Update token balances
@@ -783,6 +783,7 @@
         
         // Initialize when page loads - only once
         document.addEventListener('DOMContentLoaded', function() {
+            resetDashboardPlaceholders();
             setupCompressedNavigation();
 
             // Set contract link to Polygonscan
@@ -906,6 +907,23 @@
             }
         }
         
+        // Clear all dashboard and status placeholders to avoid stale/default values
+        function resetDashboardPlaceholders() {
+            const ids = [
+                'total-supply','total-supply-usd','total-users','token-price','total-points',
+                'point-value','point-value-usd','contract-balance','contract-balance-usd',
+                'contract-iam-balance','contract-iam-balance-usd','reg-price','reg-price-usd',
+                'cashback','cashback-usd','userStatusIdValue','userStatusLikes','userStatusDislikes',
+                'iam-balance','iam-balance-usd','dai-balance','dai-balance-usd','matic-balance','matic-balance-usd'
+            ];
+            for (var i=0;i<ids.length;i++) {
+                var el = document.getElementById(ids[i]);
+                if (el && el.textContent !== '') el.textContent = '';
+            }
+            var levelEl = document.getElementById('userStatusLevel');
+            if (levelEl && levelEl.textContent !== '') levelEl.textContent = '';
+        }
+
         // Staggered background updates for dashboard cards every 5 seconds (no full refresh)
         (function(){
             let isUpdatingCard = false;
