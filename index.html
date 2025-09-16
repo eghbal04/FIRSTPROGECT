@@ -870,8 +870,31 @@
                     daiBalanceNum: parseFloat(ethers.formatEther(daiContractBalance)),
                     regPriceValue: parseFloat(ethers.formatEther(regPrice || 0)),
                     cashBackTokenNum: parseFloat(ethers.formatEther(cashBack || 0)),
-                    contractIAMNum: parseFloat(ethers.formatEther(contractIAMBalanace || 0))
+                    contractIAMNum: parseFloat(ethers.formatEther(contractIAMBalanace || 0)),
+                    // Placeholders for estimateSell USD equivalents
+                    usdFromRegPrice: null,
+                    usdFromCashback: null,
+                    usdFromContractIAM: null
                 };
+
+                // Use on-chain estimators for more accurate DAI equivalents where applicable
+                try {
+                    const toWei = (v) => ethers.parseUnits(String(v), 18);
+                    const [usdFromRegPriceWei, usdFromCashbackWei, usdFromContractIAMWei] = await Promise.all([
+                        (dashboardCache.regPriceValue > 0 && typeof contract.estimateSell === 'function')
+                            ? contract.estimateSell(toWei(dashboardCache.regPriceValue)).catch(()=>0)
+                            : Promise.resolve(0),
+                        (dashboardCache.cashBackTokenNum > 0 && typeof contract.estimateSell === 'function')
+                            ? contract.estimateSell(toWei(dashboardCache.cashBackTokenNum)).catch(()=>0)
+                            : Promise.resolve(0),
+                        (dashboardCache.contractIAMNum > 0 && typeof contract.estimateSell === 'function')
+                            ? contract.estimateSell(toWei(dashboardCache.contractIAMNum)).catch(()=>0)
+                            : Promise.resolve(0)
+                    ]);
+                    dashboardCache.usdFromRegPrice = parseFloat(ethers.formatEther(usdFromRegPriceWei || 0));
+                    dashboardCache.usdFromCashback = parseFloat(ethers.formatEther(usdFromCashbackWei || 0));
+                    dashboardCache.usdFromContractIAM = parseFloat(ethers.formatEther(usdFromContractIAMWei || 0));
+                } catch(_) {}
 
                 renderDashboardFromCache();
             } catch (e) {
@@ -893,12 +916,16 @@
             updateDashboardElement('total-supply-usd', (c.totalSupplyNum * c.tokenPriceNum) > 0 ? '$' + formatNumber(c.totalSupplyNum * c.tokenPriceNum) : '');
             updateDashboardElement('contract-balance-usd', (Number.isFinite(c.daiBalanceNum) && c.daiBalanceNum > 0) ? '$' + c.daiBalanceNum.toFixed(2) : '');
             updateDashboardElement('contract-iam-balance', c.contractIAMNum > 0 ? formatTokenBalance(c.contractIAMNum, 2) : '');
-            updateDashboardElement('contract-iam-balance-usd', (c.contractIAMNum * c.tokenPriceNum) > 0 ? '$' + formatNumber(c.contractIAMNum * c.tokenPriceNum) : '');
+            const contractIamUsdPref = (typeof c.usdFromContractIAM === 'number' && c.usdFromContractIAM > 0)
+                ? c.usdFromContractIAM : (c.contractIAMNum * c.tokenPriceNum);
+            updateDashboardElement('contract-iam-balance-usd', contractIamUsdPref > 0 ? '$' + formatNumber(contractIamUsdPref) : '');
             updateDashboardElement('reg-price', c.regPriceValue > 0 ? formatTokenBalance(c.regPriceValue, 2) : '');
-            const regPriceUsd = c.regPriceValue * c.tokenPriceNum;
+            const regPriceUsd = (typeof c.usdFromRegPrice === 'number' && c.usdFromRegPrice > 0)
+                ? c.usdFromRegPrice : (c.regPriceValue * c.tokenPriceNum);
             updateDashboardElement('reg-price-usd', regPriceUsd > 0 ? '$' + formatNumber(regPriceUsd) : '');
             updateDashboardElement('cashback', c.cashBackTokenNum > 0 ? formatTokenBalance(c.cashBackTokenNum, 2) : '');
-            const cashbackUsd = c.cashBackTokenNum * c.tokenPriceNum;
+            const cashbackUsd = (typeof c.usdFromCashback === 'number' && c.usdFromCashback > 0)
+                ? c.usdFromCashback : (c.cashBackTokenNum * c.tokenPriceNum);
             updateDashboardElement('cashback-usd', cashbackUsd > 0 ? '$' + formatNumber(cashbackUsd) : '');
             const pointValueUsd = c.pointValueNum * c.tokenPriceNum;
             updateDashboardElement('point-value-usd', pointValueUsd > 0 ? '$' + formatNumber(pointValueUsd) : '');
