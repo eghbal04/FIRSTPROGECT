@@ -1275,6 +1275,40 @@
             upperInput.value = '';
             upperInput.removeAttribute('data-full-address');
             upperIndexInput.value = '';
+
+            // Auto-fill referrer and upper from URL (?ref=) if present
+            try {
+              var params = new URLSearchParams(window.location.search);
+              var urlRef = params.get('ref') || params.get('referrer');
+              if (urlRef) {
+                const setBoth = (addr) => {
+                  if (!/^0x[a-fA-F0-9]{40}$/.test(addr)) return;
+                  // Referrer display
+                  referrerDisplay.value = addr;
+                  referrerDisplay.setAttribute('data-full-address', addr);
+                  updateAddressDisplay(referrerDisplay);
+                  // Upper address
+                  upperInput.value = addr;
+                  upperInput.setAttribute('data-full-address', addr);
+                  updateAddressDisplay(upperInput);
+                };
+                if (/^0x[a-fA-F0-9]{40}$/.test(urlRef)) {
+                  setBoth(urlRef);
+                } else if (/^\d+$/.test(urlRef)) {
+                  try {
+                    const addr = await contract.indexToAddress(urlRef);
+                    if (addr && addr !== '0x0000000000000000000000000000000000000000') {
+                      // Update URL to address form for consistency
+                      var newUrl = window.location.origin + window.location.pathname + '?ref=' + addr;
+                      window.history.replaceState({}, '', newUrl);
+                      setBoth(addr);
+                    }
+                  } catch (_) {}
+                }
+                // Trigger validation/placement after autofill
+                setTimeout(async () => { try { await validateUpperAgainstReferrer(); } catch(_){} }, 100);
+              }
+            } catch(_) {}
             
             // Set new user address to connected wallet for unregistered users
             const newUserInputElement = document.getElementById('new-user-address');
