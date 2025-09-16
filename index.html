@@ -1037,9 +1037,10 @@
         // Helper function to update dashboard elements
         function updateDashboardElement(elementId, value) {
             const element = document.getElementById(elementId);
-            if (element) {
-                element.textContent = value;
-            }
+            if (!element) return;
+            const next = String(value == null ? '' : value);
+            if (element.textContent === next) return;
+            element.textContent = next;
         }
         
         // Helper function to format numbers
