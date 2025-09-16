@@ -208,12 +208,51 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     if (referrer && (/^0x[a-fA-F0-9]{40}$/.test(referrer) || /^\d+$/.test(referrer))) {
         console.log('🎯 Referral link detected on page load:', referrer);
-        // Show registration form immediately for referral links
-        setTimeout(() => {
-            if (typeof window.showRegistrationFormForInactiveUser === 'function') {
-                window.showRegistrationFormForInactiveUser();
+        // If on index page, redirect to register.html, prefer address form
+        try {
+            const path = (location.pathname || '').toLowerCase();
+            const isIndex = path.endsWith('/index.html') || path.endsWith('/');
+            if (isIndex) {
+                const go = (addrOrId) => {
+                    const url = location.origin + location.pathname.replace(/[^/]*$/, 'register.html') + '?ref=' + addrOrId;
+                    location.replace(url);
+                };
+                if (/^0x[a-fA-F0-9]{40}$/.test(referrer)) {
+                    go(referrer);
+                } else if (/^\d+$/.test(referrer)) {
+                    // Try resolving index to address, fallback to same numeric ref
+                    (async () => {
+                        try {
+                            if (window.connectWallet) {
+                                const { contract } = await window.connectWallet();
+                                if (contract && typeof contract.indexToAddress === 'function') {
+                                    const addr = await contract.indexToAddress(referrer);
+                                    if (addr && addr !== '0x0000000000000000000000000000000000000000') {
+                                        go(addr);
+                                        return;
+                                    }
+                                }
+                            }
+                        } catch (_) {}
+                        go(referrer);
+                    })();
+                }
+            } else {
+                // Not on index: show registration form immediately for referral links
+                setTimeout(() => {
+                    if (typeof window.showRegistrationFormForInactiveUser === 'function') {
+                        window.showRegistrationFormForInactiveUser();
+                    }
+                }, 1000);
             }
-        }, 1000);
+        } catch (_) {
+            // Fallback: show registration form
+            setTimeout(() => {
+                if (typeof window.showRegistrationFormForInactiveUser === 'function') {
+                    window.showRegistrationFormForInactiveUser();
+                }
+            }, 1000);
+        }
     }
 
     // Initialize permanent registration form

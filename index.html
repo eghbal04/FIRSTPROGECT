@@ -210,6 +210,16 @@
             
             <!-- Dashboard -->
             <div class="dashboard hidden" id="dashboard-root">
+                <!-- Referral Box -->
+                <div class="dashboard-card" id="referral-card">
+                    <div class="card-title">Referral</div>
+                    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                        <input id="referral-link" type="text" readonly style="flex:1; min-width:200px; padding:8px; background:#0f0f14; color:#e7e7e7; border:1px solid #2a2e3f; border-radius:6px; font-size:12px;" placeholder="Generating..." />
+                        <button id="copy-ref" class="status-nav-item" style="padding:8px 10px; min-width:90px;">Copy</button>
+                        <button id="share-ref" class="status-nav-item" style="padding:8px 10px; min-width:90px;">Share</button>
+                    </div>
+                    <div class="card-subtitle" id="referral-note">Your personal invite link</div>
+                </div>
                 <div class="dashboard-card">
                     <div class="card-icon">💰</div>
                     <div class="card-title">Supply</div>
@@ -535,28 +545,32 @@
                     }
 
                     // Set contract link to Polygonscan after contract known
-                    try {
-                        const linkEl = document.getElementById('contract-link');
-                        let addr = '';
-                        if (window.contractConfig && window.contractConfig.IAM_ADDRESS) {
-                            addr = window.contractConfig.IAM_ADDRESS;
-                        } else if (window.contractConfig && window.contractConfig.contract && window.contractConfig.contract.target) {
-                            addr = window.contractConfig.contract.target;
-                        } else if (typeof IAM_ADDRESS !== 'undefined') {
-                            addr = IAM_ADDRESS;
-                        }
-                        if (linkEl && addr) {
-                            linkEl.textContent = addr;
-                            linkEl.href = 'https://polygonscan.com/address/' + addr;
-                        } else if (linkEl) {
-                            linkEl.textContent = '';
-                            linkEl.removeAttribute('href');
-                        }
-                    } catch (_) {}
-
+            try {
+                const linkEl = document.getElementById('contract-link');
+                let addr = '';
+                if (window.contractConfig && window.contractConfig.IAM_ADDRESS) {
+                    addr = window.contractConfig.IAM_ADDRESS;
+                } else if (window.contractConfig && window.contractConfig.contract && window.contractConfig.contract.target) {
+                    addr = window.contractConfig.contract.target;
+                } else if (typeof IAM_ADDRESS !== 'undefined') {
+                    addr = IAM_ADDRESS;
+                }
+                if (linkEl && addr) {
+                    linkEl.textContent = addr;
+                    linkEl.href = 'https://polygonscan.com/address/' + addr;
+                } else if (linkEl) {
+                    linkEl.textContent = '';
+                    linkEl.removeAttribute('href');
+                }
+            } catch (_) {}
+            
                     // Fetch user data and dashboard in sequence and wait
                     await updateStatusBar();
                     await refreshDashboardCache();
+                    // Referral: parse ref from URL, auto-redirect inactive users, and generate own link
+                    try {
+                        await setupReferralFlow();
+                    } catch(_){}
                     // Auto-refresh: visible-only interval + focus/visibility triggers
                     try {
                         if (!window.__iam_auto_refresh_set) {
@@ -833,6 +847,81 @@
             if (element.textContent === next) return;
             element.textContent = next;
         }
+
+        // ===== Referral helpers =====
+        function parseRefFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            let ref = params.get('ref') || params.get('referrer') || '';
+            ref = (ref || '').trim();
+            if (!ref) return null;
+            // Normalize: allow address (0x...) or index (digits)
+            if (/^0x[a-fA-F0-9]{40}$/.test(ref)) return { type: 'address', value: ref };
+            if (/^\d+$/.test(ref)) return { type: 'index', value: ref };
+            return null;
+        }
+
+        async function resolveRefToAddress(contract, refObj) {
+            if (!refObj) return null;
+            if (refObj.type === 'address') return refObj.value;
+            if (refObj.type === 'index' && typeof contract.indexToAddress === 'function') {
+                try { const addr = await contract.indexToAddress(parseInt(refObj.value, 10)); return addr; } catch(_) { return null; }
+            }
+            return null;
+        }
+
+        async function setupReferralFlow() {
+            const contract = window.contractConfig && window.contractConfig.contract;
+            const address = window.contractConfig && window.contractConfig.address;
+            if (!contract || !address) return;
+
+            // 1) If URL has ref and user is not registered → redirect to register with normalized ref
+            const refObj = parseRefFromUrl();
+            if (refObj) {
+                try {
+                    const me = await contract.users(address);
+                    const myIndex = (me && (me.index ?? me[0] ?? me[1])) ? BigInt(me.index ?? me[0] ?? me[1]) : 0n;
+                    if (!myIndex || myIndex === 0n) {
+                        const refAddr = await resolveRefToAddress(contract, refObj);
+                        const refParam = refAddr && refAddr !== '0x0000000000000000000000000000000000000000' ? refAddr : (refObj.type==='index' ? refObj.value : '');
+                        const qs = refParam ? ('?ref=' + encodeURIComponent(refParam)) : '';
+                        window.location.href = 'register.html' + qs;
+                        return; // stop further setup; redirecting
+                    }
+                } catch(_){}
+            }
+
+            // 2) If user is active → generate personal referral link
+            try {
+                const me = await contract.users(address);
+                const myIndex = (me && (me.index ?? me[0] ?? me[1])) ? String(me.index ?? me[0] ?? me[1]) : '';
+                const refValue = myIndex || address;
+                const refUrl = window.location.origin + window.location.pathname + '?ref=' + encodeURIComponent(refValue);
+                const input = document.getElementById('referral-link');
+                const note = document.getElementById('referral-note');
+                if (input) input.value = refUrl;
+                if (note) note.textContent = myIndex ? ('Your invite via index IAM ' + myIndex) : 'Your invite via address';
+
+                const copyBtn = document.getElementById('copy-ref');
+                if (copyBtn) {
+                    copyBtn.onclick = async () => {
+                        try { await navigator.clipboard.writeText(refUrl); copyBtn.textContent = 'Copied'; setTimeout(()=>copyBtn.textContent='Copy', 1200); } catch(_){}
+                    };
+                }
+                const shareBtn = document.getElementById('share-ref');
+                if (shareBtn) {
+                    shareBtn.onclick = async () => {
+                        try {
+                            if (navigator.share) {
+                                await navigator.share({ title: 'Join IAM', text: 'Register with my referral:', url: refUrl });
+                            } else {
+                                await navigator.clipboard.writeText(refUrl);
+                                shareBtn.textContent = 'Copied'; setTimeout(()=>shareBtn.textContent='Share', 1200);
+                            }
+                        } catch(_){}
+                    };
+                }
+            } catch(_){}
+        }
         
         // Helper function to format numbers
         function formatNumber(num, isInteger = false) {
@@ -883,6 +972,112 @@
             // < 1 → scientific with 3 sig digits (1 leading + 2 fractional)
             return value.toExponential(2).replace('e', 'E');
         }
+        
+        // Referral link generator and sharing handlers
+        (function setupReferralUI(){
+            try {
+                var inputEl = document.getElementById('referral-link');
+                var copyBtn = document.getElementById('copy-ref');
+                var shareBtn = document.getElementById('share-ref');
+                var noteEl = document.getElementById('referral-note');
+                if (!inputEl || !copyBtn || !shareBtn) return;
+
+                // Build a clean base URL to register.html
+                var baseUrl = (location.origin + (location.pathname.endsWith('register.html') ? location.pathname : location.pathname.replace(/[^/]*$/, 'register.html'))).replace(/\?$|\?+.*/,'');
+
+                var lastAddress = '';
+                var updateLink = function(address){
+                    if (!address || address === lastAddress) return;
+                    lastAddress = address;
+                    var link = baseUrl + '?ref=' + address;
+                    if (inputEl.value !== link) inputEl.value = link;
+                    if (noteEl && noteEl.textContent !== 'Your personal invite link') {
+                        noteEl.textContent = 'Your personal invite link';
+                    }
+                };
+
+                // Helper: check if an address is active user
+                var checkActive = async function(address){
+                    try {
+                        if (!window.contractConfig || !window.contractConfig.contract) return false;
+                        var ud = await window.contractConfig.contract.users(address);
+                        return !!(ud && (ud.index || ud[0]) && BigInt(ud.index ?? ud[0]) > 0n);
+                    } catch(_) { return false; }
+                };
+
+                // Attempt immediate fill if wallet already known and active
+                var trySetActiveLink = async function(){
+                    try {
+                        if (!(window.contractConfig && window.contractConfig.address)) return false;
+                        var addr = window.contractConfig.address;
+                        var isActive = await checkActive(addr);
+                        if (isActive) {
+                            updateLink(addr);
+                            copyBtn.disabled = false;
+                            shareBtn.disabled = false;
+                            return true;
+                        } else {
+                            inputEl.value = '';
+                            if (noteEl) noteEl.textContent = 'Activate your account to get a referral link';
+                            copyBtn.disabled = true;
+                            shareBtn.disabled = true;
+                            return false;
+                        }
+                    } catch(_) { return false; }
+                };
+
+                if (window.contractConfig && window.contractConfig.address) {
+                    trySetActiveLink();
+                } else {
+                    // Poll briefly for connection becoming available
+                    var tries = 0;
+                    var intId = setInterval(async function(){
+                        tries++;
+                        if (window.contractConfig && window.contractConfig.address) {
+                            await trySetActiveLink();
+                            clearInterval(intId);
+                        }
+                        if (tries > 200) { // ~20s max
+                            clearInterval(intId);
+                        }
+                    }, 100);
+                }
+
+                // Copy handler
+                copyBtn.addEventListener('click', function(){
+                    if (!inputEl.value) return;
+                    try {
+                        navigator.clipboard.writeText(inputEl.value).then(function(){
+                            copyBtn.textContent = 'Copied';
+                            setTimeout(function(){ copyBtn.textContent = 'Copy'; }, 1200);
+                        }).catch(function(){
+                            inputEl.select();
+                            document.execCommand('copy');
+                            copyBtn.textContent = 'Copied';
+                            setTimeout(function(){ copyBtn.textContent = 'Copy'; }, 1200);
+                        });
+                    } catch(_) {}
+                });
+
+                // Share handler (Web Share API if available)
+                shareBtn.addEventListener('click', function(){
+                    var url = inputEl.value || baseUrl;
+                    var data = { title: 'Join IAM Ecosystem', text: 'Register with my invite link on IAM', url: url };
+                    if (navigator.share) {
+                        navigator.share(data).catch(function(){});
+                    } else {
+                        try {
+                            navigator.clipboard.writeText(url);
+                            shareBtn.textContent = 'Link Copied';
+                            setTimeout(function(){ shareBtn.textContent = 'Share'; }, 1200);
+                        } catch(_) {
+                            shareBtn.textContent = 'Copy Failed';
+                            setTimeout(function(){ shareBtn.textContent = 'Share'; }, 1200);
+                        }
+                    }
+                });
+            } catch(_) {}
+        })();
         
   </script>
 </body>

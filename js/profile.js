@@ -119,19 +119,16 @@ function updateProfileUI(profile) {
 
     const linkEl = document.getElementById('profile-referral-link');
     if (linkEl) {
-        if (profile.address) {
-            // Use index if available, otherwise fall back to address
-            const referralId = profile.userStruct && profile.userStruct.index && BigInt(profile.userStruct.index) > 0n 
-                ? profile.userStruct.index.toString() 
-                : profile.address;
-            const fullLink = window.location.origin + '/?ref=' + referralId;
+        const isActive = !!(profile.userStruct && profile.userStruct.index && BigInt(profile.userStruct.index) > 0n);
+        if (profile.address && isActive) {
+            const fullLink = window.location.origin + '/register.html?ref=' + profile.address;
             linkEl.href = fullLink;
             linkEl.textContent = fullLink;
             linkEl.style.pointerEvents = 'auto';
             linkEl.style.opacity = '1';
         } else {
             linkEl.href = '#';
-            linkEl.textContent = 'لینک دعوت در دسترس نیست';
+            linkEl.textContent = isActive ? 'لینک دعوت در دسترس نیست' : 'برای دریافت لینک، اکانت را فعال کنید';
             linkEl.style.pointerEvents = 'none';
             linkEl.style.opacity = '0.6';
         }
@@ -142,11 +139,9 @@ function updateProfileUI(profile) {
         copyBtn.onclick = async () => {
             try {
                 if (profile.address) {
-                    // Use index if available, otherwise fall back to address
-                    const referralId = profile.userStruct && profile.userStruct.index && BigInt(profile.userStruct.index) > 0n 
-                        ? profile.userStruct.index.toString() 
-                        : profile.address;
-                    const fullLink = window.location.origin + '/?ref=' + referralId;
+                    const isActive = !!(profile.userStruct && profile.userStruct.index && BigInt(profile.userStruct.index) > 0n);
+                    if (!isActive) { throw new Error('اکانت شما هنوز فعال نشده است'); }
+                    const fullLink = window.location.origin + '/register.html?ref=' + profile.address;
                     
                     // تلاش برای کپی کردن
                     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -403,8 +398,9 @@ function setupReferralCopy() {
                 
                 // Get user profile to get index
                 const profile = await loadUserProfileOnce();
-                const referralId = profile.index && BigInt(profile.index) > 0n ? profile.index : address;
-                const referralLink = `${window.location.origin}/?ref=${referralId}`;
+                const isActive = !!(profile && profile.userStruct && profile.userStruct.index && BigInt(profile.userStruct.index) > 0n);
+                if (!isActive) { throw new Error('اکانت شما هنوز فعال نشده است'); }
+                const referralLink = `${window.location.origin}/register.html?ref=${address}`;
                 
                 console.log('📋 Generated link:', referralLink);
                 

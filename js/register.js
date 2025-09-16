@@ -1094,6 +1094,31 @@ window.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// Auto-resolve numeric ref in URL to wallet address on register page
+document.addEventListener('DOMContentLoaded', function() {
+    try {
+        var params = new URLSearchParams(window.location.search);
+        var ref = params.get('ref') || params.get('referrer');
+        if (!ref || !/^\d+$/.test(ref)) return;
+        (async function(){
+            try {
+                if (!window.connectWallet) return;
+                const { contract } = await window.connectWallet();
+                if (!contract || typeof contract.indexToAddress !== 'function') return;
+                const addr = await contract.indexToAddress(ref);
+                if (addr && addr !== '0x0000000000000000000000000000000000000000') {
+                    // Update URL silently
+                    var url = window.location.origin + window.location.pathname + '?ref=' + addr;
+                    window.history.replaceState({}, '', url);
+                    // Fill input if present
+                    var input = document.getElementById('referrer-address');
+                    if (input) input.value = addr;
+                }
+            } catch (_) {}
+        })();
+    } catch (_) {}
+});
+
         // Register new person with desired referrer (for network use)
 window.registerNewUserWithReferrer = async function(referrer, newUserAddress, statusElement) {
     if (!window.contractConfig || !window.contractConfig.contract) {
