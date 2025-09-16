@@ -770,7 +770,7 @@
             const c = dashboardCache;
             updateDashboardElement('total-supply', Number.isFinite(c.totalSupplyNum) ? Math.floor(c.totalSupplyNum).toString() : '0');
             updateDashboardElement('total-users', c.totalUsersNum > 0 ? formatNumber(c.totalUsersNum, true) : '');
-            updateDashboardElement('token-price', Number.isFinite(c.tokenPriceNum) ? ('$' + Math.floor(c.tokenPriceNum).toString()) : '$0');
+            updateDashboardElement('token-price', Number.isFinite(c.tokenPriceNum) ? ('$' + formatTokenBalance(c.tokenPriceNum, 6)) : '$0');
             updateDashboardElement('total-points', c.totalPointsNum > 0 ? formatNumber(c.totalPointsNum, true) : '');
             updateDashboardElement('point-value', Number.isFinite(c.pointValueNum) ? Math.floor(c.pointValueNum).toString() : '0');
             updateDashboardElement('contract-balance', (Number.isFinite(c.daiBalanceNum) && c.daiBalanceNum > 0) ? c.daiBalanceNum.toFixed(2) : '');
