@@ -874,13 +874,14 @@
                     // Placeholders for estimateSell USD equivalents
                     usdFromRegPrice: null,
                     usdFromCashback: null,
-                    usdFromContractIAM: null
+                    usdFromContractIAM: null,
+                    usdFromPointValue: null
                 };
 
                 // Use on-chain estimators for more accurate DAI equivalents where applicable
                 try {
                     const toWei = (v) => ethers.parseUnits(String(v), 18);
-                    const [usdFromRegPriceWei, usdFromCashbackWei, usdFromContractIAMWei] = await Promise.all([
+                    const [usdFromRegPriceWei, usdFromCashbackWei, usdFromContractIAMWei, usdFromPointValueWei] = await Promise.all([
                         (dashboardCache.regPriceValue > 0 && typeof contract.estimateSell === 'function')
                             ? contract.estimateSell(toWei(dashboardCache.regPriceValue)).catch(()=>0)
                             : Promise.resolve(0),
@@ -889,11 +890,15 @@
                             : Promise.resolve(0),
                         (dashboardCache.contractIAMNum > 0 && typeof contract.estimateSell === 'function')
                             ? contract.estimateSell(toWei(dashboardCache.contractIAMNum)).catch(()=>0)
+                            : Promise.resolve(0),
+                        (dashboardCache.pointValueNum > 0 && typeof contract.estimateSell === 'function')
+                            ? contract.estimateSell(toWei(dashboardCache.pointValueNum)).catch(()=>0)
                             : Promise.resolve(0)
                     ]);
                     dashboardCache.usdFromRegPrice = parseFloat(ethers.formatEther(usdFromRegPriceWei || 0));
                     dashboardCache.usdFromCashback = parseFloat(ethers.formatEther(usdFromCashbackWei || 0));
                     dashboardCache.usdFromContractIAM = parseFloat(ethers.formatEther(usdFromContractIAMWei || 0));
+                    dashboardCache.usdFromPointValue = parseFloat(ethers.formatEther(usdFromPointValueWei || 0));
                 } catch(_) {}
 
                 renderDashboardFromCache();
@@ -927,7 +932,8 @@
             const cashbackUsd = (typeof c.usdFromCashback === 'number' && c.usdFromCashback > 0)
                 ? c.usdFromCashback : (c.cashBackTokenNum * c.tokenPriceNum);
             updateDashboardElement('cashback-usd', cashbackUsd > 0 ? '$' + formatNumber(cashbackUsd) : '');
-            const pointValueUsd = c.pointValueNum * c.tokenPriceNum;
+            const pointValueUsd = (typeof c.usdFromPointValue === 'number' && c.usdFromPointValue > 0)
+                ? c.usdFromPointValue : (c.pointValueNum * c.tokenPriceNum);
             updateDashboardElement('point-value-usd', pointValueUsd > 0 ? '$' + formatNumber(pointValueUsd) : '');
         }
 
