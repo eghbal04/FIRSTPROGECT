@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Binary Pool - Dashboard</title>
+    <script src="js/compat.js"></script>
     
     <!-- Web3.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
@@ -905,6 +906,134 @@
             }
         }
         
+        // Staggered background updates for dashboard cards every 5 seconds (no full refresh)
+        (function(){
+            let isUpdatingCard = false;
+            let cardIndex = 0;
+            const getContract = () => (window.contractConfig && window.contractConfig.contract) ? window.contractConfig.contract : null;
+
+            async function updateCard(fn){
+                if (isUpdatingCard) return;
+                isUpdatingCard = true;
+                try { await fn(); } catch(_) {} finally { isUpdatingCard = false; }
+            }
+
+            // Single-metric updaters
+            async function updateCard_TotalSupply(){
+                const c = getContract(); if (!c) return;
+                const v = await c.totalSupply().catch(()=>0);
+                const num = parseFloat(ethers.formatEther(v));
+                updateDashboardElement('total-supply', num > 0 ? formatNumber(num) : '');
+                // Also update USD subline if token price available
+                try {
+                    const tp = await c.getTokenPrice().catch(()=>0);
+                    const tpNum = parseFloat(ethers.formatEther(tp));
+                    updateDashboardElement('total-supply-usd', (num*tpNum)>0 ? '$'+formatNumber(num*tpNum) : '');
+                } catch(_){}
+            }
+            async function updateCard_TotalUsers(){
+                const c = getContract(); if (!c) return;
+                const v = await c.wallets().catch(()=>0);
+                const num = parseInt(v);
+                updateDashboardElement('total-users', num > 0 ? formatNumber(num, true) : '');
+            }
+            async function updateCard_TokenPrice(){
+                const c = getContract(); if (!c) return;
+                const v = await c.getTokenPrice().catch(()=>0);
+                const num = parseFloat(ethers.formatEther(v));
+                updateDashboardElement('token-price', num > 0 ? '$' + formatTokenBalance(num, 6) : '');
+            }
+            async function updateCard_TotalPoints(){
+                const c = getContract(); if (!c) return;
+                const v = await c.totalClaimableBinaryPoints().catch(()=>0);
+                const num = parseInt(v);
+                updateDashboardElement('total-points', num > 0 ? formatNumber(num, true) : '');
+            }
+            async function updateCard_PointValue(){
+                const c = getContract(); if (!c) return;
+                const v = await c.getPointValue().catch(()=>0);
+                const num = parseFloat(ethers.formatEther(v));
+                updateDashboardElement('point-value', num > 0 ? formatTokenBalance(num, 2) : '');
+                try {
+                    const tp = await c.getTokenPrice().catch(()=>0);
+                    const tpNum = parseFloat(ethers.formatEther(tp));
+                    const usd = num * tpNum;
+                    updateDashboardElement('point-value-usd', usd>0 ? '$'+formatNumber(usd) : '');
+                } catch(_){}
+            }
+            async function updateCard_DAIContractBalance(){
+                const c = getContract(); if (!c) return;
+                const v = await c.getContractdaiBalance().catch(()=>0);
+                const num = parseFloat(ethers.formatEther(v));
+                updateDashboardElement('contract-balance', (Number.isFinite(num)&&num>0) ? num.toFixed(2) : '');
+                updateDashboardElement('contract-balance-usd', (Number.isFinite(num)&&num>0) ? '$'+num.toFixed(2) : '');
+            }
+            async function updateCard_RegPrice(){
+                const c = getContract(); if (!c || typeof c.getRegPrice !== 'function') return;
+                const v = await c.getRegPrice().catch(()=>0);
+                const num = parseFloat(ethers.formatEther(v));
+                updateDashboardElement('reg-price', num>0 ? formatTokenBalance(num,2) : '');
+                try {
+                    const tp = await c.getTokenPrice().catch(()=>0);
+                    const tpNum = parseFloat(ethers.formatEther(tp));
+                    const usd = num * tpNum;
+                    updateDashboardElement('reg-price-usd', usd>0 ? '$'+formatNumber(usd) : '');
+                } catch(_){}
+            }
+            async function updateCard_Cashback(){
+                const c = getContract(); if (!c || typeof c.cashBack !== 'function') return;
+                const v = await c.cashBack().catch(()=>0);
+                const num = parseFloat(ethers.formatEther(v));
+                updateDashboardElement('cashback', num>0 ? formatTokenBalance(num,2) : '');
+                try {
+                    const tp = await c.getTokenPrice().catch(()=>0);
+                    const tpNum = parseFloat(ethers.formatEther(tp));
+                    const usd = num * tpNum;
+                    updateDashboardElement('cashback-usd', usd>0 ? '$'+formatNumber(usd) : '');
+                } catch(_){}
+            }
+            async function updateCard_ContractIAMBalance(){
+                const c = getContract(); if (!c || typeof c.balanceOf !== 'function') return;
+                const target = (c && c.target) ? c.target : null; if (!target) return;
+                const v = await c.balanceOf(target).catch(()=>0);
+                const num = parseFloat(ethers.formatEther(v));
+                updateDashboardElement('contract-iam-balance', num>0 ? formatTokenBalance(num,2) : '');
+                try {
+                    const tp = await c.getTokenPrice().catch(()=>0);
+                    const tpNum = parseFloat(ethers.formatEther(tp));
+                    const usd = num * tpNum;
+                    updateDashboardElement('contract-iam-balance-usd', usd>0 ? '$'+formatNumber(usd) : '');
+                } catch(_){}
+            }
+
+            const tasks = [
+                updateCard_TotalSupply,
+                updateCard_TotalUsers,
+                updateCard_TokenPrice,
+                updateCard_TotalPoints,
+                updateCard_PointValue,
+                updateCard_DAIContractBalance,
+                updateCard_RegPrice,
+                updateCard_Cashback,
+                updateCard_ContractIAMBalance
+            ];
+
+            function tick(){
+                if (!getContract()) return; // wait until connected
+                const fn = tasks[cardIndex % tasks.length];
+                cardIndex++;
+                updateCard(fn);
+            }
+
+            // Kick off after DOM ready
+            document.addEventListener('DOMContentLoaded', function(){
+                // Run an initial full update once
+                updateDashboard().catch(()=>{});
+                // Start staggered updates
+                setInterval(tick, 5000);
+            });
+        })();
+
         // Helper function to update dashboard elements
         function updateDashboardElement(elementId, value) {
             const element = document.getElementById(elementId);
