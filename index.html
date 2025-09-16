@@ -64,6 +64,10 @@
             justify-content: flex-start;
         }
         
+        .status-left-section .iam-index-combined {
+            margin-right: 12px;
+        }
+        
         .status-balances {
             display: flex;
             gap: 8px;
@@ -153,20 +157,20 @@
         }
         
         .info-label {
-            font-size: 9px;
+            font-size: 12px;
             color: #888;
-            margin-bottom: 1px;
+            margin-bottom: 2px;
         }
         
         .info-value {
-            font-size: 11px;
+            font-size: 14px;
             font-weight: bold;
             color: #fff;
         }
         
         /* Stars styling */
         #userStatusLevel {
-            font-size: 12px;
+            font-size: 18px;
             color: #ffd700;
             line-height: 1.2;
             word-spacing: -2px;
@@ -180,11 +184,25 @@
         
         /* Likes/Dislikes styling */
         .status-info-item .info-label {
-            font-size: 10px;
+            font-size: 13px;
+        }
+        
+        /* IAM + Index combined styling */
+        .iam-index-combined .info-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        .iam-index-combined .info-value::before {
+            content: "IAM";
+            color: #888;
+            font-size: 16px;
+            margin-right: 3px;
         }
         
         #userStatusLikes, #userStatusDislikes {
-            font-size: 10px;
+            font-size: 13px;
             font-weight: bold;
         }
         
@@ -258,129 +276,9 @@
             opacity: 0.7;
         }
         
-        /* Bottom Navigation */
-        .bottom-nav-container {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            z-index: 1000;
-        }
         
-        .bottom-menu-btn {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: linear-gradient(45deg, #00ff88, #00d4ff);
-            border: none;
-            color: #000;
-            font-size: 18px;
-            cursor: pointer;
-            box-shadow: 0 3px 15px rgba(0, 255, 136, 0.3);
-            transition: all 0.3s ease;
-            opacity: 0.6;
-            -webkit-tap-highlight-color: transparent;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            touch-action: manipulation;
-        }
         
-        .bottom-menu-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 25px rgba(0, 255, 136, 0.4);
-        }
         
-        .bottom-menu-btn:active {
-            transform: scale(0.95);
-            box-shadow: 0 2px 10px rgba(0, 255, 136, 0.5);
-        }
-        
-        .bottom-nav-menu {
-            position: absolute;
-            bottom: 70px;
-            left: 0;
-            background: rgba(35, 41, 70, 0.6);
-            border-radius: 12px;
-            padding: 12px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(0, 255, 136, 0.2);
-            display: none;
-            min-width: 160px;
-        }
-        
-        .bottom-nav-menu.show {
-            display: block;
-        }
-        
-        .nav-item {
-            display: block;
-            color: #fff;
-            text-decoration: none;
-            padding: 8px 12px;
-            border-radius: 6px;
-            margin: 3px 0;
-            transition: all 0.3s ease;
-            min-height: 36px;
-            display: flex;
-            align-items: center;
-            font-size: 0.85rem;
-            -webkit-tap-highlight-color: transparent;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            touch-action: manipulation;
-        }
-    
-        .nav-item:hover {
-            background: rgba(0, 255, 136, 0.1);
-            color: #00ff88;
-        }
-        
-        .nav-item:active {
-            background: rgba(0, 255, 136, 0.2);
-            color: #00ff88;
-            transform: scale(0.98);
-        }
-        
-        /* iOS Touch Support */
-        @media (max-width: 768px) {
-            .bottom-menu-btn {
-                width: 48px;
-                height: 48px;
-                font-size: 20px;
-                opacity: 0.6;
-            }
-            
-            .nav-item {
-                padding: 10px 14px;
-                min-height: 40px;
-                font-size: 0.9rem;
-            }
-            
-            .bottom-nav-menu {
-                min-width: 180px;
-                padding: 10px;
-            }
-        }
-        
-        /* iOS Safari specific fixes */
-        @supports (-webkit-touch-callout: none) {
-            .bottom-menu-btn {
-                -webkit-appearance: none;
-                -webkit-border-radius: 50%;
-                border-radius: 50%;
-            }
-            
-            .nav-item {
-                -webkit-appearance: none;
-                -webkit-border-radius: 8px;
-                border-radius: 8px;
-            }
-        }
         
         /* Responsive */
         @media (max-width: 768px) {
@@ -428,19 +326,27 @@
             }
             
             .info-label {
-                font-size: 8px;
+                font-size: 10px;
             }
             
             .info-value {
-                font-size: 9px;
+                font-size: 12px;
             }
             
             .status-info-item .info-label {
-                font-size: 9px;
+                font-size: 11px;
+            }
+            
+            .iam-index-combined .info-value {
+                font-size: 16px;
+            }
+            
+            .iam-index-combined .info-value::before {
+                font-size: 14px;
             }
             
             #userStatusLevel {
-                font-size: 10px;
+                font-size: 16px;
             }
             
             .main-title {
@@ -500,10 +406,9 @@
     <!-- Status Bar -->
     <div class="status-bar">
         <div class="status-content">
-            <!-- Left side: ID, Likes, Dislikes -->
+            <!-- Left side: IAM+Index, Likes, Dislikes -->
             <div class="status-left-section">
-                <div class="status-info-item">
-                    <div class="info-label">ID</div>
+                <div class="status-info-item iam-index-combined">
                     <div class="info-value" id="userStatusIdValue"></div>
                 </div>
                 <div class="status-info-item">
@@ -641,22 +546,6 @@
             </div>
         </div>
         
-    <!-- Bottom Navigation -->
-    <div class="bottom-nav-container">
-        <button class="bottom-menu-btn" id="bottom-menu-btn">☰</button>
-        <div class="bottom-nav-menu" id="bottom-nav-menu">
-            <a href="index.html" class="nav-item">Home</a>
-            <a href="register.html" class="nav-item">Register</a>
-            <a href="profile.html" class="nav-item">Profile</a>
-            <a href="transfer.html" class="nav-item">Transfer</a>
-            <a href="swap.html" class="nav-item">Swap</a>
-            <a href="sales.html" class="nav-item">Sales</a>
-            <a href="utility.html" class="nav-item">Utility</a>
-            <a href="professional-tree.html" class="nav-item">Professional Tree</a>
-            <a href="transfer-ownership.html" class="nav-item">Transfer Ownership</a>
-            <a href="about.html" class="nav-item">About</a>
-            </div>
-        </div>
         
     <!-- Scripts -->
     <script src="js/config.js"></script>
@@ -666,10 +555,7 @@
   <script>
         // Status bar update function - runs only once on page load
         function updateStatusBar() {
-            console.log('🔄 Updating status bar on page load...');
-            
             if (window.contractConfig && window.contractConfig.address) {
-                console.log('✅ Main system available, updating status bar');
                 
                 // Update wallet address
                 const walletElement = document.getElementById('userStatusWallet');
@@ -688,35 +574,44 @@
                 // Update user data, token balances, and dashboard
                 updateUserData();
                 updateDashboard();
-                } else {
-                console.log('⚠️ Main system not available');
-            }
+                }
         }
         
         // Update user data from contract
         async function updateUserData() {
             try {
                 if (window.contractConfig && window.contractConfig.contract && window.contractConfig.address) {
-                    console.log('🔄 Fetching user data from contract...');
-                    
                     const userData = await window.contractConfig.contract.users(window.contractConfig.address);
-                    console.log('📊 User data:', userData);
                     
-                    // Update User ID
+                    // Update User IAM
                     const userIdElement = document.getElementById('userStatusIdValue');
                     if (userIdElement) {
                         userIdElement.textContent = userData[0] ? userData[0].toString() : '';
                     }
                     
-                    // Update User Stars based on Level
+                    // Update User Stars based on Binary Points
                     const levelElement = document.getElementById('userStatusLevel');
                     if (levelElement) {
                         const binaryPointsClaimed = parseInt(userData[3] || 0);
-                        const level = Math.floor(binaryPointsClaimed / 10) + 1;
-                        const stars = Math.min(level, 10); // Max 10 stars
+                        let stars = 0;
+                        
+                        if (binaryPointsClaimed >= 10000) {
+                            stars = 5; // 10000+ = 5 stars
+                        } else if (binaryPointsClaimed >= 1000) {
+                            stars = 4; // 1000-9999 = 4 stars
+                        } else if (binaryPointsClaimed >= 100) {
+                            stars = 3; // 100-999 = 3 stars
+                        } else if (binaryPointsClaimed >= 10) {
+                            stars = 2; // 10-99 = 2 stars
+                        } else if (binaryPointsClaimed >= 1) {
+                            stars = 1; // 1-9 = 1 star
+                        } else {
+                            stars = 0; // 0 = no stars
+                        }
+                        
                         if (stars > 0) {
                             levelElement.textContent = '⭐'.repeat(stars);
-                } else {
+                        } else {
                             levelElement.textContent = '';
                         }
                     }
@@ -724,30 +619,28 @@
                     // Update Likes and Dislikes
                     try {
                         const voteStatus = await window.contractConfig.contract.getVoteStatus(window.contractConfig.address);
-                        console.log('📊 Vote status:', voteStatus);
                         
                         const likesElement = document.getElementById('userStatusLikes');
                         const dislikesElement = document.getElementById('userStatusDislikes');
                         
                         if (likesElement) {
-                            likesElement.textContent = voteStatus ? (voteStatus.totalLikes || '') : '';
+                            likesElement.textContent = voteStatus ? (voteStatus.totalLikes || '0') : '0';
                         }
                         if (dislikesElement) {
-                            dislikesElement.textContent = voteStatus ? (voteStatus.totalDislikes || '') : '';
+                            dislikesElement.textContent = voteStatus ? (voteStatus.totalDislikes || '0') : '0';
                         }
                     } catch (error) {
-                        console.log('Error fetching vote status:', error);
                         const likesElement = document.getElementById('userStatusLikes');
                         const dislikesElement = document.getElementById('userStatusDislikes');
-                        if (likesElement) likesElement.textContent = '';
-                        if (dislikesElement) dislikesElement.textContent = '';
+                        if (likesElement) likesElement.textContent = '0';
+                        if (dislikesElement) dislikesElement.textContent = '0';
                     }
                     
                     // Update token balances
                     await updateTokenBalances();
                 }
             } catch (error) {
-                console.log('Error updating user data:', error);
+                // Error updating user data
             }
         }
         
@@ -755,7 +648,6 @@
         async function updateTokenBalances() {
             try {
                 if (window.contractConfig && window.contractConfig.provider && window.contractConfig.address) {
-                    console.log('🔄 Fetching token balances...');
                     
                     const userAddress = window.contractConfig.address;
                     const provider = window.contractConfig.provider;
@@ -782,7 +674,7 @@
                         const balance = await iamContract.balanceOf(userAddress);
                         iamBalance = parseFloat(ethers.formatEther(balance));
                     } catch (e) {
-                        console.log('Error getting IAM balance:', e);
+                        // Error getting IAM balance
                     }
                     
                     // Get MATIC balance
@@ -791,7 +683,7 @@
                         const balance = await provider.getBalance(userAddress);
                         maticBalance = parseFloat(ethers.formatEther(balance));
                     } catch (e) {
-                        console.log('Error getting MATIC balance:', e);
+                        // Error getting MATIC balance
                     }
                     
                     // Get DAI balance
@@ -801,7 +693,7 @@
                         const balance = await daiContract.balanceOf(userAddress);
                         daiBalance = parseFloat(ethers.formatEther(balance));
                     } catch (e) {
-                        console.log('Error getting DAI balance:', e);
+                        // Error getting DAI balance
                     }
                     
                     // Update UI with formatted balances
@@ -827,10 +719,9 @@
                         if (window.contractConfig && window.contractConfig.contract) {
                             const tokenPrice = await window.contractConfig.contract.getTokenPrice();
                             iamTokenPrice = parseFloat(ethers.formatEther(tokenPrice));
-                            console.log('✅ IAM token price from contract:', iamTokenPrice);
                         }
                     } catch (error) {
-                        console.log('❌ Error getting IAM token price:', error);
+                        // Error getting IAM token price
                     }
 
                     // Update USD values with real prices
@@ -851,62 +742,12 @@
                         daiUsdElement.textContent = ''; // No USD value needed
                     }
                     
-                    console.log('✅ Token balances updated:', { iamBalance, maticBalance, daiBalance });
                 }
   } catch (error) {
-                console.log('Error updating token balances:', error);
+                // Error updating token balances
             }
         }
         
-        // Bottom navigation toggle with iOS touch support
-        function setupBottomNavigation() {
-            const menuBtn = document.getElementById('bottom-menu-btn');
-            const menu = document.getElementById('bottom-nav-menu');
-            
-            if (menuBtn && menu) {
-                // Add both click and touchstart events for better iOS support
-                function toggleMenu(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    menu.classList.toggle('show');
-                }
-                
-                // Use touchstart for better iOS responsiveness
-                menuBtn.addEventListener('touchstart', function(e) {
-                    e.preventDefault();
-                    toggleMenu(e);
-                }, { passive: false });
-                
-                // Keep click for desktop compatibility
-                menuBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    toggleMenu(e);
-                });
-                
-                // Close menu when clicking outside
-                document.addEventListener('click', function(event) {
-                    if (!menuBtn.contains(event.target) && !menu.contains(event.target)) {
-                        menu.classList.remove('show');
-                    }
-                });
-                
-                // Close menu when touching outside on mobile
-                document.addEventListener('touchstart', function(event) {
-                    if (!menuBtn.contains(event.target) && !menu.contains(event.target)) {
-                        menu.classList.remove('show');
-                    }
-                });
-                
-                // Add touch support for nav items
-                const navItems = menu.querySelectorAll('.nav-item');
-                navItems.forEach(item => {
-                    item.addEventListener('touchstart', function(e) {
-                        e.preventDefault();
-                        this.click();
-                    }, { passive: false });
-                });
-            }
-        }
         
         // Setup compressed navigation
         
@@ -924,11 +765,23 @@
             });
         }
         
+        // Setup compressed navigation
+        function setupCompressedNavigation() {
+            const navItems = document.querySelectorAll('.status-nav-item');
+            const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+
+            navItems.forEach(item => {
+                const href = item.getAttribute('href');
+                if (href === currentPage) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+        
         // Initialize when page loads - only once
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Page loaded, initializing once...');
-            
-            setupBottomNavigation();
             setupCompressedNavigation();
 
             // Set contract link to Polygonscan
@@ -953,13 +806,10 @@
             
             // Update status bar only once on page load
             if (window.contractConfig && window.contractConfig.address) {
-                console.log('Wallet already connected, updating status bar once');
                 updateStatusBar();
             } else {
-                console.log('Waiting for wallet connection...');
                 // Listen for wallet connection events - only once
                 window.addEventListener('walletConnected', function(event) {
-                    console.log('Wallet connected event received - updating once');
                     updateStatusBar();
                 }, { once: true }); // Only listen once
             }
@@ -967,27 +817,14 @@
         
         // Global function for main.js to call - only once
         window.updateUserStatusBar = function() {
-            console.log('🔄 updateUserStatusBar called from main.js - one time only');
             updateStatusBar();
         };
         
-        // Test function
-        window.testStatusBar = function() {
-            console.log('🧪 Testing status bar...');
-            updateStatusBar();
-        };
-        
-        // Test token balances function
-        window.testTokenBalances = function() {
-            console.log('🧪 Testing token balances...');
-            updateTokenBalances();
-        };
         
         // Update dashboard with contract data
         async function updateDashboard() {
             try {
                 if (window.contractConfig && window.contractConfig.contract) {
-                    console.log('🔄 Updating dashboard...');
                 
                 const contract = window.contractConfig.contract;
                 
@@ -1062,10 +899,9 @@
 
                     
                     
-                    console.log('✅ Dashboard updated successfully');
                 }
             } catch (error) {
-                console.log('Error updating dashboard:', error);
+                // Error updating dashboard
             }
         }
         
@@ -1127,51 +963,6 @@
             return value.toExponential(2).replace('e', 'E');
         }
         
-        // Test dashboard function
-        window.testDashboard = function() {
-            console.log('🧪 Testing dashboard...');
-            updateDashboard();
-        };
-        
-        // Test stars function
-        window.testStars = function() {
-            console.log('🧪 Testing stars...');
-            const levelElement = document.getElementById('userStatusLevel');
-            if (levelElement) {
-                // Test with different level counts (1-10 stars)
-                const testLevel = Math.floor(Math.random() * 10) + 1; // 1-10 levels
-                const testStars = Math.min(testLevel, 10);
-                levelElement.textContent = '⭐'.repeat(testStars);
-                console.log('✅ Stars updated:', testStars, 'for level:', testLevel);
-            }
-        };
-        
-        // Test likes/dislikes function
-        window.testLikesDislikes = function() {
-            console.log('🧪 Testing likes/dislikes...');
-            const likesElement = document.getElementById('userStatusLikes');
-            const dislikesElement = document.getElementById('userStatusDislikes');
-            
-            if (likesElement) {
-                const testLikes = Math.floor(Math.random() * 100);
-                likesElement.textContent = testLikes;
-            }
-            
-            if (dislikesElement) {
-                const testDislikes = Math.floor(Math.random() * 50);
-                dislikesElement.textContent = testDislikes;
-            }
-            
-            console.log('✅ Likes/Dislikes updated');
-        };
-        
-        // Test all status bar elements
-        window.testAllStatusBar = function() {
-            console.log('🧪 Testing all status bar elements...');
-            window.testStars();
-            window.testLikesDislikes();
-            console.log('✅ All status bar elements tested');
-        };
   </script>
 </body>
 </html>
