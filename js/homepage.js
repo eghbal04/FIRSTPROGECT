@@ -749,10 +749,7 @@ async function handleWalletConnectSuccess(walletConnectProvider) {
         const address = await signer.getAddress();
         window.contractConfig.address = address;
         
-        // ذخیره در localStorage
-        localStorage.setItem('walletConnected', 'true');
-        localStorage.setItem('walletAddress', address);
-        localStorage.setItem('walletType', 'walletconnect');
+        // No caching - wallet state is not persisted
         
         updateConnectionStatus('success', 'Wallet connection successful');
         updateWalletButtonVisibility();

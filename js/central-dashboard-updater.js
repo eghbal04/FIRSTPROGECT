@@ -491,18 +491,18 @@ class CentralDashboardUpdater {
         return {
             isRunning: this.isRunning,
             trackedElements: this.trackedElements.length,
-            cachedValues: this.previousValues.size,
+            // No cached values - always fresh data
             updateFrequency: this.updateFrequency / 1000 + ' seconds',
             debugMode: this.debugMode
         };
     }
 
     /**
-     * Reset memory
+     * Reset memory - no caching
      */
     reset() {
-        this.previousValues.clear();
-        this.log('🔄 Value memory cleared');
+        // No cache to clear - always fresh data
+        this.log('🔄 No cache to clear - always fresh data');
     }
 }
 

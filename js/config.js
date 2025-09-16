@@ -2569,7 +2569,7 @@ window.IAM_ABI = IAM_ABI;
 let isInitializing = false;
 let initializationPromise = null;
 let permissionRequestInProgress = false;
-let connectionCache = null;
+// No connection caching
 let lastConnectionAttempt = 0;
 const CONNECTION_COOLDOWN = 5000; // 5 seconds cooldown between connection attempts
 
@@ -2677,8 +2677,7 @@ async function performWeb3Initialization() {
 			initializeWeb3: initializeWeb3
 		};
 
-		// Cache the connection
-		connectionCache = connectionData;
+		// No caching - always fresh connection
 
 		return window.contractConfig;
 
@@ -2699,8 +2698,7 @@ async function performWeb3Initialization() {
 			window.contractConfig.address = null;
 		}
 
-		// Clear cache on error
-		connectionCache = null;
+		// No cache to clear
 
 		throw error;
 	}
@@ -2712,14 +2710,7 @@ async function initializeWeb3() {
 		return await globalConnectionPromise;
 	}
 	
-	// Check if we have a valid cached connection
-	if (connectionCache && 
-		connectionCache.provider && 
-		connectionCache.signer && 
-		connectionCache.contract &&
-		connectionCache.address) {
-		return connectionCache;
-	}
+	// No cached connection - always establish fresh connection
 	
 	if (window.contractConfig && 
 		window.contractConfig.provider && 
@@ -2863,17 +2854,7 @@ window.connectWallet = async function() {
 		for (let attempt = 0; attempt <= maxRetries; attempt++) {
 			try {
 				// بررسی اتصال موجود
-				if (connectionCache && 
-					connectionCache.contract && 
-					connectionCache.address && 
-					connectionCache.signer) {
-					return {
-						contract: connectionCache.contract,
-						address: connectionCache.address,
-						signer: connectionCache.signer,
-						provider: connectionCache.provider
-					};
-				}
+				// No cached connection available
 				
 				if (window.contractConfig && 
 					window.contractConfig.contract && 
@@ -2949,8 +2930,7 @@ window.connectWallet = async function() {
 					continue;
 				}
 				
-				// Clear cache on other errors to allow retry
-				connectionCache = null;
+				// No cache to clear
 				if (window.contractConfig) {
 					window.contractConfig.provider = null;
 					window.contractConfig.signer = null;
@@ -3158,7 +3138,7 @@ window.refreshNetworkAfterMetaMaskApproval = async function() {
 
 // تابع پاک کردن کش اتصال
 window.clearConnectionCache = function() {
-	connectionCache = null;
+	// No cache to clear
 	if (window.contractConfig) {
 		window.contractConfig.provider = null;
 		window.contractConfig.signer = null;
@@ -3182,8 +3162,7 @@ window.clearConnectionCache = function() {
 	// Clear pending account request
 	pendingAccountRequest = null;
 	
-	// Clear function call cache
-	functionCallCache.clear();
+	// No cache to clear
 	
 	// Clear debounce timers
 	debounceTimers.forEach(timer => clearTimeout(timer));
@@ -3309,37 +3288,10 @@ window.addEventListener('unhandledrejection', function(event) {
 	console.warn('Unhandled promise rejection:', event.reason);
 });
 
-// تابع جلوگیری از فراخوانی همزمان توابع
-const functionCallCache = new Map();
-
+// تابع جلوگیری از فراخوانی همزمان توابع - بدون کش
 async function preventConcurrentCalls(functionName, operation, cacheTime = 30000) {
-	const cacheKey = `${functionName}_${Date.now()}`;
-	
-	// Check if there's already a pending call for this function
-	if (functionCallCache.has(functionName)) {
-		const cached = functionCallCache.get(functionName);
-		if (Date.now() - cached.timestamp < cacheTime) {
-			console.log(`Waiting for existing ${functionName} call to complete...`);
-			return await cached.promise;
-		}
-	}
-	
-	// Create new promise for this function call
-	const promise = operation();
-	
-	// Cache the promise
-	functionCallCache.set(functionName, {
-		promise: promise,
-		timestamp: Date.now()
-	});
-	
-	try {
-		const result = await promise;
-		return result;
-	} finally {
-		// Remove from cache after completion
-		functionCallCache.delete(functionName);
-	}
+	// No caching - always execute operation
+	return await operation();
 }
 
 // تابع پاک کردن interval tree
@@ -4949,14 +4901,15 @@ window.getRegPrice = async function(contract) {
 
 // فرض: تب‌ها با data-tab یا id مشخص می‌شوند
 function saveActiveTab(tabId) {
-  localStorage.setItem('activeTab', tabId);
+  // No caching - tab state is not persisted
 }
 
 // هنگام کلیک روی تب یا پس از تایید متامسک:
 saveActiveTab('networkTab'); // یا هر شناسه‌ای که دارید
 
 window.addEventListener('DOMContentLoaded', function() {
-  const activeTab = localStorage.getItem('activeTab');
+  // No caching - always use default tab
+  const activeTab = 'network';
   if (activeTab) {
 	if (typeof window.showTab === 'function') {
 	  window.showTab(activeTab);

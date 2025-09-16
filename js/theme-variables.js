@@ -93,14 +93,14 @@ window.setCSSVariable = function(variableName, value) {
  */
 window.applyTheme = function(theme = 'dark') {
   document.documentElement.setAttribute('data-theme', theme);
-  localStorage.setItem('cpa-theme', theme);
+  // No caching - theme is not persisted
 };
 
 /**
  * دریافت تم فعلی
  */
 window.getCurrentTheme = function() {
-  return localStorage.getItem('cpa-theme') || 'dark';
+  return 'dark'; // Default theme - no caching
 };
 
 // اعمال تم ذخیره شده در بارگذاری صفحه

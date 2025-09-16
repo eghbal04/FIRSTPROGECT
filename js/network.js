@@ -1648,7 +1648,7 @@ async function getFinalReferrer(contract) {
 
 // فرض: بعد از ثبت‌نام موفق یا عملیات نیازمند رفرش
 window.refreshNetworkTab = function() {
-  localStorage.setItem('activeTab', 'network');
+  // No caching - tab state is not persisted
   // window.location.reload(); // حذف شد: دیگر رفرش انجام نمی‌شود
 }; 
 
@@ -1840,9 +1840,7 @@ function startTypewriter(popupEl, IAMId, walletAddress, isActive, infoList, addr
   let walletCountsUpdated = false;
   let balancesUpdated = false;
   
-  // Cache برای ذخیره نتایج محاسبه
-  const walletCountsCache = new Map();
-  const cacheTimeout = 30000; // 30 ثانیه
+  // No caching - always calculate fresh data
   
                // ساخت خطوط اولیه
      const initialLines = [
@@ -2399,21 +2397,9 @@ function startTypewriter(popupEl, IAMId, walletAddress, isActive, infoList, addr
     }
   }
   
-  // تابع محاسبه تعداد ولت‌ها با الگوریتم بهینه و cache
+  // تابع محاسبه تعداد ولت‌ها - بدون کش
   async function calculateWalletCounts(userIndex, contract) {
     try {
-      const cacheKey = `${userIndex}_${contract.target}`;
-      const now = Date.now();
-      
-      // بررسی cache
-      if (walletCountsCache.has(cacheKey)) {
-        const cached = walletCountsCache.get(cacheKey);
-        if (now - cached.timestamp < cacheTimeout) {
-          console.log('Using cached wallet counts');
-          return cached.data;
-        }
-      }
-      
       const leftChildIndex = BigInt(userIndex) * 2n;
       const rightChildIndex = BigInt(userIndex) * 2n + 1n;
       
@@ -2423,15 +2409,7 @@ function startTypewriter(popupEl, IAMId, walletAddress, isActive, infoList, addr
         calculateSubtreeCountOptimized(rightChildIndex, contract)
       ]);
       
-      const result = { leftCount, rightCount };
-      
-      // ذخیره در cache
-      walletCountsCache.set(cacheKey, {
-        data: result,
-        timestamp: now
-      });
-      
-      return result;
+      return { leftCount, rightCount };
     } catch (error) {
       console.warn('Error calculating wallet counts:', error);
       return { leftCount: 0, rightCount: 0 };
@@ -2526,14 +2504,7 @@ function startTypewriter(popupEl, IAMId, walletAddress, isActive, infoList, addr
     return await calculateSubtreeCountOptimized(parentIndex, contract);
   }
   
-  // تابع پاک کردن cache
-  function clearWalletCountsCache() {
-    walletCountsCache.clear();
-    console.log('Wallet counts cache cleared');
-  }
-  
-  // پاک کردن cache هر 5 دقیقه
-  setInterval(clearWalletCountsCache, 5 * 60 * 1000);
+  // No cache to clear
   
      // شروع تایپ از خط اول
        setTimeout(typeNextLine, 250);
@@ -2686,7 +2657,7 @@ async function showRegistrationModal(parentIndex, emptyIndex, position) {
         this.disabled = true;
         
         console.log('User avatar selection:', selectedAvatar);
-        localStorage.setItem('avatar_' + newAddress, selectedAvatar);
+        // No caching - avatar selection is not persisted
         
         try {
             const { contract, address: myAddress } = await window.connectWallet();

@@ -24,12 +24,12 @@ class UserProfileManager {
     }
 
     loadUserProfiles() {
-        const profiles = localStorage.getItem('IAM_user_profiles');
-        return profiles ? JSON.parse(profiles) : {};
+        // No caching - always return empty object
+        return {};
     }
 
     saveUserProfiles() {
-        localStorage.setItem('IAM_user_profiles', JSON.stringify(this.userProfiles));
+        // No caching - data is always fresh
     }
 
     createUserProfile(address, data = {}) {
@@ -407,8 +407,7 @@ class UserProfileManager {
             const fileName = `user-profile-${address}.html`;
             
             // در یک محیط واقعی، این فایل باید در سرور ذخیره شود
-            // فعلاً فقط در localStorage ذخیره می‌کنیم
-            localStorage.setItem(`profile_page_${address}`, pageContent);
+            // No caching - data is always fresh
         }
     }
 }

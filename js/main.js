@@ -191,8 +191,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log('Error stack:', error.stack);
     }
     
-    // Restore active tab from localStorage
-    const savedTab = localStorage.getItem('currentActiveTab');
+    // No caching - always use default tab
+    const savedTab = null;
     if (savedTab && typeof window.showTab === 'function') {
         // Wait a bit for page to fully load
         setTimeout(() => {

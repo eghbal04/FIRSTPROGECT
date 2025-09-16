@@ -100,28 +100,11 @@ class SalesPageManager {
     
     
     
-    // Load products from localStorage
+    // Load products - no caching
     async loadProducts() {
         try {
-            const savedProducts = localStorage.getItem(`products_${this.currentUser.address}`);
-            
-            // Check if we need to clear Persian products
-            const hasPersianProducts = savedProducts && (
-                savedProducts.includes('محصول نمونه') || 
-                savedProducts.includes('توضیحات محصول') ||
-                savedProducts.includes('نمایش')
-            );
-            
-            if (hasPersianProducts) {
-                // Clear localStorage and start fresh with English products
-                localStorage.removeItem(`products_${this.currentUser.address}`);
-                this.products = [];
-            } else if (savedProducts) {
-                this.products = JSON.parse(savedProducts);
-            }
-            
-            // No default products - start with empty array
-            
+            // No caching - always start with empty array
+            this.products = [];
             this.renderProducts();
             
         } catch (error) {
@@ -130,9 +113,9 @@ class SalesPageManager {
         }
     }
     
-    // Save products to localStorage
+    // No caching needed
     saveProducts() {
-        localStorage.setItem(`products_${this.currentUser.address}`, JSON.stringify(this.products));
+        // No caching - data is always fresh
     }
     
     // Render products

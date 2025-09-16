@@ -139,8 +139,7 @@ window.navigateToPage = function(pageUrl) {
   }, 300);
 };
 window.showTab = async function(tab) {
-  // Save active tab in localStorage
-  localStorage.setItem('currentActiveTab', tab);
+  // No caching - tab state is not persisted
   
   // Tab authentication disabled
 
@@ -219,13 +218,12 @@ window.showTab = async function(tab) {
 
 // Check user status on page load and redirect if needed
 window.checkUserAccessOnLoad = async function() {
-  // Retrieve active tab from localStorage
-  const savedTab = localStorage.getItem('currentActiveTab');
+  // No caching - always use URL parameter or default
   const urlParams = new URLSearchParams(window.location.search);
   const urlTab = urlParams.get('tab');
   
-  // Priority: URL parameter > localStorage > default
-  const currentTab = urlTab || savedTab || 'network';
+  // Priority: URL parameter > default
+  const currentTab = urlTab || 'network';
   
   // Tab authentication disabled; display saved or default tab
   if (typeof window.showTab === 'function') {
@@ -235,12 +233,7 @@ window.checkUserAccessOnLoad = async function() {
 
 // Run access check when page loads
 document.addEventListener('DOMContentLoaded', function() {
-  // Check active tab from old localStorage (for compatibility)
-  const oldActiveTab = localStorage.getItem('activeTab');
-  if (oldActiveTab) {
-    localStorage.setItem('currentActiveTab', oldActiveTab);
-    localStorage.removeItem('activeTab');
-  }
+  // No localStorage compatibility needed
   
   // Run access check with slight delay
   setTimeout(() => {

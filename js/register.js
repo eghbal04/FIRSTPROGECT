@@ -495,9 +495,9 @@ function getReferrerFromURL() {
     return urlParams.get('ref') || urlParams.get('referrer');
 }
 
-// Function to get referrer from localStorage
+// Function to get referrer from localStorage - no caching
 function getReferrerFromStorage() {
-    return localStorage.getItem('referrer') || localStorage.getItem('ref');
+    return null; // No caching - always get fresh referrer from URL
 }
 
 // Function to perform upgrade

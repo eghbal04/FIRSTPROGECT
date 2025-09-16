@@ -123,8 +123,7 @@ class BinaryTreeTraversal {
       
       console.log(`✅ BFS traversal completed! Found ${allUsers.length} users`);
       
-      // Store results in localStorage for caching
-      this.cacheTraversalResults(allUsers);
+      // No caching - data is always fresh
       
       return allUsers;
 
@@ -173,8 +172,7 @@ class BinaryTreeTraversal {
       
       console.log(`✅ DFS traversal completed! Found ${allUsers.length} users`);
       
-      // Store results in localStorage for caching
-      this.cacheTraversalResults(allUsers);
+      // No caching - data is always fresh
       
       return allUsers;
 
@@ -302,8 +300,7 @@ class BinaryTreeTraversal {
       
       console.log(`✅ Index-based traversal completed! Found ${allUsers.length} users`);
       
-      // Store results in localStorage for caching
-      this.cacheTraversalResults(allUsers);
+      // No caching - data is always fresh
       
       return allUsers;
 
@@ -461,8 +458,8 @@ class BinaryTreeTraversal {
     try {
       console.log('🎯 Getting all users with voting data...');
       
-      // Try to get cached results first
-      let users = this.getCachedTraversalResults();
+      // No caching - always fetch fresh data
+      let users = null;
       
       if (!users) {
                // Perform new traversal with unlimited depth

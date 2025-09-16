@@ -169,27 +169,7 @@ class FloatingTokenGrowthCard {
         }
       }
       
-      const storedTokenHistory = localStorage.getItem('tokenPriceHistory');
-      if (storedTokenHistory) {
-        try {
-          const tokenHistory = JSON.parse(storedTokenHistory);
-          if (tokenHistory.length > 0) {
-            currentPrice = tokenHistory[tokenHistory.length - 1];
-            
-            if (currentPrice && currentPrice > 0) {
-              const growthPercentage = ((currentPrice - initialPrice) / initialPrice) * 100;
-              return {
-                currentPrice,
-                initialPrice,
-                growthPercentage,
-                source: 'localStorage'
-              };
-            }
-          }
-        } catch (localError) {
-          console.warn('⚠️ خطا در خواندن از localStorage:', localError);
-        }
-      }
+      // No localStorage caching - always fetch fresh data
       
       // Third priority: Try to get from contract.getTokenPrice (slower)
       if (window.contractConfig && window.contractConfig.contract && typeof window.contractConfig.contract.getTokenPrice === 'function') {

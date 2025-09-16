@@ -1083,7 +1083,7 @@ class SwapManager {
             amount.value = '';
             
             // Save active tab
-            localStorage.setItem('activeTab', 'swap');
+            // No caching - tab state is not persisted
             
             console.log('✅ Swap operation completed successfully');
             
