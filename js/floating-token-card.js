@@ -33,8 +33,8 @@ class FloatingTokenGrowthCard {
         const cardHTML = `
       <div id="floating-token-growth-card" style="
         position: fixed;
-        top: 96px;
-        right: 12px;
+        bottom: 40px;
+        right: 8px;
         z-index: 10000;
         width: 120px;
         height: 75px;

@@ -53,6 +53,76 @@
     .footer-btn { background:#1b2336; color:#e6eaf0; border:1px solid #273149; padding:10px 12px; border-radius:10px; font-size:13px; display:inline-block; }
     .footer-btn:hover { background:#223049; }
 
+    /* Creative Navigation Menu Styles */
+    .nav-menu {
+      margin-bottom: 24px;
+    }
+    
+    .nav-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, max-content));
+      gap: 12px;
+      max-width: 100%;
+      justify-content: start;
+    }
+    
+    .nav-card {
+      background: linear-gradient(135deg, #1a1f2e 0%, #232946 100%);
+      border: 1px solid #00ff88;
+      border-radius: 12px;
+      padding: 16px 12px;
+      text-decoration: none;
+      color: #e6eaf0;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      width: max-content;
+      min-width: 120px;
+      max-width: 200px;
+    }
+    
+    .nav-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.1), transparent);
+      transition: left 0.5s ease;
+    }
+    
+    .nav-card:hover::before {
+      left: 100%;
+    }
+    
+    .nav-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 255, 136, 0.3);
+      border-color: #00ff88;
+    }
+    
+    .nav-icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+      filter: drop-shadow(0 0 8px rgba(0, 255, 136, 0.3));
+    }
+    
+    .nav-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #aef3c6;
+      text-shadow: 0 0 4px rgba(0, 255, 136, 0.2);
+    }
+    
+    .nav-card:active {
+      transform: translateY(0);
+    }
+
     /* Mobile responsiveness */
     @media (max-width: 768px) {
       .container { padding: 16px; }
@@ -64,12 +134,31 @@
       .value { font-size: 13px; }
       .statusbar { gap: 6px; padding: 8px 10px; }
       .pill { font-size: 11px; padding: 6px 8px; }
+      
+      /* Navigation menu mobile styles */
+      .nav-grid {
+        grid-template-columns: repeat(auto-fit, minmax(100px, max-content));
+        gap: 8px;
+        justify-content: start;
+      }
+      .nav-card {
+        padding: 12px 8px;
+        min-width: 100px;
+        max-width: 180px;
+      }
+      .nav-icon {
+        font-size: 20px;
+        margin-bottom: 6px;
+      }
+      .nav-label {
+        font-size: 11px;
+      }
     }
 
-    /* Ensure floating token card sits at top of the page */
+    /* Ensure floating token card sits at bottom of the page */
     #floating-token-card, .floating-token-card, .token-floating-card {
       position: fixed !important;
-      top: 8px !important;
+      bottom: 8px !important;
       right: 8px !important;
       z-index: 9999 !important;
     }
@@ -81,6 +170,25 @@
       .label { font-size: 13px; opacity: 0.95; }
       .value { width: 100%; text-align: left; direction: ltr; font-size: 13px; }
       .pill { font-size: 10.5px; }
+      
+      /* Navigation menu small mobile styles */
+      .nav-grid {
+        grid-template-columns: repeat(auto-fit, minmax(80px, max-content));
+        gap: 6px;
+        justify-content: start;
+      }
+      .nav-card {
+        padding: 10px 6px;
+        min-width: 80px;
+        max-width: 160px;
+      }
+      .nav-icon {
+        font-size: 18px;
+        margin-bottom: 4px;
+      }
+      .nav-label {
+        font-size: 10px;
+      }
     }
 
     @media (max-width: 360px) {
@@ -89,10 +197,111 @@
       .card { padding: 12px; }
       .row { padding: 6px 0; }
       .pill { font-size: 10px; padding: 5px 7px; }
+      
+      /* Navigation menu extra small mobile styles */
+      .nav-grid {
+        grid-template-columns: repeat(auto-fit, minmax(70px, max-content));
+        gap: 4px;
+        justify-content: start;
+      }
+      .nav-card {
+        padding: 8px 4px;
+        min-width: 70px;
+        max-width: 140px;
+      }
+      .nav-icon {
+        font-size: 16px;
+        margin-bottom: 3px;
+      }
+      .nav-label {
+        font-size: 9px;
+      }
+    }
+    
+    /* Google Translate Widget Styling */
+    .goog-te-banner-frame {
+      display: none !important;
+    }
+    
+    .goog-te-gadget {
+      font-family: 'Inter', sans-serif !important;
+      font-size: 12px !important;
+    }
+    
+    .goog-te-gadget-simple {
+      background: transparent !important;
+      border: none !important;
+      padding: 4px 8px !important;
+      border-radius: 6px !important;
+      color: #e6eaf0 !important;
+    }
+    
+    .goog-te-gadget-simple:hover {
+      background: rgba(0, 255, 136, 0.1) !important;
+    }
+    
+    .goog-te-gadget-simple .goog-te-menu-value {
+      color: #e6eaf0 !important;
+      font-size: 12px !important;
+    }
+    
+    .goog-te-gadget-simple .goog-te-menu-value span:first-child {
+      color: #00ff88 !important;
+    }
+    
+    .goog-te-gadget-simple .goog-te-menu-value span:last-child {
+      color: #9aa8c1 !important;
+    }
+    
+    .goog-te-menu2 {
+      background: linear-gradient(135deg, #1a1f2e 0%, #232946 100%) !important;
+      border: 1px solid #00ff88 !important;
+      border-radius: 8px !important;
+      box-shadow: 0 8px 32px rgba(0, 255, 136, 0.3) !important;
+    }
+    
+    .goog-te-menu2-item {
+      color: #e6eaf0 !important;
+      padding: 8px 12px !important;
+    }
+    
+    .goog-te-menu2-item:hover {
+      background: rgba(0, 255, 136, 0.1) !important;
+    }
+    
+    .goog-te-menu2-item-selected {
+      background: rgba(0, 255, 136, 0.2) !important;
+    }
+    
+    /* Mobile responsiveness for translate widget */
+    @media (max-width: 768px) {
+      #google_translate_element {
+        top: 10px !important;
+        right: 10px !important;
+        padding: 6px !important;
+      }
+      
+      .goog-te-gadget-simple {
+        font-size: 10px !important;
+        padding: 3px 6px !important;
+      }
         }
     </style>
 </head>
 <body>
+    <!-- Google Translate Widget -->
+    <div id="google_translate_element" style="
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      background: linear-gradient(135deg, #1a1f2e 0%, #232946 100%);
+      border: 1px solid #00ff88;
+      border-radius: 8px;
+      padding: 8px;
+      box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+    "></div>
+    
   <div class="container">
     <h1>IAMPHOENIX Dashboard</h1>
 
@@ -108,6 +317,48 @@
       
             </div>
             
+
+    <!-- Navigation Menu - Creative Design -->
+    <div class="nav-menu" style="margin-bottom: 24px;">
+      <div class="nav-grid">
+        <a class="nav-card" href="about.html">
+          <div class="nav-icon">ℹ️</div>
+          <div class="nav-label">About</div>
+        </a>
+        <a class="nav-card" href="register.html">
+          <div class="nav-icon">📝</div>
+          <div class="nav-label">Register</div>
+        </a>
+        <a class="nav-card" href="profile.html">
+          <div class="nav-icon">👤</div>
+          <div class="nav-label">Profile</div>
+        </a>
+        <a class="nav-card" href="sales.html">
+          <div class="nav-icon">💰</div>
+          <div class="nav-label">Sales</div>
+        </a>
+        <a class="nav-card" href="swap.html">
+          <div class="nav-icon">🔄</div>
+          <div class="nav-label">Swap</div>
+        </a>
+        <a class="nav-card" href="transfer.html">
+          <div class="nav-icon">📤</div>
+          <div class="nav-label">Transfer</div>
+        </a>
+        <a class="nav-card" href="transfer-ownership.html">
+          <div class="nav-icon">🏗️</div>
+          <div class="nav-label">Transfer Ownership</div>
+        </a>
+        <a class="nav-card" href="utility.html">
+          <div class="nav-icon">🛠️</div>
+          <div class="nav-label">Utility</div>
+        </a>
+        <a class="nav-card" href="professional-tree.html">
+          <div class="nav-icon">🤝</div>
+          <div class="nav-label">Partners</div>
+        </a>
+      </div>
+    </div>
 
     <div class="grid">
       <section class="card" id="contract-card" style="text-align:left; direction:ltr;">
@@ -133,6 +384,99 @@
       </section>
     </div>
 
+    <!-- Referral Link Generator Section -->
+    <div class="referral-section" style="
+      margin-top: 24px;
+      padding: 20px;
+      background: linear-gradient(135deg, #1a1f2e 0%, #232946 100%);
+      border: 1px solid #00ff88;
+      border-radius: 12px;
+      color: #e6eaf0;
+      box-shadow: 0 4px 15px rgba(0, 255, 136, 0.2);
+    ">
+      <h3 style="margin: 0 0 16px; color: #00ff88; font-size: 18px; text-align: center;">
+        🔗 Referral Link Generator
+      </h3>
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <input type="text" id="referral-index" placeholder="Your Index (e.g., 123)" 
+                 style="flex: 1; padding: 8px 12px; border: 1px solid #00ff88; border-radius: 6px; background: rgba(0, 255, 136, 0.1); color: #e6eaf0; font-size: 14px;">
+          <button id="generate-referral-btn" 
+                  style="padding: 8px 16px; background: linear-gradient(135deg, #00ff88, #00cc6a); border: none; border-radius: 6px; color: #1a1f2e; font-weight: 600; cursor: pointer; font-size: 14px;">
+            Generate Link
+          </button>
+        </div>
+        <div id="referral-link-container" style="display: none;">
+          <label style="font-size: 12px; color: #9aa8c1; margin-bottom: 4px; display: block;">Your Referral Link:</label>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="text" id="referral-link" readonly 
+                   style="flex: 1; padding: 8px 12px; border: 1px solid #00ff88; border-radius: 6px; background: rgba(0, 255, 136, 0.1); color: #e6eaf0; font-size: 12px; font-family: monospace;">
+            <button id="copy-referral-btn" 
+                    style="padding: 8px 12px; background: linear-gradient(135deg, #a786ff, #9670ff); border: none; border-radius: 6px; color: white; cursor: pointer; font-size: 12px;">
+              📋 Copy
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Professional Presentation Section -->
+    <div class="additional-content" style="
+      margin-top: 24px;
+      padding: 24px;
+      background: linear-gradient(135deg, #1a1f2e 0%, #232946 100%);
+      border: 1px solid #00ff88;
+      border-radius: 16px;
+      color: #e6eaf0;
+      line-height: 1.7;
+      box-shadow: 0 8px 32px rgba(0, 255, 136, 0.1);
+    ">
+      <h2 style="margin: 0 0 20px; color: #00ff88; font-size: 24px; font-weight: 700; text-align: center;">
+        🚀 About IAM PHOENIX
+      </h2>
+      
+      <div style="margin-bottom: 20px;">
+        <h3 style="color: #aef3c6; font-size: 18px; margin: 0 0 12px;">🌟 Revolutionary Network Marketing Platform</h3>
+        <p style="margin: 0 0 16px; color: #b8c1ec; font-size: 15px;">
+          <strong>IAM PHOENIX</strong> is a cutting-edge Network Marketing platform that leverages blockchain technology and Web3 infrastructure to create a transparent, secure, and decentralized ecosystem. Our platform eliminates traditional intermediaries and creates direct, trustless relationships between participants through smart contracts.
+        </p>
+        <p style="margin: 0 0 16px; color: #b8c1ec; font-size: 15px;">
+          Built on the <strong>Polygon blockchain</strong>, IAM PHOENIX combines the power of network marketing with the security and transparency of blockchain technology. All network marketing activities, rewards, and commissions are automatically calculated and distributed through audited smart contracts, ensuring complete transparency and eliminating the possibility of fraud or manipulation.
+        </p>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <h3 style="color: #aef3c6; font-size: 18px; margin: 0 0 12px;">🔥 Phoenix Team Mission</h3>
+        <p style="margin: 0 0 16px; color: #b8c1ec; font-size: 15px;">
+          Our team, <strong>Phoenix</strong>, is currently supporting and developing the IAM token, which is built on the Polygon blockchain and backed by the decentralized stablecoin DAI. This stablecoin is fully decentralized, and no organization or authority has access to it. The IAM token itself is an independent project, in fact a startup. It does not support or rely on another startup, but rather aims to introduce and promote itself.
+        </p>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <h3 style="color: #aef3c6; font-size: 18px; margin: 0 0 12px;">📊 Subscription & Point System</h3>
+        <p style="margin: 0 0 12px; color: #b8c1ec; font-size: 15px;">
+          The IAM token has a subscription mechanism with the following distribution:
+        </p>
+        <ul style="margin: 0 0 16px; padding-left: 20px; color: #b8c1ec; font-size: 15px;">
+          <li style="margin-bottom: 8px;"><strong>10%</strong> for referral rewards (inviter)</li>
+          <li style="margin-bottom: 8px;"><strong>10%</strong> for token burning, which increases the token's value</li>
+          <li style="margin-bottom: 8px;"><strong>80%</strong> is distributed among users based on the points they earn</li>
+        </ul>
+        <p style="margin: 0 0 16px; color: #b8c1ec; font-size: 15px;">
+          Each person can earn up to <strong>5 points every 12 hours</strong>, with a maximum of <strong>10 points per day</strong>. Any extra points overflow onto other points, increasing the value of each point.
+        </p>
+                </div>
+                
+      <div style="text-align: center; padding-top: 16px; border-top: 1px solid rgba(0, 255, 136, 0.2);">
+        <p style="margin: 0; color: #00ff88; font-size: 16px; font-weight: 600;">
+          🌟 Together, we succeed! 🌟
+        </p>
+        <p style="margin: 8px 0 0; color: #9aa8c1; font-size: 14px;">
+          A decentralized network that will soon be recognized internationally
+        </p>
+            </div>
+        </div>
+
         
         
     
@@ -140,21 +484,6 @@
     
                 </div>
                 
-  <!-- Footer page links -->
-  <div class="container">
-    <div class="footer-links">
-      <a class="footer-btn" href="index.html">Home</a>
-      <a class="footer-btn" href="about.html">About</a>
-      <a class="footer-btn" href="register.html">Register</a>
-      <a class="footer-btn" href="profile.html">Profile</a>
-      <a class="footer-btn" href="sales.html">Sales</a>
-      <a class="footer-btn" href="swap.html">Swap</a>
-      <a class="footer-btn" href="transfer.html">Transfer</a>
-      <a class="footer-btn" href="transfer-ownership.html">Transfer Ownership</a>
-      <a class="footer-btn" href="utility.html">Utility</a>
-      <a class="footer-btn" href="professional-tree.html">Professional Tree</a>
-            </div>
-        </div>
         
   <!-- Ethers (v6) CDN if not already present on other pages -->
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.1/dist/ethers.umd.min.js"></script>
@@ -226,15 +555,15 @@
         // Icon labels
         const iconLabel = (orig) => {
           switch (id) {
-            case 'status-likes': return `👍 ${orig}`;
-            case 'status-dislikes': return `👎 ${orig}`;
+            case 'status-likes': return `❤️ ${orig}`;
+            case 'status-dislikes': return `💔 ${orig}`;
             case 'status-rank': return `⭐ ${orig}`;
             default: return orig;
           }
         };
         // For likes/dislikes show icon + number
-        if (id === 'status-likes') { el.textContent = `👍 ${value ?? 0}`; return; }
-        if (id === 'status-dislikes') { el.textContent = `👎 ${value ?? 0}`; return; }
+        if (id === 'status-likes') { el.textContent = `❤️ ${value ?? 0}`; return; }
+        if (id === 'status-dislikes') { el.textContent = `💔 ${value ?? 0}`; return; }
         if (id === 'status-rank') { el.textContent = (value && String(value).trim()) ? String(value) : '⭐'; return; }
         // Normal rendering for others
         if (id === 'status-address' || id === 'status-index') {
@@ -677,8 +1006,88 @@
           window.ethereum.on('disconnect', () => { /* no-op */ });
         } catch {}
       }
+      
+      // Referral link generator functionality
+      setupReferralLinkGenerator();
     });
+    
+    function setupReferralLinkGenerator() {
+      const generateBtn = document.getElementById('generate-referral-btn');
+      const copyBtn = document.getElementById('copy-referral-btn');
+      const referralIndexInput = document.getElementById('referral-index');
+      const referralLinkInput = document.getElementById('referral-link');
+      const linkContainer = document.getElementById('referral-link-container');
+      
+      if (!generateBtn || !copyBtn || !referralIndexInput || !referralLinkInput || !linkContainer) {
+        console.warn('Referral link generator elements not found');
+        return;
+      }
+      
+      generateBtn.addEventListener('click', function() {
+        const index = referralIndexInput.value.trim();
+        if (!index) {
+          alert('Please enter your index number');
+          return;
+        }
+        
+        // Generate referral link with parameters
+        const baseUrl = window.location.origin + window.location.pathname.replace('index.html', 'register.html');
+        const referralUrl = `${baseUrl}?ref=${encodeURIComponent(index)}`;
+        
+        referralLinkInput.value = referralUrl;
+        linkContainer.style.display = 'block';
+        
+        // Auto-fill index from user's current data if available
+        const userIndex = document.getElementById('status-index')?.textContent?.replace('⭐', '').trim();
+        if (userIndex && userIndex !== '-') {
+          referralIndexInput.value = userIndex;
+        }
+      });
+      
+      copyBtn.addEventListener('click', async function() {
+        try {
+          await navigator.clipboard.writeText(referralLinkInput.value);
+          copyBtn.textContent = '✅ Copied!';
+          copyBtn.style.background = 'linear-gradient(135deg, #00ff88, #00cc6a)';
+          setTimeout(() => {
+            copyBtn.textContent = '📋 Copy';
+            copyBtn.style.background = 'linear-gradient(135deg, #a786ff, #9670ff)';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy: ', err);
+          // Fallback for older browsers
+          referralLinkInput.select();
+          document.execCommand('copy');
+          copyBtn.textContent = '✅ Copied!';
+          setTimeout(() => {
+            copyBtn.textContent = '📋 Copy';
+          }, 2000);
+        }
+      });
+      
+      // Auto-fill index from user's current data when page loads
+      setTimeout(() => {
+        const userIndex = document.getElementById('status-index')?.textContent?.replace('⭐', '').trim();
+        if (userIndex && userIndex !== '-') {
+          referralIndexInput.value = userIndex;
+        }
+      }, 2000);
+    }
   </script>
+  
+  <!-- Google Translate -->
+  <script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({
+        pageLanguage: 'en',
+        includedLanguages: 'en,fa,ar,zh,hi,es,fr,de,ja,ko,ru,tr,ur,pt,it,nl,sv,da,no,fi,pl,cs,hu,ro,bg,hr,sk,sl,et,lv,lt,mt,cy,ga,is,eu,ca,gl,af,sq,az,be,bs,cs,da,de,el,es,et,fa,fi,fr,gl,he,hi,hr,hu,hy,id,is,it,ja,ka,kk,km,ko,ky,lo,lt,lv,mk,ml,mn,ms,my,ne,no,pl,pt,ro,ru,si,sk,sl,sq,sr,sv,sw,ta,th,tr,uk,ur,uz,vi,zh',
+        layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+        autoDisplay: false,
+        multilanguagePage: true
+      }, 'google_translate_element');
+    }
+  </script>
+  <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </body>
 </html>
 
