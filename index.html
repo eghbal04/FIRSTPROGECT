@@ -44,7 +44,7 @@
     .pill { background:#162032; color:#cfe2ff; padding:6px 10px; border-radius:999px; font-size:12px; border:1px solid #223150; white-space: nowrap; text-align:center; box-sizing:border-box; width:100%; }
     /* Force two rows: row 1 (likes, dislikes, rank, index) | row 2 (address, POL, DAI, IAM) */
     #status-likes, #status-dislikes, #status-rank, #status-index { grid-row: 1; }
-    #status-address, #status-matic, #status-dai, #status-iam, #status-claimed { grid-row: 2; }
+    #status-address, #status-matic, #status-dai, #status-iam { grid-row: 2; }
     @media (max-width: 640px) {
       .statusbar { grid-template-columns: repeat(2, minmax(0,1fr)); }
     }
@@ -99,13 +99,13 @@
     <div class="statusbar" id="status-bar">
       <span class="pill" id="status-address">-</span>
       <span class="pill" id="status-index">-</span>
-      <span class="pill" id="status-rank">Rank: -</span>
+      <span class="pill" id="status-rank">⭐ -</span>
       <span class="pill" id="status-matic">POL: -</span>
       <span class="pill" id="status-dai">DAI: -</span>
       <span class="pill" id="status-iam">IAM: -</span>
-      <span class="pill" id="status-likes">Likes: -</span>
-      <span class="pill" id="status-dislikes">Dislikes: -</span>
-      <span class="pill" id="status-claimed">Claimed: -</span>
+      <span class="pill" id="status-likes">👍 -</span>
+      <span class="pill" id="status-dislikes">👎 -</span>
+      
             </div>
             
 
@@ -233,7 +233,12 @@
             default: return orig;
           }
         };
-        if (id === 'status-address' || id === 'status-index' || id === 'status-rank') {
+        // For likes/dislikes show icon + number
+        if (id === 'status-likes') { el.textContent = `👍 ${value ?? 0}`; return; }
+        if (id === 'status-dislikes') { el.textContent = `👎 ${value ?? 0}`; return; }
+        if (id === 'status-rank') { el.textContent = (value && String(value).trim()) ? String(value) : '⭐'; return; }
+        // Normal rendering for others
+        if (id === 'status-address' || id === 'status-index') {
           el.textContent = iconLabel(`${value ?? '-'}`);
         } else {
           el.textContent = iconLabel(`${label}: ${value ?? '-'}`);
@@ -246,7 +251,7 @@
       if (data.matic !== undefined) set('status-matic', 'POL', data.matic);
       if (data.dai !== undefined) set('status-dai', 'DAI', data.dai);
       if (data.iam !== undefined) set('status-iam', 'IAM', data.iam);
-      if (data.claimed !== undefined) set('status-claimed', 'Claimed', data.claimed);
+      
       if (data.likes !== undefined) set('status-likes', 'Likes', data.likes);
       if (data.dislikes !== undefined) set('status-dislikes', 'Dislikes', data.dislikes);
     }
@@ -353,45 +358,63 @@
                 updateStatusPills({ iam: formatMax2(toNumberFromUnits(ib, 18)) });
               }
             } catch {}
-            // Likes/Dislikes for current user
-            try {
-              if (typeof contract.getVoteStatus === 'function') {
-                const vs = await contract.getVoteStatus(userAddr);
-                const likes = (vs && (vs[0] !== undefined || vs.totalLikes !== undefined)) ? Number(vs[0] ?? vs.totalLikes) : 0;
-                const dislikes = (vs && (vs[1] !== undefined || vs.totalDislikes !== undefined)) ? Number(vs[1] ?? vs.totalDislikes) : 0;
-                updateStatusPills({ likes, dislikes });
-              }
-            } catch {}
-            // Index + Rank + Claimed Points
-            try {
-              let idx = null;
-              if (typeof contract.addressToIndex === 'function') idx = await contract.addressToIndex(userAddr);
-              if ((idx === null || (typeof idx === 'bigint' && idx === 0n)) && typeof contract.users === 'function') {
-                const u = await contract.users(userAddr);
-                if (u && u.index !== undefined) idx = u.index;
-                // Derive rank from binaryPointCap if available
+            // Users struct: index, likes, dislikes (preferred source)
+            let u = null;
+            try { if (typeof contract.users === 'function') u = await contract.users(userAddr); } catch {}
+            if (u) {
+              try {
+                if (u.index !== undefined) {
+                  updateStatusPills({ index: (typeof u.index === 'bigint') ? u.index.toString() : String(u.index) });
+                }
+                // Rank derived from binaryPointsClaimed (claimed count tiers)
                 try {
-                  const cap = u && u.binaryPointCap !== undefined ? u.binaryPointCap : undefined;
-                  const rankVal = cap !== undefined ? ((typeof cap === 'bigint') ? Number(cap) : Number(cap||0)) : NaN;
-                  if (!isNaN(rankVal)) {
+                  const claimedRaw = u && u.binaryPointsClaimed !== undefined ? u.binaryPointsClaimed : undefined;
+                  const claimed = claimedRaw !== undefined ? ((typeof claimedRaw === 'bigint') ? Number(claimedRaw) : Number(claimedRaw||0)) : NaN;
+                  if (!isNaN(claimed)) {
                     let stars = 0;
-                    if (rankVal >= 10000) stars = 5;
-                    else if (rankVal >= 1000) stars = 4;
-                    else if (rankVal >= 100) stars = 3;
-                    else if (rankVal >= 10) stars = 2;
-                    else if (rankVal >= 1) stars = 1;
-                    updateStatusPills({ rank: '⭐'.repeat(stars || 0) || '-' });
+                    if (claimed >= 10000) stars = 5;
+                    else if (claimed >= 1000) stars = 4;
+                    else if (claimed >= 100) stars = 3;
+                    else if (claimed >= 10) stars = 2;
+                    else if (claimed >= 1) stars = 1;
+                    updateStatusPills({ rank: '⭐'.repeat(stars || 0) || '⭐' });
                   }
                 } catch {}
-                // Claimed points
+                // Likes/Dislikes totals from contract method
                 try {
-                  if (u && u.binaryPointsClaimed !== undefined) {
-                    const c = (typeof u.binaryPointsClaimed === 'bigint') ? u.binaryPointsClaimed : BigInt(u.binaryPointsClaimed||0);
-                    updateStatusPills({ claimed: c.toString() });
+                  if (typeof contract.getVoteStatus === 'function') {
+                    const vs = await contract.getVoteStatus(userAddr);
+                    const likes = (vs && (vs[0] !== undefined || vs.totalLikes !== undefined)) ? Number(vs[0] ?? vs.totalLikes) : 0;
+                    const dislikes = (vs && (vs[1] !== undefined || vs.totalDislikes !== undefined)) ? Number(vs[1] ?? vs.totalDislikes) : 0;
+                    updateStatusPills({ likes, dislikes });
                   }
                 } catch {}
+              } catch {}
+            } else {
+              // Fallbacks
+              try {
+                let idx = null;
+                if (typeof contract.addressToIndex === 'function') idx = await contract.addressToIndex(userAddr);
+                if (idx !== null && idx !== undefined) updateStatusPills({ index: (typeof idx === 'bigint' ? idx.toString() : String(idx)) });
+              } catch {}
+              try {
+                if (typeof contract.getVoteStatus === 'function') {
+                  const vs = await contract.getVoteStatus(userAddr);
+                  const likes = (vs && (vs[0] !== undefined || vs.totalLikes !== undefined)) ? Number(vs[0] ?? vs.totalLikes) : 0;
+                  const dislikes = (vs && (vs[1] !== undefined || vs.totalDislikes !== undefined)) ? Number(vs[1] ?? vs.totalDislikes) : 0;
+                  updateStatusPills({ likes, dislikes });
+                }
+              } catch {}
+            }
+            // Index + Rank (ensure index present if not from struct)
+            try {
+              let ensuredIndex = document.getElementById('status-index')?.textContent;
+              if (!ensuredIndex || ensuredIndex === '-' || ensuredIndex.trim() === '# -') {
+                let idx = null;
+                if (typeof contract.addressToIndex === 'function') idx = await contract.addressToIndex(userAddr);
+                if (idx !== null && idx !== undefined) updateStatusPills({ index: (typeof idx === 'bigint' ? idx.toString() : String(idx)) });
+                else updateStatusPills({ index: '-' });
               }
-              if (idx !== null && idx !== undefined) updateStatusPills({ index: (typeof idx === 'bigint' ? idx.toString() : String(idx)) });
             } catch {}
           }
         } catch {}
@@ -625,10 +648,22 @@
     
 
     document.addEventListener('DOMContentLoaded', async () => {
+      // Connect button removed; keep auto-connect below
+      
       // Auto try to load if connection is already present
       try {
         await refreshContractInfoSafe();
         // buildAbiUI removed
+      } catch {}
+
+      // Auto-connect on load for immediate data
+      try {
+        if (typeof window.connectWallet === 'function') {
+          const conn = await window.connectWallet();
+          if (conn && conn.address) {
+            await refreshContractInfoSafe();
+          }
+        }
       } catch {}
 
       // Refresh periodically

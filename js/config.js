@@ -68,6 +68,12 @@ const MIN_IAM_ABI = (window.IAM_ABI && Array.isArray(window.IAM_ABI)) ? window.I
     { "inputs": [{"internalType":"uint256","name":"parentIndex","type":"uint256"}], "name": "getLeftAddress", "outputs": [{"internalType":"address","name":"","type":"address"}], "stateMutability": "view", "type": "function" },
     { "inputs": [{"internalType":"uint256","name":"parentIndex","type":"uint256"}], "name": "getRightAddress", "outputs": [{"internalType":"address","name":"","type":"address"}], "stateMutability": "view", "type": "function" },
     { "inputs": [], "name": "getPointValue", "outputs": [{"internalType":"uint256","name":"","type":"uint256"}], "stateMutability": "view", "type": "function" },
+    // Voting status
+    { "inputs": [{"internalType":"address","name":"user","type":"address"}], "name": "getVoteStatus", "outputs": [
+        {"internalType":"uint256","name":"totalLikes","type":"uint256"},
+        {"internalType":"uint256","name":"totalDislikes","type":"uint256"},
+        {"internalType":"uint8","name":"userVoteStatus","type":"uint8"}
+      ], "stateMutability": "view", "type": "function" },
     { "inputs": [], "name": "getContractdaiBalance", "outputs": [{"internalType":"uint256","name":"","type":"uint256"}], "stateMutability": "view", "type": "function" },
     { "inputs": [], "name": "cashBack", "outputs": [{"internalType":"uint256","name":"","type":"uint256"}], "stateMutability": "view", "type": "function" },
     // Write: transfer index ownership (as provided)
