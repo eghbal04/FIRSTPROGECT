@@ -602,11 +602,6 @@
         ← Back
     </a>
     
-    <!-- Connect Wallet Button -->
-    <button id="connect-wallet-btn" class="connect-wallet-btn modern-btn">
-        🔗 Connect Wallet
-    </button>
-    
     <div id="main-network" class="page-section expandable-container modern-card" style="width:100vw;max-width:none;margin:0;left:0;right:0;padding:0.5rem 0;">
         <div class="expand-header">
             <h2 style="color: #00ff88; margin: 0; font-family: 'Montserrat', sans-serif; font-weight: 700;">🌐 Network</h2>
@@ -650,7 +645,7 @@
     <!-- Scripts -->
     <script src="js/config.js"></script>
     <script src="js/auto-wallet-connect.js"></script>
-    <script src="js/auto-wallet-connect.js"></script>
+    <!-- <script src="js/auto-wallet-connect.js"></script> -->
             <script src="js/network.js?v=20250809-36"></script>
     <script>
         // Provide missing helpers expected by this page
@@ -678,6 +673,20 @@
                 }
             } catch {}
             return 0n;
+        };
+
+        // Add missing getAddressByIndex function
+        window.getAddressByIndex = async function(contract, index) {
+            if (!contract || !index) return '0x0000000000000000000000000000000000000000';
+            try {
+                if (typeof contract.indexToAddress === 'function') {
+                    const address = await contract.indexToAddress(index);
+                    return address || '0x0000000000000000000000000000000000000000';
+                }
+            } catch (error) {
+                console.error('Error getting address for index:', index, error);
+            }
+            return '0x0000000000000000000000000000000000000000';
         };
     </script>
     
@@ -910,14 +919,18 @@
                 const userAddress = window.contractConfig.userAddress;
                 
                 if (!userAddress) {
-                    console.log('❌ User address not available, trying to get from provider...');
-                    // Try to get address from provider
-                    if (window.ethereum && window.ethereum.selectedAddress) {
+                    console.log('❌ User address not available, trying to get from signer...');
+                    // Try to get address from signer first
+                    if (window.contractConfig.signer && window.contractConfig.signer.address) {
+                        const signerAddress = window.contractConfig.signer.address;
+                        console.log('✅ Got address from signer:', signerAddress);
+                        window.contractConfig.userAddress = signerAddress;
+                    } else if (window.ethereum && window.ethereum.selectedAddress) {
                         const providerAddress = window.ethereum.selectedAddress;
                         console.log('✅ Got address from provider:', providerAddress);
                         window.contractConfig.userAddress = providerAddress;
                     } else {
-                        console.log('❌ No address available from provider either');
+                        console.log('❌ No address available from signer or provider');
                         return null;
                     }
                 }
@@ -2543,18 +2556,6 @@
                             const { leftCount, rightCount } = await computeLeftRightCounts(window.contractConfig.contract, rootIdx);
                             updateTypewriterLineStartsWith('IAM >> <span class="key">leftWalletsCount:</span>', `IAM >> <span class=\"key\">leftWalletsCount:</span> <span class=\"kv\">${leftCount}</span>`);
                             updateTypewriterLineStartsWith('IAM >> <span class="key">rightWalletsCount:</span>', `IAM >> <span class=\"key\">rightWalletsCount:</span> <span class=\"kv\">${rightCount}</span>`);
-                            // Load vote status and render controls
-                            try {
-                                const vs = await window.contractConfig.contract.getVoteStatus(node.address);
-                                const likes = Number(vs[0] ?? 0);
-                                const dislikes = Number(vs[1] ?? 0);
-                                const myVote = Number(vs[2] ?? 0);
-                                const myVoteText = myVote === 1 ? 'Liked' : myVote === 2 ? 'Disliked' : 'No vote';
-                                const votesHtml = `IAM >> <span class=\"key\">votes:</span> <span class=\"kv\"><div style=\"display:flex;gap:8px;align-items:center;flex-wrap:wrap;\"><span>👍 ${likes}</span><span>👎 ${dislikes}</span><span>• ${myVoteText}</span><button style=\"background:#00ff88;color:#0a0f1c;border:none;padding:4px 8px;border-radius:6px;cursor:pointer;\" onclick=\"window.voteFromTree('${node.address}', true)\">👍 Like</button><button style=\"background:#a786ff;color:#fff;border:none;padding:4px 8px;border-radius:6px;cursor:pointer;\" onclick=\"window.voteFromTree('${node.address}', false)\">👎 Dislike</button></div></span>`;
-                                updateTypewriterLineStartsWith('IAM >> <span class="key">votes:</span>', votesHtml);
-                            } catch (_) {
-                                updateTypewriterLineStartsWith('IAM >> <span class="key">votes:</span>', 'IAM >> <span class=\"key\">votes:</span> <span class=\"kv\">-</span>');
-                            }
                         } catch (_) {}
                     }, 0);
                 }
@@ -2591,9 +2592,13 @@
                     const dislikes = Number(vs[1] ?? 0);
                     const myVote = Number(vs[2] ?? 0);
                     const myVoteText = myVote === 1 ? 'Liked' : myVote === 2 ? 'Disliked' : 'No vote';
-                    const votesHtml = `IAM >> <span class=\"key\">votes:</span> <span class=\"kv\"><div style=\"display:flex;gap:8px;align-items:center;flex-wrap:wrap;\"><span>👍 ${likes}</span><span>👎 ${dislikes}</span><span>• ${myVoteText}</span></div></span>`;
-                    updateTypewriterLineStartsWith('IAM >> <span class="key">votes:</span>', votesHtml);
-                } catch(_){}
+                    const votesHtml = `IAM >> <span class=\"key\">votes:</span> <span class=\"kv\"><div style=\"display:flex;gap:8px;align-items:center;flex-wrap:wrap;\"><span>👍 ${likes}</span><span>👎 ${dislikes}</span><span>• ${myVoteText}</span><button style=\"background:#00ff88;color:#0a0f1c;border:none;padding:4px 8px;border-radius:6px;cursor:pointer;\" onclick=\"window.voteFromTree('${address}', true)\">👍 Like</button><button style=\"background:#a786ff;color:#fff;border:none;padding:4px 8px;border-radius:6px;cursor:pointer;\" onclick=\"window.voteFromTree('${address}', false)\">👎 Dislike</button></div></span>`;
+                                updateTypewriterLineStartsWith('IAM >> <span class="key">votes:</span>', votesHtml);
+                            } catch (_) {
+                                updateTypewriterLineStartsWith('IAM >> <span class="key">votes:</span>', 'IAM >> <span class=\"key\">votes:</span> <span class=\"kv\">-</span>');
+                            }
+            
+                
             } catch (e) {
                 alert('Voting failed: ' + (e?.message || 'Unknown error'));
             }
@@ -3136,6 +3141,17 @@
                     return;
                 }
                 
+                // Ensure user address is set
+                if (!window.contractConfig.userAddress) {
+                    if (window.contractConfig.signer && window.contractConfig.signer.address) {
+                        window.contractConfig.userAddress = window.contractConfig.signer.address;
+                        console.log('✅ User address set from signer:', window.contractConfig.userAddress);
+                    } else if (window.ethereum && window.ethereum.selectedAddress) {
+                        window.contractConfig.userAddress = window.ethereum.selectedAddress;
+                        console.log('✅ User address set from provider:', window.contractConfig.userAddress);
+                    }
+                }
+                
                 // Get real wallet data
                 const realData = await getRealWalletData();
                 console.log('🔍 Real data result:', realData);
@@ -3143,12 +3159,13 @@
                 if (realData) {
                     console.log('✅ Real data loaded, rendering tree...');
                     
-                    // Update button state after successful data load
-                    const connectBtn = document.getElementById('connect-wallet-btn');
-                    if (connectBtn && window.contractConfig && window.contractConfig.userAddress) {
+                    // Update status display after successful data load
+                    const statusDiv = document.getElementById('auto-connect-status');
+                    if (statusDiv && window.contractConfig && window.contractConfig.userAddress) {
                         const shortAddress = window.contractConfig.userAddress.slice(0, 6) + '...' + window.contractConfig.userAddress.slice(-4);
-                        connectBtn.className = 'connect-wallet-btn modern-btn connected';
-                        connectBtn.textContent = `✅ ${shortAddress}`;
+                        statusDiv.className = 'connect-wallet-btn modern-btn connected';
+                        statusDiv.textContent = `✅ ${shortAddress}`;
+                        statusDiv.style.display = 'block';
                     }
                     
                     // Load the file manager tree directly
@@ -3156,19 +3173,20 @@
                 } else {
                     console.log('⚠️ Could not load real data, showing unregistered message');
                     
-                    // Update button state for failed data load
-                    const connectBtn = document.getElementById('connect-wallet-btn');
-                    if (connectBtn) {
-                        connectBtn.className = 'connect-wallet-btn modern-btn error';
-                        connectBtn.textContent = '⚠️ Data Load Failed';
+                    // Update status display for failed data load
+                    const statusDiv = document.getElementById('auto-connect-status');
+                    if (statusDiv) {
+                        statusDiv.className = 'connect-wallet-btn modern-btn error';
+                        statusDiv.textContent = '⚠️ Data Load Failed';
+                        statusDiv.style.display = 'block';
                         setTimeout(() => {
                             if (window.contractConfig && window.contractConfig.userAddress) {
                                 const shortAddress = window.contractConfig.userAddress.slice(0, 6) + '...' + window.contractConfig.userAddress.slice(-4);
-                                connectBtn.className = 'connect-wallet-btn modern-btn connected';
-                                connectBtn.textContent = `✅ ${shortAddress}`;
+                                statusDiv.className = 'connect-wallet-btn modern-btn connected';
+                                statusDiv.textContent = `✅ ${shortAddress}`;
                             } else {
-                                connectBtn.className = 'connect-wallet-btn modern-btn';
-                                connectBtn.textContent = '🔗 Connect Wallet';
+                                statusDiv.className = 'connect-wallet-btn modern-btn';
+                                statusDiv.textContent = '🔗 Connect Wallet';
                             }
                         }, 3000);
                     }
@@ -3263,133 +3281,13 @@
             }
         }
 
-        // Connect wallet button functionality
-        function setupConnectWalletButton() {
-            const connectBtn = document.getElementById('connect-wallet-btn');
-            if (!connectBtn) {
-                console.log('❌ Connect wallet button not found');
-                return;
-            }
-            
-            console.log('✅ Connect wallet button found, setting up...');
-            
-            // Update button state
-            function updateButtonState(state, text) {
-                connectBtn.className = `connect-wallet-btn modern-btn ${state}`;
-                connectBtn.textContent = text;
-            }
-            
-            // Check initial connection state
-            function checkConnectionState() {
-                if (window.contractConfig && window.contractConfig.userAddress) {
-                    const shortAddress = window.contractConfig.userAddress.slice(0, 6) + '...' + window.contractConfig.userAddress.slice(-4);
-                    updateButtonState('connected', `✅ ${shortAddress}`);
-                } else if (window.ethereum && window.ethereum.selectedAddress) {
-                    const shortAddress = window.ethereum.selectedAddress.slice(0, 6) + '...' + window.ethereum.selectedAddress.slice(-4);
-                    updateButtonState('connected', `✅ ${shortAddress}`);
-                } else {
-                    updateButtonState('', '🔗 Connect Wallet');
-                }
-            }
-            
-            // Update button state during auto-connection
-            function updateButtonForAutoConnection() {
-                updateButtonState('connecting', '🔄 Auto-Connecting...');
-            }
-            
-            // Connect wallet function (uses shared connectWallet if available)
-            async function connectWallet() {
-                try {
-                    console.log('🔄 Connect wallet button clicked');
-                    updateButtonState('connecting', '🔄 Connecting...');
-                    // Prefer global shared connector
-                    const success = window.connectWallet ? await window.connectWallet() : await simpleConnectWallet();
-                    
-                    if (success) {
-                        // Bridge field for pages expecting userAddress
-                        if (window.contractConfig) {
-                            window.contractConfig.userAddress = window.contractConfig.address || window.contractConfig.userAddress;
-                        }
-                        checkConnectionState();
-                        console.log('✅ Wallet connected successfully via button');
-                        
-                        // Load real data and render tree
-                        try {
-                            await loadRealDataAndRender();
-                        } catch (renderError) {
-                            console.log('⚠️ Tree render failed:', renderError.message);
-                        }
-                    } else {
-                        updateButtonState('error', '❌ Connection Failed');
-                        setTimeout(() => {
-                            checkConnectionState();
-                        }, 3000);
-                    }
-                } catch (error) {
-                    console.error('❌ Error connecting wallet:', error);
-                    updateButtonState('error', '❌ Error');
-                    setTimeout(() => {
-                        checkConnectionState();
-                    }, 3000);
-                }
-            }
-            
-            // Add click event listener
-            connectBtn.addEventListener('click', connectWallet);
-            console.log('✅ Click event listener added');
-            
-            // Check connection state on load
-            checkConnectionState();
-            
-            // Listen for account changes
-            if (window.ethereum) {
-                window.ethereum.on('accountsChanged', (accounts) => {
-                    console.log('🔄 Account changed, updating button state');
-                    checkConnectionState();
-                });
-                
-                window.ethereum.on('chainChanged', () => {
-                    console.log('🔄 Chain changed, updating button state');
-                    checkConnectionState();
-                });
-            }
-        }
         
-        // Show auto-connection status
-        function showAutoConnectionStatus() {
-            const statusDiv = document.createElement('div');
-            statusDiv.id = 'auto-connection-status';
-            statusDiv.style.cssText = `
-                position: fixed;
-                top: 70px;
-                right: 20px;
-                background: rgba(0, 255, 136, 0.1);
-                border: 1px solid rgba(0, 255, 136, 0.3);
-                border-radius: 8px;
-                padding: 10px 15px;
-                color: #00ff88;
-                font-size: 12px;
-                z-index: 999;
-                backdrop-filter: blur(10px);
-                max-width: 200px;
-            `;
-            statusDiv.textContent = '🔄 Auto-connecting to wallet...';
-            document.body.appendChild(statusDiv);
-            
-            // Remove after 5 seconds
-            setTimeout(() => {
-                if (statusDiv.parentNode) {
-                    statusDiv.parentNode.removeChild(statusDiv);
-                }
-            }, 5000);
-        }
 
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('🚀 Pyramid Tree page loaded');
             
-            // Show auto-connection status
-            showAutoConnectionStatus();
+            
             
             // Debug wallet connection
             console.log('🔍 Debug Wallet Connection:');
@@ -3399,8 +3297,7 @@
             console.log('- window.contractConfig:', !!window.contractConfig);
             console.log('- window.connectWallet:', !!window.connectWallet);
             
-            // Setup connect wallet button
-            setupConnectWalletButton();
+            // Setup auto-connect status (function not available)
             
             // Test function for debugging
             window.testConnectWallet = async function() {
@@ -3412,12 +3309,12 @@
             
             // Make functions globally available for debugging
             window.simpleConnectWallet = simpleConnectWallet;
-            window.setupConnectWalletButton = setupConnectWalletButton;
             
             // Wait for scripts to load and try multiple times
             let attempts = 0;
             const maxAttempts = 5;
             
+            // Auto-connect flow enabled
             const tryConnectWallet = async () => {
                 attempts++;
                 console.log(`🔄 Attempt ${attempts}/${maxAttempts} to auto-connect wallet...`);
@@ -3427,7 +3324,7 @@
                     if (!window.ethereum) {
                         if (attempts < maxAttempts) {
                             console.log('⏳ MetaMask not detected, waiting...');
-                            setTimeout(tryConnectWallet, 1000);
+                            setTimeout(() => tryConnectWallet(), 1000);
                             return;
                         } else {
                             console.log('❌ MetaMask not available after max attempts');
@@ -3467,12 +3364,7 @@
                         
                         console.log('✅ Auto-connection successful, loading real data...');
                         
-                        // Update button state
-                        if (connectBtn) {
-                            const shortAddress = window.ethereum.selectedAddress.slice(0, 6) + '...' + window.ethereum.selectedAddress.slice(-4);
-                            connectBtn.className = 'connect-wallet-btn modern-btn connected';
-                            connectBtn.textContent = `✅ ${shortAddress}`;
-                        }
+                        
                         
                         await loadRealDataAndRender();
                         return;
@@ -3484,29 +3376,30 @@
                     if (walletConnected) {
                         console.log('✅ Auto-connection successful, loading real data...');
                         
-                        // Update button state
-                        if (connectBtn && window.contractConfig && window.contractConfig.userAddress) {
-                            const shortAddress = window.contractConfig.userAddress.slice(0, 6) + '...' + window.contractConfig.userAddress.slice(-4);
-                            connectBtn.className = 'connect-wallet-btn modern-btn connected';
-                            connectBtn.textContent = `✅ ${shortAddress}`;
+                        // Ensure userAddress is set after connection
+                        if (window.contractConfig && window.contractConfig.signer && window.contractConfig.signer.address) {
+                            window.contractConfig.userAddress = window.contractConfig.signer.address;
+                            console.log('✅ User address set from signer:', window.contractConfig.userAddress);
+                        } else if (window.ethereum && window.ethereum.selectedAddress) {
+                            if (!window.contractConfig) {
+                                window.contractConfig = {};
+                            }
+                            window.contractConfig.userAddress = window.ethereum.selectedAddress;
+                            console.log('✅ User address set from provider:', window.contractConfig.userAddress);
                         }
                         
                         await loadRealDataAndRender();
                     } else {
                         console.log('⚠️ Auto-connection failed, showing default data');
                         
-                        // Update button state
-                        if (connectBtn) {
-                            connectBtn.className = 'connect-wallet-btn modern-btn';
-                            connectBtn.textContent = '🔗 Connect Wallet';
-                        }
+                        
                         
                         showEmptyTree();
                     }
             } catch (error) {
                     console.error(`❌ Error in auto-connection attempt ${attempts}:`, error);
                     if (attempts < maxAttempts) {
-                        setTimeout(tryConnectWallet, 1000);
+                        setTimeout(() => tryConnectWallet(), 1000);
                     } else {
                         console.log('❌ Max auto-connection attempts reached, showing empty state');
                         showEmptyTree();
@@ -3523,15 +3416,11 @@
             console.log('- User Agent:', navigator.userAgent);
             console.log('- Screen width:', window.innerWidth);
             
-            // Update button state for auto-connection
-            const connectBtn = document.getElementById('connect-wallet-btn');
-            if (connectBtn) {
-                connectBtn.className = 'connect-wallet-btn modern-btn connecting';
-                connectBtn.textContent = '🔄 Auto-Connecting...';
-            }
             
-            // Start trying to connect
-            setTimeout(tryConnectWallet, 500);
+            
+            // Enable auto-connecting
+            tryConnectWallet();
+            
             
             // Listen for account changes
             if (window.ethereum) {
@@ -3555,26 +3444,10 @@
         });
     </script>
     
-    <!-- Floating Token Growth Card -->
-    <script src="js/floating-token-card.js"></script>
-    
-    <!-- Mobile User Popup -->
+    <!-- Mobile User Popup disabled -->
     <script>
-        // Check if mobile-user-popup is already loaded
-        if (!window.mobileUserPopup) {
-            // Load the script dynamically to avoid duplicate loading
-            const script = document.createElement('script');
-            script.src = 'js/mobile-user-popup.js';
-            script.onload = function() {
-                console.log('✅ Mobile user popup loaded successfully');
-            };
-            script.onerror = function() {
-                console.warn('⚠️ Failed to load mobile user popup');
-            };
-            document.head.appendChild(script);
-        } else {
-            console.log('✅ Mobile user popup already loaded');
-        }
+        // Disabled to avoid 404s
     </script>
 </body>
+</html> 
 </html> 

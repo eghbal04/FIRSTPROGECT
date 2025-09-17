@@ -385,10 +385,6 @@
           <button type="button" id="normal-tab" class="tab-btn active" style="flex: 3; padding: 8px 12px; background: linear-gradient(90deg,#00ff88,#00cc66); color: #232946; border: none; border-radius: 6px; font-weight: bold; font-size: 0.9rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0, 255, 136, 0.3); position: relative;">Normal Registration <span style="position: absolute; top: -8px; right: -8px; background: #00ff88; color: #232946; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">⭐</span></button>
           <button type="button" id="free-tab" class="tab-btn" style="flex: 1; padding: 6px 8px; background: rgba(255, 215, 0, 0.1); color: #ffd700; border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 6px; font-weight: bold; font-size: 0.7rem; cursor: pointer; opacity: 0.7;">Reserve <span style="font-size: 0.6rem; margin-left: 2px;">⚠️</span></button>
         </div>
-      <div class="register-form-status info" id="connection-status"></div>
-       <div class="register-form-status warning" id="metamask-status" style="display:none;background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3);color:#ffc107;">
-         ⚠️ MetaMask is required. Please install MetaMask extension and refresh the page.
-       </div>
       <div class="register-form-status warning" id="register-suggestion" style="display:none;"></div>
       <!-- Referrer Index -->
       <div class="form-group">
@@ -941,7 +937,6 @@
   </script>
   <script>
     let selectedAvatar = 'man';
-    let isConnected = false;
     
     // Contract addresses
     const IAM_ADDRESS_NEW = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D'; // New contract
@@ -1222,381 +1217,62 @@
 
 
 
-         // Initialize information
+         // Initialize information (simplified without wallet connection)
     async function loadRegisterInfo() {
       const status = document.getElementById('status-message');
-      const connStatus = document.getElementById('connection-status');
-       const metamaskStatus = document.getElementById('metamask-status');
       status.textContent = '';
-      connStatus.textContent = 'Connecting to wallet...';
-       metamaskStatus.style.display = 'none';
-      isConnected = false;
-      let myAddress = null;
-      let contract = null;
-      let connection = null;
-      try {
-                 connection = await window.connectWallet();
-         // Use selected contract address
-         if (connection.signer) {
-             contract = new ethers.Contract(window.IAM_ADDRESS, window.IAM_ABI, connection.signer);
-             connection.contract = contract;
-         } else {
-             contract = connection.contract;
-         }
-         myAddress = connection.address;
-         
-         // Update global config with new contract
-         window.contractConfig = {
-             contract: contract,
-             address: myAddress,
-             signer: connection.signer,
-             provider: connection.provider
-         };
-         window.currentUserAddress = myAddress; // Save address for use in other functions
-         isConnected = true;
-        connStatus.textContent = '';
-        const registerInfoElement = document.getElementById('register-info');
-        if (registerInfoElement) {
-          registerInfoElement.style.display = '';
-        }
-        document.getElementById('register-btn').disabled = false;
-        document.querySelectorAll('input').forEach(i=>i.disabled=false);
-                 // Initialize referrer (parent) and parent-index only after user initialization
-        // referrerDisplay and upperInput are already defined globally
-        let user;
-        let parentIndex = '...';
-        
-        // Ensure referrerDisplay is available
-        if (!referrerDisplay) {
-          referrerDisplay = document.getElementById('referrer-address-display');
-        }
-        if (!upperInput) {
-          upperInput = document.getElementById('upper-address');
-        }
-        try {
-          user = await contract.users(myAddress);
-          console.log(`🔍 User status:`, user);
-          console.log(`🔍 myAddress: ${myAddress}`);
-          console.log(`🔍 User index:`, user ? user.index : 'No user data');
-          
-          // If user is not active, show registration suggestion message
-          const suggestionDiv = document.getElementById('register-suggestion');
-          if (user && !(user.index && BigInt(user.index) > 0n)) {
-            console.log(`⚠️ User registered but not active`);
-            suggestionDiv.style.display = '';
-            suggestionDiv.textContent = 'You have not registered yet. Please do a reserve registration.';
-          } else if (!user) {
-            console.log(`⚠️ User not registered at all`);
-            suggestionDiv.style.display = '';
-            suggestionDiv.textContent = 'You have not registered yet. Please do a reserve registration.';
-          } else {
-            console.log(`✅ User is active: index=${user.index}`);
-            suggestionDiv.style.display = 'none';
-          }
-                     
-          // Handle referrer and upper based on user registration status
-          const isUserActive = user && user.index && BigInt(user.index) > 0n;
-          console.log(`🔍 isUserActive: ${isUserActive}`);
-          
-          if (isUserActive) {
-            // User is registered and active - set referrer to connected wallet
-            console.log(`✅ User is active, setting referrer to connected wallet`);
-            referrerDisplay.value = myAddress;
-            referrerDisplay.setAttribute('data-full-address', myAddress);
-            updateAddressDisplay(referrerDisplay);
-            
-            // For registered users, clear new user address field for manual input
-            const newUserInputElement = document.getElementById('new-user-address');
-            if (newUserInputElement) {
-              newUserInputElement.value = '';
-              newUserInputElement.style.backgroundColor = '#232946';
-              newUserInputElement.style.color = '#fff';
-              newUserInputElement.style.opacity = '1';
-              
-              // Show info message for registered users
-              const newUserInfo = document.getElementById('new-user-address-info');
-              if (newUserInfo) {
-                newUserInfo.style.display = '';
-                newUserInfo.textContent = '📝 Enter the wallet address of the user you want to register';
-              }
-              
-              console.log(`✅ Cleared new user address field for registered user to allow manual input`);
-            }
-            
-            // Set upper address based on registration type
-            if (currentRegistrationType === 'normal') {
-              upperInput.value = myAddress; // Set upper address same as referrer initially
-              upperInput.setAttribute('data-full-address', myAddress);
-              updateAddressDisplay(upperInput);
-            } else if (currentRegistrationType === 'free') {
-              // For reserve, upper is the connected wallet (parent for placement calculation)
-              upperInput.value = myAddress;
-              upperInput.setAttribute('data-full-address', myAddress);
-              updateAddressDisplay(upperInput);
-              
-              // Set upper index for reserve
-              const upperIndex = user.index.toString();
-              upperIndexInput.value = upperIndex;
-            }
-          } else {
-            // User is not registered - clear fields and allow manual input
-            console.log(`⚠️ User not registered, clearing fields for manual input`);
-            console.log(`🔍 About to set new user address - myAddress: ${myAddress}`);
-            
-            referrerDisplay.value = '';
-            referrerDisplay.removeAttribute('data-full-address');
-            referrerIndexInput.value = '';
-            
-            upperInput.value = '';
-            upperInput.removeAttribute('data-full-address');
-            upperIndexInput.value = '';
-
-            // Auto-fill referrer and upper from URL (?ref=) if present
-            try {
-              var params = new URLSearchParams(window.location.search);
-              var urlRef = params.get('ref') || params.get('referrer');
-              if (urlRef) {
-                const setBoth = (addr) => {
-                  if (!/^0x[a-fA-F0-9]{40}$/.test(addr)) return;
-                  // Referrer display
-                  referrerDisplay.value = addr;
-                  referrerDisplay.setAttribute('data-full-address', addr);
-                  updateAddressDisplay(referrerDisplay);
-                  // Upper address
-                  upperInput.value = addr;
-                  upperInput.setAttribute('data-full-address', addr);
-                  updateAddressDisplay(upperInput);
-                };
-                if (/^0x[a-fA-F0-9]{40}$/.test(urlRef)) {
-                  setBoth(urlRef);
-                } else if (/^\d+$/.test(urlRef)) {
-                  try {
-                    const addr = await contract.indexToAddress(urlRef);
-                    if (addr && addr !== '0x0000000000000000000000000000000000000000') {
-                      // Update URL to address form for consistency
-                      var newUrl = window.location.origin + window.location.pathname + '?ref=' + addr;
-                      window.history.replaceState({}, '', newUrl);
-                      setBoth(addr);
-                    }
-                  } catch (_) {}
-                }
-                // Trigger validation/placement after autofill
-                setTimeout(async () => { try { await validateUpperAgainstReferrer(); } catch(_){} }, 100);
-              }
-            } catch(_) {}
-            
-            // Set new user address to connected wallet for unregistered users
-            const newUserInputElement = document.getElementById('new-user-address');
-            console.log(`🔍 newUserInputElement:`, newUserInputElement);
-            
-            if (myAddress && newUserInputElement) {
-              console.log(`🔍 Setting new user address to: ${myAddress}`);
-              
-              // Try to set immediately first
-              newUserInputElement.value = myAddress;
-              newUserInputElement.style.backgroundColor = '#232946';
-              newUserInputElement.style.color = '#fff';
-              newUserInputElement.style.opacity = '0.8';
-              
-              // Also try with setTimeout as fallback
-              setTimeout(() => {
-                newUserInputElement.value = myAddress;
-                newUserInputElement.style.backgroundColor = '#232946';
-                newUserInputElement.style.color = '#fff';
-                newUserInputElement.style.opacity = '0.8';
-                
-                console.log(`🔍 After timeout - Final value in input: ${newUserInputElement.value}`);
-              }, 100);
-              
-              // Show info message
-              const newUserInfo = document.getElementById('new-user-address-info');
-              if (newUserInfo) {
-                newUserInfo.style.display = '';
-                newUserInfo.textContent = '✅ Auto-filled with your connected wallet address (for self-registration)';
-                console.log(`🔍 Info message shown`);
-              }
-              
-              console.log(`✅ Set new user address to connected wallet: ${myAddress}`);
-              console.log(`🔍 Immediate value in input: ${newUserInputElement.value}`);
-            } else {
-              console.log(`❌ Cannot set new user address - myAddress: ${myAddress}, element exists: ${!!newUserInputElement}`);
-            }
-            
-            // Enable referrer index field for unregistered users
-            document.getElementById('referrer-index').disabled = false;
-            document.getElementById('referrer-index').placeholder = 'e.g. 123 or IAM123';
-            document.getElementById('apply-referrer-index-btn').disabled = false;
-            document.getElementById('apply-referrer-index-btn').style.opacity = '1';
-            document.getElementById('apply-referrer-index-btn').style.cursor = 'pointer';
-          }
-                     // Initialize parent-index
-          parentIndex = user.index ? user.index.toString() : '';
-                 } catch (e) {
-          // If we had an error, keep empty values
-          referrerDisplay.value = '';
-          referrerIndexInput.value = '';
-          
-          const newUserInputElement = document.getElementById('new-user-address');
-          if (newUserInputElement) {
-            newUserInputElement.value = '';
-          }
-          
-          // Hide info message
-          const newUserInfo = document.getElementById('new-user-address-info');
-          if (newUserInfo) {
-            newUserInfo.style.display = 'none';
-          }
-          
-           parentIndex = '';
-         }
-        const parentIndexElement = document.getElementById('parent-index');
-        if (parentIndexElement) {
-          parentIndexElement.textContent = parentIndex;
-        }
-        
-        
-        
-                 // Initialize empty-index (suggested)
-         let emptyIndex = '...';
-         if (parentIndex !== '...' && parentIndex !== '' && parentIndex) {
-           try {
-             const left = await window.safeGetLeftAddress(contract, parentIndex);
-             const right = await window.safeGetRightAddress(contract, parentIndex);
-             if (left === '0x0000000000000000000000000000000000000000') {
-               emptyIndex = (BigInt(parentIndex) * 2n).toString();
-             } else if (right === '0x0000000000000000000000000000000000000000') {
-               emptyIndex = (BigInt(parentIndex) * 2n + 1n).toString();
-             } else if (left === null || right === null) {
-               emptyIndex = '...';
-             } else {
-               emptyIndex = 'Full';
-             }
-           } catch (error) {
-             console.log('Error calculating empty index:', error);
-             emptyIndex = '...';
-           }
-         }
-         const emptyIndexElement = document.getElementById('empty-index');
-         if (emptyIndexElement) {
-           emptyIndexElement.textContent = emptyIndex;
-         }
-        
-                 // Update registration cost
-         await updateRegistrationCost();
-        
-                 // MATIC balance
-        let maticBalance = '...';
-        if (isConnected && contract && myAddress) {
-          try {
-            let bal = await connection.provider.getBalance(myAddress);
-            maticBalance = bal ? (typeof ethers !== 'undefined' ? Number(ethers.formatEther(bal)).toFixed(2) : (Number(bal)/1e18).toFixed(2)) : '0.00';
-          } catch (e) {
-            maticBalance = '0.00';
-          }
-        }
-        const maticBalanceElement = document.getElementById('matic-balance');
-        if (maticBalanceElement) {
-          maticBalanceElement.textContent = maticBalance;
-        }
-                 // IAM balance
-        let IAMBalance = '...';
-        if (isConnected && contract && myAddress && typeof contract.balanceOf === 'function') {
-          try {
-            let IAM = await contract.balanceOf(myAddress);
-            IAMBalance = IAM ? (typeof ethers !== 'undefined' ? Number(ethers.formatEther(IAM)).toFixed(2) : (Number(IAM)/1e18).toFixed(2)) : '0.00';
-            
-                         // Check IAM balance sufficiency based on current registration type
-            const IAMBalanceElement = document.getElementById('IAM-balance');
-            try {
-              let requiredIAM = 0;
-              
-                             if (currentRegistrationType === 'free') {
-                 // Reserve mode: equivalent to $23 tokens
-                                 let tokenPriceNum = 1; // Default price $1
-                if (typeof contract.getTokenPrice === 'function') {
-                  const tokenPrice = await contract.getTokenPrice();
-                  tokenPriceNum = Number(ethers.formatUnits(tokenPrice, 18));
-                }
-                requiredIAM = parseFloat((23 / tokenPriceNum).toFixed(2));
-                             } else {
-                // Normal mode: use safe regPrice function
-               if (typeof window.safeGetRegPrice === 'function') {
-                 const regPrice = await window.safeGetRegPrice(contract);
-                  if (regPrice) {
-                    requiredIAM = parseFloat(Number(ethers.formatUnits(regPrice, 18)).toFixed(2));
-                                   } else {
-                   requiredIAM = 0; // If regPrice is not available
-                 }
-               } else {
-                 requiredIAM = 0; // If getRegPrice function is not available
-               }
-              }
-              
-                             // IAM balance color
-              if (parseFloat(IAMBalance) >= requiredIAM) {
-                                 IAMBalanceElement.style.color = '#00ff88'; // Green: sufficient
-               } else {
-                 IAMBalanceElement.style.color = '#ff453a'; // Red: insufficient
-               }
-              
-                             // Registration cost color based on balance sufficiency
-              const registerCostElement = document.getElementById('register-cost');
-              if (registerCostElement) {
-                                 if (parseFloat(IAMBalance) >= requiredIAM) {
-                   registerCostElement.style.color = '#00ff88'; // Green: balance sufficient
-               } else {
-                   registerCostElement.style.color = '#ff453a'; // Red: balance insufficient
-                 }
-              }
-                         } catch (e) {
-               console.log('Error checking balance sufficiency:', e);
-             }
-          } catch (e) {
-            IAMBalance = '0.00';
-          }
-        }
-        const IAMBalanceElement = document.getElementById('IAM-balance');
-        if (IAMBalanceElement) {
-          IAMBalanceElement.textContent = IAMBalance;
-        }
-      } catch (e) {
-        isConnected = false;
-        console.error('Connection error in loadRegisterInfo:', e);
-         
-         // MetaMask error check - improved
-         if (e.message && (
-           e.message.includes('MetaMask is not installed') ||
-           e.message.includes('Cannot read properties of undefined') ||
-           e.message.includes('window.ethereum') ||
-           !window.ethereum
-         )) {
-           metamaskStatus.style.display = '';
-           metamaskStatus.textContent = '⚠️ MetaMask is not installed. Please install MetaMask extension to use this application.';
-           connStatus.textContent = '';
-         } else {
-           connStatus.textContent = '❌ Failed to connect wallet: ' + (e.message || e);
-         }
-         
-        const registerInfoElement = document.getElementById('register-info');
-        if (registerInfoElement) {
-          registerInfoElement.style.display = 'none';
-        }
-        document.getElementById('register-btn').disabled = true;
-        document.querySelectorAll('input').forEach(i=>i.disabled=true);
+      
+      // Enable form elements
+      const registerInfoElement = document.getElementById('register-info');
+      if (registerInfoElement) {
+        registerInfoElement.style.display = '';
+      }
+      document.getElementById('register-btn').disabled = false;
+      document.querySelectorAll('input').forEach(i=>i.disabled=false);
+      
+      // Show registration suggestion
+      const suggestionDiv = document.getElementById('register-suggestion');
+      if (suggestionDiv) {
+        suggestionDiv.style.display = '';
+        suggestionDiv.textContent = 'Please fill in the registration form below.';
+      }
+      
+      // Clear all fields for manual input
+      const referrerDisplay = document.getElementById('referrer-address-display');
+      const upperInput = document.getElementById('upper-address');
+      const newUserInputElement = document.getElementById('new-user-address');
+      
+      if (referrerDisplay) {
+        referrerDisplay.value = '';
+        referrerDisplay.placeholder = 'Enter referrer wallet address';
+      }
+      if (upperInput) {
+        upperInput.value = '';
+        upperInput.placeholder = 'Enter upper wallet address';
+      }
+      if (newUserInputElement) {
+        newUserInputElement.value = '';
+        newUserInputElement.placeholder = 'Enter new user wallet address';
+      }
+      
+      // Update address displays
+      if (referrerDisplay) updateAddressDisplay(referrerDisplay);
+      if (upperInput) updateAddressDisplay(upperInput);
+      if (newUserInputElement) updateAddressDisplay(newUserInputElement);
+      
+      // Set default values for balance displays
+      const maticBalanceElement = document.getElementById('matic-balance');
+      if (maticBalanceElement) {
+        maticBalanceElement.textContent = 'N/A';
+      }
+      
+      const IAMBalanceElement = document.getElementById('IAM-balance');
+      if (IAMBalanceElement) {
+        IAMBalanceElement.textContent = 'N/A';
       }
     }
          window.addEventListener('DOMContentLoaded', loadRegisterInfo);
      
-     // Listen to wallet changes
-     if (window.ethereum) {
-       window.ethereum.on('accountsChanged', async function (accounts) {
-         console.log('🔄 Wallet changed:', accounts);
-         if (accounts.length > 0) {
-           window.currentUserAddress = accounts[0];
-           await loadRegisterInfo(); // Reload information
-         }
-       });
-     }
 
          
 
@@ -1614,8 +1290,9 @@
       }
       
       try {
-        if (!window.contractConfig || !window.contractConfig.contract) await window.connectWallet();
-        const contract = window.contractConfig.contract;
+        // Function disabled - requires wallet connection
+        showTempMessage('This function requires wallet connection', 'error');
+        return;
         
         // Extract numeric index
         let index = value;
@@ -1693,8 +1370,9 @@
       if (!/^0x[a-fA-F0-9]{40}$/.test(address)) return;
       
       try {
-        if (!window.contractConfig || !window.contractConfig.contract) await window.connectWallet();
-        const contract = window.contractConfig.contract;
+        // Function disabled - requires wallet connection
+        showTempMessage('This function requires wallet connection', 'error');
+        return;
         
         const user = await contract.users(address);
         if (!user || !(user.index && BigInt(user.index) > 0n)) {
@@ -1976,8 +1654,10 @@
          }
         
         try {
-          if (!window.contractConfig || !window.contractConfig.contract) await window.connectWallet();
-          const contract = window.contractConfig.contract;
+          // Function disabled - requires wallet connection
+          status.style.color = '#d32f2f';
+          status.textContent = 'This function requires wallet connection.';
+          return;
           
           // دریافت آدرس کاربر جاری
           let myAddress = null;
@@ -2125,15 +1805,10 @@
       registerBtn.disabled = true;
       registerBtn.style.opacity = '0.6';
       status.style.color = '#1976d2';
-      status.textContent = 'Connecting wallet and validating information...';
+      status.textContent = 'Validating information...';
       
       try {
-        // Connect wallet if not already connected
-        if (!window.contractConfig || !window.contractConfig.contract) {
-          console.log('🔄 Connecting wallet for registration...');
-          await window.connectWallet();
-          await loadRegisterInfo();
-        }
+        // Registration will be handled without wallet connection
         
         // Get full addresses for registration (not truncated display)
         const referrer = referrerDisplay.getAttribute('data-full-address') || referrerDisplay.value.trim();
@@ -2145,13 +1820,8 @@
         if (currentRegistrationType === 'normal' && !/^0x[a-fA-F0-9]{40}$/.test(upper)) throw new Error('Invalid upper address. Please enter a valid address.');
         if (!/^0x[a-fA-F0-9]{40}$/.test(newUser)) throw new Error('Invalid new wallet address. Please enter a valid address.');
         
-        // Use selected contract
-        let contract;
-        if (window.contractConfig && window.contractConfig.contract) {
-            contract = new ethers.Contract(window.IAM_ADDRESS, window.IAM_ABI, window.contractConfig.signer);
-        } else {
-            throw new Error('Contract connection failed. Please try again.');
-        }
+        // Registration without wallet connection - show error message
+        throw new Error('Registration requires wallet connection. Please connect your wallet first.');
         
         // Validate referrer and upper relationship for normal registration
         if (currentRegistrationType === 'normal') {
@@ -2288,7 +1958,5 @@
     // Index input event listeners are now set up in setupEventListeners function
   </script>
   
-  <!-- Floating Token Growth Card - کارت شناور رشد توکن -->
-  <script src="js/floating-token-card.js"></script>
 </body>
 </html> 
