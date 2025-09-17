@@ -1,1084 +1,612 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IMPHOENIX</title>
-    <script src="js/compat.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IAMPHOENIX - Dashboard</title>
+  <script>window.SKIP_META = true;</script>
+  <script>
+    // Suppress noisy extension/MetaMask RPC messages that don't affect functionality
+    window.addEventListener('error', function(e){
+      const m = (e && e.message) || '';
+      if (m.includes('Could not establish connection') || m.includes('getEnabledChains') || m.includes('isDefaultWallet')) {
+        e.preventDefault();
+        return false;
+      }
+    });
+    window.addEventListener('unhandledrejection', function(e){
+      const r = e && e.reason;
+      const msg = (r && (r.message || r)) || '';
+      if (typeof msg === 'string' && (msg.includes('Could not establish connection') || msg.includes('getEnabledChains') || msg.includes('isDefaultWallet'))) {
+        e.preventDefault();
+        return false;
+      }
+    });
+  </script>
     <style>
-        /* Lightweight, mobile-first styles for broad device support */
-        *, *::before, *::after { box-sizing: border-box; }
-        html, body { height: 100%; }
-        body {
-            margin: 0;
-            font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
-            background: #0f0f14;
-            color: #f5f5f5;
-            -webkit-text-size-adjust: 100%;
-        }
+    body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; background:#0a0b0f; color:#e6eaf0; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 24px; box-sizing: border-box; }
+    h1 { margin: 0 0 16px; font-size: 20px; color:#9ecbff; text-align: center; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; }
+    @media (max-width: 1024px) { .grid { grid-template-columns: 1fr; gap: 14px; } }
+    .card { background: #121521; border: 1px solid #1f2433; border-radius: 12px; padding: 16px; }
+    .card h2 { margin: 0 0 12px; font-size: 18px; color:#aef3c6; }
+    .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px dashed #263048; }
+    .row:last-child { border-bottom: 0; }
+    .label { color:#9aa8c1; }
+    .value { color:#e6eaf0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; word-break: break-all; overflow-wrap: anywhere; }
+    .actions { display:flex; gap:8px; margin-bottom:16px; }
+    button { background:#2563eb; color:#fff; border:0; padding:10px 14px; border-radius:8px; cursor:pointer; }
+    button.secondary { background:#334155; }
+    .muted { color:#7f8ca8; font-size: 12px; }
+    .error { color:#ff6b6b; font-size: 13px; }
+    .statusbar { background:#0e1220; border:1px solid #1f2433; padding:10px 12px; border-radius:12px; display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); grid-auto-rows:auto; gap:8px; align-items:center; margin: 12px 0; }
+    .pill { background:#162032; color:#cfe2ff; padding:6px 10px; border-radius:999px; font-size:12px; border:1px solid #223150; white-space: nowrap; text-align:center; width:100%; box-sizing:border-box; }
+    /* Force first row: likes, dislikes, rank, index */
+    #status-likes, #status-dislikes, #status-rank, #status-index { grid-row: 1; }
+    /* Second row for the rest */
+    #status-address, #status-matic, #status-dai, #status-iam { grid-row: 2; }
+    .footer-links { margin: 24px 0 0; display: flex; flex-wrap: wrap; gap: 8px; }
+    .footer-links a { text-decoration: none; }
+    .footer-btn { background:#1b2336; color:#e6eaf0; border:1px solid #273149; padding:10px 12px; border-radius:10px; font-size:13px; display:inline-block; }
+    .footer-btn:hover { background:#223049; }
 
-        /* Top section */
-        .status-bar { background: #151823; border-bottom: 1px solid #2a2e3f; }
-        .status-content {
-            display: grid; grid-template-columns: 1fr 1fr;
-            align-items: center; gap: 6px; padding: 6px 8px;
-        }
-        .status-left-section, .status-stars-section { display: flex; gap: 6px; align-items: center; }
-        .status-balances { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; align-items: center; }
-        .status-left-section { justify-content: flex-start; min-width: 0; }
-        .status-stars-section { justify-content: center; }
-        .status-balances { justify-content: flex-end; min-width: 0; }
-        .spacer-4ch { width: 2ch; }
-        .status-info-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; line-height: 1.1; }
-        .status-balance-item { display: flex; flex-direction: column; align-items: center; min-width: 0; }
-        .info-label { color: #9aa3b2; font-size: 10px; }
-        .info-value { font-weight: 600; font-size: 12px; color: #ffffff; }
-        .iam-index-combined .info-value { font-size: 16px; }
-        #userStatusLikes, #userStatusDislikes { font-size: 20px; }
-        .status-balance-value { font-weight: 700; font-size: 12px; color: #ffffff; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-        .status-balance-usd { color: #3ddc97; font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-        /* remove smaller override to keep doubled size */
-        /* .iam-index-combined .info-value { font-size: 12px; } */
-        #userStatusLevel { font-size: 14px; }
-        /* Place stars in a second row under the left section */
-        .status-bar { display: grid; grid-template-rows: auto auto auto; }
-        .status-content { grid-column: 1 / -1; }
-        .status-stars-section { grid-column: 1 / 2; justify-content: flex-start; padding: 4px 8px; }
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {
+      .container { padding: 16px; }
+      h1 { font-size: 18px; margin-bottom: 14px; }
+      .card { padding: 14px; border-radius: 10px; }
+      .card h2 { font-size: 16px; }
+      .row { gap: 10px; padding: 8px 0; }
+      .label { font-size: 13px; }
+      .value { font-size: 13px; }
+      .statusbar { gap: 6px; padding: 8px 10px; }
+      .pill { font-size: 11px; padding: 6px 8px; }
+    }
 
-        /* Extra compact on very small screens */
-        @media (max-width: 400px) {
-            .status-content { gap: 4px; padding: 4px 6px; }
-            .status-left-section { gap: 4px; }
-            .status-balances { gap: 4px; }
-            .status-info-item { font-size: 10px; }
-            .info-value { font-size: 11px; }
-            .status-balance-value { font-size: 11px; }
-            .status-balance-usd { font-size: 9px; }
-            #userStatusLevel { font-size: 13px; }
-        }
+    @media (max-width: 480px) {
+      .container { padding: 14px; }
+      h1 { font-size: 17px; }
+      .row { flex-direction: column; align-items: flex-start; }
+      .label { font-size: 13px; opacity: 0.95; }
+      .value { width: 100%; text-align: left; direction: ltr; font-size: 13px; }
+      .pill { font-size: 10.5px; }
+    }
 
-        /* Nav */
-        .status-nav-buttons { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 8px 10px; border-top: 1px solid #2a2e3f; }
-        .status-nav-item {
-            display: block;
-            width: 100%;
-            text-align: center;
-            text-decoration: none;
-            color: #e7e7e7;
-            background: #1a1f2e;
-            border: 1px solid #2c3347;
-            border-radius: 6px;
-            padding: 10px 12px;
-            font-size: 14px;
-        }
-        .status-nav-item.active { border-color: #3ddc97; color: #3ddc97; }
-
-        /* Main container */
-        .container { max-width: 720px; margin: 0 auto; padding: 16px 12px; }
-        .main-content { text-align: center; }
-        .main-title { font-size: 22px; margin: 8px 0 12px; font-weight: 700; }
-
-        /* Dashboard as a simple list */
-        .dashboard { display: block; margin-top: 12px; }
-        .dashboard.hidden { visibility: hidden; }
-        .dashboard-card { background: #151a26; border: 1px solid #262c3b; border-radius: 8px; padding: 12px; margin-bottom: 10px; }
-        .card-title { color: #9aa3b2; font-size: 12px; margin-bottom: 4px; text-transform: uppercase; }
-        .card-value { font-size: 18px; font-weight: 700; color: #ffffff; }
-        .card-subtitle { color: #3ddc97; font-size: 12px; }
-        .card-icon { display: none; }
-
-        /* Small screens */
-        @media (min-width: 768px) {
-            .main-title { font-size: 26px; }
-            .container { padding: 20px 16px; }
-        }
-
-        /* Accessibility */
-        @media (prefers-reduced-motion: reduce) {
-            * { animation: none !important; transition: none !important; }
+    @media (max-width: 360px) {
+      .container { padding: 12px; }
+      h1 { font-size: 16px; }
+      .card { padding: 12px; }
+      .row { padding: 6px 0; }
+      .pill { font-size: 10px; padding: 5px 7px; }
         }
     </style>
-    <!-- Ethers only (lighter) -->
-    <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js" defer></script>
-
-    
 </head>
 <body>
-    <script>
-        (function(){
-            try {
-                const navMem = (navigator.deviceMemory || 0);
-                const cores = (navigator.hardwareConcurrency || 1);
-                const isLowMem = navMem && navMem <= 2;
-                const isLowCore = cores <= 4;
-                const isSlowConn = (navigator.connection && (navigator.connection.saveData || /2g/.test(navigator.connection.effectiveType||'')));
-                const lowEnd = isLowMem || isLowCore || isSlowConn;
-                if (lowEnd) {
-                    document.documentElement.classList.add('low-end');
-                    window.addEventListener('DOMContentLoaded', function(){
-                        const root = document.getElementById('dashboard-root');
-                        if (!root) return;
-                        const cards = root.querySelectorAll('.dashboard-card');
-                        for (let i = 4; i < cards.length; i++) {
-                            cards[i].style.display = 'none';
-                        }
-                        const btn = document.createElement('button');
-                        btn.textContent = 'Show more';
-                        btn.style.cssText = 'margin-top:10px;background:#232946;color:#fff;border:1px solid rgba(0,255,136,0.3);padding:8px 12px;border-radius:8px;';
-                        btn.onclick = () => {
-                            for (let i = 4; i < cards.length; i++) { cards[i].style.display = ''; }
-                            btn.remove();
-                        };
-                        root.parentElement.insertBefore(btn, root.nextSibling);
-                    });
-                }
-            } catch (_) {}
-        })();
-    </script>
-    <!-- Status Bar -->
-    <div class="status-bar">
-        <div class="status-content">
-            <!-- Left side: IAM+Index, Likes, Dislikes -->
-            <div class="status-left-section">
-                <div class="status-info-item iam-index-combined">
-                    <div class="info-value" id="userStatusIdValue"></div>
-                </div>
-                <div class="spacer-4ch"></div>
-                <div class="status-info-item">
-                    <div class="info-label">👍</div>
-                    <div class="info-value" id="userStatusLikes"></div>
-                </div>
-                <div class="spacer-4ch"></div>
-                <div class="status-info-item">
-                    <div class="info-label">👎</div>
-                    <div class="info-value" id="userStatusDislikes"></div>
-                </div>
+  <div class="container">
+    <h1>IAMPHOENIX Dashboard</h1>
+
+    <div class="statusbar" id="status-bar">
+      <span class="pill" id="status-address">-</span>
+      <span class="pill" id="status-index">-</span>
+      <span class="pill" id="status-rank">Rank: -</span>
+      <span class="pill" id="status-matic">POL: -</span>
+      <span class="pill" id="status-dai">DAI: -</span>
+      <span class="pill" id="status-iam">IAM: -</span>
+      <span class="pill" id="status-likes">Likes: -</span>
+      <span class="pill" id="status-dislikes">Dislikes: -</span>
             </div>
             
-            <!-- Center: Stars -->
-            <div class="status-stars-section">
-                <div class="status-info-item">
-                    <div class="info-label"></div>
-                    <div class="info-value" id="userStatusLevel"></div>
-                </div>
-            </div>
-            
-            <!-- Right side: IAM, DAI, MATIC -->
-            <div class="status-balances">
-                <div class="status-balance-item">
-                    <div class="status-balance-label">IAM</div>
-                    <div class="status-balance-value" id="iam-balance"></div>
-                    <div class="status-balance-usd" id="iam-balance-usd"></div>
-                </div>
-                <div class="status-balance-item">
-                    <div class="status-balance-label">DAI</div>
-                    <div class="status-balance-value" id="dai-balance"></div>
-                    <div class="status-balance-usd" id="dai-balance-usd"></div>
-                </div>
-                <div class="status-balance-item">
-                    <div class="status-balance-label">MATIC</div>
-                    <div class="status-balance-value" id="matic-balance"></div>
-                    <div class="status-balance-usd" id="matic-balance-usd"></div>
-                </div>
-            </div>
-        </div>
+
+    <div class="grid">
+      <section class="card" id="contract-card" style="text-align:left; direction:ltr;">
+        <h2>Contract Info</h2>
+        <div class="row"><div class="label">Contract Address</div><div class="value" id="c-address">-</div></div>
+        <div class="row"><div class="label">Name</div><div class="value" id="c-name">-</div></div>
+        <div class="row"><div class="label">Symbol</div><div class="value" id="c-symbol">-</div></div>
+        <div class="row"><div class="label">Decimals</div><div class="value" id="c-decimals">-</div></div>
+        <div class="row"><div class="label">Total Supply</div><div class="value" id="c-total-supply">-</div></div>
+        <div class="row"><div class="label">DAI In Contract</div><div class="value" id="c-dai-in-contract">-</div></div>
+        <div class="row"><div class="label">IAM In Contract</div><div class="value" id="c-iam-in-contract">-</div></div>
+        <div class="row"><div class="label">Registration Price</div><div class="value" id="c-registration-price">-</div></div>
+        <div class="row"><div class="label">Token Price</div><div class="value" id="c-token-price">-</div></div>
+        <div class="row"><div class="label">Point Price</div><div class="value" id="c-point-price">-</div></div>
+        <div class="row"><div class="label">Cash Back</div><div class="value" id="c-cashback">-</div></div>
         
-        <!-- Navigation Buttons in Status Bar -->
-        <div class="status-nav-buttons">
-            <a href="index.html" class="status-nav-item active">Home</a>
-            <a href="register.html" class="status-nav-item">Register</a>
-            <a href="profile.html" class="status-nav-item">Profile</a>
-            <a href="transfer.html" class="status-nav-item">Transfer</a>
-            <a href="swap.html" class="status-nav-item">Swap</a>
-            <a href="sales.html" class="status-nav-item">Sales</a>
-            <a href="utility.html" class="status-nav-item">Utility</a>
-            <a href="professional-tree.html" class="status-nav-item">Tree</a>
-            <a href="transfer-ownership.html" class="status-nav-item">Ownership</a>
-            <a href="about.html" class="status-nav-item">About</a>
-        </div>
+        
+        <div class="row"><div class="label">Wallets Count</div><div class="value" id="c-wallets-count">-</div></div>
+        <div class="row"><div class="label">Claimable Points (Total)</div><div class="value" id="c-claimable-points">-</div></div>
+        
+        <div class="muted">Some values may remain empty if their functions do not exist on the contract.</div>
+        <div class="error" id="contract-error" style="display:none"></div>
+      </section>
     </div>
 
         
         
-    <!-- Main Content -->
-    <div class="container">
-        <div class="main-content">
-            <h1 class="main-title">IAM Ecosystem</h1>
-            <div id="contract-address" style="text-align:center;margin-top:4px;font-size:12px;color:#a0aec0;">
-                Contract: <a id="contract-link" href="#" target="_blank" rel="noopener" style="color:#00e0ff;text-decoration:none;font-family:monospace;"></a>
-            </div>
-            
-            <!-- Dashboard -->
-            <div class="dashboard hidden" id="dashboard-root">
-                <!-- Referral Box -->
-                <div class="dashboard-card" id="referral-card">
-                    <div class="card-title">Referral</div>
-                    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                        <input id="referral-link" type="text" readonly style="flex:1; min-width:200px; padding:8px; background:#0f0f14; color:#e7e7e7; border:1px solid #2a2e3f; border-radius:6px; font-size:12px;" placeholder="Generating..." />
-                        <button id="copy-ref" class="status-nav-item" style="padding:8px 10px; min-width:90px;">Copy</button>
-                        <button id="share-ref" class="status-nav-item" style="padding:8px 10px; min-width:90px;">Share</button>
-                    </div>
-                    <div class="card-subtitle" id="referral-note">Your personal invite link</div>
-                </div>
-                <div class="dashboard-card">
-                    <div class="card-icon">💰</div>
-                    <div class="card-title">Supply</div>
-                    <div class="card-value" id="total-supply"></div>
-                    <div class="card-subtitle"></div>
-                    <div class="card-subtitle" id="total-supply-usd"></div>
-        </div>
-        
-                <div class="dashboard-card">
-                    <div class="card-icon">👥</div>
-                    <div class="card-title">Users</div>
-                    <div class="card-value" id="total-users"></div>
-                    <div class="card-subtitle">Wallets</div>
+    
+
+    
                 </div>
                 
-                <div class="dashboard-card">
-                    <div class="card-icon">💎</div>
-                    <div class="card-title">Token Price</div>
-                    <div class="card-value" id="token-price"></div>
-                    <div class="card-subtitle">Token Price</div>
-                </div>
-                
-                <div class="dashboard-card">
-                    <div class="card-icon">🎯</div>
-                    <div class="card-title">Points</div>
-                    <div class="card-value" id="total-points"></div>
-                    <div class="card-subtitle">Claimable</div>
-                </div>
-                
-                <div class="dashboard-card">
-                    <div class="card-icon">💵</div>
-                    <div class="card-title">Point Value</div>
-                    <div class="card-value" id="point-value"></div>
-                    <div class="card-subtitle">Per Point</div>
-                    <div class="card-subtitle" id="point-value-usd"></div>
-                </div>
-                
-                <div class="dashboard-card">
-                    <div class="card-icon">🏦</div>
-                    <div class="card-title">Backing Pool</div>
-                    <div class="card-value" id="contract-balance"></div>
-                    <div class="card-subtitle">DAI</div>
-                </div>
-                
-                <div class="dashboard-card">
-                    <div class="card-icon">🪙</div>
-                    <div class="card-title">Binary Pool</div>
-                    <div class="card-value" id="contract-iam-balance"></div>
-                    <div class="card-subtitle">IAM</div>
-                    <div class="card-subtitle" id="contract-iam-balance-usd"></div>
-                </div>
-                
-                <div class="dashboard-card">
-                    <div class="card-icon">📝</div>
-                    <div class="card-title">Reg Price</div>
-                    <div class="card-value" id="reg-price"></div>
-                    <div class="card-subtitle">Registration</div>
-                    <div class="card-subtitle" id="reg-price-usd"></div>
-                </div>
-                
-                <div class="dashboard-card">
-                    <div class="card-icon">🔁</div>
-                    <div class="card-title">Support Pool</div>
-                    <div class="card-value" id="cashback"></div>
-                    <div class="card-subtitle">Read-only</div>
-                    <div class="card-subtitle" id="cashback-usd"></div>
-                </div>
-                </div>
+  <!-- Footer page links -->
+  <div class="container">
+    <div class="footer-links">
+      <a class="footer-btn" href="index.html">Home</a>
+      <a class="footer-btn" href="about.html">About</a>
+      <a class="footer-btn" href="register.html">Register</a>
+      <a class="footer-btn" href="profile.html">Profile</a>
+      <a class="footer-btn" href="sales.html">Sales</a>
+      <a class="footer-btn" href="swap.html">Swap</a>
+      <a class="footer-btn" href="transfer.html">Transfer</a>
+      <a class="footer-btn" href="transfer-ownership.html">Transfer Ownership</a>
+      <a class="footer-btn" href="utility.html">Utility</a>
+      <a class="footer-btn" href="professional-tree.html">Professional Tree</a>
             </div>
         </div>
         
+  <!-- Ethers (v6) CDN if not already present on other pages -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.1/dist/ethers.umd.min.js"></script>
         
-    <!-- Scripts -->
+  <!-- Project scripts providing config and wallet connection/contract utils -->
     <script src="js/config.js"></script>
-    <script src="js/main.js"></script>
-    <script src="js/floating-token-card.js"></script>
+  <script src="js/network.js"></script>
+  <script src="js/web3-interactions.js"></script>
+  <script src="js/profile.js"></script>
+  <script src="js/auto-wallet-connect.js"></script>
+  <script src="js/swap.js"></script>
     
   <script>
-        // Status bar update function - runs only once on page load
-        async function updateStatusBar() {
-            if (window.contractConfig && window.contractConfig.address) {
-                
-                // Update wallet address
-                const walletElement = document.getElementById('userStatusWallet');
-                if (walletElement) {
-                    const address = window.contractConfig.address;
-                    walletElement.textContent = `${address.slice(0, 6)}...${address.slice(-4)}`;
-                }
-                
-                // Update wallet status
-                const statusElement = document.getElementById('wallet-status');
-                if (statusElement) {
-                    statusElement.textContent = `Connected: ${window.contractConfig.address.slice(0, 6)}...${window.contractConfig.address.slice(-4)}`;
-                    statusElement.className = 'status-wallet connected';
-                }
-                
-                // Update user data, token balances, and dashboard
-                await updateUserData();
-                await updateDashboard();
-                }
-        }
-        
-        // Update user data from contract
-        async function updateUserData() {
-            try {
-                if (window.contractConfig && window.contractConfig.contract && window.contractConfig.address) {
-                    const userData = await window.contractConfig.contract.users(window.contractConfig.address);
-                    
-                    // Update User IAM
-                    const userIdElement = document.getElementById('userStatusIdValue');
-                    if (userIdElement) {
-                        const idx = (userData && (userData.index ?? userData[0] ?? userData[1]));
-                        const rawId = (typeof idx !== 'undefined' && idx !== null) ? String(idx) : '';
-                        userIdElement.textContent = rawId ? ('IAM ' + rawId) : '';
-                    }
-                    
-                    // Update User Stars based on Binary Points
-                    const levelElement = document.getElementById('userStatusLevel');
-                    if (levelElement) {
-                        const binaryPointsClaimed = parseInt(userData[3] || 0);
-                        let stars = 0;
-                        
-                        if (binaryPointsClaimed >= 10000) {
-                            stars = 5; // 10000+ = 5 stars
-                        } else if (binaryPointsClaimed >= 1000) {
-                            stars = 4; // 1000-9999 = 4 stars
-                        } else if (binaryPointsClaimed >= 100) {
-                            stars = 3; // 100-999 = 3 stars
-                        } else if (binaryPointsClaimed >= 10) {
-                            stars = 2; // 10-99 = 2 stars
-                        } else if (binaryPointsClaimed >= 1) {
-                            stars = 1; // 1-9 = 1 star
+    function safeFormatUnits(value, decimals) {
+      try {
+        return (window.ethers && ethers.formatUnits) ? ethers.formatUnits(value, decimals) : String(value);
+      } catch { return String(value); }
+    }
+
+    function toNumberFromUnits(value, decimals) {
+      try {
+        const s = safeFormatUnits(value, decimals);
+        const n = Number(s);
+        return isNaN(n) ? 0 : n;
+      } catch { return 0; }
+    }
+
+    function formatUsdFromWeiProduct(productWeiBigInt) {
+      try {
+        const s = safeFormatUnits(productWeiBigInt, 18);
+        const n = Number(s);
+        if (!isFinite(n)) return '$0.00';
+        return '$' + n.toFixed(2);
+      } catch { return '$0.00'; }
+    }
+
+    function ensureUsdLineBelow(valueEl) {
+      if (!valueEl) return null;
+      let usdEl = valueEl.nextElementSibling;
+      if (!usdEl || usdEl.getAttribute('data-role') !== 'usd-subline') {
+        usdEl = document.createElement('div');
+        usdEl.setAttribute('data-role', 'usd-subline');
+        usdEl.style.fontSize = '12px';
+        usdEl.style.color = '#a786ff';
+        usdEl.style.marginTop = '2px';
+        valueEl.parentElement?.appendChild(usdEl);
+      }
+      return usdEl;
+    }
+
+    function formatMax2(num) {
+      try { return new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(Number(num)); } catch { return String(num); }
+    }
+
+    function format0(num) {
+      try { return new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(Number(num)); } catch { return String(num); }
+    }
+
+    function shortenAddress(addr) {
+      try { if (!addr || addr.length < 10) return addr || '-'; return addr.slice(0, 6) + '...' + addr.slice(-4); } catch { return addr || '-'; }
+    }
+
+    function updateStatusPills(data) {
+      const set = (id, label, value) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (id === 'status-address' || id === 'status-index' || id === 'status-rank') {
+          el.textContent = `${value ?? '-'}`;
                         } else {
-                            stars = 0; // 0 = no stars
-                        }
-                        
-                        if (stars > 0) {
-                            levelElement.textContent = '⭐'.repeat(stars);
-                        } else {
-                            levelElement.textContent = '';
-                        }
-                    }
-                    
-                    // Update Likes and Dislikes (use tuple indices)
-                    try {
-                        const voteStatus = await window.contractConfig.contract.getVoteStatus(window.contractConfig.address);
-                        const likesElement = document.getElementById('userStatusLikes');
-                        const dislikesElement = document.getElementById('userStatusDislikes');
-                        const likesVal = Array.isArray(voteStatus) ? String(voteStatus[0] ?? '') : (voteStatus?.totalLikes != null ? String(voteStatus.totalLikes) : '');
-                        const dislikesVal = Array.isArray(voteStatus) ? String(voteStatus[1] ?? '') : (voteStatus?.totalDislikes != null ? String(voteStatus.totalDislikes) : '');
-                        if (likesElement && likesElement.textContent !== likesVal) likesElement.textContent = likesVal;
-                        if (dislikesElement && dislikesElement.textContent !== dislikesVal) dislikesElement.textContent = dislikesVal;
-                    } catch (error) {
-                        const likesElement = document.getElementById('userStatusLikes');
-                        const dislikesElement = document.getElementById('userStatusDislikes');
-                        if (likesElement) { if (likesElement.textContent !== '') likesElement.textContent = '0'; }
-                        if (dislikesElement) { if (dislikesElement.textContent !== '') dislikesElement.textContent = '0'; }
-                    }
-                    
-                    // Update token balances
-                    await updateTokenBalances();
-                }
-            } catch (error) {
-                // Error updating user data
-            }
+          el.textContent = `${label}: ${value ?? '-'}`;
         }
+      };
+      if (!data) return;
+      if (data.address !== undefined) set('status-address', 'Address', data.address);
+      if (data.index !== undefined) set('status-index', 'Index', data.index);
+      if (data.rank !== undefined) set('status-rank', 'Rank', data.rank);
+      if (data.matic !== undefined) set('status-matic', 'POL', data.matic);
+      if (data.dai !== undefined) set('status-dai', 'DAI', data.dai);
+      if (data.iam !== undefined) set('status-iam', 'IAM', data.iam);
+      if (data.likes !== undefined) set('status-likes', 'Likes', data.likes);
+      if (data.dislikes !== undefined) set('status-dislikes', 'Dislikes', data.dislikes);
+    }
+
+    // User Info removed
+
+    async function fetchContractInfo() {
+      const addrEl = document.getElementById('c-address');
+      const nameEl = document.getElementById('c-name');
+      const symbolEl = document.getElementById('c-symbol');
+      const decimalsEl = document.getElementById('c-decimals');
+      const supplyEl = document.getElementById('c-total-supply');
+      const daiInEl = document.getElementById('c-dai-in-contract');
+      const iamInEl = document.getElementById('c-iam-in-contract');
+      const regPriceEl = document.getElementById('c-registration-price');
+      const tokenPriceEl = document.getElementById('c-token-price');
+      const cashbackEl = document.getElementById('c-cashback');
+      const pointPriceEl = document.getElementById('c-point-price');
+      const deployerEl = null;
+      const usersCountEl = null;
+      const walletsCountEl = document.getElementById('c-wallets-count');
+      const claimablePointsEl = document.getElementById('c-claimable-points');
+      const errEl = document.getElementById('contract-error');
+      errEl.style.display = 'none';
+      errEl.textContent = '';
+      try {
+        if (!window.connectWallet) throw new Error('Wallet connection is not available');
+        const connection = await window.connectWallet();
+        if (!connection || !connection.contract) throw new Error('Contract connection is not available');
+        const { contract, provider, signer, address: connectedAddress } = connection;
+
+        addrEl.textContent = (contract && contract.target) ? contract.target : (window.IAM_ADDRESS || '-');
+        // Update status bar basic address immediately
+        try { updateStatusPills({ address: shortenAddress(connectedAddress || (await signer.getAddress())) }); } catch {}
+
+        // Always read directly from contract (no cached meta)
+        nameEl.textContent = '';
+        symbolEl.textContent = '';
+        decimalsEl.textContent = '';
+        supplyEl.textContent = '';
         
-        // Update token balances
-        async function updateTokenBalances() {
+        if (walletsCountEl) walletsCountEl.textContent = '';
+        
+
+        // Direct reads
+        try { if (typeof contract.name === 'function') nameEl.textContent = await contract.name(); } catch {}
+        try { if (typeof contract.symbol === 'function') symbolEl.textContent = await contract.symbol(); } catch {}
+        try { if (typeof contract.decimals === 'function') decimalsEl.textContent = (await contract.decimals()).toString(); } catch {}
+        let tokenPriceWei = null;
+        let totalSupplyWei = null;
+        try {
+          if (typeof contract.totalSupply === 'function') {
+            totalSupplyWei = await contract.totalSupply();
+            supplyEl.textContent = formatMax2(toNumberFromUnits(totalSupplyWei, 18));
+          }
+        } catch {}
+        
+        // Users count intentionally removed per request
+
+        // Wallets count: prefer explicit contract variable/getter for wallets
+        try {
+          let walletsCount = null;
+          if (typeof contract.wallets === 'function') walletsCount = await contract.wallets();
+          if (typeof contract.walletsCount === 'function') walletsCount = await contract.walletsCount();
+          else if (typeof contract.getWalletsCount === 'function') walletsCount = await contract.getWalletsCount();
+          else if (typeof contract.totalWallets === 'function') walletsCount = await contract.totalWallets();
+          else if (typeof contract.walletsLength === 'function') walletsCount = await contract.walletsLength();
+          else if (typeof contract.getWalletsLength === 'function') walletsCount = await contract.getWalletsLength();
+          if (walletsCountEl && walletsCount !== null && walletsCount !== undefined) walletsCountEl.textContent = (typeof walletsCount === 'bigint' ? walletsCount.toString() : String(walletsCount));
+        } catch {}
+
+        // IAM in contract (balanceOf self)
+        let iamBalanceSelf = null;
+        try {
+          if (typeof contract.balanceOf === 'function') {
+            iamBalanceSelf = await contract.balanceOf(contract.target);
+            if (iamInEl) iamInEl.textContent = formatMax2(toNumberFromUnits(iamBalanceSelf, 18));
+          }
+        } catch {}
+
+        // ===== Status bar: wallet balances =====
+        try {
+          const userAddr = connectedAddress || (signer ? await signer.getAddress() : null);
+          if (userAddr) {
+            // POL/MATIC
             try {
-                if (window.contractConfig && window.contractConfig.provider && window.contractConfig.address) {
-                    
-                    const userAddress = window.contractConfig.address;
-                    const provider = window.contractConfig.provider;
-                    
-                    // Token addresses
-                    const IAM_ADDRESS = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D';
-                    const DAI_ADDRESS = '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063';
-                    
-                    // ERC20 ABI for token balances
-                    const ERC20_ABI = [
-                        {
-                            "inputs": [{"internalType": "address", "name": "account", "type": "address"}],
-                            "name": "balanceOf",
-                            "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-                            "stateMutability": "view",
-                            "type": "function"
-                        }
-                    ];
-                    
-                    // Get IAM balance
-                    let iamBalance = 0;
-                    try {
-                        const iamContract = new ethers.Contract(IAM_ADDRESS, ERC20_ABI, provider);
-                        const balance = await iamContract.balanceOf(userAddress);
-                        iamBalance = parseFloat(ethers.formatEther(balance));
-                    } catch (e) {
-                        // Error getting IAM balance
-                    }
-                    
-                    // Get MATIC balance
-                    let maticBalance = 0;
-                    try {
-                        const balance = await provider.getBalance(userAddress);
-                        maticBalance = parseFloat(ethers.formatEther(balance));
-                    } catch (e) {
-                        // Error getting MATIC balance
-                    }
-                    
-                    // Get DAI balance
-                    let daiBalance = 0;
-                    try {
-                        const daiContract = new ethers.Contract(DAI_ADDRESS, ERC20_ABI, provider);
-                        const balance = await daiContract.balanceOf(userAddress);
-                        daiBalance = parseFloat(ethers.formatEther(balance));
-                    } catch (e) {
-                        // Error getting DAI balance
-                    }
-                    
-                    // Update UI with formatted balances
-            const iamBalanceElement = document.getElementById('iam-balance');
-            const maticBalanceElement = document.getElementById('matic-balance');
-            const daiBalanceElement = document.getElementById('dai-balance');
-            
-            if (iamBalanceElement) {
-                        iamBalanceElement.textContent = Number.isFinite(iamBalance) ? (iamBalance > 0 ? formatTokenBalance(iamBalance, 2) : '0') : '';
-            }
-                    
-            if (maticBalanceElement) {
-                        maticBalanceElement.textContent = Number.isFinite(maticBalance) ? (maticBalance > 0 ? maticBalance.toFixed(2) : '0') : '';
-            }
-                    
-            if (daiBalanceElement) {
-                        daiBalanceElement.textContent = Number.isFinite(daiBalance) ? (daiBalance > 0 ? daiBalance.toFixed(2) : '0') : '';
-                    }
-                    
-                    // Get IAM token price from contract
-                    let iamTokenPrice = 0;
-                    try {
-                        if (window.contractConfig && window.contractConfig.contract) {
-                            const tokenPrice = await window.contractConfig.contract.getTokenPrice();
-                            iamTokenPrice = parseFloat(ethers.formatEther(tokenPrice));
-                        }
-                    } catch (error) {
-                        // Error getting IAM token price
-                    }
-
-                    // Update USD values with real prices
-            const iamUsdElement = document.getElementById('iam-balance-usd');
-            const maticUsdElement = document.getElementById('matic-balance-usd');
-            const daiUsdElement = document.getElementById('dai-balance-usd');
-            
-                if (iamUsdElement) {
-                        const iamUsdValue = (Number.isFinite(iamBalance) && Number.isFinite(iamTokenPrice)) ? (iamBalance * iamTokenPrice) : 0;
-                        iamUsdElement.textContent = '$' + (iamUsdValue > 0 ? formatTokenBalance(iamUsdValue, 2) : '0');
-                    }
-                    
-                if (maticUsdElement) {
-                        maticUsdElement.textContent = ''; // No USD value needed
-                    }
-                    
-                if (daiUsdElement) {
-                        daiUsdElement.textContent = ''; // No USD value needed
-                    }
-                    
-                }
-  } catch (error) {
-                // Error updating token balances
-            }
-        }
-        
-        
-        // Setup compressed navigation
-        
-        function setupCompressedNavigation() {
-            const navItems = document.querySelectorAll('.status-nav-item');
-            const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-            
-            navItems.forEach(item => {
-                const href = item.getAttribute('href');
-                if (href === currentPage) {
-                    item.classList.add('active');
-                } else {
-                    item.classList.remove('active');
-                }
-            });
-        }
-        
-        // Setup compressed navigation
-        function setupCompressedNavigation() {
-            const navItems = document.querySelectorAll('.status-nav-item');
-            const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-
-            navItems.forEach(item => {
-                const href = item.getAttribute('href');
-                if (href === currentPage) {
-                    item.classList.add('active');
-                } else {
-                    item.classList.remove('active');
-                }
-            });
-        }
-        
-        // Initialize when page loads - only once
-        document.addEventListener('DOMContentLoaded', function() {
-            resetDashboardPlaceholders();
-            setupCompressedNavigation();
-
-            // Add simple blocking loader
-            var loader = document.createElement('div');
-            loader.id = 'initial-loading';
-            loader.style.cssText = 'position:fixed;inset:0;background:#0f0f14;display:flex;align-items:center;justify-content:center;z-index:2000;color:#e7e7e7;font-weight:600;';
-            loader.textContent = 'Loading...';
-            document.body.appendChild(loader);
-
-            (async function loadAllOnce(){
+              const mBal = await provider.getBalance(userAddr);
+              updateStatusPills({ matic: formatMax2(toNumberFromUnits(mBal, 18)) });
+            } catch {}
+            // DAI
+            try {
+              const daiAddr = window.DAI_ADDRESS || (window.contractConfig && window.contractConfig.DAI_ADDRESS);
+              if (daiAddr) {
+                const minimalDaiAbi = [{"inputs":[{"name":"account","type":"address"}],"name":"balanceOf","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"}];
+                const Dai = new ethers.Contract(daiAddr, minimalDaiAbi, provider);
+                const dBal = await Dai.balanceOf(userAddr);
+                updateStatusPills({ dAI: undefined, dai: formatMax2(toNumberFromUnits(dBal, 18)) });
+              }
+            } catch {}
+            // IAM balance
+            try {
+              if (typeof contract.balanceOf === 'function') {
+                const ib = await contract.balanceOf(userAddr);
+                updateStatusPills({ iam: formatMax2(toNumberFromUnits(ib, 18)) });
+              }
+            } catch {}
+            // Likes/Dislikes for current user
+            try {
+              if (typeof contract.getVoteStatus === 'function') {
+                const vs = await contract.getVoteStatus(userAddr);
+                const likes = (vs && vs[0] !== undefined) ? Number(vs[0]) : 0;
+                const dislikes = (vs && vs[1] !== undefined) ? Number(vs[1]) : 0;
+                updateStatusPills({ likes, dislikes });
+              }
+            } catch {}
+            // Index
+            try {
+              let idx = null;
+              if (typeof contract.addressToIndex === 'function') idx = await contract.addressToIndex(userAddr);
+              if ((idx === null || (typeof idx === 'bigint' && idx === 0n)) && typeof contract.users === 'function') {
+                const u = await contract.users(userAddr);
+                if (u && u.index !== undefined) idx = u.index;
+                // Also derive a simple rank from binaryPointCap if available
                 try {
-                    // Ensure wallet/contract is available
-                    if (!(window.contractConfig && window.contractConfig.contract)) {
-                        if (typeof window.connectWallet === 'function') {
-                            try { await window.connectWallet(); } catch(_) {}
-                        }
-                    }
+                  if (u && u.binaryPointCap !== undefined) {
+                    const rankVal = (typeof u.binaryPointCap === 'bigint') ? Number(u.binaryPointCap) : Number(u.binaryPointCap||0);
+                    if (!isNaN(rankVal)) updateStatusPills({ rank: `Rank: ${rankVal}` });
+                  }
+                } catch {}
+              }
+              if (idx !== null && idx !== undefined) updateStatusPills({ index: (typeof idx === 'bigint' ? idx.toString() : String(idx)) });
+            } catch {}
+          }
+        } catch {}
 
-                    // Set contract link to Polygonscan after contract known
-            try {
-                const linkEl = document.getElementById('contract-link');
-                let addr = '';
-                if (window.contractConfig && window.contractConfig.IAM_ADDRESS) {
-                    addr = window.contractConfig.IAM_ADDRESS;
-                } else if (window.contractConfig && window.contractConfig.contract && window.contractConfig.contract.target) {
-                    addr = window.contractConfig.contract.target;
-                } else if (typeof IAM_ADDRESS !== 'undefined') {
-                    addr = IAM_ADDRESS;
-                }
-                if (linkEl && addr) {
-                    linkEl.textContent = addr;
-                    linkEl.href = 'https://polygonscan.com/address/' + addr;
-                } else if (linkEl) {
-                    linkEl.textContent = '';
-                    linkEl.removeAttribute('href');
-                }
-            } catch (_) {}
-            
-                    // Fetch user data and dashboard in sequence and wait
-                    await updateStatusBar();
-                    await refreshDashboardCache();
-                    // Referral: parse ref from URL, auto-redirect inactive users, and generate own link
-                    try {
-                        await setupReferralFlow();
-                    } catch(_){}
-                    // Auto-refresh: visible-only interval + focus/visibility triggers
-                    try {
-                        if (!window.__iam_auto_refresh_set) {
-                            window.__iam_auto_refresh_set = true;
-                            const tick = async () => {
-                                if (document.visibilityState !== 'visible') return;
-                                await refreshDashboardCache();
-                                // Status bar (likes/balances) may change too
-                                await updateStatusBar();
-                            };
-                            // Interval every 45s for low overhead
-                            window.__iam_auto_int = setInterval(tick, 45000);
-                            // Immediate refresh on focus/visibility regain
-                            window.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') tick(); });
-                            window.addEventListener('focus', tick);
-                        }
-                    } catch(_){}
+        // DAI in contract (best-effort via window.DAI_ADDRESS)
+        try {
+          const daiAddr = window.DAI_ADDRESS || (window.contractConfig && window.contractConfig.DAI_ADDRESS);
+          if (provider && daiAddr) {
+            const minimalDaiAbi = [{"inputs":[{"name":"account","type":"address"}],"name":"balanceOf","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"}];
+            const Dai = new ethers.Contract(daiAddr, minimalDaiAbi, provider);
+            const d = await Dai.balanceOf(contract.target);
+            if (daiInEl) daiInEl.textContent = formatMax2(toNumberFromUnits(d, 18));
+          }
+        } catch {}
 
-                    // Background per-card refresh every 5s with freeze-on-stable behavior
-                    try {
-                        if (!window.__iam_card_refresh_set) {
-                            window.__iam_card_refresh_set = true;
-                            window.__iam_frozen_cards = new Set();
+        // Registration price (only getRegPrice per request)
+        let regPriceWei = null;
+        try {
+          if (typeof contract.getRegPrice === 'function') {
+            const r = await contract.getRegPrice();
+            regPriceWei = (typeof r === 'bigint') ? r : BigInt(r);
+            if (regPriceEl) regPriceEl.textContent = formatMax2(toNumberFromUnits(regPriceWei, 18));
+          }
+        } catch {}
 
-                            const fetchSnapshot = async () => {
-                                const contract = window.contractConfig && window.contractConfig.contract;
-                                if (!contract) return null;
-                                const withTimeout = async (p, ms=12000) => Promise.race([p, new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')), ms))]);
-                                const safe = async (fn) => { try { return await fn; } catch(_) { return 0; } };
-                                const [
-                                    totalSupply, totalUsers, tokenPrice, totalPoints, pointValue,
-                                    daiContractBalance, regPrice, cashBack, contractIAMBalanace
-                                ] = await Promise.allSettled([
-                                    safe(withTimeout(contract.totalSupply())),
-                                    safe(withTimeout(contract.wallets())),
-                                    safe(withTimeout(contract.getTokenPrice())),
-                                    safe(withTimeout(contract.totalClaimableBinaryPoints())),
-                                    safe(withTimeout(contract.getPointValue())),
-                                    safe(withTimeout(contract.getContractdaiBalance())) ,
-                                    contract.getRegPrice ? safe(withTimeout(contract.getRegPrice())) : 0,
-                                    contract.cashBack ? safe(withTimeout(contract.cashBack())) : 0,
-                                    contract.balanceOf ? safe(withTimeout(contract.balanceOf(contract.target))) : 0
-                                ]).then(res => res.map(r => r.status==='fulfilled'? r.value : 0));
-                                return {
-                                    totalSupplyNum: parseFloat(ethers.formatEther(totalSupply || 0)),
-                                    totalUsersNum: parseInt(totalUsers || 0),
-                                    tokenPriceNum: parseFloat(ethers.formatEther(tokenPrice || 0)),
-                                    totalPointsNum: parseInt(totalPoints || 0),
-                                    pointValueNum: parseFloat(ethers.formatEther(pointValue || 0)),
-                                    daiBalanceNum: parseFloat(ethers.formatEther(daiContractBalance || 0)),
-                                    regPriceValue: parseFloat(ethers.formatEther(regPrice || 0)),
-                                    cashBackTokenNum: parseFloat(ethers.formatEther(cashBack || 0)),
-                                    contractIAMNum: parseFloat(ethers.formatEther(contractIAMBalanace || 0))
-                                };
-                            };
+        // Token price (try common names)
+        try {
+          let p;
+          if (typeof contract.getTokenPrice === 'function') p = await contract.getTokenPrice();
+          else if (typeof contract.tokenPrice === 'function') p = await contract.tokenPrice();
+          if (p !== undefined) {
+            tokenPriceWei = (typeof p === 'bigint') ? p : BigInt(p);
+            if (tokenPriceEl) tokenPriceEl.textContent = safeFormatUnits(tokenPriceWei, 18);
+          }
+        } catch {}
 
-                            const fmt = {
-                                num: (n, isInt=false) => {
-                                    if (!Number.isFinite(n)) return '';
-                                    if (isInt) return Math.floor(n).toString();
-                                    return n.toFixed(2);
-                                },
-                                token: (n, d=2) => {
-                                    const v = Number(n);
-                                    if (!isFinite(v) || v === 0) return '0';
-                                    const abs = Math.abs(v);
-                                    const suf = [[1e12,'T'],[1e9,'B'],[1e6,'M'],[1e3,'K']];
-                                    for (const [vv,s] of suf){ if (abs>=vv) return (v/vv).toPrecision(3).replace(/\.0+$|(?<=\.[0-9]*?)0+$/,'')+s; }
-                                    return v.toPrecision(3).replace(/\.0+$|(?<=\.[0-9]*?)0+$/,'');
-                                }
-                            };
+        // Point price will be derived below from IAM-in-contract / total unclaimed points
 
-                            const computeStrings = (c) => ({
-                                'total-supply': c.totalSupplyNum>0 ? fmt.token(c.totalSupplyNum) : '0',
-                                'total-users': c.totalUsersNum>0 ? fmt.num(c.totalUsersNum,true) : '0',
-                                'token-price': c.tokenPriceNum>0 ? '$'+fmt.token(c.tokenPriceNum,6) : '$0',
-                                'total-points': c.totalPointsNum>0 ? fmt.num(c.totalPointsNum,true) : '0',
-                                'point-value': c.pointValueNum>0 ? fmt.token(c.pointValueNum,2) : '0',
-                                'contract-balance': (Number.isFinite(c.daiBalanceNum)) ? fmt.num(c.daiBalanceNum) : '',
-                                'total-supply-usd': (c.totalSupplyNum*c.tokenPriceNum)>0 ? '$'+fmt.token(c.totalSupplyNum*c.tokenPriceNum) : '$0',
-                                'contract-balance-usd': (Number.isFinite(c.daiBalanceNum)) ? '$'+fmt.num(c.daiBalanceNum) : '$0',
-                                'contract-iam-balance': c.contractIAMNum>0 ? fmt.token(c.contractIAMNum,2) : '0',
-                                'contract-iam-balance-usd': (c.contractIAMNum*c.tokenPriceNum)>0 ? '$'+fmt.token(c.contractIAMNum*c.tokenPriceNum) : '$0',
-                                'reg-price': c.regPriceValue>0 ? fmt.token(c.regPriceValue,2) : '0',
-                                'reg-price-usd': (c.regPriceValue*c.tokenPriceNum)>0 ? '$'+fmt.token(c.regPriceValue*c.tokenPriceNum) : '$0',
-                                'cashback': c.cashBackTokenNum>0 ? fmt.token(c.cashBackTokenNum,2) : '0',
-                                'cashback-usd': (c.cashBackTokenNum*c.tokenPriceNum)>0 ? '$'+fmt.token(c.cashBackTokenNum*c.tokenPriceNum) : '$0',
-                                'point-value-usd': (c.pointValueNum*c.tokenPriceNum)>0 ? '$'+fmt.token(c.pointValueNum*c.tokenPriceNum) : '$0'
-                            });
+        // Claimable points total – read from its public variable/getter on contract
+        let totalUnclaimedPoints = null;
+        try {
+          const preferIntegerString = (v) => {
+            try { return (typeof v === 'bigint' ? v : BigInt(v)).toString(); } catch { return String(v); }
+          };
+          let cp;
+          if (typeof contract.totalClaimablePoints === 'function') cp = await contract.totalClaimablePoints();
+          else if (typeof contract.claimablePointsTotal === 'function') cp = await contract.claimablePointsTotal();
+          else if (typeof contract.getClaimablePoints === 'function') cp = await contract.getClaimablePoints();
+          else if (typeof contract.claimablePoints === 'function') cp = await contract.claimablePoints();
+          else if (typeof contract.totalUnclaimedPoints === 'function') cp = await contract.totalUnclaimedPoints();
+          else if (typeof contract.unclaimedPointsTotal === 'function') cp = await contract.unclaimedPointsTotal();
+          if (cp !== undefined) {
+            totalUnclaimedPoints = (typeof cp === 'bigint') ? cp : (()=>{ try{return BigInt(cp);}catch{return null;} })();
+            if (claimablePointsEl && totalUnclaimedPoints !== null) claimablePointsEl.textContent = totalUnclaimedPoints.toString();
+          }
+        } catch {}
 
-                            const cardTick = async () => {
-                                if (document.visibilityState !== 'visible') return;
-                                const snap = await fetchSnapshot();
-                                if (!snap) return;
-                                const strs = computeStrings(snap);
-                                for (const id in strs) {
-                                    if (window.__iam_frozen_cards.has(id)) continue;
-                                    const el = document.getElementById(id);
-                                    if (!el) continue;
-                                    const next = strs[id];
-                                    const prev = el.textContent || '';
-                                    if (prev === next && prev !== '') {
-                                        // Freeze this card (no further updates)
-                                        window.__iam_frozen_cards.add(id);
-                                        continue;
-                                    }
-                                    if (prev !== next) {
-                                        el.textContent = next;
-                                    }
-                                }
-                            };
+        // Derived Point Value = IAM in contract / total unclaimed points (IAM has 18 decimals; points are integer)
+        try {
+          if (pointPriceEl && iamBalanceSelf !== null && totalUnclaimedPoints !== null && totalUnclaimedPoints > 0n) {
+            const ONE = 1000000000000000000n; // 1e18
+            const priceWeiPerPoint = iamBalanceSelf / totalUnclaimedPoints;
+            pointPriceEl.textContent = formatMax2(toNumberFromUnits(priceWeiPerPoint, 18));
+            if (tokenPriceWei) {
+              const usdPerPointWei = (priceWeiPerPoint * tokenPriceWei) / ONE;
+              const usdEl = ensureUsdLineBelow(pointPriceEl);
+              if (usdEl) usdEl.textContent = formatUsdFromWeiProduct(usdPerPointWei);
+            }
+          }
+        } catch {}
 
-                            window.__iam_card_int = setInterval(cardTick, 5000);
-                        }
-                    } catch(_){}
-                } finally {
-                    // Remove loader regardless of success to avoid trapping user
-                    try { var el = document.getElementById('initial-loading'); if (el) el.remove(); } catch(_){}
-                }
-            })();
-        });
-        
-        // Global function for main.js to call - only once
-        window.updateUserStatusBar = function() {
-            updateStatusBar();
-        };
-        
-        
-        // In-memory cache for dashboard (refreshed every 10s), cards render from cache
-        var dashboardCache = null;
-        var dashboardRefreshing = false;
+        // Cashback (raw 18-decimals)
+        try {
+          if (cashbackEl && typeof contract.cashBack === 'function') {
+            const cb = await contract.cashBack();
+            const cbWei = (typeof cb === 'bigint') ? cb : BigInt(cb);
+            cashbackEl.textContent = formatMax2(toNumberFromUnits(cbWei, 18));
+            // USD subline below cashback
+            if (tokenPriceWei) {
+              const ONE = 1000000000000000000n;
+              const cbUsdWei = (cbWei * tokenPriceWei) / ONE;
+              const usdEl = ensureUsdLineBelow(cashbackEl);
+              if (usdEl) usdEl.textContent = formatUsdFromWeiProduct(cbUsdWei);
+            }
+          }
+        } catch {}
 
-        // Progress removed
+        // USD subline below Registration Price
+        try {
+          if (regPriceEl && regPriceWei && tokenPriceWei) {
+            const ONE = 1000000000000000000n;
+            const regUsdWei = (regPriceWei * tokenPriceWei) / ONE;
+            const usdEl = ensureUsdLineBelow(regPriceEl);
+            if (usdEl) usdEl.textContent = formatUsdFromWeiProduct(regUsdWei);
+          }
+        } catch {}
 
-        async function refreshDashboardCache() {
-            if (dashboardRefreshing) return;
-            if (!(window.contractConfig && window.contractConfig.contract)) return;
-            dashboardRefreshing = true;
-            try {
-                const contract = window.contractConfig.contract;
-                const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
-                const withTimeout = async (p, ms=12000) => Promise.race([p, new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')), ms))]);
-                const alwaysRetryOnChain = async (fnFactory) => {
-                    // Keep trying until a successful response is returned
-                    // No mock/default assignment here
-                    while (true) {
-                        try {
-                            const v = await withTimeout(fnFactory(), 15000);
-                            return v;
-                        } catch (_) {
-                            await sleep(1000);
-                        }
-                    }
-                };
-                // Build promises only for methods that exist (on-chain only)
-                const pTotalSupply = (typeof contract.totalSupply === 'function') ? alwaysRetryOnChain(()=>contract.totalSupply()) : Promise.resolve(0);
-                const pWallets = (typeof contract.wallets === 'function') ? alwaysRetryOnChain(()=>contract.wallets()) : Promise.resolve(0);
-                const pTokenPrice = (typeof contract.getTokenPrice === 'function') ? alwaysRetryOnChain(()=>contract.getTokenPrice()) : Promise.resolve(0);
-                const pTotalPoints = (typeof contract.totalClaimableBinaryPoints === 'function') ? alwaysRetryOnChain(()=>contract.totalClaimableBinaryPoints()) : Promise.resolve(0);
-                const pPointValue = (typeof contract.getPointValue === 'function') ? alwaysRetryOnChain(()=>contract.getPointValue()) : Promise.resolve(0);
-                const pDaiBalance = (typeof contract.getContractdaiBalance === 'function') ? alwaysRetryOnChain(()=>contract.getContractdaiBalance()) : Promise.resolve(0);
-                const pRegPrice = (typeof contract.getRegPrice === 'function') ? alwaysRetryOnChain(()=>contract.getRegPrice()) : Promise.resolve(0);
-                const pCashBack = (typeof contract.cashBack === 'function') ? alwaysRetryOnChain(()=>contract.cashBack()) : Promise.resolve(0);
-                const pContractIAM = (typeof contract.balanceOf === 'function' && contract.target) ? alwaysRetryOnChain(()=>contract.balanceOf(contract.target)) : Promise.resolve(0);
+        // USD under Total Supply
+        try {
+          if (totalSupplyWei && tokenPriceWei) {
+            const ONE = 1000000000000000000n;
+            const supplyUsdWei = (totalSupplyWei * tokenPriceWei) / ONE;
+            const usdEl = ensureUsdLineBelow(supplyEl);
+            if (usdEl) usdEl.textContent = formatUsdFromWeiProduct(supplyUsdWei);
+          }
+        } catch {}
 
-                const [
-                    totalSupply, totalUsers, tokenPrice, totalPoints, pointValue,
-                    daiContractBalance, regPrice, cashBack, contractIAMBalanace
-                ] = await Promise.all([
-                    pTotalSupply, pWallets, pTokenPrice, pTotalPoints, pPointValue,
-                    pDaiBalance, pRegPrice, pCashBack, pContractIAM
-                ]);
-
-                dashboardCache = {
-                    ts: Date.now(),
-                    totalSupplyNum: parseFloat(ethers.formatEther(totalSupply)),
-                    totalUsersNum: parseInt(totalUsers),
-                    tokenPriceNum: parseFloat(ethers.formatEther(tokenPrice)),
-                    totalPointsNum: parseInt(totalPoints),
-                    pointValueNum: parseFloat(ethers.formatEther(pointValue)),
-                    daiBalanceNum: parseFloat(ethers.formatEther(daiContractBalance)),
-                    regPriceValue: parseFloat(ethers.formatEther(regPrice || 0)),
-                    cashBackTokenNum: parseFloat(ethers.formatEther(cashBack || 0)),
-                    contractIAMNum: parseFloat(ethers.formatEther(contractIAMBalanace || 0)),
-                    // Placeholders for estimateSell USD equivalents
-                    usdFromRegPrice: null,
-                    usdFromCashback: null,
-                    usdFromContractIAM: null,
-                    usdFromPointValue: null
-                };
-
-                // Estimate USD equivalents in parallel if estimator exists
-                try {
-                    const toWei = (v) => ethers.parseUnits(String(v || 0), 18);
-                    if (typeof contract.estimateSell === 'function') {
-                        const eReg = dashboardCache.regPriceValue>0 ? alwaysRetryOnChain(()=>contract.estimateSell(toWei(dashboardCache.regPriceValue))) : Promise.resolve(0);
-                        const eCash = dashboardCache.cashBackTokenNum>0 ? alwaysRetryOnChain(()=>contract.estimateSell(toWei(dashboardCache.cashBackTokenNum))) : Promise.resolve(0);
-                        const eIAM = dashboardCache.contractIAMNum>0 ? alwaysRetryOnChain(()=>contract.estimateSell(toWei(dashboardCache.contractIAMNum))) : Promise.resolve(0);
-                        const ePoint = dashboardCache.pointValueNum>0 ? alwaysRetryOnChain(()=>contract.estimateSell(toWei(dashboardCache.pointValueNum))) : Promise.resolve(0);
-                        const [a,b,c,d] = await Promise.all([eReg,eCash,eIAM,ePoint]);
-                        dashboardCache.usdFromRegPrice = parseFloat(ethers.formatEther(a || 0));
-                        dashboardCache.usdFromCashback = parseFloat(ethers.formatEther(b || 0));
-                        dashboardCache.usdFromContractIAM = parseFloat(ethers.formatEther(c || 0));
-                        dashboardCache.usdFromPointValue = parseFloat(ethers.formatEther(d || 0));
-                    }
-                } catch(_) {}
-
-                renderDashboardFromCache();
-                // Progress removed
+        // USD under IAM In Contract
+        try {
+          if (iamBalanceSelf !== null && tokenPriceWei) {
+            const ONE = 1000000000000000000n;
+            const iamUsdWei = (iamBalanceSelf * tokenPriceWei) / ONE;
+            const usdEl = ensureUsdLineBelow(iamInEl);
+            if (usdEl) usdEl.textContent = formatUsdFromWeiProduct(iamUsdWei);
+          }
+        } catch {}
             } catch (e) {
-                // silent
-            } finally {
-                dashboardRefreshing = false;
-            }
-        }
+        errEl.textContent = e.message || 'Failed to load contract info';
+        errEl.style.display = 'block';
+      }
+    }
 
-        function renderDashboardFromCache() {
-            if (!dashboardCache) return;
-            const c = dashboardCache;
-            updateDashboardElement('total-supply', Number.isFinite(c.totalSupplyNum) ? Math.floor(c.totalSupplyNum).toString() : '0');
-            updateDashboardElement('total-users', c.totalUsersNum > 0 ? formatNumber(c.totalUsersNum, true) : '');
-            updateDashboardElement('token-price', Number.isFinite(c.tokenPriceNum) ? ('$' + formatTokenBalance(c.tokenPriceNum, 6)) : '$0');
-            updateDashboardElement('total-points', c.totalPointsNum > 0 ? formatNumber(c.totalPointsNum, true) : '');
-            updateDashboardElement('point-value', Number.isFinite(c.pointValueNum) ? Math.floor(c.pointValueNum).toString() : '0');
-            updateDashboardElement('contract-balance', (Number.isFinite(c.daiBalanceNum) && c.daiBalanceNum > 0) ? c.daiBalanceNum.toFixed(2) : '');
-            updateDashboardElement('total-supply-usd', (c.totalSupplyNum * c.tokenPriceNum) > 0 ? '$' + formatNumber(c.totalSupplyNum * c.tokenPriceNum) : '');
-            updateDashboardElement('contract-balance-usd', (Number.isFinite(c.daiBalanceNum) && c.daiBalanceNum > 0) ? '$' + c.daiBalanceNum.toFixed(2) : '');
-            updateDashboardElement('contract-iam-balance', Number.isFinite(c.contractIAMNum) ? Math.floor(c.contractIAMNum).toString() : '0');
-            const contractIamUsdPref = (typeof c.usdFromContractIAM === 'number' && c.usdFromContractIAM > 0)
-                ? c.usdFromContractIAM : (c.contractIAMNum * c.tokenPriceNum);
-            updateDashboardElement('contract-iam-balance-usd', contractIamUsdPref > 0 ? '$' + formatNumber(contractIamUsdPref) : '');
-            updateDashboardElement('reg-price', Number.isFinite(c.regPriceValue) ? Math.floor(c.regPriceValue).toString() : '0');
-            const regPriceUsd = (typeof c.usdFromRegPrice === 'number' && c.usdFromRegPrice > 0)
-                ? c.usdFromRegPrice : (c.regPriceValue * c.tokenPriceNum);
-                    updateDashboardElement('reg-price-usd', regPriceUsd > 0 ? '$' + formatNumber(regPriceUsd) : '');
-            updateDashboardElement('cashback', Number.isFinite(c.cashBackTokenNum) ? Math.floor(c.cashBackTokenNum).toString() : '0');
-            const cashbackUsd = (typeof c.usdFromCashback === 'number' && c.usdFromCashback > 0)
-                ? c.usdFromCashback : (c.cashBackTokenNum * c.tokenPriceNum);
-                    updateDashboardElement('cashback-usd', cashbackUsd > 0 ? '$' + formatNumber(cashbackUsd) : '');
-            const pointValueUsd = (typeof c.usdFromPointValue === 'number' && c.usdFromPointValue > 0)
-                ? c.usdFromPointValue : (c.pointValueNum * c.tokenPriceNum);
-                    updateDashboardElement('point-value-usd', pointValueUsd > 0 ? '$' + formatNumber(pointValueUsd) : '');
-            // Reveal dashboard after first successful render
-            try { var root = document.getElementById('dashboard-root'); if (root) root.classList.remove('hidden'); } catch(_){}
-        }
+    // Ensure connection before fetching; retry a few times
+    async function waitForContract(maxWaitMs = 10000, intervalMs = 500) {
+      const start = Date.now();
+      while (Date.now() - start < maxWaitMs) {
+        try {
+          if (window.contractConfig && window.contractConfig.contract) return true;
+          if (typeof window.connectWallet === 'function') {
+            const conn = await window.connectWallet();
+            if (conn && conn.contract) return true;
+          }
+        } catch {}
+        await new Promise(r => setTimeout(r, intervalMs));
+      }
+      return false;
+    }
 
-        // Backwards-compatible alias if other scripts call updateDashboard()
-        async function updateDashboard() { await refreshDashboardCache(); }
-        
-        // Clear all dashboard and status placeholders to avoid stale/default values
-        function resetDashboardPlaceholders() {
-            const ids = [
-                'total-supply','total-supply-usd','total-users','token-price','total-points',
-                'point-value','point-value-usd','contract-balance','contract-balance-usd',
-                'contract-iam-balance','contract-iam-balance-usd','reg-price','reg-price-usd',
-                'cashback','cashback-usd','userStatusIdValue','userStatusLikes','userStatusDislikes',
-                'iam-balance','iam-balance-usd','dai-balance','dai-balance-usd','matic-balance','matic-balance-usd'
-            ];
-            for (var i=0;i<ids.length;i++) {
-                var el = document.getElementById(ids[i]);
-                if (el && el.textContent !== '') el.textContent = '';
-            }
-            var levelEl = document.getElementById('userStatusLevel');
-            if (levelEl && levelEl.textContent !== '') levelEl.textContent = '';
-        }
+    async function refreshContractInfoSafe() {
+      const ok = await waitForContract(12000, 600);
+      if (!ok) return;
+      await fetchContractInfo();
+    }
 
-        // Background staggered updates disabled per request; cards load once via updateDashboard()
-        
-        // Helper function to update dashboard elements
-        function updateDashboardElement(elementId, value) {
-            const element = document.getElementById(elementId);
-            if (!element) return;
-            const next = String(value == null ? '' : value);
-            if (element.textContent === next) return;
-            element.textContent = next;
-        }
+    // ==== Dynamic ABI UI builders ====
+    function parseInputValue(raw, solidityType) {
+      if (solidityType.startsWith('uint') || solidityType.startsWith('int')) {
+        // Accept decimal string -> BigInt
+        return (typeof raw === 'string' && raw.trim() !== '') ? BigInt(raw) : 0n;
+      }
+      if (solidityType === 'bool') {
+        return String(raw).toLowerCase() === 'true';
+      }
+      // bytes, address, string, arrays (as JSON)
+      if (solidityType.endsWith(']')) {
+        try { return JSON.parse(raw); } catch { return []; }
+      }
+      return raw;
+    }
 
-        // ===== Referral helpers =====
-        function parseRefFromUrl() {
-            const params = new URLSearchParams(window.location.search);
-            let ref = params.get('ref') || params.get('referrer') || '';
-            ref = (ref || '').trim();
-            if (!ref) return null;
-            // Normalize: allow address (0x...) or index (digits)
-            if (/^0x[a-fA-F0-9]{40}$/.test(ref)) return { type: 'address', value: ref };
-            if (/^\d+$/.test(ref)) return { type: 'index', value: ref };
-            return null;
-        }
+     function buildFunctionRow(fn, container, isWrite = false) {
+      const row = document.createElement('div');
+      row.style.border = '1px solid #263048';
+      row.style.borderRadius = '10px';
+      row.style.padding = '10px';
+      row.style.margin = '10px 0';
 
-        async function resolveRefToAddress(contract, refObj) {
-            if (!refObj) return null;
-            if (refObj.type === 'address') return refObj.value;
-            if (refObj.type === 'index' && typeof contract.indexToAddress === 'function') {
-                try { const addr = await contract.indexToAddress(parseInt(refObj.value, 10)); return addr; } catch(_) { return null; }
-            }
-            return null;
-        }
+      const title = document.createElement('div');
+      title.className = 'label';
+      title.textContent = `${fn.name}(${(fn.inputs||[]).map(i=>i.type).join(', ')})`;
+      row.appendChild(title);
 
-        async function setupReferralFlow() {
-            const contract = window.contractConfig && window.contractConfig.contract;
-            const address = window.contractConfig && window.contractConfig.address;
-            if (!contract || !address) return;
+      const inputsWrap = document.createElement('div');
+      inputsWrap.style.display = 'grid';
+      inputsWrap.style.gridTemplateColumns = 'repeat(auto-fit, minmax(180px, 1fr))';
+      inputsWrap.style.gap = '8px';
+      const inputs = [];
+      (fn.inputs||[]).forEach((inp, idx) => {
+        const field = document.createElement('input');
+        field.placeholder = `${inp.name||'arg'+idx}: ${inp.type}`;
+        field.style.background = '#0f1220';
+        field.style.border = '1px solid #263048';
+        field.style.borderRadius = '8px';
+        field.style.color = '#e6eaf0';
+        field.style.padding = '8px';
+        inputsWrap.appendChild(field);
+        inputs.push({ field, type: inp.type });
+      });
+      row.appendChild(inputsWrap);
 
-            // 1) If URL has ref and user is not registered → redirect to register with normalized ref
-            const refObj = parseRefFromUrl();
-            if (refObj) {
-                try {
-                    const me = await contract.users(address);
-                    const myIndex = (me && (me.index ?? me[0] ?? me[1])) ? BigInt(me.index ?? me[0] ?? me[1]) : 0n;
-                    if (!myIndex || myIndex === 0n) {
-                        const refAddr = await resolveRefToAddress(contract, refObj);
-                        const refParam = refAddr && refAddr !== '0x0000000000000000000000000000000000000000' ? refAddr : (refObj.type==='index' ? refObj.value : '');
-                        const qs = refParam ? ('?ref=' + encodeURIComponent(refParam)) : '';
-                        window.location.href = 'register.html' + qs;
-                        return; // stop further setup; redirecting
-                    }
-                } catch(_){}
-            }
+      const actions = document.createElement('div');
+      actions.style.marginTop = '8px';
+      const btn = document.createElement('button');
+      btn.textContent = isWrite ? 'ارسال تراکنش' : 'فراخوانی';
+      actions.appendChild(btn);
+      row.appendChild(actions);
 
-            // 2) If user is active → generate personal referral link
-            try {
-                const me = await contract.users(address);
-                const myIndex = (me && (me.index ?? me[0] ?? me[1])) ? String(me.index ?? me[0] ?? me[1]) : '';
-                const refValue = myIndex || address;
-                const refUrl = window.location.origin + window.location.pathname + '?ref=' + encodeURIComponent(refValue);
-                const input = document.getElementById('referral-link');
-                const note = document.getElementById('referral-note');
-                if (input) input.value = refUrl;
-                if (note) note.textContent = myIndex ? ('Your invite via index IAM ' + myIndex) : 'Your invite via address';
+      const result = document.createElement('div');
+      result.className = 'value';
+      result.style.marginTop = '8px';
+      result.style.wordBreak = 'break-word';
+      row.appendChild(result);
 
-                const copyBtn = document.getElementById('copy-ref');
-                if (copyBtn) {
-                    copyBtn.onclick = async () => {
-                        try { await navigator.clipboard.writeText(refUrl); copyBtn.textContent = 'Copied'; setTimeout(()=>copyBtn.textContent='Copy', 1200); } catch(_){}
-                    };
-                }
-                const shareBtn = document.getElementById('share-ref');
-                if (shareBtn) {
-                    shareBtn.onclick = async () => {
-                        try {
-                            if (navigator.share) {
-                                await navigator.share({ title: 'Join IAM', text: 'Register with my referral:', url: refUrl });
+      btn.addEventListener('click', async () => {
+        try {
+          const args = inputs.map(i => parseInputValue(i.field.value, i.type));
+          const callName = fn.name;
+          const signature = `${fn.name}(${(fn.inputs||[]).map(i=>i.type).join(',')})`;
+          if (isWrite) {
+            result.textContent = '⏳ در حال ارسال تراکنش...';
+            const sender = (typeof window.sendWriteSignature === 'function') ? window.sendWriteSignature : window.sendWrite;
+            const receipt = await sender(signature, ...args);
+            result.textContent = `✅ تایید شد: ${receipt.transactionHash}`;
                             } else {
-                                await navigator.clipboard.writeText(refUrl);
-                                shareBtn.textContent = 'Copied'; setTimeout(()=>shareBtn.textContent='Share', 1200);
-                            }
-                        } catch(_){}
-                    };
-                }
-            } catch(_){}
+            result.textContent = '⏳ در حال خواندن...';
+            const reader = (typeof window.callReadSignature === 'function') ? window.callReadSignature : window.callRead;
+            const out = await reader(signature, ...args);
+            try { result.textContent = JSON.stringify(out, null, 2); }
+            catch { result.textContent = String(out); }
+          }
+        } catch (e) {
+          result.textContent = `❌ ${e.message||e}`;
         }
-        
-        // Helper function to format numbers
-        function formatNumber(num, isInteger = false) {
-            if (isInteger) {
-                if (num >= 1000000000) {
-                    return Math.floor(num / 1000000000) + 'B';
-                } else if (num >= 1000000) {
-                    return Math.floor(num / 1000000) + 'M';
-                } else if (num >= 1000) {
-                    return Math.floor(num / 1000) + 'K';
-            } else {
-                    return Math.floor(num).toString();
-                }
-    } else {
-                if (num >= 1000000000) {
-                    return (num / 1000000000).toFixed(2) + 'B';
-                } else if (num >= 1000000) {
-                    return (num / 1000000).toFixed(2) + 'M';
-                } else if (num >= 1000) {
-                    return (num / 1000).toFixed(2) + 'K';
-                } else {
-                    return num.toFixed(2);
-                }
-            }
-        }
-        
-        // Helper: format with 3 significant digits and suffixes (K/M/B/T). For <1 use scientific (E)
-        function formatTokenBalance(num, _decimalsIgnored = 3) {
-            const value = Number(num);
-            if (!isFinite(value) || value === 0) return '0';
-            const abs = Math.abs(value);
-            const suffixes = [
-                { v: 1e12, s: 'T' },
-                { v: 1e9,  s: 'B' },
-                { v: 1e6,  s: 'M' },
-                { v: 1e3,  s: 'K' }
-            ];
-            const trim = (str) => str.replace(/\.0+$|(?<=\.[0-9]*?)0+$/g, '');
-            for (const { v, s } of suffixes) {
-                if (abs >= v) {
-                    const scaled = value / v;
-                    return trim(Number(scaled.toPrecision(3)).toString()) + s;
-                }
-            }
-            if (abs >= 1) {
-                return trim(Number(value.toPrecision(3)).toString());
-            }
-            // < 1 → scientific with 3 sig digits (1 leading + 2 fractional)
-            return value.toExponential(2).replace('e', 'E');
-        }
-        
-        // Referral link generator and sharing handlers
-        (function setupReferralUI(){
-            try {
-                var inputEl = document.getElementById('referral-link');
-                var copyBtn = document.getElementById('copy-ref');
-                var shareBtn = document.getElementById('share-ref');
-                var noteEl = document.getElementById('referral-note');
-                if (!inputEl || !copyBtn || !shareBtn) return;
+      });
 
-                // Build a clean base URL to register.html
-                var baseUrl = (location.origin + (location.pathname.endsWith('register.html') ? location.pathname : location.pathname.replace(/[^/]*$/, 'register.html'))).replace(/\?$|\?+.*/,'');
+      container.appendChild(row);
+    }
 
-                var lastAddress = '';
-                var updateLink = function(address){
-                    if (!address || address === lastAddress) return;
-                    lastAddress = address;
-                    var link = baseUrl + '?ref=' + address;
-                    if (inputEl.value !== link) inputEl.value = link;
-                    if (noteEl && noteEl.textContent !== 'Your personal invite link') {
-                        noteEl.textContent = 'Your personal invite link';
-                    }
-                };
+     function buildAbiUI() { /* write functions removed per request */ }
 
-                // Helper: check if an address is active user
-                var checkActive = async function(address){
-                    try {
-                        if (!window.contractConfig || !window.contractConfig.contract) return false;
-                        var ud = await window.contractConfig.contract.users(address);
-                        return !!(ud && (ud.index || ud[0]) && BigInt(ud.index ?? ud[0]) > 0n);
-                    } catch(_) { return false; }
-                };
+    
 
-                // Attempt immediate fill if wallet already known and active
-                var trySetActiveLink = async function(){
-                    try {
-                        if (!(window.contractConfig && window.contractConfig.address)) return false;
-                        var addr = window.contractConfig.address;
-                        var isActive = await checkActive(addr);
-                        if (isActive) {
-                            updateLink(addr);
-                            copyBtn.disabled = false;
-                            shareBtn.disabled = false;
-                            return true;
-                        } else {
-                            inputEl.value = '';
-                            if (noteEl) noteEl.textContent = 'Activate your account to get a referral link';
-                            copyBtn.disabled = true;
-                            shareBtn.disabled = true;
-                            return false;
-                        }
-                    } catch(_) { return false; }
-                };
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Auto try to load if connection is already present
+      try {
+        await refreshContractInfoSafe();
+        // buildAbiUI removed
+      } catch {}
 
-                if (window.contractConfig && window.contractConfig.address) {
-                    trySetActiveLink();
-                } else {
-                    // Poll briefly for connection becoming available
-                    var tries = 0;
-                    var intId = setInterval(async function(){
-                        tries++;
-                        if (window.contractConfig && window.contractConfig.address) {
-                            await trySetActiveLink();
-                            clearInterval(intId);
-                        }
-                        if (tries > 200) { // ~20s max
-                            clearInterval(intId);
-                        }
-                    }, 100);
-                }
+      // Refresh periodically
+      setInterval(() => { refreshContractInfoSafe(); }, 30000);
 
-                // Copy handler
-                copyBtn.addEventListener('click', function(){
-                    if (!inputEl.value) return;
-                    try {
-                        navigator.clipboard.writeText(inputEl.value).then(function(){
-                            copyBtn.textContent = 'Copied';
-                            setTimeout(function(){ copyBtn.textContent = 'Copy'; }, 1200);
-                        }).catch(function(){
-                            inputEl.select();
-                            document.execCommand('copy');
-                            copyBtn.textContent = 'Copied';
-                            setTimeout(function(){ copyBtn.textContent = 'Copy'; }, 1200);
-                        });
-                    } catch(_) {}
-                });
-
-                // Share handler (Web Share API if available)
-                shareBtn.addEventListener('click', function(){
-                    var url = inputEl.value || baseUrl;
-                    var data = { title: 'Join IAM Ecosystem', text: 'Register with my invite link on IAM', url: url };
-                    if (navigator.share) {
-                        navigator.share(data).catch(function(){});
-                    } else {
-                        try {
-                            navigator.clipboard.writeText(url);
-                            shareBtn.textContent = 'Link Copied';
-                            setTimeout(function(){ shareBtn.textContent = 'Share'; }, 1200);
-                        } catch(_) {
-                            shareBtn.textContent = 'Copy Failed';
-                            setTimeout(function(){ shareBtn.textContent = 'Share'; }, 1200);
-                        }
-                    }
-                });
-            } catch(_) {}
-        })();
-        
+      // MetaMask events: keep info fresh
+      if (window.ethereum) {
+        try {
+          window.ethereum.on('accountsChanged', () => { refreshContractInfoSafe(); });
+          window.ethereum.on('chainChanged', () => { refreshContractInfoSafe(); });
+          window.ethereum.on('connect', () => { refreshContractInfoSafe(); });
+          window.ethereum.on('disconnect', () => { /* no-op */ });
+        } catch {}
+      }
+    });
   </script>
 </body>
 </html>
+

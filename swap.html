@@ -13,14 +13,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Fira+Mono&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=1.1">
-    <link rel="stylesheet" href="css/index-custom.css">
+    
     <link rel="stylesheet" href="css/floating-ai-assistant.css">
-    <link rel="stylesheet" href="css/smooth-transitions.css">
-    <link rel="stylesheet" href="css/messenger.css">
-    <link rel="stylesheet" href="css/mobile-responsive.css">
-    <link rel="stylesheet" href="css/unified-theme.css">
-    <link rel="stylesheet" href="css/modern-theme.css">
+    
     
     <!-- Web3 and Ethers.js - Load first -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
@@ -79,7 +74,7 @@
                             <div class="form-group" style="margin-bottom:0.3rem;">
                                 <label for="swapAmount" style="display:block;color:#00ff88;margin-bottom:0.2rem;font-weight:600;font-size:0.85rem;">Amount:</label>
                                 <div class="amount-input-group" style="display:flex;gap:0.5rem;align-items:center;">
-                                    <input type="number" id="swapAmount" placeholder="Enter amount" required style="flex:1;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
+                                    <input type="number" id="swapAmount" placeholder="Enter amount" required step="1" inputmode="numeric" pattern="\\d*" style="flex:1;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
                                     <button type="button" id="maxBtn" class="max-btn" style="background:linear-gradient(135deg,#a786ff,#00ff88);color:#0a0f1c;border:none;padding:0.8rem 1rem;border-radius:12px;font-weight:600;cursor:pointer;transition:all 0.3s ease;white-space:nowrap;font-size:0.85rem;">Max</button>
                                 </div>
                             </div>
@@ -125,9 +120,7 @@
     </div>
 
     <!-- Scripts -->
-    <script src="js/smooth-value-updater.js"></script>
-    <script src="js/smart-dashboard-updater.js"></script>
-    <script src="js/central-dashboard-updater.js"></script>
+    
     <script src="js/swap.js"></script>
     
     <!-- Wallet Connection and SwapManager Initialization -->
@@ -224,6 +217,9 @@
     </script>
 
     <style>
+        :root{ --bg:#0b0f17; --card:#0f1420; --elev:#121a2a; --border:#22304a; --accent:#5da0ff; --accent2:#33d69f; --text:#e6eaf0; }
+        body{ background:var(--bg); color:var(--text); }
+        .main-container{ max-width:560px; background:var(--card); border:1px solid var(--border); border-radius:14px; box-shadow:0 8px 24px rgba(0,0,0,.25); }
         /* Back Button */
         .back-btn {
             position: fixed;
@@ -254,11 +250,7 @@
             min-height: 100vh;
         }
         
-        .main-container {
-            width: 100%;
-            min-height: 100vh;
-            overflow-y: auto;
-        }
+        .main-container { width:100%; min-height:100vh; overflow-y:auto; }
         
 
         
@@ -273,23 +265,11 @@
             transition: all 0.3s ease;
         }
         
-        .swap-status.success {
-            background: rgba(0, 255, 136, 0.1);
-            color: #00ff88;
-            border: 1px solid rgba(0, 255, 136, 0.3);
-        }
+        .swap-status.success { background: rgba(46, 204, 113, 0.1); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.25); }
         
-        .swap-status.error {
-            background: rgba(255, 68, 68, 0.1);
-            color: #ff4444;
-            border: 1px solid rgba(255, 68, 68, 0.3);
-        }
+        .swap-status.error { background: rgba(231, 76, 60, 0.1); color: #e74c3c; border: 1px solid rgba(231, 76, 60, 0.25); }
         
-        .swap-status.loading {
-            background: rgba(167, 134, 255, 0.1);
-            color: #a786ff;
-            border: 1px solid rgba(167, 134, 255, 0.3);
-        }
+        .swap-status.loading { background: rgba(93, 160, 255, 0.1); color: #5da0ff; border: 1px solid rgba(93, 160, 255, 0.25); }
 
         /* Messenger animations */
         @keyframes messageSlide {

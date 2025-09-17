@@ -4,11 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Position Ownership Transfer</title>
-  <link rel="stylesheet" href="css/style.css">
+  <script>
+    // Suppress noisy extension RPC errors (non-blocking)
+    window.addEventListener('error', function(e){
+      const m = (e && e.message) || '';
+      if (m.includes('getEnabledChains') || m.includes('isDefaultWallet')) { e.preventDefault(); return false; }
+    });
+    window.addEventListener('unhandledrejection', function(e){
+      const msg = (e && e.reason && (e.reason.message||e.reason)) || '';
+      if (typeof msg === 'string' && (msg.includes('getEnabledChains') || msg.includes('isDefaultWallet'))) { e.preventDefault(); return false; }
+    });
+  </script>
   <link rel="stylesheet" href="css/transfer-ownership.css?v=20250808-1">
-  <link rel="stylesheet" href="css/mobile-responsive.css">
-  <script src="js/mobile-navigation.js"></script>
-  <script src="js/mobile-optimizer.js"></script>
   
   <!-- Theme override to match main site -->
   <style id="transfer-theme-override">
@@ -263,10 +270,12 @@
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
-  <script src="js/walletconnect-handler.js?v=5.7"></script>
-  <script src="js/walletconnect-v1.8.0.js"></script>
   <script src="js/config.js"></script>
+  <script>
+    // Reduce RPC noise on this page
+    window.SKIP_META = true;
+  </script>
+  <script src="js/auto-wallet-connect.js"></script>
   <script>
          // Check wallet connection status
      async function checkWalletConnection() {
@@ -305,12 +314,69 @@
       statusEl.className = 'status loading';
       statusEl.textContent = '⏳ Transferring ownership...';
       try {
-        // Check if transferIndexOwnership function exists
-        if (typeof window.contractConfig.contract.transferIndexOwnership !== 'function') {
-          throw new Error('Transfer ownership function not available in this contract');
+        // Ensure signer and contract are present
+        if (!window.contractConfig.signer || !window.contractConfig.contract) {
+          await window.connectWallet?.();
         }
-        
-        const tx = await window.contractConfig.contract.transferIndexOwnership(newOwner);
+
+        const c = window.contractConfig.contract;
+        const signer = window.contractConfig.signer;
+        const currentAddr = window.contractConfig.address || await signer.getAddress();
+
+        // Resolve caller's index if needed (prefer users(address); avoid addressToIndex to reduce RPC noise)
+        let callerIndex = null;
+        try {
+          if (typeof c.users === 'function') {
+            const u = await c.users(currentAddr);
+            if (u && u.index !== undefined && BigInt(u.index) > 0n) callerIndex = BigInt(u.index);
+          }
+        } catch(_) {}
+
+        // Try multiple known signatures in order
+        let tx;
+        // 1) transferIndexOwnership(address)
+        if (!tx && typeof c.transferIndexOwnership === 'function') {
+          tx = await c.transferIndexOwnership(newOwner);
+        }
+        if (!tx) {
+          try {
+            const fn = c.getFunction?.('transferIndexOwnership(address)');
+            if (fn) tx = await fn(newOwner);
+          } catch(_) {}
+        }
+        // 2) transferOwnership(address)
+        if (!tx && typeof c.transferOwnership === 'function') {
+          tx = await c.transferOwnership(newOwner);
+        }
+        if (!tx) {
+          try {
+            const fn = c.getFunction?.('transferOwnership(address)');
+            if (fn) tx = await fn(newOwner);
+          } catch(_) {}
+        }
+        // 3) transferPositionOwnership(uint256,address)
+        if (!tx && callerIndex !== null) {
+          try {
+            const fn = c.getFunction?.('transferPositionOwnership(uint256,address)');
+            if (fn) tx = await fn(callerIndex, newOwner);
+          } catch(_) {}
+        }
+        // 4) transferOwnershipOf(uint256,address)
+        if (!tx && callerIndex !== null) {
+          try {
+            const fn = c.getFunction?.('transferOwnershipOf(uint256,address)');
+            if (fn) tx = await fn(callerIndex, newOwner);
+          } catch(_) {}
+        }
+        // 5) transferIndexOwnership(uint256,address)
+        if (!tx && callerIndex !== null) {
+          try {
+            const fn = c.getFunction?.('transferIndexOwnership(uint256,address)');
+            if (fn) tx = await fn(callerIndex, newOwner);
+          } catch(_) {}
+        }
+        if (!tx) throw new Error('Transfer ownership function not available in this contract');
+
         statusEl.className = 'status loading';
         statusEl.textContent = '⏳ Waiting for transaction confirmation in your wallet...';
         await tx.wait();
@@ -404,19 +470,32 @@
     const confirmTransferBtn = document.getElementById('confirmTransferBtn');
     const pasteConfirmBtn = document.getElementById('pasteConfirmBtn');
 
+    let previouslyFocusedElement = null;
     function openConfirmModal(targetAddress) {
       pendingTargetAddress = targetAddress;
       confirmAddressText.textContent = targetAddress;
       confirmInput.value = '';
       confirmHint.textContent = '';
       confirmHint.className = 'hint';
+      previouslyFocusedElement = document.activeElement;
       modal.classList.add('show');
       modal.setAttribute('aria-hidden', 'false');
       setTimeout(() => confirmInput.focus(), 50);
     }
     function closeConfirmModal() {
+      // Move focus out of hidden content before hiding (a11y fix)
+      const fallbackFocus = document.getElementById('transferOwnershipBtn');
+      if (modal.contains(document.activeElement)) {
+        if (fallbackFocus) fallbackFocus.focus(); else document.body.focus();
+      }
       modal.classList.remove('show');
       modal.setAttribute('aria-hidden', 'true');
+      // Restore focus to triggering control if available
+      if (previouslyFocusedElement && typeof previouslyFocusedElement.focus === 'function') {
+        previouslyFocusedElement.focus();
+      } else if (fallbackFocus) {
+        fallbackFocus.focus();
+      }
     }
     cancelConfirmBtn.addEventListener('click', closeConfirmModal);
     
@@ -507,8 +586,7 @@
       console.log('✅ Transfer Ownership page initialized');
     });
   </script>
-  <script src="js/navbar.js"></script>
-  <script src="js/main.js"></script>
+  
   
   <!-- Floating Token Growth Card -->
   <script src="js/floating-token-card.js"></script>

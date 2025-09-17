@@ -4,10 +4,11 @@
 const IAM_ADDRESS_NEW = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D'; // New contract
 const IAM_ADDRESS_OLD = '0x63F5a2085906f5fcC206d6589d78038FBc74d2FE'; // Old contract
 const IAM_ADDRESS_OLDEST ='0xd7eDAdcae9073FD69Ae1081B057922F41Adf0607';
-const DAI_ADDRESS = '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063'; // Polygon DAI
+// Use global DAI address from config to avoid redeclaration conflicts
+const SWAP_DAI_ADDRESS = (typeof window !== 'undefined' && window.DAI_ADDRESS) ? window.DAI_ADDRESS : '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063';
 
-// Default to new contract
-let IAM_ADDRESS = IAM_ADDRESS_NEW;
+// Default to new contract (scoped to avoid global collisions)
+let SWAP_IAM_ADDRESS = IAM_ADDRESS_NEW;
 
 // DAI ABI (minimal for swap functionality)
 const DAI_ABI = [
@@ -98,20 +99,20 @@ class SwapManager {
         console.log('🔄 Switching contract to:', contractType);
         
         if (contractType === 'old') {
-            IAM_ADDRESS = IAM_ADDRESS_OLD;
+            SWAP_IAM_ADDRESS = IAM_ADDRESS_OLD;
             this.selectedContract = 'old';
         } else if (contractType === 'oldest') {
-            IAM_ADDRESS = IAM_ADDRESS_OLDEST;
+            SWAP_IAM_ADDRESS = IAM_ADDRESS_OLDEST;
             this.selectedContract = 'oldest';
         } else {
-            IAM_ADDRESS = IAM_ADDRESS_NEW;
+            SWAP_IAM_ADDRESS = IAM_ADDRESS_NEW;
             this.selectedContract = 'new';
         }
         
         // Recreate contract instance if wallet is connected
         if (this.signer) {
-            this.contract = new ethers.Contract(IAM_ADDRESS, IAM_ABI, this.signer);
-            console.log('✅ Contract switched to:', IAM_ADDRESS);
+            this.contract = new ethers.Contract(SWAP_IAM_ADDRESS, IAM_ABI, this.signer);
+            console.log('✅ Contract switched to:', SWAP_IAM_ADDRESS);
             
             // Refresh data with new contract
             await this.refreshSwapData();
@@ -147,8 +148,8 @@ class SwapManager {
             this.signer = await this.provider.getSigner();
             
             // Create contracts
-            this.contract = new ethers.Contract(IAM_ADDRESS, IAM_ABI, this.signer);
-            this.daiContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, this.signer);
+            this.contract = new ethers.Contract(SWAP_IAM_ADDRESS, IAM_ABI, this.signer);
+            this.daiContract = new ethers.Contract(SWAP_DAI_ADDRESS, DAI_ABI, this.signer);
             
             console.log('✅ Wallet connected successfully');
             return true;
@@ -166,7 +167,7 @@ class SwapManager {
         }
         
         try {
-            const daiBalance = await this.daiContract.balanceOf(IAM_ADDRESS);
+            const daiBalance = await this.daiContract.balanceOf(SWAP_IAM_ADDRESS);
             return parseFloat(ethers.utils.formatUnits(daiBalance, 18));
         } catch (error) {
             console.warn('⚠️ Error getting contract DAI balance:', error);
@@ -414,12 +415,7 @@ class SwapManager {
         if (swapAmount) {
             swapAmount.addEventListener('input', async () => {
                 console.log('📝 Swap amount changed:', swapAmount.value);
-                
-                // Remove any decimal points to enforce whole numbers
-                if (swapAmount.value.includes('.')) {
-                    swapAmount.value = swapAmount.value.split('.')[0];
-                }
-                
+                // Allow decimals; no truncation
                 // Real-time calculation of dollar equivalent when token amount changes
                 this.updateSwapUsdValue();
             });
@@ -1012,10 +1008,7 @@ class SwapManager {
                 throw new Error('Invalid amount - please enter a positive value');
             }
             
-            // Check if the value is a whole number
-            if (!Number.isInteger(value)) {
-                throw new Error('Please enter a whole number only (no decimals)');
-            }
+            // Allow decimal amounts (no integer-only restriction)
             
             console.log('📊 Swap information:', {
                 direction: direction.value,
@@ -1031,14 +1024,7 @@ class SwapManager {
                 throw new Error(`Insufficient IAM balance. You have ${this.userBalances.IAM.toFixed(6)} IAM, but trying to sell ${value.toFixed(6)} IAM. Please reduce the amount.`);
             }
 
-            // Validation according to contract
-            if (direction.value === 'dai-to-IAM') {
-                if (value < 1) throw new Error('Minimum purchase amount is 1 DAI. Please increase your purchase amount.');
-                // No maximum limits - allow unlimited DAI purchases
-            } else if (direction.value === 'IAM-to-dai') {
-                if (value < 1) throw new Error('Minimum sale amount is 1 IAM. Please increase your sale amount.');
-                // No other limits for IAM to DAI conversion - removed all liquidity checks
-            }
+            // Keep no explicit minimum/maximum checks here
 
             // Disable button and show processing message
             if (swapBtn) {
@@ -1113,14 +1099,14 @@ class SwapManager {
             
             console.log('🔍 Checking allowance...');
             // Check allowance
-            const allowance = await this.daiContract.allowance(address, IAM_ADDRESS);
+            const allowance = await this.daiContract.allowance(address, SWAP_IAM_ADDRESS);
             console.log('📊 Current allowance:', ethers.utils.formatUnits(allowance, 18));
             
             if (allowance.lt(daiAmountWei)) {
                 console.log('🔐 Need to approve DAI allowance...');
                 this.showEnglishPopup('🔐 DAI approval required! Please approve DAI spending to continue with your purchase.', 'loading');
                 
-                const approveTx = await this.daiContract.approve(IAM_ADDRESS, ethers.constants.MaxUint256);
+                const approveTx = await this.daiContract.approve(SWAP_IAM_ADDRESS, ethers.constants.MaxUint256);
                 this.showEnglishPopup('⏳ DAI approval transaction submitted! Waiting for confirmation... This is a one-time setup.', 'loading');
                 
                 console.log('⏳ Waiting for approve confirmation...');

@@ -9,23 +9,23 @@
     <script src="js/mobile-optimizer.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap');
+        :root{ --bg:#0b0f17; --card:#0f1420; --elev:#121a2a; --border:#22304a; --accent:#5da0ff; --accent2:#33d69f; --text:#e6eaf0; --muted:#aab6d3; }
         body {
             font-family: 'Inter', 'SF Pro Display', sans-serif;
-            background: linear-gradient(135deg, #232946 0%, #181c2a 100%);
+            background: var(--bg);
             margin: 0;
             padding: 0;
             direction: ltr;
-            color: #e0e6f7;
+            color: var(--text);
         }
         .container {
             max-width: 560px;
             margin: 16px auto;
-            background: rgba(35,41,70,0.75);
+            background: var(--card);
             border-radius: 14px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.35);
-            padding: 14px;
-            border: 1px solid rgba(167,134,255,0.25);
-            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 24px rgba(0,0,0,.25);
+            padding: 16px;
+            border: 1px solid var(--border);
         }
         
         /* Responsive Design for different screen sizes */
@@ -129,41 +129,13 @@
                 min-width: 140px;
             }
         }
-        h1 {
-            text-align: center;
-            color: #00ff88;
-            margin-bottom: 16px;
-            font-weight: 700;
-            letter-spacing: 0.3px;
-            font-size: 1.8em;
-            text-shadow: 0 1px 4px #00ff8822;
-        }
-        .profile-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 6px 8px;
-            margin: 4px 0;
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 10px;
-            background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0));
-            font-size: 0.95em;
-            transition: box-shadow .2s, border-color .2s;
-        }
-        .profile-row:hover{border-color:#a786ff33; box-shadow:0 6px 16px rgba(167,134,255,0.08)}
+        h1 { text-align:center; color:#cfe3ff; margin-bottom:16px; font-weight:700; letter-spacing:.3px; font-size:1.7em; }
+        .profile-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; margin:4px 0; border-bottom:1px dashed #2a3550; font-size:0.95em; }
+        .profile-row:hover{ background:rgba(93,160,255,.05); }
         .profile-row:last-child { border-bottom: none; }
-        .profile-label { color: #aeb4d4; font-weight: 600; letter-spacing: .2px; }
-        .profile-value { color: #e0e6f7; font-family: monospace; }
-        .balance-box {
-            background: #181c2a;
-            border-radius: 12px;
-            margin: 12px 0 16px 0;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-            padding: 12px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 12px;
-        }
+        .profile-label { color:#c9d6ff; font-weight:600; letter-spacing:.2px; }
+        .profile-value { color:#e6eaf0; font-family: monospace; }
+        .balance-box { background: rgba(93,160,255,.08); border:1px solid rgba(93,160,255,.25); border-radius:12px; margin:12px 0 16px 0; padding:12px; display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:12px; }
         .balance-item {
             background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0));
             border: 1px solid rgba(255,255,255,0.08);

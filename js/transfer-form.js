@@ -77,9 +77,13 @@ class TransferManager {
                 throw new Error('Ethers.js provider not available');
             }
             
-            // Create contract instances
+            // Create contract instances (read with project ABI; write with ERC20-min ABI to ensure transfer exists)
             this.contract = new ethers.Contract(IAM_ADDRESS_TRANSFER, window.IAM_ABI, this.signer);
             this.daiContract = new ethers.Contract(DAI_ADDRESS_TRANSFER, DAI_ABI_TRANSFER, this.signer);
+            try {
+                const ERC20_WRITE_ABI = ["function transfer(address to, uint256 amount) returns (bool)"]; 
+                this.iamWrite = new ethers.Contract(IAM_ADDRESS_TRANSFER, ERC20_WRITE_ABI, this.signer);
+            } catch {}
             
             console.log('✅ Wallet connected successfully');
             return true;
@@ -334,6 +338,61 @@ class TransferManager {
         }
 
 
+    }
+
+    // Resolve destination: supports direct address or numeric index
+    async resolveDestinationAddress(rawInput) {
+        const input = (rawInput || '').trim();
+        const isV5 = typeof ethers.utils !== 'undefined';
+        const isAddress = (addr) => {
+            try {
+                if (isV5 && ethers.utils.isAddress) return ethers.utils.isAddress(addr);
+                if (ethers.isAddress) return ethers.isAddress(addr);
+            } catch {}
+            return /^0x[a-fA-F0-9]{40}$/.test(addr);
+        };
+
+        if (isAddress(input)) return input;
+
+        // If purely numeric, treat as index and resolve through contract
+        if (/^\d+$/.test(input)) {
+            const index = parseInt(input, 10);
+            if (!this.contract) throw new Error('Contract not connected');
+
+            // Try a few common methods with timeouts
+            const withTimeout = (p, ms = 10000) => Promise.race([
+                p,
+                new Promise((_, r) => setTimeout(() => r(new Error('Timeout resolving index')) , ms))
+            ]);
+
+            // 1) getUserAddress(uint)
+            try {
+                if (typeof this.contract.getUserAddress === 'function') {
+                    const addr = await withTimeout(this.contract.getUserAddress(index));
+                    if (addr && isAddress(addr)) return addr;
+                }
+            } catch {}
+
+            // 2) indexToAddress(uint)
+            try {
+                if (typeof this.contract.indexToAddress === 'function') {
+                    const addr = await withTimeout(this.contract.indexToAddress(index));
+                    if (addr && isAddress(addr)) return addr;
+                }
+            } catch {}
+
+            // 3) wallets(uint) 0-based
+            try {
+                if (typeof this.contract.wallets === 'function') {
+                    const addr = await withTimeout(this.contract.wallets(index - 1));
+                    if (addr && isAddress(addr)) return addr;
+                }
+            } catch {}
+
+            throw new Error('User not found for this index');
+        }
+
+        throw new Error('Invalid destination. Enter a wallet address or a valid index');
     }
 
     // Handle token type change
@@ -718,7 +777,16 @@ class TransferManager {
         }
 
         const transferToInput = document.getElementById('transferTo');
-        const to = transferToInput.getAttribute('data-full-address') || transferToInput.value.trim();
+        // Resolve destination (address or index)
+        let to = transferToInput.getAttribute('data-full-address') || transferToInput.value.trim();
+        try {
+            to = await this.resolveDestinationAddress(to);
+            transferToInput.value = to;
+        } catch (err) {
+            this.showEnglishPopup(err.message || 'Invalid destination', 'error');
+            this.resetTransferButton(transferBtn, oldText);
+            return;
+        }
         const amount = parseFloat(document.getElementById('transferAmount').value);
         const token = document.getElementById('transferToken').value;
         const status = document.getElementById('transferStatus');
@@ -815,8 +883,8 @@ class TransferManager {
                     amount: amount,
                     value: value.toString(),
                     contract: this.contract.address,
-                    contractMethods: Object.keys(this.contract.interface.functions),
-                    hasTransferMethod: typeof this.contract.transfer === 'function'
+                    contractMethods: (this.contract.interface && this.contract.interface.functions) ? Object.keys(this.contract.interface.functions) : [],
+                    hasTransferMethod: !!this.iamWrite
                 });
                 
                 // Update button to show confirmation waiting
@@ -824,7 +892,11 @@ class TransferManager {
                     transferBtn.textContent = '⏳ Waiting for blockchain confirmation...';
                 }
                 
-                const tx = await this.contract.transfer(to, value);
+                // Use dedicated ERC20 write instance to guarantee transfer availability
+                if (!this.iamWrite || typeof this.iamWrite.transfer !== 'function') {
+                    throw new Error('IAM transfer method is unavailable in ABI');
+                }
+                const tx = await this.iamWrite.transfer(to, value);
                 
                 this.showEnglishPopup('⏳ IAM transfer submitted! Waiting for blockchain confirmation...', 'loading');
                 await tx.wait();

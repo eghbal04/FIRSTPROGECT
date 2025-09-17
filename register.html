@@ -335,6 +335,41 @@
         margin-left: 0.1rem;
       }
     }
+  /* Modern theme override */
+  :root{
+    --bg: #0b0f17; --card:#0f1420; --elev:#121a2a; --border:#22304a; --accent:#5da0ff; --accent-2:#33d69f; --text:#e6eaf0; --muted:#aab6d3;
+  }
+  body{ background: var(--bg); color: var(--text); padding:16px; }
+  .main-container{ max-width:560px; background:var(--card); border:1px solid var(--border); border-radius:14px; box-shadow:0 8px 24px rgba(0,0,0,.25); }
+  .register-form{ background:var(--elev)!important; border:1px solid var(--border); border-radius:14px; padding:16px 14px; }
+  .register-form-title, .register-form label{ color:#cfe3ff!important; font-weight:600; }
+  .form-group{ margin-bottom:10px; }
+  .register-form-input, .register-form input{ background:#0f1420!important; color:var(--text)!important; border:1px solid var(--border); border-radius:12px; padding:12px; font-size:1rem; box-sizing:border-box; }
+  .register-form input:focus{ border-color:var(--accent); outline:none; box-shadow:0 0 0 3px rgba(93,160,255,.15); }
+  .index-input{ height:48px; font-size:1.05rem; }
+  .address-input-group{ gap:8px; }
+  .address-input-group input{ height:48px; font-size:1.05rem; }
+  .address-field{ background:#0f1420!important; border:1px solid var(--border)!important; color:#cfd7ea!important; height:48px; font-size:1.05rem; padding:12px; border-radius:12px; line-height:1.2; }
+  .tab-btn{ background:#0f1420; color:#cfe3ff; border:1px solid var(--border); border-radius:10px; padding:10px 12px; font-weight:600; }
+  /* Ensure high-contrast label for Normal Registration */
+  .tab-btn#normal-tab{ color:#ffffff; text-shadow: 0 1px 2px rgba(0,0,0,0.4); }
+  .tab-btn#normal-tab:hover{ color:#ffffff; }
+  .tab-btn.active#normal-tab{ background:#213055!important; color:#ffffff!important; border-color:#34507c!important; }
+  .tab-btn.active#free-tab{ background:#2a1f12!important; color:#ffd27a!important; border-color:#3a2a18!important; }
+  .register-btn, .buy-btn{ background:linear-gradient(135deg, #2f9950, #2b8a3e)!important; color:var(--text)!important; border:1px solid #3aa654; padding:12px; border-radius:12px; font-weight:700; font-size:1.05rem; }
+  .register-btn:hover, .buy-btn:hover{ filter:brightness(1.05); }
+  .apply-btn, .paste-btn-inside{ background:#1a2335; color:#cfe3ff; border:1px solid var(--border); border-radius:12px; padding:14px 16px; font-size:1.05rem; min-width: 88px; }
+  .register-form-status{ border-radius:12px; }
+  .register-form-status.success{ background:rgba(46,204,113,.08); color:#2ecc71; border:1px solid rgba(46,204,113,.25); }
+  .register-form-status.error{ background:rgba(231,76,60,.08); color:#e74c3c; border:1px solid rgba(231,76,60,.25); }
+  .register-form-status.loading{ background:rgba(93,160,255,.08); color:#5da0ff; border:1px solid rgba(93,160,255,.25); }
+  @media(max-width:480px){
+    body{ padding:12px; }
+    .register-form-input, .register-form input, .address-input-group input, .address-field{ height:50px; font-size:1.06rem; padding:12px; }
+    .apply-btn, .paste-btn-inside{ font-size:1.08rem; padding:14px; }
+    .register-btn, .buy-btn{ font-size:1.08rem; padding:13px; }
+    .form-group label{ font-size:.95rem; }
+  }
   </style>
 </head>
 <body>

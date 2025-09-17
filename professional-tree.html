@@ -598,8 +598,8 @@
         </div>
     </div>
     <!-- Back Button -->
-    <a href="index.html" class="back-btn modern-btn">
-        ← Back to Dashboard
+    <a href="index.html" class="back-btn modern-btn" aria-label="Back to Dashboard" title="Back to Dashboard">
+        ← Back
     </a>
     
     <!-- Connect Wallet Button -->
@@ -649,11 +649,37 @@
 
     <!-- Scripts -->
     <script src="js/config.js"></script>
-    <script src="js/walletconnect-handler.js"></script>
+    <script src="js/auto-wallet-connect.js"></script>
+    <script src="js/auto-wallet-connect.js"></script>
             <script src="js/network.js?v=20250809-36"></script>
-    <script src="js/navbar.js"></script>
-    <script src="js/token-balances.js"></script>
-    <script src="js/tree-events.js"></script>
+    <script>
+        // Provide missing helpers expected by this page
+        window.getIndexByAddress = async function(contract, address) {
+            if (!contract || !address) return 0n;
+            try {
+                if (typeof contract.addressToIndex === 'function') {
+                    const idx = await contract.addressToIndex(address);
+                    if (idx && BigInt(idx) !== 0n) return BigInt(idx);
+                }
+            } catch {}
+            try {
+                if (typeof contract.getFunction === 'function') {
+                    const fn = contract.getFunction('getIndexByAddress(address)');
+                    if (fn) {
+                        const idx = await fn(address);
+                        if (idx && BigInt(idx) !== 0n) return BigInt(idx);
+                    }
+                }
+            } catch {}
+            try {
+                if (typeof contract.users === 'function') {
+                    const u = await contract.users(address);
+                    if (u && (u.index !== undefined)) return BigInt(u.index);
+                }
+            } catch {}
+            return 0n;
+        };
+    </script>
     
     <script>
         // Pyramid Tree Data
@@ -2579,62 +2605,65 @@
                 
                 const contract = window.contractConfig.contract;
                 const nodeIndex = parseInt(node.index);
+                const zero = '0x0000000000000000000000000000000000000000';
                 
-                // FORCE load children - no timeout limits
-                console.log(`🔥 FORCE CALLING getLeftAddress(${nodeIndex})...`);
-                const leftAddress = await contract.getLeftAddress(nodeIndex);
-                console.log(`🔥 FORCE CALLING getRightAddress(${nodeIndex})...`);
-                const rightAddress = await contract.getRightAddress(nodeIndex);
+                // Try primary methods
+                let leftAddress = zero;
+                let rightAddress = zero;
+                try {
+                    if (typeof contract.getLeftAddress === 'function') {
+                        console.log(`🔥 FORCE CALLING getLeftAddress(${nodeIndex})...`);
+                        leftAddress = await contract.getLeftAddress(nodeIndex);
+                    }
+                } catch(_) {}
+                try {
+                    if (typeof contract.getRightAddress === 'function') {
+                        console.log(`🔥 FORCE CALLING getRightAddress(${nodeIndex})...`);
+                        rightAddress = await contract.getRightAddress(nodeIndex);
+                    }
+                } catch(_) {}
+                
+                // Fallback: derive from indices using indexToAddress
+                const leftIndexNum = nodeIndex * 2;
+                const rightIndexNum = nodeIndex * 2 + 1;
+                if (leftAddress === zero && typeof contract.indexToAddress === 'function') {
+                    try { leftAddress = await contract.indexToAddress(leftIndexNum); } catch(_) {}
+                }
+                if (rightAddress === zero && typeof contract.indexToAddress === 'function') {
+                    try { rightAddress = await contract.indexToAddress(rightIndexNum); } catch(_) {}
+                }
                 
                 console.log(`📍 Node ${node.id} - Left: ${leftAddress}, Right: ${rightAddress}`);
                 
-                // Check if addresses are valid (not zero address)
-                const leftValid = leftAddress !== '0x0000000000000000000000000000000000000000';
-                const rightValid = rightAddress !== '0x0000000000000000000000000000000000000000';
-                
-                console.log(`🔍 Node ${node.id} - Left valid: ${leftValid}, Right valid: ${rightValid}`);
-                
+                // Always create two children (placeholders if address is zero)
                 const children = [];
+                const leftChild = {
+                    id: `node_${leftIndexNum}`,
+                    index: String(leftIndexNum),
+                    address: leftAddress !== zero ? leftAddress : '',
+                    type: 'node',
+                    expanded: false,
+                    children: [],
+                    hasChildren: leftAddress !== zero
+                };
+                children.push(leftChild);
+                console.log(`✅ Added left child: ${leftChild.id} (index: ${leftChild.index})`);
                 
-                // Add left child if exists
-                if (leftValid) {
-                    const leftIndex = (nodeIndex * 2).toString();
-                    const leftChild = {
-                        id: `node_${leftIndex}`,
-                        index: leftIndex,
-                        address: leftAddress,
-                        type: 'node',
-                        expanded: false,
-                        children: [],
-                        hasChildren: true
-                    };
-                    children.push(leftChild);
-                    console.log(`✅ Added left child: ${leftChild.id} (index: ${leftIndex})`);
-                } else {
-                    console.log(`❌ Left child not valid for node ${node.id} (index: ${nodeIndex})`);
-                }
+                const rightChild = {
+                    id: `node_${rightIndexNum}`,
+                    index: String(rightIndexNum),
+                    address: rightAddress !== zero ? rightAddress : '',
+                    type: 'node',
+                    expanded: false,
+                    children: [],
+                    hasChildren: rightAddress !== zero
+                };
+                children.push(rightChild);
+                console.log(`✅ Added right child: ${rightChild.id} (index: ${rightChild.index})`);
                 
-                // Add right child if exists
-                if (rightValid) {
-                    const rightIndex = (nodeIndex * 2 + 1).toString();
-                    const rightChild = {
-                        id: `node_${rightIndex}`,
-                        index: rightIndex,
-                        address: rightAddress,
-                        type: 'node',
-                        expanded: false,
-                        children: [],
-                        hasChildren: true
-                    };
-                    children.push(rightChild);
-                    console.log(`✅ Added right child: ${rightChild.id} (index: ${rightIndex})`);
-                } else {
-                    console.log(`❌ Right child not valid for node ${node.id} (index: ${nodeIndex})`);
-                }
-                
-                // Update node with children
+                // Update node with children (always two)
                 node.children = children;
-                node.hasChildren = children.length > 0;
+                node.hasChildren = true;
                 
                 console.log(`🎯 Node ${node.id} now has ${children.length} children`);
                 
@@ -3268,15 +3297,19 @@
                 updateButtonState('connecting', '🔄 Auto-Connecting...');
             }
             
-            // Connect wallet function
+            // Connect wallet function (uses shared connectWallet if available)
             async function connectWallet() {
                 try {
                     console.log('🔄 Connect wallet button clicked');
                     updateButtonState('connecting', '🔄 Connecting...');
-                    
-                    const success = await simpleConnectWallet();
+                    // Prefer global shared connector
+                    const success = window.connectWallet ? await window.connectWallet() : await simpleConnectWallet();
                     
                     if (success) {
+                        // Bridge field for pages expecting userAddress
+                        if (window.contractConfig) {
+                            window.contractConfig.userAddress = window.contractConfig.address || window.contractConfig.userAddress;
+                        }
                         checkConnectionState();
                         console.log('✅ Wallet connected successfully via button');
                         
@@ -3445,8 +3478,8 @@
                         return;
                     }
                     
-                    // Try to connect using simple method
-                    const walletConnected = await simpleConnectWallet();
+                    // Try to connect using shared connector first
+                    const walletConnected = window.connectWallet ? await window.connectWallet() : await simpleConnectWallet();
                     
                     if (walletConnected) {
                         console.log('✅ Auto-connection successful, loading real data...');
