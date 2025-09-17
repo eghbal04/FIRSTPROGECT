@@ -50,6 +50,7 @@ const MIN_IAM_ABI = (window.IAM_ABI && Array.isArray(window.IAM_ABI)) ? window.I
     // Price getters (try all common names)
     { "inputs": [], "name": "registrationPrice", "outputs": [{"internalType":"uint256","name":"","type":"uint256"}], "stateMutability": "view", "type": "function" },
     { "inputs": [], "name": "getRegistrationPrice", "outputs": [{"internalType":"uint256","name":"","type":"uint256"}], "stateMutability": "view", "type": "function" },
+    { "inputs": [], "name": "regPrice", "outputs": [{"internalType":"uint256","name":"","type":"uint256"}], "stateMutability": "view", "type": "function" },
     { "inputs": [], "name": "activatePrice", "outputs": [{"internalType":"uint256","name":"","type":"uint256"}], "stateMutability": "view", "type": "function" },
     { "inputs": [], "name": "getTokenPrice", "outputs": [{"internalType":"uint256","name":"","type":"uint256"}], "stateMutability": "view", "type": "function" },
     { "inputs": [], "name": "tokenPrice", "outputs": [{"internalType":"uint256","name":"","type":"uint256"}], "stateMutability": "view", "type": "function" },
@@ -63,11 +64,34 @@ const MIN_IAM_ABI = (window.IAM_ABI && Array.isArray(window.IAM_ABI)) ? window.I
     { "inputs": [], "name": "totalClaimableBinaryPoints", "outputs": [{"internalType":"uint256","name":"","type":"uint256"}], "stateMutability": "view", "type": "function" },
     { "inputs": [], "name": "wallets", "outputs": [{"internalType":"uint256","name":"","type":"uint256"}], "stateMutability": "view", "type": "function" },
     { "inputs": [], "name": "getRegPrice", "outputs": [{"internalType":"uint256","name":"","type":"uint256"}], "stateMutability": "view", "type": "function" },
+    // Tree helpers
+    { "inputs": [{"internalType":"uint256","name":"parentIndex","type":"uint256"}], "name": "getLeftAddress", "outputs": [{"internalType":"address","name":"","type":"address"}], "stateMutability": "view", "type": "function" },
+    { "inputs": [{"internalType":"uint256","name":"parentIndex","type":"uint256"}], "name": "getRightAddress", "outputs": [{"internalType":"address","name":"","type":"address"}], "stateMutability": "view", "type": "function" },
     { "inputs": [], "name": "getPointValue", "outputs": [{"internalType":"uint256","name":"","type":"uint256"}], "stateMutability": "view", "type": "function" },
     { "inputs": [], "name": "getContractdaiBalance", "outputs": [{"internalType":"uint256","name":"","type":"uint256"}], "stateMutability": "view", "type": "function" },
     { "inputs": [], "name": "cashBack", "outputs": [{"internalType":"uint256","name":"","type":"uint256"}], "stateMutability": "view", "type": "function" },
     // Write: transfer index ownership (as provided)
     { "inputs": [{"internalType":"address","name":"newOwner","type":"address"}], "name": "transferIndexOwnership", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
+    // Write: registration flows
+    { "inputs": [
+        {"internalType":"address","name":"referrer","type":"address"},
+        {"internalType":"address","name":"upper","type":"address"},
+        {"internalType":"address","name":"newUser","type":"address"}
+      ],
+      "name": "registerAndActivate",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    { "inputs": [
+        {"internalType":"address","name":"referrer","type":"address"},
+        {"internalType":"address","name":"newUser","type":"address"}
+      ],
+      "name": "registerFree",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
 ];
 
 // Ensure ABI is available globally from config

@@ -40,12 +40,14 @@
     button.secondary { background:#334155; }
     .muted { color:#7f8ca8; font-size: 12px; }
     .error { color:#ff6b6b; font-size: 13px; }
-    .statusbar { background:#0e1220; border:1px solid #1f2433; padding:10px 12px; border-radius:12px; display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); grid-auto-rows:auto; gap:8px; align-items:center; margin: 12px 0; }
-    .pill { background:#162032; color:#cfe2ff; padding:6px 10px; border-radius:999px; font-size:12px; border:1px solid #223150; white-space: nowrap; text-align:center; width:100%; box-sizing:border-box; }
-    /* Force first row: likes, dislikes, rank, index */
+    .statusbar { background:#0e1220; border:1px solid #1f2433; padding:10px 12px; border-radius:12px; display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); grid-template-rows: auto auto; gap:8px; align-items:center; margin: 12px 0; }
+    .pill { background:#162032; color:#cfe2ff; padding:6px 10px; border-radius:999px; font-size:12px; border:1px solid #223150; white-space: nowrap; text-align:center; box-sizing:border-box; width:100%; }
+    /* Force two rows: row 1 (likes, dislikes, rank, index) | row 2 (address, POL, DAI, IAM) */
     #status-likes, #status-dislikes, #status-rank, #status-index { grid-row: 1; }
-    /* Second row for the rest */
-    #status-address, #status-matic, #status-dai, #status-iam { grid-row: 2; }
+    #status-address, #status-matic, #status-dai, #status-iam, #status-claimed { grid-row: 2; }
+    @media (max-width: 640px) {
+      .statusbar { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    }
     .footer-links { margin: 24px 0 0; display: flex; flex-wrap: wrap; gap: 8px; }
     .footer-links a { text-decoration: none; }
     .footer-btn { background:#1b2336; color:#e6eaf0; border:1px solid #273149; padding:10px 12px; border-radius:10px; font-size:13px; display:inline-block; }
@@ -62,6 +64,14 @@
       .value { font-size: 13px; }
       .statusbar { gap: 6px; padding: 8px 10px; }
       .pill { font-size: 11px; padding: 6px 8px; }
+    }
+
+    /* Ensure floating token card sits at top of the page */
+    #floating-token-card, .floating-token-card, .token-floating-card {
+      position: fixed !important;
+      top: 8px !important;
+      right: 8px !important;
+      z-index: 9999 !important;
     }
 
     @media (max-width: 480px) {
@@ -95,6 +105,7 @@
       <span class="pill" id="status-iam">IAM: -</span>
       <span class="pill" id="status-likes">Likes: -</span>
       <span class="pill" id="status-dislikes">Dislikes: -</span>
+      <span class="pill" id="status-claimed">Claimed: -</span>
             </div>
             
 
@@ -155,6 +166,8 @@
   <script src="js/profile.js"></script>
   <script src="js/auto-wallet-connect.js"></script>
   <script src="js/swap.js"></script>
+  <!-- Floating Token Growth Card -->
+  <script src="js/floating-token-card.js"></script>
     
   <script>
     function safeFormatUnits(value, decimals) {
@@ -210,10 +223,20 @@
       const set = (id, label, value) => {
         const el = document.getElementById(id);
         if (!el) return;
+        // Icon labels
+        const iconLabel = (orig) => {
+          switch (id) {
+            case 'status-likes': return `👍 ${orig}`;
+            case 'status-dislikes': return `👎 ${orig}`;
+            case 'status-rank': return `⭐ ${orig}`;
+            case 'status-index': return `# ${orig}`;
+            default: return orig;
+          }
+        };
         if (id === 'status-address' || id === 'status-index' || id === 'status-rank') {
-          el.textContent = `${value ?? '-'}`;
-                        } else {
-          el.textContent = `${label}: ${value ?? '-'}`;
+          el.textContent = iconLabel(`${value ?? '-'}`);
+        } else {
+          el.textContent = iconLabel(`${label}: ${value ?? '-'}`);
         }
       };
       if (!data) return;
@@ -223,6 +246,7 @@
       if (data.matic !== undefined) set('status-matic', 'POL', data.matic);
       if (data.dai !== undefined) set('status-dai', 'DAI', data.dai);
       if (data.iam !== undefined) set('status-iam', 'IAM', data.iam);
+      if (data.claimed !== undefined) set('status-claimed', 'Claimed', data.claimed);
       if (data.likes !== undefined) set('status-likes', 'Likes', data.likes);
       if (data.dislikes !== undefined) set('status-dislikes', 'Dislikes', data.dislikes);
     }
@@ -256,7 +280,7 @@
 
         addrEl.textContent = (contract && contract.target) ? contract.target : (window.IAM_ADDRESS || '-');
         // Update status bar basic address immediately
-        try { updateStatusPills({ address: shortenAddress(connectedAddress || (await signer.getAddress())) }); } catch {}
+        try { const ua = connectedAddress || (signer ? await signer.getAddress() : null); if (ua) updateStatusPills({ address: shortenAddress(ua) }); } catch {}
 
         // Always read directly from contract (no cached meta)
         nameEl.textContent = '';
@@ -333,23 +357,37 @@
             try {
               if (typeof contract.getVoteStatus === 'function') {
                 const vs = await contract.getVoteStatus(userAddr);
-                const likes = (vs && vs[0] !== undefined) ? Number(vs[0]) : 0;
-                const dislikes = (vs && vs[1] !== undefined) ? Number(vs[1]) : 0;
+                const likes = (vs && (vs[0] !== undefined || vs.totalLikes !== undefined)) ? Number(vs[0] ?? vs.totalLikes) : 0;
+                const dislikes = (vs && (vs[1] !== undefined || vs.totalDislikes !== undefined)) ? Number(vs[1] ?? vs.totalDislikes) : 0;
                 updateStatusPills({ likes, dislikes });
               }
             } catch {}
-            // Index
+            // Index + Rank + Claimed Points
             try {
               let idx = null;
               if (typeof contract.addressToIndex === 'function') idx = await contract.addressToIndex(userAddr);
               if ((idx === null || (typeof idx === 'bigint' && idx === 0n)) && typeof contract.users === 'function') {
                 const u = await contract.users(userAddr);
                 if (u && u.index !== undefined) idx = u.index;
-                // Also derive a simple rank from binaryPointCap if available
+                // Derive rank from binaryPointCap if available
                 try {
-                  if (u && u.binaryPointCap !== undefined) {
-                    const rankVal = (typeof u.binaryPointCap === 'bigint') ? Number(u.binaryPointCap) : Number(u.binaryPointCap||0);
-                    if (!isNaN(rankVal)) updateStatusPills({ rank: `Rank: ${rankVal}` });
+                  const cap = u && u.binaryPointCap !== undefined ? u.binaryPointCap : undefined;
+                  const rankVal = cap !== undefined ? ((typeof cap === 'bigint') ? Number(cap) : Number(cap||0)) : NaN;
+                  if (!isNaN(rankVal)) {
+                    let stars = 0;
+                    if (rankVal >= 10000) stars = 5;
+                    else if (rankVal >= 1000) stars = 4;
+                    else if (rankVal >= 100) stars = 3;
+                    else if (rankVal >= 10) stars = 2;
+                    else if (rankVal >= 1) stars = 1;
+                    updateStatusPills({ rank: '⭐'.repeat(stars || 0) || '-' });
+                  }
+                } catch {}
+                // Claimed points
+                try {
+                  if (u && u.binaryPointsClaimed !== undefined) {
+                    const c = (typeof u.binaryPointsClaimed === 'bigint') ? u.binaryPointsClaimed : BigInt(u.binaryPointsClaimed||0);
+                    updateStatusPills({ claimed: c.toString() });
                   }
                 } catch {}
               }

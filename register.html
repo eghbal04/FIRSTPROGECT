@@ -13,10 +13,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Fira+Mono&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=1.1">
-  <link rel="stylesheet" href="css/mobile-responsive.css">
-  <link rel="stylesheet" href="css/modern-theme.css">
-  <script src="js/mobile-optimizer.js"></script>
+  <!-- Removed missing assets to avoid 404s -->
+  <!-- <link rel="stylesheet" href="css/style.css?v=1.1"> -->
+  <!-- <link rel="stylesheet" href="css/mobile-responsive.css"> -->
+  <!-- <link rel="stylesheet" href="css/modern-theme.css"> -->
+  <!-- <script src="js/mobile-optimizer.js"></script> -->
   <style>
     body {
       background: linear-gradient(135deg, #0a0f1c, #1a1f2e);
@@ -894,7 +895,50 @@
       }
   </script>
   
+  <script>window.SKIP_META = true;</script>
   <script src="js/config.js"></script>
+  <script>
+    // Fallback helpers to avoid calling non-existent contract functions
+    window.safeGetRegPrice = async function(contract){
+      try {
+        if (contract && typeof contract.getRegPrice === 'function') {
+          return await contract.getRegPrice();
+        }
+      } catch(_) {}
+      try {
+        if (contract && typeof contract.regPrice === 'function') {
+          return await contract.regPrice();
+        }
+      } catch(_) {}
+      try {
+        if (contract && typeof contract.registrationPrice === 'function') {
+          return await contract.registrationPrice();
+        }
+      } catch(_) {}
+      try {
+        if (contract && typeof contract.getRegistrationPrice === 'function') {
+          return await contract.getRegistrationPrice();
+        }
+      } catch(_) {}
+      // Default fallback (100 IAM)
+      try { return ethers.parseUnits('100', 18); } catch(_) { return null; }
+    };
+
+    window.safeGetLeftAddress = async function(contract, parentIndex){
+      if (!contract) return null;
+      if (typeof contract.getLeftAddress === 'function') {
+        try { return await contract.getLeftAddress(parentIndex); } catch(_) {}
+      }
+      return null; // gracefully fallback
+    };
+    window.safeGetRightAddress = async function(contract, parentIndex){
+      if (!contract) return null;
+      if (typeof contract.getRightAddress === 'function') {
+        try { return await contract.getRightAddress(parentIndex); } catch(_) {}
+      }
+      return null; // gracefully fallback
+    };
+  </script>
   <script>
     let selectedAvatar = 'man';
     let isConnected = false;
@@ -1156,27 +1200,23 @@
            document.getElementById('register-cost').textContent = '23 IAM';
          }
                 } else {
-           // Normal mode: use regPrice function
-           try {
-           if (window.contractConfig && window.contractConfig.contract) {
-             const contract = window.contractConfig.contract;
-             if (typeof window.getRegPrice === 'function') {
-               const regPrice = await window.getRegPrice(contract);
-               if (regPrice) {
-                 const regPriceNum = Number(ethers.formatUnits(regPrice, 18));
-                 document.getElementById('register-cost').textContent = `${regPriceNum.toFixed(2)} IAM`;
-               } else {
-                 document.getElementById('register-cost').textContent = 'RegPrice not available';
-               }
-             } else {
-               document.getElementById('register-cost').textContent = 'RegPrice function not available';
-             }
-           } else {
-             document.getElementById('register-cost').textContent = 'Contract not available';
-           }
-         } catch (e) {
-           document.getElementById('register-cost').textContent = 'Error loading regPrice';
-         }
+          // Normal mode: use safe regPrice function
+          try {
+            if (window.contractConfig && window.contractConfig.contract) {
+              const contract = window.contractConfig.contract;
+              const regPrice = await (window.safeGetRegPrice ? window.safeGetRegPrice(contract) : null);
+              if (regPrice) {
+                const regPriceNum = Number(ethers.formatUnits(regPrice, 18));
+                document.getElementById('register-cost').textContent = `${regPriceNum.toFixed(2)} IAM`;
+              } else {
+                document.getElementById('register-cost').textContent = 'RegPrice not available';
+              }
+            } else {
+              document.getElementById('register-cost').textContent = 'Contract not available';
+            }
+          } catch (e) {
+            document.getElementById('register-cost').textContent = 'Error loading regPrice';
+          }
        }
      }
 
@@ -1420,12 +1460,14 @@
          let emptyIndex = '...';
          if (parentIndex !== '...' && parentIndex !== '' && parentIndex) {
            try {
-             let left = await contract.getLeftAddress(parentIndex);
-             let right = await contract.getRightAddress(parentIndex);
+             const left = await window.safeGetLeftAddress(contract, parentIndex);
+             const right = await window.safeGetRightAddress(contract, parentIndex);
              if (left === '0x0000000000000000000000000000000000000000') {
                emptyIndex = (BigInt(parentIndex) * 2n).toString();
              } else if (right === '0x0000000000000000000000000000000000000000') {
                emptyIndex = (BigInt(parentIndex) * 2n + 1n).toString();
+             } else if (left === null || right === null) {
+               emptyIndex = '...';
              } else {
                emptyIndex = 'Full';
              }
@@ -1477,9 +1519,9 @@
                 }
                 requiredIAM = parseFloat((23 / tokenPriceNum).toFixed(2));
                              } else {
-                 // Normal mode: use regPrice function
-                if (typeof window.getRegPrice === 'function') {
-                  const regPrice = await window.getRegPrice(contract);
+                // Normal mode: use safe regPrice function
+               if (typeof window.safeGetRegPrice === 'function') {
+                 const regPrice = await window.safeGetRegPrice(contract);
                   if (regPrice) {
                     requiredIAM = parseFloat(Number(ethers.formatUnits(regPrice, 18)).toFixed(2));
                                    } else {
@@ -2167,23 +2209,19 @@
              // Calculate required amount (23 USD / token price)
              const requiredAmountFloat = 23 / tokenPriceNum;
              requiredAmount = ethers.parseEther(requiredAmountFloat.toString());
-           } else {
-             // Normal mode: use regPrice function
-           try {
-             if (typeof window.getRegPrice === 'function') {
-               const regPrice = await window.getRegPrice(contract);
-               if (regPrice) {
-                 requiredAmount = regPrice;
-               } else {
-                 throw new Error('RegPrice not available');
-               }
-             } else {
-               throw new Error('RegPrice function not available');
-             }
-                        } catch (e) {
-               console.log('Error getting regPrice:', e);
-               throw new Error('Unable to get registration price');
-             }
+          } else {
+            // Normal mode: use safe regPrice function
+            try {
+              const regPrice = await (window.safeGetRegPrice ? window.safeGetRegPrice(contract) : null);
+              if (regPrice) {
+                requiredAmount = regPrice;
+              } else {
+                throw new Error('RegPrice not available');
+              }
+            } catch (e) {
+              console.log('Error getting regPrice:', e);
+              throw new Error('Unable to get registration price');
+            }
          }
          
          if (userBalance < requiredAmount) {
@@ -2196,17 +2234,19 @@
           localStorage.setItem('avatar_' + newUser, selectedAvatar);
           
                    // Select function based on registration type
-         let tx;
-         if (currentRegistrationType === 'free') {
-           tx = await contract.registerFree(referrer, newUser);
+        let tx;
+        // Always use registerAndActivate; for reserve mode, use current user as upper
+        if (currentRegistrationType === 'free') {
+          const effectiveUpper = (upper && /^0x[a-fA-F0-9]{40}$/.test(upper)) ? upper : referrer;
+          tx = await contract.registerAndActivate(referrer, effectiveUpper, newUser);
         } else {
-           // For registerAndActivate, we need 3 parameters: referrer, upper, newUser
-           tx = await contract.registerAndActivate(referrer, upper, newUser);
-           }
+          // For registerAndActivate, we need 3 parameters: referrer, upper, newUser
+          tx = await contract.registerAndActivate(referrer, upper, newUser);
+        }
           
          showTempMessage('Waiting for network transaction confirmation...', 'info');
           await tx.wait();
-         showMessageBox(currentRegistrationType === 'free' ? 'Reserve registration completed successfully! Welcome to IAM family.' : 'Normal registration completed successfully! Welcome to IAM family.', 'success');
+        showMessageBox('Registration completed successfully! Welcome to IAM family.', 'success');
         setTimeout(loadRegisterInfo, 1500);
       } catch (e) {
         let errorMsg = e && (e.reason || (e.revert && e.revert.args && e.revert.args[0]) || e.message || e);
