@@ -1173,13 +1173,19 @@
             if (conn && conn.address) {
               console.log('✅ Wallet connected on register:', conn.address);
               try { const ws = document.getElementById('wallet-status'); if (ws) ws.textContent = `Connected: ${conn.address.slice(0,6)}...${conn.address.slice(-4)}`; } catch(_){ }
-              // Set new user field to connected address
+              // Set new user field to connected address ONLY if user is inactive
               try {
                 const nu = document.getElementById('new-user-address');
-                if (nu) {
-                  nu.value = conn.address;
-                  nu.setAttribute('data-full-address', conn.address);
-                  // Do NOT truncate new user address; keep full address visible for validity
+                if (nu && conn.contract) {
+                  let userActive = false;
+                  try {
+                    const u = await conn.contract.users(conn.address);
+                    userActive = !!(u && u.index && BigInt(u.index) > 0n);
+                  } catch(_) {}
+                  if (!userActive) {
+                    nu.value = conn.address;
+                    nu.setAttribute('data-full-address', conn.address);
+                  }
                 }
               } catch(_) {}
               // Fetch and show registration price
@@ -1239,9 +1245,22 @@
               const addr = (accounts && accounts[0]) ? accounts[0] : null;
               const nu = document.getElementById('new-user-address');
               if (nu && addr) {
-                nu.value = addr;
-                nu.setAttribute('data-full-address', addr);
-                // Keep full value; no truncation for new user field
+                // Only fill New User if account is inactive
+                try {
+                  let contract = (window.contractConfig && window.contractConfig.contract) || null;
+                  if (!contract && typeof window.connectWallet === 'function') {
+                    const c = await window.connectWallet();
+                    contract = c && c.contract ? c.contract : contract;
+                  }
+                  let userActive = false;
+                  if (contract) {
+                    try { const u = await contract.users(addr); userActive = !!(u && u.index && BigInt(u.index) > 0n); } catch(_) {}
+                  }
+                  if (!userActive) {
+                    nu.value = addr;
+                    nu.setAttribute('data-full-address', addr);
+                  }
+                } catch(_) {}
               }
               try { const ws = document.getElementById('wallet-status'); if (ws) ws.textContent = addr ? `Connected: ${addr.slice(0,6)}...${addr.slice(-4)}` : 'Not connected'; } catch(_){ }
               // Refresh registration price on account change
@@ -1279,9 +1298,14 @@
                   const ws = document.getElementById('wallet-status');
                   if (ws) ws.textContent = `Connected: ${conn.address.slice(0,6)}...${conn.address.slice(-4)}`;
                   const nu = document.getElementById('new-user-address');
-                  if (nu) {
-                    nu.value = conn.address;
-                    nu.setAttribute('data-full-address', conn.address);
+                  if (nu && conn.contract) {
+                    // Only set if inactive
+                    let userActive = false;
+                    try { const u = await conn.contract.users(conn.address); userActive = !!(u && u.index && BigInt(u.index) > 0n); } catch(_) {}
+                    if (!userActive) {
+                      nu.value = conn.address;
+                      nu.setAttribute('data-full-address', conn.address);
+                    }
                   }
                   enforceRegisterButtonState();
                 }
