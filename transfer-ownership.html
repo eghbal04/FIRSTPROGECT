@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Position Ownership Transfer</title>
+  <title>Ownership</title>
   <script>
     // Suppress noisy extension RPC errors (non-blocking)
     window.addEventListener('error', function(e){
@@ -299,7 +299,7 @@
   </a>
 
   <div class="transfer-ownership-container">
-    <h2 class="page-title">Position Ownership Transfer</h2>
+    <h2 class="page-title">Ownership</h2>
     <div class="subtext">Please carefully enter the new owner's address</div>
 
     <!-- Wallet Connection Status -->
@@ -325,7 +325,7 @@
         </div>
         <div class="hint" id="addressHint"></div>
       </div>
-      <button type="submit" id="transferOwnershipBtn" class="btn-primary" disabled>Transfer Ownership</button>
+      <button type="submit" id="transferOwnershipBtn" class="btn-primary" disabled>Ownership</button>
       <div class="status" id="transferOwnershipStatus"></div>
     </form>
   </div>
@@ -632,7 +632,7 @@
 
     // Auto update when page loads
     document.addEventListener('DOMContentLoaded', async function() {
-      console.log('🚀 Transfer Ownership page loaded');
+      console.log('🚀 Ownership page loaded');
       
       // Try to connect wallet automatically
       try {
@@ -665,7 +665,7 @@
       // Initial validation
       validateAddressInput();
       
-      console.log('✅ Transfer Ownership page initialized');
+      console.log('✅ Ownership page initialized');
     });
   </script>
   

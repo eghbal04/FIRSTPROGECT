@@ -439,14 +439,14 @@
         </a>
         <a class="nav-card" href="transfer-ownership.html">
           <div class="nav-icon">🏗️</div>
-          <div class="nav-label">Transfer Ownership</div>
+          <div class="nav-label">Ownership</div>
         </a>
         <a class="nav-card" href="utility.html">
           <div class="nav-icon">🛠️</div>
           <div class="nav-label">Utility</div>
         </a>
         <a class="nav-card" href="professional-tree.html">
-          <div class="nav-icon">🤝</div>
+          <div class="nav-icon">🌳</div>
           <div class="nav-label">Partners</div>
         </a>
         </div>
@@ -1115,24 +1115,35 @@
         return;
       }
       
-      generateBtn.addEventListener('click', function() {
-        const index = referralIndexInput.value.trim();
-        if (!index) {
-          alert('Please enter your index number');
-          return;
-        }
-        
-        // Generate referral link with parameters
-        const baseUrl = window.location.origin + window.location.pathname.replace('index.html', 'register.html');
-        const referralUrl = `${baseUrl}?ref=${encodeURIComponent(index)}`;
-        
-        referralLinkInput.value = referralUrl;
-        linkContainer.style.display = 'block';
-        
-        // Auto-fill index from user's current data if available
-        const userIndex = document.getElementById('status-index')?.textContent?.replace('⭐', '').trim();
-        if (userIndex && userIndex !== '-') {
+      generateBtn.addEventListener('click', async function() {
+        // Get connected user's address and index
+        try {
+          if (!window.ethereum || !window.ethereum.selectedAddress) {
+            alert('Please connect your wallet first');
+            return;
+          }
+          
+          const userAddress = window.ethereum.selectedAddress;
+          const userIndex = document.getElementById('status-index')?.textContent?.replace('⭐', '').trim();
+          
+          if (!userIndex || userIndex === '-') {
+            alert('User index not found. Please make sure you are registered in the contract.');
+            return;
+          }
+          
+          // Generate referral link with user's address
+          const baseUrl = window.location.origin + window.location.pathname.replace('index.html', 'register.html');
+          const referralUrl = `${baseUrl}?ref=${encodeURIComponent(userAddress)}`;
+          
+          referralLinkInput.value = referralUrl;
+          linkContainer.style.display = 'block';
+          
+          // Auto-fill index field with user's index
           referralIndexInput.value = userIndex;
+          
+        } catch (error) {
+          console.error('Error generating referral link:', error);
+          alert('Error generating referral link. Please try again.');
         }
       });
       
@@ -1164,6 +1175,27 @@
           referralIndexInput.value = userIndex;
         }
       }, 2000);
+      
+      // Auto-generate referral link if user is connected
+      setTimeout(async () => {
+        try {
+          if (window.ethereum && window.ethereum.selectedAddress) {
+            const userAddress = window.ethereum.selectedAddress;
+            const userIndex = document.getElementById('status-index')?.textContent?.replace('⭐', '').trim();
+            
+            if (userIndex && userIndex !== '-') {
+              const baseUrl = window.location.origin + window.location.pathname.replace('index.html', 'register.html');
+              const referralUrl = `${baseUrl}?ref=${encodeURIComponent(userAddress)}`;
+              
+              referralLinkInput.value = referralUrl;
+              linkContainer.style.display = 'block';
+              referralIndexInput.value = userIndex;
+            }
+          }
+        } catch (error) {
+          console.log('Auto-generate referral link failed:', error);
+        }
+      }, 3000);
     }
   </script>
   
