@@ -300,14 +300,15 @@
     
     .goog-te-menu2-item {
       color: #e2e8f0 !important;
-      padding: 8px 12px !important;
-      font-weight: 500 !important;
+      padding: 4px 8px !important;
+      font-weight: 400 !important;
       transition: all 0.2s ease !important;
-      font-size: 12px !important;
+      font-size: 10px !important;
       white-space: nowrap !important;
       width: 100% !important;
       display: block !important;
       border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+      line-height: 1.2 !important;
     }
     
     .goog-te-menu2-item:last-child {
@@ -347,8 +348,8 @@
       }
       
       .goog-te-menu2-item {
-        padding: 6px 10px !important;
-        font-size: 11px !important;
+        padding: 3px 6px !important;
+        font-size: 9px !important;
       }
     }
     
@@ -371,8 +372,8 @@
       }
       
       .goog-te-menu2-item {
-        padding: 5px 8px !important;
-        font-size: 10px !important;
+        padding: 2px 4px !important;
+        font-size: 8px !important;
       }
     }
     </style>
@@ -1171,7 +1172,7 @@
     function googleTranslateElementInit() {
       new google.translate.TranslateElement({
         pageLanguage: 'en',
-        includedLanguages: 'en,fa,ar,zh,hi,es,fr,de,ja,ko,ru,tr,ur,pt,it,nl,sv,da,no,fi,pl,cs,hu,ro,bg,hr,sk,sl,et,lv,lt,mt,cy,ga,is,eu,ca,gl,af,sq,az,be,bs,cs,da,de,el,es,et,fa,fi,fr,gl,he,hi,hr,hu,hy,id,is,it,ja,ka,kk,km,ko,ky,lo,lt,lv,mk,ml,mn,ms,my,ne,no,pl,pt,ro,ru,si,sk,sl,sq,sr,sv,sw,ta,th,tr,uk,ur,uz,vi,zh',
+        includedLanguages: 'en,fa,ar,zh,hi,es,fr,de,ja,ko,ru,tr,ur,pt,it,nl',
         layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
         autoDisplay: false,
         multilanguagePage: true
@@ -1186,7 +1187,18 @@
           menu.style.maxHeight = '400px !important';
           menu.style.overflowY = 'auto !important';
           menu.style.maxWidth = '200px !important';
+          menu.style.width = '200px !important';
         }
+        
+        // Force smaller items
+        const items = document.querySelectorAll('.goog-te-menu2-item');
+        items.forEach(item => {
+          item.style.padding = '4px 8px !important';
+          item.style.fontSize = '10px !important';
+          item.style.lineHeight = '1.2 !important';
+          item.style.width = '100% !important';
+          item.style.display = 'block !important';
+        });
       }, 1000);
     }
   </script>
