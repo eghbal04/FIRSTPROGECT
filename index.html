@@ -30,7 +30,22 @@
     .grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; }
     @media (max-width: 1024px) { .grid { grid-template-columns: 1fr; gap: 14px; } }
     .card { background: #121521; border: 1px solid #1f2433; border-radius: 12px; padding: 16px; }
-    .card h2 { margin: 0 0 12px; font-size: 18px; color:#aef3c6; }
+    .card h2 { margin: 0 0 12px; font-size: 18px; color:#aef3c6; cursor: pointer; user-select: none; display: flex; align-items: center; justify-content: space-between; }
+    .card h2:hover { color: #c4f7d6; }
+    .card h2 .toggle-icon { transition: transform 0.3s ease; font-size: 16px; }
+    .card h2.collapsed .toggle-icon { transform: rotate(-90deg); }
+    .card-content { 
+      transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease, padding 0.3s ease; 
+      overflow: hidden; 
+      max-height: 1000px;
+      opacity: 1;
+    }
+    .card-content.collapsed { 
+      max-height: 0; 
+      opacity: 0; 
+      margin: 0; 
+      padding: 0; 
+    }
     .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px dashed #263048; }
     .row:last-child { border-bottom: 0; }
     .label { color:#9aa8c1; }
@@ -454,25 +469,27 @@
 
     <div class="grid">
       <section class="card" id="contract-card" style="text-align:left; direction:ltr;">
-        <h2>Contract Info</h2>
-        <div class="row"><div class="label">Contract Address</div><div class="value" id="c-address">-</div></div>
-        <div class="row"><div class="label">Name</div><div class="value" id="c-name">-</div></div>
-        <div class="row"><div class="label">Symbol</div><div class="value" id="c-symbol">-</div></div>
-        <div class="row"><div class="label">Decimals</div><div class="value" id="c-decimals">-</div></div>
-        <div class="row"><div class="label">Total Supply</div><div class="value" id="c-total-supply">-</div></div>
-        <div class="row"><div class="label">DAI In Contract</div><div class="value" id="c-dai-in-contract">-</div></div>
-        <div class="row"><div class="label">IAM In Contract</div><div class="value" id="c-iam-in-contract">-</div></div>
-        <div class="row"><div class="label">Registration Price</div><div class="value" id="c-registration-price">-</div></div>
-        <div class="row"><div class="label">Token Price</div><div class="value" id="c-token-price">-</div></div>
-        <div class="row"><div class="label">Point Price</div><div class="value" id="c-point-price">-</div></div>
-        <div class="row"><div class="label">Cash Back</div><div class="value" id="c-cashback">-</div></div>
-        
-        
-        <div class="row"><div class="label">Wallets Count</div><div class="value" id="c-wallets-count">-</div></div>
-        <div class="row"><div class="label">Claimable Points (Total)</div><div class="value" id="c-claimable-points">-</div></div>
-        
-        <div class="muted">Some values may remain empty if their functions do not exist on the contract.</div>
-        <div class="error" id="contract-error" style="display:none"></div>
+        <h2 id="contract-header">Contract Info <span class="toggle-icon">▼</span></h2>
+        <div class="card-content" id="contract-content">
+          <div class="row"><div class="label">Contract Address</div><div class="value" id="c-address">-</div></div>
+          <div class="row"><div class="label">Name</div><div class="value" id="c-name">-</div></div>
+          <div class="row"><div class="label">Symbol</div><div class="value" id="c-symbol">-</div></div>
+          <div class="row"><div class="label">Decimals</div><div class="value" id="c-decimals">-</div></div>
+          <div class="row"><div class="label">Total Supply</div><div class="value" id="c-total-supply">-</div></div>
+          <div class="row"><div class="label">DAI In Contract</div><div class="value" id="c-dai-in-contract">-</div></div>
+          <div class="row"><div class="label">IAM In Contract</div><div class="value" id="c-iam-in-contract">-</div></div>
+          <div class="row"><div class="label">Registration Price</div><div class="value" id="c-registration-price">-</div></div>
+          <div class="row"><div class="label">Token Price</div><div class="value" id="c-token-price">-</div></div>
+          <div class="row"><div class="label">Point Price</div><div class="value" id="c-point-price">-</div></div>
+          <div class="row"><div class="label">Cash Back</div><div class="value" id="c-cashback">-</div></div>
+          
+          
+          <div class="row"><div class="label">Wallets Count</div><div class="value" id="c-wallets-count">-</div></div>
+          <div class="row"><div class="label">Claimable Points (Total)</div><div class="value" id="c-claimable-points">-</div></div>
+          
+          <div class="muted">Some values may remain empty if their functions do not exist on the contract.</div>
+          <div class="error" id="contract-error" style="display:none"></div>
+        </div>
       </section>
             </div>
             
@@ -1212,6 +1229,26 @@
       }, 1000);
     }
   </script>
+  
+  <!-- Collapsible Contract Info -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const contractHeader = document.getElementById('contract-header');
+      const contractContent = document.getElementById('contract-content');
+      
+      if (contractHeader && contractContent) {
+        contractHeader.addEventListener('click', function() {
+          contractContent.classList.toggle('collapsed');
+          contractHeader.classList.toggle('collapsed');
+        });
+        
+        // Start collapsed by default
+        contractContent.classList.add('collapsed');
+        contractHeader.classList.add('collapsed');
+      }
+    });
+  </script>
+  
   <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </body>
 </html>
