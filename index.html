@@ -71,7 +71,7 @@
       border: 1px solid #00ff88;
       border-radius: 12px;
       padding: 16px 12px;
-      text-decoration: none;
+            text-decoration: none;
       color: #e6eaf0;
       transition: all 0.3s ease;
       display: flex;
@@ -218,14 +218,14 @@
       }
     }
     
-    /* Google Translate Widget Styling */
+    /* Google Translate Widget Styling - Modern Dark Theme */
     .goog-te-banner-frame {
       display: none !important;
     }
     
     .goog-te-gadget {
       font-family: 'Inter', sans-serif !important;
-      font-size: 12px !important;
+      font-size: 13px !important;
     }
     
     .goog-te-gadget-simple {
@@ -233,44 +233,96 @@
       border: none !important;
       padding: 4px 8px !important;
       border-radius: 6px !important;
-      color: #e6eaf0 !important;
+      color: #e2e8f0 !important;
+      font-weight: 500 !important;
+      transition: all 0.2s ease !important;
+      font-size: 11px !important;
     }
     
     .goog-te-gadget-simple:hover {
-      background: rgba(0, 255, 136, 0.1) !important;
+      background: rgba(96, 165, 250, 0.15) !important;
+      color: #60a5fa !important;
     }
     
     .goog-te-gadget-simple .goog-te-menu-value {
-      color: #e6eaf0 !important;
-      font-size: 12px !important;
+      color: #e2e8f0 !important;
+      font-size: 13px !important;
+      font-weight: 500 !important;
     }
     
     .goog-te-gadget-simple .goog-te-menu-value span:first-child {
-      color: #00ff88 !important;
+      color: #60a5fa !important;
+      font-weight: 600 !important;
     }
     
     .goog-te-gadget-simple .goog-te-menu-value span:last-child {
-      color: #9aa8c1 !important;
+      color: #94a3b8 !important;
     }
     
     .goog-te-menu2 {
-      background: linear-gradient(135deg, #1a1f2e 0%, #232946 100%) !important;
-      border: 1px solid #00ff88 !important;
-      border-radius: 8px !important;
-      box-shadow: 0 8px 32px rgba(0, 255, 136, 0.3) !important;
+      background: linear-gradient(135deg, #0f1419 0%, #1a2332 100%) !important;
+      border: 2px solid #4a5568 !important;
+      border-radius: 12px !important;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5) !important;
+      backdrop-filter: blur(15px) !important;
+      max-height: 400px !important;
+      overflow-y: auto !important;
+      max-width: 200px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      width: 200px !important;
+    }
+    
+    .goog-te-menu2 .goog-te-menu2-item {
+      width: 100% !important;
+      display: block !important;
+      float: none !important;
+      clear: both !important;
+    }
+    
+    .goog-te-menu2::-webkit-scrollbar {
+      width: 6px !important;
+    }
+    
+    .goog-te-menu2::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1) !important;
+      border-radius: 3px !important;
+    }
+    
+    .goog-te-menu2::-webkit-scrollbar-thumb {
+      background: rgba(96, 165, 250, 0.6) !important;
+      border-radius: 3px !important;
+    }
+    
+    .goog-te-menu2::-webkit-scrollbar-thumb:hover {
+      background: rgba(96, 165, 250, 0.8) !important;
     }
     
     .goog-te-menu2-item {
-      color: #e6eaf0 !important;
+      color: #e2e8f0 !important;
       padding: 8px 12px !important;
+      font-weight: 500 !important;
+      transition: all 0.2s ease !important;
+      font-size: 12px !important;
+      white-space: nowrap !important;
+      width: 100% !important;
+      display: block !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    }
+    
+    .goog-te-menu2-item:last-child {
+      border-bottom: none !important;
     }
     
     .goog-te-menu2-item:hover {
-      background: rgba(0, 255, 136, 0.1) !important;
+      background: rgba(96, 165, 250, 0.15) !important;
+      color: #60a5fa !important;
     }
     
     .goog-te-menu2-item-selected {
-      background: rgba(0, 255, 136, 0.2) !important;
+      background: rgba(96, 165, 250, 0.25) !important;
+      color: #60a5fa !important;
+      font-weight: 600 !important;
     }
     
     /* Mobile responsiveness for translate widget */
@@ -279,13 +331,50 @@
         top: 10px !important;
         right: 10px !important;
         padding: 6px !important;
+        border-radius: 8px !important;
+        max-width: 120px !important;
       }
       
       .goog-te-gadget-simple {
         font-size: 10px !important;
         padding: 3px 6px !important;
       }
-        }
+      
+      .goog-te-menu2 {
+        max-height: 300px !important;
+        max-width: 180px !important;
+        font-size: 11px !important;
+      }
+      
+      .goog-te-menu2-item {
+        padding: 6px 10px !important;
+        font-size: 11px !important;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      #google_translate_element {
+        top: 8px !important;
+        right: 8px !important;
+        padding: 4px !important;
+        max-width: 100px !important;
+      }
+      
+      .goog-te-gadget-simple {
+        font-size: 9px !important;
+        padding: 2px 4px !important;
+      }
+      
+      .goog-te-menu2 {
+        max-height: 250px !important;
+        max-width: 160px !important;
+      }
+      
+      .goog-te-menu2-item {
+        padding: 5px 8px !important;
+        font-size: 10px !important;
+      }
+    }
     </style>
 </head>
 <body>
@@ -295,11 +384,13 @@
       top: 20px;
       right: 20px;
       z-index: 9999;
-      background: linear-gradient(135deg, #1a1f2e 0%, #232946 100%);
-      border: 1px solid #00ff88;
-      border-radius: 8px;
+      background: linear-gradient(135deg, #0f1419 0%, #1a2332 100%);
+      border: 2px solid #4a5568;
+      border-radius: 12px;
       padding: 8px;
-      box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(10px);
+      max-width: 150px;
     "></div>
     
   <div class="container">
@@ -315,8 +406,8 @@
       <span class="pill" id="status-likes">👍 -</span>
       <span class="pill" id="status-dislikes">👎 -</span>
       
-            </div>
-            
+        </div>
+        
 
     <!-- Navigation Menu - Creative Design -->
     <div class="nav-menu" style="margin-bottom: 24px;">
@@ -357,7 +448,7 @@
           <div class="nav-icon">🤝</div>
           <div class="nav-label">Partners</div>
         </a>
-      </div>
+        </div>
     </div>
 
     <div class="grid">
@@ -382,8 +473,8 @@
         <div class="muted">Some values may remain empty if their functions do not exist on the contract.</div>
         <div class="error" id="contract-error" style="display:none"></div>
       </section>
-    </div>
-
+            </div>
+            
     <!-- Referral Link Generator Section -->
     <div class="referral-section" style="
       margin-top: 24px;
@@ -405,7 +496,7 @@
                   style="padding: 8px 16px; background: linear-gradient(135deg, #00ff88, #00cc6a); border: none; border-radius: 6px; color: #1a1f2e; font-weight: 600; cursor: pointer; font-size: 14px;">
             Generate Link
           </button>
-        </div>
+                    </div>
         <div id="referral-link-container" style="display: none;">
           <label style="font-size: 12px; color: #9aa8c1; margin-bottom: 4px; display: block;">Your Referral Link:</label>
           <div style="display: flex; gap: 8px; align-items: center;">
@@ -415,11 +506,11 @@
                     style="padding: 8px 12px; background: linear-gradient(135deg, #a786ff, #9670ff); border: none; border-radius: 6px; color: white; cursor: pointer; font-size: 12px;">
               📋 Copy
             </button>
-          </div>
+                </div>
         </div>
-      </div>
-    </div>
-
+                </div>
+                </div>
+                
     <!-- Professional Presentation Section -->
     <div class="additional-content" style="
       margin-top: 24px;
@@ -443,15 +534,15 @@
         <p style="margin: 0 0 16px; color: #b8c1ec; font-size: 15px;">
           Built on the <strong>Polygon blockchain</strong>, IAM PHOENIX combines the power of network marketing with the security and transparency of blockchain technology. All network marketing activities, rewards, and commissions are automatically calculated and distributed through audited smart contracts, ensuring complete transparency and eliminating the possibility of fraud or manipulation.
         </p>
-      </div>
-
+                </div>
+                
       <div style="margin-bottom: 20px;">
         <h3 style="color: #aef3c6; font-size: 18px; margin: 0 0 12px;">🔥 Phoenix Team Mission</h3>
         <p style="margin: 0 0 16px; color: #b8c1ec; font-size: 15px;">
           Our team, <strong>Phoenix</strong>, is currently supporting and developing the IAM token, which is built on the Polygon blockchain and backed by the decentralized stablecoin DAI. This stablecoin is fully decentralized, and no organization or authority has access to it. The IAM token itself is an independent project, in fact a startup. It does not support or rely on another startup, but rather aims to introduce and promote itself.
         </p>
-      </div>
-
+                </div>
+                
       <div style="margin-bottom: 20px;">
         <h3 style="color: #aef3c6; font-size: 18px; margin: 0 0 12px;">📊 Subscription & Point System</h3>
         <p style="margin: 0 0 12px; color: #b8c1ec; font-size: 15px;">
@@ -475,15 +566,15 @@
           A decentralized network that will soon be recognized internationally
         </p>
             </div>
-        </div>
-
-        
-        
-    
-
-    
                 </div>
                 
+        
+        
+    
+
+    
+        </div>
+        
         
   <!-- Ethers (v6) CDN if not already present on other pages -->
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.1/dist/ethers.umd.min.js"></script>
@@ -496,7 +587,7 @@
   <script src="js/auto-wallet-connect.js"></script>
   <script src="js/swap.js"></script>
   <!-- Floating Token Growth Card -->
-  <script src="js/floating-token-card.js"></script>
+    <script src="js/floating-token-card.js"></script>
     
   <script>
     function safeFormatUnits(value, decimals) {
@@ -568,7 +659,7 @@
         // Normal rendering for others
         if (id === 'status-address' || id === 'status-index') {
           el.textContent = iconLabel(`${value ?? '-'}`);
-        } else {
+                        } else {
           el.textContent = iconLabel(`${label}: ${value ?? '-'}`);
         }
       };
@@ -963,7 +1054,7 @@
             try { result.textContent = JSON.stringify(out, null, 2); }
             catch { result.textContent = String(out); }
           }
-        } catch (e) {
+            } catch (e) {
           result.textContent = `❌ ${e.message||e}`;
         }
       });
@@ -1057,7 +1148,7 @@
           console.error('Failed to copy: ', err);
           // Fallback for older browsers
           referralLinkInput.select();
-          document.execCommand('copy');
+                            document.execCommand('copy');
           copyBtn.textContent = '✅ Copied!';
           setTimeout(() => {
             copyBtn.textContent = '📋 Copy';
@@ -1085,6 +1176,18 @@
         autoDisplay: false,
         multilanguagePage: true
       }, 'google_translate_element');
+      
+      // Force single column layout after initialization
+      setTimeout(() => {
+        const menu = document.querySelector('.goog-te-menu2');
+        if (menu) {
+          menu.style.display = 'flex !important';
+          menu.style.flexDirection = 'column !important';
+          menu.style.maxHeight = '400px !important';
+          menu.style.overflowY = 'auto !important';
+          menu.style.maxWidth = '200px !important';
+        }
+      }, 1000);
     }
   </script>
   <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
