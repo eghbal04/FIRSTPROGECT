@@ -476,7 +476,7 @@
       </section>
             </div>
             
-    <!-- Referral Link Generator Section -->
+    <!-- Referral Link - Permanent -->
     <div class="referral-section" style="
       margin-top: 24px;
       padding: 20px;
@@ -487,30 +487,24 @@
       box-shadow: 0 4px 15px rgba(0, 255, 136, 0.2);
     ">
       <h3 style="margin: 0 0 16px; color: #00ff88; font-size: 18px; text-align: center;">
-        🔗 Referral Link Generator
+        🔗 Referral Link
       </h3>
       <div style="display: flex; flex-direction: column; gap: 12px;">
-        <div style="display: flex; gap: 8px; align-items: center;">
-          <input type="text" id="referral-index" placeholder="Your Index (e.g., 123)" 
-                 style="flex: 1; padding: 8px 12px; border: 1px solid #00ff88; border-radius: 6px; background: rgba(0, 255, 136, 0.1); color: #e6eaf0; font-size: 14px;">
-          <button id="generate-referral-btn" 
-                  style="padding: 8px 16px; background: linear-gradient(135deg, #00ff88, #00cc6a); border: none; border-radius: 6px; color: #1a1f2e; font-weight: 600; cursor: pointer; font-size: 14px;">
-            Generate Link
-          </button>
-                    </div>
         <div id="referral-link-container" style="display: none;">
           <label style="font-size: 12px; color: #9aa8c1; margin-bottom: 4px; display: block;">Your Referral Link:</label>
           <div style="display: flex; gap: 8px; align-items: center;">
             <input type="text" id="referral-link" readonly 
                    style="flex: 1; padding: 8px 12px; border: 1px solid #00ff88; border-radius: 6px; background: rgba(0, 255, 136, 0.1); color: #e6eaf0; font-size: 12px; font-family: monospace;">
+            <a id="open-register-link" href="#" target="_blank" class="footer-btn" style="white-space: nowrap;">Open</a>
             <button id="copy-referral-btn" 
                     style="padding: 8px 12px; background: linear-gradient(135deg, #a786ff, #9670ff); border: none; border-radius: 6px; color: white; cursor: pointer; font-size: 12px;">
               📋 Copy
             </button>
-                </div>
+          </div>
         </div>
-                </div>
-                </div>
+        <div id="referral-note" class="muted" style="text-align:center;">Connect your wallet to see your permanent referral link</div>
+      </div>
+    </div>
                 
     <!-- Professional Presentation Section -->
     <div class="additional-content" style="
@@ -1099,54 +1093,67 @@
         } catch {}
       }
       
-      // Referral link generator functionality
-      setupReferralLinkGenerator();
+      // Setup permanent referral link
+      setupPermanentReferralLink();
     });
     
-    function setupReferralLinkGenerator() {
-      const generateBtn = document.getElementById('generate-referral-btn');
+    function setupPermanentReferralLink() {
       const copyBtn = document.getElementById('copy-referral-btn');
-      const referralIndexInput = document.getElementById('referral-index');
       const referralLinkInput = document.getElementById('referral-link');
       const linkContainer = document.getElementById('referral-link-container');
-      
-      if (!generateBtn || !copyBtn || !referralIndexInput || !referralLinkInput || !linkContainer) {
-        console.warn('Referral link generator elements not found');
+      const openBtn = document.getElementById('open-register-link');
+      const note = document.getElementById('referral-note');
+
+      if (!copyBtn || !referralLinkInput || !linkContainer || !openBtn) {
+        console.warn('Referral link elements not found');
         return;
       }
-      
-      generateBtn.addEventListener('click', async function() {
-        // Get connected user's address and index
+
+      async function setPermanentLink() {
         try {
-          if (!window.ethereum || !window.ethereum.selectedAddress) {
-            alert('Please connect your wallet first');
-            return;
+          let addr = null;
+          if (window.ethereum && window.ethereum.selectedAddress) addr = window.ethereum.selectedAddress;
+          if (!addr && window.contractConfig && window.contractConfig.address) addr = window.contractConfig.address;
+          if (!addr) return;
+
+          // Resolve user's index from status pill or contract if possible
+          let idx = document.getElementById('status-index')?.textContent?.replace('⭐', '').trim();
+          if (!idx || idx === '-' || idx === '# -') {
+            try {
+              if (window.contractConfig && window.contractConfig.contract) {
+                const c = window.contractConfig.contract;
+                if (typeof c.users === 'function') {
+                  const u = await c.users(addr);
+                  if (u && u.index !== undefined) idx = (typeof u.index === 'bigint') ? u.index.toString() : String(u.index);
+                }
+                if ((!idx || idx === '-' || idx === '0') && typeof c.addressToIndex === 'function') {
+                  const vi = await c.addressToIndex(addr);
+                  idx = (typeof vi === 'bigint') ? vi.toString() : String(vi);
+                }
+              }
+            } catch {}
           }
-          
-          const userAddress = window.ethereum.selectedAddress;
-          const userIndex = document.getElementById('status-index')?.textContent?.replace('⭐', '').trim();
-          
-          if (!userIndex || userIndex === '-') {
-            alert('User index not found. Please make sure you are registered in the contract.');
-            return;
-          }
-          
-          // Generate referral link with user's address
-          const baseUrl = window.location.origin + window.location.pathname.replace('index.html', 'register.html');
-          const referralUrl = `${baseUrl}?ref=${encodeURIComponent(userAddress)}`;
-          
+          if (!idx || idx === '-' || idx === '0') return;
+
+          const baseUrl = window.location.origin + '/register.html';
+          const referralUrl = `${baseUrl}?ref=${encodeURIComponent(idx)}`;
           referralLinkInput.value = referralUrl;
+          openBtn.href = referralUrl;
           linkContainer.style.display = 'block';
-          
-          // Auto-fill index field with user's index
-          referralIndexInput.value = userIndex;
-          
-        } catch (error) {
-          console.error('Error generating referral link:', error);
-          alert('Error generating referral link. Please try again.');
-        }
-      });
-      
+          if (note) note.style.display = 'none';
+        } catch {}
+      }
+
+      // Set immediately and on wallet events
+      setPermanentLink();
+      if (window.ethereum) {
+        try {
+          window.ethereum.on('accountsChanged', setPermanentLink);
+          window.ethereum.on('connect', setPermanentLink);
+          window.ethereum.on('chainChanged', setPermanentLink);
+        } catch {}
+      }
+
       copyBtn.addEventListener('click', async function() {
         try {
           await navigator.clipboard.writeText(referralLinkInput.value);
@@ -1167,35 +1174,6 @@
           }, 2000);
         }
       });
-      
-      // Auto-fill index from user's current data when page loads
-      setTimeout(() => {
-        const userIndex = document.getElementById('status-index')?.textContent?.replace('⭐', '').trim();
-        if (userIndex && userIndex !== '-') {
-          referralIndexInput.value = userIndex;
-        }
-      }, 2000);
-      
-      // Auto-generate referral link if user is connected
-      setTimeout(async () => {
-        try {
-          if (window.ethereum && window.ethereum.selectedAddress) {
-            const userAddress = window.ethereum.selectedAddress;
-            const userIndex = document.getElementById('status-index')?.textContent?.replace('⭐', '').trim();
-            
-            if (userIndex && userIndex !== '-') {
-              const baseUrl = window.location.origin + window.location.pathname.replace('index.html', 'register.html');
-              const referralUrl = `${baseUrl}?ref=${encodeURIComponent(userAddress)}`;
-              
-              referralLinkInput.value = referralUrl;
-              linkContainer.style.display = 'block';
-              referralIndexInput.value = userIndex;
-            }
-          }
-        } catch (error) {
-          console.log('Auto-generate referral link failed:', error);
-        }
-      }, 3000);
     }
   </script>
   
