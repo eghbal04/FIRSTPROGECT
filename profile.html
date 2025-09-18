@@ -583,7 +583,7 @@
                       <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(35,41,70,0.98);border-radius:18px;padding:2rem;max-width:600px;width:90%;border:2px solid #ff6b3533;box-shadow:0 8px 32px rgba(0,0,0,0.5);">
                           <div style="text-align:center;margin-bottom:1.5rem;">
                               <h3 style="color:#ff6b35;margin:0;font-size:1.5em;">📈 Upgrade Binary Points Cap</h3>
-                              <p style="color:#ccc;margin:0.5rem 0;font-size:0.9em;">You can purchase up to 2 points every 4 weeks</p>
+                              <p style="color:#ccc;margin:0.5rem 0;font-size:0.9em;">The contract will automatically determine if you can upgrade based on your purchase amount and timing</p>
                           </div>
                           
                           <div style="margin-bottom:1.5rem;">
@@ -943,7 +943,11 @@
              startWithdrawalTimers(user);
              
                           // Setup upgrade cap button
-              setupUpgradeCapButton(user, contract, address);
+              if (typeof setupUpgradeCapButton === 'function') {
+                  setTimeout(() => {
+                      setupUpgradeCapButton(user, contract, address);
+                  }, 100);
+              }
                  } catch (e) {
              content.innerHTML = `<div class="error-message">Error: ${e.message || e}</div>`;
          }

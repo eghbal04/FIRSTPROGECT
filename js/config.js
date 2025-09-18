@@ -111,6 +111,17 @@ const MIN_IAM_ABI = (window.IAM_ABI && Array.isArray(window.IAM_ABI)) ? window.I
       "stateMutability": "nonpayable",
       "type": "function"
     },
+    // Write: purchase function for upgrades (3 parameters only)
+    { "inputs": [
+        {"internalType":"uint256","name":"amountIAM","type":"uint256"},
+        {"internalType":"uint256","name":"payout","type":"uint256"},
+        {"internalType":"address","name":"seller","type":"address"}
+      ],
+      "name": "purchase",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
 ];
 
 // Ensure ABI is available globally from config

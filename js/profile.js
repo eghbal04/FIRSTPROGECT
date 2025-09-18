@@ -795,15 +795,16 @@ async function updateWalletCountsDisplay() {
 }
 
 // Upgrade cap with purchaseEBAConfig (English messages)
-async function purchaseEBAConfig(amount, payout = 100, seller = '0x0000000000000000000000000000000000000000') {
+async function purchaseEBAConfig(amount) {
     try {
-        console.log('🔄 Starting upgrade cap with amount:', amount, 'payout:', payout, 'seller:', seller);
+        console.log('🔄 Starting upgrade cap with amount:', amount);
         
         if (!window.connectWallet) {
             throw new Error('Wallet connection is not active');
         }
         
         const { contract, address } = await window.connectWallet();
+        
         if (!contract || !address) {
             throw new Error('Wallet connection failed');
         }
@@ -814,7 +815,7 @@ async function purchaseEBAConfig(amount, payout = 100, seller = '0x0000000000000
             throw new Error('You must register first');
         }
         
-        // تبدیل مقدار به wei
+        // Convert amount to wei
         const amountInWei = ethers.parseUnits(amount.toString(), 18);
         
         // Check user balance
@@ -823,15 +824,18 @@ async function purchaseEBAConfig(amount, payout = 100, seller = '0x0000000000000
             throw new Error('Insufficient IAM balance for upgrade');
         }
         
-        // Validate payout (must be between 30 and 100)
-        if (payout <= 30 || payout > 100) {
-            throw new Error('Payout percent must be between 30 and 100');
-        }
+        // Let the contract decide all upgrade conditions
+        // The contract will check:
+        // - totalPurchasedKind >= uptopoint
+        // - upgradeTime + 4 weeks <= block.timestamp
+        // - payout between 30-100%
+        // - amount > 0
         
         console.log('⏳ Submitting upgrade transaction...');
         
-        // Send transaction
-        const tx = await contract.purchase(amountInWei, payout, seller);
+        // Send transaction - using payout=100 and contract as seller for upgrades
+        const contractAddress = contract.target || contract.address;
+        const tx = await contract.purchase(amountInWei, 100, contractAddress);
         
         console.log('⏳ Waiting for transaction confirmation...');
         await tx.wait();
@@ -858,7 +862,8 @@ async function purchaseEBAConfig(amount, payout = 100, seller = '0x0000000000000
         } else if (error.message && error.message.includes('network')) {
             errorMessage = 'Network error - please check your internet or blockchain network';
         } else if (error.message && error.message.includes('execution reverted')) {
-            errorMessage = 'Transaction failed - check upgrade conditions';
+            // Contract will handle all validation - show generic message
+            errorMessage = 'Transaction failed - contract validation failed. Check if you meet upgrade conditions.';
         } else if (error.message && error.message.includes('not registered')) {
             errorMessage = 'You must register first';
         } else if (error.message && error.message.includes('Amount must be greater than 0')) {
@@ -875,6 +880,8 @@ async function purchaseEBAConfig(amount, payout = 100, seller = '0x0000000000000
 
 // تابع راه‌اندازی دکمه ارتقاع سقف
 function setupUpgradeCapButton(user, contract, address) {
+    console.log('🔧 Setting up upgrade cap button...');
+    
     const upgradeBtn = document.getElementById('upgrade-cap-btn');
     const modal = document.getElementById('upgrade-cap-modal');
     const amountInput = document.getElementById('upgrade-cap-amount');
@@ -885,19 +892,31 @@ function setupUpgradeCapButton(user, contract, address) {
     const cancelBtn = document.getElementById('upgrade-cap-cancel');
     const statusEl = document.getElementById('upgrade-cap-status');
     
-    if (!upgradeBtn || !modal) return;
+    console.log('🔍 Elements found:', {
+        upgradeBtn: !!upgradeBtn,
+        modal: !!modal,
+        amountInput: !!amountInput,
+        confirmBtn: !!confirmBtn,
+        cancelBtn: !!cancelBtn
+    });
+    
+    if (!upgradeBtn || !modal) {
+        console.error('❌ Required elements not found for upgrade cap button');
+        return;
+    }
     
     // نمایش مودال
-    upgradeBtn.onclick = () => {
+    upgradeBtn.addEventListener('click', () => {
+        console.log('🖱️ Upgrade cap button clicked!');
         modal.style.display = 'block';
         loadUpgradeCapData();
-    };
+    });
     
     // بستن مودال
-    cancelBtn.onclick = () => {
+    cancelBtn.addEventListener('click', () => {
         modal.style.display = 'none';
         statusEl.textContent = '';
-    };
+    });
     
     // بستن مودال با کلیک خارج از آن
     modal.onclick = (e) => {
@@ -938,15 +957,6 @@ function setupUpgradeCapButton(user, contract, address) {
             // محاسبه قیمت هر پوینت (یک سوم قیمت ثبت‌نام)
             const pointPrice = regPriceNum / 3;
             
-            // بررسی زمان آخرین ارتقاع
-            const lastUpgradeTime = Number(user.upgradeTime || 0);
-            const now = Math.floor(Date.now() / 1000);
-            const fourWeeks = 4 * 7 * 24 * 3600; // 4 هفته
-            const timeSinceUpgrade = now - lastUpgradeTime;
-            
-            // بررسی اینکه آیا می‌تواند ارتقاع کند
-            const canUpgrade = timeSinceUpgrade >= fourWeeks;
-            
             // محاسبه تعداد پوینت‌های قابل خرید
             const totalPurchased = Number(user.totalPurchasedKind || 0) / 1e18;
             const uptopoint = regPriceNum / 3; // حداقل مقدار برای یک پوینت
@@ -957,9 +967,6 @@ function setupUpgradeCapButton(user, contract, address) {
             
             // به‌روزرسانی UI
             updateUpgradeUI({
-                canUpgrade,
-                timeSinceUpgrade,
-                fourWeeks,
                 pointPrice,
                 maxPointsThisMonth,
                 totalPurchased,
@@ -993,17 +1000,6 @@ function setupUpgradeCapButton(user, contract, address) {
         // به‌روزرسانی محتوای مودال
         const modalContent = document.querySelector('#upgrade-cap-modal > div > div');
         if (modalContent) {
-            const timeLeft = info.fourWeeks - info.timeSinceUpgrade;
-            const daysLeft = Math.floor(timeLeft / (24 * 3600));
-            const hoursLeft = Math.floor((timeLeft % (24 * 3600)) / 3600);
-            
-            let statusText = '';
-            if (info.canUpgrade) {
-                statusText = `✅ Ready to upgrade! (${info.maxPointsThisMonth} point(s) available)`;
-            } else {
-                statusText = `⏳ ${daysLeft}d ${hoursLeft}h until next upgrade`;
-            }
-            
             // به‌روزرسانی متن‌های مودال
             const infoDiv = document.createElement('div');
             infoDiv.innerHTML = `
@@ -1014,7 +1010,7 @@ function setupUpgradeCapButton(user, contract, address) {
                         <div>📈 Your total purchases: ${info.totalPurchased.toFixed(6)} IAM</div>
                         <div>🎯 Min for one point: ${info.uptopoint.toFixed(6)} IAM</div>
                         <div>⭐ Points available: ${info.maxPointsThisMonth}</div>
-                        <div style="margin-top:0.5rem;color:#00ff88;font-weight:bold;">${statusText}</div>
+                        <div style="margin-top:0.5rem;color:#00ff88;font-weight:bold;">✅ Contract will automatically determine upgrade eligibility</div>
                     </div>
                 </div>
             `;
@@ -1030,7 +1026,8 @@ function setupUpgradeCapButton(user, contract, address) {
     }
     
     // Confirm upgrade (force payout=100 and seller=contract)
-    confirmBtn.onclick = async () => {
+    confirmBtn.addEventListener('click', async () => {
+        console.log('🖱️ Confirm upgrade button clicked!');
         const amount = parseFloat(amountInput.value);
         
         if (!amount || amount <= 0) {
@@ -1044,9 +1041,8 @@ function setupUpgradeCapButton(user, contract, address) {
             statusEl.textContent = '⏳ Upgrading cap...';
             statusEl.style.color = '#a786ff';
             
-            // Call purchaseEBAConfig with payout=100 and seller=contract address
-            const seller = (contract && contract.target) ? contract.target : address;
-            const result = await purchaseEBAConfig(amount, 100, seller);
+            // Call purchaseEBAConfig with amount only
+            const result = await purchaseEBAConfig(amount);
             
             statusEl.textContent = '✅ Upgrade completed successfully!';
             statusEl.style.color = '#00ff88';
@@ -1067,12 +1063,11 @@ function setupUpgradeCapButton(user, contract, address) {
         } finally {
             confirmBtn.disabled = false;
         }
-    };
+    });
 }
 
 // اضافه کردن توابع به window برای دسترسی جهانی
 window.calculateWalletCounts = calculateWalletCounts;
 window.updateWalletCountsDisplay = updateWalletCountsDisplay;
 window.purchaseEBAConfig = purchaseEBAConfig;
-window.setupUpgradeCapButton = setupUpgradeCapButton;
 window.setupUpgradeCapButton = setupUpgradeCapButton;
