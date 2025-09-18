@@ -101,6 +101,16 @@ const MIN_IAM_ABI = (window.IAM_ABI && Array.isArray(window.IAM_ABI)) ? window.I
       "stateMutability": "nonpayable",
       "type": "function"
     },
+    // Write: voting
+    { "inputs": [
+        {"internalType":"address","name":"user","type":"address"},
+        {"internalType":"bool","name":"isLike","type":"bool"}
+      ],
+      "name": "voteUser",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
 ];
 
 // Ensure ABI is available globally from config

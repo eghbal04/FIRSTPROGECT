@@ -4,25 +4,32 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Utility Tools | PHOENIX (IAM)</title>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/mobile-responsive.css">
-  <script src="js/mobile-optimizer.js"></script>
+  <script>window.SKIP_META = true;</script>
+  <script>
+    // Suppress noisy extension/MetaMask RPC messages that don't affect functionality
+    window.addEventListener('error', function(e){
+      const m = (e && e.message) || '';
+      if (m.includes('Could not establish connection') || m.includes('getEnabledChains') || m.includes('isDefaultWallet')) {
+        e.preventDefault();
+        return false;
+      }
+    });
+    window.addEventListener('unhandledrejection', function(e){
+      const r = e && e.reason;
+      const msg = (r && (r.message || r)) || '';
+      if (typeof msg === 'string' && (msg.includes('Could not establish connection') || msg.includes('getEnabledChains') || msg.includes('isDefaultWallet'))) {
+        e.preventDefault();
+        return false;
+      }
+    });
+  </script>
   
   <!-- Load ethers.js version 6 from CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
-  <!-- Load WalletConnect Provider from official CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
-  <!-- Load WalletConnect Handler -->
-  <script src="js/walletconnect-handler.js?v=5.7"></script>
-  <!-- Load WalletConnect UMD locally -->
-  <script src="js/walletconnect-v1.8.0.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.1/dist/ethers.umd.min.js"></script>
   
   <!-- Main scripts for wallet connection -->
   <script src="js/config.js"></script>
-  <script src="js/web3-interactions.js"></script>
-  <script src="js/main.js"></script>
+  <script src="js/auto-wallet-connect.js"></script>
   
   <style>
     body {
@@ -308,8 +315,6 @@
     <!-- Back Button -->
     <a href="index.html" class="back-btn">← Back</a>
 
-
-
     <div class="utility-grid">      <!-- Address and Index Conversion -->
        <div class="utility-card">
          <h3><span class="icon">🔄</span>Address and Index Conversion</h3>
@@ -419,20 +424,6 @@
         </div>
       </div>
 
-      <!-- Downline Users with Unclaimed Points -->
-       <div class="utility-card">
-         <h3><span class="icon">🌳</span>Downline Users with Unclaimed Points</h3>
-         <div class="calculator-section">
-           <div style="margin-bottom: 1rem;">
-             <h5 style="color: #a786ff; margin-bottom: 0.5rem;">📊 Find Users with Unclaimed Points</h5>
-             <p style="color: #a0aec0; font-size: 0.9rem; margin-bottom: 1rem;">
-               This will find all users in your downline who have unclaimed binary points
-             </p>
-             <button class="utility-btn" onclick="findDownlineUnclaimedUsers()" style="width: 100%;">Find Unclaimed Users</button>
-             <div class="calculator-result" id="downline-result" style="display: none;"></div>
-           </div>
-         </div>
-       </div>
 
     </div>
 
@@ -485,8 +476,8 @@
     window.convertIndexToAddress = async function() {
        const index = parseInt(document.getElementById('index-input').value);
        
-       if (!index || index < 0) {
-         alert('Please enter a valid index');
+       if (!index || index < 1) {
+         showStatus('Please enter a valid index (minimum 1)', 'error');
          return;
        }
        
@@ -495,31 +486,74 @@
        resultDiv.style.display = 'block';
        
        try {
-         // Attempt to connect to contract
-         if (window.connectWallet && typeof window.connectWallet === 'function') {
-           await window.connectWallet();
-           if (window.contractConfig && window.contractConfig.contract) {
-             // Use selected contract
-             const contract = new ethers.Contract(window.IAM_ADDRESS, window.IAM_ABI, window.contractConfig.signer);
-             // Use ABI mapping to convert index to address
-             const address = await contract.indexToAddress(index);
-             resultDiv.innerHTML = `
-               <strong>Result:</strong><br>
-               Index: ${index}<br>
-               Address: ${address}<br>
-               <button onclick="copyToClipboard('${address}')" style="background: #00ff88; color: #1a202c; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; margin-top: 0.5rem;">Copy Address</button>
-             `;
-           } else {
-             throw new Error('Contract not available');
+         // Use shared wallet connection
+         if (!window.connectWallet) {
+           throw new Error('Wallet connection not available');
+         }
+         
+         const connection = await window.connectWallet();
+         if (!connection || !connection.contract) {
+           throw new Error('Contract connection failed');
+         }
+         
+         const { contract } = connection;
+         console.log(`🔄 Converting index ${index} to address...`);
+         
+         // Try the indexToAddress function
+         let address;
+         try {
+           address = await contract.indexToAddress(index);
+           console.log(`✅ Got address from indexToAddress: ${address}`);
+         } catch (indexError) {
+           console.log(`❌ indexToAddress failed: ${indexError.message}`);
+           // Fallback: try to find address by checking if the index exists in the system
+           console.log(`🔄 Trying fallback method...`);
+           
+           // Check if the index is within reasonable bounds first
+           try {
+             const totalUsers = await contract.wallets();
+             console.log(`📊 Total users in system: ${totalUsers}`);
+             
+             if (index > Number(totalUsers)) {
+               throw new Error(`Index ${index} is greater than total users (${totalUsers})`);
+             }
+             
+             // Try to get the address using a different approach
+             // Some contracts might have the address stored differently
+             try {
+               // Try calling indexToAddress with BigInt
+               address = await contract.indexToAddress(BigInt(index));
+               console.log(`✅ Got address using BigInt: ${address}`);
+             } catch (bigIntError) {
+               console.log(`❌ BigInt approach also failed: ${bigIntError.message}`);
+               throw new Error(`Cannot convert index ${index} to address. The index might not exist or the function is not available.`);
+             }
+           } catch (fallbackError) {
+             console.log(`❌ Fallback method failed: ${fallbackError.message}`);
+             throw new Error(`Index to address conversion failed: ${fallbackError.message}`);
            }
+         }
+         
+         if (!address || address === '0x0000000000000000000000000000000000000000') {
+           resultDiv.innerHTML = `
+             <strong>Result:</strong><br>
+             Index: ${index}<br>
+             <span style="color: #ffa502;">No user found at this index</span>
+           `;
          } else {
-           throw new Error('Wallet not connected');
+           resultDiv.innerHTML = `
+             <strong>Result:</strong><br>
+             Index: ${index}<br>
+             Address: ${address}<br>
+             <button onclick="copyToClipboard('${address}')" style="background: #00ff88; color: #1a202c; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; margin-top: 0.5rem;">Copy Address</button>
+           `;
          }
        } catch (error) {
+         console.error('❌ Index to address conversion error:', error);
          resultDiv.innerHTML = `
            <strong>Error:</strong><br>
            ${error.message}<br>
-           <small style="color: #a0aec0;">To use this feature, please connect your wallet</small>
+           <small style="color: #a0aec0;">Please check if the index exists and try again</small>
          `;
        }
      }
@@ -529,7 +563,7 @@
        const address = document.getElementById('address-input').value.trim();
        
        if (!address || !address.startsWith('0x')) {
-         alert('Please enter a valid address');
+         showStatus('Please enter a valid address', 'error');
          return;
        }
        
@@ -538,41 +572,39 @@
        resultDiv.style.display = 'block';
        
        try {
-         if (window.connectWallet && typeof window.connectWallet === 'function') {
-           await window.connectWallet();
-           if (window.contractConfig && window.contractConfig.contract) {
-             // Use selected contract
-             const contract = new ethers.Contract(window.IAM_ADDRESS, window.IAM_ABI, window.contractConfig.signer);
-             // Use ABI mapping to convert address to index
-             // First get user data from users mapping
-             const userData = await contract.users(address);
-             const index = userData.index;
-             
-             if (index && index > 0) {
-               resultDiv.innerHTML = `
-                 <strong>Result:</strong><br>
-                 Address: ${address}<br>
-                 Index: ${index.toString()}<br>
-                 <button onclick="copyToClipboard('${index.toString()}')" style="background: #00ff88; color: #1a202c; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; margin-top: 0.5rem;">Copy Index</button>
-               `;
-             } else {
-               resultDiv.innerHTML = `
-                 <strong>Result:</strong><br>
-                 Address: ${address}<br>
-                 <span style="color: #ffa502;">This address is not registered in the system</span>
-               `;
-             }
-           } else {
-             throw new Error('Contract not available');
-           }
+         // Use shared wallet connection
+         if (!window.connectWallet) {
+           throw new Error('Wallet connection not available');
+         }
+         
+         const connection = await window.connectWallet();
+         if (!connection || !connection.contract) {
+           throw new Error('Contract connection failed');
+         }
+         
+         const { contract } = connection;
+         const userData = await contract.users(address);
+         const index = userData.index;
+         
+         if (index && index > 0) {
+           resultDiv.innerHTML = `
+             <strong>Result:</strong><br>
+             Address: ${address}<br>
+             Index: ${index.toString()}<br>
+             <button onclick="copyToClipboard('${index.toString()}')" style="background: #00ff88; color: #1a202c; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: pointer; margin-top: 0.5rem;">Copy Index</button>
+           `;
          } else {
-           throw new Error('Wallet not connected');
+           resultDiv.innerHTML = `
+             <strong>Result:</strong><br>
+             Address: ${address}<br>
+             <span style="color: #ffa502;">This address is not registered in the system</span>
+           `;
          }
        } catch (error) {
          resultDiv.innerHTML = `
            <strong>Error:</strong><br>
            ${error.message}<br>
-           <small style="color: #a0aec0;">To use this feature, please connect your wallet</small>
+           <small style="color: #a0aec0;">Please connect your wallet to use this feature</small>
          `;
        }
      }
@@ -582,7 +614,7 @@
        const userIndex = parseInt(document.getElementById('user-index-input').value);
        
        if (!userIndex || userIndex < 1) {
-         alert('Please enter a valid index (minimum 1)');
+         showStatus('Please enter a valid index (minimum 1)', 'error');
          return;
        }
        
@@ -591,74 +623,156 @@
        resultDiv.style.display = 'block';
        
        try {
-         if (window.connectWallet && typeof window.connectWallet === 'function') {
-           await window.connectWallet();
-           if (window.contractConfig && window.contractConfig.contract) {
-             const contract = new ethers.Contract(window.IAM_ADDRESS, window.IAM_ABI, window.contractConfig.signer);
-             
-             console.log(`🔄 Fetching user at index ${userIndex}...`);
-             
-             // Get user address by index
-             const address = await contract.indexToAddress(userIndex);
-             
-             if (!address || address === '0x0000000000000000000000000000000000000000') {
-               resultDiv.innerHTML = `
-                 <strong>User Not Found:</strong><br>
-                 No user found at index ${userIndex}<br>
-                 <small style="color: #a0aec0;">This index may not exist yet</small>
-               `;
-               return;
-             }
-             
-             console.log(`✅ User found at index ${userIndex}: ${address}`);
-             
-             // Check if current user is in the downline of the target user
-             console.log('🔄 Checking if current user is in downline...');
-             const isInDownline = await checkIfInDownline(contract, address);
-             
-             if (!isInDownline) {
-               resultDiv.innerHTML = `
-                 <div style="color: #ff6b6b; text-align: center; padding: 1rem;">
-                   ❌ Access Denied<br>
-                   <strong>This user is not part of your downline</strong><br>
-                   <small style="color: #a0aec0;">You can only view users who are in your referral network</small>
-                 </div>
-               `;
-               return;
-             }
-             
-             console.log('✅ User is in downline, proceeding to show popup...');
-             
-             // Get user data for fallback
-             const userData = await contract.users(address);
-             const balance = await contract.balanceOf(address);
-             const voteStatus = await contract.getVoteStatus(address);
-             
-             // Show mobile user popup directly
-             console.log('🔄 About to call showMobileUserPopup...');
-             await showMobileUserPopup(address, userIndex);
-             console.log('✅ showMobileUserPopup completed');
-             
-             // Show popup properly after a short delay
-             setTimeout(() => {
-               showPopupProperly();
-               console.log('✅ Popup should now be visible');
-             }, 500);
-             
-             // Update result div to show success
-             resultDiv.innerHTML = `
-               <div style="color: #00ff88; text-align: center; padding: 1rem;">
-                 ✅ User popup displayed for index ${userIndex}<br>
-                 <small style="color: #a0aec0;">This user is part of your downline</small>
-               </div>
-             `;
-             
-           } else {
-             throw new Error('Contract not available');
-           }
-         } else {
-           throw new Error('Wallet not connected');
+         // Use shared wallet connection
+         if (!window.connectWallet) {
+           throw new Error('Wallet connection not available');
          }
+         
+         const connection = await window.connectWallet();
+         if (!connection || !connection.contract) {
+           throw new Error('Contract connection failed');
+         }
+         
+         const { contract } = connection;
+         
+         console.log(`🔄 Fetching user at index ${userIndex}...`);
+         
+         // Get user address by index
+         const address = await contract.indexToAddress(userIndex);
+         
+         if (!address || address === '0x0000000000000000000000000000000000000000') {
+           resultDiv.innerHTML = `
+             <strong>User Not Found:</strong><br>
+             No user found at index ${userIndex}<br>
+             <small style="color: #a0aec0;">This index may not exist yet</small>
+           `;
+           return;
+         }
+         
+         console.log(`✅ User found at index ${userIndex}: ${address}`);
+         
+         // Check if current user is in the downline of the target user
+         console.log('🔄 Checking if current user is in downline...');
+         const isInDownline = await checkIfInDownline(contract, address);
+         
+         if (!isInDownline) {
+           resultDiv.innerHTML = `
+             <div style="color: #ff6b6b; text-align: center; padding: 1rem;">
+               ❌ Access Denied<br>
+               <strong>This user is not part of your downline</strong><br>
+               <small style="color: #a0aec0;">You can only view users who are in your referral network</small>
+             </div>
+           `;
+           return;
+         }
+         
+         console.log('✅ User is in downline, proceeding to show complete user data...');
+         
+         // Get complete user data from contract
+         const userData = await contract.users(address);
+         const balance = await contract.balanceOf(address);
+         const voteStatus = await contract.getVoteStatus(address);
+         
+         console.log('📊 Complete user data:', userData);
+         
+         // Format user data for display
+         const formatBigInt = (value) => {
+           if (typeof value === 'bigint') {
+             return value.toString();
+           }
+           return value || '0';
+         };
+         
+         const formatTimestamp = (timestamp) => {
+           if (!timestamp || timestamp === 0n) return 'Never';
+           const date = new Date(Number(timestamp) * 1000);
+           return date.toLocaleString();
+         };
+         
+         const formatEther = (value) => {
+           if (typeof value === 'bigint') {
+             return ethers.formatUnits(value, 18);
+           }
+           return value || '0';
+         };
+         
+         // Display complete user information
+         resultDiv.innerHTML = `
+           <div style="color: #00ff88; text-align: center; padding: 1rem; margin-bottom: 1rem;">
+             ✅ User Information for Index ${userIndex}
+           </div>
+           
+           <div style="display: grid; gap: 1rem; max-height: 500px; overflow-y: auto;">
+             
+             <!-- Basic Info -->
+             <div style="background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.2); border-radius: 10px; padding: 1rem;">
+               <h4 style="color: #00ff88; margin: 0 0 0.5rem 0; font-size: 1.1rem;">📊 Basic Information</h4>
+               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.9rem;">
+                 <div><strong>Index:</strong> ${formatBigInt(userData.index)}</div>
+                 <div><strong>Address:</strong> ${address.substring(0, 6)}...${address.substring(38)}</div>
+                 <div><strong>IAM Balance:</strong> ${parseFloat(formatEther(balance)).toFixed(6)} IAM</div>
+                 <div><strong>Registration Time:</strong> ${formatTimestamp(userData.upgradeTime)}</div>
+               </div>
+             </div>
+             
+             <!-- Binary Points -->
+             <div style="background: rgba(167, 134, 255, 0.1); border: 1px solid rgba(167, 134, 255, 0.2); border-radius: 10px; padding: 1rem;">
+               <h4 style="color: #a786ff; margin: 0 0 0.5rem 0; font-size: 1.1rem;">⭐ Binary Points</h4>
+               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.9rem;">
+                 <div><strong>Total Points:</strong> ${formatBigInt(userData.binaryPoints)}</div>
+                 <div><strong>Point Cap:</strong> ${formatBigInt(userData.binaryPointCap)}</div>
+                 <div><strong>Points Claimed:</strong> ${formatBigInt(userData.binaryPointsClaimed)}</div>
+                 <div><strong>Unclaimed Points:</strong> ${formatBigInt(userData.binaryPoints - userData.binaryPointsClaimed)}</div>
+               </div>
+             </div>
+             
+             <!-- Referral System -->
+             <div style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.2); border-radius: 10px; padding: 1rem;">
+               <h4 style="color: #ffc107; margin: 0 0 0.5rem 0; font-size: 1.1rem;">🌳 Referral System</h4>
+               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.9rem;">
+                 <div><strong>Left Points:</strong> ${formatBigInt(userData.leftPoints)}</div>
+                 <div><strong>Right Points:</strong> ${formatBigInt(userData.rightPoints)}</div>
+                 <div><strong>Total Purchased:</strong> ${formatBigInt(userData.totalPurchasedKind)}</div>
+                 <div><strong>Referral Claimed:</strong> ${formatBigInt(userData.refclimed)}</div>
+               </div>
+             </div>
+             
+             <!-- Monthly Rewards -->
+             <div style="background: rgba(255, 71, 87, 0.1); border: 1px solid rgba(255, 71, 87, 0.2); border-radius: 10px; padding: 1rem;">
+               <h4 style="color: #ff4757; margin: 0 0 0.5rem 0; font-size: 1.1rem;">💰 Monthly Rewards</h4>
+               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.9rem;">
+                 <div><strong>Total Monthly Rewarded:</strong> ${formatBigInt(userData.totalMonthlyRewarded)}</div>
+                 <div><strong>Last Monthly Claim:</strong> ${formatTimestamp(userData.lastMonthlyClaim)}</div>
+                 <div><strong>Deposited Amount:</strong> ${parseFloat(formatEther(userData.depositedAmount)).toFixed(6)} IAM</div>
+                 <div><strong>Last Claim Time:</strong> ${formatTimestamp(userData.lastClaimTime)}</div>
+               </div>
+             </div>
+             
+             <!-- Voting Status -->
+             <div style="background: rgba(0, 123, 255, 0.1); border: 1px solid rgba(0, 123, 255, 0.2); border-radius: 10px; padding: 1rem;">
+               <h4 style="color: #007bff; margin: 0 0 0.5rem 0; font-size: 1.1rem;">🗳️ Voting Status</h4>
+               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.9rem;">
+                 <div><strong>Total Likes:</strong> ${formatBigInt(voteStatus[0] || 0)}</div>
+                 <div><strong>Total Dislikes:</strong> ${formatBigInt(voteStatus[1] || 0)}</div>
+                 <div><strong>Net Score:</strong> ${Number(voteStatus[0] || 0) - Number(voteStatus[1] || 0)}</div>
+                 <div><strong>Your Vote:</strong> ${voteStatus[2] === 1 ? '👍 Liked' : voteStatus[2] === 2 ? '👎 Disliked' : '❌ No Vote'}</div>
+               </div>
+             </div>
+             
+             <!-- Action Buttons -->
+             <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+               <button onclick="copyToClipboard('${address}')" style="
+                 background: #a786ff; color: white; border: none; padding: 0.5rem 1rem; 
+                 border-radius: 5px; cursor: pointer; font-size: 0.8rem; flex: 1;
+               ">Copy Address</button>
+               <button onclick="copyToClipboard('${userIndex}')" style="
+                 background: #00ff88; color: #1a202c; border: none; padding: 0.5rem 1rem; 
+                 border-radius: 5px; cursor: pointer; font-size: 0.8rem; flex: 1;
+               ">Copy Index</button>
+             </div>
+             
+           </div>
+         `;
        } catch (error) {
          console.error('Error fetching user:', error);
          resultDiv.innerHTML = `
@@ -863,64 +977,64 @@
        }
      }
 
-    // Wallet connection function for utility page
-    window.connectWalletForUtility = async function() {
-       const connectBtn = document.getElementById('connect-wallet-btn');
-       const statusDiv = document.getElementById('wallet-status');
+
+    // Vote for user by index
+    window.voteForIndex = async function(isLike) {
+       const input = document.getElementById('vote-index-input');
+       const res = document.getElementById('vote-result');
+       if (!input || !res) return;
+       
+       const index = parseInt(input.value);
+       if (!index || index < 1) {
+         res.style.display = 'block';
+         res.style.background = 'rgba(255,68,68,0.1)';
+         res.style.borderColor = 'rgba(255,68,68,0.2)';
+         res.textContent = '⚠️ Please enter a valid index';
+         return;
+       }
        
        try {
-         connectBtn.textContent = 'Connecting...';
-         connectBtn.disabled = true;
+         res.style.display = 'block';
+         res.style.background = 'rgba(167,134,255,0.1)';
+         res.style.borderColor = 'rgba(167,134,255,0.2)';
+         res.textContent = '⏳ Sending vote...';
          
-         if (window.connectWallet && typeof window.connectWallet === 'function') {
-           const connection = await window.connectWallet();
-           
-           if (connection && connection.address) {
-             statusDiv.innerHTML = `
-               <div style="color: #00ff88; background: rgba(0,255,136,0.1); padding: 0.8rem; border-radius: 6px;">
-                 ✅ Wallet connected<br>
-                 <small>Address: ${connection.address.substring(0, 6)}...${connection.address.substring(38)}</small>
-               </div>
-             `;
-             connectBtn.textContent = '✅ Connected';
-             connectBtn.style.background = 'linear-gradient(45deg, #00ff88, #00cc6a)';
-           } else {
-             throw new Error('Connection failed');
-           }
-         } else {
-           throw new Error('Wallet connection function not available');
+         const connection = await window.connectWallet();
+         if (!connection || !connection.contract) {
+           throw new Error('Contract connection failed');
          }
-       } catch (error) {
-         statusDiv.innerHTML = `
-           <div style="color: #ff4757; background: rgba(255,71,87,0.1); padding: 0.8rem; border-radius: 6px;">
-             ❌ Connection error: ${error.message}
-           </div>
-         `;
-         connectBtn.textContent = '🔗 Connect Wallet';
-         connectBtn.disabled = false;
-       }
-     }
-
-    // Check wallet connection status on page load
-    window.checkWalletConnection = function() {
-       const statusDiv = document.getElementById('wallet-status');
-       const connectBtn = document.getElementById('connect-wallet-btn');
-       
-       if (window.contractConfig && window.contractConfig.address) {
-         statusDiv.innerHTML = `
-           <div style="color: #00ff88; background: rgba(0,255,136,0.1); padding: 0.8rem; border-radius: 6px;">
-             ✅ Wallet already connected<br>
-             <small>Address: ${window.contractConfig.address.substring(0, 6)}...${window.contractConfig.address.substring(38)}</small>
-           </div>
-         `;
-         connectBtn.textContent = '✅ Connected';
-         connectBtn.style.background = 'linear-gradient(45deg, #00ff88, #00cc6a)';
-         connectBtn.disabled = true;
+         
+         const { contract, address: currentAddress } = connection;
+         const address = await contract.indexToAddress(index);
+         
+         if (!address || address === '0x0000000000000000000000000000000000000000') {
+           throw new Error('No user found at this index');
+         }
+         
+         // Check if user is trying to vote for themselves
+         if (currentAddress && currentAddress.toLowerCase() === address.toLowerCase()) {
+           res.style.background = 'rgba(255,68,68,0.1)';
+           res.style.borderColor = 'rgba(255,68,68,0.2)';
+           res.textContent = '❌ Cannot vote for yourself';
+           return;
+         }
+         
+         const tx = await contract.voteUser(address, isLike);
+         await tx.wait();
+         
+         res.style.background = 'rgba(0,255,136,0.1)';
+         res.style.borderColor = 'rgba(0,255,136,0.2)';
+         res.textContent = isLike ? '✅ Like registered' : '✅ Dislike registered';
+       } catch (e) {
+         res.style.display = 'block';
+         res.style.background = 'rgba(255,68,68,0.1)';
+         res.style.borderColor = 'rgba(255,68,68,0.2)';
+         res.textContent = '❌ Error: ' + (e?.message || 'Voting error');
        }
      }
 
      // Card animations
-     document.addEventListener('DOMContentLoaded', function() {
+     document.addEventListener('DOMContentLoaded', async function() {
        const cards = document.querySelectorAll('.utility-card');
        cards.forEach((card, index) => {
          card.style.opacity = '0';
@@ -933,13 +1047,27 @@
        });
        
        // Contract is set to new contract by default
-       console.log('✅ Using new contract:', window.IAM_ADDRESS);
+       console.log('✅ Using contract:', window.IAM_ADDRESS);
        
        updateStatusTime();
        setInterval(updateStatusTime, 60000); // Update every minute
        
-       // Check wallet connection status
-       setTimeout(checkWalletConnection, 1000);
+       // Auto-connect wallet on page load (silent)
+       try {
+         console.log('🔄 Auto-connecting wallet...');
+         if (window.connectWallet) {
+           const connection = await window.connectWallet();
+           if (connection && connection.address) {
+             console.log('✅ Wallet auto-connected:', connection.address);
+           } else {
+             console.log('⚠️ Wallet not connected');
+           }
+         } else {
+           console.log('⚠️ Wallet connection not available');
+         }
+       } catch (error) {
+         console.log('⚠️ Auto-connect failed:', error.message);
+       }
      
      // Test mobile user popup availability
      setTimeout(() => {
@@ -1270,220 +1398,6 @@
   
   
   <script>
-    // Function to find all downline users with unclaimed points
-    window.findDownlineUnclaimedUsers = async function() {
-      const resultDiv = document.getElementById('downline-result');
-      resultDiv.innerHTML = 'Loading downline users...';
-      resultDiv.style.display = 'block';
-      
-      try {
-        if (window.connectWallet && typeof window.connectWallet === 'function') {
-          await window.connectWallet();
-          if (window.contractConfig && window.contractConfig.contract) {
-            const contract = new ethers.Contract(window.IAM_ADDRESS, window.IAM_ABI, window.contractConfig.signer);
-            
-            // Get current user's index
-            const currentAddress = window.contractConfig.signer.address;
-            const currentUserData = await contract.users(currentAddress);
-            const currentUserIndex = currentUserData.index;
-            
-            if (!currentUserIndex || currentUserIndex === 0n) {
-              resultDiv.innerHTML = `
-                <div style="color: #ff6b6b; text-align: center; padding: 1rem;">
-                  ❌ User Not Registered<br>
-                  <small style="color: #a0aec0;">You need to be registered to view downline users</small>
-                </div>
-              `;
-              return;
-            }
-            
-            console.log('🔍 Current user index:', currentUserIndex.toString());
-            
-            // Get total users count
-            const totalUsers = await contract.wallets();
-            console.log('📊 Total users:', totalUsers.toString());
-            
-            resultDiv.innerHTML = `
-              <div style="color: #00ff88; text-align: center; padding: 1rem;">
-                🔍 DFS Scanning tree for unclaimed points...<br>
-                <small style="color: #a0aec0;">Max depth: 10,000,000 levels | Traversing until empty nodes found</small>
-              </div>
-            `;
-            
-            const unclaimedUsers = [];
-            const maxLevel = 10000000; // 10 million level limit
-            let scannedCount = 0;
-            const visited = new Set(); // برای جلوگیری از بازدید مجدد
-            
-            console.log('🌳 Starting DFS traversal from user', currentUserIndex.toString());
-            
-            // تابع پیمایش DFS صحیح (از migration.js)
-            async function dfsTraversalRecursive(currentIndex, path = []) {
-              // محدودیت عمق
-              if (currentIndex <= 0 || currentIndex > 1000000) {
-                return;
-              }
-              
-              // اگر قبلاً این ایندکس را دیده‌ایم، برگرد
-              if (visited.has(currentIndex)) {
-                return;
-              }
-              
-              visited.add(currentIndex);
-              scannedCount++;
-              
-              try {
-                console.log(`🔍 DFS بررسی ایندکس ${currentIndex}... (${unclaimedUsers.length} found) مسیر: [${path.join(' → ')}]`);
-                
-                const userAddress = await contract.indexToAddress(currentIndex);
-                
-                // Check if user address is zero (empty node)
-                if (userAddress === '0x0000000000000000000000000000000000000000') {
-                  console.log(`⭕ ایندکس ${currentIndex}: خالی → برگشت`);
-                  return;
-                }
-                
-                console.log(`✅ ایندکس ${currentIndex}: ${userAddress.slice(0, 6)}...${userAddress.slice(-4)} → بررسی می‌شود`);
-                
-                const userData = await contract.users(userAddress);
-                
-                // Check if user has unclaimed points
-                const binaryPoints = userData.binaryPoints;
-                const binaryPointsClaimed = userData.binaryPointsClaimed;
-                
-                if (binaryPoints > 0n && binaryPoints > binaryPointsClaimed) {
-                  const unclaimedAmount = binaryPoints - binaryPointsClaimed;
-                  unclaimedUsers.push({
-                    index: Number(currentIndex),
-                    address: userAddress,
-                    binaryPoints: binaryPoints.toString(),
-                    claimed: binaryPointsClaimed.toString(),
-                    unclaimed: unclaimedAmount.toString(),
-                    level: path.length
-                  });
-                  console.log(`✅ Found unclaimed points: ${unclaimedAmount.toString()} for user ${currentIndex.toString()}`);
-                }
-                
-                const leftChild = currentIndex * 2;
-                const rightChild = currentIndex * 2 + 1;
-                
-                // اولویت با فرزند چپ
-                console.log(`📍 اولویت چپ: بررسی فرزند چپ ${currentIndex} → ${leftChild}`);
-                await dfsTraversalRecursive(leftChild, [...path, currentIndex, 'L']);
-                
-                // برگشت به رفرر و بررسی فرزند راست
-                console.log(`📍 برگشت به رفرر: بررسی فرزند راست ${currentIndex} → ${rightChild}`);
-                await dfsTraversalRecursive(rightChild, [...path, currentIndex, 'R']);
-                
-              } catch (error) {
-                console.log(`❌ خطا در DFS ایندکس ${currentIndex}: ${error.message}`);
-                return;
-              }
-            }
-            
-            // تست ساده - بررسی چند کاربر
-            console.log(`🧪 تست ساده - بررسی کاربران...`);
-            
-            // بررسی کاربر متصل
-            try {
-              const userAddress = await contract.indexToAddress(Number(currentUserIndex));
-              console.log(`👤 کاربر متصل ${currentUserIndex}: ${userAddress}`);
-              
-              if (userAddress !== '0x0000000000000000000000000000000000000000') {
-                const userData = await contract.users(userAddress);
-                console.log(`📊 اطلاعات کاربر:`, userData);
-                
-                const binaryPoints = userData.binaryPoints;
-                const binaryPointsClaimed = userData.binaryPointsClaimed;
-                
-                if (binaryPoints > 0n && binaryPoints > binaryPointsClaimed) {
-                  const unclaimedAmount = binaryPoints - binaryPointsClaimed;
-                  unclaimedUsers.push({
-                    index: Number(currentUserIndex),
-                    address: userAddress,
-                    binaryPoints: binaryPoints.toString(),
-                    claimed: binaryPointsClaimed.toString(),
-                    unclaimed: unclaimedAmount.toString(),
-                    level: 0
-                  });
-                  console.log(`✅ کاربر متصل پوینت دریافت نشده دارد: ${unclaimedAmount.toString()}`);
-                }
-              }
-            } catch (error) {
-              console.log(`❌ خطا در بررسی کاربر متصل:`, error);
-            }
-            
-            // بررسی فرزندان
-            const leftChild = Number(currentUserIndex) * 2;
-            const rightChild = Number(currentUserIndex) * 2 + 1;
-            
-            console.log(`👶 فرزند چپ: ${leftChild}, فرزند راست: ${rightChild}`);
-            
-            // شروع پیمایش DFS از کاربر متصل
-            console.log(`🌱 شروع DFS از کاربر متصل (ایندکس ${currentUserIndex})`);
-            await dfsTraversalRecursive(Number(currentUserIndex), []);
-            
-            console.log(`📊 DFS کامل شد: ${unclaimedUsers.length} کاربر پیدا شده`);
-            
-            // Display results
-            if (unclaimedUsers.length === 0) {
-              resultDiv.innerHTML = `
-                <div style="color: #a786ff; text-align: center; padding: 1rem;">
-                  ✅ No Unclaimed Points Found<br>
-                  <small style="color: #a0aec0;">All users in your downline have claimed their points</small>
-                </div>
-              `;
-            } else {
-              let resultHTML = `
-                <div style="color: #00ff88; text-align: center; padding: 1rem; margin-bottom: 1rem;">
-                  ✅ Found ${unclaimedUsers.length} Users with Unclaimed Points
-                </div>
-                <div style="max-height: 400px; overflow-y: auto; border: 1px solid rgba(167, 134, 255, 0.3); border-radius: 10px; padding: 1rem;">
-              `;
-              
-              unclaimedUsers.forEach((user, index) => {
-                resultHTML += `
-                  <div style="
-                    background: rgba(167, 134, 255, 0.1);
-                    border: 1px solid rgba(167, 134, 255, 0.2);
-                    border-radius: 8px;
-                    padding: 1rem;
-                    margin-bottom: 0.5rem;
-                    font-size: 0.9rem;
-                  ">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                      <strong style="color: #00ff88;">User #${user.index}</strong>
-                      <span style="color: #a786ff;">${user.unclaimed} unclaimed points</span>
-                    </div>
-                    <div style="color: #a0aec0; font-size: 0.8rem;">
-                      <div>Address: ${user.address.substring(0, 10)}...${user.address.substring(38)}</div>
-                      <div>Total Points: ${user.binaryPoints} | Claimed: ${user.claimed}</div>
-                      <div style="color: #ffd700; margin-top: 0.25rem;">Level: ${user.level}</div>
-                    </div>
-                  </div>
-                `;
-              });
-              
-              resultHTML += `</div>`;
-              resultDiv.innerHTML = resultHTML;
-            }
-            
-          } else {
-            throw new Error('Contract not available');
-          }
-        } else {
-          throw new Error('Wallet not connected');
-        }
-      } catch (error) {
-        console.error('❌ Error finding downline users:', error);
-        resultDiv.innerHTML = `
-          <div style="color: #ff6b6b; text-align: center; padding: 1rem;">
-            ❌ Error: ${error.message}<br>
-            <small style="color: #a0aec0;">Please try again</small>
-          </div>
-        `;
-      }
-    };
 
     // Helper function to check if a user is in downline using binary tree traversal
     window.isUserInDownline = async function(contract, targetIndex, currentIndex) {
@@ -1510,8 +1424,9 @@
     // Function to check if current user is in the downline of target user
     window.checkIfInDownline = async function(contract, targetAddress) {
       try {
-        // Get current user's address
-        const currentAddress = window.contractConfig.signer.address;
+        // Get current user's address from connection
+        const connection = await window.connectWallet();
+        const currentAddress = connection.address;
         console.log('🔍 Current user address:', currentAddress);
         console.log('🔍 Target user address:', targetAddress);
         
@@ -1727,16 +1642,25 @@
         res.style.background='rgba(167,134,255,0.1)';
         res.style.borderColor='rgba(167,134,255,0.2)';
         res.textContent='⏳ Sending vote...';
-        if (typeof window.voteForUser === 'function'){
-          await window.voteForUser(address, isLike);
-        } else if (window.contractConfig?.contract){
-          const tx = await window.contractConfig.contract.voteUser(address, isLike);
-          await tx.wait();
-        } else {
-          await window.connectWallet();
-          const tx = await window.contractConfig.contract.voteUser(address, isLike);
-          await tx.wait();
+        
+        const connection = await window.connectWallet();
+        if (!connection || !connection.contract) {
+          throw new Error('Contract connection failed');
         }
+        
+        const { address: currentAddress } = connection;
+        
+        // Check if user is trying to vote for themselves
+        if (currentAddress && currentAddress.toLowerCase() === address.toLowerCase()) {
+          res.style.background = 'rgba(255,68,68,0.1)';
+          res.style.borderColor = 'rgba(255,68,68,0.2)';
+          res.textContent = '❌ Cannot vote for yourself';
+          return;
+        }
+        
+        const tx = await connection.contract.voteUser(address, isLike);
+        await tx.wait();
+        
         res.style.background='rgba(0,255,136,0.1)';
         res.style.borderColor='rgba(0,255,136,0.2)';
         res.textContent = isLike ? '✅ Like registered' : '✅ Dislike registered';
@@ -1755,10 +1679,11 @@
       const raw = (input.value||'').trim();
       if (!raw){ res.style.display='none'; return; }
       try{
-        if (!window.contractConfig || !window.contractConfig.contract){
-          await window.connectWallet();
+        const connection = await window.connectWallet();
+        if (!connection || !connection.contract) {
+          throw new Error('Contract connection failed');
         }
-        const contract = window.contractConfig.contract;
+        const contract = connection.contract;
         // Determine if raw is index or address
         let address = raw;
         if (!raw.startsWith('0x')){
