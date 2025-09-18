@@ -791,7 +791,7 @@
                     else if (claimed >= 100) stars = 3;
                     else if (claimed >= 10) stars = 2;
                     else if (claimed >= 1) stars = 1;
-                    updateStatusPills({ rank: '⭐'.repeat(stars || 0) || '⭐' });
+                    updateStatusPills({ rank: (stars > 0 ? '⭐'.repeat(stars) : '-') });
                   }
                 } catch {}
                 // Likes/Dislikes totals from contract method
