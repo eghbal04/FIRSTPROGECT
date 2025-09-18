@@ -1,12 +1,21 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
+  <script>
+    // Suppress noisy MetaMask RPC warnings
+    window.addEventListener('error', function(e){
+      const m = (e && e.message) || '';
+      if (m.includes('getEnabledChains') || m.includes('isDefaultWallet') || m.includes('Could not establish connection')) { e.preventDefault(); return false; }
+    });
+    window.addEventListener('unhandledrejection', function(e){
+      const r = e && e.reason; const msg = (r && (r.message || r)) || '';
+      if (typeof msg === 'string' && (msg.includes('getEnabledChains') || msg.includes('isDefaultWallet') || msg.includes('Could not establish connection'))) { e.preventDefault(); return false; }
+    });
+  </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Profile</title>
-    <link rel="stylesheet" href="css/mobile-responsive.css">
-    <!-- Removed missing script: js/mobile-navigation.js -->
-    <script src="js/mobile-optimizer.js"></script>
+    <!-- Removed missing assets to avoid 404s -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap');
         :root{ --bg:#0b0f17; --card:#0f1420; --elev:#121a2a; --border:#22304a; --accent:#5da0ff; --accent2:#33d69f; --text:#e6eaf0; --muted:#aab6d3; }

@@ -76,6 +76,9 @@ const MIN_IAM_ABI = (window.IAM_ABI && Array.isArray(window.IAM_ABI)) ? window.I
       ], "stateMutability": "view", "type": "function" },
     { "inputs": [], "name": "getContractdaiBalance", "outputs": [{"internalType":"uint256","name":"","type":"uint256"}], "stateMutability": "view", "type": "function" },
     { "inputs": [], "name": "cashBack", "outputs": [{"internalType":"uint256","name":"","type":"uint256"}], "stateMutability": "view", "type": "function" },
+    // Write: withdrawals (claim rewards, monthly cashback)
+    { "inputs": [], "name": "claim", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
+    { "inputs": [{"internalType":"uint256","name":"amount","type":"uint256"}], "name": "claimMonthlyReward", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
     // Write: transfer index ownership (as provided)
     { "inputs": [{"internalType":"address","name":"newOwner","type":"address"}], "name": "transferIndexOwnership", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
     // Write: registration flows
