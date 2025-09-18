@@ -963,95 +963,16 @@
       }
     }
     
-    /* Google Translate Widget Styling */
-    .goog-te-banner-frame {
-      display: none !important;
-    }
-    
-    .goog-te-gadget {
-      font-family: 'Inter', sans-serif !important;
-      font-size: 12px !important;
-    }
-    
-    .goog-te-gadget-simple {
-      background: transparent !important;
-      border: none !important;
-      padding: 4px 8px !important;
-      border-radius: 6px !important;
-      color: #e0e6f7 !important;
-    }
-    
-    .goog-te-gadget-simple:hover {
-      background: rgba(0, 255, 136, 0.1) !important;
-    }
-    
-    .goog-te-gadget-simple .goog-te-menu-value {
-      color: #e0e6f7 !important;
-      font-size: 12px !important;
-    }
-    
-    .goog-te-gadget-simple .goog-te-menu-value span:first-child {
-      color: #00ff88 !important;
-    }
-    
-    .goog-te-gadget-simple .goog-te-menu-value span:last-child {
-      color: #b8c1ec !important;
-    }
-    
-    .goog-te-menu2 {
-      background: linear-gradient(135deg, #1a1f2e 0%, #232946 100%) !important;
-      border: 1px solid #00ff88 !important;
-      border-radius: 8px !important;
-      box-shadow: 0 8px 32px rgba(0, 255, 136, 0.3) !important;
-    }
-    
-    .goog-te-menu2-item {
-      color: #e0e6f7 !important;
-      padding: 8px 12px !important;
-    }
-    
-    .goog-te-menu2-item:hover {
-      background: rgba(0, 255, 136, 0.1) !important;
-    }
-    
-    .goog-te-menu2-item-selected {
-      background: rgba(0, 255, 136, 0.2) !important;
-    }
-    
-    /* Mobile responsiveness for translate widget */
-    @media (max-width: 768px) {
-      #google_translate_element {
-        top: 10px !important;
-        right: 10px !important;
-        padding: 6px !important;
-      }
-      
-      .goog-te-gadget-simple {
-        font-size: 10px !important;
-        padding: 3px 6px !important;
-      }
-    }
   </style>
 </head>
 <body>
-  <!-- Google Translate Widget -->
-  <div id="google_translate_element" style="
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 9999;
-    background: linear-gradient(135deg, #1a1f2e 0%, #232946 100%);
-    border: 1px solid #00ff88;
-    border-radius: 8px;
-    padding: 8px;
-    box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
-  "></div>
   
   <!-- Language Selector -->
   <div class="language-selector">
     <select id="language-selector">
       <option value="en" data-translate="language_english">🇺🇸 English</option>
       <option value="fa" data-translate="language_persian">🇮🇷 فارسی</option>
+      <option value="ar" data-translate="language_arabic">🇸🇦 العربية</option>
       <option value="ru" data-translate="language_russian">🇷🇺 Русский</option>
       <option value="zh" data-translate="language_chinese">🇨🇳 中文</option>
       <option value="de" data-translate="language_german">🇩🇪 Deutsch</option>
@@ -1082,10 +1003,10 @@
       <h2 data-translate="what_is_iam">🌟 What is IAM PHOENIX?</h2>
       <div class="about-content">
         <p data-translate="what_is_iam_desc1">
-          <strong>IAM PHOENIX</strong> is a cutting-edge Network Marketing platform that leverages blockchain technology and Web3 infrastructure to create a transparent, secure, and decentralized ecosystem. Our platform eliminates traditional intermediaries and creates direct, trustless relationships between participants through smart contracts.
+          <span data-translate="what_is_iam_desc1"><strong>IAM PHOENIX</strong> is a cutting-edge Network Marketing platform that leverages blockchain technology and Web3 infrastructure to create a transparent, secure, and decentralized ecosystem. Our platform eliminates traditional intermediaries and creates direct, trustless relationships between participants through smart contracts.</span>
         </p>
         <p data-translate="what_is_iam_desc2">
-          Built on the Polygon blockchain, IAM PHOENIX combines the power of network marketing with the security and transparency of blockchain technology. All network marketing activities, rewards, and commissions are automatically calculated and distributed through audited smart contracts, ensuring complete transparency and eliminating the possibility of fraud or manipulation.
+          <span data-translate="what_is_iam_desc2">Built on the Polygon blockchain, IAM PHOENIX combines the power of network marketing with the security and transparency of blockchain technology. All network marketing activities, rewards, and commissions are automatically calculated and distributed through audited smart contracts, ensuring complete transparency and eliminating the possibility of fraud or manipulation.</span>
         </p>
       </div>
     </div>
@@ -1095,12 +1016,11 @@
       <h2 data-translate="phoenix_team">🔥 Phoenix Team</h2>
       <div class="about-content">
         <p data-translate="phoenix_mission">
-          <strong>Hello dear friends,</strong>
-          We are the Phoenix team. Our mission is to support and develop Type Zero tokens. These tokens are advanced tools that allow people, by purchasing them, to practically support related projects and services. With this support, buyers participate in the growth of the token, while projects receive the financial resources they need to execute their plans.
+          <span data-translate="phoenix_mission">Hello dear friends,<br><br>We are the Phoenix team. Our mission is to support and develop Type Zero tokens. These tokens are advanced tools that allow people, by purchasing them, to practically support related projects and services. With this support, buyers participate in the growth of the token, while projects receive the financial resources they need to execute their plans.</span>
         </p>
         
         <p data-translate="phoenix_iam_support">
-          Our team, Phoenix, is currently supporting and developing the IAM token, which is built on the Polygon blockchain and backed by the decentralized stablecoin DAI. This stablecoin is fully decentralized, and no organization or authority has access to it. The IAM token itself is an independent project, in fact a startup. It does not support or rely on another startup, but rather aims to introduce and promote itself.
+          <span data-translate="phoenix_iam_support">Our team, Phoenix, is currently supporting and developing the IAM token, which is built on the Polygon blockchain and backed by the decentralized stablecoin DAI. This stablecoin is fully decentralized, and no organization or authority has access to it. The IAM token itself is an independent project, in fact a startup. It does not support or rely on another startup, but rather aims to introduce and promote itself.</span>
         </p>
       </div>
     </div>
@@ -1110,7 +1030,7 @@
       <h2 data-translate="subscription_point_system">📊 Subscription and Point System</h2>
       <div class="about-content">
         <p data-translate="subscription_mechanism">
-          The IAM token has a subscription mechanism. The distribution of the subscription fee is as follows:
+          <span data-translate="subscription_mechanism">The IAM token has a subscription mechanism. The distribution of the subscription fee is as follows:</span>
         </p>
         <ul>
           <li data-translate="referral_rewards">10% for referral rewards (inviter)</li>
@@ -1119,7 +1039,7 @@
         </ul>
         
         <p data-translate="point_earning_system">
-          Each person can earn up to 5 points every 12 hours, with a maximum of 10 points per day. Any extra points overflow onto other points, increasing the value of each point.
+          <span data-translate="point_earning_system">Each person can earn up to 5 points every 12 hours, with a maximum of 10 points per day. Any extra points overflow onto other points, increasing the value of each point.</span>
         </p>
       </div>
     </div>
@@ -1129,7 +1049,7 @@
       <h2 data-translate="subscription_refund">💰 Subscription Refund Mechanism</h2>
       <div class="about-content">
         <p data-translate="refund_guarantee">
-          People who are unable to earn points need not worry. The full amount they pay for a subscription will be refunded to them in the form of tokens. This refund occurs monthly at a rate of 3% of the amount paid until the full subscription fee is returned.
+          <span data-translate="refund_guarantee">People who are unable to earn points need not worry. The full amount they pay for a subscription will be refunded to them in the form of tokens. This refund occurs monthly at a rate of 3% of the amount paid until the full subscription fee is returned.</span>
         </p>
       </div>
     </div>
@@ -1139,7 +1059,7 @@
       <h2 data-translate="activities_rewards">🎯 Activities and Rewards with the Token</h2>
       <div class="about-content">
         <p data-translate="token_activities">
-          All activities, including receiving rewards and commissions, are carried out with the IAM token. Each time a buy or sell transaction is made, the user pays a 2% fee, which is deposited into the token's financial reserve:
+          <span data-translate="token_activities">All activities, including receiving rewards and commissions, are carried out with the IAM token. Each time a buy or sell transaction is made, the user pays a 2% fee, which is deposited into the token's financial reserve:</span>
         </p>
         <ul>
           <li data-translate="dai_to_iam">Converting DAI to IAM (buy) = token creation</li>
@@ -1147,7 +1067,7 @@
         </ul>
         
         <p data-translate="token_burning_benefits">
-          All these activities result in token burning and increase the token's value. The system also functions as a binary network, where points and rewards are distributed transparently and fairly among users.
+          <span data-translate="token_burning_benefits">All these activities result in token burning and increase the token's value. The system also functions as a binary network, where points and rewards are distributed transparently and fairly among users.</span>
         </p>
       </div>
     </div>
@@ -1157,7 +1077,7 @@
       <h2 data-translate="increase_points">📈 How to Increase the Number of Points</h2>
       <div class="about-content">
         <p data-translate="additional_points">
-          Users can request to purchase up to two additional points per month to increase their income. To do this, they pay one-third of the subscription fee for each point, and:
+          <span data-translate="additional_points">Users can request to purchase up to two additional points per month to increase their income. To do this, they pay one-third of the subscription fee for each point, and:</span>
         </p>
         <ul>
           <li data-translate="burning_percentage">5% is used for token burning, which increases the token's value</li>
@@ -1165,7 +1085,7 @@
         </ul>
         
         <p data-translate="point_mechanism">
-          This mechanism ensures that the token always retains its value, and that the distribution of rewards remains fair and valuable. Each subscription can ultimately generate up to 100 points within 12 hours.
+          <span data-translate="point_mechanism">This mechanism ensures that the token always retains its value, and that the distribution of rewards remains fair and valuable. Each subscription can ultimately generate up to 100 points within 12 hours.</span>
         </p>
       </div>
     </div>
@@ -1175,12 +1095,12 @@
       <h2 data-translate="deflationary_ecosystem">🔥 Deflationary Ecosystem</h2>
       <div class="about-content">
         <p data-translate="severe_deflation">
-          <strong>This ecosystem experiences severe negative inflation (deflation).</strong> The token growth logic is fundamentally different from traditional systems - instead of creating more tokens, the system continuously removes tokens from circulation, creating a deflationary pressure that drives price appreciation.
+          <span data-translate="severe_deflation">This ecosystem experiences severe negative inflation (deflation). The token growth logic is fundamentally different from traditional systems - instead of creating more tokens, the system continuously removes tokens from circulation, creating a deflationary pressure that drives price appreciation.</span>
         </p>
         
         <h3 data-translate="token_burning_mechanisms">🔥 Token Burning Mechanisms</h3>
         <p data-translate="burning_overview">
-          In every major activity within the ecosystem, a portion of tokens is permanently burned (removed from circulation). This creates a continuous reduction in total supply, leading to increased scarcity and value appreciation.
+          <span data-translate="burning_overview">In every major activity within the ecosystem, a portion of tokens is permanently burned (removed from circulation). This creates a continuous reduction in total supply, leading to increased scarcity and value appreciation.</span>
         </p>
         
         <ul>
@@ -1194,7 +1114,7 @@
         
         <h3 data-translate="deflationary_impact">📈 Deflationary Impact</h3>
         <p data-translate="circulation_reduction">
-          <strong>Every transaction removes tokens from circulation.</strong> This continuous reduction in total supply creates a deflationary spiral where:
+          <span data-translate="circulation_reduction">Every transaction removes tokens from circulation. This continuous reduction in total supply creates a deflationary spiral where:</span>
         </p>
         <ul>
           <li data-translate="scarcity_increase">Scarcity increases with every transaction</li>
@@ -1204,7 +1124,7 @@
         </ul>
         
         <p data-translate="severe_price_increase">
-          <strong>This mechanism causes severe price increases</strong> as the token becomes increasingly scarce. Unlike inflationary systems that dilute value, this deflationary model ensures that every token holder benefits from the continuous reduction in supply.
+          <span data-translate="severe_price_increase">This mechanism causes severe price increases as the token becomes increasingly scarce. Unlike inflationary systems that dilute value, this deflationary model ensures that every token holder benefits from the continuous reduction in supply.</span>
         </p>
       </div>
     </div>
@@ -1214,23 +1134,23 @@
       <h2 data-translate="project_features">🌟 Project Features</h2>
       <div class="about-content">
         <p data-translate="extraordinary_project">
-          This project is extraordinary and operates on a binary network with a lifetime storage system. Even if lower levels up to the 10th level are formed regularly and all participants earn points, in the worst-case scenario for the platform paying commissions, the value of each point will be about 60% of the subscription amount.
+          <span data-translate="extraordinary_project">This project is extraordinary and operates on a binary network with a lifetime storage system. Even if lower levels up to the 10th level are formed regularly and all participants earn points, in the worst-case scenario for the platform paying commissions, the value of each point will be about 60% of the subscription amount.</span>
         </p>
         
         <p data-translate="point_limitation">
-          The reason is the limitation on the number of points per person and the overflow of extra points, which increases the value of each point.
+          <span data-translate="point_limitation">The reason is the limitation on the number of points per person and the overflow of extra points, which increases the value of each point.</span>
         </p>
         
         <p data-translate="decentralized_transparent">
-          The project is completely decentralized and transparent, and all funds are distributed among participants. It is a decentralized network that will soon be recognized internationally.
+          <span data-translate="decentralized_transparent">The project is completely decentralized and transparent, and all funds are distributed among participants. It is a decentralized network that will soon be recognized internationally.</span>
         </p>
         
         <p data-translate="phoenix_goal">
-          Our goal is for people to both earn income and benefit from the growth of the token by participating in this project.
+          <span data-translate="phoenix_goal">Our goal is for people to both earn income and benefit from the growth of the token by participating in this project.</span>
         </p>
         
         <p data-translate="together_success">
-          <strong>Together, we succeed!</strong>
+          <strong data-translate="together_success">Together, we succeed!</strong>
         </p>
       </div>
     </div>
@@ -1240,19 +1160,19 @@
       <h2 data-translate="smart_contract_info">📋 Smart Contract Information</h2>
       <div class="contract-info">
         <h3 data-translate="smart_contract_details">Smart Contract Details</h3>
-        <p><strong data-translate="network">Network:</strong> Polygon Mainnet (ChainId: 137)</p>
-        <p><strong data-translate="reference_token">Reference Token:</strong> DAI (18 decimals)</p>
+        <p><strong data-translate="network">Network:</strong> <span data-translate="polygon_mainnet">Polygon Mainnet (ChainId: 137)</span></p>
+        <p><strong data-translate="reference_token">Reference Token:</strong> <span data-translate="dai_decimals">DAI (18 decimals)</span></p>
         <p><strong data-translate="iam_contract_address">IAM Contract Address:</strong></p>
         <a id="contract-address-link" href="#" target="_blank" style="text-decoration: none;">
-          <div class="contract-address" id="contract-address" title="Click to view on PolygonScan">
-          Loading contract address...
+          <div class="contract-address" id="contract-address" data-translate="click_to_view_polygonscan" title="Click to view on PolygonScan">
+          <span data-translate="loading_contract_address">Loading contract address...</span>
         </div>
         </a>
         <button class="copy-btn" id="copy-address-btn" data-translate="copy_address">📋 Copy Address</button>
         <p><strong data-translate="dai_token_address">DAI Token Address:</strong></p>
         <a id="dai-address-link" href="#" target="_blank" style="text-decoration: none;">
-          <div class="contract-address" id="dai-address" title="Click to view on PolygonScan">
-          Loading DAI address...
+          <div class="contract-address" id="dai-address" data-translate="click_to_view_polygonscan" title="Click to view on PolygonScan">
+          <span data-translate="loading_dai_address">Loading DAI address...</span>
         </div>
         </a>
         <button class="copy-btn" id="copy-dai-btn" data-translate="copy_dai_address">📋 Copy DAI Address</button>
@@ -1960,12 +1880,263 @@
         ecosystem_balance: "Ecosystem balance is preserved through controlled deflation",
         severe_price_increase: "This mechanism causes severe price increases as the token becomes increasingly scarce. Unlike inflationary systems that dilute value, this deflationary model ensures that every token holder benefits from the continuous reduction in supply.",
         
+        // Loading Messages
+        loading_contract_address: "Loading contract address...",
+        loading_dai_address: "Loading DAI address...",
+        click_to_view_polygonscan: "Click to view on PolygonScan",
+        polygon_mainnet: "Polygon Mainnet (ChainId: 137)",
+        dai_decimals: "DAI (18 decimals)",
+        
         // Back Button
         back_button: "← Back",
         
         // Language Selector
         language_english: "🇺🇸 English",
         language_persian: "🇮🇷 فارسی",
+        language_arabic: "🇸🇦 العربية",
+        language_russian: "🇷🇺 Русский",
+        language_chinese: "🇨🇳 中文",
+        language_german: "🇩🇪 Deutsch",
+        language_french: "🇫🇷 Français"
+      },
+      ar: {
+        title: "معلومات عنا | IAM - PHOENIX",
+        header_title: "🚀 حول IAM PHOENIX",
+        header_description: "منصة تسويق شبكي ثورية مبنية على تقنية البلوك تشين، تخلق نظامًا بيئيًا لامركزيًا حيث يتم ضمان الشفافية والأمان والنمو من خلال العقود الذكية.",
+        what_is_iam: "🌟 ما هو IAM PHOENIX؟",
+        what_is_iam_desc1: "IAM PHOENIX هي منصة تسويق شبكي متطورة تستفيد من تقنية البلوك تشين والبنية التحتية Web3 لإنشاء نظام بيئي شفاف وآمن ولا مركزي. تزيل منصتنا الوسطاء التقليديين وتخلق علاقات مباشرة وموثوقة بين المشاركين من خلال العقود الذكية.",
+        what_is_iam_desc2: "مبنية على بلوك تشين Polygon، تجمع IAM PHOENIX بين قوة التسويق الشبكي وأمان وشفافية تقنية البلوك تشين. جميع أنشطة التسويق الشبكي والمكافآت والعمولات يتم حسابها وتوزيعها تلقائيًا من خلال العقود الذكية المدققة، مما يضمن الشفافية الكاملة ويمنع إمكانية الاحتيال أو التلاعب.",
+        smart_contract_info: "📋 معلومات العقد الذكي",
+        smart_contract_details: "تفاصيل العقد الذكي",
+        network: "الشبكة:",
+        reference_token: "الرمز المرجعي:",
+        iam_contract_address: "عنوان عقد IAM:",
+        dai_token_address: "عنوان رمز DAI:",
+        blockchain_explorer: "مستكشف البلوك تشين:",
+        view_on_polygonscan: "عرض على Polygonscan",
+        copy_address: "📋 نسخ العنوان",
+        copy_dai_address: "📋 نسخ عنوان DAI",
+        key_features: "✨ الميزات الرئيسية",
+        web3_technology: "🔗 تقنية Web3",
+        web3_tech_1: "مبنية على بروتوكولات الإنترنت الجيل القادم",
+        web3_tech_2: "تسويق شبكي لامركزي بدون وسطاء",
+        web3_tech_3: "أمان وأتمتة العقود الذكية",
+        web3_tech_4: "سيادة المستخدم والتحكم في الأصول",
+        network_marketing: "🌐 التسويق الشبكي",
+        network_marketing_1: "هيكل شبكة شجرة ثنائية",
+        network_marketing_2: "توزيع المكافآت التلقائي",
+        network_marketing_3: "تتبع الإحالات الشفاف",
+        network_marketing_4: "نظام عمولات عادل",
+        token_economy: "💎 اقتصاد الرموز",
+        token_economy_1: "رموز IAM كعملة أساسية",
+        token_economy_2: "حساب السعر الديناميكي",
+        token_economy_3: "آلية حرق الرموز",
+        token_economy_4: "دعم السيولة والتداول",
+        vendor_marketplace: "🛍️ سوق البائعين",
+        vendor_marketplace_1: "صفحات بائعين فردية",
+        vendor_marketplace_2: "معاملات رموز IAM",
+        vendor_marketplace_3: "نظام عمولات تلقائي",
+        vendor_marketplace_4: "معالجة دفع آمنة",
+        trading_system: "💱 نظام التداول",
+        buy_sell_tokens: "شراء وبيع الرموز",
+        buy_tokens: "🛒 شراء الرموز",
+        sell_tokens: "💰 بيع الرموز",
+        min_purchase: "الحد الأدنى للشراء:",
+        max_purchase: "الحد الأقصى للشراء:",
+        dynamic_balance: "(ديناميكي بناءً على رصيد العقد)",
+        backing_fee: "رسوم الدعم:",
+        dynamic_fee: "(ديناميكي: 2% إذا ≤200k DAI، 2.5% إذا ≤500k DAI، 3% إذا >500k DAI)",
+        user_share: "حصة المستخدم:",
+        user_share_desc: "مبلغ DAI مطروح منه رسوم الدعم",
+        token_minting: "سك الرموز:",
+        token_minting_desc: "بناءً على حصة المستخدم بالسعر الحالي",
+        min_sale: "الحد الأدنى للبيع:",
+        max_sale: "الحد الأقصى للبيع:",
+        no_restriction: "بدون قيود (بيع الرصيد الكامل)",
+        instant_conversion: "التحويل الفوري:",
+        instant_conversion_desc: "DAI إلى محفظتك",
+        price_calculation: "حساب السعر",
+        price_calculation_desc: "يتم حساب سعر الرمز ديناميكيًا بناءً على رصيد DAI في العقد وإجمالي العرض، مما يضمن تسعيرًا عادلاً وشفافًا.",
+        network_marketing_system: "🌳 نظام التسويق الشبكي",
+        registration_activation: "التسجيل والتفعيل",
+        paid_registration: "📝 التسجيل المدفوع",
+        paid_registration_desc1: "تسجيل قائم على العقد الذكي",
+        paid_registration_desc2: "هيكل شبكة شجرة ثنائية",
+        paid_registration_desc3: "تسعير تسجيل ديناميكي بناءً على عدد المحافظ",
+        paid_registration_desc4: "مكافأة إحالة 10% من رسوم التسجيل",
+        free_registration: "🆓 التسجيل المجاني",
+        free_registration_desc1: "حرق رموز تعادل 23 DAI",
+        free_registration_desc2: "بدون رسوم تسجيل",
+        free_registration_desc3: "نفس فوائد التسجيل المدفوع",
+        free_registration_desc4: "نفس هيكل الشبكة",
+        registration_pricing: "تسعير التسجيل",
+        wallet_count: "عدد المحافظ",
+        registration_price: "سعر التسجيل",
+        binary_points_system: "🎯 نظام النقاط الثنائية",
+        how_to_earn_points: "كيفية كسب النقاط",
+        point_earning_conditions: "شروط كسب النقاط",
+        reward_claim_system: "نظام المطالبة بالمكافآت",
+        max_points: "الحد الأقصى للنقاط:",
+        max_points_desc: "الحد الأقصى للنقاط الثنائية (القيمة الدقيقة من العقد - MAX_BINARY_POINT_CAP)",
+        initial_points: "النقاط الأولية:",
+        initial_points_desc: "5 نقاط للتسجيل المدفوع، 0 للتسجيل المجاني",
+        point_increase: "زيادة النقاط:",
+        point_increase_desc: "حد أقصى نقطتان لكل دورة شراء",
+        time_interval: "الفاصل الزمني:",
+        time_interval_desc: "4 أسابيع بين كسب النقاط",
+        fee_desc: "الرسوم:",
+        fee_desc2: "2% من المكافأة (مضافة إلى صندوق استرداد نقدي)",
+        cashback_repayment: "سداد الاسترداد النقدي:",
+        cashback_repayment_desc: "يتم سداد مكافآت الشهر السابق أولاً",
+        vendor_purchase_system: "🛍️ نظام شراء البائعين",
+        how_to_purchase_vendors: "كيفية الشراء من البائعين",
+        purchase_function: "🛒 وظيفة الشراء",
+        purchase_benefits: "فوائد الشراء",
+        purchase_benefit1: "كسب نقاط ثنائية لنمو الشبكة",
+        purchase_benefit2: "دعم نظام البائعين",
+        purchase_benefit3: "توزيع النقاط التلقائي",
+        purchase_benefit4: "تسجيل المعاملات الشفاف",
+        community_voting_system: "🗳️ نظام التصويت المجتمعي",
+        user_rating_system: "نظام تقييم المستخدمين",
+        vote_on_users: "👍👎 التصويت على المستخدمين",
+        voting_benefits: "فوائد التصويت",
+        voting_benefit1: "مراقبة الجودة مدفوعة بالمجتمع",
+        voting_benefit2: "بناء السمعة في الشبكة",
+        voting_benefit3: "تحديد الأعضاء الموثوقين",
+        voting_benefit4: "نظام ملاحظات المستخدمين الشفاف",
+        monthly_rewards: "💰 المكافآت الشهرية",
+        eligibility_requirements: "متطلبات الأهلية",
+        eligibility_req1: "فقط المستخدمون الذين لديهم موضع فارغ واحد على الأقل",
+        eligibility_req2: "حد أدنى 30 يوماً من آخر مطالبة",
+        eligibility_req3: "أقصى مكافأة: المبلغ المودع",
+        reward_calculation: "حساب المكافآت",
+        reward_rate: "معدل المكافأة:",
+        reward_rate_desc: "3% من المبلغ المودع شهرياً للمستخدمين الذين لديهم موضع فارغ واحد على الأقل. حد أقصى حتى 100% من المبلغ المودع.",
+        source: "المصدر:",
+        source_desc: "صندوق استرداد نقدي للعقد",
+        repayment: "السداد:",
+        repayment_desc: "يتم سداد الاسترداد النقدي السابق أولاً",
+        security_protection: "🔒 الأمان والحماية",
+        security_feature1: "أمان العقد الذكي:",
+        security_feature1_desc: "جميع العمليات مؤمنة بعقود ذكية مدققة",
+        security_feature2: "حماية إعادة الدخول:",
+        security_feature2_desc: "تدابير أمنية متقدمة ضد الهجمات",
+        security_feature3: "العمليات المؤتمتة:",
+        security_feature3_desc: "لا تدخل بشري في الوظائف الحرجة",
+        security_feature4: "المعاملات الشفافة:",
+        security_feature4_desc: "جميع الأنشطة مرئية على البلوك تشين",
+        security_feature5: "حماية الأموال:",
+        security_feature5_desc: "المستخدمون يحتفظون بالتحكم الكامل في الأصول",
+        security_feature6: "نظام التصويت:",
+        security_feature6_desc: "مراقبة الجودة مدفوعة بالمجتمع مع نظام الإعجاب/عدم الإعجاب",
+        security_feature7: "نقل المؤشر:",
+        security_feature7_desc: "القدرة على نقل ملكية المؤشر إلى عنوان جديد",
+        security_feature8: "التسعير الديناميكي:",
+        security_feature8_desc: "تسعير عادل للرموز بناءً على رصيد العقد",
+        security_feature9: "شفافية الرسوم:",
+        security_feature9_desc: "جميع الرسوم محددة بوضوح ومحسوبة تلقائيًا",
+        live_statistics: "📊 الإحصائيات المباشرة",
+        registered_wallets: "المحافظ المسجلة",
+        contract_dai_balance: "رصيد DAI في العقد",
+        claimable_points: "النقاط القابلة للمطالبة",
+        cashback_fund: "صندوق الاسترداد النقدي",
+        faq: "❓ الأسئلة الشائعة",
+        faq_question1: "كيف أشتري رموز IAM؟",
+        faq_question2: "كيف أبيع رموز IAM؟",
+        faq_question3: "ما هي الرسوم؟",
+        faq_question4: "كيف أسجل في الشبكة؟",
+        faq_question5: "هل يمكنني التسجيل مجانًا؟",
+        faq_question6: "كيف تعمل النقاط الثنائية؟",
+        faq_question7: "ما هي المكافآت الشهرية؟",
+        faq_question8: "هل يمكنني نقل ملكية المؤشر؟",
+        faq_question9: "كيف أشتري من البائعين؟",
+        faq_question10: "كيف يعمل نظام التصويت؟",
+        faq_answer1: "استخدم دالة buyTokens() مع مبلغ DAI. تحتاج إلى الموافقة على إنفاق DAI أولاً.",
+        faq_answer2: "استخدم دالة sellTokens() مع مبلغ رموز IAM. سيتم حرق الرموز وستتلقى DAI.",
+        faq_answer3: "رسوم دعم 2% على جميع المعاملات. رسوم ديناميكية بناءً على رصيد العقد: 2% إذا ≤200k DAI، 2.5% إذا ≤500k DAI، 3% إذا >500k DAI.",
+        faq_answer4: "استخدم دالة registerAndActivate() مع رسوم التسجيل. تسعير ديناميكي بناءً على عدد المحافظ.",
+        faq_answer5: "نعم، استخدم دالة registerFree() بحرق رموز تعادل قيمة 23 DAI.",
+        faq_answer6: "حد أقصى نقطتان لكل دورة شراء مع فاصل 4 أسابيع. الحد الأقصى للنقاط الثنائية (القيمة الدقيقة من العقد - MAX_BINARY_POINT_CAP). النقاط الأولية: 5 للتسجيل المدفوع، 0 للتسجيل المجاني.",
+        faq_answer7: "معدل المكافأة الدقيق من العقد (القيمة الدقيقة من العقد) للمستخدمين الذين لديهم كلا الابنين فارغين (leftPoints = 0 و rightPoints = 0). حد أقصى حتى 100% من المبلغ المودع. يتم سداد الاسترداد النقدي السابق أولاً.",
+        faq_answer8: "نعم، استخدم دالة transferIndexOwnership() لنقل المؤشر إلى عنوان جديد. سيتم نقل جميع بيانات المستخدم بما في ذلك النقاط والتاريخ.",
+        faq_answer9: "استخدم دالة purchase() مع المبلغ ونسبة الدفع (30-100%) وعنوان البائع. سيتم حرق نسبة محددة من الرموز (القيمة الدقيقة من العقد). توزيع تلقائي للنقاط الثنائية (القيمة الدقيقة من العقد).",
+        faq_answer10: "استخدم voteUser(voter, target) للإعجاب أو عدم الإعجاب بأي مستخدم مسجل. يمكنك تغيير تصويتك في أي وقت. إجمالي الإعجابات وعدم الإعجابات مرئي للجمهور (getVoteStatus).",
+        additional_points: "يمكن للمستخدمين طلب شراء ما يصل إلى نقطتين إضافيتين شهريًا لزيادة دخلهم. للقيام بذلك، يدفعون ثلث رسوم الاشتراك لكل نقطة، و:",
+        loading_contract_address: "جاري تحميل عنوان العقد...",
+        loading_dai_address: "جاري تحميل عنوان DAI...",
+        click_to_view_polygonscan: "انقر للعرض على PolygonScan",
+        polygon_mainnet: "شبكة Polygon الرئيسية (ChainId: 137)",
+        dai_decimals: "DAI (18 منزلة عشرية)",
+        
+        // Phoenix Team Section
+        phoenix_team: "🔥 فريق فينيكس",
+        phoenix_mission: "مرحباً أصدقاؤنا الأعزاء،<br><br>نحن فريق فينيكس. مهمتنا هي دعم وتطوير رموز النوع صفر. هذه الرموز هي أدوات متقدمة تتيح للناس، من خلال شرائها، دعم المشاريع والخدمات ذات الصلة عملياً. بهذا الدعم، يشارك المشترون في نمو الرمز، بينما تحصل المشاريع على الموارد المالية التي تحتاجها لتنفيذ خططها.",
+        phoenix_iam_support: "فريقنا، فينيكس، يدعم ويطور حالياً رمز IAM، المبني على بلوك تشين Polygon ومدعوم بالعملة المستقرة اللامركزية DAI. هذه العملة المستقرة لامركزية بالكامل، ولا تملك أي منظمة أو سلطة الوصول إليها. رمز IAM نفسه هو مشروع مستقل، في الواقع شركة ناشئة. لا يدعم أو يعتمد على شركة ناشئة أخرى، بل يهدف إلى تقديم وترويج نفسه.",
+        
+        // Subscription and Point System
+        subscription_point_system: "📊 نظام الاشتراك والنقاط",
+        subscription_mechanism: "رمز IAM يحتوي على آلية اشتراك. توزيع رسوم الاشتراك كما يلي:",
+        increase_points: "📈 كيفية زيادة عدد النقاط",
+        referral_rewards: "10% لمكافآت الإحالة (المدعو)",
+        token_burning: "10% لحرق الرموز، مما يزيد من قيمة الرمز",
+        user_distribution: "80% يتم توزيعها بين المستخدمين بناءً على النقاط التي يكسبونها",
+        
+        // Subscription Refund
+        subscription_refund: "💰 آلية استرداد الاشتراك",
+        refund_guarantee: "الأشخاص الذين لا يمكنهم كسب النقاط لا داعي للقلق. المبلغ الكامل الذي يدفعونه مقابل الاشتراك سيتم استرداده لهم في شكل رموز. يحدث هذا الاسترداد شهرياً بمعدل 3% من المبلغ المدفوع حتى يتم إرجاع رسوم الاشتراك الكاملة.",
+        
+        // Activities and Rewards
+        activities_rewards: "🎯 الأنشطة والمكافآت بالرمز",
+        token_activities: "جميع الأنشطة، بما في ذلك استلام المكافآت والعمولات، تتم باستخدام رمز IAM. في كل مرة يتم فيها إجراء معاملة شراء أو بيع، يدفع المستخدم رسوماً بنسبة 2%، والتي يتم إيداعها في الاحتياطي المالي للرمز:",
+        dai_to_iam: "تحويل DAI إلى IAM (شراء) = إنشاء رموز",
+        iam_to_dai: "تحويل IAM إلى DAI (بيع) = حرق الرموز",
+        
+        // Project Features
+        project_features: "🌟 ميزات المشروع",
+        extraordinary_project: "هذا المشروع استثنائي ويعمل على شبكة ثنائية مع نظام تخزين مدى الحياة. حتى لو تم تشكيل المستويات السفلى حتى المستوى العاشر بانتظام وكسب جميع المشاركين للنقاط، في أسوأ سيناريو للمنصة لدفع العمولات، ستكون قيمة كل نقطة حوالي 60% من مبلغ الاشتراك.",
+        point_limitation: "السبب هو القيود على عدد النقاط لكل شخص وفيض النقاط الإضافية، مما يزيد من قيمة كل نقطة.",
+        decentralized_transparent: "المشروع لامركزي وشفاف بالكامل، ويتم توزيع جميع الأموال بين المشاركين. إنها شبكة لامركزية ستحصل قريباً على اعتراف دولي.",
+        phoenix_goal: "هدفنا هو أن يحصل الناس على دخل ويستفيدوا من نمو الرمز من خلال المشاركة في هذا المشروع.",
+        together_success: "معاً، ننجح!",
+        
+        // Token Burning Mechanisms
+        burning_buy: "🛒 شراء الرموز: أثناء معاملات الشراء، يتم حرق الرموز كجزء من آلية رسوم الدعم",
+        burning_sell: "💰 بيع الرموز: أثناء معاملات البيع، يتم حرق رموز إضافية للحفاظ على توازن النظام",
+        burning_registration: "📝 التسجيل المدفوع: يتم استخدام جزء من رسوم التسجيل لحرق الرموز، مما يقلل من إجمالي العرض",
+        burning_claim: "🎯 مطالبات المكافآت: أثناء عمليات المطالبة بالمكافآت، يتم حرق الرموز للحفاظ على الضغط الانكماشي",
+        burning_purchase: "🛍️ مشتريات المنتجات: عند الشراء من البائعين، يتم حرق الرموز كجزء من المعاملة",
+        burning_free_reg: "🆓 التسجيل المجاني: التسجيلات المجانية تتطلب حرق رموز تعادل قيمة 23 DAI",
+        burning_percentage: "5% يُستخدم لحرق الرموز، مما يزيد من قيمة الرمز",
+        binary_pool: "95% يُضاف إلى المجمع الثنائي ويُوزع بين المستخدمين الذين كسبوا النقاط",
+        
+        // Deflationary Effects
+        circulation_reduction: "كل معاملة تزيل رموزاً من التداول. هذا التقليل المستمر في إجمالي العرض يخلق دوامة انكماشية حيث:",
+        scarcity_increase: "تزداد الندرة مع كل معاملة",
+        value_appreciation: "تزداد قيمة الرمز بسبب انخفاض العرض",
+        price_pressure: "يتم الحفاظ على ضغط السعر التصاعدي باستمرار",
+        ecosystem_balance: "يتم الحفاظ على توازن النظام من خلال الانكماش المتحكم فيه",
+        severe_price_increase: "هذه الآلية تسبب زيادات حادة في الأسعار حيث يصبح الرمز نادراً بشكل متزايد. على عكس الأنظمة التضخمية التي تخفف القيمة، يضمن هذا النموذج الانكماشي أن كل حامل رمز يستفيد من التقليل المستمر في العرض.",
+        
+        // Point Earning System
+        point_earning_system: "يمكن لكل شخص كسب ما يصل إلى 5 نقاط كل 12 ساعة، بحد أقصى 10 نقاط في اليوم. أي نقاط إضافية تفيض على نقاط أخرى، مما يزيد من قيمة كل نقطة.",
+        token_burning_benefits: "جميع هذه الأنشطة تؤدي إلى حرق الرموز وزيادة قيمة الرمز. يعمل النظام أيضاً كشبكة ثنائية، حيث يتم توزيع النقاط والمكافآت بشفافية وعدالة بين المستخدمين.",
+        
+        // Additional Point System
+        point_mechanism: "هذه الآلية تضمن أن الرمز يحتفظ دائماً بقيمته، وأن توزيع المكافآت يبقى عادلاً وقيم. يمكن لكل اشتراك أن يولد في النهاية ما يصل إلى 100 نقطة خلال 12 ساعة.",
+        
+        // Deflationary System
+        deflationary_ecosystem: "🔥 النظام البيئي الانكماشي",
+        severe_deflation: "هذا النظام البيئي يعاني من تضخم سلبي شديد (انكماش). منطق نمو الرمز مختلف جوهرياً عن الأنظمة التقليدية - بدلاً من إنشاء المزيد من الرموز، يزيل النظام باستمرار الرموز من التداول، مما يخلق ضغطاً انكماشياً يدفع تقدير السعر.",
+        token_burning_mechanisms: "🔥 آليات حرق الرموز",
+        burning_overview: "في كل نشاط رئيسي داخل النظام البيئي، يتم حرق جزء من الرموز نهائياً (إزالته من التداول). هذا يخلق تقليلاً مستمراً في إجمالي العرض، مما يؤدي إلى زيادة الندرة وتقدير القيمة.",
+        deflationary_impact: "📈 التأثير الانكماشي",
+        
+        back_button: "← العودة",
+        
+        // Language Selector
+        language_english: "🇺🇸 English",
+        language_persian: "🇮🇷 فارسی",
+        language_arabic: "🇸🇦 العربية",
         language_russian: "🇷🇺 Русский",
         language_chinese: "🇨🇳 中文",
         language_german: "🇩🇪 Deutsch",
@@ -2855,18 +3026,5 @@
     });
   </script>
   
-  <!-- Google Translate -->
-  <script type="text/javascript">
-    function googleTranslateElementInit() {
-      new google.translate.TranslateElement({
-        pageLanguage: 'en',
-        includedLanguages: 'en,fa,ar,zh,hi,es,fr,de,ja,ko,ru,tr,ur,pt,it,nl,sv,da,no,fi,pl,cs,hu,ro,bg,hr,sk,sl,et,lv,lt,mt,cy,ga,is,eu,ca,gl,af,sq,az,be,bs,cs,da,de,el,es,et,fa,fi,fr,gl,he,hi,hr,hu,hy,id,is,it,ja,ka,kk,km,ko,ky,lo,lt,lv,mk,ml,mn,ms,my,ne,no,pl,pt,ro,ru,si,sk,sl,sq,sr,sv,sw,ta,th,tr,uk,ur,uz,vi,zh',
-        layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-        autoDisplay: false,
-        multilanguagePage: true
-      }, 'google_translate_element');
-    }
-  </script>
-  <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </body>
 </html> 
