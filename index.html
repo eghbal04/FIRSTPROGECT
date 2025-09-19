@@ -172,13 +172,16 @@
     }
     .muted { color:#7f8ca8; font-size: 12px; }
     .error { color:#ff6b6b; font-size: 13px; }
-    .statusbar { background:#0e1220; border:1px solid #1f2433; padding:10px 12px; border-radius:12px; display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); grid-template-rows: auto auto; gap:8px; align-items:center; margin: 12px 0; }
-    .pill { background:#162032; color:#cfe2ff; padding:6px 10px; border-radius:999px; font-size:12px; border:1px solid #223150; white-space: nowrap; text-align:center; box-sizing:border-box; width:100%; }
-    /* Force two rows: row 1 (address, likes, dislikes, rank) | row 2 (index, POL, DAI, IAM) */
-    #status-address, #status-likes, #status-dislikes, #status-rank { grid-row: 1; }
-    #status-index, #status-matic, #status-dai, #status-iam { grid-row: 2; }
+    .statusbar { background:#0e1220; border:1px solid #1f2433; padding:4px 6px; border-radius:6px; display:flex; gap:3px; align-items:center; margin: 6px 0; }
+    .statusbar.top { flex-wrap: nowrap; }
+    .statusbar.bottom { flex-wrap: nowrap; }
+    .pill { background:#162032; color:#cfe2ff; padding:2px 4px; border-radius:4px; font-size:8px; border:1px solid #223150; white-space: nowrap; text-align:center; box-sizing:border-box; flex: 1; min-width: 0; }
+    /* Two separate status bars: top (address, index, likes, dislikes, rank) | bottom (POL, DAI, IAM) */
     @media (max-width: 640px) {
-      .statusbar { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .statusbar { padding:3px 4px; gap:2px; margin: 4px 0; }
+      .statusbar.top { flex-wrap: wrap; }
+      .statusbar.bottom { flex-wrap: nowrap; }
+      .pill { padding:2px 3px; font-size:7px; border-radius:3px; }
     }
     .footer-links { margin: 24px 0 0; display: flex; flex-wrap: wrap; gap: 8px; }
     .footer-links a { text-decoration: none; }
@@ -226,18 +229,20 @@
     }
     
     .nav-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(80px, max-content));
-      gap: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 8px 0; /* row-gap 8px, column-gap 0 to let space-between handle columns */
       max-width: 100%;
-      justify-content: start;
+      width: 100%;
+      box-sizing: border-box;
     }
     
     .nav-card {
       background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
       border: 1px solid transparent;
-      border-radius: 10px;
-      padding: 12px 8px;
+      border-radius: 12px;
+      padding: 6px 8px;
       text-decoration: none;
       color: #e6eaf0;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -247,9 +252,10 @@
       text-align: center;
       position: relative;
       overflow: hidden;
-      width: max-content;
-      min-width: 80px;
-      max-width: 120px;
+      width: 30%;
+      flex: 0 0 30%;
+      box-sizing: border-box;
+      min-height: 56px;
       box-shadow: 0 2px 8px rgba(30, 41, 59, 0.2);
       backdrop-filter: blur(5px);
     }
@@ -294,8 +300,8 @@
     }
     
     .nav-icon {
-      font-size: 18px;
-      margin-bottom: 6px;
+      font-size: 22px;
+      margin-bottom: 4px;
       filter: drop-shadow(0 0 6px rgba(0, 255, 136, 0.3));
       transition: all 0.3s ease;
       position: relative;
@@ -303,7 +309,7 @@
     }
     
     .nav-label {
-      font-size: 10px;
+      font-size: 15px;
       font-weight: 600;
       color: #e6eaf0;
       text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
@@ -378,22 +384,23 @@
       
       /* Navigation menu mobile styles */
       .nav-grid {
-        grid-template-columns: repeat(auto-fit, minmax(70px, max-content));
-        gap: 10px;
-        justify-content: start;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(4, auto);
+        gap: 5px;
+        width: 100%;
       }
       .nav-card {
-        padding: 10px 6px;
-        min-width: 70px;
-        max-width: 100px;
-        border-radius: 8px;
+        padding: 12px 8px;
+        width: 100%;
+        min-height: 70px;
+        border-radius: 10px;
       }
       .nav-icon {
-        font-size: 16px;
-        margin-bottom: 4px;
+        font-size: 20px;
+        margin-bottom: 6px;
       }
       .nav-label {
-        font-size: 9px;
+        font-size: 12px;
         font-weight: 600;
       }
     }
@@ -416,22 +423,23 @@
       
       /* Navigation menu small mobile styles */
       .nav-grid {
-        grid-template-columns: repeat(auto-fit, minmax(60px, max-content));
-        gap: 8px;
-        justify-content: start;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(4, auto);
+        gap: 4px;
+        width: 100%;
       }
       .nav-card {
-        padding: 8px 4px;
-        min-width: 60px;
-        max-width: 80px;
-        border-radius: 6px;
+        padding: 10px 6px;
+        width: 100%;
+        min-height: 60px;
+        border-radius: 8px;
       }
       .nav-icon {
-        font-size: 14px;
-        margin-bottom: 3px;
+        font-size: 18px;
+        margin-bottom: 5px;
       }
       .nav-label {
-        font-size: 8px;
+        font-size: 11px;
         font-weight: 600;
       }
     }
@@ -445,22 +453,23 @@
       
       /* Navigation menu extra small mobile styles */
       .nav-grid {
-        grid-template-columns: repeat(auto-fit, minmax(50px, max-content));
-        gap: 6px;
-        justify-content: start;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(4, auto);
+        gap: 3px;
+        width: 100%;
       }
       .nav-card {
-        padding: 6px 3px;
-        min-width: 50px;
-        max-width: 70px;
-        border-radius: 5px;
+        padding: 8px 4px;
+        width: 100%;
+        min-height: 50px;
+        border-radius: 6px;
       }
       .nav-icon {
-        font-size: 12px;
-        margin-bottom: 2px;
+        font-size: 16px;
+        margin-bottom: 4px;
       }
       .nav-label {
-        font-size: 7px;
+        font-size: 10px;
         font-weight: 600;
       }
     }
@@ -644,25 +653,27 @@
   <div class="container">
     <h1>IAMPHOENIX Dashboard</h1>
 
-    <div class="statusbar" id="status-bar">
+    <div class="statusbar top" id="status-bar-top">
       <span class="pill" id="status-address">-</span>
+      <span class="pill" id="status-index">-</span>
       <span class="pill" id="status-likes">👍 -</span>
       <span class="pill" id="status-dislikes">👎 -</span>
       <span class="pill" id="status-rank">⭐ -</span>
-      <span class="pill" id="status-index">-</span>
+    </div>
+
+    <div class="statusbar bottom" id="status-bar-bottom">
       <span class="pill" id="status-matic">POL: -</span>
       <span class="pill" id="status-dai">DAI: -</span>
       <span class="pill" id="status-iam">IAM: -</span>
-      
-        </div>
+    </div>
         
 
     <!-- Navigation Menu - Creative Design -->
     <div class="nav-menu" style="margin-bottom: 24px;">
       <div class="nav-grid">
-        <a class="nav-card" href="about.html">
-          <div class="nav-icon">ℹ️</div>
-          <div class="nav-label">About</div>
+        <a class="nav-card" href="swap.html">
+          <div class="nav-icon">🔄</div>
+          <div class="nav-label">Swap</div>
         </a>
         <a class="nav-card" href="register.html">
           <div class="nav-icon">📝</div>
@@ -672,13 +683,13 @@
           <div class="nav-icon">👤</div>
           <div class="nav-label">Profile</div>
         </a>
+        <a class="nav-card" href="about.html">
+          <div class="nav-icon">ℹ️</div>
+          <div class="nav-label">About</div>
+        </a>
         <a class="nav-card" href="sales.html">
           <div class="nav-icon">💰</div>
           <div class="nav-label">Sales</div>
-        </a>
-        <a class="nav-card" href="swap.html">
-          <div class="nav-icon">🔄</div>
-          <div class="nav-label">Swap</div>
         </a>
         <a class="nav-card" href="transfer.html">
           <div class="nav-icon">📤</div>
@@ -882,6 +893,68 @@
       try { if (!addr || addr.length < 10) return addr || '-'; return addr.slice(0, 6) + '...' + addr.slice(-4); } catch { return addr || '-'; }
     }
 
+    // Dynamically size pills based on their values
+    function setDynamicPillWidths(barType, values) {
+      try {
+        const isTopBar = barType === 'top';
+        const pillIds = isTopBar ? 
+          ['status-address', 'status-index', 'status-likes', 'status-dislikes', 'status-rank'] :
+          ['status-matic', 'status-dai', 'status-iam'];
+        
+        // Disable dynamic sizing on small screens
+        if (window.matchMedia && window.matchMedia('(max-width: 640px)').matches) {
+          pillIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) { el.style.flex = '1'; el.style.minWidth = '0'; }
+          });
+          return;
+        }
+
+        const items = pillIds.map(id => {
+          const el = document.getElementById(id);
+          if (!el) return { id, value: 0, element: null };
+          
+          let value = 0;
+          if (values && values[id]) {
+            value = Number(values[id]) || 0;
+          } else {
+            // Try to parse from text content
+            const text = el.textContent || '';
+            const num = Number(text.replace(/[^0-9.\-]+/g, ''));
+            value = isFinite(num) ? num : 0;
+          }
+          
+          return { id, value: Math.max(0, value), element: el };
+        });
+
+        const total = items.reduce((sum, item) => sum + item.value, 0);
+        
+        // If all values are zero, use equal distribution
+        if (total === 0) {
+          items.forEach(item => {
+            if (item.element) {
+              item.element.style.flex = '1';
+              item.element.style.minWidth = '0';
+            }
+          });
+          return;
+        }
+
+        // Calculate proportional widths
+        items.forEach(item => {
+          if (!item.element) return;
+          
+          const proportion = item.value / total;
+          const minWidth = 0.1; // Minimum 10% width
+          const maxWidth = 0.6; // Maximum 60% width
+          const flexValue = Math.max(minWidth, Math.min(maxWidth, proportion));
+          
+          item.element.style.flex = `${flexValue} 1 0`;
+          item.element.style.minWidth = '0';
+        });
+      } catch {}
+    }
+
     function updateStatusPills(data) {
       const set = (id, label, value) => {
         const el = document.getElementById(id);
@@ -916,6 +989,25 @@
       
       if (data.likes !== undefined) set('status-likes', 'Likes', data.likes);
       if (data.dislikes !== undefined) set('status-dislikes', 'Dislikes', data.dislikes);
+
+      // Apply dynamic sizing after updating all values
+      setTimeout(() => {
+        // Top bar dynamic sizing
+        setDynamicPillWidths('top', {
+          'status-address': data.address ? 1 : 0, // Address always gets minimum width
+          'status-index': data.index,
+          'status-likes': data.likes,
+          'status-dislikes': data.dislikes,
+          'status-rank': data.rank ? 1 : 0 // Rank always gets minimum width
+        });
+
+        // Bottom bar dynamic sizing
+        setDynamicPillWidths('bottom', {
+          'status-matic': data.matic,
+          'status-dai': data.dai,
+          'status-iam': data.iam
+        });
+      }, 100);
     }
 
     // User Info removed
