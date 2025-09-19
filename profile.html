@@ -5,11 +5,11 @@
     // Suppress noisy MetaMask RPC warnings
     window.addEventListener('error', function(e){
       const m = (e && e.message) || '';
-      if (m.includes('getEnabledChains') || m.includes('isDefaultWallet') || m.includes('Could not establish connection')) { e.preventDefault(); return false; }
+      if (m.includes('getEnabledChains') || m.includes('isDefaultWallet') || m.includes('Could not establish connection') || m.includes('Internal JSON-RPC error')) { e.preventDefault(); return false; }
     });
     window.addEventListener('unhandledrejection', function(e){
       const r = e && e.reason; const msg = (r && (r.message || r)) || '';
-      if (typeof msg === 'string' && (msg.includes('getEnabledChains') || msg.includes('isDefaultWallet') || msg.includes('Could not establish connection'))) { e.preventDefault(); return false; }
+      if (typeof msg === 'string' && (msg.includes('getEnabledChains') || msg.includes('isDefaultWallet') || msg.includes('Could not establish connection') || msg.includes('Internal JSON-RPC error'))) { e.preventDefault(); return false; }
     });
   </script>
     <meta charset="UTF-8">

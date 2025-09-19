@@ -8,11 +8,11 @@
     // Suppress noisy extension RPC errors (non-blocking)
     window.addEventListener('error', function(e){
       const m = (e && e.message) || '';
-      if (m.includes('getEnabledChains') || m.includes('isDefaultWallet')) { e.preventDefault(); return false; }
+      if (m.includes('getEnabledChains') || m.includes('isDefaultWallet') || m.includes('Internal JSON-RPC error')) { e.preventDefault(); return false; }
     });
     window.addEventListener('unhandledrejection', function(e){
       const msg = (e && e.reason && (e.reason.message||e.reason)) || '';
-      if (typeof msg === 'string' && (msg.includes('getEnabledChains') || msg.includes('isDefaultWallet'))) { e.preventDefault(); return false; }
+      if (typeof msg === 'string' && (msg.includes('getEnabledChains') || msg.includes('isDefaultWallet') || msg.includes('Internal JSON-RPC error'))) { e.preventDefault(); return false; }
     });
   </script>
   <link rel="stylesheet" href="css/transfer-ownership.css?v=20250808-1">

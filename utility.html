@@ -9,7 +9,7 @@
     // Suppress noisy extension/MetaMask RPC messages that don't affect functionality
     window.addEventListener('error', function(e){
       const m = (e && e.message) || '';
-      if (m.includes('Could not establish connection') || m.includes('getEnabledChains') || m.includes('isDefaultWallet')) {
+      if (m.includes('Could not establish connection') || m.includes('getEnabledChains') || m.includes('isDefaultWallet') || m.includes('Internal JSON-RPC error')) {
         e.preventDefault();
         return false;
       }
@@ -17,7 +17,7 @@
     window.addEventListener('unhandledrejection', function(e){
       const r = e && e.reason;
       const msg = (r && (r.message || r)) || '';
-      if (typeof msg === 'string' && (msg.includes('Could not establish connection') || msg.includes('getEnabledChains') || msg.includes('isDefaultWallet'))) {
+      if (typeof msg === 'string' && (msg.includes('Could not establish connection') || msg.includes('getEnabledChains') || msg.includes('isDefaultWallet') || msg.includes('Internal JSON-RPC error'))) {
         e.preventDefault();
         return false;
       }

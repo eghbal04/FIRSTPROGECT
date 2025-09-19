@@ -9,7 +9,7 @@
     // Suppress noisy extension/MetaMask RPC messages that don't affect functionality
     window.addEventListener('error', function(e){
       const m = (e && e.message) || '';
-      if (m.includes('Could not establish connection') || m.includes('getEnabledChains') || m.includes('isDefaultWallet')) {
+      if (m.includes('Could not establish connection') || m.includes('getEnabledChains') || m.includes('isDefaultWallet') || m.includes('Internal JSON-RPC error')) {
         e.preventDefault();
         return false;
       }
@@ -17,7 +17,7 @@
     window.addEventListener('unhandledrejection', function(e){
       const r = e && e.reason;
       const msg = (r && (r.message || r)) || '';
-      if (typeof msg === 'string' && (msg.includes('Could not establish connection') || msg.includes('getEnabledChains') || msg.includes('isDefaultWallet'))) {
+      if (typeof msg === 'string' && (msg.includes('Could not establish connection') || msg.includes('getEnabledChains') || msg.includes('isDefaultWallet') || msg.includes('Internal JSON-RPC error'))) {
         e.preventDefault();
         return false;
       }
@@ -52,7 +52,6 @@
       background: linear-gradient(180deg, rgba(18,21,33,1) 0%, rgba(18,21,33,0.92) 100%);
       border: 1px solid rgba(0,255,136,0.15);
       box-shadow: 0 6px 24px rgba(0,255,136,0.06), inset 0 0 0 1px rgba(59,130,246,0.08);
-      margin: 16px 0;
       overflow: visible;
       width: 100%;
       max-width: 100%;
@@ -493,6 +492,43 @@
       h1 { font-size: 18px; margin-bottom: 14px; }
       .card { padding: 14px; border-radius: 10px; }
       .card h2 { font-size: 14px; }
+      
+      /* Referral section mobile */
+      .referral-section {
+        margin-top: 16px !important;
+        padding: 16px !important;
+        border-radius: 10px !important;
+      }
+      .referral-section h3 {
+        font-size: 16px !important;
+        margin-bottom: 12px !important;
+      }
+      
+      /* Additional content mobile */
+      .additional-content {
+        margin-top: 16px !important;
+        padding: 16px !important;
+        border-radius: 12px !important;
+      }
+      .additional-content h2 {
+        font-size: 20px !important;
+        margin-bottom: 16px !important;
+      }
+      .additional-content h3 {
+        font-size: 16px !important;
+        margin-bottom: 10px !important;
+      }
+      .additional-content p {
+        font-size: 14px !important;
+        margin-bottom: 12px !important;
+      }
+      .additional-content ul {
+        padding-left: 16px !important;
+      }
+      .additional-content li {
+        font-size: 14px !important;
+        margin-bottom: 6px !important;
+      }
       .row { 
         gap: 6px; 
         padding: 6px 0; 
@@ -539,7 +575,6 @@
       
       /* Contract Info tablet improvements */
       #contract-card {
-        margin: 8px 0;
         padding: 12px;
         overflow: visible;
       }
@@ -567,9 +602,9 @@
       
       /* Navigation menu mobile styles */
       .nav-grid {
-        grid-template-columns: repeat(3, 1fr);
-        grid-template-rows: repeat(4, auto);
-        gap: 5px;
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(5, auto);
+        gap: 8px;
         width: 100%;
       }
       .nav-card {
@@ -600,6 +635,51 @@
       .container { padding: 14px; }
       h1 { font-size: 17px; }
       .card h2 { font-size: 13px; }
+      
+      /* Referral section small mobile */
+      .referral-section {
+        margin-top: 12px !important;
+        padding: 12px !important;
+        border-radius: 8px !important;
+      }
+      .referral-section h3 {
+        font-size: 14px !important;
+        margin-bottom: 10px !important;
+      }
+      .referral-section input {
+        font-size: 11px !important;
+        padding: 6px 8px !important;
+      }
+      .referral-section button {
+        font-size: 11px !important;
+        padding: 6px 8px !important;
+      }
+      
+      /* Additional content small mobile */
+      .additional-content {
+        margin-top: 12px !important;
+        padding: 12px !important;
+        border-radius: 10px !important;
+      }
+      .additional-content h2 {
+        font-size: 18px !important;
+        margin-bottom: 12px !important;
+      }
+      .additional-content h3 {
+        font-size: 14px !important;
+        margin-bottom: 8px !important;
+      }
+      .additional-content p {
+        font-size: 13px !important;
+        margin-bottom: 10px !important;
+      }
+      .additional-content ul {
+        padding-left: 12px !important;
+      }
+      .additional-content li {
+        font-size: 13px !important;
+        margin-bottom: 4px !important;
+      }
       .row { 
         flex-direction: row; 
         align-items: center; 
@@ -647,7 +727,6 @@
       
       /* Contract Info mobile improvements */
       #contract-card {
-        margin: 6px 0;
         padding: 8px;
         overflow: visible;
       }
@@ -655,7 +734,9 @@
         margin-bottom: 4px;
         padding-bottom: 4px;
         border-bottom: 1px solid rgba(0, 255, 136, 0.1);
-        min-width: max-content;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
       }
       #contract-card .row:last-child {
         border-bottom: none;
@@ -668,6 +749,22 @@
         padding-bottom: 6px;
         border-bottom: 1px solid rgba(0, 255, 136, 0.2);
       }
+      #contract-card .label {
+        font-size: 10px;
+        min-width: auto;
+        max-width: 100%;
+        width: 100%;
+        text-align: right;
+      }
+      #contract-card .value {
+        font-size: 10px;
+        padding: 3px 6px;
+        word-break: break-all;
+        white-space: normal;
+        overflow-wrap: break-word;
+        width: 100%;
+        text-align: right;
+      }
       #contract-content {
         overflow: visible;
         width: 100%;
@@ -675,9 +772,9 @@
       
       /* Navigation menu small mobile styles */
       .nav-grid {
-        grid-template-columns: repeat(3, 1fr);
-        grid-template-rows: repeat(4, auto);
-        gap: 4px;
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(5, auto);
+        gap: 6px;
         width: 100%;
       }
       .nav-card {
@@ -703,11 +800,56 @@
       .row { padding: 6px 0; }
       .pill { font-size: 10px; padding: 5px 7px; }
       
+      /* Referral section extra small mobile */
+      .referral-section {
+        margin-top: 10px !important;
+        padding: 10px !important;
+        border-radius: 6px !important;
+      }
+      .referral-section h3 {
+        font-size: 13px !important;
+        margin-bottom: 8px !important;
+      }
+      .referral-section input {
+        font-size: 10px !important;
+        padding: 4px 6px !important;
+      }
+      .referral-section button {
+        font-size: 10px !important;
+        padding: 4px 6px !important;
+      }
+      
+      /* Additional content extra small mobile */
+      .additional-content {
+        margin-top: 10px !important;
+        padding: 10px !important;
+        border-radius: 8px !important;
+      }
+      .additional-content h2 {
+        font-size: 16px !important;
+        margin-bottom: 10px !important;
+      }
+      .additional-content h3 {
+        font-size: 13px !important;
+        margin-bottom: 6px !important;
+      }
+      .additional-content p {
+        font-size: 12px !important;
+        margin-bottom: 8px !important;
+      }
+      .additional-content ul {
+        padding-left: 10px !important;
+      }
+      .additional-content li {
+        font-size: 12px !important;
+        margin-bottom: 3px !important;
+      }
+      
       /* Navigation menu extra small mobile styles */
       .nav-grid {
-        grid-template-columns: repeat(3, 1fr);
-        grid-template-rows: repeat(4, auto);
-        gap: 3px;
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(5, auto);
+        gap: 4px;
         width: 100%;
       }
       .nav-card {
@@ -990,7 +1132,9 @@
           <div class="error" id="contract-error" style="display:none"></div>
         </div>
       </section>
-            </div>
+      <!-- Empty placeholder to make contract card take only one column -->
+      <div class="card" style="visibility: hidden; height: 0; padding: 0; margin: 0; border: none;"></div>
+    </div>
             
     <!-- Referral Link - Permanent -->
     <div class="referral-section" style="

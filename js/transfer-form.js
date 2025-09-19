@@ -285,10 +285,20 @@ class TransferManager {
             await this.handleTransfer(e);
         });
 
-        // Max button
+        // Max button (in balance card)
         const maxBtn = document.getElementById('maxAmountBtn');
         if (maxBtn) {
             maxBtn.addEventListener('click', (e) => {
+                e.preventDefault(); // Prevent default button behavior
+                e.stopPropagation(); // Stop event bubbling
+                this.setMaxAmount();
+            });
+        }
+
+        // Max button (in amount input)
+        const maxBtnInput = document.getElementById('maxAmountBtnInput');
+        if (maxBtnInput) {
+            maxBtnInput.addEventListener('click', (e) => {
                 e.preventDefault(); // Prevent default button behavior
                 e.stopPropagation(); // Stop event bubbling
                 this.setMaxAmount();
@@ -724,7 +734,9 @@ class TransferManager {
                 } else {
                     value = (parseFloat(balance.toString()) / Math.pow(10, 18)).toString();
                 }
-                amountInput.value = parseFloat(value).toFixed(6);
+                // Subtract 0.01 DAI (1 cent) for safety
+                const safeAmount = parseFloat(value) - 0.01;
+                amountInput.value = safeAmount > 0 ? safeAmount.toFixed(6) : '0';
             } else if (token === 'iam') {
                 const address = await this.signer.getAddress();
                 const balance = await this.contract.balanceOf(address);
@@ -800,6 +812,25 @@ class TransferManager {
             return;
         }
         
+        // Validate Ethereum address format
+        if (!/^0x[a-fA-F0-9]{40}$/.test(to)) {
+            this.showEnglishPopup('❌ Invalid destination address format. Please enter a valid Ethereum address.', 'error');
+            this.resetTransferButton(transferBtn, oldText);
+            return;
+        }
+        
+        // Check if destination is the same as sender
+        try {
+            const senderAddress = await this.signer.getAddress();
+            if (to.toLowerCase() === senderAddress.toLowerCase()) {
+                this.showEnglishPopup('❌ Cannot transfer to yourself. Please enter a different destination address.', 'error');
+                this.resetTransferButton(transferBtn, oldText);
+                return;
+            }
+        } catch (err) {
+            console.error('Error getting sender address:', err);
+        }
+        
         if (!this.signer) {
             this.showEnglishPopup('Wallet connection not established. Please connect your wallet first', 'error');
             this.resetTransferButton(transferBtn, oldText);
@@ -809,6 +840,30 @@ class TransferManager {
         try {
             // Show initial processing message
             this.showEnglishPopup('🚀 Starting transfer... Please wait', 'loading');
+            
+            // Check balance before attempting transfer
+            const senderAddress = await this.signer.getAddress();
+            let hasEnoughBalance = false;
+            
+            if (token.toLowerCase() === 'pol') {
+                const balance = await this.signer.provider.getBalance(senderAddress);
+                const requiredAmount = ethers.parseEther ? ethers.parseEther(amount.toString()) : (parseFloat(amount) * Math.pow(10, 18)).toString();
+                hasEnoughBalance = BigInt(balance) >= BigInt(requiredAmount);
+            } else if (token.toLowerCase() === 'dai') {
+                const daiBalance = await this.daiContract.balanceOf(senderAddress);
+                const requiredAmount = ethers.parseUnits ? ethers.parseUnits(amount.toString(), 18) : (parseFloat(amount) * Math.pow(10, 18)).toString();
+                hasEnoughBalance = BigInt(daiBalance) >= BigInt(requiredAmount);
+            } else if (token.toLowerCase() === 'iam') {
+                const iamBalance = await this.iamContract.balanceOf(senderAddress);
+                const requiredAmount = ethers.parseUnits ? ethers.parseUnits(amount.toString(), 18) : (parseFloat(amount) * Math.pow(10, 18)).toString();
+                hasEnoughBalance = BigInt(iamBalance) >= BigInt(requiredAmount);
+            }
+            
+            if (!hasEnoughBalance) {
+                this.showEnglishPopup(`❌ Insufficient ${token.toUpperCase()} balance. Please check your wallet balance and try again.`, 'error');
+                this.resetTransferButton(transferBtn, oldText);
+                return;
+            }
             
             if (token.toLowerCase() === 'pol') {
                 let value;
@@ -913,6 +968,11 @@ class TransferManager {
             await this.loadTransferData(); // Refresh balances after successful transfer
             
         } catch (error) {
+            console.error('❌ Transfer error details:', error);
+            console.error('❌ Error message:', error.message);
+            console.error('❌ Error code:', error.code);
+            console.error('❌ Error data:', error.data);
+            
             let englishMsg = this.getEnglishErrorMessage(error);
             this.showEnglishPopup(englishMsg, 'error');
         }
