@@ -39,23 +39,43 @@
       background: linear-gradient(180deg, rgba(18,21,33,1) 0%, rgba(18,21,33,0.92) 100%);
       border: 1px solid rgba(0,255,136,0.15);
       box-shadow: 0 6px 24px rgba(0,255,136,0.06), inset 0 0 0 1px rgba(59,130,246,0.08);
+      margin: 16px 0;
+      overflow: hidden;
     }
     #contract-card .row { 
-      padding: 10px 0; 
+      padding: 12px 0; 
       border-bottom: 1px dashed rgba(0,255,136,0.18);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
     }
     #contract-card .row:last-child { border-bottom: 0; }
-    #contract-card .label { 
-      color: #9ecbff; 
-      font-weight: 600; 
-      letter-spacing: .2px;
+    #contract-card .label {
+      font-weight: 600;
+      color: #aef3c6;
+      min-width: 140px;
+      font-size: 14px;
     }
-    #contract-card .value { 
-      color:#e6eaf0; 
-      background: rgba(0,255,136,0.07);
-      border: 1px solid rgba(0,255,136,0.18);
-      padding: 4px 8px; 
-      border-radius: 8px; 
+    #contract-card .value {
+      flex: 1;
+      font-family: monospace;
+      font-size: 13px;
+      color: #e6eaf0;
+      word-break: break-all;
+      background: rgba(0, 255, 136, 0.05);
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(0, 255, 136, 0.1);
+    }
+    #contract-card .value a {
+      color: #60a5fa;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    #contract-card .value a:hover {
+      color: #93c5fd;
+      text-decoration: underline;
     }
     #contract-card a.value { 
       color: #9ecbff; 
@@ -423,11 +443,53 @@
       h1 { font-size: 18px; margin-bottom: 14px; }
       .card { padding: 14px; border-radius: 10px; }
       .card h2 { font-size: 16px; }
-      .row { gap: 10px; padding: 8px 0; }
-      .label { font-size: 13px; }
-      .value { font-size: 13px; }
+      .row { 
+        gap: 10px; 
+        padding: 8px 0; 
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .label { 
+        font-size: 13px; 
+        font-weight: 600;
+        color: #aef3c6;
+        min-width: 120px;
+      }
+      .value { 
+        font-size: 13px; 
+        flex: 1;
+        word-break: break-all;
+        font-family: monospace;
+        background: rgba(0, 255, 136, 0.05);
+        padding: 4px 8px;
+        border-radius: 4px;
+        border: 1px solid rgba(0, 255, 136, 0.1);
+      }
       .statusbar { gap: 6px; padding: 8px 10px; }
       .pill { font-size: 11px; padding: 6px 8px; }
+      
+      /* Contract Info tablet improvements */
+      #contract-card {
+        margin: 12px 0;
+        padding: 16px;
+      }
+      #contract-card .row {
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(0, 255, 136, 0.15);
+      }
+      #contract-card .row:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+      }
+      #contract-card h2 {
+        font-size: 18px;
+        margin-bottom: 16px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+      }
       
       /* Navigation menu mobile styles */
       .nav-grid {
@@ -463,10 +525,53 @@
     @media (max-width: 480px) {
       .container { padding: 14px; }
       h1 { font-size: 17px; }
-      .row { flex-direction: column; align-items: flex-start; }
-      .label { font-size: 13px; opacity: 0.95; }
-      .value { width: 100%; text-align: left; direction: ltr; font-size: 13px; }
+      .row { 
+        flex-direction: column; 
+        align-items: flex-start; 
+        gap: 4px;
+        padding: 8px 0;
+      }
+      .label { 
+        font-size: 12px; 
+        opacity: 0.95; 
+        font-weight: 600;
+        color: #aef3c6;
+      }
+      .value { 
+        width: 100%; 
+        text-align: left; 
+        direction: ltr; 
+        font-size: 12px; 
+        word-break: break-all;
+        font-family: monospace;
+        background: rgba(0, 255, 136, 0.1);
+        padding: 4px 8px;
+        border-radius: 4px;
+        border: 1px solid rgba(0, 255, 136, 0.2);
+      }
       .pill { font-size: 10.5px; }
+      
+      /* Contract Info mobile improvements */
+      #contract-card {
+        margin: 8px 0;
+        padding: 12px;
+      }
+      #contract-card .row {
+        margin-bottom: 8px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid rgba(0, 255, 136, 0.1);
+      }
+      #contract-card .row:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+      }
+      #contract-card h2 {
+        font-size: 16px;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+      }
       
       /* Navigation menu small mobile styles */
       .nav-grid {
@@ -753,6 +858,10 @@
         <a class="nav-card" href="professional-tree.html">
           <div class="nav-icon">🌳</div>
           <div class="nav-label">Partners</div>
+        </a>
+        <a class="nav-card" href="price-chart.html">
+          <div class="nav-icon">📈</div>
+          <div class="nav-label">Price Chart</div>
         </a>
         </div>
     </div>
