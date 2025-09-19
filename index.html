@@ -174,7 +174,7 @@
     .error { color:#ff6b6b; font-size: 13px; }
     .statusbar { background:#0e1220; border:1px solid #1f2433; padding:4px 6px; border-radius:6px; display:flex; gap:3px; align-items:center; margin: 6px 0; }
     .statusbar.top { flex-wrap: nowrap; }
-    .statusbar.bottom { flex-wrap: nowrap; }
+    .statusbar.bottom { flex-wrap: wrap; }
     .pill { background:#162032; color:#cfe2ff; padding:2px 4px; border-radius:4px; font-size:8px; border:1px solid #223150; white-space: nowrap; text-align:center; box-sizing:border-box; flex: 1; min-width: 0; }
     /* Two separate status bars: top (address, index, likes, dislikes, rank) | bottom (POL, DAI, IAM) */
     @media (max-width: 640px) {
@@ -229,12 +229,14 @@
     }
     
     .nav-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      grid-template-rows: repeat(4, auto);
-      gap: 6px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      row-gap: 8px;
+      column-gap: 0;
       max-width: 100%;
       width: 100%;
+      box-sizing: border-box;
     }
     
     .nav-card {
@@ -251,8 +253,10 @@
       text-align: center;
       position: relative;
       overflow: hidden;
-      width: 100%;
+      width: 31%;
+      flex: 0 0 31%;
       min-height: 80px;
+      box-sizing: border-box;
       box-shadow: 0 2px 8px rgba(30, 41, 59, 0.2);
       backdrop-filter: blur(5px);
     }
@@ -937,17 +941,31 @@
           return;
         }
 
-        // Calculate proportional widths
+        // Calculate widths
         items.forEach(item => {
           if (!item.element) return;
-          
+          const el = item.element;
           const proportion = item.value / total;
-          const minWidth = 0.1; // Minimum 10% width
-          const maxWidth = 0.6; // Maximum 60% width
-          const flexValue = Math.max(minWidth, Math.min(maxWidth, proportion));
-          
-          item.element.style.flex = `${flexValue} 1 0`;
-          item.element.style.minWidth = '0';
+
+          if (isTopBar) {
+            // Top bar: grow proportionally but stay in one row
+            const minGrow = 0.1; // Minimum 10%
+            const maxGrow = 0.6; // Maximum 60%
+            const grow = Math.max(minGrow, Math.min(maxGrow, proportion));
+            el.style.flex = `${grow} 1 0`;
+            el.style.minWidth = '0';
+          } else {
+            // Bottom bar: allow wrap; give small values small width and large/long ones full row
+            let basisPercent = Math.max(8, Math.min(88, proportion * 100));
+            // If content text is long, move this pill to its own line
+            const contentLen = (el.textContent || '').length;
+            if (contentLen > 18) basisPercent = 100;
+            // Very small values get minimal width to leave room for others
+            if (item.value === 0) basisPercent = 12;
+            el.style.flex = `0 1 ${basisPercent}%`;
+            el.style.minWidth = '0';
+            el.style.maxWidth = `${basisPercent}%`;
+          }
         });
       } catch {}
     }

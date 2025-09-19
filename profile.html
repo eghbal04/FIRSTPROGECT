@@ -657,7 +657,7 @@
                         tpEl.textContent = tpFull + ' IAM';
                         if (tpUsdEl) {
                             const usd = (typeof tokenPrice==='number' ? tokenPrice : 0) * Number(tpFull);
-                            tpUsdEl.textContent = '≈ $' + (usd?Math.round(usd).toString():'0');
+                            tpUsdEl.textContent = '≈ $' + (isFinite(usd) ? usd.toFixed(2) : '0.00');
                         }
                     }
                     if (rrEl) {
