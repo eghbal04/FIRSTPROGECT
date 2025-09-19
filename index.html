@@ -174,8 +174,11 @@
     .error { color:#ff6b6b; font-size: 13px; }
     .statusbar { background:#0e1220; border:1px solid #1f2433; padding:4px 6px; border-radius:6px; display:flex; gap:3px; align-items:center; margin: 6px 0; }
     .statusbar.top { flex-wrap: nowrap; }
-    .statusbar.bottom { flex-wrap: wrap; }
+    .statusbar.bottom { flex-wrap: nowrap; }
     .pill { background:#162032; color:#cfe2ff; padding:2px 4px; border-radius:4px; font-size:8px; border:1px solid #223150; white-space: nowrap; text-align:center; box-sizing:border-box; flex: 1; min-width: 0; }
+    /* Fixed widths for bottom status bar: IAM 2/3, POL and DAI share 1/3 */
+    #status-iam { flex: 0 0 66.67%; max-width: 66.67%; min-width: 0; }
+    #status-matic, #status-dai { flex: 0 0 16.67%; max-width: 16.67%; min-width: 0; }
     /* Two separate status bars: top (address, index, likes, dislikes, rank) | bottom (POL, DAI, IAM) */
     @media (max-width: 640px) {
       .statusbar { padding:3px 4px; gap:2px; margin: 4px 0; }
@@ -954,13 +957,13 @@
             el.style.flex = `${grow} 1 0`;
             el.style.minWidth = '0';
           } else {
-            // Bottom bar: allow wrap; give small values small width and large/long ones full row
-            let basisPercent = Math.max(8, Math.min(88, proportion * 100));
-            // If content text is long, move this pill to its own line
-            const contentLen = (el.textContent || '').length;
-            if (contentLen > 18) basisPercent = 100;
-            // Very small values get minimal width to leave room for others
-            if (item.value === 0) basisPercent = 12;
+            // Bottom bar: fixed proportions - IAM gets 2/3, POL and DAI share 1/3
+            let basisPercent;
+            if (item.id === 'status-iam') {
+              basisPercent = 66.67; // 2/3 of the width
+            } else {
+              basisPercent = 16.67; // 1/6 each for POL and DAI (1/3 ÷ 2)
+            }
             el.style.flex = `0 1 ${basisPercent}%`;
             el.style.minWidth = '0';
             el.style.maxWidth = `${basisPercent}%`;
