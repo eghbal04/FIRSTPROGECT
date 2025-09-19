@@ -360,6 +360,8 @@
         flex: 0 0 83.33%;
         padding-right: 0.2rem;
         font-size: 0.65rem;
+        font-family: 'Fira Mono', monospace;
+        letter-spacing: 0.3px;
       }
       
       .paste-btn-inside {
@@ -367,6 +369,37 @@
         font-size: 0.55rem;
         padding: 0.15rem 0.3rem;
         margin-left: 0.1rem;
+        min-width: 50px;
+      }
+      
+      /* Mobile-specific improvements for new user field */
+      #new-user-address {
+        font-family: 'Fira Mono', monospace !important;
+        letter-spacing: 0.5px !important;
+        font-size: 0.75rem !important;
+        padding: 12px 8px !important;
+        line-height: 1.3 !important;
+        word-break: break-all !important;
+        white-space: pre-wrap !important;
+        overflow-x: auto !important;
+        min-height: 50px !important;
+        resize: vertical !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      
+      #new-user-address::placeholder {
+        font-family: 'Fira Mono', monospace;
+        letter-spacing: 0.3px;
+        opacity: 0.7;
+        font-size: 0.7rem;
+      }
+      
+      /* Mobile paste button */
+      #paste-new-user-btn {
+        font-size: 0.7rem !important;
+        padding: 6px 10px !important;
+        margin-bottom: 6px !important;
       }
     }
   /* Modern theme override */
@@ -384,6 +417,54 @@
   .address-input-group{ gap:8px; }
   .address-input-group input{ height:48px; font-size:1.05rem; }
   .address-field{ background:#0f1420!important; border:1px solid var(--border)!important; color:#cfd7ea!important; height:48px; font-size:1.05rem; padding:12px; border-radius:12px; line-height:1.2; }
+  
+  /* New user address field - show full address */
+  #new-user-address {
+    font-family: 'Fira Mono', monospace !important;
+    letter-spacing: 0.5px !important;
+    font-size: 0.85rem !important;
+    padding: 12px !important;
+    line-height: 1.3 !important;
+    word-break: break-all !important;
+    white-space: pre-wrap !important;
+    overflow-x: auto !important;
+    min-height: 60px !important;
+    resize: vertical !important;
+    background: #0f1420 !important;
+    border: 1px solid var(--border) !important;
+    color: #cfd7ea !important;
+    border-radius: 12px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  #new-user-address::placeholder {
+    font-family: 'Fira Mono', monospace;
+    letter-spacing: 0.3px;
+    opacity: 0.7;
+    font-size: 0.8rem;
+  }
+  
+  /* Paste button for new user address */
+  #paste-new-user-btn {
+    background: rgba(0, 255, 136, 0.2) !important;
+    color: #00ff88 !important;
+    border: 1px solid rgba(0, 255, 136, 0.4) !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+    cursor: pointer !important;
+  }
+  
+  #paste-new-user-btn:hover {
+    background: rgba(0, 255, 136, 0.3) !important;
+    border-color: rgba(0, 255, 136, 0.6) !important;
+    transform: translateY(-1px) !important;
+  }
+  
+  #paste-new-user-btn:active {
+    transform: translateY(0) !important;
+  }
   .tab-btn{ background:#0f1420; color:#cfe3ff; border:1px solid var(--border); border-radius:10px; padding:10px 12px; font-weight:600; }
   /* Ensure high-contrast label for Normal Registration */
   .tab-btn#normal-tab{ color:#ffffff; text-shadow: 0 1px 2px rgba(0,0,0,0.4); }
@@ -421,6 +502,20 @@
           <button type="button" id="free-tab" class="tab-btn" style="flex: 1; padding: 6px 8px; background: rgba(255, 215, 0, 0.1); color: #ffd700; border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 6px; font-weight: bold; font-size: 0.7rem; cursor: pointer; opacity: 0.7;">Reserve <span style="font-size: 0.6rem; margin-left: 2px;">⚠️</span></button>
         </div>
       <div class="register-form-status warning" id="register-suggestion" style="display:none;"></div>
+      
+      <!-- Registration Permission Notice -->
+      <div class="info-box" style="margin-bottom: 16px; padding: 12px; background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); color: #00ff88; border-radius: 8px;">
+        <div style="font-weight: 600; margin-bottom: 4px;">📋 Registration Rules:</div>
+        <div style="font-size: 0.85rem; line-height: 1.4;">
+          • <strong>New users:</strong> Can register for themselves only<br>
+          • <strong>Active users:</strong> Can register for themselves or their <strong>downlines</strong><br>
+          • <strong>Auto-fill:</strong> If you're active, your info will be auto-filled as referrer (locked)<br>
+          • <strong>Upper field:</strong> You can change upper to yourself or your downlines<br>
+          • Crossline and upline registrations are not allowed<br>
+          • This ensures proper tree structure and prevents conflicts
+        </div>
+      </div>
+      
       <!-- Referrer Index -->
       <div class="form-group">
         <label for="referrer-index">Referrer Index</label>
@@ -447,7 +542,8 @@
       <!-- New User Address -->
       <div class="form-group">
         <label for="new-user-address">New User Address</label>
-        <input type="text" id="new-user-address" class="register-form-input index-input" placeholder="0x..." autocomplete="off">
+        <textarea id="new-user-address" class="register-form-input" placeholder="0x..." autocomplete="off" rows="2" style="font-family: 'Fira Mono', monospace; letter-spacing: 0.5px; resize: vertical; min-height: 60px; width: 100%; margin-bottom: 8px;"></textarea>
+        <button type="button" id="paste-new-user-btn" class="paste-btn-inside" style="width: 100%; margin-bottom: 4px; padding: 8px 12px; font-size: 0.8rem;">📋 Paste Address</button>
         <div id="new-user-address-info" class="register-form-status" style="display:none; margin-top: 4px; font-size: 0.7rem; background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); color: #00ff88;"></div>
       </div>
        
@@ -830,12 +926,61 @@
                }
              });
              
+             // Paste button for new user address
+             const pasteNewUserBtn = document.getElementById('paste-new-user-btn');
+             const newUserInput = document.getElementById('new-user-address');
+             
+             if (pasteNewUserBtn && newUserInput) {
+               pasteNewUserBtn.addEventListener('click', async function() {
+                 try {
+                   const text = await navigator.clipboard.readText();
+                   if (text && text.trim()) {
+                     // Clean the pasted text - remove extra spaces and newlines
+                     const cleanedText = text.trim().replace(/\s+/g, '');
+                     newUserInput.value = cleanedText;
+                     
+                     // Trigger validation
+                     newUserInput.dispatchEvent(new Event('input'));
+                     
+                     showTempMessage('✅ Address pasted successfully', 'success');
+                   } else {
+                     showTempMessage('❌ No text found in clipboard', 'error');
+                   }
+                 } catch (error) {
+                   console.error('Paste failed:', error);
+                   showTempMessage('❌ Paste failed. Please paste manually.', 'error');
+                 }
+               });
+             }
+             
              // Address field event listeners (for manual editing)
              referrerDisplay.addEventListener('change', async function() {
                await checkAddressValidity(referrerDisplay, 'referrer');
                await validateUpperAgainstReferrer();
                await calculatePlacementForNewUser();
              });
+             
+             // New user address input handler - clean spaces automatically
+             if (newUserInput) {
+               newUserInput.addEventListener('input', function() {
+                 // Remove any spaces, newlines, or extra characters
+                 const cleanedValue = this.value.replace(/\s+/g, '');
+                 if (this.value !== cleanedValue) {
+                   this.value = cleanedValue;
+                 }
+               });
+               
+               newUserInput.addEventListener('paste', function(e) {
+                 // Allow paste to complete, then clean it
+                 setTimeout(() => {
+                   const cleanedValue = this.value.replace(/\s+/g, '');
+                   if (this.value !== cleanedValue) {
+                     this.value = cleanedValue;
+                     showTempMessage('✅ Address cleaned automatically', 'success');
+                   }
+                 }, 10);
+               });
+             }
              
              referrerIndexInput.addEventListener('change', async function() {
                // Only validate if it's a valid index format
@@ -1094,13 +1239,21 @@
                 const nu = document.getElementById('new-user-address');
                 if (nu && conn.contract) {
                   let userActive = false;
+                  let userIndex = null;
                   try {
                     const u = await conn.contract.users(conn.address);
                     userActive = !!(u && u.index && BigInt(u.index) > 0n);
+                    if (userActive) {
+                      userIndex = Number(u.index);
+                    }
                   } catch(_) {}
+                  
                   if (!userActive) {
                     nu.value = conn.address;
                     nu.setAttribute('data-full-address', conn.address);
+                  } else {
+                    // If user is active, auto-fill referrer fields with their info
+                    await autoFillReferrerFields(conn.address, userIndex);
                   }
                 }
               } catch(_) {}
@@ -1274,6 +1427,152 @@
             console.log(`❌ Not in subtree`);
             return false;
                     }
+
+          // Function to auto-fill referrer fields with current user's info
+          async function autoFillReferrerFields(userAddress, userIndex) {
+            try {
+              console.log(`🔄 Auto-filling referrer fields for active user: ${userAddress} (Index: ${userIndex})`);
+              
+              // Fill referrer index field
+              const referrerIndexInput = document.getElementById('referrer-index');
+              if (referrerIndexInput && userIndex) {
+                referrerIndexInput.value = userIndex;
+                referrerIndexInput.readOnly = true;
+                referrerIndexInput.style.backgroundColor = '#2a2a2a';
+                referrerIndexInput.style.color = '#888';
+                referrerIndexInput.style.cursor = 'not-allowed';
+                referrerIndexInput.placeholder = 'Auto-filled (Read-only)';
+              }
+              
+              // Fill referrer address field
+              const referrerDisplay = document.getElementById('referrer-address-display');
+              if (referrerDisplay) {
+                referrerDisplay.value = truncateAddress(userAddress);
+                referrerDisplay.setAttribute('data-full-address', userAddress);
+                referrerDisplay.readOnly = true;
+                referrerDisplay.style.backgroundColor = '#2a2a2a';
+                referrerDisplay.style.color = '#888';
+                referrerDisplay.style.cursor = 'not-allowed';
+                referrerDisplay.placeholder = 'Auto-filled (Read-only)';
+              }
+              
+              // Fill upper index field (keep editable)
+              const upperIndexInput = document.getElementById('upper-index');
+              if (upperIndexInput && userIndex) {
+                upperIndexInput.value = userIndex;
+                // Keep upper fields editable - user can change to their downlines
+              }
+              
+              // Fill upper address field (keep editable)
+              const upperInput = document.getElementById('upper-address');
+              if (upperInput) {
+                upperInput.value = truncateAddress(userAddress);
+                upperInput.setAttribute('data-full-address', userAddress);
+                // Keep upper fields editable - user can change to their downlines
+              }
+              
+              // Disable referrer apply button only
+              const applyReferrerBtn = document.getElementById('apply-referrer-index-btn');
+              
+              if (applyReferrerBtn) {
+                applyReferrerBtn.disabled = true;
+                applyReferrerBtn.style.opacity = '0.5';
+                applyReferrerBtn.style.cursor = 'not-allowed';
+                applyReferrerBtn.textContent = 'Auto-filled';
+              }
+              
+              // Keep upper apply button enabled - user can change upper to their downlines
+              
+              // Show success message
+              showTempMessage(`✅ Auto-filled referrer fields with your info (Index: ${userIndex}) - Referrer locked, Upper editable`, 'success');
+              
+              // Trigger validation
+              setTimeout(async () => {
+                await validateUpperAgainstReferrer();
+                await calculatePlacementForNewUser();
+              }, 500);
+              
+            } catch (error) {
+              console.error('Error auto-filling referrer fields:', error);
+            }
+          }
+
+          // Function to check if current user can register for the given address
+          async function canUserRegisterForAddress(targetAddress, addressType) {
+            try {
+              if (!window.contractConfig || !window.contractConfig.contract) {
+                console.log('❌ Contract not available');
+                return false;
+              }
+              
+              const contract = window.contractConfig.contract;
+              
+              // Get current user info
+              let myAddress = null;
+              let myUser = null;
+              try {
+                // Try multiple methods to get current user address
+                if (window.currentUserAddress) {
+                  myAddress = window.currentUserAddress;
+                } else if (contract.signer) {
+                  myAddress = await contract.signer.getAddress();
+                } else if (window.ethereum && window.ethereum.selectedAddress) {
+                  myAddress = window.ethereum.selectedAddress;
+                } else if (window.contractConfig && window.contractConfig.address) {
+                  myAddress = window.contractConfig.address;
+                }
+                
+                if (myAddress) {
+                  myUser = await contract.users(myAddress);
+                  window.currentUserAddress = myAddress;
+                }
+              } catch (e) {
+                console.log('Error getting current user:', e);
+                return false;
+              }
+              
+              // If we still don't have an address, return false
+              if (!myAddress) {
+                console.log('❌ Could not determine current user address');
+                return false;
+              }
+              
+              // If target is the same as current user, it's always allowed (even if not active yet)
+              if (myAddress && targetAddress && targetAddress.toLowerCase() === myAddress.toLowerCase()) {
+                console.log(`✅ Can register for self (${addressType})`);
+                return true;
+              }
+              
+              // If current user is not active, they can only register for themselves
+              if (!myUser || !(myUser.index && BigInt(myUser.index) > 0n)) {
+                console.log(`❌ Current user is not active. Can only register for self.`);
+                return false;
+              }
+              
+              // Get target user info
+              const targetUser = await contract.users(targetAddress);
+              if (!targetUser || !(targetUser.index && BigInt(targetUser.index) > 0n)) {
+                console.log(`❌ Target ${addressType} is not active`);
+                return false;
+              }
+              
+              const myIndex = Number(myUser.index);
+              const targetIndex = Number(targetUser.index);
+              
+              // Check if target is in current user's downline (subtree)
+              if (isIndexInUserSubtree(targetIndex, myIndex)) {
+                console.log(`✅ Can register for ${addressType} (in downline)`);
+                return true;
+              }
+              
+              console.log(`❌ Cannot register for ${addressType} (not in downline)`);
+              return false;
+              
+            } catch (error) {
+              console.error(`❌ Error checking registration permission:`, error);
+              return false;
+            }
+          }
 
     // Function to validate referrer and upper relationship
     async function validateReferrerUpperRelationship(contract, referrer, upper) {
@@ -1671,7 +1970,14 @@
           return;
         }
         
-        showTempMessage(`${type} address is valid`, 'success');
+        // Check if current user can register for this address
+        const canRegister = await canUserRegisterForAddress(address, type);
+        if (!canRegister) {
+          showTempMessage(`You can only register for yourself or your downlines. This ${type} is not in your downline.`, 'error');
+          return;
+        }
+        
+        showTempMessage(`${type} address is valid and you can register for it`, 'success');
       } catch (e) {
         showTempMessage(`Error checking ${type} address: ${e.message}`, 'error');
       }
@@ -1706,6 +2012,16 @@
           if (!upper || upper === 'root' || !/^0x[a-fA-F0-9]{40}$/.test(upper)) {
             statusEl.style.display = 'none';
             placementEl.style.display = 'none';
+            return;
+          }
+          
+          // Check if current user can register for this upper address
+          const canRegisterForUpper = await canUserRegisterForAddress(upper, 'upper');
+          if (!canRegisterForUpper) {
+            statusEl.className = 'register-form-status error';
+            statusEl.textContent = '❌ You can only register for yourself or your downlines';
+            statusEl.style.display = '';
+            showTempMessage('You can only register for yourself or your downlines. This upper address is not in your downline.', 'error');
             return;
           }
           
@@ -2132,8 +2448,17 @@
         if (!/^0x[a-fA-F0-9]{40}$/.test(newUser)) throw new Error('Invalid new wallet address. Please enter a valid address.');
         
         
-        // Validate referrer and upper relationship for normal registration
+        // Check if current user can register for referrer and upper
+        const canRegisterForReferrer = await canUserRegisterForAddress(referrer, 'referrer');
+        if (!canRegisterForReferrer) {
+          throw new Error('You can only register for yourself or your downlines. This referrer is not in your downline.');
+        }
+        
         if (currentRegistrationType === 'normal') {
+          const canRegisterForUpper = await canUserRegisterForAddress(upper, 'upper');
+          if (!canRegisterForUpper) {
+            throw new Error('You can only register for yourself or your downlines. This upper address is not in your downline.');
+          }
           await validateReferrerUpperRelationship(contract, referrer, upper);
         }
         let myAddress = null, user = null;
