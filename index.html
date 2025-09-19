@@ -90,6 +90,9 @@
       min-width: 0;
       overflow-wrap: break-word;
       white-space: pre-wrap;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
     }
     #contract-card .value a {
       color: #60a5fa;
@@ -146,12 +149,16 @@
       border-color: rgba(0,255,136,0.55);
       box-shadow: 0 0 0 3px rgba(0,255,136,0.12) inset;
     }
-    /* Subline USD badges under values */
-    [data-role="usd-subline"] { 
+    /* Inline USD badges next to values */
+    [data-role="usd-inline"] { 
       background: rgba(167,134,255,0.08);
       border: 1px solid rgba(167,134,255,0.25);
       padding: 2px 6px; 
       border-radius: 6px;
+      font-size: 11px;
+      color: #a78eff;
+      font-weight: 500;
+      margin-left: 8px;
       display: inline-block;
     }
     .card-content { 
@@ -530,6 +537,13 @@
         min-width: 0;
         overflow-wrap: break-word;
         white-space: pre-wrap;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      [data-role="usd-inline"] {
+        margin-left: 6px;
+        font-size: 10px;
       }
       .statusbar { gap: 6px; padding: 8px 10px; }
       .pill { font-size: 11px; padding: 6px 8px; }
@@ -626,6 +640,13 @@
         min-width: 0;
         overflow-wrap: break-word;
         white-space: pre-wrap;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      [data-role="usd-inline"] {
+        margin-left: 4px;
+        font-size: 9px;
       }
       .pill { font-size: 10.5px; }
       
@@ -1107,16 +1128,13 @@
       } catch { return '$0.00'; }
     }
 
-    function ensureUsdLineBelow(valueEl) {
+    function ensureUsdInline(valueEl) {
       if (!valueEl) return null;
-      let usdEl = valueEl.nextElementSibling;
-      if (!usdEl || usdEl.getAttribute('data-role') !== 'usd-subline') {
-        usdEl = document.createElement('div');
-        usdEl.setAttribute('data-role', 'usd-subline');
-        usdEl.style.fontSize = '12px';
-        usdEl.style.color = '#a786ff';
-        usdEl.style.marginTop = '2px';
-        valueEl.parentElement?.appendChild(usdEl);
+      let usdEl = valueEl.querySelector('[data-role="usd-inline"]');
+      if (!usdEl) {
+        usdEl = document.createElement('span');
+        usdEl.setAttribute('data-role', 'usd-inline');
+        valueEl.appendChild(usdEl);
       }
       return usdEl;
     }
@@ -1502,7 +1520,7 @@
             pointPriceEl.textContent = formatMax2(toNumberFromUnits(priceWeiPerPoint, 18));
             if (tokenPriceWei) {
               const usdPerPointWei = (priceWeiPerPoint * tokenPriceWei) / ONE;
-              const usdEl = ensureUsdLineBelow(pointPriceEl);
+              const usdEl = ensureUsdInline(pointPriceEl);
               if (usdEl) usdEl.textContent = formatUsdFromWeiProduct(usdPerPointWei);
             }
           }
@@ -1518,7 +1536,7 @@
             if (tokenPriceWei) {
               const ONE = 1000000000000000000n;
               const cbUsdWei = (cbWei * tokenPriceWei) / ONE;
-              const usdEl = ensureUsdLineBelow(cashbackEl);
+              const usdEl = ensureUsdInline(cashbackEl);
               if (usdEl) usdEl.textContent = formatUsdFromWeiProduct(cbUsdWei);
             }
           }
@@ -1529,7 +1547,7 @@
           if (regPriceEl && regPriceWei && tokenPriceWei) {
             const ONE = 1000000000000000000n;
             const regUsdWei = (regPriceWei * tokenPriceWei) / ONE;
-            const usdEl = ensureUsdLineBelow(regPriceEl);
+            const usdEl = ensureUsdInline(regPriceEl);
             if (usdEl) usdEl.textContent = formatUsdFromWeiProduct(regUsdWei);
           }
         } catch {}
@@ -1539,7 +1557,7 @@
           if (totalSupplyWei && tokenPriceWei) {
             const ONE = 1000000000000000000n;
             const supplyUsdWei = (totalSupplyWei * tokenPriceWei) / ONE;
-            const usdEl = ensureUsdLineBelow(supplyEl);
+            const usdEl = ensureUsdInline(supplyEl);
             if (usdEl) usdEl.textContent = formatUsdFromWeiProduct(supplyUsdWei);
           }
         } catch {}
@@ -1549,7 +1567,7 @@
           if (iamBalanceSelf !== null && tokenPriceWei) {
             const ONE = 1000000000000000000n;
             const iamUsdWei = (iamBalanceSelf * tokenPriceWei) / ONE;
-            const usdEl = ensureUsdLineBelow(iamInEl);
+            const usdEl = ensureUsdInline(iamInEl);
             if (usdEl) usdEl.textContent = formatUsdFromWeiProduct(iamUsdWei);
           }
         } catch {}
