@@ -98,6 +98,8 @@
       color: #60a5fa;
       text-decoration: none;
       font-weight: 600;
+      font-family: monospace;
+      font-size: 12px;
     }
     #contract-card .value a:hover {
       color: #93c5fd;
@@ -529,6 +531,9 @@
         font-size: 9px;
         padding: 1px 3px;
       }
+      #contract-card .value a {
+        font-size: 11px;
+      }
       .statusbar { gap: 6px; padding: 8px 10px; }
       .pill { font-size: 11px; padding: 6px 8px; }
       
@@ -633,6 +638,9 @@
         margin-left: 3px;
         font-size: 8px;
         padding: 1px 2px;
+      }
+      #contract-card .value a {
+        font-size: 10px;
       }
       .pill { font-size: 10.5px; }
       
@@ -1113,6 +1121,12 @@
       } catch { return '$0.00'; }
     }
 
+    function shortenAddress(address) {
+      if (!address || address === '-') return '-';
+      if (address.length < 10) return address;
+      return address.slice(0, 6) + '...' + address.slice(-4);
+    }
+
     function ensureUsdInline(valueEl) {
       if (!valueEl) return null;
       let usdEl = valueEl.querySelector('[data-role="usd-inline"]');
@@ -1295,7 +1309,7 @@
         const { contract, provider, signer, address: connectedAddress } = connection;
 
         const contractAddress = (contract && contract.target) ? String(contract.target) : (window.IAM_ADDRESS || '-');
-        addrEl.textContent = contractAddress;
+        addrEl.textContent = shortenAddress(contractAddress);
         // Link to Polygonscan/Amoy based on network
         try {
           if (addrEl && addrEl.tagName === 'A' && contractAddress && contractAddress.startsWith('0x') && contractAddress.length === 42) {
