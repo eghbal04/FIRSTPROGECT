@@ -30,18 +30,6 @@
     </script>
 </head>
 <body>
-    <!-- Google Translate Widget -->
-    <div id="google_translate_element" style="
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 9999;
-      background: linear-gradient(135deg, #1a1f2e 0%, #232946 100%);
-      border: 1px solid #00ff88;
-      border-radius: 8px;
-      padding: 8px;
-      box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
-    "></div>
     
     <!-- Back Button -->
     <a href="index.html" class="back-btn">← Back</a>
@@ -321,88 +309,7 @@
             }
         }
         
-        /* Google Translate Widget Styling */
-        .goog-te-banner-frame {
-            display: none !important;
-        }
-        
-        .goog-te-gadget {
-            font-family: 'Noto Sans Arabic', sans-serif !important;
-            font-size: 12px !important;
-        }
-        
-        .goog-te-gadget-simple {
-            background: transparent !important;
-            border: none !important;
-            padding: 4px 8px !important;
-            border-radius: 6px !important;
-            color: #e6eaf0 !important;
-        }
-        
-        .goog-te-gadget-simple:hover {
-            background: rgba(0, 255, 136, 0.1) !important;
-        }
-        
-        .goog-te-gadget-simple .goog-te-menu-value {
-            color: #e6eaf0 !important;
-            font-size: 12px !important;
-        }
-        
-        .goog-te-gadget-simple .goog-te-menu-value span:first-child {
-            color: #00ff88 !important;
-        }
-        
-        .goog-te-gadget-simple .goog-te-menu-value span:last-child {
-            color: #9aa8c1 !important;
-        }
-        
-        .goog-te-menu2 {
-            background: linear-gradient(135deg, #1a1f2e 0%, #232946 100%) !important;
-            border: 1px solid #00ff88 !important;
-            border-radius: 8px !important;
-            box-shadow: 0 8px 32px rgba(0, 255, 136, 0.3) !important;
-        }
-        
-        .goog-te-menu2-item {
-            color: #e6eaf0 !important;
-            padding: 8px 12px !important;
-        }
-        
-        .goog-te-menu2-item:hover {
-            background: rgba(0, 255, 136, 0.1) !important;
-        }
-        
-        .goog-te-menu2-item-selected {
-            background: rgba(0, 255, 136, 0.2) !important;
-        }
-        
-        /* Mobile responsiveness for translate widget */
-        @media (max-width: 768px) {
-            #google_translate_element {
-                top: 10px !important;
-                right: 10px !important;
-                padding: 6px !important;
-            }
-            
-            .goog-te-gadget-simple {
-                font-size: 10px !important;
-                padding: 3px 6px !important;
-            }
-        }
     </style>
     
-    <!-- Google Translate -->
-    <script type="text/javascript">
-      function googleTranslateElementInit() {
-        new google.translate.TranslateElement({
-          pageLanguage: 'en',
-          includedLanguages: 'en,fa,ar,zh,hi,es,fr,de,ja,ko,ru,tr,ur,pt,it,nl,sv,da,no,fi,pl,cs,hu,ro,bg,hr,sk,sl,et,lv,lt,mt,cy,ga,is,eu,ca,gl,af,sq,az,be,bs,cs,da,de,el,es,et,fa,fi,fr,gl,he,hi,hr,hu,hy,id,is,it,ja,ka,kk,km,ko,ky,lo,lt,lv,mk,ml,mn,ms,my,ne,no,pl,pt,ro,ru,si,sk,sl,sq,sr,sv,sw,ta,th,tr,uk,ur,uz,vi,zh',
-          layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-          autoDisplay: false,
-          multilanguagePage: true
-        }, 'google_translate_element');
-      }
-    </script>
-    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </body>
 </html>
