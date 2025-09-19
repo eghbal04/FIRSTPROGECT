@@ -43,7 +43,7 @@
     }
     @media (max-width: 1024px) { .grid { grid-template-columns: 1fr; gap: 14px; } }
     .card { background: #121521; border: 1px solid #1f2433; border-radius: 12px; padding: 16px; }
-    .card h2 { margin: 0 0 12px; font-size: 18px; color:#aef3c6; cursor: pointer; user-select: none; display: flex; align-items: center; justify-content: space-between; }
+    .card h2 { margin: 0 0 12px; font-size: 16px; color:#aef3c6; cursor: pointer; user-select: none; display: flex; align-items: center; justify-content: space-between; }
     .card h2:hover { color: #c4f7d6; }
     .card h2 .toggle-icon { transition: transform 0.3s ease; font-size: 16px; }
     .card h2.collapsed .toggle-icon { transform: rotate(-90deg); }
@@ -72,9 +72,9 @@
     #contract-card .label {
       font-weight: 600;
       color: #aef3c6;
-      min-width: 120px;
-      max-width: 120px;
-      font-size: 13px;
+      min-width: 100px;
+      max-width: 100px;
+      font-size: 11px;
       flex-shrink: 0;
     }
     #contract-card .value {
@@ -492,7 +492,7 @@
       .container { padding: 16px; }
       h1 { font-size: 18px; margin-bottom: 14px; }
       .card { padding: 14px; border-radius: 10px; }
-      .card h2 { font-size: 16px; }
+      .card h2 { font-size: 14px; }
       .row { 
         gap: 6px; 
         padding: 6px 0; 
@@ -503,11 +503,11 @@
         min-width: 0;
       }
       .label { 
-        font-size: 12px; 
+        font-size: 10px; 
         font-weight: 600;
         color: #aef3c6;
-        min-width: 100px;
-        max-width: 100px;
+        min-width: 80px;
+        max-width: 80px;
         flex-shrink: 0;
       }
       .value { 
@@ -599,6 +599,7 @@
     @media (max-width: 480px) {
       .container { padding: 14px; }
       h1 { font-size: 17px; }
+      .card h2 { font-size: 13px; }
       .row { 
         flex-direction: row; 
         align-items: center; 
@@ -608,12 +609,12 @@
         min-width: 0;
       }
       .label { 
-        font-size: 11px; 
+        font-size: 9px; 
         opacity: 0.95; 
         font-weight: 600;
         color: #aef3c6;
-        min-width: 80px;
-        max-width: 80px;
+        min-width: 60px;
+        max-width: 60px;
         flex-shrink: 0;
       }
       .value { 
