@@ -34,6 +34,48 @@
     .card h2:hover { color: #c4f7d6; }
     .card h2 .toggle-icon { transition: transform 0.3s ease; font-size: 16px; }
     .card h2.collapsed .toggle-icon { transform: rotate(-90deg); }
+    /* Contract Info – enhanced theming */
+    #contract-card { 
+      background: linear-gradient(180deg, rgba(18,21,33,1) 0%, rgba(18,21,33,0.92) 100%);
+      border: 1px solid rgba(0,255,136,0.15);
+      box-shadow: 0 6px 24px rgba(0,255,136,0.06), inset 0 0 0 1px rgba(59,130,246,0.08);
+    }
+    #contract-card .row { 
+      padding: 10px 0; 
+      border-bottom: 1px dashed rgba(0,255,136,0.18);
+    }
+    #contract-card .row:last-child { border-bottom: 0; }
+    #contract-card .label { 
+      color: #9ecbff; 
+      font-weight: 600; 
+      letter-spacing: .2px;
+    }
+    #contract-card .value { 
+      color:#e6eaf0; 
+      background: rgba(0,255,136,0.07);
+      border: 1px solid rgba(0,255,136,0.18);
+      padding: 4px 8px; 
+      border-radius: 8px; 
+    }
+    #contract-card a.value { 
+      color: #9ecbff; 
+      text-decoration: none; 
+      background: rgba(59,130,246,0.08);
+      border: 1px solid rgba(59,130,246,0.25);
+    }
+    #contract-card a.value:hover { 
+      color: #00ff88; 
+      border-color: rgba(0,255,136,0.55);
+      box-shadow: 0 0 0 3px rgba(0,255,136,0.12) inset;
+    }
+    /* Subline USD badges under values */
+    [data-role="usd-subline"] { 
+      background: rgba(167,134,255,0.08);
+      border: 1px solid rgba(167,134,255,0.25);
+      padding: 2px 6px; 
+      border-radius: 6px;
+      display: inline-block;
+    }
     .card-content { 
       transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease, padding 0.3s ease; 
       overflow: hidden; 
@@ -718,21 +760,21 @@
       <section class="card" id="contract-card" style="text-align:left; direction:ltr;">
         <h2 id="contract-header">Contract Info <span class="toggle-icon">▼</span></h2>
         <div class="card-content" id="contract-content">
-          <div class="row"><div class="label">Contract Address</div><a class="value" id="c-address" href="#" target="_blank" rel="noopener noreferrer">-</a></div>
-          <div class="row"><div class="label">Name</div><div class="value" id="c-name">-</div></div>
-          <div class="row"><div class="label">Symbol</div><div class="value" id="c-symbol">-</div></div>
-          <div class="row"><div class="label">Decimals</div><div class="value" id="c-decimals">-</div></div>
-          <div class="row"><div class="label">Total Supply</div><div class="value" id="c-total-supply">-</div></div>
-          <div class="row"><div class="label">Backing Pool</div><div class="value" id="c-dai-in-contract">-</div></div>
-          <div class="row"><div class="label">Binary Pool</div><div class="value" id="c-iam-in-contract">-</div></div>
-          <div class="row"><div class="label">Registration Price</div><div class="value" id="c-registration-price">-</div></div>
-          <div class="row"><div class="label">Token Price</div><div class="value" id="c-token-price">-</div></div>
-          <div class="row"><div class="label">Point Price</div><div class="value" id="c-point-price">-</div></div>
-          <div class="row"><div class="label">Help Fund</div><div class="value" id="c-cashback">-</div></div>
+          <div class="row"><div class="label">🔗 Contract Address</div><a class="value" id="c-address" href="#" target="_blank" rel="noopener noreferrer">-</a></div>
+          <div class="row"><div class="label">🏷️ Name</div><div class="value" id="c-name">-</div></div>
+          <div class="row"><div class="label">🧩 Symbol</div><div class="value" id="c-symbol">-</div></div>
+          <div class="row"><div class="label">#️⃣ Decimals</div><div class="value" id="c-decimals">-</div></div>
+          <div class="row"><div class="label">📦 Total Supply</div><div class="value" id="c-total-supply">-</div></div>
+          <div class="row"><div class="label">💰 Backing Pool</div><div class="value" id="c-dai-in-contract">-</div></div>
+          <div class="row"><div class="label">🧮 Binary Pool</div><div class="value" id="c-iam-in-contract">-</div></div>
+          <div class="row"><div class="label">💳 Registration Price</div><div class="value" id="c-registration-price">-</div></div>
+          <div class="row"><div class="label">💵 Token Price</div><div class="value" id="c-token-price">-</div></div>
+          <div class="row"><div class="label">🎯 Point Price</div><div class="value" id="c-point-price">-</div></div>
+          <div class="row"><div class="label">🤝 Help Fund</div><div class="value" id="c-cashback">-</div></div>
           
           
-          <div class="row"><div class="label">Wallets Count</div><div class="value" id="c-wallets-count">-</div></div>
-          <div class="row"><div class="label">Claimable Points (Total)</div><div class="value" id="c-claimable-points">-</div></div>
+          <div class="row"><div class="label">👛 Wallets Count</div><div class="value" id="c-wallets-count">-</div></div>
+          <div class="row"><div class="label">🎁 Claimable Points (Total)</div><div class="value" id="c-claimable-points">-</div></div>
           
           <div class="muted">Some values may remain empty if their functions do not exist on the contract.</div>
           <div class="error" id="contract-error" style="display:none"></div>
