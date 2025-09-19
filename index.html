@@ -117,27 +117,9 @@
     
     /* Ensure all contract data is visible */
     #contract-card {
-      overflow-x: auto;
-      overflow-y: visible;
+      overflow: visible;
     }
     
-    #contract-card::-webkit-scrollbar {
-      height: 6px;
-    }
-    
-    #contract-card::-webkit-scrollbar-track {
-      background: rgba(0, 255, 136, 0.1);
-      border-radius: 3px;
-    }
-    
-    #contract-card::-webkit-scrollbar-thumb {
-      background: rgba(0, 255, 136, 0.3);
-      border-radius: 3px;
-    }
-    
-    #contract-card::-webkit-scrollbar-thumb:hover {
-      background: rgba(0, 255, 136, 0.5);
-    }
     #contract-card a.value { 
       color: #9ecbff; 
       text-decoration: none; 
@@ -554,8 +536,7 @@
       #contract-card {
         margin: 8px 0;
         padding: 12px;
-        overflow-x: auto;
-        overflow-y: visible;
+        overflow: visible;
       }
       #contract-card .row {
         margin-bottom: 6px;
@@ -659,8 +640,7 @@
       #contract-card {
         margin: 6px 0;
         padding: 8px;
-        overflow-x: auto;
-        overflow-y: visible;
+        overflow: visible;
       }
       #contract-card .row {
         margin-bottom: 4px;
