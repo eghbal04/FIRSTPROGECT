@@ -219,8 +219,9 @@
     .statusbar.bottom { flex-wrap: nowrap; }
     .pill { background:#162032; color:#cfe2ff; padding:2px 4px; border-radius:4px; font-size:8px; border:1px solid #223150; white-space: nowrap; text-align:center; box-sizing:border-box; flex: 1; min-width: 0; }
     /* Fixed widths for bottom status bar: IAM 2/3, POL and DAI share 1/3 */
-    #status-iam { flex: 0 0 66.67%; max-width: 66.67%; min-width: 0; }
-    #status-matic, #status-dai { flex: 0 0 16.67%; max-width: 16.67%; min-width: 0; }
+    /* Bottom bar fixed fractions: IAM = 2/4, POL = 1/4, DAI = 1/4 */
+    #status-iam { flex: 0 0 50%; max-width: 50%; min-width: 0; }
+    #status-matic, #status-dai { flex: 0 0 25%; max-width: 25%; min-width: 0; }
     /* Two separate status bars: top (address, index, likes, dislikes, rank) | bottom (POL, DAI, IAM) */
     @media (max-width: 640px) {
       .statusbar { padding:3px 4px; gap:2px; margin: 4px 0; }
