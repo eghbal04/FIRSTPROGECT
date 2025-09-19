@@ -718,17 +718,17 @@
       <section class="card" id="contract-card" style="text-align:left; direction:ltr;">
         <h2 id="contract-header">Contract Info <span class="toggle-icon">▼</span></h2>
         <div class="card-content" id="contract-content">
-          <div class="row"><div class="label">Contract Address</div><div class="value" id="c-address">-</div></div>
+          <div class="row"><div class="label">Contract Address</div><a class="value" id="c-address" href="#" target="_blank" rel="noopener noreferrer">-</a></div>
           <div class="row"><div class="label">Name</div><div class="value" id="c-name">-</div></div>
           <div class="row"><div class="label">Symbol</div><div class="value" id="c-symbol">-</div></div>
           <div class="row"><div class="label">Decimals</div><div class="value" id="c-decimals">-</div></div>
           <div class="row"><div class="label">Total Supply</div><div class="value" id="c-total-supply">-</div></div>
-          <div class="row"><div class="label">DAI In Contract</div><div class="value" id="c-dai-in-contract">-</div></div>
-          <div class="row"><div class="label">IAM In Contract</div><div class="value" id="c-iam-in-contract">-</div></div>
+          <div class="row"><div class="label">Backing Pool</div><div class="value" id="c-dai-in-contract">-</div></div>
+          <div class="row"><div class="label">Binary Pool</div><div class="value" id="c-iam-in-contract">-</div></div>
           <div class="row"><div class="label">Registration Price</div><div class="value" id="c-registration-price">-</div></div>
           <div class="row"><div class="label">Token Price</div><div class="value" id="c-token-price">-</div></div>
           <div class="row"><div class="label">Point Price</div><div class="value" id="c-point-price">-</div></div>
-          <div class="row"><div class="label">Cash Back</div><div class="value" id="c-cashback">-</div></div>
+          <div class="row"><div class="label">Help Fund</div><div class="value" id="c-cashback">-</div></div>
           
           
           <div class="row"><div class="label">Wallets Count</div><div class="value" id="c-wallets-count">-</div></div>
@@ -1054,7 +1054,21 @@
         if (!connection || !connection.contract) throw new Error('Contract connection is not available');
         const { contract, provider, signer, address: connectedAddress } = connection;
 
-        addrEl.textContent = (contract && contract.target) ? contract.target : (window.IAM_ADDRESS || '-');
+        const contractAddress = (contract && contract.target) ? String(contract.target) : (window.IAM_ADDRESS || '-');
+        addrEl.textContent = contractAddress;
+        // Link to Polygonscan/Amoy based on network
+        try {
+          if (addrEl && addrEl.tagName === 'A' && contractAddress && contractAddress.startsWith('0x') && contractAddress.length === 42) {
+            let base = 'https://polygonscan.com';
+            try {
+              const net = provider && provider.getNetwork ? await provider.getNetwork() : null;
+              const chainId = net && net.chainId ? Number(net.chainId) : undefined;
+              if (chainId === 137) base = 'https://polygonscan.com';
+              else if (chainId === 80002 || chainId === 80001) base = 'https://amoy.polygonscan.com';
+            } catch {}
+            addrEl.setAttribute('href', base + '/address/' + contractAddress);
+          }
+        } catch {}
         // Update status bar basic address immediately
         try { const ua = connectedAddress || (signer ? await signer.getAddress() : null); if (ua) updateStatusPills({ address: shortenAddress(ua) }); } catch {}
 
