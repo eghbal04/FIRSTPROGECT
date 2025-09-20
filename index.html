@@ -44,21 +44,25 @@
     @media (max-width: 1024px) { .grid { grid-template-columns: 1fr; gap: 14px; } }
     .card { background: #121521; border: 1px solid #1f2433; border-radius: 12px; padding: 16px; }
     .card h2 { margin: 0 0 12px; font-size: 16px; color:#aef3c6; cursor: pointer; user-select: none; display: flex; align-items: center; justify-content: space-between; }
+    #contract-card h2 { margin: 0 0 16px; font-size: 18px; color: #00ff88; text-align: center; }
     .card h2:hover { color: #c4f7d6; }
     .card h2 .toggle-icon { transition: transform 0.3s ease; font-size: 16px; }
     .card h2.collapsed .toggle-icon { transform: rotate(-90deg); }
     /* Contract Info – enhanced theming */
     #contract-card { 
-      background: linear-gradient(180deg, rgba(18,21,33,1) 0%, rgba(18,21,33,0.92) 100%);
-      border: 1px solid rgba(0,255,136,0.15);
-      box-shadow: 0 6px 24px rgba(0,255,136,0.06), inset 0 0 0 1px rgba(59,130,246,0.08);
+      background: linear-gradient(135deg, #1a1f2e 0%, #232946 100%);
+      border: 1px solid #00ff88;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 255, 136, 0.2);
       overflow: visible;
       width: 100%;
       max-width: 100%;
       min-width: 0;
+      padding: 20px;
+      margin-bottom: 24px;
     }
     #contract-card .row { 
-      padding: 8px 0; 
+      padding: 6px 0; 
       border-bottom: 1px dashed rgba(0,255,136,0.18);
       display: flex;
       align-items: center;
@@ -71,19 +75,19 @@
     #contract-card .label {
       font-weight: 600;
       color: #aef3c6;
-      min-width: 100px;
-      max-width: 100px;
-      font-size: 11px;
+      min-width: 90px;
+      max-width: 90px;
+      font-size: 10px;
       flex-shrink: 0;
     }
     #contract-card .value {
       flex: 1;
       font-family: monospace;
-      font-size: 12px;
+      font-size: 11px;
       color: #e6eaf0;
       word-break: break-all;
       background: rgba(0, 255, 136, 0.05);
-      padding: 4px 8px;
+      padding: 3px 6px;
       border-radius: 4px;
       border: 1px solid rgba(0, 255, 136, 0.1);
       min-width: 0;
@@ -98,7 +102,7 @@
       text-decoration: none;
       font-weight: 600;
       font-family: monospace;
-      font-size: 12px;
+      font-size: 11px;
     }
     #contract-card .value a:hover {
       color: #93c5fd;
@@ -283,10 +287,10 @@
     }
     .muted { color:#7f8ca8; font-size: 12px; }
     .error { color:#ff6b6b; font-size: 13px; }
-    .statusbar { background:#0e1220; border:1px solid #1f2433; padding:8px 10px; border-radius:8px; display:flex; gap:6px; align-items:center; margin: 8px 0; }
+    .statusbar { background:#0e1220; border:1px solid #1f2433; padding:12px 16px; border-radius:10px; display:flex; gap:8px; align-items:center; margin: 10px 0; }
     .statusbar.top { flex-wrap: wrap; }
     .statusbar.bottom { flex-wrap: nowrap; }
-    .pill { background:#162032; color:#cfe2ff; padding:6px 8px; border-radius:6px; font-size:11px; border:1px solid #223150; white-space: nowrap; text-align:center; box-sizing:border-box; flex: 1; min-width: 0; }
+    .pill { background:#162032; color:#cfe2ff; padding:10px 12px; border-radius:8px; font-size:13px; border:1px solid #223150; white-space: nowrap; text-align:center; box-sizing:border-box; flex: 1; min-width: 0; }
     /* Fixed widths for bottom status bar: IAM 2/3, POL and DAI share 1/3 */
     /* Bottom bar fixed fractions: IAM = 2/4, POL = 1/4, DAI = 1/4 */
     #status-iam { flex: 0 0 50%; max-width: 50%; min-width: 0; }
@@ -1108,33 +1112,29 @@
         </div>
     </div>
 
-    <div class="grid">
-      <section class="card" id="contract-card" style="text-align:left; direction:ltr;">
-        <h2 id="contract-header">Contract Info <span class="toggle-icon">▼</span></h2>
-        <div class="card-content" id="contract-content">
-          <div class="row"><div class="label">🔗 Contract Address</div><a class="value" id="c-address" href="#" target="_blank" rel="noopener noreferrer">-</a></div>
-          <div class="row"><div class="label">🏷️ Name</div><div class="value" id="c-name">-</div></div>
-          <div class="row"><div class="label">🧩 Symbol</div><div class="value" id="c-symbol">-</div></div>
-          <div class="row"><div class="label">#️⃣ Decimals</div><div class="value" id="c-decimals">-</div></div>
-          <div class="row"><div class="label">📦 Total Supply</div><div class="value" id="c-total-supply">-</div></div>
-          <div class="row"><div class="label">💰 Backing Pool</div><div class="value" id="c-dai-in-contract">-</div></div>
-          <div class="row"><div class="label">🧮 Binary Pool</div><div class="value" id="c-iam-in-contract">-</div></div>
-          <div class="row"><div class="label">💳 Registration Price</div><div class="value" id="c-registration-price">-</div></div>
-          <div class="row"><div class="label">💵 Token Price</div><div class="value" id="c-token-price">-</div></div>
-          <div class="row"><div class="label">🎯 Point Price</div><div class="value" id="c-point-price">-</div></div>
-          <div class="row"><div class="label">🤝 Help Fund</div><div class="value" id="c-cashback">-</div></div>
-          
-          
-          <div class="row"><div class="label">👛 Wallets Count</div><div class="value" id="c-wallets-count">-</div></div>
-          <div class="row"><div class="label">🎁 Claimable Points (Total)</div><div class="value" id="c-claimable-points">-</div></div>
-          
-          <div class="muted">Some values may remain empty if their functions do not exist on the contract.</div>
-          <div class="error" id="contract-error" style="display:none"></div>
-        </div>
-      </section>
-      <!-- Empty placeholder to make contract card take only one column -->
-      <div class="card" style="visibility: hidden; height: 0; padding: 0; margin: 0; border: none;"></div>
-    </div>
+    <section class="card" id="contract-card" style="text-align:left; direction:ltr;">
+      <h2 id="contract-header">Contract Info <span class="toggle-icon">▼</span></h2>
+      <div class="card-content" id="contract-content">
+        <div class="row"><div class="label">🔗 Contract Address</div><a class="value" id="c-address" href="#" target="_blank" rel="noopener noreferrer">-</a></div>
+        <div class="row"><div class="label">🏷️ Name</div><div class="value" id="c-name">-</div></div>
+        <div class="row"><div class="label">🧩 Symbol</div><div class="value" id="c-symbol">-</div></div>
+        <div class="row"><div class="label">#️⃣ Decimals</div><div class="value" id="c-decimals">-</div></div>
+        <div class="row"><div class="label">📦 Total Supply</div><div class="value" id="c-total-supply">-</div></div>
+        <div class="row"><div class="label">💰 Backing Pool</div><div class="value" id="c-dai-in-contract">-</div></div>
+        <div class="row"><div class="label">🧮 Binary Pool</div><div class="value" id="c-iam-in-contract">-</div></div>
+        <div class="row"><div class="label">💳 Registration Price</div><div class="value" id="c-registration-price">-</div></div>
+        <div class="row"><div class="label">💵 Token Price</div><div class="value" id="c-token-price">-</div></div>
+        <div class="row"><div class="label">🎯 Point Price</div><div class="value" id="c-point-price">-</div></div>
+        <div class="row"><div class="label">🤝 Help Fund</div><div class="value" id="c-cashback">-</div></div>
+        
+        
+        <div class="row"><div class="label">👛 Wallets Count</div><div class="value" id="c-wallets-count">-</div></div>
+        <div class="row"><div class="label">🎁 Claimable Points (Total)</div><div class="value" id="c-claimable-points">-</div></div>
+        
+        <div class="muted">Some values may remain empty if their functions do not exist on the contract.</div>
+        <div class="error" id="contract-error" style="display:none"></div>
+      </div>
+    </section>
             
     <!-- Referral Link - Permanent -->
     <div class="referral-section" style="
