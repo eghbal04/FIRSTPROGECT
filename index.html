@@ -283,20 +283,20 @@
     }
     .muted { color:#7f8ca8; font-size: 12px; }
     .error { color:#ff6b6b; font-size: 13px; }
-    .statusbar { background:#0e1220; border:1px solid #1f2433; padding:4px 6px; border-radius:6px; display:flex; gap:3px; align-items:center; margin: 6px 0; }
+    .statusbar { background:#0e1220; border:1px solid #1f2433; padding:8px 10px; border-radius:8px; display:flex; gap:6px; align-items:center; margin: 8px 0; }
     .statusbar.top { flex-wrap: wrap; }
     .statusbar.bottom { flex-wrap: nowrap; }
-    .pill { background:#162032; color:#cfe2ff; padding:2px 4px; border-radius:4px; font-size:8px; border:1px solid #223150; white-space: nowrap; text-align:center; box-sizing:border-box; flex: 1; min-width: 0; }
+    .pill { background:#162032; color:#cfe2ff; padding:6px 8px; border-radius:6px; font-size:11px; border:1px solid #223150; white-space: nowrap; text-align:center; box-sizing:border-box; flex: 1; min-width: 0; }
     /* Fixed widths for bottom status bar: IAM 2/3, POL and DAI share 1/3 */
     /* Bottom bar fixed fractions: IAM = 2/4, POL = 1/4, DAI = 1/4 */
     #status-iam { flex: 0 0 50%; max-width: 50%; min-width: 0; }
     #status-matic, #status-dai { flex: 0 0 25%; max-width: 25%; min-width: 0; }
     /* Two separate status bars: top (address, index, likes, dislikes, rank) | bottom (POL, DAI, IAM) */
     @media (max-width: 640px) {
-      .statusbar { padding:3px 4px; gap:2px; margin: 4px 0; }
+      .statusbar { padding:6px 8px; gap:4px; margin: 6px 0; }
       .statusbar.top { flex-wrap: wrap; }
       .statusbar.bottom { flex-wrap: nowrap; }
-      .pill { padding:2px 3px; font-size:7px; border-radius:3px; }
+      .pill { padding:4px 6px; font-size:9px; border-radius:5px; }
     }
     .footer-links { margin: 24px 0 0; display: flex; flex-wrap: wrap; gap: 8px; }
     .footer-links a { text-decoration: none; }
@@ -570,8 +570,8 @@
       #contract-card .value a {
         font-size: 11px;
       }
-      .statusbar { gap: 6px; padding: 8px 10px; }
-      .pill { font-size: 11px; padding: 6px 8px; }
+      .statusbar { gap: 8px; padding: 10px 12px; }
+      .pill { font-size: 12px; padding: 8px 10px; }
       
       /* Contract Info tablet improvements */
       #contract-card {
@@ -723,7 +723,7 @@
       #contract-card .value a {
         font-size: 10px;
       }
-      .pill { font-size: 10.5px; }
+      .pill { font-size: 11px; padding: 6px 8px; }
       
       /* Contract Info mobile improvements */
       #contract-card {
@@ -798,7 +798,7 @@
       h1 { font-size: 16px; }
       .card { padding: 12px; }
       .row { padding: 6px 0; }
-      .pill { font-size: 10px; padding: 5px 7px; }
+      .pill { font-size: 10px; padding: 6px 8px; }
       
       /* Referral section extra small mobile */
       .referral-section {
