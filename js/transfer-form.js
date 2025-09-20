@@ -905,11 +905,37 @@ class TransferManager {
                 this.showEnglishPopup('⏳ MATIC transfer submitted! Waiting for blockchain confirmation...', 'loading');
                 await tx.wait();
                 
+                // Get sender and recipient indices for MATIC
+                let senderIndex = null;
+                let recipientIndex = null;
+                try {
+                    const senderAddress = await this.signer.getAddress();
+                    
+                    if (this.contract && typeof this.contract.addressToIndex === 'function') {
+                        const senderIndexRaw = await this.contract.addressToIndex(senderAddress);
+                        const senderIndexNum = parseInt(senderIndexRaw.toString());
+                        if (senderIndexNum > 0) {
+                            senderIndex = senderIndexNum.toString();
+                        }
+                        
+                        const recipientIndexRaw = await this.contract.addressToIndex(to);
+                        const recipientIndexNum = parseInt(recipientIndexRaw.toString());
+                        if (recipientIndexNum > 0) {
+                            recipientIndex = recipientIndexNum.toString();
+                        }
+                    }
+                } catch (error) {
+                    console.log('Could not get user indices for MATIC:', error);
+                }
+                
                 this.showEnglishPopup(`🎉 MATIC transfer completed successfully!`, 'success', {
                     hash: tx.hash,
                     recipient: to,
                     amount: amount,
-                    token: 'MATIC'
+                    token: 'MATIC',
+                    senderIndex: senderIndex,
+                    recipientIndex: recipientIndex,
+                    senderAddress: await this.signer.getAddress()
                 });
                 
             } else if (token.toLowerCase() === 'dai') {
@@ -932,11 +958,37 @@ class TransferManager {
                 this.showEnglishPopup('⏳ DAI transfer submitted! Waiting for blockchain confirmation...', 'loading');
                 await tx.wait();
                 
+                // Get sender and recipient indices for DAI
+                let senderIndex = null;
+                let recipientIndex = null;
+                try {
+                    const senderAddress = await this.signer.getAddress();
+                    
+                    if (this.contract && typeof this.contract.addressToIndex === 'function') {
+                        const senderIndexRaw = await this.contract.addressToIndex(senderAddress);
+                        const senderIndexNum = parseInt(senderIndexRaw.toString());
+                        if (senderIndexNum > 0) {
+                            senderIndex = senderIndexNum.toString();
+                        }
+                        
+                        const recipientIndexRaw = await this.contract.addressToIndex(to);
+                        const recipientIndexNum = parseInt(recipientIndexRaw.toString());
+                        if (recipientIndexNum > 0) {
+                            recipientIndex = recipientIndexNum.toString();
+                        }
+                    }
+                } catch (error) {
+                    console.log('Could not get user indices for DAI:', error);
+                }
+                
                 this.showEnglishPopup(`🎉 DAI transfer completed successfully!`, 'success', {
                     hash: tx.hash,
                     recipient: to,
                     amount: amount,
-                    token: 'DAI'
+                    token: 'DAI',
+                    senderIndex: senderIndex,
+                    recipientIndex: recipientIndex,
+                    senderAddress: await this.signer.getAddress()
                 });
                 
             } else {
@@ -973,11 +1025,66 @@ class TransferManager {
                 this.showEnglishPopup('⏳ IAM transfer submitted! Waiting for blockchain confirmation...', 'loading');
                 await tx.wait();
                 
+                // Get USD value for IAM tokens
+                let usdValue = null;
+                try {
+                    if (this.contract && typeof this.contract.getTokenPrice === 'function') {
+                        const tokenPriceRaw = await this.contract.getTokenPrice();
+                        let tokenPrice = 0;
+                        if (typeof ethers.utils !== 'undefined' && ethers.utils.formatUnits) {
+                            tokenPrice = parseFloat(ethers.utils.formatUnits(tokenPriceRaw, 18));
+                        } else if (typeof ethers.formatUnits !== 'undefined') {
+                            tokenPrice = parseFloat(ethers.formatUnits(tokenPriceRaw, 18));
+                        } else {
+                            tokenPrice = parseFloat(tokenPriceRaw.toString()) / Math.pow(10, 18);
+                        }
+                        
+                        if (tokenPrice > 0) {
+                            usdValue = (parseFloat(amount) * tokenPrice).toFixed(2);
+                        }
+                    }
+                } catch (error) {
+                    console.log('Could not get token price for USD display:', error);
+                }
+                
+                // Get sender and recipient indices
+                let senderIndex = null;
+                let recipientIndex = null;
+                try {
+                    const senderAddress = await this.signer.getAddress();
+                    
+                    // Get sender index
+                    if (this.contract && typeof this.contract.addressToIndex === 'function') {
+                        const senderIndexRaw = await this.contract.addressToIndex(senderAddress);
+                        const senderIndexNum = parseInt(senderIndexRaw.toString());
+                        if (senderIndexNum > 0) {
+                            senderIndex = senderIndexNum.toString();
+                        }
+                        console.log('Sender index lookup:', { address: senderAddress, index: senderIndexRaw.toString(), valid: senderIndexNum > 0 });
+                    }
+                    
+                    // Get recipient index
+                    if (this.contract && typeof this.contract.addressToIndex === 'function') {
+                        const recipientIndexRaw = await this.contract.addressToIndex(to);
+                        const recipientIndexNum = parseInt(recipientIndexRaw.toString());
+                        if (recipientIndexNum > 0) {
+                            recipientIndex = recipientIndexNum.toString();
+                        }
+                        console.log('Recipient index lookup:', { address: to, index: recipientIndexRaw.toString(), valid: recipientIndexNum > 0 });
+                    }
+                } catch (error) {
+                    console.log('Could not get user indices:', error);
+                }
+                
                 this.showEnglishPopup(`🎉 IAM transfer completed successfully!`, 'success', {
                     hash: tx.hash,
                     recipient: to,
                     amount: amount,
-                    token: 'IAM'
+                    token: 'IAM',
+                    usdValue: usdValue,
+                    senderIndex: senderIndex,
+                    recipientIndex: recipientIndex,
+                    senderAddress: await this.signer.getAddress()
                 });
             }
             
@@ -1042,7 +1149,10 @@ class TransferManager {
         // Add transaction details for success popups
         if (type === 'success' && transactionDetails) {
             const shortHash = transactionDetails.hash.substring(0, 10) + '...' + transactionDetails.hash.substring(transactionDetails.hash.length - 8);
-            const shortRecipient = transactionDetails.recipient.substring(0, 6) + '...' + transactionDetails.recipient.substring(transactionDetails.recipient.length - 4);
+            
+            // Get sender address from transaction details or signer
+            const senderAddress = transactionDetails.senderAddress || 'Unknown';
+            const recipientAddress = transactionDetails.recipient;
             
             popupContent += `
                 <div style="background: rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 15px; margin: 15px 0; text-align: left;">
@@ -1052,9 +1162,13 @@ class TransferManager {
                     </div>
                     <div style="margin-bottom: 8px; font-size: 12px;">
                         <strong>Amount:</strong> ${transactionDetails.amount} ${transactionDetails.token}
+                        ${transactionDetails.usdValue ? ` ($${transactionDetails.usdValue} USD)` : ''}
                     </div>
-                    <div style="margin-bottom: 8px; font-size: 12px;">
-                        <strong>Recipient:</strong> ${shortRecipient}
+                    <div style="margin-bottom: 8px; font-size: 12px; word-break: break-all;">
+                        <strong>From:</strong> ${transactionDetails.senderIndex ? `User #${transactionDetails.senderIndex} - ` : ''}${senderAddress}
+                    </div>
+                    <div style="margin-bottom: 8px; font-size: 12px; word-break: break-all;">
+                        <strong>To:</strong> ${transactionDetails.recipientIndex ? `User #${transactionDetails.recipientIndex} - ` : ''}${recipientAddress}
                     </div>
                     <div style="margin-bottom: 8px; font-size: 12px;">
                         <strong>Transaction Hash:</strong> ${shortHash}
