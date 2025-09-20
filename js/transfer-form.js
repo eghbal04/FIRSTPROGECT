@@ -22,6 +22,8 @@ class TransferManager {
         this.signer = null;
         this.contract = null;
         this.daiContract = null;
+        this.iamContract = null;
+        this.iamWrite = null;
         this.isRefreshing = false;
 
         console.log('✅ TransferManager created');
@@ -80,10 +82,19 @@ class TransferManager {
             // Create contract instances (read with project ABI; write with ERC20-min ABI to ensure transfer exists)
             this.contract = new ethers.Contract(IAM_ADDRESS_TRANSFER, window.IAM_ABI, this.signer);
             this.daiContract = new ethers.Contract(DAI_ADDRESS_TRANSFER, DAI_ABI_TRANSFER, this.signer);
+            
+            // Set iamContract to the same as contract for consistency
+            this.iamContract = this.contract;
+            
             try {
                 const ERC20_WRITE_ABI = ["function transfer(address to, uint256 amount) returns (bool)"]; 
                 this.iamWrite = new ethers.Contract(IAM_ADDRESS_TRANSFER, ERC20_WRITE_ABI, this.signer);
-            } catch {}
+                console.log('✅ IAM write contract created successfully');
+            } catch (error) {
+                console.error('❌ Error creating IAM write contract:', error);
+                // Fallback: use the main contract for both read and write
+                this.iamWrite = this.contract;
+            }
             
             console.log('✅ Wallet connected successfully');
             return true;
@@ -819,17 +830,8 @@ class TransferManager {
             return;
         }
         
-        // Check if destination is the same as sender
-        try {
-            const senderAddress = await this.signer.getAddress();
-            if (to.toLowerCase() === senderAddress.toLowerCase()) {
-                this.showEnglishPopup('❌ Cannot transfer to yourself. Please enter a different destination address.', 'error');
-                this.resetTransferButton(transferBtn, oldText);
-                return;
-            }
-        } catch (err) {
-            console.error('Error getting sender address:', err);
-        }
+        // Allow self-transfers - removed restriction
+        // Users can now transfer assets to themselves if needed
         
         if (!this.signer) {
             this.showEnglishPopup('Wallet connection not established. Please connect your wallet first', 'error');
@@ -847,15 +849,30 @@ class TransferManager {
             
             if (token.toLowerCase() === 'pol') {
                 const balance = await this.signer.provider.getBalance(senderAddress);
-                const requiredAmount = ethers.parseEther ? ethers.parseEther(amount.toString()) : (parseFloat(amount) * Math.pow(10, 18)).toString();
+                let requiredAmount;
+                if (ethers.parseEther) {
+                    requiredAmount = ethers.parseEther(amount.toString());
+                } else {
+                    requiredAmount = this.convertToWei(amount);
+                }
                 hasEnoughBalance = BigInt(balance) >= BigInt(requiredAmount);
             } else if (token.toLowerCase() === 'dai') {
                 const daiBalance = await this.daiContract.balanceOf(senderAddress);
-                const requiredAmount = ethers.parseUnits ? ethers.parseUnits(amount.toString(), 18) : (parseFloat(amount) * Math.pow(10, 18)).toString();
+                let requiredAmount;
+                if (ethers.parseUnits) {
+                    requiredAmount = ethers.parseUnits(amount.toString(), 18);
+                } else {
+                    requiredAmount = this.convertToWei(amount);
+                }
                 hasEnoughBalance = BigInt(daiBalance) >= BigInt(requiredAmount);
             } else if (token.toLowerCase() === 'iam') {
-                const iamBalance = await this.iamContract.balanceOf(senderAddress);
-                const requiredAmount = ethers.parseUnits ? ethers.parseUnits(amount.toString(), 18) : (parseFloat(amount) * Math.pow(10, 18)).toString();
+                const iamBalance = await this.contract.balanceOf(senderAddress);
+                let requiredAmount;
+                if (ethers.parseUnits) {
+                    requiredAmount = ethers.parseUnits(amount.toString(), 18);
+                } else {
+                    requiredAmount = this.convertToWei(amount);
+                }
                 hasEnoughBalance = BigInt(iamBalance) >= BigInt(requiredAmount);
             }
             
@@ -872,7 +889,7 @@ class TransferManager {
                 } else if (typeof ethers.parseEther !== 'undefined') {
                     value = ethers.parseEther(amount.toString());
                 } else {
-                    value = (parseFloat(amount) * Math.pow(10, 18)).toString();
+                    value = this.convertToWei(amount);
                 }
                 
                 // Update button to show confirmation waiting
@@ -902,7 +919,7 @@ class TransferManager {
                 } else if (typeof ethers.parseUnits !== 'undefined') {
                     parsedAmount = ethers.parseUnits(amount.toString(), 18);
                 } else {
-                    parsedAmount = (parseFloat(amount) * Math.pow(10, 18)).toString();
+                    parsedAmount = this.convertToWei(amount);
                 }
                 
                 // Update button to show confirmation waiting
@@ -930,7 +947,7 @@ class TransferManager {
                 } else if (typeof ethers.parseUnits !== 'undefined') {
                     value = ethers.parseUnits(amount.toString(), 18);
                 } else {
-                    value = (parseFloat(amount) * Math.pow(10, 18)).toString();
+                    value = this.convertToWei(amount);
                 }
                 
                 console.log('🔄 IAM Transfer Details:', {
@@ -947,11 +964,11 @@ class TransferManager {
                     transferBtn.textContent = '⏳ Waiting for blockchain confirmation...';
                 }
                 
-                // Use dedicated ERC20 write instance to guarantee transfer availability
-                if (!this.iamWrite || typeof this.iamWrite.transfer !== 'function') {
+                // Use the main contract for IAM transfer (now includes transfer function in ABI)
+                if (!this.contract || typeof this.contract.transfer !== 'function') {
                     throw new Error('IAM transfer method is unavailable in ABI');
                 }
-                const tx = await this.iamWrite.transfer(to, value);
+                const tx = await this.contract.transfer(to, value);
                 
                 this.showEnglishPopup('⏳ IAM transfer submitted! Waiting for blockchain confirmation...', 'loading');
                 await tx.wait();
@@ -1109,6 +1126,41 @@ class TransferManager {
         else if (msg.includes('gas')) return '❌ Insufficient gas for transaction. Please increase gas limit.';
         else if (msg.includes('revert')) return '❌ Transfer failed. Please verify the destination address and try again.';
         else return `❌ Transfer error: ${msg}. Please try again.`;
+    }
+
+    // Convert amount to wei with proper handling of large numbers
+    convertToWei(amount) {
+        try {
+            // Convert to string to avoid scientific notation
+            const amountStr = amount.toString();
+            
+            // Split by decimal point
+            const parts = amountStr.split('.');
+            const integerPart = parts[0] || '0';
+            let decimalPart = parts[1] || '';
+            
+            // Pad or truncate decimal part to 18 digits
+            if (decimalPart.length > 18) {
+                decimalPart = decimalPart.substring(0, 18);
+            } else {
+                decimalPart = decimalPart.padEnd(18, '0');
+            }
+            
+            // Combine and return as string
+            const weiStr = integerPart + decimalPart;
+            
+            // Validate that it's a valid number
+            if (!/^\d+$/.test(weiStr)) {
+                throw new Error('Invalid number format');
+            }
+            
+            return weiStr;
+        } catch (error) {
+            console.error('Error converting to wei:', error);
+            // Fallback to simple multiplication with proper formatting
+            const result = (parseFloat(amount) * Math.pow(10, 18));
+            return Math.floor(result).toString();
+        }
     }
 
     // Reset transfer button state
