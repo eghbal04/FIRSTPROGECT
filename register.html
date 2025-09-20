@@ -1537,19 +1537,19 @@
                 return false;
               }
               
-              // If target is the same as current user, it's always allowed (even if not active yet)
+              // If target is the same as current user, it's always allowed
               if (myAddress && targetAddress && targetAddress.toLowerCase() === myAddress.toLowerCase()) {
                 console.log(`✅ Can register for self (${addressType})`);
                 return true;
               }
               
-              // If current user is not active, they can only register for themselves
+              // For inactive users, allow registration for any active referrer/upper
               if (!myUser || !(myUser.index && BigInt(myUser.index) > 0n)) {
-                console.log(`❌ Current user is not active. Can only register for self.`);
-                return false;
+                console.log(`ℹ️ Current user is not active. Allowing registration with any active ${addressType}.`);
+                return true; // Allow inactive users to register with any active referrer/upper
               }
               
-              // Get target user info
+              // For active users, check if target is in their downline or is themselves
               const targetUser = await contract.users(targetAddress);
               if (!targetUser || !(targetUser.index && BigInt(targetUser.index) > 0n)) {
                 console.log(`❌ Target ${addressType} is not active`);
@@ -1559,9 +1559,9 @@
               const myIndex = Number(myUser.index);
               const targetIndex = Number(targetUser.index);
               
-              // Check if target is in current user's downline (subtree)
-              if (isIndexInUserSubtree(targetIndex, myIndex)) {
-                console.log(`✅ Can register for ${addressType} (in downline)`);
+              // Check if target is in current user's downline (subtree) or is the same user
+              if (isIndexInUserSubtree(targetIndex, myIndex) || targetIndex === myIndex) {
+                console.log(`✅ Can register for ${addressType} (in downline or self)`);
                 return true;
               }
               
@@ -1964,16 +1964,17 @@
           return;
         }
         
-        const user = await contract.users(address);
-        if (!user || !(user.index && BigInt(user.index) > 0n)) {
-          showTempMessage(`${type} address is not active`, 'error');
-          return;
-        }
-        
         // Check if current user can register for this address
         const canRegister = await canUserRegisterForAddress(address, type);
         if (!canRegister) {
           showTempMessage(`You can only register for yourself or your downlines. This ${type} is not in your downline.`, 'error');
+          return;
+        }
+        
+        // Check if address is active (for referrer/upper validation)
+        const user = await contract.users(address);
+        if (!user || !(user.index && BigInt(user.index) > 0n)) {
+          showTempMessage(`${type} address is not active`, 'error');
           return;
         }
         
