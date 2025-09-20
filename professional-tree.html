@@ -540,6 +540,36 @@
             background: rgba(0,255,136,0.06);
             transform: translateX(2px);
         }
+        
+        /* Empty node styles */
+        .empty-node {
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(255, 152, 0, 0.1)) !important;
+            border: 2px dashed rgba(255, 193, 7, 0.5) !important;
+            cursor: pointer !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .empty-node:hover {
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 152, 0, 0.2)) !important;
+            border-color: rgba(255, 193, 7, 0.8) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3) !important;
+        }
+        
+        .empty-label {
+            color: #ffc107 !important;
+            font-weight: 600 !important;
+        }
+        
+        .empty-info {
+            color: #ff9800 !important;
+            font-weight: 500 !important;
+            cursor: pointer !important;
+        }
+        
+        .empty-info:hover {
+            color: #ff5722 !important;
+        }
         .tree-expand-btn {
             background: linear-gradient(135deg, rgba(0,255,136,0.85), rgba(0,212,255,0.85));
             border: none;
@@ -1210,7 +1240,37 @@
                     
                     console.log(`✅ Created ${node.children.length} children for node ${node.index}`);
                 } else {
-                    console.log(`⚠️ No children found for node ${node.index}`);
+                    // Create empty nodes for left and right positions
+                    const nodeIndex = parseInt(node.index);
+                    const leftIndex = nodeIndex * 2;
+                    const rightIndex = nodeIndex * 2 + 1;
+                    
+                    node.children = [
+                        {
+                            id: `empty_node_${leftIndex}`,
+                            index: leftIndex.toString(),
+                            address: null,
+                            type: 'empty',
+                            expanded: false,
+                            children: [],
+                            hasChildren: false,
+                            parentIndex: nodeIndex,
+                            position: 'left'
+                        },
+                        {
+                            id: `empty_node_${rightIndex}`,
+                            index: rightIndex.toString(),
+                            address: null,
+                            type: 'empty',
+                            expanded: false,
+                            children: [],
+                            hasChildren: false,
+                            parentIndex: nodeIndex,
+                            position: 'right'
+                        }
+                    ];
+                    
+                    console.log(`📝 Created 2 empty children for node ${node.index}`);
                 }
                 
             } catch (error) {
@@ -1912,6 +1972,21 @@
                         
                         // Recursively create next level
                         await createTreeLevel(leftChild, level + 1, maxLevel);
+                    } else {
+                        // Create empty node for left position
+                        const leftEmptyChild = {
+                            id: `empty_node_${leftIndex}`,
+                            index: leftIndex.toString(),
+                            address: null,
+                            type: 'empty',
+                            expanded: false,
+                            children: [],
+                            hasChildren: false,
+                            parentIndex: nodeIndex,
+                            position: 'left'
+                        };
+                        parentNode.children.push(leftEmptyChild);
+                        console.log(`📝 Added empty left child: ${leftEmptyChild.id}`);
                     }
                     
                     if (rightValid) {
@@ -1929,6 +2004,21 @@
                         
                         // Recursively create next level
                         await createTreeLevel(rightChild, level + 1, maxLevel);
+                    } else {
+                        // Create empty node for right position
+                        const rightEmptyChild = {
+                            id: `empty_node_${rightIndex}`,
+                            index: rightIndex.toString(),
+                            address: null,
+                            type: 'empty',
+                            expanded: false,
+                            children: [],
+                            hasChildren: false,
+                            parentIndex: nodeIndex,
+                            position: 'right'
+                        };
+                        parentNode.children.push(rightEmptyChild);
+                        console.log(`📝 Added empty right child: ${rightEmptyChild.id}`);
                     }
                     
                 } catch (error) {
@@ -2064,17 +2154,24 @@
             const isExpanded = fileManagerData.expandedNodes.has(node.id);
             const hasChildren = node.hasChildren || (node.children && node.children.length > 0);
             
+            // Check if this is an empty node
+            const isEmptyNode = node.type === 'empty';
+            
             nodeElement.innerHTML = `
-                <div class="tree-node-content ${isExpanded ? 'expanded' : ''}" data-node-id="${node.id}">
+                <div class="tree-node-content ${isExpanded ? 'expanded' : ''} ${isEmptyNode ? 'empty-node' : ''}" data-node-id="${node.id}">
                     ${hasChildren ? `
                         <button class="tree-expand-btn ${isExpanded ? 'expanded' : ''}" data-node-id="${node.id}">
                             ${isExpanded ? '−' : '+'}
                         </button>
                     ` : '<div style="width: 14px;"></div>'}
                     
-
-                    <span class="tree-node-label">IAM ${node.index}</span>
-                    ${!isMobile() ? `<span class="tree-node-info" onclick="copyToClipboard('${node.address}')" title="Click to copy full address">${node.address ? node.address.substring(0, 6) + '...' + node.address.substring(node.address.length - 4) : ''}</span>` : ''}
+                    ${isEmptyNode ? `
+                        <span class="tree-node-label empty-label">📝 Empty Slot ${node.index}</span>
+                        <span class="tree-node-info empty-info" title="Click to register new user">Click to Register</span>
+                    ` : `
+                        <span class="tree-node-label">IAM ${node.index}</span>
+                        ${!isMobile() ? `<span class="tree-node-info" onclick="copyToClipboard('${node.address}')" title="Click to copy full address">${node.address ? node.address.substring(0, 6) + '...' + node.address.substring(node.address.length - 4) : ''}</span>` : ''}
+                    `}
                 </div>
             `;
             
@@ -2091,12 +2188,66 @@
             
             const nodeContent = nodeElement.querySelector('.tree-node-content');
             nodeContent.addEventListener('click', () => {
-                // On click, show typewriter modal with full user details
-                showNodeDetails(node);
+                if (isEmptyNode) {
+                    // For empty nodes, open registration form
+                    openRegistrationForm(node);
+                } else {
+                    // On click, show typewriter modal with full user details
+                    showNodeDetails(node);
+                }
             });
         }
 
 
+
+        // Open registration form for empty nodes
+        function openRegistrationForm(emptyNode) {
+            console.log('📝 Opening registration form for empty node:', emptyNode);
+            
+            // Get parent address (upper) - this is the parent node in the tree
+            let upperAddress = null;
+            if (emptyNode.parentIndex) {
+                // Find parent node in tree
+                const parentNode = findNodeInTree(fileManagerData.treeData, `unlimited_node_${emptyNode.parentIndex}`);
+                if (parentNode && parentNode.address) {
+                    upperAddress = parentNode.address;
+                } else {
+                    // If parent not found in unlimited tree, try to find in regular tree
+                    const regularParentNode = findNodeInTree(fileManagerData.treeData, `node_${emptyNode.parentIndex}`);
+                    if (regularParentNode && regularParentNode.address) {
+                        upperAddress = regularParentNode.address;
+                    }
+                }
+            }
+            
+            if (!upperAddress) {
+                alert('Parent address not found. Cannot register new user.');
+                return;
+            }
+            
+            // Calculate slot number (emptyIndex divided by 2)
+            const slotNumber = Math.floor(parseInt(emptyNode.index) / 2);
+            
+            console.log('📍 Registration parameters:');
+            console.log(`  Upper (parent): ${upperAddress}`);
+            console.log(`  Empty Index: ${emptyNode.index}`);
+            console.log(`  Slot Number: ${slotNumber} (${emptyNode.index} ÷ 2)`);
+            console.log(`  Position: ${emptyNode.position}`);
+            
+            // Create registration URL with parameters (only upper address)
+            const baseUrl = window.location.origin + '/register.html';
+            const params = new URLSearchParams();
+            params.set('upper', upperAddress);
+            params.set('emptyIndex', slotNumber.toString());
+            params.set('position', emptyNode.position);
+            
+            const registrationUrl = `${baseUrl}?${params.toString()}`;
+            
+            console.log('🔗 Registration URL:', registrationUrl);
+            
+            // Open registration form in new tab
+            window.open(registrationUrl, '_blank');
+        }
 
         // Toggle node expansion for flat structure
         async function toggleNodeExpansion(nodeId) {
@@ -2644,29 +2795,66 @@
                 
                 // Always create two children (placeholders if address is zero)
                 const children = [];
-                const leftChild = {
-                    id: `node_${leftIndexNum}`,
-                    index: String(leftIndexNum),
-                    address: leftAddress !== zero ? leftAddress : '',
-                    type: 'node',
-                    expanded: false,
-                    children: [],
-                    hasChildren: leftAddress !== zero
-                };
-                children.push(leftChild);
-                console.log(`✅ Added left child: ${leftChild.id} (index: ${leftChild.index})`);
                 
-                const rightChild = {
-                    id: `node_${rightIndexNum}`,
-                    index: String(rightIndexNum),
-                    address: rightAddress !== zero ? rightAddress : '',
-                    type: 'node',
-                    expanded: false,
-                    children: [],
-                    hasChildren: rightAddress !== zero
-                };
-                children.push(rightChild);
-                console.log(`✅ Added right child: ${rightChild.id} (index: ${rightChild.index})`);
+                // Left child
+                if (leftAddress !== zero) {
+                    const leftChild = {
+                        id: `node_${leftIndexNum}`,
+                        index: String(leftIndexNum),
+                        address: leftAddress,
+                        type: 'node',
+                        expanded: false,
+                        children: [],
+                        hasChildren: true
+                    };
+                    children.push(leftChild);
+                    console.log(`✅ Added left child: ${leftChild.id} (index: ${leftChild.index})`);
+                } else {
+                    // Create empty node for left position
+                    const leftEmptyChild = {
+                        id: `empty_node_${leftIndexNum}`,
+                        index: String(leftIndexNum),
+                        address: null,
+                        type: 'empty',
+                        expanded: false,
+                        children: [],
+                        hasChildren: false,
+                        parentIndex: nodeIndex,
+                        position: 'left'
+                    };
+                    children.push(leftEmptyChild);
+                    console.log(`📝 Added empty left child: ${leftEmptyChild.id} (index: ${leftEmptyChild.index})`);
+                }
+                
+                // Right child
+                if (rightAddress !== zero) {
+                    const rightChild = {
+                        id: `node_${rightIndexNum}`,
+                        index: String(rightIndexNum),
+                        address: rightAddress,
+                        type: 'node',
+                        expanded: false,
+                        children: [],
+                        hasChildren: true
+                    };
+                    children.push(rightChild);
+                    console.log(`✅ Added right child: ${rightChild.id} (index: ${rightChild.index})`);
+                } else {
+                    // Create empty node for right position
+                    const rightEmptyChild = {
+                        id: `empty_node_${rightIndexNum}`,
+                        index: String(rightIndexNum),
+                        address: null,
+                        type: 'empty',
+                        expanded: false,
+                        children: [],
+                        hasChildren: false,
+                        parentIndex: nodeIndex,
+                        position: 'right'
+                    };
+                    children.push(rightEmptyChild);
+                    console.log(`📝 Added empty right child: ${rightEmptyChild.id} (index: ${rightEmptyChild.index})`);
+                }
                 
                 // Update node with children (always two)
                 node.children = children;
@@ -3444,6 +3632,161 @@
                 });
             }
         });
+        
+        // Test function to create empty nodes manually
+        window.testEmptyNodes = function() {
+            console.log('🧪 Testing empty nodes creation...');
+            
+            // Find a node that has children
+            const rootNode = fileManagerData.treeData;
+            if (rootNode && rootNode.children) {
+                // Add empty nodes to the first child
+                const firstChild = rootNode.children[0];
+                if (firstChild) {
+                    const nodeIndex = parseInt(firstChild.index);
+                    const leftIndex = nodeIndex * 2;
+                    const rightIndex = nodeIndex * 2 + 1;
+                    
+                    // Add empty nodes
+                    firstChild.children = [
+                        {
+                            id: `empty_node_${leftIndex}`,
+                            index: leftIndex.toString(),
+                            address: null,
+                            type: 'empty',
+                            expanded: false,
+                            children: [],
+                            hasChildren: false,
+                            parentIndex: nodeIndex,
+                            position: 'left'
+                        },
+                        {
+                            id: `empty_node_${rightIndex}`,
+                            index: rightIndex.toString(),
+                            address: null,
+                            type: 'empty',
+                            expanded: false,
+                            children: [],
+                            hasChildren: false,
+                            parentIndex: nodeIndex,
+                            position: 'right'
+                        }
+                    ];
+                    
+                    console.log(`✅ Added empty nodes to ${firstChild.id}`);
+                    
+                    // Re-render tree
+                    renderTreeView();
+                }
+            }
+        };
+        
+        // Force create empty nodes for all existing nodes
+        window.forceCreateEmptyNodes = function() {
+            console.log('🧪 Force creating empty nodes for all nodes...');
+            
+            function addEmptyNodesToNode(node) {
+                if (node && node.children && node.children.length > 0) {
+                    // Check if children are real nodes or empty nodes
+                    const hasRealChildren = node.children.some(child => child.type === 'node' && child.address);
+                    const hasEmptyChildren = node.children.some(child => child.type === 'empty');
+                    
+                    if (hasRealChildren && !hasEmptyChildren) {
+                        // Add empty nodes to this node
+                        const nodeIndex = parseInt(node.index);
+                        const leftIndex = nodeIndex * 2;
+                        const rightIndex = nodeIndex * 2 + 1;
+                        
+                        // Check if left and right positions are empty
+                        const leftExists = node.children.some(child => parseInt(child.index) === leftIndex);
+                        const rightExists = node.children.some(child => parseInt(child.index) === rightIndex);
+                        
+                        if (!leftExists) {
+                            node.children.push({
+                                id: `empty_node_${leftIndex}`,
+                                index: leftIndex.toString(),
+                                address: null,
+                                type: 'empty',
+                                expanded: false,
+                                children: [],
+                                hasChildren: false,
+                                parentIndex: nodeIndex,
+                                position: 'left'
+                            });
+                            console.log(`📝 Added empty left node ${leftIndex} to ${node.id}`);
+                        }
+                        
+                        if (!rightExists) {
+                            node.children.push({
+                                id: `empty_node_${rightIndex}`,
+                                index: rightIndex.toString(),
+                                address: null,
+                                type: 'empty',
+                                expanded: false,
+                                children: [],
+                                hasChildren: false,
+                                parentIndex: nodeIndex,
+                                position: 'right'
+                            });
+                            console.log(`📝 Added empty right node ${rightIndex} to ${node.id}`);
+                        }
+                    }
+                    
+                    // Recursively process children
+                    node.children.forEach(child => addEmptyNodesToNode(child));
+                }
+            }
+            
+            // Process the entire tree
+            addEmptyNodesToNode(fileManagerData.treeData);
+            
+            // Re-render tree
+            renderTreeView();
+            
+            console.log('✅ Empty nodes creation completed');
+        };
+        
+        // Test function to test registration form opening
+        window.testRegistrationForm = function() {
+            console.log('🧪 Testing registration form opening...');
+            
+            // Create a test empty node with a parent that has an address
+            const testEmptyNode = {
+                id: 'test_empty_node',
+                index: '6', // This will be divided by 2 to get slot number 3
+                address: null,
+                type: 'empty',
+                expanded: false,
+                children: [],
+                hasChildren: false,
+                parentIndex: 2,
+                position: 'left'
+            };
+            
+            // Add a parent node to the tree for testing
+            if (fileManagerData.treeData) {
+                const parentNode = {
+                    id: 'unlimited_node_2',
+                    index: '2',
+                    address: '0x1234567890123456789012345678901234567890', // Test address
+                    type: 'node',
+                    expanded: false,
+                    children: [],
+                    hasChildren: true
+                };
+                
+                // Add parent to tree if not exists
+                if (!fileManagerData.treeData.children) {
+                    fileManagerData.treeData.children = [];
+                }
+                fileManagerData.treeData.children.push(parentNode);
+            }
+            
+            console.log('📝 Test empty node:', testEmptyNode);
+            
+            // Test the registration form opening
+            openRegistrationForm(testEmptyNode);
+        };
     </script>
     
     <!-- Mobile User Popup disabled -->

@@ -809,67 +809,45 @@
          // Define input variables before any use
          let newUserInput, referrerDisplay, referrerIndexInput, upperInput, upperIndexInput, refInput, indexInput;
          
-         // Function to handle referral parameters from URL
-         function handleReferralParameters() {
-           const urlParams = new URLSearchParams(window.location.search);
-           const referrerIndex = urlParams.get('ref');
-           const referrerAddress = urlParams.get('addr') || urlParams.get('ref');
-           const upperIndex = urlParams.get('upper');
-           const upperAddress = urlParams.get('upperAddr');
-           
-           console.log('🔗 Referral parameters:', { referrerIndex, referrerAddress, upperIndex, upperAddress });
-           
-           // Auto-fill referrer/upper by index if provided
-           if (referrerIndex) {
-             if (referrerIndexInput) referrerIndexInput.value = referrerIndex;
-             if (upperIndexInput) upperIndexInput.value = referrerIndex;
-             // Resolve both indices to addresses automatically
-             setTimeout(async () => {
-               if (referrerIndexInput && referrerDisplay) await applyIndexToAddress(referrerIndexInput, referrerDisplay, 'referrer');
-               if (upperIndexInput && upperInput) await applyIndexToAddress(upperIndexInput, upperInput, 'upper');
-             }, 500);
-           }
-           
-           if (referrerAddress) {
-             // Set referrer and upper from link; new user must remain the connected wallet address
-             if (referrerDisplay) referrerDisplay.value = referrerAddress;
-             if (upperInput) upperInput.value = referrerAddress;
-             // Trigger validations for referrer and upper only
-             setTimeout(async () => {
-               if (referrerDisplay) await checkAddressValidity(referrerDisplay, 'referrer');
-               if (upperInput) await checkAddressValidity(upperInput, 'upper');
-             }, 500);
-           }
-           
-           // Auto-fill upper information if provided
-           if (upperIndex) {
-             upperIndexInput.value = upperIndex;
-             // Trigger validation and address lookup
-             setTimeout(async () => {
-               await checkAddressValidity(upperIndexInput, 'upper');
-             }, 700);
-           }
-           
-           if (upperAddress) {
-             upperInput.value = upperAddress;
-             // Trigger validation
-             setTimeout(async () => {
-               await checkAddressValidity(upperInput, 'upper');
-             }, 700);
-           }
-           
-           // Show success message if referral parameters were processed
-           if (referrerIndex || referrerAddress || upperIndex || upperAddress) {
-             setTimeout(() => {
-               const statusDiv = document.getElementById('referrer-validation-status');
-               if (statusDiv) {
-                 statusDiv.style.display = 'block';
-                 statusDiv.className = 'register-form-status success';
-                 statusDiv.textContent = '✅ Referral information loaded from link successfully!';
-               }
-             }, 1000);
-           }
-         }
+          // Function to handle referral parameters from URL
+          function handleReferralParameters() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const upperIndex = urlParams.get('upper');
+            const upperAddress = urlParams.get('upperAddr');
+            const emptyIndex = urlParams.get('emptyIndex');
+            const position = urlParams.get('position');
+            
+            console.log('🔗 Referral parameters:', { upperIndex, upperAddress, emptyIndex, position });
+            
+            // Auto-fill upper information if provided
+            if (upperIndex) {
+              if (upperIndexInput) upperIndexInput.value = upperIndex;
+              // Trigger validation and address lookup
+              setTimeout(async () => {
+                await checkAddressValidity(upperIndexInput, 'upper');
+              }, 700);
+            }
+            
+            if (upperAddress) {
+              if (upperInput) upperInput.value = upperAddress;
+              // Trigger validation
+              setTimeout(async () => {
+                await checkAddressValidity(upperInput, 'upper');
+              }, 700);
+            }
+            
+            // Show success message if upper parameters were processed
+            if (upperIndex || upperAddress) {
+              setTimeout(() => {
+                const statusDiv = document.getElementById('upper-validation-status');
+                if (statusDiv) {
+                  statusDiv.style.display = 'block';
+                  statusDiv.className = 'register-form-status success';
+                  statusDiv.textContent = `✅ Upper information loaded from link successfully! (Slot: ${emptyIndex || 'N/A'}, Position: ${position || 'N/A'})`;
+                }
+              }, 1000);
+            }
+          }
          
          document.addEventListener('DOMContentLoaded', function() {
            newUserInput = document.getElementById('new-user-address');
@@ -1252,8 +1230,9 @@
                     nu.value = conn.address;
                     nu.setAttribute('data-full-address', conn.address);
                   } else {
-                    // If user is active, auto-fill referrer fields with their info
+                    // Always auto-fill referrer fields with connected wallet address
                     await autoFillReferrerFields(conn.address, userIndex);
+                    console.log('🔗 Referrer set to connected wallet address:', conn.address);
                   }
                 }
               } catch(_) {}
@@ -1327,6 +1306,19 @@
                   if (!userActive) {
                     nu.value = addr;
                     nu.setAttribute('data-full-address', addr);
+                  } else {
+                    // If user is active, update referrer fields with new wallet address
+                    try {
+                      const contract = (window.contractConfig && window.contractConfig.contract) || null;
+                      if (contract) {
+                        const u = await contract.users(addr);
+                        const userIndex = u && u.index ? Number(u.index) : null;
+                        if (userIndex) {
+                          await autoFillReferrerFields(addr, userIndex);
+                          console.log('🔗 Referrer updated to new wallet address:', addr);
+                        }
+                      }
+                    } catch(_) {}
                   }
                 } catch(_) {}
               }
