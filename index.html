@@ -1160,6 +1160,94 @@
       </div>
     </div>
                 
+    <!-- Tree Navigation and Ranking Section -->
+    <div class="additional-content" style="
+      margin-top: 24px;
+      padding: 24px;
+      background: linear-gradient(135deg, #1a1f2e 0%, #232946 100%);
+      border: 1px solid #00ff88;
+      border-radius: 16px;
+      color: #e6eaf0;
+      line-height: 1.7;
+      box-shadow: 0 8px 32px rgba(0, 255, 136, 0.1);
+    ">
+      <h2 style="margin: 0 0 20px; color: #00ff88; font-size: 24px; font-weight: 700; text-align: center;">
+        🌳 Tree Navigation & Leaderboard
+      </h2>
+      
+      <div style="margin-bottom: 20px;">
+        <h3 style="color: #aef3c6; font-size: 18px; margin: 0 0 12px;">🌲 Binary Tree Explorer</h3>
+        <p style="margin: 0 0 16px; color: #b8c1ec; font-size: 15px;">
+          Navigate through the binary tree structure and discover the top performers who have claimed the most points in the network.
+        </p>
+        
+        <div id="tree-navigation" style="margin-bottom: 20px;">
+          <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+            <button id="explore-tree-btn" style="
+              background: linear-gradient(135deg, #00ff88, #00cc6a);
+              color: #181c2a;
+              border: none;
+              padding: 10px 20px;
+              border-radius: 8px;
+              font-weight: 600;
+              cursor: pointer;
+              transition: all 0.3s ease;
+            ">🌳 Explore Tree</button>
+            <button id="refresh-leaderboard-btn" style="
+              background: linear-gradient(135deg, #a786ff, #9670ff);
+              color: #181c2a;
+              border: none;
+              padding: 10px 20px;
+              border-radius: 8px;
+              font-weight: 600;
+              cursor: pointer;
+              transition: all 0.3s ease;
+            ">🔄 Refresh Leaderboard</button>
+          </div>
+          
+          <div id="tree-stats" style="
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: none;
+          ">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+              <div style="text-align: center;">
+                <div style="color: #00ff88; font-weight: bold; font-size: 18px;" id="total-users">-</div>
+                <div style="color: #aef3c6; font-size: 12px;">Total Users</div>
+              </div>
+              <div style="text-align: center;">
+                <div style="color: #a786ff; font-weight: bold; font-size: 18px;" id="total-points">-</div>
+                <div style="color: #aef3c6; font-size: 12px;">Total Points</div>
+              </div>
+              <div style="text-align: center;">
+                <div style="color: #ff6b35; font-weight: bold; font-size: 18px;" id="claimed-points">-</div>
+                <div style="color: #aef3c6; font-size: 12px;">Claimed Points</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div id="leaderboard-container" style="display: none;">
+          <h3 style="color: #aef3c6; font-size: 18px; margin: 0 0 12px;">🏆 Top 10 Performers</h3>
+          <div id="leaderboard-list" style="
+            background: rgba(167, 134, 255, 0.1);
+            border: 1px solid rgba(167, 134, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+          ">
+            <div style="text-align: center; color: #aef3c6; padding: 20px;">
+              Click "Explore Tree" to load the leaderboard
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Professional Presentation Section -->
     <div class="additional-content" style="
       margin-top: 24px;
@@ -1897,9 +1985,12 @@
         } catch {}
       }
       
-      // Setup permanent referral link
-      setupPermanentReferralLink();
-    });
+    // Setup permanent referral link
+    setupPermanentReferralLink();
+    
+    // Setup tree navigation and leaderboard
+    setupTreeNavigationAndLeaderboard();
+  });
     
     function setupPermanentReferralLink() {
       const copyBtn = document.getElementById('copy-referral-btn');
@@ -1977,6 +2068,249 @@
           }, 2000);
         }
       });
+    }
+
+    // Tree Navigation and Leaderboard System
+    function setupTreeNavigationAndLeaderboard() {
+      const exploreBtn = document.getElementById('explore-tree-btn');
+      const refreshBtn = document.getElementById('refresh-leaderboard-btn');
+      const treeStats = document.getElementById('tree-stats');
+      const leaderboardContainer = document.getElementById('leaderboard-container');
+      const leaderboardList = document.getElementById('leaderboard-list');
+
+      if (!exploreBtn || !refreshBtn) return;
+
+      // Explore tree button
+      exploreBtn.addEventListener('click', async () => {
+        try {
+          exploreBtn.disabled = true;
+          exploreBtn.textContent = '⏳ Exploring...';
+          
+          await exploreBinaryTree();
+          
+          exploreBtn.textContent = '🌳 Explore Tree';
+        } catch (error) {
+          console.error('Error exploring tree:', error);
+          exploreBtn.textContent = '❌ Error';
+          setTimeout(() => {
+            exploreBtn.textContent = '🌳 Explore Tree';
+            exploreBtn.disabled = false;
+          }, 2000);
+        } finally {
+          exploreBtn.disabled = false;
+        }
+      });
+
+      // Refresh leaderboard button
+      refreshBtn.addEventListener('click', async () => {
+        try {
+          refreshBtn.disabled = true;
+          refreshBtn.textContent = '⏳ Refreshing...';
+          
+          await exploreBinaryTree();
+          
+          refreshBtn.textContent = '🔄 Refresh Leaderboard';
+        } catch (error) {
+          console.error('Error refreshing leaderboard:', error);
+          refreshBtn.textContent = '❌ Error';
+          setTimeout(() => {
+            refreshBtn.textContent = '🔄 Refresh Leaderboard';
+            refreshBtn.disabled = false;
+          }, 2000);
+        } finally {
+          refreshBtn.disabled = false;
+        }
+      });
+    }
+
+    // Main function to explore binary tree and create leaderboard
+    async function exploreBinaryTree() {
+      try {
+        if (!window.connectWallet) {
+          throw new Error('Wallet connection is not available');
+        }
+
+        const { contract } = await window.connectWallet();
+        if (!contract) {
+          throw new Error('Contract connection failed');
+        }
+
+        console.log('🌳 Starting binary tree exploration...');
+        
+        // Get all users from the tree
+        const allUsers = await getAllUsersFromTree(contract);
+        
+        // Sort by claimed points (descending)
+        const sortedUsers = allUsers.sort((a, b) => {
+          const aClaimed = Number(a.binaryPointsClaimed || 0);
+          const bClaimed = Number(b.binaryPointsClaimed || 0);
+          return bClaimed - aClaimed;
+        });
+
+        // Update statistics
+        updateTreeStatistics(allUsers);
+        
+        // Display top 10 leaderboard
+        displayLeaderboard(sortedUsers.slice(0, 10));
+        
+        console.log(`✅ Tree exploration completed. Found ${allUsers.length} users.`);
+        
+      } catch (error) {
+        console.error('Error in tree exploration:', error);
+        throw error;
+      }
+    }
+
+    // Get all users from the binary tree using optimized traversal
+    async function getAllUsersFromTree(contract) {
+      const users = [];
+      const processedIndices = new Set();
+      const maxDepth = 25; // Prevent infinite loops
+      
+      // Start from root (index 1)
+      const rootIndex = 1n;
+      const stack = [{ index: rootIndex, depth: 0 }];
+      
+      while (stack.length > 0) {
+        const { index, depth } = stack.pop();
+        const indexStr = index.toString();
+        
+        // Skip if already processed or too deep
+        if (processedIndices.has(indexStr) || depth > maxDepth) continue;
+        processedIndices.add(indexStr);
+        
+        try {
+          // Get address for this index
+          const address = await contract.indexToAddress(index);
+          
+          if (address && address !== '0x0000000000000000000000000000000000000000') {
+            // Get user data
+            const userData = await contract.users(address);
+            
+            if (userData && userData.index) {
+              users.push({
+                address: address,
+                index: userData.index,
+                binaryPoints: userData.binaryPoints || 0,
+                binaryPointsClaimed: userData.binaryPointsClaimed || 0,
+                leftPoints: userData.leftPoints || 0,
+                rightPoints: userData.rightPoints || 0,
+                totalPurchasedKind: userData.totalPurchasedKind || 0,
+                depositedAmount: userData.depositedAmount || 0
+              });
+              
+              // Add children to stack
+              const leftChild = index * 2n;
+              const rightChild = index * 2n + 1n;
+              
+              stack.push({ index: rightChild, depth: depth + 1 });
+              stack.push({ index: leftChild, depth: depth + 1 });
+            }
+          }
+        } catch (e) {
+          // Skip errors and continue
+          continue;
+        }
+      }
+      
+      return users;
+    }
+
+    // Update tree statistics display
+    function updateTreeStatistics(users) {
+      const totalUsersEl = document.getElementById('total-users');
+      const totalPointsEl = document.getElementById('total-points');
+      const claimedPointsEl = document.getElementById('claimed-points');
+      const treeStats = document.getElementById('tree-stats');
+      
+      if (!totalUsersEl || !totalPointsEl || !claimedPointsEl || !treeStats) return;
+      
+      const totalUsers = users.length;
+      const totalPoints = users.reduce((sum, user) => sum + Number(user.binaryPoints || 0), 0);
+      const claimedPoints = users.reduce((sum, user) => sum + Number(user.binaryPointsClaimed || 0), 0);
+      
+      totalUsersEl.textContent = totalUsers.toLocaleString();
+      totalPointsEl.textContent = totalPoints.toLocaleString();
+      claimedPointsEl.textContent = claimedPoints.toLocaleString();
+      
+      treeStats.style.display = 'block';
+    }
+
+    // Display leaderboard
+    function displayLeaderboard(topUsers) {
+      const leaderboardContainer = document.getElementById('leaderboard-container');
+      const leaderboardList = document.getElementById('leaderboard-list');
+      
+      if (!leaderboardContainer || !leaderboardList) return;
+      
+      if (topUsers.length === 0) {
+        leaderboardList.innerHTML = '<div style="text-align: center; color: #aef3c6; padding: 20px;">No users found</div>';
+        leaderboardContainer.style.display = 'block';
+        return;
+      }
+      
+      const leaderboardHTML = topUsers.map((user, index) => {
+        const rank = index + 1;
+        const claimedPoints = Number(user.binaryPointsClaimed || 0);
+        const totalPoints = Number(user.binaryPoints || 0);
+        const address = user.address;
+        const shortAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Unknown';
+        
+        // Rank styling
+        let rankStyle = '';
+        let rankIcon = '';
+        if (rank === 1) {
+          rankStyle = 'background: linear-gradient(135deg, #ffd700, #ffed4e); color: #181c2a;';
+          rankIcon = '👑';
+        } else if (rank === 2) {
+          rankStyle = 'background: linear-gradient(135deg, #c0c0c0, #e5e5e5); color: #181c2a;';
+          rankIcon = '🥈';
+        } else if (rank === 3) {
+          rankStyle = 'background: linear-gradient(135deg, #cd7f32, #daa520); color: #181c2a;';
+          rankIcon = '🥉';
+        } else {
+          rankStyle = 'background: rgba(167, 134, 255, 0.2); color: #aef3c6;';
+          rankIcon = `#${rank}`;
+        }
+        
+        return `
+          <div style="
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            margin: 8px 0;
+            background: rgba(0, 255, 136, 0.05);
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+          " onmouseover="this.style.background='rgba(0, 255, 136, 0.1)'" onmouseout="this.style.background='rgba(0, 255, 136, 0.05)'">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="
+                ${rankStyle}
+                padding: 6px 12px;
+                border-radius: 20px;
+                font-weight: bold;
+                font-size: 14px;
+                min-width: 40px;
+                text-align: center;
+              ">${rankIcon}</div>
+              <div>
+                <div style="color: #e6eaf0; font-weight: 600; font-family: monospace;">${shortAddress}</div>
+                <div style="color: #aef3c6; font-size: 12px;">Index: ${user.index}</div>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <div style="color: #00ff88; font-weight: bold; font-size: 16px;">${claimedPoints.toLocaleString()}</div>
+              <div style="color: #aef3c6; font-size: 12px;">claimed points</div>
+              <div style="color: #a786ff; font-size: 11px;">${totalPoints.toLocaleString()} total</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      leaderboardList.innerHTML = leaderboardHTML;
+      leaderboardContainer.style.display = 'block';
     }
   </script>
   
