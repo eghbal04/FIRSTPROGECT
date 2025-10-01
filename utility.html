@@ -273,11 +273,17 @@
         <div class="calculator-section">
           <div style="display:flex; flex-direction:column; gap:.75rem;">
             <div style="flex:1; min-width:220px;">
-              <label for="conv-iam" style="color:#a0aec0; font-size:.9rem;">IAM</label>
+              <label for="conv-iam" style="color:#a0aec0; font-size:.9rem; display:flex; align-items:center; justify-content:space-between; gap:.5rem;">
+                <span>IAM</span>
+                <button id="conv-iam-max" type="button" class="utility-btn" style="padding:.25rem .6rem; border-radius:6px; font-size:.8rem; line-height:1; background:linear-gradient(45deg,#334155,#1f2937); color:#e2e8f0;">Max</button>
+              </label>
               <input id="conv-iam" type="number" inputmode="decimal" class="calculator-input" placeholder="Enter IAM amount" min="0" step="0.000000000000000001" style="direction:ltr; text-align:left;">
             </div>
             <div style="flex:1; min-width:220px;">
-              <label for="conv-dai" style="color:#a0aec0; font-size:.9rem;">DAI</label>
+              <label for="conv-dai" style="color:#a0aec0; font-size:.9rem; display:flex; align-items:center; justify-content:space-between; gap:.5rem;">
+                <span>DAI</span>
+                <button id="conv-dai-max" type="button" class="utility-btn" style="padding:.25rem .6rem; border-radius:6px; font-size:.8rem; line-height:1; background:linear-gradient(45deg,#334155,#1f2937); color:#e2e8f0;">Max</button>
+              </label>
               <input id="conv-dai" type="number" inputmode="decimal" class="calculator-input" placeholder="Enter DAI amount" min="0" step="0.000000000000000001" style="direction:ltr; text-align:left;">
             </div>
           </div>
@@ -1488,6 +1494,8 @@
       const iamInput = document.getElementById('conv-iam');
       const daiInput = document.getElementById('conv-dai');
       const result = document.getElementById('conv-result');
+      const btnMaxIam = document.getElementById('conv-iam-max');
+      const btnMaxDai = document.getElementById('conv-dai-max');
       const btnIamToDai = document.getElementById('btn-iam-to-dai');
       const btnDaiToIam = document.getElementById('btn-dai-to-iam');
       if (!iamInput || !daiInput || !result) return;
@@ -1529,6 +1537,48 @@
 
       iamInput.addEventListener('input', onIamChange);
       daiInput.addEventListener('input', onDaiChange);
+
+      // Fetch wallet balances and set Max
+      async function fetchBalances() {
+        try {
+          if (!window.connectWallet) return { iam: null, dai: null };
+          const { contract, provider, address } = await window.connectWallet();
+          let iamBal = null, daiBal = null;
+          try {
+            if (contract && typeof contract.balanceOf === 'function') {
+              const b = await contract.balanceOf(address);
+              iamBal = Number(ethers.formatUnits(b, 18));
+            }
+          } catch(_) {}
+          try {
+            const daiAddr = window.DAI_ADDRESS || (window.contractConfig && window.contractConfig.DAI_ADDRESS);
+            if (provider && daiAddr) {
+              const minimalDaiAbi = [{"inputs":[{"name":"account","type":"address"}],"name":"balanceOf","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"}];
+              const Dai = new ethers.Contract(daiAddr, minimalDaiAbi, provider);
+              const d = await Dai.balanceOf(address);
+              daiBal = Number(ethers.formatUnits(d, 18));
+            }
+          } catch(_) {}
+          return { iam: iamBal, dai: daiBal };
+        } catch { return { iam: null, dai: null }; }
+      }
+
+      async function setMaxIam() {
+        const { iam } = await fetchBalances();
+        if (iam === null || isNaN(iam)) return;
+        iamInput.value = iam.toString();
+        iamInput.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+
+      async function setMaxDai() {
+        const { dai } = await fetchBalances();
+        if (dai === null || isNaN(dai)) return;
+        daiInput.value = dai.toString();
+        daiInput.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+
+      if (btnMaxIam) btnMaxIam.addEventListener('click', setMaxIam);
+      if (btnMaxDai) btnMaxDai.addEventListener('click', setMaxDai);
 
       if (btnIamToDai) btnIamToDai.onclick = async ()=>{
         const v = iamInput.value.trim();
