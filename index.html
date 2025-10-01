@@ -1265,6 +1265,18 @@
       } catch { return '$0.00'; }
     }
 
+    function formatUsdFromWeiProduct2Decimals(productWeiBigInt) {
+      try {
+        const s = safeFormatUnits(productWeiBigInt, 18);
+        const n = Number(s);
+        if (!isFinite(n)) return '$0.00';
+        return '$' + n.toLocaleString('en-US', { 
+          minimumFractionDigits: 2, 
+          maximumFractionDigits: 2 
+        });
+      } catch { return '$0.00'; }
+    }
+
     function shortenAddress(address) {
       if (!address || address === '-') return '-';
       if (address.length < 10) return address;
@@ -1623,7 +1635,10 @@
             const minimalDaiAbi = [{"inputs":[{"name":"account","type":"address"}],"name":"balanceOf","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"}];
             const Dai = new ethers.Contract(daiAddr, minimalDaiAbi, provider);
             const d = await Dai.balanceOf(contract.target);
-            if (daiInEl) daiInEl.textContent = formatMax2(toNumberFromUnits(d, 18));
+            if (daiInEl) daiInEl.textContent = toNumberFromUnits(d, 18).toLocaleString('en-US', { 
+              minimumFractionDigits: 2, 
+              maximumFractionDigits: 2 
+            });
           }
         } catch {}
 
@@ -1678,7 +1693,7 @@
             if (tokenPriceWei) {
               const usdPerPointWei = (priceWeiPerPoint * tokenPriceWei) / ONE;
               const usdEl = ensureUsdInline(pointPriceEl);
-              if (usdEl) usdEl.textContent = formatUsdFromWeiProduct(usdPerPointWei);
+              if (usdEl) usdEl.textContent = formatUsdFromWeiProduct2Decimals(usdPerPointWei);
             }
           }
         } catch {}
@@ -1694,7 +1709,7 @@
               const ONE = 1000000000000000000n;
               const cbUsdWei = (cbWei * tokenPriceWei) / ONE;
               const usdEl = ensureUsdInline(cashbackEl);
-              if (usdEl) usdEl.textContent = formatUsdFromWeiProduct(cbUsdWei);
+              if (usdEl) usdEl.textContent = formatUsdFromWeiProduct2Decimals(cbUsdWei);
             }
           }
         } catch {}
@@ -1702,10 +1717,15 @@
         // USD subline below Registration Price
         try {
           if (regPriceEl && regPriceWei && tokenPriceWei) {
-            const ONE = 1000000000000000000n;
-            const regUsdWei = (regPriceWei * tokenPriceWei) / ONE;
+            // Convert to numbers for precise calculation
+            const regPriceNum = Number(ethers.formatUnits(regPriceWei, 18));
+            const tokenPriceNum = Number(ethers.formatUnits(tokenPriceWei, 18));
+            const usdValue = regPriceNum * tokenPriceNum;
             const usdEl = ensureUsdInline(regPriceEl);
-            if (usdEl) usdEl.textContent = formatUsdFromWeiProduct(regUsdWei);
+            if (usdEl) usdEl.textContent = '$' + usdValue.toLocaleString('en-US', { 
+              minimumFractionDigits: 2, 
+              maximumFractionDigits: 2 
+            });
           }
         } catch {}
 
@@ -1715,7 +1735,7 @@
             const ONE = 1000000000000000000n;
             const supplyUsdWei = (totalSupplyWei * tokenPriceWei) / ONE;
             const usdEl = ensureUsdInline(supplyEl);
-            if (usdEl) usdEl.textContent = formatUsdFromWeiProduct(supplyUsdWei);
+            if (usdEl) usdEl.textContent = formatUsdFromWeiProduct2Decimals(supplyUsdWei);
           }
         } catch {}
 
@@ -1725,7 +1745,7 @@
             const ONE = 1000000000000000000n;
             const iamUsdWei = (iamBalanceSelf * tokenPriceWei) / ONE;
             const usdEl = ensureUsdInline(iamInEl);
-            if (usdEl) usdEl.textContent = formatUsdFromWeiProduct(iamUsdWei);
+            if (usdEl) usdEl.textContent = formatUsdFromWeiProduct2Decimals(iamUsdWei);
           }
         } catch {}
             } catch (e) {
