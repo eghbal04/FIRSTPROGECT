@@ -1182,18 +1182,39 @@
         </p>
         
         <div id="tree-navigation" style="margin-bottom: 20px;">
-          <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
-            <button id="explore-tree-btn" style="
-              background: linear-gradient(135deg, #00ff88, #00cc6a);
-              color: #181c2a;
-              border: none;
-              padding: 12px 24px;
-              border-radius: 8px;
-              font-weight: 600;
-              cursor: pointer;
-              transition: all 0.3s ease;
-              font-size: 16px;
-            ">🌳 Start Tree Exploration</button>
+          <div style="margin-bottom: 15px;">
+            <div id="exploration-status" style="
+              color: #aef3c6;
+              font-size: 14px;
+              margin-bottom: 8px;
+              text-align: center;
+            ">⏳ Starting Tree Exploration...</div>
+            <div style="
+              background: rgba(0, 255, 136, 0.1);
+              border: 1px solid rgba(0, 255, 136, 0.3);
+              border-radius: 10px;
+              height: 20px;
+              overflow: hidden;
+              position: relative;
+            ">
+              <div id="progress-bar" style="
+                background: linear-gradient(135deg, #00ff88, #00cc6a);
+                height: 100%;
+                width: 0%;
+                transition: width 0.3s ease;
+                position: relative;
+              "></div>
+              <div id="progress-text" style="
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                color: #181c2a;
+                font-weight: bold;
+                font-size: 12px;
+                z-index: 1;
+              ">0%</div>
+            </div>
           </div>
           
           <div id="tree-stats" style="
@@ -1233,6 +1254,22 @@
           ">
             <div style="text-align: center; color: #aef3c6; padding: 20px;">
               Click "Explore Tree" to load the leaderboard
+            </div>
+          </div>
+        </div>
+        
+        <div id="popularity-container" style="display: block; margin-top: 20px;">
+          <h3 style="color: #aef3c6; font-size: 18px; margin: 0 0 12px;">❤️ Member Popularity</h3>
+          <div id="popularity-list" style="
+            background: rgba(255, 107, 51, 0.1);
+            border: 1px solid rgba(255, 107, 51, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+          ">
+            <div style="text-align: center; color: #aef3c6; padding: 20px;">
+              Loading popularity data...
             </div>
           </div>
         </div>
@@ -2074,33 +2111,40 @@
 
     // Tree Navigation and Leaderboard System
     function setupTreeNavigationAndLeaderboard() {
-      const exploreBtn = document.getElementById('explore-tree-btn');
+      // Start exploration automatically
+      startAutomaticExploration();
+    }
 
-      if (!exploreBtn) return;
+    // Automatic tree exploration
+    async function startAutomaticExploration() {
+      const statusEl = document.getElementById('exploration-status');
+      const progressBar = document.getElementById('progress-bar');
+      const progressText = document.getElementById('progress-text');
+      
+      if (!statusEl || !progressBar || !progressText) return;
 
-      // Explore tree button
-      exploreBtn.addEventListener('click', async () => {
-        try {
-          exploreBtn.disabled = true;
-          exploreBtn.textContent = '⏳ Exploring Tree...';
-          
-          await exploreBinaryTree();
-          
-          exploreBtn.textContent = '✅ Exploration Complete';
-          exploreBtn.style.background = 'linear-gradient(135deg, #00ff88, #00cc6a)';
-        } catch (error) {
-          console.error('Error exploring tree:', error);
-          exploreBtn.textContent = '❌ Error - Try Again';
-          exploreBtn.style.background = 'linear-gradient(135deg, #ff4444, #cc0000)';
-          setTimeout(() => {
-            exploreBtn.textContent = '🌳 Start Tree Exploration';
-            exploreBtn.style.background = 'linear-gradient(135deg, #00ff88, #00cc6a)';
-            exploreBtn.disabled = false;
-          }, 3000);
-        } finally {
-          exploreBtn.disabled = false;
-        }
-      });
+      try {
+        updateProgress(0, '⏳ Starting Tree Exploration...');
+        
+        await exploreBinaryTree();
+        
+        updateProgress(100, '✅ Tree Exploration Complete');
+      } catch (error) {
+        console.error('Error in automatic tree exploration:', error);
+        updateProgress(0, '❌ Exploration Failed - Check Console');
+        progressBar.style.background = 'linear-gradient(135deg, #ff4444, #cc0000)';
+      }
+    }
+
+    // Update progress bar
+    function updateProgress(percentage, statusText) {
+      const statusEl = document.getElementById('exploration-status');
+      const progressBar = document.getElementById('progress-bar');
+      const progressText = document.getElementById('progress-text');
+      
+      if (statusEl) statusEl.textContent = statusText;
+      if (progressBar) progressBar.style.width = percentage + '%';
+      if (progressText) progressText.textContent = Math.round(percentage) + '%';
     }
 
     // Main function to explore binary tree and create leaderboard
@@ -2110,15 +2154,21 @@
           throw new Error('Wallet connection is not available');
         }
 
+        updateProgress(10, '⏳ Connecting to Contract...');
+
         const { contract } = await window.connectWallet();
         if (!contract) {
           throw new Error('Contract connection failed');
         }
 
+        updateProgress(20, '⏳ Exploring Binary Tree...');
+
         console.log('🌳 Starting binary tree exploration...');
         
         // Get all users from the tree
         const allUsers = await getAllUsersFromTree(contract);
+        
+        updateProgress(70, '⏳ Processing Data...');
         
         // Sort by claimed points (descending)
         const sortedUsers = allUsers.sort((a, b) => {
@@ -2127,11 +2177,18 @@
           return bClaimed - aClaimed;
         });
 
+        updateProgress(85, '⏳ Updating Statistics...');
+
         // Update statistics
         updateTreeStatistics(allUsers);
         
+        updateProgress(95, '⏳ Displaying Leaderboard...');
+        
         // Display top 10 leaderboard
         displayLeaderboard(sortedUsers.slice(0, 10));
+        
+        // Display popularity data (already collected in allUsers)
+        displayPopularityList(allUsers);
         
         console.log(`✅ Tree exploration completed. Found ${allUsers.length} users.`);
         
@@ -2141,11 +2198,12 @@
       }
     }
 
-    // Get all users from the binary tree using optimized traversal
+    // Get all users from the binary tree using optimized traversal with likes/dislikes
     async function getAllUsersFromTree(contract) {
       const users = [];
       const processedIndices = new Set();
       const maxDepth = 10000000; // Increased per request to allow deep traversal
+      let processedCount = 0;
       
       // Start from root (index 1)
       const rootIndex = 1n;
@@ -2164,10 +2222,16 @@
           const address = await contract.indexToAddress(index);
           
           if (address && address !== '0x0000000000000000000000000000000000000000') {
-            // Get user data
-            const userData = await contract.users(address);
+            // Get user data and vote status in parallel
+            const [userData, voteStatus] = await Promise.all([
+              contract.users(address),
+              contract.getVoteStatus(address).catch(() => ({ 0: 0, 1: 0 })) // Fallback for vote errors
+            ]);
             
             if (userData && userData.index) {
+              const likes = Number(voteStatus[0] || voteStatus.totalLikes || 0);
+              const dislikes = Number(voteStatus[1] || voteStatus.totalDislikes || 0);
+              
               users.push({
                 address: address,
                 index: userData.index,
@@ -2176,7 +2240,10 @@
                 leftPoints: userData.leftPoints || 0,
                 rightPoints: userData.rightPoints || 0,
                 totalPurchasedKind: userData.totalPurchasedKind || 0,
-                depositedAmount: userData.depositedAmount || 0
+                depositedAmount: userData.depositedAmount || 0,
+                likes: likes,
+                dislikes: dislikes,
+                popularityScore: likes - dislikes
               });
               
               // Add children to stack
@@ -2186,6 +2253,13 @@
               stack.push({ index: rightChild, depth: depth + 1 });
               stack.push({ index: leftChild, depth: depth + 1 });
             }
+          }
+          
+          // Update progress every 10 processed nodes
+          processedCount++;
+          if (processedCount % 10 === 0) {
+            const progress = Math.min(20 + (processedCount * 0.5), 65);
+            updateProgress(progress, `⏳ Exploring... Found ${users.length} users`);
           }
         } catch (e) {
           // Skip errors and continue
@@ -2291,6 +2365,107 @@
       
       leaderboardList.innerHTML = leaderboardHTML;
       leaderboardContainer.style.display = 'block';
+    }
+
+    // Display popularity list
+    function displayPopularityList(users) {
+      const popularityContainer = document.getElementById('popularity-container');
+      const popularityList = document.getElementById('popularity-list');
+      
+      if (!popularityContainer || !popularityList) return;
+      
+      // Show container
+      popularityContainer.style.display = 'block';
+      
+      if (users.length === 0) {
+        popularityList.innerHTML = '<div style="text-align: center; color: #aef3c6; padding: 20px;">No popularity data found</div>';
+        return;
+      }
+      
+      // Sort by popularity score (likes - dislikes) descending
+      const sortedByPopularity = users.sort((a, b) => (b.popularityScore || 0) - (a.popularityScore || 0));
+      
+      // Display top 10 most popular users
+      const popularUsers = sortedByPopularity.slice(0, 10);
+      
+      const popularityHTML = popularUsers.map((user, index) => {
+        const rank = index + 1;
+        const likes = user.likes || 0;
+        const dislikes = user.dislikes || 0;
+        const popularityScore = user.popularityScore || 0;
+        const address = user.address;
+        const shortAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'Unknown';
+        
+        // Rank styling
+        let rankStyle = '';
+        let rankIcon = '';
+        if (rank === 1) {
+          rankStyle = 'background: linear-gradient(135deg, #ffd700, #ffed4e); color: #181c2a;';
+          rankIcon = '👑';
+        } else if (rank === 2) {
+          rankStyle = 'background: linear-gradient(135deg, #c0c0c0, #e5e5e5); color: #181c2a;';
+          rankIcon = '🥈';
+        } else if (rank === 3) {
+          rankStyle = 'background: linear-gradient(135deg, #cd7f32, #daa520); color: #181c2a;';
+          rankIcon = '🥉';
+        } else {
+          rankStyle = 'background: rgba(255, 107, 51, 0.2); color: #aef3c6;';
+          rankIcon = `#${rank}`;
+        }
+        
+        // Popularity color based on score
+        let popularityColor = '#aef3c6'; // neutral
+        if (popularityScore > 0) popularityColor = '#00ff88'; // positive
+        else if (popularityScore < 0) popularityColor = '#ff4444'; // negative
+        
+        return `
+          <div style="
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            margin: 8px 0;
+            background: rgba(255, 107, 51, 0.05);
+            border: 1px solid rgba(255, 107, 51, 0.2);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+          " onmouseover="this.style.background='rgba(255, 107, 51, 0.1)'" onmouseout="this.style.background='rgba(255, 107, 51, 0.05)'">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="
+                ${rankStyle}
+                padding: 6px 12px;
+                border-radius: 20px;
+                font-weight: bold;
+                font-size: 14px;
+                min-width: 40px;
+                text-align: center;
+              ">${rankIcon}</div>
+              <div>
+                <div style="color: #e6eaf0; font-weight: 600; font-family: monospace;">${shortAddress}</div>
+                <div style="color: #aef3c6; font-size: 12px;">Index: ${user.index}</div>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <div style="display: flex; gap: 15px; align-items: center;">
+                <div style="text-align: center;">
+                  <div style="color: #00ff88; font-weight: bold; font-size: 16px;">${likes}</div>
+                  <div style="color: #aef3c6; font-size: 12px;">❤️ Likes</div>
+                </div>
+                <div style="text-align: center;">
+                  <div style="color: #ff4444; font-weight: bold; font-size: 16px;">${dislikes}</div>
+                  <div style="color: #aef3c6; font-size: 12px;">💔 Dislikes</div>
+                </div>
+                <div style="text-align: center;">
+                  <div style="color: ${popularityColor}; font-weight: bold; font-size: 16px;">${popularityScore >= 0 ? '+' : ''}${popularityScore}</div>
+                  <div style="color: #aef3c6; font-size: 12px;">📊 Score</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      popularityList.innerHTML = popularityHTML;
     }
   </script>
   
