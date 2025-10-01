@@ -1187,22 +1187,13 @@
               background: linear-gradient(135deg, #00ff88, #00cc6a);
               color: #181c2a;
               border: none;
-              padding: 10px 20px;
+              padding: 12px 24px;
               border-radius: 8px;
               font-weight: 600;
               cursor: pointer;
               transition: all 0.3s ease;
-            ">🌳 Explore Tree</button>
-            <button id="refresh-leaderboard-btn" style="
-              background: linear-gradient(135deg, #a786ff, #9670ff);
-              color: #181c2a;
-              border: none;
-              padding: 10px 20px;
-              border-radius: 8px;
-              font-weight: 600;
-              cursor: pointer;
-              transition: all 0.3s ease;
-            ">🔄 Refresh Leaderboard</button>
+              font-size: 16px;
+            ">🌳 Start Tree Exploration</button>
           </div>
           
           <div id="tree-stats" style="
@@ -1400,6 +1391,17 @@
         return n.toLocaleString('en-US', { 
           minimumFractionDigits: 0, 
           maximumFractionDigits: 18 
+        });
+      } catch { return String(num); }
+    }
+
+    function format2Decimals(num) {
+      try { 
+        const n = Number(num);
+        if (!isFinite(n)) return String(num);
+        return n.toLocaleString('en-US', { 
+          minimumFractionDigits: 2, 
+          maximumFractionDigits: 2 
         });
       } catch { return String(num); }
     }
@@ -1636,7 +1638,7 @@
             // POL/MATIC
             try {
               const mBal = await provider.getBalance(userAddr);
-              updateStatusPills({ matic: formatMax2(toNumberFromUnits(mBal, 18)) });
+              updateStatusPills({ matic: format2Decimals(toNumberFromUnits(mBal, 18)) });
             } catch {}
             // DAI
             try {
@@ -1645,14 +1647,14 @@
                 const minimalDaiAbi = [{"inputs":[{"name":"account","type":"address"}],"name":"balanceOf","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"}];
                 const Dai = new ethers.Contract(daiAddr, minimalDaiAbi, provider);
                 const dBal = await Dai.balanceOf(userAddr);
-                updateStatusPills({ dAI: undefined, dai: formatMax2(toNumberFromUnits(dBal, 18)) });
+                updateStatusPills({ dAI: undefined, dai: format2Decimals(toNumberFromUnits(dBal, 18)) });
               }
             } catch {}
             // IAM balance
             try {
               if (typeof contract.balanceOf === 'function') {
                 const ib = await contract.balanceOf(userAddr);
-                updateStatusPills({ iam: formatMax2(toNumberFromUnits(ib, 18)) });
+                updateStatusPills({ iam: format2Decimals(toNumberFromUnits(ib, 18)) });
               }
             } catch {}
             // Users struct: index, likes, dislikes (preferred source)
@@ -2073,52 +2075,30 @@
     // Tree Navigation and Leaderboard System
     function setupTreeNavigationAndLeaderboard() {
       const exploreBtn = document.getElementById('explore-tree-btn');
-      const refreshBtn = document.getElementById('refresh-leaderboard-btn');
-      const treeStats = document.getElementById('tree-stats');
-      const leaderboardContainer = document.getElementById('leaderboard-container');
-      const leaderboardList = document.getElementById('leaderboard-list');
 
-      if (!exploreBtn || !refreshBtn) return;
+      if (!exploreBtn) return;
 
       // Explore tree button
       exploreBtn.addEventListener('click', async () => {
         try {
           exploreBtn.disabled = true;
-          exploreBtn.textContent = '⏳ Exploring...';
+          exploreBtn.textContent = '⏳ Exploring Tree...';
           
           await exploreBinaryTree();
           
-          exploreBtn.textContent = '🌳 Explore Tree';
+          exploreBtn.textContent = '✅ Exploration Complete';
+          exploreBtn.style.background = 'linear-gradient(135deg, #00ff88, #00cc6a)';
         } catch (error) {
           console.error('Error exploring tree:', error);
-          exploreBtn.textContent = '❌ Error';
+          exploreBtn.textContent = '❌ Error - Try Again';
+          exploreBtn.style.background = 'linear-gradient(135deg, #ff4444, #cc0000)';
           setTimeout(() => {
-            exploreBtn.textContent = '🌳 Explore Tree';
+            exploreBtn.textContent = '🌳 Start Tree Exploration';
+            exploreBtn.style.background = 'linear-gradient(135deg, #00ff88, #00cc6a)';
             exploreBtn.disabled = false;
-          }, 2000);
+          }, 3000);
         } finally {
           exploreBtn.disabled = false;
-        }
-      });
-
-      // Refresh leaderboard button
-      refreshBtn.addEventListener('click', async () => {
-        try {
-          refreshBtn.disabled = true;
-          refreshBtn.textContent = '⏳ Refreshing...';
-          
-          await exploreBinaryTree();
-          
-          refreshBtn.textContent = '🔄 Refresh Leaderboard';
-        } catch (error) {
-          console.error('Error refreshing leaderboard:', error);
-          refreshBtn.textContent = '❌ Error';
-          setTimeout(() => {
-            refreshBtn.textContent = '🔄 Refresh Leaderboard';
-            refreshBtn.disabled = false;
-          }, 2000);
-        } finally {
-          refreshBtn.disabled = false;
         }
       });
     }
@@ -2165,7 +2145,7 @@
     async function getAllUsersFromTree(contract) {
       const users = [];
       const processedIndices = new Set();
-      const maxDepth = 25; // Prevent infinite loops
+      const maxDepth = 10000000; // Increased per request to allow deep traversal
       
       // Start from root (index 1)
       const rootIndex = 1n;
