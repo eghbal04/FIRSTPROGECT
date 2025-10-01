@@ -1258,7 +1258,10 @@
         const s = safeFormatUnits(productWeiBigInt, 18);
         const n = Number(s);
         if (!isFinite(n)) return '$0.00';
-        return '$' + n.toFixed(2);
+        return '$' + n.toLocaleString('en-US', { 
+          minimumFractionDigits: 2, 
+          maximumFractionDigits: 18 
+        });
       } catch { return '$0.00'; }
     }
 
@@ -1280,11 +1283,25 @@
     }
 
     function formatMax2(num) {
-      try { return new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(Number(num)); } catch { return String(num); }
+      try { 
+        const n = Number(num);
+        if (!isFinite(n)) return String(num);
+        return n.toLocaleString('en-US', { 
+          minimumFractionDigits: 2, 
+          maximumFractionDigits: 18 
+        });
+      } catch { return String(num); }
     }
 
     function format0(num) {
-      try { return new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(Number(num)); } catch { return String(num); }
+      try { 
+        const n = Number(num);
+        if (!isFinite(n)) return String(num);
+        return n.toLocaleString('en-US', { 
+          minimumFractionDigits: 0, 
+          maximumFractionDigits: 18 
+        });
+      } catch { return String(num); }
     }
 
     function shortenAddress(addr) {

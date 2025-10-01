@@ -408,15 +408,12 @@
             const maticBalance = await provider.getBalance(address);
             const IAMBalance = await contract.balanceOf(address);
             
-            // Function to format large numbers
+            // Function to format large numbers - show full values without abbreviations
             function formatLargeNumber(num) {
-                if (num >= 1000000) {
-                    return (num / 1000000).toFixed(1) + 'M';
-                } else if (num >= 1000) {
-                    return (num / 1000).toFixed(1) + 'K';
-                } else {
-                    return num.toFixed(2);
-                }
+                return num.toLocaleString('en-US', { 
+                    minimumFractionDigits: 2, 
+                    maximumFractionDigits: 2 
+                });
             }
             
             // Calculate IAM USD equivalent
@@ -479,7 +476,7 @@
                     <div class="balance-item">
                         <div class="balance-label">IAM</div>
                         <span class="balance-value" title="${Number.parseFloat(ethers.formatUnits(IAMBalance.toString(), 18)).toLocaleString('en-US', {maximumFractionDigits: 4})}">${formatLargeNumber(Number.parseFloat(ethers.formatUnits(IAMBalance.toString(), 18)))}</span>
-                        <div style="font-size:0.8rem;color:#a786ff;margin-top:2px;">≈ $${formatLargeNumber(IAMUsdValue)}</div>
+                        <div style="font-size:0.8rem;color:#a786ff;margin-top:2px;">≈ $${IAMUsdValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                     </div>
                     <div class="balance-item">
                         <div class="balance-label">MATIC</div>
@@ -552,7 +549,7 @@
                      </div>
                      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                          <span class="profile-label">USD Value:</span>
-                         <span class="profile-value">$${formatLargeNumber(Number(user.refclimed.toString())/1e18 * tokenPrice)}</span>
+                         <span class="profile-value">$${(Number(user.refclimed.toString())/1e18 * tokenPrice).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                      </div>
                      
                  </div>
@@ -577,7 +574,7 @@
                         tpEl.textContent = tpFull + ' IAM';
                         if (tpUsdEl) {
                             const usd = (typeof tokenPrice==='number' ? tokenPrice : 0) * Number(tpFull);
-                            tpUsdEl.textContent = '≈ $' + (isFinite(usd) ? usd.toFixed(2) : '0.00');
+                            tpUsdEl.textContent = '≈ $' + (isFinite(usd) ? usd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00');
                         }
                     }
                     if (rrEl) {
