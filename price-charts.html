@@ -48,6 +48,7 @@
   <!-- Main scripts -->
   <script src="js/config.js"></script>
   <script src="js/auto-wallet-connect.js"></script>
+  <script src="js/database-service.js"></script>
   <script src="browser-price-service.js"></script>
   
   <style>
@@ -484,11 +485,40 @@
       return { tokenCanvas, pointCanvas };
     }
     
+    // Generate initial price history if not exists
+    async function generateInitialPriceHistory() {
+      try {
+        // Check if token price history exists
+        const tokenHistory = localStorage.getItem('tokenPriceHistory');
+        if (!tokenHistory) {
+          console.log('🔄 Generating initial token price history...');
+          await priceService.getPriceHistory('token', 'IAM', 24);
+        }
+        
+        // Check if point price history exists
+        const pointHistory = localStorage.getItem('pointPriceHistory');
+        if (!pointHistory) {
+          console.log('🔄 Generating initial point price history...');
+          await priceService.getPriceHistory('point', 'binary_points', 24);
+        }
+        
+        console.log('✅ Initial price history generation completed');
+      } catch (error) {
+        console.error('❌ Error generating initial price history:', error);
+      }
+    }
+    
     // Initialize
     document.addEventListener('DOMContentLoaded', async function() {
       try {
         priceService = new window.BrowserPriceService();
         console.log('✅ Real price service initialized');
+        
+        // Initialize database service
+        await priceService.connectToDatabase();
+        
+        // Generate initial price history if not exists
+        await generateInitialPriceHistory();
         
         // اتصال خودکار به کنترکت با تلاش مجدد
         updateConnectionStatus('🔄 Auto-connecting to wallet...', 'warning');
@@ -518,40 +548,6 @@
         // Start auto refresh
         startAutoRefresh();
         
-        // تست مستقیم کنترکت
-        setTimeout(async () => {
-          console.log('🧪 تست مستقیم کنترکت...');
-          if (priceService.contract) {
-            try {
-              const directPrice = await priceService.contract.getTokenPrice();
-              console.log('✅ قیمت مستقیم از کنترکت:', directPrice.toString());
-            } catch (error) {
-              console.error('❌ خطا در دریافت قیمت مستقیم:', error);
-            }
-          } else {
-            console.log('❌ کنترکت متصل نیست');
-          }
-        }, 2000);
-        
-        // تست نمودار Point Price
-        setTimeout(async () => {
-          console.log('🧪 تست نمودار Point Price...');
-          try {
-            const pointHistory = await priceService.getPriceHistory('point', 'binary_points', 24);
-            console.log('✅ Point History:', pointHistory);
-            
-            // تست ایجاد نمودار Point
-            if (pointHistory && pointHistory.length > 0) {
-              console.log('🧪 تست ایجاد نمودار Point...');
-              createPointChart(pointHistory);
-            } else {
-              console.log('❌ Point History خالی است');
-            }
-          } catch (error) {
-            console.error('❌ خطا در دریافت Point History:', error);
-          }
-        }, 3000);
-        
       } catch (error) {
         console.error('❌ Error initializing charts:', error);
         showError('Failed to initialize charts');
@@ -561,6 +557,7 @@
     // Set up event listeners
     function setupEventListeners() {
       document.getElementById('timeRange').addEventListener('change', loadCharts);
+      
     }
     
     // Load charts data
@@ -640,7 +637,30 @@
           }
           createTokenChart(history);
         } else {
-          showNoData('tokenChart');
+          console.warn('⚠️ No token history data available');
+          
+          // تلاش برای بارگذاری از localStorage
+          const storedHistory = localStorage.getItem('tokenPriceHistory');
+          if (storedHistory) {
+            try {
+              const parsedHistory = JSON.parse(storedHistory);
+              console.log('📊 Loaded token history from localStorage:', parsedHistory.length, 'points');
+              if (parsedHistory.length > 0) {
+                const tokenCanvas = document.getElementById('tokenChart');
+                if (tokenCanvas) {
+                  tokenCanvas.style.display = 'block';
+                }
+                createTokenChart(parsedHistory);
+              } else {
+                showNoData('tokenChart');
+              }
+            } catch (error) {
+              console.error('❌ Error parsing stored token history:', error);
+              showNoData('tokenChart');
+            }
+          } else {
+            showNoData('tokenChart');
+          }
         }
         
       } catch (error) {
@@ -676,7 +696,29 @@
           createPointChart(history);
         } else {
           console.warn('⚠️ No point history data available');
-          showNoData('pointChart');
+          
+          // تلاش برای بارگذاری از localStorage
+          const storedHistory = localStorage.getItem('pointPriceHistory');
+          if (storedHistory) {
+            try {
+              const parsedHistory = JSON.parse(storedHistory);
+              console.log('📊 Loaded point history from localStorage:', parsedHistory.length, 'points');
+              if (parsedHistory.length > 0) {
+                const pointCanvas = document.getElementById('pointChart');
+                if (pointCanvas) {
+                  pointCanvas.style.display = 'block';
+                }
+                createPointChart(parsedHistory);
+              } else {
+                showNoData('pointChart');
+              }
+            } catch (error) {
+              console.error('❌ Error parsing stored point history:', error);
+              showNoData('pointChart');
+            }
+          } else {
+            showNoData('pointChart');
+          }
         }
         
       } catch (error) {
