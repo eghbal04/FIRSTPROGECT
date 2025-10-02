@@ -1,33 +1,19 @@
 {
-  "name": "neon-price-api",
+  "name": "price-api",
   "version": "1.0.0",
-  "description": "API server for Neon database price data integration",
+  "description": "Price API for IAM Token and Point prices",
   "main": "price-api.js",
   "scripts": {
     "start": "node price-api.js",
-    "dev": "nodemon price-api.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon price-api.js"
   },
-  "keywords": [
-    "neon",
-    "postgresql",
-    "api",
-    "price",
-    "crypto",
-    "blockchain"
-  ],
-  "author": "Your Name",
-  "license": "MIT",
   "dependencies": {
     "express": "^4.18.2",
-    "pg": "^8.11.3",
     "cors": "^2.8.5",
+    "pg": "^8.11.3",
     "dotenv": "^16.3.1"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
-  },
-  "engines": {
-    "node": ">=16.0.0"
   }
 }

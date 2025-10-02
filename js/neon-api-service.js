@@ -3,7 +3,7 @@
 
 class NeonApiService {
   constructor() {
-    this.baseUrl = 'http://localhost:3000/api'; // آدرس API محلی
+    this.baseUrl = 'http://localhost:3000'; // آدرس API محلی
     this.apiKey = 'neon-api-key-2024'; // کلید API محلی
   }
 
@@ -51,7 +51,7 @@ class NeonApiService {
   // ذخیره قیمت توکن
   async saveTokenPrice(priceData) {
     try {
-      const response = await fetch(`${this.baseUrl}/prices/token`, {
+      const response = await fetch(`${this.baseUrl}/api/token-prices`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -86,7 +86,7 @@ class NeonApiService {
   // ذخیره قیمت پوینت
   async savePointPrice(pointData) {
     try {
-      const response = await fetch(`${this.baseUrl}/prices/point`, {
+      const response = await fetch(`${this.baseUrl}/api/point-prices`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -117,7 +117,7 @@ class NeonApiService {
   // دریافت آخرین قیمت توکن
   async getLatestTokenPrice(symbol) {
     try {
-      const response = await fetch(`${this.baseUrl}/prices/token/${symbol}/latest`, {
+      const response = await fetch(`${this.baseUrl}/api/token-prices?symbol=${symbol}&hours=1`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -128,7 +128,10 @@ class NeonApiService {
       if (response.ok) {
         const result = await response.json();
         console.log('📊 Latest token price from Neon:', result);
-        return result;
+        if (result.success && result.data && result.data.length > 0) {
+          return result.data[0]; // Return the first (latest) record
+        }
+        return null;
       } else if (response.status === 404) {
         console.log('⚠️ No token price data found in Neon database');
         return null;
@@ -144,7 +147,7 @@ class NeonApiService {
   // دریافت آخرین قیمت پوینت
   async getLatestPointPrice(pointType) {
     try {
-      const response = await fetch(`${this.baseUrl}/prices/point/${pointType}/latest`, {
+      const response = await fetch(`${this.baseUrl}/api/point-prices?pointType=${pointType}&hours=1`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -155,7 +158,10 @@ class NeonApiService {
       if (response.ok) {
         const result = await response.json();
         console.log('📊 Latest point price from Neon:', result);
-        return result;
+        if (result.success && result.data && result.data.length > 0) {
+          return result.data[0]; // Return the first (latest) record
+        }
+        return null;
       } else if (response.status === 404) {
         console.log('⚠️ No point price data found in Neon database');
         return null;
