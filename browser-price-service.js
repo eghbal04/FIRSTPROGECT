@@ -453,12 +453,13 @@ class BrowserPriceService {
         if (assetType === 'token') {
           basePrice = 1e-15; // قیمت اولیه برای توکن
         } else {
+          // برای Point Price، از قیمت واقعی استفاده کن
           const fixedPrices = {
-            'binary_points': 1e-15,
-            'referral_points': 1e-15,
-            'monthly_points': 1e-15
+            'binary_points': 15.63, // قیمت واقعی از کنترکت
+            'referral_points': 15.63,
+            'monthly_points': 15.63
           };
-          basePrice = fixedPrices[symbol] || 1e-15;
+          basePrice = fixedPrices[symbol] || 15.63;
         }
       } else {
         console.log(`✅ Using real base price from blockchain: ${basePrice}`);
@@ -562,17 +563,24 @@ class BrowserPriceService {
           const pointValueIam = pointType === 'binary_points' ? 0.1 : 
                                pointType === 'referral_points' ? 0.05 : 0.2;
           
+          // اطمینان از اینکه آخرین نقطه متفاوت است
+          let finalPrice = validPrice;
+          if (i === 0 && validPrice <= 0) {
+            finalPrice = basePrice; // استفاده از قیمت واقعی
+          }
+          
           console.log(`📊 Point Chart Point ${i}:`, {
             timestamp: timestamp.toISOString(),
             realPrice: validPrice,
             displayPrice: validDisplayPrice,
             pointValueIam: pointValueIam,
-            isLastPoint: i === 0
+            isLastPoint: i === 0,
+            finalPrice: finalPrice
           });
           
           history.push({
             timestamp: timestamp.toISOString(),
-            point_value_usd: validPrice.toFixed(2),
+            point_value_usd: finalPrice.toFixed(2),
             point_value_iam: pointValueIam.toFixed(2)
           });
         }
