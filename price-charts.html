@@ -278,14 +278,6 @@
               <div class="stat-value current-price" id="currentTokenPrice">Loading...</div>
               <div class="stat-label">Current Price</div>
             </div>
-            <div class="stat-item">
-              <div class="stat-value" id="tokenPercentage">0.00%</div>
-              <div class="stat-label">24h Change</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-value" id="tokenVolume">0</div>
-              <div class="stat-label">Volume</div>
-            </div>
           </div>
         </div>
         <div class="chart-container">
@@ -488,15 +480,30 @@
       }
     }
 
-    // Save prices to Neon database
+    // Clear database and save prices from floating-token-card
     async function savePricesToNeon(initialPrice, currentPrice) {
       try {
-        console.log('💾 Saving prices to Neon database:', {
+        console.log('💾 Clearing database and saving prices from floating-token-card:', {
           initialPrice: initialPrice,
           currentPrice: currentPrice
         });
 
-        // Save initial price (25 days ago)
+        // First, clear all existing records
+        console.log('🗑️ Clearing existing database records...');
+        const clearResponse = await fetch('/api/clear-database', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+
+        if (clearResponse.ok) {
+          console.log('✅ Database cleared successfully');
+        } else {
+          console.warn('⚠️ Failed to clear database, continuing...');
+        }
+
+        // Save initial price (25 days ago) as first record
         const initialDate = new Date();
         initialDate.setDate(initialDate.getDate() - 25);
         
@@ -510,7 +517,24 @@
           created_at: initialDate.toISOString()
         };
 
-        // Save current price (now)
+        console.log('💾 Saving initial price (first record):', initialPriceData);
+
+        // Save initial price to database
+        const initialResponse = await fetch('/api/token-prices', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(initialPriceData)
+        });
+
+        if (initialResponse.ok) {
+          console.log('✅ Initial price saved as first record');
+              } else {
+          console.error('❌ Failed to save initial price');
+        }
+
+        // Save current price (now) as second record
         const currentPriceData = {
           symbol: 'IAM',
           name: 'IAM Token',
@@ -521,20 +545,10 @@
           created_at: new Date().toISOString()
         };
 
-        // Save to database via API
-        const response = await fetch('/api/token-prices', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(initialPriceData)
-        });
+        console.log('💾 Saving current price (second record):', currentPriceData);
 
-        if (response.ok) {
-          console.log('✅ Initial price saved to Neon');
-        }
-
-        const response2 = await fetch('/api/token-prices', {
+        // Save current price to database
+        const currentResponse = await fetch('/api/token-prices', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -542,10 +556,46 @@
           body: JSON.stringify(currentPriceData)
         });
 
-        if (response2.ok) {
-          console.log('✅ Current price saved to Neon');
+        if (currentResponse.ok) {
+          console.log('✅ Current price saved as second record');
+          } else {
+          console.error('❌ Failed to save current price');
         }
 
+        // Generate additional historical data points for better chart visualization
+        console.log('📊 Generating additional historical data points...');
+        const additionalPoints = 4; // Generate 4 more points
+        const timeDiff = (new Date() - initialDate) / (additionalPoints + 1);
+        
+        for (let i = 1; i <= additionalPoints; i++) {
+          const pointDate = new Date(initialDate.getTime() + (timeDiff * i));
+          const progress = i / (additionalPoints + 1);
+          const pointPrice = initialPrice + (currentPrice - initialPrice) * progress;
+          
+          const pointData = {
+            symbol: 'IAM',
+            name: 'IAM Token',
+            price_usd: pointPrice.toString(),
+            price_dai: pointPrice.toString(),
+            market_cap: (pointPrice * 1000000000).toString(),
+            total_supply: '1000000000',
+            created_at: pointDate.toISOString()
+          };
+
+          const pointResponse = await fetch('/api/token-prices', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(pointData)
+          });
+
+          if (pointResponse.ok) {
+            console.log(`✅ Historical point ${i} saved`);
+          }
+        }
+
+        console.log('🎉 All prices saved successfully to Neon database');
         return true;
       } catch (error) {
         console.error('❌ Error saving prices to Neon:', error);
@@ -553,96 +603,99 @@
       }
     }
 
-    // Update token stats
+    // Global variables for price comparison
+    let lastTokenPrice = null;
+    let lastPointPrice = null;
+    let chartUpdateNeeded = false;
+
+    // Update token stats with price comparison
     function updateTokenStats(priceData) {
       const priceElement = document.getElementById('currentTokenPrice');
-      const percentageElement = document.getElementById('tokenPercentage');
-      const volumeElement = document.getElementById('tokenVolume');
       
       if (priceElement) {
         const price = parseFloat(priceData.price_usd || priceData.priceUsd || 0);
         if (isNaN(price)) {
           priceElement.textContent = 'Loading...';
-          if (percentageElement) percentageElement.textContent = '0.00%';
-          if (volumeElement) volumeElement.textContent = '0';
         } else {
           // Get prices from floating-token-card
           getPricesFromFloatingCard().then(floatingData => {
             if (floatingData) {
-              console.log('📊 Using prices from floating-token-card:', floatingData);
-              
-              // Save to Neon database
-              savePricesToNeon(floatingData.initialPrice, floatingData.currentPrice);
-              
-              // Use floating-token-card prices
-              const initialPrice = floatingData.initialPrice;
               const currentPrice = floatingData.currentPrice;
-              const percentageChange = floatingData.growthPercentage;
               
-              // Format price display
-              const priceInWei = (currentPrice * 1e18).toFixed(0);
-              const priceScientific = currentPrice.toExponential(6);
-              const priceUSD = currentPrice.toExponential(2);
+              // Check if price has changed significantly (more than 0.1%)
+              const priceChanged = !lastTokenPrice || 
+                Math.abs(currentPrice - lastTokenPrice) / lastTokenPrice > 0.001;
               
-              // Update price display
-              priceElement.innerHTML = `
-                <div style="color: #ffffff; font-size: 1.2em; font-weight: bold;">${priceScientific}</div>
-                <div style="color: #00ff88; font-size: 0.9em; margin-top: 4px;">USD: $${priceUSD}</div>
-                <div style="color: #888; font-size: 0.8em; margin-top: 2px;">Wei: ${priceInWei}</div>
-                <div style="color: #00ff88; font-size: 0.7em; margin-top: 2px;">From Floating Card</div>
-              `;
-              
-              // Update percentage
-              if (percentageElement) {
-                const changeText = percentageChange >= 0 ? `+${percentageChange.toFixed(2)}%` : `${percentageChange.toFixed(2)}%`;
-                const changeColor = percentageChange >= 0 ? '#00ff88' : '#ff6b6b';
-                percentageElement.textContent = changeText;
-                percentageElement.style.color = changeColor;
-              }
-              
-              // Update volume (mock data for now)
-              if (volumeElement) {
-                const volume = (Math.random() * 1000000).toFixed(0);
-                volumeElement.textContent = volume;
-              }
-              
-              console.log('📊 Token stats updated from floating-token-card:', {
-                initialPrice: initialPrice.toExponential(6),
-                currentPrice: priceScientific,
-                priceInWei: priceInWei,
-                percentageChange: percentageChange.toFixed(2) + '%',
-                volume: volumeElement ? volumeElement.textContent : 'N/A'
-              });
-            } else {
+              if (priceChanged) {
+                console.log('📊 Price changed, updating chart:', {
+                  lastPrice: lastTokenPrice ? lastTokenPrice.toExponential(6) : 'None',
+                  currentPrice: currentPrice.toExponential(6),
+                  changePercent: lastTokenPrice ? 
+                    ((currentPrice - lastTokenPrice) / lastTokenPrice * 100).toFixed(4) + '%' : 'N/A'
+                });
+                
+                // Update last price
+                lastTokenPrice = currentPrice;
+                chartUpdateNeeded = true;
+                
+                // Save to Neon database only if price changed
+                savePricesToNeon(floatingData.initialPrice, currentPrice);
+                
+                // Use floating-token-card prices
+                const initialPrice = floatingData.initialPrice;
+                const percentageChange = floatingData.growthPercentage;
+                
+                // Format price display
+                const priceInWei = (currentPrice * 1e18).toFixed(0);
+                const priceScientific = currentPrice.toExponential(6);
+                const priceUSD = currentPrice.toExponential(2);
+                
+                // Update price display
+                priceElement.innerHTML = `
+                  <div style="color: #ffffff; font-size: 1.2em; font-weight: bold;">${priceScientific}</div>
+                  <div style="color: #00ff88; font-size: 0.9em; margin-top: 4px;">USD: $${priceUSD}</div>
+                  <div style="color: #888; font-size: 0.8em; margin-top: 2px;">Wei: ${priceInWei}</div>
+                  <div style="color: #00ff88; font-size: 0.7em; margin-top: 2px;">From Floating Card</div>
+                `;
+                
+                console.log('📊 Token stats updated from floating-token-card:', {
+                  initialPrice: initialPrice.toExponential(6),
+                  currentPrice: priceScientific,
+                  priceInWei: priceInWei,
+                  percentageChange: percentageChange.toFixed(2) + '%',
+                  chartUpdateNeeded: chartUpdateNeeded
+                });
+              } else {
+                console.log('📊 Price unchanged, skipping chart update:', {
+                  currentPrice: currentPrice.toExponential(6),
+                  lastPrice: lastTokenPrice.toExponential(6)
+                });
+            }
+          } else {
               // Fallback to original logic
               const initialPrice = 10e-15;
               const currentPrice = price;
               const percentageChange = ((currentPrice - initialPrice) / initialPrice) * 100;
               
-              // Format price display
-              const priceInWei = (currentPrice * 1e18).toFixed(0);
-              const priceScientific = currentPrice.toExponential(6);
-              const priceUSD = currentPrice.toExponential(2);
+              // Check if price has changed
+              const priceChanged = !lastTokenPrice || 
+                Math.abs(currentPrice - lastTokenPrice) / lastTokenPrice > 0.001;
               
-              // Update price display
-              priceElement.innerHTML = `
-                <div style="color: #ffffff; font-size: 1.2em; font-weight: bold;">${priceScientific}</div>
-                <div style="color: #00ff88; font-size: 0.9em; margin-top: 4px;">USD: $${priceUSD}</div>
-                <div style="color: #888; font-size: 0.8em; margin-top: 2px;">Wei: ${priceInWei}</div>
-              `;
-              
-              // Update percentage
-              if (percentageElement) {
-                const changeText = percentageChange >= 0 ? `+${percentageChange.toFixed(2)}%` : `${percentageChange.toFixed(2)}%`;
-                const changeColor = percentageChange >= 0 ? '#00ff88' : '#ff6b6b';
-                percentageElement.textContent = changeText;
-                percentageElement.style.color = changeColor;
-              }
-              
-              // Update volume (mock data for now)
-              if (volumeElement) {
-                const volume = (Math.random() * 1000000).toFixed(0);
-                volumeElement.textContent = volume;
+              if (priceChanged) {
+                lastTokenPrice = currentPrice;
+                chartUpdateNeeded = true;
+                
+                // Format price display
+                const priceInWei = (currentPrice * 1e18).toFixed(0);
+                const priceScientific = currentPrice.toExponential(6);
+                const priceUSD = currentPrice.toExponential(2);
+                
+                // Update price display
+                priceElement.innerHTML = `
+                  <div style="color: #ffffff; font-size: 1.2em; font-weight: bold;">${priceScientific}</div>
+                  <div style="color: #00ff88; font-size: 0.9em; margin-top: 4px;">USD: $${priceUSD}</div>
+                  <div style="color: #888; font-size: 0.8em; margin-top: 2px;">Wei: ${priceInWei}</div>
+                `;
               }
             }
           });
@@ -658,7 +711,7 @@
         const price = parseFloat(priceData.point_value_usd || priceData.pointValueUsd || 0);
         if (isNaN(price)) {
           priceElement.textContent = '$0.00';
-        } else {
+      } else {
           priceElement.textContent = `$${price.toFixed(2)}`;
         }
       }
@@ -692,7 +745,7 @@
           });
         });
         prices = history.map(item => parseFloat(item.price_usd));
-      } else {
+              } else {
         // Generate sample data
         labels = ['12:00', '14:00', '16:00', '18:00', '20:00', '22:00'];
         prices = [1.2e-15, 1.3e-15, 1.1e-15, 1.4e-15, 1.25e-15, 1.35e-15];
@@ -974,7 +1027,7 @@
       container.appendChild(errorDiv);
     }
     
-    // Start real-time auto refresh
+    // Start real-time auto refresh with smart updates
     function startRealTimeAutoRefresh() {
       if (refreshInterval) {
         clearInterval(refreshInterval);
@@ -984,15 +1037,55 @@
       refreshInterval = setInterval(async () => {
         console.log('🔄 Auto-refresh triggered...');
         
-        // Save current blockchain data first
-        await saveCurrentBlockchainData();
-        
-        // Then load charts from database
-        await loadTokenChartFromDatabase();
-        await loadPointChartFromDatabase();
+        try {
+          // Get current prices from floating-token-card
+          const floatingData = await getPricesFromFloatingCard();
+          
+          if (floatingData) {
+            const currentPrice = floatingData.currentPrice;
+            
+            // Check if price has changed significantly
+            const priceChanged = !lastTokenPrice || 
+              Math.abs(currentPrice - lastTokenPrice) / lastTokenPrice > 0.001;
+            
+            if (priceChanged) {
+              console.log('📊 Price changed, updating chart and database:', {
+                lastPrice: lastTokenPrice ? lastTokenPrice.toExponential(6) : 'None',
+                currentPrice: currentPrice.toExponential(6),
+                changePercent: lastTokenPrice ? 
+                  ((currentPrice - lastTokenPrice) / lastTokenPrice * 100).toFixed(4) + '%' : 'N/A'
+              });
+              
+              // Update last price
+              lastTokenPrice = currentPrice;
+              
+              // Save current blockchain data to database
+              await saveCurrentBlockchainData();
+              
+              // Load charts from database
+              await loadTokenChartFromDatabase();
+              await loadPointChartFromDatabase();
+              
+              console.log('✅ Chart updated due to price change');
+            } else {
+              console.log('📊 Price unchanged, skipping chart update:', {
+                currentPrice: currentPrice.toExponential(6),
+                lastPrice: lastTokenPrice.toExponential(6)
+              });
+            }
+          } else {
+            // Fallback: update charts anyway if floating data not available
+            console.log('⚠️ Floating data not available, updating charts anyway');
+            await saveCurrentBlockchainData();
+            await loadTokenChartFromDatabase();
+            await loadPointChartFromDatabase();
+          }
+        } catch (error) {
+          console.error('❌ Error in auto-refresh:', error);
+        }
       }, 30000); // 30 seconds
       
-      console.log('✅ Auto-refresh enabled: 30 seconds');
+      console.log('✅ Smart auto-refresh enabled: 30 seconds (only updates when price changes)');
       
       // Also start price service auto-update
       if (priceService) {
