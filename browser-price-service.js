@@ -438,7 +438,8 @@ class BrowserPriceService {
             pointValueInIam: pointValueInIam,
             tokenPriceInEther: tokenPriceInEther,
             basePrice: basePrice,
-            calculation: `${pointValueInIam} IAM * ${tokenPriceInEther} ETH = ${basePrice} USD`
+            calculation: `${pointValueInIam} IAM * ${tokenPriceInEther} ETH = ${basePrice} USD`,
+            pointType: symbol
           });
         } else {
           const pointPrice = await this.getPointValue(symbol);
@@ -560,6 +561,14 @@ class BrowserPriceService {
           // برای پوینت‌ها، قیمت اولیه 1e-15 را در نظر بگیر
           const pointValueIam = pointType === 'binary_points' ? 0.1 : 
                                pointType === 'referral_points' ? 0.05 : 0.2;
+          
+          console.log(`📊 Point Chart Point ${i}:`, {
+            timestamp: timestamp.toISOString(),
+            realPrice: validPrice,
+            displayPrice: validDisplayPrice,
+            pointValueIam: pointValueIam,
+            isLastPoint: i === 0
+          });
           
           history.push({
             timestamp: timestamp.toISOString(),

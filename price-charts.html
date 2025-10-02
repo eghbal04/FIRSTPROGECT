@@ -346,21 +346,6 @@
           </select>
         </div>
         
-        <div class="control-group">
-          <label for="tokenSymbol">Token</label>
-          <select id="tokenSymbol">
-            <option value="IAM" selected>IAM Token</option>
-          </select>
-        </div>
-        
-        <div class="control-group">
-          <label for="pointType">Point Type</label>
-          <select id="pointType">
-            <option value="binary_points" selected>Binary Points</option>
-            <option value="referral_points">Referral Points</option>
-            <option value="monthly_points">Monthly Points</option>
-          </select>
-        </div>
         
       </div>
       
@@ -554,6 +539,14 @@
           try {
             const pointHistory = await priceService.getPriceHistory('point', 'binary_points', 24);
             console.log('✅ Point History:', pointHistory);
+            
+            // تست ایجاد نمودار Point
+            if (pointHistory && pointHistory.length > 0) {
+              console.log('🧪 تست ایجاد نمودار Point...');
+              createPointChart(pointHistory);
+            } else {
+              console.log('❌ Point History خالی است');
+            }
           } catch (error) {
             console.error('❌ خطا در دریافت Point History:', error);
           }
@@ -568,8 +561,6 @@
     // Set up event listeners
     function setupEventListeners() {
       document.getElementById('timeRange').addEventListener('change', loadCharts);
-      document.getElementById('tokenSymbol').addEventListener('change', loadCharts);
-      document.getElementById('pointType').addEventListener('change', loadCharts);
     }
     
     // Load charts data
@@ -600,8 +591,8 @@
         showLoading();
         
         const timeRange = parseInt(document.getElementById('timeRange').value);
-        const tokenSymbol = document.getElementById('tokenSymbol').value;
-        const pointType = document.getElementById('pointType').value;
+        const tokenSymbol = 'IAM'; // ثابت
+        const pointType = 'binary_points'; // ثابت
         
         console.log('🔄 Loading real charts data...', { timeRange, tokenSymbol, pointType });
         
@@ -673,6 +664,7 @@
         
         // Get price history
         const history = await priceService.getPriceHistory('point', pointType, hours);
+        console.log('📊 Point history loaded:', history.length, 'points');
         
         if (history && history.length > 0) {
           // نمایش canvas
@@ -680,8 +672,10 @@
           if (pointCanvas) {
             pointCanvas.style.display = 'block';
           }
+          console.log('🔄 Creating point chart with history:', history);
           createPointChart(history);
         } else {
+          console.warn('⚠️ No point history data available');
           showNoData('pointChart');
         }
         
@@ -911,6 +905,8 @@
       }
       const ctx = pointCanvas.getContext('2d');
       
+      console.log('🔄 Creating point chart...', { historyLength: history.length });
+      
       if (pointChart) {
         pointChart.destroy();
       }
@@ -925,6 +921,18 @@
       const prices = history.map(h => {
         const price = parseFloat(h.point_value_usd);
         return isNaN(price) ? 0 : price;
+      });
+      
+      console.log(`📊 Point Chart Data:`, {
+        labels: labels.length,
+        prices: prices,
+        minPrice: Math.min(...prices),
+        maxPrice: Math.max(...prices),
+        firstPrice: prices[0],
+        lastPrice: prices[prices.length - 1],
+        priceRange: Math.max(...prices) - Math.min(...prices),
+        allPrices: prices.slice(0, 5), // 5 قیمت اول
+        lastPrices: prices.slice(-5)   // 5 قیمت آخر
       });
       
       
