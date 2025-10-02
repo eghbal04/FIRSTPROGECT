@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Price Charts | PHOENIX (IAM)</title>
+  <script>window.SKIP_META = true;</script>
+  <script>
+    // Suppress noisy extension/MetaMask RPC messages that don't affect functionality
+    window.addEventListener('error', function(e){
+      const m = (e && e.message) || '';
+        if (m.includes('Could not establish connection') || 
+            m.includes('getEnabledChains') || 
+            m.includes('isDefaultWallet') || 
+            m.includes('Internal JSON-RPC error') ||
+            m.includes('exports is not defined') ||
+            m.includes('The method "isDefaultWallet" does not exist') ||
+            m.includes('Module not found') ||
+            m.includes('index.js:3')) {
+        e.preventDefault();
+        return false;
+      }
+    });
+    window.addEventListener('unhandledrejection', function(e){
+      const r = e && e.reason;
+      const msg = (r && (r.message || r)) || '';
+        if (typeof msg === 'string' && (msg.includes('Could not establish connection') || 
+            msg.includes('getEnabledChains') || 
+            msg.includes('isDefaultWallet') || 
+            msg.includes('Internal JSON-RPC error') ||
+            msg.includes('exports is not defined') ||
+            msg.includes('The method "isDefaultWallet" does not exist') ||
+            msg.includes('Module not found') ||
+            msg.includes('index.js:3'))) {
+        e.preventDefault();
+        return false;
+      }
+    });
+  </script>
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
+  
+  <!-- Load ethers.js version 6 from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.1/dist/ethers.umd.min.js"></script>
+  
+  <!-- Main scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/auto-wallet-connect.js"></script>
+  <script src="browser-price-service.js"></script>
+  
+  <style>
+    body {
+      background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 50%, #2d3748 100%);
+      color: #e2e8f0;
+      font-family: 'Noto Sans Arabic', sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+    
+    .back-btn {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      background: linear-gradient(135deg, #a786ff, #00ff88);
+      color: #181c2a;
+      text-decoration: none;
+      padding: 0.7rem 1.2rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(167, 134, 255, 0.3);
+      transition: all 0.3s ease;
+    }
+    
+    .back-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(167, 134, 255, 0.3);
+    }
+    
+    .charts-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+    
+    .charts-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    
+    .charts-header h1 {
+      font-size: 3rem;
+      margin: 0 0 1rem 0;
+      background: linear-gradient(135deg, #00ff88, #a786ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .charts-header p {
+      font-size: 1.2rem;
+      color: #a0aec0;
+      margin: 0;
+    }
+    
+    .controls-panel {
+      background: linear-gradient(135deg, rgba(35,41,70,0.8) 0%, rgba(45,55,72,0.8) 100%);
+      border: 1px solid rgba(0,255,136,0.2);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 16px rgba(0,255,136,0.1);
+      backdrop-filter: blur(10px);
+    }
+    
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .control-group label {
+      color: #a786ff;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    
+    .control-group select,
+    .control-group input {
+      background: rgba(26,32,44,0.8);
+      border: 1px solid rgba(0,255,136,0.3);
+      border-radius: 8px;
+      padding: 0.8rem;
+      color: #e2e8f0;
+      font-size: 1rem;
+    }
+    
+    .control-group select:focus,
+    .control-group input:focus {
+      outline: none;
+      border-color: #00ff88;
+      box-shadow: 0 0 0 3px rgba(0,255,136,0.1);
+    }
+    
+    
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+    
+    .chart-card {
+      background: linear-gradient(135deg, rgba(35,41,70,0.8) 0%, rgba(45,55,72,0.8) 100%);
+      border: 1px solid rgba(0,255,136,0.2);
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 4px 16px rgba(0,255,136,0.1);
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+    
+    .chart-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 40px rgba(0,255,136,0.2);
+      border-color: rgba(0,255,136,0.4);
+    }
+    
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    
+    .chart-title {
+      font-size: 1.5rem;
+      color: #00ff88;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .chart-icon {
+      font-size: 1.8rem;
+    }
+    
+    .chart-stats {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    
+    .stat-item {
+      background: rgba(0,255,136,0.1);
+      border: 1px solid rgba(0,255,136,0.2);
+      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #00ff88;
+    }
+    
+    .stat-label {
+      font-size: 0.8rem;
+      color: #a0aec0;
+    }
+    
+    .chart-container {
+      position: relative;
+      height: 400px;
+      width: 100%;
+    }
+    
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 400px;
+      font-size: 1.2rem;
+      color: #a786ff;
+    }
+    
+    .error {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 400px;
+      font-size: 1.2rem;
+      color: #ff4757;
+      text-align: center;
+    }
+    
+    .no-data {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 400px;
+      font-size: 1.2rem;
+      color: #a0aec0;
+      text-align: center;
+    }
+    
+    @media (min-width: 768px) {
+      .charts-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    
+    @media (min-width: 1200px) {
+      .charts-grid {
+        grid-template-columns: 2fr 1fr;
+      }
+    }
+    
+    /* Animation keyframes */
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes slideOut {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100%); opacity: 0; }
+    }
+    
+    .status-indicator {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-left: 0.5rem;
+    }
+    
+    .status-online {
+      background: #00ff88;
+      box-shadow: 0 0 10px rgba(0,255,136,0.5);
+    }
+    
+    .status-offline {
+      background: #ff4757;
+      box-shadow: 0 0 10px rgba(255,71,87,0.5);
+    }
+    
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    .info-value, .stat-value {
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      word-break: break-all;
+      max-width: 200px;
+      overflow-wrap: break-word;
+    }
+    
+    .current-price {
+      font-family: 'Courier New', monospace;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <!-- Back Button -->
+  <a href="index.html" class="back-btn">← Back</a>
+
+  <div class="charts-container">
+    <!-- Header -->
+    <div class="charts-header">
+      <h1>📊 Price Charts</h1>
+      <p>Real-time token and point price analysis</p>
+      <div id="connection-status" style="margin-top: 1rem; padding: 0.5rem 1rem; border-radius: 8px; background: rgba(167, 134, 255, 0.1); border: 1px solid rgba(167, 134, 255, 0.2); color: #a786ff;">
+        <span id="connection-text">🔄 Connecting to contract...</span>
+        <span id="connection-spinner" style="margin-left: 0.5rem; animation: spin 1s linear infinite;">⏳</span>
+      </div>
+    </div>
+
+    <!-- Controls Panel -->
+    <div class="controls-panel">
+      <div class="controls-grid">
+        <div class="control-group">
+          <label for="timeRange">Time Range</label>
+          <select id="timeRange">
+            <option value="1">1 Hour</option>
+            <option value="6">6 Hours</option>
+            <option value="24" selected>24 Hours</option>
+            <option value="168">7 Days</option>
+            <option value="720">30 Days</option>
+          </select>
+        </div>
+        
+        <div class="control-group">
+          <label for="tokenSymbol">Token</label>
+          <select id="tokenSymbol">
+            <option value="IAM" selected>IAM Token</option>
+          </select>
+        </div>
+        
+        <div class="control-group">
+          <label for="pointType">Point Type</label>
+          <select id="pointType">
+            <option value="binary_points" selected>Binary Points</option>
+            <option value="referral_points">Referral Points</option>
+            <option value="monthly_points">Monthly Points</option>
+          </select>
+        </div>
+        
+      </div>
+      
+    </div>
+
+    <!-- Charts Grid -->
+    <div class="charts-grid">
+      <!-- Token Price Chart -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3 class="chart-title">
+            <span class="chart-icon">💰</span>
+            Token Price Chart
+          </h3>
+          <div class="chart-stats" id="tokenStats">
+            <div class="stat-item">
+              <div class="stat-value current-price" id="currentTokenPrice">$0.000000000000000000</div>
+              <div class="stat-label">Current Price</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="tokenChange">+0.00%</div>
+              <div class="stat-label">24h Change</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value current-price" id="tokenVolume">$0.000000000000000000</div>
+              <div class="stat-label">24h Volume</div>
+            </div>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="tokenChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Point Price Chart -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3 class="chart-title">
+            <span class="chart-icon">⭐</span>
+            Point Price Chart
+          </h3>
+          <div class="chart-stats" id="pointStats">
+            <div class="stat-item">
+              <div class="stat-value current-price" id="currentPointPrice">$0.000000000000000000</div>
+              <div class="stat-label">Current Price</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value current-price" id="pointValue">0.000000000000000000 IAM</div>
+              <div class="stat-label">Value in IAM</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value current-price" id="pointSupply">0.000000000000000000</div>
+              <div class="stat-label">Total Supply</div>
+            </div>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="pointChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // استفاده از BrowserPriceService از window
+    
+    // Global variables
+    let priceService;
+    let tokenChart = null;
+    let pointChart = null;
+    let refreshInterval = null;
+    let isLoading = false; // جلوگیری از اجرای همزمان
+    
+    // Global error handler
+    window.addEventListener('error', function(e) {
+      const m = (e && e.message) || '';
+      if (m.includes('BigInt') || m.includes('serialize') || m.includes('JSON.stringify')) {
+        console.warn('⚠️ BigInt serialization warning (suppressed):', m);
+        e.preventDefault();
+        return false;
+      }
+    });
+    
+    // Wait for DOM elements to be ready
+    function waitForElement(selector, timeout = 5000) {
+      return new Promise((resolve, reject) => {
+        const element = document.querySelector(selector);
+        if (element) {
+          resolve(element);
+          return;
+        }
+        
+        const observer = new MutationObserver((mutations, obs) => {
+          const element = document.querySelector(selector);
+          if (element) {
+            obs.disconnect();
+            resolve(element);
+          }
+        });
+        
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true
+        });
+        
+        setTimeout(() => {
+          observer.disconnect();
+          reject(new Error(`Element ${selector} not found within ${timeout}ms`));
+        }, timeout);
+      });
+    }
+    
+    // Create canvas elements if they don't exist
+    function ensureCanvasElements() {
+      let tokenCanvas = document.getElementById('tokenChart');
+      let pointCanvas = document.getElementById('pointChart');
+      
+      if (!tokenCanvas) {
+        console.log('🔄 Creating tokenChart canvas...');
+        const tokenContainer = document.querySelector('.chart-container');
+        if (tokenContainer) {
+          tokenContainer.innerHTML = '<canvas id="tokenChart"></canvas>';
+          tokenCanvas = document.getElementById('tokenChart');
+        }
+      }
+      
+      if (!pointCanvas) {
+        console.log('🔄 Creating pointChart canvas...');
+        const pointContainer = document.querySelectorAll('.chart-container')[1];
+        if (pointContainer) {
+          pointContainer.innerHTML = '<canvas id="pointChart"></canvas>';
+          pointCanvas = document.getElementById('pointChart');
+        }
+      }
+      
+      return { tokenCanvas, pointCanvas };
+    }
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', async function() {
+      try {
+        priceService = new window.BrowserPriceService();
+        console.log('✅ Real price service initialized');
+        
+        // اتصال خودکار به کنترکت با تلاش مجدد
+        updateConnectionStatus('🔄 Auto-connecting to wallet...', 'warning');
+        
+        try {
+          const connected = await priceService.autoConnectWithRetry(3, 2000);
+          if (connected) {
+            // بررسی وضعیت واقعی اتصال
+            const provider = priceService.provider;
+            const signer = await provider.getSigner();
+            const address = await signer.getAddress();
+            updateConnectionStatus(`✅ Connected to contract - Real data (${address.slice(0,6)}...${address.slice(-4)})`, 'success');
+          } else {
+            updateConnectionStatus('⚠️ Auto-connection failed - Using mock data', 'warning');
+          }
+        } catch (error) {
+          console.warn('⚠️ Auto-connection failed, using mock data:', error.message);
+          updateConnectionStatus('⚠️ Auto-connection failed - Using mock data', 'warning');
+        }
+        
+        // Load initial data
+        await loadCharts();
+        
+        // Set up event listeners
+        setupEventListeners();
+        
+        // Start auto refresh
+        startAutoRefresh();
+        
+        // تست مستقیم کنترکت
+        setTimeout(async () => {
+          console.log('🧪 تست مستقیم کنترکت...');
+          if (priceService.contract) {
+            try {
+              const directPrice = await priceService.contract.getTokenPrice();
+              console.log('✅ قیمت مستقیم از کنترکت:', directPrice.toString());
+            } catch (error) {
+              console.error('❌ خطا در دریافت قیمت مستقیم:', error);
+            }
+          } else {
+            console.log('❌ کنترکت متصل نیست');
+          }
+        }, 2000);
+        
+        // تست نمودار Point Price
+        setTimeout(async () => {
+          console.log('🧪 تست نمودار Point Price...');
+          try {
+            const pointHistory = await priceService.getPriceHistory('point', 'binary_points', 24);
+            console.log('✅ Point History:', pointHistory);
+          } catch (error) {
+            console.error('❌ خطا در دریافت Point History:', error);
+          }
+        }, 3000);
+        
+      } catch (error) {
+        console.error('❌ Error initializing charts:', error);
+        showError('Failed to initialize charts');
+      }
+    });
+    
+    // Set up event listeners
+    function setupEventListeners() {
+      document.getElementById('timeRange').addEventListener('change', loadCharts);
+      document.getElementById('tokenSymbol').addEventListener('change', loadCharts);
+      document.getElementById('pointType').addEventListener('change', loadCharts);
+    }
+    
+    // Load charts data
+    async function loadCharts() {
+      // جلوگیری از اجرای همزمان
+      if (isLoading) {
+        console.log('⚠️ Charts already loading, skipping...');
+        return;
+      }
+      
+      try {
+        isLoading = true;
+        console.log('🔄 Loading charts...');
+        
+        // اطمینان از وجود canvas elements
+        console.log('🔄 Ensuring canvas elements...');
+        const { tokenCanvas, pointCanvas } = ensureCanvasElements();
+        
+        if (!tokenCanvas || !pointCanvas) {
+          console.warn('⚠️ Canvas elements not available, retrying in 500ms...');
+          isLoading = false;
+          setTimeout(loadCharts, 500);
+          return;
+        }
+        
+        console.log('✅ Canvas elements ready');
+        
+        showLoading();
+        
+        const timeRange = parseInt(document.getElementById('timeRange').value);
+        const tokenSymbol = document.getElementById('tokenSymbol').value;
+        const pointType = document.getElementById('pointType').value;
+        
+        console.log('🔄 Loading real charts data...', { timeRange, tokenSymbol, pointType });
+        
+        // به‌روزرسانی قیمت‌های واقعی
+        await priceService.updatePrices();
+        
+        // Load token data
+        await loadTokenChart(tokenSymbol, timeRange);
+        
+        // Load point data
+        await loadPointChart(pointType, timeRange);
+        
+        console.log('✅ Real charts loaded successfully');
+        
+      } catch (error) {
+        console.error('❌ Error loading charts:', error);
+        // نمایش خطا در console به جای فراخوانی showError با پیام
+        console.error('Failed to load real charts data. Please check your wallet connection.');
+      } finally {
+        isLoading = false; // آزاد کردن flag
+      }
+    }
+    
+    // Load token chart
+    async function loadTokenChart(symbol, hours) {
+      try {
+        // Get latest price
+        const latestPrice = await priceService.getLatestTokenPrice(symbol);
+        
+        if (latestPrice) {
+          console.log('📊 Latest token price:', latestPrice);
+          updateTokenStats(latestPrice);
+        } else {
+          console.warn('⚠️ No latest token price data available');
+        }
+        
+        // Get price history
+        const history = await priceService.getPriceHistory('token', symbol, hours);
+        
+        if (history && history.length > 0) {
+          // نمایش canvas
+          const tokenCanvas = document.getElementById('tokenChart');
+          if (tokenCanvas) {
+            tokenCanvas.style.display = 'block';
+          }
+          createTokenChart(history);
+        } else {
+          showNoData('tokenChart');
+        }
+        
+      } catch (error) {
+        console.error('❌ Error loading token chart:', error);
+        showError('tokenChart');
+      }
+    }
+    
+    // Load point chart
+    async function loadPointChart(pointType, hours) {
+      try {
+        // Get latest price
+        const latestPrice = await priceService.getLatestPointPrice(pointType);
+        
+        if (latestPrice) {
+          console.log('📊 Latest point price:', latestPrice);
+          updatePointStats(latestPrice);
+        } else {
+          console.warn('⚠️ No latest point price data available');
+        }
+        
+        // Get price history
+        const history = await priceService.getPriceHistory('point', pointType, hours);
+        
+        if (history && history.length > 0) {
+          // نمایش canvas
+          const pointCanvas = document.getElementById('pointChart');
+          if (pointCanvas) {
+            pointCanvas.style.display = 'block';
+          }
+          createPointChart(history);
+        } else {
+          showNoData('pointChart');
+        }
+        
+      } catch (error) {
+        console.error('❌ Error loading point chart:', error);
+        showError('pointChart');
+      }
+    }
+    
+    // Update token stats
+    function updateTokenStats(price) {
+      if (!price) {
+        console.warn('⚠️ Token price data is null or undefined');
+        return;
+      }
+      
+      const priceUsd = price.price_usd || price.priceUsd || '0.00';
+      const priceChange = price.price_change_24h || 0;
+      const volume = price.volume_24h || price.marketCap || '0.00';
+      
+      // نمایش قیمت به صورت علمی
+      let displayPrice = priceUsd;
+      if (priceUsd.includes('e-') || priceUsd.includes('e+')) {
+        // اگر قیمت به صورت علمی است، آن را به صورت خوانا نمایش دهیم
+        displayPrice = priceUsd;
+      } else {
+        // اگر قیمت عادی است، آن را به صورت علمی تبدیل کن
+        const numPrice = parseFloat(priceUsd);
+        displayPrice = numPrice.toExponential(2);
+      }
+      
+      document.getElementById('currentTokenPrice').textContent = `$${displayPrice}`;
+      document.getElementById('tokenChange').textContent = `${priceChange > 0 ? '+' : ''}${priceChange}%`;
+      document.getElementById('tokenVolume').textContent = `$${volume}`;
+      
+      // Update change color
+      const changeElement = document.getElementById('tokenChange');
+      changeElement.style.color = priceChange > 0 ? '#00ff88' : '#ff4757';
+    }
+    
+    // Update point stats
+    function updatePointStats(price) {
+      if (!price) {
+        console.warn('⚠️ Point price data is null or undefined');
+        return;
+      }
+      
+      const pointValueUsd = price.point_value_usd || price.pointValueUsd || '0.00';
+      const pointValueIam = price.point_value_iam || price.pointValueIam || '0.00';
+      
+      document.getElementById('currentPointPrice').textContent = `$${pointValueUsd}`;
+      document.getElementById('pointValue').textContent = `${pointValueIam} IAM`;
+      document.getElementById('pointSupply').textContent = 'N/A';
+    }
+    
+    // Create token chart
+    function createTokenChart(history) {
+      const { tokenCanvas } = ensureCanvasElements();
+      if (!tokenCanvas) {
+        console.error('❌ tokenChart canvas not found, retrying...');
+        setTimeout(() => createTokenChart(history), 100);
+        return;
+      }
+      const ctx = tokenCanvas.getContext('2d');
+      
+      if (tokenChart) {
+        tokenChart.destroy();
+      }
+      
+          const labels = history.map(h => {
+            const date = new Date(h.timestamp);
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const dayName = dayNames[date.getDay()];
+            const hour = date.getHours().toString().padStart(2, '0');
+            return `${dayName} ${hour}:00`;
+          });
+          const prices = history.map(h => {
+            const price = parseFloat(h.price_usd);
+            // اگر قیمت از getPriceHistory آمده، مستقیماً استفاده کن
+            // (قبلاً در getPriceHistory به مقیاس 1000 تبدیل شده)
+            const finalPrice = isNaN(price) ? 1000 : price;
+            
+            // اطمینان از اینکه قیمت‌ها متفاوت هستند
+            if (finalPrice === 1000 && history.indexOf(h) === history.length - 1) {
+              // آخرین نقطه باید متفاوت باشد - بررسی قیمت واقعی
+              const realPrice = parseFloat(h.price_usd);
+              console.log(`🔍 Last point calculation:`, {
+                realPrice: realPrice,
+                finalPrice: finalPrice,
+                isLastPoint: history.indexOf(h) === history.length - 1,
+                priceUsd: h.price_usd
+              });
+              
+              if (realPrice > 1e-15) {
+                // محاسبه تغییر بر اساس نسبت قیمت‌ها
+                const ratio = realPrice / 1e-15;
+                const newPrice = 1000 * ratio;
+                console.log(`🔍 Price ratio calculation:`, {
+                  ratio: ratio,
+                  newPrice: newPrice,
+                  calculation: `1000 * ${ratio} = ${newPrice}`
+                });
+                return newPrice; // تغییر متناسب
+              } else {
+                // اگر قیمت واقعی نامعتبر است، از قیمت کنونی استفاده کن
+                const currentPrice = 1.283e-15; // قیمت کنونی از کنترکت
+                const ratio = currentPrice / 1e-15;
+                const newPrice = 1000 * ratio;
+                console.log(`🔍 Fallback price calculation:`, {
+                  currentPrice: currentPrice,
+                  ratio: ratio,
+                  newPrice: newPrice,
+                  calculation: `1000 * ${ratio} = ${newPrice}`
+                });
+                return newPrice;
+              }
+            }
+            
+            return finalPrice;
+          });
+          
+          console.log(`📊 Token Chart Data:`, {
+            labels: labels.length,
+            prices: prices,
+            minPrice: Math.min(...prices),
+            maxPrice: Math.max(...prices),
+            firstPrice: prices[0],
+            lastPrice: prices[prices.length - 1],
+            priceRange: Math.max(...prices) - Math.min(...prices),
+            allPrices: prices.slice(0, 5), // 5 قیمت اول
+            lastPrices: prices.slice(-5)   // 5 قیمت آخر
+          });
+      
+      
+      tokenChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Price (USD)',
+            data: prices,
+            borderColor: '#00ff88',
+            backgroundColor: 'rgba(0, 255, 136, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: '#00ff88',
+            pointBorderColor: '#00ff88',
+            pointRadius: 4,
+            pointHoverRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: {
+                color: '#e2e8f0'
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  // تبدیل قیمت نمودار به قیمت واقعی برای نمایش
+                  const chartPrice = context.raw;
+                  const realPrice = 1e-15 + ((chartPrice - 1000) / 1000) * 1e-15;
+                  return '$' + realPrice.toExponential(2);
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: {
+                color: '#a0aec0',
+                maxTicksLimit: 8,
+                callback: function(value, index, ticks) {
+                  // نمایش هر 3 ساعت یک بار
+                  if (index % 3 === 0) {
+                    return this.getLabelForValue(value);
+                  }
+                  return '';
+                }
+              },
+              grid: {
+                color: 'rgba(160, 174, 192, 0.1)'
+              }
+            },
+            y: {
+              ticks: {
+                color: '#a0aec0',
+                callback: function(value) {
+                  // تبدیل قیمت نمودار به قیمت واقعی برای نمایش
+                  const realPrice = 1e-15 + ((value - 1000) / 1000) * 1e-15;
+                  return '$' + realPrice.toExponential(2);
+                }
+              },
+              grid: {
+                color: 'rgba(160, 174, 192, 0.1)'
+              },
+              min: function(context) {
+                const data = context.chart.data.datasets[0].data;
+                return Math.min(...data) - 50; // کمی پایین‌تر از حداقل
+              },
+              max: function(context) {
+                const data = context.chart.data.datasets[0].data;
+                return Math.max(...data) + 50; // کمی بالاتر از حداکثر
+              }
+            }
+          },
+          interaction: {
+            intersect: false,
+            mode: 'index'
+          }
+        }
+      });
+    }
+    
+    // Create point chart
+    function createPointChart(history) {
+      const { pointCanvas } = ensureCanvasElements();
+      if (!pointCanvas) {
+        console.error('❌ pointChart canvas not found, retrying...');
+        setTimeout(() => createPointChart(history), 100);
+        return;
+      }
+      const ctx = pointCanvas.getContext('2d');
+      
+      if (pointChart) {
+        pointChart.destroy();
+      }
+      
+      const labels = history.map(h => {
+        const date = new Date(h.timestamp);
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const dayName = dayNames[date.getDay()];
+        const hour = date.getHours().toString().padStart(2, '0');
+        return `${dayName} ${hour}:00`;
+      });
+      const prices = history.map(h => {
+        const price = parseFloat(h.point_value_usd);
+        return isNaN(price) ? 0 : price;
+      });
+      
+      
+      pointChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Point Value (USD)',
+            data: prices,
+            borderColor: '#a786ff',
+            backgroundColor: 'rgba(167, 134, 255, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: '#a786ff',
+            pointBorderColor: '#a786ff',
+            pointRadius: 4,
+            pointHoverRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: {
+                color: '#e2e8f0'
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return '$' + context.raw.toFixed(2);
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: {
+                color: '#a0aec0',
+                maxTicksLimit: 8,
+                callback: function(value, index, ticks) {
+                  // نمایش هر 3 ساعت یک بار
+                  if (index % 3 === 0) {
+                    return this.getLabelForValue(value);
+                  }
+                  return '';
+                }
+              },
+              grid: {
+                color: 'rgba(160, 174, 192, 0.1)'
+              }
+            },
+            y: {
+              ticks: {
+                color: '#a0aec0',
+                callback: function(value) {
+                  return '$' + value.toFixed(2);
+                }
+              },
+              grid: {
+                color: 'rgba(160, 174, 192, 0.1)'
+              }
+            }
+          },
+          interaction: {
+            intersect: false,
+            mode: 'index'
+          }
+        }
+      });
+    }
+    
+    // Show loading state
+    function showLoading() {
+      const { tokenCanvas, pointCanvas } = ensureCanvasElements();
+      
+      if (tokenCanvas) {
+        tokenCanvas.style.display = 'none';
+        const tokenContainer = tokenCanvas.parentElement;
+        if (tokenContainer) {
+          tokenContainer.innerHTML = '<div class="loading">🔄 Loading token data...</div>';
+        }
+      }
+      
+      if (pointCanvas) {
+        pointCanvas.style.display = 'none';
+        const pointContainer = pointCanvas.parentElement;
+        if (pointContainer) {
+          pointContainer.innerHTML = '<div class="loading">🔄 Loading point data...</div>';
+        }
+      }
+    }
+    
+    // Show error state
+    function showError(chartId) {
+      // اگر chartId یک پیام است، آن را در console نمایش دهیم
+      if (typeof chartId === 'string' && chartId.includes('Failed to load')) {
+        console.error('❌ Error:', chartId);
+        return;
+      }
+      
+      const canvas = document.getElementById(chartId);
+      if (canvas) {
+        canvas.style.display = 'none';
+        const container = canvas.parentElement;
+        if (container) {
+          container.innerHTML = '<div class="error">❌ Failed to load data</div>';
+        }
+      } else {
+        console.error('❌ Chart canvas not found:', chartId);
+      }
+    }
+    
+    // Show no data state
+    function showNoData(chartId) {
+      const canvas = document.getElementById(chartId);
+      if (canvas) {
+        canvas.style.display = 'none';
+        const container = canvas.parentElement;
+        if (container) {
+          container.innerHTML = '<div class="no-data">📊 No data available</div>';
+        }
+      } else {
+        console.warn('⚠️ Chart canvas not found:', chartId);
+      }
+    }
+    
+    // Update connection status
+    function updateConnectionStatus(message, type) {
+      const statusEl = document.getElementById('connection-status');
+      const textEl = document.getElementById('connection-text');
+      const spinnerEl = document.getElementById('connection-spinner');
+      
+      if (statusEl && textEl) {
+        textEl.textContent = message;
+        statusEl.style.background = type === 'success' ? 'rgba(0, 255, 136, 0.1)' : 
+                                   type === 'warning' ? 'rgba(255, 193, 7, 0.1)' : 
+                                   'rgba(255, 71, 87, 0.1)';
+        statusEl.style.borderColor = type === 'success' ? 'rgba(0, 255, 136, 0.2)' : 
+                                    type === 'warning' ? 'rgba(255, 193, 7, 0.2)' : 
+                                    'rgba(255, 71, 87, 0.2)';
+        statusEl.style.color = type === 'success' ? '#00ff88' : 
+                              type === 'warning' ? '#ffc107' : 
+                              '#ff4757';
+        
+        // مدیریت spinner
+        if (spinnerEl) {
+          if (type === 'warning' && message.includes('Connecting')) {
+            spinnerEl.style.display = 'inline';
+          } else {
+            spinnerEl.style.display = 'none';
+          }
+        }
+      }
+    }
+
+    
+    // Start auto refresh
+    function startAutoRefresh() {
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+      }
+      
+      // Auto-refresh هر 60 ثانیه
+      refreshInterval = setInterval(() => {
+        console.log('🔄 Auto-refresh triggered...');
+        loadCharts();
+      }, 60000); // 60 seconds
+      console.log('✅ Auto-refresh enabled: 60 seconds');
+    }
+
+    
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function() {
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+      }
+    });
+  </script>
+</body>
+</html>

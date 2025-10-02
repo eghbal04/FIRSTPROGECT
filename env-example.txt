@@ -1,0 +1,6 @@
+# Neon Database Configuration
+# Replace with your actual Neon database URL
+NETLIFY_DATABASE_URL=postgresql://username:password@hostname:port/database?sslmode=require
+
+# Example:
+# NETLIFY_DATABASE_URL=postgresql://myuser:mypassword@ep-cool-name-123456.us-east-1.aws.neon.tech/neondb?sslmode=require
