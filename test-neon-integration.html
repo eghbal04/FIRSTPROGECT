@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neon Database Integration Test</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 50%, #2d3748 100%);
+      color: #e2e8f0;
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .test-section {
+      background: rgba(35,41,70,0.8);
+      border: 1px solid rgba(0,255,136,0.2);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .test-button {
+      background: linear-gradient(135deg, #a786ff, #00ff88);
+      color: #181c2a;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 5px;
+      font-weight: bold;
+    }
+    
+    .test-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(167, 134, 255, 0.3);
+    }
+    
+    .result {
+      background: rgba(0,0,0,0.3);
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 10px;
+      font-family: 'Courier New', monospace;
+      white-space: pre-wrap;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .success { border-left: 4px solid #00ff88; }
+    .error { border-left: 4px solid #ff4757; }
+    .warning { border-left: 4px solid #ffc107; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 Neon Database Integration Test</h1>
+    
+    <div class="test-section">
+      <h3>🔌 Connection Tests</h3>
+      <button class="test-button" onclick="testNeonConnection()">Test Neon API Connection</button>
+      <button class="test-button" onclick="testLocalStorage()">Test LocalStorage Fallback</button>
+      <div id="connection-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+      <h3>💰 Price Data Tests</h3>
+      <button class="test-button" onclick="testTokenPrice()">Test Token Price</button>
+      <button class="test-button" onclick="testPointPrice()">Test Point Price</button>
+      <button class="test-button" onclick="testPriceHistory()">Test Price History</button>
+      <div id="price-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+      <h3>📊 Charts Integration Test</h3>
+      <button class="test-button" onclick="testChartsIntegration()">Test Charts Integration</button>
+      <button class="test-button" onclick="testAutoRefresh()">Test Auto Refresh</button>
+      <div id="charts-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+      <h3>🔍 Debug Information</h3>
+      <button class="test-button" onclick="showDebugInfo()">Show Debug Info</button>
+      <button class="test-button" onclick="clearAllData()">Clear All Data</button>
+      <div id="debug-result" class="result"></div>
+    </div>
+  </div>
+
+  <!-- Load required scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/database-service.js"></script>
+  <script src="js/neon-api-service.js"></script>
+  <script src="browser-price-service.js"></script>
+
+  <script>
+    let priceService;
+    let testResults = [];
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', async function() {
+      try {
+        priceService = new window.BrowserPriceService();
+        await priceService.connectToDatabase();
+        logResult('connection-result', '✅ Price service initialized', 'success');
+      } catch (error) {
+        logResult('connection-result', '❌ Error initializing price service: ' + error.message, 'error');
+      }
+    });
+
+    // Test Neon API connection
+    async function testNeonConnection() {
+      try {
+        logResult('connection-result', '🔄 Testing Neon API connection...', 'warning');
+        
+        if (window.NeonApiService) {
+          const neonService = new window.NeonApiService();
+          const connected = await neonService.initialize();
+          
+          if (connected) {
+            logResult('connection-result', '✅ Neon API connection successful!', 'success');
+          } else {
+            logResult('connection-result', '⚠️ Neon API connection failed, using fallback', 'warning');
+          }
+        } else {
+          logResult('connection-result', '❌ NeonApiService not available', 'error');
+        }
+      } catch (error) {
+        logResult('connection-result', '❌ Neon connection error: ' + error.message, 'error');
+      }
+    }
+
+    // Test localStorage fallback
+    async function testLocalStorage() {
+      try {
+        logResult('connection-result', '🔄 Testing localStorage fallback...', 'warning');
+        
+        // Test saving data
+        const testData = {
+          symbol: 'TEST',
+          priceUsd: '1.23',
+          timestamp: new Date().toISOString()
+        };
+        
+        localStorage.setItem('test_price_' + Date.now(), JSON.stringify(testData));
+        
+        // Test retrieving data
+        const keys = Object.keys(localStorage).filter(k => k.startsWith('test_price_'));
+        if (keys.length > 0) {
+          const retrieved = JSON.parse(localStorage.getItem(keys[0]));
+          logResult('connection-result', '✅ LocalStorage fallback working: ' + JSON.stringify(retrieved), 'success');
+        } else {
+          logResult('connection-result', '❌ LocalStorage test failed', 'error');
+        }
+      } catch (error) {
+        logResult('connection-result', '❌ LocalStorage error: ' + error.message, 'error');
+      }
+    }
+
+    // Test token price functionality
+    async function testTokenPrice() {
+      try {
+        logResult('price-result', '🔄 Testing token price functionality...', 'warning');
+        
+        if (priceService) {
+          // Test getting real price
+          const realPrice = await priceService.getRealTokenPrice();
+          logResult('price-result', '📊 Real token price: ' + JSON.stringify(realPrice, null, 2), 'success');
+          
+          // Test saving price
+          await priceService.saveTokenPriceToStorage(realPrice);
+          logResult('price-result', '✅ Token price saved successfully', 'success');
+          
+          // Test getting latest price
+          const latestPrice = await priceService.getLatestTokenPrice('IAM');
+          logResult('price-result', '📊 Latest token price: ' + JSON.stringify(latestPrice, null, 2), 'success');
+        } else {
+          logResult('price-result', '❌ Price service not initialized', 'error');
+        }
+      } catch (error) {
+        logResult('price-result', '❌ Token price test error: ' + error.message, 'error');
+      }
+    }
+
+    // Test point price functionality
+    async function testPointPrice() {
+      try {
+        logResult('price-result', '🔄 Testing point price functionality...', 'warning');
+        
+        if (priceService) {
+          // Test getting real point price
+          const realPointPrice = await priceService.getRealPointPrice('binary_points');
+          logResult('price-result', '📊 Real point price: ' + JSON.stringify(realPointPrice, null, 2), 'success');
+          
+          // Test saving point price
+          await priceService.savePointPriceToStorage(realPointPrice);
+          logResult('price-result', '✅ Point price saved successfully', 'success');
+          
+          // Test getting latest point price
+          const latestPointPrice = await priceService.getLatestPointPrice('binary_points');
+          logResult('price-result', '📊 Latest point price: ' + JSON.stringify(latestPointPrice, null, 2), 'success');
+        } else {
+          logResult('price-result', '❌ Price service not initialized', 'error');
+        }
+      } catch (error) {
+        logResult('price-result', '❌ Point price test error: ' + error.message, 'error');
+      }
+    }
+
+    // Test price history functionality
+    async function testPriceHistory() {
+      try {
+        logResult('price-result', '🔄 Testing price history functionality...', 'warning');
+        
+        if (priceService) {
+          // Test token price history
+          const tokenHistory = await priceService.getPriceHistory('token', 'IAM', 24);
+          logResult('price-result', '📊 Token price history: ' + tokenHistory.length + ' points', 'success');
+          
+          // Test point price history
+          const pointHistory = await priceService.getPriceHistory('point', 'binary_points', 24);
+          logResult('price-result', '📊 Point price history: ' + pointHistory.length + ' points', 'success');
+          
+          if (tokenHistory.length > 0) {
+            logResult('price-result', '📊 Sample token history: ' + JSON.stringify(tokenHistory[0], null, 2), 'success');
+          }
+          
+          if (pointHistory.length > 0) {
+            logResult('price-result', '📊 Sample point history: ' + JSON.stringify(pointHistory[0], null, 2), 'success');
+          }
+        } else {
+          logResult('price-result', '❌ Price service not initialized', 'error');
+        }
+      } catch (error) {
+        logResult('price-result', '❌ Price history test error: ' + error.message, 'error');
+      }
+    }
+
+    // Test charts integration
+    async function testChartsIntegration() {
+      try {
+        logResult('charts-result', '🔄 Testing charts integration...', 'warning');
+        
+        if (priceService) {
+          // Test auto-update prices
+          await priceService.updatePrices();
+          logResult('charts-result', '✅ Auto-update prices completed', 'success');
+          
+          // Test getting data for charts
+          const tokenData = await priceService.getLatestTokenPrice('IAM');
+          const pointData = await priceService.getLatestPointPrice('binary_points');
+          
+          if (tokenData && pointData) {
+            logResult('charts-result', '✅ Charts data available: Token=' + tokenData.price_usd + ', Point=' + pointData.point_value_usd, 'success');
+          } else {
+            logResult('charts-result', '⚠️ Some charts data missing', 'warning');
+          }
+        } else {
+          logResult('charts-result', '❌ Price service not initialized', 'error');
+        }
+      } catch (error) {
+        logResult('charts-result', '❌ Charts integration test error: ' + error.message, 'error');
+      }
+    }
+
+    // Test auto refresh
+    async function testAutoRefresh() {
+      try {
+        logResult('charts-result', '🔄 Testing auto refresh...', 'warning');
+        
+        if (priceService) {
+          // Start auto update
+          priceService.startAutoUpdate(1); // 1 minute interval for testing
+          logResult('charts-result', '✅ Auto refresh started (1 minute interval)', 'success');
+          
+          // Stop after 5 seconds for testing
+          setTimeout(() => {
+            if (priceService.refreshInterval) {
+              clearInterval(priceService.refreshInterval);
+              logResult('charts-result', '✅ Auto refresh stopped', 'success');
+            }
+          }, 5000);
+        } else {
+          logResult('charts-result', '❌ Price service not initialized', 'error');
+        }
+      } catch (error) {
+        logResult('charts-result', '❌ Auto refresh test error: ' + error.message, 'error');
+      }
+    }
+
+    // Show debug information
+    function showDebugInfo() {
+      try {
+        let debugInfo = '🔍 Debug Information:\n\n';
+        
+        // Service status
+        debugInfo += 'Price Service: ' + (priceService ? '✅ Initialized' : '❌ Not initialized') + '\n';
+        debugInfo += 'Neon API Service: ' + (window.NeonApiService ? '✅ Available' : '❌ Not available') + '\n';
+        debugInfo += 'Database Service: ' + (window.DatabaseService ? '✅ Available' : '❌ Not available') + '\n\n';
+        
+        // LocalStorage data
+        const tokenKeys = Object.keys(localStorage).filter(k => k.startsWith('token_price_'));
+        const pointKeys = Object.keys(localStorage).filter(k => k.startsWith('point_price_'));
+        debugInfo += 'LocalStorage Data:\n';
+        debugInfo += 'Token prices: ' + tokenKeys.length + ' records\n';
+        debugInfo += 'Point prices: ' + pointKeys.length + ' records\n\n';
+        
+        // Recent data samples
+        if (tokenKeys.length > 0) {
+          const latestToken = JSON.parse(localStorage.getItem(tokenKeys[tokenKeys.length - 1]));
+          debugInfo += 'Latest Token Price:\n' + JSON.stringify(latestToken, null, 2) + '\n\n';
+        }
+        
+        if (pointKeys.length > 0) {
+          const latestPoint = JSON.parse(localStorage.getItem(pointKeys[pointKeys.length - 1]));
+          debugInfo += 'Latest Point Price:\n' + JSON.stringify(latestPoint, null, 2) + '\n\n';
+        }
+        
+        // Browser info
+        debugInfo += 'Browser Info:\n';
+        debugInfo += 'User Agent: ' + navigator.userAgent + '\n';
+        debugInfo += 'Local Storage: ' + (typeof(Storage) !== "undefined" ? '✅ Supported' : '❌ Not supported') + '\n';
+        debugInfo += 'Ethers.js: ' + (typeof ethers !== "undefined" ? '✅ Available' : '❌ Not available') + '\n';
+        
+        logResult('debug-result', debugInfo, 'success');
+      } catch (error) {
+        logResult('debug-result', '❌ Debug info error: ' + error.message, 'error');
+      }
+    }
+
+    // Clear all data
+    function clearAllData() {
+      try {
+        // Clear localStorage
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && (key.startsWith('token_price_') || key.startsWith('point_price_') || key.startsWith('test_price_'))) {
+            keysToRemove.push(key);
+          }
+        }
+        
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+        
+        logResult('debug-result', '✅ Cleared ' + keysToRemove.length + ' data records from localStorage', 'success');
+      } catch (error) {
+        logResult('debug-result', '❌ Clear data error: ' + error.message, 'error');
+      }
+    }
+
+    // Helper function to log results
+    function logResult(elementId, message, type = 'success') {
+      const element = document.getElementById(elementId);
+      if (element) {
+        const timestamp = new Date().toLocaleTimeString();
+        element.textContent = `[${timestamp}] ${message}\n` + element.textContent;
+        element.className = 'result ' + type;
+      }
+    }
+  </script>
+</body>
+</html>

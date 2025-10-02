@@ -1,0 +1,22 @@
+// Browser-compatible index.js
+// این فایل برای جلوگیری از خطای "exports is not defined" ایجاد شده است
+
+// اگر exports تعریف نشده، آن را تعریف کن
+if (typeof exports === 'undefined') {
+  var exports = window.exports = {};
+}
+
+// اگر module تعریف نشده، آن را تعریف کن
+if (typeof module === 'undefined') {
+  window.module = { exports: {} };
+}
+
+// اگر require تعریف نشده، آن را تعریف کن
+if (typeof require === 'undefined') {
+  window.require = function(id) {
+    console.warn('require() called but not available in browser:', id);
+    return {};
+  };
+}
+
+console.log('✅ Browser compatibility layer loaded');

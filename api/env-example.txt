@@ -1,0 +1,18 @@
+# Environment Variables for Neon Price API
+# کپی کنید این فایل را به .env و مقادیر را پر کنید
+
+# Database Configuration
+DATABASE_URL=postgresql://neondb_owner:npg_4dRPEJOfq5Mj@ep-calm-leaf-aehi0krv-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+
+# Server Configuration
+PORT=3000
+NODE_ENV=development
+
+# API Configuration
+API_KEY=your-secret-api-key-here
+
+# CORS Configuration
+CORS_ORIGIN=http://localhost:3000,https://your-domain.com
+
+# Logging
+LOG_LEVEL=info
