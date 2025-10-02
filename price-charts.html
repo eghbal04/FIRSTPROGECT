@@ -178,47 +178,6 @@
       font-size: 3rem;
     }
     
-    .controls {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 2rem;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-    
-    .btn {
-      background: linear-gradient(135deg, #a786ff, #00ff88);
-      color: #181c2a;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-size: 0.9rem;
-    }
-    
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(167, 134, 255, 0.4);
-    }
-    
-    .btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
-    
-    .btn-secondary {
-      background: rgba(255, 255, 255, 0.1);
-      color: #e2e8f0;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    
-    .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.2);
-      box-shadow: 0 6px 20px rgba(255, 255, 255, 0.1);
-    }
     
     .status-indicator {
       display: inline-block;
@@ -254,11 +213,6 @@
       <p class="page-subtitle">Real-time IAM Token and Point Price Analysis</p>
     </div>
     
-    <div class="controls">
-      <button class="btn" onclick="loadCharts()">🔄 Refresh Charts</button>
-      <button class="btn btn-secondary" onclick="toggleRealTimeMode()">⏱️ Toggle Real-time</button>
-      <button class="btn btn-secondary" onclick="clearDatabaseData()">🗑️ Clear Data</button>
-    </div>
     
     <div class="charts-grid">
       <!-- Point Price Chart -->
@@ -315,7 +269,6 @@
     let tokenChart = null;
     let pointChart = null;
     let refreshInterval = null;
-    let isRealTimeMode = true;
     
     // Initialize when DOM is loaded
     document.addEventListener('DOMContentLoaded', async function() {
@@ -327,15 +280,13 @@
         await priceService.connectToDatabase();
         await priceService.connectToContract();
         
-        // Load charts
+        // Load charts automatically
         await loadCharts();
         
-        // Start real-time updates
-        if (isRealTimeMode) {
-          startRealTimeAutoRefresh();
-        }
+        // Start real-time updates automatically
+        startRealTimeAutoRefresh();
         
-        console.log('✅ Price Charts initialized successfully');
+        console.log('✅ Price Charts initialized successfully - Auto mode enabled');
         
       } catch (error) {
         console.error('❌ Error initializing Price Charts:', error);
@@ -372,7 +323,11 @@
         
       } catch (error) {
         console.error('❌ Error loading charts:', error);
-        showError('Failed to load charts. Please try again.');
+        // Auto-retry after 5 seconds
+        setTimeout(() => {
+          console.log('🔄 Auto-retrying chart load...');
+          loadCharts();
+        }, 5000);
       }
     }
     
@@ -670,65 +625,20 @@
         clearInterval(refreshInterval);
       }
       
+      // Auto-refresh every 30 seconds
       refreshInterval = setInterval(() => {
-        console.log('🔄 Real-time auto-refresh triggered...');
+        console.log('🔄 Auto-refresh triggered...');
         loadCharts();
       }, 30000); // 30 seconds
       
-      console.log('✅ Real-time auto-refresh enabled: 30 seconds');
+      console.log('✅ Auto-refresh enabled: 30 seconds');
       
+      // Also start price service auto-update
       if (priceService) {
         priceService.startAutoUpdate(1); // Every 1 minute
       }
     }
     
-    // Toggle real-time mode
-    function toggleRealTimeMode() {
-      isRealTimeMode = !isRealTimeMode;
-      
-      if (isRealTimeMode) {
-        startRealTimeAutoRefresh();
-        console.log('✅ Real-time mode enabled');
-      } else {
-        if (refreshInterval) {
-          clearInterval(refreshInterval);
-          refreshInterval = null;
-        }
-        if (priceService) {
-          priceService.stopAutoUpdate();
-        }
-        console.log('⏸️ Real-time mode disabled');
-      }
-    }
-    
-    // Clear database data
-    async function clearDatabaseData() {
-      if (!confirm('Are you sure you want to clear all database data?')) {
-        return;
-      }
-      
-      try {
-        console.log('🔄 Clearing database data...');
-        
-        if (priceService && priceService.neonApiService) {
-          // Clear Neon database
-          await priceService.neonApiService.cleanupOldData();
-        }
-        
-        // Clear localStorage
-        localStorage.removeItem('tokenPrices');
-        localStorage.removeItem('pointPrices');
-        
-        console.log('✅ Database data cleared');
-        
-        // Reload charts
-        await loadCharts();
-        
-      } catch (error) {
-        console.error('❌ Error clearing database data:', error);
-        alert('Failed to clear database data. Please try again.');
-      }
-    }
     
     // Format number with commas
     function formatNumber(num) {
