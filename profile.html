@@ -206,6 +206,16 @@
                 padding: 0.6em 1.2em !important;
                 font-size: 0.9em !important;
             }
+            
+            /* Responsive upgrade cap modal buttons */
+            #upgrade-cap-modal div[style*="display:flex"] {
+                flex-direction: column !important;
+                gap: 0.6rem !important;
+            }
+            #upgrade-cap-modal button {
+                padding: 0.6em 1.2em !important;
+                font-size: 0.9em !important;
+            }
         }
         
         @media (max-width: 480px) {
@@ -214,6 +224,15 @@
                 margin-bottom: 0.8rem !important;
             }
             .withdrawal-buttons button {
+                padding: 0.5em 1em !important;
+                font-size: 0.8em !important;
+            }
+            
+            /* Responsive upgrade cap modal buttons for small screens */
+            #upgrade-cap-modal div[style*="display:flex"] {
+                gap: 0.4rem !important;
+            }
+            #upgrade-cap-modal button {
                 padding: 0.5em 1em !important;
                 font-size: 0.8em !important;
             }
@@ -378,6 +397,283 @@
         setInterval(updateCashbackTimer, 1000);
         setInterval(updateUpgradeTimer, 1000);
     }
+    
+    // Setup purchase point button functionality
+    function setupPurchasePointButton(user, contract, address) {
+        const purchasePointBtn = document.getElementById('purchase-point-btn');
+        const statusDiv = document.getElementById('upgrade-cap-status');
+        
+        if (!purchasePointBtn || !statusDiv) return;
+        
+        purchasePointBtn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            
+            // Disable button and show loading
+            purchasePointBtn.disabled = true;
+            purchasePointBtn.style.opacity = '0.5';
+            purchasePointBtn.style.cursor = 'not-allowed';
+            statusDiv.innerHTML = '⏳ Processing 1 point purchase...';
+            statusDiv.style.color = '#a786ff';
+            
+            try {
+                // Check if user is registered
+                if (!(user.index && BigInt(user.index) > 0n)) {
+                    throw new Error('You must be registered to purchase points');
+                }
+                
+                // Get registration price from contract
+                let regPrice = null;
+                try {
+                    if (typeof contract.getRegPrice === 'function') {
+                        regPrice = await contract.getRegPrice();
+                    } else if (typeof contract.regPrice === 'function') {
+                        regPrice = await contract.regPrice();
+                    }
+                } catch (e) {
+                    console.log('Error getting regPrice:', e);
+                }
+                
+                if (!regPrice) {
+                    throw new Error('Unable to get registration price from contract');
+                }
+                
+                // Convert regPrice to IAM amount (regPrice is already in wei)
+                const regPriceIAM = Number(ethers.formatUnits(regPrice, 18));
+                
+                // Get token price for USD calculation
+                let tokenPrice = 1; // Default price
+                try {
+                    if (typeof contract.getTokenPrice === 'function') {
+                        const tokenPriceRaw = await contract.getTokenPrice();
+                        tokenPrice = Number(ethers.formatUnits(tokenPriceRaw, 18));
+                    }
+                } catch (e) {
+                    console.log('Error getting token price, using default:', e);
+                }
+                
+                // Calculate 1/3 of registration cost + $1 worth of IAM
+                const oneThirdCostIAM = regPriceIAM / 3;
+                const oneDollarIAM = 1.0 / tokenPrice; // $1 worth of IAM
+                const finalCostIAM = oneThirdCostIAM + oneDollarIAM;
+                
+                // Calculate USD equivalent
+                const usdEquivalent = finalCostIAM * tokenPrice;
+                
+                // Show message box with token amount and USD equivalent
+                statusDiv.innerHTML = `
+                    <div style="background:rgba(0,255,136,0.1);border:2px solid #00ff88;border-radius:10px;padding:1rem;margin:0.5rem 0;text-align:center;">
+                        <div style="color:#00ff88;font-weight:bold;font-size:1.1em;margin-bottom:0.5rem;">🎯 Purchase 1 Point</div>
+                        <div style="color:#fff;font-size:1em;margin-bottom:0.3rem;">Token Amount: <span style="color:#a786ff;font-weight:bold;">${finalCostIAM.toFixed(6)} IAM</span></div>
+                        <div style="color:#fff;font-size:1em;">USD Equivalent: <span style="color:#00ff88;font-weight:bold;">$${usdEquivalent.toFixed(4)}</span></div>
+                        <div style="color:#ccc;font-size:0.9em;margin-top:0.5rem;">Payout: 100% to Contract</div>
+                    </div>
+                `;
+                statusDiv.style.color = '#00ff88';
+                
+                // Wait 3 seconds before proceeding
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                
+                // Convert to wei
+                const amountInWei = ethers.parseUnits(finalCostIAM.toString(), 18);
+                
+                // Check user balance
+                const userBalance = await contract.balanceOf(address);
+                if (userBalance < amountInWei) {
+                    throw new Error(`Insufficient IAM balance. Required: ${finalCostIAM.toFixed(6)} IAM`);
+                }
+                
+                statusDiv.innerHTML = '⏳ Sending purchase transaction...';
+                statusDiv.style.color = '#a786ff';
+                
+                // Purchase with 100% payout to contract address
+                const contractAddress = contract.target || contract.address;
+                const tx = await contract.purchase(amountInWei, 100, contractAddress);
+                
+                statusDiv.innerHTML = '⏳ Waiting for transaction confirmation...';
+                statusDiv.style.color = '#a786ff';
+                
+                await tx.wait();
+                
+                statusDiv.innerHTML = '✅ 1 point purchased successfully!';
+                statusDiv.style.color = '#00ff88';
+                
+                // Reload profile after 2 seconds
+                setTimeout(() => {
+                    loadProfile();
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Purchase point error:', error);
+                
+                let errorMsg = 'Error purchasing point';
+                if (error.code === 4001 || error.message.includes('user denied')) {
+                    errorMsg = '❌ Transaction was cancelled by user';
+                } else if (error.code === -32002 || error.message.includes('Already processing')) {
+                    errorMsg = '⏳ Wallet is processing another request. Please wait';
+                } else if (error.message.includes('network')) {
+                    errorMsg = '❌ Network error! Check your internet connection';
+                } else if (error.message.includes('insufficient funds')) {
+                    errorMsg = '❌ Insufficient balance to pay transaction fee';
+                } else {
+                    errorMsg = '❌ ' + (error.message || 'Unknown purchase error');
+                }
+                
+                statusDiv.innerHTML = errorMsg;
+                statusDiv.style.color = '#ff4444';
+            }
+            
+            // Re-enable button
+            purchasePointBtn.disabled = false;
+            purchasePointBtn.style.opacity = '';
+            purchasePointBtn.style.cursor = '';
+        });
+    }
+    
+    // Setup purchase 2 points button functionality
+    function setupPurchase2PointsButton(user, contract, address) {
+        const purchase2PointsBtn = document.getElementById('purchase-2-points-btn');
+        const statusDiv = document.getElementById('upgrade-cap-status');
+        
+        if (!purchase2PointsBtn || !statusDiv) return;
+        
+        purchase2PointsBtn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            
+            // Disable button and show loading
+            purchase2PointsBtn.disabled = true;
+            purchase2PointsBtn.style.opacity = '0.5';
+            purchase2PointsBtn.style.cursor = 'not-allowed';
+            statusDiv.innerHTML = '⏳ Processing 2 points purchase...';
+            statusDiv.style.color = '#a786ff';
+            
+            try {
+                // Check if user is registered
+                if (!(user.index && BigInt(user.index) > 0n)) {
+                    throw new Error('You must be registered to purchase points');
+                }
+                
+                // Get registration price from contract
+                let regPrice = null;
+                try {
+                    if (typeof contract.getRegPrice === 'function') {
+                        regPrice = await contract.getRegPrice();
+                    } else if (typeof contract.regPrice === 'function') {
+                        regPrice = await contract.regPrice();
+                    }
+                } catch (e) {
+                    console.log('Error getting regPrice:', e);
+                }
+                
+                if (!regPrice) {
+                    throw new Error('Unable to get registration price from contract');
+                }
+                
+                // Convert regPrice to IAM amount (regPrice is already in wei)
+                const regPriceIAM = Number(ethers.formatUnits(regPrice, 18));
+                
+                // Get token price for USD calculation
+                let tokenPrice = 1; // Default price
+                try {
+                    if (typeof contract.getTokenPrice === 'function') {
+                        const tokenPriceRaw = await contract.getTokenPrice();
+                        tokenPrice = Number(ethers.formatUnits(tokenPriceRaw, 18));
+                    }
+                } catch (e) {
+                    console.log('Error getting token price, using default:', e);
+                }
+                
+                // Calculate 2/3 of registration cost + $1 worth of IAM
+                const twoThirdsCostIAM = (regPriceIAM * 2) / 3;
+                const oneDollarIAM = 1.0 / tokenPrice; // $1 worth of IAM
+                const finalCostIAM = twoThirdsCostIAM + oneDollarIAM;
+                
+                // Calculate USD equivalent
+                const usdEquivalent = finalCostIAM * tokenPrice;
+                
+                // Show message box with token amount and USD equivalent
+                statusDiv.innerHTML = `
+                    <div style="background:rgba(167,134,255,0.1);border:2px solid #a786ff;border-radius:10px;padding:1rem;margin:0.5rem 0;text-align:center;">
+                        <div style="color:#a786ff;font-weight:bold;font-size:1.1em;margin-bottom:0.5rem;">🎯🎯 Purchase 2 Points</div>
+                        <div style="color:#fff;font-size:1em;margin-bottom:0.3rem;">Token Amount: <span style="color:#ff6b35;font-weight:bold;">${finalCostIAM.toFixed(6)} IAM</span></div>
+                        <div style="color:#fff;font-size:1em;">USD Equivalent: <span style="color:#a786ff;font-weight:bold;">$${usdEquivalent.toFixed(4)}</span></div>
+                        <div style="color:#ccc;font-size:0.9em;margin-top:0.5rem;">Payout: 100% to Contract</div>
+                    </div>
+                `;
+                statusDiv.style.color = '#a786ff';
+                
+                // Wait 3 seconds before proceeding
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                
+                // Convert to wei
+                const amountInWei = ethers.parseUnits(finalCostIAM.toString(), 18);
+                
+                // Check user balance
+                const userBalance = await contract.balanceOf(address);
+                if (userBalance < amountInWei) {
+                    throw new Error(`Insufficient IAM balance. Required: ${finalCostIAM.toFixed(6)} IAM`);
+                }
+                
+                statusDiv.innerHTML = '⏳ Sending purchase transaction...';
+                statusDiv.style.color = '#a786ff';
+                
+                // Purchase with 100% payout to contract address
+                const contractAddress = contract.target || contract.address;
+                const tx = await contract.purchase(amountInWei, 100, contractAddress);
+                
+                statusDiv.innerHTML = '⏳ Waiting for transaction confirmation...';
+                statusDiv.style.color = '#a786ff';
+                
+                await tx.wait();
+                
+                statusDiv.innerHTML = '✅ 2 points purchased successfully!';
+                statusDiv.style.color = '#00ff88';
+                
+                // Reload profile after 2 seconds
+                setTimeout(() => {
+                    loadProfile();
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Purchase 2 points error:', error);
+                
+                let errorMsg = 'Error purchasing 2 points';
+                if (error.code === 4001 || error.message.includes('user denied')) {
+                    errorMsg = '❌ Transaction was cancelled by user';
+                } else if (error.code === -32002 || error.message.includes('Already processing')) {
+                    errorMsg = '⏳ Wallet is processing another request. Please wait';
+                } else if (error.message.includes('network')) {
+                    errorMsg = '❌ Network error! Check your internet connection';
+                } else if (error.message.includes('insufficient funds')) {
+                    errorMsg = '❌ Insufficient balance to pay transaction fee';
+                } else {
+                    errorMsg = '❌ ' + (error.message || 'Unknown purchase error');
+                }
+                
+                statusDiv.innerHTML = errorMsg;
+                statusDiv.style.color = '#ff4444';
+            }
+            
+            // Re-enable button
+            purchase2PointsBtn.disabled = false;
+            purchase2PointsBtn.style.opacity = '';
+            purchase2PointsBtn.style.cursor = '';
+        });
+    }
+    
+    // Update upgrade cap balance display with USD equivalent
+    function updateUpgradeCapBalance(IAMBalance, tokenPrice) {
+        const balanceElement = document.getElementById('upgrade-cap-balance');
+        const balanceUsdElement = document.getElementById('upgrade-cap-balance-usd');
+        
+        if (balanceElement && balanceUsdElement) {
+            const balanceIAM = Number(ethers.formatUnits(IAMBalance, 18));
+            const balanceUSD = balanceIAM * tokenPrice;
+            
+            balanceElement.textContent = `${balanceIAM.toFixed(6)} IAM`;
+            balanceUsdElement.textContent = `≈ $${balanceUSD.toFixed(2)}`;
+        }
+    }
+    
     async function loadProfile() {
         const content = document.getElementById('profile-content');
         content.innerHTML = '<div class="loading">Loading information...</div>';
@@ -504,12 +800,10 @@
                           </div>
                           
                           <div style="margin-bottom:1.5rem;">
-                              <label style="display:block;color:#a786ff;margin-bottom:0.5rem;font-weight:bold;">IAM Amount for Upgrade:</label>
-                              <input type="number" id="upgrade-cap-amount" placeholder="Enter IAM amount" style="width:100%;padding:0.8rem;border:2px solid #ff6b3333;border-radius:8px;background:rgba(255,107,51,0.1);color:#fff;font-size:1rem;box-sizing:border-box;">
-                              <div id="upgrade-cap-amount-usd" style="margin-top:6px;color:#a786ff;font-size:0.9em;">≈ $0.00</div>
                               <div style="margin-top:0.5rem;font-size:0.9em;color:#ccc;">
                                   <span>Current Balance: </span>
                                   <span id="upgrade-cap-balance" style="color:#00ff88;font-weight:bold;">Loading...</span>
+                                  <div id="upgrade-cap-balance-usd" style="margin-top:2px;color:#a786ff;font-size:0.8em;">≈ $0.00</div>
                               </div>
                               <div style="margin-top:0.5rem;font-size:0.9em;color:#ccc;">
                                   <span>Current Cap: </span>
@@ -517,8 +811,9 @@
                               </div>
                           </div>
                           
-                          <div style="display:flex;gap:1rem;justify-content:center;">
-                              <button id="upgrade-cap-confirm" style="background:linear-gradient(90deg,#ff6b35,#ff8e53);color:#181c2a;border:none;border-radius:8px;padding:0.8rem 1.5rem;font-weight:bold;cursor:pointer;transition:all 0.2s;">Confirm Upgrade</button>
+                          <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+                              <button id="purchase-point-btn" style="background:linear-gradient(90deg,#00ff88,#a786ff);color:#181c2a;border:none;border-radius:8px;padding:0.8rem 1.5rem;font-weight:bold;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:0.4em;"><span style='font-size:1em;'>🎯</span> Purchase 1 Point</button>
+                              <button id="purchase-2-points-btn" style="background:linear-gradient(90deg,#a786ff,#ff6b35);color:#181c2a;border:none;border-radius:8px;padding:0.8rem 1.5rem;font-weight:bold;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:0.4em;"><span style='font-size:1em;'>🎯🎯</span> Purchase 2 Points</button>
                               <button id="upgrade-cap-cancel" style="background:rgba(255,255,255,0.1);color:#ccc;border:1px solid #666;border-radius:8px;padding:0.8rem 1.5rem;cursor:pointer;transition:all 0.2s;">Cancel</button>
                           </div>
                           
@@ -856,15 +1151,30 @@
                  }, 1000); // 1 second delay to ensure complete loading
              }
              
-             // Initialize withdrawal timers
-             startWithdrawalTimers(user);
-             
+            // Initialize withdrawal timers
+            startWithdrawalTimers(user);
+            
+            // Setup upgrade cap balance display
+            setTimeout(() => {
+                updateUpgradeCapBalance(IAMBalance, tokenPrice);
+            }, 100);
+            
                           // Setup upgrade cap button
               if (typeof setupUpgradeCapButton === 'function') {
                   setTimeout(() => {
                       setupUpgradeCapButton(user, contract, address);
                   }, 100);
               }
+              
+              // Setup purchase point button
+              setTimeout(() => {
+                  setupPurchasePointButton(user, contract, address);
+              }, 200);
+              
+              // Setup purchase 2 points button
+              setTimeout(() => {
+                  setupPurchase2PointsButton(user, contract, address);
+              }, 300);
                  } catch (e) {
              content.innerHTML = `<div class="error-message">Error: ${e.message || e}</div>`;
          }
