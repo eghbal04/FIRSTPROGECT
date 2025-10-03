@@ -908,6 +908,13 @@ function setupUpgradeCapButton(user, contract, address) {
     // نمایش مودال
     upgradeBtn.addEventListener('click', () => {
         console.log('🖱️ Upgrade cap button clicked!');
+        
+        // Check if button is disabled (timer is active)
+        if (upgradeBtn.disabled) {
+            console.log('❌ Upgrade cap button is disabled - timer is active');
+            return;
+        }
+        
         modal.style.display = 'block';
         loadUpgradeCapData();
     });

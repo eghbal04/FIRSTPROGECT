@@ -366,6 +366,8 @@
             const nextUpgradeTime = lastUpgrade + (28 * 24 * 3600); // 28 days (4 weeks)
             const timeLeft = nextUpgradeTime - now;
             
+            const upgradeBtn = document.getElementById('upgrade-cap-btn');
+            
             if (timeLeft > 0) {
                 const days = Math.floor(timeLeft / (24 * 3600));
                 const hours = Math.floor((timeLeft % (24 * 3600)) / 3600);
@@ -380,10 +382,26 @@
                 }
                 upgradeTimer.style.color = '#ff4444';
                 upgradeTimer.style.fontWeight = 'bold';
+                
+                // Disable upgrade button when timer is active
+                if (upgradeBtn) {
+                    upgradeBtn.disabled = true;
+                    upgradeBtn.style.opacity = '0.5';
+                    upgradeBtn.style.cursor = 'not-allowed';
+                    upgradeBtn.title = 'Upgrade cap is on cooldown. Please wait for timer to reach zero.';
+                }
             } else {
                 upgradeTimer.textContent = '✅ Ready';
                 upgradeTimer.style.color = '#00ff88';
                 upgradeTimer.style.fontWeight = 'bold';
+                
+                // Enable upgrade button when timer reaches zero
+                if (upgradeBtn) {
+                    upgradeBtn.disabled = false;
+                    upgradeBtn.style.opacity = '1';
+                    upgradeBtn.style.cursor = 'pointer';
+                    upgradeBtn.title = 'Upgrade binary points cap using IAM tokens. The more you upgrade, the higher your points cap becomes.';
+                }
             }
         }
         
