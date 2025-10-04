@@ -44,7 +44,7 @@
     @media (max-width: 1024px) { .grid { grid-template-columns: 1fr; gap: 14px; } }
     .card { background: #121521; border: 1px solid #1f2433; border-radius: 12px; padding: 16px; }
     .card h2 { margin: 0 0 12px; font-size: 16px; color:#aef3c6; cursor: pointer; user-select: none; display: flex; align-items: center; justify-content: space-between; }
-    #contract-card h2 { margin: 0 0 16px; font-size: 18px; color: #00ff88; text-align: center; }
+    #contract-card h2 { margin: 0 0 8px; font-size: 16px; color: #00ff88; text-align: center; }
     .card h2:hover { color: #c4f7d6; }
     .card h2 .toggle-icon { transition: transform 0.3s ease; font-size: 16px; }
     .card h2.collapsed .toggle-icon { transform: rotate(-90deg); }
@@ -52,17 +52,17 @@
     #contract-card { 
       background: linear-gradient(135deg, #1a1f2e 0%, #232946 100%);
       border: 1px solid #00ff88;
-      border-radius: 12px;
+      border-radius: 10px;
       box-shadow: 0 4px 15px rgba(0, 255, 136, 0.2);
       overflow: visible;
       width: 100%;
       max-width: 100%;
       min-width: 0;
-      padding: 20px;
-      margin-bottom: 24px;
+      padding: 12px 16px;
+      margin: 10px 0;
     }
     #contract-card .row { 
-      padding: 6px 0; 
+      padding: 4px 0; 
       border-bottom: 1px dashed rgba(0,255,136,0.18);
       display: flex;
       align-items: center;
@@ -872,6 +872,174 @@
       }
     }
     
+    /* Typewriter Message Box Styles */
+    .typewriter-message-box {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: linear-gradient(135deg, #1a1f2e 0%, #232946 100%);
+      border: 2px solid #00ff88;
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 600px;
+      width: 90%;
+      z-index: 10000;
+      box-shadow: 0 8px 32px rgba(0, 255, 136, 0.3);
+      backdrop-filter: blur(10px);
+      display: none;
+    }
+    
+    .typewriter-message-box.show {
+      display: block;
+      animation: fadeInScale 0.5s ease-out;
+    }
+    
+    @keyframes fadeInScale {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+    }
+    
+    .typewriter-message-box .message-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .typewriter-message-box .message-header h3 {
+      color: #00ff88;
+      font-size: 24px;
+      margin: 0 0 8px 0;
+      font-weight: 700;
+    }
+    
+    .typewriter-message-box .language-switcher {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      pointer-events: auto;
+      position: relative;
+      z-index: 1000;
+    }
+    
+    .typewriter-message-box .lang-btn {
+      background: rgba(0, 255, 136, 0.1);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      color: #00ff88;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      pointer-events: auto !important;
+      user-select: none;
+      position: relative;
+      z-index: 1000;
+      display: inline-block;
+    }
+    
+    .typewriter-message-box .lang-btn:hover {
+      background: rgba(0, 255, 136, 0.2);
+      border-color: rgba(0, 255, 136, 0.5);
+    }
+    
+    .typewriter-message-box .lang-btn.active {
+      background: linear-gradient(135deg, #00ff88, #00cc6a);
+      color: #181c2a;
+      border-color: #00ff88;
+    }
+    
+    .typewriter-message-box .message-content {
+      color: #e6eaf0;
+      font-size: 16px;
+      line-height: 1.6;
+      text-align: center;
+      margin-bottom: 24px;
+      min-height: 120px;
+    }
+    
+    .typewriter-message-box .typewriter-text {
+      display: inline;
+    }
+    
+    .typewriter-message-box .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 20px;
+      background: #00ff88;
+      animation: blink 1s infinite;
+      margin-left: 2px;
+    }
+    
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+    
+    
+    .typewriter-message-box .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 9999;
+      display: none;
+    }
+    
+    .typewriter-message-box .overlay.show {
+      display: block;
+      animation: fadeIn 0.3s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    /* Mobile responsiveness for typewriter message */
+    @media (max-width: 768px) {
+      .typewriter-message-box {
+        width: 95%;
+        padding: 20px;
+        max-width: none;
+      }
+      
+      .typewriter-message-box .message-header h3 {
+        font-size: 20px;
+      }
+      
+      .typewriter-message-box .message-content {
+        font-size: 14px;
+        min-height: 100px;
+      }
+      
+    }
+    
+    @media (max-width: 480px) {
+      .typewriter-message-box {
+        width: 98%;
+        padding: 16px;
+      }
+      
+      .typewriter-message-box .message-header h3 {
+        font-size: 18px;
+      }
+      
+      .typewriter-message-box .message-content {
+        font-size: 13px;
+        min-height: 80px;
+      }
+    }
+
     /* Google Translate Widget Styling - Modern Dark Theme */
     .goog-te-banner-frame {
       display: none !important;
@@ -1048,6 +1216,23 @@
       max-width: 150px;
     "></div>
     
+  <!-- Typewriter Message Box -->
+  <div class="typewriter-message-box" id="typewriter-message-box">
+    <div class="overlay" id="message-overlay"></div>
+    <div class="message-header">
+      <h3 id="message-title">💬 پیام مهم</h3>
+      <div class="language-switcher" id="language-switcher">
+        <button class="lang-btn active" data-lang="fa" id="lang-fa" onclick="window.switchLanguageGlobal('fa')">فارسی</button>
+        <button class="lang-btn" data-lang="en" id="lang-en" onclick="window.switchLanguageGlobal('en')">English</button>
+        <button class="lang-btn" data-lang="ar" id="lang-ar" onclick="window.switchLanguageGlobal('ar')">العربية</button>
+      </div>
+    </div>
+    <div class="message-content">
+      <div class="typewriter-text" id="typewriter-text"></div>
+      <div class="cursor" id="typewriter-cursor"></div>
+    </div>
+  </div>
+
   <div class="container">
     <h1>IAMPHOENIX Dashboard</h1>
 
@@ -2033,6 +2218,9 @@
     
     // Setup tree navigation and leaderboard
     setupTreeNavigationAndLeaderboard();
+    
+    // Setup typewriter message box
+    setupTypewriterMessage();
   });
     
     function setupPermanentReferralLink() {
@@ -2470,6 +2658,323 @@
       }).join('');
       
       popularityList.innerHTML = popularityHTML;
+    }
+
+    // Typewriter Message Box System
+    function setupTypewriterMessage() {
+      const messageBox = document.getElementById('typewriter-message-box');
+      const overlay = document.getElementById('message-overlay');
+      const typewriterText = document.getElementById('typewriter-text');
+      const cursor = document.getElementById('typewriter-cursor');
+      const messageTitle = document.getElementById('message-title');
+      const langButtons = document.querySelectorAll('.lang-btn');
+
+      if (!messageBox || !overlay || !typewriterText || !cursor) {
+        console.warn('Typewriter message elements not found');
+        return;
+      }
+
+      // Multilingual messages
+      const messages = {
+        fa: {
+          title: '💬 پیام مهم',
+          content: `با سلام و احترام،
+
+از شما خواهشمندیم که تنها یک حساب کاربری ثبت کنید. این درخواست به دلیل وجود امکانات ارتقا در سیستم است که امکان پیشرفت و رشد در شبکه را برای شما فراهم می‌کند.
+
+لطفاً ابتدا به طور کامل با تمام جنبه‌های کار آشنا شوید و پس از انجام آزمایش‌ها و کسب اطلاعات جامع، در صورت نیاز به ایجاد حساب دوم، این کار را با آگاهی کامل انجام دهید.
+
+این پیام با نهایت احترام به شما ارائه می‌شود و امیدواریم از درک متقابل برخوردار باشیم.`
+        },
+        en: {
+          title: '💬 Important Message',
+          content: `With greetings and respect,
+
+We kindly request that you register only one account. This request is made due to the upgrade capabilities available in the system, which provide you with opportunities for advancement and growth within the network.
+
+Please first familiarize yourself completely with all aspects of the work, and after conducting thorough testing and gathering comprehensive information, if you need to create a secondary account, please do so with full awareness and understanding.
+
+This message is presented to you with the utmost respect, and we hope for mutual understanding.`
+        },
+        ar: {
+          title: '💬 رسالة مهمة',
+          content: `بكل احترام وتقدير،
+
+نطلب منكم بأدب أن تسجلوا حساباً واحداً فقط. هذا الطلب بسبب وجود إمكانيات الترقية المتاحة في النظام والتي توفر لكم فرص التقدم والنمو داخل الشبكة.
+
+يرجى أولاً التعرف بشكل كامل على جميع جوانب العمل، وبعد إجراء اختبارات شاملة وجمع معلومات وافية، إذا احتجتم لإنشاء حساب ثانوي، يرجى القيام بذلك بوعي وفهم كامل.
+
+هذه الرسالة مقدمة لكم بأقصى درجات الاحترام ونأمل التفاهم المتبادل.`
+        }
+      };
+
+      // Set Persian as default language
+      let currentLanguage = 'fa';
+
+      // Update UI elements with current language
+      function updateLanguage(lang) {
+        currentLanguage = lang;
+        const message = messages[lang];
+        
+        // Update title
+        messageTitle.textContent = message.title;
+        
+        // Update language switcher
+        langButtons.forEach(btn => {
+          btn.classList.remove('active');
+          if (btn.dataset.lang === lang) {
+            btn.classList.add('active');
+          }
+        });
+        
+        // Update text direction
+        if (lang === 'ar') {
+          messageBox.style.direction = 'rtl';
+          typewriterText.style.textAlign = 'right';
+        } else if (lang === 'en') {
+          messageBox.style.direction = 'ltr';
+          typewriterText.style.textAlign = 'left';
+        } else {
+          messageBox.style.direction = 'rtl';
+          typewriterText.style.textAlign = 'right';
+        }
+      }
+
+      // Language switcher event listeners
+      function setupLanguageButtons() {
+        console.log('Setting up language buttons, found buttons:', langButtons.length);
+        
+        // Re-query the buttons to ensure they exist
+        const freshLangButtons = document.querySelectorAll('.lang-btn');
+        console.log('Fresh query found buttons:', freshLangButtons.length);
+        
+        freshLangButtons.forEach((btn, index) => {
+          console.log(`Setting up button ${index}:`, btn.dataset.lang, btn.textContent, btn);
+          
+          // Remove any existing listeners first
+          btn.removeEventListener('click', handleLanguageClick);
+          btn.removeEventListener('click', handleLanguageClickFallback);
+          
+          // Add primary click listener
+          btn.addEventListener('click', handleLanguageClick);
+          
+          // Add fallback click listener
+          btn.addEventListener('click', handleLanguageClickFallback);
+          
+          // Test if button is clickable
+          btn.style.pointerEvents = 'auto';
+          btn.style.cursor = 'pointer';
+          
+          // Add a simple test click handler
+          btn.addEventListener('click', (e) => {
+            console.log('SIMPLE CLICK TEST - Button clicked:', btn.dataset.lang, btn.textContent);
+          });
+        });
+        console.log('Language buttons setup complete');
+      }
+      
+      // Primary click handler
+      async function handleLanguageClick(e) {
+        console.log('Language button click detected (primary)');
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        
+        const lang = e.target.dataset.lang;
+        console.log('Language button clicked (primary):', lang);
+        
+        if (lang && messages[lang]) {
+          await switchLanguage(lang);
+        } else {
+          console.error('Invalid language or message not found:', lang);
+        }
+        
+        // Prevent the event from reaching the overlay
+        return false;
+      }
+      
+      // Fallback click handler
+      async function handleLanguageClickFallback(e) {
+        console.log('Language button click detected (fallback)');
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        
+        const lang = e.target.dataset.lang;
+        console.log('Language button clicked (fallback):', lang);
+        
+        if (lang && messages[lang]) {
+          await switchLanguage(lang);
+        } else {
+          console.error('Invalid language or message not found (fallback):', lang);
+        }
+        
+        // Prevent the event from reaching the overlay
+        return false;
+      }
+      
+      // Language switching function
+      async function switchLanguage(lang) {
+        console.log('switchLanguage called with:', lang);
+        updateLanguage(lang);
+        
+        // Clear current text and restart typewriter effect
+        typewriterText.textContent = '';
+        cursor.style.display = 'inline-block';
+        
+        // Get new message content
+        const newMessage = messages[lang].content;
+        
+        // Start typewriter effect with new language
+        await typeWriter(newMessage, typewriterText, 30);
+        
+        // Hide cursor after typing is complete
+        setTimeout(() => {
+          cursor.style.display = 'none';
+        }, 1000);
+      }
+      
+      // Global function for onclick attributes
+      window.switchLanguageGlobal = function(lang) {
+        console.log('Global switchLanguage called with:', lang);
+        switchLanguage(lang);
+      };
+      
+      // Setup language buttons
+      setupLanguageButtons();
+
+      // Check if message should be shown - ALWAYS SHOW (unlimited)
+      async function shouldShowMessage() {
+        // Always show message - no limitations
+        return true;
+      }
+
+      // Typewriter effect
+      function typeWriter(text, element, speed = 50) {
+        return new Promise((resolve) => {
+          let i = 0;
+          element.textContent = '';
+          
+          function type() {
+            if (i < text.length) {
+              element.textContent += text.charAt(i);
+              i++;
+              setTimeout(type, speed);
+            } else {
+              resolve();
+            }
+          }
+          
+          type();
+        });
+      }
+
+      // Show message box
+      async function showMessage() {
+        if (await shouldShowMessage()) {
+          // Update to current language first
+          updateLanguage(currentLanguage);
+          
+          messageBox.classList.add('show');
+          overlay.classList.add('show');
+          
+          // Get current message content
+          const currentMessage = messages[currentLanguage].content;
+          
+          // Start typewriter effect
+          await typeWriter(currentMessage, typewriterText, 30);
+          
+          // Hide cursor after typing is complete
+          setTimeout(() => {
+            cursor.style.display = 'none';
+          }, 1000);
+          
+          // Auto-close after 10 seconds
+          setTimeout(() => {
+            hideMessage();
+          }, 10000);
+          
+          // Setup language buttons after message is shown
+          setTimeout(() => {
+            setupLanguageButtons();
+          }, 100);
+        }
+      }
+
+      // Hide message box
+      function hideMessage() {
+        messageBox.classList.remove('show');
+        overlay.classList.remove('show');
+        typewriterText.textContent = '';
+        cursor.style.display = 'inline-block';
+      }
+
+      // Event listeners
+      // Overlay click handler - only hide if clicking directly on overlay, not on child elements
+      overlay.addEventListener('click', (e) => {
+        console.log('Overlay clicked, target:', e.target, 'overlay:', overlay);
+        // Only hide if clicking directly on the overlay, not on child elements
+        if (e.target === overlay) {
+          console.log('Hiding message box due to overlay click');
+          hideMessage();
+        } else {
+          console.log('Overlay click ignored - clicked on child element:', e.target);
+        }
+      });
+      
+      // Prevent message box clicks from bubbling to overlay
+      messageBox.addEventListener('click', (e) => {
+        console.log('Message box clicked, preventing bubble');
+        e.stopPropagation();
+      });
+      
+      // Prevent language switcher clicks from bubbling to overlay
+      const languageSwitcher = document.getElementById('language-switcher');
+      if (languageSwitcher) {
+        languageSwitcher.addEventListener('click', (e) => {
+          console.log('Language switcher clicked, preventing bubble');
+          e.stopPropagation();
+        });
+      }
+      
+      // Prevent message content clicks from bubbling to overlay
+      const messageContent = document.querySelector('.message-content');
+      if (messageContent) {
+        messageContent.addEventListener('click', (e) => {
+          console.log('Message content clicked, preventing bubble');
+          e.stopPropagation();
+        });
+      }
+
+      // Show message after ensuring status bar is loaded
+      async function waitAndShowMessage() {
+        // Wait for status bar to be populated
+        let attempts = 0;
+        const maxAttempts = 10;
+        
+        while (attempts < maxAttempts) {
+          const statusIndex = document.getElementById('status-index');
+          if (statusIndex && statusIndex.textContent && statusIndex.textContent !== '-') {
+            // Status bar is populated, wait a bit more then show message
+            setTimeout(() => {
+              showMessage();
+              // Re-setup language buttons after message is shown
+              setTimeout(setupLanguageButtons, 500);
+            }, 1000);
+            return;
+          }
+          await new Promise(resolve => setTimeout(resolve, 500));
+          attempts++;
+        }
+        
+        // If status bar never populated, show message anyway
+        showMessage();
+        // Re-setup language buttons after message is shown
+        setTimeout(setupLanguageButtons, 500);
+      }
+      
+      // Start the process
+      waitAndShowMessage();
     }
   </script>
   
