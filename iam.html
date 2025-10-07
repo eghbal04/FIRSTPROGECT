@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl" id="html-root">
+<html lang="ar" dir="rtl" id="html-root">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -260,6 +260,18 @@
 
         /* Disable drop-cap in RTL languages (e.g., Persian/Arabic) */
         [dir="rtl"] .chapter.intro .text::first-letter {
+            float: none;
+            font-size: inherit;
+            line-height: inherit;
+            padding: 0;
+            margin: 0;
+            color: inherit;
+            text-shadow: none;
+            font-weight: inherit;
+        }
+
+        /* Disable drop-cap in LTR languages as well */
+        [dir="ltr"] .chapter.intro .text::first-letter {
             float: none;
             font-size: inherit;
             line-height: inherit;
@@ -553,9 +565,9 @@
     <!-- Language Switcher -->
     <div class="language-switcher">
         <select class="language-select" id="languageSelect">
-            <option value="fa" selected>🇮🇷 فارسی</option>
+            <option value="fa">🇮🇷 فارسی</option>
             <option value="en">🇺🇸 English</option>
-            <option value="ar">🇸🇦 العربية</option>
+            <option value="ar" selected>🇸🇦 العربية</option>
             <option value="ru">🇷🇺 Русский</option>
             <option value="zh">🇨🇳 中文</option>
         </select>
@@ -1123,8 +1135,8 @@
                 switchLanguage(lang);
             });
             
-            // Load default language (Persian) on page load
-            switchLanguage('fa');
+            // Load default language (Arabic) on page load
+            switchLanguage('ar');
         });
 
         // ایجاد ذرات شناور
