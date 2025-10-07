@@ -126,7 +126,7 @@ app.post('/api/token-prices', async (req, res) => {
       
       // مقایسه با دقت 1e-20 برای اعداد بسیار کوچک
       const priceDifference = Math.abs(latestPrice - newPrice);
-      const tolerance = Math.max(1e-20, Math.abs(latestPrice) * 0.00001); // 0.001% tolerance
+      const tolerance = Math.max(1e-20, Math.abs(latestPrice) * 0.001); // 0.1% tolerance
       
       if (priceDifference < tolerance) {
         console.log(`📊 Price unchanged for ${symbol}: ${latestPrice} ≈ ${newPrice} (diff: ${priceDifference})`);
@@ -183,9 +183,9 @@ app.post('/api/point-prices', async (req, res) => {
       const latestPrice = parseFloat(latestResult.rows[0].point_value_usd);
       const newPrice = parseFloat(pointValueUsd);
       
-      // مقایسه با دقت 0.001 برای قیمت‌های پوینت
+      // مقایسه با دقت 0.01 برای قیمت‌های پوینت
       const priceDifference = Math.abs(latestPrice - newPrice);
-      const tolerance = 0.001; // $0.001 tolerance
+      const tolerance = 0.01; // $0.01 tolerance
       
       if (priceDifference < tolerance) {
         console.log(`📊 Point price unchanged for ${pointType}: ${latestPrice} ≈ ${newPrice} (diff: ${priceDifference})`);
