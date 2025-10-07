@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Price Charts | PHOENIX (IAM)</title>
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+  
+  <!-- Load ethers.js version 6 from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.1/dist/ethers.umd.min.js"></script>
+  
+  <style>
+    body {
+      background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 50%, #2d3748 100%);
+      color: #e2e8f0;
+      font-family: 'Noto Sans Arabic', sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+    
+    .back-btn {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      background: linear-gradient(135deg, #a786ff, #00ff88);
+      color: #181c2a;
+      text-decoration: none;
+      padding: 0.7rem 1.2rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      box-shadow: 0 4px 15px rgba(167, 134, 255, 0.3);
+    }
+    
+    .back-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(167, 134, 255, 0.4);
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+      padding-top: 4rem;
+    }
+    
+    .page-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    
+    .page-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #a786ff, #00ff88);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+    }
+    
+    .page-subtitle {
+      font-size: 1.1rem;
+      color: #94a3b8;
+      margin-bottom: 2rem;
+    }
+    
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+    
+    @media (max-width: 768px) {
+      .charts-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+    }
+    
+    .chart-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 1.5rem;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+    
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    
+    .chart-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #e2e8f0;
+      margin: 0;
+    }
+    
+    .chart-icon {
+      font-size: 1.5rem;
+    }
+    
+    .chart-stats {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    
+    .stat-item {
+      text-align: center;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .stat-value {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #00ff88;
+      margin-bottom: 0.25rem;
+    }
+    
+    .stat-label {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .chart-container {
+      position: relative;
+      height: 400px;
+    }
+    
+    .chart-container canvas {
+      width: 100% !important;
+      height: 100% !important;
+    }
+    
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      font-size: 1.1rem;
+      color: #94a3b8;
+    }
+    
+    .error {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #ff6b6b;
+      text-align: center;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .error-icon {
+      font-size: 3rem;
+    }
+    
+    .status-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 0.5rem;
+    }
+    
+    .status-online {
+      background: #00ff88;
+      box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+    }
+    
+    .status-offline {
+      background: #ff6b6b;
+      box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+    }
+    
+    .status-warning {
+      background: #ffa726;
+      box-shadow: 0 0 10px rgba(255, 167, 38, 0.5);
+    }
+  </style>
+</head>
+
+<body>
+  <a href="index.html" class="back-btn">← Back to Home</a>
+  
+  <div class="container">
+    <div class="page-header">
+      <h1 class="page-title">Price Charts</h1>
+      <p class="page-subtitle">Real-time IAM Token and Point Price Analysis</p>
+    </div>
+
+    <div class="charts-grid">
+      <!-- Point Price Chart -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3 class="chart-title">
+            <span class="chart-icon">⭐</span>
+            Point Price Chart
+          </h3>
+          <div class="chart-stats" id="pointStats">
+            <div class="stat-item">
+              <div class="stat-value current-price" id="currentPointPrice">$15.63</div>
+              <div class="stat-label">Current Price</div>
+            </div>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="pointChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Token Price Chart -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3 class="chart-title">
+            <span class="chart-icon">💰</span>
+            Token Price Chart
+          </h3>
+          <div class="chart-stats" id="tokenStats">
+            <div class="stat-item">
+              <div class="stat-value current-price" id="currentTokenPrice">1.28e-15</div>
+              <div class="stat-label">Current Price</div>
+            </div>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="tokenChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global variables
+    let tokenChart = null;
+    let pointChart = null;
+    
+    // Initialize when DOM is loaded
+    document.addEventListener('DOMContentLoaded', async function() {
+      console.log('🚀 Initializing Simple Price Charts...');
+      console.log('📊 Chart.js available:', typeof Chart !== 'undefined');
+      
+      try {
+        // Load charts with sample data
+        await loadCharts();
+        console.log('✅ Charts initialized successfully');
+      } catch (error) {
+        console.error('❌ Error initializing charts:', error);
+        showError('Failed to initialize charts. Please refresh the page.');
+      }
+    });
+    
+    // Load charts with sample data
+    async function loadCharts() {
+      try {
+        console.log('🔄 Loading charts with sample data...');
+        
+        // Ensure canvas elements exist
+        const tokenCanvas = document.getElementById('tokenChart');
+        const pointCanvas = document.getElementById('pointChart');
+        
+        if (!tokenCanvas || !pointCanvas) {
+          console.error('❌ Canvas elements not found');
+          return;
+        }
+        
+        console.log('✅ Canvas elements ready');
+        
+        // Create token chart with sample data
+        createTokenChart(tokenCanvas);
+        
+        // Create point chart with sample data
+        createPointChart(pointCanvas);
+        
+        console.log('✅ Charts loaded successfully');
+        
+      } catch (error) {
+        console.error('❌ Error loading charts:', error);
+      }
+    }
+    
+    // Create token chart with sample data
+    function createTokenChart(canvas) {
+      console.log('🔄 Creating token chart with sample data');
+      
+      if (tokenChart) {
+        tokenChart.destroy();
+      }
+      
+      if (!canvas) {
+        console.error('❌ Canvas element not found');
+        return;
+      }
+
+      const ctx = canvas.getContext('2d');
+
+      // Generate sample data for token price
+      const labels = [];
+      const prices = [];
+      
+      // Generate 24 hours of data
+      for (let i = 23; i >= 0; i--) {
+        const date = new Date();
+        date.setHours(date.getHours() - i);
+        labels.push(date.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit'
+        }));
+        
+        // Generate realistic token price data (very small numbers)
+        const basePrice = 1.28e-15;
+        const variation = (Math.random() - 0.5) * 0.1e-15; // ±5% variation
+        const price = basePrice + variation;
+        prices.push(price);
+      }
+
+      const data = {
+        labels: labels,
+        datasets: [{
+          label: 'Token Price (USD)',
+          data: prices,
+          borderColor: '#00ff88',
+          backgroundColor: 'rgba(0, 255, 136, 0.1)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.4,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          pointBackgroundColor: '#00ff88',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2
+        }]
+      };
+
+      const config = {
+        type: 'line',
+        data: data,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            intersect: false,
+            mode: 'index'
+          },
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              titleColor: '#ffffff',
+              bodyColor: '#00ff88',
+              borderColor: '#00ff88',
+              borderWidth: 1,
+              callbacks: {
+                label: function(context) {
+                  const value = parseFloat(context.raw);
+                  return [
+                    'Token Price: ' + value.toExponential(6),
+                    'USD: $' + value.toExponential(3),
+                    'Scientific: ' + value.toExponential(6)
+                  ];
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              display: true,
+              title: {
+                display: true,
+                text: 'Time',
+                color: '#ffffff',
+                font: {
+                  size: 12
+                }
+              },
+              ticks: {
+                color: '#ffffff',
+                font: {
+                  size: 10
+                }
+              },
+              grid: {
+                color: 'rgba(255, 255, 255, 0.1)',
+                drawBorder: false
+              }
+            },
+            y: {
+              display: true,
+              title: {
+                display: true,
+                text: 'Price (Scientific)',
+                color: '#ffffff',
+                font: {
+                  size: 12
+                }
+              },
+              ticks: {
+                color: '#ffffff',
+                font: {
+                  size: 10
+                },
+                callback: function(value) {
+                  const val = parseFloat(value);
+                  return val.toExponential(2);
+                }
+              },
+              grid: {
+                color: 'rgba(255, 255, 255, 0.1)',
+                drawBorder: false
+              }
+            }
+          }
+        }
+      };
+
+      try {
+        tokenChart = new Chart(ctx, config);
+        console.log('✅ Token chart created successfully');
+      } catch (error) {
+        console.error('❌ Chart error:', error);
+      }
+    }
+    
+    // Create point chart with sample data
+    function createPointChart(canvas) {
+      console.log('🔄 Creating point chart with sample data');
+      
+      if (pointChart) {
+        pointChart.destroy();
+      }
+      
+      if (!canvas) {
+        console.error('❌ Canvas element not found');
+        return;
+      }
+      
+      const ctx = canvas.getContext('2d');
+      
+      // Generate sample data for point price
+      const labels = [];
+      const prices = [];
+      
+      // Generate 24 hours of data
+      for (let i = 23; i >= 0; i--) {
+        const date = new Date();
+        date.setHours(date.getHours() - i);
+        labels.push(date.toLocaleTimeString('en-US', { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        }));
+        
+        // Generate realistic point price data
+        const basePrice = 15.63;
+        const variation = (Math.random() - 0.5) * 2; // ±$1 variation
+        const price = basePrice + variation;
+        prices.push(price);
+      }
+      
+      const data = {
+        labels: labels,
+        datasets: [{
+          label: 'Point Price (USD)',
+          data: prices,
+          borderColor: '#a786ff',
+          backgroundColor: 'rgba(167, 134, 255, 0.1)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.4,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          pointBackgroundColor: '#a786ff',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2
+        }]
+      };
+      
+      const config = {
+        type: 'line',
+        data: data,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            intersect: false,
+            mode: 'index'
+          },
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              titleColor: '#ffffff',
+              bodyColor: '#a786ff',
+              borderColor: '#a786ff',
+              borderWidth: 1,
+              callbacks: {
+                label: function(context) {
+                  return '$' + parseFloat(context.raw).toFixed(2);
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              display: true,
+              title: {
+                display: true,
+                text: 'Time',
+                color: '#ffffff',
+                font: {
+                  size: 12
+                }
+              },
+              ticks: {
+                color: '#ffffff',
+                font: {
+                  size: 10
+                }
+              },
+              grid: {
+                color: 'rgba(255, 255, 255, 0.1)',
+                drawBorder: false
+              }
+            },
+            y: {
+              display: true,
+              title: {
+                display: true,
+                text: 'Price (USD)',
+                color: '#ffffff',
+                font: {
+                  size: 12
+                }
+              },
+              ticks: {
+                color: '#ffffff',
+                font: {
+                  size: 10
+                },
+                callback: function(value) {
+                  return '$' + parseFloat(value).toFixed(2);
+                }
+              },
+              grid: {
+                color: 'rgba(255, 255, 255, 0.1)',
+                drawBorder: false
+              }
+            }
+          }
+        }
+      };
+      
+      try {
+        pointChart = new Chart(ctx, config);
+        console.log('✅ Point chart created successfully');
+      } catch (error) {
+        console.error('❌ Chart error:', error);
+      }
+    }
+    
+    // Show general error
+    function showError(message) {
+      const container = document.querySelector('.container');
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'chart-card';
+      errorDiv.innerHTML = `
+        <div class="error">
+          <div class="error-icon">❌</div>
+          <div>${message}</div>
+        </div>
+      `;
+      container.appendChild(errorDiv);
+    }
+    
+    // Test charts function
+    function testCharts() {
+      console.log('🧪 Testing charts...');
+      
+      const tokenCanvas = document.getElementById('tokenChart');
+      const pointCanvas = document.getElementById('pointChart');
+      
+      console.log('Token canvas:', tokenCanvas);
+      console.log('Point canvas:', pointCanvas);
+      console.log('Chart.js available:', typeof Chart !== 'undefined');
+      
+      if (!tokenCanvas) {
+        console.error('❌ Token canvas not found!');
+        return;
+      }
+      
+      if (!pointCanvas) {
+        console.error('❌ Point canvas not found!');
+        return;
+      }
+      
+      if (typeof Chart === 'undefined') {
+        console.error('❌ Chart.js not loaded!');
+        return;
+      }
+      
+      console.log('✅ All elements found, charts should be working');
+      
+      // Refresh charts
+      loadCharts();
+    }
+  </script>
+</body>
+</html>
