@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -33,12 +33,27 @@
       width: 100%;
       overflow: visible;
     }
+    
+    /* Ensure all main content divs have consistent width */
+    .additional-content {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+    
+    .card {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
     h1 { margin: 0 0 16px; font-size: 20px; color:#9ecbff; text-align: center; }
     .grid { 
       display: grid; 
       grid-template-columns: repeat(2, minmax(0,1fr)); 
       gap: 16px; 
       width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
       overflow: visible;
     }
     @media (max-width: 1024px) { .grid { grid-template-columns: 1fr; gap: 14px; } }
@@ -345,6 +360,9 @@
     /* Creative Navigation Menu Styles */
     .nav-menu {
       margin-bottom: 24px;
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
     }
     
     .nav-grid {
@@ -488,6 +506,14 @@
     
     .nav-card:nth-child(9) { /* Partners */
       border-left: 3px solid #ec4899;
+    }
+    
+    .nav-card:nth-child(10) { /* Price Charts */
+      border-left: 3px solid #6366f1;
+    }
+    
+    .nav-card:nth-child(11) { /* I AM */
+      border-left: 3px solid #fbbf24;
     }
 
     /* Mobile responsiveness */
@@ -872,22 +898,10 @@
       }
     }
     
-    /* Simple Message Box Styles */
-    .simple-message-box {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 10000;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
+    /* Message Box Styles Removed */
     
     .simple-message-box.show {
-      display: flex;
+      display: block;
       animation: fadeInScale 0.5s ease-out;
     }
     
@@ -916,14 +930,15 @@
       background: rgba(20, 24, 37, 0.55);
       border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 16px;
-      padding: 24px;
-      max-width: 560px;
-      width: 90%;
+      padding: 20px;
+      max-width: 100%;
+      width: 100%;
       position: relative;
       z-index: 10001;
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
       backdrop-filter: blur(12px) saturate(120%);
       -webkit-backdrop-filter: blur(12px) saturate(120%);
+      margin: 0 auto;
     }
 
     /* Accent top bar */
@@ -945,7 +960,7 @@
       font-size: 24px;
       margin: 0 0 16px 0;
       font-weight: 700;
-      text-align: center;
+      text-align: left;
     }
 
     /* Modern gradient title for the actual header element */
@@ -1005,14 +1020,15 @@
       background: rgba(255, 255, 255, 0.04);
       border-radius: 12px;
       border: 1px solid rgba(255, 255, 255, 0.08);
-      font-family: 'Tahoma', 'Arial', sans-serif;
+      font-family: 'Arial', sans-serif;
       font-size: 16px;
       line-height: 1.6;
-      direction: rtl;
-      text-align: justify;
-      text-justify: inter-word;
-      unicode-bidi: bidi-override;
+      direction: ltr;
+      text-align: left;
+      unicode-bidi: normal;
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      word-spacing: normal;
+      letter-spacing: normal;
     }
     
     .simple-message-box .cursor {
@@ -1024,20 +1040,67 @@
       animation: blink 1s infinite;
     }
     
-    /* Language-specific text styling */
-    .simple-message-box[data-lang="fa"] .message-text,
-    .simple-message-box[data-lang="ar"] .message-text {
-      direction: rtl;
-      text-align: justify;
-      text-justify: inter-word;
-      font-family: 'Tahoma', 'Arial', sans-serif;
-    }
-    
+    /* English text styling */
     .simple-message-box[data-lang="en"] .message-text {
       direction: ltr;
-      text-align: justify;
-      text-justify: inter-word;
+      text-align: left;
       font-family: 'Arial', sans-serif;
+      unicode-bidi: normal;
+      word-spacing: normal;
+      letter-spacing: normal;
+      writing-mode: horizontal-tb;
+      text-orientation: mixed;
+    }
+    
+    /* Responsive design for message box */
+    @media (max-width: 768px) {
+      .simple-message-box .message-container {
+        padding: 16px;
+        margin: 10px;
+        border-radius: 12px;
+      }
+      
+      .simple-message-box .message-title {
+        font-size: 20px;
+        margin-bottom: 12px;
+      }
+      
+      .simple-message-box .message-text {
+        font-size: 14px;
+        line-height: 1.5;
+        padding: 12px;
+      }
+      
+      .simple-message-box #language-select {
+        padding: 8px 12px;
+        font-size: 13px;
+        min-width: 120px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .simple-message-box .message-container {
+        padding: 12px;
+        margin: 8px;
+        border-radius: 10px;
+      }
+      
+      .simple-message-box .message-title {
+        font-size: 18px;
+        margin-bottom: 10px;
+      }
+      
+      .simple-message-box .message-text {
+        font-size: 13px;
+        line-height: 1.4;
+        padding: 10px;
+      }
+      
+      .simple-message-box #language-select {
+        padding: 6px 10px;
+        font-size: 12px;
+        min-width: 100px;
+      }
     }
     
     @keyframes blink {
@@ -1088,202 +1151,11 @@
     }
     
 
-    /* Google Translate Widget Styling - Modern Dark Theme */
-    .goog-te-banner-frame {
-      display: none !important;
-    }
     
-    .goog-te-gadget {
-      font-family: 'Inter', sans-serif !important;
-      font-size: 13px !important;
-    }
-    
-    .goog-te-gadget-simple {
-      background: transparent !important;
-      border: none !important;
-      padding: 4px 8px !important;
-      border-radius: 6px !important;
-      color: #e2e8f0 !important;
-      font-weight: 500 !important;
-      transition: all 0.2s ease !important;
-      font-size: 11px !important;
-    }
-    
-    .goog-te-gadget-simple:hover {
-      background: rgba(96, 165, 250, 0.15) !important;
-      color: #60a5fa !important;
-    }
-    
-    .goog-te-gadget-simple .goog-te-menu-value {
-      color: #e2e8f0 !important;
-      font-size: 13px !important;
-      font-weight: 500 !important;
-    }
-    
-    .goog-te-gadget-simple .goog-te-menu-value span:first-child {
-      color: #60a5fa !important;
-      font-weight: 600 !important;
-    }
-    
-    .goog-te-gadget-simple .goog-te-menu-value span:last-child {
-      color: #94a3b8 !important;
-    }
-    
-    .goog-te-menu2 {
-      background: linear-gradient(135deg, #0f1419 0%, #1a2332 100%) !important;
-      border: 2px solid #4a5568 !important;
-      border-radius: 12px !important;
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5) !important;
-      backdrop-filter: blur(15px) !important;
-      max-height: 400px !important;
-      overflow-y: auto !important;
-      max-width: 200px !important;
-      display: flex !important;
-      flex-direction: column !important;
-      width: 200px !important;
-    }
-    
-    .goog-te-menu2 .goog-te-menu2-item {
-      width: 100% !important;
-      display: block !important;
-      float: none !important;
-      clear: both !important;
-    }
-    
-    .goog-te-menu2::-webkit-scrollbar {
-      width: 6px !important;
-    }
-    
-    .goog-te-menu2::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, 0.1) !important;
-      border-radius: 3px !important;
-    }
-    
-    .goog-te-menu2::-webkit-scrollbar-thumb {
-      background: rgba(96, 165, 250, 0.6) !important;
-      border-radius: 3px !important;
-    }
-    
-    .goog-te-menu2::-webkit-scrollbar-thumb:hover {
-      background: rgba(96, 165, 250, 0.8) !important;
-    }
-    
-    .goog-te-menu2-item {
-      color: #e2e8f0 !important;
-      padding: 4px 8px !important;
-      font-weight: 400 !important;
-      transition: all 0.2s ease !important;
-      font-size: 10px !important;
-      white-space: nowrap !important;
-      width: 100% !important;
-      display: block !important;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
-      line-height: 1.2 !important;
-    }
-    
-    .goog-te-menu2-item:last-child {
-      border-bottom: none !important;
-    }
-    
-    .goog-te-menu2-item:hover {
-      background: rgba(96, 165, 250, 0.15) !important;
-      color: #60a5fa !important;
-    }
-    
-    .goog-te-menu2-item-selected {
-      background: rgba(96, 165, 250, 0.25) !important;
-      color: #60a5fa !important;
-      font-weight: 600 !important;
-    }
-    
-    /* Mobile responsiveness for translate widget */
-    @media (max-width: 768px) {
-      #google_translate_element {
-        bottom: 10px !important;
-        left: 10px !important;
-        padding: 6px !important;
-        border-radius: 8px !important;
-        max-width: 120px !important;
-      }
-      
-      .goog-te-gadget-simple {
-        font-size: 10px !important;
-        padding: 3px 6px !important;
-      }
-      
-      .goog-te-menu2 {
-        max-height: 300px !important;
-        max-width: 180px !important;
-        font-size: 11px !important;
-      }
-      
-      .goog-te-menu2-item {
-        padding: 3px 6px !important;
-        font-size: 9px !important;
-      }
-    }
-    
-    @media (max-width: 480px) {
-      #google_translate_element {
-        bottom: 8px !important;
-        left: 8px !important;
-        padding: 4px !important;
-        max-width: 100px !important;
-      }
-      
-      .goog-te-gadget-simple {
-        font-size: 9px !important;
-        padding: 2px 4px !important;
-      }
-      
-      .goog-te-menu2 {
-        max-height: 250px !important;
-        max-width: 160px !important;
-      }
-      
-      .goog-te-menu2-item {
-        padding: 2px 4px !important;
-        font-size: 8px !important;
-      }
-    }
     </style>
 </head>
 <body>
-    <!-- Google Translate Widget -->
-    <div id="google_translate_element" style="
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      z-index: 9999;
-      background: linear-gradient(135deg, #0f1419 0%, #1a2332 100%);
-      border: 2px solid #4a5568;
-      border-radius: 12px;
-      padding: 8px;
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(10px);
-      max-width: 150px;
-    "></div>
     
-  <!-- Simple Message Box -->
-  <div class="simple-message-box" id="simple-message-box">
-    <div class="message-overlay" id="message-overlay"></div>
-    <div class="message-container">
-      <div class="message-header">
-        <h3 id="message-title">💬 تو مگو همه بجنگند و ز صلح من چه آید\nتو یک نه‌ای هزاری، تو چراغ خود برافروز</h3>
-        <div class="language-selector">
-          <select id="language-select" onchange="changeLanguage(this.value)">
-            <option value="fa" selected>فارسی</option>
-            <option value="en">English</option>
-            <option value="ar">العربية</option>
-          </select>
-        </div>
-      </div>
-      <div class="message-content">
-        <div class="message-text" id="message-text"></div>
-        <div class="cursor" id="message-cursor"></div>
-      </div>
-    </div>
-  </div>
 
   <div class="container">
     <h1>IAMPHOENIX Dashboard</h1>
@@ -1346,8 +1218,108 @@
           <div class="nav-icon">📊</div>
           <div class="nav-label">Price Charts</div>
         </a>
+        <a class="nav-card" href="iam.html">
+          <div class="nav-icon">🌟</div>
+          <div class="nav-label">I AM</div>
+        </a>
         </div>
     </div>
+
+
+    <!-- About IAM PHOENIX Section -->
+    <div class="additional-content" style="
+      margin: 20px 0;
+      padding: 24px;
+      background: linear-gradient(135deg, #1a1f2e 0%, #232946 100%);
+      border: 1px solid #00ff88;
+      border-radius: 16px;
+      color: #e6eaf0;
+      line-height: 1.7;
+      box-shadow: 0 8px 32px rgba(0, 255, 136, 0.1);
+    ">
+      <h2 style="margin: 0 0 20px; color: #00ff88; font-size: 24px; font-weight: 700; text-align: center;">
+        🚀 About IAM PHOENIX
+      </h2>
+      
+      <div style="margin-bottom: 20px;">
+        <h3 style="color: #aef3c6; font-size: 18px; margin: 0 0 12px;">🌟 Revolutionary Network Marketing Platform</h3>
+        <p style="margin: 0 0 16px; color: #b8c1ec; font-size: 15px;">
+          <strong>IAM PHOENIX</strong> is a cutting-edge Network Marketing platform that leverages blockchain technology and Web3 infrastructure to create a transparent, secure, and decentralized ecosystem. Our platform eliminates traditional intermediaries and creates direct, trustless relationships between participants through smart contracts.
+        </p>
+        <p style="margin: 0 0 16px; color: #b8c1ec; font-size: 15px;">
+          Built on the <strong>Polygon blockchain</strong>, IAM PHOENIX combines the power of network marketing with the security and transparency of blockchain technology. All network marketing activities, rewards, and commissions are automatically calculated and distributed through audited smart contracts, ensuring complete transparency and eliminating the possibility of fraud or manipulation.
+        </p>
+                </div>
+                
+      <div style="margin-bottom: 20px;">
+        <h3 style="color: #aef3c6; font-size: 18px; margin: 0 0 12px;">🔥 Phoenix Team Mission</h3>
+        <p style="margin: 0 0 16px; color: #b8c1ec; font-size: 15px;">
+          Our team, <strong>Phoenix</strong>, is currently supporting and developing the IAM token, which is built on the Polygon blockchain and backed by the decentralized stablecoin DAI. This stablecoin is fully decentralized, and no organization or authority has access to it. The IAM token itself is an independent project, in fact a startup. It does not support or rely on another startup, but rather aims to introduce and promote itself.
+        </p>
+                </div>
+                
+      <div style="margin-bottom: 20px;">
+        <h3 style="color: #aef3c6; font-size: 18px; margin: 0 0 12px;">📊 Subscription & Point System</h3>
+        <p style="margin: 0 0 12px; color: #b8c1ec; font-size: 15px;">
+          The IAM token has a subscription mechanism with the following distribution:
+        </p>
+        <ul style="margin: 0 0 16px; padding-left: 20px; color: #b8c1ec; font-size: 15px;">
+          <li style="margin-bottom: 8px;"><strong>10%</strong> for referral rewards (inviter)</li>
+          <li style="margin-bottom: 8px;"><strong>10%</strong> for token burning, which increases the token's value</li>
+          <li style="margin-bottom: 8px;"><strong>80%</strong> is distributed among users based on the points they earn</li>
+        </ul>
+        <p style="margin: 0 0 16px; color: #b8c1ec; font-size: 15px;">
+          Each person can earn up to <strong>5 points every 12 hours</strong>, with a maximum of <strong>10 points per day</strong>. Any extra points overflow onto other points, increasing the value of each point.
+        </p>
+                </div>
+                
+      <div style="margin-bottom: 20px;">
+        <h3 style="color: #aef3c6; font-size: 18px; margin: 0 0 12px;">💰 Subscription Refund Mechanism</h3>
+        <p style="margin: 0 0 16px; color: #b8c1ec; font-size: 15px;">
+          People who cannot earn points will have their full subscription amount refunded in tokens. This refund occurs monthly at <strong>3%</strong> until the full fee is returned.
+        </p>
+                </div>
+                
+      <div style="margin-bottom: 20px;">
+        <h3 style="color: #aef3c6; font-size: 18px; margin: 0 0 12px;">🔄 Activities and Rewards</h3>
+        <p style="margin: 0 0 16px; color: #b8c1ec; font-size: 15px;">
+          All activities are carried out with the IAM token. Each transaction has a <strong>2% fee</strong> deposited into the token's financial reserve.
+        </p>
+                </div>
+                
+      <div style="margin-bottom: 20px;">
+        <h3 style="color: #aef3c6; font-size: 18px; margin: 0 0 12px;">📈 How to Increase Points</h3>
+        <p style="margin: 0 0 16px; color: #b8c1ec; font-size: 15px;">
+          Users can purchase up to <strong>two additional points per month</strong> by paying one-third of the subscription fee for each point.
+        </p>
+                </div>
+                
+      <div style="margin-bottom: 20px;">
+        <h3 style="color: #aef3c6; font-size: 18px; margin: 0 0 12px;">📉 Deflationary Ecosystem</h3>
+        <p style="margin: 0 0 16px; color: #b8c1ec; font-size: 15px;">
+          This ecosystem experiences deflation. Instead of creating more tokens, the system continuously removes tokens from circulation, creating deflationary pressure that drives price appreciation.
+        </p>
+                </div>
+                
+      <div style="margin-bottom: 20px;">
+        <h3 style="color: #aef3c6; font-size: 18px; margin: 0 0 12px;">🎯 Our Mission</h3>
+        <p style="margin: 0 0 16px; color: #b8c1ec; font-size: 15px;">
+          Our goal is to collaborate with you to build a decentralized, healthy, secure, and sustainably rewarding community. Please review all platform sections and guidelines thoroughly before taking any steps.
+        </p>
+        <p style="margin: 0 0 16px; color: #b8c1ec; font-size: 15px;">
+          We stand with you throughout this journey to build a transparent and reliable future.
+        </p>
+                </div>
+                
+      <div style="text-align: center; padding-top: 16px; border-top: 1px solid rgba(0, 255, 136, 0.2);">
+        <p style="margin: 0; color: #00ff88; font-size: 16px; font-weight: 600;">
+          🌟 Together, we succeed! 🌟
+        </p>
+        <p style="margin: 8px 0 0; color: #9aa8c1; font-size: 14px;">
+          A decentralized network that will soon be recognized internationally
+        </p>
+            </div>
+                </div>
 
     <section class="card" id="contract-card" style="text-align:left; direction:ltr;">
       <h2 id="contract-header">Contract Info <span class="toggle-icon">▼</span></h2>
@@ -1517,62 +1489,6 @@
       </div>
     </div>
 
-    <!-- Professional Presentation Section -->
-    <div class="additional-content" style="
-      margin-top: 24px;
-      padding: 24px;
-      background: linear-gradient(135deg, #1a1f2e 0%, #232946 100%);
-      border: 1px solid #00ff88;
-      border-radius: 16px;
-      color: #e6eaf0;
-      line-height: 1.7;
-      box-shadow: 0 8px 32px rgba(0, 255, 136, 0.1);
-    ">
-      <h2 style="margin: 0 0 20px; color: #00ff88; font-size: 24px; font-weight: 700; text-align: center;">
-        🚀 About IAM PHOENIX
-      </h2>
-      
-      <div style="margin-bottom: 20px;">
-        <h3 style="color: #aef3c6; font-size: 18px; margin: 0 0 12px;">🌟 Revolutionary Network Marketing Platform</h3>
-        <p style="margin: 0 0 16px; color: #b8c1ec; font-size: 15px;">
-          <strong>IAM PHOENIX</strong> is a cutting-edge Network Marketing platform that leverages blockchain technology and Web3 infrastructure to create a transparent, secure, and decentralized ecosystem. Our platform eliminates traditional intermediaries and creates direct, trustless relationships between participants through smart contracts.
-        </p>
-        <p style="margin: 0 0 16px; color: #b8c1ec; font-size: 15px;">
-          Built on the <strong>Polygon blockchain</strong>, IAM PHOENIX combines the power of network marketing with the security and transparency of blockchain technology. All network marketing activities, rewards, and commissions are automatically calculated and distributed through audited smart contracts, ensuring complete transparency and eliminating the possibility of fraud or manipulation.
-        </p>
-                </div>
-                
-      <div style="margin-bottom: 20px;">
-        <h3 style="color: #aef3c6; font-size: 18px; margin: 0 0 12px;">🔥 Phoenix Team Mission</h3>
-        <p style="margin: 0 0 16px; color: #b8c1ec; font-size: 15px;">
-          Our team, <strong>Phoenix</strong>, is currently supporting and developing the IAM token, which is built on the Polygon blockchain and backed by the decentralized stablecoin DAI. This stablecoin is fully decentralized, and no organization or authority has access to it. The IAM token itself is an independent project, in fact a startup. It does not support or rely on another startup, but rather aims to introduce and promote itself.
-        </p>
-                </div>
-                
-      <div style="margin-bottom: 20px;">
-        <h3 style="color: #aef3c6; font-size: 18px; margin: 0 0 12px;">📊 Subscription & Point System</h3>
-        <p style="margin: 0 0 12px; color: #b8c1ec; font-size: 15px;">
-          The IAM token has a subscription mechanism with the following distribution:
-        </p>
-        <ul style="margin: 0 0 16px; padding-left: 20px; color: #b8c1ec; font-size: 15px;">
-          <li style="margin-bottom: 8px;"><strong>10%</strong> for referral rewards (inviter)</li>
-          <li style="margin-bottom: 8px;"><strong>10%</strong> for token burning, which increases the token's value</li>
-          <li style="margin-bottom: 8px;"><strong>80%</strong> is distributed among users based on the points they earn</li>
-        </ul>
-        <p style="margin: 0 0 16px; color: #b8c1ec; font-size: 15px;">
-          Each person can earn up to <strong>5 points every 12 hours</strong>, with a maximum of <strong>10 points per day</strong>. Any extra points overflow onto other points, increasing the value of each point.
-        </p>
-                </div>
-                
-      <div style="text-align: center; padding-top: 16px; border-top: 1px solid rgba(0, 255, 136, 0.2);">
-        <p style="margin: 0; color: #00ff88; font-size: 16px; font-weight: 600;">
-          🌟 Together, we succeed! 🌟
-        </p>
-        <p style="margin: 8px 0 0; color: #9aa8c1; font-size: 14px;">
-          A decentralized network that will soon be recognized internationally
-        </p>
-            </div>
-                </div>
                 
         
         
@@ -2271,8 +2187,7 @@
     // Setup tree navigation and leaderboard
     setupTreeNavigationAndLeaderboard();
     
-    // Setup simple message box
-    setupSimpleMessage();
+    // Message box removed
   });
     
     function setupPermanentReferralLink() {
@@ -2712,244 +2627,10 @@
       popularityList.innerHTML = popularityHTML;
     }
 
-    // Simple Message Box System
-    function setupSimpleMessage() {
-      const messageBox = document.getElementById('simple-message-box');
-      const overlay = document.getElementById('message-overlay');
-      const messageText = document.getElementById('message-text');
-      const messageTitle = document.getElementById('message-title');
-      const languageSelect = document.getElementById('language-select');
-      const cursor = document.getElementById('message-cursor');
-
-      if (!messageBox || !overlay || !messageText || !messageTitle || !languageSelect) {
-        console.warn('Simple message elements not found');
-        return;
-      }
-
-      // Multilingual messages
-      const messages = {
-        fa: {
-          title: 'تو مگو همه بجنگند و ز صلح من چه آید\nتو یک نه‌ای هزاری، تو چراغ خود برافروز',
-          content: `با سلام و احترام
-
-از حضور شما در این سامانه سپاسگزاریم.
-
-هدف ما همکاری با شما برای ساخت جامعه‌ای غیرمتمرکز، سالم، امن و با درآمد پایدار است.
-
-خواهشمند است پیش از هر اقدامی، بخش‌های مختلف سامانه و دستورالعمل‌ها را به‌طور کامل مطالعه کنید.
-
-درک دقیق فناوری‌های نو مانند بلاک‌چین و مدل‌های امنیتی آن، و آشنایی با دارایی‌های مبتنی بر الگوریتم‌های نوآورانه، کم‌ریسک و درآمدزا، می‌تواند رشد مشترک ما را به‌طور چشمگیری تسریع کند.
-
-ما در تمام این مسیر در کنار شما هستیم تا با تکیه بر دانش، شفافیت و همکاری، آینده‌ای مطمئن و قابل اتکا بسازیم.`
-        },
-        en: {
-          title: "Don't say: 'All are at war—what could my peace bring?'\nYou are not one but a thousand; light your own lamp",
-          content: `Greetings and respect.
-
-We appreciate your presence on this platform.
-
-Our goal is to collaborate with you to build a decentralized, healthy, secure, and sustainably rewarding community.
-
-Before taking any steps, please review all platform sections and guidelines thoroughly.
-
-A clear understanding of new technologies such as blockchain and its security models, and familiarity with innovative, lower‑risk, revenue‑generating algorithmic assets, can significantly accelerate our shared growth.
-
-We stand with you throughout this journey to build a transparent and reliable future through knowledge, clarity, and collaboration.`
-        },
-        ar: {
-          title: 'لا تقل: الجميع يقاتلون، فماذا يجدي سلمي؟\nلست واحداً بل أنت ألف، فأوقد سراجك',
-          content: `تحية واحتراماً.
-
-نقدّر وجودكم على هذه المنصّة.
-
-هدفنا هو التعاون معكم لبناء مجتمع لامركزي صحي وآمن ومستدام العائد.
-
-يرجى الاطلاع بدقّة على أقسام المنصّة والتعليمات قبل الشروع بأي إجراء.
-
-إن الفهم الواضح للتقنيات الحديثة مثل البلوكشين ونماذج الأمان الخاصة به، إلى جانب الإلمام بالأصول المعتمدة على خوارزميات مبتكرة منخفضة المخاطر ومولِّدة للعائد، يمكن أن يسرّع نمونا المشترك بشكل ملحوظ.
-
-نحن إلى جانبكم طوال هذه الرحلة لبناء مستقبل شفاف وموثوق قائم على المعرفة والوضوح والتعاون.`
-        }
-      };
-
-      // Set Persian as default language
-      let currentLanguage = 'fa';
-
-      // Update UI elements with current language
-      function updateLanguage(lang) {
-        currentLanguage = lang;
-        const message = messages[lang];
-        
-        // Update title
-        messageTitle.textContent = message.title;
-        
-        // Update language selector
-        languageSelect.value = lang;
-        
-        // Update message content
-        messageText.textContent = message.content;
-        
-        // Add language data attribute for CSS targeting
-        messageBox.setAttribute('data-lang', lang);
-        
-        // Update text direction and justification
-        if (lang === 'ar') {
-          messageBox.style.direction = 'rtl';
-          messageText.style.textAlign = 'justify';
-        } else if (lang === 'en') {
-          messageBox.style.direction = 'ltr';
-          messageText.style.textAlign = 'justify';
-        } else {
-          messageBox.style.direction = 'rtl';
-          messageText.style.textAlign = 'justify';
-        }
-      }
-
-      // Typewriter removed
-
-      // Language change handler
-      async function changeLanguage(lang) {
-        console.log('Language changed to:', lang);
-        
-        // Update current language
-        currentLanguage = lang;
-        
-        // Update language first
-        const message = messages[lang];
-        messageTitle.textContent = message.title;
-        languageSelect.value = lang;
-        
-        // Add language data attribute for CSS targeting
-        messageBox.setAttribute('data-lang', lang);
-        
-        // Update text direction and justification
-        if (lang === 'ar') {
-          messageBox.style.direction = 'rtl';
-          messageText.style.textAlign = 'justify';
-        } else if (lang === 'en') {
-          messageBox.style.direction = 'ltr';
-          messageText.style.textAlign = 'justify';
-        } else {
-          messageBox.style.direction = 'rtl';
-          messageText.style.textAlign = 'justify';
-        }
-        
-        // Directly set content and keep cursor hidden
-        messageText.textContent = message.content;
-        cursor.style.display = 'none';
-      }
-      
-      // Make changeLanguage global
-      window.changeLanguage = changeLanguage;
-
-      // Show message box
-      async function showMessage() {
-        // Update to current language first
-        updateLanguage(currentLanguage);
-        
-        messageBox.classList.add('show');
-        
-        // Get current message content
-        const currentMessage = messages[currentLanguage].content;
-        
-        // Directly set content and keep cursor hidden
-        messageText.textContent = currentMessage;
-        cursor.style.display = 'none';
-      }
-
-      // Hide message box
-      function hideMessage() {
-        messageBox.classList.remove('show');
-        messageText.textContent = '';
-        cursor.style.display = 'inline-block';
-      }
-
-      // Event listeners
-      // Overlay click handler
-      overlay.addEventListener('click', (e) => {
-        console.log('Overlay clicked, target:', e.target, 'overlay:', overlay);
-        
-        // Only hide if clicking directly on the overlay, not on child elements
-        if (e.target === overlay) {
-          console.log('Hiding message box due to overlay click');
-          hideMessage();
-        } else {
-          console.log('Overlay click ignored - clicked on child element:', e.target);
-        }
-      });
-      
-      // Prevent message box clicks from bubbling to overlay
-      const messageContainer = document.querySelector('.message-container');
-      if (messageContainer) {
-        messageContainer.addEventListener('click', (e) => {
-          console.log('Message container clicked, preventing bubble');
-          e.stopPropagation();
-        });
-      }
-
-      // Show message after ensuring status bar is loaded
-      async function waitAndShowMessage() {
-        // Wait for status bar to be populated
-        let attempts = 0;
-        const maxAttempts = 10;
-        
-        while (attempts < maxAttempts) {
-          const statusIndex = document.getElementById('status-index');
-          if (statusIndex && statusIndex.textContent && statusIndex.textContent !== '-') {
-            // Status bar is populated, wait a bit more then show message
-            setTimeout(() => {
-              showMessage();
-            }, 1000);
-            return;
-          }
-          await new Promise(resolve => setTimeout(resolve, 500));
-          attempts++;
-        }
-        
-        // If status bar never populated, show message anyway
-        showMessage();
-      }
-      
-      // Start the process
-      waitAndShowMessage();
-    }
+    // Message Box System Removed
   </script>
   
-  <!-- Google Translate -->
-  <script type="text/javascript">
-    function googleTranslateElementInit() {
-      new google.translate.TranslateElement({
-        pageLanguage: 'en',
-        includedLanguages: 'en,fa,ar,zh,hi,es,fr,de,ja,ko,ru,tr,ur,pt,it,nl',
-        layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-        autoDisplay: false,
-        multilanguagePage: true
-      }, 'google_translate_element');
-      
-      // Force single column layout after initialization
-      setTimeout(() => {
-        const menu = document.querySelector('.goog-te-menu2');
-        if (menu) {
-          menu.style.display = 'flex !important';
-          menu.style.flexDirection = 'column !important';
-          menu.style.maxHeight = '400px !important';
-          menu.style.overflowY = 'auto !important';
-          menu.style.maxWidth = '200px !important';
-          menu.style.width = '200px !important';
-        }
-        
-        // Force smaller items
-        const items = document.querySelectorAll('.goog-te-menu2-item');
-        items.forEach(item => {
-          item.style.padding = '4px 8px !important';
-          item.style.fontSize = '10px !important';
-          item.style.lineHeight = '1.2 !important';
-          item.style.width = '100% !important';
-          item.style.display = 'block !important';
-        });
-      }, 1000);
-    }
-  </script>
+  
   
   <!-- Collapsible Contract Info -->
   <script>
@@ -2970,7 +2651,7 @@ We stand with you throughout this journey to build a transparent and reliable fu
     });
   </script>
   
-  <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </body>
 </html>
+
 

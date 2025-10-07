@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" id="html-root">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>I AM - بازگشت به سرچشمه</title>
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css" rel="stylesheet" type="text/css" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&family=Noto+Sans+SC:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Global Text Rendering Fix */
+        p, div, span, h1, h2, h3, h4, h5, h6 {
+            word-break: keep-all;
+            overflow-wrap: break-word;
+            hyphens: none;
+            -webkit-hyphens: none;
+            -moz-hyphens: none;
+            -ms-hyphens: none;
+        }
+
+        body {
+            font-family: 'Vazir', 'Tahoma', 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0a0b0f 0%, #1a1b2e 50%, #16213e 100%);
+            color: #e6eaf0;
+            line-height: 1.9;
+            min-height: 100vh;
+            overflow-x: hidden;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            font-feature-settings: "liga" 1, "kern" 1;
+            font-variant-ligatures: normal;
+            word-spacing: normal;
+            letter-spacing: normal;
+        }
+
+        /* Back Button */
+        .back-button-container {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1000;
+        }
+
+        .back-button {
+            background: linear-gradient(135deg, #00ff88, #a786ff);
+            color: #181c2a;
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            font-family: 'Vazir', 'Tahoma', sans-serif;
+        }
+
+        .back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 255, 136, 0.4);
+            background: linear-gradient(135deg, #00e677, #9670ff);
+        }
+
+        /* Language Switcher */
+        .language-switcher {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid #00ff88;
+            border-radius: 12px;
+            padding: 8px;
+            backdrop-filter: blur(10px);
+            min-width: 120px;
+        }
+
+        .language-select {
+            background: linear-gradient(135deg, #00ff88, #00c2ff);
+            color: #0a0b0f;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            width: 100%;
+            outline: none;
+            transition: all 0.3s ease;
+            font-family: 'Vazir', 'Tahoma', sans-serif;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230a0b0f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 16px;
+            padding-right: 35px;
+        }
+
+        .language-select:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 255, 136, 0.4);
+        }
+
+        .language-select:focus {
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.6);
+        }
+
+        .language-select option {
+            background: #0a0b0f;
+            color: #e6eaf0;
+            padding: 8px;
+            font-family: 'Vazir', 'Tahoma', sans-serif;
+        }
+
+        /* Language-specific styles */
+        [data-lang="en"] {
+            font-family: 'Roboto', 'Arial', sans-serif;
+            direction: ltr;
+        }
+
+        [data-lang="ar"] {
+            font-family: 'Noto Sans Arabic', 'Tahoma', sans-serif;
+            direction: rtl;
+        }
+
+        [data-lang="ru"] {
+            font-family: 'Roboto', 'Arial', sans-serif;
+            direction: ltr;
+        }
+
+        [data-lang="zh"] {
+            font-family: 'Noto Sans SC', 'Arial', sans-serif;
+            direction: ltr;
+        }
+
+        [data-lang="fa"] {
+            font-family: 'Vazir', 'Tahoma', sans-serif;
+            direction: rtl;
+        }
+
+        /* Layout */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(90deg, #00ff88, #00c2ff);
+            border-radius: 2px;
+        }
+
+        .main-title {
+            font-family: 'Vazir', 'Tahoma', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 400;
+            background: linear-gradient(135deg, #00ff88 0%, #00c2ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+            text-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
+        }
+
+        .subtitle {
+            font-family: 'Vazir', 'Tahoma', sans-serif;
+            font-size: 1.3rem;
+            color: #aef3c6;
+            font-weight: 300;
+            margin-bottom: 30px;
+            letter-spacing: 0.5px;
+        }
+
+        .intro-quote {
+            font-family: 'Vazir', 'Tahoma', sans-serif;
+            font-size: 1.1rem;
+            color: #b8c1ec;
+            font-style: italic;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 30px;
+            background: rgba(0, 255, 136, 0.05);
+            border-right: 4px solid #00ff88;
+            border-radius: 8px;
+            line-height: 2.1;
+            letter-spacing: 0.3px;
+        }
+
+        .content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Chapter Styles */
+        .chapter {
+            margin-bottom: 80px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 20px;
+            border: 1px solid rgba(0, 255, 136, 0.1);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chapter::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #00ff88, #00c2ff);
+        }
+
+        .chapter-title {
+            font-family: 'Vazir', 'Tahoma', sans-serif;
+            font-size: 2.2rem;
+            color: #00ff88;
+            margin-bottom: 30px;
+            font-weight: 400;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+
+        .chapter-subtitle {
+            font-family: 'Vazir', 'Tahoma', sans-serif;
+            font-size: 1.4rem;
+            color: #aef3c6;
+            margin-bottom: 25px;
+            font-weight: 300;
+            letter-spacing: 0.3px;
+        }
+
+        .text {
+            font-family: 'Vazir', 'Tahoma', sans-serif;
+            font-size: 1.1rem;
+            color: #e6eaf0;
+            margin-bottom: 25px;
+            text-align: justify;
+            line-height: 2.0;
+            letter-spacing: 0.2px;
+            word-spacing: 0.1em;
+            font-feature-settings: "liga" 0, "kern" 1;
+            font-variant-ligatures: none;
+            text-rendering: optimizeLegibility;
+        }
+
+        .highlight {
+            font-family: 'Vazir', 'Tahoma', sans-serif;
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(0, 194, 255, 0.2));
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+        }
+
+        /* Quote Styles */
+        .quote {
+            font-family: 'Vazir', 'Tahoma', sans-serif;
+            background: rgba(0, 255, 136, 0.08);
+            border-right: 4px solid #00ff88;
+            padding: 25px;
+            margin: 30px 0;
+            border-radius: 12px;
+            font-style: italic;
+            font-size: 1.1rem;
+            color: #b8c1ec;
+            position: relative;
+            line-height: 2.1;
+            letter-spacing: 0.3px;
+            word-spacing: 0.1em;
+            font-feature-settings: "liga" 0, "kern" 1;
+            font-variant-ligatures: none;
+            text-rendering: optimizeLegibility;
+        }
+
+        .quote::before {
+            content: '"';
+            position: absolute;
+            top: -10px;
+            right: 20px;
+            font-size: 4rem;
+            color: #00ff88;
+            opacity: 0.3;
+        }
+
+        .quote-author {
+            font-family: 'Vazir', 'Tahoma', sans-serif;
+            text-align: left;
+            margin-top: 15px;
+            font-weight: 600;
+            color: #00ff88;
+            font-style: normal;
+            letter-spacing: 0.3px;
+        }
+
+        /* Poetry Styles */
+        .poetry {
+            font-family: 'Vazir', 'Tahoma', sans-serif;
+            background: rgba(0, 194, 255, 0.08);
+            border-right: 4px solid #00c2ff;
+            padding: 30px;
+            margin: 30px 0;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 1.2rem;
+            line-height: 2.2;
+            color: #b8c1ec;
+            letter-spacing: 0.4px;
+            word-spacing: 0.1em;
+            font-feature-settings: "liga" 0, "kern" 1;
+            font-variant-ligatures: none;
+            text-rendering: optimizeLegibility;
+        }
+
+        .poetry-line {
+            font-family: 'Vazir', 'Tahoma', sans-serif;
+            margin-bottom: 15px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            word-spacing: 0.1em;
+            font-feature-settings: "liga" 0, "kern" 1;
+            font-variant-ligatures: none;
+            text-rendering: optimizeLegibility;
+        }
+
+        /* Conclusion Styles */
+        .conclusion {
+            font-family: 'Vazir', 'Tahoma', sans-serif;
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 194, 255, 0.1));
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            padding: 50px;
+            border-radius: 20px;
+            text-align: center;
+            margin-top: 60px;
+            line-height: 2.1;
+            letter-spacing: 0.3px;
+        }
+
+        .conclusion-title {
+            font-family: 'Vazir', 'Tahoma', sans-serif;
+            font-size: 2.5rem;
+            color: #00ff88;
+            margin-bottom: 30px;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+        }
+
+        .final-quote {
+            font-family: 'Vazir', 'Tahoma', sans-serif;
+            font-size: 1.3rem;
+            color: #aef3c6;
+            font-style: italic;
+            margin: 30px 0;
+            line-height: 2.2;
+            letter-spacing: 0.4px;
+        }
+
+        .call-to-action {
+            font-family: 'Vazir', 'Tahoma', sans-serif;
+            background: linear-gradient(135deg, #00ff88, #00c2ff);
+            color: #0a0b0f;
+            padding: 20px 40px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: inline-block;
+            margin: 30px 0;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+
+        .call-to-action:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.4);
+        }
+
+
+        /* Animations */
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(0, 255, 136, 0.3);
+            border-radius: 50%;
+            animation: float 6s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.3; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 0.8; }
+        }
+
+        .section-divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ff88, transparent);
+            margin: 60px 0;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-title {
+                font-size: 2.5rem;
+            }
+            
+            .chapter {
+                padding: 25px;
+                margin-bottom: 50px;
+            }
+            
+            .chapter-title {
+                font-size: 1.8rem;
+            }
+            
+            .text {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-particles" id="particles"></div>
+    
+    <!-- Back Button -->
+    <div class="back-button-container">
+        <a href="index.html" class="back-button">
+            ← Home
+        </a>
+    </div>
+    
+    <!-- Language Switcher -->
+    <div class="language-switcher">
+        <select class="language-select" id="languageSelect">
+            <option value="fa" selected>🇮🇷 فارسی</option>
+            <option value="en">🇺🇸 English</option>
+            <option value="ar">🇸🇦 العربية</option>
+            <option value="ru">🇷🇺 Русский</option>
+            <option value="zh">🇨🇳 中文</option>
+        </select>
+    </div>
+    
+    <div class="container">
+        <div class="header">
+            <h1 class="main-title">I AM</h1>
+            <h2 class="subtitle">بازگشت به سرچشمه</h2>
+            <div class="intro-quote">
+                "در اعماق وجود هر یک از ما، ندایی آرام اما پیوسته طنینانداز است: من هستم"
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Introduction -->
+            <div class="chapter intro">
+                <h2 class="chapter-title">Loading...</h2>
+                <p class="text">Loading...</p>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- مولانا -->
+            <div class="chapter">
+                <h2 class="chapter-title">Loading...</h2>
+                <p class="text">Loading...</p>
+                <div class="poetry">
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="quote-author">— Loading...</div>
+                </div>
+                <p class="text">Loading...</p>
+                <div class="poetry">
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="quote-author">— Loading...</div>
+                </div>
+                <p class="text">Loading...</p>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- حافظ -->
+            <div class="chapter">
+                <h2 class="chapter-title">Loading...</h2>
+                <p class="text">Loading...</p>
+                <div class="poetry">
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="quote-author">— Loading...</div>
+                </div>
+                <p class="text">Loading...</p>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- عطار -->
+            <div class="chapter">
+                <h2 class="chapter-title">Loading...</h2>
+                <p class="text">Loading...</p>
+                <div class="poetry">
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="quote-author">— Loading...</div>
+                </div>
+                <p class="text">Loading...</p>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- سنایی -->
+            <div class="chapter">
+                <h2 class="chapter-title">Loading...</h2>
+                <p class="text">Loading...</p>
+                <div class="poetry">
+                    <div class="poetry-line">Loading...</div>
+                    <div class="poetry-line">Loading...</div>
+                    <div class="quote-author">— Loading...</div>
+                </div>
+                <p class="text">Loading...</p>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- رامانا مهارشی -->
+            <div class="chapter">
+                <h2 class="chapter-title">Loading...</h2>
+                <p class="text">Loading...</p>
+                <div class="quote">
+                    "Loading..."
+                    <div class="quote-author">— Loading...</div>
+                </div>
+                <p class="text">Loading...</p>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- توماس مرتون -->
+            <div class="chapter">
+                <h2 class="chapter-title">Loading...</h2>
+                <p class="text">Loading...</p>
+                <div class="quote">
+                    "Loading..."
+                    <div class="quote-author">— Loading...</div>
+                </div>
+                <p class="text">Loading...</p>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- اکهارت تول -->
+            <div class="chapter">
+                <h2 class="chapter-title">Loading...</h2>
+                <p class="text">Loading...</p>
+                <div class="quote">
+                    "Loading..."
+                    <div class="quote-author">— Loading...</div>
+                </div>
+                <p class="text">Loading...</p>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- نتیجه‌گیری -->
+            <div class="conclusion">
+                <h2 class="conclusion-title">Loading...</h2>
+                <p class="text">Loading...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Language data
+        const translations = {
+            fa: {
+                title: "I AM",
+                subtitle: "بازگشت به سرچشمه",
+                intro: "در اعماق وجود هر یک از ما، ندایی آرام اما پیوسته طنینانداز است: من هستم",
+                chapter1: "مقدمه: IAM، نجوایی از عمق وجود",
+                chapter2: "مولانا: رقص «من» در شعله عشق الهی",
+                chapter3: "حافظ: جام «من» در خلوت دل",
+                chapter4: "عطار نیشابوری: پرواز از نفس به سوی جانان",
+                chapter5: "سنایی غزنوی: حکمت «من» در نقد نفس",
+                chapter6: "رامانا مهارشی: سؤال ابدی «من کیستم؟»",
+                chapter7: "توماس مرتون: ماسک false self و نور true self",
+                chapter8: "اکهارت تول: رهایی از ego در حضور حال",
+                conclusion: "نتیجه‌گیری: IAM، بازگشت به وحدت درونی",
+                content: {
+                    intro: "در میان هیاهوی جهان، جایی که جنگ‌ها و جانبداری‌ها سایه‌ای بر آگاهی می‌افکنند، IAM نه یک کلمه، بلکه یک دعوت است: «من هستم». این مفهوم، ریشه در عمق عرفان جهان دارد و پلی است به سوی هویت اصیل – آن «من» خالص که فراتر از مرزها، ایدئولوژی‌ها و تعصبات قرار دارد. IAM، نمادی است برای بازگشت به درون، جایی که ego محو می‌شود و وحدت پدیدار. با الهام از اشعار و نوشته‌های عرفای بزرگ، این کاوش را آغاز می‌کنیم: از مولانا تا رامانا مهارشی، از حافظ تا توماس مرتون، و از عطار و سنایی تا اکهارت تول. هدف، نه بحث‌های بیرونی، بلکه بیداری درونی است – تا به جای جنگ با دیگری، با خود آشتی کنیم و «من هستم» را در سکوت بیابیم.",
+                    molana_intro: "مولانا جلال‌الدین رومی، آن شمس‌تابان عرفان، «من هستم» را در محو ego می‌بیند. او می‌گوید: «اگر آتش است یارت تو برو در او همی‌سوز / به شب فراق سوزان تو چو شمع باش تا روز» – اگر معشوق آتش است، در آن بسوز و در شب فراق مانند شمع باش تا روز. این همان مفهوم IAM است که فراتر از ego قرار دارد. مولانا هشدار می‌دهد که ego، مانند فرعون، فریاد می‌زند «من بزرگ‌ترین هستم»، اما true self در رهایی از این توهم نهفته است: «وقتی خودخواهیت را فتح کنی، تمام تاریکی‌ات به نور تبدیل می‌شود.»",
+                    molana_poem1: "زین دو هزاران من و ما ای عجبا من چه منم / گوش بنه عربده را دست منه بر دهنم / چونک من از دست شدم در ره من شیشه منه / ور بنهی پا بنهم هر چه بیابم شکنم / زانک دلم هر نفسی دنگ خیال تو بود / گر طربی در طربم گر حزنی در حزنم / تلخ کنی تلخ شوم لطف کنی لطف شوم / با تو خوش است ای صنم لب شکر خوش ذقنم / اصل توی من چه کسم آینه‌ای در کف تو / هر چه نمایی بشوم آینه ممتحنم",
+                    molana_poem1_explanation: "این شعر معروف مولانا در مورد «من ساختگی» است. او می‌گوید که این «من» که خود را می‌شناسد، هنوز در سطح شخصیت و هویت قرار دارد. این «من» خود را در جام و میخانه می‌یابد، یعنی در لذت‌ها و وابستگی‌های دنیوی. این همان «من ساختگی» است که با خواسته‌ها و نیازهایش تعریف می‌شود.",
+                    molana_poem2: "اگر آتش است یارت تو برو در او همی‌سوز / به شب فراق سوزان تو چو شمع باش تا روز / تو مخالفت همی‌کش تو موافقت همی‌کن / چو لباس تو درانند تو لباس وصل می‌دوز / به موافقت بیابد تن و جان سماع جانی / ز رباب و دف و سرنا و ز مطربان درآموز / به میان بیست مطرب چو یکی زند مخالف / همه گم‌کنند ره را چو ستیزه شد قلاوز / تو مگو همه به جنگند و ز صلح من چه آید / تو یکی نه‌ای هزاری تو چراغ خود برافروز / که یکی چراغ روشن ز هزار مرده بهتر / که به است یک قد خوش ز هزار قامت کوز",
+                    molana_poem2_explanation: "در این غزل زیبا، مولانا ego را به عنوان تاریکی می‌بیند که با نور عشق محو می‌گردد. او می‌گوید: «تو مگو همه به جنگند و ز صلح من چه آید / تو یکی نه‌ای هزاری تو چراغ خود برافروز» – نگو که همه در حال جنگند و از صلح من چه آید، تو یکی نیستی، هزارتایی، چراغ خود را برافروز. این همان مفهوم IAM است که فراتر از ego قرار دارد. مولانا در نهایت می‌سراید: «که یکی چراغ روشن ز هزار مرده بهتر / که به است یک قد خوش ز هزار قامت کوز» – یک چراغ روشن از هزار مرده بهتر است، یک قامت خوش از هزار قامت کوز بهتر است. این بیداری، پایان جانبداری‌هاست – چرا که وقتی «من هستم» را دریابیم، دیگری را نیز در خود می‌بینیم. جنگ‌ها، زاده egoهای جداافتاده‌اند؛ بازگشت به درون، صلح ابدی می‌آورد.",
+                    hafiz_poem: "بر سرِ آنم که گر ز دست برآید / دست به‌کاری زنم که غصّه سرآید / خلوتِ دل نیست جایِ صحبتِ اَضداد / دیو چو بیرون رود فرشته درآید / صحبت حُکّام ظلمتِ شبِ یلداست / نور ز خورشید جوی بو که برآید / بر درِ اربابِ بی‌مروّتِ دنیا / چند نشینی که خواجه کی به درآید / تَرکِ گدایی مکن که گنج بیابی / از نظرِ رهرُوی که در گذر آید / صالح و طالِح مَتاعِ خویش نمودند / تا که قبول افتد و که در نظر آید / بلبلِ عاشق تو عمر خواه که آخِر / باغ شود سبز و شاخِ گُل به بر‌آید / غفلتِ حافظ در این سراچه عجب نیست / هر که به میخانه رفت بی‌خبر آید",
+                    hafiz_intro: "حافظ شیرازی، لسان‌الغیب، هویت اصیل را در خلوت دل جستجو می‌کند: «خلوتِ دل نیست جایِ صحبتِ اَضداد» – جایی که تضادهای ego (اضداد) کنار می‌روند و «من هستم» خالص می‌درخشد. او، نماد هویت ایرانی و وجدان ناخودآگاه جامعه، در غزلیاتش بر اعتدال و اغتنام فرصت تأکید دارد: هویت اصیل، نه در جانبداری‌های بیرونی، بلکه در تقدیرگرایی درونی نهفته است.",
+                    hafiz_explanation: "حافظ در این غزل زیبا می‌گوید: «بر سرِ آنم که گر ز دست برآید / دست به‌کاری زنم که غصّه سرآید» – یعنی اگر از دست برآید، کاری می‌کند که غصه تمام شود. سپس می‌گوید: «خلوتِ دل نیست جایِ صحبتِ اَضداد / دیو چو بیرون رود فرشته درآید» – جایی که تضادهای ego (اضداد) کنار می‌روند و «من هستم» خالص می‌درخشد. وقتی دیو ego از دل بیرون رود، فرشته «من اصلی» درآید. و در نهایت: «صحبت حُکّام ظلمتِ شبِ یلداست» – صحبت با حکام، تاریکی شب یلدا است. این همان مفهوم IAM است که فراتر از تضادها و تعصبات قرار دارد. در جهانی پر از جنگ، حافظ دعوت می‌کند به درون: رها کردن ego، مانند خالی کردن جام از زهر تعصب، تا شراب الهی بنوشیم. «هویت راستین آدمی»، در درک خود از طریق عشق است – نه در جدال با دیگری. با این بیداری، جانبداری‌ها محو می‌شوند و صلح، از دل برمی‌خیزد.",
+                    attar_intro: "عطار نیشابوری، عارف پرنده، ego را راهزنی بر سر راه «من» اصیل می‌بیند: «عشق را بی‌خویشتن باید شدن. / نفس خود را راهزن باید شدن» – نفس (ego)، دزدی است که باید از آن بگذریم تا به خود واقعی برسیم. او هشدار می‌دهد: «ز خود غایب مشو ای دل یکی دم. / که در جانی تو داری هر دو عالم» – غفلت از خود، ego را تقویت می‌کند، اما ماندن در آگاهی، «من هستم» را آشکار می‌سازد.",
+                    attar_poem: "عشق را بی‌خویشتن باید شدن / نفس خود را راهزن باید شدن",
+                    attar_explanation: "در دیوانش، عطار ego را به عنوان سگی افسوس‌خوار توصیف می‌کند: «جهان خورد این سگ افسوس‌خواره... / که من همخانة این سگ بزادم» – این سگ، نماد نفس خودخواه است که جهان را می‌بلعد، اما خود واقعی، فراتر از این هوس‌هاست. عطار دعوت می‌کند به صمیمیت بدون تفاوت: «برای رسیدن به صمیمیت و دوستی واقعی، باید هیچ تفاوتی بین خودمان و سایر انسان‌ها قائل نشوید.» این رهایی از ego، پایان جدایی‌هاست و «من» را در وحدت با همه می‌گشاید.",
+                    sanai_poem: "من ز جانِ جان ، شکایت می کنم / من نیم شاکی ، روایت می کنم",
+                    sanai_intro: "سنایی غزنوی، حکیم عارف، «من هستم» را در شکایت از نفس می‌جوید: «من ز جانِ جان ، شکایت می کنم / من نیم شاکی ، روایت می کنم» – این شکایت، نقدی بر ego است که جان واقعی را پنهان می‌کند. او می‌سراید: «من هرچه غزل داشته ام خرج تو کردم / اندوخته هایی که نشد راحت دردم» – غزل‌های ego، خرج‌شده در راه معشوق، و درد، زاده جدایی از خود اصیل است.",
+                    sanai_explanation: "سنایی تأکید دارد: «دل همی گوید : ازو رنجیده ام / وز نفاقِ سست می خندیده ام» – رنج از ego، خنده از نفاق آن، و بازگشت به «من» خالص. در جهان پر از هوس، سنایی راه عشق را سخت می‌داند: «راه عشق از روی عقل از بهر آن بس مشکلست» – اما عبور از ego، به حکمت «من هستم» می‌رسد، جایی که جانبداری‌ها بی‌معنا می‌گردند.",
+                    ramana_quote: "ماندن با 'من هستم' یعنی فقط چنین توجه‌داری تیز و هوشیارانه به خود",
+                    merton_quote: "اگر او را پیدا کنم، خودم را پیدا می‌کنم و اگر خود حقیقی‌ام را پیدا کنم، او را پیدا می‌کنم.",
+                    tolle_quote: "من محتوای زندگی‌ام نیستم؛ من زندگی هستم، فضایی هستم که همه چیز در آن روی می‌دهد! من آگاهی هستم، حال هستم؛ من هستم!",
+                    ramana_intro: "رامانا مهارشی، عارف هندی، «من هستم» را با خودکاوی می‌رساند: «من کیستم؟» – سؤالی که ego را لایه‌به‌لایه می‌شکافد تا به آگاهی خالص برسد. او می‌گوید: «ماندن با 'من هستم' یعنی فقط چنین توجه‌داری تیز و هوشیارانه به خود» – ماندن در «من هستم»، با تمرکز کامل بر آگاهی، بدون پراکندگی افکار.",
+                    ramana_explanation: "در آموزه‌هایش، همه افکار و ادراکات، برآمده از «من هستم» هستند – اما ego، آن را می‌پوشاند. رامانا تأکید می‌کند: «روش خودکاوی سری رامانا، شامل بررسی هویت اصلی ما با پرسیدن 'من کیستم؟' و آگاه شدن از آگاه بودن است.» این کاوش، پایان جنگ‌های درونی و بیرونی است؛ وقتی «من کیستم؟» را دریابیم، جدایی‌ها (جانبداری‌ها) توهم می‌شوند. بازگشت به درون، مانند غوطه‌وری در اقیانوس آگاهی، صلح بی‌پایان می‌آورد.",
+                    merton_intro: "توماس مرتون، راهب تراپیست، تمایز خود حقیقی و خود کاذب را چنین توصیف می‌کند: «می‌توانیم خودمان باشیم یا نباشیم، هرطور که بخواهیم. ما آزادیم که واقعی باشیم، یا غیرواقعی. ممکن است راستگو باشیم یا دروغگو، انتخاب با ماست.» خود کاذب، ماسکی است که ego می‌سازد – «این مردی است که می‌خواهم باشم اما نمی‌تواند وجود داشته باشد، چون خدا هیچ چیز درباره‌اش نمی‌داند» – اما خود حقیقی، آنچه خدا می‌آفریند: زندگی در عشق، شادی و صلح.",
+                    merton_explanation: "مرتون می‌گوید: «اگر او را پیدا کنم، خودم را پیدا می‌کنم و اگر خود حقیقی‌ام را پیدا کنم، او را پیدا می‌کنم.» این یافتن، رهایی از ego است – پایان جانبداری‌ها، زیرا خود حقیقی، جدایی نمی‌شناسد. در سکوت درونی، «من هستم» آشکار می‌شود و جنگ‌ها، به عنوان توهمات ego، محو می‌گردند.",
+                    tolle_intro: "اکهارت تول، عارف معاصر آلمانی، «من هستم» را به عنوان آگاهی خالص در لحظه حال معرفی می‌کند، جایی که ego – آن صدای مداوم ذهن – ساکت می‌شود. او می‌گوید: «من محتوای زندگی‌ام نیستم؛ من زندگی هستم، فضایی هستم که همه چیز در آن روی می‌دهد! من آگاهی هستم، حال هستم؛ من هستم!» این «من»، فراتر از هویت‌های ساختگی است و ego را به عنوان توهمی می‌بیند که از مقایسه و گذشته زاده می‌شود: «من دارم، پس هستم. من بیشتر دارم، پس بیشتر هستم. ایگو در هوای مقایسه‌ها نفس می‌کشد. ایگو خود را از دریچه‌ی چشمان دیگران تماشا می‌کند و دوست دارد به چشم بیاید.»",
+                    tolle_explanation: "تول تأکید می‌کند که ذهن، بخش مرده وجود ماست: «ذهن یک مانع است. سعی کن این را درک کنی. ذهن تمام چیزهایی است که تجربه کرده‌ای، هرآنچه که برتو رخ داده و هرآنچه که مرده است، ذهن بخش مرده‌ی وجود تو است.» بیداری از ego، یعنی بازگشت به «من هستم» در حال – جایی که جنگ‌ها و جانبداری‌ها، به عنوان داستان‌های ذهنی، محو می‌گردند. تول دعوت می‌کند: «عمیقاً حضور در لحظه رو با هرچی که دارید، درک کنید. زمان حال رو تمرکز اصلی زندگی‌تون بکنید.» این حضور، پایان جدایی‌هاست؛ وقتی ego را رها کنیم، وحدت درونی آشکار می‌شود و صلح، از عمق «من هستم» برمی‌خیزد.",
+                    conclusion: "IAM، «من هستم»، نجوایی است از عرفای بزرگ: مولانا با رقص عشق، حافظ با جام خلوت، عطار با پرواز از نفس، سنایی با حکمت شکایت، رامانا با سؤال ابدی، مرتون با انتخاب اصالت، و تول با حضور در حال. این مفهوم، دعوتی است به رها کردن ego – آن ریشه جنگ و جانبداری – و بازگشت به درون. وقتی «من هستم» را دریابیم، دیگری را در خود می‌بینیم؛ صلح، نه از بیرون، بلکه از عمق وجود برمی‌خیزد. بیایید این بیداری را انتخاب کنیم: یک نفس عمیق، یک سؤال ساده – «من کیستم؟» – و جهان، دگرگون می‌شود. IAM: پلی به سوی هویت اصیل، جایی که صلح ابدی ساکن است."
+                }
+            },
+            en: {
+                title: "I AM",
+                subtitle: "Return to the Source",
+                intro: "In the depths of each of us, a quiet but continuous voice resonates: I am",
+                chapter1: "Introduction: IAM, a Whisper from the Depths of Being",
+                chapter2: "Rumi: The Dance of 'I' in the Flame of Divine Love",
+                chapter3: "Hafez: The Cup of 'I' in the Solitude of the Heart",
+                chapter4: "Attar of Nishapur: Flight from Ego to the Beloved",
+                chapter5: "Sanai of Ghazni: The Wisdom of 'I' in Criticizing the Self",
+                chapter6: "Ramana Maharshi: The Eternal Question 'Who Am I?'",
+                chapter7: "Thomas Merton: The Mask of False Self and the Light of True Self",
+                chapter8: "Eckhart Tolle: Liberation from Ego in the Presence of Now",
+                conclusion: "Conclusion: IAM, Return to Inner Unity",
+                content: {
+                    intro: "In the midst of the world's chaos, where wars and partisanship cast shadows on consciousness, IAM is not just a word, but an invitation: 'I am'. This concept has roots in the depths of world mysticism and is a bridge to authentic identity – that pure 'I' which transcends boundaries, ideologies, and prejudices. IAM is a symbol for returning inward, where ego dissolves and unity emerges. Inspired by the poems and writings of great mystics, we begin this exploration: from Rumi to Ramana Maharshi, from Hafez to Thomas Merton, and from Attar and Sanai to Eckhart Tolle. The goal is not external debates, but inner awakening – so that instead of fighting with others, we make peace with ourselves and find 'I am' in silence.",
+                    molana_intro: "Rumi, the sun of mysticism, sees 'I am' in the dissolution of ego. He says: 'If your beloved is fire, go burn in it / In the burning night of separation, be like a candle until dawn' – if the beloved is fire, burn in it, and in the night of separation be like a candle until dawn. This is the same IAM concept that transcends ego. Rumi warns that ego, like Pharaoh, cries 'I am the greatest', but true self lies in liberation from this illusion: 'When you conquer your selfishness, all your darkness turns to light.'",
+                    molana_poem1: "From these two thousand I's and we's, O wonder, what am I? / Listen to the clamor, don't put your hand on my mouth / Since I am lost from myself, don't put glass on my path / If you put your foot, I will break whatever I find / For my heart was intoxicated with your thought every breath / Whether in joy I am joyful, whether in sorrow I am sad / You make me bitter, I become bitter; you make me sweet, I become sweet / With you it is pleasant, O beauty, your sugar lips are sweet to my taste / The origin is you, what am I? A mirror in your hand / Whatever you show, I become, I am your tested mirror",
+                    molana_poem1_explanation: "This famous poem by Rumi is about the 'false self'. He says that this 'I' that knows itself is still at the level of personality and identity. This 'I' finds itself in the cup and tavern, that is, in worldly pleasures and attachments. This is the same 'false self' that is defined by its desires and needs.",
+                    molana_poem2: "If your beloved is fire, go burn in it / In the burning night of separation, be like a candle until dawn / You pull disagreement, you pull agreement / When they tear your clothes, you sew the clothes of union / Let body and soul find agreement in spiritual dance / Learn from the lute and drum and horn and from musicians / Among twenty musicians, if one plays discordant / All lose their way when the leader becomes quarrelsome / Don't say everyone is fighting and what good is my peace / You are not one, you are thousands, light your own lamp / For one bright lamp is better than a thousand dead / For one good stature is better than a thousand crooked ones",
+                    molana_poem2_explanation: "In this beautiful ghazal, Rumi sees ego as darkness that dissolves with the light of love. He says: 'Don't say everyone is fighting and what good is my peace / You are not one, you are thousands, light your own lamp' – don't say everyone is fighting and what good is my peace, you are not one, you are thousands, light your own lamp. This is the same IAM concept that transcends ego. Rumi finally sings: 'For one bright lamp is better than a thousand dead / For one good stature is better than a thousand crooked ones' – one bright lamp is better than a thousand dead, one good stature is better than a thousand crooked ones. This awakening is the end of partisanship – because when we realize 'I am', we also see the other in ourselves. Wars are born of separated egos; returning inward brings eternal peace.",
+                    hafiz_intro: "Hafez of Shiraz, the tongue of the unseen, seeks authentic identity in the solitude of the heart: 'The solitude of the heart is not a place for the conversation of opposites' – where the contradictions of ego (opposites) fade away and pure 'I am' shines. He, the symbol of Iranian identity and the unconscious conscience of society, emphasizes moderation and seizing opportunity in his ghazals: authentic identity lies not in external partisanship, but in inner determinism.",
+                    hafiz_poem: "I am ready that if it slips from my hand / I will do something that ends the sorrow / The solitude of the heart is not a place for the conversation of opposites / When the demon leaves, the angel enters / Conversation with rulers is the darkness of the longest night / Seek light from the sun, for it will rise / At the door of the merciless masters of the world / How long will you sit, when will the master come in / Do not abandon begging, for you may find treasure / From the sight of the beloved who passes by / The righteous and the wicked showed their goods / Until acceptance comes and who appears in sight / O nightingale lover, you desire life so that finally / The garden becomes green and the rose branch blooms / Hafez's negligence in this palace is not strange / Whoever goes to the tavern comes unaware",
+                    hafiz_explanation: "Hafez says in this beautiful ghazal: 'I am ready that if it slips from my hand / I will do something that ends the sorrow' – meaning if it slips from my hand, I will do something that ends the sorrow. Then he says: 'The solitude of the heart is not a place for the conversation of opposites / When the demon leaves, the angel enters' – where the contradictions of ego (opposites) fade away and pure 'I am' shines. When the demon of ego leaves the heart, the angel of 'true self' enters. And finally: 'Conversation with rulers is the darkness of the longest night' – conversation with rulers is the darkness of the longest night. This is the same IAM concept that transcends contradictions and prejudices. In a world full of war, Hafez invites us inward: letting go of ego, like emptying the cup of the poison of prejudice, to drink divine wine. 'The true identity of man' lies in understanding oneself through love – not in conflict with others. With this awakening, partisanship dissolves and peace arises from the heart.",
+                    attar_intro: "Attar of Nishapur, the flying mystic, sees ego as a bandit on the path to authentic 'I': 'Love requires becoming selfless / One must become a bandit of one's own ego' – ego (self) is a thief that we must pass beyond to reach our true self. He warns: 'Don't be absent from yourself for a moment, O heart / For in your soul you have both worlds' – absence from self strengthens ego, but staying in awareness reveals 'I am'.",
+                    attar_poem: "Love requires becoming selfless / One must become a bandit of one's own ego",
+                    attar_explanation: "In his divan, Attar describes ego as a sorrowful dog: 'The world is eaten by this sorrowful dog... / I was born in the same house as this dog' – this dog is a symbol of the selfish ego that devours the world, but the true self is beyond these desires. Attar invites to intimacy without difference: 'To achieve true intimacy and friendship, you must make no distinction between yourself and other human beings.' This liberation from ego is the end of separations and opens 'I' in unity with all.",
+                    sanai_poem: "I complain about the soul of the soul / I am not a complainer, I am a narrator",
+                    sanai_intro: "Sanai of Ghazni, the wise mystic, seeks 'I am' in complaining about the self: 'I complain about the soul of the soul / I am not a complainer, I am a narrator' – this complaint is a critique of ego that hides the true soul. He sings: 'I spent all my ghazals on you / The treasures that did not ease my pain' – the ghazals of ego, spent on the path of the beloved, and pain, born of separation from the authentic self.",
+                    sanai_explanation: "Sanai emphasizes: 'The heart says: I am hurt by it / And I laugh at its weak hypocrisy' – pain from ego, laughter at its hypocrisy, and return to pure 'I'. In a world full of desire, Sanai considers the path of love difficult: 'The path of love from reason is very difficult' – but passing beyond ego leads to the wisdom of 'I am', where partisanship becomes meaningless.",
+                    ramana_quote: "Staying with 'I am' means only such keen and vigilant self-attentiveness",
+                    merton_quote: "If I find Him I will find myself and if I find my true self I will find Him.",
+                    tolle_quote: "I am not the content of my life; I am life, the space in which everything happens! I am consciousness, the present; I am!",
+                    ramana_intro: "Ramana Maharshi, the Indian mystic, reaches 'I am' through self-inquiry: 'Who am I?' – a question that peels away ego layer by layer to reach pure awareness. He says: 'Staying with 'I am' means only such keen and vigilant self-attentiveness' – staying in 'I am' with complete focus on awareness, without scattered thoughts.",
+                    ramana_explanation: "In his teachings, all thoughts and perceptions are outgrowths of 'I am' – but ego covers it. Ramana emphasizes: 'Sri Ramana's method of Self-Enquiry, involves investigating our core identity by asking, 'Who am I?' and becoming conscious of being conscious.' This inquiry is the end of inner and outer wars; when we realize 'Who am I?', separations (partisanship) become illusions. Returning inward, like diving into an ocean of awareness, brings endless peace.",
+                    merton_intro: "Thomas Merton, the Trappist monk, describes the distinction between true self and false self thus: 'We can be ourselves or not, as we please. We are at liberty to be real, or to be unreal. We may be true or false, the choice is ours.' False self is a mask that ego creates – 'This is the man I want myself to be but who cannot exist, because God does not know anything about him' – but true self is what God creates: life in love, joy, and peace.",
+                    merton_explanation: "Merton says: 'If I find Him I will find myself and if I find my true self I will find Him.' This finding is liberation from ego – the end of partisanship, because true self knows no separation. In inner silence, 'I am' is revealed and wars, as ego illusions, dissolve.",
+                    tolle_intro: "Eckhart Tolle, the contemporary German mystic, introduces 'I am' as pure awareness in the present moment, where ego – that constant voice of the mind – becomes silent. He says: 'I am not the content of my life; I am life, I am the space in which everything happens! I am awareness, I am the present; I am!' This 'I' transcends false identities and sees ego as an illusion born of comparison and the past: 'I have, therefore I am. I have more, therefore I am more. Ego breathes in the air of comparisons. Ego watches itself through the eyes of others and likes to be noticed.'",
+                    tolle_explanation: "Tolle emphasizes that the mind is the dead part of our existence: 'The mind is an obstacle. Try to understand this. The mind is everything you have experienced, everything that has happened to you and everything that is dead, the mind is the dead part of your existence.' Awakening from ego means returning to 'I am' in the present – where wars and partisanship, as mental stories, dissolve. Tolle invites: 'Deeply understand presence in the moment with everything you have. Make the present moment the main focus of your life.' This presence is the end of separations; when we let go of ego, inner unity is revealed and peace arises from the depths of 'I am'.",
+                    conclusion: "IAM, 'I am', is a whisper from the great mystics: Rumi with the dance of love, Hafez with the cup of solitude, Attar with the flight from ego, Sanai with the wisdom of complaint, Ramana with the eternal question, Merton with the choice of authenticity, and Tolle with presence in the now. This concept is an invitation to let go of ego – that root of war and partisanship – and return inward. When we realize 'I am', we see the other in ourselves; peace arises not from without, but from the depths of being. Let us choose this awakening: a deep breath, a simple question – 'Who am I?' – and the world transforms. IAM: a bridge to authentic identity, where eternal peace dwells."
+                }
+            },
+            ar: {
+                title: "أنا",
+                subtitle: "العودة إلى المصدر",
+                intro: "في أعماق كل منا، صوت هادئ لكن مستمر يتردد: أنا",
+                chapter1: "مقدمة: أنا، همسة من أعماق الوجود",
+                chapter2: "مولانا: رقصة 'الأنا' في لهب الحب الإلهي",
+                chapter3: "حافظ: كأس 'الأنا' في خلوت القلب",
+                chapter4: "عطار النيسابوري: الطيران من الأنا إلى المحبوب",
+                chapter5: "سنائي الغزنوي: حكمة 'الأنا' في نقد النفس",
+                chapter6: "رامانا مهارشي: السؤال الأبدي 'من أنا؟'",
+                chapter7: "توماس ميرتون: قناع الذات الزائفة ونور الذات الحقيقية",
+                chapter8: "إيكهارت تول: التحرر من الأنا في حضور الآن",
+                conclusion: "الخلاصة: أنا، العودة إلى الوحدة الداخلية",
+                content: {
+                    intro: "في وسط فوضى العالم، حيث تلقي الحروب والانحياز ظلالاً على الوعي، 'أنا' ليست مجرد كلمة، بل دعوة: 'أنا'. هذا المفهوم له جذور في أعماق التصوف العالمي وهو جسر نحو الهوية الأصيلة – ذلك 'الأنا' النقي الذي يتجاوز الحدود والأيديولوجيات والتحيزات. 'أنا' رمز للعودة إلى الداخل، حيث يذوب الأنا وتظهر الوحدة. مستوحاة من قصائد وكتابات العرفاء العظماء، نبدأ هذا الاستكشاف: من مولانا إلى رامانا مهارشي، من حافظ إلى توماس ميرتون، ومن عطار وسنائي إلى إيكهارت تول. الهدف ليس النقاشات الخارجية، بل الصحوة الداخلية – حتى بدلاً من القتال مع الآخرين، نتصالح مع أنفسنا ونجد 'أنا' في الصمت.",
+                    molana_intro: "مولانا جلال الدين الرومي، شمس التصوف، يرى 'أنا' في ذوبان الأنا. يقول: 'إذا كان حبيبك ناراً فاذهب واحترق فيها / في ليلة الفراق المحرقة كن كالشمع حتى الفجر' – إذا كان الحبيب ناراً فاحترق فيها، وفي ليلة الفراق كن كالشمع حتى الفجر. هذا هو نفس مفهوم 'أنا' الذي يتجاوز الأنا. مولانا يحذر أن الأنا، مثل فرعون، يصرخ 'أنا الأعظم'، لكن الذات الحقيقية تكمن في التحرر من هذا الوهم: 'عندما تنتصر على أنانيتك، كل ظلامك يتحول إلى نور.'",
+                    molana_poem1: "من هذين الألفين من الأنا ونحن يا عجبا من أنا / أذنك على الضجيج لا تضع يدك على فمي / لأنني من نفسي ضعت في طريقي لا تضع زجاجاً / وإن وضعت رجلاً أضع كل ما أجده أكسر / لأن قلبي كل نفس كان سكر خيالك / إن طرباً في طربي إن حزناً في حزني / مررتني مررت مررتني حلوة حلوة / معك طيب أي صنم شفاه السكر حلوة طعمي / الأصل أنت من أنا مرآة في كفك / كل ما تظهره أصبح مرآة ممتحنة",
+                    molana_poem1_explanation: "هذه القصيدة الشهيرة لمولانا تتحدث عن 'الذات الزائفة'. يقول أن هذا 'الأنا' الذي يعرف نفسه لا يزال في مستوى الشخصية والهوية. هذا 'الأنا' يجد نفسه في الكأس والخمارة، أي في ملذات وارتباطات دنيوية. هذه هي نفس 'الذات الزائفة' التي تُعرّف برغباتها واحتياجاتها.",
+                    molana_poem2: "إذا كان حبيبك ناراً فاذهب واحترق فيها / في ليلة الفراق المحرقة كن كالشمع حتى الفجر / أنت تجذب المخالفة أنت تجذب الموافقة / عندما يمزقون ثوبك أنت تخيط ثوب الوصال / بالموافقة يجد الجسد والروح سماع الروح / من الرباب والدف والسرنا ومن المطربين تعلم / في وسط عشرين مطرباً إذا ضرب واحد مخالفاً / الجميع يضيعون الطريق إذا أصبح القائد مشاكساً / لا تقل الجميع يقاتلون وما فائدة سلامي / أنت لست واحداً، أنت آلاف، أشعل مصباحك / لأن مصباحاً واحداً مضيء أفضل من ألف ميت / لأن قامة واحدة جميلة أفضل من ألف منحنية",
+                    molana_poem2_explanation: "في هذه الغزلة الجميلة، يرى مولانا الأنا كظلام يذوب بنور الحب. يقول: 'لا تقل الجميع يقاتلون وما فائدة سلامي / أنت لست واحداً، أنت آلاف، أشعل مصباحك' – لا تقل الجميع يقاتلون وما فائدة سلامي، أنت لست واحداً، أنت آلاف، أشعل مصباحك. هذا هو نفس مفهوم 'أنا' الذي يتجاوز الأنا. مولانا يغني أخيراً: 'لأن مصباحاً واحداً مضيء أفضل من ألف ميت / لأن قامة واحدة جميلة أفضل من ألف منحنية' – مصباح واحد مضيء أفضل من ألف ميت، قامة واحدة جميلة أفضل من ألف منحنية. هذه الصحوة هي نهاية الانحياز – لأن عندما ندرك 'أنا'، نرى الآخر في أنفسنا أيضاً. الحروب تولد من الأنا المنفصلة؛ العودة إلى الداخل تجلب السلام الأبدي.",
+                    hafiz_poem: "أنا مستعد أنه إذا انزلق من يدي / سأفعل شيئاً ينهي الحزن / خلوت القلب ليس مكاناً لمحادثة الأضداد / عندما يخرج الشيطان يدخل الملاك / محادثة الحكام ظلام أطول ليلة / اطلب النور من الشمس، فإنها ستشرق / على باب أسياد العالم القساة / كم ستبقى جالساً، متى سيأتي السيد / لا تتخلى عن التسول، فقد تجد الكنز / من رؤية المحبوب الذي يمر / أظهر الصالح والطالح بضاعتهما / حتى يأتي القبول ومن يظهر في البصر / أيها العاشق البلبل، تريد الحياة حتى النهاية / تصبح الحديقة خضراء وتزهر غصن الورد / إهمال حافظ في هذا القصر ليس غريباً / من يذهب إلى حانة الخمر يأتي غير مدرك",
+                    hafiz_intro: "حافظ الشيرازي، لسان الغيب، يسعى للهوية الأصيلة في خلوت القلب: 'خلوت القلب ليس مكاناً لمحادثة الأضداد' – حيث تتلاشى تناقضات الأنا (الأضداد) ويشرق 'أنا' النقي. هو، رمز الهوية الإيرانية وضمير المجتمع اللاواعي، يؤكد على الاعتدال واستغلال الفرصة في غزلياته: الهوية الأصيلة لا تكمن في الانحياز الخارجي، بل في الحتمية الداخلية.",
+                    hafiz_explanation: "يقول حافظ في هذه الغزلة الجميلة: 'أنا مستعد أنه إذا انزلق من يدي / سأفعل شيئاً ينهي الحزن' – يعني إذا انزلق من يدي، سأفعل شيئاً ينهي الحزن. ثم يقول: 'خلوت القلب ليس مكاناً لمحادثة الأضداد / عندما يخرج الشيطان يدخل الملاك' – حيث تتلاشى تناقضات الأنا (الأضداد) ويشرق 'أنا' النقي. عندما يخرج شيطان الأنا من القلب، يدخل ملاك 'الذات الحقيقية'. وأخيراً: 'محادثة الحكام ظلام أطول ليلة' – محادثة الحكام ظلام أطول ليلة. هذا هو نفس مفهوم 'أنا' الذي يتجاوز التناقضات والتحيزات. في عالم مليء بالحرب، حافظ يدعونا إلى الداخل: التخلي عن الأنا، مثل إفراغ الكأس من سم التحيز، لشرب النبيذ الإلهي. 'الهوية الحقيقية للإنسان' تكمن في فهم الذات من خلال الحب – وليس في الصراع مع الآخر. مع هذه الصحوة، يذوب الانحياز ويولد السلام من القلب.",
+                    attar_intro: "عطار النيسابوري، العارف الطائر، يرى الأنا كقاطع طريق على طريق 'الأنا' الأصيل: 'الحب يتطلب أن تصبح بلا ذات / يجب أن تصبح قاطع طريق لأناك' – الأنا (الذات) لص يجب أن نتجاوزه للوصول إلى ذواتنا الحقيقية. يحذر: 'لا تغب عن نفسك لحظة واحدة يا قلب / لأن في روحك لديك العالمين' – الغياب عن الذات يقوي الأنا، لكن البقاء في الوعي يكشف 'أنا'.",
+                    attar_poem: "الحب يتطلب أن تصبح بلا ذات / يجب أن تصبح قاطع طريق لأناك",
+                    attar_explanation: "في ديوانه، يصف عطار الأنا ككلب حزين: 'العالم يؤكل من قبل هذا الكلب الحزين... / ولدت في نفس بيت هذا الكلب' – هذا الكلب رمز للأنا الأنانية التي تلتهم العالم، لكن الذات الحقيقية تتجاوز هذه الرغبات. عطار يدعو إلى الحميمية بدون فرق: 'لتحقيق الحميمية والصداقة الحقيقية، يجب ألا تضع فرقاً بين نفسك وباقي البشر.' هذا التحرر من الأنا هو نهاية الانفصالات ويفتح 'الأنا' في وحدة مع الجميع.",
+                    sanai_poem: "أنا أشكو من روح الروح / أنا لست شاكياً، أنا راوٍ",
+                    sanai_intro: "سنائي الغزنوي، العارف الحكيم، يسعى 'أنا' في الشكوى من النفس: 'أنا أشكو من روح الروح / أنا لست شاكياً، أنا راوٍ' – هذه الشكوى نقد للأنا الذي يخفي الروح الحقيقية. يغني: 'أنفقت كل غزلياتي عليك / الكنوز التي لم تخفف ألمي' – غزليات الأنا، المنفقة على طريق المحبوب، والألم، المولود من الانفصال عن الذات الأصيلة.",
+                    sanai_explanation: "سنائي يؤكد: 'القلب يقول: أنا مجروح منه / وأضحك من نفاقه الضعيف' – الألم من الأنا، الضحك من نفاقه، والعودة إلى 'الأنا' النقي. في عالم مليء بالرغبة، سنائي يعتبر طريق الحب صعباً: 'طريق الحب من العقل صعب جداً' – لكن تجاوز الأنا يؤدي إلى حكمة 'أنا'، حيث يصبح الانحياز بلا معنى.",
+                    ramana_quote: "البقاء مع 'أنا' يعني فقط مثل هذا الانتباه الذاتي الحاد واليقظ",
+                    merton_quote: "إذا وجدته سأجد نفسي وإذا وجدت ذاتي الحقيقية سأجده.",
+                    tolle_quote: "أنا لست محتوى حياتي؛ أنا الحياة، أنا الفضاء الذي يحدث فيه كل شيء! أنا الوعي، أنا الحاضر؛ أنا!",
+                    ramana_intro: "رامانا مهارشي، العارف الهندي، يصل إلى 'أنا' من خلال الاستعلام الذاتي: 'من أنا؟' – سؤال يقشر الأنا طبقة بطبقة للوصول إلى الوعي النقي. يقول: 'البقاء مع 'أنا' يعني فقط مثل هذا الانتباه الذاتي الحاد واليقظ' – البقاء في 'أنا' مع التركيز الكامل على الوعي، بدون أفكار مشتتة.",
+                    ramana_explanation: "في تعاليمه، كل الأفكار والإدراكات هي نتائج 'أنا' – لكن الأنا يغطيها. رامانا يؤكد: 'طريقة سري رامانا للاستعلام الذاتي، تتضمن التحقيق في هويتنا الأساسية بسؤال 'من أنا؟' والوعي بأن نكون واعين.' هذا الاستعلام هو نهاية الحروب الداخلية والخارجية؛ عندما ندرك 'من أنا؟'، تصبح الانفصالات (الانحياز) أوهاماً. العودة إلى الداخل، مثل الغوص في محيط الوعي، تجلب سلاماً لا نهاية له.",
+                    merton_intro: "توماس ميرتون، الراهب الترابيستي، يصف التمييز بين الذات الحقيقية والذات الزائفة هكذا: 'يمكننا أن نكون أنفسنا أم لا، كما نشاء. نحن أحرار في أن نكون حقيقيين، أو غير حقيقيين. قد نكون صادقين أو كاذبين، الخيار لنا.' الذات الزائفة قناع يخلقه الأنا – 'هذا هو الرجل الذي أريد أن أكونه لكنه لا يمكن أن يوجد، لأن الله لا يعرف شيئاً عنه' – لكن الذات الحقيقية هي ما يخلقه الله: الحياة في الحب والفرح والسلام.",
+                    merton_explanation: "ميرتون يقول: 'إذا وجدته سأجد نفسي وإذا وجدت ذاتي الحقيقية سأجده.' هذا الإيجاد هو تحرر من الأنا – نهاية الانحياز، لأن الذات الحقيقية لا تعرف الانفصال. في الصمت الداخلي، يُكشف 'أنا' والحروب، كأوهام الأنا، تذوب.",
+                    tolle_intro: "إيكهارت تول، العارف الألماني المعاصر، يقدم 'أنا' كوعي نقي في اللحظة الحالية، حيث الأنا – ذلك الصوت المستمر للعقل – يصمت. يقول: 'أنا لست محتوى حياتي؛ أنا الحياة، أنا الفضاء الذي يحدث فيه كل شيء! أنا الوعي، أنا الحاضر؛ أنا!' هذا 'الأنا' يتجاوز الهويات الزائفة ويرى الأنا كوهم مولود من المقارنة والماضي: 'أملك، إذن أنا موجود. أملك أكثر، إذن أنا أكثر. الأنا يتنفس في هواء المقارنات. الأنا يراقب نفسه من خلال عيون الآخرين ويحب أن يُلاحظ.'",
+                    tolle_explanation: "تول يؤكد أن العقل هو الجزء الميت من وجودنا: 'العقل عائق. حاول أن تفهم هذا. العقل هو كل ما اختبرته، كل ما حدث لك وكل ما هو ميت، العقل هو الجزء الميت من وجودك.' الصحوة من الأنا تعني العودة إلى 'أنا' في الحاضر – حيث الحروب والانحياز، كقصص عقلية، تذوب. تول يدعو: 'افهم بعمق الحضور في اللحظة بكل ما لديك. اجعل اللحظة الحالية التركيز الرئيسي لحياتك.' هذا الحضور هو نهاية الانفصالات؛ عندما نتخلى عن الأنا، تُكشف الوحدة الداخلية والسلام ينبع من أعماق 'أنا'.",
+                    conclusion: "'أنا'، 'أنا'، همسة من العرفاء العظماء: مولانا برقصة الحب، حافظ بكأس الخلوت، عطار بالطيران من الأنا، سنائي بحكمة الشكوى، رامانا بالسؤال الأبدي، ميرتون باختيار الأصالة، وتول بالحضور في الآن. هذا المفهوم دعوة للتخلي عن الأنا – ذلك الجذر للحرب والانحياز – والعودة إلى الداخل. عندما ندرك 'أنا'، نرى الآخر في أنفسنا؛ السلام ينبع ليس من الخارج، بل من أعماق الوجود. دعونا نختار هذه الصحوة: نفس عميق، سؤال بسيط – 'من أنا؟' – والعالم يتحول. 'أنا': جسر نحو الهوية الأصيلة، حيث يسكن السلام الأبدي."
+                }
+            },
+            ru: {
+                title: "Я ЕСТЬ",
+                subtitle: "Возвращение к источнику",
+                intro: "В глубине каждого из нас звучит тихий, но непрерывный голос: я есть",
+                chapter1: "Введение: Я ЕСТЬ, шёпот из глубин бытия",
+                chapter2: "Руми: Танец 'Я' в пламени божественной любви",
+                chapter3: "Хафиз: Чаша 'Я' в уединении сердца",
+                chapter4: "Аттар Нишапури: Полет от эго к возлюбленному",
+                chapter5: "Санаи Газневи: Мудрость 'Я' в критике себя",
+                chapter6: "Рамана Махарши: Вечный вопрос 'Кто я?'",
+                chapter7: "Томас Мертон: Маска ложного себя и свет истинного себя",
+                chapter8: "Экхарт Толле: Освобождение от эго в присутствии сейчас",
+                conclusion: "Заключение: Я ЕСТЬ, возвращение к внутреннему единству",
+                content: {
+                    intro: "В хаосе мира, где войны и пристрастность отбрасывают тени на сознание, Я ЕСТЬ - это не просто слово, а приглашение: 'я есть'. Это понятие имеет корни в глубинах мировой мистики и является мостом к подлинной идентичности - тому чистому 'Я', которое превосходит границы, идеологии и предрассудки. Я ЕСТЬ - символ возвращения внутрь, где эго растворяется и возникает единство. Вдохновленные стихами и писаниями великих мистиков, мы начинаем это исследование: от Руми до Раманы Махарши, от Хафиза до Томаса Мертона, и от Аттара и Санаи до Экхарта Толле. Цель - не внешние дебаты, а внутреннее пробуждение - чтобы вместо борьбы с другими мы примирились с собой и нашли 'я есть' в тишине.",
+                    molana_intro: "Руми, солнце мистики, видит 'я есть' в растворении эго. Он говорит: 'Если твой возлюбленный - огонь, иди и сгори в нем / В пылающую ночь разлуки будь как свеча до рассвета' - если возлюбленный - огонь, сгори в нем, и в ночь разлуки будь как свеча до рассвета. Это та же концепция Я ЕСТЬ, которая превосходит эго. Руми предупреждает, что эго, как фараон, кричит 'я величайший', но истинное я лежит в освобождении от этой иллюзии: 'Когда ты покоряешь свою эгоистичность, вся твоя тьма превращается в свет.'",
+                    molana_poem1: "Из этих двух тысяч я и мы, о чудо, что я / Ухо к шуму не клади руку на мой рот / Поскольку я потерялся от себя, на моем пути не ставь стекло / Если поставишь ногу, я поставлю все, что найду, сломаю / Ибо мое сердце каждым вздохом было пьяно от твоей мысли / Если радость в радости, если печаль в печали / Горьким делаешь меня - горьким становлюсь, сладким делаешь - сладким становлюсь / С тобой хорошо, о красавица, твои сахарные губы сладки на вкус / Исток ты, что я? Зеркало в твоей руке / Что бы ты ни показал, я стану, я твое испытанное зеркало",
+                    molana_poem1_explanation: "Это знаменитое стихотворение Руми о 'ложном я'. Он говорит, что это 'Я', которое знает себя, все еще находится на уровне личности и идентичности. Это 'Я' находит себя в чаше и таверне, то есть в мирских удовольствиях и привязанностях. Это то же 'ложное я', которое определяется своими желаниями и потребностями.",
+                    molana_poem2: "Если твой возлюбленный - огонь, иди и сгори в нем / В пылающую ночь разлуки будь как свеча до рассвета / Ты тянешь несогласие, ты тянешь согласие / Когда рвут твою одежду, ты шьешь одежду соединения / С согласием найдет тело и душа духовный танец / От лютни и бубна и рожка и от музыкантов научись / Среди двадцати музыкантов, если один ударит несогласным / Все потеряют путь, когда лидер станет сварливым / Не говори, что все воюют и какая польза от моего мира / Ты не один, ты тысячи, зажги свой светильник / Ибо один яркий светильник лучше тысячи мертвых / Ибо один хороший рост лучше тысячи кривых",
+                    molana_poem2_explanation: "В этой прекрасной газели Руми видит эго как тьму, которая растворяется светом любви. Он говорит: 'Не говори, что все воюют и какая польза от моего мира / Ты не один, ты тысячи, зажги свой светильник' - не говори, что все воюют и какая польза от моего мира, ты не один, ты тысячи, зажги свой светильник. Это та же концепция Я ЕСТЬ, которая превосходит эго. Руми в конце поет: 'Ибо один яркий светильник лучше тысячи мертвых / Ибо один хороший рост лучше тысячи кривых' - один яркий светильник лучше тысячи мертвых, один хороший рост лучше тысячи кривых. Это пробуждение - конец пристрастности, потому что когда мы осознаем 'я есть', мы также видим другого в себе. Войны рождаются от разделенных эго; возвращение внутрь приносит вечный мир.",
+                    hafiz_poem: "Я готов, что если это выскользнет из моей руки / Я сделаю что-то, что положит конец печали / Уединение сердца - не место для разговора противоположностей / Когда демон уходит, входит ангел / Разговор с правителями - тьма самой длинной ночи / Ищи свет от солнца, ибо оно взойдет / У дверей безжалостных хозяев мира / Сколько будешь сидеть, когда хозяин войдет / Не оставляй нищенства, ибо можешь найти сокровище / От взгляда возлюбленной, которая проходит мимо / Праведные и грешные показали свои товары / Пока не придет принятие и кто появится в поле зрения / О влюбленный соловей, ты желаешь жизни, чтобы в конце / Сад стал зеленым и ветка розы расцвела / Небрежность Хафиза в этом дворце не странна / Кто идет в таверну, приходит неосознанно",
+                    hafiz_intro: "Хафиз Ширази, язык невидимого, ищет подлинную идентичность в уединении сердца: 'Уединение сердца - не место для разговора противоположностей' - где противоречия эго (противоположности) исчезают и сияет чистое 'я есть'. Он, символ иранской идентичности и бессознательная совесть общества, подчеркивает умеренность и использование возможностей в своих газелях: подлинная идентичность лежит не во внешней пристрастности, а во внутреннем детерминизме.",
+                    hafiz_explanation: "Хафиз говорит в этой прекрасной газели: 'Я готов, что если это выскользнет из моей руки / Я сделаю что-то, что положит конец печали' - то есть если это выскользнет из моей руки, я сделаю что-то, что положит конец печали. Затем он говорит: 'Уединение сердца - не место для разговора противоположностей / Когда демон уходит, входит ангел' - где противоречия эго (противоположности) исчезают и сияет чистое 'я есть'. Когда демон эго покидает сердце, входит ангел 'истинного я'. И наконец: 'Разговор с правителями - тьма самой длинной ночи' - разговор с правителями - тьма самой длинной ночи. Это та же концепция Я ЕСТЬ, которая превосходит противоречия и предрассудки. В мире, полном войны, Хафиз приглашает нас внутрь: отпустить эго, как опорожнить чашу от яда предрассудков, чтобы пить божественное вино. 'Подлинная идентичность человека' лежит в понимании себя через любовь - а не в конфликте с другими. С этим пробуждением пристрастность растворяется и мир возникает из сердца.",
+                    attar_intro: "Аттар Нишапури, летающий мистик, видит эго как разбойника на пути к подлинному 'Я': 'Любовь требует стать бессловесным / Нужно стать разбойником собственного эго' - эго (я) - вор, которого мы должны преодолеть, чтобы достичь нашего истинного я. Он предупреждает: 'Не отсутствуй от себя ни на мгновение, о сердце / Ибо в твоей душе у тебя есть оба мира' - отсутствие от себя укрепляет эго, но пребывание в осознанности раскрывает 'я есть'.",
+                    attar_poem: "Любовь требует стать бессловесным / Нужно стать разбойником собственного эго",
+                    attar_explanation: "В своем диване Аттар описывает эго как печальную собаку: 'Мир съедается этой печальной собакой... / Я родился в том же доме, что и эта собака' - эта собака - символ эгоистичного эго, которое пожирает мир, но истинное я превосходит эти желания. Аттар приглашает к близости без различий: 'Чтобы достичь истинной близости и дружбы, вы не должны делать различий между собой и другими людьми.' Это освобождение от эго - конец разделений и открывает 'Я' в единстве со всеми.",
+                    sanai_poem: "Я жалуюсь на душу души / Я не жалующийся, я рассказчик",
+                    sanai_intro: "Санаи Газневи, мудрый мистик, ищет 'я есть' в жалобе на себя: 'Я жалуюсь на душу души / Я не жалующийся, я рассказчик' - эта жалоба - критика эго, которое скрывает истинную душу. Он поет: 'Я потратил все свои газели на тебя / Сокровища, которые не облегчили мою боль' - газели эго, потраченные на путь возлюбленного, и боль, рожденная от разлуки с подлинным я.",
+                    sanai_explanation: "Санаи подчеркивает: 'Сердце говорит: я ранен им / И я смеюсь над его слабой лицемерностью' - боль от эго, смех над его лицемерием, и возвращение к чистому 'Я'. В мире, полном желания, Санаи считает путь любви трудным: 'Путь любви от разума очень труден' - но преодоление эго ведет к мудрости 'я есть', где пристрастность становится бессмысленной.",
+                    ramana_quote: "Пребывание с 'я есть' означает только такую острую и бдительную самонаблюдательность",
+                    merton_quote: "Если я найду Его, я найду себя, и если я найду свое истинное я, я найду Его.",
+                    tolle_quote: "Я не содержание своей жизни; я жизнь, я пространство, в котором все происходит! Я осознание, я настоящее; я есть!",
+                    ramana_intro: "Рамана Махарши, индийский мистик, достигает 'я есть' через самоисследование: 'Кто я?' - вопрос, который слой за слоем снимает эго, чтобы достичь чистого осознания. Он говорит: 'Пребывание с 'я есть' означает только такую острую и бдительную самонаблюдательность' - пребывание в 'я есть' с полным фокусом на осознанности, без рассеянных мыслей.",
+                    ramana_explanation: "В его учениях все мысли и восприятия являются порождениями 'я есть' - но эго покрывает это. Рамана подчеркивает: 'Метод самоисследования Шри Раманы включает исследование нашей основной идентичности, задавая вопрос 'Кто я?' и становясь сознательным того, что мы сознательны.' Это исследование - конец внутренних и внешних войн; когда мы осознаем 'Кто я?', разделения (пристрастность) становятся иллюзиями. Возвращение внутрь, как погружение в океан осознанности, приносит бесконечный мир.",
+                    merton_intro: "Томас Мертон, траппистский монах, описывает различие между истинным я и ложным я так: 'Мы можем быть собой или нет, как нам угодно. Мы свободны быть реальными или нереальными. Мы можем быть истинными или ложными, выбор за нами.' Ложное я - маска, которую создает эго - 'Это человек, которым я хочу быть, но который не может существовать, потому что Бог ничего не знает о нем' - но истинное я - это то, что создает Бог: жизнь в любви, радости и мире.",
+                    merton_explanation: "Мертон говорит: 'Если я найду Его, я найду себя, и если я найду свое истинное я, я найду Его.' Это нахождение - освобождение от эго, конец пристрастности, потому что истинное я не знает разделения. Во внутренней тишине раскрывается 'я есть' и войны, как иллюзии эго, растворяются.",
+                    tolle_intro: "Экхарт Толле, современный немецкий мистик, представляет 'я есть' как чистое осознание в настоящем моменте, где эго - тот постоянный голос ума - становится тихим. Он говорит: 'Я не содержание своей жизни; я жизнь, я пространство, в котором все происходит! Я осознание, я настоящее; я есть!' Это 'Я' превосходит ложные идентичности и видит эго как иллюзию, рожденную сравнением и прошлым: 'Я имею, поэтому я есть. Я имею больше, поэтому я больше. Эго дышит воздухом сравнений. Эго наблюдает себя через глаза других и любит быть замеченным.'",
+                    tolle_explanation: "Толле подчеркивает, что ум - мертвая часть нашего существования: 'Ум - препятствие. Попробуй понять это. Ум - это все, что ты испытал, все, что с тобой произошло, и все, что мертво, ум - мертвая часть твоего существования.' Пробуждение от эго означает возвращение к 'я есть' в настоящем - где войны и пристрастность, как ментальные истории, растворяются. Толле приглашает: 'Глубоко понимай присутствие в моменте со всем, что у тебя есть. Сделай настоящий момент главным фокусом своей жизни.' Это присутствие - конец разделений; когда мы отпускаем эго, раскрывается внутреннее единство и мир возникает из глубин 'я есть'.",
+                    conclusion: "Я ЕСТЬ, 'я есть', - шёпот великих мистиков: Руми с танцем любви, Хафиз с чашей уединения, Аттар с полетом от эго, Санаи с мудростью жалобы, Рамана с вечным вопросом, Мертон с выбором подлинности, и Толле с присутствием в сейчас. Это понятие - приглашение отпустить эго - тот корень войны и пристрастности - и вернуться внутрь. Когда мы осознаем 'я есть', мы видим другого в себе; мир возникает не извне, а из глубин бытия. Давайте выберем это пробуждение: глубокий вдох, простой вопрос - 'Кто я?' - и мир преображается. Я ЕСТЬ: мост к подлинной идентичности, где обитает вечный мир."
+                }
+            },
+            zh: {
+                title: "我是",
+                subtitle: "回归本源",
+                intro: "在我们每个人的内心深处，都有一个安静但持续的声音在回响：我是",
+                chapter1: "引言：我是，来自存在深处的低语",
+                chapter2: "鲁米：'我'在神圣爱火中的舞蹈",
+                chapter3: "哈菲兹：'我'在心灵孤独中的酒杯",
+                chapter4: "阿塔尔·尼沙普里：从自我飞向挚爱的旅程",
+                chapter5: "萨纳伊·加兹纳维：'我'在自我批评中的智慧",
+                chapter6: "拉马纳·马哈希：永恒的问题'我是谁？'",
+                chapter7: "托马斯·默顿：虚假自我的面具与真实自我的光芒",
+                chapter8: "埃克哈特·托勒：在当下从自我中解脱",
+                conclusion: "结论：我是，回归内在统一",
+                content: {
+                    intro: "在世界的混乱中，战争和党派偏见在意识上投下阴影，'我是'不仅仅是一个词，而是一个邀请：'我是'。这个概念植根于世界神秘主义的深处，是通往真实身份的桥梁——那个超越边界、意识形态和偏见的纯粹'我'。'我是'是向内回归的象征，在那里自我消解，统一显现。受到伟大神秘主义者的诗歌和著作的启发，我们开始这个探索：从鲁米到拉马纳·马哈希，从哈菲兹到托马斯·默顿，从阿塔尔和萨纳伊到埃克哈特·托勒。目标不是外部辩论，而是内在觉醒——这样我们不是与其他人战斗，而是与自己和解，在静默中找到'我是'。",
+                    molana_intro: "鲁米，神秘主义的太阳，在自我的消解中看到'我是'。他说：'如果你的挚爱是火，去燃烧在其中 / 在分离的燃烧夜晚，像蜡烛一样直到黎明'——如果挚爱是火，在其中燃烧，在分离的夜晚像蜡烛一样直到黎明。这正是超越自我的'我是'概念。鲁米警告说，自我，像法老一样，呼喊着'我是最伟大的'，但真正的自我在于从这种幻觉中解脱：'当你征服自私时，你所有的黑暗都变成光明。'",
+                    molana_poem1: "从这两千个我和我们，哦奇迹，我是什么？ / 听喧嚣，不要把手放在我嘴上 / 既然我从自己迷失，在我的路上不要放玻璃 / 如果你放脚，我会放所有我找到的，我会打破 / 因为我的心每一口气都被你的思想陶醉 / 如果快乐在快乐中，如果悲伤在悲伤中 / 你让我苦，我变苦；你让我甜，我变甜 / 和你在一起很好，哦美人，你的糖唇在我嘴里甜 / 源头是你，我是什么？你手中的镜子 / 无论你显示什么，我变成，我是你测试的镜子",
+                    molana_poem1_explanation: "鲁米这首著名诗歌是关于'虚假自我'的。他说这个认识自己的'我'仍然处于个性和身份层面。这个'我'在酒杯和酒馆中找到自己，即在世俗的快乐和依恋中。这正是由其欲望和需求定义的'虚假自我'。",
+                    molana_poem2: "如果你的挚爱是火，去燃烧在其中 / 在分离的燃烧夜晚，像蜡烛一样直到黎明 / 你拉不同意，你拉同意 / 当他们撕破你的衣服，你缝制连接的服装 / 通过同意，身体和灵魂找到精神舞蹈 / 从琵琶和鼓和号角以及从音乐家学习 / 在二十个音乐家中，如果一个敲击不和谐 / 当领导者变得好斗时，所有人都失去道路 / 不要说所有人都在战斗，我的和平有什么用 / 你不是一个，你是千个，点亮你自己的灯 / 因为一盏明亮的灯胜过千个死者 / 因为一个美好的身材胜过千个弯曲的身材",
+                    molana_poem2_explanation: "在这首美丽的加扎尔中，鲁米将自我视为被爱之光消解的黑暗。他说：'不要说所有人都在战斗，我的和平有什么用 / 你不是一个，你是千个，点亮你自己的灯'——不要说所有人都在战斗，我的和平有什么用，你不是一个，你是千个，点亮你自己的灯。这正是超越自我的'我是'概念。鲁米最后唱道：'因为一盏明亮的灯胜过千个死者 / 因为一个美好的身材胜过千个弯曲的身材'——一盏明亮的灯胜过千个死者，一个美好的身材胜过千个弯曲的身材。这种觉醒是党派偏见的终结——因为当我们意识到'我是'时，我们也在自己身上看到他人。战争诞生于分离的自我；向内回归带来永恒的和平。",
+                    hafiz_poem: "我准备好了，如果它从我手中滑落 / 我会做些什么来结束悲伤 / 心灵的孤独不是对立面对话的地方 / 当恶魔离开时，天使进入 / 与统治者的对话是最长夜晚的黑暗 / 从太阳寻求光明，因为它会升起 / 在世界的无情主人门前 / 你要坐多久，主人什么时候进来 / 不要放弃乞讨，因为你可能找到宝藏 / 从经过的挚爱眼中 / 义人和恶人展示了他们的商品 / 直到接受来临，谁出现在视野中 / 哦，痴情的夜莺，你渴望生命，最终 / 花园变绿，玫瑰枝绽放 / 哈菲兹在这宫殿中的疏忽并不奇怪 / 去酒馆的人会不知不觉地到来",
+                    hafiz_intro: "哈菲兹·设拉子，无形之舌，在心灵的孤独中寻求真实身份：'心灵的孤独不是对立面对话的地方'——在那里自我的矛盾（对立面）消失，纯粹的'我是'闪耀。他，伊朗身份的象征和社会的无意识良心，在他的加扎尔中强调节制和抓住机会：真实身份不在于外部党派偏见，而在于内在决定论。",
+                    hafiz_explanation: "哈菲兹在这首美丽的加扎尔中说：'我准备好了，如果它从我手中滑落 / 我会做些什么来结束悲伤'——意思是如果它从我手中滑落，我会做些什么来结束悲伤。然后他说：'心灵的孤独不是对立面对话的地方 / 当恶魔离开时，天使进入'——在那里自我的矛盾（对立面）消失，纯粹的'我是'闪耀。当自我的恶魔离开心灵时，'真实自我'的天使进入。最后：'与统治者的对话是最长夜晚的黑暗'——与统治者的对话是最长夜晚的黑暗。这正是超越矛盾和偏见的'我是'概念。在一个充满战争的世界中，哈菲兹邀请我们向内：放下自我，就像清空偏见毒药的杯子，喝神圣的酒。'人的真实身份'在于通过爱理解自己——而不是与他人的冲突。有了这种觉醒，党派偏见消解，和平从心中诞生。",
+                    attar_intro: "阿塔尔·尼沙普里，飞翔的神秘主义者，将自我视为通往真实'我'道路上的强盗：'爱需要变得无私 / 必须成为自己自我的强盗'——自我（我）是我们必须超越才能到达真实自我的小偷。他警告：'不要离开自己一刻，哦心 / 因为在你灵魂中你有两个世界'——离开自己会加强自我，但保持在觉知中会揭示'我是'。",
+                    attar_poem: "爱需要变得无私 / 必须成为自己自我的强盗",
+                    attar_explanation: "在他的迪万中，阿塔尔将自我描述为一只悲伤的狗：'世界被这只悲伤的狗吃掉... / 我出生在这只狗的同一个房子里'——这只狗是吞噬世界的自私自我的象征，但真正的自我超越这些欲望。阿塔尔邀请无差别的亲密：'为了实现真正的亲密和友谊，你必须在你自己和其他人类之间不做任何区别。'这种从自我中的解脱是分离的终结，并在与所有人的统一中打开'我'。",
+                    sanai_poem: "我抱怨灵魂的灵魂 / 我不是抱怨者，我是叙述者",
+                    sanai_intro: "萨纳伊·加兹纳维，智慧的神秘主义者，在抱怨自我中寻求'我是'：'我抱怨灵魂的灵魂 / 我不是抱怨者，我是叙述者'——这种抱怨是对隐藏真实灵魂的自我的批评。他唱道：'我把所有的加扎尔都花在你身上 / 没有缓解我痛苦的宝藏'——自我的加扎尔，花在挚爱的道路上，痛苦，诞生于与真实自我的分离。",
+                    sanai_explanation: "萨纳伊强调：'心说：我被它伤害了 / 我嘲笑它软弱的虚伪'——来自自我的痛苦，嘲笑其虚伪，回归纯粹的'我'。在一个充满欲望的世界中，萨纳伊认为爱的道路是困难的：'从理性出发的爱之路非常困难'——但超越自我会导向'我是'的智慧，在那里党派偏见变得毫无意义。",
+                    ramana_quote: "与'我是'在一起意味着只有这种敏锐和警觉的自我关注",
+                    merton_quote: "如果我找到他，我会找到自己，如果我找到我的真实自我，我会找到他。",
+                    tolle_quote: "我不是我生活的内容；我是生活，我是所有事情发生的空间！我是觉知，我是现在；我是！",
+                    ramana_intro: "拉马纳·马哈希，印度神秘主义者，通过自我质询达到'我是'：'我是谁？'——一个层层剥开自我以达到纯粹觉知的问题。他说：'与'我是'在一起意味着只有这种敏锐和警觉的自我关注'——与'我是'在一起，完全专注于觉知，没有分散的思想。",
+                    ramana_explanation: "在他的教义中，所有思想和感知都是'我是'的产物——但自我掩盖了它。拉马纳强调：'斯里·拉马纳的自我质询方法，涉及通过问'我是谁？'来调查我们的核心身份，并意识到我们是有意识的。'这种质询是内外战争的终结；当我们意识到'我是谁？'时，分离（党派偏见）成为幻觉。向内回归，就像潜入觉知的海洋，带来无尽的和平。",
+                    merton_intro: "托马斯·默顿，特拉普派修道士，这样描述真实自我和虚假自我的区别：'我们可以成为自己或不是，随我们喜欢。我们自由地成为真实的，或不真实的。我们可能是真实的或虚假的，选择是我们的。'虚假自我是自我创造的面具——'这是我想成为的人，但他不可能存在，因为上帝对他一无所知'——但真实自我是上帝创造的：在爱、喜悦和和平中的生活。",
+                    merton_explanation: "默顿说：'如果我找到他，我会找到自己，如果我找到我的真实自我，我会找到他。'这种发现是从自我中的解脱——党派偏见的终结，因为真实自我不知道分离。在内在静默中，'我是'被揭示，战争，作为自我的幻觉，消解。",
+                    tolle_intro: "埃克哈特·托勒，当代德国神秘主义者，将'我是'介绍为当下时刻的纯粹觉知，在那里自我——那个持续的头脑声音——变得安静。他说：'我不是我生活的内容；我是生活，我是所有事情发生的空间！我是觉知，我是现在；我是！'这个'我'超越虚假身份，将自我视为从比较和过去诞生的幻觉：'我有，所以我存在。我有更多，所以我更多。自我在比较的空气中呼吸。自我通过他人的眼睛观察自己，喜欢被注意。'",
+                    tolle_explanation: "托勒强调头脑是我们存在的死亡部分：'头脑是障碍。试着理解这一点。头脑是你所经历的一切，发生在你身上的一切，以及一切死亡的东西，头脑是你存在的死亡部分。'从自我中觉醒意味着回归到当下的'我是'——在那里战争和党派偏见，作为心理故事，消解。托勒邀请：'用你所拥有的一切深刻理解当下的存在。让当下时刻成为你生活的主要焦点。'这种存在是分离的终结；当我们放下自我时，内在统一被揭示，和平从'我是'的深处升起。",
+                    conclusion: "'我是'，'我是'，是伟大神秘主义者的低语：鲁米用爱的舞蹈，哈菲兹用孤独的酒杯，阿塔尔用从自我的飞行，萨纳伊用抱怨的智慧，拉马纳用永恒的问题，默顿用真实的选择，托勒用当下的存在。这个概念是放下自我的邀请——那个战争和党派偏见的根源——并回归内在。当我们意识到'我是'时，我们在自己身上看到他人；和平不是从外部升起，而是从存在的深处升起。让我们选择这种觉醒：深呼吸，简单的问题——'我是谁？'——世界转变。'我是'：通往真实身份的桥梁，永恒和平居住的地方。"
+                }
+            }
+        };
+
+        // Language switching functionality
+        function switchLanguage(lang) {
+            // Update HTML attributes
+            document.getElementById('html-root').setAttribute('lang', lang);
+            document.getElementById('html-root').setAttribute('dir', lang === 'ar' || lang === 'fa' ? 'rtl' : 'ltr');
+            
+            // Update select value
+            document.getElementById('languageSelect').value = lang;
+            
+            // Update content
+            const content = translations[lang];
+            if (content) {
+                // Update main titles
+                document.querySelector('.main-title').textContent = content.title;
+                document.querySelector('.subtitle').textContent = content.subtitle;
+                document.querySelector('.intro-quote').textContent = `"${content.intro}"`;
+                
+                // Update chapter titles
+                const chapterTitles = document.querySelectorAll('.chapter-title');
+                if (chapterTitles.length >= 8) {
+                    chapterTitles[0].textContent = content.chapter1;
+                    chapterTitles[1].textContent = content.chapter2;
+                    chapterTitles[2].textContent = content.chapter3;
+                    chapterTitles[3].textContent = content.chapter4;
+                    chapterTitles[4].textContent = content.chapter5;
+                    chapterTitles[5].textContent = content.chapter6;
+                    chapterTitles[6].textContent = content.chapter7;
+                    chapterTitles[7].textContent = content.chapter8;
+                }
+                
+                // Update conclusion title
+                const conclusionTitle = document.querySelector('.conclusion-title');
+                if (conclusionTitle) {
+                    conclusionTitle.textContent = content.conclusion;
+                }
+                
+                // Update all text content
+                if (content.content) {
+                    // Update intro content
+                    const introTexts = document.querySelectorAll('.intro .text');
+                    if (introTexts.length > 0) {
+                        introTexts[0].textContent = content.content.intro;
+                    }
+                    
+                    // Update chapter content - find chapters by their order
+                    const chapters = document.querySelectorAll('.chapter');
+                    
+                    // Chapter 1 - Molana (index 1, after intro)
+                    if (chapters[1]) {
+                        const molanaTexts = chapters[1].querySelectorAll('.text');
+                        if (molanaTexts.length >= 2) {
+                            molanaTexts[0].textContent = content.content.molana_intro;
+                            molanaTexts[1].textContent = content.content.molana_poem1_explanation;
+                            if (molanaTexts[2]) {
+                                molanaTexts[2].textContent = content.content.molana_poem2_explanation;
+                            }
+                        }
+                        
+                        // Update poetry
+                        const poetryLines = chapters[1].querySelectorAll('.poetry-line');
+                        if (poetryLines.length >= 10 && content.content.molana_poem1) {
+                            const poem1Lines = content.content.molana_poem1.split(' / ');
+                            for (let i = 0; i < Math.min(poetryLines.length, poem1Lines.length); i++) {
+                                poetryLines[i].textContent = poem1Lines[i];
+                            }
+                        }
+                        
+                        if (poetryLines.length >= 20 && content.content.molana_poem2) {
+                            const poem2Lines = content.content.molana_poem2.split(' / ');
+                            const startIndex = 10; // Start from the second poem
+                            for (let i = 0; i < poem2Lines.length && (startIndex + i) < poetryLines.length; i++) {
+                                poetryLines[startIndex + i].textContent = poem2Lines[i];
+                            }
+                        }
+                    }
+                    
+                    // Chapter 2 - Hafez (index 2)
+                    if (chapters[2]) {
+                        const hafizTexts = chapters[2].querySelectorAll('.text');
+                        if (hafizTexts.length >= 2) {
+                            hafizTexts[0].textContent = content.content.hafiz_intro;
+                            hafizTexts[1].textContent = content.content.hafiz_explanation;
+                        }
+                        
+                        // Update Hafez poetry
+                        const hafizPoetryLines = chapters[2].querySelectorAll('.poetry-line');
+                        if (hafizPoetryLines.length >= 14 && content.content.hafiz_poem) {
+                            const poemLines = content.content.hafiz_poem.split(' / ');
+                            for (let i = 0; i < Math.min(hafizPoetryLines.length, poemLines.length); i++) {
+                                hafizPoetryLines[i].textContent = poemLines[i];
+                            }
+                        }
+                    }
+                    
+                    // Chapter 3 - Attar (index 3)
+                    if (chapters[3]) {
+                        const attarTexts = chapters[3].querySelectorAll('.text');
+                        if (attarTexts.length >= 2) {
+                            attarTexts[0].textContent = content.content.attar_intro;
+                            attarTexts[1].textContent = content.content.attar_explanation;
+                        }
+                        
+                        // Update Attar poetry
+                        const attarPoetryLines = chapters[3].querySelectorAll('.poetry-line');
+                        if (attarPoetryLines.length >= 2 && content.content.attar_poem) {
+                            const poemLines = content.content.attar_poem.split(' / ');
+                            for (let i = 0; i < Math.min(attarPoetryLines.length, poemLines.length); i++) {
+                                attarPoetryLines[i].textContent = poemLines[i];
+                            }
+                        }
+                    }
+                    
+                    // Chapter 4 - Sanai (index 4)
+                    if (chapters[4]) {
+                        const sanaiTexts = chapters[4].querySelectorAll('.text');
+                        if (sanaiTexts.length >= 2) {
+                            sanaiTexts[0].textContent = content.content.sanai_intro;
+                            sanaiTexts[1].textContent = content.content.sanai_explanation;
+                        }
+                        
+                        // Update Sanai poetry
+                        const sanaiPoetryLines = chapters[4].querySelectorAll('.poetry-line');
+                        if (sanaiPoetryLines.length >= 2 && content.content.sanai_poem) {
+                            const poemLines = content.content.sanai_poem.split(' / ');
+                            for (let i = 0; i < Math.min(sanaiPoetryLines.length, poemLines.length); i++) {
+                                sanaiPoetryLines[i].textContent = poemLines[i];
+                            }
+                        }
+                    }
+                    
+                    // Chapter 5 - Ramana (index 5)
+                    if (chapters[5]) {
+                        const ramanaTexts = chapters[5].querySelectorAll('.text');
+                        if (ramanaTexts.length >= 2) {
+                            ramanaTexts[0].textContent = content.content.ramana_intro;
+                            ramanaTexts[1].textContent = content.content.ramana_explanation;
+                        }
+                        
+                        // Update Ramana quote
+                        const ramanaQuote = chapters[5].querySelector('.quote');
+                        if (ramanaQuote && content.content.ramana_quote) {
+                            ramanaQuote.textContent = content.content.ramana_quote;
+                        }
+                    }
+                    
+                    // Chapter 6 - Merton (index 6)
+                    if (chapters[6]) {
+                        const mertonTexts = chapters[6].querySelectorAll('.text');
+                        if (mertonTexts.length >= 2) {
+                            mertonTexts[0].textContent = content.content.merton_intro;
+                            mertonTexts[1].textContent = content.content.merton_explanation;
+                        }
+                        
+                        // Update Merton quote
+                        const mertonQuote = chapters[6].querySelector('.quote');
+                        if (mertonQuote && content.content.merton_quote) {
+                            mertonQuote.textContent = content.content.merton_quote;
+                        }
+                    }
+                    
+                    // Chapter 7 - Tolle (index 7)
+                    if (chapters[7]) {
+                        const tolleTexts = chapters[7].querySelectorAll('.text');
+                        if (tolleTexts.length >= 2) {
+                            tolleTexts[0].textContent = content.content.tolle_intro;
+                            tolleTexts[1].textContent = content.content.tolle_explanation;
+                        }
+                        
+                        // Update Tolle quote
+                        const tolleQuote = chapters[7].querySelector('.quote');
+                        if (tolleQuote && content.content.tolle_quote) {
+                            tolleQuote.textContent = content.content.tolle_quote;
+                        }
+                    }
+                    
+                    // Update conclusion content
+                    const conclusionTexts = document.querySelectorAll('.conclusion .text');
+                    if (conclusionTexts.length > 0) {
+                        conclusionTexts[0].textContent = content.content.conclusion;
+                    }
+                }
+            }
+        }
+
+        // Add event listener for language select
+        document.addEventListener('DOMContentLoaded', function() {
+            const languageSelect = document.getElementById('languageSelect');
+            languageSelect.addEventListener('change', function() {
+                const lang = this.value;
+                switchLanguage(lang);
+            });
+            
+            // Load default language (Persian) on page load
+            switchLanguage('fa');
+        });
+
+        // ایجاد ذرات شناور
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // انیمیشن تایپ برای عنوان اصلی
+        function typeWriter(element, text, speed = 100) {
+            let i = 0;
+            element.innerHTML = '';
+            
+            function type() {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                    setTimeout(type, speed);
+                }
+            }
+            
+            type();
+        }
+
+        // اسکرول نرم
+        function smoothScroll() {
+            const links = document.querySelectorAll('a[href^="#"]');
+            links.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+        }
+
+        // انیمیشن ظاهر شدن عناصر هنگام اسکرول
+        function animateOnScroll() {
+            const elements = document.querySelectorAll('.chapter');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, {
+                threshold: 0.1
+            });
+
+            elements.forEach(element => {
+                element.style.opacity = '0';
+                element.style.transform = 'translateY(30px)';
+                element.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(element);
+            });
+        }
+
+        // راه‌اندازی
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            smoothScroll();
+            animateOnScroll();
+            
+            // انیمیشن تایپ برای عنوان اصلی
+            const mainTitle = document.querySelector('.main-title');
+            if (mainTitle) {
+                const originalText = mainTitle.textContent;
+                typeWriter(mainTitle, originalText, 150);
+            }
+        });
+
+        // تغییر رنگ ذرات بر اساس موقعیت ماوس
+        document.addEventListener('mousemove', function(e) {
+            const particles = document.querySelectorAll('.particle');
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+            
+            particles.forEach((particle, index) => {
+                const hue = (x * 60 + y * 60 + index * 10) % 360;
+                particle.style.background = `hsla(${hue}, 70%, 60%, 0.6)`;
+            });
+        });
+    </script>
+</body>
+</html>
