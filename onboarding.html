@@ -74,12 +74,6 @@
             border-radius: 12px; height: 150px; display: grid; place-items: center; color: #b8c1ec; font-size: 0.95rem;
             margin-top: 8px;
         }
-        .actions { padding: 0 16px 16px; display: flex; gap: 10px; flex-wrap: wrap; }
-        .btn {
-            background: linear-gradient(135deg, #00ff88, #00c2ff);
-            color: #0a0b0f; border: 0; border-radius: 10px; padding: 10px 16px; font-weight: 700; text-decoration: none;
-        }
-        .btn.secondary { background: linear-gradient(135deg, #a786ff, #00c2ff); color: #0a0b0f; }
 
         .divider { height: 2px; margin: 28px 0; background: linear-gradient(90deg, transparent, #00ff88, transparent); }
 
@@ -91,7 +85,6 @@
         }
         .card h3 { color: #00ff88; font-weight: 600; margin-bottom: 8px; font-size: 1.05rem; text-align: center; }
         .card p { color: #cfd6e6; font-size: 0.95rem; text-align: center; }
-        .card .go { display: block; margin-top: 10px; text-align: center; }
 
         .faq { margin-top: 30px; }
         .faq h2 { color: #00ff88; font-size: 1.2rem; margin-bottom: 10px; }
@@ -127,9 +120,9 @@
                 subtitle: 'گام‌به‌گام: تامین DAI → سواپ به IAM → ثبت‌نام → آشنایی با بخش‌ها',
                 intro: 'در این صفحه، روال کامل شروع کار را می‌آموزید: ابتدا مقدار لازم DAI را از صرافی یا کیف‌پول خود تامین می‌کنید، سپس در بخش سواپ همین سایت آن را به توکن IAM تبدیل می‌نمایید، بعد با همان توکن، فرآیند ثبت‌نام را انجام می‌دهید و در پایان با سایر بخش‌ها آشنا می‌شوید.',
                 links: {
-                    profile: { h: 'داشبورد پروفایل', p: 'مدیریت اطلاعات، دارایی‌ها و پیگیری وضعیت.', btn: 'ورود به پروفایل' },
-                    swap: { h: 'تبدیل و انتقال', p: 'سواپ، انتقال و ابزارهای مالی مرتبط.', btn: 'سواپ و تبدیل' },
-                    about: { h: 'سایر صفحات', p: 'معرفی، درباره، و راهنماهای تکمیلی.', btn: 'درباره ما' }
+                    profile: { h: 'داشبورد پروفایل', p: 'مدیریت اطلاعات، دارایی‌ها و پیگیری وضعیت.' },
+                    swap: { h: 'تبدیل و انتقال', p: 'سواپ، انتقال و ابزارهای مالی مرتبط.' },
+                    about: { h: 'سایر صفحات', p: 'معرفی، درباره، و راهنماهای تکمیلی.' }
                 },
                 faq: {
                     title: 'سوالات متداول',
@@ -156,16 +149,16 @@
                     leaderboard: { h: 'رتبه‌بندی شبکه', p: 'جدول برترین‌ها و محبوب‌ترین‌ها را بررسی کنید تا عملکرد اعضا و توزیع امتیازها را بهتر بشناسید. این بخش به شما دید مناسبی از پویایی شبکه می‌دهد.', list: ['Top Performers را مرور کنید.', 'Member Popularity را بسنجید.', 'از داده‌ها برای برنامه تیم استفاده کنید.', 'وضعیت شبکه را دوره‌ای بررسی کنید.'] },
                     dashboard: { h: 'داشبورد اصلی', p: 'از طریق میانبرها به بخش‌های کلیدی (Swap، Register، Profile، Transfer و …) دسترسی سریع داشته باشید و وضعیت موجودی‌ها و شاخص‌های اصلی را یکجا مشاهده کنید.', list: ['اتصال کیف‌پول از بالا سمت چپ.', 'وضعیت موجودی‌ها (POL/DAI/IAM) را ببینید.', 'میانبرهای اصلی را برای سرعت بیشتر به‌کار ببرید.', 'پیش از هر اقدام، شبکه/کیف‌پول را چک کنید.'] }
                 },
-                buttons: { about: 'درباره IAM', swap: 'رفتن به سواپ', register: 'رفتن به ثبت‌نام', back: 'بازگشت' }
+                buttons: { back: 'بازگشت' }
             },
             ar: {
                 title: 'دليل البدء (Onboarding)',
                 subtitle: 'خطوة بخطوة: توفير DAI → مبادلة إلى IAM → التسجيل → التعرف على الأقسام',
                 intro: 'في هذه الصفحة ستتعلم العملية كاملة: قم بتوفير DAI من منصة تداول أو محفظتك، ثم قم بالمبادلة إلى رمز IAM عبر صفحة السواب، وبعدها أكمل التسجيل باستخدام IAM وتعرّف على باقي الأقسام.',
                 links: {
-                    profile: { h: 'لوحة الملف الشخصي', p: 'إدارة المعلومات والأرصدة وتتبع الحالة.', btn: 'فتح الملف الشخصي' },
-                    swap: { h: 'التحويل والنقل', p: 'السواب، التحويل وأدوات التمويل.', btn: 'السواب والتحويل' },
-                    about: { h: 'صفحات أخرى', p: 'التعريف، عن المنصة، وأدلة إضافية.', btn: 'عنّا' }
+                    profile: { h: 'لوحة الملف الشخصي', p: 'إدارة المعلومات والأرصدة وتتبع الحالة.' },
+                    swap: { h: 'التحويل والنقل', p: 'السواب، التحويل وأدوات التمويل.' },
+                    about: { h: 'صفحات أخرى', p: 'التعريف، عن المنصة، وأدلة إضافية.' }
                 },
                 faq: {
                     title: 'الأسئلة الشائعة',
@@ -192,16 +185,16 @@
                     leaderboard: { h: 'لوحة المتصدرين', p: 'اعرف أفضل المنجزين والأعضاء الأكثر شعبية لرؤية ديناميكية الشبكة.', list: ['تتبع أفضل الأداء.', 'راقب الشعبية.', 'استخدمها للتخطيط.', 'حدّث البيانات دورياً.'] },
                     dashboard: { h: 'لوحة التحكم الرئيسية', p: 'وصول سريع إلى الأقسام الأساسية ومؤشرات الرصيد.', list: ['اتصال المحفظة.', 'مراجعة الأرصدة.', 'استخدم الاختصارات.', 'تأكد من الشبكة قبل العمليات.'] }
                 },
-                buttons: { about: 'حول IAM', swap: 'الانتقال إلى السواب', register: 'الانتقال إلى التسجيل', back: 'رجوع' }
+                buttons: { back: 'رجوع' }
             },
             en: {
                 title: 'Getting Started (Onboarding)',
                 subtitle: 'Step-by-step: Fund DAI → Swap to IAM → Register → Explore sections',
                 intro: 'This page guides you through the full flow: fund DAI from an exchange or wallet, swap to IAM on the site, complete registration using IAM, and explore other sections.',
                 links: {
-                    profile: { h: 'Profile Dashboard', p: 'Manage info, balances, and track status.', btn: 'Open Profile' },
-                    swap: { h: 'Swap & Transfer', p: 'Swap, transfer, and related financial tools.', btn: 'Go to Swap' },
-                    about: { h: 'Other Pages', p: 'Intro, About, and additional guides.', btn: 'About Us' }
+                    profile: { h: 'Profile Dashboard', p: 'Manage info, balances, and track status.' },
+                    swap: { h: 'Swap & Transfer', p: 'Swap, transfer, and related financial tools.' },
+                    about: { h: 'Other Pages', p: 'Intro, About, and additional guides.' }
                 },
                 faq: {
                     title: 'FAQ',
@@ -228,7 +221,7 @@
                     leaderboard: { h: 'Leaderboard', p: 'See top performers and popularity to understand network dynamics.', list: ['Track top performers.', 'Review popularity.', 'Use insights for planning.', 'Refresh periodically.'] },
                     dashboard: { h: 'Main Dashboard', p: 'Quick access to core sections with key balances and indicators.', list: ['Connect wallet.', 'Review balances.', 'Use shortcuts.', 'Check network before actions.'] }
                 },
-                buttons: { about: 'About IAM', swap: 'Go to Swap', register: 'Go to Register', back: 'Back' }
+                buttons: { back: 'Back' }
             }
         };
 
@@ -244,15 +237,12 @@
             if (t.links) {
                 document.getElementById('ql-h-profile').textContent = t.links.profile.h;
                 document.getElementById('ql-p-profile').textContent = t.links.profile.p;
-                document.getElementById('ql-b-profile').textContent = t.links.profile.btn;
 
                 document.getElementById('ql-h-swap').textContent = t.links.swap.h;
                 document.getElementById('ql-p-swap').textContent = t.links.swap.p;
-                document.getElementById('ql-b-swap').textContent = t.links.swap.btn;
 
                 document.getElementById('ql-h-about').textContent = t.links.about.h;
                 document.getElementById('ql-p-about').textContent = t.links.about.p;
-                document.getElementById('ql-b-about').textContent = t.links.about.btn;
             }
 
             // FAQ
@@ -272,10 +262,8 @@
                 if (stepBodies[i]) stepBodies[i].textContent = s.body;
             });
 
+
             // Buttons
-            document.getElementById('btn-about').textContent = t.buttons.about;
-            document.getElementById('btn-swap').textContent = t.buttons.swap;
-            document.getElementById('btn-register').textContent = t.buttons.register;
             document.getElementById('btn-back').textContent = t.buttons.back;
 
             // Tutorials
@@ -390,9 +378,6 @@
                 <div class="step-body">
                     <p data-step-body>از هر صرافی معتبر یا کیف‌پول شخصی، مقدار مورد نیاز DAI را تهیه و به کیف‌پول متصل به سایت منتقل کنید.</p>
                 </div>
-                <div class="actions">
-                    <a class="btn secondary" id="btn-about" href="iam.html" target="_blank" rel="noopener">درباره IAM</a>
-                </div>
             </div>
 
             <div class="step">
@@ -402,9 +387,6 @@
                 </div>
                 <div class="step-body">
                     <p data-step-body>از طریق صفحه سواپ، DAI خود را به توکن IAM تبدیل کنید. اطمینان یابید کیف‌پول شما متصل است.</p>
-                </div>
-                <div class="actions">
-                    <a class="btn" id="btn-swap" href="swap.html">رفتن به سواپ</a>
                 </div>
             </div>
 
@@ -416,9 +398,6 @@
                 <div class="step-body">
                     <p data-step-body>پس از دریافت IAM، برای ساخت حساب و فعال‌سازی امکانات، ثبت‌نام را تکمیل کنید.</p>
                 </div>
-                <div class="actions">
-                    <a class="btn" id="btn-register" href="register.html">رفتن به ثبت‌نام</a>
-                </div>
             </div>
         </section>
 
@@ -428,17 +407,14 @@
             <div class="card">
                 <h3 id="ql-h-profile">داشبورد پروفایل</h3>
                 <p id="ql-p-profile">مدیریت اطلاعات، دارایی‌ها و پیگیری وضعیت.</p>
-                <a class="btn go" id="ql-b-profile" href="profile.html">ورود به پروفایل</a>
             </div>
             <div class="card">
                 <h3 id="ql-h-swap">تبدیل و انتقال</h3>
                 <p id="ql-p-swap">سواپ، انتقال و ابزارهای مالی مرتبط.</p>
-                <a class="btn go" id="ql-b-swap" href="swap.html">سواپ و تبدیل</a>
             </div>
             <div class="card">
                 <h3 id="ql-h-about">سایر صفحات</h3>
                 <p id="ql-p-about">معرفی، درباره، و راهنماهای تکمیلی.</p>
-                <a class="btn go" id="ql-b-about" href="about.html">درباره ما</a>
             </div>
         </section>
 
