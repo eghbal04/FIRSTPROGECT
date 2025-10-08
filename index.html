@@ -1954,8 +1954,13 @@
             let shouldEnable = false;
             let disableReason = '';
             
+            // Check for buttons that should always be enabled first
+            if (href === 'about.html' || href === 'onboarding.html') {
+              shouldEnable = true;
+              console.log(`✅ Enabled ${href} - always enabled`);
+            }
             // Check if button should be disabled due to inactive user
-            if (buttonsToDisableWhenInactive.includes(href)) {
+            else if (buttonsToDisableWhenInactive.includes(href)) {
               if (isActive) {
                 shouldEnable = true;
                 console.log(`✅ Enabled ${href} - user is active`);
@@ -2008,11 +2013,6 @@
                 disableReason = 'You need at least one star to access I AM features';
                 console.log(`🔒 Disabled ${href} - no stars`);
               }
-            }
-            // Check for buttons that should always be enabled (About, Onboarding, etc.)
-            else if (href === 'about.html' || href === 'onboarding.html') {
-              shouldEnable = true;
-              console.log(`✅ Enabled ${href} - always enabled`);
             }
             // All other buttons should remain disabled by default
             else {
