@@ -1723,8 +1723,18 @@
       } catch {}
     }
 
+    // Add debouncing to prevent too frequent calls
+    let updateButtonStatesTimeout;
+    
     // Function to check if user is active and update button states
     async function updateButtonStates() {
+      // Clear any existing timeout
+      if (updateButtonStatesTimeout) {
+        clearTimeout(updateButtonStatesTimeout);
+      }
+      
+      // Debounce the function call
+      updateButtonStatesTimeout = setTimeout(async () => {
       try {
         console.log('🔄 Starting updateButtonStates...');
         
@@ -1895,86 +1905,74 @@
         updateNavCards.forEach(card => {
           const href = card.getAttribute('href');
           
+          // Reset button state first
+          card.classList.remove('disabled', 'enabled');
+          
           // Check if button should be disabled due to inactive user
           if (buttonsToDisableWhenInactive.includes(href)) {
             if (!isActive) {
               card.classList.add('disabled');
-              card.classList.remove('enabled');
               card.title = 'You must be registered and active to access this feature';
+              console.log(`🔒 Disabled ${href} - user not active`);
             } else {
-              card.classList.remove('disabled');
               card.classList.add('enabled');
               card.title = '';
+              console.log(`✅ Enabled ${href} - user is active`);
             }
           }
-          
           // Check if Register button should be disabled due to insufficient balance
-          if (href === 'register.html') {
+          else if (href === 'register.html') {
             if (hasInsufficientBalance) {
               card.classList.add('disabled');
-              card.classList.remove('enabled');
               card.title = 'Insufficient IAM balance for registration';
+              console.log(`🔒 Disabled ${href} - insufficient balance`);
             } else {
-              card.classList.remove('disabled');
               card.classList.add('enabled');
               card.title = '';
+              console.log(`✅ Enabled ${href} - sufficient balance`);
             }
           }
-          
           // Check if Swap button should be disabled due to zero balances
-          if (href === 'swap.html') {
+          else if (href === 'swap.html') {
             if (hasZeroBalances) {
               card.classList.add('disabled');
-              card.classList.remove('enabled');
               card.title = 'You need DAI or IAM tokens to perform swaps';
+              console.log(`🔒 Disabled ${href} - zero balances`);
             } else {
-              card.classList.remove('disabled');
               card.classList.add('enabled');
               card.title = '';
+              console.log(`✅ Enabled ${href} - has balances`);
             }
           }
-          
           // Check if Transfer button should be disabled due to zero balances
-          if (href === 'transfer.html') {
+          else if (href === 'transfer.html') {
             if (hasZeroTransferBalances) {
               card.classList.add('disabled');
-              card.classList.remove('enabled');
               card.title = 'You need IAM, DAI, or POL tokens to perform transfers';
+              console.log(`🔒 Disabled ${href} - zero transfer balances`);
             } else {
-              card.classList.remove('disabled');
               card.classList.add('enabled');
               card.title = '';
+              console.log(`✅ Enabled ${href} - has transfer balances`);
             }
           }
-          
           // Check if I AM button should be disabled due to no stars
-          if (href === 'iam.html') {
+          else if (href === 'iam.html') {
             if (!hasStars) {
               card.classList.add('disabled');
-              card.classList.remove('enabled');
               card.title = 'You need at least one star to access I AM features';
+              console.log(`🔒 Disabled ${href} - no stars`);
             } else {
-              card.classList.remove('disabled');
               card.classList.add('enabled');
               card.title = '';
+              console.log(`✅ Enabled ${href} - has stars`);
             }
           }
-          
           // Enable buttons that don't have specific conditions (About, Onboarding, etc.)
-          const alwaysEnabledButtons = ['about.html', 'onboarding.html'];
-          if (alwaysEnabledButtons.includes(href)) {
-            card.classList.remove('disabled');
+          else {
             card.classList.add('enabled');
             card.title = '';
-          }
-          
-          // Enable basic buttons if wallet is connected (fallback for internet issues)
-          const basicButtons = ['swap.html', 'register.html', 'transfer.html'];
-          if (basicButtons.includes(href)) {
-            // If wallet is connected, enable these buttons regardless of other conditions
-            card.classList.remove('disabled');
-            card.classList.add('enabled');
-            card.title = '';
+            console.log(`✅ Enabled ${href} - no specific conditions`);
           }
         });
         
@@ -1996,6 +1994,7 @@
           }
         });
       }
+      }, 500); // 500ms debounce
     }
 
     function updateStatusPills(data) {
@@ -2536,9 +2535,9 @@
       // Refresh periodically
       setInterval(() => { 
         refreshContractInfoSafe(); 
-        // Also update button states periodically
-        setTimeout(() => updateButtonStates(), 1000);
-      }, 30000);
+        // Also update button states periodically (less frequent)
+        setTimeout(() => updateButtonStates(), 2000);
+      }, 60000); // Increased to 60 seconds
 
       // MetaMask events: keep info fresh
       if (window.ethereum) {
