@@ -1726,6 +1726,7 @@
     // Add debouncing to prevent too frequent calls
     let updateButtonStatesTimeout;
     let isUpdatingButtons = false;
+    let isInternetEnvironment = false;
     
     // Function to check if user is active and update button states
     async function updateButtonStates() {
@@ -1759,12 +1760,29 @@
         }
         
         console.log('🔄 Attempting wallet connection...');
-        const connection = await window.connectWallet();
+        
+        // Add timeout for internet environment detection
+        const startTime = Date.now();
+        const connectionPromise = window.connectWallet();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Connection timeout - likely internet environment')), 10000)
+        );
+        
+        const connection = await Promise.race([connectionPromise, timeoutPromise]);
+        const connectionTime = Date.now() - startTime;
         console.log('🔄 Connection result:', connection);
         
         if (!connection || !connection.contract || !connection.address) {
           console.log('🔒 All buttons disabled - wallet not connected');
           return;
+        }
+        
+        // Detect internet environment based on connection time
+        if (connectionTime > 3000) {
+          isInternetEnvironment = true;
+          console.log(`🌐 Internet environment detected (${connectionTime}ms) - using simplified logic`);
+        } else {
+          console.log(`🏠 Local environment detected (${connectionTime}ms) - using full logic`);
         }
         
         console.log('✅ Wallet connected successfully, checking user status...');
@@ -1917,75 +1935,91 @@
           card.classList.remove('disabled', 'enabled');
           card.classList.add('disabled');
           
-          // Check if button should be enabled based on specific conditions
-          let shouldEnable = false;
-          let disableReason = '';
-          
-          // Check if button should be disabled due to inactive user
-          if (buttonsToDisableWhenInactive.includes(href)) {
-            if (isActive) {
-              shouldEnable = true;
-              console.log(`✅ Enabled ${href} - user is active`);
+          // Simplified logic for internet environment
+          if (isInternetEnvironment) {
+            // In internet environment, enable basic buttons and disable advanced ones
+            const basicButtons = ['about.html', 'onboarding.html', 'swap.html', 'register.html', 'transfer.html'];
+            if (basicButtons.includes(href)) {
+              card.classList.remove('disabled');
+              card.classList.add('enabled');
+              card.title = '';
+              console.log(`✅ Internet mode enabled ${href}`);
             } else {
-              disableReason = 'You must be registered and active to access this feature';
-              console.log(`🔒 Disabled ${href} - user not active`);
+              card.classList.add('disabled');
+              card.title = 'Advanced features require stable connection';
+              console.log(`🔒 Internet mode disabled ${href}`);
             }
-          }
-          // Check if Register button should be enabled (sufficient balance)
-          else if (href === 'register.html') {
-            if (!hasInsufficientBalance) {
-              shouldEnable = true;
-              console.log(`✅ Enabled ${href} - sufficient balance`);
-            } else {
-              disableReason = 'Insufficient IAM balance for registration';
-              console.log(`🔒 Disabled ${href} - insufficient balance`);
-            }
-          }
-          // Check if Swap button should be enabled (has balances)
-          else if (href === 'swap.html') {
-            if (!hasZeroBalances) {
-              shouldEnable = true;
-              console.log(`✅ Enabled ${href} - has balances`);
-            } else {
-              disableReason = 'You need DAI or IAM tokens to perform swaps';
-              console.log(`🔒 Disabled ${href} - zero balances`);
-            }
-          }
-          // Check if Transfer button should be enabled (has transfer balances)
-          else if (href === 'transfer.html') {
-            if (!hasZeroTransferBalances) {
-              shouldEnable = true;
-              console.log(`✅ Enabled ${href} - has transfer balances`);
-            } else {
-              disableReason = 'You need IAM, DAI, or POL tokens to perform transfers';
-              console.log(`🔒 Disabled ${href} - zero transfer balances`);
-            }
-          }
-          // Check if I AM button should be enabled (has stars)
-          else if (href === 'iam.html') {
-            if (hasStars) {
-              shouldEnable = true;
-              console.log(`✅ Enabled ${href} - has stars`);
-            } else {
-              disableReason = 'You need at least one star to access I AM features';
-              console.log(`🔒 Disabled ${href} - no stars`);
-            }
-          }
-          // Always enable buttons that don't have specific conditions (About, Onboarding, etc.)
-          else {
-            shouldEnable = true;
-            console.log(`✅ Enabled ${href} - no specific conditions`);
-          }
-          
-          // Apply the final state
-          if (shouldEnable) {
-            card.classList.remove('disabled');
-            card.classList.add('enabled');
-            card.title = '';
           } else {
-            card.classList.add('disabled');
-            card.classList.remove('enabled');
-            card.title = disableReason;
+            // Full logic for local environment
+            let shouldEnable = false;
+            let disableReason = '';
+            
+            // Check if button should be disabled due to inactive user
+            if (buttonsToDisableWhenInactive.includes(href)) {
+              if (isActive) {
+                shouldEnable = true;
+                console.log(`✅ Enabled ${href} - user is active`);
+              } else {
+                disableReason = 'You must be registered and active to access this feature';
+                console.log(`🔒 Disabled ${href} - user not active`);
+              }
+            }
+            // Check if Register button should be enabled (sufficient balance)
+            else if (href === 'register.html') {
+              if (!hasInsufficientBalance) {
+                shouldEnable = true;
+                console.log(`✅ Enabled ${href} - sufficient balance`);
+              } else {
+                disableReason = 'Insufficient IAM balance for registration';
+                console.log(`🔒 Disabled ${href} - insufficient balance`);
+              }
+            }
+            // Check if Swap button should be enabled (has balances)
+            else if (href === 'swap.html') {
+              if (!hasZeroBalances) {
+                shouldEnable = true;
+                console.log(`✅ Enabled ${href} - has balances`);
+              } else {
+                disableReason = 'You need DAI or IAM tokens to perform swaps';
+                console.log(`🔒 Disabled ${href} - zero balances`);
+              }
+            }
+            // Check if Transfer button should be enabled (has transfer balances)
+            else if (href === 'transfer.html') {
+              if (!hasZeroTransferBalances) {
+                shouldEnable = true;
+                console.log(`✅ Enabled ${href} - has transfer balances`);
+              } else {
+                disableReason = 'You need IAM, DAI, or POL tokens to perform transfers';
+                console.log(`🔒 Disabled ${href} - zero transfer balances`);
+              }
+            }
+            // Check if I AM button should be enabled (has stars)
+            else if (href === 'iam.html') {
+              if (hasStars) {
+                shouldEnable = true;
+                console.log(`✅ Enabled ${href} - has stars`);
+              } else {
+                disableReason = 'You need at least one star to access I AM features';
+                console.log(`🔒 Disabled ${href} - no stars`);
+              }
+            }
+            // Always enable buttons that don't have specific conditions (About, Onboarding, etc.)
+            else {
+              shouldEnable = true;
+              console.log(`✅ Enabled ${href} - no specific conditions`);
+            }
+            
+            // Apply the final state
+            if (shouldEnable) {
+              card.classList.remove('disabled');
+              card.classList.add('enabled');
+              card.title = '';
+            } else {
+              card.classList.add('disabled');
+              card.classList.remove('enabled');
+              card.title = disableReason;
+            }
           }
         });
         
@@ -1994,16 +2028,26 @@
       } catch (error) {
         console.error('❌ Error updating button states:', error);
         
-        // Fallback: enable basic buttons even if there's an error
-        console.log('🔄 Applying fallback: enabling basic buttons...');
+        // Enhanced fallback for internet environment
+        console.log('🔄 Applying enhanced fallback for internet environment...');
         const fallbackNavCards = document.querySelectorAll('.nav-card');
         fallbackNavCards.forEach(card => {
           const href = card.getAttribute('href');
+          
+          // Reset button state
+          card.classList.remove('disabled', 'enabled');
+          
+          // Always enable basic buttons in fallback mode
           const basicButtons = ['about.html', 'onboarding.html', 'swap.html', 'register.html', 'transfer.html'];
           if (basicButtons.includes(href)) {
-            card.classList.remove('disabled');
             card.classList.add('enabled');
             card.title = '';
+            console.log(`✅ Fallback enabled ${href}`);
+          } else {
+            // Keep other buttons disabled in fallback mode
+            card.classList.add('disabled');
+            card.title = 'Please check your connection and try again';
+            console.log(`🔒 Fallback disabled ${href}`);
           }
         });
       } finally {
