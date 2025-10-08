@@ -395,12 +395,16 @@
         .flat-tree-node::before {
             content: attr(data-depth);
             position: absolute;
-            top: 2px;
-            right: 6px;
+            top: 0px;
+            right: 0px;
             font-size: 10px;
             font-weight: bold;
-            opacity: 0.7;
-            z-index: 1;
+            color: #ffffff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.7);
+            background: rgba(0, 0, 0, 0.6);
+            padding: 2px 4px;
+            border-radius: 0px 0px 0px 3px;
+            z-index: 10;
         }
         
         /* Hover effects for all levels */
@@ -588,6 +592,35 @@
             color: var(--iam-accent);
             text-shadow: 0 0 8px rgba(0,255,136,0.2);
         }
+
+        .tree-node-label {
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8), 0 0 8px rgba(0,0,0,0.6);
+            color: #ffffff !important;
+        }
+
+        .star-rating {
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8), 0 0 8px rgba(255,215,0,0.6);
+            transition: all 0.3s ease;
+            font-size: 12px;
+            margin-top: 0px;
+            text-align: center;
+            color: #ffd700 !important;
+        }
+
+        .star-rating:hover {
+            transform: scale(1.1);
+            text-shadow: 2px 2px 6px rgba(0,0,0,0.9), 0 0 12px rgba(255,215,0,0.8);
+        }
+
+        .tree-node-info {
+            font-weight: 600;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8), 0 0 6px rgba(0,0,0,0.6);
+            color: #ffffff !important;
+        }
+
+
 
         /* Scrollbar */
         ::-webkit-scrollbar { height: 10px; width: 10px; }
@@ -1056,7 +1089,111 @@
             }
         }
 
-                // Create pyramid node - Only render direct children (lazy loading)
+                // Calculate star rating based on binaryPointsClaimed
+        function calculateStarRating(binaryPointsClaimed) {
+            if (!binaryPointsClaimed || binaryPointsClaimed === '0' || binaryPointsClaimed === 0) {
+                return 0;
+            }
+            
+            const points = parseInt(binaryPointsClaimed.toString());
+            if (points >= 10000) return 5;
+            if (points >= 1000) return 4;
+            if (points >= 100) return 3;
+            if (points >= 10) return 2;
+            if (points >= 1) return 1;
+            return 0;
+        }
+
+        // Create star display element
+        function createStarDisplay(starRating) {
+            const starContainer = document.createElement('span');
+            starContainer.className = 'star-rating';
+            starContainer.style.color = '#ffd700';
+            
+            if (starRating > 0) {
+                const stars = '★'.repeat(starRating);
+                starContainer.textContent = stars;
+                starContainer.title = `${starRating} star${starRating > 1 ? 's' : ''} (${starRating === 1 ? '1+' : starRating === 2 ? '10+' : starRating === 3 ? '100+' : starRating === 4 ? '1000+' : '10000+'} points)`;
+            } else {
+                starContainer.textContent = '';
+            }
+            
+            return starContainer;
+        }
+
+        // Update star ratings for all visible nodes
+        async function updateAllNodeStarRatings() {
+            try {
+                const starElements = document.querySelectorAll('.star-rating');
+                console.log(`🔄 Updating star ratings for ${starElements.length} nodes`);
+                
+                for (const starElement of starElements) {
+                    const nodeId = starElement.id.replace('star-', '');
+                    const node = findNode(pyramidData.root, parseInt(nodeId));
+                    if (node) {
+                        await updateNodeStarRating(nodeId, node.index);
+                    }
+                }
+            } catch (error) {
+                console.log('⚠️ Error updating all star ratings:', error);
+            }
+        }
+
+        // Update star rating for a specific node
+        async function updateNodeStarRating(nodeId, nodeIndex) {
+            try {
+                if (!window.contractConfig || !window.contractConfig.contract) {
+                    console.log('⚠️ Contract not available for star rating');
+                    return;
+                }
+
+                const contract = window.contractConfig.contract;
+                let userAddress = null;
+                
+                // Get user address by index using the existing function
+                try {
+                    userAddress = await window.getAddressByIndex(contract, nodeIndex);
+                } catch (error) {
+                    console.log(`⚠️ Could not get address for index ${nodeIndex}:`, error);
+                    return;
+                }
+
+                if (!userAddress || userAddress === '0x0000000000000000000000000000000000000000') {
+                    console.log(`⚠️ No valid address for index ${nodeIndex}`);
+                    return;
+                }
+
+                // Get user data
+                let userData = null;
+                try {
+                    if (typeof contract.getUserByAddress === 'function') {
+                        userData = await contract.getUserByAddress(userAddress);
+                    } else if (typeof contract.users === 'function') {
+                        userData = await contract.users(userAddress);
+                    }
+                } catch (error) {
+                    console.log(`⚠️ Could not get user data for address ${userAddress}:`, error);
+                    return;
+                }
+
+                if (userData && userData.binaryPointsClaimed) {
+                    const starRating = calculateStarRating(userData.binaryPointsClaimed);
+                    const starElement = document.getElementById(`star-${nodeId}`);
+                    if (starElement) {
+                        const newStarDisplay = createStarDisplay(starRating);
+                        starElement.innerHTML = newStarDisplay.innerHTML;
+                        starElement.title = newStarDisplay.title;
+                        console.log(`✅ Updated star rating for node ${nodeId}: ${starRating} stars`);
+                    }
+                } else {
+                    console.log(`⚠️ No binaryPointsClaimed data for node ${nodeId}`);
+                }
+            } catch (error) {
+                console.log(`⚠️ Error updating star rating for node ${nodeId}:`, error);
+            }
+        }
+
+        // Create pyramid node - Only render direct children (lazy loading)
         function createPyramidNode(node, level = 0) {
             const nodeDiv = document.createElement('div');
             nodeDiv.className = 'pyramid-node';
@@ -1095,9 +1232,26 @@
                 showUserPopup(node);
             };
             
+            // Create star rating display (initially empty, will be updated when user data is loaded)
+            const starDisplay = createStarDisplay(0);
+            starDisplay.id = `star-${node.id}`;
+            
+            // Create a container for index and stars
+            const indexContainer = document.createElement('div');
+            indexContainer.style.display = 'flex';
+            indexContainer.style.flexDirection = 'column';
+            indexContainer.style.alignItems = 'center';
+            indexContainer.style.gap = '4px';
+            
+            indexContainer.appendChild(indexDisplay);
+            indexContainer.appendChild(starDisplay);
+            
             buttonContainer.appendChild(expandBtn);
-            buttonContainer.appendChild(indexDisplay);
+            buttonContainer.appendChild(indexContainer);
             nodeDiv.appendChild(buttonContainer);
+            
+            // Update star rating asynchronously
+            updateNodeStarRating(node.id, node.index);
             
             // Children container - Only render direct children (lazy loading)
             if (node.children && node.children.length > 0 && node.expanded) {
@@ -1325,6 +1479,17 @@
 
                 const details = buildUserDetails(userData, node.index, userAddress);
                 showTypewriterUserModal(details);
+                
+                // Update star rating for this node
+                if (userData && userData.binaryPointsClaimed) {
+                    const starRating = calculateStarRating(userData.binaryPointsClaimed);
+                    const starElement = document.getElementById(`star-${node.id}`);
+                    if (starElement) {
+                        const newStarDisplay = createStarDisplay(starRating);
+                        starElement.innerHTML = newStarDisplay.innerHTML;
+                        starElement.title = newStarDisplay.title;
+                    }
+                }
                 // append USD lines for token fields (raw userData preferred for precision)
                 buildUserUsdLines(details).then(lines => { if (lines.length) appendTypewriterLines(lines); });
                 // Append placeholders immediately so we can update them reliably
@@ -1490,8 +1655,13 @@
                 // Load root node
                 await loadRootNode();
                 
-                // Render tree view
-                renderTreeView();
+            // Render tree view
+            renderTreeView();
+            
+            // Update star ratings for all visible nodes
+            setTimeout(() => {
+                updateAllNodeStarRatings();
+            }, 1000);
                 
             } catch (error) {
                 console.error('❌ Error loading file manager tree:', error);
@@ -2123,59 +2293,88 @@
             nodeElement.setAttribute('data-node-id', node.id);
             nodeElement.setAttribute('data-depth', depth);
             
-            // Dynamic color generation for very deep levels (26+)
-            if (depth >= 26) {
-                // Generate distinct colors for deeper levels
-                const colors = [
-                    '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57',
-                    '#ff9ff3', '#54a0ff', '#5f27cd', '#00d2d3', '#ff9f43',
-                    '#10ac84', '#ee5a24', '#0984e3', '#6c5ce7', '#a29bfe',
-                    '#fd79a8', '#fdcb6e', '#e17055', '#81ecec', '#74b9ff'
-                ];
-                
-                const colorIndex = (depth - 26) % colors.length;
-                const selectedColor = colors[colorIndex];
-                
-                // Convert hex to RGB
-                const r = parseInt(selectedColor.slice(1, 3), 16);
-                const g = parseInt(selectedColor.slice(3, 5), 16);
-                const b = parseInt(selectedColor.slice(5, 7), 16);
-                
-                const intensity = Math.max(0.02, 0.08 - (depth - 26) * 0.002);
-                const borderIntensity = Math.max(0.1, 0.3 - (depth - 26) * 0.005);
-                const shadowIntensity = Math.max(0.05, 0.15 - (depth - 26) * 0.003);
-                
-                nodeElement.style.background = `linear-gradient(135deg, rgba(${r}, ${g}, ${b}, ${intensity}), rgba(${r}, ${g}, ${b}, ${intensity * 0.5}))`;
-                nodeElement.style.border = `3px solid rgba(${r}, ${g}, ${b}, ${borderIntensity})`;
-                nodeElement.style.boxShadow = `0 2px 4px rgba(${r}, ${g}, ${b}, ${shadowIntensity})`;
-                nodeElement.style.color = selectedColor;
-            }
+            // Dynamic color generation with very distinct colors
+            const distinctColors = [
+                '#ff0000', // Level 0: Red
+                '#00ff00', // Level 1: Green
+                '#0000ff', // Level 2: Blue
+                '#ffff00', // Level 3: Yellow
+                '#ff00ff', // Level 4: Magenta
+                '#00ffff', // Level 5: Cyan
+                '#ff8000', // Level 6: Orange
+                '#8000ff', // Level 7: Purple
+                '#ff0080', // Level 8: Pink
+                '#80ff00', // Level 9: Lime
+                '#0080ff', // Level 10: Light Blue
+                '#ff8080', // Level 11: Light Red
+                '#80ff80', // Level 12: Light Green
+                '#8080ff', // Level 13: Light Blue
+                '#ffff80', // Level 14: Light Yellow
+                '#ff80ff', // Level 15: Light Magenta
+                '#80ffff', // Level 16: Light Cyan
+                '#ff4000', // Level 17: Dark Orange
+                '#4000ff', // Level 18: Dark Purple
+                '#ff0040', // Level 19: Dark Pink
+                '#40ff00'  // Level 20: Dark Lime
+            ];
+            
+            // Get color based on depth, cycle through colors for deeper levels
+            const colorIndex = depth % distinctColors.length;
+            const levelColor = distinctColors[colorIndex];
+            
+            // Convert hex to RGB
+            const r = parseInt(levelColor.slice(1, 3), 16);
+            const g = parseInt(levelColor.slice(3, 5), 16);
+            const b = parseInt(levelColor.slice(5, 7), 16);
+            
+            // Calculate intensity based on depth - make colors more visible
+            const intensity = Math.max(0.3, 0.8 - depth * 0.02);
+            const borderIntensity = Math.max(0.6, 0.9 - depth * 0.01);
+            const shadowIntensity = Math.max(0.4, 0.7 - depth * 0.01);
+            
+            // Apply level-based colors
+            nodeElement.style.background = `linear-gradient(135deg, rgba(${r}, ${g}, ${b}, ${intensity}), rgba(${r}, ${g}, ${b}, ${intensity * 0.7}))`;
+            nodeElement.style.border = `2px solid rgba(${r}, ${g}, ${b}, ${borderIntensity})`;
+            nodeElement.style.boxShadow = `0 2px 8px rgba(${r}, ${g}, ${b}, ${shadowIntensity})`;
+            nodeElement.style.color = `#${levelColor}`;
+            
+            // Add level indicator
+            nodeElement.setAttribute('data-level', depth);
+            nodeElement.setAttribute('data-level-color', levelColor);
             
             const isExpanded = fileManagerData.expandedNodes.has(node.id);
             const hasChildren = node.hasChildren || (node.children && node.children.length > 0);
             
-            // Check if this is an empty node
+            // Check if this is an empty node - skip rendering empty nodes
             const isEmptyNode = node.type === 'empty';
             
+            // Skip rendering empty nodes
+            if (isEmptyNode) {
+                return;
+            }
+            
             nodeElement.innerHTML = `
-                <div class="tree-node-content ${isExpanded ? 'expanded' : ''} ${isEmptyNode ? 'empty-node' : ''}" data-node-id="${node.id}">
+                <div class="tree-node-content ${isExpanded ? 'expanded' : ''}" data-node-id="${node.id}">
                     ${hasChildren ? `
                         <button class="tree-expand-btn ${isExpanded ? 'expanded' : ''}" data-node-id="${node.id}">
                             ${isExpanded ? '−' : '+'}
                         </button>
                     ` : '<div style="width: 14px;"></div>'}
                     
-                    ${isEmptyNode ? `
-                        <span class="tree-node-label empty-label">📝 Empty Slot ${node.index}</span>
-                        <span class="tree-node-info empty-info" title="Click to register new user">Click to Register</span>
-                    ` : `
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 1px;">
                         <span class="tree-node-label">IAM ${node.index}</span>
-                        ${!isMobile() ? `<span class="tree-node-info" onclick="copyToClipboard('${node.address}')" title="Click to copy full address">${node.address ? node.address.substring(0, 6) + '...' + node.address.substring(node.address.length - 4) : ''}</span>` : ''}
-                    `}
+                        <span class="star-rating" id="star-${node.id}" style="font-size: 12px; color: #ffd700; text-align: center;"></span>
+                    </div>
+                    ${!isMobile() ? `<span class="tree-node-info" onclick="copyToClipboard('${node.address}')" title="Click to copy full address">${node.address ? node.address.substring(0, 6) + '...' + node.address.substring(node.address.length - 4) : ''}</span>` : ''}
                 </div>
             `;
             
             container.appendChild(nodeElement);
+            
+            // Update star rating for this node
+            setTimeout(() => {
+                updateNodeStarRating(node.id, node.index);
+            }, 100);
             
             // Add click listeners
             const expandBtn = nodeElement.querySelector('.tree-expand-btn');
