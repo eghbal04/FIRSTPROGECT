@@ -1937,57 +1937,86 @@
           
           // Simplified logic for internet environment
           if (isInternetEnvironment) {
-            // In internet environment, enable basic buttons and check conditions for advanced ones
-            const basicButtons = ['about.html', 'onboarding.html', 'swap.html', 'register.html', 'transfer.html'];
-            const advancedButtons = ['professional-tree.html', 'profile.html', 'sales.html', 'transfer-ownership.html', 'utility.html', 'price-charts.html', 'iam.html'];
+            // In internet environment, use the same logic as local but with simplified conditions
+            let shouldEnable = false;
+            let disableReason = '';
             
-            if (basicButtons.includes(href)) {
+            // Check for buttons that should always be enabled first
+            if (href === 'about.html' || href === 'onboarding.html' || href === '/about' || href === '/onboarding') {
+              shouldEnable = true;
+              console.log(`✅ Internet mode enabled ${href} - always enabled`);
+            }
+            // Check if button should be disabled due to inactive user
+            else if (buttonsToDisableWhenInactive.includes(href)) {
+              if (isActive) {
+                shouldEnable = true;
+                console.log(`✅ Internet mode enabled ${href} - user is active`);
+              } else {
+                shouldEnable = false;
+                disableReason = 'You must be registered and active to access this feature';
+                console.log(`🔒 Internet mode disabled ${href} - user not active`);
+              }
+            }
+            // Check if Register button should be enabled (sufficient balance)
+            else if (href === 'register.html' || href === '/register') {
+              if (!hasInsufficientBalance) {
+                shouldEnable = true;
+                console.log(`✅ Internet mode enabled ${href} - sufficient balance`);
+              } else {
+                shouldEnable = false;
+                disableReason = 'Insufficient IAM balance for registration';
+                console.log(`🔒 Internet mode disabled ${href} - insufficient balance`);
+              }
+            }
+            // Check if Swap button should be enabled (has balances)
+            else if (href === 'swap.html' || href === '/swap') {
+              if (!hasZeroBalances) {
+                shouldEnable = true;
+                console.log(`✅ Internet mode enabled ${href} - has balances`);
+              } else {
+                shouldEnable = false;
+                disableReason = 'You need DAI or IAM tokens to perform swaps';
+                console.log(`🔒 Internet mode disabled ${href} - zero balances`);
+              }
+            }
+            // Check if Transfer button should be enabled (has transfer balances)
+            else if (href === 'transfer.html' || href === '/transfer') {
+              if (!hasZeroTransferBalances) {
+                shouldEnable = true;
+                console.log(`✅ Internet mode enabled ${href} - has transfer balances`);
+              } else {
+                shouldEnable = false;
+                disableReason = 'You need IAM, DAI, or POL tokens to perform transfers';
+                console.log(`🔒 Internet mode disabled ${href} - zero transfer balances`);
+              }
+            }
+            // Check if I AM button should be enabled (has stars)
+            else if (href === 'iam.html' || href === '/iam') {
+              if (hasStars) {
+                shouldEnable = true;
+                console.log(`✅ Internet mode enabled ${href} - has stars`);
+              } else {
+                shouldEnable = false;
+                disableReason = 'You need at least one star to access I AM features';
+                console.log(`🔒 Internet mode disabled ${href} - no stars`);
+              }
+            }
+            // All other buttons should remain disabled by default
+            else {
+              shouldEnable = false;
+              disableReason = 'This feature is not available';
+              console.log(`🔒 Internet mode disabled ${href} - not available`);
+            }
+            
+            // Apply the final state
+            if (shouldEnable) {
               card.classList.remove('disabled');
               card.classList.add('enabled');
               card.title = '';
-              console.log(`✅ Internet mode enabled ${href}`);
-            } else if (advancedButtons.includes(href)) {
-              // Check conditions for advanced buttons in internet mode
-              let shouldEnable = false;
-              let disableReason = '';
-              
-              // Check if button should be disabled due to inactive user
-              if (buttonsToDisableWhenInactive.includes(href)) {
-                if (isActive) {
-                  shouldEnable = true;
-                  console.log(`✅ Internet mode enabled ${href} - user is active`);
-                } else {
-                  shouldEnable = false;
-                  disableReason = 'You must be registered and active to access this feature';
-                  console.log(`🔒 Internet mode disabled ${href} - user not active`);
-                }
-              }
-              // Check if I AM button should be enabled (has stars)
-              else if (href === 'iam.html' || href === '/iam') {
-                if (hasStars) {
-                  shouldEnable = true;
-                  console.log(`✅ Internet mode enabled ${href} - has stars`);
-                } else {
-                  shouldEnable = false;
-                  disableReason = 'You need at least one star to access I AM features';
-                  console.log(`🔒 Internet mode disabled ${href} - no stars`);
-                }
-              }
-              
-              // Apply the final state
-              if (shouldEnable) {
-                card.classList.remove('disabled');
-                card.classList.add('enabled');
-                card.title = '';
-              } else {
-                card.classList.add('disabled');
-                card.classList.remove('enabled');
-                card.title = disableReason;
-              }
             } else {
               card.classList.add('disabled');
-              card.title = 'This feature is not available';
-              console.log(`🔒 Internet mode disabled ${href} - not available`);
+              card.classList.remove('enabled');
+              card.title = disableReason;
             }
           } else {
             // Full logic for local environment
