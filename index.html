@@ -1726,6 +1726,8 @@
     // Function to check if user is active and update button states
     async function updateButtonStates() {
       try {
+        console.log('🔄 Starting updateButtonStates...');
+        
         // First, disable all buttons as default state
         const defaultNavCards = document.querySelectorAll('.nav-card');
         defaultNavCards.forEach(card => {
@@ -1738,17 +1740,30 @@
           return;
         }
         
+        console.log('🔄 Attempting wallet connection...');
         const connection = await window.connectWallet();
+        console.log('🔄 Connection result:', connection);
+        
         if (!connection || !connection.contract || !connection.address) {
           console.log('🔒 All buttons disabled - wallet not connected');
           return;
         }
         
+        console.log('✅ Wallet connected successfully, checking user status...');
+        
         const { contract, address } = connection;
         
         // Get user data
-        const user = await contract.users(address);
-        const isActive = user && user.index && BigInt(user.index) > 0n;
+        let user = null;
+        let isActive = false;
+        try {
+          user = await contract.users(address);
+          isActive = user && user.index && BigInt(user.index) > 0n;
+          console.log('👤 User data:', user, 'Active:', isActive);
+        } catch (error) {
+          console.warn('⚠️ Could not get user data, assuming inactive:', error);
+          isActive = false;
+        }
         
         // Check IAM balance and registration price
         let hasInsufficientBalance = false;
@@ -1952,12 +1967,34 @@
             card.classList.add('enabled');
             card.title = '';
           }
+          
+          // Enable basic buttons if wallet is connected (fallback for internet issues)
+          const basicButtons = ['swap.html', 'register.html', 'transfer.html'];
+          if (basicButtons.includes(href)) {
+            // If wallet is connected, enable these buttons regardless of other conditions
+            card.classList.remove('disabled');
+            card.classList.add('enabled');
+            card.title = '';
+          }
         });
         
         console.log(`🔒 Button states updated. User active: ${isActive}, Insufficient balance: ${hasInsufficientBalance}, Zero balances: ${hasZeroBalances}, Zero transfer balances: ${hasZeroTransferBalances}, Has stars: ${hasStars}`);
         
       } catch (error) {
         console.error('❌ Error updating button states:', error);
+        
+        // Fallback: enable basic buttons even if there's an error
+        console.log('🔄 Applying fallback: enabling basic buttons...');
+        const fallbackNavCards = document.querySelectorAll('.nav-card');
+        fallbackNavCards.forEach(card => {
+          const href = card.getAttribute('href');
+          const basicButtons = ['about.html', 'onboarding.html', 'swap.html', 'register.html', 'transfer.html'];
+          if (basicButtons.includes(href)) {
+            card.classList.remove('disabled');
+            card.classList.add('enabled');
+            card.title = '';
+          }
+        });
       }
     }
 
