@@ -1726,25 +1726,20 @@
     // Function to check if user is active and update button states
     async function updateButtonStates() {
       try {
+        // First, disable all buttons as default state
+        const navCards = document.querySelectorAll('.nav-card');
+        navCards.forEach(card => {
+          card.classList.add('disabled');
+          card.title = 'Please connect your wallet first';
+        });
+        
         if (!window.connectWallet) {
-          // Disable all buttons when wallet connection is not available
-          const navCards = document.querySelectorAll('.nav-card');
-          navCards.forEach(card => {
-            card.classList.add('disabled');
-            card.title = 'Please connect your wallet first';
-          });
           console.log('🔒 All buttons disabled - wallet connection not available');
           return;
         }
         
         const connection = await window.connectWallet();
         if (!connection || !connection.contract || !connection.address) {
-          // Disable all buttons when wallet is not connected
-          const navCards = document.querySelectorAll('.nav-card');
-          navCards.forEach(card => {
-            card.classList.add('disabled');
-            card.title = 'Please connect your wallet first';
-          });
           console.log('🔒 All buttons disabled - wallet not connected');
           return;
         }
@@ -1889,9 +1884,11 @@
           if (buttonsToDisableWhenInactive.includes(href)) {
             if (!isActive) {
               card.classList.add('disabled');
+              card.classList.remove('enabled');
               card.title = 'You must be registered and active to access this feature';
             } else {
               card.classList.remove('disabled');
+              card.classList.add('enabled');
               card.title = '';
             }
           }
@@ -1900,9 +1897,11 @@
           if (href === 'register.html') {
             if (hasInsufficientBalance) {
               card.classList.add('disabled');
+              card.classList.remove('enabled');
               card.title = 'Insufficient IAM balance for registration';
             } else {
               card.classList.remove('disabled');
+              card.classList.add('enabled');
               card.title = '';
             }
           }
@@ -1911,9 +1910,11 @@
           if (href === 'swap.html') {
             if (hasZeroBalances) {
               card.classList.add('disabled');
+              card.classList.remove('enabled');
               card.title = 'You need DAI or IAM tokens to perform swaps';
             } else {
               card.classList.remove('disabled');
+              card.classList.add('enabled');
               card.title = '';
             }
           }
@@ -1922,9 +1923,11 @@
           if (href === 'transfer.html') {
             if (hasZeroTransferBalances) {
               card.classList.add('disabled');
+              card.classList.remove('enabled');
               card.title = 'You need IAM, DAI, or POL tokens to perform transfers';
             } else {
               card.classList.remove('disabled');
+              card.classList.add('enabled');
               card.title = '';
             }
           }
@@ -1933,11 +1936,21 @@
           if (href === 'iam.html') {
             if (!hasStars) {
               card.classList.add('disabled');
+              card.classList.remove('enabled');
               card.title = 'You need at least one star to access I AM features';
             } else {
               card.classList.remove('disabled');
+              card.classList.add('enabled');
               card.title = '';
             }
+          }
+          
+          // Enable buttons that don't have specific conditions (About, Onboarding, etc.)
+          const alwaysEnabledButtons = ['about.html', 'onboarding.html'];
+          if (alwaysEnabledButtons.includes(href)) {
+            card.classList.remove('disabled');
+            card.classList.add('enabled');
+            card.title = '';
           }
         });
         
@@ -2450,8 +2463,26 @@
         // buildAbiUI removed
       } catch {}
 
+      // Disable all buttons immediately on page load
+      const navCards = document.querySelectorAll('.nav-card');
+      navCards.forEach(card => {
+        card.classList.add('disabled');
+        card.title = 'Please connect your wallet first';
+      });
+      
       // Update button states on page load (before auto-connect)
       await updateButtonStates();
+      
+      // Additional timeout fallback to ensure buttons are disabled
+      setTimeout(() => {
+        const navCards = document.querySelectorAll('.nav-card');
+        navCards.forEach(card => {
+          if (!card.classList.contains('enabled')) {
+            card.classList.add('disabled');
+            card.title = 'Please connect your wallet first';
+          }
+        });
+      }, 1000);
       
       // Auto-connect on load for immediate data
       try {
