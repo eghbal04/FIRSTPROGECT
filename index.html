@@ -1960,6 +1960,7 @@
                 shouldEnable = true;
                 console.log(`✅ Enabled ${href} - user is active`);
               } else {
+                shouldEnable = false;
                 disableReason = 'You must be registered and active to access this feature';
                 console.log(`🔒 Disabled ${href} - user not active`);
               }
@@ -1970,6 +1971,7 @@
                 shouldEnable = true;
                 console.log(`✅ Enabled ${href} - sufficient balance`);
               } else {
+                shouldEnable = false;
                 disableReason = 'Insufficient IAM balance for registration';
                 console.log(`🔒 Disabled ${href} - insufficient balance`);
               }
@@ -1980,6 +1982,7 @@
                 shouldEnable = true;
                 console.log(`✅ Enabled ${href} - has balances`);
               } else {
+                shouldEnable = false;
                 disableReason = 'You need DAI or IAM tokens to perform swaps';
                 console.log(`🔒 Disabled ${href} - zero balances`);
               }
@@ -1990,6 +1993,7 @@
                 shouldEnable = true;
                 console.log(`✅ Enabled ${href} - has transfer balances`);
               } else {
+                shouldEnable = false;
                 disableReason = 'You need IAM, DAI, or POL tokens to perform transfers';
                 console.log(`🔒 Disabled ${href} - zero transfer balances`);
               }
@@ -2000,14 +2004,21 @@
                 shouldEnable = true;
                 console.log(`✅ Enabled ${href} - has stars`);
               } else {
+                shouldEnable = false;
                 disableReason = 'You need at least one star to access I AM features';
                 console.log(`🔒 Disabled ${href} - no stars`);
               }
             }
-            // Always enable buttons that don't have specific conditions (About, Onboarding, etc.)
-            else {
+            // Check for buttons that should always be enabled (About, Onboarding, etc.)
+            else if (href === 'about.html' || href === 'onboarding.html') {
               shouldEnable = true;
-              console.log(`✅ Enabled ${href} - no specific conditions`);
+              console.log(`✅ Enabled ${href} - always enabled`);
+            }
+            // All other buttons should remain disabled by default
+            else {
+              shouldEnable = false;
+              disableReason = 'This feature is not available';
+              console.log(`🔒 Disabled ${href} - not available`);
             }
             
             // Apply the final state
