@@ -2054,6 +2054,17 @@
                 console.log(`🔒 Disabled ${href} - no stars`);
               }
             }
+            // Check for other buttons that should be enabled based on user activity
+            else if (buttonsToDisableWhenInactive.includes(href)) {
+              if (isActive) {
+                shouldEnable = true;
+                console.log(`✅ Enabled ${href} - user is active`);
+              } else {
+                shouldEnable = false;
+                disableReason = 'You must be registered and active to access this feature';
+                console.log(`🔒 Disabled ${href} - user not active`);
+              }
+            }
             // All other buttons should remain disabled by default
             else {
               shouldEnable = false;
