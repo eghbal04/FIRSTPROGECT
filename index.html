@@ -1955,7 +1955,7 @@
             let disableReason = '';
             
             // Check for buttons that should always be enabled first
-            if (href === 'about.html' || href === 'onboarding.html') {
+            if (href === 'about.html' || href === 'onboarding.html' || href === '/about' || href === '/onboarding') {
               shouldEnable = true;
               console.log(`✅ Enabled ${href} - always enabled`);
             }
@@ -1971,7 +1971,7 @@
               }
             }
             // Check if Register button should be enabled (sufficient balance)
-            else if (href === 'register.html') {
+            else if (href === 'register.html' || href === '/register') {
               if (!hasInsufficientBalance) {
                 shouldEnable = true;
                 console.log(`✅ Enabled ${href} - sufficient balance`);
@@ -1982,7 +1982,7 @@
               }
             }
             // Check if Swap button should be enabled (has balances)
-            else if (href === 'swap.html') {
+            else if (href === 'swap.html' || href === '/swap') {
               if (!hasZeroBalances) {
                 shouldEnable = true;
                 console.log(`✅ Enabled ${href} - has balances`);
@@ -1993,7 +1993,7 @@
               }
             }
             // Check if Transfer button should be enabled (has transfer balances)
-            else if (href === 'transfer.html') {
+            else if (href === 'transfer.html' || href === '/transfer') {
               if (!hasZeroTransferBalances) {
                 shouldEnable = true;
                 console.log(`✅ Enabled ${href} - has transfer balances`);
@@ -2004,7 +2004,7 @@
               }
             }
             // Check if I AM button should be enabled (has stars)
-            else if (href === 'iam.html') {
+            else if (href === 'iam.html' || href === '/iam') {
               if (hasStars) {
                 shouldEnable = true;
                 console.log(`✅ Enabled ${href} - has stars`);
