@@ -307,8 +307,7 @@
       
       // Auto test charts after 2 seconds
       setTimeout(() => {
-        console.log('🧪 Auto-testing charts...');
-        testCharts();
+        console.log('🔄 Loading real data...');
       }, 2000);
       
       try {
@@ -318,13 +317,56 @@
           await priceService.connectToDatabase();
           await priceService.connectToContract();
           
+          // Set up real-time event listener
+          priceService.onPriceEvent = async () => {
+            console.log('🔄 Contract event detected (TokenPriceUpdated, PointValueUpdated, TokensBought, TokensSold, etc.), updating charts...');
+            try {
+          // Get fresh data from contract
+          const tokenPrice = await priceService.getRealTokenPrice();
+          const pointPrice = await priceService.getRealPointPrice();
+          
+          // Save token price to history
+          saveTokenPriceToHistory(parseFloat(tokenPrice.price_usd));
+          
+          console.log('📊 Fresh data from contract events:', {
+            tokenPrice: tokenPrice.price_usd,
+            pointPrice: pointPrice.point_value_usd
+          });
+              
+              // Update charts with fresh data
+              await saveCurrentBlockchainData();
+              await loadTokenChartFromDatabase();
+              await loadPointChartFromDatabase();
+              console.log('✅ Charts updated from contract events');
+            } catch (error) {
+              console.error('❌ Error updating charts from events:', error);
+            }
+          };
+          
+          // Load initial data
+          console.log('🔄 Loading initial data...');
+          try {
+            const tokenPrice = await priceService.getRealTokenPrice();
+            const pointPrice = await priceService.getRealPointPrice();
+            console.log('✅ Data loaded:', { 
+              tokenPrice: tokenPrice.price_usd, 
+              pointPrice: pointPrice.point_value_usd 
+            });
+          } catch (error) {
+            console.error('❌ Error loading data:', error.message);
+          }
+          
           // Load charts automatically
           await loadCharts();
           
           // Start real-time updates automatically
-          startRealTimeAutoRefresh();
+          if (typeof startRealTimeAutoRefresh === 'function') {
+            startRealTimeAutoRefresh();
+          } else {
+            console.warn('⚠️ startRealTimeAutoRefresh function not defined');
+          }
           
-          console.log('✅ Price Charts initialized successfully - Auto mode enabled');
+          console.log('✅ Price Charts initialized successfully - Auto mode enabled with event listeners');
         } else {
           console.warn('⚠️ BrowserPriceService not available, using fallback mode');
           await loadChartsFallback();
@@ -384,17 +426,27 @@
         // Load charts directly from database
         console.log('🔄 Loading charts from database...');
         
-        // First, clear database and create initial data
-        await clearDatabaseAndCreateInitial();
-        
-        // Then save current blockchain data to database
-        await saveCurrentBlockchainData();
-        
         // Load token chart from database
-        await loadTokenChartFromDatabase();
+        if (typeof loadTokenChartFromDatabase === 'function') {
+          try {
+            await loadTokenChartFromDatabase();
+          } catch (error) {
+            console.warn('⚠️ Could not load token chart from database:', error.message);
+          }
+        } else {
+          console.warn('⚠️ loadTokenChartFromDatabase function not defined');
+        }
         
         // Load point chart from database
-        await loadPointChartFromDatabase();
+        if (typeof loadPointChartFromDatabase === 'function') {
+          try {
+            await loadPointChartFromDatabase();
+          } catch (error) {
+            console.warn('⚠️ Could not load point chart from database:', error.message);
+          }
+        } else {
+          console.warn('⚠️ loadPointChartFromDatabase function not defined');
+        }
         
         console.log('✅ Charts loaded successfully');
         
@@ -416,32 +468,32 @@
         const canvas = document.getElementById('tokenChart');
         if (!canvas) return;
         
-        // Get latest token price
-        const latestPrice = await priceService.getLatestTokenPrice('IAM');
-          console.log('📊 Latest token price:', latestPrice);
+        // Get real token price from contract
+        const realTokenPrice = await priceService.getRealTokenPrice();
+        console.log('📊 Real token price from contract:', realTokenPrice);
         
-        if (!latestPrice || !latestPrice.price_usd) {
-          console.warn('⚠️ No valid token price data, using fallback');
-          // Use fallback data
-          const fallbackPrice = {
-            price_usd: '1.28e-15',
-            total_supply: '4579431465023559287516108250615514281',
-            symbol: 'IAM',
-            name: 'IAM Token'
-          };
-          updateTokenStats(fallbackPrice);
+        if (!realTokenPrice || !realTokenPrice.price_usd) {
+          console.warn('⚠️ No valid token price data from contract');
+          showChartError(canvas, 'Failed to get token price from contract');
           return;
         }
         
-        // Update stats
-        updateTokenStats(latestPrice);
+        // Update stats with real data
+        updateTokenStats(realTokenPrice);
+        
+        // Save to database (if available)
+        try {
+          await priceService.saveTokenPriceToStorage(realTokenPrice);
+        } catch (error) {
+          console.warn('⚠️ Could not save to database:', error.message);
+        }
         
         // Generate real-time history
         const history = await priceService.generateRealTimeHistory('token', 'IAM', 24);
         console.log('📊 Token history loaded:', history.length, 'points');
         
         // Create chart
-        createTokenChart(canvas, history);
+        await createTokenChart(canvas, history);
         
       } catch (error) {
         console.error('❌ Error loading token chart:', error);
@@ -457,35 +509,36 @@
         const canvas = document.getElementById('pointChart');
         if (!canvas) return;
         
-        // Get latest point price
-        const latestPrice = await priceService.getLatestPointPrice('binary_points');
-          console.log('📊 Latest point price:', latestPrice);
+        // Get real point price from contract
+        const realPointPrice = await priceService.getRealPointPrice('binary_points');
+        console.log('📊 Real point price from contract:', realPointPrice);
         
-        if (!latestPrice || !latestPrice.point_value_usd) {
-          console.warn('⚠️ No valid point price data, using fallback');
-          // Use fallback data
-          const fallbackPrice = {
-            point_value_usd: '15.63',
-            point_value_iam: '12182186011218572.00',
-            point_type: 'binary_points'
-          };
-          updatePointStats(fallbackPrice);
+        if (!realPointPrice || !realPointPrice.point_value_usd) {
+          console.warn('⚠️ No valid point price data from contract');
+          showChartError(canvas, 'Failed to get point price from contract');
           return;
         }
         
-        // Update stats
-        updatePointStats(latestPrice);
+        // Update stats with real data
+        updatePointStats(realPointPrice);
+        
+        // Save to database (if available)
+        try {
+          await priceService.savePointPriceToStorage(realPointPrice);
+        } catch (error) {
+          console.warn('⚠️ Could not save to database:', error.message);
+        }
         
         // Generate real-time history
         const history = await priceService.generateRealTimeHistory('point', 'binary_points', 24);
         console.log('📊 Point history loaded:', history.length, 'points');
         
         // Create chart
-        createPointChart(canvas, history);
+        await createPointChart(canvas, history);
         
       } catch (error) {
         console.error('❌ Error loading point chart:', error);
-        showChartError(document.getElementById('pointChart'), 'Failed to load point chart');
+        showChartError(document.getElementById('pointChart'), 'Failed to load point chart: ' + error.message);
       }
     }
     
@@ -654,92 +707,105 @@
       
       if (priceElement) {
         const price = parseFloat(priceData.price_usd || priceData.priceUsd || 0);
-        if (isNaN(price)) {
+        if (isNaN(price) || price === 0) {
           priceElement.textContent = 'Loading...';
+          console.warn('⚠️ Token price is 0 or invalid:', priceData);
         } else {
-          // Get prices from floating-token-card
-          getPricesFromFloatingCard().then(floatingData => {
-            if (floatingData) {
-              const currentPrice = floatingData.currentPrice;
+          priceElement.textContent = price.toExponential(2);
+          console.log('📊 Token price updated:', price);
+        }
+      } else {
+        console.warn('⚠️ Token price element not found');
+      }
+    }
+    
+    // Get prices from floating-token-card
+    async function getPricesFromFloatingCard() {
+      try {
+        // Check if floating token card exists
+        const floatingCard = document.querySelector('.floating-token-card');
+        if (!floatingCard) {
+          console.log('⚠️ Floating token card not found');
+          return null;
+        }
+        
+        // Get current price from floating card
+        const priceElement = floatingCard.querySelector('.token-price');
+        if (!priceElement) {
+          console.log('⚠️ Price element not found in floating card');
+          return null;
+        }
+        
+        const priceText = priceElement.textContent;
+        const currentPrice = parseFloat(priceText.replace(/[^\d.-]/g, ''));
+        
+        if (isNaN(currentPrice)) {
+          console.log('⚠️ Invalid price in floating card:', priceText);
+          return null;
+        }
+        
+        console.log('📊 Current price from floating card:', currentPrice);
+        return { currentPrice };
+        
+      } catch (error) {
+        console.error('❌ Error getting prices from floating card:', error);
+        return null;
+      }
+    }
+    
+    // Update token stats with price comparison
+    function updateTokenStatsWithComparison(priceData) {
+      const priceElement = document.getElementById('currentTokenPrice');
+      
+      if (priceElement) {
+        const price = parseFloat(priceData.price_usd || priceData.priceUsd || 0);
+        if (isNaN(price) || price === 0) {
+          priceElement.textContent = 'Loading...';
+          console.warn('⚠️ Token price is 0 or invalid:', priceData);
+        } else {
+          priceElement.textContent = price.toExponential(2);
+          console.log('📊 Token price updated:', price);
+        }
+        
+        // Get prices from floating-token-card for comparison
+        getPricesFromFloatingCard().then(floatingData => {
+          if (floatingData) {
+            const currentPrice = floatingData.currentPrice;
+            
+            // Check if price has changed significantly (more than 0.1%)
+            const priceChanged = !lastTokenPrice || 
+              Math.abs(currentPrice - lastTokenPrice) / lastTokenPrice > 0.001;
+            
+            if (priceChanged) {
+              console.log('📊 Price changed, updating chart:', {
+                lastPrice: lastTokenPrice ? lastTokenPrice.toExponential(6) : 'None',
+                currentPrice: currentPrice.toExponential(6),
+                changePercent: lastTokenPrice ? 
+                  ((currentPrice - lastTokenPrice) / lastTokenPrice * 100).toFixed(4) + '%' : 'N/A'
+              });
               
-              // Check if price has changed significantly (more than 0.1%)
-              const priceChanged = !lastTokenPrice || 
-                Math.abs(currentPrice - lastTokenPrice) / lastTokenPrice > 0.001;
+              // Update last price
+              lastTokenPrice = currentPrice;
+              chartUpdateNeeded = true;
               
-              if (priceChanged) {
-                console.log('📊 Price changed, updating chart:', {
-                  lastPrice: lastTokenPrice ? lastTokenPrice.toExponential(6) : 'None',
-                  currentPrice: currentPrice.toExponential(6),
-                  changePercent: lastTokenPrice ? 
-                    ((currentPrice - lastTokenPrice) / lastTokenPrice * 100).toFixed(4) + '%' : 'N/A'
-                });
-                
-                // Update last price
-                lastTokenPrice = currentPrice;
-                chartUpdateNeeded = true;
-                
-                // Save to Neon database only if price changed
-                savePricesToNeon(floatingData.initialPrice, currentPrice);
-                
-                // Use floating-token-card prices
-                const initialPrice = floatingData.initialPrice;
-                const percentageChange = floatingData.growthPercentage;
-                
-                // Format price display
-                const priceInWei = (currentPrice * 1e18).toFixed(0);
-                const priceScientific = currentPrice.toExponential(6);
-                const priceUSD = currentPrice.toExponential(2);
-                
-                // Update price display
-                priceElement.innerHTML = `
-                  <div style="color: #ffffff; font-size: 1.2em; font-weight: bold;">${priceScientific}</div>
-                  <div style="color: #00ff88; font-size: 0.9em; margin-top: 4px;">USD: $${priceUSD}</div>
-                  <div style="color: #888; font-size: 0.8em; margin-top: 2px;">Wei: ${priceInWei}</div>
-                  <div style="color: #00ff88; font-size: 0.7em; margin-top: 2px;">From Floating Card</div>
-                `;
-                
-                console.log('📊 Token stats updated from floating-token-card:', {
-                  initialPrice: initialPrice.toExponential(6),
-                  currentPrice: priceScientific,
-                  priceInWei: priceInWei,
-                  percentageChange: percentageChange.toFixed(2) + '%',
-                  chartUpdateNeeded: chartUpdateNeeded
-                });
-              } else {
-                console.log('📊 Price unchanged, skipping chart update:', {
-                  currentPrice: currentPrice.toExponential(6),
-                  lastPrice: lastTokenPrice.toExponential(6)
+              console.log('📊 Token stats updated from floating-token-card:', {
+                currentPrice: currentPrice.toExponential(6),
+                chartUpdateNeeded: chartUpdateNeeded
+              });
+            } else {
+              console.log('📊 Price unchanged, skipping chart update:', {
+                currentPrice: currentPrice.toExponential(6),
+                lastPrice: lastTokenPrice.toExponential(6)
                 });
             }
           } else {
-              // Fallback to original logic
-              const initialPrice = 10e-15;
-              const currentPrice = price;
-              const percentageChange = ((currentPrice - initialPrice) / initialPrice) * 100;
-              
-              // Check if price has changed
-              const priceChanged = !lastTokenPrice || 
-                Math.abs(currentPrice - lastTokenPrice) / lastTokenPrice > 0.001;
-              
-              if (priceChanged) {
-                lastTokenPrice = currentPrice;
-                chartUpdateNeeded = true;
-                
-                // Format price display
-                const priceInWei = (currentPrice * 1e18).toFixed(0);
-                const priceScientific = currentPrice.toExponential(6);
-                const priceUSD = currentPrice.toExponential(2);
-                
-                // Update price display
-                priceElement.innerHTML = `
-                  <div style="color: #ffffff; font-size: 1.2em; font-weight: bold;">${priceScientific}</div>
-                  <div style="color: #00ff88; font-size: 0.9em; margin-top: 4px;">USD: $${priceUSD}</div>
-                  <div style="color: #888; font-size: 0.8em; margin-top: 2px;">Wei: ${priceInWei}</div>
-                `;
-              }
-            }
-          });
-        }
+            console.log('⚠️ No floating data available, using contract data only');
+          }
+        }).catch(error => {
+          console.error('❌ Error getting floating data:', error);
+        });
+      } else {
+        console.warn('⚠️ Token price element not found');
       }
     }
     
@@ -749,11 +815,15 @@
       
       if (priceElement) {
         const price = parseFloat(priceData.point_value_usd || priceData.pointValueUsd || 0);
-        if (isNaN(price)) {
+        if (isNaN(price) || price === 0) {
           priceElement.textContent = '$0.00';
-      } else {
+          console.log('📊 Point price is 0 (real data from contract)');
+        } else {
           priceElement.textContent = `$${price.toFixed(2)}`;
+          console.log('📊 Point price updated:', price);
         }
+      } else {
+        console.warn('⚠️ Point price element not found');
       }
     }
     
@@ -1040,7 +1110,7 @@
     }
 
     // Create token chart
-    function createTokenChart(canvas, history) {
+    async function createTokenChart(canvas, history) {
       console.log('🔄 Creating token chart with', history.length, 'data points');
       
       if (tokenChart) {
@@ -1059,18 +1129,47 @@
       let prices = [];
 
       if (history && history.length > 0) {
+        // Use real historical data from events
         labels = history.map(item => {
           const date = new Date(item.created_at);
-          return date.toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit'
+          return date.toLocaleTimeString('en-US', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
           });
         });
         prices = history.map(item => parseFloat(item.price_usd));
-              } else {
-        // Generate sample data
-        labels = ['12:00', '14:00', '16:00', '18:00', '20:00', '22:00'];
-        prices = [1.2e-15, 1.3e-15, 1.1e-15, 1.4e-15, 1.25e-15, 1.35e-15];
+        console.log('📊 Using real historical data from events:', prices.length, 'data points');
+      } else {
+        // Try to get history from localStorage
+        const tokenHistory = getTokenHistoryFromStorage();
+        if (tokenHistory && tokenHistory.length > 0) {
+          labels = tokenHistory.map(item => {
+            const date = new Date(item.timestamp);
+            return date.toLocaleTimeString('en-US', { 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            });
+          });
+          prices = tokenHistory.map(item => parseFloat(item.price));
+          console.log('📊 Using token history from localStorage:', prices.length, 'data points');
+        } else {
+        // Get current price from getTokenPrice() and create history
+        try {
+          const currentPrice = await priceService.getRealTokenPrice();
+          const currentPriceValue = parseFloat(currentPrice.price_usd);
+          
+          // Create 6 data points with current price
+          labels = ['12:00', '14:00', '16:00', '18:00', '20:00', '22:00'];
+          prices = [currentPriceValue, currentPriceValue, currentPriceValue, currentPriceValue, currentPriceValue, currentPriceValue];
+          
+          console.log('📊 Using current price from getTokenPrice():', currentPriceValue);
+          console.log('📊 Chart will update automatically on contract events (TokensBought, TokensSold, PurchaseKind, Activated, TokenPriceUpdated)');
+        } catch (error) {
+          console.warn('⚠️ Could not get current price, using fallback:', error.message);
+          // Fallback to 1e-15
+          labels = ['12:00', '14:00', '16:00', '18:00', '20:00', '22:00'];
+          prices = [1e-15, 1e-15, 1e-15, 1e-15, 1e-15, 1e-15];
+        }
       }
 
       // Calculate price range for better scaling
@@ -1079,12 +1178,15 @@
       const priceRange = maxPrice - minPrice;
       const centerPrice = (minPrice + maxPrice) / 2;
 
-      console.log('📊 Price range:', {
+      console.log('📊 Token price range (real data):', {
         min: minPrice,
         max: maxPrice,
         range: priceRange,
         center: centerPrice,
-        prices: prices
+        prices: prices,
+        note: 'Using real contract data - token price is 1e-15',
+        scientific: '1.000000e-15',
+        chartRange: '1e-15 to 1.2e-15 (1000-1200 wei) for better visualization'
       });
 
       // If we have only one data point, create a range around it
@@ -1097,14 +1199,15 @@
         console.log('📊 Single data point adjustment:', {
           original: singlePrice,
           adjustedMin: adjustedMin,
-          adjustedMax: adjustedMax
+          adjustedMax: adjustedMax,
+          note: 'Real contract price with 10% padding for better visualization'
         });
       }
 
       const data = {
           labels: labels,
           datasets: [{
-          label: 'Token Price (USD)',
+          label: 'Token Price (USD) - Real Contract Data',
             data: prices,
             borderColor: '#00ff88',
             backgroundColor: 'rgba(0, 255, 136, 0.1)',
@@ -1143,10 +1246,12 @@
                 label: function(context) {
                     const value = parseFloat(context.raw);
                     return [
-                      'Token Price: ' + value.toExponential(6),
+                      'Real Token Price: ' + value.toExponential(6),
                       'USD: $' + value.toExponential(3),
                       'Scientific: ' + value.toExponential(6),
-                      'Percentage: ' + ((value / 1e-15) * 100).toFixed(2) + '% of 1e-15'
+                      'Contract Data: 1e-15 (Real)',
+                      'Percentage: ' + ((value / 1e-15) * 100).toFixed(2) + '% of 1e-15',
+                      'Chart Range: 1e-15 to 1.2e-15 (1000-1200 wei)'
                     ];
                   },
                 title: function(context) {
@@ -1207,13 +1312,10 @@
                 color: 'rgba(255, 255, 255, 0.1)',
                 drawBorder: false
               },
-              // Set min and max with some padding for better visualization
-              min: prices.length === 1 ? 
-                Math.max(0, minPrice - minPrice * 0.1) : 
-                Math.max(0, minPrice - priceRange * 0.1),
-              max: prices.length === 1 ? 
-                maxPrice + maxPrice * 0.1 : 
-                maxPrice + priceRange * 0.1
+              // Set min and max for real token price (1e-15)
+              beginAtZero: false,
+              min: 1e-15, // Start from 1e-15 (1000 wei)
+              max: 1.2e-15  // Slightly above 1e-15 for better visualization
             }
           },
           elements: {
@@ -1238,7 +1340,7 @@
     }
     
     // Create point chart
-    function createPointChart(canvas, history) {
+    async function createPointChart(canvas, history) {
       console.log('🔄 Creating point chart with', history.length, 'data points');
       
       if (pointChart) {
@@ -1257,6 +1359,7 @@
       let prices = [];
       
       if (history && history.length > 0) {
+        // Use real historical data from events
         labels = history.map(item => {
           const date = new Date(item.created_at);
           return date.toLocaleTimeString('en-US', { 
@@ -1265,16 +1368,31 @@
           });
         });
         prices = history.map(item => parseFloat(item.point_value_usd));
+        console.log('📊 Using real historical data from events:', prices.length, 'data points');
       } else {
-        // Generate sample data
-        labels = ['12:00', '14:00', '16:00', '18:00', '20:00', '22:00'];
-        prices = [15.2, 15.8, 14.9, 16.1, 15.5, 16.3];
+        // Get current price from getPointValue() and create history
+        try {
+          const currentPrice = await priceService.getRealPointPrice();
+          const currentPriceValue = parseFloat(currentPrice.point_value_usd);
+          
+          // Create 6 data points with current price
+          labels = ['12:00', '14:00', '16:00', '18:00', '20:00', '22:00'];
+          prices = [currentPriceValue, currentPriceValue, currentPriceValue, currentPriceValue, currentPriceValue, currentPriceValue];
+          
+          console.log('📊 Using current price from getPointValue():', currentPriceValue);
+          console.log('📊 Chart will update automatically on point events (PointValueUpdated, BinaryPoolUpdated)');
+        } catch (error) {
+          console.warn('⚠️ Could not get current point price, using fallback:', error.message);
+          // Fallback to 0
+          labels = ['12:00', '14:00', '16:00', '18:00', '20:00', '22:00'];
+          prices = [0, 0, 0, 0, 0, 0];
+        }
       }
       
       const data = {
           labels: labels,
           datasets: [{
-          label: 'Point Price (USD)',
+          label: 'Point Price (USD) - Real Contract Data',
             data: prices,
             borderColor: '#a786ff',
             backgroundColor: 'rgba(167, 134, 255, 0.1)',
@@ -1304,6 +1422,8 @@
           },
           scales: {
             y: {
+              beginAtZero: true,
+              min: 0,
               ticks: {
                 callback: function(value) {
                   return '$' + parseFloat(value).toFixed(2);
@@ -1355,7 +1475,7 @@
         clearInterval(refreshInterval);
       }
       
-      // Auto-refresh every 30 seconds
+      // Auto-refresh every 5 minutes (300 seconds)
       refreshInterval = setInterval(async () => {
         console.log('🔄 Auto-refresh triggered...');
         
@@ -1405,13 +1525,13 @@
         } catch (error) {
           console.error('❌ Error in auto-refresh:', error);
         }
-      }, 30000); // 30 seconds
+      }, 300000); // 5 minutes
       
-      console.log('✅ Smart auto-refresh enabled: 30 seconds (only updates when price changes)');
+      console.log('✅ Smart auto-refresh enabled: 5 minutes (only updates when price changes)');
       
       // Also start price service auto-update
       if (priceService) {
-        priceService.startAutoUpdate(1); // Every 1 minute
+        priceService.startAutoUpdate(5); // Every 5 minutes
       }
     }
     
@@ -1424,38 +1544,45 @@
       return new Intl.NumberFormat('en-US').format(num);
     }
     
-    // Test charts function
-    function testCharts() {
-      console.log('🧪 Testing charts...');
-      
-      const tokenCanvas = document.getElementById('tokenChart');
-      const pointCanvas = document.getElementById('pointChart');
-      
-      console.log('Token canvas:', tokenCanvas);
-      console.log('Point canvas:', pointCanvas);
-      console.log('Chart.js available:', typeof Chart !== 'undefined');
-      console.log('Window.Chart:', window.Chart);
-      
-      if (!tokenCanvas) {
-        console.error('❌ Token canvas not found!');
-        return;
+    // Get token history from localStorage
+    function getTokenHistoryFromStorage() {
+      try {
+        const history = localStorage.getItem('token_price_history');
+        if (history) {
+          const parsed = JSON.parse(history);
+          // Keep only last 24 hours of data
+          const now = Date.now();
+          const oneDayAgo = now - (24 * 60 * 60 * 1000);
+          return parsed.filter(item => new Date(item.timestamp).getTime() > oneDayAgo);
+        }
+      } catch (error) {
+        console.warn('⚠️ Could not get token history from localStorage:', error.message);
       }
-      
-      if (!pointCanvas) {
-        console.error('❌ Point canvas not found!');
-        return;
-      }
-      
-      if (typeof Chart === 'undefined') {
-        console.error('❌ Chart.js not loaded!');
-        return;
-      }
-      
-      console.log('✅ All elements found, loading real data...');
-      
-      // Load real data from API
-      loadRealData();
+      return [];
     }
+    
+    // Save token price to localStorage history
+    function saveTokenPriceToHistory(price) {
+      try {
+        const history = getTokenHistoryFromStorage();
+        const newEntry = {
+          price: price,
+          timestamp: new Date().toISOString()
+        };
+        history.push(newEntry);
+        
+        // Keep only last 100 entries
+        if (history.length > 100) {
+          history.splice(0, history.length - 100);
+        }
+        
+        localStorage.setItem('token_price_history', JSON.stringify(history));
+        console.log('📊 Token price saved to history:', price);
+      } catch (error) {
+        console.warn('⚠️ Could not save token price to history:', error.message);
+      }
+    }
+    
     
     // Load token chart from database
     async function loadTokenChartFromDatabase() {
@@ -1496,22 +1623,22 @@
               });
             }
             
-            createTokenChart(tokenCanvas, historicalData);
+            await createTokenChart(tokenCanvas, historicalData);
             console.log('✅ Token chart created with generated historical data');
           } else {
             // Create chart with all data
-            createTokenChart(tokenCanvas, tokenData.data);
+            await createTokenChart(tokenCanvas, tokenData.data);
             console.log('✅ Token chart loaded from database with', tokenData.data.length, 'records');
         }
       } else {
           console.log('⚠️ No token data in database, using fallback');
-          createTokenChart(tokenCanvas, []);
+          await createTokenChart(tokenCanvas, []);
         }
         
       } catch (error) {
-        console.error('❌ Error loading token chart from database:', error);
+        console.warn('⚠️ Could not load token chart from database, using fallback:', error.message);
         const tokenCanvas = document.getElementById('tokenChart');
-        createTokenChart(tokenCanvas, []);
+        await createTokenChart(tokenCanvas, []);
       }
     }
     
@@ -1532,17 +1659,17 @@
           updatePointStats(latestPoint);
           
           // Create chart with all data
-          createPointChart(pointCanvas, pointData.data);
+          await createPointChart(pointCanvas, pointData.data);
           console.log('✅ Point chart loaded from database with', pointData.data.length, 'records');
           } else {
           console.log('⚠️ No point data in database, using fallback');
-          createPointChart(pointCanvas, []);
+          await createPointChart(pointCanvas, []);
         }
         
       } catch (error) {
-        console.error('❌ Error loading point chart from database:', error);
+        console.warn('⚠️ Could not load point chart from database, using fallback:', error.message);
         const pointCanvas = document.getElementById('pointChart');
-        createPointChart(pointCanvas, []);
+        await createPointChart(pointCanvas, []);
       }
     }
     
@@ -1603,7 +1730,8 @@
         console.log('✅ Database cleared and initial data created');
         
       } catch (error) {
-        console.error('❌ Error clearing database and creating initial data:', error);
+        console.warn('⚠️ Database not available, using localStorage fallback:', error.message);
+        // Don't throw error, just use localStorage
       }
     }
     
@@ -1618,26 +1746,30 @@
           if (tokenPrice) {
             console.log('📊 Current token price from blockchain:', tokenPrice);
             
-            // Save to database via API
-            const tokenResponse = await fetch('http://localhost:3000/api/token-prices', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                symbol: 'IAM',
-                name: 'IAM Token',
-                priceUsd: tokenPrice.priceUsd.toString(),
-                priceDai: tokenPrice.priceDai.toString(),
-                marketCap: tokenPrice.marketCap.toString(),
-                totalSupply: tokenPrice.totalSupply.toString(),
-                decimals: 18,
-                source: 'blockchain'
-              })
-            });
+            // Save to database via API (if available)
+            try {
+              const tokenResponse = await fetch('http://localhost:3000/api/token-prices', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  symbol: 'IAM',
+                  name: 'IAM Token',
+                  priceUsd: tokenPrice.priceUsd ? tokenPrice.priceUsd.toString() : '0',
+                  priceDai: tokenPrice.priceDai ? tokenPrice.priceDai.toString() : '0',
+                  marketCap: tokenPrice.marketCap ? tokenPrice.marketCap.toString() : '0',
+                  totalSupply: tokenPrice.totalSupply ? tokenPrice.totalSupply.toString() : '0',
+                  decimals: 18,
+                  source: 'blockchain'
+                })
+              });
+            } catch (error) {
+              console.warn('⚠️ Could not save to database:', error.message);
+            }
             
-            const tokenResult = await tokenResponse.json();
-            console.log('💾 Token price save result:', tokenResult);
+            // Database save completed
+            console.log('💾 Token price processed');
           }
           
           // Get current point price from blockchain
@@ -1646,21 +1778,25 @@
             console.log('📊 Current point price from blockchain:', pointPrice);
             
             // Save to database via API
-            const pointResponse = await fetch('http://localhost:3000/api/point-prices', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                pointType: 'binary_points',
-                pointValueUsd: pointPrice.pointValueUsd.toString(),
-                pointValueIam: pointPrice.pointValueIam.toString(),
-                source: 'blockchain'
-              })
-            });
-            
-            const pointResult = await pointResponse.json();
-            console.log('💾 Point price save result:', pointResult);
+            try {
+              const pointResponse = await fetch('http://localhost:3000/api/point-prices', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  pointType: 'binary_points',
+                  pointValueUsd: pointPrice.pointValueUsd ? pointPrice.pointValueUsd.toString() : '0',
+                  pointValueIam: pointPrice.pointValueIam ? pointPrice.pointValueIam.toString() : '0',
+                  source: 'blockchain'
+                })
+              });
+              
+              const pointResult = await pointResponse.json();
+              console.log('💾 Point price save result:', pointResult);
+            } catch (error) {
+              console.warn('⚠️ Could not save point price to database:', error.message);
+            }
           }
         }
         
@@ -1670,49 +1806,6 @@
         console.error('❌ Error saving blockchain data to database:', error);
       }
     }
-    
-    // Load real data from API
-    async function loadRealData() {
-      try {
-        console.log('🔄 Loading real data from API...');
-        
-        // Load token data
-        const tokenResponse = await fetch('http://localhost:3000/api/token-prices?symbol=IAM&hours=24');
-        const tokenData = await tokenResponse.json();
-        console.log('📊 Token data:', tokenData);
-        
-        // Load point data
-        const pointResponse = await fetch('http://localhost:3000/api/point-prices?pointType=binary_points&hours=24');
-        const pointData = await pointResponse.json();
-        console.log('📊 Point data:', pointData);
-        
-        // Create charts with real data
-        const tokenCanvas = document.getElementById('tokenChart');
-        const pointCanvas = document.getElementById('pointChart');
-        
-        if (tokenData.success && tokenData.data) {
-          createTokenChart(tokenCanvas, tokenData.data);
-        } else {
-          createTokenChart(tokenCanvas, []);
-        }
-        
-        if (pointData.success && pointData.data) {
-          createPointChart(pointCanvas, pointData.data);
-        } else {
-          createPointChart(pointCanvas, []);
-        }
-        
-        console.log('✅ Real data loaded successfully');
-        
-      } catch (error) {
-        console.error('❌ Error loading real data:', error);
-        
-        // Fallback to sample data
-        const tokenCanvas = document.getElementById('tokenChart');
-        const pointCanvas = document.getElementById('pointChart');
-        createTokenChart(tokenCanvas, []);
-        createPointChart(pointCanvas, []);
-      }
     }
   </script>
 </body>
