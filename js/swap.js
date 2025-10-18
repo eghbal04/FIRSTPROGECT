@@ -2,6 +2,7 @@
 
 // Contract addresses
 const IAM_ADDRESS_OLD = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D'; // Old contract
+const IAM_ADDRESS_NEW = '0x4bA2B68ec4B47159bA73c178C6730691D630417a'; // New contract
 // Use global DAI address from config to avoid redeclaration conflicts
 const SWAP_DAI_ADDRESS = (typeof window !== 'undefined' && window.DAI_ADDRESS) ? window.DAI_ADDRESS : '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063';
 
