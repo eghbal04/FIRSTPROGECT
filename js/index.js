@@ -1,10 +1,8 @@
 // Browser-compatible index.js
 // این فایل برای جلوگیری از خطای "exports is not defined" ایجاد شده است
 
-// اگر exports تعریف نشده، آن را تعریف کن
-if (typeof exports === 'undefined') {
-  var exports = window.exports = {};
-}
+// تعریف exports در ابتدا - این خط باید قبل از هر چیز اجرا شود
+var exports = window.exports = {};
 
 // اگر module تعریف نشده، آن را تعریف کن
 if (typeof module === 'undefined') {
