@@ -80,9 +80,9 @@ class BrowserPriceService {
       const signer = await this.provider.getSigner();
       console.log('✅ Signer دریافت شد:', await signer.getAddress());
       
-      // آدرس کنترکت IAM - از آدرس جدید استفاده شود در صورت موجود بودن
-      const configuredNew = (typeof window !== 'undefined') ? (window.SECOND_IAM_ADDRESS || (window.getIAMAddress && window.getIAMAddress())) : null;
-      const IAM_ADDRESS = configuredNew || '0x55e006157260b191Ff09D512a416233001eF05Bc';
+      // آدرس کنترکت IAM - از آدرس اصلی استفاده شود
+      const configuredNew = (typeof window !== 'undefined') ? (window.getIAMAddress && window.getIAMAddress()) : null;
+      const IAM_ADDRESS = configuredNew || '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D';
       
       console.log('🔍 Contract address selection:', {
         configuredNew: configuredNew,
@@ -92,8 +92,8 @@ class BrowserPriceService {
       });
       console.log('🔄 اتصال به کنترکت:', IAM_ADDRESS);
       
-      // ABI کنترکت IAM - کامل برای دریافت قیمت‌های واقعی
-      const IAM_ABI = [
+      // ABI کنترکت IAM - استفاده از ABI کامل از config.js
+      const IAM_ABI = window.IAM_ABI || [
         "function getTokenPrice() view returns (uint256)",
         "function getPointValue() view returns (uint256)",
         "function getContractdaiBalance() view returns (uint256)",

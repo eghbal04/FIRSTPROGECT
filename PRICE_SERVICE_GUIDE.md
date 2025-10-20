@@ -224,7 +224,7 @@ setInterval(updatePrices, 5 * 60 * 1000);
 
 ## 📈 استفاده در پروژه Web3
 
-### 1. در فایل utility.html
+### 1. در فایل اصلی
 ```javascript
 // اضافه کردن به utility.html
 import PriceService from './price-service.js';

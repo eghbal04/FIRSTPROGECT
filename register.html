@@ -33,11 +33,17 @@
     // Suppress noisy MetaMask RPC messages that don't affect functionality
     window.addEventListener('error', function(e){
       const m = (e && e.message) || '';
-      if (m.includes('getEnabledChains') || m.includes('isDefaultWallet') || m.includes('Could not establish connection') || m.includes('Internal JSON-RPC error')) { e.preventDefault(); return false; }
+      if (m.includes('getEnabledChains') || m.includes('isDefaultWallet') || m.includes('Could not establish connection') || m.includes('Internal JSON-RPC error') || m.includes('Receiving end does not exist') || m.includes('Extension context invalidated')) { 
+        e.preventDefault(); 
+        return false; 
+      }
     });
     window.addEventListener('unhandledrejection', function(e){
       const r = e && e.reason; const msg = (r && (r.message || r)) || '';
-      if (typeof msg === 'string' && (msg.includes('getEnabledChains') || msg.includes('isDefaultWallet') || msg.includes('Could not establish connection') || msg.includes('Internal JSON-RPC error'))) { e.preventDefault(); return false; }
+      if (typeof msg === 'string' && (msg.includes('getEnabledChains') || msg.includes('isDefaultWallet') || msg.includes('Could not establish connection') || msg.includes('Internal JSON-RPC error') || msg.includes('Receiving end does not exist') || msg.includes('Extension context invalidated'))) { 
+        e.preventDefault(); 
+        return false; 
+      }
     });
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1001,6 +1007,13 @@
         <span class="avatar-choice" data-avatar="student-woman">👩‍🎓</span>
       </div>
       <div class="register-form-status" id="status-message"></div>
+      
+      <!-- Manual retry button for wallet connection issues -->
+      <div id="wallet-retry-section" style="display: none; margin-top: 10px; text-align: center;">
+        <button id="retry-wallet-btn" class="btn" style="background: linear-gradient(135deg, #a786ff, #00ff88); color: #0a0f1c; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer;">
+          🔄 Retry Wallet Connection
+        </button>
+      </div>
   
   <div class="info-box" id="required-cost-box" style="display:none; margin-top:8px; padding:8px; border-radius:8px;">
     <span>Required IAM for this registration: </span>
@@ -1108,11 +1121,40 @@
     // Try to connect wallet on load and report status
     (function(){
       document.addEventListener('DOMContentLoaded', async function(){
+        // Add a small delay to let MetaMask fully initialize
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
         try {
           
           if (typeof window.connectWallet === 'function') {
             console.log('🔗 Attempting wallet connection (register)...');
-            const conn = await window.connectWallet();
+            
+            // Add retry logic for MetaMask connection issues
+            let conn = null;
+            let retryCount = 0;
+            const maxRetries = 3;
+            
+            while (retryCount < maxRetries && !conn) {
+              try {
+                // Add a small delay before each attempt to let MetaMask stabilize
+                if (retryCount > 0) {
+                  await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                
+                conn = await window.connectWallet();
+                if (conn && conn.address) {
+                  break;
+                }
+              } catch (error) {
+                console.warn(`⚠️ Wallet connection attempt ${retryCount + 1} failed:`, error.message);
+                retryCount++;
+                if (retryCount < maxRetries) {
+                  console.log(`⏳ Retrying wallet connection in 2 seconds... (${retryCount}/${maxRetries})`);
+                  await new Promise(resolve => setTimeout(resolve, 2000));
+                }
+              }
+            }
+            
             if (conn && conn.address) {
               console.log('✅ Wallet connected on register:', conn.address);
               // Set new user field to connected address ONLY if user is inactive
@@ -1179,13 +1221,83 @@
               } catch(_) {}
               enforceRegisterButtonState();
             } else {
-              console.warn('⚠️ Wallet not connected on register');
+              console.warn('⚠️ Wallet not connected on register after all retry attempts');
+              // Show user-friendly message and retry button
+              const statusEl = document.getElementById('status-message');
+              const retrySection = document.getElementById('wallet-retry-section');
+              if (statusEl) {
+                statusEl.className = 'register-form-status warning';
+                statusEl.textContent = '⚠️ Wallet connection failed. Please try again.';
+              }
+              if (retrySection) {
+                retrySection.style.display = 'block';
+              }
             }
           } else {
             console.warn('⚠️ connectWallet is not available on register');
+            // Show user-friendly message
+            const statusEl = document.getElementById('status-message');
+            if (statusEl) {
+              statusEl.className = 'register-form-status error';
+              statusEl.textContent = '❌ Wallet connection not available. Please check if MetaMask is installed.';
+            }
           }
         } catch (e) {
           console.warn('⚠️ Wallet connect attempt failed on register:', e && (e.message||e));
+          // Show user-friendly message
+          const statusEl = document.getElementById('status-message');
+          if (statusEl) {
+            statusEl.className = 'register-form-status error';
+            statusEl.textContent = '❌ Wallet connection failed. Please refresh the page and try again.';
+          }
+        }
+
+        // Add retry button functionality
+        const retryBtn = document.getElementById('retry-wallet-btn');
+        if (retryBtn) {
+          retryBtn.addEventListener('click', async function() {
+            console.log('🔄 Manual wallet retry requested...');
+            retryBtn.disabled = true;
+            retryBtn.textContent = '⏳ Connecting...';
+            
+            try {
+              if (typeof window.connectWallet === 'function') {
+                const conn = await window.connectWallet();
+                if (conn && conn.address) {
+                  console.log('✅ Manual wallet connection successful:', conn.address);
+                  const statusEl = document.getElementById('status-message');
+                  const retrySection = document.getElementById('wallet-retry-section');
+                  
+                  if (statusEl) {
+                    statusEl.className = 'register-form-status success';
+                    statusEl.textContent = '✅ Wallet connected successfully!';
+                  }
+                  if (retrySection) {
+                    retrySection.style.display = 'none';
+                  }
+                  
+                  // Reload the page to refresh all wallet-dependent functionality
+                  setTimeout(() => {
+                    window.location.reload();
+                  }, 2000);
+                } else {
+                  throw new Error('Wallet connection failed');
+                }
+              } else {
+                throw new Error('Wallet connection not available');
+              }
+            } catch (error) {
+              console.error('❌ Manual wallet retry failed:', error);
+              const statusEl = document.getElementById('status-message');
+              if (statusEl) {
+                statusEl.className = 'register-form-status error';
+                statusEl.textContent = '❌ Wallet connection failed. Please check MetaMask and try again.';
+              }
+            } finally {
+              retryBtn.disabled = false;
+              retryBtn.textContent = '🔄 Retry Wallet Connection';
+            }
+          });
         }
 
         // Keep new user field in sync with account changes

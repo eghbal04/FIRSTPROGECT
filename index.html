@@ -2998,6 +2998,7 @@
 
             const options = [];
             if (def) options.push({ key: 'old', label: 'Old Contract — ' + mediumShortAddress(def), value: def, color: '#ff8c00' });
+            if (second) options.push({ key: 'new', label: 'New Contract — ' + mediumShortAddress(second), value: second, color: '#00ff88' });
             if (current && !options.find(o => o.value.toLowerCase() === current.toLowerCase())) {
               options.push({ key: 'current', label: 'Current — ' + mediumShortAddress(current), value: current, color: '#e6eaf0' });
             }
