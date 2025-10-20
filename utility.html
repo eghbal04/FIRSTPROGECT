@@ -91,6 +91,17 @@
       border-color: rgba(0,255,136,0.4);
     }
     
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
     .utility-card h3 {
       font-size: 1.3rem;
       margin: 0 0 0.8rem 0;
@@ -350,18 +361,446 @@
         </div>
       </div>
 
+      <!-- Unclaimed Points Section -->
+      <div class="utility-card">
+        <h3><span class="icon">⏰</span>Unclaimed Points Tracker</h3>
+        <div class="calculator-section">
+          <div style="margin-bottom: 1rem;">
+            <h5 style="color: #a786ff; margin-bottom: 0.5rem;">🔍 Find Users with Unclaimed Points</h5>
+            <p style="color: #a0aec0; font-size: 0.9rem; margin-bottom: 1rem;">
+              Lists users who haven't claimed their points and 12+ hours have passed since their last claim.
+            </p>
+            <button class="utility-btn" onclick="findUnclaimedPoints()" style="width: 100%; margin-bottom: 1rem;">
+              🔍 Scan for Unclaimed Points
+            </button>
+            
+            <!-- Progress Bar -->
+            <div id="scan-progress" style="display: none; margin-bottom: 1rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <span style="color: #a0aec0; font-size: 0.9rem;">Scanning Progress</span>
+                <span id="progress-text" style="color: #a786ff; font-size: 0.9rem; font-weight: bold;">0%</span>
+              </div>
+              <div style="width: 100%; height: 8px; background: rgba(0,0,0,0.3); border-radius: 4px; overflow: hidden;">
+                <div id="progress-bar" style="height: 100%; background: linear-gradient(90deg, #a786ff, #00ff88); width: 0%; transition: width 0.3s ease;"></div>
+              </div>
+              <div id="progress-details" style="color: #a0aec0; font-size: 0.8rem; margin-top: 0.5rem; text-align: center;">
+                Initializing...
+              </div>
+            </div>
+          </div>
+          
+          <!-- Results Section -->
+          <div id="unclaimed-results" style="display: none;">
+            <div style="margin-bottom: 1rem;">
+              <h5 style="color: #a786ff; margin-bottom: 0.5rem;">📊 Results</h5>
+              <div id="unclaimed-stats" style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+                  <div style="text-align: center;">
+                    <div style="color: #00ff88; font-size: 1.5rem; font-weight: bold;" id="total-scanned">0</div>
+                    <div style="color: #a0aec0; font-size: 0.9rem;">Total Scanned</div>
+                  </div>
+                  <div style="text-align: center;">
+                    <div style="color: #ff6b6b; font-size: 1.5rem; font-weight: bold;" id="unclaimed-count">0</div>
+                    <div style="color: #a0aec0; font-size: 0.9rem;">Unclaimed</div>
+                  </div>
+                  <div style="text-align: center;">
+                    <div style="color: #4ecdc4; font-size: 1.5rem; font-weight: bold;" id="claimed-count">0</div>
+                    <div style="color: #a0aec0; font-size: 0.9rem;">Recently Claimed</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div id="unclaimed-list" style="max-height: 400px; overflow-y: auto; border: 1px solid rgba(167, 134, 255, 0.2); border-radius: 8px;">
+              <table style="width: 100%; border-collapse: collapse;">
+                <thead style="background: rgba(167, 134, 255, 0.1); position: sticky; top: 0;">
+                  <tr>
+                    <th style="padding: 0.75rem; text-align: left; color: #a786ff; font-size: 0.9rem;">Index</th>
+                    <th style="padding: 0.75rem; text-align: left; color: #a786ff; font-size: 0.9rem;">Address</th>
+                    <th style="padding: 0.75rem; text-align: left; color: #a786ff; font-size: 0.9rem;">Last Claim</th>
+                    <th style="padding: 0.75rem; text-align: left; color: #a786ff; font-size: 0.9rem;">Hours Ago</th>
+                    <th style="padding: 0.75rem; text-align: left; color: #a786ff; font-size: 0.9rem;">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="unclaimed-table-body">
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
 
     </div>
 
 
 
   <script>
-    // Contract address - using new contract by default
-    const UTILITY_IAM_ADDRESS = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D'; // New contract
+    // Contract address - using old contract by default
+    const UTILITY_IAM_ADDRESS = (typeof window !== 'undefined' && window.DEFAULT_IAM_ADDRESS) ? window.DEFAULT_IAM_ADDRESS : '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D'; // Old contract
     
-    // Set global contract address if not already set
-    if (!window.IAM_ADDRESS) {
-        window.IAM_ADDRESS = UTILITY_IAM_ADDRESS;
+    // Set global contract address to old contract
+    window.IAM_ADDRESS = UTILITY_IAM_ADDRESS;
+
+    // Global variables for unclaimed points tracking
+    let contract = null;
+    let signer = null;
+    let userAddress = null;
+
+    // Initialize contract connection
+    async function initializeContract() {
+        try {
+            if (typeof window.ethereum === 'undefined') {
+                throw new Error('MetaMask not found');
+            }
+
+            const provider = new ethers.BrowserProvider(window.ethereum);
+            signer = await provider.getSigner();
+            userAddress = await signer.getAddress();
+            
+            contract = new ethers.Contract(UTILITY_IAM_ADDRESS, window.IAM_ABI, signer);
+            
+            return true;
+        } catch (error) {
+            showStatus('Error connecting to wallet: ' + error.message, 'error');
+            return false;
+        }
+    }
+
+    // DFS Traversal algorithm (exact copy from migration page)
+    async function dfsTraversal(index, visitedUsers, genealogyMap, userIndexMap) {
+        try {
+            // Skip if already visited or invalid index
+            if (visitedUsers.has(index) || index <= 0) {
+                return;
+            }
+
+            // Get user address by index
+            const userAddress = await contract.indexToAddress(index);
+            
+            // Skip if address is empty
+            if (userAddress === '0x0000000000000000000000000000000000000000') {
+                return;
+            }
+
+            // Mark as visited
+            visitedUsers.add(index);
+
+            // Get referrer using getReferrer function with index
+            const referrerAddress = await contract.getReferrer(index);
+            
+            // Get user data
+            const userData = await contract.users(userAddress);
+            
+            // Store user data
+            genealogyMap.set(userAddress, {
+                index: userData.index.toString(),
+                referrer: referrerAddress,
+                upper: referrerAddress,
+                left: '0x0000000000000000000000000000000000000000',
+                right: '0x0000000000000000000000000000000000000000',
+                binaryPoints: userData.binaryPoints ? userData.binaryPoints.toString() : '0',
+                depositedAmount: userData.depositedAmount ? userData.depositedAmount.toString() : '0',
+                lastMonthlyClaim: userData.lastMonthlyClaim ? userData.lastMonthlyClaim.toString() : '0',
+                totalMonthlyRewarded: userData.totalMonthlyRewarded ? userData.totalMonthlyRewarded.toString() : '0',
+                refclimed: userData.refclimed ? userData.refclimed.toString() : '0'
+            });
+            
+            userIndexMap.set(index, userAddress);
+            
+            // Recursively visit children by index with left-first priority
+            const leftIndex = await contract.getLeftChild(index);
+            const leftAddress = await contract.indexToAddress(Number(leftIndex));
+            if (leftAddress !== '0x0000000000000000000000000000000000000000') {
+                await dfsTraversal(Number(leftIndex), visitedUsers, genealogyMap, userIndexMap);
+
+                // Only check right child if left exists (per register logic)
+                const rightIndex = await contract.getRightChild(index);
+                const rightAddress = await contract.indexToAddress(Number(rightIndex));
+                if (rightAddress !== '0x0000000000000000000000000000000000000000') {
+                    await dfsTraversal(Number(rightIndex), visitedUsers, genealogyMap, userIndexMap);
+                }
+            }
+            
+        } catch (error) {
+            console.warn(`Error in DFS for index ${index}: ${error.message}`);
+        }
+    }
+
+    // Build complete genealogy using DFS (exact copy from migration page)
+    async function buildCompleteGenealogy() {
+        try {
+            const genealogyMap = new Map();
+            const userIndexMap = new Map();
+            const visitedUsers = new Set();
+            
+            // Get total users count for reference
+            const totalUsers = await contract.wallets();
+            console.log(`Total users in contract: ${totalUsers}`);
+            
+            // Start DFS from root user (index 1)
+            await dfsTraversal(1, visitedUsers, genealogyMap, userIndexMap);
+            
+            console.log(`DFS traversal completed: ${genealogyMap.size} users found`);
+            
+            return { genealogyMap, userIndexMap };
+        } catch (error) {
+            throw new Error(`Error building genealogy: ${error.message}`);
+        }
+    }
+
+    // Find users with unclaimed points
+    async function findUnclaimedPoints() {
+        try {
+            showStatus('Starting unclaimed points scan...', 'info');
+            
+            // Initialize contract if not already done
+            if (!contract) {
+                const connected = await initializeContract();
+                if (!connected) return;
+            }
+
+            // Show loading state
+            const button = event.target;
+            const originalText = button.textContent;
+            button.disabled = true;
+            button.textContent = '⏳ Scanning...';
+
+            // Show progress bar and results section
+            document.getElementById('scan-progress').style.display = 'block';
+            document.getElementById('unclaimed-results').style.display = 'block';
+            updateProgress(0, 'Building genealogy tree...');
+
+            // Initialize results display
+            const results = [];
+            let totalScanned = 0;
+            let unclaimedCount = 0;
+            let claimedCount = 0;
+            const currentTime = Math.floor(Date.now() / 1000); // Current timestamp in seconds
+
+            // Clear previous results
+            document.getElementById('unclaimed-table-body').innerHTML = '';
+            document.getElementById('total-scanned').textContent = '0';
+            document.getElementById('unclaimed-count').textContent = '0';
+            document.getElementById('claimed-count').textContent = '0';
+
+            // Build genealogy using DFS
+            const { genealogyMap, userIndexMap } = await buildCompleteGenealogy();
+            const totalUsers = genealogyMap.size;
+
+            updateProgress(10, `Processing ${totalUsers} users...`);
+
+            // Process each user and show results in real-time
+            for (const [address, userData] of genealogyMap) {
+                try {
+                    totalScanned++;
+                    
+                    // Get last claim time
+                    const lastClaimTime = parseInt(userData.lastMonthlyClaim);
+                    let userResult = null;
+                    
+                    if (lastClaimTime === 0) {
+                        // User has never claimed
+                        userResult = {
+                            index: userData.index,
+                            address: address,
+                            lastClaimTime: 0,
+                            hoursAgo: 'Never',
+                            status: 'Never Claimed'
+                        };
+                        unclaimedCount++;
+                    } else {
+                        // Calculate hours since last claim
+                        const hoursAgo = Math.floor((currentTime - lastClaimTime) / 3600);
+                        
+                        if (hoursAgo >= 12) {
+                            // 12+ hours have passed
+                            userResult = {
+                                index: userData.index,
+                                address: address,
+                                lastClaimTime: lastClaimTime,
+                                hoursAgo: hoursAgo,
+                                status: 'Unclaimed'
+                            };
+                            unclaimedCount++;
+                        } else {
+                            claimedCount++;
+                        }
+                    }
+                    
+                    // If user has unclaimed points, add to results and show immediately
+                    if (userResult) {
+                        results.push(userResult);
+                        addUserToTable(userResult);
+                    }
+                    
+                    // Update statistics in real-time
+                    document.getElementById('total-scanned').textContent = totalScanned;
+                    document.getElementById('unclaimed-count').textContent = unclaimedCount;
+                    document.getElementById('claimed-count').textContent = claimedCount;
+                    
+                    // Update progress every 10 users or at the end
+                    if (totalScanned % 10 === 0 || totalScanned === totalUsers) {
+                        const progress = Math.round((totalScanned / totalUsers) * 90) + 10; // 10-100%
+                        updateProgress(progress, `Processing user ${totalScanned} of ${totalUsers}... (Found ${unclaimedCount} unclaimed)`);
+                    }
+                    
+                } catch (error) {
+                    console.warn(`Error processing user ${address}: ${error.message}`);
+                }
+            }
+
+            updateProgress(100, `Scan completed! Found ${unclaimedCount} users with unclaimed points`);
+
+            showStatus(`Scan completed: ${unclaimedCount} users with unclaimed points found`, 'success');
+
+        } catch (error) {
+            showStatus('Error scanning for unclaimed points: ' + error.message, 'error');
+        } finally {
+            // Reset button and hide progress
+            button.disabled = false;
+            button.textContent = originalText;
+            setTimeout(() => {
+                document.getElementById('scan-progress').style.display = 'none';
+            }, 2000);
+        }
+    }
+
+    // Update progress bar
+    function updateProgress(percentage, details) {
+        document.getElementById('progress-bar').style.width = `${percentage}%`;
+        document.getElementById('progress-text').textContent = `${percentage}%`;
+        document.getElementById('progress-details').textContent = details;
+    }
+
+    // Add user to table in real-time
+    function addUserToTable(user) {
+        const tbody = document.getElementById('unclaimed-table-body');
+        const row = document.createElement('tr');
+        row.style.borderBottom = '1px solid rgba(167, 134, 255, 0.1)';
+        row.style.animation = 'fadeIn 0.3s ease';
+
+        // Index
+        const indexCell = document.createElement('td');
+        indexCell.textContent = user.index;
+        indexCell.style.padding = '0.75rem';
+        indexCell.style.color = '#e2e8f0';
+        row.appendChild(indexCell);
+
+        // Address
+        const addressCell = document.createElement('td');
+        addressCell.textContent = `${user.address.substring(0, 6)}...${user.address.substring(38)}`;
+        addressCell.style.padding = '0.75rem';
+        addressCell.style.color = '#a0aec0';
+        addressCell.style.fontFamily = 'monospace';
+        row.appendChild(addressCell);
+
+        // Last Claim
+        const lastClaimCell = document.createElement('td');
+        if (user.lastClaimTime === 0) {
+            lastClaimCell.textContent = 'Never';
+            lastClaimCell.style.color = '#ff6b6b';
+        } else {
+            const date = new Date(user.lastClaimTime * 1000);
+            lastClaimCell.textContent = date.toLocaleString();
+            lastClaimCell.style.color = '#a0aec0';
+        }
+        lastClaimCell.style.padding = '0.75rem';
+        row.appendChild(lastClaimCell);
+
+        // Hours Ago
+        const hoursAgoCell = document.createElement('td');
+        if (user.hoursAgo === 'Never') {
+            hoursAgoCell.textContent = 'Never';
+            hoursAgoCell.style.color = '#ff6b6b';
+        } else {
+            hoursAgoCell.textContent = `${user.hoursAgo}h`;
+            hoursAgoCell.style.color = user.hoursAgo >= 24 ? '#ff6b6b' : user.hoursAgo >= 12 ? '#ffa726' : '#4ecdc4';
+        }
+        hoursAgoCell.style.padding = '0.75rem';
+        hoursAgoCell.style.fontWeight = 'bold';
+        row.appendChild(hoursAgoCell);
+
+        // Status
+        const statusCell = document.createElement('td');
+        statusCell.textContent = user.status;
+        statusCell.style.padding = '0.75rem';
+        if (user.status === 'Never Claimed') {
+            statusCell.style.color = '#ff6b6b';
+        } else {
+            statusCell.style.color = '#ffa726';
+        }
+        statusCell.style.fontWeight = 'bold';
+        row.appendChild(statusCell);
+
+        // Add to top of table for better visibility
+        tbody.insertBefore(row, tbody.firstChild);
+    }
+
+    // Update the unclaimed points table
+    function updateUnclaimedTable(results) {
+        const tbody = document.getElementById('unclaimed-table-body');
+        tbody.innerHTML = '';
+
+        results.forEach(user => {
+            const row = document.createElement('tr');
+            row.style.borderBottom = '1px solid rgba(167, 134, 255, 0.1)';
+
+            // Index
+            const indexCell = document.createElement('td');
+            indexCell.textContent = user.index;
+            indexCell.style.padding = '0.75rem';
+            indexCell.style.color = '#e2e8f0';
+            row.appendChild(indexCell);
+
+            // Address
+            const addressCell = document.createElement('td');
+            addressCell.textContent = `${user.address.substring(0, 6)}...${user.address.substring(38)}`;
+            addressCell.style.padding = '0.75rem';
+            addressCell.style.color = '#a0aec0';
+            addressCell.style.fontFamily = 'monospace';
+            row.appendChild(addressCell);
+
+            // Last Claim
+            const lastClaimCell = document.createElement('td');
+            if (user.lastClaimTime === 0) {
+                lastClaimCell.textContent = 'Never';
+                lastClaimCell.style.color = '#ff6b6b';
+            } else {
+                const date = new Date(user.lastClaimTime * 1000);
+                lastClaimCell.textContent = date.toLocaleString();
+                lastClaimCell.style.color = '#a0aec0';
+            }
+            lastClaimCell.style.padding = '0.75rem';
+            row.appendChild(lastClaimCell);
+
+            // Hours Ago
+            const hoursAgoCell = document.createElement('td');
+            if (user.hoursAgo === 'Never') {
+                hoursAgoCell.textContent = 'Never';
+                hoursAgoCell.style.color = '#ff6b6b';
+            } else {
+                hoursAgoCell.textContent = `${user.hoursAgo}h`;
+                hoursAgoCell.style.color = user.hoursAgo >= 24 ? '#ff6b6b' : user.hoursAgo >= 12 ? '#ffa726' : '#4ecdc4';
+            }
+            hoursAgoCell.style.padding = '0.75rem';
+            hoursAgoCell.style.fontWeight = 'bold';
+            row.appendChild(hoursAgoCell);
+
+            // Status
+            const statusCell = document.createElement('td');
+            statusCell.textContent = user.status;
+            statusCell.style.padding = '0.75rem';
+            if (user.status === 'Never Claimed') {
+                statusCell.style.color = '#ff6b6b';
+            } else {
+                statusCell.style.color = '#ffa726';
+            }
+            statusCell.style.fontWeight = 'bold';
+            row.appendChild(statusCell);
+
+            tbody.appendChild(row);
+        });
     }
 
     // Show status message

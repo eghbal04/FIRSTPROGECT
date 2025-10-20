@@ -11,14 +11,11 @@ let IAM_ADDRESS = (() => {
     }
 })();
 const DAI_ADDRESS = '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063';
-// Optional: second preset IAM address
-const SECOND_IAM_ADDRESS = '0x8dc37ecF3198ce5062776b6A020B61146B5d2548';
 
 // Expose to window
 window.IAM_ADDRESS = IAM_ADDRESS;
 window.DAI_ADDRESS = DAI_ADDRESS;
 window.DEFAULT_IAM_ADDRESS = DEFAULT_IAM_ADDRESS;
-window.SECOND_IAM_ADDRESS = SECOND_IAM_ADDRESS;
 
 // Basic config placeholder for other scripts
 window.contractConfig = {
