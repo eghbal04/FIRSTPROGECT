@@ -1,12 +1,12 @@
 // swap.js - Professional and principled for DAI ↔ IAM swap
 
-// Contract addresses
-const IAM_ADDRESS_OLD = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D'; // Old contract
-const IAM_ADDRESS_NEW = '0x8dc37ecF3198ce5062776b6A020B61146B5d2548'; // New contract
+// Contract addresses - use from config.js
+const IAM_ADDRESS_OLD = (typeof window !== 'undefined' && window.DEFAULT_IAM_ADDRESS) ? window.DEFAULT_IAM_ADDRESS : '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D'; // Old contract
+const IAM_ADDRESS_NEW = (typeof window !== 'undefined' && window.SECOND_IAM_ADDRESS) ? window.SECOND_IAM_ADDRESS : '0x8dc37ecF3198ce5062776b6A020B61146B5d2548'; // New contract
 // Use global DAI address from config to avoid redeclaration conflicts
 const SWAP_DAI_ADDRESS = (typeof window !== 'undefined' && window.DAI_ADDRESS) ? window.DAI_ADDRESS : '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063';
 
-// Use old contract only
+// Start with old contract as default
 let SWAP_IAM_ADDRESS = IAM_ADDRESS_OLD;
 
 // DAI ABI (minimal for swap functionality)
@@ -1488,12 +1488,24 @@ class SwapManager {
             this.selectedContract = 'new';
         }
         
-        // Recreate contract instance if wallet is connected
+        // Update global config if available
+        if (window.setIAMAddress) {
+            try {
+                await window.setIAMAddress(SWAP_IAM_ADDRESS);
+                console.log('✅ Updated global IAM address to:', SWAP_IAM_ADDRESS);
+            } catch (error) {
+                console.warn('⚠️ Could not update global IAM address:', error);
+            }
+        }
+        
+        // Recreate contract instances if wallet is connected
         if (this.signer) {
             this.contract = new ethers.Contract(SWAP_IAM_ADDRESS, IAM_ABI, this.signer);
-            console.log('✅ Using old contract:', SWAP_IAM_ADDRESS);
+            this.daiContract = new ethers.Contract(SWAP_DAI_ADDRESS, DAI_ABI, this.signer);
+            console.log('✅ Using IAM contract:', SWAP_IAM_ADDRESS);
+            console.log('✅ Using DAI contract:', SWAP_DAI_ADDRESS);
             
-            // Refresh data with old contract
+            // Refresh data with new contract
             await this.refreshSwapData();
         }
     }
@@ -1526,7 +1538,7 @@ class SwapManager {
             this.provider = new ethers.providers.Web3Provider(window.ethereum);
             this.signer = await this.provider.getSigner();
             
-            // Create contracts
+            // Create contracts with current selected address
             this.contract = new ethers.Contract(SWAP_IAM_ADDRESS, IAM_ABI, this.signer);
             this.daiContract = new ethers.Contract(SWAP_DAI_ADDRESS, DAI_ABI, this.signer);
             
@@ -1568,7 +1580,7 @@ class SwapManager {
             console.log('🔄 Starting SwapManager initialization...');
             
             // Ensure DOM elements exist
-            const requiredElements = ['swapForm', 'swapDirection', 'swapAmount', 'maxBtn', 'swapStatus'];
+            const requiredElements = ['swapForm', 'swapDirection', 'swapAmount', 'maxBtn', 'swapStatus', 'contractSelector'];
             const missingElements = requiredElements.filter(id => !document.getElementById(id));
             
             if (missingElements.length > 0) {
@@ -1586,6 +1598,14 @@ class SwapManager {
             }
             
             console.log('✅ All DOM elements exist');
+            
+            // Check contract selector value and set initial contract
+            const contractSelector = document.getElementById('contractSelector');
+            if (contractSelector) {
+                const selectedContract = contractSelector.value;
+                console.log('🔄 Initial contract selection:', selectedContract);
+                await this.switchContract(selectedContract);
+            }
             
             // Setup event listeners
             this.setupEventListeners();
@@ -1852,7 +1872,8 @@ class SwapManager {
                 try {
                     await this.switchContract(e.target.value);
                     this.updateContractSelectionUI();
-                    this.showStatus(`✅ Using Old contract (only option available)`, 'success');
+                    const contractName = e.target.value === 'old' ? 'Old' : 'New';
+                    this.showStatus(`✅ Switched to ${contractName} contract successfully`, 'success');
                 } catch (error) {
                     console.error('❌ Error switching contract:', error);
                     this.showStatus('Error switching contract: ' + error.message, 'error');
