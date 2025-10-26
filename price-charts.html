@@ -12,12 +12,45 @@
   <!-- Load ethers.js version 6 from CDN -->
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.1/dist/ethers.umd.min.js"></script>
   
+  <!-- Force connection to Contract 5 -->
+  <script>
+    // Force IAM_ADDRESS to Contract 5 before config.js loads
+    window.IAM_ADDRESS = '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2';
+    
+    // Clear localStorage to prevent interference
+    localStorage.removeItem('iam_selected_address');
+    localStorage.setItem('iam_selected_address', '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2');
+  </script>
+  
   <!-- Main scripts -->
   <script src="js/index.js"></script>
   <script src="js/config.js"></script>
   <script src="js/auto-wallet-connect.js"></script>
   <script src="js/neon-api-service.js"></script>
   <script src="browser-price-service.js"></script>
+  
+  <!-- Override connectWallet to ensure Contract 5 is used -->
+  <script>
+    // Override connectWallet to force Contract 5
+    const originalConnectWallet = window.connectWallet;
+    window.connectWallet = async function() {
+      // Force Contract 5 address
+      window.IAM_ADDRESS = '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2';
+      window.DEFAULT_IAM_ADDRESS = '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2';
+      
+      // Call original function
+      if (originalConnectWallet) {
+        return await originalConnectWallet.apply(this, arguments);
+      }
+    };
+    
+    // Final override after all scripts load
+    window.addEventListener('load', function() {
+      window.IAM_ADDRESS = '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2';
+      window.DEFAULT_IAM_ADDRESS = '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2';
+      console.log('✅ Price Charts forced to Contract 5:', window.IAM_ADDRESS);
+    });
+  </script>
   
   <style>
     body {

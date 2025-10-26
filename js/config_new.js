@@ -2,26 +2,16 @@
 
 // Contract addresses
 const CONTRACT_1_ADDRESS = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D'; // Old contract
-const CONTRACT_2_ADDRESS = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26'; // New contract
+const CONTRACT_2_ADDRESS = '0xE2cf10Dc2C417eD164Ca9B446350A8e1049238c5'; // New contract
 const CONTRACT_3_ADDRESS = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D'; // Old contract (duplicate)
-const CONTRACT_4_ADDRESS = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26'; // New contract (duplicate)
-const CONTRACT_5_ADDRESS = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26'; // New contract (duplicate)
+const CONTRACT_4_ADDRESS = '0xE2cf10Dc2C417eD164Ca9B446350A8e1049238c5'; // New contract (duplicate)
+const CONTRACT_5_ADDRESS = '0xE2cf10Dc2C417eD164Ca9B446350A8e1049238c5'; // New contract (duplicate)
 
 // DAI Token Address
 const DAI_ADDRESS = '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063';
 
 // DAI ABI (minimal for swap functionality)
 const DAI_ABI = [
-    {
-        "inputs": [
-            {"internalType": "address", "name": "owner", "type": "address"},
-            {"internalType": "address", "name": "spender", "type": "address"}
-        ],
-        "name": "allowance",
-        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-        "stateMutability": "view",
-        "type": "function"
-    },
     {
         "inputs": [
             {"internalType": "address", "name": "spender", "type": "address"},
@@ -58,19 +48,18 @@ const DAI_ABI = [
     },
     {
         "inputs": [
-            {"internalType": "address", "name": "from", "type": "address"},
-            {"internalType": "address", "name": "to", "type": "address"},
-            {"internalType": "uint256", "name": "value", "type": "uint256"}
+            {"internalType": "address", "name": "owner", "type": "address"},
+            {"internalType": "address", "name": "spender", "type": "address"}
         ],
-        "name": "transferFrom",
-        "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
-        "stateMutability": "nonpayable",
+        "name": "allowance",
+        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+        "stateMutability": "view",
         "type": "function"
     }
 ];
 
-// Universal ABI for all contracts (Old and New)
-const IAM_ABI = [
+// New Contract 5 ABI (complete)
+const NEW_IAM_ABI = [
 	{
 		"inputs": [],
 		"stateMutability": "nonpayable",
@@ -1735,12 +1724,12 @@ window.CONTRACT_5_ADDRESS = CONTRACT_5_ADDRESS;
 window.DAI_ADDRESS = DAI_ADDRESS;
 window.DAI_ABI = DAI_ABI;
 window.IAM_ADDRESS = CONTRACT_5_ADDRESS;
-window.IAM_ABI = IAM_ABI;
+window.NEW_IAM_ABI = NEW_IAM_ABI;
 
 // Contract configuration object
 window.contractConfig = {
     address: CONTRACT_5_ADDRESS,
-    ABI: IAM_ABI,
+    ABI: NEW_IAM_ABI,
     contract: null
 };
 
@@ -1770,6 +1759,7 @@ async function connectWallet() {
     try {
         console.log('🔍 Debugging wallet connection...');
         console.log('🔍 window.ethereum:', typeof window.ethereum);
+        console.log('🔍 ethers:', typeof ethers);
         
         if (!window.ethereum) {
             throw new Error('MetaMask not installed');
@@ -1790,12 +1780,12 @@ async function connectWallet() {
             console.log('🔧 Using ethers v6');
             provider = new ethers.BrowserProvider(window.ethereum);
             signer = await provider.getSigner();
-            contract = new ethers.Contract(currentContractAddress, IAM_ABI, signer);
+            contract = new ethers.Contract(currentContractAddress, NEW_IAM_ABI, signer);
         } else {
             console.log('🔧 Using ethers v5');
             provider = new ethers.providers.Web3Provider(window.ethereum);
             signer = provider.getSigner();
-            contract = new ethers.Contract(currentContractAddress, IAM_ABI, signer);
+            contract = new ethers.Contract(currentContractAddress, NEW_IAM_ABI, signer);
         }
         
         console.log('✅ Wallet connected successfully:', await signer.getAddress());
@@ -1842,7 +1832,6 @@ window.setIAMAddress = setIAMAddress;
 
 console.log('✅ Clean config loaded - Real Contracts Available');
 console.log('📍 Contract Addresses:');
-console.log('   Contract 3 (Old):', CONTRACT_3_ADDRESS, '- Old contract');
-console.log('   Contract 5 (New):', CONTRACT_5_ADDRESS, '- New contract');
-console.log('   Universal ABI:', 'Same ABI for all contracts');
-console.log('🔧 ABI Functions:', IAM_ABI.length);
+console.log('   Contract 3 (Old):', CONTRACT_3_ADDRESS, '- For withdrawals');
+console.log('   Contract 5 (New):', CONTRACT_5_ADDRESS, '- For new features');
+console.log('🔧 ABI Functions:', NEW_IAM_ABI.length);

@@ -96,18 +96,18 @@ function updateProfileUI(profile) {
     const addressEl = document.getElementById('profile-address');
     if (addressEl) addressEl.textContent = profile.address ? shorten(profile.address) : '---';
 
-    let referrerText = 'بدون معرف';
-    if (profile.userStruct && profile.userStruct.referrer) {
-        if (profile.userStruct.referrer === '0x0000000000000000000000000000000000000000') {
-            referrerText = 'بدون معرف';
-        } else if (profile.userStruct.referrer.toLowerCase() === profile.address.toLowerCase()) {
-            referrerText = 'خود شما';
+    let upperText = 'بدون معرف';
+    if (profile.userStruct && profile.userStruct.upper) {
+        if (profile.userStruct.upper === '0x0000000000000000000000000000000000000000') {
+            upperText = 'بدون معرف';
+        } else if (profile.userStruct.upper.toLowerCase() === profile.address.toLowerCase()) {
+            upperText = 'خود شما';
         } else {
-            referrerText = shorten(profile.userStruct.referrer);
+            upperText = shorten(profile.userStruct.upper);
         }
     }
-    const referrerEl = document.getElementById('profile-referrer');
-    if (referrerEl) referrerEl.textContent = referrerText;
+    const upperEl = document.getElementById('profile-upper');
+    if (upperEl) upperEl.textContent = upperText;
 
     const daiEl = document.getElementById('profile-dai');
             if (daiEl) daiEl.textContent = profile.daiBalance ? formatNumber(profile.daiBalance, 2) + ' DAI' : '0 DAI';
@@ -263,22 +263,6 @@ function updateProfileUI(profile) {
     
     const lastClaimTimeEl = document.getElementById('profile-lastClaimTime');
     if (lastClaimTimeEl) lastClaimTimeEl.textContent = formatTimestamp(profile.userStruct.lastClaimTime);
-    const lastMonthlyClaimEl = document.getElementById('profile-lastMonthlyClaim');
-    if (lastMonthlyClaimEl) lastMonthlyClaimEl.textContent = formatTimestamp(profile.userStruct.lastMonthlyClaim);
-    const totalMonthlyRewardedEl = document.getElementById('profile-totalMonthlyRewarded');
-    if (totalMonthlyRewardedEl) totalMonthlyRewardedEl.textContent = profile.userStruct.totalMonthlyRewarded || '۰';
-    const depositedAmountEl = document.getElementById('profile-depositedAmount');
-    if (depositedAmountEl) {
-      let val = profile.userStruct.depositedAmount;
-      if (val && typeof val === 'object' && typeof val.toString === 'function') {
-        val = ethers.formatUnits(val.toString(), 18);
-      } else if (typeof val === 'bigint') {
-        val = ethers.formatUnits(val, 18);
-      } else if (typeof val === 'string' && val.length > 18) {
-        val = ethers.formatUnits(val, 18);
-      }
-      depositedAmountEl.textContent = val ? val : '۰';
-    }
 
     // موجودی متیک
     const maticEl = document.getElementById('profile-matic');
@@ -304,51 +288,51 @@ function updateProfileUI(profile) {
     }
 }
 
-// Add/replace this function to update the referrer field in the profile section
-async function updateProfileReferrer() {
+// Add/replace this function to update the upper field in the profile section
+async function updateProfileupper() {
   try {
     if (!window.connectWallet) return;
     const { contract, address } = await window.connectWallet();
     if (!contract || !address) return;
     const user = await contract.users(address);
-    let referrer = '-';
+    let upper = '-';
     if (user && user.index !== undefined) {
       let idx = user.index;
       if (typeof idx === 'bigint') idx = Number(idx);
       else idx = parseInt(idx);
       if (idx === 0) {
-        referrer = address; // Only if index is 0
+        upper = address; // Only if index is 0
       } else {
         try {
-          referrer = await contract.getReferrer(idx);
+          upper = await contract.getupper(idx);
         } catch (e) {
-          referrer = '-';
+          upper = '-';
         }
       }
     } else {
     }
-    const refEl = document.getElementById('profile-referrer');
+    const refEl = document.getElementById('profile-upper');
     if (refEl) {
-      if (referrer === '0x0000000000000000000000000000000000000000' || referrer === '-' || !referrer) {
+      if (upper === '0x0000000000000000000000000000000000000000' || upper === '-' || !upper) {
         refEl.textContent = 'بدون معرف';
-      } else if (referrer.toLowerCase() === address.toLowerCase()) {
+      } else if (upper.toLowerCase() === address.toLowerCase()) {
         refEl.textContent = 'خود شما';
       } else {
-        refEl.textContent = shorten(referrer);
+        refEl.textContent = shorten(upper);
       }
     }
   } catch (e) {
-    const refEl = document.getElementById('profile-referrer');
+    const refEl = document.getElementById('profile-upper');
     if (refEl) refEl.textContent = 'بدون معرف';
   }
 }
 
-// Patch loadUserProfile to always update referrer from contract after profile loads
+// Patch loadUserProfile to always update upper from contract after profile loads
 if (window.loadUserProfile) {
   const origLoadUserProfile = window.loadUserProfile;
   window.loadUserProfile = async function() {
     await origLoadUserProfile.apply(this, arguments);
-    await updateProfileReferrer(); // Always update referrer from contract, no delay
+    await updateProfileupper(); // Always update upper from contract, no delay
   };
 }
 

@@ -39,14 +39,14 @@ class DatabaseService {
   // Store user registration data
   async storeUserRegistration(userData) {
     try {
-      const { address, index, referrer, registrationTime } = userData;
+      const { address, index, upper, registrationTime } = userData;
       
       // For now, store in localStorage as fallback
       const userKey = `user_${address}`;
       const userRecord = {
         address,
         index,
-        referrer,
+        upper,
         registrationTime: registrationTime || new Date().toISOString(),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()

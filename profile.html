@@ -2,6 +2,13 @@
 <html lang="en" dir="ltr">
 <head>
   <script>
+    // Force profile page to use Contract 5 only
+    window.IAM_ADDRESS = '0x79be882352E79CE86D0beD3AcF0B42683E18Be2e';
+    
+    // Clear any existing contract selection
+    localStorage.removeItem('selectedContract');
+    localStorage.setItem('selectedContract', '5');
+    
     // Suppress noisy MetaMask RPC warnings
     window.addEventListener('error', function(e){
       const m = (e && e.message) || '';
@@ -186,6 +193,16 @@
             color: #a786ff;
         }
         .error-message { color: #ff4444; }
+        
+        .error {
+            color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            margin: 1rem 0;
+        }
         #copyProfileReferral:hover {
             background: linear-gradient(90deg,#a786ff,#00ff88) !important;
             transform: translateY(-1px);
@@ -254,7 +271,39 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
     <script src="js/config.js"></script>
+    <script src="js/floating-token-card.js"></script>
+    <script>
+        // Ensure Contract 5 is used after config.js loads
+        window.IAM_ADDRESS = '0x79be882352E79CE86D0beD3AcF0B42683E18Be2e';
+        window.DEFAULT_IAM_ADDRESS = '0x79be882352E79CE86D0beD3AcF0B42683E18Be2e';
+        
+        // Override connectWallet to force Contract 5
+        const originalConnectWallet = window.connectWallet;
+        window.connectWallet = async function() {
+            const result = await originalConnectWallet();
+            if (result && result.contract) {
+                // Force contract address
+                result.contract = new ethers.Contract('0x79be882352E79CE86D0beD3AcF0B42683E18Be2e', window.IAM_ABI, result.signer);
+            }
+            return result;
+        };
+        
+        console.log('🔒 Profile page locked to Contract 5:', window.IAM_ADDRESS);
+    </script>
     <script src="js/profile.js"></script>
+    <script>
+        // Disable profile.js loading to avoid conflicts with optimized profile.html loading
+        console.log('🚫 Profile.js loading disabled - using optimized profile.html loading');
+    </script>
+    <script>
+        // Final override to ensure Contract 5 is used
+        window.addEventListener('load', function() {
+            window.IAM_ADDRESS = '0x79be882352E79CE86D0beD3AcF0B42683E18Be2e';
+            window.DEFAULT_IAM_ADDRESS = '0x79be882352E79CE86D0beD3AcF0B42683E18Be2e';
+            localStorage.setItem('selectedContract', '5');
+            console.log('✅ Profile page final lock to Contract 5 confirmed');
+        });
+    </script>
     <script>
     // Disable/hide floating token card on profile page
     (function(){
@@ -301,13 +350,14 @@
     // Function to initialize withdrawal timers
     function startWithdrawalTimers(user) {
         const claimTimer = document.getElementById('claim-timer');
-        const cashbackTimer = document.getElementById('cashback-timer');
         const upgradeTimer = document.getElementById('upgrade-timer');
         
         if (!claimTimer) return;
         
         // Commission withdrawal timer (every 12 hours)
         function updateClaimTimer() {
+            if (!claimTimer) return;
+            
             const now = Math.floor(Date.now() / 1000);
             const lastClaim = user.lastClaimTime ? Number(user.lastClaimTime) : 0;
             const nextClaimTime = lastClaim + (12 * 3600); // 12 hours
@@ -327,43 +377,13 @@
             }
         }
         
-        // Cashback withdrawal timer (every 30 days) - only if button exists
-        function updateCashbackTimer() {
-            if (!cashbackTimer) return;
-            
-            const now = Math.floor(Date.now() / 1000);
-            const lastCashback = user.lastMonthlyClaim ? Number(user.lastMonthlyClaim) : 0;
-            const nextCashbackTime = lastCashback + (30 * 24 * 3600); // 30 days
-            const timeLeft = nextCashbackTime - now;
-            
-            if (timeLeft > 0) {
-                const days = Math.floor(timeLeft / (24 * 3600));
-                const hours = Math.floor((timeLeft % (24 * 3600)) / 3600);
-                const minutes = Math.floor((timeLeft % 3600) / 60);
-                
-                if (days > 0) {
-                    cashbackTimer.textContent = `⏰ ${days}d ${hours}h ${minutes}m`;
-                } else if (hours > 0) {
-                    cashbackTimer.textContent = `⏰ ${hours}h ${minutes}m`;
-                } else {
-                    cashbackTimer.textContent = `⏰ ${minutes}m`;
-                }
-                cashbackTimer.style.color = '#ff4444';
-                cashbackTimer.style.fontWeight = 'bold';
-            } else {
-                cashbackTimer.textContent = '✅ Ready';
-                cashbackTimer.style.color = '#00ff88';
-                cashbackTimer.style.fontWeight = 'bold';
-            }
-        }
-        
-        // Upgrade cap timer (every 4 weeks = 28 days)
+        // Upgrade cap timer (every 15 days)
         function updateUpgradeTimer() {
             if (!upgradeTimer) return;
             
             const now = Math.floor(Date.now() / 1000);
             const lastUpgrade = user.upgradeTime ? Number(user.upgradeTime) : 0;
-            const nextUpgradeTime = lastUpgrade + (28 * 24 * 3600); // 28 days (4 weeks)
+            const nextUpgradeTime = lastUpgrade + (15 * 24 * 3600); // 15 days
             const timeLeft = nextUpgradeTime - now;
             
             const upgradeBtn = document.getElementById('upgrade-cap-btn');
@@ -407,12 +427,10 @@
         
         // Initialize timers
         updateClaimTimer();
-        updateCashbackTimer();
         updateUpgradeTimer();
         
         // Update every second
         setInterval(updateClaimTimer, 1000);
-        setInterval(updateCashbackTimer, 1000);
         setInterval(updateUpgradeTimer, 1000);
     }
     
@@ -435,7 +453,7 @@
             
             try {
                 // Check if user is registered
-                if (!(user.index && BigInt(user.index) > 0n)) {
+                if (!(user.num && BigInt(user.num) > 0n)) {
                     throw new Error('You must be registered to purchase points');
                 }
                 
@@ -444,8 +462,6 @@
                 try {
                     if (typeof contract.getRegPrice === 'function') {
                         regPrice = await contract.getRegPrice();
-                    } else if (typeof contract.regPrice === 'function') {
-                        regPrice = await contract.regPrice();
                     }
                 } catch (e) {
                     console.log('Error getting regPrice:', e);
@@ -566,7 +582,7 @@
             
             try {
                 // Check if user is registered
-                if (!(user.index && BigInt(user.index) > 0n)) {
+                if (!(user.num && BigInt(user.num) > 0n)) {
                     throw new Error('You must be registered to purchase points');
                 }
                 
@@ -575,8 +591,6 @@
                 try {
                     if (typeof contract.getRegPrice === 'function') {
                         regPrice = await contract.getRegPrice();
-                    } else if (typeof contract.regPrice === 'function') {
-                        regPrice = await contract.regPrice();
                     }
                 } catch (e) {
                     console.log('Error getting regPrice:', e);
@@ -718,9 +732,24 @@
                 }
             }
             const user = await fetchUserSafe(address);
-            // Balances
-            const maticBalance = await provider.getBalance(address);
-            const IAMBalance = await contract.balanceOf(address);
+            
+            console.log('💰 Fetching balances...');
+            content.innerHTML = '<div class="loading">Fetching balances...</div>';
+            
+            // Fetch balances in parallel with timeout
+            const balancePromises = [
+                provider.getBalance(address).catch(() => '0'),
+                contract.balanceOf(address).catch(() => '0')
+            ];
+            
+            const balanceTimeout = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Balance fetch timeout')), 8000)
+            );
+            
+            const [maticBalance, IAMBalance] = await Promise.race([
+                Promise.all(balancePromises),
+                balanceTimeout
+            ]);
             
             // Function to format large numbers - show full values without abbreviations
             function formatLargeNumber(num) {
@@ -754,36 +783,8 @@
                 daiBalance = ethers.formatUnits(daiRaw, 18);
             } catch {}
             // Index
-            const IAMId = user.index ? `IAM${user.index.toString().padStart(5, '0')}` : '-';
-            // Condition for monthly cashback button activation
-            let canMonthlyCashback = false;
-            let monthlyMsg = '';
+            const IAMId = user.num ? `IAM${user.num.toString().padStart(5, '0')}` : '-';
             
-            // Check if user is active (has an index)
-            if (!user.index || BigInt(user.index) <= 0n) {
-                monthlyMsg = 'You must be an active user to access cashback withdrawal.';
-            } else {
-                const now = Math.floor(Date.now() / 1000);
-                const lastMonthly = user.lastMonthlyClaim ? Number(user.lastMonthlyClaim) : 0;
-                const oneMonth = 30 * 24 * 60 * 60;
-                
-                // Check for empty child (left or right)
-                let hasEmptyChild = false;
-                if (typeof contract.indexToAddress === 'function') {
-                    const leftAddr = await contract.indexToAddress(BigInt(user.index) * 2n);
-                    const rightAddr = await contract.indexToAddress(BigInt(user.index) * 2n + 1n);
-                    if (!leftAddr || leftAddr === '0x0000000000000000000000000000000000000000' || !rightAddr || rightAddr === '0x0000000000000000000000000000000000000000') {
-                        hasEmptyChild = true;
-                    }
-                }
-                
-                if (hasEmptyChild && (now - lastMonthly >= oneMonth)) {
-                    canMonthlyCashback = true;
-                } else {
-                    if (!hasEmptyChild) monthlyMsg = 'To withdraw monthly cashback, you must have at least one empty child position.';
-                    else if (now - lastMonthly < oneMonth) monthlyMsg = 'At least one month must have passed since the last monthly withdrawal.';
-                }
-            }
             // Display
             content.innerHTML = `
                 <div class="balance-box">
@@ -803,11 +804,8 @@
                 </div>
                 <div class="withdrawal-buttons" style="display:flex;gap:0.8rem;justify-content:center;margin-bottom:1rem;flex-wrap:wrap;">
                   <button id="claim-btn" title="Commission withdrawal is only possible once every 12 hours and if you have points to withdraw. If you don't have points or 12 hours haven't passed yet, withdrawal is not possible." style="background:linear-gradient(90deg,#00ff88,#a786ff);color:#181c2a;font-weight:bold;border:none;border-radius:8px;padding:0.7em 1.5em;font-size:0.95em;cursor:pointer;box-shadow:0 1px 4px #00ff8840;display:inline-flex;align-items:center;gap:0.4em;transition:box-shadow 0.2s,transform 0.2s;"><span style='font-size:1em;'>💸</span> Withdraw Commission <span id="claim-timer" style="font-size:0.8em;margin-right:0.3em;"></span></button>
-                  <button id="monthly-cashback-btn" title="Cashback withdrawal is only possible once every 30 days, with at least one empty child position and up to the deposit limit. If both positions are full or 30 days haven't passed or the cashback limit is reached, withdrawal is not possible." style="background:linear-gradient(90deg,#a786ff,#00ff88);color:#181c2a;font-weight:bold;border:none;border-radius:8px;padding:0.7em 1.5em;font-size:0.95em;cursor:pointer;box-shadow:0 1px 4px #a786ff40;display:inline-flex;align-items:center;gap:0.4em;transition:box-shadow 0.2s,transform 0.2s;"><span style='font-size:1em;'>📆</span> Cashback <span id="cashback-timer" style="font-size:0.8em;margin-right:0.3em;"></span></button>
                   <button id="upgrade-cap-btn" title="Upgrade binary points cap using IAM tokens. The more you upgrade, the higher your points cap becomes." style="background:linear-gradient(90deg,#ff6b35,#ff8e53);color:#181c2a;font-weight:bold;border:none;border-radius:8px;padding:0.7em 1.5em;font-size:0.95em;cursor:pointer;box-shadow:0 1px 4px #ff6b3540;display:inline-flex;align-items:center;gap:0.4em;transition:box-shadow 0.2s,transform 0.2s;"><span style='font-size:1em;'>📈</span> Upgrade Cap <span id="upgrade-timer" style="font-size:0.8em;margin-right:0.3em;"></span></button>
                 </div>
-                ${!canMonthlyCashback && monthlyMsg ? `<div style="background:rgba(167,134,255,0.08);border:1.5px solid #a786ff;border-radius:10px;padding:1em 1.2em;margin-bottom:1.5rem;text-align:center;font-size:1.07em;color:#a786ff;box-shadow:0 2px 8px #a786ff22;"><span style='font-size:1.2em;'>📆</span> <b>Cashback Not Available:</b><br>${monthlyMsg}</div>` : ''}
-                <div id="monthly-cashback-msg" style="display:none;color:#ff4444;text-align:center;margin-bottom:1.2rem;font-size:1.05em;transition:opacity 0.3s;"></div>
                 
                                                    <!-- Upgrade Cap Modal -->
                   <div id="upgrade-cap-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:1000;backdrop-filter:blur(5px);">
@@ -840,10 +838,10 @@
                   </div>
                 <div class="profile-row"><span class="profile-label">Wallet Address:</span><span class="profile-value">${address}</span></div>
                                  <div class="profile-row"><span class="profile-label">ID:</span><span class="profile-value">${IAMId}</span></div>
-                                 <div class="profile-row"><span class="profile-label">ID Number:</span><span class="profile-value">${user.index}</span></div>
-                <div class="profile-row"><span class="profile-label">Active:</span><span class="profile-value">${(user.index && BigInt(user.index) > 0n) ? 'Yes' : 'No'}</span></div>
+                                 <div class="profile-row"><span class="profile-label">ID Number:</span><span class="profile-value">${user.num}</span></div>
+                <div class="profile-row"><span class="profile-label">Active:</span><span class="profile-value">${(user.num && BigInt(user.num) > 0n) ? 'Yes' : 'No'}</span></div>
                 <div class="profile-row"><span class="profile-label">Binary Points:</span><span class="profile-value">${user.binaryPoints}</span></div>
-                <div class="profile-row"><span class="profile-label">Binary Points Cap:</span><span class="profile-value">${user.binaryPointCap}</span></div>
+                <div class="profile-row"><span class="profile-label">Binary Points Cap:</span><span class="profile-value">${user.binaryPointCap.toString()}</span></div>
                 <div class="profile-row"><span class="profile-label">Claimed Points:</span><span class="profile-value">${user.binaryPointsClaimed}</span></div>
                 <div class="profile-row"><span class="profile-label">Total Purchases:</span><span class="profile-value"><span id="profile-purchased-kind">--</span><div id="profile-purchased-kind-usd" style="font-size:0.9em;color:#a786ff;margin-top:2px;"></div></span></div>
                 <div class="profile-row"><span class="profile-label">Upgrade Time:</span><span class="profile-value">${formatDateTime(user.upgradeTime)}</span></div>
@@ -852,9 +850,6 @@
                 <div class="profile-row"><span class="profile-label">Right Points:</span><span class="profile-value">${user.rightPoints}</span></div>
                 <div class="profile-row"><span class="profile-label">Left Wallets Count:</span><span class="profile-value" id="profile-left-wallets">Calculating...</span></div>
                 <div class="profile-row"><span class="profile-label">Right Wallets Count:</span><span class="profile-value" id="profile-right-wallets">Calculating...</span></div>
-                <div class="profile-row"><span class="profile-label">Last Monthly Withdrawal:</span><span class="profile-value">${formatDateTime(user.lastMonthlyClaim)}</span></div>
-                <div class="profile-row"><span class="profile-label">Total Monthly Rewards:</span><span class="profile-value">${user.totalMonthlyRewarded}</span></div>
-                <div class="profile-row"><span class="profile-label">Deposit:</span><span class="profile-value" title="${ethers.formatUnits(user.depositedAmount.toString(), 18).split('.')[0]}">${ethers.formatUnits(user.depositedAmount.toString(), 18).split('.')[0]}</span></div>
                                  <div class="profile-row" style="flex-direction: column; align-items: flex-start; gap: 8px;">
                      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                          <span class="profile-label">Referral Reward:</span>
@@ -877,11 +872,123 @@
                     if(a >= 1e6 || a < 1e-2) return v.toExponential(2).replace('e','E');
                     return Number(v.toPrecision(3)).toString();
                 }
+                
+                // Function to calculate left and right wallet counts
+                async function calculateWalletCounts(userIndex, contract) {
+                    try {
+                        const leftChildIndex = BigInt(userIndex) * 2n;
+                        const rightChildIndex = BigInt(userIndex) * 2n + 1n;
+                        
+                        // اجرای همزمان محاسبه چپ و راست برای سرعت بیشتر
+                        const [leftCount, rightCount] = await Promise.all([
+                            calculateSubtreeCountOptimized(leftChildIndex, contract),
+                            calculateSubtreeCountOptimized(rightChildIndex, contract)
+                        ]);
+                        
+                        return { leftCount, rightCount };
+                    } catch (error) {
+                        console.warn('Error calculating wallet counts:', error);
+                        return { leftCount: 0, rightCount: 0 };
+                    }
+                }
+                
+                // تابع محاسبه فوق‌بهینه تعداد ولت‌ها با Level-Order Traversal
+                async function calculateSubtreeCountOptimized(startIndex, contract) {
+                    try {
+                        let count = 0;
+                        const queue = [startIndex];
+                        const visited = new Set();
+                        const maxDepth = Infinity; // Infinite depth limit
+                        const batchSize = 5; // اندازه batch برای پردازش همزمان
+                        
+                        for (let depth = 0; depth < maxDepth && queue.length > 0; depth++) {
+                            const currentLevel = [];
+                            const levelSize = queue.length;
+                            
+                            // جمع‌آوری تمام گره‌های سطح فعلی
+                            for (let i = 0; i < levelSize; i++) {
+                                const currentIndex = queue.shift();
+                                if (!visited.has(currentIndex.toString())) {
+                                    visited.add(currentIndex.toString());
+                                    currentLevel.push(currentIndex);
+                                }
+                            }
+                            
+                            if (currentLevel.length === 0) break;
+                            
+                            // پردازش batch به batch برای بهینه‌سازی
+                            for (let i = 0; i < currentLevel.length; i += batchSize) {
+                                const batch = currentLevel.slice(i, i + batchSize);
+                                
+                                // دریافت آدرس‌ها به صورت همزمان
+                                const addressPromises = batch.map(index => 
+                                    contract.numToAddress(index).catch(() => null)
+                                );
+                                
+                                const addresses = await Promise.all(addressPromises);
+                                
+                                // بررسی کاربران فعال
+                                const userPromises = addresses.map(address => {
+                                    if (!address || address === '0x0000000000000000000000000000000000000000') {
+                                        return null;
+                                    }
+                                    return contract.users(address).catch(() => null);
+                                });
+                                
+                                const users = await Promise.all(userPromises);
+                                
+                                // شمارش کاربران فعال و اضافه کردن فرزندان به queue
+                                for (let j = 0; j < users.length; j++) {
+                                    const user = users[j];
+                                    if (user && user.num && BigInt(user.num) > 0n) {
+                                        count++;
+                                        
+                                        // اضافه کردن فرزندان به queue
+                                        const leftChild = BigInt(currentLevel[i + j]) * 2n;
+                                        const rightChild = BigInt(currentLevel[i + j]) * 2n + 1n;
+                                        
+                                        if (!visited.has(leftChild.toString())) {
+                                            queue.push(leftChild);
+                                        }
+                                        if (!visited.has(rightChild.toString())) {
+                                            queue.push(rightChild);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        return count;
+                    } catch (error) {
+                        console.warn('Error in calculateSubtreeCountOptimized:', error);
+                        return 0;
+                    }
+                }
+                
+                // Update wallet counts
+                async function updateWalletCounts() {
+                    try {
+                        if (user && user.num && window.contractConfig && window.contractConfig.contract) {
+                            const counts = await calculateWalletCounts(user.num, window.contractConfig.contract);
+                            
+                            const leftEl = document.getElementById('profile-left-wallets');
+                            const rightEl = document.getElementById('profile-right-wallets');
+                            
+                            if (leftEl) leftEl.textContent = counts.leftCount;
+                            if (rightEl) rightEl.textContent = counts.rightCount;
+                        }
+                    } catch (error) {
+                        console.warn('Error updating wallet counts:', error);
+                    }
+                }
+                
+                // Start wallet counts calculation
+                updateWalletCounts();
+                
                 try {
                     const tpEl = document.getElementById('profile-purchased-kind');
                     const tpUsdEl = document.getElementById('profile-purchased-kind-usd');
                     const rrEl = document.getElementById('profile-refclimed');
-                    const cashbackBtn = document.getElementById('monthly-cashback-btn');
                     if (tpEl) {
                         const tpFull = ethers.formatUnits((user.totalPurchasedKind||0).toString(), 18).split('.')[0];
                         tpEl.textContent = tpFull + ' IAM';
@@ -895,33 +1002,10 @@
                         rrEl.textContent = rrFullInt + ' IAM';
                         rrEl.title = rrFullInt + ' IAM';
                     }
-                    // Disable cashback when both children are filled
-                    if (cashbackBtn && user.index && BigInt(user.index) > 0n && typeof contract.getLeftAddress === 'function' && typeof contract.getRightAddress === 'function') {
-                        Promise.all([
-                            contract.getLeftAddress(user.index),
-                            contract.getRightAddress(user.index)
-                        ]).then(([leftAddr, rightAddr]) => {
-                            const ZERO = '0x0000000000000000000000000000000000000000';
-                            const hasEmptyChild = (leftAddr === ZERO) || (rightAddr === ZERO);
-                            const now = Math.floor(Date.now()/1000);
-                            const lastMonthly = Number(user.lastMonthlyClaim||0);
-                            const timeOk = (now - lastMonthly) >= (30*24*3600);
-                            const eligible = hasEmptyChild && timeOk;
-                            cashbackBtn.disabled = !eligible;
-                            cashbackBtn.style.opacity = eligible ? '1' : '0.5';
-                            cashbackBtn.style.cursor = eligible ? 'pointer' : 'not-allowed';
-                            if (!eligible) {
-                                cashbackBtn.title = hasEmptyChild ? 'Cooldown: wait 30 days since last monthly withdrawal' : 'Not eligible: both child positions are filled';
-                            }
-                        }).catch(()=>{});
-                    }
                 } catch(_) {}
             })();
 
             setTimeout(function() {
-              const cashbackBtn = document.getElementById('monthly-cashback-btn');
-              const cashbackMsg = document.getElementById('monthly-cashback-msg');
-              
               // Claim button (commission withdrawal)
               const claimBtn = document.getElementById('claim-btn');
               if (claimBtn) {
@@ -930,21 +1014,14 @@
                   claimBtn.disabled = true;
                   claimBtn.style.opacity = '0.5';
                   claimBtn.style.cursor = 'not-allowed';
-                  cashbackMsg.style.display = 'block';
-                  cashbackMsg.style.opacity = '1';
-                  cashbackMsg.style.background = 'rgba(167,134,255,0.08)';
-                  cashbackMsg.style.border = '1.5px solid #a786ff';
-                  cashbackMsg.style.borderRadius = '10px';
-                  cashbackMsg.style.padding = '1em 1.2em';
-                  cashbackMsg.style.marginBottom = '1.2rem';
-                  cashbackMsg.style.textAlign = 'center';
-                  cashbackMsg.style.fontSize = '1.07em';
-                  cashbackMsg.style.boxShadow = '0 2px 8px #a786ff22';
-                  cashbackMsg.style.whiteSpace = 'pre-line';
                   
                   // Display specific message for claim operation
-                  cashbackMsg.innerHTML = '<b>💸 Commission Withdrawal Operation:</b><br>• This operation withdraws your binary rewards<br>• Withdrawal is only possible once every 12 hours<br>• You must have active points<br>• If you don\'t have points or 12 hours haven\'t passed, withdrawal is not possible<br><br><b>🔍 Checking conditions...</b>';
-                  cashbackMsg.style.color = '#a786ff';
+                  console.log('💸 Commission Withdrawal Operation:');
+                  console.log('• This operation withdraws your binary rewards');
+                  console.log('• Withdrawal is only possible once every 12 hours');
+                  console.log('• You must have active points');
+                  console.log('• If you don\'t have points or 12 hours haven\'t passed, withdrawal is not possible');
+                  console.log('🔍 Checking conditions...');
                   
                   try {
                     const { contract, address } = await window.connectWallet();
@@ -952,7 +1029,7 @@
                     const now = Math.floor(Date.now() / 1000);
                     
                     // Check withdrawal conditions
-                    if (!(user.index && BigInt(user.index) > 0n)) {
+                    if (!(user.num && BigInt(user.num) > 0n)) {
                       throw new Error('Your account is not active. You must register first.');
                     }
                     
@@ -965,24 +1042,18 @@
                       throw new Error(`Still ${remain} hours remaining until next withdrawal.`);
                     }
                     
-                    cashbackMsg.innerHTML = '⏳ Sending commission withdrawal request...';
-                    cashbackMsg.style.color = '#00ff88';
+                    console.log('⏳ Sending commission withdrawal request...');
                     
                     // Call claim function
                     const tx = await contract.claim();
                     
-                    cashbackMsg.innerHTML = '⏳ Waiting for transaction confirmation in wallet...';
-                    cashbackMsg.style.color = '#a786ff';
+                    console.log('⏳ Waiting for transaction confirmation in wallet...');
                     
                     await tx.wait();
                     
-                    cashbackMsg.innerHTML = '✅ Commission withdrawal completed successfully!';
-                    cashbackMsg.style.color = '#00ff88';
-                    cashbackMsg.style.background = 'rgba(0,255,136,0.08)';
-                    cashbackMsg.style.border = '1.5px solid #00ff88';
+                    console.log('✅ Commission withdrawal completed successfully!');
                     
                     setTimeout(() => {
-                      cashbackMsg.style.display = 'none';
                       loadProfile(); // Reload profile
                     }, 2000);
                     
@@ -1002,120 +1073,12 @@
                       errorMsg = '❌ ' + (err.message || 'Unknown withdrawal error');
                     }
                     
-                    cashbackMsg.innerHTML = errorMsg;
-                    cashbackMsg.style.color = '#ff4444';
-                    cashbackMsg.style.background = 'rgba(255,68,68,0.08)';
-                    cashbackMsg.style.border = '1.5px solid #ff4444';
-                    
-                    setTimeout(() => {
-                      cashbackMsg.style.display = 'none';
-                    }, 5000);
+                    console.error(errorMsg);
                   }
                   
                   claimBtn.disabled = false;
                   claimBtn.style.opacity = '';
                   claimBtn.style.cursor = '';
-                });
-              }
-              
-              // Cashback button (monthly withdrawal)
-              if (cashbackBtn && cashbackMsg) {
-                cashbackBtn.addEventListener('click', async function(e) {
-                  console.log('Cashback button clicked!'); // for debugging
-                  cashbackBtn.disabled = true;
-                  cashbackBtn.style.opacity = '0.5';
-                  cashbackBtn.style.cursor = 'not-allowed';
-                  cashbackMsg.style.display = 'block';
-                  cashbackMsg.style.opacity = '1';
-                  cashbackMsg.style.background = 'rgba(0,255,136,0.08)';
-                  cashbackMsg.style.border = '1.5px solid #00ff88';
-                  cashbackMsg.style.borderRadius = '10px';
-                  cashbackMsg.style.padding = '1em 1.2em';
-                  cashbackMsg.style.marginBottom = '1.2rem';
-                  cashbackMsg.style.textAlign = 'center';
-                  cashbackMsg.style.fontSize = '1.07em';
-                  cashbackMsg.style.boxShadow = '0 2px 8px #00ff8822';
-                  cashbackMsg.style.whiteSpace = 'pre-line';
-                  
-                  // Display specific message for cashback operation
-                  cashbackMsg.innerHTML = '<b>📆 Monthly Cashback Withdrawal Operation:</b><br>• This operation withdraws your monthly reward<br>• Withdrawal is only possible once every 30 days<br>• You must have at least one empty child position<br>• Cashback limit equals your deposit amount<br>• <span style=\'color:#a786ff\'>If there is sufficient balance in the help fund, <b>three percent</b> of your payment amount is paid as monthly cashback.</span><br><br><b>🔍 Checking conditions...</b>';
-                  cashbackMsg.style.color = '#00ff88';
-                  
-                  try {
-                    const { contract, address } = await window.connectWallet();
-                    const user = await fetchUserSafe(address);
-                    const now = Math.floor(Date.now() / 1000);
-                    const leftAddr = await contract.getLeftAddress(user.index);
-                    const rightAddr = await contract.getRightAddress(user.index);
-                    
-                    // Check cashback withdrawal conditions
-                    if (!(user.index && BigInt(user.index) > 0n)) {
-                      throw new Error('Your account is not active. You must register first.');
-                    }
-                    
-                    if (leftAddr != '0x0000000000000000000000000000000000000000' && rightAddr != '0x0000000000000000000000000000000000000000') {
-                      throw new Error('To withdraw cashback, you must have at least one empty child position.');
-                    }
-                    
-                    if (now < Number(user.lastMonthlyClaim) + 30 * 24 * 3600) {
-                      const remain = Math.ceil((Number(user.lastMonthlyClaim) + 30 * 24 * 3600 - now) / (24*3600));
-                      throw new Error(`Still ${remain} days remaining until next cashback withdrawal.`);
-                    }
-                    
-                    if (user.totalMonthlyRewarded >= user.depositedAmount) {
-                      throw new Error('Your monthly cashback limit is full.');
-                    }
-                    
-                    cashbackMsg.innerHTML = '⏳ Sending cashback withdrawal request...';
-                    cashbackMsg.style.color = '#a786ff';
-                    
-                    // Call cashback function
-                    const tx = await contract.claimMonthlyReward(1);
-                    
-                    cashbackMsg.innerHTML = '⏳ Waiting for transaction confirmation in wallet...';
-                    cashbackMsg.style.color = '#a786ff';
-                    
-                    await tx.wait();
-                    
-                    cashbackMsg.innerHTML = '✅ Monthly cashback withdrawal completed successfully!';
-                    cashbackMsg.style.color = '#00ff88';
-                    cashbackMsg.style.background = 'rgba(0,255,136,0.08)';
-                    cashbackMsg.style.border = '1.5px solid #00ff88';
-                    
-                    setTimeout(() => {
-                      cashbackMsg.style.display = 'none';
-                      loadProfile(); // Reload profile
-                    }, 2000);
-                    
-                  } catch(err) {
-                    console.error('Cashback error:', err); // for debugging
-                    let errorMsg = 'Error in cashback withdrawal';
-                    
-                    if (err.code === 4001 || err.message.includes('user denied')) {
-                      errorMsg = '❌ Transaction was cancelled by user.';
-                    } else if (err.code === -32002 || err.message.includes('Already processing')) {
-                      errorMsg = '⏳ Wallet is processing another request. Please wait.';
-                    } else if (err.message.includes('network')) {
-                      errorMsg = '❌ Network error! Check your internet connection.';
-                    } else if (err.message.includes('insufficient funds')) {
-                      errorMsg = '❌ Insufficient balance to pay transaction fee.';
-                    } else {
-                      errorMsg = '❌ ' + (err.message || 'Unknown withdrawal error');
-                    }
-                    
-                    cashbackMsg.innerHTML = errorMsg;
-                    cashbackMsg.style.color = '#ff4444';
-                    cashbackMsg.style.background = 'rgba(255,68,68,0.08)';
-                    cashbackMsg.style.border = '1.5px solid #ff4444';
-                    
-                    setTimeout(() => {
-                      cashbackMsg.style.display = 'none';
-                    }, 5000);
-                  }
-                  
-                  cashbackBtn.disabled = false;
-                  cashbackBtn.style.opacity = '';
-                  cashbackBtn.style.cursor = '';
                 });
               }
             }, 100);
@@ -1198,11 +1161,37 @@
          }
     }
     window.addEventListener('DOMContentLoaded', async function() {
-        if (typeof window.ethereum !== 'undefined') {
-            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-            if (accounts && accounts.length > 0) {
-                await loadProfile();
+        console.log('🚀 Profile page DOM loaded, starting optimized loading...');
+        
+        // Show loading immediately
+        const content = document.getElementById('profile-content');
+        content.innerHTML = '<div class="loading">Connecting to Contract 5...</div>';
+        
+        try {
+            // Quick check for MetaMask
+            if (typeof window.ethereum === 'undefined') {
+                content.innerHTML = '<div class="error">MetaMask not installed. Please install MetaMask to view your profile.</div>';
+                return;
             }
+            
+            // Check if already connected
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            if (!accounts || accounts.length === 0) {
+                content.innerHTML = '<div class="error">Please connect your wallet to view your profile.</div>';
+                return;
+            }
+            
+            // Start loading with timeout
+            const loadingPromise = loadProfile();
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Loading timeout after 15 seconds')), 15000)
+            );
+            
+            await Promise.race([loadingPromise, timeoutPromise]);
+            
+        } catch (error) {
+            console.error('❌ Profile loading error:', error);
+            content.innerHTML = `<div class="error">Error loading profile: ${error.message}</div>`;
         }
     });
     </script>

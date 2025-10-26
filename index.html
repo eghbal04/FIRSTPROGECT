@@ -59,7 +59,7 @@
     @media (max-width: 1024px) { .grid { grid-template-columns: 1fr; gap: 14px; } }
     .card { background: #121521; border: 1px solid #1f2433; border-radius: 12px; padding: 16px; }
     .card h2 { margin: 0 0 12px; font-size: 16px; color:#aef3c6; cursor: pointer; user-select: none; display: flex; align-items: center; justify-content: space-between; }
-    #contract-card h2 { margin: 0 0 8px; font-size: 16px; color: #00ff88; text-align: center; }
+    #contract-card h2 { margin: 0 0 8px; font-size: 20px; color: #00ff88; text-align: center; }
     .card h2:hover { color: #c4f7d6; }
     .card h2 .toggle-icon { transition: transform 0.3s ease; font-size: 16px; }
     .card h2.collapsed .toggle-icon { transform: rotate(-90deg); }
@@ -92,13 +92,13 @@
       color: #aef3c6;
       min-width: 90px;
       max-width: 90px;
-      font-size: 10px;
+      font-size: 14px;
       flex-shrink: 0;
     }
     #contract-card .value {
       flex: 1;
       font-family: monospace;
-      font-size: 11px;
+      font-size: 16px;
       color: #e6eaf0;
       word-break: break-all;
       background: rgba(0, 255, 136, 0.05);
@@ -1201,7 +1201,7 @@
 
     <div class="statusbar top" id="status-bar-top">
       <span class="pill" id="status-address">-</span>
-      <span class="pill" id="status-index">-</span>
+      <span class="pill" id="status-user-id">ID: -</span>
       <span class="pill" id="status-likes">👍 -</span>
       <span class="pill" id="status-dislikes">👎 -</span>
       <span class="pill" id="status-rank">⭐ -</span>
@@ -1221,53 +1221,53 @@
         
 
     <!-- Navigation Menu - Creative Design -->
-    <div class="nav-menu" style="margin-bottom: 24px;">
+    <div class="nav-menu" id="nav-menu" style="margin-bottom: 24px;">
       <div class="nav-grid">
         <a class="nav-card" href="about.html">
           <div class="nav-icon">ℹ️</div>
           <div class="nav-label">Presentation</div>
         </a>
-        <a class="nav-card" href="swap.html">
+        <a class="nav-card nav-swap" href="swap.html">
           <div class="nav-icon">🔄</div>
           <div class="nav-label">Swap</div>
         </a>
-        <a class="nav-card" href="register.html">
+        <a class="nav-card nav-new-contract" href="register.html">
           <div class="nav-icon">📝</div>
           <div class="nav-label">Register</div>
         </a>
-        <a class="nav-card" href="onboarding.html">
+        <a class="nav-card nav-new-contract" href="onboarding.html">
           <div class="nav-icon">🎓</div>
           <div class="nav-label">Onboarding</div>
         </a>
-        <a class="nav-card" href="professional-tree.html">
+        <a class="nav-card nav-new-contract" href="professional-tree.html">
           <div class="nav-icon">🌳</div>
           <div class="nav-label">Partners</div>
         </a>
-        <a class="nav-card" href="transfer.html">
+        <a class="nav-card nav-new-contract" href="transfer.html">
           <div class="nav-icon">📤</div>
           <div class="nav-label">Transfer</div>
         </a>
-        <a class="nav-card" href="profile.html">
+        <a class="nav-card nav-new-contract" href="profile.html">
           <div class="nav-icon">👤</div>
           <div class="nav-label">Profile</div>
         </a>
-        <a class="nav-card" href="sales.html">
+        <a class="nav-card nav-new-contract" href="sales.html">
           <div class="nav-icon">💰</div>
           <div class="nav-label">Sales</div>
         </a>
-        <a class="nav-card" href="transfer-ownership.html">
+        <a class="nav-card nav-new-contract" href="transfer-ownership.html">
           <div class="nav-icon">🏗️</div>
           <div class="nav-label">Ownership</div>
         </a>
-        <a class="nav-card" href="utility.html">
+        <a class="nav-card nav-new-contract" href="utility.html">
           <div class="nav-icon">🛠️</div>
           <div class="nav-label">Utility</div>
         </a>
-        <a class="nav-card" href="price-charts.html" target="_blank">
+        <a class="nav-card nav-new-contract" href="price-charts.html" target="_blank">
           <div class="nav-icon">📊</div>
           <div class="nav-label">Price Charts</div>
         </a>
-        <a class="nav-card" href="iam.html">
+        <a class="nav-card nav-new-contract" href="iam.html">
           <div class="nav-icon">🌟</div>
           <div class="nav-label">I AM</div>
         </a>
@@ -1276,7 +1276,7 @@
 
 
     <!-- About IAM PHOENIX Section -->
-    <div class="additional-content" style="
+    <div class="additional-content new-contract-content" style="
       margin: 20px 0;
       padding: 24px;
       background: linear-gradient(135deg, #1a1f2e 0%, #232946 100%);
@@ -1373,7 +1373,7 @@
     <section class="card" id="contract-card" style="text-align:left; direction:ltr;">
       <h2 id="contract-header">Contract Info <span class="toggle-icon">▼</span></h2>
       <div class="card-content" id="contract-content">
-        <div class="row"><div class="label">🔗 Contract Address</div><a class="value" id="c-address" href="#" target="_blank" rel="noopener noreferrer">-</a></div>
+        <div class="row"><div class="label">🔗 Contract Address</div><a class="value" id="c-address" href="#" target="_blank" rel="noopener noupper">-</a></div>
         <div class="row"><div class="label">🏷️ Name</div><div class="value" id="c-name">-</div></div>
         <div class="row"><div class="label">🧩 Symbol</div><div class="value" id="c-symbol">-</div></div>
         <div class="row"><div class="label">#️⃣ Decimals</div><div class="value" id="c-decimals">-</div></div>
@@ -1537,6 +1537,7 @@
       </div>
     </div>
 
+
                 
         
         
@@ -1630,7 +1631,7 @@
         if (!isFinite(n)) return String(num);
         return n.toLocaleString('en-US', { 
           minimumFractionDigits: 2, 
-          maximumFractionDigits: 18 
+          maximumFractionDigits: 2 
         });
       } catch { return String(num); }
     }
@@ -1646,13 +1647,15 @@
       } catch { return String(num); }
     }
 
-    function format2Decimals(num) {
+    function formatTokenPrice(num) {
       try { 
         const n = Number(num);
         if (!isFinite(n)) return String(num);
+        
+        // Format to exactly 9 decimal places
         return n.toLocaleString('en-US', { 
-          minimumFractionDigits: 2, 
-          maximumFractionDigits: 2 
+          minimumFractionDigits: 9, 
+          maximumFractionDigits: 9 
         });
       } catch { return String(num); }
     }
@@ -1666,7 +1669,7 @@
       try {
         const isTopBar = barType === 'top';
         const pillIds = isTopBar ? 
-          ['status-address', 'status-index', 'status-likes', 'status-dislikes', 'status-rank'] :
+          ['status-address', 'status-user-id', 'status-likes', 'status-dislikes', 'status-rank'] :
           ['status-matic', 'status-dai', 'status-iam'];
         
         // Disable dynamic sizing on small screens
@@ -1769,7 +1772,7 @@
         if (id === 'status-dislikes') { el.textContent = `💔 ${value ?? 0}`; return; }
         if (id === 'status-rank') { el.textContent = (value && String(value).trim()) ? String(value) : '⭐'; return; }
         // Normal rendering for others
-        if (id === 'status-address' || id === 'status-index') {
+        if (id === 'status-address' || id === 'status-user-id') {
           el.textContent = iconLabel(`${value ?? '-'}`);
                         } else {
           el.textContent = iconLabel(`${label}: ${value ?? '-'}`);
@@ -1777,7 +1780,7 @@
       };
       if (!data) return;
       if (data.address !== undefined) set('status-address', 'Address', data.address);
-      if (data.index !== undefined) set('status-index', 'Index', data.index);
+      if (data['user-id'] !== undefined) set('status-user-id', 'ID', data['user-id']);
       if (data.rank !== undefined) set('status-rank', 'Rank', data.rank);
       if (data.matic !== undefined) set('status-matic', 'POL', data.matic);
       if (data.dai !== undefined) set('status-dai', 'DAI', data.dai);
@@ -1791,7 +1794,7 @@
         // Top bar dynamic sizing
         setDynamicPillWidths('top', {
           'status-address': data.address ? 1 : 0, // Address always gets minimum width
-          'status-index': data.index,
+          'status-user-id': data['user-id'],
           'status-likes': data.likes,
           'status-dislikes': data.dislikes,
           'status-rank': data.rank ? 1 : 0 // Rank always gets minimum width
@@ -1805,6 +1808,32 @@
         });
       }, 100);
     }
+
+    // Force refresh contract info function
+    window.forceRefreshContractInfo = async function() {
+      try {
+        console.log('🔄 Force refreshing contract info...');
+        
+        // Clear any cached data
+        if (window.contractConfig) {
+          window.contractConfig.contract = null;
+        }
+        
+        // Refresh contract info
+        if (window.refreshContractInfoSafe) {
+          await window.refreshContractInfoSafe();
+        }
+        
+        // Refresh floating token card
+        if (window.floatingTokenCard && window.floatingTokenCard.updateTokenPrice) {
+          window.floatingTokenCard.updateTokenPrice();
+        }
+        
+        console.log('✅ Contract info force refreshed');
+      } catch (error) {
+        console.error('❌ Error force refreshing contract info:', error);
+      }
+    };
 
     // User Info removed
 
@@ -1832,8 +1861,24 @@
         if (!connection || !connection.contract) throw new Error('Contract connection is not available');
         const { contract, provider, signer, address: connectedAddress } = connection;
 
-        const contractAddress = (contract && contract.target) ? String(contract.target) : (window.IAM_ADDRESS || '-');
+        // Get the currently selected contract address
+        const currentContractAddress = (window.getIAMAddress && typeof window.getIAMAddress === 'function') ? 
+          window.getIAMAddress() : (window.IAM_ADDRESS || '-');
+        
+        console.log('🔍 Fetching contract info for address:', currentContractAddress);
+        
+        const contractAddress = (contract && contract.target) ? String(contract.target) : currentContractAddress;
         addrEl.textContent = shortenAddress(contractAddress);
+        
+        // Update contract info header to show selected contract
+        const contractHeader = document.getElementById('contract-header');
+        if (contractHeader) {
+          const isOldContract = contractAddress.toLowerCase() === '0x2d3923a5ba62b2bec13b9181b1e9ae0ea2c8118d';
+          const contractType = isOldContract ? 'Old' : 'New';
+          contractHeader.innerHTML = `Contract Info (${contractType}) <span class="toggle-icon">▼</span>`;
+          console.log('📋 Contract header updated:', contractType);
+        }
+        
         // Link to Polygonscan/Amoy based on network
         try {
           if (addrEl && addrEl.tagName === 'A' && contractAddress && contractAddress.startsWith('0x') && contractAddress.length === 42) {
@@ -1932,9 +1977,24 @@
             try { if (typeof contract.users === 'function') u = await contract.users(userAddr); } catch {}
             if (u) {
               try {
-                if (u.index !== undefined) {
-                  updateStatusPills({ index: (typeof u.index === 'bigint') ? u.index.toString() : String(u.index) });
-                  // Update button states when user index changes
+                // Get index/num from user struct - try different methods
+                let userIdValue = null;
+                
+                // Method 1: Try u.index (new contract structure)
+                if (u && u.index !== undefined) {
+                  userIdValue = u.index;
+                }
+                // Method 2: Try u[0] (first element in tuple/array)
+                else if (u && u[0] !== undefined) {
+                  userIdValue = u[0];
+                }
+                // Method 3: Try u.num (old contract)
+                else if (u && u.num !== undefined) {
+                  userIdValue = u.num;
+                }
+                
+                if (userIdValue !== null && userIdValue !== undefined) {
+                  updateStatusPills({ 'user-id': (typeof userIdValue === 'bigint') ? userIdValue.toString() : String(userIdValue) });
                 }
                 // Rank derived from binaryPointsClaimed (claimed count tiers)
                 try {
@@ -1964,11 +2024,14 @@
             } else {
               // Fallbacks
               try {
-                let idx = null;
-                if (typeof contract.addressToIndex === 'function') idx = await contract.addressToIndex(userAddr);
-                if (idx !== null && idx !== undefined) {
-                  updateStatusPills({ index: (typeof idx === 'bigint' ? idx.toString() : String(idx)) });
-                  // Update button states when user index changes
+                // Try to get user ID from getUserNumber if available
+                if (typeof contract.getUserNumber === 'function') {
+                  try {
+                    const userNum = await contract.getUserNumber(userAddr);
+                    if (userNum !== null && userNum !== undefined) {
+                      updateStatusPills({ 'user-id': (typeof userNum === 'bigint' ? userNum.toString() : String(userNum)) });
+                    }
+                  } catch {}
                 }
               } catch {}
               try {
@@ -1980,18 +2043,20 @@
                 }
               } catch {}
             }
-            // Index + Rank (ensure index present if not from struct)
+            // Ensure user ID is present
             try {
-              let ensuredIndex = document.getElementById('status-index')?.textContent;
-              if (!ensuredIndex || ensuredIndex === '-' || ensuredIndex.trim() === '# -') {
-                let idx = null;
-                if (typeof contract.addressToIndex === 'function') idx = await contract.addressToIndex(userAddr);
-                if (idx !== null && idx !== undefined) {
-                  updateStatusPills({ index: (typeof idx === 'bigint' ? idx.toString() : String(idx)) });
-                  // Update button states when user index changes
+              let ensuredUserId = document.getElementById('status-user-id')?.textContent;
+              if (!ensuredUserId || ensuredUserId === '-' || ensuredUserId.trim() === 'ID: -') {
+                // Try to get user ID from getUserNumber if available
+                if (typeof contract.getUserNumber === 'function') {
+                  try {
+                    const userNum = await contract.getUserNumber(userAddr);
+                    if (userNum !== null && userNum !== undefined) {
+                      updateStatusPills({ 'user-id': (typeof userNum === 'bigint' ? userNum.toString() : String(userNum)) });
+                    }
+                  } catch {}
                 } else {
-                  updateStatusPills({ index: '-' });
-                  // Update button states when user has no index
+                  updateStatusPills({ 'user-id': '-' });
                 }
               }
             } catch {}
@@ -2029,7 +2094,7 @@
           else if (typeof contract.tokenPrice === 'function') p = await contract.tokenPrice();
           if (p !== undefined) {
             tokenPriceWei = (typeof p === 'bigint') ? p : BigInt(p);
-            if (tokenPriceEl) tokenPriceEl.textContent = safeFormatUnits(tokenPriceWei, 18);
+            if (tokenPriceEl) tokenPriceEl.textContent = formatTokenPrice(safeFormatUnits(tokenPriceWei, 18));
           }
         } catch {}
 
@@ -2218,10 +2283,23 @@
 
      function buildAbiUI() { /* write functions removed per request */ }
 
+    // Global flag to prevent multiple modals
+    let claimModalShown = false;
+    let lastModalCheckTime = 0;
+    
     // Check claim status and show reminder if needed
     async function checkClaimStatusAndRemind() {
       try {
         if (!window.connectWallet) return;
+        
+        // Prevent multiple modals and frequent checks
+        const now = Date.now();
+        if (claimModalShown || (now - lastModalCheckTime) < 5000) {
+          console.log('🔍 Modal already shown or recent check, skipping');
+          return;
+        }
+        
+        lastModalCheckTime = now;
         
         const connection = await window.connectWallet();
         if (!connection || !connection.contract || !connection.address) return;
@@ -2232,16 +2310,56 @@
         const user = await contract.users(address);
         if (!user || user.index === 0n) return; // User not registered
         
+        // Debug: Log raw user data
+        console.log('🔍 Raw user data:', user);
+        console.log('🔍 Raw binaryPoints:', user.binaryPoints);
+        console.log('🔍 Raw lastClaimTime:', user.lastClaimTime);
+        
         const binaryPoints = Number(user.binaryPoints || 0);
         const lastClaimTime = Number(user.lastClaimTime || 0);
         const currentTime = Math.floor(Date.now() / 1000);
         const timeSinceLastClaim = currentTime - lastClaimTime;
         const twelveHours = 12 * 60 * 60; // 12 hours in seconds
         
-        // Check if user has points and 12+ hours have passed since last claim
-        if (binaryPoints > 0 && timeSinceLastClaim >= twelveHours) {
-          showClaimReminderModal();
+        console.log('🔍 Checking claimable points for contract:', contract.target);
+        console.log('🔍 User points:', binaryPoints, 'Time since last claim:', timeSinceLastClaim);
+        console.log('🔍 Current time:', currentTime, 'Last claim time:', lastClaimTime);
+        
+        // Check if user has claimable points (points > 0 AND 12+ hours passed)
+        const hasClaimablePoints = binaryPoints > 0 && timeSinceLastClaim >= twelveHours;
+        
+        if (!hasClaimablePoints) {
+          if (binaryPoints === 0) {
+            console.log('✅ User has no points to claim - no modal needed');
+          } else if (timeSinceLastClaim < twelveHours) {
+            console.log('⏰ User has points but not enough time passed:', binaryPoints, 'Time since last claim:', timeSinceLastClaim);
+          } else {
+            console.log('⚠️ Invalid points or time data - no modal shown');
+          }
+          return;
         }
+        
+        // User has claimable points - show modal
+        console.log('💰 User has claimable points:', binaryPoints, 'Time since last claim:', timeSinceLastClaim);
+        console.log('🎯 Showing claim modal for contract:', contract.target);
+        
+        // Double-check: Verify points are actually claimable by calling contract
+        try {
+          const canClaim = await contract.canClaim(address);
+          console.log('🔍 Contract canClaim result:', canClaim);
+          
+          if (!canClaim) {
+            console.log('⚠️ Contract says user cannot claim - not showing modal');
+            return;
+          }
+        } catch (error) {
+          console.log('⚠️ Error checking canClaim:', error.message);
+          // Continue anyway - maybe canClaim function doesn't exist
+        }
+        
+        claimModalShown = true; // Set flag to prevent multiple modals
+        showClaimReminderModal();
+        
       } catch (error) {
         console.error('Error checking claim status:', error);
       }
@@ -2259,7 +2377,43 @@
           throw new Error('Contract connection failed');
         }
         
-        const { contract } = connection;
+        const { contract, address } = connection;
+        
+        // Final check before executing claim
+        try {
+          const user = await contract.users(address);
+          const binaryPoints = Number(user.binaryPoints || 0);
+          const lastClaimTime = Number(user.lastClaimTime || 0);
+          const currentTime = Math.floor(Date.now() / 1000);
+          const timeSinceLastClaim = currentTime - lastClaimTime;
+          const twelveHours = 12 * 60 * 60; // 12 hours in seconds
+          
+          console.log('🔍 Final check before claim - Points:', binaryPoints, 'Time since last claim:', timeSinceLastClaim);
+          
+          if (binaryPoints === 0) {
+            throw new Error('No points to claim');
+          }
+          
+          if (timeSinceLastClaim < twelveHours) {
+            throw new Error('Not enough time passed since last claim');
+          }
+          
+          // Try to call canClaim if it exists
+          try {
+            const canClaim = await contract.canClaim(address);
+            console.log('🔍 Contract canClaim result:', canClaim);
+            
+            if (!canClaim) {
+              throw new Error('Contract says user cannot claim');
+            }
+          } catch (error) {
+            console.log('⚠️ Error checking canClaim:', error.message);
+            // Continue anyway - maybe canClaim function doesn't exist
+          }
+        } catch (error) {
+          console.error('❌ Pre-claim check failed:', error.message);
+          throw error;
+        }
         
         // Show loading message
         const statusEl = document.getElementById('status-message') || createStatusElement();
@@ -2291,12 +2445,16 @@
                 if (modal) {
                   modal.remove();
                 }
+                // Reset flag
+                claimModalShown = false;
                 // Refresh page
                 location.reload();
               }
             }
           } catch (error) {
             console.error('Error checking points after claim:', error);
+            // Reset flag
+            claimModalShown = false;
             // Refresh page anyway
             location.reload();
           }
@@ -2334,11 +2492,74 @@
 
     // Show claim reminder modal
     function showClaimReminderModal() {
-      // Remove existing modal if any
-      const existingModal = document.getElementById('claim-reminder-modal');
-      if (existingModal) {
-        existingModal.remove();
+      console.log('🔍 showClaimReminderModal called - checking claimable points...');
+      
+      // First check if user actually has claimable points
+      if (!window.connectWallet) {
+        console.log('⚠️ Cannot check points - wallet not connected');
+        return;
       }
+      
+      // Check user's current claimable points before showing modal
+      window.connectWallet().then(async (connection) => {
+        try {
+          const { contract, address } = connection;
+          const userData = await contract.users(address);
+          const binaryPoints = Number(userData.binaryPoints || 0);
+          const lastClaimTime = Number(userData.lastClaimTime || 0);
+          const currentTime = Math.floor(Date.now() / 1000);
+          const timeSinceLastClaim = currentTime - lastClaimTime;
+          const twelveHours = 12 * 60 * 60; // 12 hours in seconds
+          
+          console.log('🔍 Current user points:', binaryPoints, 'Time since last claim:', timeSinceLastClaim);
+          console.log('🔍 Contract address:', contract.target);
+          
+          // Check if user has claimable points (points > 0 AND 12+ hours passed)
+          const hasClaimablePoints = binaryPoints > 0 && timeSinceLastClaim >= twelveHours;
+          
+          if (!hasClaimablePoints) {
+            if (binaryPoints === 0) {
+              console.log('✅ User has no points to claim - modal not shown');
+            } else if (timeSinceLastClaim < twelveHours) {
+              console.log('⏰ User has points but not enough time passed - modal not shown');
+            } else {
+              console.log('⚠️ Invalid points or time data - modal not shown');
+            }
+            return;
+          }
+          
+          // Double-check with contract before showing modal
+          try {
+            const canClaim = await contract.canClaim(address);
+            console.log('🔍 Contract canClaim result in modal:', canClaim);
+            
+            if (!canClaim) {
+              console.log('⚠️ Contract says user cannot claim - modal not shown');
+              return;
+            }
+          } catch (error) {
+            console.log('⚠️ Error checking canClaim in modal:', error.message);
+            // Continue anyway - maybe canClaim function doesn't exist
+          }
+          
+          console.log('💰 User has claimable points:', binaryPoints, '- showing modal');
+          console.log('🎯 Modal shown for contract:', contract.target);
+          showModal();
+        } catch (error) {
+          console.error('Error checking user points:', error);
+          console.log('⚠️ Error occurred, not showing modal');
+        }
+      }).catch(error => {
+        console.error('Error connecting wallet for point check:', error);
+        console.log('⚠️ Wallet connection error, not showing modal');
+      });
+      
+      function showModal() {
+        // Remove existing modal if any
+        const existingModal = document.getElementById('claim-reminder-modal');
+        if (existingModal) {
+          existingModal.remove();
+        }
       
       // Create modal overlay
       const modalOverlay = document.createElement('div');
@@ -2468,6 +2689,9 @@
       modalContent.addEventListener('click', (e) => {
         e.stopPropagation();
       });
+      
+      document.body.appendChild(modalOverlay);
+      }
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -2554,27 +2778,27 @@
           if (!addr && window.contractConfig && window.contractConfig.address) addr = window.contractConfig.address;
           if (!addr) return;
 
-          // Resolve user's index from status pill or contract if possible
-          let idx = document.getElementById('status-index')?.textContent?.replace('⭐', '').trim();
-          if (!idx || idx === '-' || idx === '# -') {
+          // Resolve user's ID from status pill or contract if possible
+          let userId = document.getElementById('status-user-id')?.textContent?.replace('ID:', '').trim();
+          if (!userId || userId === '-' || userId === '-') {
             try {
               if (window.contractConfig && window.contractConfig.contract) {
                 const c = window.contractConfig.contract;
                 if (typeof c.users === 'function') {
                   const u = await c.users(addr);
-                  if (u && u.index !== undefined) idx = (typeof u.index === 'bigint') ? u.index.toString() : String(u.index);
+                  if (u && u.num !== undefined) userId = (typeof u.num === 'bigint') ? u.num.toString() : String(u.num);
                 }
-                if ((!idx || idx === '-' || idx === '0') && typeof c.addressToIndex === 'function') {
-                  const vi = await c.addressToIndex(addr);
-                  idx = (typeof vi === 'bigint') ? vi.toString() : String(vi);
+                if ((!userId || userId === '-' || userId === '0') && typeof c.getUserNumber === 'function') {
+                  const un = await c.getUserNumber(addr);
+                  userId = (typeof un === 'bigint') ? un.toString() : String(un);
                 }
               }
             } catch {}
           }
-          if (!idx || idx === '-' || idx === '0') return;
+          if (!userId || userId === '-' || userId === '0') return;
 
           const baseUrl = window.location.origin + '/register.html';
-          const referralUrl = `${baseUrl}?ref=${encodeURIComponent(idx)}`;
+          const referralUrl = `${baseUrl}?ref=${encodeURIComponent(userId)}`;
           referralLinkInput.value = referralUrl;
           // Removed open button per request
           linkContainer.style.display = 'block';
@@ -2655,15 +2879,48 @@
     // Main function to explore binary tree and create leaderboard
     async function exploreBinaryTree() {
       try {
-        if (!window.connectWallet) {
-          throw new Error('Wallet connection is not available');
-        }
-
         updateProgress(10, '⏳ Connecting to Contract...');
 
-        const { contract } = await window.connectWallet();
+        let contract = null;
+        
+        // Try to get contract from window.connectWallet first
+        if (window.connectWallet) {
+          try {
+            const walletResult = await window.connectWallet();
+            contract = walletResult.contract;
+            console.log('📊 Using contract from connectWallet:', contract);
+          } catch (e) {
+            console.log('⚠️ Failed to get contract from connectWallet:', e.message);
+          }
+        }
+        
+        // Fallback: create contract directly
+        if (!contract && window.IAM_ADDRESS && window.NEW_IAM_ABI && window.ethers) {
+          try {
+            let provider, signer;
+            
+            // Compatible with both ethers v5 and v6
+            if (typeof ethers.providers !== 'undefined' && typeof ethers.providers.Web3Provider !== 'undefined') {
+              // Ethers v5
+              provider = new ethers.providers.Web3Provider(window.ethereum);
+              signer = provider.getSigner();
+            } else if (typeof ethers.BrowserProvider !== 'undefined') {
+              // Ethers v6
+              provider = new ethers.BrowserProvider(window.ethereum);
+              signer = await provider.getSigner();
+            }
+            
+            if (provider && signer) {
+              contract = new ethers.Contract(window.IAM_ADDRESS, window.NEW_IAM_ABI, signer);
+              console.log('📊 Created contract directly:', contract);
+            }
+          } catch (e) {
+            console.log('⚠️ Failed to create contract directly:', e.message);
+          }
+        }
+        
         if (!contract) {
-          throw new Error('Contract connection failed');
+          throw new Error('Contract connection failed - no contract available');
         }
 
         updateProgress(20, '⏳ Exploring Binary Tree...');
@@ -2710,6 +2967,8 @@
       const maxDepth = 10000000; // Increased per request to allow deep traversal
       let processedCount = 0;
       
+      console.log('🌳 Starting tree traversal with contract:', contract);
+      
       // Start from root (index 1)
       const rootIndex = 1n;
       const stack = [{ index: rootIndex, depth: 0 }];
@@ -2723,23 +2982,75 @@
         processedIndices.add(indexStr);
         
         try {
-          // Get address for this index
-          const address = await contract.indexToAddress(index);
+          let address = null;
+          
+          // Try different methods to get address from index
+          try {
+            // Method 1: indexToAddress (old contract)
+            if (typeof contract.indexToAddress === 'function') {
+              address = await contract.indexToAddress(index);
+              console.log(`📊 Method 1 (indexToAddress): Index ${index} -> ${address}`);
+            }
+          } catch (e) {
+            console.log(`⚠️ Method 1 failed for index ${index}:`, e.message);
+          }
+          
+          // Method 2: numToAddress (new contract)
+          if (!address || address === '0x0000000000000000000000000000000000000000') {
+            try {
+              if (typeof contract.numToAddress === 'function') {
+                address = await contract.numToAddress(index);
+                console.log(`📊 Method 2 (numToAddress): Index ${index} -> ${address}`);
+              }
+            } catch (e) {
+              console.log(`⚠️ Method 2 failed for index ${index}:`, e.message);
+            }
+          }
+          
+          // Method 3: getAddressByNumber (alternative)
+          if (!address || address === '0x0000000000000000000000000000000000000000') {
+            try {
+              if (typeof contract.getAddressByNumber === 'function') {
+                address = await contract.getAddressByNumber(index);
+                console.log(`📊 Method 3 (getAddressByNumber): Index ${index} -> ${address}`);
+              }
+            } catch (e) {
+              console.log(`⚠️ Method 3 failed for index ${index}:`, e.message);
+            }
+          }
           
           if (address && address !== '0x0000000000000000000000000000000000000000') {
-            // Get user data and vote status in parallel
-            const [userData, voteStatus] = await Promise.all([
-              contract.users(address),
-              contract.getVoteStatus(address).catch(() => ({ 0: 0, 1: 0 })) // Fallback for vote errors
-            ]);
+            console.log(`✅ Found address for index ${index}: ${address}`);
             
-            if (userData && userData.index) {
+            // Get user data
+            let userData = null;
+            try {
+              if (typeof contract.users === 'function') {
+                userData = await contract.users(address);
+                console.log(`📊 User data for ${address}:`, userData);
+              }
+            } catch (e) {
+              console.log(`⚠️ Failed to get user data for ${address}:`, e.message);
+            }
+            
+            // Get vote status (optional)
+            let voteStatus = { 0: 0, 1: 0 };
+            try {
+              if (typeof contract.getVoteStatus === 'function') {
+                voteStatus = await contract.getVoteStatus(address);
+                console.log(`📊 Vote status for ${address}:`, voteStatus);
+              }
+            } catch (e) {
+              console.log(`⚠️ Failed to get vote status for ${address}:`, e.message);
+            }
+            
+            if (userData && userData.num) {
               const likes = Number(voteStatus[0] || voteStatus.totalLikes || 0);
               const dislikes = Number(voteStatus[1] || voteStatus.totalDislikes || 0);
               
               users.push({
                 address: address,
-                index: userData.index,
+                index: userData.num, // Use num instead of index
                 binaryPoints: userData.binaryPoints || 0,
                 binaryPointsClaimed: userData.binaryPointsClaimed || 0,
                 leftPoints: userData.leftPoints || 0,
@@ -2750,6 +3061,8 @@
                 dislikes: dislikes,
                 popularityScore: likes - dislikes
               });
+              
+              console.log(`✅ Added user ${address} with num ${userData.num}`);
               
               // Add children to stack
               const leftChild = index * 2n;
@@ -2767,11 +3080,13 @@
             updateProgress(progress, `⏳ Exploring... Found ${users.length} users`);
           }
         } catch (e) {
+          console.log(`⚠️ Error processing index ${index}:`, e.message);
           // Skip errors and continue
           continue;
         }
       }
       
+      console.log(`🌳 Tree traversal completed. Found ${users.length} users`);
       return users;
     }
 
@@ -2856,7 +3171,7 @@
               ">${rankIcon}</div>
               <div>
                 <div style="color: #e6eaf0; font-weight: 600; font-family: monospace;">${shortAddress}</div>
-                <div style="color: #aef3c6; font-size: 12px;">Index: ${user.index}</div>
+                <div style="color: #aef3c6; font-size: 12px;">ID: ${user.index}</div>
               </div>
             </div>
             <div style="text-align: right;">
@@ -2947,7 +3262,7 @@
               ">${rankIcon}</div>
               <div>
                 <div style="color: #e6eaf0; font-weight: 600; font-family: monospace;">${shortAddress}</div>
-                <div style="color: #aef3c6; font-size: 12px;">Index: ${user.index}</div>
+                <div style="color: #aef3c6; font-size: 12px;">ID: ${user.index}</div>
               </div>
             </div>
             <div style="text-align: right;">
@@ -2986,6 +3301,137 @@
           if (pill) pill.textContent = addr ? ('Contract: ' + shortenAddress(addr)) : '-';
         } catch {}
       }
+      
+      // Update navigation visibility based on contract type
+      function updateNavigationVisibility(contractAddress) {
+        try {
+          // Old contracts (CONTRACT_1, 2, 3)
+          const oldContracts = [
+            '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D'
+          ];
+          
+          // New contracts (CONTRACT_4, 5)
+          const newContracts = [
+            '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26'
+          ];
+          
+          const isOldContract = oldContracts.some(addr => 
+            addr.toLowerCase() === (contractAddress || '').toLowerCase()
+          );
+          
+          const isNewContract = newContracts.some(addr => 
+            addr.toLowerCase() === (contractAddress || '').toLowerCase()
+          );
+          
+          // Get all navigation items for new contract
+          const newContractNavItems = document.querySelectorAll('.nav-new-contract');
+          
+          // Get additional content sections
+          const newContractContent = document.querySelectorAll('.new-contract-content');
+          const contractCard = document.getElementById('contract-card');
+          const grid = document.getElementById('dashboard-grid');
+          
+          // Always ensure all navigation items are visible
+          newContractNavItems.forEach(item => {
+            item.style.display = '';
+          });
+          
+          if (isOldContract) {
+            // Old contract: Keep all navigation items visible but hide content sections
+            // Don't hide navigation items - let users access all pages
+            
+            // Hide all new contract content sections
+            newContractContent.forEach(content => {
+              content.style.display = 'none';
+            });
+            
+            // Hide the grid (dashboard cards)
+            if (grid) {
+              grid.style.display = 'none';
+            }
+            
+            // Show contract card and refresh its info
+            if (contractCard) {
+              contractCard.style.display = 'block';
+              // Force refresh contract info to show old contract data
+              setTimeout(() => {
+                if (window.forceRefreshContractInfo) {
+                  window.forceRefreshContractInfo();
+                }
+              }, 200);
+            }
+            
+            console.log('Old contract selected - navigation items remain visible');
+          } else if (isNewContract) {
+            // New contract: Show all content sections and dashboard
+            // Navigation items are already visible from above
+            
+            // Show all new contract content sections
+            newContractContent.forEach(content => {
+              content.style.display = '';
+            });
+            
+            // Show the grid (dashboard cards)
+            if (grid) {
+              grid.style.display = '';
+            }
+            
+            // Show contract card and refresh its info
+            if (contractCard) {
+              contractCard.style.display = 'block';
+              // Force refresh contract info to show new contract data
+              setTimeout(() => {
+                if (window.forceRefreshContractInfo) {
+                  window.forceRefreshContractInfo();
+                }
+              }, 200);
+            }
+            
+            console.log('New contract selected - showing all pages');
+          }
+        } catch (e) {
+          console.error('Error updating navigation visibility:', e);
+        }
+      }
+      
+      // Helper function to check if user has claimable points
+      window.checkClaimablePoints = async function(contractAddress = null) {
+        try {
+          if (!window.connectWallet) return false;
+          
+          const connection = await window.connectWallet();
+          if (!connection || !connection.contract || !connection.address) return false;
+          
+          const { contract, address } = connection;
+          
+          // If specific contract address is provided, check if it matches
+          if (contractAddress && contract.target.toLowerCase() !== contractAddress.toLowerCase()) {
+            console.log('🔍 Contract address mismatch, skipping check');
+            return false;
+          }
+          
+          const user = await contract.users(address);
+          if (!user || user.index === 0n) return false;
+          
+          const binaryPoints = Number(user.binaryPoints || 0);
+          const lastClaimTime = Number(user.lastClaimTime || 0);
+          const currentTime = Math.floor(Date.now() / 1000);
+          const timeSinceLastClaim = currentTime - lastClaimTime;
+          const twelveHours = 12 * 60 * 60; // 12 hours in seconds
+          
+          const hasClaimablePoints = binaryPoints > 0 && timeSinceLastClaim >= twelveHours;
+          
+          console.log('🔍 Claimable points check for contract:', contract.target);
+          console.log('🔍 Points:', binaryPoints, 'Time since last claim:', timeSinceLastClaim);
+          console.log('🔍 Has claimable points:', hasClaimablePoints);
+          
+          return hasClaimablePoints;
+        } catch (error) {
+          console.error('Error checking claimable points:', error);
+          return false;
+        }
+      };
+      
       document.addEventListener('DOMContentLoaded', function(){
         // (Removed) top bar contract select button handler
         // Init full-width contract selector under status bars
@@ -2997,8 +3443,17 @@
             const current = (window.getIAMAddress && typeof window.getIAMAddress === 'function') ? window.getIAMAddress() : (window.IAM_ADDRESS || '');
 
             const options = [];
-            if (def) options.push({ key: 'old', label: 'Old Contract — ' + mediumShortAddress(def), value: def, color: '#ff8c00' });
-            if (second) options.push({ key: 'new', label: 'New Contract — ' + mediumShortAddress(second), value: second, color: '#00ff88' });
+            
+            // Define contract addresses directly
+            const OLD_CONTRACT = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D';
+            const NEW_CONTRACT = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26';
+            
+            // Old Contract
+            options.push({ key: 'old', label: 'Old Contract — ' + mediumShortAddress(OLD_CONTRACT), value: OLD_CONTRACT, color: '#ff8c00' });
+            // New Contract  
+            options.push({ key: 'new', label: 'New Contract — ' + mediumShortAddress(NEW_CONTRACT), value: NEW_CONTRACT, color: '#00ff88' });
+            
+            // If current selection is not one of the main contracts, add it
             if (current && !options.find(o => o.value.toLowerCase() === current.toLowerCase())) {
               options.push({ key: 'current', label: 'Current — ' + mediumShortAddress(current), value: current, color: '#e6eaf0' });
             }
@@ -3010,8 +3465,8 @@
               opt.value = o.value;
               opt.textContent = o.label;
               if (o.color) opt.style.color = o.color;
-              // Select old contract by default if no current selection or if current is not set
-              if ((!current || current === def) && o.value.toLowerCase() === def.toLowerCase()) {
+              // Select new contract by default if no current selection
+              if ((!current || current === def) && o.key === 'new') {
                 opt.selected = true;
                 defaultSelected = true;
               } else if (current && o.value.toLowerCase() === current.toLowerCase()) {
@@ -3021,9 +3476,9 @@
               selector.appendChild(opt);
             });
             
-            // If no selection was made, default to old contract
-            if (!defaultSelected && def) {
-              selector.value = def;
+            // If no selection was made, default to new contract
+            if (!defaultSelected && window.CONTRACT_5_ADDRESS) {
+              selector.value = window.CONTRACT_5_ADDRESS;
             }
 
             function applySelectorColor(addr) {
@@ -3045,13 +3500,53 @@
                   await window.setIAMAddress(newAddr);
                   updateTopBarAddress(newAddr);
                   applySelectorColor(newAddr);
+                  updateNavigationVisibility(newAddr);
+                  
+                  // Force refresh contract info and floating token card
+                  setTimeout(async () => {
+                    try {
+                      // Refresh contract info
+                      if (window.refreshContractInfoSafe) {
+                        await window.refreshContractInfoSafe();
+                      }
+                      
+                      // Refresh floating token card
+                      if (window.floatingTokenCard && window.floatingTokenCard.updateTokenPrice) {
+                        window.floatingTokenCard.updateTokenPrice();
+                      }
+                      
+                      // Force update contractConfig if it exists
+                      if (window.contractConfig && window.contractConfig.contract) {
+                        // Recreate contract with new address
+                        const provider = window.contractConfig.provider;
+                        const signer = window.contractConfig.signer;
+                        const abi = window.NEW_IAM_ABI || window.IAM_ABI;
+                        
+                        if (provider && signer && abi) {
+                          const newContract = new ethers.Contract(newAddr, abi, signer);
+                          window.contractConfig.contract = newContract;
+                          console.log('🔄 ContractConfig updated with new contract:', newAddr);
+                        }
+                      }
+                      
+                      console.log('✅ Contract switched successfully to:', newAddr);
+                    } catch (error) {
+                      console.error('❌ Error refreshing contract data:', error);
+                    }
+                  }, 500);
+                  
                   // Reload page to ensure all modules initialize with the selected contract
-                  location.reload();
+                  setTimeout(() => {
+                    location.reload();
+                  }, 1000);
                 }
               } catch (e) {
                 alert('Failed to switch: ' + (e && e.message ? e.message : e));
               }
             });
+            
+            // Initial navigation visibility update
+            updateNavigationVisibility(selector.value || current);
           }
         } catch {}
         try {

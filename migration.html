@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Migration Tool - Binary Tree Structure</title>
-    <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.1/dist/ethers.umd.min.js"></script>
+    <title>Migration - Tree Structure Export</title>
     <style>
         * {
             margin: 0;
@@ -14,20 +13,20 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0a0f1c, #1a1f2e);
-            color: #ffffff;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
             min-height: 100vh;
             padding: 20px;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
-            background: rgba(26, 31, 46, 0.8);
-            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
             padding: 30px;
-            border: 1px solid rgba(167, 134, 255, 0.2);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
         .header {
@@ -36,125 +35,233 @@
         }
 
         .header h1 {
-            color: #a786ff;
             font-size: 2.5rem;
             margin-bottom: 10px;
-            text-shadow: 0 0 20px rgba(167, 134, 255, 0.5);
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .header p {
-            color: #9ecbff;
             font-size: 1.1rem;
+            opacity: 0.8;
         }
 
-        .status-card {
-            background: rgba(0, 255, 136, 0.1);
-            border: 1px solid rgba(0, 255, 136, 0.3);
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .status-card.error {
-            background: rgba(255, 68, 68, 0.1);
-            border-color: rgba(255, 68, 68, 0.3);
-        }
-
-        .status-card.warning {
-            background: rgba(255, 193, 7, 0.1);
-            border-color: rgba(255, 193, 7, 0.3);
-        }
-
-        .contract-info {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+        .controls {
+            display: flex;
+            gap: 15px;
             margin-bottom: 30px;
-        }
-
-        .contract-card {
-            background: rgba(26, 31, 46, 0.6);
-            border: 1px solid rgba(167, 134, 255, 0.2);
-            border-radius: 10px;
-            padding: 20px;
-        }
-
-        .contract-card h3 {
-            color: #a786ff;
-            margin-bottom: 15px;
-            font-size: 1.3rem;
-        }
-
-        .contract-address {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 10px;
-            border-radius: 5px;
-            font-family: monospace;
-            font-size: 0.9rem;
-            word-break: break-all;
-            color: #9ecbff;
-        }
-
-        .migration-controls {
-            background: rgba(26, 31, 46, 0.6);
-            border: 1px solid rgba(167, 134, 255, 0.2);
-            border-radius: 10px;
-            padding: 25px;
-            margin-bottom: 30px;
-        }
-
-        .migration-controls h3 {
-            color: #a786ff;
-            margin-bottom: 20px;
-            font-size: 1.4rem;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         .btn {
-            background: linear-gradient(135deg, #a786ff, #00ff88);
-            color: #0a0f1c;
+            padding: 12px 24px;
             border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
+            border-radius: 10px;
+            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            font-size: 1rem;
             transition: all 0.3s ease;
-            margin: 5px;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
         }
 
-        .btn:hover {
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(167, 134, 255, 0.4);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #56ab2f 0%, #a8e6cf 100%);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(86, 171, 47, 0.4);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(45deg, #ff416c 0%, #ff4b2b 100%);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 65, 108, 0.4);
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #ff9800 0%, #ffc107 100%);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.4);
+        }
+
+        .btn-info {
+            background: linear-gradient(45deg, #17a2b8 0%, #20c997 100%);
+            color: white;
+        }
+
+        .btn-info:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(23, 162, 184, 0.4);
         }
 
         .btn:disabled {
-            opacity: 0.5;
+            opacity: 0.6;
             cursor: not-allowed;
-            transform: none;
+            transform: none !important;
         }
 
-        .btn.danger {
-            background: linear-gradient(135deg, #ff4444, #cc3333);
-            color: #ffffff;
-        }
-
-        .btn.warning {
-            background: linear-gradient(135deg, #ffc107, #ff8f00);
-            color: #0a0f1c;
-        }
-
-        .progress-section {
-            background: rgba(26, 31, 46, 0.6);
-            border: 1px solid rgba(167, 134, 255, 0.2);
+        .status-bar {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
             border-radius: 10px;
-            padding: 25px;
             margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .status-bar.success {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid rgba(76, 175, 80, 0.5);
+        }
+
+        .status-bar.error {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid rgba(244, 67, 54, 0.5);
+        }
+
+        .status-bar.info {
+            background: rgba(33, 150, 243, 0.2);
+            border: 1px solid rgba(33, 150, 243, 0.5);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+            color: #4ecdc4;
+        }
+
+        .stat-card p {
+            opacity: 0.8;
+        }
+
+        .tree-table-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+
+        .tree-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .tree-table th {
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            padding: 15px;
+            text-align: center;
+            font-weight: 600;
+            color: white;
+        }
+
+        .tree-table td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tree-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .address {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .position-left {
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+
+        .position-right {
+            color: #4ecdc4;
+            font-weight: bold;
+        }
+
+        .log-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+
+        .log-entry.success {
+            color: #4caf50;
+        }
+
+        .log-entry.error {
+            color: #f44336;
+        }
+
+        .log-entry.info {
+            color: #2196f3;
+        }
+
+        .log-entry.warning {
+            color: #ff9800;
         }
 
         .progress-bar {
             width: 100%;
             height: 20px;
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
             overflow: hidden;
             margin: 10px 0;
@@ -162,187 +269,30 @@
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #a786ff, #00ff88);
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
             width: 0%;
             transition: width 0.3s ease;
-        }
-
-        .log-section {
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(167, 134, 255, 0.2);
-            border-radius: 10px;
-            padding: 20px;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .log-entry {
-            padding: 5px 0;
-            border-bottom: 1px solid rgba(167, 134, 255, 0.1);
-            font-family: monospace;
-            font-size: 0.9rem;
-        }
-
-        .log-entry.success {
-            color: #00ff88;
-        }
-
-        .log-entry.error {
-            color: #ff4444;
-        }
-
-        .log-entry.warning {
-            color: #ffc107;
-        }
-
-        .log-entry.info {
-            color: #9ecbff;
-        }
-
-        .migration-stats {
-            margin-top: 20px;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 8px;
-            border: 1px solid rgba(167, 134, 255, 0.2);
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-
-        .stat-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 12px;
-            background: rgba(26, 31, 46, 0.6);
-            border-radius: 6px;
-            border: 1px solid rgba(167, 134, 255, 0.1);
-        }
-
-        .stat-label {
-            color: #9ecbff;
-            font-size: 0.9rem;
-        }
-
-        .stat-value {
-            color: #a786ff;
-            font-weight: 600;
-            font-size: 1rem;
-        }
-
-        .stat-value.success {
-            color: #00ff88;
-        }
-
-        .stat-value.error {
-            color: #ff4444;
-        }
-
-        .comparison-table-section {
-            background: rgba(26, 31, 46, 0.6);
-            border: 1px solid rgba(167, 134, 255, 0.2);
-            border-radius: 10px;
-            padding: 25px;
-            margin-bottom: 20px;
-        }
-
-        .table-container {
-            overflow-x: auto;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .comparison-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9rem;
-        }
-
-        .comparison-table th,
-        .comparison-table td {
-            padding: 10px 8px;
-            text-align: center;
-            border: 1px solid rgba(167, 134, 255, 0.2);
-        }
-
-        .comparison-table th {
-            background: rgba(167, 134, 255, 0.1);
-            color: #a786ff;
-            font-weight: 600;
-            position: sticky;
-            top: 0;
-        }
-
-        .comparison-table td {
-            color: #9ecbff;
-        }
-
-        .comparison-table tr:nth-child(even) {
-            background: rgba(167, 134, 255, 0.05);
-        }
-
-        .status-success {
-            color: #00ff88;
-            font-weight: 600;
-        }
-
-        .status-error {
-            color: #ff4444;
-            font-weight: 600;
-        }
-
-        .status-pending {
-            color: #ffc107;
-            font-weight: 600;
-        }
-
-        .address-cell {
-            font-family: monospace;
-            font-size: 0.8rem;
-            word-break: break-all;
-        }
-
-        .user-info {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .info-card {
-            background: rgba(26, 31, 46, 0.6);
-            border: 1px solid rgba(167, 134, 255, 0.2);
-            border-radius: 8px;
-            padding: 15px;
-        }
-
-        .info-card h4 {
-            color: #a786ff;
-            margin-bottom: 10px;
-            font-size: 1rem;
-        }
-
-        .info-value {
-            color: #9ecbff;
-            font-size: 0.9rem;
-            word-break: break-all;
         }
 
         @media (max-width: 768px) {
             .container {
                 padding: 15px;
             }
-            
-            .contract-info {
-                grid-template-columns: 1fr;
-            }
-            
+
             .header h1 {
                 font-size: 2rem;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
     </style>
@@ -350,1362 +300,720 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔄 Migration Tool</h1>
-            <p>انتقال ساختار درخت باینری از قرارداد قدیم به جدید</p>
+            <h1>🌳 Tree Structure Export & Position Check</h1>
+            <p>استخراج و ذخیره ساختار کامل درخت + بررسی جایگاه خالی کاربران</p>
         </div>
 
-        <div id="statusCard" class="status-card">
-            <h3>📊 وضعیت سیستم</h3>
-            <p id="statusText">در حال اتصال به کیف پول...</p>
+        <div class="controls">
+            <button class="btn btn-primary" onclick="connectWallet()">🔗 اتصال کیف پول</button>
+            <button class="btn btn-success" onclick="extractTreeStructure()" id="extractBtn" disabled>🌳 استخراج درخت</button>
+            <button class="btn btn-primary" onclick="downloadJSON()" id="downloadBtn" disabled>💾 دانلود JSON</button>
+            <button class="btn btn-warning" onclick="testRegistrationWithRevert()" id="testRegBtn" disabled>🚫 تست ثبت با Revert</button>
+            <button class="btn btn-info" onclick="showRegistrationForm()" id="showFormBtn" disabled>📝 فرم ثبت دستی</button>
+            <button class="btn btn-danger" onclick="clearData()">🗑️ پاک کردن</button>
         </div>
 
-        <div class="contract-info">
-            <div class="contract-card">
-                <h3>📜 قرارداد قدیم</h3>
-                <div class="contract-address" id="oldContractAddress">در حال بارگذاری...</div>
-            </div>
-            <div class="contract-card">
-                <h3>🆕 قرارداد جدید</h3>
-                <div class="contract-address" id="newContractAddress">در حال بارگذاری...</div>
-            </div>
-        </div>
-
-        <div class="user-info" id="userInfo" style="display: none;">
-            <div class="info-card">
-                <h4>👤 آدرس کیف پول</h4>
-                <div class="info-value" id="userAddress">-</div>
-            </div>
-            <div class="info-card">
-                <h4>🌳 موقعیت در درخت</h4>
-                <div class="info-value" id="userPosition">-</div>
-            </div>
-            <div class="info-card">
-                <h4>👥 زیرمجموعه‌ها</h4>
-                <div class="info-value" id="userChildren">-</div>
-            </div>
-            <div class="info-card">
-                <h4>💰 موجودی IAM</h4>
-                <div class="info-value" id="userBalance">-</div>
+        <div class="status-bar" id="statusBar" style="display: none;">
+            <span id="statusText">آماده</span>
+            <div class="progress-bar" id="progressBar" style="display: none;">
+                    <div class="progress-fill" id="progressFill"></div>
             </div>
         </div>
 
-        <!-- Contract Comparison Table -->
-        <div class="comparison-table-section" id="contractComparisonSection">
-            <h3>📊 مقایسه قراردادها</h3>
-            <div class="table-container">
-                <table class="comparison-table">
-                    <thead>
-                        <tr>
-                            <th>ویژگی</th>
-                            <th>قرارداد قدیم</th>
-                            <th>قرارداد جدید</th>
-                            <th>وضعیت</th>
-                        </tr>
-                    </thead>
-                    <tbody id="contractComparisonTableBody">
-                        <tr>
-                            <td><strong>آدرس قرارداد</strong></td>
-                            <td class="address-cell" id="oldContractAddressCell">در حال بارگذاری...</td>
-                            <td class="address-cell" id="newContractAddressCell">در حال بارگذاری...</td>
-                            <td class="status-pending">⏳ در انتظار</td>
-                        </tr>
-                        <tr>
-                            <td><strong>نام قرارداد</strong></td>
-                            <td id="oldContractName">-</td>
-                            <td id="newContractName">-</td>
-                            <td class="status-pending">⏳ در انتظار</td>
-                        </tr>
-                        <tr>
-                            <td><strong>نماد توکن</strong></td>
-                            <td id="oldContractSymbol">-</td>
-                            <td id="newContractSymbol">-</td>
-                            <td class="status-pending">⏳ در انتظار</td>
-                        </tr>
-                        <tr>
-                            <td><strong>تعداد اعشار</strong></td>
-                            <td id="oldContractDecimals">-</td>
-                            <td id="newContractDecimals">-</td>
-                            <td class="status-pending">⏳ در انتظار</td>
-                        </tr>
-                        <tr>
-                            <td><strong>تعداد کل کاربران</strong></td>
-                            <td id="oldContractUsers">-</td>
-                            <td id="newContractUsers">-</td>
-                            <td class="status-pending">⏳ در انتظار</td>
-                        </tr>
-                        <tr>
-                            <td><strong>تولید کل توکن</strong></td>
-                            <td id="oldContractSupply">-</td>
-                            <td id="newContractSupply">-</td>
-                            <td class="status-pending">⏳ در انتظار</td>
-                        </tr>
-                        <tr>
-                            <td><strong>قیمت توکن</strong></td>
-                            <td id="oldContractPrice">-</td>
-                            <td id="newContractPrice">-</td>
-                            <td class="status-pending">⏳ در انتظار</td>
-                        </tr>
-                        <tr>
-                            <td><strong>موجودی DAI قرارداد</strong></td>
-                            <td id="oldContractDaiBalance">-</td>
-                            <td id="newContractDaiBalance">-</td>
-                            <td class="status-pending">⏳ در انتظار</td>
-                        </tr>
-                        <tr>
-                            <td><strong>موجودی IAM قرارداد</strong></td>
-                            <td id="oldContractIamBalance">-</td>
-                            <td id="newContractIamBalance">-</td>
-                            <td class="status-pending">⏳ در انتظار</td>
-                        </tr>
-                        <tr>
-                            <td><strong>آدرس DAI</strong></td>
-                            <td class="address-cell" id="oldContractDaiAddress">-</td>
-                            <td class="address-cell" id="newContractDaiAddress">-</td>
-                            <td class="status-pending">⏳ در انتظار</td>
-                        </tr>
-                    </tbody>
-                </table>
+        <div class="stats" id="statsContainer" style="display: none;">
+            <div class="stat-card">
+                <h3 id="totalUsers">0</h3>
+                <p>کل کاربران</p>
             </div>
-            <div style="margin-top: 15px; text-align: center;">
-                <button id="refreshComparisonBtn" class="btn">🔄 بروزرسانی مقایسه</button>
-            </div>
-        </div>
-
-        <!-- Index and Address Comparison Table -->
-        <div class="comparison-table-section" id="indexAddressComparisonSection">
-            <h3>🔍 مقایسه ایندکس‌ها و آدرس‌ها</h3>
-            <div style="margin-bottom: 15px; text-align: center;">
-                <button id="loadIndexComparisonBtn" class="btn">📋 بارگذاری مقایسه ایندکس‌ها</button>
-                <button id="refreshIndexComparisonBtn" class="btn" style="display: none;">🔄 بروزرسانی</button>
-            </div>
-            <div class="table-container" id="indexComparisonContainer" style="display: none;">
-                <table class="comparison-table">
-                    <thead>
-                        <tr>
-                            <th>ایندکس</th>
-                            <th>آدرس قرارداد قدیم</th>
-                            <th>آدرس قرارداد جدید</th>
-                            <th>وضعیت تطبیق</th>
-                            <th>رفرر قدیم</th>
-                            <th>رفرر جدید</th>
-                        </tr>
-                    </thead>
-                    <tbody id="indexComparisonTableBody">
-                    </tbody>
-                </table>
-            </div>
-            <div id="indexComparisonStats" style="display: none; margin-top: 15px; padding: 15px; background: rgba(0, 0, 0, 0.3); border-radius: 8px; border: 1px solid rgba(167, 134, 255, 0.2);">
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <span class="stat-label">کل ایندکس‌ها:</span>
-                        <span class="stat-value" id="totalIndexesCount">0</span>
+            <div class="stat-card">
+                <h3 id="extractedUsers">0</h3>
+                <p>استخراج شده</p>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-label">تطبیق کامل:</span>
-                        <span class="stat-value success" id="matchedIndexesCount">0</span>
+            <div class="stat-card">
+                <h3 id="activeUsers">0</h3>
+                <p>کاربران فعال</p>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-label">عدم تطبیق:</span>
-                        <span class="stat-value error" id="unmatchedIndexesCount">0</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">در قرارداد جدید نیست:</span>
-                        <span class="stat-value error" id="notInNewContractCount">0</span>
+            <div class="stat-card">
+                <h3 id="treeLevels">0</h3>
+                <p>سطح درخت</p>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <div class="migration-controls">
-            <h3>🔄 کنترل‌های میگریشن</h3>
-            <button id="exportSnapshotBtn" class="btn">📤 خروجی JSON شبکه</button>
-            <input id="importSnapshotInput" type="file" accept="application/json" style="display:none" />
-            <button id="importSnapshotBtn" class="btn">📥 ورود JSON شبکه</button>
-            <button id="analyzeBtn" class="btn">🔍 تحلیل کامل ساختار درخت</button>
-            <button id="migrateBtn" class="btn danger" disabled>🚀 شروع میگریشن کامل</button>
-            <button id="verifyBtn" class="btn warning" disabled>✅ تأیید میگریشن کامل</button>
-            <button id="resumeBtn" class="btn" disabled style="display: none;">🔄 ادامه میگریشن</button>
-            <button id="skipErrorBtn" class="btn warning" disabled style="display: none;">⏭️ رد کردن خطا و ادامه</button>
-        </div>
-
-        <div class="progress-section" id="progressSection" style="display: none;">
-            <h3>📈 پیشرفت میگریشن</h3>
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill"></div>
-            </div>
-            <p id="progressText">0% - آماده برای شروع</p>
-            
-            <div class="migration-stats" id="migrationStats" style="display: none;">
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <span class="stat-label">کل کاربران:</span>
-                        <span class="stat-value" id="totalUsersCount">0</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">میگریشن شده:</span>
-                        <span class="stat-value success" id="migratedUsersCount">0</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">ناموفق:</span>
-                        <span class="stat-value error" id="failedUsersCount">0</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">در حال پردازش:</span>
-                        <span class="stat-value" id="processingUsersCount">0</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="comparison-table-section" id="comparisonTableSection" style="display: none;">
-            <h3>📊 جدول تطبیق کاربران</h3>
-            <div class="table-container">
-                <table class="comparison-table">
+                
+        <div class="tree-table-container" id="tableContainer" style="display: none;">
+            <h3 style="margin-bottom: 15px; text-align: center;">📊 ساختار درخت</h3>
+            <table class="tree-table" id="treeTable">
                     <thead>
                         <tr>
-                            <th>ایندکس قدیم</th>
-                            <th>آدرس قدیم</th>
-                            <th>آدرس جدید</th>
-                            <th>رفرر قدیم</th>
-                            <th>رفرر جدید</th>
-                            <th>وضعیت</th>
+                        <th>شماره ترتیب</th>
+                            <th>آدرس کاربر</th>
+                        <th>آدرس معرف</th>
+                        <th>موقعیت</th>
+                        <th>سطح</th>
+                        <th>وضعیت</th>
                         </tr>
                     </thead>
-                    <tbody id="comparisonTableBody">
+                <tbody id="treeTableBody">
                     </tbody>
                 </table>
+        </div>
+
+        <div class="tree-table-container" id="registrationContainer" style="display: none;">
+            <h3 style="margin-bottom: 15px; text-align: center;">📝 تست ثبت کاربر جدید</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">آدرس معرف (Referrer):</label>
+                    <input type="text" id="referrerInput" placeholder="0x..." style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">آدرس والد (Upper):</label>
+                    <input type="text" id="upperInput" placeholder="0x..." style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white;">
+                </div>
+                <div style="grid-column: 1 / -1;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">آدرس کاربر جدید:</label>
+                    <input type="text" id="newUserInput" placeholder="0x..." style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white;">
+                </div>
+            </div>
+            <div style="text-align: center;">
+                <button class="btn btn-success" onclick="testManualRegistration()">🚀 تست ثبت دستی</button>
+                <button class="btn btn-warning" onclick="fillTestData()">📋 پر کردن داده تست</button>
             </div>
         </div>
 
-        <div class="log-section">
-            <h3>📝 گزارش عملیات</h3>
-            <div id="logContainer">
-                <div class="log-entry info">سیستم آماده است...</div>
-            </div>
+        <div class="log-container" id="logContainer">
+            <div class="log-entry info">[سیستم] آماده برای استخراج درخت...</div>
         </div>
     </div>
 
-    <!-- Load config.js first -->
-    <script src="js/config.js"></script>
+    <script src="js/ethers.min.js"></script>
+    <script src="js/iam-abi.js"></script>
     <script>
-        class MigrationManager {
-            constructor() {
-                this.oldContract = null;
-                this.newContract = null;
-                this.signer = null;
-                this.userAddress = null;
-                this.treeStructure = null;
-                this.isMigrating = false;
-                this.migrationQueue = [];
-                this.migratedUsers = new Set();
-                this.failedUsers = new Set();
-                this.totalUsers = 0;
-                this.processedUsers = 0;
-                this.visitedUsers = new Set();
-                
-                this.initialize();
-            }
+        // Global variables
+        let contract = null;
+        let signer = null;
+        let treeData = [];
+        let isExtracting = false;
+        let totalNodes = 0;
+        let processedNodes = 0;
 
-            async initialize() {
-                try {
-                    this.log('🔄 شروع فرآیند اتصال...', 'info');
-                    
-                    // Add a small delay to ensure MetaMask is ready
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    
-                    await this.connectWallet();
-                    await this.setupContracts();
-                    await this.loadUserData();
-                    this.updateStatus('✅ سیستم آماده است', 'success');
-                } catch (error) {
-                    this.log(`❌ خطا در راه‌اندازی: ${error.message}`, 'error');
-                    this.updateStatus('❌ خطا در راه‌اندازی سیستم', 'error');
-                    
-                    // Add retry button
-                    this.addRetryButton();
+        // Contract configuration - Updated with new ABI
+        const CONTRACT_ADDRESS = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D';
+        
+        // Full ABI for Contract
+        const CONTRACT_ABI = window.IAM_ABI || [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"allowance","type":"uint256"},{"internalType":"uint256","name":"needed","type":"uint256"}],"name":"ERC20InsufficientAllowance","type":"error"},{"inputs":[{"internalType":"address","name":"sender","type":"address"},{"internalType":"uint256","name":"balance","type":"uint256"},{"internalType":"uint256","name":"needed","type":"uint256"}],"name":"ERC20InsufficientBalance","type":"error"},{"inputs":[{"internalType":"address","name":"approver","type":"address"}],"name":"ERC20InvalidApprover","type":"error"},{"inputs":[{"internalType":"address","name":"receiver","type":"address"}],"name":"ERC20InvalidReceiver","type":"error"},{"inputs":[{"internalType":"address","name":"sender","type":"address"}],"name":"ERC20InvalidSender","type":"error"},{"inputs":[{"internalType":"address","name":"spender","type":"address"}],"name":"ERC20InvalidSpender","type":"error"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"amountIAM","type":"uint256"}],"name":"Activated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"newPoints","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"newCap","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"BinaryPointsUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"newPoolSize","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"BinaryPoolUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"claimer","type":"address"},{"indexed":false,"internalType":"uint256","name":"totalDistributed","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"claimerReward","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"BinaryRewardDistributed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"},{"indexed":true,"internalType":"uint256","name":"index","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"IndexTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"reward","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"monthsPassed","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"MonthlyRewardClaimed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"string","name":"reason","type":"string"},{"indexed":false,"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"MonthlyRewardFailed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"amountIAM","type":"uint256"}],"name":"PurchaseKind","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"buyer","type":"address"},{"indexed":false,"internalType":"uint256","name":"daiAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"tokenAmount","type":"uint256"}],"name":"TokensBought","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"seller","type":"address"},{"indexed":false,"internalType":"uint256","name":"tokenAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"daiAmount","type":"uint256"}],"name":"TokensSold","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":true,"internalType":"address","name":"parent","type":"address"},{"indexed":true,"internalType":"address","name":"referrer","type":"address"},{"indexed":false,"internalType":"uint256","name":"position","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"TreeStructureUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"voter","type":"address"},{"indexed":true,"internalType":"address","name":"target","type":"address"},{"indexed":false,"internalType":"bool","name":"isLike","type":"bool"},{"indexed":false,"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"VoteSubmitted","type":"event"},{"inputs":[],"name":"MAX_BINARY_POINT_CAP","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"REFERRAL_FEE_PERCENT","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"daiAmount","type":"uint256"}],"name":"buyTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"cashBack","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"cashback","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"claim","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"minReward","type":"uint256"}],"name":"claimMonthlyReward","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"contractTotalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"daiToken","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"dislikeCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"daiAmount","type":"uint256"}],"name":"estimateBuy","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenAmount","type":"uint256"}],"name":"estimateSell","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getContractTokenBalance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getContractdaiBalance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"index","type":"uint256"}],"name":"getLeftAddress","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"index","type":"uint256"}],"name":"getLeftChild","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"pure","type":"function"},{"inputs":[{"internalType":"uint256","name":"index","type":"uint256"}],"name":"getParent","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"pure","type":"function"},{"inputs":[],"name":"getPointValue","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"index","type":"uint256"}],"name":"getReferrer","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getRegPrice","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"index","type":"uint256"}],"name":"getRightAddress","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"index","type":"uint256"}],"name":"getRightChild","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"pure","type":"function"},{"inputs":[],"name":"getTokenPrice","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getUserTree","outputs":[{"internalType":"address","name":"left","type":"address"},{"internalType":"address","name":"right","type":"address"},{"internalType":"uint256","name":"binaryPoints","type":"uint256"},{"internalType":"uint256","name":"binaryPointCap","type":"uint256"},{"internalType":"uint256","name":"depositedAmount","type":"uint256"},{"internalType":"uint256","name":"lastMonthlyClaim","type":"uint256"},{"internalType":"uint256","name":"totalMonthlyRewarded","type":"uint256"},{"internalType":"uint256","name":"refclimed","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getVoteStatus","outputs":[{"internalType":"uint256","name":"totalLikes","type":"uint256"},{"internalType":"uint256","name":"totalDislikes","type":"uint256"},{"internalType":"uint8","name":"userVoteStatus","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"indexToAddress","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"likeCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"amountIAM","type":"uint256"},{"internalType":"uint256","name":"payout","type":"uint256"},{"internalType":"address","name":"seller","type":"address"}],"name":"purchase","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"referrer","type":"address"},{"internalType":"address","name":"upper","type":"address"},{"internalType":"address","name":"newUser","type":"address"}],"name":"registerAndActivate","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"referrer","type":"address"},{"internalType":"address","name":"newUser","type":"address"}],"name":"registerFree","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenAmount","type":"uint256"}],"name":"sellTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalClaimableBinaryPoints","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalClaimablePoints","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferIndexOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"address","name":"","type":"address"}],"name":"userVotes","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"users","outputs":[{"internalType":"uint256","name":"index","type":"uint256"},{"internalType":"uint256","name":"binaryPoints","type":"uint256"},{"internalType":"uint256","name":"binaryPointCap","type":"uint256"},{"internalType":"uint256","name":"binaryPointsClaimed","type":"uint256"},{"internalType":"uint256","name":"totalPurchasedKind","type":"uint256"},{"internalType":"uint256","name":"upgradeTime","type":"uint256"},{"internalType":"uint256","name":"lastClaimTime","type":"uint256"},{"internalType":"uint256","name":"leftPoints","type":"uint256"},{"internalType":"uint256","name":"rightPoints","type":"uint256"},{"internalType":"uint256","name":"lastMonthlyClaim","type":"uint256"},{"internalType":"uint256","name":"totalMonthlyRewarded","type":"uint256"},{"internalType":"uint256","name":"refclimed","type":"uint256"},{"internalType":"uint256","name":"depositedAmount","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"target","type":"address"},{"internalType":"bool","name":"isLike","type":"bool"}],"name":"voteUser","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"wallets","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}];
+
+        // DOM elements
+        const statusBar = document.getElementById('statusBar');
+        const statusText = document.getElementById('statusText');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+        const extractBtn = document.getElementById('extractBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const statsContainer = document.getElementById('statsContainer');
+        const tableContainer = document.getElementById('tableContainer');
+        const treeTableBody = document.getElementById('treeTableBody');
+        const logContainer = document.getElementById('logContainer');
+
+        // Utility functions
+        function logMessage(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString('fa-IR');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function showStatus(message, type = 'info') {
+            statusText.textContent = message;
+            statusBar.className = `status-bar ${type}`;
+            statusBar.style.display = 'block';
+        }
+
+        function showProgress(show = true) {
+            if (show) {
+                progressBar.style.display = 'block';
+            } else {
+                progressBar.style.display = 'none';
+            }
+        }
+
+        function updateProgress(current, total) {
+            const percentage = total > 0 ? (current / total) * 100 : 0;
+            progressFill.style.width = `${percentage}%`;
+            statusText.textContent = `در حال پردازش: ${current}/${total} (${percentage.toFixed(1)}%)`;
+        }
+
+        function updateStats(totalUsers, extractedUsers, activeUsers, treeLevels) {
+            document.getElementById('totalUsers').textContent = totalUsers;
+            document.getElementById('extractedUsers').textContent = extractedUsers;
+            document.getElementById('activeUsers').textContent = activeUsers;
+            document.getElementById('treeLevels').textContent = treeLevels;
+            statsContainer.style.display = 'grid';
+        }
+
+        function addRowToTable(order, userAddress, upperAddress, position, level, status) {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${order}</td>
+                <td><span class="address">${userAddress}</span></td>
+                <td><span class="address">${upperAddress}</span></td>
+                <td><span class="position-${position.toLowerCase()}">${position}</span></td>
+                <td>${level}</td>
+                <td>${status}</td>
+            `;
+            treeTableBody.appendChild(row);
+        }
+
+        // Wallet connection
+        async function connectWallet() {
+            try {
+                if (typeof window.ethereum === 'undefined') {
+                    throw new Error('MetaMask not found');
                 }
-            }
 
-            addRetryButton() {
-                const statusCard = document.getElementById('statusCard');
-                const retryBtn = document.createElement('button');
-                retryBtn.textContent = '🔄 تلاش مجدد';
-                retryBtn.className = 'btn';
-                retryBtn.style.marginTop = '10px';
-                retryBtn.onclick = () => {
-                    retryBtn.remove();
-                    this.initialize();
-                };
-                statusCard.appendChild(retryBtn);
-            }
+                logMessage('در حال اتصال به کیف پول...', 'info');
+                showStatus('در حال اتصال...', 'info');
 
-            async connectWallet() {
-                try {
-                    // Check if MetaMask is available
-                    if (typeof window.ethereum === 'undefined') {
-                        throw new Error('MetaMask یافت نشد - لطفاً MetaMask را نصب کنید');
-                    }
-
-                    // Check if MetaMask is locked
-                    try {
-                        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-                        if (!accounts || accounts.length === 0) {
-                            // Request account access
-                            const newAccounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                            if (!newAccounts || newAccounts.length === 0) {
-                                throw new Error('هیچ حساب کیف پولی یافت نشد - لطفاً MetaMask را باز کنید و حساب خود را انتخاب کنید');
-                            }
-                            this.userAddress = newAccounts[0];
-                        } else {
-                            this.userAddress = accounts[0];
-                        }
-                    } catch (requestError) {
-                        if (requestError.code === 4001) {
-                            throw new Error('کاربر اتصال را رد کرد - لطفاً دوباره تلاش کنید');
-                        } else if (requestError.code === -32002) {
-                            throw new Error('درخواست اتصال در حال پردازش است - لطفاً MetaMask را بررسی کنید');
-                        } else {
-                            throw new Error(`خطا در درخواست اتصال: ${requestError.message}`);
-                        }
-                    }
-
-                    this.log(`✅ کیف پول متصل شد: ${this.userAddress.substring(0, 6)}...${this.userAddress.substring(38)}`, 'success');
-                } catch (error) {
-                    throw new Error(`خطا در اتصال کیف پول: ${error.message}`);
-                }
-            }
-
-            async setupContracts() {
-                try {
-                    const provider = new ethers.BrowserProvider(window.ethereum);
-                    this.signer = await provider.getSigner();
-
-                    // Wait for config to be loaded
-                    if (!window.DEFAULT_IAM_ADDRESS) {
-                        this.log('⏳ در حال انتظار برای بارگذاری کانفیگ...', 'info');
-                        await new Promise(resolve => setTimeout(resolve, 2000));
-                    }
-
-                    // Get contract address from config
-                    const contractAddress = window.DEFAULT_IAM_ADDRESS;
-
-                    if (!contractAddress) {
-                        throw new Error('آدرس قرارداد در فایل کانفیگ یافت نشد - لطفاً صفحه را رفرش کنید');
-                    }
-
-                    // Update UI
-                    document.getElementById('oldContractAddress').textContent = contractAddress;
-                    document.getElementById('newContractAddress').textContent = 'N/A - Single Contract Mode';
-
-                    // Create contract instance
-                    this.oldContract = new ethers.Contract(contractAddress, window.IAM_ABI, this.signer);
-                    this.newContract = null; // No new contract
-
-                    this.log('✅ قراردادها آماده شدند', 'success');
-                } catch (error) {
-                    throw new Error(`خطا در راه‌اندازی قراردادها: ${error.message}`);
-                }
-            }
-
-            async loadUserData() {
-                try {
-                    // Get user position in old contract
-                    const userData = await this.oldContract.users(this.userAddress);
-                    const userTree = await this.oldContract.getUserTree(this.userAddress);
-                    
-                    // Update UI
-                    document.getElementById('userAddress').textContent = this.userAddress;
-                    document.getElementById('userPosition').textContent = `شاخه ${userData.index.toString()}`;
-                    document.getElementById('userChildren').textContent = `چپ: ${userTree.left}, راست: ${userTree.right}`;
-                    
-                    const balance = await this.oldContract.balanceOf(this.userAddress);
-                    const balanceFormatted = ethers.formatUnits(balance, 18);
-                    document.getElementById('userBalance').textContent = `${parseFloat(balanceFormatted).toFixed(6)} IAM`;
-
-                    document.getElementById('userInfo').style.display = 'grid';
-                    this.log('✅ اطلاعات کاربر بارگذاری شد', 'success');
-                    
-                    // Load contract comparison data
-                    await this.loadContractComparison();
-                } catch (error) {
-                    this.log(`⚠️ خطا در بارگذاری اطلاعات کاربر: ${error.message}`, 'warning');
-                }
-            }
-
-            async loadContractComparison() {
-                try {
-                    this.log('📊 در حال بارگذاری مقایسه قراردادها...', 'info');
-                    
-            // Load contract data
-            await this.loadContractData(this.oldContract, 'old');
-            
-            // No new contract - show N/A
-            this.showContractDataNA('new');
-                    
-                    this.log('✅ مقایسه قراردادها بارگذاری شد', 'success');
-                } catch (error) {
-                    this.log(`⚠️ خطا در بارگذاری مقایسه قراردادها: ${error.message}`, 'warning');
-                }
-            }
-
-            async loadIndexComparison() {
-                try {
-                    this.log('🔍 شروع بارگذاری مقایسه ایندکس‌ها و آدرس‌ها...', 'info');
-                    
-                    // Show loading state
-                    document.getElementById('loadIndexComparisonBtn').disabled = true;
-                    document.getElementById('loadIndexComparisonBtn').textContent = '⏳ در حال بارگذاری...';
-                    
-                    // Get total users from old contract
-                    const totalUsers = await this.oldContract.wallets();
-                    this.log(`📊 تعداد کل کاربران در قرارداد قدیم: ${totalUsers.toString()}`, 'info');
-                    
-                    const comparisonData = [];
-                    let matchedCount = 0;
-                    let unmatchedCount = 0;
-                    let notInNewContractCount = 0;
-                    
-                    // Process each index
-                    for (let i = 1; i <= totalUsers; i++) {
-                        try {
-                            // Get address from old contract by index
-                            const oldAddress = await this.oldContract.indexToAddress(i);
-                            
-                            if (oldAddress === '0x0000000000000000000000000000000000000000') {
-                                continue; // Skip empty addresses
-                            }
-                            
-                            // Get referrer from old contract
-                            let oldReferrer = '0x0000000000000000000000000000000000000000';
-                            try {
-                                oldReferrer = await this.oldContract.getReferrer(i);
-                            } catch (e) {
-                                // Referrer might not exist
-                            }
-                            
-                            // Check if address exists in new contract
-                            let newAddress = null;
-                            let newReferrer = '0x0000000000000000000000000000000000000000';
-                            let matchStatus = 'not_found';
-                            
-                            try {
-                                const newUserData = await this.newContract.users(oldAddress);
-                                if (newUserData.index.toString() !== '0') {
-                                    newAddress = oldAddress;
-                                    matchStatus = 'matched';
-                                    matchedCount++;
-                                    
-                                    // Get referrer from new contract
-                                    try {
-                                        const newUserTree = await this.newContract.getUserTree(oldAddress);
-                                        newReferrer = newUserTree.referrer;
-                                    } catch (e) {
-                                        // Referrer might not exist
-                                    }
-                                } else {
-                                    notInNewContractCount++;
-                                    matchStatus = 'not_in_new';
-                                }
-                            } catch (e) {
-                                notInNewContractCount++;
-                                matchStatus = 'not_in_new';
-                            }
-                            
-                            comparisonData.push({
-                                index: i,
-                                oldAddress: oldAddress,
-                                newAddress: newAddress,
-                                oldReferrer: oldReferrer,
-                                newReferrer: newReferrer,
-                                status: matchStatus
-                            });
-                            
-                            // Update progress every 10 users
-                            if (i % 10 === 0) {
-                                this.log(`📊 پردازش ایندکس ${i} از ${totalUsers}...`, 'info');
-                            }
-                            
-                        } catch (error) {
-                            this.log(`⚠️ خطا در پردازش ایندکس ${i}: ${error.message}`, 'warning');
-                            unmatchedCount++;
-                        }
-                    }
-                    
-                    // Update statistics
-                    document.getElementById('totalIndexesCount').textContent = comparisonData.length;
-                    document.getElementById('matchedIndexesCount').textContent = matchedCount;
-                    document.getElementById('unmatchedIndexesCount').textContent = unmatchedCount;
-                    document.getElementById('notInNewContractCount').textContent = notInNewContractCount;
-                    
-                    // Update table
-                    this.updateIndexComparisonTable(comparisonData);
-                    
-                    // Show results
-                    document.getElementById('indexComparisonContainer').style.display = 'block';
-                    document.getElementById('indexComparisonStats').style.display = 'block';
-                    document.getElementById('loadIndexComparisonBtn').style.display = 'none';
-                    document.getElementById('refreshIndexComparisonBtn').style.display = 'inline-block';
-                    
-                    this.log(`✅ مقایسه ایندکس‌ها تکمیل شد: ${matchedCount} تطبیق، ${notInNewContractCount} در قرارداد جدید نیست`, 'success');
-                    
-                } catch (error) {
-                    this.log(`❌ خطا در بارگذاری مقایسه ایندکس‌ها: ${error.message}`, 'error');
-                } finally {
-                    document.getElementById('loadIndexComparisonBtn').disabled = false;
-                    document.getElementById('loadIndexComparisonBtn').textContent = '📋 بارگذاری مقایسه ایندکس‌ها';
-                }
-            }
-
-            updateIndexComparisonTable(comparisonData) {
-                const tbody = document.getElementById('indexComparisonTableBody');
-                tbody.innerHTML = '';
-                
-                comparisonData.forEach(item => {
-                    const row = document.createElement('tr');
-                    
-                    // Index
-                    const indexCell = document.createElement('td');
-                    indexCell.textContent = item.index;
-                    row.appendChild(indexCell);
-                    
-                    // Old Address
-                    const oldAddressCell = document.createElement('td');
-                    oldAddressCell.className = 'address-cell';
-                    oldAddressCell.textContent = item.oldAddress ? 
-                        `${item.oldAddress.substring(0, 6)}...${item.oldAddress.substring(38)}` : '-';
-                    row.appendChild(oldAddressCell);
-                    
-                    // New Address
-                    const newAddressCell = document.createElement('td');
-                    newAddressCell.className = 'address-cell';
-                    newAddressCell.textContent = item.newAddress ? 
-                        `${item.newAddress.substring(0, 6)}...${item.newAddress.substring(38)}` : '-';
-                    row.appendChild(newAddressCell);
-                    
-                    // Match Status
-                    const statusCell = document.createElement('td');
-                    switch(item.status) {
-                        case 'matched':
-                            statusCell.className = 'status-success';
-                            statusCell.textContent = '✅ تطبیق';
-                            break;
-                        case 'not_in_new':
-                            statusCell.className = 'status-error';
-                            statusCell.textContent = '❌ در قرارداد جدید نیست';
-                            break;
-                        case 'not_found':
-                            statusCell.className = 'status-pending';
-                            statusCell.textContent = '⏳ یافت نشد';
-                            break;
-                        default:
-                            statusCell.className = 'status-pending';
-                            statusCell.textContent = item.status;
-                    }
-                    row.appendChild(statusCell);
-                    
-                    // Old Referrer
-                    const oldReferrerCell = document.createElement('td');
-                    oldReferrerCell.className = 'address-cell';
-                    oldReferrerCell.textContent = item.oldReferrer && item.oldReferrer !== '0x0000000000000000000000000000000000000000' 
-                        ? `${item.oldReferrer.substring(0, 6)}...${item.oldReferrer.substring(38)}` : '-';
-                    row.appendChild(oldReferrerCell);
-                    
-                    // New Referrer
-                    const newReferrerCell = document.createElement('td');
-                    newReferrerCell.className = 'address-cell';
-                    newReferrerCell.textContent = item.newReferrer && item.newReferrer !== '0x0000000000000000000000000000000000000000' 
-                        ? `${item.newReferrer.substring(0, 6)}...${item.newReferrer.substring(38)}` : '-';
-                    row.appendChild(newReferrerCell);
-                    
-                    tbody.appendChild(row);
+                const accounts = await window.ethereum.request({
+                    method: 'eth_requestAccounts'
                 });
-            }
 
-            async loadContractData(contract, prefix) {
-                try {
-                    // Contract address
-                    const contractAddress = await contract.getAddress();
-                    document.getElementById(`${prefix}ContractAddressCell`).textContent = 
-                        `${contractAddress.substring(0, 6)}...${contractAddress.substring(38)}`;
-                    
-                    // Contract name
-                    try {
-                        const name = await contract.name();
-                        document.getElementById(`${prefix}ContractName`).textContent = name;
-                    } catch (e) {
-                        document.getElementById(`${prefix}ContractName`).textContent = 'نامشخص';
-                    }
-                    
-                    // Contract symbol
-                    try {
-                        const symbol = await contract.symbol();
-                        document.getElementById(`${prefix}ContractSymbol`).textContent = symbol;
-                    } catch (e) {
-                        document.getElementById(`${prefix}ContractSymbol`).textContent = 'نامشخص';
-                    }
-                    
-                    // Decimals
-                    try {
-                        const decimals = await contract.decimals();
-                        document.getElementById(`${prefix}ContractDecimals`).textContent = decimals.toString();
-                    } catch (e) {
-                        document.getElementById(`${prefix}ContractDecimals`).textContent = 'نامشخص';
-                    }
-                    
-                    // Total users
-                    try {
-                        const users = await contract.wallets();
-                        document.getElementById(`${prefix}ContractUsers`).textContent = users.toString();
-                    } catch (e) {
-                        document.getElementById(`${prefix}ContractUsers`).textContent = 'نامشخص';
-                    }
-                    
-                    // Total supply
-                    try {
-                        const supply = await contract.totalSupply();
-                        const supplyFormatted = ethers.formatUnits(supply, 18);
-                        document.getElementById(`${prefix}ContractSupply`).textContent = 
-                            `${parseFloat(supplyFormatted).toFixed(2)} IAM`;
-                    } catch (e) {
-                        document.getElementById(`${prefix}ContractSupply`).textContent = 'نامشخص';
-                    }
-                    
-                    // Token price
-                    try {
-                        const price = await contract.getTokenPrice();
-                        const priceFormatted = ethers.formatUnits(price, 18);
-                        document.getElementById(`${prefix}ContractPrice`).textContent = 
-                            `$${parseFloat(priceFormatted).toFixed(6)}`;
-                    } catch (e) {
-                        document.getElementById(`${prefix}ContractPrice`).textContent = 'نامشخص';
-                    }
-                    
-                    // DAI balance
-                    try {
-                        const daiBalance = await contract.getContractdaiBalance();
-                        const daiBalanceFormatted = ethers.formatUnits(daiBalance, 18);
-                        document.getElementById(`${prefix}ContractDaiBalance`).textContent = 
-                            `${parseFloat(daiBalanceFormatted).toFixed(2)} DAI`;
-                    } catch (e) {
-                        document.getElementById(`${prefix}ContractDaiBalance`).textContent = 'نامشخص';
-                    }
-                    
-                    // IAM balance
-                    try {
-                        const iamBalance = await contract.getContractTokenBalance();
-                        const iamBalanceFormatted = ethers.formatUnits(iamBalance, 18);
-                        document.getElementById(`${prefix}ContractIamBalance`).textContent = 
-                            `${parseFloat(iamBalanceFormatted).toFixed(2)} IAM`;
-                    } catch (e) {
-                        document.getElementById(`${prefix}ContractIamBalance`).textContent = 'نامشخص';
-                    }
-                    
-                    // DAI address
-                    try {
-                        const daiAddress = await contract.daiToken();
-                        document.getElementById(`${prefix}ContractDaiAddress`).textContent = 
-                            `${daiAddress.substring(0, 6)}...${daiAddress.substring(38)}`;
-                    } catch (e) {
-                        document.getElementById(`${prefix}ContractDaiAddress`).textContent = 'نامشخص';
-                    }
-                    
-                    // Update status to success
-                    const statusCells = document.querySelectorAll(`#${prefix}ContractAddressCell`).forEach(cell => {
-                        const row = cell.closest('tr');
-                        const statusCell = row.querySelector('td:last-child');
-                        statusCell.className = 'status-success';
-                        statusCell.textContent = '✅ موفق';
-                    });
+                if (accounts.length === 0) {
+                    throw new Error('No accounts found');
+                }
+
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+                contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+
+                const userAddress = await signer.getAddress();
+                logMessage(`✅ کیف پول متصل شد: ${userAddress}`, 'success');
+                showStatus('کیف پول متصل شد', 'success');
+
+                extractBtn.disabled = false;
+                document.getElementById('testRegBtn').disabled = false;
+                document.getElementById('showFormBtn').disabled = false;
+                logMessage('آماده برای استخراج درخت و تست ثبت', 'info');
                     
                 } catch (error) {
-                    this.log(`⚠️ خطا در بارگذاری داده‌های قرارداد ${prefix}: ${error.message}`, 'warning');
-                    
-                    // Update status to error
-                    const statusCells = document.querySelectorAll(`#${prefix}ContractAddressCell`).forEach(cell => {
-                        const row = cell.closest('tr');
-                        const statusCell = row.querySelector('td:last-child');
-                        statusCell.className = 'status-error';
-                        statusCell.textContent = '❌ خطا';
-                    });
-                }
+                logMessage(`❌ خطا در اتصال: ${error.message}`, 'error');
+                showStatus('خطا در اتصال کیف پول', 'error');
             }
+        }
 
-            async analyzeTreeStructure() {
+        // DFS Tree traversal with progress tracking - Updated for Contract 5
+        async function dfsTraversal(index, level = 1, parentIndex = 0) {
+            try {
+                // Get user address from index
+                const userAddress = await contract.indexToAddress(index);
+                
+                if (userAddress === '0x0000000000000000000000000000000000000000') {
+                    return null;
+                }
+
+                // Get user data - Contract 5
+                const userData = await contract.users(userAddress);
+                // Get index from struct - try multiple methods
+                const userIndex = userData.index || userData[0] || userData['0'] || 0n;
+                
+                // Get upper address - Contract 5 doesn't have getupper, so we'll use parent from tree
+                let upperAddress = '0x0000000000000000000000000000000000000000';
                 try {
-                    this.log('🔍 شروع تحلیل کامل ساختار درخت...', 'info');
-                    
-                    // Get total users count for reference (but don't use as limit)
-                    this.totalUsers = await this.oldContract.wallets();
-                    this.log(`📊 تعداد کل کاربران (مرجع): ${this.totalUsers.toString()}`, 'info');
-
-                    // If a snapshot is loaded, use it; otherwise build by DFS
-                    if (this.snapshot && Array.isArray(this.snapshot) && this.snapshot.length) {
-                        this.log('🧩 استفاده از اسنپ‌شات بارگذاری‌شده برای ساخت نقشه ژنولوژی', 'info');
-                        await this.loadSnapshotIntoState(this.snapshot);
+                    // Try to get parent from tree structure
+                    if (index > 1) {
+                        // Parent index is floor(index / 2)
+                        const parentIdx = Math.floor(index / 2);
+                        if (parentIdx > 0) {
+                            upperAddress = await contract.indexToAddress(parentIdx);
+                            if (upperAddress === '0x0000000000000000000000000000000000000000') {
+                                upperAddress = 'Root';
+                            }
+                        } else {
+                            upperAddress = 'Root';
+                        }
                     } else {
-                        this.log('🌳 در حال جستجوی کامل کاربران با DFS...', 'info');
-                        await this.buildCompleteGenealogy();
+                        upperAddress = 'Root';
+                    }
+                } catch (upperError) {
+                    logMessage(`خطا در دریافت upper برای کاربر ${index}: ${upperError.message}`, 'warning');
+                    upperAddress = 'Root';
+                }
+                
+                // Determine position (left/right)
+                let position = 'Root';
+                if (parentIndex > 0) {
+                    try {
+                        const leftChild = index * 2;
+                        const rightChild = index * 2 + 1;
+                        
+                        // Check if this is left child of parent
+                        if (leftChild === index) {
+                            position = 'Left';
+                        } else if (rightChild === index) {
+                            position = 'Right';
+                        } else {
+                            // For computed positions
+                            if (index % 2 === 0) {
+                                position = 'Left';
+                            } else {
+                                position = 'Right';
+                            }
+                        }
+                    } catch (posError) {
+                        logMessage(`خطا در تعیین موقعیت برای کاربر ${index}: ${posError.message}`, 'warning');
+                        // Fallback: use index to determine position
+                        position = (index % 2 === 0) ? 'Left' : 'Right';
+                    }
+                }
+
+                const isActive = userIndex > 0n;
+                const treeEntry = {
+                    order: index,
+                    user: userAddress,
+                    upper: upperAddress !== '0x0000000000000000000000000000000000000000' ? upperAddress : 'Root',
+                    position: position,
+                    level: level,
+                    status: isActive ? 'Active' : 'Inactive'
+                };
+
+                // Add to table immediately
+                addRowToTable(index, userAddress, treeEntry.upper, position, level, treeEntry.status);
+                
+                // Update progress
+                processedNodes++;
+                updateProgress(processedNodes, totalNodes);
+                
+                // Log progress every 10 nodes
+                if (processedNodes % 10 === 0) {
+                    logMessage(`پردازش شده: ${processedNodes}/${totalNodes} گره`, 'info');
+                }
+                
+                // Get children from getUserTree - Contract 5
+                let leftResult = null;
+                let rightResult = null;
+                
+                try {
+                    const treeData = await contract.getUserTree(userAddress);
+                    const leftChildAddress = treeData[0] || treeData.left || '0x0000000000000000000000000000000000000000';
+                    const rightChildAddress = treeData[1] || treeData.right || '0x0000000000000000000000000000000000000000';
+                    
+                    // Get children indices from addresses
+                    let leftChildIndex = 0;
+                    let rightChildIndex = 0;
+                    
+                    // Left child
+                    if (leftChildAddress !== '0x0000000000000000000000000000000000000000') {
+                        try {
+                            const leftUserData = await contract.users(leftChildAddress);
+                            leftChildIndex = leftUserData.index || leftUserData[0] || leftUserData['0'] || 0n;
+                            
+                            if (leftChildIndex > 0n) {
+                                leftResult = await dfsTraversal(Number(leftChildIndex), level + 1, index);
+                            }
+                        } catch (leftError) {
+                            logMessage(`خطا در دریافت فرزند چپ برای ${index}: ${leftError.message}`, 'warning');
+                        }
                     }
                     
-                    this.log('✅ تحلیل ساختار درخت تکمیل شد', 'success');
-                    document.getElementById('migrateBtn').disabled = false;
-                } catch (error) {
-                    this.log(`❌ خطا در تحلیل ساختار: ${error.message}`, 'error');
+                    // Right child
+                    if (rightChildAddress !== '0x0000000000000000000000000000000000000000') {
+                        try {
+                            const rightUserData = await contract.users(rightChildAddress);
+                            rightChildIndex = rightUserData.index || rightUserData[0] || rightUserData['0'] || 0n;
+                            
+                            if (rightChildIndex > 0n) {
+                                rightResult = await dfsTraversal(Number(rightChildIndex), level + 1, index);
+                            }
+                        } catch (rightError) {
+                            logMessage(`خطا در دریافت فرزند راست برای ${index}: ${rightError.message}`, 'warning');
+                        }
+                    }
+                } catch (treeError) {
+                    logMessage(`خطا در دریافت tree data برای ${index}: ${treeError.message}`, 'warning');
                 }
+                
+                return {
+                    node: treeEntry,
+                    left: leftResult,
+                    right: rightResult
+                };
+                
+                } catch (error) {
+                logMessage(`خطا در DFS برای ایندکس ${index}: ${error.message}`, 'warning');
+                return null;
             }
+        }
 
-            async exportSnapshot() {
+        // Tree extraction using DFS with progress bar
+        async function extractTreeStructure() {
+            if (isExtracting) return;
+            
+            try {
+                isExtracting = true;
+                extractBtn.disabled = true;
+                extractBtn.textContent = '⏳ در حال استخراج...';
+
+                logMessage('شروع استخراج ساختار درخت با الگوریتم DFS...', 'info');
+                showStatus('در حال استخراج درخت...', 'info');
+                showProgress(true);
+
+                treeData = [];
+                treeTableBody.innerHTML = '';
+                processedNodes = 0;
+
+                // First, estimate total nodes by checking wallets count
+                const totalWallets = await contract.wallets();
+                totalNodes = totalWallets.toNumber();
+                
+                logMessage(`تخمین کل گره‌ها: ${totalNodes}`, 'info');
+                updateProgress(0, totalNodes);
+
+                // Start DFS from root (index 1)
+                logMessage('شروع پیمایش DFS از ریشه درخت...', 'info');
+                const treeRoot = await dfsTraversal(1, 1, 0);
+                
+                if (!treeRoot) {
+                    throw new Error('درخت خالی است یا خطا در پیمایش');
+                }
+
+                // Collect all nodes from DFS result
+                function collectNodes(node) {
+                    if (!node) return;
+                    
+                    treeData.push(node.node);
+                    
+                    if (node.left) {
+                        collectNodes(node.left);
+                    }
+                    if (node.right) {
+                        collectNodes(node.right);
+                    }
+                }
+                
+                collectNodes(treeRoot);
+                
+                // Keep the order as rendered in table (DFS order)
+                // Table was already populated during dfsTraversal
+                logMessage(`داده‌ها به ترتیب DFS استخراج شدند`, 'info');
+                
+                // JSON will be downloaded in the same order as displayed in table
+                // No sorting and no table rebuild - use existing table order
+                
+                // Calculate statistics
+                const totalUsers = treeData.length;
+                const activeUsers = treeData.filter(entry => entry.status === 'Active').length;
+                const maxLevel = Math.max(...treeData.map(entry => entry.level));
+
+                updateStats(totalUsers, totalUsers, activeUsers, maxLevel);
+                tableContainer.style.display = 'block';
+                downloadBtn.disabled = false;
+
+                showProgress(false);
+                logMessage(`✅ استخراج کامل شد! ${totalUsers} کاربر با الگوریتم DFS استخراج شد`, 'success');
+                showStatus('استخراج کامل شد', 'success');
+
+                        } catch (error) {
+                showProgress(false);
+                logMessage(`❌ خطا در استخراج: ${error.message}`, 'error');
+                showStatus('خطا در استخراج', 'error');
+            } finally {
+                isExtracting = false;
+                extractBtn.disabled = false;
+                extractBtn.textContent = '🌳 استخراج درخت';
+            }
+        }
+
+        // Download JSON
+        function downloadJSON() {
+            if (treeData.length === 0) {
+                logMessage('❌ هیچ داده‌ای برای دانلود وجود ندارد', 'error');
+                    return;
+                }
+                
                 try {
-                    // Ensure genealogy is built
-                    if (!this.userIndexMap || this.userIndexMap.size === 0) {
-                        this.log('ℹ️ ابتدا تحلیل درخت را انجام دهید تا اسنپ‌شات ساخته شود', 'info');
-                        return;
-                    }
-                    const sortedIndices = Array.from(this.userIndexMap.keys()).sort((a,b)=>a-b);
-                    const snapshot = [];
-                    for (const idx of sortedIndices) {
-                        const address = this.userIndexMap.get(idx);
-                        const data = this.genealogyMap.get(address) || {};
-                        snapshot.push({
-                            index: idx,
-                            address,
-                            referrer: data.referrer || '0x0000000000000000000000000000000000000000'
-                        });
-                    }
-                    const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json' });
+                // Create simplified JSON structure (only order, upper, user)
+                const simplifiedData = treeData.map(entry => ({
+                    order: entry.order,
+                    upper: entry.upper,
+                    user: entry.user
+                }));
+
+                const jsonString = JSON.stringify(simplifiedData, null, 2);
+                    const blob = new Blob([jsonString], { type: 'application/json' });
                     const url = URL.createObjectURL(blob);
+                
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                const filename = `tree-structure-${timestamp}.json`;
+                    
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = `iam-network-snapshot-${Date.now()}.json`;
+                a.download = filename;
                     document.body.appendChild(a);
                     a.click();
-                    a.remove();
+                    document.body.removeChild(a);
                     URL.revokeObjectURL(url);
-                    this.log('📤 اسنپ‌شات JSON با موفقیت صادر شد', 'success');
+                    
+                logMessage(`✅ فایل JSON دانلود شد: ${filename}`, 'success');
+                showStatus('فایل دانلود شد', 'success');
+
                 } catch (error) {
-                    this.log(`❌ خطا در خروجی JSON: ${error.message}`, 'error');
-                }
+                logMessage(`❌ خطا در دانلود: ${error.message}`, 'error');
+                showStatus('خطا در دانلود', 'error');
             }
+        }
 
-            async importSnapshot(file) {
-                try {
-                    const text = await file.text();
-                    const json = JSON.parse(text);
-                    if (!Array.isArray(json)) throw new Error('فرمت JSON معتبر نیست');
-                    this.snapshot = json;
-                    await this.loadSnapshotIntoState(json);
-                    this.log('📥 اسنپ‌شات JSON با موفقیت بارگذاری شد', 'success');
-                    document.getElementById('migrateBtn').disabled = false;
-                } catch (error) {
-                    this.log(`❌ خطا در ورود JSON: ${error.message}`, 'error');
-                }
-            }
-
-            async loadSnapshotIntoState(snapshotArray) {
-                // Reset maps
-                this.genealogyMap = new Map();
-                this.userIndexMap = new Map();
-                this.comparisonData = [];
-                this.visitedUsers = new Set();
-                for (const item of snapshotArray) {
-                    if (!item || !item.index || !item.address) continue;
-                    this.userIndexMap.set(Number(item.index), item.address);
-                    this.genealogyMap.set(item.address, {
-                        index: String(item.index),
-                        referrer: item.referrer || '0x0000000000000000000000000000000000000000',
-                        upper: item.referrer || '0x0000000000000000000000000000000000000000',
-                        left: '0x0000000000000000000000000000000000000000',
-                        right: '0x0000000000000000000000000000000000000000'
-                    });
-                    this.comparisonData.push({
-                        oldIndex: Number(item.index),
-                        oldAddress: item.address,
-                        newAddress: null,
-                        oldReferrer: item.referrer || '0x0000000000000000000000000000000000000000',
-                        newReferrer: null,
-                        status: 'pending'
-                    });
-                }
-                this.updateComparisonTable();
-            }
-
-            async buildCompleteGenealogy() {
-                try {
-                    this.genealogyMap = new Map();
-                    this.userIndexMap = new Map();
-                    this.comparisonData = [];
-                    this.visitedUsers = new Set();
-                    
-                    this.log(`🔍 شروع جستجوی DFS درخت باینری...`, 'info');
-                    this.log(`📊 تعداد کاربران در قرارداد: ${this.totalUsers}`, 'info');
-                    
-                    // Start DFS from root user (index 1)
-                    await this.dfsTraversal(1);
-                    
-                    // Check if we found all users from wallets variable
-                    if (this.genealogyMap.size < this.totalUsers) {
-                        this.log(`⚠️ هشدار: فقط ${this.genealogyMap.size} کاربر از ${this.totalUsers} کاربر wallets یافت شد`, 'warning');
-                    } else if (this.genealogyMap.size > this.totalUsers) {
-                        this.log(`ℹ️ اطلاعات: ${this.genealogyMap.size} کاربر یافت شد (بیشتر از ${this.totalUsers} wallets)`, 'info');
-                    }
-                    
-                    this.log(`✅ جستجوی DFS پایان یافت: ${this.genealogyMap.size} کاربر یافت شد`, 'success');
-                    this.updateComparisonTable();
-                } catch (error) {
-                    throw new Error(`خطا در ساخت نقشه ژنولوژی: ${error.message}`);
-                }
-            }
-
-            async dfsTraversal(index) {
-                try {
-                    // Skip if already visited or invalid index
-                    if (this.visitedUsers.has(index) || index <= 0) {
-                        return;
-                    }
-
-                    // Get user address by index
-                    const userAddress = await this.oldContract.indexToAddress(index);
-                    
-                    // Skip if address is empty
-                    if (userAddress === '0x0000000000000000000000000000000000000000') {
-                        return;
-                    }
-
-                    // Mark as visited
-                    this.visitedUsers.add(index);
-
-                    // Get referrer using getReferrer function with index
-                    const referrerAddress = await this.oldContract.getReferrer(index);
-                    
-                    // Get user data (addresses left/right are not used for traversal)
-                    const userData = await this.oldContract.users(userAddress);
-                    
-                    // Store user data
-                    this.genealogyMap.set(userAddress, {
-                        index: userData.index.toString(),
-                        referrer: referrerAddress,
-                        upper: referrerAddress, // Use referrer as upper
-                        left: '0x0000000000000000000000000000000000000000',
-                        right: '0x0000000000000000000000000000000000000000',
-                        binaryPoints: userData.binaryPoints ? userData.binaryPoints.toString() : '0',
-                        depositedAmount: userData.depositedAmount ? userData.depositedAmount.toString() : '0',
-                        lastMonthlyClaim: userData.lastMonthlyClaim ? userData.lastMonthlyClaim.toString() : '0',
-                        totalMonthlyRewarded: userData.totalMonthlyRewarded ? userData.totalMonthlyRewarded.toString() : '0',
-                        refclimed: userData.refclimed ? userData.refclimed.toString() : '0'
-                    });
-                    
-                    this.userIndexMap.set(index, userAddress);
-                    
-                    // Add to comparison data
-                    this.comparisonData.push({
-                        oldIndex: index,
-                        oldAddress: userAddress,
-                        newAddress: null,
-                        oldReferrer: referrerAddress,
-                        newReferrer: null,
-                        status: 'pending'
-                    });
-                    
-                    this.log(`✅ کاربر ایندکس ${index} یافت شد: ${userAddress.substring(0, 6)}...${userAddress.substring(38)}`, 'success');
-                    
-                    // Recursively visit children by index with left-first priority
-                    const leftIndex = await this.oldContract.getLeftChild(index);
-                    const leftAddress = await this.oldContract.indexToAddress(Number(leftIndex));
-                    if (leftAddress !== '0x0000000000000000000000000000000000000000') {
-                        await this.dfsTraversal(Number(leftIndex));
-
-                        // Only check right child if left exists (per register logic)
-                        const rightIndex = await this.oldContract.getRightChild(index);
-                        const rightAddress = await this.oldContract.indexToAddress(Number(rightIndex));
-                        if (rightAddress !== '0x0000000000000000000000000000000000000000') {
-                            await this.dfsTraversal(Number(rightIndex));
-                        }
-                    }
-                    
-                } catch (error) {
-                    this.log(`⚠️ خطا در DFS برای ایندکس ${index}: ${error.message}`, 'warning');
-                }
-            }
-
-            async startMigration() {
-                if (this.isMigrating) return;
+        // Check if user has empty position - Updated for Contract 5
+        async function checkUserEmptyPosition(userAddress) {
+            try {
+                logMessage(`بررسی جایگاه خالی برای کاربر: ${userAddress}`, 'info');
                 
-                this.isMigrating = true;
-                document.getElementById('migrateBtn').disabled = true;
-                document.getElementById('progressSection').style.display = 'block';
-                document.getElementById('migrationStats').style.display = 'block';
-                document.getElementById('comparisonTableSection').style.display = 'block';
+                // Get user data from contract
+                const userData = await contract.users(userAddress);
+                // Get index from struct - try multiple methods
+                const userIndex = userData.index || userData[0] || userData['0'] || 0n;
                 
-                try {
-                    this.log('🚀 شروع فرآیند میگریشن کامل...', 'info');
-                    
-                    // Build migration queue in correct order (by index)
-                    await this.buildMigrationQueue();
-                    
-                    this.log(`📋 صف میگریشن ساخته شد: ${this.migrationQueue.length} کاربر (به ترتیب ایندکس)`, 'info');
-                    
-                    // Update statistics and table
-                    this.updateMigrationStats();
-                    this.updateComparisonTable();
-                    
-                    // Process migration queue
-                    await this.processMigrationQueue();
-                    
-                    this.log('✅ میگریشن کامل با موفقیت تکمیل شد', 'success');
-                    document.getElementById('verifyBtn').disabled = false;
-                    // Hide skip error button when migration completes successfully
-                    document.getElementById('skipErrorBtn').style.display = 'none';
-                    
-                } catch (error) {
-                    this.log(`❌ خطا در میگریشن: ${error.message}`, 'error');
-                    this.log(`⚠️ میگریشن متوقف شد، اما می‌توانید با دکمه "ادامه میگریشن" یا "رد کردن خطا" ادامه دهید`, 'warning');
-                    document.getElementById('resumeBtn').style.display = 'inline-block';
-                    document.getElementById('resumeBtn').disabled = false;
-                    document.getElementById('skipErrorBtn').style.display = 'inline-block';
-                    document.getElementById('skipErrorBtn').disabled = false;
-                } finally {
-                    this.isMigrating = false;
-                    // Keep resume button enabled even after errors
-                    document.getElementById('resumeBtn').disabled = false;
+                if (userIndex === 0n) {
+                    throw new Error('کاربر در سیستم ثبت نشده است');
                 }
-            }
-
-            async buildMigrationQueue() {
-                try {
-                    this.migrationQueue = [];
-                    
-                    // Build migration queue using all found users (sorted by index)
-                    const sortedIndices = Array.from(this.userIndexMap.keys()).sort((a, b) => a - b);
-                    
-                    for (const index of sortedIndices) {
-                        const userAddress = this.userIndexMap.get(index);
-                        if (userAddress) {
-                            this.migrationQueue.push({
-                                index: index,
-                                address: userAddress,
-                                referrer: this.genealogyMap.get(userAddress).referrer
-                            });
-                        }
-                    }
-                    
-                    this.log(`📋 صف میگریشن ساخته شد: ${this.migrationQueue.length} کاربر (به ترتیب ایندکس)`, 'info');
-                } catch (error) {
-                    throw new Error(`خطا در ساخت صف میگریشن: ${error.message}`);
-                }
-            }
-
-            async processMigrationQueue() {
-                try {
-                    this.processedUsers = 0;
-                    
-                    for (const userInfo of this.migrationQueue) {
-                        try {
-                            const result = await this.migrateUser(userInfo);
-                            this.migratedUsers.add(userInfo.address);
-                            this.processedUsers++;
-                            
-                            // Update comparison data
-                            this.updateComparisonData(userInfo.index, userInfo.address, result.newAddress, result.newReferrer, 'success');
-                            
-                            const progress = Math.round((this.processedUsers / this.migrationQueue.length) * 100);
-                            this.updateProgress(progress, `در حال میگریشن کاربر ${this.processedUsers} از ${this.migrationQueue.length} (ایندکس ${userInfo.index})`);
-                            
-                            // Update statistics and table
-                            this.updateMigrationStats();
-                            this.updateComparisonTable();
-                            
-                            this.log(`✅ کاربر ایندکس ${userInfo.index} (${userInfo.address.substring(0, 6)}...${userInfo.address.substring(38)}) میگریشن شد`, 'success');
-                            
-                            // Add small delay to avoid overwhelming the network
-                            await new Promise(resolve => setTimeout(resolve, 1000));
-                            
-                        } catch (error) {
-                            this.failedUsers.add(userInfo.address);
-                            
-                            // Update comparison data with error
-                            this.updateComparisonData(userInfo.index, userInfo.address, null, null, 'error');
-                            
-                            this.log(`❌ خطا در میگریشن کاربر ایندکس ${userInfo.index} (${userInfo.address.substring(0, 6)}...${userInfo.address.substring(38)}): ${error.message}`, 'error');
-                            
-                            // Update statistics and table even on failure
-                            this.updateMigrationStats();
-                            this.updateComparisonTable();
-                            
-                            // Continue migration instead of stopping - log error and move to next user
-                            this.log(`⚠️ رد شدن از کاربر ایندکس ${userInfo.index} و ادامه میگریشن...`, 'warning');
-                            
-                            // Add small delay before continuing
-                            await new Promise(resolve => setTimeout(resolve, 500));
-                        }
-                    }
-                    
-                    this.updateProgress(100, 'میگریشن کامل شد');
-                } catch (error) {
-                    this.log(`❌ خطا در پردازش صف میگریشن: ${error.message}`, 'error');
-                    this.log(`⚠️ میگریشن متوقف شد، اما می‌توانید با دکمه "ادامه میگریشن" ادامه دهید`, 'warning');
-                }
-            }
-
-            async migrateUser(userInfo) {
-                try {
-                    const userAddress = userInfo.address;
-                    const referrerAddress = userInfo.referrer;
-                    
-                    // Check if user already exists in new contract
-                    const existingUser = await this.newContract.users(userAddress);
-                    if (existingUser.index.toString() !== '0') {
-                        this.log(`⚠️ کاربر ایندکس ${userInfo.index} (${userAddress.substring(0, 6)}...${userAddress.substring(38)}) قبلاً در قرارداد جدید وجود دارد`, 'warning');
-                        
-                        // Get new contract data for comparison
-                        const newUserData = await this.newContract.users(userAddress);
-                        const newUserTree = await this.newContract.getUserTree(userAddress);
-                        
-                        return {
-                            newAddress: userAddress,
-                            newReferrer: newUserTree.referrer
-                        };
-                    }
-                    
-                    // Register user in new contract using referrer as upper
-                    if (referrerAddress !== '0x0000000000000000000000000000000000000000') {
-                        // Pre-check with callStatic to capture revert reasons without spending gas
-                        try {
-                            await this.newContract.callStatic.registerAndActivate(
-                                referrerAddress,
-                                referrerAddress,
-                                userAddress
-                            );
-                        } catch (preErr) {
-                            const msg = (preErr && preErr.message) ? preErr.message : String(preErr);
-                            if (msg.toLowerCase().includes('insufficient token balance')) {
-                                this.log(`❌ ثبت‌نام ایندکس ${userInfo.index} ممکن نیست: موجودی توکن کافی نیست برای فعال‌سازی. قرارداد/کیف‌پول تامین مالی شود یا تنظیمات فعال‌سازی بررسی گردد.`, 'error');
-                            } else {
-                                this.log(`❌ پیش‌بررسی تراکنش ناموفق برای ایندکس ${userInfo.index}: ${msg}`, 'error');
-                            }
-                            throw new Error(msg);
-                        }
-
-                        // Send tx with manual gasLimit to bypass estimation errors (after successful callStatic)
-                        const tx = await this.newContract.registerAndActivate(
-                            referrerAddress, // referrer
-                            referrerAddress, // upper (same as referrer)
-                            userAddress,     // new user
-                            { gasLimit: 1000000 }
-                        );
-                        await tx.wait();
-                        
-                        // Get new contract data after registration
-                        const newUserData = await this.newContract.users(userAddress);
-                        const newUserTree = await this.newContract.getUserTree(userAddress);
-                        
-                        this.log(`✅ کاربر ایندکس ${userInfo.index} (${userAddress.substring(0, 6)}...${userAddress.substring(38)}) در قرارداد جدید ثبت شد`, 'success');
-                        
-                        return {
-                            newAddress: userAddress,
-                            newReferrer: newUserTree.referrer
-                        };
-                    } else {
-                        throw new Error(`کاربر ایندکس ${userInfo.index} رفرر ندارد - نمی‌توان ثبت نام کرد`);
-                    }
-                    
-                } catch (error) {
-                    throw new Error(`خطا در میگریشن کاربر ایندکس ${userInfo.index}: ${error.message}`);
-                }
-            }
-
-            async verifyMigration() {
-                try {
-                    this.log('🔍 شروع تأیید میگریشن کامل...', 'info');
-                    
-                    let successCount = 0;
-                    let failCount = 0;
-                    
-                    for (const userAddress of this.migrationQueue) {
-                        try {
-                            const newUserData = await this.newContract.users(userAddress);
-                            if (newUserData.index.toString() !== '0') {
-                                successCount++;
-                            } else {
-                                failCount++;
-                                this.log(`❌ کاربر ${userAddress.substring(0, 6)}...${userAddress.substring(38)} در قرارداد جدید یافت نشد`, 'error');
-                            }
-                        } catch (error) {
-                            failCount++;
-                            this.log(`❌ خطا در تأیید کاربر ${userAddress.substring(0, 6)}...${userAddress.substring(38)}: ${error.message}`, 'error');
-                        }
-                    }
-                    
-                    this.log(`📊 نتایج تأیید: ${successCount} موفق، ${failCount} ناموفق`, 'info');
-                    
-                    if (failCount === 0) {
-                        this.log('✅ میگریشن کامل تأیید شد', 'success');
-                    } else {
-                        this.log(`⚠️ میگریشن ناقص: ${failCount} کاربر ناموفق`, 'warning');
-                    }
-                    
-                } catch (error) {
-                    this.log(`❌ خطا در تأیید میگریشن: ${error.message}`, 'error');
-                }
-            }
-
-            updateMigrationStats() {
-                document.getElementById('totalUsersCount').textContent = this.migrationQueue.length;
-                document.getElementById('migratedUsersCount').textContent = this.migratedUsers.size;
-                document.getElementById('failedUsersCount').textContent = this.failedUsers.size;
-                document.getElementById('processingUsersCount').textContent = this.processedUsers;
-            }
-
-            updateComparisonData(oldIndex, oldAddress, newAddress, newReferrer, status) {
-                const data = this.comparisonData.find(item => item.oldIndex === oldIndex);
-                if (data) {
-                    data.newAddress = newAddress;
-                    data.newReferrer = newReferrer;
-                    data.status = status;
-                }
-            }
-
-            updateComparisonTable() {
-                const tbody = document.getElementById('comparisonTableBody');
-                tbody.innerHTML = '';
                 
-                this.comparisonData.forEach(item => {
-                    const row = document.createElement('tr');
-                    
-                    // Old Index
-                    const oldIndexCell = document.createElement('td');
-                    oldIndexCell.textContent = item.oldIndex;
-                    row.appendChild(oldIndexCell);
-                    
-                    // Old Address
-                    const oldAddressCell = document.createElement('td');
-                    oldAddressCell.className = 'address-cell';
-                    oldAddressCell.textContent = item.oldAddress ? `${item.oldAddress.substring(0, 6)}...${item.oldAddress.substring(38)}` : '-';
-                    row.appendChild(oldAddressCell);
-                    
-                    // New Address
-                    const newAddressCell = document.createElement('td');
-                    newAddressCell.className = 'address-cell';
-                    newAddressCell.textContent = item.newAddress ? `${item.newAddress.substring(0, 6)}...${item.newAddress.substring(38)}` : '-';
-                    row.appendChild(newAddressCell);
-                    
-                    // Old Referrer
-                    const oldReferrerCell = document.createElement('td');
-                    oldReferrerCell.className = 'address-cell';
-                    oldReferrerCell.textContent = item.oldReferrer && item.oldReferrer !== '0x0000000000000000000000000000000000000000' 
-                        ? `${item.oldReferrer.substring(0, 6)}...${item.oldReferrer.substring(38)}` : '-';
-                    row.appendChild(oldReferrerCell);
-                    
-                    // New Referrer
-                    const newReferrerCell = document.createElement('td');
-                    newReferrerCell.className = 'address-cell';
-                    newReferrerCell.textContent = item.newReferrer && item.newReferrer !== '0x0000000000000000000000000000000000000000' 
-                        ? `${item.newReferrer.substring(0, 6)}...${item.newReferrer.substring(38)}` : '-';
-                    row.appendChild(newReferrerCell);
-                    
-                    // Status
-                    const statusCell = document.createElement('td');
-                    statusCell.className = `status-${item.status}`;
-                    switch(item.status) {
-                        case 'success':
-                            statusCell.textContent = '✅ موفق';
-                            break;
-                        case 'error':
-                            statusCell.textContent = '❌ خطا';
-                            break;
-                        case 'pending':
-                            statusCell.textContent = '⏳ در انتظار';
-                            break;
-                        default:
-                            statusCell.textContent = item.status;
-                    }
-                    row.appendChild(statusCell);
-                    
-                    tbody.appendChild(row);
+                // Get left and right children using getUserTree - Contract 5
+                const treeData = await contract.getUserTree(userAddress);
+                const leftChild = treeData[0] || treeData.left || '0x0000000000000000000000000000000000000000';
+                const rightChild = treeData[1] || treeData.right || '0x0000000000000000000000000000000000000000';
+                
+                const leftEmpty = leftChild === '0x0000000000000000000000000000000000000000';
+                const rightEmpty = rightChild === '0x0000000000000000000000000000000000000000';
+                
+                logMessage(`فرزند چپ: ${leftChild} (${leftEmpty ? 'خالی' : 'پر'})`, 'info');
+                logMessage(`فرزند راست: ${rightChild} (${rightEmpty ? 'خالی' : 'پر'})`, 'info');
+                
+                if (!leftEmpty && !rightEmpty) {
+                    const errorMsg = `کاربر ${userAddress} جایگاه خالی ندارد - هر دو فرزند پر هستند`;
+                    logMessage(`❌ ${errorMsg}`, 'error');
+                    showStatus('کاربر جایگاه خالی ندارد', 'error');
+                    throw new Error(errorMsg);
+                }
+                
+                const availablePositions = [];
+                if (leftEmpty) availablePositions.push('چپ');
+                if (rightEmpty) availablePositions.push('راست');
+                
+                const successMsg = `✅ کاربر ${userAddress} دارای جایگاه خالی: ${availablePositions.join(' و ')}`;
+                logMessage(successMsg, 'success');
+                showStatus('کاربر جایگاه خالی دارد', 'success');
+                
+                return {
+                    hasEmptyPosition: true,
+                    leftEmpty: leftEmpty,
+                    rightEmpty: rightEmpty,
+                    availablePositions: availablePositions
+                };
+                
+            } catch (error) {
+                logMessage(`❌ خطا در بررسی جایگاه: ${error.message}`, 'error');
+                showStatus('خطا در بررسی جایگاه', 'error');
+                throw error;
+            }
+        }
+
+        // Register new user with position validation and revert logic - Updated for new ABI
+        async function registerNewUser(referrerAddress, upperAddress, newUserAddress) {
+            try {
+                logMessage(`شروع ثبت کاربر جدید: ${newUserAddress}`, 'info');
+                logMessage(`معرف (referrer): ${referrerAddress}`, 'info');
+                logMessage(`والد (upper): ${upperAddress}`, 'info');
+                
+                // First check if upper user has empty position - if not, revert
+                await checkUserEmptyPosition(upperAddress);
+                
+                // If we reach here, user has empty position, proceed with registration
+                logMessage('در حال ثبت کاربر در قرارداد...', 'info');
+                const tx = await contract.registerAndActivate(
+                    referrerAddress,  // referrer
+                    upperAddress,     // upper
+                    newUserAddress   // newUser
+                );
+                
+                logMessage(`✅ تراکنش ارسال شد: ${tx.hash}`, 'success');
+                showStatus('در انتظار تایید تراکنش...', 'info');
+                
+                const receipt = await tx.wait();
+                logMessage(`✅ کاربر با موفقیت ثبت شد! Block: ${receipt.blockNumber}`, 'success');
+                showStatus('کاربر با موفقیت ثبت شد', 'success');
+                
+                return receipt;
+                
+            } catch (error) {
+                // If error is about empty position, it's a revert - don't proceed to next level
+                if (error.message.includes('جایگاه خالی ندارد')) {
+                    logMessage(`🚫 ثبت Revert شد: ${error.message}`, 'error');
+                    showStatus('ثبت Revert شد - جایگاه خالی نیست', 'error');
+                    throw new Error(`Registration reverted: ${error.message}`);
+                }
+                
+                // Other errors (network, contract, etc.)
+                logMessage(`❌ خطا در ثبت کاربر: ${error.message}`, 'error');
+                showStatus('خطا در ثبت کاربر', 'error');
+                throw error;
+            }
+        }
+
+        // Clear data
+        function clearData() {
+            treeData = [];
+            treeTableBody.innerHTML = '';
+            statsContainer.style.display = 'none';
+            tableContainer.style.display = 'none';
+            downloadBtn.disabled = true;
+            logContainer.innerHTML = '<div class="log-entry info">[سیستم] داده‌ها پاک شدند...</div>';
+            showStatus('داده‌ها پاک شدند', 'info');
+        }
+
+        // Test registration with revert logic
+        async function testRegistrationWithRevert() {
+            try {
+                logMessage('🧪 شروع تست ثبت کاربر با منطق Revert...', 'info');
+                showStatus('در حال تست ثبت...', 'info');
+                
+                // Test case: Try to register under user that has no empty position
+                const upperUserAddress = '0x95EF8Cd4975400B8758D5Fe49DBF4620B9d957ee'; // User with no empty position
+                const upperAddress = '0x7253fDF13E11c70297BeE84cD91B925e74557768'; // Parent of upper user
+                const newUserAddress = '0x1234567890123456789012345678901234567890'; // Fake address for test
+                
+                logMessage(`🔍 تلاش برای ثبت کاربر جدید: ${newUserAddress}`, 'info');
+                logMessage(`📍 زیر کاربر: ${upperUserAddress}`, 'info');
+                logMessage(`👤 معرف: ${upperAddress}`, 'info');
+                
+                // First check if upper user has empty position
+                await checkUserEmptyPosition(upperUserAddress);
+                
+                // If we reach here, it means user has empty position (unexpected)
+                logMessage('⚠️ خطا: کاربر باید جایگاه خالی نداشته باشد!', 'warning');
+                
+            } catch (error) {
+                // This is expected - user has no empty position, so registration should revert
+                logMessage(`✅ تست موفق - ثبت Revert شد: ${error.message}`, 'success');
+                showStatus('تست موفق - ثبت Revert شد', 'success');
+                
+                // Now test with a user that has empty position
+                await testRegistrationWithValidPosition();
+            }
+        }
+
+        // Test registration with valid position
+        async function testRegistrationWithValidPosition() {
+            try {
+                logMessage('🧪 تست ثبت با جایگاه معتبر...', 'info');
+                
+                // Test with root user (usually has empty positions)
+                const upperUserAddress = '0xB6F844eFE62948647968196257B7DcD2323beF0C'; // Root user
+                const upperAddress = '0xB6F844eFE62948647968196257B7DcD2323beF0C'; // Same as upper
+                const newUserAddress = '0x9876543210987654321098765432109876543210'; // Another fake address
+                
+                logMessage(`🔍 تلاش برای ثبت کاربر جدید: ${newUserAddress}`, 'info');
+                logMessage(`📍 زیر کاربر: ${upperUserAddress}`, 'info');
+                
+                // Check if upper user has empty position
+                const result = await checkUserEmptyPosition(upperUserAddress);
+                
+                logMessage(`✅ کاربر دارای جایگاه خالی در موقعیت: ${result.availablePositions.join(' و ')}`, 'success');
+                logMessage('✅ ثبت کاربر در این جایگاه امکان‌پذیر است', 'success');
+                showStatus('تست موفق - جایگاه معتبر', 'success');
+                
+            } catch (error) {
+                logMessage(`❌ خطا در تست جایگاه معتبر: ${error.message}`, 'error');
+                showStatus('خطا در تست جایگاه معتبر', 'error');
+            }
+        }
+
+        // Fill test data in the form - Updated for new fields
+        function fillTestData() {
+            document.getElementById('referrerInput').value = '0x7253fDF13E11c70297BeE84cD91B925e74557768';
+            document.getElementById('upperInput').value = '0x95EF8Cd4975400B8758D5Fe49DBF4620B9d957ee';
+            document.getElementById('newUserInput').value = '0x1234567890123456789012345678901234567890';
+            
+            logMessage('📋 داده‌های تست پر شدند', 'info');
+        }
+
+        // Test manual registration - Updated for new ABI
+        async function testManualRegistration() {
+            try {
+                const referrerAddress = document.getElementById('referrerInput').value.trim();
+                const upperAddress = document.getElementById('upperInput').value.trim();
+                const newUserAddress = document.getElementById('newUserInput').value.trim();
+                
+                if (!referrerAddress || !upperAddress || !newUserAddress) {
+                    throw new Error('لطفاً تمام فیلدها را پر کنید');
+                }
+                
+                if (!referrerAddress.startsWith('0x') || !upperAddress.startsWith('0x') || !newUserAddress.startsWith('0x')) {
+                    throw new Error('آدرس‌ها باید با 0x شروع شوند');
+                }
+                
+                logMessage('🚀 شروع تست ثبت دستی...', 'info');
+                showStatus('در حال تست ثبت...', 'info');
+                
+                // Test registration with revert logic - Updated signature: (referrer, upper, newUser)
+                await registerNewUser(referrerAddress, upperAddress, newUserAddress);
+                
+            } catch (error) {
+                logMessage(`❌ خطا در تست ثبت دستی: ${error.message}`, 'error');
+                showStatus('خطا در تست ثبت', 'error');
+            }
+        }
+
+        // Show registration form
+        function showRegistrationForm() {
+            document.getElementById('registrationContainer').style.display = 'block';
+            logMessage('📝 فرم ثبت کاربر نمایش داده شد', 'info');
+        }
+
+        // Auto connect wallet
+        async function autoConnectWallet() {
+            try {
+                if (typeof window.ethereum === 'undefined') {
+                    logMessage('❌ MetaMask یافت نشد', 'error');
+                    return;
+                }
+
+                logMessage('در حال اتصال خودکار به کیف پول...', 'info');
+                showStatus('اتصال خودکار...', 'info');
+
+                const accounts = await window.ethereum.request({
+                    method: 'eth_accounts'
                 });
-            }
 
-            async resumeMigration() {
-                if (this.isMigrating) return;
-                
-                this.isMigrating = true;
-                document.getElementById('resumeBtn').disabled = true;
-                document.getElementById('migrateBtn').disabled = true;
-                
-                try {
-                    this.log('🔄 ادامه فرآیند میگریشن...', 'info');
-                    
-                    // Continue from where we left off
-                    const remainingUsers = this.migrationQueue.filter(userInfo => 
-                        !this.migratedUsers.has(userInfo.address) && !this.failedUsers.has(userInfo.address)
-                    );
-                    
-                    this.log(`📋 ${remainingUsers.length} کاربر باقی‌مانده برای میگریشن`, 'info');
-                    
-                    // Process remaining users
-                    for (const userInfo of remainingUsers) {
-                        try {
-                            const result = await this.migrateUser(userInfo);
-                            this.migratedUsers.add(userInfo.address);
-                            this.processedUsers++;
-                            
-                            // Update comparison data
-                            this.updateComparisonData(userInfo.index, userInfo.address, result.newAddress, result.newReferrer, 'success');
-                            
-                            const progress = Math.round((this.processedUsers / this.migrationQueue.length) * 100);
-                            this.updateProgress(progress, `در حال میگریشن کاربر ${this.processedUsers} از ${this.migrationQueue.length} (ایندکس ${userInfo.index})`);
-                            
-                            this.updateMigrationStats();
-                            this.updateComparisonTable();
-                            
-                            this.log(`✅ کاربر ایندکس ${userInfo.index} (${userInfo.address.substring(0, 6)}...${userInfo.address.substring(38)}) میگریشن شد`, 'success');
-                            
-                            await new Promise(resolve => setTimeout(resolve, 1000));
-                            
+                if (accounts.length === 0) {
+                    logMessage('❌ هیچ حساب فعالی یافت نشد', 'warning');
+                    return;
+                }
+
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+                contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+
+                const userAddress = await signer.getAddress();
+                logMessage(`✅ کیف پول خودکار متصل شد: ${userAddress}`, 'success');
+                showStatus('کیف پول متصل شد', 'success');
+
+                extractBtn.disabled = false;
+                document.getElementById('testRegBtn').disabled = false;
+                document.getElementById('showFormBtn').disabled = false;
+                logMessage('آماده برای استخراج درخت و تست ثبت', 'info');
+
                         } catch (error) {
-                            this.failedUsers.add(userInfo.address);
-                            
-                            // Update comparison data with error
-                            this.updateComparisonData(userInfo.index, userInfo.address, null, null, 'error');
-                            
-                            this.log(`❌ خطا در میگریشن کاربر ایندکس ${userInfo.index} (${userInfo.address.substring(0, 6)}...${userInfo.address.substring(38)}): ${error.message}`, 'error');
-                            
-                            this.updateMigrationStats();
-                            this.updateComparisonTable();
-                            
-                            // Continue migration instead of stopping - log error and move to next user
-                            this.log(`⚠️ رد شدن از کاربر ایندکس ${userInfo.index} و ادامه میگریشن...`, 'warning');
-                            
-                            // Add small delay before continuing
-                            await new Promise(resolve => setTimeout(resolve, 500));
-                        }
-                    }
-                    
-                    this.updateProgress(100, 'میگریشن کامل شد');
-                    this.log('✅ میگریشن کامل با موفقیت تکمیل شد', 'success');
-                    document.getElementById('verifyBtn').disabled = false;
-                    // Hide skip error button when migration completes successfully
-                    document.getElementById('skipErrorBtn').style.display = 'none';
-                    
-                } catch (error) {
-                    this.log(`❌ خطا در ادامه میگریشن: ${error.message}`, 'error');
-                    this.log(`⚠️ میگریشن متوقف شد، اما می‌توانید با دکمه "ادامه میگریشن" یا "رد کردن خطا" ادامه دهید`, 'warning');
-                    document.getElementById('skipErrorBtn').style.display = 'inline-block';
-                    document.getElementById('skipErrorBtn').disabled = false;
-                } finally {
-                    this.isMigrating = false;
-                    // Keep resume button enabled even after errors
-                    document.getElementById('resumeBtn').disabled = false;
-                }
-            }
-
-            async skipErrorAndContinue() {
-                if (this.isMigrating) return;
-                
-                this.log('⏭️ رد کردن خطا و ادامه میگریشن...', 'info');
-                
-                // Simply call resumeMigration which now continues on errors
-                await this.resumeMigration();
-            }
-
-            updateProgress(percentage, text) {
-                document.getElementById('progressFill').style.width = `${percentage}%`;
-                document.getElementById('progressText').textContent = `${percentage}% - ${text}`;
-            }
-
-            updateStatus(message, type) {
-                const statusCard = document.getElementById('statusCard');
-                const statusText = document.getElementById('statusText');
-                
-                statusCard.className = `status-card ${type}`;
-                statusText.textContent = message;
-            }
-
-            log(message, type = 'info') {
-                const logContainer = document.getElementById('logContainer');
-                const logEntry = document.createElement('div');
-                logEntry.className = `log-entry ${type}`;
-                logEntry.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
-                logContainer.appendChild(logEntry);
-                logContainer.scrollTop = logContainer.scrollHeight;
+                logMessage(`❌ خطا در اتصال خودکار: ${error.message}`, 'error');
+                showStatus('خطا در اتصال خودکار', 'error');
             }
         }
 
-        // Show N/A for new contract data
-        showContractDataNA(prefix) {
-            document.getElementById(`${prefix}ContractAddressCell`).textContent = 'N/A';
-            document.getElementById(`${prefix}ContractName`).textContent = 'N/A';
-            document.getElementById(`${prefix}ContractSymbol`).textContent = 'N/A';
-            document.getElementById(`${prefix}ContractDecimals`).textContent = 'N/A';
-            document.getElementById(`${prefix}ContractUsers`).textContent = 'N/A';
-            document.getElementById(`${prefix}ContractSupply`).textContent = 'N/A';
-            document.getElementById(`${prefix}ContractPrice`).textContent = 'N/A';
-            document.getElementById(`${prefix}ContractDaiBalance`).textContent = 'N/A';
-            document.getElementById(`${prefix}ContractIamBalance`).textContent = 'N/A';
-            document.getElementById(`${prefix}ContractDaiAddress`).textContent = 'N/A';
-            
-            // Update status to N/A
-            const statusCells = document.querySelectorAll(`#${prefix}ContractAddressCell`).forEach(cell => {
-                const row = cell.closest('tr');
-                const statusCell = row.querySelector('td:last-child');
-                statusCell.className = 'status-pending';
-                statusCell.textContent = 'N/A';
-            });
-        }
-
-        // Initialize when page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            window.migrationManager = new MigrationManager();
-            
-            // Setup event listeners
-            document.getElementById('exportSnapshotBtn').addEventListener('click', () => {
-                window.migrationManager.exportSnapshot();
-            });
-
-            document.getElementById('importSnapshotBtn').addEventListener('click', () => {
-                document.getElementById('importSnapshotInput').click();
-            });
-
-            document.getElementById('importSnapshotInput').addEventListener('change', (e) => {
-                const file = e.target.files && e.target.files[0];
-                if (file) {
-                    window.migrationManager.importSnapshot(file);
-                    // reset input to allow same-file re-upload later if needed
-                    e.target.value = '';
-                }
-            });
-            document.getElementById('analyzeBtn').addEventListener('click', () => {
-                window.migrationManager.analyzeTreeStructure();
-            });
-            
-            document.getElementById('migrateBtn').addEventListener('click', () => {
-                window.migrationManager.startMigration();
-            });
-            
-            document.getElementById('verifyBtn').addEventListener('click', () => {
-                window.migrationManager.verifyMigration();
-            });
-            
-            document.getElementById('resumeBtn').addEventListener('click', () => {
-                window.migrationManager.resumeMigration();
-            });
-            
-            document.getElementById('skipErrorBtn').addEventListener('click', () => {
-                window.migrationManager.skipErrorAndContinue();
-            });
-            
-            document.getElementById('refreshComparisonBtn').addEventListener('click', () => {
-                window.migrationManager.loadContractComparison();
-            });
-            
-            document.getElementById('loadIndexComparisonBtn').addEventListener('click', () => {
-                window.migrationManager.loadIndexComparison();
-            });
-            
-            document.getElementById('refreshIndexComparisonBtn').addEventListener('click', () => {
-                window.migrationManager.loadIndexComparison();
-            });
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            logMessage('صفحه Migration بارگذاری شد', 'info');
+            // Auto connect after 1 second
+            setTimeout(autoConnectWallet, 1000);
         });
     </script>
 </body>
 </html>
-

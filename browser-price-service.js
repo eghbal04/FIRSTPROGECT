@@ -82,7 +82,7 @@ class BrowserPriceService {
       
       // آدرس کنترکت IAM - از آدرس اصلی استفاده شود
       const configuredNew = (typeof window !== 'undefined') ? (window.getIAMAddress && window.getIAMAddress()) : null;
-      const IAM_ADDRESS = configuredNew || '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D';
+      const IAM_ADDRESS = configuredNew || '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2';
       
       console.log('🔍 Contract address selection:', {
         configuredNew: configuredNew,

@@ -40,7 +40,7 @@ CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     address VARCHAR(42) NOT NULL UNIQUE,
     user_index INTEGER NOT NULL UNIQUE,
-    referrer VARCHAR(42),
+    upper VARCHAR(42),
     registration_time TIMESTAMP,
     created_at TIMESTAMP DEFAULT NOW()
 );
@@ -84,13 +84,13 @@ const [post] = await sql`SELECT * FROM posts WHERE id = ${postId}`;
 const userData = {
   address: '0x1234...',
   index: 1,
-  referrer: '0x5678...',
+  upper: '0x5678...',
   registrationTime: new Date().toISOString()
 };
 
 await sql`
-  INSERT INTO users (address, user_index, referrer, registration_time)
-  VALUES (${userData.address}, ${userData.index}, ${userData.referrer}, ${userData.registrationTime})
+  INSERT INTO users (address, user_index, upper, registration_time)
+  VALUES (${userData.address}, ${userData.index}, ${userData.upper}, ${userData.registrationTime})
 `;
 ```
 
@@ -180,7 +180,7 @@ async function onWalletConnect(address, index) {
     await db.storeUserRegistration({
       address,
       index,
-      referrer: null,
+      upper: null,
       registrationTime: new Date().toISOString()
     });
     console.log('✅ User data stored');

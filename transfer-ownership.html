@@ -218,24 +218,16 @@
     ← Back to Dashboard
   </a>
 
-  <div class="transfer-ownership-container">
-    <h2 class="page-title">Ownership</h2>
-    <div class="subtext">Please carefully enter the new owner's address</div>
+    <div class="transfer-ownership-container">
+      <h2 class="page-title">Ownership</h2>
+      <div class="subtext">Please carefully enter the new owner's address</div>
 
-    <!-- Wallet Connection Status -->
-    <div class="card" id="connectionStatus">
-      <b>🔗 Connection Status:</b><br>
-      <div id="walletConnectionInfo" style="color: #ffc107;">⏳ Checking wallet connection...</div>
-    </div>
-
-
-
-    <div class="card warning-card">
-      <b>Important Warning:</b><br>
-      By transferring ownership, all access and control of this position will be transferred to the new address and you will no longer have any access to this account.<br>
-      This operation is irreversible. Please ensure the destination address is correct before proceeding.<br>
-      <b>Recommendation:</b> Carefully check the destination address multiple times. If there's an error, recovery is not possible.
-    </div>
+      <div class="card warning-card">
+        <b>Important Warning:</b><br>
+        By transferring ownership, all access and control of this position will be transferred to the new address and you will no longer have any access to this account.<br>
+        This operation is irreversible. Please ensure the destination address is correct before proceeding.<br>
+        <b>Recommendation:</b> Carefully check the destination address multiple times. If there's an error, recovery is not possible.
+      </div>
     <form id="transferOwnershipForm">
       <div class="form-group">
         <label for="newOwnerAddress">New Owner Address</label>
@@ -271,6 +263,16 @@
        </div>
     </div>
   </div>
+  <!-- Force connection to Contract 5 -->
+  <script>
+    // Force IAM_ADDRESS to Contract 5 before config.js loads
+    window.IAM_ADDRESS = '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2';
+    
+    // Clear localStorage to prevent interference
+    localStorage.removeItem('iam_selected_address');
+    localStorage.setItem('iam_selected_address', '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2');
+  </script>
+  
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.10.0/dist/ethers.umd.min.js"></script>
   <script src="js/config.js"></script>
   <script>
@@ -278,25 +280,46 @@
     window.SKIP_META = true;
   </script>
   <script src="js/auto-wallet-connect.js"></script>
+  
+  <!-- Override connectWallet to ensure Contract 5 is used -->
+  <script>
+    // Override connectWallet to force Contract 5
+    const originalConnectWallet = window.connectWallet;
+    window.connectWallet = async function() {
+      // Force Contract 5 address
+      window.IAM_ADDRESS = '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2';
+      window.DEFAULT_IAM_ADDRESS = '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2';
+      
+      // Call original function
+      if (originalConnectWallet) {
+        return await originalConnectWallet.apply(this, arguments);
+      }
+    };
+    
+    // Final override after all scripts load
+    window.addEventListener('load', function() {
+      window.IAM_ADDRESS = '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2';
+      window.DEFAULT_IAM_ADDRESS = '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2';
+      console.log('✅ Transfer Ownership forced to Contract 5:', window.IAM_ADDRESS);
+    });
+  </script>
   <script>
          // Check wallet connection status
      async function checkWalletConnection() {
        try {
-         const connectionInfoEl = document.getElementById('walletConnectionInfo');
-         
          if (!window.contractConfig || !window.contractConfig.contract || !window.contractConfig.signer) {
-           if (connectionInfoEl) {
-             connectionInfoEl.innerHTML = '<span style="color: #ff4444;">❌ Wallet not connected. Please connect your wallet first.</span>';
-           }
            return false;
          }
          
-         if (connectionInfoEl) {
-           connectionInfoEl.innerHTML = '<span style="color: #00ff88;">✅ Wallet connected successfully</span>';
+         // Test the connection by getting the current address
+         try {
+           const currentAddress = await window.contractConfig.signer.getAddress();
+           console.log('✅ Wallet connection verified');
+           return true;
+         } catch (error) {
+           console.warn('Error getting wallet address:', error);
+           return false;
          }
-         
-         console.log('✅ Wallet connection verified');
-         return true;
        } catch (error) {
          console.warn('Error checking wallet connection:', error);
          return false;
@@ -336,48 +359,54 @@
 
         // Try multiple known signatures in order
         let tx;
+        let lastError = null;
+        
         // 1) transferIndexOwnership(address)
         if (!tx && typeof c.transferIndexOwnership === 'function') {
-          tx = await c.transferIndexOwnership(newOwner);
+          try {
+            tx = await c.transferIndexOwnership(newOwner);
+            console.log('✅ Successfully called transferIndexOwnership(address)');
+          } catch (err) {
+            console.warn('transferIndexOwnership(address) failed:', err);
+            lastError = err;
+          }
         }
+        
+        // 2) Try with signature directly
         if (!tx) {
           try {
             const fn = c.getFunction?.('transferIndexOwnership(address)');
-            if (fn) tx = await fn(newOwner);
-          } catch(_) {}
+            if (fn) {
+              tx = await fn(newOwner);
+              console.log('✅ Successfully called transferIndexOwnership(address) via signature');
+            }
+          } catch (err) {
+            console.warn('transferIndexOwnership(address) signature failed:', err);
+            lastError = err;
+          }
         }
-        // 2) transferOwnership(address)
-        if (!tx && typeof c.transferOwnership === 'function') {
-          tx = await c.transferOwnership(newOwner);
-        }
-        if (!tx) {
-          try {
-            const fn = c.getFunction?.('transferOwnership(address)');
-            if (fn) tx = await fn(newOwner);
-          } catch(_) {}
-        }
-        // 3) transferPositionOwnership(uint256,address)
-        if (!tx && callerIndex !== null) {
-          try {
-            const fn = c.getFunction?.('transferPositionOwnership(uint256,address)');
-            if (fn) tx = await fn(callerIndex, newOwner);
-          } catch(_) {}
-        }
-        // 4) transferOwnershipOf(uint256,address)
-        if (!tx && callerIndex !== null) {
-          try {
-            const fn = c.getFunction?.('transferOwnershipOf(uint256,address)');
-            if (fn) tx = await fn(callerIndex, newOwner);
-          } catch(_) {}
-        }
-        // 5) transferIndexOwnership(uint256,address)
+        
+        // 3) transferToUser(address, uint256) - Note: this may not exist for ownership
+        // Skip this as it's for token transfer, not ownership
+        
+        // 4) transferIndexOwnership(uint256,address) - if caller index is available
         if (!tx && callerIndex !== null) {
           try {
             const fn = c.getFunction?.('transferIndexOwnership(uint256,address)');
-            if (fn) tx = await fn(callerIndex, newOwner);
-          } catch(_) {}
+            if (fn) {
+              tx = await fn(callerIndex, newOwner);
+              console.log('✅ Successfully called transferIndexOwnership(uint256,address)');
+            }
+          } catch (err) {
+            console.warn('transferIndexOwnership(uint256,address) failed:', err);
+            lastError = err;
+          }
         }
-        if (!tx) throw new Error('Transfer ownership function not available in this contract');
+        
+        if (!tx) {
+          const errorMsg = lastError ? lastError.message : 'Transfer ownership function not available in this contract';
+          throw new Error(errorMsg);
+        }
 
         statusEl.className = 'status loading';
         statusEl.textContent = '⏳ Waiting for transaction confirmation in your wallet...';
@@ -461,6 +490,7 @@
         addressHint.className = 'hint error';
       }
     });
+
 
     // Confirmation modal
     let pendingTargetAddress = null;
@@ -550,21 +580,46 @@
       openConfirmModal(newOwner);
     });
 
+    // Auto-connect wallet function with retry
+    async function autoConnectWallet(maxRetries = 3) {
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          console.log(`🔗 Auto-connect attempt ${attempt}/${maxRetries}`);
+          
+          if (window.connectWallet) {
+            await window.connectWallet();
+            console.log('✅ Auto-connect successful');
+            await checkWalletConnection();
+            return true;
+          } else {
+            throw new Error('connectWallet function not available');
+          }
+        } catch (error) {
+          console.warn(`⚠️ Auto-connect attempt ${attempt} failed:`, error);
+          
+          if (attempt === maxRetries) {
+            console.error('❌ Auto-connection failed after all attempts');
+            return false;
+          }
+          
+          // Wait before retry
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+    }
+
     // Auto update when page loads
     document.addEventListener('DOMContentLoaded', async function() {
       console.log('🚀 Ownership page loaded');
       
-      // Try to connect wallet automatically
-      try {
-        if (window.connectWallet) {
-          console.log('🔗 Attempting wallet connection...');
-          await window.connectWallet();
-          console.log('✅ Wallet connected successfully');
-          checkWalletConnection();
-        }
-      } catch (error) {
-        console.warn('⚠️ Wallet connection failed:', error);
+      // Check if MetaMask is available
+      if (typeof window.ethereum === 'undefined') {
+        console.warn('❌ MetaMask not installed');
+        return;
       }
+      
+      // Try to connect wallet automatically with retry
+      await autoConnectWallet(3);
       
       // Check wallet connection status
       if (window.contractConfig && window.contractConfig.contract) {
@@ -579,7 +634,12 @@
         }, 1000);
         
         // Stop checking after 15 seconds
-        setTimeout(() => clearInterval(checkConnection), 15000);
+        setTimeout(() => {
+          clearInterval(checkConnection);
+          if (!window.contractConfig) {
+            console.warn('❌ Wallet connection timeout');
+          }
+        }, 15000);
       }
       
       // Initial validation

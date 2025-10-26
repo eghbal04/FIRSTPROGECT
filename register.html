@@ -33,14 +33,14 @@
     // Suppress noisy MetaMask RPC messages that don't affect functionality
     window.addEventListener('error', function(e){
       const m = (e && e.message) || '';
-      if (m.includes('getEnabledChains') || m.includes('isDefaultWallet') || m.includes('Could not establish connection') || m.includes('Internal JSON-RPC error') || m.includes('Receiving end does not exist') || m.includes('Extension context invalidated')) { 
+      if (m.includes('getEnabledChains') || m.includes('isDefaultWallet') || m.includes('Could not establish connection') || m.includes('Internal JSON-RPC error') || m.includes('Receiving end does not exist') || m.includes('Extension context invalidated') || m.includes('ethereum.send(...) is deprecated')) { 
         e.preventDefault(); 
         return false; 
       }
     });
     window.addEventListener('unhandledrejection', function(e){
       const r = e && e.reason; const msg = (r && (r.message || r)) || '';
-      if (typeof msg === 'string' && (msg.includes('getEnabledChains') || msg.includes('isDefaultWallet') || msg.includes('Could not establish connection') || msg.includes('Internal JSON-RPC error') || msg.includes('Receiving end does not exist') || msg.includes('Extension context invalidated'))) { 
+      if (typeof msg === 'string' && (msg.includes('getEnabledChains') || msg.includes('isDefaultWallet') || msg.includes('Could not establish connection') || msg.includes('Internal JSON-RPC error') || msg.includes('Receiving end does not exist') || msg.includes('Extension context invalidated') || msg.includes('ethereum.send(...) is deprecated'))) { 
         e.preventDefault(); 
         return false; 
       }
@@ -154,6 +154,18 @@
     }
     .register-btn:active, .buy-btn:active {
       background: linear-gradient(90deg,#00cc66,#00ff88) !important;
+    }
+    
+    /* Loading state for register button */
+    .register-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+      background: linear-gradient(90deg, #666, #555) !important;
+      box-shadow: none !important;
+    }
+    
+    .register-btn:disabled:hover {
+      filter: none !important;
     }
     .register-form-status {
       color: #fff !important;
@@ -481,6 +493,23 @@
 
   <!-- Main Content -->
   <div class="main-container">
+    
+    <!-- Contract Selection -->
+    <div style="background:#1a1f2e;color:#ffffff;padding:1rem;border-radius:10px;margin-bottom:1rem;border:1px solid #22304a;">
+      <h3 style="margin:0 0 1rem;color:#5da0ff;text-align:center;">📄 Contract Selection</h3>
+      <div style="display:flex;gap:0.5rem;align-items:center;justify-content:center;">
+        <label for="contractSelect" style="color:#e6eaf0;font-weight:bold;">Contract:</label>
+        <select id="contractSelect" style="background:#0f1420;color:#e6eaf0;border:1px solid #22304a;border-radius:5px;padding:0.5rem;min-width:200px;">
+          <option value="1">Contract 1: 0xd7eD...0607</option>
+          <option value="2">Contract 2: 0x63F5...d2FE</option>
+          <option value="3" selected>Contract 3: 0x2D39...118D (Default)</option>
+          <option value="4">Contract 4: 0x8dc3...2548</option>
+          <option value="5">Contract 5: 0xb2f3...93a5 (New)</option>
+        </select>
+      </div>
+      <div id="contractInfo" style="margin-top:0.5rem;text-align:center;font-size:0.9rem;color:#9ecbff;"></div>
+    </div>
+    
          <form class="register-form" autocomplete="off">
                <!-- Registration tabs -->
       <div class="register-form-status warning" id="register-suggestion" style="display:none;"></div>
@@ -491,7 +520,7 @@
         <div style="font-size: 0.85rem; line-height: 1.4;">
           • <strong>New users:</strong> Can register for themselves only<br>
           • <strong>Active users:</strong> Can register for themselves or their <strong>downlines</strong><br>
-          • <strong>Auto-fill:</strong> If you're active, your info will be auto-filled as referrer (locked)<br>
+          • <strong>Auto-fill:</strong> If you're active, your info will be auto-filled as upper (locked)<br>
           • <strong>Upper field:</strong> You can change upper to yourself or your downlines<br>
           • Crossline and upline registrations are not allowed<br>
           • This ensures proper tree structure and prevents conflicts
@@ -716,7 +745,7 @@
     }
 
          // Define input variables before any use
-         let newUserInput, referrerDisplay, referrerIndexInput, upperInput, upperIndexInput, refInput, indexInput;
+         let newUserInput, referrerAddressDisplay, referrerIndexInput, upperInput, refInput, indexInput;
          
           // Function to handle referral parameters from URL
           function handleReferralParameters() {
@@ -728,31 +757,34 @@
             
             console.log('🔗 Referral parameters:', { upperIndex, upperAddress, emptyIndex, position });
             
-            // Auto-fill upper information if provided
+            // Auto-fill referrer information if provided
             if (upperIndex) {
-              if (upperIndexInput) upperIndexInput.value = upperIndex;
+              if (referrerIndexInput) referrerIndexInput.value = upperIndex;
               // Trigger validation and address lookup
               setTimeout(async () => {
-                await checkAddressValidity(upperIndexInput, 'upper');
+                await checkAddressValidity(referrerIndexInput, 'referrer');
               }, 700);
             }
             
             if (upperAddress) {
-              if (upperInput) upperInput.value = upperAddress;
+              if (referrerAddressDisplay) {
+                referrerAddressDisplay.value = truncateAddress(upperAddress);
+                referrerAddressDisplay.setAttribute('data-full-address', upperAddress);
+              }
               // Trigger validation
               setTimeout(async () => {
-                await checkAddressValidity(upperInput, 'upper');
+                await checkAddressValidity(referrerAddressDisplay, 'referrer');
               }, 700);
             }
             
-            // Show success message if upper parameters were processed
+            // Show success message if referrer parameters were processed
             if (upperIndex || upperAddress) {
               setTimeout(() => {
-                const statusDiv = document.getElementById('upper-validation-status');
+                const statusDiv = document.getElementById('referrer-validation-status');
                 if (statusDiv) {
                   statusDiv.style.display = 'block';
                   statusDiv.className = 'register-form-status success';
-                  statusDiv.textContent = `✅ Upper information loaded from link successfully! (Slot: ${emptyIndex || 'N/A'}, Position: ${position || 'N/A'})`;
+                  statusDiv.textContent = `✅ Referrer information loaded from link successfully! (Slot: ${emptyIndex || 'N/A'}, Position: ${position || 'N/A'})`;
                 }
               }, 1000);
             }
@@ -760,39 +792,41 @@
          
          document.addEventListener('DOMContentLoaded', function() {
            newUserInput = document.getElementById('new-user-address');
-           referrerDisplay = document.getElementById('referrer-address-display');
+           referrerAddressDisplay = document.getElementById('referrer-address-display');
            referrerIndexInput = document.getElementById('referrer-index');
-           upperInput = document.getElementById('upper-address');
            upperIndexInput = document.getElementById('upper-index');
-           refInput = document.getElementById('referrer-address');
+           upperInput = document.getElementById('upper-address');
+           refInput = document.getElementById('upper-address');
            indexInput = referrerIndexInput; // Use referrer index as the main index input
            
            // Handle URL parameters for referral links
            handleReferralParameters();
            
            // Initialize global variables
-           window.upperIndexInput = upperIndexInput;
-           window.refInput = refInput;
-           window.upperInput = upperInput;
            window.newUserInput = newUserInput;
-           window.referrerDisplay = referrerDisplay;
+           window.referrerAddressDisplay = referrerAddressDisplay;
            window.referrerIndexInput = referrerIndexInput;
+           window.upperIndexInput = upperIndexInput;
+           window.upperInput = upperInput;
+           window.refInput = refInput;
+           // Alias for backward compatibility
+           window.upperDisplay = referrerAddressDisplay;
            
            // Set up all event listeners here
            setupEventListeners();
            
            function setupEventListeners() {
-             // Ensure referrerDisplay is available
-             if (!referrerDisplay) {
-               referrerDisplay = document.getElementById('referrer-address-display');
+             // Ensure referrer address display is available
+             if (!referrerAddressDisplay) {
+               referrerAddressDisplay = document.getElementById('referrer-address-display');
              }
              
-             // Referrer index application
+             // Referrer index application button
              document.getElementById('apply-referrer-index-btn').addEventListener('click', async function() {
-               await applyIndexToAddress(referrerIndexInput, referrerDisplay, 'referrer');
+               await applyIndexToAddress(referrerIndexInput, referrerAddressDisplay, 'referrer');
              });
              
-             // Upper index application
+             // Upper index application button
              document.getElementById('apply-upper-index-btn').addEventListener('click', async function() {
                await applyIndexToAddress(upperIndexInput, upperInput, 'upper');
              });
@@ -841,64 +875,78 @@
              }
              
              // Address field event listeners (for manual editing)
-             referrerDisplay.addEventListener('change', async function() {
-               await checkAddressValidity(referrerDisplay, 'referrer');
-               await validateUpperAgainstReferrer();
+             referrerAddressDisplay.addEventListener('change', async function() {
+               await checkAddressValidity(referrerAddressDisplay, 'referrer');
+               await validateUpperAgainstupper();
                await calculatePlacementForNewUser();
              });
              
              // New user address input handler - clean spaces automatically
              if (newUserInput) {
+               let isUpdating = false; // Prevent infinite loop
                newUserInput.addEventListener('input', function() {
+                 if (isUpdating) return; // Skip if we're updating from code
                  // Remove any spaces, newlines, or extra characters
                  const cleanedValue = this.value.replace(/\s+/g, '');
                  if (this.value !== cleanedValue) {
+                   isUpdating = true;
                    this.value = cleanedValue;
+                   setTimeout(() => { isUpdating = false; }, 0);
                  }
                });
                
                newUserInput.addEventListener('paste', function(e) {
+                 if (isUpdating) return; // Skip if we're updating from code
                  // Allow paste to complete, then clean it
                  setTimeout(() => {
+                   if (isUpdating) return;
                    const cleanedValue = this.value.replace(/\s+/g, '');
                    if (this.value !== cleanedValue) {
+                     isUpdating = true;
                      this.value = cleanedValue;
                      showTempMessage('✅ Address cleaned automatically', 'success');
+                     setTimeout(() => { isUpdating = false; }, 0);
                    }
                  }, 10);
                });
              }
              
-             referrerIndexInput.addEventListener('change', async function() {
+             upperIndexInput.addEventListener('change', async function() {
                // Only validate if it's a valid index format
                const value = this.value.trim();
                if (value && (value.match(/^\d+$/) || value.match(/^IAM\d+$/))) {
-                 await checkAddressValidity(referrerIndexInput, 'referrer');
-                 await validateUpperAgainstReferrer();
+                 await checkAddressValidity(upperIndexInput, 'upper');
+                 await validateUpperAgainstupper();
                  await calculatePlacementForNewUser();
                }
              });
              
              upperInput.addEventListener('change', async function() {
                await checkAddressValidity(upperInput, 'upper');
-               await validateUpperAgainstReferrer();
+               await validateUpperAgainstupper();
+               await checkUpperCapacityAndShowStatus();
+             });
+             
+             // Add real-time capacity checking for upper field
+             upperInput.addEventListener('input', async function() {
+               await checkUpperCapacityAndShowStatus();
              });
            }
            
            
            
-          // When user clicks on referrer index input
-           referrerIndexInput.addEventListener('click', async function() {
+          // When user clicks on upper index input
+           upperIndexInput.addEventListener('click', async function() {
                try {
               // Read clipboard content
                  const clipboardText = await navigator.clipboard.readText();
                  
               // Check if copied text looks like a number or IAM format
                  if (clipboardText.match(/^(\d+|IAM\d+)$/)) {
-                   referrerIndexInput.value = clipboardText;
+                   upperIndexInput.value = clipboardText;
                 
                                  // Display success message (optional)
-                 alert('Referrer index copied from clipboard successfully!');
+                 alert('upper index copied from clipboard successfully!');
                  }
                } catch (err) {
                            console.error('Error accessing clipboard:', err);
@@ -1036,29 +1084,134 @@
   </script>
   
   <script>window.SKIP_META = true;</script>
+  <script>
+    // Force register page to use only the new contract
+    const NEW_CONTRACT_ADDRESS = '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2'; // Contract 5
+    
+    // Override config.js behavior for register page
+    window.IAM_ADDRESS = NEW_CONTRACT_ADDRESS;
+    
+    // Clear any old contract selection from localStorage
+    try {
+      localStorage.removeItem('iam_selected_address');
+      localStorage.setItem('iam_selected_address', NEW_CONTRACT_ADDRESS);
+      console.log('✅ Set localStorage to new contract:', NEW_CONTRACT_ADDRESS);
+    } catch (e) {
+      console.warn('⚠️ Could not update localStorage:', e);
+    }
+    
+    // Override the config.js IAM_ADDRESS assignment
+    window.addEventListener('load', function() {
+      window.IAM_ADDRESS = NEW_CONTRACT_ADDRESS;
+      console.log('✅ Register page: Final IAM_ADDRESS override:', window.IAM_ADDRESS);
+    });
+    
+    console.log('✅ Register page: IAM_ADDRESS set to new contract:', window.IAM_ADDRESS);
+  </script>
   <script src="js/config.js"></script>
+  <script src="js/floating-token-card.js"></script>
   <script src="js/auto-wallet-connect.js"></script>
   <script>
+    // Override connectWallet to force new contract and cache connection
+    const originalConnectWallet = window.connectWallet;
+    let cachedConnection = null;
+    let isConnecting = false;
+    
+    window.connectWallet = async function() {
+      // Return cached connection if available
+      if (cachedConnection && cachedConnection.address && cachedConnection.contract) {
+        console.log('✅ Using cached wallet connection');
+        return cachedConnection;
+      }
+      
+      // Prevent concurrent connection attempts
+      if (isConnecting) {
+        console.log('⏳ Wallet connection in progress, waiting...');
+        while (isConnecting) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        if (cachedConnection) {
+          return cachedConnection;
+        }
+      }
+      
+      isConnecting = true;
+      console.log('🔄 Register page: Overriding connectWallet to use new contract');
+      
+      try {
+        // Force IAM_ADDRESS to new contract
+        window.IAM_ADDRESS = NEW_CONTRACT_ADDRESS;
+        
+        // Call original function
+        const result = await originalConnectWallet.call(this);
+        
+        // Cache the connection if successful
+        if (result && result.contract && result.address) {
+          cachedConnection = result;
+          console.log('✅ Register page: Contract connected to:', result.IAM_ADDRESS);
+        }
+        
+        return result;
+      } finally {
+        isConnecting = false;
+      }
+    };
+    
+    // Contract Selection Handler
+    function selectContract(contractNumber) {
+      // Only allow contract 5 (new contract)
+      if (contractNumber !== '5') {
+        console.warn('⚠️ Only new contract (5) is allowed on register page');
+        contractNumber = '5'; // Force to contract 5
+      }
+      
+      const contractAddresses = {
+        '5': window.CONTRACT_5_ADDRESS // Only new contract
+      };
+      
+      const selectedAddress = contractAddresses[contractNumber];
+      if (!selectedAddress) {
+        console.error('❌ Invalid contract number');
+        return;
+      }
+      
+      // Update global IAM address
+      window.IAM_ADDRESS = selectedAddress;
+      
+      // Update contract info display
+      const contractInfo = document.getElementById('contractInfo');
+      if (contractInfo) {
+        contractInfo.innerHTML = `✅ New Contract Selected: ${selectedAddress}`;
+      }
+      
+      console.log(`✅ New contract selected: ${selectedAddress}`);
+    }
+    
+    // Add event listener when DOM is loaded - auto-select on change
+    document.addEventListener('DOMContentLoaded', function() {
+      // Force connection to new contract only (Contract 5 - the new contract)
+      selectContract('5');
+      
+      // Hide contract selector since we only want the new contract
+      const contractSelect = document.getElementById('contractSelect');
+      if (contractSelect) {
+        contractSelect.style.display = 'none';
+      }
+      
+      // Hide contract label as well
+      const contractLabel = document.querySelector('label[for="contractSelect"]');
+      if (contractLabel) {
+        contractLabel.style.display = 'none';
+      }
+      
+      console.log('✅ Register page locked to new contract only (Contract 5)');
+    });
+    
     // Fallback helpers to avoid calling non-existent contract functions
     window.safeGetRegPrice = async function(contract){
       try {
         if (contract && typeof contract.getRegPrice === 'function') {
           return await contract.getRegPrice();
-        }
-      } catch(_) {}
-      try {
-        if (contract && typeof contract.regPrice === 'function') {
-          return await contract.regPrice();
-        }
-      } catch(_) {}
-      try {
-        if (contract && typeof contract.registrationPrice === 'function') {
-          return await contract.registrationPrice();
-        }
-      } catch(_) {}
-      try {
-        if (contract && typeof contract.getRegistrationPrice === 'function') {
-          return await contract.getRegistrationPrice();
         }
       } catch(_) {}
       // Default fallback (100 IAM)
@@ -1067,15 +1220,15 @@
 
     window.safeGetLeftAddress = async function(contract, parentIndex){
       if (!contract) return null;
-      if (typeof contract.getLeftAddress === 'function') {
-        try { return await contract.getLeftAddress(parentIndex); } catch(_) {}
+      if (typeof contract.getLeftChild === 'function') {
+        try { return await contract.getLeftChild(parentIndex); } catch(_) {}
       }
       return null; // gracefully fallback
     };
     window.safeGetRightAddress = async function(contract, parentIndex){
       if (!contract) return null;
-      if (typeof contract.getRightAddress === 'function') {
-        try { return await contract.getRightAddress(parentIndex); } catch(_) {}
+      if (typeof contract.getRightChild === 'function') {
+        try { return await contract.getRightChild(parentIndex); } catch(_) {}
       }
       return null; // gracefully fallback
     };
@@ -1165,19 +1318,46 @@
                   let userIndex = null;
                   try {
                     const u = await conn.contract.users(conn.address);
-                    userActive = !!(u && u.index && BigInt(u.index) > 0n);
-                    if (userActive) {
-                      userIndex = Number(u.index);
+                    console.log('🔍 Checking user data:', u);
+                    
+                    // Try different methods to get index
+                    let userIndexValue = null;
+                    
+                    // Method 1: Try u.index
+                    if (u && u.index !== undefined) {
+                      userIndexValue = u.index;
+                      console.log('📍 Found index as u.index:', userIndexValue);
                     }
-                  } catch(_) {}
+                    // Method 2: Try u[0] (first element in tuple/array)
+                    else if (u && u[0] !== undefined) {
+                      userIndexValue = u[0];
+                      console.log('📍 Found index as u[0]:', userIndexValue);
+                    }
+                    // Method 3: Try u.num
+                    else if (u && u.num !== undefined) {
+                      userIndexValue = u.num;
+                      console.log('📍 Found index as u.num:', userIndexValue);
+                    }
+                    
+                    userActive = !!(userIndexValue && BigInt(userIndexValue) > 0n);
+                    console.log('✅ User active:', userActive, 'Index value:', userIndexValue);
+                    if (userActive) {
+                      userIndex = Number(userIndexValue);
+                      console.log('📊 User index:', userIndex);
+                    }
+                  } catch(e) {
+                    console.log('❌ Error checking user:', e);
+                  }
                   
                   if (!userActive) {
+                    console.log('ℹ️ User is not active, setting new-user address to connected wallet');
                     nu.value = conn.address;
                     nu.setAttribute('data-full-address', conn.address);
                   } else {
-                    // Always auto-fill referrer fields with connected wallet address
-                    await autoFillReferrerFields(conn.address, userIndex);
-                    console.log('🔗 Referrer set to connected wallet address:', conn.address);
+                    // Always auto-fill upper fields with connected wallet address
+                    console.log('🔄 Auto-filling fields for active user...');
+                    await autoFillupperFields(conn.address, userIndex);
+                    console.log('✅ Auto-fill completed for active user');
                   }
                 }
               } catch(_) {}
@@ -1322,15 +1502,15 @@
                     nu.value = addr;
                     nu.setAttribute('data-full-address', addr);
                   } else {
-                    // If user is active, update referrer fields with new wallet address
+                    // If user is active, update upper fields with new wallet address
                     try {
                       const contract = (window.contractConfig && window.contractConfig.contract) || null;
                       if (contract) {
                         const u = await contract.users(addr);
                         const userIndex = u && u.index ? Number(u.index) : null;
                         if (userIndex) {
-                          await autoFillReferrerFields(addr, userIndex);
-                          console.log('🔗 Referrer updated to new wallet address:', addr);
+                          await autoFillupperFields(addr, userIndex);
+                          console.log('🔗 upper updated to new wallet address:', addr);
                         }
                       }
                     } catch(_) {}
@@ -1367,11 +1547,11 @@
   <script>
     let selectedAvatar = 'man';
     
-    // Contract addresses
-    const IAM_ADDRESS_NEW = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D'; // New contract
+    // Contract addresses (already set above)
+    // const IAM_ADDRESS_NEW = '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2'; // New contract (Contract 5)
     
-    // Default to new contract (override global if exists)
-    window.IAM_ADDRESS = IAM_ADDRESS_NEW;
+    // Default to new contract (already set above)
+    // window.IAM_ADDRESS = IAM_ADDRESS_NEW;
     
 
 
@@ -1435,84 +1615,95 @@
             return false;
                     }
 
-          // Function to auto-fill referrer fields with current user's info
-          async function autoFillReferrerFields(userAddress, userIndex) {
+          // Function to auto-fill upper fields with current user's info
+          async function autoFillupperFields(userAddress, userIndex) {
             try {
-              console.log(`🔄 Auto-filling referrer fields for active user: ${userAddress} (Index: ${userIndex})`);
+              console.log(`🔄 Auto-filling referrer and upper fields for active user: ${userAddress} (Index: ${userIndex})`);
               
               // Fill referrer index field
-              const referrerIndexInput = document.getElementById('referrer-index');
+              referrerIndexInput = document.getElementById('referrer-index');
+              console.log('📍 Referrer index input found:', !!referrerIndexInput);
               if (referrerIndexInput && userIndex) {
                 referrerIndexInput.value = userIndex;
-                referrerIndexInput.readOnly = true;
-                referrerIndexInput.style.backgroundColor = '#2a2a2a';
-                referrerIndexInput.style.color = '#888';
-                referrerIndexInput.style.cursor = 'not-allowed';
-                referrerIndexInput.placeholder = 'Auto-filled (Read-only)';
+                console.log('✅ Referrer index set to:', userIndex);
               }
               
               // Fill referrer address field
-              const referrerDisplay = document.getElementById('referrer-address-display');
-              if (referrerDisplay) {
-                referrerDisplay.value = truncateAddress(userAddress);
-                referrerDisplay.setAttribute('data-full-address', userAddress);
-                referrerDisplay.readOnly = true;
-                referrerDisplay.style.backgroundColor = '#2a2a2a';
-                referrerDisplay.style.color = '#888';
-                referrerDisplay.style.cursor = 'not-allowed';
-                referrerDisplay.placeholder = 'Auto-filled (Read-only)';
+              referrerAddressDisplay = document.getElementById('referrer-address-display');
+              console.log('📍 Referrer address display found:', !!referrerAddressDisplay);
+              if (referrerAddressDisplay) {
+                referrerAddressDisplay.value = truncateAddress(userAddress);
+                referrerAddressDisplay.setAttribute('data-full-address', userAddress);
+                console.log('✅ Referrer address set to:', truncateAddress(userAddress));
               }
               
-              // Fill upper index field (keep editable)
-              const upperIndexInput = document.getElementById('upper-index');
+              // Fill upper index field (same as referrer by default)
+              upperIndexInput = document.getElementById('upper-index');
+              console.log('📍 Upper index input found:', !!upperIndexInput);
               if (upperIndexInput && userIndex) {
                 upperIndexInput.value = userIndex;
-                // Keep upper fields editable - user can change to their downlines
+                console.log('✅ Upper index set to:', userIndex);
               }
               
-              // Fill upper address field (keep editable)
-              const upperInput = document.getElementById('upper-address');
+              // Fill upper address field (same as referrer by default)
+              upperInput = document.getElementById('upper-address');
+              console.log('📍 Upper address input found:', !!upperInput);
               if (upperInput) {
                 upperInput.value = truncateAddress(userAddress);
                 upperInput.setAttribute('data-full-address', userAddress);
-                // Keep upper fields editable - user can change to their downlines
+                console.log('✅ Upper address set to:', truncateAddress(userAddress));
               }
               
-              // Disable referrer apply button only
+              // Disable referrer apply button
               const applyReferrerBtn = document.getElementById('apply-referrer-index-btn');
-              
               if (applyReferrerBtn) {
                 applyReferrerBtn.disabled = true;
                 applyReferrerBtn.style.opacity = '0.5';
                 applyReferrerBtn.style.cursor = 'not-allowed';
                 applyReferrerBtn.textContent = 'Auto-filled';
+                console.log('✅ Referrer apply button disabled');
               }
               
-              // Keep upper apply button enabled - user can change upper to their downlines
+              // Upper field remains editable - user can change upper to their downlines
               
               // Show success message
-              showTempMessage(`✅ Auto-filled referrer fields with your info (Index: ${userIndex}) - Referrer locked, Upper editable`, 'success');
+              showTempMessage(`✅ Auto-filled referrer and upper with your info (Index: ${userIndex}). Both fields locked by default.`, 'success');
+              console.log('✅ Auto-fill completed successfully');
               
               // Trigger validation
               setTimeout(async () => {
-                await validateUpperAgainstReferrer();
+                await validateUpperAgainstupper();
                 await calculatePlacementForNewUser();
               }, 500);
               
             } catch (error) {
-              console.error('Error auto-filling referrer fields:', error);
+              console.error('❌ Error auto-filling referrer and upper fields:', error);
             }
           }
 
           // Function to check if current user can register for the given address
           async function canUserRegisterForAddress(targetAddress, addressType) {
             try {
-              if (!window.contractConfig || !window.contractConfig.contract) {
-                console.log('❌ Contract not available');
-                return false;
+              // Try to get contract from multiple sources
+              let contract = null;
+              
+              if (window.contractConfig && window.contractConfig.contract) {
+                contract = window.contractConfig.contract;
+              } else if (typeof window.connectWallet === 'function') {
+                try {
+                  const conn = await window.connectWallet();
+                  if (conn && conn.contract) {
+                    contract = conn.contract;
+                  }
+                } catch (e) {
+                  console.log('Error getting contract from connectWallet:', e);
+                }
               }
               
-              const contract = window.contractConfig.contract;
+              if (!contract) {
+                console.log('❌ Contract not available from any source');
+                return false;
+              }
               
               // Get current user info
               let myAddress = null;
@@ -1550,10 +1741,24 @@
                 return true;
               }
               
-              // For inactive users, allow registration for any active referrer/upper
+              // For inactive users, allow registration for any active upper/upper
               if (!myUser || !(myUser.index && BigInt(myUser.index) > 0n)) {
-                console.log(`ℹ️ Current user is not active. Allowing registration with any active ${addressType}.`);
-                return true; // Allow inactive users to register with any active referrer/upper
+                console.log(`ℹ️ Current user is not active. Checking if ${addressType} is active...`);
+                
+                // Check if target address is active
+                try {
+                  const targetUser = await contract.users(targetAddress);
+                  if (targetUser && targetUser.index && BigInt(targetUser.index) > 0n) {
+                    console.log(`✅ Target ${addressType} is active. Allowing registration.`);
+                    return true;
+                  } else {
+                    console.log(`❌ Target ${addressType} is not active.`);
+                    return false;
+                  }
+                } catch (error) {
+                  console.log(`❌ Error checking target ${addressType}:`, error);
+                  return false;
+                }
               }
               
               // For active users, check if target is in their downline or is themselves
@@ -1563,11 +1768,11 @@
                 return false;
               }
               
-              const myIndex = Number(myUser.index);
-              const targetIndex = Number(targetUser.index);
+              const myUserNumber = Number(myUser.index);
+              const targetUserNumber = Number(targetUser.index);
               
               // Check if target is in current user's downline (subtree) or is the same user
-              if (isIndexInUserSubtree(targetIndex, myIndex) || targetIndex === myIndex) {
+              if (isIndexInUserSubtree(targetUserNumber, myUserNumber) || targetUserNumber === myUserNumber) {
                 console.log(`✅ Can register for ${addressType} (in downline or self)`);
                 return true;
               }
@@ -1581,40 +1786,94 @@
             }
           }
 
-    // Function to validate referrer and upper relationship
-    async function validateReferrerUpperRelationship(contract, referrer, upper) {
-      console.log(`🔍 Validating referrer-upper relationship: referrer=${referrer}, upper=${upper}`);
+          // Helper function to get contract instance
+          async function getContractInstance() {
+            try {
+              // Try multiple sources
+              if (window.contractConfig && window.contractConfig.contract) {
+                console.log('✅ Using contract from contractConfig');
+                return window.contractConfig.contract;
+              }
+              
+              if (typeof window.connectWallet === 'function') {
+                const conn = await window.connectWallet();
+                if (conn && conn.contract) {
+                  console.log('✅ Using contract from connectWallet');
+                  return conn.contract;
+                }
+              }
+              
+              console.log('❌ No contract available');
+              return null;
+            } catch (error) {
+              console.error('❌ Error getting contract:', error);
+              return null;
+            }
+          }
+
+    // Helper function to convert index/number to address
+    async function numToAddress(contract, num) {
+      try {
+        // Try numToAddress first (new contract)
+        if (typeof contract.numToAddress === 'function') {
+          const address = await contract.numToAddress(BigInt(num));
+          if (address && address !== '0x0000000000000000000000000000000000000000') {
+            return address;
+          }
+        }
+      } catch (e) {
+        console.log('numToAddress failed, trying indexToAddress:', e.message);
+      }
       
-      // If referrer and upper are the same, it's valid
-      if (referrer.toLowerCase() === upper.toLowerCase()) {
-        console.log(`✅ Referrer and upper are the same - valid`);
+      try {
+        // Try indexToAddress (old contract)
+        if (typeof contract.indexToAddress === 'function') {
+          const address = await contract.indexToAddress(BigInt(num));
+          if (address && address !== '0x0000000000000000000000000000000000000000') {
+            return address;
+          }
+        }
+      } catch (e) {
+        console.log('indexToAddress also failed:', e.message);
+      }
+      
+      return null;
+    }
+
+    // Function to validate upper and upper relationship
+    async function validateupperUpperRelationship(contract, upper, upperParam) {
+      console.log(`🔍 Validating upper-upper relationship: upper=${upper}, upper=${upperParam}`);
+      
+      // If upper and upper are the same, it's valid
+      if (upper.toLowerCase() === upperParam.toLowerCase()) {
+        console.log(`✅ upper and upper are the same - valid`);
         return;
       }
       
       try {
-        // Get referrer user data
-        const referrerUser = await contract.users(referrer);
-        if (!referrerUser || !(referrerUser.index && BigInt(referrerUser.index) > 0n)) {
-          throw new Error('Referrer is not active or does not exist');
-        }
-        
         // Get upper user data
         const upperUser = await contract.users(upper);
         if (!upperUser || !(upperUser.index && BigInt(upperUser.index) > 0n)) {
+          throw new Error('upper is not active or does not exist');
+        }
+        
+        // Get upper user data  
+        const upperU = await contract.users(upperParam);
+        if (!upperU || !(upperU.index && BigInt(upperU.index) > 0n)) {
           throw new Error('Upper address is not active or does not exist');
         }
         
-        const referrerIndex = Number(referrerUser.index);
-        const upperIndex = Number(upperUser.index);
+        const upperUserNumber = Number(upperUser.index);
+        const upperUserNumber2 = Number(upperU.index);
         
-        console.log(`🔍 Referrer index: ${referrerIndex}, Upper index: ${upperIndex}`);
+        console.log(`🔍 upper user number: ${upperUserNumber}, Upper user number: ${upperUserNumber2}`);
         
-        // Check if upper is in referrer's subtree
-        if (isIndexInUserSubtree(upperIndex, referrerIndex)) {
-          console.log(`✅ Upper address is in referrer's subtree - valid`);
+        // Check if upper is in upper's subtree
+        if (isIndexInUserSubtree(upperUserNumber, upperUserNumber2)) {
+          console.log(`✅ Upper address is in upper's subtree - valid`);
           return;
         } else {
-          throw new Error('Upper address must be either the same as referrer or a descendant of referrer in the tree structure');
+          throw new Error('Upper address must be either the same as upper or a descendant of upper in the tree structure');
         }
         
       } catch (error) {
@@ -1683,13 +1942,13 @@
       }
       
       // Clear all fields for manual input
-      const referrerDisplay = document.getElementById('referrer-address-display');
+      const upperDisplay = document.getElementById('upper-address-display');
       const upperInput = document.getElementById('upper-address');
       const newUserInputElement = document.getElementById('new-user-address');
       
-      if (referrerDisplay) {
-        referrerDisplay.value = '';
-        referrerDisplay.placeholder = 'Enter referrer wallet address';
+      if (referrerAddressDisplay) {
+        referrerAddressDisplay.value = '';
+        referrerAddressDisplay.placeholder = 'Enter referrer wallet address';
       }
       if (upperInput) {
         upperInput.value = '';
@@ -1700,10 +1959,8 @@
         newUserInputElement.placeholder = 'Enter new user wallet address';
       }
       
-      // Update address displays
-      if (referrerDisplay) updateAddressDisplay(referrerDisplay);
-      if (upperInput) updateAddressDisplay(upperInput);
-      if (newUserInputElement) updateAddressDisplay(newUserInputElement);
+      // Don't call updateAddressDisplay here as it triggers events and causes loops
+      // The inputs are already cleared above, no need to update display
       
       // Set default values for balance displays
       const maticBalanceElement = document.getElementById('matic-balance');
@@ -1727,10 +1984,10 @@
     // Function to apply index to address field
     async function applyIndexToAddress(indexInput, addressInput, type) {
       const value = indexInput.value.trim();
-      console.log(`🔍 Applying ${type} index: ${value}`);
+      console.log(`🔍 Applying ${type} user number: ${value}`);
       
       if (!value) {
-        showTempMessage(`Please enter a valid ${type} index`, 'error');
+        showTempMessage(`Please enter a valid ${type} user number`, 'error');
         return;
       }
       
@@ -1758,15 +2015,23 @@
         index = index.replace(/[^0-9]/g, '');
         
         if (!index || index.length > 8) {
-          showTempMessage(`Invalid ${type} index format`, 'error');
+          showTempMessage(`Invalid ${type} user number format`, 'error');
           return;
         }
         
-        // Get address from index
-        const address = await contract.indexToAddress(index);
+        // Get address from user number with error handling
+        let address;
+        try {
+          // Try numToAddress (new contract)
+          address = await contract.numToAddress(index);
+        } catch (error) {
+          console.warn(`⚠️ Error calling numToAddress for user number ${index}:`, error.message);
+          showTempMessage(`${type} user number ${index} does not exist in the contract`, 'error');
+          return;
+        }
         
         if (!address || address === '0x0000000000000000000000000000000000000000') {
-          showTempMessage(`${type} index does not exist`, 'error');
+          showTempMessage(`${type} user number does not exist`, 'error');
           return;
         }
         
@@ -1779,22 +2044,22 @@
         // Update display with truncated address
         updateAddressDisplay(addressInput);
         
-        // For referrer, also update the display field
-        if (type === 'referrer') {
+        // For upper, also update the display field
+        if (type === 'upper') {
           addressInput.value = address;
           addressInput.setAttribute('data-full-address', address);
           updateAddressDisplay(addressInput);
           
           // Clear the index input after successful conversion
-          referrerIndexInput.value = '';
+          upperIndexInput.value = '';
         }
         
         showTempMessage(`${type} address set successfully`, 'success');
         console.log(`✅ ${type} address set: ${address}`);
         
-        // If this is upper address, validate against referrer and show placement info
+        // If this is upper address, validate against upper and show placement info
         if (type === 'upper') {
-          await validateUpperAgainstReferrer();
+          await validateUpperAgainstupper();
         }
         
       } catch (error) {
@@ -1814,9 +2079,18 @@
     
     // Function to update address display with truncation
     function updateAddressDisplay(addressInput) {
+      if (!addressInput) return;
+      
+      // Prevent infinite loop by temporarily removing event listeners
       const fullAddress = addressInput.getAttribute('data-full-address') || addressInput.value;
       if (fullAddress && fullAddress.length > 10) {
+        // Set value without triggering input events
+        const oldValue = addressInput.value;
         addressInput.value = truncateAddress(fullAddress);
+        // Only update if different to avoid unnecessary re-renders
+        if (addressInput.value === oldValue && addressInput.value !== truncateAddress(fullAddress)) {
+          addressInput.value = truncateAddress(fullAddress);
+        }
       }
     }
     
@@ -1841,33 +2115,91 @@
           return;
         }
         
-        // Check if current user can register for this address
-        const canRegister = await canUserRegisterForAddress(address, type);
-        if (!canRegister) {
-          showTempMessage(`You can only register for yourself or your downlines. This ${type} is not in your downline.`, 'error');
-          return;
-        }
-        
-        // Check if address is active (for referrer/upper validation)
+        // Check if address is active
         const user = await contract.users(address);
         if (!user || !(user.index && BigInt(user.index) > 0n)) {
           showTempMessage(`${type} address is not active`, 'error');
           return;
         }
         
-        showTempMessage(`${type} address is valid and you can register for it`, 'success');
+        showTempMessage(`${type} address is valid`, 'success');
       } catch (e) {
         showTempMessage(`Error checking ${type} address: ${e.message}`, 'error');
       }
     }
     
-    // Function to validate upper address against referrer in real-time
-    async function validateUpperAgainstReferrer() {
+    // Function to check if upper has available child slots
+    async function checkUpperCapacity(upperAddress) {
+      try {
+        if (!window.contractConfig || !window.contractConfig.contract) return { hasCapacity: true, message: '' };
+        const contract = window.contractConfig.contract;
+        
+        // Get left and right children
+        const leftChild = await contract.getLeftChild(upperAddress);
+        const rightChild = await contract.getRightChild(upperAddress);
+        
+        const hasLeftSlot = !leftChild || leftChild === '0x0000000000000000000000000000000000000000';
+        const hasRightSlot = !rightChild || rightChild === '0x0000000000000000000000000000000000000000';
+        
+        if (!hasLeftSlot && !hasRightSlot) {
+          return {
+            hasCapacity: false,
+            message: '❌ This Upper is at full capacity (both children are occupied)'
+          };
+        } else if (!hasLeftSlot) {
+          return {
+            hasCapacity: true,
+            message: '⚠️ Left child is occupied, only right child is available'
+          };
+        } else if (!hasRightSlot) {
+          return {
+            hasCapacity: true,
+            message: '⚠️ Right child is occupied, only left child is available'
+          };
+        } else {
+          return {
+            hasCapacity: true,
+            message: '✅ Both children are available'
+          };
+        }
+      } catch (error) {
+        console.error('Error checking upper capacity:', error);
+        return { hasCapacity: true, message: 'Error checking Upper capacity' };
+      }
+    }
+    
+    // Function to check upper capacity and show status in real-time
+    async function checkUpperCapacityAndShowStatus() {
+      const upper = upperInput.getAttribute('data-full-address') || upperInput.value.trim();
+      
+      if (!upper || upper === 'root' || !/^0x[a-fA-F0-9]{40}$/.test(upper)) {
+        return;
+      }
+      
+      try {
+        const capacityCheck = await checkUpperCapacity(upper);
+        
+        // Show capacity status in upper field placeholder or nearby element
+        if (capacityCheck.hasCapacity) {
+          upperInput.style.borderColor = capacityCheck.message.includes('⚠️') ? '#ff4444' : '#00ff88';
+          upperInput.title = capacityCheck.message;
+        } else {
+          upperInput.style.borderColor = '#ff4444';
+          upperInput.title = capacityCheck.message;
+          showTempMessage(capacityCheck.message, 'error');
+        }
+      } catch (error) {
+        console.error('Error in real-time capacity check:', error);
+      }
+    }
+
+    // Function to validate upper address against upper in real-time
+    async function validateUpperAgainstupper() {
       const statusEl = document.getElementById('upper-validation-status');
       if (!statusEl) return;
       
-      const referrer = referrerDisplay.getAttribute('data-full-address') || referrerDisplay.value.trim();
-      const upper = upperInput.getAttribute('data-full-address') || upperInput.value.trim();
+      const referrer = referrerAddressDisplay.getAttribute('data-full-address') || referrerAddressDisplay.value.trim();
+      const upperForValidation = upperInput.getAttribute('data-full-address') || upperInput.value.trim();
       
       if (!referrer || referrer === 'root') {
         statusEl.style.display = 'none';
@@ -1885,29 +2217,45 @@
         const contract = window.contractConfig.contract;
         
         if (currentRegistrationType === 'normal') {
-          // Normal registration: validate upper against referrer
-          if (!upper || upper === 'root' || !/^0x[a-fA-F0-9]{40}$/.test(upper)) {
+          // Simple validation: check if upper is valid address
+          if (!upperForValidation || upperForValidation === 'root' || !/^0x[a-fA-F0-9]{40}$/.test(upperForValidation)) {
             statusEl.style.display = 'none';
             placementEl.style.display = 'none';
             return;
           }
           
-          // Check if current user can register for this upper address
-          const canRegisterForUpper = await canUserRegisterForAddress(upper, 'upper');
-          if (!canRegisterForUpper) {
+          // Check if address is active
+          try {
+            const upperUserData = await contract.users(upperForValidation);
+            if (!upperUserData || !(upperUserData.index && BigInt(upperUserData.index) > 0n)) {
+              statusEl.className = 'register-form-status error';
+              statusEl.textContent = '❌ This address is not active';
+              statusEl.style.display = '';
+              return;
+            }
+          } catch (error) {
             statusEl.className = 'register-form-status error';
-            statusEl.textContent = '❌ You can only register for yourself or your downlines';
+            statusEl.textContent = '❌ Could not verify address';
             statusEl.style.display = '';
-            showTempMessage('You can only register for yourself or your downlines. This upper address is not in your downline.', 'error');
             return;
           }
           
-          await validateReferrerUpperRelationship(contract, referrer, upper);
+          // Check capacity
+          const capacityCheck = await checkUpperCapacity(upperForValidation);
+          if (!capacityCheck.hasCapacity) {
+            statusEl.className = 'register-form-status error';
+            statusEl.textContent = capacityCheck.message;
+            statusEl.style.display = '';
+            showTempMessage(capacityCheck.message, 'error');
+            return;
+          }
+          
+          // Show success
           statusEl.className = 'register-form-status success';
-          statusEl.textContent = '✅ Upper address is valid for this referrer';
+          statusEl.textContent = `✅ Upper address is valid. ${capacityCheck.message}`;
           statusEl.style.display = '';
           
-          showTempMessage('Upper address is valid for this referrer', 'success');
+          showTempMessage(`Upper address is valid. ${capacityCheck.message}`, 'success');
         }
       } catch (error) {
         statusEl.className = 'register-form-status error';
@@ -1982,25 +2330,26 @@
              status.textContent = 'New user address is valid and can be registered.';
            }
           
-                     // نمایش ایندکس مربوط به این آدرس (اگر وجود داشته باشد)
+                     // نمایش شماره کاربر مربوط به این آدرس (اگر وجود داشته باشد)
            try {
-             // جستجو در ایندکس‌های موجود برای یافتن این آدرس
-             let foundIndex = null;
-             for (let i = 1; i <= 1000; i++) { // جستجو در 1000 ایندکس اول
+             // جستجو در شماره‌های کاربر موجود برای یافتن این آدرس
+             let foundUserNumber = null;
+             for (let i = 1; i <= 1000; i++) { // جستجو در 1000 شماره کاربر اول
                try {
-                 const addrAtIndex = await contract.indexToAddress(i);
-                 if (addrAtIndex.toLowerCase() === address.toLowerCase()) {
-                   foundIndex = i;
+                 // Try numToAddress (new contract)
+                 const addrAtNumber = await contract.numToAddress(i);
+                 if (addrAtNumber.toLowerCase() === address.toLowerCase()) {
+                   foundUserNumber = i;
                    break;
                  }
                } catch (e) {
-                 // اگر ایندکس وجود نداشته باشد، ادامه بده
+                 // اگر شماره کاربر وجود نداشته باشد، ادامه بده
                  continue;
                }
              }
              
-             if (foundIndex) {
-               status.textContent += ` (Index: ${foundIndex})`;
+             if (foundUserNumber) {
+               status.textContent += ` (User Number: ${foundUserNumber})`;
              }
                       } catch (e) {
              // اگر خطا در جستجوی ایندکس داشتیم، نادیده بگیر
@@ -2010,10 +2359,10 @@
          }
        }
        
-       // Function to calculate placement for new user when both referrer and new user are provided
+       // Function to calculate placement for new user when both upper and new user are provided
        async function calculatePlacementForNewUser() {
          const newUserAddress = newUserInput.value.trim();
-         const referrerAddress = referrerDisplay.getAttribute('data-full-address') || referrerDisplay.value.trim();
+         const referrerAddress = referrerAddressDisplay.getAttribute('data-full-address') || referrerAddressDisplay.value.trim();
          
          // Only calculate if both addresses are valid and different
          if (!newUserAddress || !referrerAddress || 
@@ -2067,6 +2416,7 @@
       // Disable button and show loading state
       registerBtn.disabled = true;
       registerBtn.style.opacity = '0.6';
+      registerBtn.innerHTML = '⏳ Registering...';
       status.style.color = '#1976d2';
       status.textContent = 'Validating information...';
       
@@ -2074,15 +2424,24 @@
         // Ensure wallet connection and get contract instance
         let contract = null, signerAddress = null;
         try {
-          if (typeof window.connectWallet === 'function') {
+          // First, try to use existing contract from window.contractConfig
+          if (window.contractConfig && window.contractConfig.contract) {
+            contract = window.contractConfig.contract;
+            // Try to get signer address
+            if (window.contractConfig.signer) {
+              try {
+                signerAddress = await window.contractConfig.signer.getAddress();
+              } catch(_) {}
+            }
+          }
+          
+          // Only call connectWallet if we don't have a contract yet
+          if (!contract && typeof window.connectWallet === 'function') {
             const conn = await window.connectWallet();
             if (conn && conn.contract) {
               contract = conn.contract;
               signerAddress = conn.address || (conn.signer ? await conn.signer.getAddress() : null);
             }
-          }
-          if (!contract && window.contractConfig && window.contractConfig.contract) {
-            contract = window.contractConfig.contract;
           }
         } catch(_) {}
         if (!contract) {
@@ -2090,105 +2449,98 @@
           status.textContent = 'Registration requires wallet connection. Please connect your wallet first.';
           registerBtn.disabled = false;
           registerBtn.style.opacity = '1';
+          registerBtn.innerHTML = 'Register';
           return;
         }
 
         // Get full addresses for registration (not truncated display)
-        const referrer = referrerDisplay.getAttribute('data-full-address') || referrerDisplay.value.trim();
-        const upper = upperInput.getAttribute('data-full-address') || upperInput.value.trim();
+        const parentUpper = referrerAddressDisplay.getAttribute('data-full-address') || referrerAddressDisplay.value.trim();
+        const upperReferrer = upperInput.getAttribute('data-full-address') || upperInput.value.trim();
         const newUser = newUserInput.value.trim();
         
+        console.log('📋 Registration parameters:', { parentUpper, upperReferrer, newUser });
+        
         // Validate inputs
-        if (!/^0x[a-fA-F0-9]{40}$/.test(referrer)) throw new Error('Invalid referrer address. Please enter a valid address.');
-        if (currentRegistrationType === 'normal' && !/^0x[a-fA-F0-9]{40}$/.test(upper)) throw new Error('Invalid upper address. Please enter a valid address.');
+        if (!/^0x[a-fA-F0-9]{40}$/.test(parentUpper)) throw new Error('Invalid upper address. Please enter a valid address.');
         if (!/^0x[a-fA-F0-9]{40}$/.test(newUser)) throw new Error('Invalid new wallet address. Please enter a valid address.');
         
-        
-        // Check if current user can register for referrer and upper
-        const canRegisterForReferrer = await canUserRegisterForAddress(referrer, 'referrer');
-        if (!canRegisterForReferrer) {
-          throw new Error('You can only register for yourself or your downlines. This referrer is not in your downline.');
+        // Validate upper address if provided
+        if (!upperReferrer || upperReferrer === 'root') {
+          console.log('⚠️ Upper not provided, will use parent as upper');
+        } else if (!/^0x[a-fA-F0-9]{40}$/.test(upperReferrer)) {
+          throw new Error('Invalid upper address.');
+        }
+        // Get current user address for balance checking
+        let myAddress = null;
+        try {
+          if (contract.signer) {
+            myAddress = await contract.signer.getAddress();
+          } else if (window.ethereum && window.ethereum.selectedAddress) {
+            myAddress = window.ethereum.selectedAddress;
+          }
+          console.log('🔍 Current user address:', myAddress);
+        } catch (e) {
+          console.error('Error getting user address:', e);
+          throw new Error('Unable to get your wallet address. Please connect your wallet.');
         }
         
-        if (currentRegistrationType === 'normal') {
-          const canRegisterForUpper = await canUserRegisterForAddress(upper, 'upper');
-          if (!canRegisterForUpper) {
-            throw new Error('You can only register for yourself or your downlines. This upper address is not in your downline.');
-          }
-          await validateReferrerUpperRelationship(contract, referrer, upper);
+        if (!myAddress) {
+          throw new Error('Unable to get your wallet address. Please connect your wallet.');
         }
-        let myAddress = null, user = null;
-        const sameAddress = (a, b) => {
-          if (!a || !b) return false;
-          try { return a.toLowerCase() === b.toLowerCase(); } catch(_) { return false; }
-        };
-                 try {
-             // استفاده از آدرس ذخیره شده
-          // Determine connected wallet address robustly
-          myAddress = (window.ethereum && window.ethereum.selectedAddress) ? window.ethereum.selectedAddress : null;
-          if (!myAddress && contract.signer) {
-            try { myAddress = await contract.signer.getAddress(); } catch(_) {}
-          }
-          if (!myAddress && window.contractConfig && window.contractConfig.address) {
-            myAddress = window.contractConfig.address;
-          }
-          if (myAddress) {
-            user = await contract.users(myAddress);
-            window.currentUserAddress = myAddress;
-          }
-         } catch (e) {
-             console.log(`Error getting user info in reserve registration:`, e);
-           }
-          
-                     console.log(`🔍 Checking user in reserve registration:`, user);
-                   // Check if user is registering for themselves or others
-          if (user && (user.index && BigInt(user.index) > 0n)) {
-             // User is active, can register others
-             console.log(`✅ User is active, can register others`);
-           } else {
-             // If user is not active, check if they're registering for themselves
-            if (sameAddress(newUser, myAddress)) {
-               console.log(`✅ User registering for themselves`);
-               // Allow self-registration
-             } else {
-               console.log(`⚠️ User not active:`, user);
-               throw new Error(`You must register first to be able to register others.`);
-             }
-           }
-         
-                   // Check token balance based on registration type
-         const userBalance = await contract.balanceOf(myAddress);
-         let requiredAmount;
-         
-                    if (currentRegistrationType === 'free') {
-             // Reserve mode: equivalent to $23 tokens
-             let tokenPriceNum = 1; // Default price $1
-             try {
-               if (typeof contract.getTokenPrice === 'function') {
-                 const tokenPrice = await contract.getTokenPrice();
-                 tokenPriceNum = Number(ethers.formatUnits(tokenPrice, 18));
-               }
-             } catch (e) {
-               console.log('Error getting token price, using default price:', e);
-             }
-             
-             // Calculate required amount (23 USD / token price)
-             const requiredAmountFloat = 23 / tokenPriceNum;
-             requiredAmount = ethers.parseEther(requiredAmountFloat.toString());
+        
+        // ========== اعتبارسنجی 1: بررسی اینکه والد فعال است ==========
+        status.textContent = 'Checking parent address...';
+        console.log('🔍 Validating parent address: ' + parentUpper);
+        
+        const parentUser = await contract.users(parentUpper);
+        
+        // Check if parent has valid index
+        if (!parentUser || !(parentUser.index && BigInt(parentUser.index) > 0n)) {
+          throw new Error('Parent address is not active or does not exist.');
+        }
+        console.log('✅ Parent is active');
+        
+        // ========== اعتبارسنجی 2: بررسی ظرفیت والد ==========
+        status.textContent = 'Checking parent capacity...';
+        const capacityCheck = await checkUpperCapacity(parentUpper);
+        if (!capacityCheck.hasCapacity) {
+          throw new Error(capacityCheck.message);
+        }
+        console.log('✅ Parent has capacity:', capacityCheck.message);
+        
+        // Validate upper if provided and not root
+        if (upperReferrer && upperReferrer !== 'root' && /^0x[a-fA-F0-9]{40}$/.test(upperReferrer)) {
+          const upperUserData = await contract.users(upperReferrer);
+          if (!upperUserData || !(upperUserData.index && BigInt(upperUserData.index) > 0n)) {
+            console.log('⚠️ Upper is not active, will use parent as upper');
+            upperReferrer = 'root';
           } else {
-            // Normal mode: use safe regPrice function
-            try {
-              const regPrice = await (window.safeGetRegPrice ? window.safeGetRegPrice(contract) : null);
-              if (regPrice) {
-                requiredAmount = regPrice;
-              } else {
-                throw new Error('RegPrice not available');
-              }
-            } catch (e) {
-              console.log('Error getting regPrice:', e);
-              throw new Error('Unable to get registration price');
-            }
-         }
+            console.log('✅ Upper is active');
+          }
+        } else {
+          console.log('ℹ️ No upper provided, will use root');
+          upperReferrer = 'root';
+        }
+        
+        // ========== اعتبارسنجی 3: مقدار کافی IAM داشته باشد ==========
+        console.log('📊 Checking IAM balance...');
+        status.textContent = 'Checking IAM balance...';
+        const userBalance = await contract.balanceOf(myAddress);
+        let requiredAmount;
+         
+                   // Always use regPrice from contract
+                   status.textContent = 'Getting registration price...';
+                   try {
+                     const regPrice = await (window.safeGetRegPrice ? window.safeGetRegPrice(contract) : null);
+                     if (regPrice) {
+                       requiredAmount = regPrice;
+                     } else {
+                       throw new Error('RegPrice not available');
+                     }
+                   } catch (e) {
+                     console.log('Error getting regPrice:', e);
+                     throw new Error('Unable to get registration price');
+                   }
          
          if (userBalance < requiredAmount) {
            const requiredFormatted = Number(ethers.formatEther(requiredAmount)).toFixed(2);
@@ -2196,21 +2548,34 @@
            throw new Error(`Insufficient IAM balance. Required: ${requiredFormatted} IAM, Current: ${currentFormatted} IAM`);
          }
          
-                  showTempMessage(currentRegistrationType === 'free' ? 'Sending reserve registration request to network... Please wait for transaction confirmation.' : 'Sending normal registration request to network... Please wait for transaction confirmation.', 'info');
+                  showTempMessage('Sending registration request to network... Please wait for transaction confirmation.', 'info');
           localStorage.setItem('avatar_' + newUser, selectedAvatar);
           
-                   // Select function based on registration type
+                   // Simplified registration logic for new contract
         let tx;
-        // Always use registerAndActivate; for reserve mode, use current user as upper
-        if (currentRegistrationType === 'free') {
-          const effectiveUpper = (upper && /^0x[a-fA-F0-9]{40}$/.test(upper)) ? upper : referrer;
-          tx = await contract.registerAndActivate(referrer, effectiveUpper, newUser);
-        } else {
-          // For registerAndActivate, we need 3 parameters: referrer, upper, newUser
-          tx = await contract.registerAndActivate(referrer, upper, newUser);
-        }
+        // Use registerAndActivate with the validated values
+        status.textContent = 'Sending transaction...';
+        registerBtn.innerHTML = '⏳ Sending Transaction...';
+        
+        // Determine the upper parameter (use parent if upper is root or invalid)
+        const targetUpper = (upperReferrer && upperReferrer !== 'root' && /^0x[a-fA-F0-9]{40}$/.test(upperReferrer)) 
+                          ? upperReferrer 
+                          : parentUpper;
+        
+        console.log('📤 Sending registration with:', {
+          parent: parentUpper,
+          upper: targetUpper,
+          newUser: newUser
+        });
+        
+        // Send transaction (single attempt, no retry)
+        status.textContent = 'Sending transaction...';
+        tx = await contract.registerAndActivate(parentUpper, targetUpper, newUser);
+        console.log('✅ Transaction sent successfully');
           
          showTempMessage('Waiting for network transaction confirmation...', 'info');
+         status.textContent = 'Waiting for confirmation...';
+         registerBtn.innerHTML = '⏳ Confirming...';
           await tx.wait();
         showMessageBox('Registration completed successfully! Welcome to IAM family.', 'success');
         setTimeout(loadRegisterInfo, 1500);
@@ -2220,9 +2585,9 @@
         if (/already registered|Already registered/i.test(errorMsg)) {
           showTempMessage('This address is already registered.', 'error');
                    } else if (/not active|inactive/i.test(errorMsg)) {
-          showTempMessage('Selected referrer is not active. Please enter an active referrer.', 'error');
-        } else if (/invalid referrer|referrer/i.test(errorMsg)) {
-           showTempMessage('Invalid referrer address or does not exist.', 'error');
+          showTempMessage('Selected upper is not active. Please enter an active upper.', 'error');
+        } else if (/invalid upper|upper/i.test(errorMsg)) {
+           showTempMessage('Invalid upper address or does not exist.', 'error');
                    } else if (/insufficient|balance/i.test(errorMsg)) {
               // اگر خطای کمبود موجودی از smart contract آمده، همان پیام رو نشون بده
              if (errorMsg.includes('IAM balance insufficient')) {
@@ -2230,7 +2595,9 @@
            } else {
              showTempMessage('Your IAM balance is insufficient for registration.', 'error');
            }
-                   } else if (/user rejected|reject/i.test(errorMsg)) {
+                   } else if (/403|Non-200 status code/i.test(errorMsg)) {
+          showMessageBox('⚠️ Network error (403): Too many requests. Please wait a moment and try again, or check your internet connection.', 'error');
+        } else if (/user rejected|reject/i.test(errorMsg)) {
           showTempMessage('Registration process was cancelled by you.', 'error');
         } else if (/execution reverted/i.test(errorMsg)) {
           const match = errorMsg.match(/reverted: "([^"]+)"/);
@@ -2246,6 +2613,7 @@
         // Restore button state
         registerBtn.disabled = false;
         registerBtn.style.opacity = '1';
+        registerBtn.innerHTML = 'Register';
       }
     };
 
