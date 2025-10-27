@@ -2058,27 +2058,55 @@ class SwapManager {
 
             // Token price from contract
             console.log('🔄 Fetching token price...');
+            this.tokenPrice = null;
             try {
-                // Check if getTokenPrice function exists and try to call it
+                // Method 1: Try getTokenPrice function first
                 if (typeof this.contract.getTokenPrice === 'function') {
-            try {
-                const tokenPrice = await Promise.race([
-                    this.contract.getTokenPrice(),
+                    try {
+                        const tokenPrice = await Promise.race([
+                            this.contract.getTokenPrice(),
                             new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
-                ]);
-                this.tokenPrice = ethers.utils.formatUnits(tokenPrice, 18);
-            console.log('✅ Token price received:', this.tokenPrice);
+                        ]);
+                        this.tokenPrice = ethers.utils.formatUnits(tokenPrice, 18);
+                        console.log('✅ Token price received from getTokenPrice():', this.tokenPrice);
                     } catch (priceError) {
-                        console.log('ℹ️ Token price not available from contract, using default');
-                        this.tokenPrice = '0.00001'; // Default price for old contracts
+                        console.log('ℹ️ getTokenPrice() failed, trying alternative method');
+                        // Continue to method 2
                     }
-                } else {
-                    console.log('ℹ️ getTokenPrice function not available, using default');
-                    this.tokenPrice = '0.00001'; // Default price for old contracts
+                }
+                
+                // Method 2: Calculate price from contract balance and supply
+                if (!this.tokenPrice || this.tokenPrice === '0' || this.tokenPrice === 0) {
+                    try {
+                        const contractDaiBalance = await Promise.race([
+                            this.contract.getContractdaiBalance(),
+                            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
+                        ]);
+                        const totalSupply = await Promise.race([
+                            this.contract.totalSupply(),
+                            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
+                        ]);
+                        
+                        if (totalSupply.gt(0)) {
+                            const daiBalanceNum = parseFloat(ethers.utils.formatUnits(contractDaiBalance, 18));
+                            const supplyNum = parseFloat(ethers.utils.formatUnits(totalSupply, 18));
+                            this.tokenPrice = (daiBalanceNum / supplyNum).toFixed(8);
+                            console.log('✅ Token price calculated from balance/supply:', this.tokenPrice);
+                        }
+                    } catch (calcError) {
+                        console.log('ℹ️ Price calculation from balance/supply failed');
+                    }
+                }
+                
+                // Method 3: If still no price, set to null and show error
+                if (!this.tokenPrice || this.tokenPrice === '0' || this.tokenPrice === 0) {
+                    this.tokenPrice = null;
+                    console.warn('⚠️ Unable to fetch token price from any method');
+                    this.showStatus('Token price unavailable. Price calculations will not work.', 'error');
                 }
             } catch (error) {
-                console.log('ℹ️ Error fetching token price, using default');
-                this.tokenPrice = '0.00001'; // Fallback to default price
+                console.log('ℹ️ Error fetching token price:', error);
+                this.tokenPrice = null;
             }
 
             // IAM balance
@@ -2121,16 +2149,23 @@ class SwapManager {
             }
             
             // Calculate IAM dollar equivalent
-            const IAMUsdValue = parseFloat(IAMBalanceFormatted) * parseFloat(this.tokenPrice);
+            let IAMUsdValue = 0;
+            if (this.tokenPrice) {
+                IAMUsdValue = parseFloat(IAMBalanceFormatted) * parseFloat(this.tokenPrice);
+            }
             
             // Display balances
             const IAMBalanceEl = document.getElementById('IAMBalance');
             const daiBalanceEl = document.getElementById('daiBalance');
             if (IAMBalanceEl) {
                 const fullIAMAmount = Number(IAMBalanceFormatted).toLocaleString('en-US', {maximumFractionDigits: 6});
+                let usdDisplay = IAMUsdValue > 0 ? `≈ $${formatLargeNumber(IAMUsdValue)}` : '≈ $0.00';
+                if (!this.tokenPrice) {
+                    usdDisplay = '<span style="opacity:0.5;">Price unavailable</span>';
+                }
                 IAMBalanceEl.innerHTML = `
                     <span title="${fullIAMAmount} IAM">${formatLargeNumber(Number(IAMBalanceFormatted))} IAM</span>
-                    <div style="font-size:0.8rem;color:#a786ff;margin-top:2px;">≈ $${formatLargeNumber(IAMUsdValue)}</div>
+                    <div style="font-size:0.8rem;color:#a786ff;margin-top:2px;">${usdDisplay}</div>
                 `;
             }
             if (daiBalanceEl) {

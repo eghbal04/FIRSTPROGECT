@@ -1484,8 +1484,11 @@
           } catch(_) {}
         }
 
-      });
-    })();
+      }
+      // End of initializeWalletConnection function
+
+      // Call wallet connection on page load
+      initializeWalletConnection();
   </script>
   <script>
     let selectedAvatar = 'man';
