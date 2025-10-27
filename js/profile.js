@@ -119,7 +119,7 @@ function updateProfileUI(profile) {
 
     const linkEl = document.getElementById('profile-referral-link');
     if (linkEl) {
-        const isActive = !!(profile.userStruct && profile.userStruct.index && BigInt(profile.userStruct.index) > 0n);
+        const isActive = !!(profile.userStruct && profile.userStruct.num && BigInt(profile.userStruct.num) > 0n);
         if (profile.address && isActive) {
             const fullLink = window.location.origin + '/register.html?ref=' + profile.address;
             linkEl.href = fullLink;
@@ -139,7 +139,7 @@ function updateProfileUI(profile) {
         copyBtn.onclick = async () => {
             try {
                 if (profile.address) {
-                    const isActive = !!(profile.userStruct && profile.userStruct.index && BigInt(profile.userStruct.index) > 0n);
+                    const isActive = !!(profile.userStruct && profile.userStruct.num && BigInt(profile.userStruct.num) > 0n);
                     if (!isActive) { throw new Error('اکانت شما هنوز فعال نشده است'); }
                     const fullLink = window.location.origin + '/register.html?ref=' + profile.address;
                     
@@ -296,8 +296,8 @@ async function updateProfileupper() {
     if (!contract || !address) return;
     const user = await contract.users(address);
     let upper = '-';
-    if (user && user.index !== undefined) {
-      let idx = user.index;
+    if (user && user.num !== undefined) {
+      let idx = user.num;
       if (typeof idx === 'bigint') idx = Number(idx);
       else idx = parseInt(idx);
       if (idx === 0) {
@@ -720,8 +720,8 @@ async function countSubtreeUltraFast(startIndex, contract) {
         processedIndices.add(indexStr);
         
         try {
-            // Direct index to address check - fastest method
-            const address = await contract.indexToAddress(currentIndex);
+            // Direct num to address check - fastest method
+            const address = await contract.numToAddress(currentIndex);
             
             // Quick validation - if address exists and is not zero, count it
             if (address && address !== '0x0000000000000000000000000000000000000000') {
@@ -752,9 +752,9 @@ async function updateWalletCountsDisplay() {
         if (!contract || !address) return;
         
         const user = await contract.users(address);
-        if (!user || !(user.index && BigInt(user.index) > 0n)) return;
+        if (!user || !(user.num && BigInt(user.num) > 0n)) return;
         
-        const userIndex = parseInt(user.index);
+        const userIndex = parseInt(user.num);
         const counts = await calculateWalletCounts(userIndex, contract);
         
         // Update display in profile
@@ -795,7 +795,7 @@ async function purchaseEBAConfig(amount) {
         
         // Ensure user is registered
         const user = await contract.users(address);
-        if (!user || !user.index || BigInt(user.index) === 0n) {
+        if (!user || !user.num || BigInt(user.num) === 0n) {
             throw new Error('You must register first');
         }
         

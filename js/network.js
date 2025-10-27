@@ -120,20 +120,20 @@ window.networkShowUserPopup = async function(address, user) {
             const rightChildIndex = BigInt(userIndex) * 2n + 1n;
             // Left
             try {
-                const leftAddress = await contract.indexToAddress(leftChildIndex);
+                const leftAddress = await contract.numToAddress(leftChildIndex);
                 if (leftAddress && leftAddress !== '0x0000000000000000000000000000000000000000') {
                     const leftUser = await (async () => { try { return await contract.users(leftAddress); } catch(e){ return { index:0n }; } })();
-                    if (leftUser && leftUser.index && BigInt(leftUser.index) > 0n) {
+                    if (leftUser && leftUser.num && BigInt(leftUser.num) > 0n) {
                         leftCount = 1 + await calculateSubtreeCount(leftChildIndex, contract, 'left');
                     }
                 }
             } catch {}
             // Right
             try {
-                const rightAddress = await contract.indexToAddress(rightChildIndex);
+                const rightAddress = await contract.numToAddress(rightChildIndex);
                 if (rightAddress && rightAddress !== '0x0000000000000000000000000000000000000000') {
                     const rightUser = await (async () => { try { return await contract.users(rightAddress); } catch(e){ return { index:0n }; } })();
-                    if (rightUser && rightUser.index && BigInt(rightUser.index) > 0n) {
+                    if (rightUser && rightUser.num && BigInt(rightUser.num) > 0n) {
                         rightCount = 1 + await calculateSubtreeCount(rightChildIndex, contract, 'right');
                     }
                 }
@@ -153,10 +153,10 @@ window.networkShowUserPopup = async function(address, user) {
             let subtreeCount = 0;
             // Check left child
             try {
-                const leftAddress = await contract.indexToAddress(leftChildIndex);
+                const leftAddress = await contract.numToAddress(leftChildIndex);
                 if (leftAddress && leftAddress !== '0x0000000000000000000000000000000000000000') {
                     const leftUser = await (async () => { try { return await contract.users(leftAddress); } catch(e){ return { index:0n }; } })();
-                    if (leftUser && leftUser.index && BigInt(leftUser.index) > 0n) {
+                    if (leftUser && leftUser.num && BigInt(leftUser.num) > 0n) {
                         subtreeCount += 1;
                         subtreeCount += await countRecursive(leftChildIndex);
                     }
@@ -166,10 +166,10 @@ window.networkShowUserPopup = async function(address, user) {
             }
             // Check right child
             try {
-                const rightAddress = await contract.indexToAddress(rightChildIndex);
+                const rightAddress = await contract.numToAddress(rightChildIndex);
                 if (rightAddress && rightAddress !== '0x0000000000000000000000000000000000000000') {
                     const rightUser = await (async () => { try { return await contract.users(rightAddress); } catch(e){ return { index:0n }; } })();
-                    if (rightUser && rightUser.index && BigInt(rightUser.index) > 0n) {
+                    if (rightUser && rightUser.num && BigInt(rightUser.num) > 0n) {
                         subtreeCount += 1;
                         subtreeCount += await countRecursive(rightChildIndex);
                     }
@@ -585,7 +585,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
             console.log(`🔄 Getting address for index: ${index}`);
         let address = null;
             try {
-            address = await contract.indexToAddress(index);
+            address = await contract.numToAddress(index);
             } catch (error) {
                 console.error('Error getting address for index:', index, error);
                 address = null;
@@ -640,7 +640,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                         setTimeout(() => reject(new Error('Left user fetch timeout')), 60000)
                     );
                     leftUser = await Promise.race([leftUserPromise, leftTimeoutPromise]);
-                    if (leftUser && leftUser.index && BigInt(leftUser.index) > 0n) { 
+                    if (leftUser && leftUser.num && BigInt(leftUser.num) > 0n) { 
                         hasDirects = true; 
                         leftActive = true; 
                         console.log(`✅ Left child active for node ${index}, leftUser.index: ${leftUser.index}`);
@@ -659,7 +659,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                         setTimeout(() => reject(new Error('Right user fetch timeout')), 60000)
                     );
                     rightUser = await Promise.race([rightUserPromise, rightTimeoutPromise]);
-                    if (rightUser && rightUser.index && BigInt(rightUser.index) > 0n) { 
+                    if (rightUser && rightUser.num && BigInt(rightUser.num) > 0n) { 
                         hasDirects = true; 
                         rightActive = true; 
                         console.log(`✅ Right child active for node ${index}, rightUser.index: ${rightUser.index}`);
@@ -2442,7 +2442,7 @@ function startTypewriter(popupEl, IAMId, walletAddress, isActive, infoList, addr
           
           // دریافت آدرس‌ها به صورت همزمان
           const addressPromises = batch.map(index => 
-            contract.indexToAddress(index).catch(() => null)
+            contract.numToAddress(index).catch(() => null)
           );
           const addresses = await Promise.all(addressPromises);
           

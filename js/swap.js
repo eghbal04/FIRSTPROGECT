@@ -1408,8 +1408,23 @@ const IAM_ABI = [
 		"outputs": [
 			{
 				"internalType": "uint256",
-				"name": "index",
+				"name": "num",
 				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "parent",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "leftChild",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "rightChild",
+				"type": "address"
 			},
 			{
 				"internalType": "uint256",
@@ -1453,22 +1468,12 @@ const IAM_ABI = [
 			},
 			{
 				"internalType": "uint256",
-				"name": "lastMonthlyClaim",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "totalMonthlyRewarded",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
 				"name": "refclimed",
 				"type": "uint256"
 			},
 			{
 				"internalType": "uint256",
-				"name": "depositedAmount",
+				"name": "registrationDate",
 				"type": "uint256"
 			}
 		],

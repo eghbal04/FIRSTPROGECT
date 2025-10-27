@@ -95,7 +95,7 @@ class DatabaseService {
   async getUserByIndex(index) {
     try {
       const usersList = JSON.parse(localStorage.getItem('users_list') || '[]');
-      const user = usersList.find(u => u.index === index);
+      const user = usersList.find(u => u.num === index);
       
       return user || null;
     } catch (error) {
@@ -234,7 +234,7 @@ class DatabaseService {
         
         return {
           address: user.address,
-          index: user.index,
+          num: user.num,
           likes,
           dislikes,
           netScore

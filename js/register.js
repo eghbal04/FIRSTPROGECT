@@ -75,7 +75,7 @@ async function loadRegisterData(contract, address, tokenPriceUSDFormatted) {
         // Update balance display
         await window.displayUserBalances();
         // Check registration status
-        if (userData && userData.index && BigInt(userData.index) > 0n) {
+        if (userData && userData.num && BigInt(userData.num) > 0n) {
             // Only show upgrade form
             const profileContainer = document.querySelector('#main-register .profile-container');
             if (profileContainer) profileContainer.style.display = 'none';
@@ -136,7 +136,7 @@ async function updateUpgradeCalculations() {
         const { contract, address } = window.contractConfig;
         const userData = await contract.users(address);
         
-        if (userData && userData.index && BigInt(userData.index) > 0n) {
+        if (userData && userData.num && BigInt(userData.num) > 0n) {
             const currentLevel = parseInt(userData.level);
             const nextLevel = currentLevel + 1;
             
@@ -333,7 +333,7 @@ window.checkIndexReferralLine = async function() {
             console.log(`👤 User info at index ${index}:`, userAtAddress);
             
             // Check if user is active
-            const isActive = userAtAddress && userAtAddress.index && BigInt(userAtAddress.index) > 0n;
+            const isActive = userAtAddress && userAtAddress.num && BigInt(userAtAddress.num) > 0n;
             
             if (!isActive) {
                 refInput.value = '';
@@ -423,7 +423,7 @@ async function performRegistration() {
         // Check current user status
         const currentUserData = await contract.users(address);
         
-        if (currentUserData && currentUserData.index && BigInt(currentUserData.index) > 0n) {
+        if (currentUserData && currentUserData.num && BigInt(currentUserData.num) > 0n) {
             // User is registered - can only register subordinates
             const userAddressInput = document.getElementById('register-user-address') || document.getElementById('new-user-address');
             const userAddress = userAddressInput ? userAddressInput.value.trim() : '';
@@ -437,7 +437,7 @@ async function performRegistration() {
             
             // Check that new user is not registered
             const newUserData = await contract.users(userAddress);
-            if (newUserData && newUserData.index && BigInt(newUserData.index) > 0n) {
+            if (newUserData && newUserData.num && BigInt(newUserData.num) > 0n) {
                 throw new Error('This address is already registered');
             }
             
@@ -937,7 +937,7 @@ window.showRegistrationForm = async function() {
       try {
         refData = await contract.users(upper);
       } catch (e) { refData = null; }
-      if (!refData || !(refData.index && BigInt(refData.index) > 0n)) {
+      if (!refData || !(refData.num && BigInt(refData.num) > 0n)) {
         showTempMessage('upper is not active.', 'error');
         registerBtn.disabled = false;
         registerBtn.textContent = 'Register';
@@ -1007,10 +1007,10 @@ window.showRegistrationForm = async function() {
                 const { contract } = window.contractConfig;
                 // بررسی معتبر بودن معرف
                 const refData = await contract.users(refAddr);
-                if (!(refData && refData.index && BigInt(refData.index) > 0n)) throw new Error('upper is not active');
+                if (!(refData && refData.num && BigInt(refData.num) > 0n)) throw new Error('upper is not active');
                 // بررسی ثبت‌نام نبودن نفر جدید
                 const userData = await contract.users(userAddr);
-                if (userData && userData.index && BigInt(userData.index) > 0n) throw new Error('This address is already registered');
+                if (userData && userData.num && BigInt(userData.num) > 0n) throw new Error('This address is already registered');
                 // ثبت‌نام نفر جدید (با ولت فعلی)
                 const tx = await contract.registerAndActivate(refAddr, refAddr, userAddr);
                 await tx.wait();
@@ -1074,10 +1074,10 @@ window.addEventListener('DOMContentLoaded', function() {
                 const { contract } = window.contractConfig;
                 // بررسی معتبر بودن معرف
                 const refData = await contract.users(refAddr);
-                if (!(refData && refData.index && BigInt(refData.index) > 0n)) throw new Error('upper is not active');
+                if (!(refData && refData.num && BigInt(refData.num) > 0n)) throw new Error('upper is not active');
                 // بررسی ثبت‌نام نبودن نفر جدید
                 const userData = await contract.users(userAddr);
-                if (userData && userData.index && BigInt(userData.index) > 0n) throw new Error('This address is already registered');
+                if (userData && userData.num && BigInt(userData.num) > 0n) throw new Error('This address is already registered');
                 // ثبت‌نام نفر جدید (با ولت فعلی)
                 const tx = await contract.registerAndActivate(refAddr, refAddr, userAddr);
                 await tx.wait();
