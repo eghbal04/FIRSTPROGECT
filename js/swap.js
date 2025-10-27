@@ -1527,6 +1527,7 @@ class SwapManager {
         this.userBalances = { dai: 0, IAM: 0 };
         this.isSwapping = false;
         this.isRefreshing = false;
+        this.isApproving = false;
         this.provider = null;
         this.signer = null;
         this.contract = null;
@@ -2033,6 +2034,38 @@ class SwapManager {
             console.log('✅ USD field event listeners connected');
         }
         
+        // Event listener for Approve button
+        const approveBtn = document.getElementById('approveBtn');
+        if (approveBtn) {
+            approveBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                console.log('🔐 Approve button clicked');
+                
+                if (this.isApproving) {
+                    console.log('⚠️ Approve already in progress');
+                    return;
+                }
+                
+                this.isApproving = true;
+                approveBtn.disabled = true;
+                const originalText = approveBtn.textContent;
+                approveBtn.textContent = '⏳ Approving...';
+                
+                try {
+                    await this.approveDAI();
+                } catch (error) {
+                    console.error('❌ Error in approve:', error);
+                } finally {
+                    this.isApproving = false;
+                    approveBtn.disabled = false;
+                    approveBtn.textContent = originalText;
+                }
+            });
+            console.log('✅ Approve button event listener connected');
+        }
+        
         // Initial execution to set initial state
         this.toggleSwapUsdConverter();
         
@@ -2145,6 +2178,19 @@ class SwapManager {
             
             // Update USD equivalent display
             this.updateSwapUsdValue();
+            
+            // Check allowance and update approve UI (only for DAI to IAM swaps)
+            if (this.daiContract && this.signer) {
+                try {
+                    const userAddress = await this.signer.getAddress();
+                    const allowance = await this.daiContract.allowance(userAddress, SWAP_IAM_ADDRESS);
+                    const needsApproval = allowance.eq(0) || allowance.lt(ethers.utils.parseUnits('1', 18));
+                    await this.updateApproveUI(needsApproval);
+                    console.log('🔍 Allowance checked, needsApproval:', needsApproval);
+                } catch (error) {
+                    console.warn('⚠️ Could not check allowance:', error);
+                }
+            }
             
         } catch (error) {
             console.error('❌ Error loading swap data:', error);
@@ -2656,19 +2702,11 @@ class SwapManager {
             console.log('📊 Current allowance:', ethers.utils.formatUnits(allowance, 18));
             
             if (allowance.lt(daiAmountWei)) {
-                console.log('🔐 Need to approve DAI allowance...');
-                this.showEnglishPopup('🔐 DAI approval required! Please approve DAI spending to continue with your purchase.', 'loading');
-                
-                const approveTx = await this.daiContract.approve(SWAP_IAM_ADDRESS, ethers.constants.MaxUint256);
-                this.showEnglishPopup('⏳ DAI approval transaction submitted! Waiting for confirmation... This is a one-time setup.', 'loading');
-                
-                console.log('⏳ Waiting for approve confirmation...');
-                await approveTx.wait();
-                this.showEnglishPopup('✅ DAI approval successful! You can now proceed with your purchase.', 'success');
-                console.log('✅ Approve confirmed');
-            } else {
-                console.log('✅ Allowance is sufficient');
+                console.log('🔐 Insufficient allowance, throwing error');
+                throw new Error('Insufficient DAI allowance. Please approve DAI first by clicking the "Approve DAI" button.');
             }
+            
+            console.log('✅ Allowance is sufficient');
             
             // Buy IAM
             console.log('🛒 Starting IAM token purchase...');
@@ -2718,6 +2756,63 @@ class SwapManager {
         }
     }
 
+    // Approve DAI manually
+    async approveDAI() {
+        console.log('🔐 Starting DAI approval...');
+        
+        try {
+            if (!this.contract || !this.signer || !this.daiContract) {
+                throw new Error('Contract connection not established');
+            }
+            
+            const address = await this.signer.getAddress();
+            
+            console.log('🔐 Approving DAI to spend...');
+            this.showStatus('🔐 Requesting DAI approval...', 'loading');
+            
+            const approveTx = await this.daiContract.approve(SWAP_IAM_ADDRESS, ethers.constants.MaxUint256);
+            console.log('⏳ Approval transaction submitted:', approveTx.hash);
+            
+            this.showStatus('⏳ Approval transaction submitted. Waiting for confirmation...', 'loading');
+            
+            await approveTx.wait();
+            
+            console.log('✅ DAI approved successfully');
+            this.showStatus('✅ DAI approved successfully! You can now swap.', 'success');
+            
+            // Hide approve button and status, show swap button
+            this.updateApproveUI(false);
+            
+            return true;
+        } catch (error) {
+            console.error('❌ Error approving DAI:', error);
+            const errorMessage = this.getErrorMessage(error);
+            this.showStatus(errorMessage, 'error');
+            throw error;
+        }
+    }
+    
+    // Update approve UI based on allowance status
+    async updateApproveUI(showApprove) {
+        const approveBtn = document.getElementById('approveBtn');
+        const approveStatus = document.getElementById('approval-status');
+        const swapBtn = document.getElementById('swapBtn');
+        
+        if (approveBtn && approveStatus) {
+            if (showApprove) {
+                approveBtn.style.display = 'block';
+                approveStatus.style.display = 'block';
+                if (swapBtn) swapBtn.style.opacity = '0.5';
+                if (swapBtn) swapBtn.disabled = true;
+            } else {
+                approveBtn.style.display = 'none';
+                approveStatus.style.display = 'none';
+                if (swapBtn) swapBtn.style.opacity = '1';
+                if (swapBtn) swapBtn.disabled = false;
+            }
+        }
+    }
+
     async refreshSwapData() {
         // Prevent multiple simultaneous refresh calls
         if (this.isRefreshing) {
@@ -2730,6 +2825,14 @@ class SwapManager {
         
         try {
             await this.loadSwapData();
+            
+            // Check allowance and update approve UI
+            if (this.daiContract && this.signer) {
+                const address = await this.signer.getAddress();
+                const allowance = await this.daiContract.allowance(address, SWAP_IAM_ADDRESS);
+                const needsApproval = allowance.eq(0) || allowance.lt(ethers.utils.parseUnits('1', 18));
+                await this.updateApproveUI(needsApproval);
+            }
             
             console.log('✅ Swap data refreshed');
         } catch (error) {
