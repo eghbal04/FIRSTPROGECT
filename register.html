@@ -1269,26 +1269,13 @@
                   const u = await conn.contract.users(conn.address);
                   console.log('🔍 Checking user data:', u);
                   
-                  // Try to get index/number field from struct
+                  // Try to get index field from struct (ONLY u.index)
                   let userIndexValue = null;
                   
-                  // Try different possible fields
-                  if (u) {
-                    // Method 1: Check u.index (first priority)
-                    if (u.index !== undefined && u.index !== null) {
-                      userIndexValue = u.index;
-                      console.log('📍 Found index as u.index:', userIndexValue);
-                    }
-                    // Method 2: Check u.num
-                    else if (u.num !== undefined && u.num !== null) {
-                      userIndexValue = u.num;
-                      console.log('📍 Found index as u.num:', userIndexValue);
-                    }
-                    // Method 3: Check u[0] (array index)
-                    else if (u[0] !== undefined && u[0] !== null) {
-                      userIndexValue = u[0];
-                      console.log('📍 Found index as u[0]:', userIndexValue);
-                    }
+                  // Only check u.index
+                  if (u && u.index !== undefined && u.index !== null) {
+                    userIndexValue = u.index;
+                    console.log('📍 Found index as u.index:', userIndexValue);
                   }
                   
                   // User is active if index exists and is non-zero
@@ -1545,50 +1532,28 @@
         statusEl.textContent = icon + message;
     }
 
-    // Function to check if user is active (checks multiple possible fields)
+    // Function to check if user is active (checks only user.index)
     function isUserActive(user) {
       if (!user) return false;
       
-      let indexValue = null;
-      
-      // Try different possible fields (index first priority)
-      // Method 1: Check user.index (most common)
+      // Only check user.index
       if (user.index !== undefined && user.index !== null) {
-        indexValue = user.index;
-      }
-      // Method 2: Check user.num
-      else if (user.num !== undefined && user.num !== null) {
-        indexValue = user.num;
-      }
-      // Method 3: Check user[0] (array index)
-      else if (user[0] !== undefined && user[0] !== null) {
-        indexValue = user[0];
-      }
-      
-      // User is active if index exists and is non-zero
-      if (indexValue !== null && indexValue !== undefined) {
-        return BigInt(indexValue) !== 0n;
+        return BigInt(user.index) !== 0n;
       }
       
       return false;
     }
 
-    // Function to get user num value (checks multiple possible fields)
+    // Function to get user num value (checks only user.index)
     function getUserNumValue(user) {
       if (!user) return null;
       
-      let indexValue = null;
-      
-      // Try different possible fields (index first priority)
+      // Only check user.index
       if (user.index !== undefined && user.index !== null) {
-        indexValue = user.index;
-      } else if (user.num !== undefined && user.num !== null) {
-        indexValue = user.num;
-      } else if (user[0] !== undefined && user[0] !== null) {
-        indexValue = user[0];
+        return BigInt(user.index);
       }
       
-      return indexValue !== null ? BigInt(indexValue) : null;
+      return null;
     }
 
     // Function to check if target index is in current user's subtree

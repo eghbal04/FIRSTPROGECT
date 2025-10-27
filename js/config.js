@@ -270,20 +270,26 @@ window.connectWallet = connectWallet;
 window.getIAMAddress = getIAMAddress;
 window.setIAMAddress = setIAMAddress;
 
-// Helper functions for user validation (consistent with register.html)
+// Helper functions for user validation (checks user.index)
 function isUserActive(user) {
     if (!user) return false;
-    if (user.num !== undefined && user.num !== null) {
-        return BigInt(user.num) !== 0n;
+    
+    // Only check user.index
+    if (user.index !== undefined && user.index !== null) {
+        return BigInt(user.index) !== 0n;
     }
+    
     return false;
 }
 
 function getUserNumValue(user) {
     if (!user) return null;
-    if (user.num !== undefined && user.num !== null) {
-        return BigInt(user.num);
+    
+    // Only check user.index
+    if (user.index !== undefined && user.index !== null) {
+        return BigInt(user.index);
     }
+    
     return null;
 }
 

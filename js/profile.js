@@ -920,10 +920,12 @@ function setupUpgradeCapButton(user, contract, address) {
     });
     
     // بستن مودال
-    cancelBtn.addEventListener('click', () => {
-        modal.style.display = 'none';
-        statusEl.textContent = '';
-    });
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+            statusEl.textContent = '';
+        });
+    }
     
     // بستن مودال با کلیک خارج از آن
     modal.onclick = (e) => {
@@ -1033,44 +1035,47 @@ function setupUpgradeCapButton(user, contract, address) {
     }
     
     // Confirm upgrade (force payout=100 and seller=contract)
-    confirmBtn.addEventListener('click', async () => {
-        console.log('🖱️ Confirm upgrade button clicked!');
-        const amount = parseFloat(amountInput.value);
-        
-        if (!amount || amount <= 0) {
-            statusEl.textContent = '❌ Please enter a valid amount';
-            statusEl.style.color = '#ff4444';
-            return;
-        }
-        
-        try {
-            confirmBtn.disabled = true;
-            statusEl.textContent = '⏳ Upgrading cap...';
-            statusEl.style.color = '#a786ff';
+    // Note: confirmBtn may not exist if using the new purchase button design
+    if (confirmBtn && amountInput) {
+        confirmBtn.addEventListener('click', async () => {
+            console.log('🖱️ Confirm upgrade button clicked!');
+            const amount = parseFloat(amountInput.value);
             
-            // Call purchaseEBAConfig with amount only
-            const result = await purchaseEBAConfig(amount);
+            if (!amount || amount <= 0) {
+                statusEl.textContent = '❌ Please enter a valid amount';
+                statusEl.style.color = '#ff4444';
+                return;
+            }
             
-            statusEl.textContent = '✅ Upgrade completed successfully!';
-            statusEl.style.color = '#00ff88';
-            
-            // Close modal after 2 seconds
-            setTimeout(() => {
-                modal.style.display = 'none';
-                statusEl.textContent = '';
-                // Reload profile
-                if (typeof loadProfile === 'function') {
-                    loadProfile();
-                }
-            }, 2000);
-            
-        } catch (error) {
-            statusEl.textContent = '❌ Error: ' + error.message;
-            statusEl.style.color = '#ff4444';
-        } finally {
-            confirmBtn.disabled = false;
-        }
-    });
+            try {
+                confirmBtn.disabled = true;
+                statusEl.textContent = '⏳ Upgrading cap...';
+                statusEl.style.color = '#a786ff';
+                
+                // Call purchaseEBAConfig with amount only
+                const result = await purchaseEBAConfig(amount);
+                
+                statusEl.textContent = '✅ Upgrade completed successfully!';
+                statusEl.style.color = '#00ff88';
+                
+                // Close modal after 2 seconds
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                    statusEl.textContent = '';
+                    // Reload profile
+                    if (typeof loadProfile === 'function') {
+                        loadProfile();
+                    }
+                }, 2000);
+                
+            } catch (error) {
+                statusEl.textContent = '❌ Error: ' + error.message;
+                statusEl.style.color = '#ff4444';
+            } finally {
+                confirmBtn.disabled = false;
+            }
+        });
+    }
 }
 
 // اضافه کردن توابع به window برای دسترسی جهانی

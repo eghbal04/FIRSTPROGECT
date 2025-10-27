@@ -755,23 +755,13 @@
                     console.log(`🔍 getIndexByAddress: users(${address}) =`, u);
                     console.log(`🔍 Full struct:`, Object.keys(u));
                     
-                    // Try to get index - could be object property or array index
+                    // Try to get index - ONLY check u.index
                     let indexValue = null;
                     
-                    // Method 1: Try as object property
-                    if (u && u.index !== undefined) {
+                    // Only check u.index
+                    if (u && u.index !== undefined && u.index !== null) {
                         indexValue = u.index;
-                        console.log(`✅ Found index as property: ${indexValue}`);
-                    }
-                    // Method 2: Try as array/tuple index (first element in struct)
-                    else if (u && Array.isArray(u) && u[0] !== undefined) {
-                        indexValue = u[0];
-                        console.log(`✅ Found index as array[0]: ${indexValue}`);
-                    }
-                    // Method 3: Try object with numeric key
-                    else if (u && u['0'] !== undefined) {
-                        indexValue = u['0'];
-                        console.log(`✅ Found index as u['0']: ${indexValue}`);
+                        console.log(`✅ Found index as u.index: ${indexValue}`);
                     }
                     
                     if (indexValue !== null && indexValue !== undefined && indexValue !== 0n && indexValue !== 0) {
