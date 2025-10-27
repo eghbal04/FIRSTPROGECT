@@ -1320,26 +1320,17 @@
                     const u = await conn.contract.users(conn.address);
                     console.log('🔍 Checking user data:', u);
                     
-                    // Try different methods to get index
+                    // Try to get num (only field now)
                     let userIndexValue = null;
                     
-                    // Method 1: Try u.index
-                    if (u && u.index !== undefined) {
-                      userIndexValue = u.index;
-                      console.log('📍 Found index as u.index:', userIndexValue);
-                    }
-                    // Method 2: Try u[0] (first element in tuple/array)
-                    else if (u && u[0] !== undefined) {
-                      userIndexValue = u[0];
-                      console.log('📍 Found index as u[0]:', userIndexValue);
-                    }
-                    // Method 3: Try u.num
-                    else if (u && u.num !== undefined) {
+                    // Try u.num
+                    if (u && u.num !== undefined && u.num !== null) {
                       userIndexValue = u.num;
-                      console.log('📍 Found index as u.num:', userIndexValue);
+                      console.log('📍 Found num as u.num:', userIndexValue);
                     }
                     
-                    userActive = !!(userIndexValue && BigInt(userIndexValue) > 0n);
+                    // User is active if index exists and is non-zero
+                    userActive = !!(userIndexValue && BigInt(userIndexValue) !== 0n);
                     console.log('✅ User active:', userActive, 'Index value:', userIndexValue);
                     if (userActive) {
                       userIndex = Number(userIndexValue);
@@ -1496,7 +1487,11 @@
                   }
                   let userActive = false;
                   if (contract) {
-                    try { const u = await contract.users(addr); userActive = !!(u && u.index && BigInt(u.index) > 0n); } catch(_) {}
+                    try { 
+                      const u = await contract.users(addr);
+                      // User is active if index exists and is non-zero
+                      userActive = isUserActive(u);
+                    } catch(_) {}
                   }
                   if (!userActive) {
                     nu.value = addr;
@@ -1585,7 +1580,29 @@
         statusEl.textContent = icon + message;
     }
 
-                                                // Function to check if target index is in current user's subtree
+    // Function to check if user is active (only checks num field now)
+    function isUserActive(user) {
+      if (!user) return false;
+      
+      // Only check num field
+      if (user.num !== undefined && user.num !== null) {
+        return BigInt(user.num) !== 0n;
+      }
+      
+      return false;
+    }
+
+    // Function to get user num value
+    function getUserNumValue(user) {
+      if (!user) return null;
+      
+      if (user.num !== undefined && user.num !== null) {
+        return BigInt(user.num);
+      }
+      return null;
+    }
+
+    // Function to check if target index is in current user's subtree
           function isIndexInUserSubtree(targetIndex, currentUserIndex) {
             console.log(`🔍 Checking: target index=${targetIndex}, current user=${currentUserIndex}`);
             
@@ -1742,13 +1759,17 @@
               }
               
               // For inactive users, allow registration for any active upper/upper
-              if (!myUser || !(myUser.index && BigInt(myUser.index) > 0n)) {
+              // User is active if num exists and is non-zero
+              const isMyUserActive = isUserActive(myUser);
+              if (!isMyUserActive) {
                 console.log(`ℹ️ Current user is not active. Checking if ${addressType} is active...`);
                 
                 // Check if target address is active
                 try {
                   const targetUser = await contract.users(targetAddress);
-                  if (targetUser && targetUser.index && BigInt(targetUser.index) > 0n) {
+                  // User is active if num exists and is non-zero
+                  const isTargetActive = isUserActive(targetUser);
+                  if (isTargetActive) {
                     console.log(`✅ Target ${addressType} is active. Allowing registration.`);
                     return true;
                   } else {
@@ -1763,13 +1784,15 @@
               
               // For active users, check if target is in their downline or is themselves
               const targetUser = await contract.users(targetAddress);
-              if (!targetUser || !(targetUser.index && BigInt(targetUser.index) > 0n)) {
+              // User is active if num exists and is non-zero
+              const isTargetActive = isUserActive(targetUser);
+              if (!isTargetActive) {
                 console.log(`❌ Target ${addressType} is not active`);
                 return false;
               }
               
-              const myUserNumber = Number(myUser.index);
-              const targetUserNumber = Number(targetUser.index);
+              const myUserNumber = Number(getUserNumValue(myUser));
+              const targetUserNumber = Number(getUserNumValue(targetUser));
               
               // Check if target is in current user's downline (subtree) or is the same user
               if (isIndexInUserSubtree(targetUserNumber, myUserNumber) || targetUserNumber === myUserNumber) {
@@ -1853,18 +1876,22 @@
       try {
         // Get upper user data
         const upperUser = await contract.users(upper);
-        if (!upperUser || !(upperUser.index && BigInt(upperUser.index) > 0n)) {
+        // User is active if num exists and is non-zero
+        const isUpperActive = isUserActive(upperUser);
+        if (!isUpperActive) {
           throw new Error('upper is not active or does not exist');
         }
         
         // Get upper user data  
         const upperU = await contract.users(upperParam);
-        if (!upperU || !(upperU.index && BigInt(upperU.index) > 0n)) {
+        // User is active if num exists and is non-zero
+        const isUpperActive2 = isUserActive(upperU);
+        if (!isUpperActive2) {
           throw new Error('Upper address is not active or does not exist');
         }
         
-        const upperUserNumber = Number(upperUser.index);
-        const upperUserNumber2 = Number(upperU.index);
+        const upperUserNumber = Number(getUserNumValue(upperUser));
+        const upperUserNumber2 = Number(getUserNumValue(upperU));
         
         console.log(`🔍 upper user number: ${upperUserNumber}, Upper user number: ${upperUserNumber2}`);
         
@@ -2023,15 +2050,23 @@
         let address;
         try {
           // Try numToAddress (new contract)
-          address = await contract.numToAddress(index);
+          if (typeof contract.numToAddress === 'function') {
+            address = await contract.numToAddress(BigInt(index));
+          } else if (typeof contract.getAddressByNumber === 'function') {
+            address = await contract.getAddressByNumber(BigInt(index));
+          } else {
+            throw new Error('No method available to get address from number');
+          }
+          
+          // Check if address is valid
+          if (!address || address === '0x0000000000000000000000000000000000000000') {
+            throw new Error('User number does not exist');
+          }
+          
+          console.log(`✅ Found ${type} address for number ${index}:`, address);
         } catch (error) {
-          console.warn(`⚠️ Error calling numToAddress for user number ${index}:`, error.message);
+          console.warn(`⚠️ Error getting address for user number ${index}:`, error.message);
           showTempMessage(`${type} user number ${index} does not exist in the contract`, 'error');
-          return;
-        }
-        
-        if (!address || address === '0x0000000000000000000000000000000000000000') {
-          showTempMessage(`${type} user number does not exist`, 'error');
           return;
         }
         
@@ -2117,7 +2152,9 @@
         
         // Check if address is active
         const user = await contract.users(address);
-        if (!user || !(user.index && BigInt(user.index) > 0n)) {
+        // User is active if num exists and is non-zero
+        const isUserActive2 = isUserActive(user);
+        if (!isUserActive2) {
           showTempMessage(`${type} address is not active`, 'error');
           return;
         }
@@ -2130,38 +2167,53 @@
     
     // Function to check if upper has available child slots
     async function checkUpperCapacity(upperAddress) {
+      console.log('🔍 checkUpperCapacity called for:', upperAddress);
       try {
-        if (!window.contractConfig || !window.contractConfig.contract) return { hasCapacity: true, message: '' };
+        if (!window.contractConfig || !window.contractConfig.contract) {
+          console.log('⚠️ No contract available, returning default');
+          return { hasCapacity: true, message: '' };
+        }
         const contract = window.contractConfig.contract;
         
+        console.log('🔍 Getting left child...');
         // Get left and right children
         const leftChild = await contract.getLeftChild(upperAddress);
+        console.log('📊 Left child:', leftChild);
+        
+        console.log('🔍 Getting right child...');
         const rightChild = await contract.getRightChild(upperAddress);
+        console.log('📊 Right child:', rightChild);
         
         const hasLeftSlot = !leftChild || leftChild === '0x0000000000000000000000000000000000000000';
         const hasRightSlot = !rightChild || rightChild === '0x0000000000000000000000000000000000000000';
         
+        console.log('📊 Slot availability:', { hasLeftSlot, hasRightSlot });
+        
+        let result;
         if (!hasLeftSlot && !hasRightSlot) {
-          return {
+          result = {
             hasCapacity: false,
             message: '❌ This Upper is at full capacity (both children are occupied)'
           };
         } else if (!hasLeftSlot) {
-          return {
+          result = {
             hasCapacity: true,
             message: '⚠️ Left child is occupied, only right child is available'
           };
         } else if (!hasRightSlot) {
-          return {
+          result = {
             hasCapacity: true,
             message: '⚠️ Right child is occupied, only left child is available'
           };
         } else {
-          return {
+          result = {
             hasCapacity: true,
             message: '✅ Both children are available'
           };
         }
+        
+        console.log('📊 checkUpperCapacity result:', result);
+        return result;
       } catch (error) {
         console.error('Error checking upper capacity:', error);
         return { hasCapacity: true, message: 'Error checking Upper capacity' };
@@ -2203,12 +2255,10 @@
       
       if (!referrer || referrer === 'root') {
         statusEl.style.display = 'none';
-        placementEl.style.display = 'none';
         return;
       }
       if (!/^0x[a-fA-F0-9]{40}$/.test(referrer)) {
         statusEl.style.display = 'none';
-        placementEl.style.display = 'none';
         return;
       }
       
@@ -2220,14 +2270,16 @@
           // Simple validation: check if upper is valid address
           if (!upperForValidation || upperForValidation === 'root' || !/^0x[a-fA-F0-9]{40}$/.test(upperForValidation)) {
             statusEl.style.display = 'none';
-            placementEl.style.display = 'none';
             return;
           }
           
           // Check if address is active
+          let upperUserData;
           try {
-            const upperUserData = await contract.users(upperForValidation);
-            if (!upperUserData || !(upperUserData.index && BigInt(upperUserData.index) > 0n)) {
+            upperUserData = await contract.users(upperForValidation);
+            // User is active if num exists and is non-zero
+            const isUpperActive = isUserActive(upperUserData);
+            if (!isUpperActive) {
               statusEl.className = 'register-form-status error';
               statusEl.textContent = '❌ This address is not active';
               statusEl.style.display = '';
@@ -2250,12 +2302,36 @@
             return;
           }
           
-          // Show success
-          statusEl.className = 'register-form-status success';
-          statusEl.textContent = `✅ Upper address is valid. ${capacityCheck.message}`;
-          statusEl.style.display = '';
-          
-          showTempMessage(`Upper address is valid. ${capacityCheck.message}`, 'success');
+          // Check if upper is in referrer's downline using contract function
+          // isInDownline(ancestor, descendant) - check if upper is descendant of referrer
+          try {
+            const isInReferrerDownline = await contract.isInDownline(referrer, upperForValidation);
+            
+            console.log('🔍 isInDownline result:', isInReferrerDownline, 'for ancestor:', referrer, 'descendant:', upperForValidation);
+            
+            if (!isInReferrerDownline) {
+              statusEl.className = 'register-form-status error';
+              statusEl.textContent = '❌ Upper is not in referrer\'s downline - will use parent';
+              statusEl.style.display = '';
+              showTempMessage('Upper is not in referrer\'s downline, parent will be used', 'warning');
+              return;
+            }
+            
+            console.log('✅ Upper is in referrer\'s downline');
+            
+            // Show success
+            statusEl.className = 'register-form-status success';
+            statusEl.textContent = `✅ Upper is valid and in referrer's downline. ${capacityCheck.message}`;
+            statusEl.style.display = '';
+            
+            showTempMessage(`Upper is valid and in referrer's downline. ${capacityCheck.message}`, 'success');
+          } catch (error) {
+            console.error('Error checking downline:', error);
+            statusEl.className = 'register-form-status error';
+            statusEl.textContent = '❌ Could not validate upper relationship';
+            statusEl.style.display = '';
+            showTempMessage('Could not validate upper relationship', 'warning');
+          }
         }
       } catch (error) {
         statusEl.className = 'register-form-status error';
@@ -2314,7 +2390,9 @@
           
                      // بررسی اینکه آیا این آدرس قبلاً ثبت‌نام شده است
            const user = await contract.users(address);
-           if (user && (user.index && BigInt(user.index) > 0n)) {
+           // User is active if num exists and is non-zero
+           const isUserRegistered = isUserActive(user);
+           if (isUserRegistered) {
              status.style.color = '#d32f2f';
              status.textContent = 'This address is already registered.';
              return;
@@ -2395,10 +2473,12 @@
              return;
            }
            
-           // Only show placement if current user is active
-           if (!myUser || !(myUser.index && BigInt(myUser.index) > 0n)) {
-             return;
-           }
+          // Only show placement if current user is active
+          // User is active if num exists and is non-zero
+          const isMyUserActive = isUserActive(myUser);
+          if (!isMyUserActive) {
+            return;
+          }
            
            
          } catch (error) {
@@ -2406,14 +2486,22 @@
          }
        }
       
-
-
-                             // Register new user (based on selected type)
-    document.getElementById('register-btn').onclick = async function() {
+                            
+                            
+                            // Register new user (based on selected type)
+    console.log('🔧 Setting up register button onclick handler...');
+    const registerBtnElement = document.getElementById('register-btn');
+    console.log('🔍 Register button element:', registerBtnElement);
+    
+    registerBtnElement.addEventListener('click', async function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('🚀 Register button clicked!');
       const status = document.getElementById('status-message');
       const registerBtn = this;
       
       // Disable button and show loading state
+      console.log('🔄 Disabling button...');
       registerBtn.disabled = true;
       registerBtn.style.opacity = '0.6';
       registerBtn.innerHTML = '⏳ Registering...';
@@ -2421,6 +2509,7 @@
       status.textContent = 'Validating information...';
       
       try {
+        console.log('✅ Starting registration process...');
         // Ensure wallet connection and get contract instance
         let contract = null, signerAddress = null;
         try {
@@ -2454,6 +2543,7 @@
         }
 
         // Get full addresses for registration (not truncated display)
+        console.log('🔍 Getting registration parameters...');
         const parentUpper = referrerAddressDisplay.getAttribute('data-full-address') || referrerAddressDisplay.value.trim();
         const upperReferrer = upperInput.getAttribute('data-full-address') || upperInput.value.trim();
         const newUser = newUserInput.value.trim();
@@ -2461,7 +2551,12 @@
         console.log('📋 Registration parameters:', { parentUpper, upperReferrer, newUser });
         
         // Validate inputs
-        if (!/^0x[a-fA-F0-9]{40}$/.test(parentUpper)) throw new Error('Invalid upper address. Please enter a valid address.');
+        console.log('🔍 Validating inputs...');
+        if (!/^0x[a-fA-F0-9]{40}$/.test(parentUpper)) {
+          console.error('❌ Invalid parentUpper address');
+          throw new Error('Invalid upper address. Please enter a valid address.');
+        }
+        console.log('✅ Parent address is valid');
         if (!/^0x[a-fA-F0-9]{40}$/.test(newUser)) throw new Error('Invalid new wallet address. Please enter a valid address.');
         
         // Validate upper address if provided
@@ -2492,35 +2587,73 @@
         status.textContent = 'Checking parent address...';
         console.log('🔍 Validating parent address: ' + parentUpper);
         
-        const parentUser = await contract.users(parentUpper);
+            const parentUser = await contract.users(parentUpper);
         
-        // Check if parent has valid index
-        if (!parentUser || !(parentUser.index && BigInt(parentUser.index) > 0n)) {
+        // Check if parent has valid num (non-zero means active)
+        const isParentActive = isUserActive(parentUser);
+        if (!isParentActive) {
           throw new Error('Parent address is not active or does not exist.');
         }
         console.log('✅ Parent is active');
         
-        // ========== اعتبارسنجی 2: بررسی ظرفیت والد ==========
-        status.textContent = 'Checking parent capacity...';
-        const capacityCheck = await checkUpperCapacity(parentUpper);
+        // ========== اعتبارسنجی 2: Validate and determine the upper (direct parent) ==========
+        console.log('🔍 Validating upper and determining final upper...');
+        
+        if (upperReferrer && upperReferrer !== 'root' && /^0x[a-fA-F0-9]{40}$/.test(upperReferrer)) {
+          try {
+            console.log('🔍 Fetching upper user data...');
+            const upperUserData = await contract.users(upperReferrer);
+            console.log('✅ Upper user data retrieved');
+            
+            // User is active if num exists and is non-zero
+            const isUpperActive = isUserActive(upperUserData);
+            console.log('🔍 Upper active status:', isUpperActive);
+            
+            if (!isUpperActive) {
+              console.log('⚠️ Upper is not active, will use referrer as upper');
+              upperReferrer = parentUpper; // Use referrer as upper if provided upper is invalid
+            } else {
+              console.log('✅ Upper is active, checking if in referrer\'s downline...');
+              
+              // Check if upper is in referrer's downline using contract function
+              // isInDownline(ancestor, descendant) - check if upper is descendant of referrer
+              try {
+                const isInReferrerDownline = await contract.isInDownline(parentUpper, upperReferrer);
+                console.log('🔍 isInDownline result:', isInReferrerDownline, 'ancestor (referrer):', parentUpper, 'descendant (upper):', upperReferrer);
+                
+                if (!isInReferrerDownline) {
+                  console.log('⚠️ Upper is not in referrer\'s downline, will use referrer as upper');
+                  upperReferrer = parentUpper; // Use referrer as upper
+                } else {
+                  console.log('✅ Upper is in referrer\'s downline');
+                }
+              } catch (error) {
+                console.error('❌ Error checking downline:', error);
+                console.log('⚠️ Could not validate downline relationship, using referrer as upper');
+                upperReferrer = parentUpper;
+              }
+            }
+          } catch (error) {
+            console.error('❌ Error fetching upper user data:', error);
+            console.log('⚠️ Upper address error, will use referrer as upper');
+            upperReferrer = parentUpper;
+          }
+        } else {
+          console.log('ℹ️ No upper provided, will use referrer as upper');
+          upperReferrer = parentUpper;
+        }
+        
+        console.log('✅ Final upper (direct parent):', upperReferrer);
+        
+        // Check capacity of the final upper
+        console.log('🔍 Checking capacity of upper:', upperReferrer);
+        status.textContent = 'Checking upper capacity...';
+        const capacityCheck = await checkUpperCapacity(upperReferrer);
+        console.log('📊 Capacity check result:', capacityCheck);
         if (!capacityCheck.hasCapacity) {
           throw new Error(capacityCheck.message);
         }
-        console.log('✅ Parent has capacity:', capacityCheck.message);
-        
-        // Validate upper if provided and not root
-        if (upperReferrer && upperReferrer !== 'root' && /^0x[a-fA-F0-9]{40}$/.test(upperReferrer)) {
-          const upperUserData = await contract.users(upperReferrer);
-          if (!upperUserData || !(upperUserData.index && BigInt(upperUserData.index) > 0n)) {
-            console.log('⚠️ Upper is not active, will use parent as upper');
-            upperReferrer = 'root';
-          } else {
-            console.log('✅ Upper is active');
-          }
-        } else {
-          console.log('ℹ️ No upper provided, will use root');
-          upperReferrer = 'root';
-        }
+        console.log('✅ Upper has capacity:', capacityCheck.message);
         
         // ========== اعتبارسنجی 3: مقدار کافی IAM داشته باشد ==========
         console.log('📊 Checking IAM balance...');
@@ -2557,21 +2690,29 @@
         status.textContent = 'Sending transaction...';
         registerBtn.innerHTML = '⏳ Sending Transaction...';
         
-        // Determine the upper parameter (use parent if upper is root or invalid)
-        const targetUpper = (upperReferrer && upperReferrer !== 'root' && /^0x[a-fA-F0-9]{40}$/.test(upperReferrer)) 
-                          ? upperReferrer 
-                          : parentUpper;
-        
-        console.log('📤 Sending registration with:', {
-          parent: parentUpper,
-          upper: targetUpper,
+        // Use upperReferrer as the upper (direct parent)
+        // upperReferrer is already validated and set to parentUpper if invalid
+        console.log('📤 Final registration parameters:', {
+          referrer: parentUpper,
+          upper: upperReferrer,
           newUser: newUser
         });
+        console.log('📝 Explaining:');
+        console.log('  - referrer:', parentUpper, '= Referrer (promoter, can be multiple levels up or same as upper)');
+        console.log('  - upper:', upperReferrer, '= Upper (direct parent where new user will be placed)');
+        console.log('  - newUser:', newUser, '= New user to register');
         
         // Send transaction (single attempt, no retry)
+        console.log('🚀 Calling registerAndActivate(referrer, upper, newUser)...');
         status.textContent = 'Sending transaction...';
-        tx = await contract.registerAndActivate(parentUpper, targetUpper, newUser);
-        console.log('✅ Transaction sent successfully');
+        
+        try {
+          tx = await contract.registerAndActivate(parentUpper, upperReferrer, newUser);
+          console.log('✅ Transaction sent successfully, tx hash:', tx.hash);
+        } catch (txError) {
+          console.error('❌ Transaction failed:', txError);
+          throw txError;
+        }
           
          showTempMessage('Waiting for network transaction confirmation...', 'info');
          status.textContent = 'Waiting for confirmation...';
@@ -2584,9 +2725,11 @@
         if (typeof errorMsg !== 'string') errorMsg = JSON.stringify(errorMsg);
         if (/already registered|Already registered/i.test(errorMsg)) {
           showTempMessage('This address is already registered.', 'error');
-                   } else if (/not active|inactive/i.test(errorMsg)) {
+        } else if (/403|Non-200 status code|rate limit/i.test(errorMsg)) {
+          showTempMessage('⚠️ Network error (403): Rate limit exceeded. Please wait a moment and try again.', 'error');
+        } else if (/not active|inactive/i.test(errorMsg)) {
           showTempMessage('Selected upper is not active. Please enter an active upper.', 'error');
-        } else if (/invalid upper|upper/i.test(errorMsg)) {
+                   } else if (/invalid upper|upper/i.test(errorMsg)) {
            showTempMessage('Invalid upper address or does not exist.', 'error');
                    } else if (/insufficient|balance/i.test(errorMsg)) {
               // اگر خطای کمبود موجودی از smart contract آمده، همان پیام رو نشون بده
@@ -2615,7 +2758,7 @@
         registerBtn.style.opacity = '1';
         registerBtn.innerHTML = 'Register';
       }
-    };
+    });
 
      
 

@@ -2,9 +2,9 @@
 
 // Contract addresses
 const CONTRACT_1_ADDRESS = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D'; // Old contract
-const CONTRACT_2_ADDRESS = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26'; // New contract
+const CONTRACT_2_ADDRESS = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D'; // New contract
 const CONTRACT_3_ADDRESS = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D'; // Old contract (duplicate)
-const CONTRACT_4_ADDRESS = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26'; // New contract (duplicate)
+const CONTRACT_4_ADDRESS = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D'; // New contract (duplicate)
 const CONTRACT_5_ADDRESS = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26'; // New contract (duplicate)
 
 // DAI Token Address
@@ -588,12 +588,12 @@ const IAM_ABI = [
 				"name": "upper",
 				"type": "address"
 			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "index",
-				"type": "uint256"
-			},
+		{
+			"indexed": false,
+			"internalType": "uint256",
+			"name": "num",
+			"type": "uint256"
+		},
 			{
 				"indexed": false,
 				"internalType": "uint256",
@@ -1839,6 +1839,27 @@ function setIAMAddress(address) {
 window.connectWallet = connectWallet;
 window.getIAMAddress = getIAMAddress;
 window.setIAMAddress = setIAMAddress;
+
+// Helper functions for user validation (consistent with register.html)
+function isUserActive(user) {
+    if (!user) return false;
+    if (user.num !== undefined && user.num !== null) {
+        return BigInt(user.num) !== 0n;
+    }
+    return false;
+}
+
+function getUserNumValue(user) {
+    if (!user) return null;
+    if (user.num !== undefined && user.num !== null) {
+        return BigInt(user.num);
+    }
+    return null;
+}
+
+// Make helper functions globally available
+window.isUserActive = isUserActive;
+window.getUserNumValue = getUserNumValue;
 
 console.log('✅ Clean config loaded - Real Contracts Available');
 console.log('📍 Contract Addresses:');
