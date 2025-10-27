@@ -24,14 +24,14 @@
     });
   </script>
   
-  <!-- Force connection to New Contract (Contract 5) -->
+  <!-- Force connection to Old Contract (Default) -->
   <script>
-    // Force IAM_ADDRESS to New Contract before config.js loads
-    window.IAM_ADDRESS = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26';
+    // Force IAM_ADDRESS to Old Contract before config.js loads
+    window.IAM_ADDRESS = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D';
     
     // Clear localStorage to prevent interference
     localStorage.removeItem('iam_selected_address');
-    localStorage.setItem('iam_selected_address', '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26');
+    localStorage.setItem('iam_selected_address', '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D');
   </script>
   
   <!-- Load ethers.js version 6 from CDN -->
@@ -41,14 +41,14 @@
   <script src="js/config.js"></script>
   <script src="js/auto-wallet-connect.js"></script>
   
-  <!-- Override connectWallet to ensure Contract 5 is used -->
+  <!-- Override connectWallet to ensure Old Contract is used -->
   <script>
-    // Override connectWallet to force Contract 5
+    // Override connectWallet to force Old Contract
     const originalConnectWallet = window.connectWallet;
     window.connectWallet = async function() {
-      // Force New Contract address
-      window.IAM_ADDRESS = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26';
-      window.DEFAULT_IAM_ADDRESS = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26';
+      // Force Old Contract address (default)
+      window.IAM_ADDRESS = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D';
+      window.DEFAULT_IAM_ADDRESS = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D';
       
       // Call original function
       if (originalConnectWallet) {
@@ -58,9 +58,9 @@
     
     // Final override after all scripts load
     window.addEventListener('load', function() {
-      window.IAM_ADDRESS = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26';
-      window.DEFAULT_IAM_ADDRESS = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26';
-      console.log('✅ Utility forced to New Contract:', window.IAM_ADDRESS);
+      window.IAM_ADDRESS = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D';
+      window.DEFAULT_IAM_ADDRESS = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D';
+      console.log('✅ Utility using Old Contract (Default):', window.IAM_ADDRESS);
     });
 
     // Helper function to find address by number using users mapping
@@ -656,10 +656,10 @@
 
 
   <script>
-    // Contract address - using New Contract
-    const UTILITY_IAM_ADDRESS = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26'; // New Contract
+    // Contract address - using Old Contract (Default)
+    const UTILITY_IAM_ADDRESS = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D'; // Old Contract (Default)
     
-    // Set global contract address to New Contract
+    // Set global contract address to Old Contract
     window.IAM_ADDRESS = UTILITY_IAM_ADDRESS;
 
     // Global variables for unclaimed points tracking

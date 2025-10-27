@@ -1,10 +1,19 @@
 // config.js - Contract Configuration and Utility Functions
 
 // Contract addresses
-const IAM_ADDRESS = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D';
+const IAM_ADDRESS_OLD = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D'; // Old contract (default)
+const IAM_ADDRESS_NEW = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26'; // New contract
 const DAI_ADDRESS = '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063';
-// Optional: second preset IAM address
-const SECOND_IAM_ADDRESS = '0x4bA2B68ec4B47159bA73c178C6730691D630417a';
+
+// Set default to OLD contract for all pages
+const IAM_ADDRESS = IAM_ADDRESS_OLD; // Default address
+
+// Define contract numbers for swap page
+const CONTRACT_1_ADDRESS = IAM_ADDRESS_OLD;
+const CONTRACT_2_ADDRESS = IAM_ADDRESS_OLD;
+const CONTRACT_3_ADDRESS = IAM_ADDRESS_OLD;
+const CONTRACT_4_ADDRESS = IAM_ADDRESS_OLD;
+const CONTRACT_5_ADDRESS = IAM_ADDRESS_NEW;
 
 // Expose to window
     window.IAM_ADDRESS = IAM_ADDRESS;
@@ -154,14 +163,14 @@ window.CONTRACT_3_ADDRESS = CONTRACT_3_ADDRESS;
 window.CONTRACT_4_ADDRESS = CONTRACT_4_ADDRESS;
 window.CONTRACT_5_ADDRESS = CONTRACT_5_ADDRESS;
 window.DAI_ADDRESS = DAI_ADDRESS;
-window.DAI_ABI = DAI_ABI;
-window.IAM_ADDRESS = CONTRACT_5_ADDRESS;
-window.IAM_ABI = IAM_ABI;
+window.IAM_ADDRESS = CONTRACT_1_ADDRESS; // Default to old contract
+window.IAM_ADDRESS_OLD = IAM_ADDRESS_OLD;
+window.IAM_ADDRESS_NEW = IAM_ADDRESS_NEW;
 
 // Contract configuration object
 window.contractConfig = {
-    address: CONTRACT_5_ADDRESS,
-    ABI: IAM_ABI,
+    address: CONTRACT_1_ADDRESS, // Default to old contract
+    ABI: MIN_IAM_ABI,
     contract: null
 };
 
@@ -211,12 +220,12 @@ async function connectWallet() {
             console.log('🔧 Using ethers v6');
             provider = new ethers.BrowserProvider(window.ethereum);
             signer = await provider.getSigner();
-            contract = new ethers.Contract(currentContractAddress, IAM_ABI, signer);
+            contract = new ethers.Contract(currentContractAddress, MIN_IAM_ABI, signer);
         } else {
             console.log('🔧 Using ethers v5');
             provider = new ethers.providers.Web3Provider(window.ethereum);
             signer = provider.getSigner();
-            contract = new ethers.Contract(currentContractAddress, IAM_ABI, signer);
+            contract = new ethers.Contract(currentContractAddress, MIN_IAM_ABI, signer);
         }
         
         console.log('✅ Wallet connected successfully:', await signer.getAddress());
@@ -246,8 +255,8 @@ function getIAMAddress() {
         return stored;
     }
     
-    // Default to new contract
-    return CONTRACT_5_ADDRESS;
+    // Default to old contract for all pages
+    return CONTRACT_1_ADDRESS;
 }
 
 // Set IAM address function
@@ -282,9 +291,9 @@ function getUserNumValue(user) {
 window.isUserActive = isUserActive;
 window.getUserNumValue = getUserNumValue;
 
-console.log('✅ Clean config loaded - Real Contracts Available');
+console.log('✅ Clean config loaded - Old Contract (Default)');
 console.log('📍 Contract Addresses:');
-console.log('   Contract 3 (Old):', CONTRACT_3_ADDRESS, '- Old contract');
-console.log('   Contract 5 (New):', CONTRACT_5_ADDRESS, '- New contract');
-console.log('   Universal ABI:', 'Same ABI for all contracts');
-console.log('🔧 ABI Functions:', IAM_ABI.length);
+console.log('   Old Contract (Default):', IAM_ADDRESS_OLD);
+console.log('   New Contract:', IAM_ADDRESS_NEW);
+console.log('   Current IAM_ADDRESS:', window.IAM_ADDRESS);
+console.log('🔧 ABI Functions:', MIN_IAM_ABI.length);

@@ -1068,34 +1068,34 @@
   
   <script>window.SKIP_META = true;</script>
   <script>
-    // Force register page to use only the new contract
-    const NEW_CONTRACT_ADDRESS = '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2'; // Contract 5
+    // Force register page to use Old Contract (Default)
+    const OLD_CONTRACT_ADDRESS = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D'; // Old contract (default)
     
     // Override config.js behavior for register page
-    window.IAM_ADDRESS = NEW_CONTRACT_ADDRESS;
+    window.IAM_ADDRESS = OLD_CONTRACT_ADDRESS;
     
     // Clear any old contract selection from localStorage
     try {
       localStorage.removeItem('iam_selected_address');
-      localStorage.setItem('iam_selected_address', NEW_CONTRACT_ADDRESS);
-      console.log('✅ Set localStorage to new contract:', NEW_CONTRACT_ADDRESS);
+      localStorage.setItem('iam_selected_address', OLD_CONTRACT_ADDRESS);
+      console.log('✅ Set localStorage to old contract:', OLD_CONTRACT_ADDRESS);
     } catch (e) {
       console.warn('⚠️ Could not update localStorage:', e);
     }
     
     // Override the config.js IAM_ADDRESS assignment
     window.addEventListener('load', function() {
-      window.IAM_ADDRESS = NEW_CONTRACT_ADDRESS;
+      window.IAM_ADDRESS = OLD_CONTRACT_ADDRESS;
       console.log('✅ Register page: Final IAM_ADDRESS override:', window.IAM_ADDRESS);
     });
     
-    console.log('✅ Register page: IAM_ADDRESS set to new contract:', window.IAM_ADDRESS);
+    console.log('✅ Register page: IAM_ADDRESS set to old contract (default):', window.IAM_ADDRESS);
   </script>
   <script src="js/config.js"></script>
   <script src="js/floating-token-card.js"></script>
   <script src="js/auto-wallet-connect.js"></script>
   <script>
-    // Override connectWallet to force new contract and cache connection
+    // Override connectWallet to force old contract and cache connection
     const originalConnectWallet = window.connectWallet;
     let cachedConnection = null;
     let isConnecting = false;
@@ -1119,11 +1119,11 @@
       }
       
       isConnecting = true;
-      console.log('🔄 Register page: Overriding connectWallet to use new contract');
+      console.log('🔄 Register page: Overriding connectWallet to use old contract (default)');
       
       try {
-        // Force IAM_ADDRESS to new contract
-        window.IAM_ADDRESS = NEW_CONTRACT_ADDRESS;
+        // Force IAM_ADDRESS to old contract
+        window.IAM_ADDRESS = OLD_CONTRACT_ADDRESS;
         
         // Call original function
         const result = await originalConnectWallet.call(this);
@@ -1131,7 +1131,8 @@
         // Cache the connection if successful
         if (result && result.contract && result.address) {
           cachedConnection = result;
-          console.log('✅ Register page: Contract connected to:', result.IAM_ADDRESS);
+          const contractAddress = result.contract?.target || window.IAM_ADDRESS;
+          console.log('✅ Register page: Contract connected to:', contractAddress);
         }
         
         return result;
@@ -1140,12 +1141,12 @@
       }
     };
     
-    // Set contract to new contract (Contract 5) on page load
+    // Set contract to old contract (Default) on page load
     document.addEventListener('DOMContentLoaded', function() {
-      // Force connection to new contract only (Contract 5)
-      if (window.CONTRACT_5_ADDRESS) {
-        window.IAM_ADDRESS = window.CONTRACT_5_ADDRESS;
-        console.log('✅ Register page locked to new contract:', window.CONTRACT_5_ADDRESS);
+      // Force connection to old contract only (Contract 1)
+      if (window.CONTRACT_1_ADDRESS) {
+        window.IAM_ADDRESS = window.CONTRACT_1_ADDRESS;
+        console.log('✅ Register page locked to old contract (default):', window.CONTRACT_1_ADDRESS);
       }
     });
     
@@ -1268,13 +1269,26 @@
                   const u = await conn.contract.users(conn.address);
                   console.log('🔍 Checking user data:', u);
                   
-                  // Try to get num (only field now)
+                  // Try to get index/number field from struct
                   let userIndexValue = null;
                   
-                  // Try u.num
-                  if (u && u.num !== undefined && u.num !== null) {
-                    userIndexValue = u.num;
-                    console.log('📍 Found num as u.num:', userIndexValue);
+                  // Try different possible fields
+                  if (u) {
+                    // Method 1: Check u.index (first priority)
+                    if (u.index !== undefined && u.index !== null) {
+                      userIndexValue = u.index;
+                      console.log('📍 Found index as u.index:', userIndexValue);
+                    }
+                    // Method 2: Check u.num
+                    else if (u.num !== undefined && u.num !== null) {
+                      userIndexValue = u.num;
+                      console.log('📍 Found index as u.num:', userIndexValue);
+                    }
+                    // Method 3: Check u[0] (array index)
+                    else if (u[0] !== undefined && u[0] !== null) {
+                      userIndexValue = u[0];
+                      console.log('📍 Found index as u[0]:', userIndexValue);
+                    }
                   }
                   
                   // User is active if index exists and is non-zero
@@ -1531,26 +1545,50 @@
         statusEl.textContent = icon + message;
     }
 
-    // Function to check if user is active (only checks num field now)
+    // Function to check if user is active (checks multiple possible fields)
     function isUserActive(user) {
       if (!user) return false;
       
-      // Only check num field
-      if (user.num !== undefined && user.num !== null) {
-        return BigInt(user.num) !== 0n;
+      let indexValue = null;
+      
+      // Try different possible fields (index first priority)
+      // Method 1: Check user.index (most common)
+      if (user.index !== undefined && user.index !== null) {
+        indexValue = user.index;
+      }
+      // Method 2: Check user.num
+      else if (user.num !== undefined && user.num !== null) {
+        indexValue = user.num;
+      }
+      // Method 3: Check user[0] (array index)
+      else if (user[0] !== undefined && user[0] !== null) {
+        indexValue = user[0];
+      }
+      
+      // User is active if index exists and is non-zero
+      if (indexValue !== null && indexValue !== undefined) {
+        return BigInt(indexValue) !== 0n;
       }
       
       return false;
     }
 
-    // Function to get user num value
+    // Function to get user num value (checks multiple possible fields)
     function getUserNumValue(user) {
       if (!user) return null;
       
-      if (user.num !== undefined && user.num !== null) {
-        return BigInt(user.num);
+      let indexValue = null;
+      
+      // Try different possible fields (index first priority)
+      if (user.index !== undefined && user.index !== null) {
+        indexValue = user.index;
+      } else if (user.num !== undefined && user.num !== null) {
+        indexValue = user.num;
+      } else if (user[0] !== undefined && user[0] !== null) {
+        indexValue = user[0];
       }
-      return null;
+      
+      return indexValue !== null ? BigInt(indexValue) : null;
     }
 
     // Function to check if target index is in current user's subtree
@@ -2000,14 +2038,13 @@
         // Get address from user number with error handling
         let address;
         try {
-          // Try numToAddress (new contract)
-          if (typeof contract.numToAddress === 'function') {
-            address = await contract.numToAddress(BigInt(index));
-          } else if (typeof contract.getAddressByNumber === 'function') {
-            address = await contract.getAddressByNumber(BigInt(index));
-          } else {
-            throw new Error('No method available to get address from number');
+          // Only use indexToAddress (old contract)
+          if (!contract || typeof contract.indexToAddress !== 'function') {
+            throw new Error('Contract not connected or indexToAddress not available');
           }
+          
+          address = await contract.indexToAddress(BigInt(index));
+          console.log(`📍 Using indexToAddress for index ${index}:`, address);
           
           // Check if address is valid
           if (!address || address === '0x0000000000000000000000000000000000000000') {
@@ -2036,8 +2073,8 @@
           addressInput.setAttribute('data-full-address', address);
           updateAddressDisplay(addressInput);
           
-          // Clear the index input after successful conversion
-          upperIndexInput.value = '';
+          // Keep the index input value (don't clear it)
+          // upperIndexInput.value stays as entered by user
         }
         
         showTempMessage(`${type} address set successfully`, 'success');
@@ -2149,6 +2186,7 @@
     // Function to validate upper address against upper in real-time
     async function validateUpperAgainstupper() {
       const statusEl = document.getElementById('upper-validation-status');
+      const placementEl = document.getElementById('placement-info');
       if (!statusEl) return;
       
       const referrer = referrerAddressDisplay.getAttribute('data-full-address') || referrerAddressDisplay.value.trim();
@@ -2156,10 +2194,12 @@
       
       if (!referrer || referrer === 'root') {
         statusEl.style.display = 'none';
+        if (placementEl) placementEl.style.display = 'none';
         return;
       }
       if (!/^0x[a-fA-F0-9]{40}$/.test(referrer)) {
         statusEl.style.display = 'none';
+        if (placementEl) placementEl.style.display = 'none';
         return;
       }
       
@@ -2171,6 +2211,7 @@
           // Simple validation: check if upper is valid address
           if (!upperForValidation || upperForValidation === 'root' || !/^0x[a-fA-F0-9]{40}$/.test(upperForValidation)) {
             statusEl.style.display = 'none';
+            if (placementEl) placementEl.style.display = 'none';
             return;
           }
           
@@ -2180,6 +2221,7 @@
             statusEl.className = 'register-form-status error';
             statusEl.textContent = '❌ You can only register for yourself or your downlines';
             statusEl.style.display = '';
+            if (placementEl) placementEl.style.display = 'none';
             showTempMessage('You can only register for yourself or your downlines. This upper address is not in your downline.', 'error');
             return;
           }
@@ -2203,7 +2245,7 @@
         statusEl.className = 'register-form-status error';
         statusEl.textContent = '❌ ' + error.message;
         statusEl.style.display = '';
-        placementEl.style.display = 'none';
+        if (placementEl) placementEl.style.display = 'none';
         showTempMessage(error.message, 'error');
       }
     }

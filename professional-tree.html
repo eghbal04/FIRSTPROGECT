@@ -713,28 +713,28 @@
     <!-- <script src="js/auto-wallet-connect.js"></script> -->
             <script src="js/network.js?v=20250809-36"></script>
     
-    <!-- Force Contract 5 for Tree -->
+    <!-- Force Old Contract (Default) for Tree -->
     <script>
-        // Override to ensure Contract 5 is used for tree
+        // Override to ensure Old Contract is used for tree
         window.addEventListener('DOMContentLoaded', function() {
-            console.log('🌳 Professional Tree - Ensuring Contract 5 usage');
+            console.log('🌳 Professional Tree - Ensuring Old Contract (Default) usage');
             
-            // Force Contract 5 address
-            if (window.CONTRACT_5_ADDRESS) {
-                window.IAM_ADDRESS = window.CONTRACT_5_ADDRESS;
-                window.DEFAULT_IAM_ADDRESS = window.CONTRACT_5_ADDRESS;
-                console.log('✅ Tree forced to Contract 5:', window.IAM_ADDRESS);
+            // Force Contract 1 (Old) address (default)
+            if (window.CONTRACT_1_ADDRESS) {
+                window.IAM_ADDRESS = window.CONTRACT_1_ADDRESS;
+                window.DEFAULT_IAM_ADDRESS = window.CONTRACT_1_ADDRESS;
+                console.log('✅ Tree forced to Old Contract (Default):', window.IAM_ADDRESS);
             }
             
-            // Override connectWallet to ensure Contract 5
+            // Override connectWallet to ensure Old Contract
             const originalConnectWallet = window.connectWallet;
             if (originalConnectWallet) {
                 window.connectWallet = async function() {
-                    // Force Contract 5 address
-                    window.IAM_ADDRESS = window.CONTRACT_5_ADDRESS;
-                    window.DEFAULT_IAM_ADDRESS = window.CONTRACT_5_ADDRESS;
+                    // Force Old Contract address (default)
+                    window.IAM_ADDRESS = window.CONTRACT_1_ADDRESS;
+                    window.DEFAULT_IAM_ADDRESS = window.CONTRACT_1_ADDRESS;
                     
-                    console.log('🔒 Tree wallet connection forced to Contract 5');
+                    console.log('🔒 Tree wallet connection forced to Old Contract (Default)');
                     
                     // Call original function
                     return await originalConnectWallet.apply(this, arguments);
@@ -745,7 +745,7 @@
     
     <script>
         // Provide missing helpers expected by this page
-        // Get index by address - Updated for Contract 5
+        // Get index by address - Updated for Old Contract
         window.getIndexByAddress = async function(contract, address) {
             if (!contract || !address) return 0n;
             try {
@@ -1475,7 +1475,7 @@
             // Only the clicked button shows loading
         }
 
-        // Show user popup for a specific node - Updated for Contract 5
+        // Show user popup for a specific node - Updated for Old Contract
         async function showUserPopup(node) {
             try {
                 console.log('🔄 Showing user details for node:', node.index, 'address:', node.address);
@@ -1740,7 +1740,7 @@
             }
         }
 
-        // Load root node - Updated for Contract 5
+        // Load root node - Updated for Old Contract
         async function loadRootNode() {
             const contract = window.contractConfig.contract;
             const userAddress = window.contractConfig.userAddress;
@@ -1749,19 +1749,26 @@
                 throw new Error('No user address available');
             }
             
-            console.log('🌳 Loading root node for Contract 5...');
+            console.log('🌳 Loading root node for Old Contract (Default)...');
             
             try {
-                // Get user info using new contract methods
+                // Get user info using old contract methods
                 const user = await contract.users(userAddress);
                 // Try multiple methods to get index
                 const userIndex = (user.index || user[0] || user['0'] || 1).toString();
                 
-                // Get user tree data using new getUserTree function
-                const treeData = await contract.getUserTree(userAddress);
-                console.log('🌳 User tree data:', treeData);
+                // Get user tree data using getUserTree function (if available)
+                let treeData = null;
+                if (typeof contract.getUserTree === 'function') {
+                    try {
+                        treeData = await contract.getUserTree(userAddress);
+                        console.log('🌳 User tree data:', treeData);
+                    } catch (e) {
+                        console.warn('⚠️ getUserTree not available, using fallback');
+                    }
+                }
                 
-                // Create root node with new contract data
+                // Create root node with contract data
                 fileManagerData.treeData = {
                     id: 'root',
                     index: userIndex,
@@ -1770,15 +1777,15 @@
                     expanded: false,
                     children: [],
                     hasChildren: true,
-                    // New contract data
-                    leftChild: treeData.left,
-                    rightChild: treeData.right,
-                    binaryPoints: treeData.binaryPoints.toString(),
-                    binaryPointCap: treeData.binaryPointCap.toString(),
-                    refClaimed: treeData.refclimed.toString()
+                    // Include tree data if available
+                    leftChild: treeData?.left || '0x0000000000000000000000000000000000000000',
+                    rightChild: treeData?.right || '0x0000000000000000000000000000000000000000',
+                    binaryPoints: treeData?.binaryPoints?.toString() || user.binaryPoints?.toString() || '0',
+                    binaryPointCap: treeData?.binaryPointCap?.toString() || user.binaryPointCap?.toString() || '0',
+                    refClaimed: treeData?.refclimed?.toString() || user.refclimed?.toString() || '0'
                 };
                 
-                console.log('✅ Root node loaded with Contract 5 data:', fileManagerData.treeData);
+                console.log('✅ Root node loaded with Old Contract data:', fileManagerData.treeData);
                 
             } catch (error) {
                 console.error('❌ Error loading root node:', error);

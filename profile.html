@@ -2,12 +2,12 @@
 <html lang="en" dir="ltr">
 <head>
   <script>
-    // Force profile page to use New Contract only
-    window.IAM_ADDRESS = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26';
+    // Force profile page to use Old Contract (Default)
+    window.IAM_ADDRESS = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D';
     
     // Clear any existing contract selection
     localStorage.removeItem('selectedContract');
-    localStorage.setItem('selectedContract', '5');
+    localStorage.setItem('selectedContract', '1');
     
     // Suppress noisy MetaMask RPC warnings
     window.addEventListener('error', function(e){
@@ -273,22 +273,22 @@
     <script src="js/config.js"></script>
     <script src="js/floating-token-card.js"></script>
     <script>
-        // Ensure New Contract is used after config.js loads
-        window.IAM_ADDRESS = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26';
-        window.DEFAULT_IAM_ADDRESS = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26';
+        // Ensure Old Contract is used after config.js loads
+        window.IAM_ADDRESS = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D';
+        window.DEFAULT_IAM_ADDRESS = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D';
         
-        // Override connectWallet to force New Contract
+        // Override connectWallet to force Old Contract
         const originalConnectWallet = window.connectWallet;
         window.connectWallet = async function() {
             const result = await originalConnectWallet();
             if (result && result.contract) {
-                // Force contract address
-                result.contract = new ethers.Contract('0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26', window.IAM_ABI, result.signer);
+                // Force contract address to Old Contract
+                result.contract = new ethers.Contract('0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D', window.IAM_ABI, result.signer);
             }
             return result;
         };
         
-        console.log('🔒 Profile page locked to New Contract:', window.IAM_ADDRESS);
+        console.log('🔒 Profile page locked to Old Contract (Default):', window.IAM_ADDRESS);
     </script>
     <script src="js/profile.js"></script>
     <script>
@@ -296,12 +296,12 @@
         console.log('🚫 Profile.js loading disabled - using optimized profile.html loading');
     </script>
     <script>
-        // Final override to ensure New Contract is used
+        // Final override to ensure Old Contract is used
         window.addEventListener('load', function() {
-            window.IAM_ADDRESS = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26';
-            window.DEFAULT_IAM_ADDRESS = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26';
-            localStorage.setItem('selectedContract', '5');
-            console.log('✅ Profile page final lock to New Contract confirmed');
+            window.IAM_ADDRESS = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D';
+            window.DEFAULT_IAM_ADDRESS = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D';
+            localStorage.setItem('selectedContract', '1');
+            console.log('✅ Profile page final lock to Old Contract confirmed');
         });
     </script>
     <script>

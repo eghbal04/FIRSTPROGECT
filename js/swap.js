@@ -1,11 +1,13 @@
 // swap.js - Professional and principled for DAI ↔ IAM swap
 
-// Contract addresses
-const IAM_ADDRESS_OLD = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D'; // Old contract
+// Contract addresses for swap page
+const IAM_ADDRESS_OLD = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D'; // Old contract (default)
+const IAM_ADDRESS_NEW = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26'; // New contract
+const IAM_ADDRESS_MIDDLE = '0xF473F20017f7aC6c2d636e2D3e8b5fE0E8142658'; // Middle contract (placeholder)
 // Use global DAI address from config to avoid redeclaration conflicts
 const SWAP_DAI_ADDRESS = (typeof window !== 'undefined' && window.DAI_ADDRESS) ? window.DAI_ADDRESS : '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063';
 
-// Use old contract only
+// Default to old contract for swap
 let SWAP_IAM_ADDRESS = IAM_ADDRESS_OLD;
 
 // DAI ABI (minimal for swap functionality)
@@ -1470,25 +1472,42 @@ class SwapManager {
         this.signer = null;
         this.contract = null;
         this.daiContract = null;
-        this.selectedContract = 'old'; // Only old contract available
+        this.selectedContract = 'old'; // Default to old contract
         
         console.log('✅ SwapManager created');
     }
 
-    // Switch contract (only old contract available)
+    // Switch contract (support old, middle, and new contracts)
     async switchContract(contractType) {
-        console.log('🔄 Contract switching disabled - only old contract available');
+        console.log('🔄 Switching to contract:', contractType);
         
-        // Force old contract
-        SWAP_IAM_ADDRESS = IAM_ADDRESS_OLD;
-        this.selectedContract = 'old';
+        // Select contract address based on type
+        switch(contractType) {
+            case 'old':
+                SWAP_IAM_ADDRESS = IAM_ADDRESS_OLD;
+                console.log('✅ Using old contract:', SWAP_IAM_ADDRESS);
+                break;
+            case 'middle':
+                SWAP_IAM_ADDRESS = IAM_ADDRESS_MIDDLE;
+                console.log('✅ Using middle contract:', SWAP_IAM_ADDRESS);
+                break;
+            case 'new':
+                SWAP_IAM_ADDRESS = IAM_ADDRESS_NEW;
+                console.log('✅ Using new contract:', SWAP_IAM_ADDRESS);
+                break;
+            default:
+                SWAP_IAM_ADDRESS = IAM_ADDRESS_OLD;
+                console.log('⚠️ Unknown contract type, using old contract');
+        }
+        
+        this.selectedContract = contractType;
         
         // Recreate contract instance if wallet is connected
         if (this.signer) {
             this.contract = new ethers.Contract(SWAP_IAM_ADDRESS, IAM_ABI, this.signer);
-            console.log('✅ Using old contract:', SWAP_IAM_ADDRESS);
+            console.log('✅ Contract instance created with address:', SWAP_IAM_ADDRESS);
             
-            // Refresh data with old contract
+            // Refresh data with selected contract
             await this.refreshSwapData();
         }
     }
