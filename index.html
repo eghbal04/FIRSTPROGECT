@@ -1933,10 +1933,12 @@
         } catch {}
 
         // IAM in contract (balanceOf self)
+        // Always use old contract for market status
         let iamBalanceSelf = null;
         try {
           if (typeof contract.balanceOf === 'function') {
-            iamBalanceSelf = await contract.balanceOf(contract.target);
+            const oldContractAddress = (window.IAM_ADDRESS_OLD) ? window.IAM_ADDRESS_OLD : '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D';
+            iamBalanceSelf = await contract.balanceOf(oldContractAddress);
             if (iamInEl) iamInEl.textContent = formatMax2(toNumberFromUnits(iamBalanceSelf, 18));
           }
         } catch {}
@@ -1962,13 +1964,16 @@
                 // Update button states when DAI balance changes
               }
             } catch {}
-            // IAM balance
+            // IAM balance (always check old contract)
             try {
-              if (typeof contract.balanceOf === 'function') {
-                const ib = await contract.balanceOf(userAddr);
+              const oldContractAddress = (window.IAM_ADDRESS_OLD) ? window.IAM_ADDRESS_OLD : '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D';
+              // Create contract instance for old contract to check IAM balance
+              if (window.IAM_ABI && typeof window.IAM_ABI === 'object' && Array.isArray(window.IAM_ABI)) {
+                const oldContract = new ethers.Contract(oldContractAddress, window.IAM_ABI, provider);
+                const ib = await oldContract.balanceOf(userAddr);
                 updateStatusPills({ iam: format2Decimals(toNumberFromUnits(ib, 18)) });
-                // Update button states when IAM balance changes
               }
+              // Update button states when IAM balance changes
             } catch {}
             // Users struct: index, likes, dislikes (preferred source)
             let u = null;
@@ -2047,12 +2052,15 @@
         } catch {}
 
         // DAI in contract (best-effort via window.DAI_ADDRESS)
+        // Always use old contract for market status
         try {
           const daiAddr = window.DAI_ADDRESS || (window.contractConfig && window.contractConfig.DAI_ADDRESS);
           if (provider && daiAddr) {
             const minimalDaiAbi = [{"inputs":[{"name":"account","type":"address"}],"name":"balanceOf","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"}];
             const Dai = new ethers.Contract(daiAddr, minimalDaiAbi, provider);
-            const d = await Dai.balanceOf(contract.target);
+            // Always check old contract for market status
+            const oldContractAddress = (window.IAM_ADDRESS_OLD) ? window.IAM_ADDRESS_OLD : '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D';
+            const d = await Dai.balanceOf(oldContractAddress);
             if (daiInEl) daiInEl.textContent = toNumberFromUnits(d, 18).toLocaleString('en-US', { 
               minimumFractionDigits: 2, 
               maximumFractionDigits: 2 

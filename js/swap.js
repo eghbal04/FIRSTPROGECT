@@ -1,8 +1,9 @@
 // swap.js - Professional and principled for DAI ↔ IAM swap
 
 // Contract addresses for swap page
-const IAM_ADDRESS_OLD = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D'; // Old contract (default)
-const IAM_ADDRESS_NEW = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26'; // New contract
+// Use window variables to avoid redeclaration conflicts with config.js
+const IAM_ADDRESS_OLD = (typeof window !== 'undefined' && window.IAM_ADDRESS_OLD) ? window.IAM_ADDRESS_OLD : '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D'; // Old contract (default)
+const IAM_ADDRESS_NEW = (typeof window !== 'undefined' && window.IAM_ADDRESS_NEW) ? window.IAM_ADDRESS_NEW : '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26'; // New contract
 const IAM_ADDRESS_MIDDLE = '0xF473F20017f7aC6c2d636e2D3e8b5fE0E8142658'; // Middle contract (placeholder)
 // Use global DAI address from config to avoid redeclaration conflicts
 const SWAP_DAI_ADDRESS = (typeof window !== 'undefined' && window.DAI_ADDRESS) ? window.DAI_ADDRESS : '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063';
@@ -1510,6 +1511,38 @@ class SwapManager {
             // Refresh data with selected contract
             await this.refreshSwapData();
         }
+        
+        // Update UI to restrict swap direction
+        this.updateSwapDirectionUI();
+    }
+    
+    // Update swap direction UI based on contract type
+    updateSwapDirectionUI() {
+        const directionSelect = document.getElementById('swapDirection');
+        if (!directionSelect) return;
+        
+        // Only old contract supports buying tokens
+        if (this.selectedContract === 'old') {
+            // Enable buy option
+            if (directionSelect.querySelector('option[value="dai-to-IAM"]')) {
+                directionSelect.querySelector('option[value="dai-to-IAM"]').style.display = 'block';
+                directionSelect.querySelector('option[value="dai-to-IAM"]').disabled = false;
+            }
+            console.log('✅ Old contract: Buy and sell options enabled');
+        } else {
+            // Only sell option for middle and new contracts
+            if (directionSelect.querySelector('option[value="dai-to-IAM"]')) {
+                directionSelect.querySelector('option[value="dai-to-IAM"]').style.display = 'none';
+                directionSelect.querySelector('option[value="dai-to-IAM"]').disabled = true;
+            }
+            
+            // Set default to sell if currently on buy
+            if (directionSelect.value === 'dai-to-IAM') {
+                directionSelect.value = 'IAM-to-dai';
+            }
+            
+            console.log('⚠️ Non-default contract: Only sell option enabled');
+        }
     }
 
     // Connect to wallet and initialize contracts
@@ -1553,6 +1586,7 @@ class SwapManager {
     }
 
     // Helper: Reading contract DAI balance as numeric (with decimals)
+    // Always check old contract balance for market status
     async getContractDaiBalanceNum() {
         if (!this.daiContract) {
             console.warn('⚠️ DAI contract not initialized');
@@ -1560,7 +1594,10 @@ class SwapManager {
         }
         
         try {
-            const daiBalance = await this.daiContract.balanceOf(SWAP_IAM_ADDRESS);
+            // Always use old contract for market backing status
+            // Use window variable to avoid redeclaration conflict
+            const oldContractAddress = (typeof window !== 'undefined' && window.IAM_ADDRESS_OLD) ? window.IAM_ADDRESS_OLD : IAM_ADDRESS_OLD;
+            const daiBalance = await this.daiContract.balanceOf(oldContractAddress);
             return parseFloat(ethers.formatUnits(daiBalance, 18));
         } catch (error) {
             console.warn('⚠️ Error getting contract DAI balance:', error);
@@ -1616,6 +1653,7 @@ class SwapManager {
             // Update UI
             this.updateMaxAmount();
             this.updateContractSelectionUI();
+            this.updateSwapDirectionUI();
             
             console.log('✅ SwapManager successfully initialized');
             
@@ -2441,6 +2479,12 @@ class SwapManager {
                 amount: value,
                 userBalances: this.userBalances
             });
+            
+            // Restrict swap direction based on contract type
+            // Only old contract can buy tokens; other contracts can only sell
+            if (direction.value === 'dai-to-IAM' && this.selectedContract !== 'old') {
+                throw new Error(`Buying tokens is only available on the Old Contract. Please switch to Old Contract to purchase tokens.`);
+            }
             
             // Check balance
             if (direction.value === 'dai-to-IAM' && value > this.userBalances.dai) {

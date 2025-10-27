@@ -16,7 +16,9 @@ const CONTRACT_4_ADDRESS = IAM_ADDRESS_OLD;
 const CONTRACT_5_ADDRESS = IAM_ADDRESS_NEW;
 
 // Expose to window
-    window.IAM_ADDRESS = IAM_ADDRESS;
+window.IAM_ADDRESS = IAM_ADDRESS;
+window.IAM_ADDRESS_OLD = IAM_ADDRESS_OLD;
+window.IAM_ADDRESS_NEW = IAM_ADDRESS_NEW;
 window.DAI_ADDRESS = DAI_ADDRESS;
 
 // Basic config placeholder for other scripts
