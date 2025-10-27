@@ -2042,13 +2042,13 @@ class SwapManager {
             try {
                 // Check if getTokenPrice function exists and try to call it
                 if (typeof this.contract.getTokenPrice === 'function') {
-                    try {
-                        const tokenPrice = await Promise.race([
-                            this.contract.getTokenPrice(),
+            try {
+                const tokenPrice = await Promise.race([
+                    this.contract.getTokenPrice(),
                             new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
-                        ]);
-                        this.tokenPrice = ethers.utils.formatUnits(tokenPrice, 18);
-                        console.log('✅ Token price received:', this.tokenPrice);
+                ]);
+                this.tokenPrice = ethers.utils.formatUnits(tokenPrice, 18);
+            console.log('✅ Token price received:', this.tokenPrice);
                     } catch (priceError) {
                         console.log('ℹ️ Token price not available from contract, using default');
                         this.tokenPrice = '0.00001'; // Default price for old contracts
@@ -2070,7 +2070,7 @@ class SwapManager {
                     new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
                 ]);
                 IAMBalanceFormatted = ethers.utils.formatUnits(IAMBalance, 18);
-                console.log('✅ IAM balance received:', IAMBalanceFormatted);
+            console.log('✅ IAM balance received:', IAMBalanceFormatted);
             } catch (error) {
                 console.log('ℹ️ Could not fetch IAM balance, using 0');
                 IAMBalanceFormatted = '0';
