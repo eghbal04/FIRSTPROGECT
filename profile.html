@@ -273,22 +273,22 @@
     <script src="js/config.js"></script>
     <script src="js/floating-token-card.js"></script>
     <script>
-        // Ensure Contract 5 is used after config.js loads
-        window.IAM_ADDRESS = '0x79be882352E79CE86D0beD3AcF0B42683E18Be2e';
-        window.DEFAULT_IAM_ADDRESS = '0x79be882352E79CE86D0beD3AcF0B42683E18Be2e';
+        // Ensure New Contract is used after config.js loads
+        window.IAM_ADDRESS = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26';
+        window.DEFAULT_IAM_ADDRESS = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26';
         
-        // Override connectWallet to force Contract 5
+        // Override connectWallet to force New Contract
         const originalConnectWallet = window.connectWallet;
         window.connectWallet = async function() {
             const result = await originalConnectWallet();
             if (result && result.contract) {
                 // Force contract address
-                result.contract = new ethers.Contract('0x79be882352E79CE86D0beD3AcF0B42683E18Be2e', window.IAM_ABI, result.signer);
+                result.contract = new ethers.Contract('0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26', window.IAM_ABI, result.signer);
             }
             return result;
         };
         
-        console.log('🔒 Profile page locked to Contract 5:', window.IAM_ADDRESS);
+        console.log('🔒 Profile page locked to New Contract:', window.IAM_ADDRESS);
     </script>
     <script src="js/profile.js"></script>
     <script>
@@ -296,12 +296,12 @@
         console.log('🚫 Profile.js loading disabled - using optimized profile.html loading');
     </script>
     <script>
-        // Final override to ensure Contract 5 is used
+        // Final override to ensure New Contract is used
         window.addEventListener('load', function() {
-            window.IAM_ADDRESS = '0x79be882352E79CE86D0beD3AcF0B42683E18Be2e';
-            window.DEFAULT_IAM_ADDRESS = '0x79be882352E79CE86D0beD3AcF0B42683E18Be2e';
+            window.IAM_ADDRESS = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26';
+            window.DEFAULT_IAM_ADDRESS = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26';
             localStorage.setItem('selectedContract', '5');
-            console.log('✅ Profile page final lock to Contract 5 confirmed');
+            console.log('✅ Profile page final lock to New Contract confirmed');
         });
     </script>
     <script>
@@ -874,15 +874,15 @@
                 }
                 
                 // Function to calculate left and right wallet counts
-                async function calculateWalletCounts(userIndex, contract) {
+                async function calculateWalletCounts(userNum, contract) {
                     try {
-                        const leftChildIndex = BigInt(userIndex) * 2n;
-                        const rightChildIndex = BigInt(userIndex) * 2n + 1n;
+                        const leftChildNum = BigInt(userNum) * 2n;
+                        const rightChildNum = BigInt(userNum) * 2n + 1n;
                         
                         // اجرای همزمان محاسبه چپ و راست برای سرعت بیشتر
                         const [leftCount, rightCount] = await Promise.all([
-                            calculateSubtreeCountOptimized(leftChildIndex, contract),
-                            calculateSubtreeCountOptimized(rightChildIndex, contract)
+                            calculateSubtreeCountOptimized(leftChildNum, contract),
+                            calculateSubtreeCountOptimized(rightChildNum, contract)
                         ]);
                         
                         return { leftCount, rightCount };
@@ -893,10 +893,10 @@
                 }
                 
                 // تابع محاسبه فوق‌بهینه تعداد ولت‌ها با Level-Order Traversal
-                async function calculateSubtreeCountOptimized(startIndex, contract) {
+                async function calculateSubtreeCountOptimized(startNum, contract) {
                     try {
                         let count = 0;
-                        const queue = [startIndex];
+                        const queue = [startNum];
                         const visited = new Set();
                         const maxDepth = Infinity; // Infinite depth limit
                         const batchSize = 5; // اندازه batch برای پردازش همزمان
@@ -907,10 +907,10 @@
                             
                             // جمع‌آوری تمام گره‌های سطح فعلی
                             for (let i = 0; i < levelSize; i++) {
-                                const currentIndex = queue.shift();
-                                if (!visited.has(currentIndex.toString())) {
-                                    visited.add(currentIndex.toString());
-                                    currentLevel.push(currentIndex);
+                                const currentNum = queue.shift();
+                                if (!visited.has(currentNum.toString())) {
+                                    visited.add(currentNum.toString());
+                                    currentLevel.push(currentNum);
                                 }
                             }
                             
@@ -921,8 +921,8 @@
                                 const batch = currentLevel.slice(i, i + batchSize);
                                 
                                 // دریافت آدرس‌ها به صورت همزمان
-                                const addressPromises = batch.map(index => 
-                                    contract.numToAddress(index).catch(() => null)
+                                const addressPromises = batch.map(num => 
+                                    contract.numToAddress(num).catch(() => null)
                                 );
                                 
                                 const addresses = await Promise.all(addressPromises);
