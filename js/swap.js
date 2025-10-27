@@ -2034,37 +2034,7 @@ class SwapManager {
             console.log('✅ USD field event listeners connected');
         }
         
-        // Event listener for Approve button
-        const approveBtn = document.getElementById('approveBtn');
-        if (approveBtn) {
-            approveBtn.addEventListener('click', async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                console.log('🔐 Approve button clicked');
-                
-                if (this.isApproving) {
-                    console.log('⚠️ Approve already in progress');
-                    return;
-                }
-                
-                this.isApproving = true;
-                approveBtn.disabled = true;
-                const originalText = approveBtn.textContent;
-                approveBtn.textContent = '⏳ Approving...';
-                
-                try {
-                    await this.approveDAI();
-                } catch (error) {
-                    console.error('❌ Error in approve:', error);
-                } finally {
-                    this.isApproving = false;
-                    approveBtn.disabled = false;
-                    approveBtn.textContent = originalText;
-                }
-            });
-            console.log('✅ Approve button event listener connected');
-        }
+        // Approval is now automatic - no separate button needed
         
         // Initial execution to set initial state
         this.toggleSwapUsdConverter();
@@ -2636,13 +2606,48 @@ class SwapManager {
             // Show processing popup
             this.showEnglishPopup('🚀 Starting swap transaction...', 'loading');
 
+            // Check and auto-approve for DAI to IAM swaps
+            if (direction.value === 'dai-to-IAM') {
+                console.log('🛒 Starting IAM purchase with DAI...');
+                
+                if (!this.contract || !this.signer || !this.daiContract) {
+                    throw new Error('Contract connection not established');
+                }
+                
+                const address = await this.signer.getAddress();
+                const daiAmountWei = ethers.utils.parseUnits(value.toString(), 18);
+                
+                console.log('🔍 Checking allowance...');
+                const allowance = await this.daiContract.allowance(address, SWAP_IAM_ADDRESS);
+                console.log('📊 Current allowance:', ethers.utils.formatUnits(allowance, 18));
+                
+                // Auto-approve with maximum if allowance is insufficient
+                if (allowance.lt(daiAmountWei)) {
+                    console.log('🔐 Insufficient allowance, auto-approving with maximum amount...');
+                    this.showEnglishPopup('🔐 Approving DAI spending (max amount)...', 'loading');
+                    
+                    try {
+                        const approveTx = await this.daiContract.approve(SWAP_IAM_ADDRESS, ethers.constants.MaxUint256);
+                        console.log('⏳ Approval transaction submitted:', approveTx.hash);
+                        
+                        this.showEnglishPopup('⏳ Waiting for approval confirmation...', 'loading');
+                        await approveTx.wait();
+                        
+                        console.log('✅ DAI approved with maximum amount');
+                        this.showEnglishPopup('✅ Approval confirmed! Proceeding with swap...', 'loading');
+                    } catch (error) {
+                        console.error('❌ Error approving DAI:', error);
+                        throw new Error('Failed to approve DAI. Please try again.');
+                    }
+                }
+            }
+            
             // Execute swap operation
             let transactionHash = null;
             let transactionType = '';
             let transactionDirection = '';
             
             if (direction.value === 'dai-to-IAM') {
-                console.log('🛒 Starting IAM purchase with DAI...');
                 transactionType = 'Token Purchase';
                 transactionDirection = 'DAI → IAM';
                 transactionHash = await this.buyTokensWithDAI(value);
@@ -2702,8 +2707,8 @@ class SwapManager {
             console.log('📊 Current allowance:', ethers.utils.formatUnits(allowance, 18));
             
             if (allowance.lt(daiAmountWei)) {
-                console.log('🔐 Insufficient allowance, throwing error');
-                throw new Error('Insufficient DAI allowance. Please approve DAI first by clicking the "Approve DAI" button.');
+                console.log('🔐 Insufficient allowance - this should not happen as approval is automatic');
+                throw new Error('Insufficient DAI allowance. The system should have automatically approved DAI. Please try again.');
             }
             
             console.log('✅ Allowance is sufficient');
@@ -2792,24 +2797,13 @@ class SwapManager {
         }
     }
     
-    // Update approve UI based on allowance status
+    // Update approve UI based on allowance status (no longer needed - approval is automatic)
     async updateApproveUI(showApprove) {
-        const approveBtn = document.getElementById('approveBtn');
-        const approveStatus = document.getElementById('approval-status');
+        // Approval is now automatic in the swap flow, so we always keep the swap button enabled
         const swapBtn = document.getElementById('swapBtn');
-        
-        if (approveBtn && approveStatus) {
-            if (showApprove) {
-                approveBtn.style.display = 'block';
-                approveStatus.style.display = 'block';
-                if (swapBtn) swapBtn.style.opacity = '0.5';
-                if (swapBtn) swapBtn.disabled = true;
-            } else {
-                approveBtn.style.display = 'none';
-                approveStatus.style.display = 'none';
-                if (swapBtn) swapBtn.style.opacity = '1';
-                if (swapBtn) swapBtn.disabled = false;
-            }
+        if (swapBtn) {
+            swapBtn.style.opacity = '1';
+            swapBtn.disabled = false;
         }
     }
 
