@@ -2,7 +2,7 @@
 
 // Contract addresses
 const IAM_ADDRESS_OLD = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D'; // Old contract
-const IAM_ADDRESS_MIDDLE = '0xF473E4018cDf3dEbFb151cB50D6aB3a0292Ad658'; // Middle contract
+const IAM_ADDRESS_MIDDLE = '0x8dc37ecF3198ce5062776b6A020B61146B5d2548'; // Middle contract
 const IAM_ADDRESS_NEW = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26';
 
 // Use global DAI address from config to avoid redeclaration conflicts
