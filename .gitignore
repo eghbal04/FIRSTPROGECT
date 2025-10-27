@@ -191,3 +191,6 @@ secrets.json
 dev/
 >>>>>>> e8a7abda7fd7c03c29d2042026e5769930714287
 *.sol
+
+# Local Netlify folder
+.netlify
