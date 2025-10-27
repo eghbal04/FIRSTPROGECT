@@ -1537,7 +1537,7 @@ class SwapManager {
             }
             
             // Create provider and signer
-            this.provider = new ethers.providers.Web3Provider(window.ethereum);
+            this.provider = new ethers.BrowserProvider(window.ethereum);
             this.signer = await this.provider.getSigner();
             
             // Create contracts
@@ -1561,7 +1561,7 @@ class SwapManager {
         
         try {
             const daiBalance = await this.daiContract.balanceOf(SWAP_IAM_ADDRESS);
-            return parseFloat(ethers.utils.formatUnits(daiBalance, 18));
+            return parseFloat(ethers.formatUnits(daiBalance, 18));
         } catch (error) {
             console.warn('⚠️ Error getting contract DAI balance:', error);
             return 0;
@@ -1750,28 +1750,55 @@ class SwapManager {
     updateContractSelectionUI() {
         const contractSelector = document.getElementById('contractSelector');
         if (contractSelector) {
-            // Only old contract option available
+            // Update all contract options with short addresses
             const oldOption = contractSelector.querySelector('option[value="old"]');
+            const middleOption = contractSelector.querySelector('option[value="middle"]');
+            const newOption = contractSelector.querySelector('option[value="new"]');
             
             if (oldOption) {
-                oldOption.textContent = `Old Contract — ${IAM_ADDRESS_OLD.substring(0, 6)}...${IAM_ADDRESS_OLD.substring(38)}`;
+                oldOption.textContent = `Old Contract — ${IAM_ADDRESS_OLD.substring(0, 6)}...${IAM_ADDRESS_OLD.substring(38)} (Default)`;
+            }
+            if (middleOption) {
+                middleOption.textContent = `Middle Contract — ${IAM_ADDRESS_MIDDLE.substring(0, 6)}...${IAM_ADDRESS_MIDDLE.substring(38)}`;
+            }
+            if (newOption) {
+                newOption.textContent = `New Contract — ${IAM_ADDRESS_NEW.substring(0, 6)}...${IAM_ADDRESS_NEW.substring(38)}`;
             }
             
             contractSelector.value = this.selectedContract;
         }
         
+        // Get current contract address
+        let currentAddress;
+        switch(this.selectedContract) {
+            case 'old':
+                currentAddress = IAM_ADDRESS_OLD;
+                break;
+            case 'middle':
+                currentAddress = IAM_ADDRESS_MIDDLE;
+                break;
+            case 'new':
+                currentAddress = IAM_ADDRESS_NEW;
+                break;
+            default:
+                currentAddress = IAM_ADDRESS_OLD;
+        }
+        
         const contractInfo = document.getElementById('contractInfo');
         if (contractInfo) {
-            // Only old contract available
-            const nameLabel = 'Old Contract';
-            const addressLabel = IAM_ADDRESS_OLD;
-            const nameColor = '#ff8c00'; // Orange for old contract
+            const nameLabel = this.selectedContract === 'old' ? 'Old Contract' : 
+                             this.selectedContract === 'middle' ? 'Middle Contract' : 'New Contract';
+            const nameColor = this.selectedContract === 'old' ? '#ff8c00' : 
+                             this.selectedContract === 'middle' ? '#ff6b6b' : '#00ff88';
+            
+            // Short address format
+            const shortAddress = `${currentAddress.substring(0, 6)}...${currentAddress.substring(38)}`;
             
             contractInfo.innerHTML = `
                 <div style="background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 6px; padding: 0.5rem 0.6rem; margin-bottom: 0.4rem;">
                     <div style="display:flex; justify-content: space-between; gap:10px; align-items:center; flex-wrap:wrap;">
                         <p style="margin: 0; color: ${nameColor}; font-size: 0.8rem; font-weight:700;">${nameLabel}</p>
-                        <p style="margin: 0; color: #9ecbff; font-size: 0.75rem; word-break: break-all;">${addressLabel}</p>
+                        <p style="margin: 0; color: #9ecbff; font-size: 0.75rem;" title="${currentAddress}">${shortAddress}</p>
                     </div>
                 </div>
             `;
@@ -1924,7 +1951,7 @@ class SwapManager {
                     this.contract.getTokenPrice(),
                     new Promise((_, reject) => setTimeout(() => reject(new Error('Token price fetch timeout')), 10000))
                 ]);
-                this.tokenPrice = ethers.utils.formatUnits(tokenPrice, 18);
+                this.tokenPrice = ethers.formatUnits(tokenPrice, 18);
             console.log('✅ Token price received:', this.tokenPrice);
                 console.log('🔍 this.tokenPrice set to:', this.tokenPrice);
             } catch (error) {
@@ -1939,7 +1966,7 @@ class SwapManager {
                     this.contract.balanceOf(address),
                     new Promise((_, reject) => setTimeout(() => reject(new Error('IAM balance fetch timeout')), 10000))
                 ]);
-                IAMBalanceFormatted = ethers.utils.formatUnits(IAMBalance, 18);
+                IAMBalanceFormatted = ethers.formatUnits(IAMBalance, 18);
             console.log('✅ IAM balance received:', IAMBalanceFormatted);
             } catch (error) {
                 console.warn('⚠️ Error fetching IAM balance:', error);
@@ -1952,7 +1979,7 @@ class SwapManager {
                     this.daiContract.balanceOf(address),
                     new Promise((_, reject) => setTimeout(() => reject(new Error('DAI balance fetch timeout')), 10000))
                 ]);
-                daiBalanceFormatted = ethers.utils.formatUnits(daiBalance, 18);
+                daiBalanceFormatted = ethers.formatUnits(daiBalance, 18);
                 console.log('✅ DAI balance received:', daiBalanceFormatted);
             } catch (error) {
                 console.warn('⚠️ Error fetching DAI balance:', error);
@@ -2494,22 +2521,22 @@ class SwapManager {
             
             const address = await this.signer.getAddress();
             
-            const daiAmountWei = ethers.utils.parseUnits(daiAmount.toString(), 18);
+            const daiAmountWei = ethers.parseUnits(daiAmount.toString(), 18);
             
             console.log('🔍 Checking allowance...');
             // Check allowance
             const allowance = await this.daiContract.allowance(address, SWAP_IAM_ADDRESS);
-            console.log('📊 Current allowance:', ethers.utils.formatUnits(allowance, 18));
+            console.log('📊 Current allowance:', ethers.formatUnits(allowance, 18));
             
-            if (allowance.lt(daiAmountWei)) {
+            if (allowance < daiAmountWei) {
                 console.log('🔐 Need to approve DAI allowance...');
                 this.showEnglishPopup('🔐 DAI approval required! Please approve DAI spending to continue with your purchase.', 'loading');
                 
-                const approveTx = await this.daiContract.approve(SWAP_IAM_ADDRESS, ethers.constants.MaxUint256);
+                const approveTx = await this.daiContract.approve(SWAP_IAM_ADDRESS, ethers.MaxUint256);
                 this.showEnglishPopup('⏳ DAI approval transaction submitted! Waiting for confirmation... This is a one-time setup.', 'loading');
                 
                 console.log('⏳ Waiting for approve confirmation...');
-                await approveTx.wait();
+                await approveTx.wait(1);
                 this.showEnglishPopup('✅ DAI approval successful! You can now proceed with your purchase.', 'success');
                 console.log('✅ Approve confirmed');
             } else {
@@ -2524,7 +2551,7 @@ class SwapManager {
             this.showEnglishPopup('⏳ Transaction submitted! Waiting for blockchain confirmation... This may take a few moments.', 'loading');
             
             console.log('⏳ Waiting for purchase transaction confirmation...');
-            await tx.wait();
+            await tx.wait(1);
             
             console.log('✅ Purchase completed successfully');
             return tx.hash; // Return transaction hash
@@ -2544,7 +2571,7 @@ class SwapManager {
                 throw new Error('Contract connection not established');
             }
             
-            const IAMAmountWei = ethers.utils.parseUnits(IAMAmount.toString(), 18);
+            const IAMAmountWei = ethers.parseUnits(IAMAmount.toString(), 18);
             
             console.log('💰 Starting IAM token sale...');
             this.showEnglishPopup('💰 Processing IAM token sale... Please wait while we execute your transaction.', 'loading');
@@ -2553,7 +2580,7 @@ class SwapManager {
             this.showEnglishPopup('⏳ Sale transaction submitted! Waiting for blockchain confirmation... This may take a few moments.', 'loading');
             
             console.log('⏳ Waiting for sale transaction confirmation...');
-            await tx.wait();
+            await tx.wait(1);
             
             console.log('✅ Sale completed successfully');
             return tx.hash; // Return transaction hash
