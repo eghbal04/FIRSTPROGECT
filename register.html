@@ -2148,6 +2148,116 @@
       }
     }
 
+    // Function to check if upper has capacity for new registration
+    async function checkUpperCapacity(upperAddress) {
+      try {
+        if (!window.contractConfig || !window.contractConfig.contract) {
+          return { hasCapacity: false, message: 'Contract not available' };
+        }
+        
+        const contract = window.contractConfig.contract;
+        const upperUser = await contract.users(upperAddress);
+        
+        // Get left and right addresses
+        const index = Number(upperUser.index);
+        const leftAddress = await contract.getLeftAddress(index);
+        const rightAddress = await contract.getRightAddress(index);
+        
+        // Check if both slots are filled
+        const zeroAddress = '0x0000000000000000000000000000000000000000';
+        const hasLeft = leftAddress !== zeroAddress && leftAddress !== null;
+        const hasRight = rightAddress !== zeroAddress && rightAddress !== null;
+        
+        if (hasLeft && hasRight) {
+          return { hasCapacity: false, message: 'Upper address has no capacity (both slots filled)' };
+        }
+        
+        const availableSlots = (!hasLeft ? 1 : 0) + (!hasRight ? 1 : 0);
+        return { hasCapacity: true, message: `Upper has ${availableSlots} available slot(s)` };
+        
+      } catch (error) {
+        console.error('Error checking upper capacity:', error);
+        return { hasCapacity: false, message: 'Error checking capacity: ' + error.message };
+      }
+    }
+
+    // Function to check upper capacity and show status
+    async function checkUpperCapacityAndShowStatus() {
+      const upperAddress = upperInput.getAttribute('data-full-address') || upperInput.value.trim();
+      if (!upperAddress || upperAddress === 'root' || !/^0x[a-fA-F0-9]{40}$/.test(upperAddress)) {
+        return;
+      }
+      
+      try {
+        const capacityCheck = await checkUpperCapacity(upperAddress);
+        const statusEl = document.getElementById('upper-validation-status');
+        
+        if (capacityCheck.hasCapacity) {
+          if (statusEl) {
+            statusEl.style.display = 'none';
+          }
+          upperInput.style.borderColor = '#00ff88';
+          upperInput.title = capacityCheck.message;
+        } else {
+          if (statusEl) {
+            statusEl.style.display = '';
+            statusEl.className = 'register-form-status error';
+            statusEl.textContent = '❌ ' + capacityCheck.message;
+          }
+          upperInput.style.borderColor = '#ff4444';
+          upperInput.title = capacityCheck.message;
+        }
+      } catch (error) {
+        console.error('Error checking capacity status:', error);
+      }
+    }
+
+    // Function to validate referrer-upper relationship
+    async function validateReferrerUpperRelationship(contract, referrer, upper) {
+      console.log(`🔍 Validating referrer-upper relationship: referrer=${referrer}, upper=${upper}`);
+      
+      // If referrer and upper are the same, it's valid
+      if (referrer.toLowerCase() === upper.toLowerCase()) {
+        console.log(`✅ Referrer and upper are the same - valid`);
+        return;
+      }
+      
+      try {
+        // Get referrer user data
+        const referrerUser = await contract.users(referrer);
+        // User is active if num exists and is non-zero
+        const isReferrerActive = isUserActive(referrerUser);
+        if (!isReferrerActive) {
+          throw new Error('Referrer is not active or does not exist');
+        }
+        
+        // Get upper user data  
+        const upperUser = await contract.users(upper);
+        // User is active if num exists and is non-zero
+        const isUpperActive = isUserActive(upperUser);
+        if (!isUpperActive) {
+          throw new Error('Upper address is not active or does not exist');
+        }
+        
+        const referrerUserNumber = Number(getUserNumValue(referrerUser));
+        const upperUserNumber = Number(getUserNumValue(upperUser));
+        
+        console.log(`🔍 Referrer user number: ${referrerUserNumber}, Upper user number: ${upperUserNumber}`);
+        
+        // Check if upper is in referrer's subtree
+        if (isIndexInUserSubtree(referrerUserNumber, upperUserNumber)) {
+          console.log(`✅ Upper address is in referrer's subtree - valid`);
+          return;
+        } else {
+          throw new Error('Upper address must be either the same as referrer or a descendant of referrer in the tree structure');
+        }
+        
+      } catch (error) {
+        console.error(`❌ Validation error:`, error);
+        throw error;
+      }
+    }
+
     // Function to validate upper address against upper in real-time
     async function validateUpperAgainstupper() {
       const statusEl = document.getElementById('upper-validation-status');
@@ -2181,7 +2291,7 @@
           }
           
           // Check if current user can register for this upper address
-          const canRegisterForUpper = await canUserRegisterForAddress(upper, 'upper');
+          const canRegisterForUpper = await canUserRegisterForAddress(upperForValidation, 'upper');
           if (!canRegisterForUpper) {
             statusEl.className = 'register-form-status error';
             statusEl.textContent = '❌ You can only register for yourself or your downlines';
@@ -2191,19 +2301,19 @@
             return;
           }
           
-          await validateReferrerUpperRelationship(contract, referrer, upper);
+          // Note: canUserRegisterForAddress already validated the relationship
           statusEl.className = 'register-form-status success';
           statusEl.textContent = '✅ Upper address is valid for this referrer';
           statusEl.style.display = '';
           
           // Show placement information
-          await showPlacementInfo(contract, upper);
+          await showPlacementInfo(contract, upperForValidation);
           
           showTempMessage('Upper address is valid for this referrer', 'success');
         } else if (currentRegistrationType === 'free') {
           // Reserve registration: show placement info based on upper (connected wallet)
           statusEl.style.display = 'none';
-          await showReservePlacementInfo(contract, upper);
+          await showReservePlacementInfo(contract, upperForValidation);
           showTempMessage('Reserve placement calculated based on connected wallet', 'success');
         }
       } catch (error) {
@@ -2609,7 +2719,7 @@
         // Get full addresses for registration (not truncated display)
         console.log('🔍 Getting registration parameters...');
         const parentUpper = referrerAddressDisplay.getAttribute('data-full-address') || referrerAddressDisplay.value.trim();
-        const upperReferrer = upperInput.getAttribute('data-full-address') || upperInput.value.trim();
+        let upperReferrer = upperInput.getAttribute('data-full-address') || upperInput.value.trim();
         const newUser = newUserInput.value.trim();
         
         console.log('📋 Registration parameters:', { parentUpper, upperReferrer, newUser });
@@ -2677,25 +2787,9 @@
               console.log('⚠️ Upper is not active, will use referrer as upper');
               upperReferrer = parentUpper; // Use referrer as upper if provided upper is invalid
             } else {
-              console.log('✅ Upper is active, checking if in referrer\'s downline...');
-              
-              // Check if upper is in referrer's downline using contract function
-              // isInDownline(ancestor, descendant) - check if upper is descendant of referrer
-              try {
-                const isInReferrerDownline = await contract.isInDownline(parentUpper, upperReferrer);
-                console.log('🔍 isInDownline result:', isInReferrerDownline, 'ancestor (referrer):', parentUpper, 'descendant (upper):', upperReferrer);
-                
-                if (!isInReferrerDownline) {
-                  console.log('⚠️ Upper is not in referrer\'s downline, will use referrer as upper');
-                  upperReferrer = parentUpper; // Use referrer as upper
-                } else {
-                  console.log('✅ Upper is in referrer\'s downline');
-                }
-              } catch (error) {
-                console.error('❌ Error checking downline:', error);
-                console.log('⚠️ Could not validate downline relationship, using referrer as upper');
-                upperReferrer = parentUpper;
-              }
+              console.log('✅ Upper is active and valid');
+              // Note: The contract does not have an isInDownline function to validate the relationship
+              // The provided upper address will be used as-is
             }
           } catch (error) {
             console.error('❌ Error fetching upper user data:', error);

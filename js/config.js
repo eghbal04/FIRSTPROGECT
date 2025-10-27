@@ -81,8 +81,23 @@ const MIN_IAM_ABI = (window.IAM_ABI && Array.isArray(window.IAM_ABI)) ? window.I
     { "inputs": [], "name": "wallets", "outputs": [{"internalType":"uint256","name":"","type":"uint256"}], "stateMutability": "view", "type": "function" },
     { "inputs": [], "name": "getRegPrice", "outputs": [{"internalType":"uint256","name":"","type":"uint256"}], "stateMutability": "view", "type": "function" },
     // Tree helpers
-    { "inputs": [{"internalType":"uint256","name":"parentIndex","type":"uint256"}], "name": "getLeftAddress", "outputs": [{"internalType":"address","name":"","type":"address"}], "stateMutability": "view", "type": "function" },
-    { "inputs": [{"internalType":"uint256","name":"parentIndex","type":"uint256"}], "name": "getRightAddress", "outputs": [{"internalType":"address","name":"","type":"address"}], "stateMutability": "view", "type": "function" },
+    { "inputs": [{"internalType":"uint256","name":"index","type":"uint256"}], "name": "getLeftAddress", "outputs": [{"internalType":"address","name":"","type":"address"}], "stateMutability": "view", "type": "function" },
+    { "inputs": [{"internalType":"uint256","name":"index","type":"uint256"}], "name": "getRightAddress", "outputs": [{"internalType":"address","name":"","type":"address"}], "stateMutability": "view", "type": "function" },
+    { "inputs": [{"internalType":"uint256","name":"index","type":"uint256"}], "name": "getLeftChild", "outputs": [{"internalType":"uint256","name":"","type":"uint256"}], "stateMutability": "pure", "type": "function" },
+    { "inputs": [{"internalType":"uint256","name":"index","type":"uint256"}], "name": "getRightChild", "outputs": [{"internalType":"uint256","name":"","type":"uint256"}], "stateMutability": "pure", "type": "function" },
+    { "inputs": [{"internalType":"uint256","name":"index","type":"uint256"}], "name": "getParent", "outputs": [{"internalType":"uint256","name":"","type":"uint256"}], "stateMutability": "pure", "type": "function" },
+    { "inputs": [{"internalType":"uint256","name":"index","type":"uint256"}], "name": "getupper", "outputs": [{"internalType":"address","name":"","type":"address"}], "stateMutability": "view", "type": "function" },
+    { "inputs": [{"internalType":"uint256","name":"index","type":"uint256"}], "name": "getReferrer", "outputs": [{"internalType":"address","name":"","type":"address"}], "stateMutability": "view", "type": "function" },
+    { "inputs": [{"internalType":"address","name":"user","type":"address"}], "name": "getUserTree", "outputs": [
+        {"internalType":"address","name":"left","type":"address"},
+        {"internalType":"address","name":"right","type":"address"},
+        {"internalType":"uint256","name":"binaryPoints","type":"uint256"},
+        {"internalType":"uint256","name":"binaryPointCap","type":"uint256"},
+        {"internalType":"uint256","name":"depositedAmount","type":"uint256"},
+        {"internalType":"uint256","name":"lastMonthlyClaim","type":"uint256"},
+        {"internalType":"uint256","name":"totalMonthlyRewarded","type":"uint256"},
+        {"internalType":"uint256","name":"refclimed","type":"uint256"}
+      ], "stateMutability": "view", "type": "function" },
     { "inputs": [], "name": "getPointValue", "outputs": [{"internalType":"uint256","name":"","type":"uint256"}], "stateMutability": "view", "type": "function" },
     // Voting status
     { "inputs": [{"internalType":"address","name":"user","type":"address"}], "name": "getVoteStatus", "outputs": [
