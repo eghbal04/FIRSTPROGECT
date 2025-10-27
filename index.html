@@ -700,57 +700,7 @@
       z-index: 9999 !important;
     }
 
-    /* Floating Contract Selector Button */
-    #floating-contract-button {
-      position: fixed;
-      top: 80px;
-      right: 8px;
-      z-index: 9998;
-      background: linear-gradient(135deg, #1a1f2e 0%, #232946 100%);
-      border: 1px solid #00ff88;
-      border-radius: 50px;
-      padding: 12px 20px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: #00ff88;
-      font-size: 14px;
-      font-weight: 600;
-      box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
-      transition: all 0.3s ease;
-      user-select: none;
-    }
-
-    #floating-contract-button:hover {
-      background: linear-gradient(135deg, #232946 0%, #2a3147 100%);
-      box-shadow: 0 6px 20px rgba(0, 255, 136, 0.5);
-      transform: translateY(-2px);
-    }
-
-    #floating-contract-button.active {
-      background: linear-gradient(135deg, #0f1522 0%, #1a1f2e 100%);
-    }
-
-    #floating-contract-button .icon {
-      font-size: 18px;
-    }
-
-    /* Contract Selector Wrap Toggle */
-    #contract-selector-wide-wrap.hidden {
-      display: none;
-    }
-
     @media (max-width: 768px) {
-      #floating-contract-button {
-        top: 60px;
-        right: 4px;
-        padding: 10px 16px;
-        font-size: 13px;
-      }
-    }
-
-    @media (max-width: 480px) {
       .container { padding: 14px; }
       h1 { font-size: 17px; }
       .card h2 { font-size: 13px; }
@@ -1263,17 +1213,6 @@
       <span class="pill" id="status-iam">IAM: -</span>
     </div>
         
-    <!-- Full-width contract option selector -->
-    <div id="contract-selector-wide-wrap" style="margin-top:10px; margin-bottom:16px; width:100%;">
-      <select id="contract-selector-wide" style="width:100%; padding:12px 14px; border-radius:10px; background:#1e293b; color:#e6eaf0; border:1px solid #334155; cursor:pointer; font-size:14px; letter-spacing:0.2px;"></select>
-    </div>
-    
-    <!-- Floating Contract Selector Button -->
-    <div id="floating-contract-button" title="انتخاب قرارداد جدید / Select New Contract">
-      <span class="icon">📋</span>
-      <span id="floating-contract-text">انتخاب قرارداد</span>
-    </div>
-
     <!-- Navigation Menu - Creative Design -->
     <div class="nav-menu" id="nav-menu" style="margin-bottom: 24px;">
       <div class="nav-grid">
@@ -3604,31 +3543,6 @@
           }
         } catch {}
         
-        // Floating Contract Button Handler
-        try {
-          const floatingButton = document.getElementById('floating-contract-button');
-          const contractSelectorWrap = document.getElementById('contract-selector-wide-wrap');
-          
-          if (floatingButton && contractSelectorWrap) {
-            // Initially hide the contract selector
-            contractSelectorWrap.classList.add('hidden');
-            
-            floatingButton.addEventListener('click', function() {
-              contractSelectorWrap.classList.toggle('hidden');
-              floatingButton.classList.toggle('active');
-              
-              // Update button text based on visibility
-              const contractText = document.getElementById('floating-contract-text');
-              if (contractSelectorWrap.classList.contains('hidden')) {
-                if (contractText) contractText.textContent = 'انتخاب قرارداد';
-              } else {
-                if (contractText) contractText.textContent = 'مخفی کردن';
-              }
-            });
-          }
-        } catch (err) {
-          console.error('Error initializing floating contract button:', err);
-        }
         
         try {
           const addr = (window.getIAMAddress && typeof window.getIAMAddress === 'function') ? window.getIAMAddress() : (window.IAM_ADDRESS || '');
