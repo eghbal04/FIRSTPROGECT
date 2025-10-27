@@ -1650,10 +1650,10 @@
         const n = Number(num);
         if (!isFinite(n)) return String(num);
         
-        // Format to exactly 9 decimal places
+        // Format with full decimal precision
         return n.toLocaleString('en-US', { 
-          minimumFractionDigits: 9, 
-          maximumFractionDigits: 9 
+          minimumFractionDigits: 18, 
+          maximumFractionDigits: 18 
         });
       } catch { return String(num); }
     }
