@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مقایسه کنترکت‌ها - Contract Comparison</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script src="js/config.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0b0f 0%, #1a1f2e 100%);
+            color: #e6eaf0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(18, 21, 33, 0.8);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #334155;
+        }
+
+        .header h1 {
+            color: #00ff88;
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        }
+
+        .header p {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .control-group {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #334155;
+        }
+
+        .control-group h3 {
+            color: #aef3c6;
+            margin-bottom: 16px;
+            font-size: 1.2rem;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #cbd5e1;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            background: #0f172a;
+            color: #e6eaf0;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #00ff88;
+            box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
+            color: #0a0b0f;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 255, 136, 0.3);
+        }
+
+        .btn:disabled {
+            background: #475569;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .status-bar {
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            border-left: 4px solid #00ff88;
+        }
+
+        .status-text {
+            color: #cbd5e1;
+            font-size: 14px;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .contract-section {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #334155;
+        }
+
+        .contract-section h3 {
+            color: #aef3c6;
+            margin-bottom: 16px;
+            text-align: center;
+            font-size: 1.3rem;
+        }
+
+        .contract-info {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 1px solid #475569;
+        }
+
+        .contract-info .row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 4px 0;
+        }
+
+        .contract-info .row:last-child {
+            margin-bottom: 0;
+        }
+
+        .contract-info .label {
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .contract-info .value {
+            color: #e6eaf0;
+            font-family: monospace;
+            font-size: 13px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #475569;
+        }
+
+        .stat-card .number {
+            color: #00ff88;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .stat-card .label {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .table-container {
+            background: #0f172a;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #475569;
+        }
+
+        .table-header {
+            background: #1e293b;
+            padding: 12px 16px;
+            border-bottom: 1px solid #475569;
+        }
+
+        .table-header h4 {
+            color: #aef3c6;
+            font-size: 1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px 16px;
+            text-align: right;
+            border-bottom: 1px solid #334155;
+        }
+
+        th {
+            background: #1e293b;
+            color: #cbd5e1;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        td {
+            color: #e6eaf0;
+            font-size: 0.9rem;
+        }
+
+        .address {
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #60a5fa;
+        }
+
+        .position-left {
+            color: #f59e0b;
+            font-weight: 600;
+        }
+
+        .position-right {
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .position-root {
+            color: #ef4444;
+            font-weight: 600;
+        }
+
+        .match-yes {
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .match-no {
+            color: #ef4444;
+            font-weight: 600;
+        }
+
+        .match-partial {
+            color: #f59e0b;
+            font-weight: 600;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #334155;
+            border-radius: 50%;
+            border-top-color: #00ff88;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #7f1d1d;
+            color: #fecaca;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            border: 1px solid #dc2626;
+        }
+
+        .success {
+            background: #064e3b;
+            color: #a7f3d0;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            border: 1px solid #059669;
+        }
+
+        @media (max-width: 768px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>مقایسه کنترکت‌ها</h1>
+            <p>مقایسه موقعیت کاربران (چپ/راست) در دو کنترکت مختلف</p>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <h3>کنترکت اول</h3>
+                <div class="form-group">
+                    <label for="contract1-address">آدرس کنترکت:</label>
+                    <input type="text" id="contract1-address" placeholder="0x..." value="0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D">
+                </div>
+                <div class="form-group">
+                    <label for="contract1-name">نام کنترکت:</label>
+                    <input type="text" id="contract1-name" placeholder="کنترکت قدیمی" value="Contract 3 (Old)">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>کنترکت دوم</h3>
+                <div class="form-group">
+                    <label for="contract2-address">آدرس کنترکت:</label>
+                    <input type="text" id="contract2-address" placeholder="0x..." value="0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2">
+                </div>
+                <div class="form-group">
+                    <label for="contract2-name">نام کنترکت:</label>
+                    <input type="text" id="contract2-name" placeholder="کنترکت جدید" value="Contract 5 (New)">
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <h3>تنظیمات مقایسه</h3>
+                <div class="form-group">
+                    <label for="max-users">حداکثر تعداد کاربران:</label>
+                    <input type="number" id="max-users" value="100" min="10" max="1000">
+                </div>
+                <div class="form-group">
+                    <label for="start-index">شروع از ایندکس:</label>
+                    <input type="number" id="start-index" value="1" min="1">
+                </div>
+                <button id="compare-btn" class="btn">شروع مقایسه</button>
+            </div>
+
+            <div class="control-group">
+                <h3>وضعیت</h3>
+                <div class="status-bar">
+                    <div class="status-text" id="status-text">آماده برای مقایسه</div>
+                </div>
+                <button id="clear-btn" class="btn" style="background: #ef4444;">پاک کردن نتایج</button>
+            </div>
+        </div>
+
+        <div id="results-container" style="display: none;">
+            <div class="comparison-grid">
+                <div class="contract-section">
+                    <h3 id="contract1-title">کنترکت اول</h3>
+                    <div class="contract-info">
+                        <div class="row">
+                            <span class="label">آدرس:</span>
+                            <span class="value" id="contract1-addr-display">-</span>
+                        </div>
+                        <div class="row">
+                            <span class="label">تعداد کاربران:</span>
+                            <span class="value" id="contract1-total">-</span>
+                        </div>
+                        <div class="row">
+                            <span class="label">چپ:</span>
+                            <span class="value" id="contract1-left">-</span>
+                        </div>
+                        <div class="row">
+                            <span class="label">راست:</span>
+                            <span class="value" id="contract1-right">-</span>
+                        </div>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="number" id="contract1-left-count">0</div>
+                            <div class="label">چپ</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number" id="contract1-right-count">0</div>
+                            <div class="label">راست</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number" id="contract1-root-count">0</div>
+                            <div class="label">ریشه</div>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h4>کاربران کنترکت اول</h4>
+                        </div>
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ایندکس</th>
+                                        <th>آدرس کاربر</th>
+                                        <th>آدرس والد</th>
+                                        <th>موقعیت</th>
+                                        <th>وضعیت</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="contract1-table-body">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="contract-section">
+                    <h3 id="contract2-title">کنترکت دوم</h3>
+                    <div class="contract-info">
+                        <div class="row">
+                            <span class="label">آدرس:</span>
+                            <span class="value" id="contract2-addr-display">-</span>
+                        </div>
+                        <div class="row">
+                            <span class="label">تعداد کاربران:</span>
+                            <span class="value" id="contract2-total">-</span>
+                        </div>
+                        <div class="row">
+                            <span class="label">چپ:</span>
+                            <span class="value" id="contract2-left">-</span>
+                        </div>
+                        <div class="row">
+                            <span class="label">راست:</span>
+                            <span class="value" id="contract2-right">-</span>
+                        </div>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="number" id="contract2-left-count">0</div>
+                            <div class="label">چپ</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number" id="contract2-right-count">0</div>
+                            <div class="label">راست</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="number" id="contract2-root-count">0</div>
+                            <div class="label">ریشه</div>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <div class="table-header">
+                            <h4>کاربران کنترکت دوم</h4>
+                        </div>
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ایندکس</th>
+                                        <th>آدرس کاربر</th>
+                                        <th>آدرس والد</th>
+                                        <th>موقعیت</th>
+                                        <th>وضعیت</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="contract2-table-body">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="contract-section" style="margin-top: 24px;">
+                <h3>نتایج مقایسه</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="number" id="total-matched">0</div>
+                        <div class="label">تطبیق کامل</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number" id="partial-matched">0</div>
+                        <div class="label">تطبیق جزئی</div>
+                    </div>
+                    <div class="number" id="not-matched">0</div>
+                    <div class="label">عدم تطبیق</div>
+                </div>
+                <div class="table-container">
+                    <div class="table-header">
+                        <h4>جدول مقایسه</h4>
+                    </div>
+                    <div style="max-height: 400px; overflow-y: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>آدرس کاربر</th>
+                                    <th>کنترکت 1</th>
+                                    <th>کنترکت 2</th>
+                                    <th>وضعیت تطبیق</th>
+                                </tr>
+                            </thead>
+                            <tbody id="comparison-table-body">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let contract1 = null;
+        let contract2 = null;
+        let signer = null;
+        let isComparing = false;
+
+        // DOM elements
+        const statusText = document.getElementById('status-text');
+        const compareBtn = document.getElementById('compare-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        const resultsContainer = document.getElementById('results-container');
+
+        // Contract ABI (minimal for comparison)
+        const CONTRACT_ABI = [
+            {"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"indexToAddress","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+            {"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"users","outputs":[{"internalType":"uint256","name":"index","type":"uint256"},{"internalType":"uint256","name":"binaryPoints","type":"uint256"},{"internalType":"uint256","name":"binaryPointCap","type":"uint256"},{"internalType":"uint256","name":"binaryPointsClaimed","type":"uint256"},{"internalType":"uint256","name":"totalPurchasedKind","type":"uint256"},{"internalType":"uint256","name":"upgradeTime","type":"uint256"},{"internalType":"uint256","name":"lastClaimTime","type":"uint256"},{"internalType":"uint256","name":"leftPoints","type":"uint256"},{"internalType":"uint256","name":"rightPoints","type":"uint256"},{"internalType":"uint256","name":"lastMonthlyClaim","type":"uint256"},{"internalType":"uint256","name":"totalMonthlyRewarded","type":"uint256"},{"internalType":"uint256","name":"refclimed","type":"uint256"},{"internalType":"uint256","name":"depositedAmount","type":"uint256"}],"stateMutability":"view","type":"function"},
+            {"inputs":[{"internalType":"uint256","name":"index","type":"uint256"}],"name":"getupper","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
+            {"inputs":[{"internalType":"uint256","name":"index","type":"uint256"}],"name":"getLeftChild","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
+            {"inputs":[{"internalType":"uint256","name":"index","type":"uint256"}],"name":"getRightChild","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}
+        ];
+
+        // Utility functions
+        function shortenAddress(address) {
+            if (!address || address === '0x0000000000000000000000000000000000000000') return 'Root';
+            return address.slice(0, 6) + '...' + address.slice(-4);
+        }
+
+        function updateStatus(message, type = 'info') {
+            statusText.textContent = message;
+            statusText.style.color = type === 'error' ? '#ef4444' : 
+                                    type === 'success' ? '#10b981' : 
+                                    type === 'warning' ? '#f59e0b' : '#cbd5e1';
+        }
+
+        function showLoading() {
+            statusText.innerHTML = '<span class="loading">در حال پردازش...</span>';
+        }
+
+        // Connect wallet
+        async function connectWallet() {
+            try {
+                if (typeof window.ethers === 'undefined') {
+                    throw new Error('Ethers library not loaded');
+                }
+
+                if (typeof window.ethers.providers !== 'undefined') {
+                    // Ethers v5
+                    const provider = new window.ethers.providers.Web3Provider(window.ethereum);
+                    signer = provider.getSigner();
+                } else {
+                    // Ethers v6
+                    const provider = new window.ethers.BrowserProvider(window.ethereum);
+                    signer = await provider.getSigner();
+                }
+
+                const address = await signer.getAddress();
+                updateStatus(`کیف پول متصل شد: ${shortenAddress(address)}`, 'success');
+                return true;
+            } catch (error) {
+                updateStatus(`خطا در اتصال کیف پول: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        // Initialize contracts
+        async function initializeContracts() {
+            try {
+                const contract1Address = document.getElementById('contract1-address').value.trim();
+                const contract2Address = document.getElementById('contract2-address').value.trim();
+
+                if (!contract1Address || !contract2Address) {
+                    throw new Error('لطفاً آدرس هر دو کنترکت را وارد کنید');
+                }
+
+                if (contract1Address === contract2Address) {
+                    throw new Error('آدرس دو کنترکت نمی‌تواند یکسان باشد');
+                }
+
+                if (typeof window.ethers.providers !== 'undefined') {
+                    // Ethers v5
+                    const provider = new window.ethers.providers.Web3Provider(window.ethereum);
+                    contract1 = new window.ethers.Contract(contract1Address, CONTRACT_ABI, provider);
+                    contract2 = new window.ethers.Contract(contract2Address, CONTRACT_ABI, provider);
+                } else {
+                    // Ethers v6
+                    const provider = new window.ethers.BrowserProvider(window.ethereum);
+                    contract1 = new window.ethers.Contract(contract1Address, CONTRACT_ABI, provider);
+                    contract2 = new window.ethers.Contract(contract2Address, CONTRACT_ABI, provider);
+                }
+
+                updateStatus('کنترکت‌ها با موفقیت initialize شدند', 'success');
+                return true;
+            } catch (error) {
+                updateStatus(`خطا در initialize کنترکت‌ها: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        // Get user data from contract
+        async function getUserData(contract, index) {
+            try {
+                const userAddress = await contract.indexToAddress(index);
+                
+                if (userAddress === '0x0000000000000000000000000000000000000000') {
+                    return null;
+                }
+
+                const userData = await contract.users(userAddress);
+                const upperAddress = await contract.getupper(index);
+                
+                // Determine position
+                let position = 'Root';
+                if (index > 1) {
+                    const parentIndex = Math.floor(index / 2);
+                    try {
+                        const leftChild = await contract.getLeftChild(parentIndex);
+                        const rightChild = await contract.getRightChild(parentIndex);
+                        
+                        if (leftChild.toNumber() === index) {
+                            position = 'Left';
+                        } else if (rightChild.toNumber() === index) {
+                            position = 'Right';
+                        }
+                    } catch (posError) {
+                        console.warn(`خطا در تعیین موقعیت برای کاربر ${index}:`, posError.message);
+                    }
+                }
+
+                return {
+                    index: index,
+                    address: userAddress,
+                    upper: upperAddress,
+                    position: position,
+                    isActive: userData.index.toNumber() > 0
+                };
+            } catch (error) {
+                console.error(`خطا در دریافت اطلاعات کاربر ${index}:`, error.message);
+                return null;
+            }
+        }
+
+        // Compare contracts
+        async function compareContracts() {
+            if (isComparing) return;
+            
+            try {
+                isComparing = true;
+                compareBtn.disabled = true;
+                showLoading();
+
+                // Connect wallet
+                const walletConnected = await connectWallet();
+                if (!walletConnected) return;
+
+                // Initialize contracts
+                const contractsInitialized = await initializeContracts();
+                if (!contractsInitialized) return;
+
+                const maxUsers = parseInt(document.getElementById('max-users').value);
+                const startIndex = parseInt(document.getElementById('start-index').value);
+
+                updateStatus(`در حال دریافت اطلاعات ${maxUsers} کاربر از هر کنترکت...`);
+
+                // Get data from both contracts
+                const contract1Data = [];
+                const contract2Data = [];
+
+                for (let i = startIndex; i < startIndex + maxUsers; i++) {
+                    updateStatus(`در حال پردازش کاربر ${i}...`);
+                    
+                    const user1Data = await getUserData(contract1, i);
+                    const user2Data = await getUserData(contract2, i);
+                    
+                    if (user1Data) contract1Data.push(user1Data);
+                    if (user2Data) contract2Data.push(user2Data);
+                }
+
+                // Display results
+                displayResults(contract1Data, contract2Data);
+                
+                updateStatus('مقایسه با موفقیت انجام شد', 'success');
+                
+            } catch (error) {
+                updateStatus(`خطا در مقایسه: ${error.message}`, 'error');
+            } finally {
+                isComparing = false;
+                compareBtn.disabled = false;
+            }
+        }
+
+        // Display comparison results
+        function displayResults(contract1Data, contract2Data) {
+            resultsContainer.style.display = 'block';
+
+            // Update contract info
+            document.getElementById('contract1-title').textContent = document.getElementById('contract1-name').value;
+            document.getElementById('contract2-title').textContent = document.getElementById('contract2-name').value;
+            
+            document.getElementById('contract1-addr-display').textContent = shortenAddress(document.getElementById('contract1-address').value);
+            document.getElementById('contract2-addr-display').textContent = shortenAddress(document.getElementById('contract2-address').value);
+
+            // Calculate statistics
+            const contract1Stats = calculateStats(contract1Data);
+            const contract2Stats = calculateStats(contract2Data);
+
+            // Update contract 1 stats
+            document.getElementById('contract1-total').textContent = contract1Data.length;
+            document.getElementById('contract1-left').textContent = contract1Stats.left;
+            document.getElementById('contract1-right').textContent = contract1Stats.right;
+            document.getElementById('contract1-left-count').textContent = contract1Stats.left;
+            document.getElementById('contract1-right-count').textContent = contract1Stats.right;
+            document.getElementById('contract1-root-count').textContent = contract1Stats.root;
+
+            // Update contract 2 stats
+            document.getElementById('contract2-total').textContent = contract2Data.length;
+            document.getElementById('contract2-left').textContent = contract2Stats.left;
+            document.getElementById('contract2-right').textContent = contract2Stats.right;
+            document.getElementById('contract2-left-count').textContent = contract2Stats.left;
+            document.getElementById('contract2-right-count').textContent = contract2Stats.right;
+            document.getElementById('contract2-root-count').textContent = contract2Stats.root;
+
+            // Populate tables
+            populateTable('contract1-table-body', contract1Data);
+            populateTable('contract2-table-body', contract2Data);
+
+            // Compare and show comparison results
+            const comparisonResults = compareUserData(contract1Data, contract2Data);
+            displayComparisonResults(comparisonResults);
+        }
+
+        // Calculate statistics
+        function calculateStats(data) {
+            const stats = { left: 0, right: 0, root: 0 };
+            
+            data.forEach(user => {
+                if (user.position === 'Left') stats.left++;
+                else if (user.position === 'Right') stats.right++;
+                else if (user.position === 'Root') stats.root++;
+            });
+            
+            return stats;
+        }
+
+        // Populate table
+        function populateTable(tableBodyId, data) {
+            const tbody = document.getElementById(tableBodyId);
+            tbody.innerHTML = '';
+
+            data.forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.index}</td>
+                    <td><span class="address">${shortenAddress(user.address)}</span></td>
+                    <td><span class="address">${shortenAddress(user.upper)}</span></td>
+                    <td><span class="position-${user.position.toLowerCase()}">${user.position}</span></td>
+                    <td>${user.isActive ? 'فعال' : 'غیرفعال'}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Compare user data between contracts
+        function compareUserData(contract1Data, contract2Data) {
+            const comparison = [];
+            const contract2Map = new Map();
+            
+            // Create map for contract 2 data
+            contract2Data.forEach(user => {
+                contract2Map.set(user.address.toLowerCase(), user);
+            });
+
+            // Compare each user from contract 1
+            contract1Data.forEach(user1 => {
+                const user2 = contract2Map.get(user1.address.toLowerCase());
+                
+                if (user2) {
+                    const matchStatus = user1.position === user2.position ? 'match' : 'partial';
+                    comparison.push({
+                        address: user1.address,
+                        contract1: user1,
+                        contract2: user2,
+                        status: matchStatus
+                    });
+                } else {
+                    comparison.push({
+                        address: user1.address,
+                        contract1: user1,
+                        contract2: null,
+                        status: 'not_found'
+                    });
+                }
+            });
+
+            return comparison;
+        }
+
+        // Display comparison results
+        function displayComparisonResults(results) {
+            const tbody = document.getElementById('comparison-table-body');
+            tbody.innerHTML = '';
+
+            let totalMatched = 0;
+            let partialMatched = 0;
+            let notMatched = 0;
+
+            results.forEach(result => {
+                const row = document.createElement('tr');
+                
+                let statusText = '';
+                let statusClass = '';
+                
+                if (result.status === 'match') {
+                    statusText = 'تطبیق کامل';
+                    statusClass = 'match-yes';
+                    totalMatched++;
+                } else if (result.status === 'partial') {
+                    statusText = 'تطبیق جزئی';
+                    statusClass = 'match-partial';
+                    partialMatched++;
+                } else {
+                    statusText = 'یافت نشد';
+                    statusClass = 'match-no';
+                    notMatched++;
+                }
+
+                row.innerHTML = `
+                    <td><span class="address">${shortenAddress(result.address)}</span></td>
+                    <td><span class="position-${result.contract1.position.toLowerCase()}">${result.contract1.position}</span></td>
+                    <td>${result.contract2 ? `<span class="position-${result.contract2.position.toLowerCase()}">${result.contract2.position}</span>` : '-'}</td>
+                    <td><span class="${statusClass}">${statusText}</span></td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // Update comparison stats
+            document.getElementById('total-matched').textContent = totalMatched;
+            document.getElementById('partial-matched').textContent = partialMatched;
+            document.getElementById('not-matched').textContent = notMatched;
+        }
+
+        // Clear results
+        function clearResults() {
+            resultsContainer.style.display = 'none';
+            updateStatus('آماده برای مقایسه');
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            compareBtn.addEventListener('click', compareContracts);
+            clearBtn.addEventListener('click', clearResults);
+            
+            // Auto-connect wallet
+            if (window.ethereum) {
+                connectWallet();
+            }
+        });
+    </script>
+</body>
+</html>
+

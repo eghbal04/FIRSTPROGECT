@@ -9,6 +9,8 @@ class BrowserPriceService {
     this.useNeonDatabase = false;
     this.useRealTimeData = true; // استفاده از داده‌های لحظه‌ای بلاکچین
     this.realTimeInterval = null; // برای به‌روزرسانی لحظه‌ای
+    this.onPriceEvent = null; // callback for real-time price updates
+    this._priceEventDebounce = null;
   }
 
   // اتصال به دیتابیس
@@ -78,37 +80,49 @@ class BrowserPriceService {
       const signer = await this.provider.getSigner();
       console.log('✅ Signer دریافت شد:', await signer.getAddress());
       
-      // آدرس کنترکت IAM
-      const IAM_ADDRESS = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D';
+      // آدرس کنترکت IAM - از آدرس جدید استفاده شود در صورت موجود بودن
+      const configuredNew = (typeof window !== 'undefined') ? (window.SECOND_IAM_ADDRESS || (window.getIAMAddress && window.getIAMAddress())) : null;
+      const IAM_ADDRESS = configuredNew || '0x55e006157260b191Ff09D512a416233001eF05Bc';
+      
+      console.log('🔍 Contract address selection:', {
+        configuredNew: configuredNew,
+        windowSECOND_IAM_ADDRESS: (typeof window !== 'undefined') ? window.SECOND_IAM_ADDRESS : 'undefined',
+        windowGetIAMAddress: (typeof window !== 'undefined' && window.getIAMAddress) ? window.getIAMAddress() : 'undefined',
+        finalAddress: IAM_ADDRESS
+      });
       console.log('🔄 اتصال به کنترکت:', IAM_ADDRESS);
       
-      // ABI کنترکت IAM
+      // ABI کنترکت IAM - کامل برای دریافت قیمت‌های واقعی
       const IAM_ABI = [
         "function getTokenPrice() view returns (uint256)",
-        "function tokenPrice() view returns (uint256)",
-        "function price() view returns (uint256)",
         "function getPointValue() view returns (uint256)",
-        "function pointValue() view returns (uint256)",
+        "function getContractdaiBalance() view returns (uint256)",
+        "function getContractTokenBalance() view returns (uint256)",
+        "function totalClaimablePoints() view returns (uint256)",
         "function balanceOf(address account) view returns (uint256)",
         "function totalSupply() view returns (uint256)",
         "function name() view returns (string)",
         "function symbol() view returns (string)",
-        "function decimals() view returns (uint8)"
+        "function decimals() view returns (uint8)",
+        "event TokensBought(address indexed buyer, uint256 daiAmount, uint256 tokenAmount)",
+        "event TokensSold(address indexed seller, uint256 tokenAmount, uint256 daiAmount)",
+        "event BinaryPoolUpdated(uint256 newPoolSize, uint256 timestamp)",
+        "event PurchaseKind(address indexed user, uint256 amountIAM)",
+        "event Activated(address indexed user, uint256 amountIAM)",
+        "event TokenPriceUpdated(uint256 newPrice, uint256 daiBalance, uint256 tokenSupply, uint256 timestamp)",
+        "event PointValueUpdated(uint256 newPointValue, uint256 totalClaimablePoints, uint256 contractTokenBalance, uint256 timestamp)"
       ];
       
       this.contract = new ethers.Contract(IAM_ADDRESS, IAM_ABI, signer);
       
-      // تست اتصال
-      console.log('🔄 تست اتصال به کنترکت...');
-      const name = await this.contract.name();
-      console.log('✅ نام کنترکت:', name);
-      
-      // تست دریافت قیمت
-      console.log('🔄 تست دریافت قیمت توکن...');
-      const testPrice = await this.contract.getTokenPrice();
-      console.log('✅ قیمت تست:', testPrice.toString());
-      
       console.log('✅ اتصال به کنترکت IAM برقرار شد');
+
+      // Subscribe to price-impacting events (only if events are available)
+      try {
+        this._subscribeToContractEvents();
+      } catch (error) {
+        console.warn('⚠️ Event subscription failed, continuing without events:', error.message);
+      }
       return true;
     } catch (error) {
       console.error('❌ خطا در اتصال به کنترکت:', error);
@@ -121,265 +135,121 @@ class BrowserPriceService {
     }
   }
 
-  // دریافت قیمت واقعی توکن از کنترکت
-  async getRealTokenPrice() {
+  // Subscribe to contract events that may affect price/points
+  _subscribeToContractEvents() {
     try {
-      console.log(`🔄 Starting getRealTokenPrice...`);
-      
+      if (!this.contract) return;
+      const safeEmit = () => {
+        clearTimeout(this._priceEventDebounce);
+        this._priceEventDebounce = setTimeout(async () => {
+          try {
+            if (typeof this.onPriceEvent === 'function') {
+              await this.onPriceEvent();
+            }
+          } catch (e) {
+            console.warn('⚠️ onPriceEvent handler error:', e);
+          }
+        }, 300); // debounce burst of events
+      };
+
+      // Only listen to events that exist in the ABI
+      if (this.contract.on) {
+        try { this.contract.on('TokensBought', (...args) => { console.log('📈 TokensBought', args); safeEmit(); }); } catch {}
+        try { this.contract.on('TokensSold', (...args) => { console.log('📉 TokensSold', args); safeEmit(); }); } catch {}
+        try { this.contract.on('BinaryPoolUpdated', (...args) => { console.log('🏊 BinaryPoolUpdated', args); safeEmit(); }); } catch {}
+        try { this.contract.on('PurchaseKind', (...args) => { console.log('🛒 PurchaseKind', args); safeEmit(); }); } catch {}
+        try { this.contract.on('Activated', (...args) => { console.log('✅ Activated', args); safeEmit(); }); } catch {}
+        try { this.contract.on('TokenPriceUpdated', (...args) => { console.log('💰 TokenPriceUpdated', args); safeEmit(); }); } catch {}
+        try { this.contract.on('PointValueUpdated', (...args) => { console.log('🎯 PointValueUpdated', args); safeEmit(); }); } catch {}
+      }
+    } catch (e) {
+      console.warn('⚠️ Failed to subscribe to contract events:', e);
+    }
+  }
+
+  // دریافت قیمت واقعی پوینت از کنترکت
+  async getRealPointPrice() {
+    try {
       if (!this.contract) {
-        console.log(`🔄 Contract not connected, trying to connect...`);
         await this.connectToContract();
       }
 
       if (!this.contract) {
-        console.log(`❌ Contract still not connected after retry, using mock data`);
-        // Fallback: استفاده از داده‌های نمونه
-        return this.getMockTokenPrice();
+        throw new Error('Contract connection failed');
       }
-      
-      console.log(`✅ Contract connected, getting token price...`);
 
-      // دریافت قیمت توکن از کنترکت
-      console.log('🔍 Attempting to get token price from contract...');
-      let tokenPrice;
+      // دریافت قیمت پوینت از کنترکت
+      const pointPrice = await this.contract.getPointValue();
       
-      try {
-        tokenPrice = await this.contract.getTokenPrice();
-        console.log('✅ getTokenPrice() successful');
-      } catch (error) {
-        console.log('⚠️ getTokenPrice() failed, trying tokenPrice()...');
-        try {
-          tokenPrice = await this.contract.tokenPrice();
-          console.log('✅ tokenPrice() successful');
-        } catch (error2) {
-          console.log('⚠️ tokenPrice() failed, trying price()...');
-          try {
-            tokenPrice = await this.contract.price();
-            console.log('✅ price() successful');
-          } catch (error3) {
-            console.error('❌ All price methods failed:', error3);
-            throw error3;
-          }
-        }
-      }
-      
-      const priceInWei = tokenPrice.toString();
-      
-      // بررسی اینکه آیا قیمت منطقی است
-      const priceValue = Number(tokenPrice);
-      console.log('🔍 Price validation:', {
-        priceValue: priceValue,
-        isReasonable: priceValue > 0 && priceValue < 1e20,
-        expectedRange: '0 < price < 1e20',
-        actualPrice: priceValue,
-        isNaN: isNaN(priceValue)
-      });
-      
-      console.log(`🔍 Raw token price from contract:`, {
-        tokenPrice: tokenPrice.toString(),
-        priceInWei: priceInWei,
-        isBigInt: typeof tokenPrice === 'bigint',
-        contractAddress: this.contractAddress,
-        method: 'getTokenPrice()'
-      });
-      
-      // قیمت از کنترکت به صورت wei می‌آید، باید به ether تبدیل شود
+      const priceInWei = pointPrice.toString();
       const priceInEther = parseFloat(priceInWei) / 1e18;
       
-      // بررسی اینکه آیا قیمت منطقی است (باید حدود 10e-15 باشد)
-      if (priceInEther > 1e-10) {
-        console.error('❌ Price is too high! Expected ~10e-15, got:', priceInEther);
-        console.log('🔍 Price validation failed:', {
-          rawWei: priceInWei,
-          priceInEther: priceInEther,
-          expectedRange: '10e-15 to 1e-12',
-          actualPrice: priceInEther,
-          isReasonable: priceInEther < 1e-10
-        });
-        // استفاده از قیمت ثابت برای تست
-        const fixedPrice = 1.283e-15;
-        console.log('🔧 Using fixed price for testing:', fixedPrice);
-        return this.getMockTokenPrice();
+      // دریافت اطلاعات اضافی
+      const totalClaimablePoints = await this.contract.totalClaimablePoints();
+      const contractTokenBalance = await this.contract.getContractTokenBalance();
+      
+      // بازگشت قیمت واقعی پوینت
+      return {
+        point_value_usd: priceInEther.toString(),
+        point_value_iam: priceInWei,
+        point_type: 'binary_points',
+        total_claimable_points: totalClaimablePoints ? totalClaimablePoints.toString() : '0',
+        contract_token_balance: contractTokenBalance ? contractTokenBalance.toString() : '0',
+        timestamp: new Date().toISOString(),
+        source: 'contract'
+      };
+      
+    } catch (error) {
+      console.error('❌ Error getting real point price:', error);
+      console.error('❌ Error details:', {
+        message: error.message,
+        code: error.code,
+        reason: error.reason
+      });
+      throw new Error('Failed to get point price from contract');
+    }
+  }
+
+  // دریافت قیمت واقعی توکن از کنترکت
+  async getRealTokenPrice() {
+    try {
+      if (!this.contract) {
+        await this.connectToContract();
       }
-      
-      console.log('🔍 Price conversion details:', {
-        rawWei: priceInWei,
-        priceInEther: priceInEther,
-        scientific: priceInEther.toExponential(6),
-        expectedWei: '1283',
-        actualWei: priceInWei,
-        isCorrect: priceInWei === '1283'
-      });
-      
-      // بررسی اینکه آیا قیمت منطقی است (باید حدود 1e-15 باشد)
-      if (priceInEther > 1e-10) {
-        console.warn('⚠️ Price seems too high, checking calculation...');
-        console.log('🔍 Price analysis:', {
-          rawWei: priceInWei,
-          priceInEther: priceInEther,
-          expectedRange: '1e-15 to 1e-12',
-          actualPrice: priceInEther,
-          isReasonable: priceInEther < 1e-10
-        });
+
+      if (!this.contract) {
+        throw new Error('Contract connection failed');
       }
+
+      // دریافت قیمت توکن از کنترکت
+      const tokenPrice = await this.contract.getTokenPrice();
       
-      console.log('🔍 Price conversion:', {
-        priceInWei: priceInWei,
-        priceInEther: priceInEther,
-        scientific: priceInEther.toExponential(6),
-        calculation: `${priceInWei} / 1e18 = ${priceInEther}`
-      });
+      const priceInWei = tokenPrice.toString();
+      const priceInEther = parseFloat(priceInWei) / 1e18;
       
-      console.log(`🔍 Detailed price calculation:`, {
-        tokenPriceWei: tokenPrice.toString(),
-        priceInWei: priceInWei,
-        priceInEther: priceInEther,
-        scientific: priceInEther.toExponential(6),
-        fixed: priceInEther.toFixed(18),
-        calculation: `${priceInWei} / 1e18 = ${priceInEther}`,
-        isCorrect: priceInEther === 1.283e-15
-      });
-      
-      // دریافت اطلاعات اضافی برای دیباگ
+      // دریافت اطلاعات اضافی
       const totalSupply = await this.contract.totalSupply();
       const name = await this.contract.name();
       const symbol = await this.contract.symbol();
       const decimals = await this.contract.decimals();
       
-      console.log(`🔍 Debug - Contract Data:`, {
-        tokenPriceWei: priceInWei,
-        priceInEther: priceInEther,
-        rawValue: tokenPrice.toString(),
-        totalSupply: totalSupply.toString(),
-        totalSupplyFormatted: ethers.formatUnits(totalSupply, 18),
-        name: name,
-        symbol: symbol,
-        decimals: decimals.toString()
-      });
-      
-      // اگر قیمت صفر یا نامعتبر است، از fallback استفاده کن
-      if (priceInEther <= 0 || isNaN(priceInEther)) {
-        console.log(`⚠️ Token price is zero or invalid, using fallback`);
-        return this.getMockTokenPrice();
-      }
-      
-      // قیمت اولیه 10e-15 را در نظر بگیر (ثابت) - این معادل 10000 Wei است
-      const initialPrice = 10e-15; // This equals 10000 Wei
-      const currentPrice = priceInEther; // قیمت از بلاکچین (متغیر)
-      
-      console.log('🔬 Scientific Price System:', {
-        initialPrice: initialPrice.toExponential(6) + ' (10e-15)',
-        blockchainPrice: currentPrice.toExponential(6),
-        priceInWei: priceInWei,
-        explanation: 'قیمت اولیه ثابت 10e-15، قیمت بلاکچین متغیر، ذخیره در دیتابیس برای تاریخچه نمودار'
-      });
-      
-      // محاسبه درصد رشد
-      const priceChangePercent = ((currentPrice - initialPrice) / initialPrice * 100);
-      
-      console.log('🔍 Percentage growth calculation:', {
-        currentPrice: currentPrice,
-        initialPrice: initialPrice,
-        priceChangePercent: priceChangePercent,
-        priceChangePercentFixed2: priceChangePercent.toFixed(2),
-        priceChangePercentFixed4: priceChangePercent.toFixed(4),
-        calculation: `(${currentPrice} - ${initialPrice}) / ${initialPrice} × 100 = ${priceChangePercent}%`,
-        explanation: 'ضربدر 100 برای تبدیل نسبت به درصد است',
-        example: 'نسبت 0.283 × 100 = 28.3%',
-        expectedResult: '28.30% (if current price is 1.283e-15)'
-      });
-      
-      console.log(`✅ Using real token price from blockchain:`, {
-        rawWei: priceInWei,
-        priceInEther: currentPrice,
-        scientific: currentPrice.toExponential(6),
-        initialPrice: initialPrice,
-        currentPrice: currentPrice,
-        priceChange: priceChangePercent.toFixed(2) + '%',
-        calculation: `From ${initialPrice} to ${currentPrice} = ${priceChangePercent.toFixed(2)}% change`,
-        growthAnalysis: {
-          isReasonable: Math.abs(priceChangePercent) < 1000000,
-          expectedRange: '-99% to +1000%',
-          actualChange: priceChangePercent
-        }
-      });
-      
-      // اطلاعات اضافی قبلاً دریافت شده
-      
-      // محاسبه ارزش بازار با قیمت کنونی
-      const marketCap = (parseFloat(currentPrice) * parseFloat(ethers.formatUnits(totalSupply, 18))).toFixed(2);
-      
-      // بررسی نهایی قیمت
-      console.log('🔍 Final price validation:', {
-        rawWei: priceInWei,
-        priceInEther: currentPrice,
-        scientific: currentPrice.toExponential(6),
-        expectedWei: '1283',
-        actualWei: priceInWei,
-        isCorrect: priceInWei === '1283'
-      });
-      
-      // نمایش قیمت به صورت علمی در کارت
-      const scientificPrice = priceInEther.toExponential(2);
-      
-      console.log(`🔍 Price Display:`, {
-        realPrice: priceInEther,
-        scientificPrice: scientificPrice,
-        initialPrice: initialPrice,
-        priceChange: ((priceInEther - initialPrice) / initialPrice * 100).toFixed(2) + '%'
-      });
-      
+      // بازگشت قیمت واقعی
       return {
+        price_usd: priceInEther.toString(),
+        price_wei: priceInWei,
         symbol: symbol,
         name: name,
-        priceUsd: scientificPrice,
-        priceDai: scientificPrice, // فرض می‌کنیم DAI = USD
-        marketCap: marketCap,
-        totalSupply: ethers.formatUnits(totalSupply, 18),
+        total_supply: totalSupply.toString(),
         decimals: decimals.toString(),
-        source: 'contract',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        source: 'contract'
       };
     } catch (error) {
       console.error('❌ خطا در دریافت قیمت توکن:', error);
-      // Fallback: استفاده از داده‌های نمونه
-      return this.getMockTokenPrice();
+      throw new Error('Failed to get token price from contract');
     }
   }
 
-      // داده‌های نمونه برای توکن
-      getMockTokenPrice() {
-        const initialPrice = 10e-15;
-    const currentPrice = 1.283e-15; // قیمت ثابت برای تست
-    const marketCap = 1234567.89;
-    
-    const priceChange = ((currentPrice - initialPrice) / initialPrice * 100);
-    
-    console.log(`🔍 Debug - Mock Token Price:`, {
-      initialPrice: initialPrice,
-      currentPrice: currentPrice,
-      marketCap: marketCap,
-      priceChange: priceChange,
-      priceChangeFixed2: priceChange.toFixed(2),
-      priceChangeFixed4: priceChange.toFixed(4),
-      evolution: `From ${initialPrice} to ${currentPrice} = ${priceChange.toFixed(2)}% change`
-    });
-    
-    // نمایش قیمت به صورت علمی در کارت
-    const scientificPrice = currentPrice.toExponential(2);
-    
-    return {
-      symbol: 'IAM',
-      name: 'IAM Token',
-      priceUsd: scientificPrice,
-      priceDai: scientificPrice,
-      marketCap: marketCap.toFixed(2),
-      totalSupply: '1000000000.000000000000000000',
-      decimals: '18',
-      source: 'mock',
-      timestamp: new Date().toISOString()
-    };
-  }
 
   // دریافت قیمت واقعی پوینت از کنترکت
   async getRealPointPrice(pointType = 'binary_points') {
@@ -389,8 +259,7 @@ class BrowserPriceService {
       }
 
       if (!this.contract) {
-        // Fallback: استفاده از داده‌های نمونه
-        return this.getMockPointPrice(pointType);
+        throw new Error('Contract connection failed');
       }
 
       // دریافت قیمت پوینت مستقیماً از کنترکت getPointValue
@@ -404,10 +273,18 @@ class BrowserPriceService {
         pointType: pointType
       });
       
-      // اگر مقدار صفر یا نامعتبر است، از fallback استفاده کن
+      // اگر مقدار صفر است، داده‌های صفر برگردان
       if (pointValueInIam <= 0 || isNaN(pointValueInIam)) {
-        console.log(`⚠️ Point value is zero or invalid, using fallback`);
-        return this.getMockPointPrice(pointType);
+        console.log(`⚠️ Point value is zero from contract`);
+        return {
+          point_value_usd: '0',
+          point_value_iam: '0',
+          point_type: 'binary_points',
+          total_claimable_points: '0',
+          contract_token_balance: '0',
+          timestamp: new Date().toISOString(),
+          source: 'contract'
+        };
       }
       
       // دریافت قیمت توکن برای تبدیل به دلار
@@ -453,7 +330,7 @@ class BrowserPriceService {
     } catch (error) {
       console.error('❌ خطا در دریافت قیمت پوینت:', error);
       // Fallback: استفاده از داده‌های نمونه
-      return this.getMockPointPrice(pointType);
+      throw new Error('Failed to get point price from contract');
     }
   }
 
@@ -473,12 +350,28 @@ class BrowserPriceService {
         });
         return realPrice;
       } else {
-        console.log(`⚠️ استفاده از داده‌های نمونه برای: ${pointType}`);
-        return this.getMockPointPrice(pointType);
+        console.log(`⚠️ Point price is zero from contract`);
+        return {
+          point_value_usd: '0',
+          point_value_iam: '0',
+          point_type: 'binary_points',
+          total_claimable_points: '0',
+          contract_token_balance: '0',
+          timestamp: new Date().toISOString(),
+          source: 'contract'
+        };
       }
     } catch (error) {
       console.error(`❌ خطا در دریافت ارزش پوینت ${pointType}:`, error);
-      return this.getMockPointPrice(pointType);
+      return {
+        point_value_usd: '0',
+        point_value_iam: '0',
+        point_type: 'binary_points',
+        total_claimable_points: '0',
+        contract_token_balance: '0',
+        timestamp: new Date().toISOString(),
+        source: 'contract'
+      };
     }
   }
 
@@ -494,18 +387,36 @@ class BrowserPriceService {
         console.log(`✅ قیمت توکن واقعی دریافت شد:`, {
           symbol: realPrice.symbol,
           name: realPrice.name,
-          priceUSD: realPrice.priceUsd,
+          priceUSD: realPrice.price_usd,
           marketCap: realPrice.marketCap,
-          totalSupply: realPrice.totalSupply
+          totalSupply: realPrice.total_supply
         });
         return realPrice;
       } else {
-        console.log(`⚠️ استفاده از داده‌های نمونه برای: ${symbol}`);
-        return this.getMockTokenPrice();
+        console.log(`⚠️ Token price is zero from contract`);
+        return {
+          price_usd: '0',
+          price_wei: '0',
+          symbol: 'IAM',
+          name: 'IAM Token',
+          total_supply: '0',
+          decimals: '18',
+          timestamp: new Date().toISOString(),
+          source: 'contract'
+        };
       }
     } catch (error) {
       console.error(`❌ خطا در دریافت قیمت توکن ${symbol}:`, error);
-      return this.getMockTokenPrice();
+      return {
+        price_usd: '0',
+        price_wei: '0',
+        symbol: 'IAM',
+        name: 'IAM Token',
+        total_supply: '0',
+        decimals: '18',
+        timestamp: new Date().toISOString(),
+        source: 'contract'
+      };
     }
   }
 
@@ -766,42 +677,6 @@ class BrowserPriceService {
     }
   }
 
-  // داده‌های نمونه برای پوینت‌ها
-  getMockPointPrice(pointType) {
-    // قیمت اولیه 10e-15
-    const initialPrice = 10e-15;
-    const currentPrice = initialPrice + (Math.random() * 0.0001); // تغییر کوچک از قیمت اولیه
-    
-    const pointValueIam = pointType === 'binary_points' ? 0.1 : 
-                         pointType === 'referral_points' ? 0.05 : 0.2;
-    
-    // شبیه‌سازی قیمت توکن برای تبدیل به دلار
-    const mockTokenPrice = 1.283e-15; // قیمت واقعی توکن از کنترکت
-    const pointValueInUsd = (pointValueIam * mockTokenPrice).toFixed(2);
-    
-    // اطمینان از اینکه قیمت صفر نباشد
-    const finalPointValueUsd = parseFloat(pointValueInUsd) > 0 ? pointValueInUsd : '15.63';
-    
-    console.log(`🔍 Debug - Mock Point Price (${pointType}):`, {
-      initialPrice: initialPrice,
-      currentPrice: currentPrice,
-      pointValueIam: pointValueIam,
-      mockTokenPrice: mockTokenPrice,
-      pointValueInUsd: pointValueInUsd,
-      calculation: `${pointValueIam} IAM * ${mockTokenPrice} ETH = ${pointValueInUsd} USD`,
-      priceChange: ((currentPrice - initialPrice) / initialPrice * 100).toFixed(2) + '%',
-      evolution: `From ${initialPrice} to ${currentPrice} = ${((currentPrice - initialPrice) / initialPrice * 100).toFixed(2)}% change`
-    });
-    
-    return {
-      pointType: pointType,
-      pointValue: finalPointValueUsd,
-      pointValueUsd: finalPointValueUsd,
-      pointValueIam: pointValueIam.toFixed(2),
-      source: 'mock',
-      timestamp: new Date().toISOString()
-    };
-  }
 
   // ذخیره قیمت توکن (اولویت: Neon، سپس localStorage)
   async saveTokenPriceToStorage(tokenData) {
@@ -809,11 +684,11 @@ class BrowserPriceService {
       // تبدیل BigInt به string قبل از JSON.stringify
       const serializableData = {
         ...tokenData,
-        priceUsd: tokenData.priceUsd.toString(),
-        priceDai: tokenData.priceDai.toString(),
-        marketCap: tokenData.marketCap.toString(),
-        totalSupply: tokenData.totalSupply.toString(),
-        decimals: tokenData.decimals.toString()
+        priceUsd: tokenData.priceUsd ? tokenData.priceUsd.toString() : '0',
+        priceDai: tokenData.priceDai ? tokenData.priceDai.toString() : '0',
+        marketCap: tokenData.marketCap ? tokenData.marketCap.toString() : '0',
+        totalSupply: tokenData.totalSupply ? tokenData.totalSupply.toString() : '0',
+        decimals: tokenData.decimals ? tokenData.decimals.toString() : '18'
       };
       
       // اولویت اول: ذخیره در دیتابیس Neon
@@ -838,6 +713,27 @@ class BrowserPriceService {
       }
       
       console.log('✅ قیمت توکن در localStorage ذخیره شد');
+      
+      // Save to history for charts
+      try {
+        const history = JSON.parse(localStorage.getItem('token_price_history') || '[]');
+        const newEntry = {
+          price: parseFloat(tokenData.price_usd),
+          timestamp: new Date().toISOString()
+        };
+        history.push(newEntry);
+        
+        // Keep only last 100 entries
+        if (history.length > 100) {
+          history.splice(0, history.length - 100);
+        }
+        
+        localStorage.setItem('token_price_history', JSON.stringify(history));
+        console.log('📊 Token price saved to history:', parseFloat(tokenData.price_usd));
+      } catch (error) {
+        console.warn('⚠️ Could not save token price to history:', error.message);
+      }
+      
       return tokenData;
     } catch (error) {
       console.error('❌ خطا در ذخیره قیمت توکن:', error);
@@ -851,9 +747,9 @@ class BrowserPriceService {
       // تبدیل BigInt به string قبل از JSON.stringify
       const serializableData = {
         ...pointData,
-        pointValue: pointData.pointValue.toString(),
-        pointValueUsd: pointData.pointValueUsd.toString(),
-        pointValueIam: pointData.pointValueIam.toString()
+        pointValue: pointData.pointValue ? pointData.pointValue.toString() : '0',
+        pointValueUsd: pointData.pointValueUsd ? pointData.pointValueUsd.toString() : '0',
+        pointValueIam: pointData.pointValueIam ? pointData.pointValueIam.toString() : '0'
       };
       
       // اولویت اول: ذخیره در دیتابیس Neon
@@ -877,7 +773,7 @@ class BrowserPriceService {
         keys.sort().slice(0, keys.length - 100).forEach(k => localStorage.removeItem(k));
       }
       
-      console.log(`✅ قیمت ${pointData.pointType} در localStorage ذخیره شد`);
+      console.log(`✅ قیمت ${pointData.pointType || 'binary_points'} در localStorage ذخیره شد`);
       return pointData;
     } catch (error) {
       console.error('❌ خطا در ذخیره قیمت پوینت:', error);
@@ -1163,7 +1059,7 @@ class BrowserPriceService {
   }
 
   // شروع به‌روزرسانی خودکار (لحظه‌ای)
-  startAutoUpdate(intervalMinutes = 1) {
+  startAutoUpdate(intervalMinutes = 5) {
     console.log(`🔄 شروع به‌روزرسانی لحظه‌ای هر ${intervalMinutes} دقیقه`);
     
     // پاک کردن interval قبلی

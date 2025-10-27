@@ -104,14 +104,14 @@ async function getUserTree(userAddress) {
         }
         
         const { contract } = connection;
-        const [left, right, activated, binaryPoints, binaryPointCap] = await contract.getUserTree(userAddress);
+        const [left, right, binaryPoints, binaryPointCap, refclimed] = await contract.getUserTree(userAddress);
         
         return {
             left,
             right,
-            activated,
             binaryPoints: ethers.formatUnits(binaryPoints, 18),
-            binaryPointCap: parseInt(ethers.formatUnits(binaryPointCap, 18))
+            binaryPointCap: parseInt(ethers.formatUnits(binaryPointCap, 18)),
+            refclimed: ethers.formatUnits(refclimed, 18)
         };
     } catch (error) {
         console.error('Web3: Error getting user tree:', error);

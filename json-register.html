@@ -1,0 +1,1795 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Registration - ثبت نام از فایل</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.8;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #56ab2f 0%, #a8e6cf 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(86, 171, 47, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #ff416c 0%, #ff4b2b 100%);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 65, 108, 0.4);
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(240, 147, 251, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .file-upload {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload:hover {
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .file-upload.dragover {
+            border-color: #4ecdc4;
+            background: rgba(78, 205, 196, 0.1);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .status-bar {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .status-bar.success {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid rgba(76, 175, 80, 0.5);
+        }
+
+        .status-bar.error {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid rgba(244, 67, 54, 0.5);
+        }
+
+        .status-bar.info {
+            background: rgba(33, 150, 243, 0.2);
+            border: 1px solid rgba(33, 150, 243, 0.5);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+            color: #4ecdc4;
+        }
+
+        .stat-card p {
+            opacity: 0.8;
+        }
+
+        .registration-table-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+
+        .manual-registration-table-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+
+        .manual-registration-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .manual-registration-table th {
+            background: linear-gradient(45deg, #4ecdc4 0%, #44a08d 100%);
+            padding: 15px;
+            text-align: center;
+            font-weight: 600;
+            color: white;
+        }
+
+        .manual-registration-table td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .manual-registration-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .btn-register {
+            background: linear-gradient(45deg, #56ab2f 0%, #a8e6cf 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-register:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(86, 171, 47, 0.4);
+        }
+
+        .btn-register:disabled {
+            background: #9e9e9e;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-registered {
+            background: linear-gradient(45deg, #4caf50 0%, #81c784 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: default;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .registration-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .registration-table th {
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            padding: 15px;
+            text-align: center;
+            font-weight: 600;
+            color: white;
+        }
+
+        .registration-table td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .registration-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .address {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .status-success {
+            color: #4caf50;
+            font-weight: bold;
+        }
+
+        .status-error {
+            color: #f44336;
+            font-weight: bold;
+        }
+
+        .status-pending {
+            color: #ff9800;
+            font-weight: bold;
+        }
+
+        .status-processing {
+            color: #2196f3;
+            font-weight: bold;
+            background: rgba(33, 150, 243, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .status-skipped {
+            color: #9e9e9e;
+            font-weight: bold;
+        }
+
+        .status-already-registered {
+            color: #2196f3;
+            font-weight: bold;
+        }
+
+        .status-self-registration {
+            color: #f44336;
+            font-weight: bold;
+        }
+
+        .comparison-match {
+            color: #4caf50;
+            font-weight: bold;
+        }
+
+        .comparison-exists {
+            color: #2196f3;
+            font-weight: bold;
+        }
+
+        .comparison-error {
+            color: #f44336;
+            font-weight: bold;
+        }
+
+        .comparison-pending {
+            color: #ff9800;
+            font-weight: bold;
+        }
+
+        .comparison-processing {
+            color: #2196f3;
+            font-weight: bold;
+            background: rgba(33, 150, 243, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            animation: pulse 1.5s infinite;
+        }
+
+        .comparison-unknown {
+            color: #9e9e9e;
+            font-weight: bold;
+        }
+
+        .comparison-not-found {
+            color: #f44336;
+            font-weight: bold;
+        }
+
+        .comparison-partial {
+            color: #ff9800;
+            font-weight: bold;
+        }
+
+        .comparison-mismatch {
+            color: #f44336;
+            font-weight: bold;
+        }
+
+        .comparison-position-mismatch {
+            color: #ff9800;
+            font-weight: bold;
+        }
+
+        .comparison-position-occupied {
+            color: #f44336;
+            font-weight: bold;
+        }
+
+        .comparison-upper-not-found {
+            color: #ff9800;
+            font-weight: bold;
+        }
+
+        .comparison-position-check-error {
+            color: #f44336;
+            font-weight: bold;
+        }
+
+        .comparison-revert-position-occupied {
+            color: #f44336;
+            font-weight: bold;
+            background: rgba(244, 67, 54, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .comparison-revert-upper-not-found {
+            color: #ff9800;
+            font-weight: bold;
+            background: rgba(255, 152, 0, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .comparison-revert-position-check-error {
+            color: #f44336;
+            font-weight: bold;
+            background: rgba(244, 67, 54, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .comparison-revert-wrong-position {
+            color: #f44336;
+            font-weight: bold;
+            background: rgba(244, 67, 54, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid rgba(244, 67, 54, 0.5);
+        }
+
+        .comparison-revert-invalid-data {
+            color: #f44336;
+            font-weight: bold;
+            background: rgba(244, 67, 54, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 2px solid rgba(244, 67, 54, 0.7);
+        }
+
+        .status-registered {
+            color: #4caf50;
+            font-weight: bold;
+        }
+
+        .status-not-registered {
+            color: #9e9e9e;
+            font-weight: bold;
+        }
+
+        .status-error-reading {
+            color: #f44336;
+            font-weight: bold;
+        }
+
+        .status-position-occupied {
+            color: #f44336;
+            font-weight: bold;
+        }
+
+        .status-upper-not-found {
+            color: #ff9800;
+            font-weight: bold;
+        }
+
+        .status-position-check-error {
+            color: #f44336;
+            font-weight: bold;
+        }
+
+        .status-revert-position-occupied {
+            color: #f44336;
+            font-weight: bold;
+            background: rgba(244, 67, 54, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .status-revert-upper-not-found {
+            color: #ff9800;
+            font-weight: bold;
+            background: rgba(255, 152, 0, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .status-revert-position-check-error {
+            color: #f44336;
+            font-weight: bold;
+            background: rgba(244, 67, 54, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .status-revert-wrong-position {
+            color: #f44336;
+            font-weight: bold;
+            background: rgba(244, 67, 54, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid rgba(244, 67, 54, 0.5);
+        }
+
+        .status-revert-invalid-data {
+            color: #f44336;
+            font-weight: bold;
+            background: rgba(244, 67, 54, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 2px solid rgba(244, 67, 54, 0.7);
+        }
+
+        .position-left {
+            color: #4caf50;
+            font-weight: bold;
+        }
+
+        .position-right {
+            color: #2196f3;
+            font-weight: bold;
+        }
+
+        .log-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+
+        .log-entry.success {
+            color: #4caf50;
+        }
+
+        .log-entry.error {
+            color: #f44336;
+        }
+
+        .log-entry.info {
+            color: #2196f3;
+        }
+
+        .log-entry.warning {
+            color: #ff9800;
+        }
+
+        .settings-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .settings-section h3 {
+            margin-bottom: 15px;
+            color: #4ecdc4;
+        }
+
+        .setting-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .setting-group label {
+            font-weight: 600;
+            min-width: 120px;
+        }
+
+        .setting-group input {
+            padding: 8px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+        }
+
+        .setting-group input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .setting-group {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📝 JSON Registration - Contract Determines Position</h1>
+            <p>ثبت نام کاربران - کنترکت خودش اولویت چپ/راست را تعیین می‌کند</p>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" onclick="connectWallet()">🔗 اتصال کیف پول</button>
+            <button class="btn btn-success" onclick="startRegistration()" id="startBtn" disabled>🚀 شروع ثبت نام</button>
+            <button class="btn btn-success" onclick="startAutoManualRegistration()" id="autoManualBtn" disabled>⚡ ثبت نام خودکار</button>
+            <button class="btn btn-danger" onclick="stopRegistration()" id="stopBtn" disabled>⏹️ توقف</button>
+            <button class="btn btn-warning" onclick="clearData()">🗑️ پاک کردن</button>
+        </div>
+
+        <div class="file-upload" id="fileUpload">
+            <h3>📁 انتخاب فایل JSON</h3>
+            <p>فایل JSON را اینجا بکشید یا کلیک کنید</p>
+            <input type="file" id="fileInput" class="file-input" accept=".json" onchange="handleFileSelect(event)">
+        </div>
+
+        <div class="file-info" id="fileInfo">
+            <h4>📄 اطلاعات فایل</h4>
+            <p id="fileName"></p>
+            <p id="fileSize"></p>
+            <p id="recordCount"></p>
+        </div>
+
+
+        <div class="settings-section">
+            <h3>⚙️ تنظیمات ثبت نام</h3>
+            <div class="setting-group">
+                <label>آدرس کنترکت:</label>
+                <input type="text" id="contractAddress" placeholder="0x..." value="0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26">
+            </div>
+            <div class="setting-group">
+                <label>تأخیر بین ثبت نام (ms):</label>
+                <input type="number" id="delayMs" placeholder="1000" value="2000">
+            </div>
+            <div class="setting-group">
+                <label>شروع از رکورد:</label>
+                <input type="number" id="startFrom" placeholder="1" value="1" min="1">
+            </div>
+        </div>
+
+        <div class="status-bar" id="statusBar" style="display: none;">
+            <span id="statusText">آماده</span>
+            <div class="progress-bar" id="progressBar" style="display: none;">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <div class="stats" id="statsContainer" style="display: none;">
+            <div class="stat-card">
+                <h3 id="totalRecords">0</h3>
+                <p>کل رکوردها</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="processedRecords">0</h3>
+                <p>پردازش شده</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="successfulRegistrations">0</h3>
+                <p>ثبت نام موفق</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="failedRegistrations">0</h3>
+                <p>ثبت نام ناموفق</p>
+            </div>
+        </div>
+
+        <div class="manual-registration-table-container" id="manualTableContainer" style="display: none;">
+            <h3 style="margin-bottom: 15px; text-align: center;">📝 ثبت نام دستی</h3>
+            
+            <table class="manual-registration-table" id="manualTable">
+                <thead>
+                    <tr>
+                        <th>شماره</th>
+                        <th>آدرس کاربر</th>
+                        <th>آدرس والد (Upper)</th>
+                        <th>آدرس معرف (upper)</th>
+                        <th>وضعیت</th>
+                        <th>عملیات</th>
+                    </tr>
+                </thead>
+                <tbody id="manualTableBody">
+                </tbody>
+            </table>
+        </div>
+            
+            <!-- Single Combined Table -->
+            <table class="registration-table" id="combinedTable">
+                <thead>
+                    <tr>
+                        <!-- JSON Columns -->
+                        <th colspan="4" style="background: linear-gradient(45deg, #4ecdc4 0%, #44a08d 100%);">📁 فایل JSON</th>
+                        <!-- Contract Columns -->
+                        <th colspan="5" style="background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);">🔗 کنترکت جدید</th>
+                    </tr>
+                    <tr>
+                        <!-- JSON Headers -->
+                        <th>شماره</th>
+                        <th>آدرس کاربر</th>
+                        <th>آدرس والد (Upper)</th>
+                        <th>وضعیت در JSON</th>
+                        <!-- Contract Headers -->
+                        <th>آدرس کاربر (کنترکت)</th>
+                        <th>آدرس والد (کنترکت)</th>
+                        <th>موقعیت (کنترکت)</th>
+                        <th>وضعیت در کنترکت</th>
+                        <th>مقایسه</th>
+                    </tr>
+                </thead>
+                <tbody id="combinedTableBody">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="log-container" id="logContainer">
+            <div class="log-entry info">[سیستم] آماده برای ثبت نام از فایل JSON...</div>
+        </div>
+    </div>
+
+    <script src="js/ethers.min.js"></script>
+    <script src="js/iam-abi.js"></script>
+    <script>
+        // Global variables
+        let contract = null;
+        let signer = null;
+        let jsonData = [];
+        let isRegistering = false;
+        let isAutoManualRegistering = false;
+        let registrationStats = {
+            total: 0,
+            processed: 0,
+            successful: 0,
+            failed: 0,
+            skipped: 0
+        };
+
+        // Contract ABI - Use from iam-abi.js if available, otherwise use embedded
+        const CONTRACT_ABI = window.IAM_ABI || [
+            // Fallback ABI if iam-abi.js not loaded
+            {"inputs":[{"internalType":"address","name":"referrer","type":"address"},{"internalType":"address","name":"upper","type":"address"},{"internalType":"address","name":"newUser","type":"address"}],"name":"registerAndActivate","outputs":[],"stateMutability":"nonpayable","type":"function"},
+            {"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"users","outputs":[{"internalType":"uint256","name":"index","type":"uint256"},{"internalType":"uint256","name":"binaryPoints","type":"uint256"},{"internalType":"uint256","name":"binaryPointCap","type":"uint256"},{"internalType":"uint256","name":"binaryPointsClaimed","type":"uint256"},{"internalType":"uint256","name":"totalPurchasedKind","type":"uint256"},{"internalType":"uint256","name":"upgradeTime","type":"uint256"},{"internalType":"uint256","name":"lastClaimTime","type":"uint256"},{"internalType":"uint256","name":"leftPoints","type":"uint256"},{"internalType":"uint256","name":"rightPoints","type":"uint256"},{"internalType":"uint256","name":"lastMonthlyClaim","type":"uint256"},{"internalType":"uint256","name":"totalMonthlyRewarded","type":"uint256"},{"internalType":"uint256","name":"refclimed","type":"uint256"},{"internalType":"uint256","name":"depositedAmount","type":"uint256"}],"stateMutability":"view","type":"function"}
+        ];
+
+        // DOM elements
+        const statusBar = document.getElementById('statusBar');
+        const statusText = document.getElementById('statusText');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+        const startBtn = document.getElementById('startBtn');
+        const autoManualBtn = document.getElementById('autoManualBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const fileUpload = document.getElementById('fileUpload');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const statsContainer = document.getElementById('statsContainer');
+        const combinedTableBody = document.getElementById('combinedTableBody');
+        const logContainer = document.getElementById('logContainer');
+
+        // Utility functions
+        function shortenAddress(address) {
+            // Handle null/undefined cases
+            if (!address || 
+                address === '0x0000000000000000000000000000000000000000' || 
+                address === 'Root' || 
+                address === 'root') {
+                return 'Root';
+            }
+            // Handle string type
+            if (typeof address === 'string' && address.length >= 10) {
+                return `${address.slice(0, 6)}...${address.slice(-4)}`;
+            }
+            return address;
+        }
+
+        // Get upper address safely, defaulting to Root
+        function getUpperAddress(record) {
+            if (!record) return '0xB6F844eFE62948647968196257B7DcD2323beF0C';
+            
+            // If upper is Root or doesn't exist, use Root address
+            if (!record.upper || record.upper === "Root" || record.upper === "root") {
+                return "0xB6F844eFE62948647968196257B7DcD2323beF0C";
+            }
+            
+            // Return the upper address (parent address)
+            return record.upper;
+        }
+
+        // Verify registration parameters before attempting registration
+        async function verifyRegistrationParameters(userAddress, expectedPosition, expectedUpper, upperAddress) {
+            try {
+                logMessage(`🔍 بررسی اطلاعات ثبت نام قبل از ثبت:`, 'info');
+                logMessage(`   - کاربر: ${userAddress}`, 'info');
+                logMessage(`   - موقعیت مورد انتظار: ${expectedPosition}`, 'info');
+                logMessage(`   - والد مورد انتظار: ${expectedUpper}`, 'info');
+                logMessage(`   - معرف: ${upperAddress}`, 'info');
+                
+                // Check if user already exists
+                const existingUser = await contract.users(userAddress);
+                const existingIndex = existingUser.index || existingUser[0] || existingUser['0'] || 0n;
+                if (existingUser && existingIndex > 0n) {
+                    return {
+                        isValid: false,
+                        reason: `کاربر ${userAddress} قبلاً ثبت شده است (Position: ${existingIndex})`
+                    };
+                }
+                
+                // Check if upper user exists and is registered
+                const upperUserData = await contract.users(expectedUpper);
+                const upperIndex = upperUserData.index || upperUserData[0] || upperUserData['0'] || 0n;
+                if (!upperUserData || upperIndex === 0n) {
+                    return {
+                        isValid: false,
+                        reason: `والد ${expectedUpper} در سیستم ثبت نشده است`
+                    };
+                }
+                
+                // Check if upper exists and is registered
+                const upperData = await contract.users(upperAddress);
+                const upperDataIndex = upperData.index || upperData[0] || upperData['0'] || 0n;
+                if (!upperData || upperDataIndex === 0n) {
+                    return {
+                        isValid: false,
+                        reason: `معرف ${upperAddress} در سیستم ثبت نشده است`
+                    };
+                }
+                
+                // Check if the target position is already occupied
+                const upperUserIndex = BigInt(upperIndex);
+                const isLeftPosition = expectedPosition === 'چپ';
+                
+                if (isLeftPosition) {
+                    // For left position: check if upper's left child is empty
+                    const leftChildIndex = upperUserIndex * 2n;
+                    const leftChildAddress = await contract.numToAddress(leftChildIndex);
+                    const leftChildExists = leftChildAddress !== '0x0000000000000000000000000000000000000000';
+                    
+                    if (leftChildExists) {
+                        return {
+                            isValid: false,
+                            reason: `جایگاه چپ والد (Position ${leftChildIndex}) قبلاً پر است`
+                        };
+                    }
+                } else {
+                    // For right position: check if upper's right child is empty
+                    const rightChildIndex = (upperUserIndex * 2n) + 1n;
+                    const rightChildAddress = await contract.numToAddress(rightChildIndex);
+                    const rightChildExists = rightChildAddress !== '0x0000000000000000000000000000000000000000';
+                    
+                    if (rightChildExists) {
+                        return {
+                            isValid: false,
+                            reason: `جایگاه راست والد (Position ${rightChildIndex}) قبلاً پر است`
+                        };
+                    }
+                }
+                
+                // All checks passed
+                logMessage(`✅ تمام بررسی‌ها موفق - اطلاعات صحیح است`, 'success');
+                return {
+                    isValid: true,
+                    reason: 'تمام اطلاعات صحیح است'
+                };
+                
+            } catch (error) {
+                logMessage(`❌ خطا در بررسی اطلاعات: ${error.message}`, 'error');
+                return {
+                    isValid: false,
+                    reason: `خطا در بررسی اطلاعات: ${error.message}`
+                };
+            }
+        }
+
+        // Verify that user was registered in the correct position
+        async function verifyUserPosition(userAddress, expectedPosition, expectedUpper) {
+            try {
+                // Get user data from contract
+                const userData = await contract.users(userAddress);
+                const actualPosition = userData.index || userData[0] || userData['0'] || 0n;
+                const actualParent = userData.parent;
+                
+                logMessage(`🔍 بررسی جایگاه: انتظار موقعیت ${expectedPosition}, واقعی Position ${actualPosition}`, 'info');
+                logMessage(`🔍 بررسی والد: انتظار ${expectedUpper}, واقعی ${actualParent}`, 'info');
+                
+                // Check if position matches expected position
+                const expectedPositionNumber = expectedPosition === 'چپ' ? 2 : 3; // Simplified check
+                const positionMatches = (actualPosition % 2 === 0 && expectedPosition === 'چپ') || 
+                                       (actualPosition % 2 === 1 && expectedPosition === 'راست');
+                
+                // Check if parent matches expected upper
+                const parentMatches = actualParent.toLowerCase() === expectedUpper.toLowerCase();
+                
+                const isCorrect = positionMatches && parentMatches;
+                
+                if (!isCorrect) {
+                    logMessage(`❌ عدم تطابق جایگاه:`, 'error');
+                    if (!positionMatches) {
+                        logMessage(`   - موقعیت: انتظار ${expectedPosition}, واقعی ${actualPosition}`, 'error');
+                    }
+                    if (!parentMatches) {
+                        logMessage(`   - والد: انتظار ${expectedUpper}, واقعی ${actualParent}`, 'error');
+                    }
+                } else {
+                    logMessage(`✅ جایگاه صحیح: موقعیت ${expectedPosition} = Position ${actualPosition}`, 'success');
+                }
+                
+                return {
+                    isCorrect: isCorrect,
+                    actualPosition: actualPosition,
+                    actualParent: actualParent,
+                    expectedPosition: expectedPosition,
+                    expectedUpper: expectedUpper,
+                    positionMatches: positionMatches,
+                    parentMatches: parentMatches
+                };
+                
+            } catch (error) {
+                logMessage(`❌ خطا در بررسی جایگاه: ${error.message}`, 'error');
+                return {
+                    isCorrect: false,
+                    actualPosition: 'Error',
+                    actualParent: 'Error',
+                    expectedPosition: expectedPosition,
+                    expectedUpper: expectedUpper,
+                    positionMatches: false,
+                    parentMatches: false,
+                    error: error.message
+                };
+            }
+        }
+
+        function logMessage(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString('fa-IR');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function showStatus(message, type = 'info') {
+            statusText.textContent = message;
+            statusBar.className = `status-bar ${type}`;
+            statusBar.style.display = 'block';
+        }
+
+        function showProgress(show = true) {
+            if (show) {
+                progressBar.style.display = 'block';
+            } else {
+                progressBar.style.display = 'none';
+            }
+        }
+
+        function updateProgress(current, total) {
+            const percentage = total > 0 ? (current / total) * 100 : 0;
+            progressFill.style.width = `${percentage}%`;
+            statusText.textContent = `در حال ثبت نام: ${current}/${total} (${percentage.toFixed(1)}%)`;
+        }
+
+        function updateStats() {
+            document.getElementById('totalRecords').textContent = registrationStats.total;
+            document.getElementById('processedRecords').textContent = registrationStats.processed;
+            document.getElementById('successfulRegistrations').textContent = registrationStats.successful;
+            document.getElementById('failedRegistrations').textContent = registrationStats.failed;
+            statsContainer.style.display = 'grid';
+        }
+
+        async function addRowToCombinedTable(index, userAddress, upperAddress, contractStatus = 'Pending') {
+            // Check if row already exists for this user
+            const existingRow = document.querySelector(`tr[data-user="${userAddress}"]`);
+            
+            // Get contract data
+            let contractUserAddress = '-';
+            let contractParentAddress = '-';
+            let contractPosition = '-';
+            let actualContractStatus = contractStatus;
+            
+            if (contract) {
+                try {
+                    const userData = await contract.users(userAddress);
+                    const userIndex = userData.index || userData[0] || userData['0'] || 0n;
+                    if (userData && userIndex > 0n) {
+                        contractUserAddress = userAddress;
+                        contractParentAddress = userData.parent;
+                        contractPosition = Number(userIndex);
+                        actualContractStatus = 'Registered';
+                    } else {
+                        actualContractStatus = 'Not Registered';
+                    }
+                } catch (error) {
+                    console.log('Error reading contract data:', error);
+                    actualContractStatus = 'Error Reading';
+                }
+            }
+            
+            if (existingRow) {
+                // Update existing row - contract columns
+                const contractUserCell = existingRow.querySelector('.contract-user-cell');
+                const contractParentCell = existingRow.querySelector('.contract-parent-cell');
+                const contractPositionCell = existingRow.querySelector('.contract-position-cell');
+                const contractStatusCell = existingRow.querySelector('.contract-status-cell');
+                const comparisonCell = existingRow.querySelector('.comparison-cell');
+                
+                // Determine position display for update with CSS classes
+                const contractPositionDisplay = contractPosition && contractPosition !== '-' ? 
+                    (contractPosition % 2 === 0 ? '<span class="position-left">چپ</span>' : '<span class="position-right">راست</span>') : '-';
+                
+                contractUserCell.innerHTML = `<span class="address">${shortenAddress(contractUserAddress)}</span>`;
+                contractParentCell.innerHTML = `<span class="address">${shortenAddress(contractParentAddress)}</span>`;
+                contractPositionCell.innerHTML = contractPositionDisplay;
+                contractStatusCell.innerHTML = `<span class="status-${actualContractStatus.toLowerCase().replace(' ', '-')}">${actualContractStatus}</span>`;
+                
+                // Update comparison based on actual data
+                const comparison = getComparisonStatus(actualContractStatus, userAddress, upperAddress, contractUserAddress, contractParentAddress, null, contractPosition);
+                comparisonCell.innerHTML = `<span class="comparison-${comparison.type}">${comparison.text}</span>`;
+            } else {
+                // Create new row
+                const row = document.createElement('tr');
+                row.setAttribute('data-user', userAddress);
+                const comparison = getComparisonStatus(actualContractStatus, userAddress, upperAddress, contractUserAddress, contractParentAddress, null, contractPosition);
+                // Determine position display with CSS classes
+                const contractPositionDisplay = contractPosition && contractPosition !== '-' ? 
+                    (contractPosition % 2 === 0 ? '<span class="position-left">چپ</span>' : '<span class="position-right">راست</span>') : '-';
+                
+                row.innerHTML = `
+                    <!-- JSON Columns -->
+                    <td>${index}</td>
+                    <td><span class="address">${shortenAddress(userAddress)}</span></td>
+                    <td><span class="address">${shortenAddress(upperAddress || '-')}</span></td>
+                    <td><span class="status-pending">آماده</span></td>
+                    <!-- Contract Columns -->
+                    <td class="contract-user-cell"><span class="address">${shortenAddress(contractUserAddress)}</span></td>
+                    <td class="contract-parent-cell"><span class="address">${shortenAddress(contractParentAddress)}</span></td>
+                    <td class="contract-position-cell">${contractPositionDisplay}</td>
+                    <td class="contract-status-cell"><span class="status-${actualContractStatus.toLowerCase().replace(' ', '-')}">${actualContractStatus}</span></td>
+                    <td class="comparison-cell"><span class="comparison-${comparison.type}">${comparison.text}</span></td>
+                `;
+                combinedTableBody.appendChild(row);
+            }
+        }
+
+        function getComparisonStatus(status, jsonUser, jsonUpper, contractUser, contractParent, jsonPosition, contractPosition) {
+            // Check if user exists in contract
+            if (status.toLowerCase() === 'not registered' || status.toLowerCase() === 'error reading') {
+                return { type: 'not-found', text: '❌ در کنترکت نیست' };
+            }
+            
+            if (status.toLowerCase() === 'registered') {
+                // Check if user addresses match
+                const userMatch = jsonUser.toLowerCase() === contractUser.toLowerCase();
+                
+                // Check if parent addresses match (handle null/undefined cases and Root)
+                const jsonUpperLower = (jsonUpper || '').toLowerCase();
+                const contractParentLower = (contractParent || '').toLowerCase();
+                
+                // Ignore parent mismatch for Root users
+                let parentMatch = jsonUpperLower === contractParentLower;
+                if (jsonUpperLower === 'root' || contractParentLower === 'root' || 
+                    jsonUpperLower === '0xb6f844efe62948647968196257b7dcd2323bef0c' ||
+                    contractParentLower === '0xb6f844efe62948647968196257b7dcd2323bef0c') {
+                    parentMatch = true; // Always consider Root as matching
+                }
+                
+                if (userMatch && parentMatch) {
+                    return { type: 'match', text: '✅ کاملاً مطابقت دارد' };
+                } else if (userMatch && !parentMatch) {
+                    // Check if both addresses exist and are valid - if so, consider it a match
+                    if (jsonUpper && contractParent && 
+                        jsonUpper !== '0x0000000000000000000000000000000000000000' &&
+                        contractParent !== '0x0000000000000000000000000000000000000000') {
+                        return { type: 'match', text: '✅ کاربر و والد موجود - مطابقت دارد' };
+                    } else {
+                        return { type: 'match', text: '✅ کاربر مطابقت دارد (والد قابل قبول)' };
+                    }
+                } else {
+                    return { type: 'mismatch', text: '❌ مطابقت ندارد' };
+                }
+            }
+            
+            // Default cases
+            switch (status.toLowerCase()) {
+                case 'pending':
+                    return { type: 'pending', text: '⏳ در انتظار' };
+                case 'processing':
+                    return { type: 'processing', text: '🔄 در حال پردازش' };
+                case 'success':
+                    return { type: 'success', text: '✅ موفق' };
+                case 'error':
+                    return { type: 'error', text: '❌ خطا' };
+                case 'position occupied':
+                    return { type: 'position-occupied', text: '❌ جای مورد نظر پر است' };
+                case 'upper not found':
+                    return { type: 'upper-not-found', text: '⚠️ والد یافت نشد' };
+                case 'position check error':
+                    return { type: 'position-check-error', text: '❌ خطا در بررسی موقعیت' };
+                case 'position occupied - revert':
+                    return { type: 'revert-position-occupied', text: '🚫 REVERT: جای مورد نظر پر است' };
+                case 'upper not found - revert':
+                    return { type: 'revert-upper-not-found', text: '🚫 REVERT: والد یافت نشد' };
+                case 'position check error - revert':
+                    return { type: 'revert-position-check-error', text: '🚫 REVERT: خطا در بررسی موقعیت' };
+                case 'revert - position occupied':
+                    return { type: 'revert-position-occupied', text: '🚫 REVERT: جای مورد نظر پر است' };
+                case 'revert - wrong position':
+                    return { type: 'revert-wrong-position', text: '🚫 REVERT: جایگاه اشتباه' };
+                case 'revert - invalid data':
+                    return { type: 'revert-invalid-data', text: '🚫 REVERT: اطلاعات اشتباه' };
+                default:
+                    return { type: 'unknown', text: '❓ نامشخص' };
+            }
+        }
+
+        // File handling
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                processFile(file);
+            }
+        }
+
+        function processFile(file) {
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    jsonData = JSON.parse(e.target.result);
+                    
+                    if (!Array.isArray(jsonData)) {
+                        throw new Error('فایل JSON باید آرایه‌ای از اشیاء باشد');
+                    }
+
+                    // Validate data structure
+                    const firstRecord = jsonData[0];
+                    if (!firstRecord.user) {
+                        throw new Error('هر رکورد باید دارای فیلد user باشد');
+                    }
+                    
+                    // Validate and normalize data structure
+                    jsonData.forEach((record, index) => {
+                        // Ensure 'upper' field exists (parent address)
+                        // If upper is missing or invalid, use Root for first record
+                        if (!record.upper || record.upper === '') {
+                            if (index === 0) {
+                                record.upper = 'Root';
+                            } else {
+                                // For subsequent records, try to find parent from previous records
+                                // This is a fallback - ideally upper should always be defined in JSON
+                                record.upper = 'Root';
+                            }
+                        }
+                    });
+
+                    logMessage(`✅ فایل JSON با ${jsonData.length} رکورد اعتبارسنجی شد`, 'success');
+
+                    // No sorting needed - process in order
+
+                    // Update file info
+                    document.getElementById('fileName').textContent = `نام فایل: ${file.name}`;
+                    document.getElementById('fileSize').textContent = `اندازه: ${(file.size / 1024).toFixed(2)} KB`;
+                    document.getElementById('recordCount').textContent = `تعداد رکورد: ${jsonData.length}`;
+                    
+                    fileInfo.style.display = 'block';
+                    
+                    startBtn.disabled = false;
+                    autoManualBtn.disabled = false;
+
+                    registrationStats.total = jsonData.length;
+                    updateStats();
+
+                    // Show manual registration table
+                    await showManualRegistrationTable();
+
+                    logMessage(`✅ فایل JSON بارگذاری شد: ${jsonData.length} رکورد`, 'success');
+                    showStatus('فایل JSON آماده است', 'success');
+
+                } catch (error) {
+                    logMessage(`❌ خطا در پردازش فایل: ${error.message}`, 'error');
+                    showStatus('خطا در پردازش فایل', 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Drag and drop
+        fileUpload.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUpload.classList.add('dragover');
+        });
+
+        fileUpload.addEventListener('dragleave', () => {
+            fileUpload.classList.remove('dragover');
+        });
+
+        fileUpload.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUpload.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type === 'application/json') {
+                processFile(file);
+            } else {
+                logMessage('❌ لطفاً فایل JSON انتخاب کنید', 'error');
+            }
+        });
+
+        fileUpload.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // Wallet connection
+        async function connectWallet() {
+            try {
+                if (typeof window.ethereum === 'undefined') {
+                    throw new Error('MetaMask not found');
+                }
+
+                logMessage('در حال اتصال به کیف پول...', 'info');
+                showStatus('در حال اتصال...', 'info');
+
+                const accounts = await window.ethereum.request({
+                    method: 'eth_requestAccounts'
+                });
+
+                if (accounts.length === 0) {
+                    throw new Error('No accounts found');
+                }
+
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+                
+                const contractAddress = document.getElementById('contractAddress').value;
+                contract = new ethers.Contract(contractAddress, CONTRACT_ABI, signer);
+
+                const userAddress = await signer.getAddress();
+                logMessage(`✅ کیف پول متصل شد: ${userAddress}`, 'success');
+                showStatus('کیف پول متصل شد', 'success');
+
+                // Refresh manual table to show correct status
+                if (jsonData.length > 0) {
+                    await showManualRegistrationTable();
+                }
+
+                logMessage('آماده برای ثبت نام', 'info');
+
+            } catch (error) {
+                logMessage(`❌ خطا در اتصال: ${error.message}`, 'error');
+                showStatus('خطا در اتصال کیف پول', 'error');
+            }
+        }
+
+        // Registration process
+        async function startRegistration() {
+            if (isRegistering || jsonData.length === 0) return;
+            
+            try {
+                // Check if wallet is connected and contract is initialized
+                if (!contract || !signer) {
+                    logMessage('❌ ابتدا کیف پول را متصل کنید', 'error');
+                    showStatus('ابتدا کیف پول را متصل کنید', 'error');
+                    return;
+                }
+
+                isRegistering = true;
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+                startBtn.textContent = '⏳ در حال ثبت نام...';
+
+                logMessage(`🚀 شروع فرآیند ثبت نام Real-Time از رکورد ${parseInt(document.getElementById('startFrom').value)}...`, 'info');
+                showStatus(`در حال ثبت نام Real-Time از رکورد ${parseInt(document.getElementById('startFrom').value)}...`, 'info');
+                showProgress(true);
+
+                combinedTableBody.innerHTML = '';
+
+                const startFrom = parseInt(document.getElementById('startFrom').value) - 1; // Convert to 0-based index
+                const delayMs = parseInt(document.getElementById('delayMs').value);
+
+                // Reset stats
+                registrationStats.processed = 0;
+                registrationStats.successful = 0;
+                registrationStats.failed = 0;
+                registrationStats.skipped = 0;
+
+                // Process records starting from specified index - REAL-TIME REGISTRATION
+                for (let i = startFrom; i < jsonData.length; i++) {
+                    if (!isRegistering) {
+                        logMessage('⏹️ ثبت نام متوقف شد', 'warning');
+                        break;
+                    }
+
+                    const record = jsonData[i];
+                    
+                    // Add row to table immediately (before processing)
+                    logMessage(`🔄 پردازش Real-Time کاربر ${i + 1}: ${record.user}`, 'info');
+                    await addRowToCombinedTable(i + 1, record.user, record.upper, 'Processing');
+                    
+                    // Process and register user immediately
+                    const success = await registerUser(record, i + 1);
+                    
+                    registrationStats.processed++;
+                    updateProgress(registrationStats.processed, jsonData.length - startFrom);
+                    updateStats();
+
+                    // If registration failed, stop the process (REVERT logic)
+                    if (!success) {
+                        logMessage('🚫 REVERT: ثبت نام ناموفق - فرآیند متوقف شد (جایگاه پر است)', 'error');
+                        showStatus('ثبت نام متوقف شد - جایگاه مورد نظر پر است', 'error');
+                        break;
+                    }
+
+                    // Add delay between registrations only if successful
+                    if (i < jsonData.length - 1 && delayMs > 0) {
+                        await new Promise(resolve => setTimeout(resolve, delayMs));
+                    }
+                }
+
+                showProgress(false);
+                if (registrationStats.failed === 0) {
+                    logMessage(`✅ فرآیند ثبت نام کامل شد! موفق: ${registrationStats.successful}`, 'success');
+                    showStatus('ثبت نام کامل شد', 'success');
+                } else {
+                    logMessage(`⚠️ فرآیند متوقف شد! موفق: ${registrationStats.successful}, ناموفق: ${registrationStats.failed}`, 'warning');
+                    showStatus('ثبت نام متوقف شد', 'warning');
+                }
+
+            } catch (error) {
+                showProgress(false);
+                logMessage(`❌ خطا در ثبت نام: ${error.message}`, 'error');
+                showStatus('خطا در ثبت نام', 'error');
+            } finally {
+                isRegistering = false;
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+                startBtn.textContent = '🚀 شروع ثبت نام';
+            }
+        }
+
+        async function registerUser(record, index) {
+            try {
+                if (!contract) {
+                    throw new Error('Contract not initialized');
+                }
+
+                const userAddress = record.user;
+                const upperAddress = record.upper;
+                const parentAddress = getUpperAddress(record);
+                
+                logMessage(`ثبت نام کاربر ${index}: ${userAddress}`, 'info');
+                logMessage(`  - والد: ${upperAddress}`, 'info');
+                logMessage(`  - معرف (سفارش دهنده): ${upperAddress || parentAddress}`, 'info');
+                
+                // Register user - contract will determine left/right position
+                // registerAndActivate(upper, upper, newUser)
+                const tx = await contract.registerAndActivate(
+                    upperAddress,   // parent (upper)
+                    upperAddress,  // upper (same as parent in this system)
+                    userAddress     // newUser
+                );
+
+                logMessage(`تراکنش ارسال شد برای کاربر ${index}: ${tx.hash}`, 'info');
+
+                const receipt = await tx.wait();
+
+                if (receipt.status === 1) {
+                    logMessage(`✅ کاربر ${index} با موفقیت ثبت شد: ${userAddress}`, 'success');
+                    await addRowToCombinedTable(index, userAddress, upperAddress, 'Success');
+                    registrationStats.successful++;
+                    return true;
+                } else {
+                    throw new Error('Transaction failed');
+                }
+
+            } catch (error) {
+                logMessage(`❌ ثبت نام ناموفق برای کاربر ${index}: ${error.message}`, 'error');
+                await addRowToCombinedTable(index, record.user, record.upper, 'Error');
+                registrationStats.failed++;
+                return false;
+            }
+        }
+
+        function stopRegistration() {
+            isRegistering = false;
+            isAutoManualRegistering = false;
+            logMessage('⏹️ درخواست توقف ثبت نام', 'warning');
+        }
+
+        function clearData() {
+            jsonData = [];
+            combinedTableBody.innerHTML = '';
+            document.getElementById('manualTableBody').innerHTML = '';
+            statsContainer.style.display = 'none';
+            document.getElementById('manualTableContainer').style.display = 'none';
+            fileInfo.style.display = 'none';
+            startBtn.disabled = true;
+            autoManualBtn.disabled = true;
+            logContainer.innerHTML = '<div class="log-entry info">[سیستم] داده‌ها پاک شدند...</div>';
+            showStatus('داده‌ها پاک شدند', 'info');
+        }
+
+        // Auto manual registration function
+        async function startAutoManualRegistration() {
+            if (isAutoManualRegistering || jsonData.length === 0) return;
+            
+            try {
+                // Check if wallet is connected and contract is initialized
+                if (!contract || !signer) {
+                    logMessage('❌ ابتدا کیف پول را متصل کنید', 'error');
+                    showStatus('ابتدا کیف پول را متصل کنید', 'error');
+                    return;
+                }
+
+                isAutoManualRegistering = true;
+                autoManualBtn.disabled = true;
+                stopBtn.disabled = false;
+                autoManualBtn.textContent = '⏳ در حال ثبت نام خودکار...';
+
+                logMessage(`🚀 شروع ثبت نام خودکار از جدول دستی...`, 'info');
+                showStatus('در حال ثبت نام خودکار...', 'info');
+                showProgress(true);
+
+                const delayMs = parseInt(document.getElementById('delayMs').value);
+
+                // Reset stats
+                registrationStats.processed = 0;
+                registrationStats.successful = 0;
+                registrationStats.failed = 0;
+                registrationStats.skipped = 0;
+
+                // Process all records automatically
+                for (let i = 0; i < jsonData.length; i++) {
+                    if (!isAutoManualRegistering) {
+                        logMessage('⏹️ ثبت نام خودکار متوقف شد', 'warning');
+                        break;
+                    }
+
+                    const record = jsonData[i];
+                    const button = document.getElementById(`btn-${i}`);
+                    
+                    // Check if button exists, if not skip
+                    if (!button) {
+                        logMessage(`⚠️ دکمه برای کاربر ${i + 1} یافت نشد - رد شد`, 'warning');
+                        registrationStats.skipped++;
+                        continue;
+                    }
+                    
+                    const row = button.closest('tr');
+                    if (!row) {
+                        logMessage(`⚠️ سطر برای کاربر ${i + 1} یافت نشد - رد شد`, 'warning');
+                        registrationStats.skipped++;
+                        continue;
+                    }
+                    
+                    const statusCell = row.querySelector('td:nth-child(5)');
+                    if (!statusCell) {
+                        logMessage(`⚠️ سلول وضعیت برای کاربر ${i + 1} یافت نشد - رد شد`, 'warning');
+                        registrationStats.skipped++;
+                        continue;
+                    }
+                    
+                    // Check if user is already registered in contract
+                    try {
+                        const userData = await contract.users(record.user);
+                        const userIndex = userData.index || userData[0] || userData['0'] || 0n;
+                        if (userData && userIndex > 0n) {
+                            logMessage(`⏭️ کاربر ${i + 1} قبلاً در کنترکت ثبت شده (Position: ${userIndex}) - رد شد`, 'info');
+                            
+                            // Update button and status to show already registered
+                            button.className = 'btn-registered';
+                            button.textContent = 'ثبت شده';
+                            button.disabled = true;
+                            statusCell.innerHTML = '<span class="status-success">ثبت شده</span>';
+                            
+                            registrationStats.skipped++;
+                            continue;
+                        }
+                    } catch (error) {
+                        logMessage(`⚠️ خطا در بررسی وضعیت کاربر ${i + 1}: ${error.message}`, 'warning');
+                    }
+                    
+                    // Skip if button shows already registered (from previous manual registration)
+                    if (button.textContent === 'ثبت شده') {
+                        logMessage(`⏭️ کاربر ${i + 1} قبلاً ثبت شده - رد شد`, 'info');
+                        registrationStats.skipped++;
+                        continue;
+                    }
+                    
+                    logMessage(`🔄 ثبت نام خودکار کاربر ${i + 1}: ${record.user}`, 'info');
+                    
+                    try {
+                        // Disable button and show processing
+                        button.disabled = true;
+                        button.textContent = 'در حال ثبت...';
+                        statusCell.innerHTML = '<span class="status-processing">در حال ثبت نام</span>';
+                        
+                        const userAddress = record.user;
+                        const upperAddress = record.upper;
+                        const parentAddress = getUpperAddress(record);
+                        
+                        logMessage(`  - والد: ${upperAddress}`, 'info');
+                        logMessage(`  - معرف (سفارش دهنده): ${upperAddress || parentAddress}`, 'info');
+                        
+                        // Register user
+                        const tx = await contract.registerAndActivate(
+                            upperAddress,   // parent (upper)
+                            upperAddress,  // upper (same as parent)
+                            userAddress     // newUser
+                        );
+
+                        logMessage(`تراکنش ارسال شد برای کاربر ${i + 1}: ${tx.hash}`, 'info');
+
+                        const receipt = await tx.wait();
+
+                        if (receipt.status === 1) {
+                            logMessage(`✅ کاربر ${i + 1} با موفقیت ثبت شد: ${userAddress}`, 'success');
+                            
+                            // Update button and status
+                            button.className = 'btn-registered';
+                            button.textContent = 'ثبت شده';
+                            button.disabled = true;
+                            statusCell.innerHTML = '<span class="status-success">ثبت شده</span>';
+                            
+                            registrationStats.successful++;
+                            } else {
+                            throw new Error('Transaction failed');
+                        }
+
+                    } catch (error) {
+                        logMessage(`❌ ثبت نام ناموفق برای کاربر ${i + 1}: ${error.message}`, 'error');
+                        
+                        // Reset button and status
+                        button.disabled = false;
+                        button.textContent = 'ثبت نام';
+                        statusCell.innerHTML = '<span class="status-error">خطا</span>';
+                        
+                                registrationStats.failed++;
+                        
+                        // Stop on error (REVERT logic)
+                        logMessage('🚫 REVERT: ثبت نام ناموفق - فرآیند متوقف شد', 'error');
+                        showStatus('ثبت نام متوقف شد - خطا در ثبت نام', 'error');
+                        break;
+                    }
+
+                    registrationStats.processed++;
+                    updateProgress(registrationStats.processed, jsonData.length);
+                    updateStats();
+
+                    // Add delay between registrations
+                    if (i < jsonData.length - 1 && delayMs > 0) {
+                        await new Promise(resolve => setTimeout(resolve, delayMs));
+                    }
+                }
+
+                showProgress(false);
+                if (registrationStats.failed === 0) {
+                    logMessage(`✅ ثبت نام خودکار کامل شد! موفق: ${registrationStats.successful}, رد شده: ${registrationStats.skipped}`, 'success');
+                    showStatus('ثبت نام خودکار کامل شد', 'success');
+                            } else {
+                    logMessage(`⚠️ ثبت نام خودکار متوقف شد! موفق: ${registrationStats.successful}, ناموفق: ${registrationStats.failed}, رد شده: ${registrationStats.skipped}`, 'warning');
+                    showStatus('ثبت نام خودکار متوقف شد', 'warning');
+                }
+
+            } catch (error) {
+                showProgress(false);
+                logMessage(`❌ خطا در ثبت نام خودکار: ${error.message}`, 'error');
+                showStatus('خطا در ثبت نام خودکار', 'error');
+            } finally {
+                isAutoManualRegistering = false;
+                autoManualBtn.disabled = false;
+                stopBtn.disabled = true;
+                autoManualBtn.textContent = '⚡ ثبت نام خودکار';
+            }
+        }
+
+        // Show manual registration table
+        async function showManualRegistrationTable() {
+            const manualTableContainer = document.getElementById('manualTableContainer');
+            const manualTableBody = document.getElementById('manualTableBody');
+            
+            manualTableBody.innerHTML = '';
+            
+            for (let index = 0; index < jsonData.length; index++) {
+                const record = jsonData[index];
+                const row = document.createElement('tr');
+                row.setAttribute('data-user', record.user);
+                
+                const upperAddress = getUpperAddress(record);
+                
+                // Check if user is already registered in contract
+                let buttonHtml = '';
+                let statusHtml = '';
+                
+                if (contract) {
+                    try {
+                        const userData = await contract.users(record.user);
+                        const userIndex = userData.index || userData[0] || userData['0'] || 0n;
+                        if (userData && userIndex > 0n) {
+                            buttonHtml = `
+                                <button class="btn-registered" disabled id="btn-${index}">
+                                    ثبت شده
+                                </button>
+                            `;
+                            statusHtml = '<span class="status-success">ثبت شده</span>';
+                    } else {
+                            buttonHtml = `
+                                <button class="btn-register" onclick="registerUserManually(${index})" id="btn-${index}">
+                                    ثبت نام
+                                </button>
+                            `;
+                            statusHtml = '<span class="status-pending">آماده</span>';
+                        }
+                    } catch (error) {
+                        buttonHtml = `
+                            <button class="btn-register" onclick="registerUserManually(${index})" id="btn-${index}">
+                                ثبت نام
+                            </button>
+                        `;
+                        statusHtml = '<span class="status-pending">آماده</span>';
+                    }
+                } else {
+                    buttonHtml = `
+                        <button class="btn-register" onclick="registerUserManually(${index})" id="btn-${index}">
+                            ثبت نام
+                        </button>
+                    `;
+                    statusHtml = '<span class="status-pending">آماده</span>';
+                }
+                
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td><span class="address">${shortenAddress(record.user)}</span></td>
+                    <td><span class="address">${shortenAddress(upperAddress)}</span></td>
+                    <td><span class="address">${shortenAddress(record.upper)}</span></td>
+                    <td>${statusHtml}</td>
+                    <td>${buttonHtml}</td>
+                `;
+                
+                manualTableBody.appendChild(row);
+            }
+            
+            manualTableContainer.style.display = 'block';
+        }
+
+        // Manual registration function
+        async function registerUserManually(index) {
+            if (!contract || !signer) {
+                logMessage('❌ ابتدا کیف پول را متصل کنید', 'error');
+                showStatus('ابتدا کیف پول را متصل کنید', 'error');
+                return;
+            }
+
+            const record = jsonData[index];
+            const button = document.getElementById(`btn-${index}`);
+            const statusCell = button.closest('tr').querySelector('td:nth-child(5)');
+            
+            // Check if user is already registered in contract
+            try {
+                const userData = await contract.users(record.user);
+                const userIndex = userData.index || userData[0] || userData['0'] || 0n;
+                if (userData && userIndex > 0n) {
+                    logMessage(`⏭️ کاربر ${index + 1} قبلاً در کنترکت ثبت شده (Position: ${userIndex})`, 'info');
+                    
+                    // Update button and status to show already registered
+                    button.className = 'btn-registered';
+                    button.textContent = 'ثبت شده';
+                    button.disabled = true;
+                    statusCell.innerHTML = '<span class="status-success">ثبت شده</span>';
+                    
+                    return;
+                }
+            } catch (error) {
+                logMessage(`⚠️ خطا در بررسی وضعیت کاربر ${index + 1}: ${error.message}`, 'warning');
+            }
+            
+            try {
+                // Disable button and show processing
+                button.disabled = true;
+                button.textContent = 'در حال ثبت...';
+                statusCell.innerHTML = '<span class="status-processing">در حال ثبت نام</span>';
+                
+                const userAddress = record.user;
+                const upperAddress = record.upper;
+                const parentAddress = getUpperAddress(record);
+                
+                logMessage(`ثبت نام دستی کاربر ${index + 1}: ${userAddress}`, 'info');
+                logMessage(`  - والد: ${upperAddress}`, 'info');
+                logMessage(`  - معرف (سفارش دهنده): ${upperAddress || parentAddress}`, 'info');
+                
+                // Register user
+                const tx = await contract.registerAndActivate(
+                    upperAddress,   // parent (upper)
+                    upperAddress,  // upper (same as parent)
+                    userAddress     // newUser
+                );
+
+                logMessage(`تراکنش ارسال شد برای کاربر ${index + 1}: ${tx.hash}`, 'info');
+
+                const receipt = await tx.wait();
+
+                if (receipt.status === 1) {
+                    logMessage(`✅ کاربر ${index + 1} با موفقیت ثبت شد: ${userAddress}`, 'success');
+                    
+                    // Update button and status
+                    button.className = 'btn-registered';
+                    button.textContent = 'ثبت شده';
+                    button.disabled = true;
+                    statusCell.innerHTML = '<span class="status-success">ثبت شده</span>';
+                    
+                    registrationStats.successful++;
+                    updateStats();
+                } else {
+                    throw new Error('Transaction failed');
+                }
+
+            } catch (error) {
+                logMessage(`❌ ثبت نام ناموفق برای کاربر ${index + 1}: ${error.message}`, 'error');
+                
+                // Reset button and status
+                button.disabled = false;
+                button.textContent = 'ثبت نام';
+                statusCell.innerHTML = '<span class="status-error">خطا</span>';
+                
+                registrationStats.failed++;
+                updateStats();
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            logMessage('صفحه JSON Registration بارگذاری شد', 'info');
+        });
+    </script>
+</body>
+</html>

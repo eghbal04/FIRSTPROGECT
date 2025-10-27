@@ -106,10 +106,10 @@ window.networkShowUserPopup = async function(address, user) {
     }
     
          // Required information
-     const IAMId = user && user.index !== undefined && user.index !== null ? 
-         (window.generateIAMId ? window.generateIAMId(user.index) : user.index) : '-';
+     const IAMId = user && user.num !== undefined && user.num !== null ? 
+         (window.generateIAMId ? window.generateIAMId(user.num) : user.num) : '-';
      const walletAddress = address ? shortAddress(address) : '-';
-     const isActive = user && user.index && BigInt(user.index) > 0n ? true : false;
+     const isActive = user && user.num && BigInt(user.num) > 0n ? true : false;
     
     // Function to calculate left and right wallet counts (active ones in subtree)
     async function calculateWalletCounts(userIndex, contract) {
@@ -123,7 +123,7 @@ window.networkShowUserPopup = async function(address, user) {
                 const leftAddress = await contract.indexToAddress(leftChildIndex);
                 if (leftAddress && leftAddress !== '0x0000000000000000000000000000000000000000') {
                     const leftUser = await (async () => { try { return await contract.users(leftAddress); } catch(e){ return { index:0n }; } })();
-                    if (leftUser && leftUser.index && BigInt(leftUser.index) > 0n) {
+                    if (leftUser && leftUser.num && BigInt(leftUser.num) > 0n) {
                         leftCount = 1 + await calculateSubtreeCount(leftChildIndex, contract, 'left');
                     }
                 }
@@ -133,7 +133,7 @@ window.networkShowUserPopup = async function(address, user) {
                 const rightAddress = await contract.indexToAddress(rightChildIndex);
                 if (rightAddress && rightAddress !== '0x0000000000000000000000000000000000000000') {
                     const rightUser = await (async () => { try { return await contract.users(rightAddress); } catch(e){ return { index:0n }; } })();
-                    if (rightUser && rightUser.index && BigInt(rightUser.index) > 0n) {
+                    if (rightUser && rightUser.num && BigInt(rightUser.num) > 0n) {
                         rightCount = 1 + await calculateSubtreeCount(rightChildIndex, contract, 'right');
                     }
                 }
@@ -156,7 +156,7 @@ window.networkShowUserPopup = async function(address, user) {
                 const leftAddress = await contract.indexToAddress(leftChildIndex);
                 if (leftAddress && leftAddress !== '0x0000000000000000000000000000000000000000') {
                     const leftUser = await (async () => { try { return await contract.users(leftAddress); } catch(e){ return { index:0n }; } })();
-                    if (leftUser && leftUser.index && BigInt(leftUser.index) > 0n) {
+                    if (leftUser && leftUser.num && BigInt(leftUser.num) > 0n) {
                         subtreeCount += 1;
                         subtreeCount += await countRecursive(leftChildIndex);
                     }
@@ -169,7 +169,7 @@ window.networkShowUserPopup = async function(address, user) {
                 const rightAddress = await contract.indexToAddress(rightChildIndex);
                 if (rightAddress && rightAddress !== '0x0000000000000000000000000000000000000000') {
                     const rightUser = await (async () => { try { return await contract.users(rightAddress); } catch(e){ return { index:0n }; } })();
-                    if (rightUser && rightUser.index && BigInt(rightUser.index) > 0n) {
+                    if (rightUser && rightUser.num && BigInt(rightUser.num) > 0n) {
                         subtreeCount += 1;
                         subtreeCount += await countRecursive(rightChildIndex);
                     }
@@ -195,8 +195,8 @@ window.networkShowUserPopup = async function(address, user) {
         {icon:'💰', label:'Total Deposit', val: (user && user.depositedAmount) ? Math.floor(Number(user.depositedAmount) / 1e18) : '-'},
         {icon:'⬅️', label:'Left Points', val: (user && user.leftPoints !== undefined) ? user.leftPoints : '-'},
         {icon:'➡️', label:'Right Points', val: (user && user.rightPoints !== undefined) ? user.rightPoints : '-'},
-        {icon:'👥⬅️', label:'Left Wallet Count', key:'left-wallet-count', userIndex: user && user.index ? user.index : 1n, val:(walletCounts && walletCounts.leftCount !== undefined) ? walletCounts.leftCount : '-'},
-        {icon:'👥➡️', label:'Right Wallet Count', key:'right-wallet-count', userIndex: user && user.index ? user.index : 1n, val:(walletCounts && walletCounts.rightCount !== undefined) ? walletCounts.rightCount : '-'}
+        {icon:'👥⬅️', label:'Left Wallet Count', key:'left-wallet-count', userIndex: user && user.num ? user.num : 1n, val:(walletCounts && walletCounts.leftCount !== undefined) ? walletCounts.leftCount : '-'},
+        {icon:'👥➡️', label:'Right Wallet Count', key:'right-wallet-count', userIndex: user && user.num ? user.num : 1n, val:(walletCounts && walletCounts.rightCount !== undefined) ? walletCounts.rightCount : '-'}
      ];
 
     const popupEl = document.createElement('div');
@@ -425,8 +425,8 @@ window.networkShowUserPopup = async function(address, user) {
     setTimeout(() => {
       (async () => {
         try {
-          if (user && user.index && window.contractConfig && window.contractConfig.contract) {
-            const counts = await calculateWalletCounts(user.index, window.contractConfig.contract);
+          if (user && user.num && window.contractConfig && window.contractConfig.contract) {
+            const counts = await calculateWalletCounts(user.num, window.contractConfig.contract);
             const leftLi = document.querySelector('.user-info-list li[data-key="left-wallet-count"] .value');
             const rightLi = document.querySelector('.user-info-list li[data-key="right-wallet-count"] .value');
             if (leftLi) leftLi.textContent = counts.leftCount;
@@ -629,7 +629,13 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                 const timeoutPromise = new Promise((_, reject) => 
                     setTimeout(() => reject(new Error('User tree fetch timeout')), 60000)
                 );
-                tree = await Promise.race([treePromise, timeoutPromise]);
+                const treeResult = await Promise.race([treePromise, timeoutPromise]);
+                // New ABI returns: [left, right, binaryPoints, binaryPointCap, refclimed]
+                // Extract only left and right addresses
+                tree = {
+                    left: treeResult[0] || '0x0000000000000000000000000000000000000000',
+                    right: treeResult[1] || '0x0000000000000000000000000000000000000000'
+                };
             } catch(e) { 
                 console.warn('Error getting user tree, using fallback:', e);
                 tree = { left:'0x0000000000000000000000000000000000000000', right:'0x0000000000000000000000000000000000000000' }; 
@@ -642,16 +648,16 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                         setTimeout(() => reject(new Error('Left user fetch timeout')), 60000)
                     );
                     leftUser = await Promise.race([leftUserPromise, leftTimeoutPromise]);
-                    if (leftUser && leftUser.index && BigInt(leftUser.index) > 0n) { 
+                    if (leftUser && leftUser.num && BigInt(leftUser.num) > 0n) { 
                         hasDirects = true; 
                         leftActive = true; 
-                        console.log(`✅ Left child active for node ${index}, leftUser.index: ${leftUser.index}`);
+                        console.log(`✅ Left child active for node ${index}, leftUser.num: ${leftUser.num}`);
                     } else {
                         console.log(`❌ Left child not active for node ${index}, leftUser:`, leftUser);
                     }
                 } catch(e) {
                     console.warn('Error getting left user, skipping:', e);
-                    leftUser = { index:0n };
+                    leftUser = { num:0n };
                 }
             }
             if (tree.right && tree.right !== '0x0000000000000000000000000000000000000000') {
@@ -661,16 +667,16 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                         setTimeout(() => reject(new Error('Right user fetch timeout')), 60000)
                     );
                     rightUser = await Promise.race([rightUserPromise, rightTimeoutPromise]);
-                    if (rightUser && rightUser.index && BigInt(rightUser.index) > 0n) { 
+                    if (rightUser && rightUser.num && BigInt(rightUser.num) > 0n) { 
                         hasDirects = true; 
                         rightActive = true; 
-                        console.log(`✅ Right child active for node ${index}, rightUser.index: ${rightUser.index}`);
+                        console.log(`✅ Right child active for node ${index}, rightUser.num: ${rightUser.num}`);
                     } else {
                         console.log(`❌ Right child not active for node ${index}, rightUser:`, rightUser);
                     }
                 } catch(e) {
                     console.warn('Error getting right user, skipping:', e);
-                    rightUser = { index:0n };
+                    rightUser = { num:0n };
                 }
             }
         }
@@ -693,7 +699,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
          nodeDiv.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
          nodeDiv.style.transform = 'translateZ(0)';
          
-         const IAMId = window.generateIAMId ? window.generateIAMId(user.index) : user.index;
+         const IAMId = window.generateIAMId ? window.generateIAMId(user.num) : user.num;
          const formattedIAMId = `IAM${String(IAMId).padStart(5, '0')}`;
          // Responsive node sizing - Larger, more visible sizes
         const isMobile = window.innerWidth <= 480;
@@ -946,7 +952,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                         // Now render content in each row based on availability
                         if (leftActive) {
                             console.log('🔄 Rendering left child...');
-                            await renderVerticalNodeLazy(BigInt(leftUser.index), leftRow, level + 1, false);
+                            await renderVerticalNodeLazy(BigInt(leftUser.num), leftRow, level + 1, false);
                             console.log('✅ Left child rendered');
                         } else {
                             console.log('🔄 Creating empty left slot...');
@@ -956,7 +962,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                         
                         if (rightActive) {
                             console.log('🔄 Rendering right child...');
-                            await renderVerticalNodeLazy(BigInt(rightUser.index), rightRow, level + 1, false);
+                            await renderVerticalNodeLazy(BigInt(rightUser.num), rightRow, level + 1, false);
                             console.log('✅ Right child rendered');
                         } else {
                             console.log('🔄 Creating empty right slot...');
@@ -1329,8 +1335,8 @@ window.renderSimpleBinaryTree = async function() {
         let userIndex = 0n;
         try {
             user = await contract.users(address);
-            if (user && typeof user.index !== 'undefined' && user.index !== null) {
-                userIndex = BigInt(user.index);
+            if (user && typeof user.num !== 'undefined' && user.num !== null) {
+                userIndex = BigInt(user.num);
             }
         } catch {}
 
@@ -1613,7 +1619,7 @@ async function getFinalReferrer(contract) {
   if (urlReferrer) {
     try {
       const user = await contract.users(urlReferrer);
-      if (user && user.index && BigInt(user.index) > 0n) {
+      if (user && user.num && BigInt(user.num) > 0n) {
         return urlReferrer;
       }
     } catch (e) {
@@ -1626,7 +1632,7 @@ async function getFinalReferrer(contract) {
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
     const currentAddress = accounts[0];
     const user = await contract.users(currentAddress);
-    if (user && user.index && BigInt(user.index) > 0n) {
+    if (user && user.num && BigInt(user.num) > 0n) {
       return currentAddress;
     }
   } catch (e) {
@@ -1679,7 +1685,7 @@ window.forceRenderNetwork = async function() {
 // تابع نمایش اطلاعات struct کاربر به صورت تایپ‌رایت (فارسی)
 window.showUserStructTypewriter = function(address, user) {
   const infoLines = [
-    `IAM ID:  ${window.generateIAMId ? window.generateIAMId(user.index) : user.index}`,
+    `IAM ID:  ${window.generateIAMId ? window.generateIAMId(user.num) : user.num}`,
     `امتیاز باینری:  ${user.binaryPoints}`,
     `امتیاز باینری دریافت‌شده:  ${user.binaryPointsClaimed}`,
     `امتیاز باینری مانده:  ${user.binaryPoints && user.binaryPointsClaimed ? (Number(user.binaryPoints) - Number(user.binaryPointsClaimed)) : '0'}`,
@@ -2464,7 +2470,7 @@ function startTypewriter(popupEl, IAMId, walletAddress, isActive, infoList, addr
             
             // شمارش کاربران معتبر
             const validUsers = users.filter(user => 
-              user && user.index && BigInt(user.index) > 0n
+              user && user.num && BigInt(user.num) > 0n
             );
             count += validUsers.length;
             
@@ -2475,7 +2481,7 @@ function startTypewriter(popupEl, IAMId, walletAddress, isActive, infoList, addr
               
               if (address && address !== '0x0000000000000000000000000000000000000000') {
                 const user = users[validAddresses.indexOf(address)];
-                if (user && user.index && BigInt(user.index) > 0n) {
+                if (user && user.num && BigInt(user.num) > 0n) {
                   const leftChild = BigInt(currentIndex) * 2n;
                   const rightChild = BigInt(currentIndex) * 2n + 1n;
                   

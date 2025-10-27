@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bulk JSON Registration - IAMPHOENIX</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 2rem;
+      direction: rtl;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: rgba(15, 23, 42, 0.8);
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(0, 255, 136, 0.2);
+    }
+    
+    h1 {
+      color: #00ff88;
+      margin-bottom: 1.5rem;
+      font-size: 2rem;
+      text-align: center;
+    }
+    
+    .section {
+      margin-bottom: 2rem;
+      background: rgba(15, 23, 42, 0.5);
+      padding: 1.5rem;
+      border-radius: 12px;
+      border: 1px solid rgba(0, 255, 136, 0.1);
+    }
+    
+    .section-title {
+      color: #00ff88;
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    button {
+      background: linear-gradient(135deg, #00ff88 0%, #00cc6f 100%);
+      color: #0f0f23;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0, 255, 136, 0.3);
+    }
+    
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .status {
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 8px;
+      text-align: center;
+      font-weight: 600;
+    }
+    
+    .status.success {
+      background: rgba(0, 255, 136, 0.1);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      color: #00ff88;
+    }
+    
+    .status.error {
+      background: rgba(255, 107, 107, 0.1);
+      border: 1px solid rgba(255, 107, 107, 0.3);
+      color: #ff6b6b;
+    }
+    
+    .status.info {
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #3b82f6;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      max-height: 500px;
+      overflow-y: auto;
+      display: block;
+    }
+    
+    thead {
+      display: table-header-group;
+    }
+    
+    tbody {
+      display: table-row-group;
+      max-height: 400px;
+      overflow-y: auto;
+      display: block;
+    }
+    
+    th, td {
+      padding: 0.75rem;
+      text-align: right;
+      border-bottom: 1px solid rgba(0, 255, 136, 0.1);
+      font-family: 'Fira Mono', monospace;
+      font-size: 0.9rem;
+    }
+    
+    th {
+      background: rgba(0, 255, 136, 0.1);
+      color: #00ff88;
+      font-weight: 700;
+      position: sticky;
+      top: 0;
+      display: table-cell;
+    }
+    
+    tr {
+      display: table-row;
+    }
+    
+    tr:hover {
+      background: rgba(0, 255, 136, 0.05);
+    }
+    
+    .status-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    
+    .status-pending {
+      background: rgba(59, 130, 246, 0.1);
+      color: #3b82f6;
+    }
+    
+    .status-success {
+      background: rgba(0, 255, 136, 0.1);
+      color: #00ff88;
+    }
+    
+    .status-error {
+      background: rgba(255, 107, 107, 0.1);
+      color: #ff6b6b;
+    }
+    
+    .status-processing {
+      background: rgba(251, 191, 36, 0.1);
+      color: #fbbf24;
+    }
+    
+    .file-upload {
+      border: 2px dashed rgba(0, 255, 136, 0.3);
+      border-radius: 12px;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-bottom: 1rem;
+    }
+    
+    .file-upload:hover {
+      border-color: #00ff88;
+      background: rgba(0, 255, 136, 0.05);
+    }
+    
+    .file-upload input[type="file"] {
+      display: none;
+    }
+    
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    
+    .stat-card {
+      background: rgba(30, 41, 59, 0.6);
+      padding: 1rem;
+      border-radius: 8px;
+      text-align: center;
+      border: 1px solid rgba(0, 255, 136, 0.2);
+    }
+    
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #00ff88;
+    }
+    
+    .stat-label {
+      color: #cbd5e1;
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+    }
+    
+    .address-cell {
+      font-size: 0.85rem;
+      color: #00ff88;
+      word-break: break-all;
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+    
+    .button-group button {
+      flex: 1;
+      min-width: 150px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📝 Bulk JSON Registration</h1>
+    
+    <!-- File Upload Section -->
+    <div class="section">
+      <div class="section-title">📂 Upload JSON File</div>
+      <div class="file-upload" onclick="document.getElementById('fileInput').click()">
+        <input type="file" id="fileInput" accept=".json" />
+        <div style="font-size: 3rem; margin-bottom: 1rem;">📁</div>
+        <div style="font-size: 1.1rem; color: #00ff88; margin-bottom: 0.5rem;">Click to Upload JSON File</div>
+        <div style="font-size: 0.9rem; color: #cbd5e1;">Accepted format: JSON array with order, upper, user fields</div>
+      </div>
+      <div id="uploadStatus"></div>
+    </div>
+    
+    <!-- Statistics -->
+    <div class="section" id="statsSection" style="display: none;">
+      <div class="section-title">📊 Statistics</div>
+      <div class="stats">
+        <div class="stat-card">
+          <div class="stat-value" id="statTotal">0</div>
+          <div class="stat-label">Total Users</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statPending">0</div>
+          <div class="stat-label">Pending</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statSuccess">0</div>
+          <div class="stat-label">Success</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statError">0</div>
+          <div class="stat-label">Errors</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div class="section" id="actionSection" style="display: none;">
+      <div class="section-title">⚙️ Actions</div>
+      <div class="button-group">
+        <button id="connectBtn">Connect Wallet</button>
+        <button id="startRegistrationBtn" disabled>Start Auto Registration</button>
+        <button id="pauseBtn" disabled>Pause</button>
+        <button id="resetBtn">Reset All</button>
+        <button id="exportBtn">Export Results</button>
+      </div>
+      <div id="actionStatus"></div>
+    </div>
+    
+    <!-- Registration Table -->
+    <div class="section" id="tableSection" style="display: none;">
+      <div class="section-title">📋 Registration Queue</div>
+      <div style="max-height: 500px; overflow-y: auto;">
+        <table id="registrationTable">
+          <thead>
+            <tr>
+              <th style="width: 60px;">Order</th>
+              <th>Upper (Referrer)</th>
+              <th>User Address</th>
+              <th style="width: 120px;">Status</th>
+              <th style="width: 150px;">Error Message</th>
+            </tr>
+          </thead>
+          <tbody id="registrationTableBody">
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.1/dist/ethers.umd.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/web3-interactions.js"></script>
+  <script>
+    let registrationData = [];
+    let currentAccount = null;
+    let contract = null;
+    let isProcessing = false;
+    let processQueue = false;
+    
+    // File upload handler
+    document.getElementById('fileInput').addEventListener('change', async function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      const status = document.getElementById('uploadStatus');
+      status.innerHTML = `<div class="status info">Reading file...</div>`;
+      
+      try {
+        const text = await file.text();
+        registrationData = JSON.parse(text);
+        
+        if (!Array.isArray(registrationData)) {
+          throw new Error('Invalid JSON format. Expected an array.');
+        }
+        
+        // Process data and populate table
+        processRegistrationData(registrationData);
+        
+        status.innerHTML = `<div class="status success">✅ File loaded successfully! ${registrationData.length} users found.</div>`;
+        
+        // Show sections
+        document.getElementById('statsSection').style.display = 'block';
+        document.getElementById('actionSection').style.display = 'block';
+        document.getElementById('tableSection').style.display = 'block';
+        
+        updateStats();
+        
+      } catch (error) {
+        console.error('Error loading file:', error);
+        status.innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
+      }
+    });
+    
+    // Process registration data
+    function processRegistrationData(data) {
+      const tbody = document.getElementById('registrationTableBody');
+      tbody.innerHTML = '';
+      
+      let rootAddress = null;
+      
+      // First pass: find the root address (first user with order 1)
+      data.forEach((item) => {
+        if (item.order === 1 && item.user) {
+          rootAddress = item.user;
+        }
+      });
+      
+      data.forEach((item, index) => {
+        const row = document.createElement('tr');
+        row.id = `row-${index}`;
+        
+        const order = item.order || index + 1;
+        const upper = item.upper || item.referrer || '';
+        const user = item.user || item.newUser || '';
+        
+        // Handle "Root" as special case - use the actual root address
+        let upperAddress = upper;
+        let upperDisplay = upper;
+        if (upper === 'Root') {
+          upperAddress = rootAddress || '0x0000000000000000000000000000000000000000';
+          upperDisplay = rootAddress ? '🌳 Root (' + rootAddress.substring(0, 6) + '...)' : '🌳 Root';
+        }
+        
+        row.innerHTML = `
+          <td>${order}</td>
+          <td class="address-cell">${upperDisplay}</td>
+          <td class="address-cell">${user ? user.substring(0, 10) + '...' + user.substring(36) : '⚠️ No address'}</td>
+          <td><span class="status-badge status-pending" id="status-${index}">Pending</span></td>
+          <td id="error-${index}">-</td>
+        `;
+        
+        // Store the actual upper address for later use
+        row.dataset.upper = upperAddress;
+        row.dataset.upperOriginal = upper;
+        
+        tbody.appendChild(row);
+      });
+      
+      // Store root address globally
+      window.rootAddress = rootAddress;
+    }
+    
+    // Update statistics
+    function updateStats() {
+      const total = registrationData.length;
+      const pending = registrationData.filter((_, i) => 
+        document.getElementById(`status-${i}`).textContent === 'Pending'
+      ).length;
+      const success = registrationData.filter((_, i) => 
+        document.getElementById(`status-${i}`).textContent === 'Success'
+      ).length;
+      const error = registrationData.filter((_, i) => 
+        document.getElementById(`status-${i}`).textContent === 'Error'
+      ).length;
+      
+      document.getElementById('statTotal').textContent = total;
+      document.getElementById('statPending').textContent = pending;
+      document.getElementById('statSuccess').textContent = success;
+      document.getElementById('statError').textContent = error;
+    }
+    
+    // Connect wallet
+    document.getElementById('connectBtn').onclick = async function() {
+      const btn = document.getElementById('connectBtn');
+      const status = document.getElementById('actionStatus');
+      
+      try {
+        btn.disabled = true;
+        btn.textContent = '⏳ Connecting...';
+        
+        const connection = await window.connectWallet();
+        if (!connection || !connection.contract) {
+          throw new Error('No wallet connection available');
+        }
+        
+        contract = connection.contract;
+        currentAccount = connection.address;
+        
+        btn.textContent = '✅ Connected';
+        status.innerHTML = `<div class="status success">Wallet connected: ${currentAccount.substring(0, 6)}...${currentAccount.substring(38)}</div>`;
+        
+        document.getElementById('startRegistrationBtn').disabled = false;
+        
+      } catch (error) {
+        console.error('Error connecting wallet:', error);
+        status.innerHTML = `<div class="status error">${error.message || 'Failed to connect wallet'}</div>`;
+        btn.textContent = 'Connect Wallet';
+        btn.disabled = false;
+      }
+    };
+    
+    // Start registration
+    document.getElementById('startRegistrationBtn').onclick = function() {
+      processQueue = true;
+      isProcessing = true;
+      document.getElementById('startRegistrationBtn').disabled = true;
+      document.getElementById('startRegistrationBtn').textContent = '⏳ Processing...';
+      document.getElementById('pauseBtn').disabled = false;
+      
+      processNextRegistration();
+    };
+    
+    // Pause registration
+    document.getElementById('pauseBtn').onclick = function() {
+      processQueue = false;
+      isProcessing = false;
+      document.getElementById('startRegistrationBtn').disabled = false;
+      document.getElementById('startRegistrationBtn').textContent = 'Resume Registration';
+      document.getElementById('pauseBtn').disabled = true;
+      document.getElementById('actionStatus').innerHTML = `<div class="status info">⏸️ Registration paused</div>`;
+    };
+    
+    // Process registration queue
+    async function processNextRegistration() {
+      if (!processQueue || !contract) {
+        isProcessing = false;
+        document.getElementById('startRegistrationBtn').disabled = false;
+        document.getElementById('startRegistrationBtn').textContent = 'Start Auto Registration';
+        return;
+      }
+      
+      // Find first pending item
+      let currentIndex = -1;
+      for (let i = 0; i < registrationData.length; i++) {
+        const status = document.getElementById(`status-${i}`).textContent;
+        if (status === 'Pending') {
+          currentIndex = i;
+          break;
+        }
+      }
+      
+      // If no more pending items, stop
+      if (currentIndex === -1) {
+        processQueue = false;
+        isProcessing = false;
+        document.getElementById('actionStatus').innerHTML = `<div class="status success">✅ All registrations completed!</div>`;
+        document.getElementById('startRegistrationBtn').disabled = false;
+        document.getElementById('startRegistrationBtn').textContent = 'Start Auto Registration';
+        document.getElementById('pauseBtn').disabled = true;
+        updateStats();
+        return;
+      }
+      
+      const item = registrationData[currentIndex];
+      const order = item.order || currentIndex + 1;
+      let upper = item.upper || item.referrer || '';
+      const user = item.user || '';
+      
+      // Handle Root by replacing with actual root address
+      if (upper === 'Root' && window.rootAddress) {
+        upper = window.rootAddress;
+      }
+      
+      // Skip if no user address
+      if (!user || !/^0x[a-fA-F0-9]{40}$/.test(user)) {
+        document.getElementById(`status-${currentIndex}`).textContent = 'Error';
+        document.getElementById(`status-${currentIndex}`).className = 'status-badge status-error';
+        document.getElementById(`error-${currentIndex}`).textContent = 'Invalid user address';
+        updateStats();
+        
+        // STOP on error
+        processQueue = false;
+        isProcessing = false;
+        document.getElementById('actionStatus').innerHTML = `<div class="status error">❌ Stopped due to error at order ${order}</div>`;
+        document.getElementById('startRegistrationBtn').disabled = false;
+        document.getElementById('startRegistrationBtn').textContent = 'Resume Registration';
+        document.getElementById('pauseBtn').disabled = true;
+        return;
+      }
+      
+      // Skip if upper is Root (already registered)
+      if (upper === 'Root') {
+        document.getElementById(`status-${currentIndex}`).textContent = 'Success';
+        document.getElementById(`status-${currentIndex}`).className = 'status-badge status-success';
+        document.getElementById(`error-${currentIndex}`).textContent = 'Root - Skipped';
+        updateStats();
+        setTimeout(() => processNextRegistration(), 500);
+        return;
+      }
+      
+      // Skip if upper is empty or invalid
+      if (!upper || !/^0x[a-fA-F0-9]{40}$/.test(upper)) {
+        document.getElementById(`status-${currentIndex}`).textContent = 'Error';
+        document.getElementById(`status-${currentIndex}`).className = 'status-badge status-error';
+        document.getElementById(`error-${currentIndex}`).textContent = 'Invalid referrer address';
+        updateStats();
+        
+        // STOP on error
+        processQueue = false;
+        isProcessing = false;
+        document.getElementById('actionStatus').innerHTML = `<div class="status error">❌ Stopped due to error at order ${order}</div>`;
+        document.getElementById('startRegistrationBtn').disabled = false;
+        document.getElementById('startRegistrationBtn').textContent = 'Resume Registration';
+        document.getElementById('pauseBtn').disabled = true;
+        return;
+      }
+      
+      // Update status to processing
+      document.getElementById(`status-${currentIndex}`).textContent = 'Processing...';
+      document.getElementById(`status-${currentIndex}`).className = 'status-badge status-processing';
+      
+      try {
+        // Execute registration
+        const tx = await contract.registerAndActivate(upper, upper, user);
+        await tx.wait();
+        
+        // Success
+        document.getElementById(`status-${currentIndex}`).textContent = 'Success';
+        document.getElementById(`status-${currentIndex}`).className = 'status-badge status-success';
+        document.getElementById(`error-${currentIndex}`).textContent = '-';
+        
+      } catch (error) {
+        console.error(`Registration error for item ${currentIndex}:`, error);
+        let errorMsg = error.message || 'Registration failed';
+        
+        if (error.reason) {
+          errorMsg = error.reason;
+        }
+        
+        // Check all possible error messages for "already registered"
+        const alreadyRegisteredPatterns = [
+          'already registered',
+          'user exists',
+          'already exists',
+          'user already registered',
+          'user has been registered',
+          'execution reverted: "Already registered"'
+        ];
+        
+        const isAlreadyRegistered = alreadyRegisteredPatterns.some(pattern => 
+          errorMsg.toLowerCase().includes(pattern.toLowerCase())
+        );
+        
+        if (isAlreadyRegistered) {
+          // User already registered - skip and continue
+          document.getElementById(`status-${currentIndex}`).textContent = 'Success';
+          document.getElementById(`status-${currentIndex}`).className = 'status-badge status-success';
+          document.getElementById(`error-${currentIndex}`).textContent = 'Already registered';
+          updateStats();
+          setTimeout(() => processNextRegistration(), 500);
+          return;
+        }
+        
+        // For all other errors - skip and continue (don't stop)
+        document.getElementById(`status-${currentIndex}`).textContent = 'Skipped';
+        document.getElementById(`status-${currentIndex}`).className = 'status-badge status-error';
+        document.getElementById(`error-${currentIndex}`).textContent = errorMsg.substring(0, 50);
+        updateStats();
+        
+        // Continue to next registration
+        setTimeout(() => processNextRegistration(), 1000);
+        return;
+      }
+      
+      updateStats();
+      
+      // Process next after delay
+      setTimeout(() => processNextRegistration(), 2000);
+    }
+    
+    // Reset all
+    document.getElementById('resetBtn').onclick = function() {
+      if (confirm('Are you sure you want to reset all data?')) {
+        registrationData = [];
+        document.getElementById('registrationTableBody').innerHTML = '';
+        document.getElementById('uploadStatus').innerHTML = '';
+        document.getElementById('actionStatus').innerHTML = '';
+        document.getElementById('statsSection').style.display = 'none';
+        document.getElementById('actionSection').style.display = 'none';
+        document.getElementById('tableSection').style.display = 'none';
+        document.getElementById('fileInput').value = '';
+        isProcessing = false;
+        processQueue = false;
+      }
+    };
+    
+    // Export results
+    document.getElementById('exportBtn').onclick = function() {
+      const results = registrationData.map((item, index) => ({
+        ...item,
+        status: document.getElementById(`status-${index}`).textContent,
+        error: document.getElementById(`error-${index}`).textContent
+      }));
+      
+      const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `registration-results-${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+  </script>
+</body>
+</html>

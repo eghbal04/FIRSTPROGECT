@@ -97,13 +97,14 @@ function updateProfileUI(profile) {
     if (addressEl) addressEl.textContent = profile.address ? shorten(profile.address) : '---';
 
     let referrerText = 'بدون معرف';
-    if (profile.userStruct && profile.userStruct.referrer) {
-        if (profile.userStruct.referrer === '0x0000000000000000000000000000000000000000') {
+    // Use parent from userStruct
+    if (profile.userStruct && profile.userStruct.parent) {
+        if (profile.userStruct.parent === '0x0000000000000000000000000000000000000000') {
             referrerText = 'بدون معرف';
-        } else if (profile.userStruct.referrer.toLowerCase() === profile.address.toLowerCase()) {
+        } else if (profile.userStruct.parent.toLowerCase() === profile.address.toLowerCase()) {
             referrerText = 'خود شما';
         } else {
-            referrerText = shorten(profile.userStruct.referrer);
+            referrerText = shorten(profile.userStruct.parent);
         }
     }
     const referrerEl = document.getElementById('profile-referrer');
@@ -119,7 +120,7 @@ function updateProfileUI(profile) {
 
     const linkEl = document.getElementById('profile-referral-link');
     if (linkEl) {
-        const isActive = !!(profile.userStruct && profile.userStruct.index && BigInt(profile.userStruct.index) > 0n);
+        const isActive = !!(profile.userStruct && profile.userStruct.num && BigInt(profile.userStruct.num) > 0n);
         if (profile.address && isActive) {
             const fullLink = window.location.origin + '/register.html?ref=' + profile.address;
             linkEl.href = fullLink;
@@ -139,7 +140,7 @@ function updateProfileUI(profile) {
         copyBtn.onclick = async () => {
             try {
                 if (profile.address) {
-                    const isActive = !!(profile.userStruct && profile.userStruct.index && BigInt(profile.userStruct.index) > 0n);
+                    const isActive = !!(profile.userStruct && profile.userStruct.num && BigInt(profile.userStruct.num) > 0n);
                     if (!isActive) { throw new Error('اکانت شما هنوز فعال نشده است'); }
                     const fullLink = window.location.origin + '/register.html?ref=' + profile.address;
                     
@@ -173,7 +174,7 @@ function updateProfileUI(profile) {
     const statusElement = document.getElementById('profileStatus');
     if (statusElement) {
         // وضعیت ثبت‌نام بر اساس index > 0
-        if (profile.userStruct && profile.userStruct.index && BigInt(profile.userStruct.index) > 0n) {
+        if (profile.userStruct && profile.userStruct.num && BigInt(profile.userStruct.num) > 0n) {
             statusElement.textContent = 'کاربر ثبت‌نام شده';
             statusElement.className = 'profile-status success';
         } else {
@@ -263,22 +264,10 @@ function updateProfileUI(profile) {
     
     const lastClaimTimeEl = document.getElementById('profile-lastClaimTime');
     if (lastClaimTimeEl) lastClaimTimeEl.textContent = formatTimestamp(profile.userStruct.lastClaimTime);
-    const lastMonthlyClaimEl = document.getElementById('profile-lastMonthlyClaim');
-    if (lastMonthlyClaimEl) lastMonthlyClaimEl.textContent = formatTimestamp(profile.userStruct.lastMonthlyClaim);
-    const totalMonthlyRewardedEl = document.getElementById('profile-totalMonthlyRewarded');
-    if (totalMonthlyRewardedEl) totalMonthlyRewardedEl.textContent = profile.userStruct.totalMonthlyRewarded || '۰';
-    const depositedAmountEl = document.getElementById('profile-depositedAmount');
-    if (depositedAmountEl) {
-      let val = profile.userStruct.depositedAmount;
-      if (val && typeof val === 'object' && typeof val.toString === 'function') {
-        val = ethers.formatUnits(val.toString(), 18);
-      } else if (typeof val === 'bigint') {
-        val = ethers.formatUnits(val, 18);
-      } else if (typeof val === 'string' && val.length > 18) {
-        val = ethers.formatUnits(val, 18);
-      }
-      depositedAmountEl.textContent = val ? val : '۰';
-    }
+    
+    // Registration date
+    const regDateEl = document.getElementById('profile-registrationDate');
+    if (regDateEl) regDateEl.textContent = formatTimestamp(profile.userStruct.registrationDate);
 
     // موجودی متیک
     const maticEl = document.getElementById('profile-matic');
@@ -312,8 +301,8 @@ async function updateProfileReferrer() {
     if (!contract || !address) return;
     const user = await contract.users(address);
     let referrer = '-';
-    if (user && user.index !== undefined) {
-      let idx = user.index;
+    if (user && user.num !== undefined) {
+      let idx = user.num;
       if (typeof idx === 'bigint') idx = Number(idx);
       else idx = parseInt(idx);
       if (idx === 0) {
@@ -398,7 +387,7 @@ function setupReferralCopy() {
                 
                 // Get user profile to get index
                 const profile = await loadUserProfileOnce();
-                const isActive = !!(profile && profile.userStruct && profile.userStruct.index && BigInt(profile.userStruct.index) > 0n);
+                const isActive = !!(profile && profile.userStruct && profile.userStruct.num && BigInt(profile.userStruct.num) > 0n);
                 if (!isActive) { throw new Error('اکانت شما هنوز فعال نشده است'); }
                 const referralLink = `${window.location.origin}/register.html?ref=${address}`;
                 
@@ -768,9 +757,9 @@ async function updateWalletCountsDisplay() {
         if (!contract || !address) return;
         
         const user = await contract.users(address);
-        if (!user || !(user.index && BigInt(user.index) > 0n)) return;
+        if (!user || !(user.num && BigInt(user.num) > 0n)) return;
         
-        const userIndex = parseInt(user.index);
+        const userIndex = parseInt(user.num);
         const counts = await calculateWalletCounts(userIndex, contract);
         
         // Update display in profile
@@ -811,7 +800,7 @@ async function purchaseEBAConfig(amount) {
         
         // Ensure user is registered
         const user = await contract.users(address);
-        if (!user || !user.index || BigInt(user.index) === 0n) {
+        if (!user || !user.num || BigInt(user.num) === 0n) {
             throw new Error('You must register first');
         }
         

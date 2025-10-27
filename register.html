@@ -135,23 +135,7 @@
       transition: all 0.3s ease;
     }
     
-    /* Normal tab active styles */
-    .tab-btn.active[id="normal-tab"] {
-      background: linear-gradient(90deg,#00ff88,#00cc66) !important;
-      color: #232946 !important;
-      box-shadow: 0 2px 8px rgba(0, 255, 136, 0.3) !important;
-      font-size: 0.9rem !important;
-      padding: 8px 12px !important;
-    }
     
-    /* Reserve tab active styles */
-    .tab-btn.active[id="free-tab"] {
-      background: linear-gradient(90deg,#ffd700,#ffa500) !important;
-      color: #232946 !important;
-      box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3) !important;
-      font-size: 0.8rem !important;
-      padding: 6px 10px !important;
-    }
     
     /* Main register button */
     .register-btn, .buy-btn {
@@ -467,10 +451,6 @@
   }
   .tab-btn{ background:#0f1420; color:#cfe3ff; border:1px solid var(--border); border-radius:10px; padding:10px 12px; font-weight:600; }
   /* Ensure high-contrast label for Normal Registration */
-  .tab-btn#normal-tab{ color:#ffffff; text-shadow: 0 1px 2px rgba(0,0,0,0.4); }
-  .tab-btn#normal-tab:hover{ color:#ffffff; }
-  .tab-btn.active#normal-tab{ background:#213055!important; color:#ffffff!important; border-color:#34507c!important; }
-  .tab-btn.active#free-tab{ background:#2a1f12!important; color:#ffd27a!important; border-color:#3a2a18!important; }
   .register-btn, .buy-btn{ background:linear-gradient(135deg, #2f9950, #2b8a3e)!important; color:var(--text)!important; border:1px solid #3aa654; padding:12px; border-radius:12px; font-weight:700; font-size:1.05rem; }
   .register-btn:hover, .buy-btn:hover{ filter:brightness(1.05); }
   .apply-btn, .paste-btn-inside{ background:#1a2335; color:#cfe3ff; border:1px solid var(--border); border-radius:12px; padding:14px 16px; font-size:1.05rem; min-width: 88px; }
@@ -497,10 +477,6 @@
   <div class="main-container">
          <form class="register-form" autocomplete="off">
                <!-- Registration tabs -->
-        <div style="display: flex; margin-bottom: 4px; background: rgba(35, 41, 70, 0.5); border-radius: 8px; padding: 2px;">
-          <button type="button" id="normal-tab" class="tab-btn active" style="flex: 3; padding: 8px 12px; background: linear-gradient(90deg,#00ff88,#00cc66); color: #232946; border: none; border-radius: 6px; font-weight: bold; font-size: 0.9rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0, 255, 136, 0.3); position: relative;">Normal Registration <span style="position: absolute; top: -8px; right: -8px; background: #00ff88; color: #232946; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">⭐</span></button>
-          <button type="button" id="free-tab" class="tab-btn" style="flex: 1; padding: 6px 8px; background: rgba(255, 215, 0, 0.1); color: #ffd700; border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 6px; font-weight: bold; font-size: 0.7rem; cursor: pointer; opacity: 0.7;">Reserve <span style="font-size: 0.6rem; margin-left: 2px;">⚠️</span></button>
-        </div>
       <div class="register-form-status warning" id="register-suggestion" style="display:none;"></div>
       
       <!-- Registration Permission Notice -->
@@ -536,7 +512,6 @@
         </div>
         <input type="text" id="upper-address" class="register-form-input address-field" placeholder="0x..." autocomplete="off" value="root" readonly>
         <div id="upper-validation-status" class="register-form-status" style="display:none; margin-top: 4px; font-size: 0.7rem;"></div>
-        <div id="placement-info" class="register-form-status" style="display:none; margin-top: 4px; font-size: 0.7rem; background: rgba(167, 134, 255, 0.1); border: 1px solid rgba(167, 134, 255, 0.3); color: #a786ff;"></div>
       </div>
 
       <!-- New User Address -->
@@ -679,78 +654,6 @@
          }, 4000);
      }
 
-         // Function to display reserve information
-     function showReserveInfoMessage() {
-         const messageBox = document.createElement('div');
-         messageBox.id = 'reserve-info-message';
-         messageBox.style.cssText = `
-             position: fixed;
-             top: 50%;
-             left: 50%;
-             transform: translate(-50%, -50%);
-             background: linear-gradient(135deg, rgba(255, 107, 107, 0.95), rgba(255, 165, 0, 0.95));
-             color: white;
-             padding: 20px 25px;
-             border-radius: 16px;
-             box-shadow: 0 12px 40px rgba(255, 107, 107, 0.4);
-             z-index: 10000;
-             max-width: 90vw;
-             width: 320px;
-             text-align: center;
-             font-size: 15px;
-             line-height: 1.5;
-             backdrop-filter: blur(15px);
-             border: 2px solid rgba(255, 165, 0, 0.5);
-         `;
-        
-                                   messageBox.innerHTML = `
-              <div style="margin-bottom: 12px; font-size: 24px;">🔄</div>
-              <div style="margin-bottom: 15px; font-size: 16px; font-weight: bold; color: #fff;">Reserve Registration</div>
-              
-              <div style="text-align: left; margin-bottom: 12px; background: rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">
-                  <div style="margin-bottom: 6px; font-weight: bold; color: #fff; font-size: 14px;">📋 Features:</div>
-                  <div style="margin-bottom: 4px; font-size: 13px;">• Cost: $23 IAM tokens</div>
-                  <div style="margin-bottom: 4px; font-size: 13px;">• Type: Reserve (inactive)</div>
-                  <div style="margin-bottom: 4px; font-size: 13px;">• Status: Waiting mode</div>
-                  <div style="margin-bottom: 4px; font-size: 13px;">• Activation: Extra payment needed</div>
-              </div>
-              
-              <div style="text-align: left; margin-bottom: 15px; background: rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);">
-                  <div style="margin-bottom: 6px; font-weight: bold; color: #fff; font-size: 14px;">⚠️ Important:</div>
-                  <div style="margin-bottom: 4px; font-size: 13px;">• User not active</div>
-                  <div style="margin-bottom: 4px; font-size: 13px;">• Extra payment for activation</div>
-                  <div style="margin-bottom: 4px; font-size: 13px;">• Position reservation only</div>
-                  <div style="margin-bottom: 4px; font-size: 13px;">• Activation cost separate</div>
-              </div>
-              
-              <div style="margin-top: 15px;">
-                  <button onclick="this.parentElement.parentElement.remove()" style="
-                      background: rgba(255, 255, 255, 0.2);
-                      border: 2px solid rgba(255, 255, 255, 0.4);
-                      color: white;
-                      padding: 10px 20px;
-                      border-radius: 8px;
-                      cursor: pointer;
-                      font-size: 13px;
-                      font-weight: bold;
-                      transition: all 0.3s ease;
-                      width: 100%;
-                  " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
-                      I Understand
-                  </button>
-              </div>
-          `;
-        
-        document.body.appendChild(messageBox);
-        
-                 // Auto remove after 15 seconds
-        setTimeout(() => {
-            if (messageBox.parentElement) {
-                messageBox.style.animation = 'fadeOut 0.5s ease';
-                setTimeout(() => messageBox.remove(), 500);
-            }
-        }, 15000);
-    }
 
     // Function to display temporary messages (for validation)
     function showTempMessage(message, type = 'info', duration = 3000) {
@@ -1622,156 +1525,26 @@
      // Change registration type based on selected tab
      let currentRegistrationType = 'normal';
      
-     // Event listener for normal registration tab
-     document.getElementById('normal-tab').addEventListener('click', function() {
-       currentRegistrationType = 'normal';
-       
-               // Change tab appearance using CSS classes
-        document.getElementById('normal-tab').classList.add('active');
-        document.getElementById('normal-tab').innerHTML = 'Normal Registration <span style="position: absolute; top: -8px; right: -8px; background: #00ff88; color: #232946; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">⭐</span>';
-        document.getElementById('normal-tab').style.flex = '3';
-        document.getElementById('free-tab').classList.remove('active');
-        document.getElementById('free-tab').innerHTML = 'Reserve <span style="font-size: 0.6rem; margin-left: 2px;">⚠️</span>';
-        document.getElementById('free-tab').style.flex = '1';
-       
-               // Change button text
-        document.getElementById('register-btn').textContent = 'Register';
-        document.getElementById('register-btn').style.background = 'linear-gradient(90deg,#00ff88,#00cc66) !important';
-       
-       // Change information
-       document.getElementById('registration-type').textContent = 'Normal';
-       document.getElementById('registration-type').style.color = '#00ff88';
-
-       // Change upper label for normal registration
-       document.getElementById('upper-label').textContent = 'Upper Index';
-       document.getElementById('upper-index').placeholder = 'e.g. 123';
-       document.getElementById('upper-address').placeholder = '0x...';
-       
-       // Enable referrer index field for normal registration
-       document.getElementById('referrer-index').disabled = false;
-       document.getElementById('referrer-index').placeholder = 'e.g. 123 or IAM123';
-       document.getElementById('apply-referrer-index-btn').disabled = false;
-       document.getElementById('apply-referrer-index-btn').style.opacity = '1';
-       document.getElementById('apply-referrer-index-btn').style.cursor = 'pointer';
-       
-       // Enable upper fields for normal registration
-       document.getElementById('upper-index').disabled = false;
-       document.getElementById('upper-address').disabled = false;
-       document.getElementById('apply-upper-index-btn').disabled = false;
-       document.getElementById('apply-upper-index-btn').style.opacity = '1';
-       document.getElementById('apply-upper-index-btn').style.cursor = 'pointer';
-       
-       // Clear placement info
-       document.getElementById('placement-info').style.display = 'none';
-       document.getElementById('upper-validation-status').style.display = 'none';
-
-       // Update placement info for reserve
-       if (window.contractConfig && window.contractConfig.contract) {
-         setTimeout(async () => {
-           await validateUpperAgainstReferrer();
-         }, 100);
-       }
-       
-       // Update cost
-      updateRegistrationCost();
-     });
      
-     // Event listener for free registration tab
-     document.getElementById('free-tab').addEventListener('click', function() {
-       currentRegistrationType = 'free';
-       
-       // Change tab appearance using CSS classes
-       document.getElementById('free-tab').classList.add('active');
-       document.getElementById('free-tab').innerHTML = 'Reserve <span style="font-size: 0.6rem; margin-left: 2px;">⚠️</span>';
-       document.getElementById('free-tab').style.flex = '1';
-       document.getElementById('normal-tab').classList.remove('active');
-       document.getElementById('normal-tab').innerHTML = 'Normal Registration <span style="position: absolute; top: -8px; right: -8px; background: #00ff88; color: #232946; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">⭐</span>';
-       document.getElementById('normal-tab').style.flex = '3';
-       
-               // Change button text
-        document.getElementById('register-btn').textContent = 'Register Reserve';
-        document.getElementById('register-btn').style.background = 'linear-gradient(90deg,#ffa500,#ff8c00) !important';
-       
-       // Change information
-       document.getElementById('registration-type').textContent = 'Reserve';
-       document.getElementById('registration-type').style.color = '#ff6b6b';
-
-       // Change upper label for reserve registration
-       document.getElementById('upper-label').textContent = 'Upper Address (Auto-filled)';
-       document.getElementById('upper-index').placeholder = 'Auto-calculated';
-       document.getElementById('upper-address').placeholder = 'Auto-filled from connected wallet';
-       
-       // Disable referrer index field for reserve (read-only)
-       document.getElementById('referrer-index').disabled = true;
-       document.getElementById('referrer-index').placeholder = 'Auto-filled from connected wallet';
-       document.getElementById('apply-referrer-index-btn').disabled = true;
-       document.getElementById('apply-referrer-index-btn').style.opacity = '0.5';
-       document.getElementById('apply-referrer-index-btn').style.cursor = 'not-allowed';
-       
-       // Disable upper fields for reserve (read-only)
-       document.getElementById('upper-index').disabled = true;
-       document.getElementById('upper-address').disabled = true;
-       document.getElementById('apply-upper-index-btn').disabled = true;
-       document.getElementById('apply-upper-index-btn').style.opacity = '0.5';
-       document.getElementById('apply-upper-index-btn').style.cursor = 'not-allowed';
-       
-       // Clear placement info
-       document.getElementById('placement-info').style.display = 'none';
-       document.getElementById('upper-validation-status').style.display = 'none';
-
-       // Update placement info for reserve
-       if (window.contractConfig && window.contractConfig.contract) {
-         setTimeout(async () => {
-           await validateUpperAgainstReferrer();
-         }, 100);
-       }
-       
-       // Display message box with reserve information
-       showReserveInfoMessage();
-       
-       // Update cost
-      updateRegistrationCost();
-     });
      
      // Function to update registration cost
      async function updateRegistrationCost() {
-       if (currentRegistrationType === 'free') {
-         // Reserve mode: equivalent to $23 tokens
-         try {
-           if (window.contractConfig && window.contractConfig.contract) {
-             const contract = window.contractConfig.contract;
-             if (typeof contract.getTokenPrice === 'function') {
-               const tokenPrice = await contract.getTokenPrice();
-               const tokenPriceNum = Number(ethers.formatUnits(tokenPrice, 18));
-               const requiredAmount = (23 / tokenPriceNum);
-               document.getElementById('register-cost').textContent = `${requiredAmount.toFixed(2)} IAM`;
-             } else {
-               document.getElementById('register-cost').textContent = '23 IAM';
-             }
+       // Normal mode: use safe regPrice function
+       try {
+         if (window.contractConfig && window.contractConfig.contract) {
+           const contract = window.contractConfig.contract;
+           const regPrice = await (window.safeGetRegPrice ? window.safeGetRegPrice(contract) : null);
+           if (regPrice) {
+             const regPriceNum = Number(ethers.formatUnits(regPrice, 18));
+             document.getElementById('register-cost').textContent = `${regPriceNum.toFixed(2)} IAM`;
            } else {
-             document.getElementById('register-cost').textContent = 'Equivalent to $23';
+             document.getElementById('register-cost').textContent = 'RegPrice not available';
            }
-         } catch (e) {
-           document.getElementById('register-cost').textContent = '23 IAM';
+         } else {
+           document.getElementById('register-cost').textContent = 'Contract not available';
          }
-                } else {
-          // Normal mode: use safe regPrice function
-          try {
-            if (window.contractConfig && window.contractConfig.contract) {
-              const contract = window.contractConfig.contract;
-              const regPrice = await (window.safeGetRegPrice ? window.safeGetRegPrice(contract) : null);
-              if (regPrice) {
-                const regPriceNum = Number(ethers.formatUnits(regPrice, 18));
-                document.getElementById('register-cost').textContent = `${regPriceNum.toFixed(2)} IAM`;
-              } else {
-                document.getElementById('register-cost').textContent = 'RegPrice not available';
-              }
-            } else {
-              document.getElementById('register-cost').textContent = 'Contract not available';
-            }
-          } catch (e) {
-            document.getElementById('register-cost').textContent = 'Error loading regPrice';
-          }
+       } catch (e) {
+         document.getElementById('register-cost').textContent = 'Error loading regPrice';
        }
      }
 
@@ -1979,8 +1752,7 @@
     // Function to validate upper address against referrer in real-time
     async function validateUpperAgainstReferrer() {
       const statusEl = document.getElementById('upper-validation-status');
-      const placementEl = document.getElementById('placement-info');
-      if (!statusEl || !placementEl) return;
+      if (!statusEl) return;
       
       const referrer = referrerDisplay.getAttribute('data-full-address') || referrerDisplay.value.trim();
       const upper = upperInput.getAttribute('data-full-address') || upperInput.value.trim();
@@ -2023,211 +1795,17 @@
           statusEl.textContent = '✅ Upper address is valid for this referrer';
           statusEl.style.display = '';
           
-          // Show placement information
-          await showPlacementInfo(contract, upper);
-          
           showTempMessage('Upper address is valid for this referrer', 'success');
-        } else if (currentRegistrationType === 'free') {
-          // Reserve registration: show placement info based on upper (connected wallet)
-          statusEl.style.display = 'none';
-          await showReservePlacementInfo(contract, upper);
-          showTempMessage('Reserve placement calculated based on connected wallet', 'success');
         }
       } catch (error) {
         statusEl.className = 'register-form-status error';
         statusEl.textContent = '❌ ' + error.message;
         statusEl.style.display = '';
-        placementEl.style.display = 'none';
         showTempMessage(error.message, 'error');
       }
     }
     
-    // Function to show placement info for reserve registration (registerFree algorithm)
-    async function showReservePlacementInfo(contract, upperAddress) {
-      const placementEl = document.getElementById('placement-info');
-      if (!placementEl) return;
-      
-      try {
-        // Get upper user data (connected wallet)
-        const upperUser = await contract.users(upperAddress);
-        if (!upperUser || !(upperUser.index && BigInt(upperUser.index) > 0n)) {
-          placementEl.style.display = 'none';
-          return;
-        }
-        
-        let parentIndex = Number(upperUser.index);
-        let parentAddr = upperAddress;
-        let found = false;
-        let isLeft = false;
-        let path = [parentIndex]; // Track the path taken
-        
-        // Simulate the exact registerFree algorithm
-        while (!found) {
-          const leftAddress = await contract.getLeftAddress(parentIndex);
-          const rightAddress = await contract.getRightAddress(parentIndex);
-          
-          if (leftAddress === '0x0000000000000000000000000000000000000000') {
-            // Left position is available
-            isLeft = true;
-            found = true;
-            path.push(parentIndex * 2);
-          } else if (rightAddress === '0x0000000000000000000000000000000000000000') {
-            // Right position is available
-            isLeft = false;
-            found = true;
-            path.push(parentIndex * 2 + 1);
-          } else {
-            // Both positions are occupied, need to find the path with fewer points
-            try {
-              const leftChildIndex = parentIndex * 2;
-              const rightChildIndex = parentIndex * 2 + 1;
-              
-              const leftChildAddress = await contract.indexToAddress(leftChildIndex);
-              const rightChildAddress = await contract.indexToAddress(rightChildIndex);
-              
-              if (leftChildAddress === '0x0000000000000000000000000000000000000000' || 
-                  rightChildAddress === '0x0000000000000000000000000000000000000000') {
-                // One of the children doesn't exist, this shouldn't happen
-                throw new Error('Invalid tree structure');
-              }
-              
-              const leftUser = await contract.users(leftChildAddress);
-              const rightUser = await contract.users(rightChildAddress);
-              
-              const leftCount = Number(leftUser.leftPoints) + Number(leftUser.rightPoints);
-              const rightCount = Number(rightUser.leftPoints) + Number(rightUser.rightPoints);
-              
-              if (leftCount <= rightCount) {
-                parentIndex = leftChildIndex;
-                parentAddr = leftChildAddress;
-                path.push(leftChildIndex);
-              } else {
-                parentIndex = rightChildIndex;
-                parentAddr = rightChildAddress;
-                path.push(rightChildIndex);
-              }
-            } catch (error) {
-              console.error('Error in tree traversal:', error);
-              placementEl.className = 'register-form-status error';
-              placementEl.textContent = '❌ Error calculating placement position';
-              placementEl.style.display = '';
-              return;
-            }
-          }
-        }
-        
-        const userIndex = isLeft ? parentIndex * 2 : parentIndex * 2 + 1;
-        const position = isLeft ? 'LEFT' : 'RIGHT';
-        
-        // Show placement information for reserve (exact registerFree algorithm)
-        placementEl.className = 'register-form-status info';
-        placementEl.innerHTML = `
-          <div style="margin-bottom: 2px;">📍 Reserve user will be placed as <strong>${position}</strong> child</div>
-          <div style="font-size: 0.65rem; opacity: 0.8; margin-bottom: 2px;">Final Index: <strong>${userIndex}</strong></div>
-          <div style="font-size: 0.6rem; opacity: 0.7; margin-bottom: 2px;">Parent: ${parentAddr.substring(0, 6)}...${parentAddr.substring(38)} (Index: ${parentIndex})</div>
-          <div style="font-size: 0.6rem; opacity: 0.7;">Path: ${path.slice(0, -1).join(' → ')} → <strong>${userIndex}</strong></div>
-          <div style="font-size: 0.6rem; opacity: 0.6; margin-top: 2px; color: #ff6b6b;">⚠️ Reserve: User will be inactive (binaryPointCap = 0)</div>
-        `;
-        placementEl.style.display = '';
-        
-      } catch (error) {
-        console.error('Error getting reserve placement info:', error);
-        placementEl.className = 'register-form-status error';
-        placementEl.textContent = '❌ Error calculating placement position';
-        placementEl.style.display = '';
-      }
-    }
     
-    // Function to show where new user will be placed (using smart contract algorithm)
-    async function showPlacementInfo(contract, upperAddress) {
-      const placementEl = document.getElementById('placement-info');
-      if (!placementEl) return;
-      
-      try {
-        // Get upper user data
-        const upperUser = await contract.users(upperAddress);
-        if (!upperUser || !(upperUser.index && BigInt(upperUser.index) > 0n)) {
-          placementEl.style.display = 'none';
-          return;
-        }
-        
-        let parentIndex = Number(upperUser.index);
-        let found = false;
-        let isLeft = false;
-        let path = [parentIndex]; // Track the path taken
-        
-        // Simulate the smart contract algorithm
-        while (!found) {
-          const leftAddress = await contract.getLeftAddress(parentIndex);
-          const rightAddress = await contract.getRightAddress(parentIndex);
-          
-          if (leftAddress === '0x0000000000000000000000000000000000000000') {
-            // Left position is available
-            isLeft = true;
-            found = true;
-            path.push(parentIndex * 2);
-          } else if (rightAddress === '0x0000000000000000000000000000000000000000') {
-            // Right position is available
-            isLeft = false;
-            found = true;
-            path.push(parentIndex * 2 + 1);
-          } else {
-            // Both positions are occupied, need to find the path with fewer points
-            try {
-              const leftChildIndex = parentIndex * 2;
-              const rightChildIndex = parentIndex * 2 + 1;
-              
-              const leftChildAddress = await contract.indexToAddress(leftChildIndex);
-              const rightChildAddress = await contract.indexToAddress(rightChildIndex);
-              
-              if (leftChildAddress === '0x0000000000000000000000000000000000000000' || 
-                  rightChildAddress === '0x0000000000000000000000000000000000000000') {
-                // One of the children doesn't exist, this shouldn't happen
-                throw new Error('Invalid tree structure');
-              }
-              
-              const leftUser = await contract.users(leftChildAddress);
-              const rightUser = await contract.users(rightChildAddress);
-              
-              const leftCount = Number(leftUser.leftPoints) + Number(leftUser.rightPoints);
-              const rightCount = Number(rightUser.leftPoints) + Number(rightUser.rightPoints);
-              
-              if (leftCount <= rightCount) {
-                parentIndex = leftChildIndex;
-                path.push(leftChildIndex);
-              } else {
-                parentIndex = rightChildIndex;
-                path.push(rightChildIndex);
-              }
-            } catch (error) {
-              console.error('Error in tree traversal:', error);
-              placementEl.className = 'register-form-status error';
-              placementEl.textContent = '❌ Error calculating placement position';
-              placementEl.style.display = '';
-              return;
-            }
-          }
-        }
-        
-        const finalIndex = isLeft ? parentIndex * 2 : parentIndex * 2 + 1;
-        const position = isLeft ? 'LEFT' : 'RIGHT';
-        
-        // Show placement information
-        placementEl.className = 'register-form-status info';
-        placementEl.innerHTML = `
-          <div style="margin-bottom: 2px;">📍 New user will be placed as <strong>${position}</strong> child</div>
-          <div style="font-size: 0.65rem; opacity: 0.8; margin-bottom: 2px;">Final Index: <strong>${finalIndex}</strong></div>
-          <div style="font-size: 0.6rem; opacity: 0.7;">Path: ${path.slice(0, -1).join(' → ')} → <strong>${finalIndex}</strong></div>
-        `;
-        placementEl.style.display = '';
-        
-      } catch (error) {
-        console.error('Error getting placement info:', error);
-        placementEl.className = 'register-form-status error';
-        placementEl.textContent = '❌ Error calculating placement position';
-        placementEl.style.display = '';
-      }
-    }
      
 
      
@@ -2361,33 +1939,6 @@
              return;
            }
            
-           // Calculate placement based on registration type
-           if (currentRegistrationType === 'normal') {
-             const upperAddress = upperInput.getAttribute('data-full-address') || upperInput.value.trim();
-             if (upperAddress && upperAddress !== 'root' && /^0x[a-fA-F0-9]{40}$/.test(upperAddress)) {
-               await showPlacementInfo(contract, upperAddress);
-             }
-           } else if (currentRegistrationType === 'free') {
-             // For reserve, use current user as upper
-             await showReservePlacementInfo(contract, myAddress);
-             
-                // Show simple additional message for reserve registration
-                const placementEl = document.getElementById('placement-info');
-                if (placementEl && placementEl.style.display !== 'none') {
-                  const additionalText = `Registering: ${newUserAddress.substring(0, 6)}...${newUserAddress.substring(38)} | Referrer: ${referrerAddress.substring(0, 6)}...${referrerAddress.substring(38)} | Change wallet if needed`;
-                  
-                  // Typewriter effect for additional info
-                  let j = 0;
-                  const additionalTypewriter = setInterval(() => {
-                    if (j < additionalText.length) {
-                      placementEl.textContent += additionalText.charAt(j);
-                      j++;
-                    } else {
-                      clearInterval(additionalTypewriter);
-                    }
-                  }, 30);
-                }
-           }
            
          } catch (error) {
            console.error('Error calculating placement for new user:', error);

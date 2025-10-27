@@ -34,7 +34,7 @@ class SalesPageManager {
             
             // Get user information
             const user = await contract.users(address);
-            if (!user || !user.index || BigInt(user.index) === 0n) {
+            if (!user || !user.num || BigInt(user.num) === 0n) {
                 throw new Error('You must register first');
             }
             
@@ -55,7 +55,7 @@ class SalesPageManager {
             
             this.currentUser = {
                 address,
-                index: user.index.toString(),
+                index: user.num.toString(),
                 likes: likesCount,
                 balance: balanceFormatted,
                 name: this.generateUserName(address)

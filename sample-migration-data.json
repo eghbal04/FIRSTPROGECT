@@ -1,0 +1,57 @@
+[
+  {
+    "address": "0x1234567890123456789012345678901234567890",
+    "upper": "0x0000000000000000000000000000000000000000",
+    "depositAmount": "0.1",
+    "index": 1,
+    "registrationTime": 1640995200,
+    "metadata": {
+      "source": "old_contract",
+      "migrated": false
+    }
+  },
+  {
+    "address": "0x2345678901234567890123456789012345678901",
+    "upper": "0x1234567890123456789012345678901234567890",
+    "depositAmount": "0.05",
+    "index": 2,
+    "registrationTime": 1640995260,
+    "metadata": {
+      "source": "old_contract",
+      "migrated": false
+    }
+  },
+  {
+    "address": "0x3456789012345678901234567890123456789012",
+    "upper": "0x1234567890123456789012345678901234567890",
+    "depositAmount": "0.2",
+    "index": 3,
+    "registrationTime": 1640995320,
+    "metadata": {
+      "source": "old_contract",
+      "migrated": false
+    }
+  },
+  {
+    "address": "0x4567890123456789012345678901234567890123",
+    "upper": "0x2345678901234567890123456789012345678901",
+    "depositAmount": "0.15",
+    "index": 4,
+    "registrationTime": 1640995380,
+    "metadata": {
+      "source": "old_contract",
+      "migrated": false
+    }
+  },
+  {
+    "address": "0x5678901234567890123456789012345678901234",
+    "upper": "0x3456789012345678901234567890123456789012",
+    "depositAmount": "0.08",
+    "index": 5,
+    "registrationTime": 1640995440,
+    "metadata": {
+      "source": "old_contract",
+      "migrated": false
+    }
+  }
+]
