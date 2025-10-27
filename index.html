@@ -59,7 +59,7 @@
     @media (max-width: 1024px) { .grid { grid-template-columns: 1fr; gap: 14px; } }
     .card { background: #121521; border: 1px solid #1f2433; border-radius: 12px; padding: 16px; }
     .card h2 { margin: 0 0 12px; font-size: 16px; color:#aef3c6; cursor: pointer; user-select: none; display: flex; align-items: center; justify-content: space-between; }
-    #contract-card h2 { margin: 0 0 8px; font-size: 16px; color: #00ff88; text-align: center; }
+    #contract-card h2 { margin: 0 0 8px; font-size: 20px; color: #00ff88; text-align: center; }
     .card h2:hover { color: #c4f7d6; }
     .card h2 .toggle-icon { transition: transform 0.3s ease; font-size: 16px; }
     .card h2.collapsed .toggle-icon { transform: rotate(-90deg); }
@@ -92,13 +92,13 @@
       color: #aef3c6;
       min-width: 90px;
       max-width: 90px;
-      font-size: 10px;
+      font-size: 14px;
       flex-shrink: 0;
     }
     #contract-card .value {
       flex: 1;
       font-family: monospace;
-      font-size: 11px;
+      font-size: 16px;
       color: #e6eaf0;
       word-break: break-all;
       background: rgba(0, 255, 136, 0.05);
@@ -700,7 +700,7 @@
       z-index: 9999 !important;
     }
 
-    @media (max-width: 480px) {
+    @media (max-width: 768px) {
       .container { padding: 14px; }
       h1 { font-size: 17px; }
       .card h2 { font-size: 13px; }
@@ -1201,7 +1201,7 @@
 
     <div class="statusbar top" id="status-bar-top">
       <span class="pill" id="status-address">-</span>
-      <span class="pill" id="status-index">-</span>
+      <span class="pill" id="status-user-id">ID: -</span>
       <span class="pill" id="status-likes">👍 -</span>
       <span class="pill" id="status-dislikes">👎 -</span>
       <span class="pill" id="status-rank">⭐ -</span>
@@ -1213,55 +1213,53 @@
       <span class="pill" id="status-iam">IAM: -</span>
     </div>
         
-    <!-- Full-width contract option selector -->
-    <div id="contract-selector-wide-wrap" style="margin-top:10px; margin-bottom:16px; width:100%;">
-      <select id="contract-selector-wide" style="width:100%; padding:12px 14px; border-radius:10px; background:#1e293b; color:#e6eaf0; border:1px solid #334155; cursor:pointer; font-size:14px; letter-spacing:0.2px;"></select>
-    </div>
-    
-        
 
     <!-- Navigation Menu - Creative Design -->
-    <div class="nav-menu" style="margin-bottom: 24px;">
+    <div class="nav-menu" id="nav-menu" style="margin-bottom: 24px;">
       <div class="nav-grid">
         <a class="nav-card" href="about.html">
           <div class="nav-icon">ℹ️</div>
           <div class="nav-label">Presentation</div>
         </a>
-        <a class="nav-card" href="swap.html">
+        <a class="nav-card nav-swap" href="swap.html">
           <div class="nav-icon">🔄</div>
           <div class="nav-label">Swap</div>
         </a>
-        <a class="nav-card" href="register.html">
+        <a class="nav-card nav-new-contract" href="register.html">
           <div class="nav-icon">📝</div>
           <div class="nav-label">Register</div>
         </a>
-        <a class="nav-card" href="onboarding.html">
+        <a class="nav-card nav-new-contract" href="onboarding.html">
           <div class="nav-icon">🎓</div>
           <div class="nav-label">Onboarding</div>
+        </a>
+        <a class="nav-card nav-new-contract" href="professional-tree.html">
+          <div class="nav-icon">🌳</div>
+          <div class="nav-label">Partners</div>
+        </a>
+        <a class="nav-card nav-new-contract" href="transfer.html">
+          <div class="nav-icon">📤</div>
+          <div class="nav-label">Transfer</div>
+        </a>
+        <a class="nav-card nav-new-contract" href="profile.html">
+          <div class="nav-icon">👤</div>
+          <div class="nav-label">Profile</div>
+        </a>
+        <a class="nav-card nav-new-contract" href="sales.html">
+          <div class="nav-icon">💰</div>
+          <div class="nav-label">Sales</div>
+        </a>
+        <a class="nav-card nav-new-contract" href="transfer-ownership.html">
+          <div class="nav-icon">🏗️</div>
+          <div class="nav-label">Ownership</div>
+        </a>
+        <a class="nav-card nav-new-contract" href="utility.html">
+          <div class="nav-icon">🛠️</div>
+          <div class="nav-label">Utility</div>
         </a>
         <a class="nav-card" href="professional-tree.html">
           <div class="nav-icon">🌳</div>
           <div class="nav-label">Partners</div>
-        </a>
-        <a class="nav-card" href="transfer.html">
-          <div class="nav-icon">📤</div>
-          <div class="nav-label">Transfer</div>
-        </a>
-        <a class="nav-card" href="profile.html">
-          <div class="nav-icon">👤</div>
-          <div class="nav-label">Profile</div>
-        </a>
-        <a class="nav-card" href="sales.html">
-          <div class="nav-icon">💰</div>
-          <div class="nav-label">Sales</div>
-        </a>
-        <a class="nav-card" href="transfer-ownership.html">
-          <div class="nav-icon">🏗️</div>
-          <div class="nav-label">Ownership</div>
-        </a>
-        <a class="nav-card" href="utility.html">
-          <div class="nav-icon">🛠️</div>
-          <div class="nav-label">Utility</div>
         </a>
         <a class="nav-card" href="price-charts.html" target="_blank">
           <div class="nav-icon">📊</div>
@@ -1276,7 +1274,7 @@
 
 
     <!-- About IAM PHOENIX Section -->
-    <div class="additional-content" style="
+    <div class="additional-content new-contract-content" style="
       margin: 20px 0;
       padding: 24px;
       background: linear-gradient(135deg, #1a1f2e 0%, #232946 100%);
@@ -1373,7 +1371,7 @@
     <section class="card" id="contract-card" style="text-align:left; direction:ltr;">
       <h2 id="contract-header">Contract Info <span class="toggle-icon">▼</span></h2>
       <div class="card-content" id="contract-content">
-        <div class="row"><div class="label">🔗 Contract Address</div><a class="value" id="c-address" href="#" target="_blank" rel="noopener noreferrer">-</a></div>
+        <div class="row"><div class="label">🔗 Contract Address</div><a class="value" id="c-address" href="#" target="_blank" rel="noopener noupper">-</a></div>
         <div class="row"><div class="label">🏷️ Name</div><div class="value" id="c-name">-</div></div>
         <div class="row"><div class="label">🧩 Symbol</div><div class="value" id="c-symbol">-</div></div>
         <div class="row"><div class="label">#️⃣ Decimals</div><div class="value" id="c-decimals">-</div></div>
@@ -1537,6 +1535,7 @@
       </div>
     </div>
 
+
                 
         
         
@@ -1630,7 +1629,7 @@
         if (!isFinite(n)) return String(num);
         return n.toLocaleString('en-US', { 
           minimumFractionDigits: 2, 
-          maximumFractionDigits: 18 
+          maximumFractionDigits: 2 
         });
       } catch { return String(num); }
     }
@@ -1646,13 +1645,15 @@
       } catch { return String(num); }
     }
 
-    function format2Decimals(num) {
+    function formatTokenPrice(num) {
       try { 
         const n = Number(num);
         if (!isFinite(n)) return String(num);
+        
+        // Format to exactly 9 decimal places
         return n.toLocaleString('en-US', { 
-          minimumFractionDigits: 2, 
-          maximumFractionDigits: 2 
+          minimumFractionDigits: 9, 
+          maximumFractionDigits: 9 
         });
       } catch { return String(num); }
     }
@@ -1666,7 +1667,7 @@
       try {
         const isTopBar = barType === 'top';
         const pillIds = isTopBar ? 
-          ['status-address', 'status-index', 'status-likes', 'status-dislikes', 'status-rank'] :
+          ['status-address', 'status-user-id', 'status-likes', 'status-dislikes', 'status-rank'] :
           ['status-matic', 'status-dai', 'status-iam'];
         
         // Disable dynamic sizing on small screens
@@ -1769,7 +1770,7 @@
         if (id === 'status-dislikes') { el.textContent = `💔 ${value ?? 0}`; return; }
         if (id === 'status-rank') { el.textContent = (value && String(value).trim()) ? String(value) : '⭐'; return; }
         // Normal rendering for others
-        if (id === 'status-address' || id === 'status-index') {
+        if (id === 'status-address' || id === 'status-user-id') {
           el.textContent = iconLabel(`${value ?? '-'}`);
                         } else {
           el.textContent = iconLabel(`${label}: ${value ?? '-'}`);
@@ -1777,7 +1778,7 @@
       };
       if (!data) return;
       if (data.address !== undefined) set('status-address', 'Address', data.address);
-      if (data.index !== undefined) set('status-index', 'Index', data.index);
+      if (data['user-id'] !== undefined) set('status-user-id', 'ID', data['user-id']);
       if (data.rank !== undefined) set('status-rank', 'Rank', data.rank);
       if (data.matic !== undefined) set('status-matic', 'POL', data.matic);
       if (data.dai !== undefined) set('status-dai', 'DAI', data.dai);
@@ -1791,7 +1792,7 @@
         // Top bar dynamic sizing
         setDynamicPillWidths('top', {
           'status-address': data.address ? 1 : 0, // Address always gets minimum width
-          'status-index': data.index,
+          'status-user-id': data['user-id'],
           'status-likes': data.likes,
           'status-dislikes': data.dislikes,
           'status-rank': data.rank ? 1 : 0 // Rank always gets minimum width
@@ -1805,6 +1806,32 @@
         });
       }, 100);
     }
+
+    // Force refresh contract info function
+    window.forceRefreshContractInfo = async function() {
+      try {
+        console.log('🔄 Force refreshing contract info...');
+        
+        // Clear any cached data
+        if (window.contractConfig) {
+          window.contractConfig.contract = null;
+        }
+        
+        // Refresh contract info
+        if (window.refreshContractInfoSafe) {
+          await window.refreshContractInfoSafe();
+        }
+        
+        // Refresh floating token card
+        if (window.floatingTokenCard && window.floatingTokenCard.updateTokenPrice) {
+          window.floatingTokenCard.updateTokenPrice();
+        }
+        
+        console.log('✅ Contract info force refreshed');
+      } catch (error) {
+        console.error('❌ Error force refreshing contract info:', error);
+      }
+    };
 
     // User Info removed
 
@@ -1832,8 +1859,24 @@
         if (!connection || !connection.contract) throw new Error('Contract connection is not available');
         const { contract, provider, signer, address: connectedAddress } = connection;
 
-        const contractAddress = (contract && contract.target) ? String(contract.target) : (window.IAM_ADDRESS || '-');
+        // Get the currently selected contract address
+        const currentContractAddress = (window.getIAMAddress && typeof window.getIAMAddress === 'function') ? 
+          window.getIAMAddress() : (window.IAM_ADDRESS || '-');
+        
+        console.log('🔍 Fetching contract info for address:', currentContractAddress);
+        
+        const contractAddress = (contract && contract.target) ? String(contract.target) : currentContractAddress;
         addrEl.textContent = shortenAddress(contractAddress);
+        
+        // Update contract info header to show selected contract
+        const contractHeader = document.getElementById('contract-header');
+        if (contractHeader) {
+          const isOldContract = contractAddress.toLowerCase() === '0x2d3923a5ba62b2bec13b9181b1e9ae0ea2c8118d';
+          const contractType = isOldContract ? 'Old' : 'New';
+          contractHeader.innerHTML = `Contract Info (${contractType}) <span class="toggle-icon">▼</span>`;
+          console.log('📋 Contract header updated:', contractType);
+        }
+        
         // Link to Polygonscan/Amoy based on network
         try {
           if (addrEl && addrEl.tagName === 'A' && contractAddress && contractAddress.startsWith('0x') && contractAddress.length === 42) {
@@ -1932,8 +1975,8 @@
             try { if (typeof contract.users === 'function') u = await contract.users(userAddr); } catch {}
             if (u) {
               try {
-                if (u.num !== undefined) {
-                  updateStatusPills({ index: (typeof u.num === 'bigint') ? u.num.toString() : String(u.num) });
+                if (u.index !== undefined) {
+                  updateStatusPills({ index: (typeof u.index === 'bigint') ? u.index.toString() : String(u.index) });
                   // Update button states when user index changes
                 }
                 // Rank derived from binaryPointsClaimed (claimed count tiers)
@@ -1964,11 +2007,14 @@
             } else {
               // Fallbacks
               try {
-                let idx = null;
-                if (typeof contract.addressToIndex === 'function') idx = await contract.addressToIndex(userAddr);
-                if (idx !== null && idx !== undefined) {
-                  updateStatusPills({ index: (typeof idx === 'bigint' ? idx.toString() : String(idx)) });
-                  // Update button states when user index changes
+                // Try to get user ID from getUserNumber if available
+                if (typeof contract.getUserNumber === 'function') {
+                  try {
+                    const userNum = await contract.getUserNumber(userAddr);
+                    if (userNum !== null && userNum !== undefined) {
+                      updateStatusPills({ 'user-id': (typeof userNum === 'bigint' ? userNum.toString() : String(userNum)) });
+                    }
+                  } catch {}
                 }
               } catch {}
               try {
@@ -1980,18 +2026,20 @@
                 }
               } catch {}
             }
-            // Index + Rank (ensure index present if not from struct)
+            // Ensure user ID is present
             try {
-              let ensuredIndex = document.getElementById('status-index')?.textContent;
-              if (!ensuredIndex || ensuredIndex === '-' || ensuredIndex.trim() === '# -') {
-                let idx = null;
-                if (typeof contract.addressToIndex === 'function') idx = await contract.addressToIndex(userAddr);
-                if (idx !== null && idx !== undefined) {
-                  updateStatusPills({ index: (typeof idx === 'bigint' ? idx.toString() : String(idx)) });
-                  // Update button states when user index changes
+              let ensuredUserId = document.getElementById('status-user-id')?.textContent;
+              if (!ensuredUserId || ensuredUserId === '-' || ensuredUserId.trim() === 'ID: -') {
+                // Try to get user ID from getUserNumber if available
+                if (typeof contract.getUserNumber === 'function') {
+                  try {
+                    const userNum = await contract.getUserNumber(userAddr);
+                    if (userNum !== null && userNum !== undefined) {
+                      updateStatusPills({ 'user-id': (typeof userNum === 'bigint' ? userNum.toString() : String(userNum)) });
+                    }
+                  } catch {}
                 } else {
-                  updateStatusPills({ index: '-' });
-                  // Update button states when user has no index
+                  updateStatusPills({ 'user-id': '-' });
                 }
               }
             } catch {}
@@ -2029,7 +2077,7 @@
           else if (typeof contract.tokenPrice === 'function') p = await contract.tokenPrice();
           if (p !== undefined) {
             tokenPriceWei = (typeof p === 'bigint') ? p : BigInt(p);
-            if (tokenPriceEl) tokenPriceEl.textContent = safeFormatUnits(tokenPriceWei, 18);
+            if (tokenPriceEl) tokenPriceEl.textContent = formatTokenPrice(safeFormatUnits(tokenPriceWei, 18));
           }
         } catch {}
 
@@ -2218,257 +2266,7 @@
 
      function buildAbiUI() { /* write functions removed per request */ }
 
-    // Check claim status and show reminder if needed
-    async function checkClaimStatusAndRemind() {
-      try {
-        if (!window.connectWallet) return;
-        
-        const connection = await window.connectWallet();
-        if (!connection || !connection.contract || !connection.address) return;
-        
-        const { contract, address } = connection;
-        
-        // Get user data
-        const user = await contract.users(address);
-        if (!user || user.num === 0n) return; // User not registered
-        
-        const binaryPoints = Number(user.binaryPoints || 0);
-        const lastClaimTime = Number(user.lastClaimTime || 0);
-        const currentTime = Math.floor(Date.now() / 1000);
-        const timeSinceLastClaim = currentTime - lastClaimTime;
-        const twelveHours = 12 * 60 * 60; // 12 hours in seconds
-        
-        // Check if user has points and 12+ hours have passed since last claim
-        if (binaryPoints > 0 && timeSinceLastClaim >= twelveHours) {
-          showClaimReminderModal();
-        }
-      } catch (error) {
-        console.error('Error checking claim status:', error);
-      }
-    }
     
-    // Execute claim function
-    async function executeClaim() {
-      try {
-        if (!window.connectWallet) {
-          throw new Error('Wallet connection not available');
-        }
-        
-        const connection = await window.connectWallet();
-        if (!connection || !connection.contract) {
-          throw new Error('Contract connection failed');
-        }
-        
-        const { contract } = connection;
-        
-        // Show loading message
-        const statusEl = document.getElementById('status-message') || createStatusElement();
-        statusEl.textContent = '⏳ Executing claim transaction...';
-        statusEl.style.display = 'block';
-        statusEl.style.color = '#00ff88';
-        
-        // Execute claim
-        const tx = await contract.claim();
-        
-        statusEl.textContent = '⏳ Waiting for transaction confirmation...';
-        
-        const receipt = await tx.wait();
-        
-        statusEl.textContent = `✅ Claim successful! Transaction: ${receipt.hash}`;
-        statusEl.style.color = '#00ff88';
-        
-        // Check if binary points are now zero and hide modal if so
-        setTimeout(async () => {
-          try {
-            const connection = await window.connectWallet();
-            if (connection && connection.contract && connection.address) {
-              const user = await connection.contract.users(connection.address);
-              const binaryPoints = Number(user.binaryPoints || 0);
-              
-              if (binaryPoints === 0) {
-                // Hide modal if points are zero
-                const modal = document.getElementById('claim-reminder-modal');
-                if (modal) {
-                  modal.remove();
-                }
-                // Refresh page
-                location.reload();
-              }
-            }
-          } catch (error) {
-            console.error('Error checking points after claim:', error);
-            // Refresh page anyway
-            location.reload();
-          }
-        }, 2000);
-        
-      } catch (error) {
-        console.error('Claim error:', error);
-        const statusEl = document.getElementById('status-message') || createStatusElement();
-        statusEl.textContent = `❌ Claim failed: ${error.message}`;
-        statusEl.style.color = '#ff6b6b';
-        statusEl.style.display = 'block';
-      }
-    }
-    
-    // Create status element if it doesn't exist
-    function createStatusElement() {
-      const statusEl = document.createElement('div');
-      statusEl.id = 'status-message';
-      statusEl.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: rgba(0, 0, 0, 0.9);
-        color: #ffffff;
-        padding: 1rem;
-        border-radius: 8px;
-        border: 1px solid #00ff88;
-        z-index: 10001;
-        max-width: 300px;
-        word-wrap: break-word;
-      `;
-      document.body.appendChild(statusEl);
-      return statusEl;
-    }
-
-    // Show claim reminder modal
-    function showClaimReminderModal() {
-      // Remove existing modal if any
-      const existingModal = document.getElementById('claim-reminder-modal');
-      if (existingModal) {
-        existingModal.remove();
-      }
-      
-      // Create modal overlay
-      const modalOverlay = document.createElement('div');
-      modalOverlay.id = 'claim-reminder-modal';
-      modalOverlay.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.9);
-        z-index: 10000;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        backdrop-filter: blur(5px);
-      `;
-      
-      // Create modal content
-      const modalContent = document.createElement('div');
-      modalContent.style.cssText = `
-        background: linear-gradient(135deg, #1a1f2e, #2d3748);
-        border: 2px solid #00ff88;
-        border-radius: 15px;
-        padding: 2rem;
-        max-width: 500px;
-        width: 90%;
-        text-align: center;
-        box-shadow: 0 10px 30px rgba(0, 255, 136, 0.3);
-        animation: slideIn 0.3s ease-out;
-      `;
-      
-      modalContent.innerHTML = `
-        <div style="color: #00ff88; font-size: 2rem; margin-bottom: 1rem;">💰</div>
-        <h2 style="color: #ffffff; margin-bottom: 1rem; font-size: 1.5rem;">⚠️ CLAIM REQUIRED!</h2>
-        <p style="color: #e2e8f0; margin-bottom: 1.5rem; line-height: 1.6;">
-          You have unclaimed binary rewards that MUST be claimed before you can continue using the platform.
-          <br><br>
-          <strong style="color: #ff6b6b; font-size: 1.1rem;">⚠️ You cannot proceed without claiming your rewards!</strong>
-          <br><br>
-          <span style="color: #00ff88; font-weight: 600;">This modal will remain open until you successfully claim your rewards.</span>
-        </p>
-        <div id="claimStatus" style="margin-bottom: 1rem; color: #e2e8f0; font-size: 0.9rem;"></div>
-        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-          <button id="claimNowBtn" style="
-            background: linear-gradient(135deg, #00ff88, #00cc6a);
-            color: #0a0f1c;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-          ">💰 CLAIM NOW</button>
-        </div>
-      `;
-      
-      modalOverlay.appendChild(modalContent);
-      document.body.appendChild(modalOverlay);
-      
-      // Add animation keyframes
-      const style = document.createElement('style');
-      style.textContent = `
-        @keyframes slideIn {
-          from { transform: translateY(-50px); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
-        }
-      `;
-      document.head.appendChild(style);
-      
-      // Event listeners
-      document.getElementById('claimNowBtn').addEventListener('click', async () => {
-        const btn = document.getElementById('claimNowBtn');
-        const status = document.getElementById('claimStatus');
-        
-        try {
-          btn.disabled = true;
-          btn.textContent = '⏳ Claiming...';
-          status.textContent = 'Processing your claim...';
-          
-          // Execute claim
-          await executeClaim();
-          
-          // Check if claim was successful by verifying points are now 0
-          setTimeout(async () => {
-            try {
-              const connection = await window.connectWallet();
-              if (connection && connection.contract && connection.address) {
-                const user = await connection.contract.users(connection.address);
-                const binaryPoints = Number(user.binaryPoints || 0);
-                
-                if (binaryPoints === 0) {
-                  // Success - close modal
-                  status.textContent = '✅ Claim successful! Closing...';
-                  setTimeout(() => {
-                    modalOverlay.remove();
-                    location.reload();
-                  }, 1500);
-                } else {
-                  // Still has points - keep modal open
-                  btn.disabled = false;
-                  btn.textContent = '💰 Claim Now';
-                  status.textContent = 'Claim failed or points still available. Please try again.';
-                }
-              }
-            } catch (error) {
-              btn.disabled = false;
-              btn.textContent = '💰 Claim Now';
-              status.textContent = 'Error checking claim status. Please try again.';
-            }
-          }, 3000);
-          
-        } catch (error) {
-          btn.disabled = false;
-          btn.textContent = '💰 Claim Now';
-          status.textContent = 'Claim failed. Please try again.';
-          console.error('Error executing claim:', error);
-        }
-      });
-      
-      // Prevent closing modal by clicking outside or ESC
-      modalOverlay.addEventListener('click', (e) => {
-        e.stopPropagation();
-      });
-      
-      modalContent.addEventListener('click', (e) => {
-        e.stopPropagation();
-      });
-    }
 
     document.addEventListener('DOMContentLoaded', async () => {
       // Connect button removed; keep auto-connect below
@@ -2554,27 +2352,27 @@
           if (!addr && window.contractConfig && window.contractConfig.address) addr = window.contractConfig.address;
           if (!addr) return;
 
-          // Resolve user's index from status pill or contract if possible
-          let idx = document.getElementById('status-index')?.textContent?.replace('⭐', '').trim();
-          if (!idx || idx === '-' || idx === '# -') {
+          // Resolve user's ID from status pill or contract if possible
+          let userId = document.getElementById('status-user-id')?.textContent?.replace('ID:', '').trim();
+          if (!userId || userId === '-' || userId === '-') {
             try {
               if (window.contractConfig && window.contractConfig.contract) {
                 const c = window.contractConfig.contract;
                 if (typeof c.users === 'function') {
                   const u = await c.users(addr);
-                  if (u && u.num !== undefined) idx = (typeof u.num === 'bigint') ? u.num.toString() : String(u.num);
+                  if (u && u.index !== undefined) idx = (typeof u.index === 'bigint') ? u.index.toString() : String(u.index);
                 }
-                if ((!idx || idx === '-' || idx === '0') && typeof c.addressToIndex === 'function') {
-                  const vi = await c.addressToIndex(addr);
-                  idx = (typeof vi === 'bigint') ? vi.toString() : String(vi);
+                if ((!userId || userId === '-' || userId === '0') && typeof c.getUserNumber === 'function') {
+                  const un = await c.getUserNumber(addr);
+                  userId = (typeof un === 'bigint') ? un.toString() : String(un);
                 }
               }
             } catch {}
           }
-          if (!idx || idx === '-' || idx === '0') return;
+          if (!userId || userId === '-' || userId === '0') return;
 
           const baseUrl = window.location.origin + '/register.html';
-          const referralUrl = `${baseUrl}?ref=${encodeURIComponent(idx)}`;
+          const referralUrl = `${baseUrl}?ref=${encodeURIComponent(userId)}`;
           referralLinkInput.value = referralUrl;
           // Removed open button per request
           linkContainer.style.display = 'block';
@@ -2655,15 +2453,48 @@
     // Main function to explore binary tree and create leaderboard
     async function exploreBinaryTree() {
       try {
-        if (!window.connectWallet) {
-          throw new Error('Wallet connection is not available');
-        }
-
         updateProgress(10, '⏳ Connecting to Contract...');
 
-        const { contract } = await window.connectWallet();
+        let contract = null;
+        
+        // Try to get contract from window.connectWallet first
+        if (window.connectWallet) {
+          try {
+            const walletResult = await window.connectWallet();
+            contract = walletResult.contract;
+            console.log('📊 Using contract from connectWallet:', contract);
+          } catch (e) {
+            console.log('⚠️ Failed to get contract from connectWallet:', e.message);
+          }
+        }
+        
+        // Fallback: create contract directly
+        if (!contract && window.IAM_ADDRESS && window.NEW_IAM_ABI && window.ethers) {
+          try {
+            let provider, signer;
+            
+            // Compatible with both ethers v5 and v6
+            if (typeof ethers.providers !== 'undefined' && typeof ethers.providers.Web3Provider !== 'undefined') {
+              // Ethers v5
+              provider = new ethers.providers.Web3Provider(window.ethereum);
+              signer = provider.getSigner();
+            } else if (typeof ethers.BrowserProvider !== 'undefined') {
+              // Ethers v6
+              provider = new ethers.BrowserProvider(window.ethereum);
+              signer = await provider.getSigner();
+            }
+            
+            if (provider && signer) {
+              contract = new ethers.Contract(window.IAM_ADDRESS, window.NEW_IAM_ABI, signer);
+              console.log('📊 Created contract directly:', contract);
+            }
+          } catch (e) {
+            console.log('⚠️ Failed to create contract directly:', e.message);
+          }
+        }
+        
         if (!contract) {
-          throw new Error('Contract connection failed');
+          throw new Error('Contract connection failed - no contract available');
         }
 
         updateProgress(20, '⏳ Exploring Binary Tree...');
@@ -2710,6 +2541,8 @@
       const maxDepth = 10000000; // Increased per request to allow deep traversal
       let processedCount = 0;
       
+      console.log('🌳 Starting tree traversal with contract:', contract);
+      
       // Start from root (index 1)
       const rootIndex = 1n;
       const stack = [{ index: rootIndex, depth: 0 }];
@@ -2723,15 +2556,67 @@
         processedIndices.add(indexStr);
         
         try {
-          // Get address for this index
-          const address = await contract.indexToAddress(index);
+          let address = null;
+          
+          // Try different methods to get address from index
+          try {
+            // Method 1: indexToAddress (old contract)
+            if (typeof contract.indexToAddress === 'function') {
+              address = await contract.indexToAddress(index);
+              console.log(`📊 Method 1 (indexToAddress): Index ${index} -> ${address}`);
+            }
+          } catch (e) {
+            console.log(`⚠️ Method 1 failed for index ${index}:`, e.message);
+          }
+          
+          // Method 2: numToAddress (new contract)
+          if (!address || address === '0x0000000000000000000000000000000000000000') {
+            try {
+              if (typeof contract.numToAddress === 'function') {
+                address = await contract.numToAddress(index);
+                console.log(`📊 Method 2 (numToAddress): Index ${index} -> ${address}`);
+              }
+            } catch (e) {
+              console.log(`⚠️ Method 2 failed for index ${index}:`, e.message);
+            }
+          }
+          
+          // Method 3: getAddressByNumber (alternative)
+          if (!address || address === '0x0000000000000000000000000000000000000000') {
+            try {
+              if (typeof contract.getAddressByNumber === 'function') {
+                address = await contract.getAddressByNumber(index);
+                console.log(`📊 Method 3 (getAddressByNumber): Index ${index} -> ${address}`);
+              }
+            } catch (e) {
+              console.log(`⚠️ Method 3 failed for index ${index}:`, e.message);
+            }
+          }
           
           if (address && address !== '0x0000000000000000000000000000000000000000') {
-            // Get user data and vote status in parallel
-            const [userData, voteStatus] = await Promise.all([
-              contract.users(address),
-              contract.getVoteStatus(address).catch(() => ({ 0: 0, 1: 0 })) // Fallback for vote errors
-            ]);
+            console.log(`✅ Found address for index ${index}: ${address}`);
+            
+            // Get user data
+            let userData = null;
+            try {
+              if (typeof contract.users === 'function') {
+                userData = await contract.users(address);
+                console.log(`📊 User data for ${address}:`, userData);
+              }
+            } catch (e) {
+              console.log(`⚠️ Failed to get user data for ${address}:`, e.message);
+            }
+            
+            // Get vote status (optional)
+            let voteStatus = { 0: 0, 1: 0 };
+            try {
+              if (typeof contract.getVoteStatus === 'function') {
+                voteStatus = await contract.getVoteStatus(address);
+                console.log(`📊 Vote status for ${address}:`, voteStatus);
+              }
+            } catch (e) {
+              console.log(`⚠️ Failed to get vote status for ${address}:`, e.message);
+            }
             
             if (userData && userData.num) {
               const likes = Number(voteStatus[0] || voteStatus.totalLikes || 0);
@@ -2739,7 +2624,7 @@
               
               users.push({
                 address: address,
-                index: userData.num,
+                index: userData.index,
                 binaryPoints: userData.binaryPoints || 0,
                 binaryPointsClaimed: userData.binaryPointsClaimed || 0,
                 leftPoints: userData.leftPoints || 0,
@@ -2750,6 +2635,8 @@
                 dislikes: dislikes,
                 popularityScore: likes - dislikes
               });
+              
+              console.log(`✅ Added user ${address} with num ${userData.num}`);
               
               // Add children to stack based on tree structure
               const leftChildAddress = userData.leftChild && userData.leftChild !== '0x0000000000000000000000000000000000000000' ? index * 2n : null;
@@ -2767,11 +2654,13 @@
             updateProgress(progress, `⏳ Exploring... Found ${users.length} users`);
           }
         } catch (e) {
+          console.log(`⚠️ Error processing index ${index}:`, e.message);
           // Skip errors and continue
           continue;
         }
       }
       
+      console.log(`🌳 Tree traversal completed. Found ${users.length} users`);
       return users;
     }
 
@@ -2856,7 +2745,7 @@
               ">${rankIcon}</div>
               <div>
                 <div style="color: #e6eaf0; font-weight: 600; font-family: monospace;">${shortAddress}</div>
-                <div style="color: #aef3c6; font-size: 12px;">Index: ${user.num}</div>
+                <div style="color: #aef3c6; font-size: 12px;">Index: ${user.index}</div>
               </div>
             </div>
             <div style="text-align: right;">
@@ -2947,7 +2836,7 @@
               ">${rankIcon}</div>
               <div>
                 <div style="color: #e6eaf0; font-weight: 600; font-family: monospace;">${shortAddress}</div>
-                <div style="color: #aef3c6; font-size: 12px;">Index: ${user.num}</div>
+                <div style="color: #aef3c6; font-size: 12px;">Index: ${user.index}</div>
               </div>
             </div>
             <div style="text-align: right;">
@@ -2974,92 +2863,6 @@
     }
 
     // Message Box System Removed
-    // Contract selector logic
-    (function(){
-      function promptForAddress(current) {
-        const input = prompt('Contract address (0x...)', current || (window.getIAMAddress ? window.getIAMAddress() : ''));
-        return input && input.trim() ? input.trim() : null;
-      }
-      function updateTopBarAddress(addr) {
-        try {
-          const pill = document.getElementById('status-address');
-          if (pill) pill.textContent = addr ? ('Contract: ' + shortenAddress(addr)) : '-';
-        } catch {}
-      }
-      document.addEventListener('DOMContentLoaded', function(){
-        // (Removed) top bar contract select button handler
-        // Init full-width contract selector under status bars
-        try {
-          const selector = document.getElementById('contract-selector-wide');
-          if (selector) {
-            const def = window.DEFAULT_IAM_ADDRESS;
-            const second = window.SECOND_IAM_ADDRESS;
-            const current = (window.getIAMAddress && typeof window.getIAMAddress === 'function') ? window.getIAMAddress() : (window.IAM_ADDRESS || '');
-
-            const options = [];
-            if (def) options.push({ key: 'old', label: 'Old Contract — ' + mediumShortAddress(def), value: def, color: '#ff8c00' });
-            if (current && !options.find(o => o.value.toLowerCase() === current.toLowerCase())) {
-              options.push({ key: 'current', label: 'Current — ' + mediumShortAddress(current), value: current, color: '#e6eaf0' });
-            }
-
-            selector.innerHTML = '';
-            let defaultSelected = false;
-            options.forEach(o => {
-              const opt = document.createElement('option');
-              opt.value = o.value;
-              opt.textContent = o.label;
-              if (o.color) opt.style.color = o.color;
-              // Select old contract by default if no current selection or if current is not set
-              if ((!current || current === def) && o.value.toLowerCase() === def.toLowerCase()) {
-                opt.selected = true;
-                defaultSelected = true;
-              } else if (current && o.value.toLowerCase() === current.toLowerCase()) {
-                opt.selected = true;
-                defaultSelected = true;
-              }
-              selector.appendChild(opt);
-            });
-            
-            // If no selection was made, default to old contract
-            if (!defaultSelected && def) {
-              selector.value = def;
-            }
-
-            function applySelectorColor(addr) {
-              try {
-                let color = '#e6eaf0';
-                if (addr && def && addr.toLowerCase() === String(def).toLowerCase()) color = '#ff8c00';
-                if (addr && second && addr.toLowerCase() === String(second).toLowerCase()) color = '#00ff88';
-                selector.style.color = color;
-              } catch {}
-            }
-
-            applySelectorColor(selector.value || current);
-
-            selector.addEventListener('change', async function(){
-              const newAddr = selector.value;
-              if (!newAddr) return;
-              try {
-                if (window.setIAMAddress) {
-                  await window.setIAMAddress(newAddr);
-                  updateTopBarAddress(newAddr);
-                  applySelectorColor(newAddr);
-                  // Reload page to ensure all modules initialize with the selected contract
-                  location.reload();
-                }
-              } catch (e) {
-                alert('Failed to switch: ' + (e && e.message ? e.message : e));
-              }
-            });
-          }
-        } catch {}
-        try {
-          const addr = (window.getIAMAddress && typeof window.getIAMAddress === 'function') ? window.getIAMAddress() : (window.IAM_ADDRESS || '');
-          updateTopBarAddress(addr);
-        } catch {}
-      });
-    })();
-
   </script>
   
   

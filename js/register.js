@@ -81,8 +81,8 @@ async function loadRegisterData(contract, address, tokenPriceUSDFormatted) {
             if (profileContainer) profileContainer.style.display = 'none';
             const upgradeForm = document.getElementById('upgrade-form');
             if (upgradeForm) upgradeForm.style.display = 'block';
-            // Disable referrer input
-            const refInput = document.getElementById('referrer-address');
+            // Disable upper input
+            const refInput = document.getElementById('upper-address');
             if (refInput) refInput.readOnly = true;
             await loadUpgradeData(contract, address, tokenPriceUSDFormatted);
             // Show new register button
@@ -94,8 +94,8 @@ async function loadRegisterData(contract, address, tokenPriceUSDFormatted) {
             if (profileContainer) profileContainer.style.display = '';
             const upgradeForm = document.getElementById('upgrade-form');
             if (upgradeForm) upgradeForm.style.display = 'none';
-            // Enable referrer input
-            const refInput = document.getElementById('referrer-address');
+            // Enable upper input
+            const refInput = document.getElementById('upper-address');
             if (refInput) refInput.readOnly = false;
             // Hide new register button
             const newRegisterBtn = document.getElementById('new-register-btn');
@@ -136,9 +136,9 @@ async function updateUpgradeCalculations() {
         const { contract, address } = window.contractConfig;
         const userData = await contract.users(address);
         
-        if (userData && userData.num && BigInt(userData.num) > 0n) {
-            // Level field no longer exists, use binaryPointCap instead
-            const currentCap = userData.binaryPointCap || 0n;
+        if (userData && userData.index && BigInt(userData.index) > 0n) {
+            const currentLevel = parseInt(userData.level);
+            const nextLevel = currentLevel + 1;
             
             // Calculate next level based on current cap
             const nextCap = BigInt(currentCap) + 1n;
@@ -191,7 +191,7 @@ function setupRegisterButton() {
                 } else if (msg.includes('insufficient funds')) {
                     msg = 'Insufficient balance for transaction fee or registration.';
                 } else if (msg.includes('invalid address')) {
-                    msg = 'Invalid referrer or destination address.';
+                    msg = 'Invalid upper or destination address.';
                 } else if (msg.includes('not allowed') || msg.includes('only owner')) {
                     msg = 'You are not authorized to perform this operation.';
                 } else if (msg.includes('already registered') || msg.includes('already exists')) {
@@ -233,11 +233,11 @@ async function performRegistrationForNewUser() {
         }
         const { contract, address } = window.contractConfig;
         
-        // Referrer by default: get from input field
-        const referrerInput = document.getElementById('referrer-address');
-        const referrerAddress = referrerInput && referrerInput.value ? referrerInput.value.trim() : '';
-        if (!referrerAddress) {
-            throw new Error('Please enter referrer address');
+        // upper by default: get from input field
+        const upperInput = document.getElementById('upper-address');
+        const upperAddress = upperInput && upperInput.value ? upperInput.value.trim() : '';
+        if (!upperAddress) {
+            throw new Error('Please enter upper address');
         }
         
         // New user: connected wallet
@@ -251,7 +251,7 @@ async function performRegistrationForNewUser() {
           await approveTx.wait();
         }
         
-        const tx = await contract.registerAndActivate(referrerAddress, referrerAddress, userAddress);
+        const tx = await contract.registerAndActivate(upperAddress, upperAddress, userAddress);
         await tx.wait();
         showRegisterSuccess("Registration completed successfully!");
         
@@ -272,7 +272,7 @@ async function performRegistrationForNewUser() {
 // Function to check index referral line (for register.html compatibility)
 window.checkIndexReferralLine = async function() {
     const indexInput = document.getElementById('index-search');
-    const refInput = document.getElementById('referrer-address');
+    const refInput = document.getElementById('upper-address');
     
     if (!indexInput || !refInput) {
         console.log('Index input elements not found');
@@ -359,7 +359,7 @@ window.checkIndexReferralLine = async function() {
             return;
         }
         
-        // Set referrer address in field
+        // Set upper address in field
         refInput.readOnly = false;
         refInput.disabled = false;
         refInput.value = addr;
@@ -369,7 +369,7 @@ window.checkIndexReferralLine = async function() {
         // Show success message
         if (status) status.style.color = '#388e3c';
         if (window.showTempMessage) {
-            window.showTempMessage(`✅ Referrer address set automatically: ${addr}`, 'success');
+            window.showTempMessage(`✅ upper address set automatically: ${addr}`, 'success');
         }
         
         // Update new position information
@@ -404,7 +404,7 @@ window.checkIndexReferralLine = async function() {
         }
         
         // Successful completion
-        console.log(`✅ Referrer address set: ${addr}`);
+        console.log(`✅ upper address set: ${addr}`);
         
     } catch (e) {
         const status = document.getElementById('status-message');
@@ -436,8 +436,8 @@ async function performRegistration() {
                 throw new Error('New user address is not valid');
             }
             
-            // Referrer: current user address
-            const referrerAddress = address;
+            // upper: current user address
+            const upperAddress = address;
             
             // Check that new user is not registered
             const newUserData = await contract.users(userAddress);
@@ -453,18 +453,18 @@ async function performRegistration() {
               await approveTx.wait();
             }
             
-            const tx = await contract.registerAndActivate(referrerAddress, referrerAddress, userAddress);
+            const tx = await contract.registerAndActivate(upperAddress, upperAddress, userAddress);
             await tx.wait();
             showRegisterSuccess("Subordinate registration completed successfully!");
         } else {
             // User is not registered - manual mode
-            let referrerInput = document.getElementById('referrer-address');
-            let referrerAddress = referrerInput && referrerInput.value ? referrerInput.value.trim() : '';
-            if (!referrerAddress) {
-                referrerAddress = getReferrerFromURL() || getReferrerFromStorage();
+            let upperInput = document.getElementById('upper-address');
+            let upperAddress = upperInput && upperInput.value ? upperInput.value.trim() : '';
+            if (!upperAddress) {
+                upperAddress = getupperFromURL() || getupperFromStorage();
             }
-            if (!referrerAddress) {
-                throw new Error('Please enter referrer address');
+            if (!upperAddress) {
+                throw new Error('Please enter upper address');
             }
 
             // Approve logic before registration:
@@ -474,7 +474,7 @@ async function performRegistration() {
               const approveTx = await usdcContract.approve(window.IAM_ADDRESS, regprice);
               await approveTx.wait();
             }
-            const tx = await contract.registerAndActivate(referrerAddress, referrerAddress, address);
+            const tx = await contract.registerAndActivate(upperAddress, upperAddress, address);
             await tx.wait();
             showRegisterSuccess("Registration completed successfully!");
         }
@@ -493,15 +493,15 @@ async function performRegistration() {
     }
 }
 
-// Function to get referrer from URL
-function getReferrerFromURL() {
+// Function to get upper from URL
+function getupperFromURL() {
     const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get('ref') || urlParams.get('referrer');
+    return urlParams.get('ref') || urlParams.get('upper');
 }
 
-// Function to get referrer from localStorage - no caching
-function getReferrerFromStorage() {
-    return null; // No caching - always get fresh referrer from URL
+// Function to get upper from localStorage - no caching
+function getupperFromStorage() {
+    return null; // No caching - always get fresh upper from URL
 }
 
 // Function to perform upgrade
@@ -721,19 +721,19 @@ window.showRegistrationFormForNewUser = async function() {
     // Get and display required token amount for registration
     await window.displayUserBalances();
 
-    // Set referrer by default: empty address (user must enter manually)
-    let referrer = '';
+    // Set upper by default: empty address (user must enter manually)
+    let upper = '';
     
     // Set new user address to connected wallet
     const userAddress = window.contractConfig.address;
     
     // Fill form fields
-    const referrerInput = document.getElementById('referrer-address');
+    const upperInput = document.getElementById('upper-address');
     const userAddressInput = document.getElementById('register-user-address') || document.getElementById('new-user-address');
     
-    if (referrerInput) {
-        referrerInput.value = referrer;
-        referrerInput.readOnly = false; // Enable referrer editing
+    if (upperInput) {
+        upperInput.value = upper;
+        upperInput.readOnly = false; // Enable upper editing
     }
     
     if (userAddressInput) {
@@ -747,9 +747,9 @@ window.showRegistrationFormForNewUser = async function() {
         statusElement.innerHTML = `
             <div style="background: rgba(255,193,7,0.1); border: 1px solid rgba(255,193,7,0.3); border-radius: 8px; padding: 12px; margin: 10px 0;">
                 <strong style="color: #ffc107;">📝 Manual Registration:</strong><br>
-                • Please enter the referrer address<br>
+                • Please enter the upper address<br>
                 • New user: <span style="color: #a786ff;">${userAddress}</span><br>
-                • After entering the referrer address, click the "Register" button
+                • After entering the upper address, click the "Register" button
             </div>
         `;
         statusElement.className = 'profile-status info';
@@ -814,14 +814,14 @@ window.showRegistrationForm = async function() {
         const refInputGroup = document.getElementById('register-ref-input-group');
         const refSummary = document.getElementById('register-ref-summary');
         const walletAddressSpan = document.getElementById('register-wallet-address');
-        const referrerAddressSpan = document.getElementById('register-referrer-address');
+        const upperAddressSpan = document.getElementById('register-upper-address');
         
-        // Referrer by default: current user address
-        const referrer = address;
-        const referrerInput = document.getElementById('referrer-address');
-        if (referrerInput) {
-            referrerInput.value = referrer;
-            referrerInput.readOnly = true; // Disable referrer editing
+        // upper by default: current user address
+        const upper = address;
+        const upperInput = document.getElementById('upper-address');
+        if (upperInput) {
+            upperInput.value = upper;
+            upperInput.readOnly = true; // Disable upper editing
         }
         
         // نمایش پیام راهنما
@@ -830,7 +830,7 @@ window.showRegistrationForm = async function() {
             statusElement.innerHTML = `
                 <div style="background: rgba(167,134,255,0.1); border: 1px solid rgba(167,134,255,0.3); border-radius: 8px; padding: 12px; margin: 10px 0;">
                     <strong style="color: #a786ff;">👥 Subordinate Registration:</strong><br>
-                    • Referrer: <span style="color: #a786ff;">${referrer}</span> (You)<br>
+                    • upper: <span style="color: #a786ff;">${upper}</span> (You)<br>
                     • Enter the new user address<br>
                     • You can only register subordinates for yourself
                 </div>
@@ -838,30 +838,30 @@ window.showRegistrationForm = async function() {
             statusElement.className = 'profile-status info';
         }
         
-        // Hide referrer field and show summary
+        // Hide upper field and show summary
         if (refInputGroup) refInputGroup.style.display = 'none';
         if (refSummary) {
             refSummary.style.display = 'block';
             if (walletAddressSpan) walletAddressSpan.textContent = address;
-            if (referrerAddressSpan) referrerAddressSpan.textContent = referrer;
+            if (upperAddressSpan) upperAddressSpan.textContent = upper;
         }
     } else {
         // User is not registered - normal mode
-        let referrer = getReferrerFromURL();
+        let upper = getupperFromURL();
         const refInputGroup = document.getElementById('register-ref-input-group');
         const refSummary = document.getElementById('register-ref-summary');
         const walletAddressSpan = document.getElementById('register-wallet-address');
-        const referrerAddressSpan = document.getElementById('register-referrer-address');
+        const upperAddressSpan = document.getElementById('register-upper-address');
         let isReferralMode = false;
-        if (!referrer) {
+        if (!upper) {
             // If not in URL, leave field empty (user must enter manually)
-            referrer = '';
+            upper = '';
         } else {
-            // If referrer was in URL, activate referral mode
+            // If upper was in URL, activate referral mode
             isReferralMode = true;
         }
-        const referrerInput = document.getElementById('referrer-address');
-        if (referrerInput) referrerInput.value = referrer || '';
+        const upperInput = document.getElementById('upper-address');
+        if (upperInput) upperInput.value = upper || '';
 
                     // If referral mode is active, hide input and show summary
         if (isReferralMode) {
@@ -869,7 +869,7 @@ window.showRegistrationForm = async function() {
             if (refSummary) {
                 refSummary.style.display = 'block';
                 if (walletAddressSpan) walletAddressSpan.textContent = window.contractConfig.address;
-                if (referrerAddressSpan) referrerAddressSpan.textContent = referrer;
+                if (upperAddressSpan) upperAddressSpan.textContent = upper;
             }
                  } else {
              if (refInputGroup) refInputGroup.style.display = 'block';
@@ -910,8 +910,8 @@ window.showRegistrationForm = async function() {
       // Get user address from input (not just connected wallet)
       const userAddressInput = document.getElementById('register-user-address');
       let targetUserAddress = userAddressInput ? userAddressInput.value.trim() : '';
-      const referrerInput = document.getElementById('referrer-address');
-      let referrer = referrerInput ? referrerInput.value.trim() : '';
+      const upperInput = document.getElementById('upper-address');
+      let upper = upperInput ? upperInput.value.trim() : '';
 
       if (!/^0x[a-fA-F0-9]{40}$/.test(targetUserAddress)) {
         showTempMessage('New user wallet address is not valid.', 'error');
@@ -919,8 +919,8 @@ window.showRegistrationForm = async function() {
         registerBtn.textContent = 'Register';
         return;
       }
-      if (!/^0x[a-fA-F0-9]{40}$/.test(referrer)) {
-        showTempMessage('Referrer address is not valid.', 'error');
+      if (!/^0x[a-fA-F0-9]{40}$/.test(upper)) {
+        showTempMessage('upper address is not valid.', 'error');
         registerBtn.disabled = false;
         registerBtn.textContent = 'Register';
         return;
@@ -939,9 +939,9 @@ window.showRegistrationForm = async function() {
       // بررسی فعال بودن رفرر
       let refData;
       try {
-        refData = await contract.users(referrer);
+        refData = await contract.users(upper);
       } catch (e) { refData = null; }
-      if (!refData || !(refData.num && BigInt(refData.num) > 0n)) {
+      if (!refData || !(refData.index && BigInt(refData.index) > 0n)) {
         showTempMessage('Referrer is not active.', 'error');
         registerBtn.disabled = false;
         registerBtn.textContent = 'Register';
@@ -963,7 +963,7 @@ window.showRegistrationForm = async function() {
       registerBtn.disabled = true;
       registerBtn.textContent = 'Registering...';
       try {
-        await contract.registerAndActivate(referrer, referrer, targetUserAddress);
+        await contract.registerAndActivate(upper, upper, targetUserAddress);
         showRegisterSuccess('Registration completed successfully!');
         registerBtn.style.display = 'none';
       } catch (e) {
@@ -989,7 +989,7 @@ window.showRegistrationForm = async function() {
         closeNewRegister.onclick = function() {
             newRegisterModal.style.display = 'none';
             document.getElementById('new-user-address').value = '';
-            document.getElementById('new-referrer-address').value = '';
+            document.getElementById('new-upper-address').value = '';
             document.getElementById('new-register-status').textContent = '';
             // Hide any duplicate or leftover registration forms
             const allModals = document.querySelectorAll('.new-registration-modal, #new-registration-modal');
@@ -997,10 +997,10 @@ window.showRegistrationForm = async function() {
         };
         submitNewRegister.onclick = async function() {
             const userAddr = document.getElementById('new-user-address').value.trim();
-            const refAddr = document.getElementById('new-referrer-address').value.trim();
+            const refAddr = document.getElementById('new-upper-address').value.trim();
             const statusDiv = document.getElementById('new-register-status');
             if (!userAddr || !refAddr) {
-                showTempMessage('Please enter new user address and referrer address', 'error');
+                showTempMessage('Please enter new user address and upper address', 'error');
                 return;
             }
             submitNewRegister.disabled = true;
@@ -1011,7 +1011,7 @@ window.showRegistrationForm = async function() {
                 const { contract } = window.contractConfig;
                 // بررسی معتبر بودن معرف
                 const refData = await contract.users(refAddr);
-                if (!(refData && refData.num && BigInt(refData.num) > 0n)) throw new Error('Referrer is not active');
+                if (!(refData && refData.index && BigInt(refData.index) > 0n)) throw new Error('Referrer is not active');
                 // بررسی ثبت‌نام نبودن نفر جدید
                 const userData = await contract.users(userAddr);
                 if (userData && userData.num && BigInt(userData.num) > 0n) throw new Error('This address is already registered');
@@ -1030,12 +1030,12 @@ window.showRegistrationForm = async function() {
 }
 
     // Simple registration function
-async function registerUser(referrer, requiredTokenAmount, targetUserAddress) {
+async function registerUser(upper, requiredTokenAmount, targetUserAddress) {
     const { contract, address } = await window.connectWallet();
     if (!contract || !address) throw new Error('Wallet not connected');
     // Convert amount to wei (integer)
     const amountInWei = ethers.parseUnits(requiredTokenAmount, 18);
-    await contract.registerAndActivate(referrer, referrer, targetUserAddress);
+    await contract.registerAndActivate(upper, upper, targetUserAddress);
 }
 
     // Manage display of new registration form and new person registration
@@ -1055,7 +1055,7 @@ window.addEventListener('DOMContentLoaded', function() {
         closeNewRegister.onclick = function() {
             newRegisterModal.style.display = 'none';
             document.getElementById('new-user-address').value = '';
-            document.getElementById('new-referrer-address').value = '';
+            document.getElementById('new-upper-address').value = '';
             document.getElementById('new-register-status').textContent = '';
             // Hide any duplicate or leftover registration forms
             const allModals = document.querySelectorAll('.new-registration-modal, #new-registration-modal');
@@ -1063,10 +1063,10 @@ window.addEventListener('DOMContentLoaded', function() {
         };
         submitNewRegister.onclick = async function() {
             const userAddr = document.getElementById('new-user-address').value.trim();
-            const refAddr = document.getElementById('new-referrer-address').value.trim();
+            const refAddr = document.getElementById('new-upper-address').value.trim();
             const statusDiv = document.getElementById('new-register-status');
             if (!userAddr || !refAddr) {
-                statusDiv.textContent = 'Please enter new user address and referrer address';
+                statusDiv.textContent = 'Please enter new user address and upper address';
                 statusDiv.className = 'profile-status error';
                 return;
             }
@@ -1078,7 +1078,7 @@ window.addEventListener('DOMContentLoaded', function() {
                 const { contract } = window.contractConfig;
                 // بررسی معتبر بودن معرف
                 const refData = await contract.users(refAddr);
-                if (!(refData && refData.num && BigInt(refData.num) > 0n)) throw new Error('Referrer is not active');
+                if (!(refData && refData.index && BigInt(refData.index) > 0n)) throw new Error('Referrer is not active');
                 // بررسی ثبت‌نام نبودن نفر جدید
                 const userData = await contract.users(userAddr);
                 if (userData && userData.num && BigInt(userData.num) > 0n) throw new Error('This address is already registered');
@@ -1098,12 +1098,12 @@ window.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Auto-fill referrer and upper from URL (?ref=) on register page
+// Auto-fill upper and upper from URL (?ref=) on register page
 document.addEventListener('DOMContentLoaded', function() {
     function fillRefAndUpper(addr) {
         try {
-            var refInput = document.getElementById('referrer-address');
-            var refDisplay = document.getElementById('referrer-address-display');
+            var refInput = document.getElementById('upper-address');
+            var refDisplay = document.getElementById('upper-address-display');
             var upperInput = document.getElementById('upper-address');
             if (refInput) refInput.value = addr;
             if (refDisplay) {
@@ -1118,7 +1118,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     try {
         var params = new URLSearchParams(window.location.search);
-        var ref = params.get('ref') || params.get('referrer');
+        var ref = params.get('ref') || params.get('upper');
         if (!ref) return;
         // If address, fill directly
         if (/^0x[a-fA-F0-9]{40}$/.test(ref)) {
@@ -1145,8 +1145,8 @@ document.addEventListener('DOMContentLoaded', function() {
     } catch (_) {}
 });
 
-        // Register new person with desired referrer (for network use)
-window.registerNewUserWithReferrer = async function(referrer, newUserAddress, statusElement) {
+        // Register new person with desired upper (for network use)
+window.registerNewUserWithupper = async function(upper, newUserAddress, statusElement) {
     if (!window.contractConfig || !window.contractConfig.contract) {
         if (statusElement) {
             statusElement.textContent = 'Wallet connection not established';
@@ -1155,9 +1155,9 @@ window.registerNewUserWithReferrer = async function(referrer, newUserAddress, st
         return;
     }
     const { contract } = window.contractConfig;
-    if (!referrer || !newUserAddress) {
+    if (!upper || !newUserAddress) {
         if (statusElement) {
-            statusElement.textContent = 'Referrer address and new user address are required';
+            statusElement.textContent = 'upper address and new user address are required';
             statusElement.className = 'profile-status error';
         }
         return;
@@ -1169,12 +1169,12 @@ window.registerNewUserWithReferrer = async function(referrer, newUserAddress, st
     try {
         // Check if referrer is active
         const refData = await contract.users(referrer);
-        if (!(refData && refData.num && BigInt(refData.num) > 0n)) throw new Error('Referrer is not active');
+        if (!(refData && refData.index && BigInt(refData.index) > 0n)) throw new Error('Referrer is not active');
         // بررسی ثبت‌نام نبودن نفر جدید
         const userData = await contract.users(newUserAddress);
         if (userData && userData.num && BigInt(userData.num) > 0n) throw new Error('This address is already registered');
         // ثبت‌نام نفر جدید (با ولت فعلی)
-        const tx = await contract.registerAndActivate(referrer, referrer, newUserAddress);
+        const tx = await contract.registerAndActivate(upper, upper, newUserAddress);
         await tx.wait();
         
         // مخفی کردن دکمه ثبت‌نام اصلی

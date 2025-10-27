@@ -58,7 +58,6 @@ All HTML pages now include mobile responsiveness:
 - `register.html`
 - `reports.html`
 - `transfer-ownership.html`
-- `utility.html`
 - `professional-tree.html`
 
 ## 🎯 Mobile Breakpoints

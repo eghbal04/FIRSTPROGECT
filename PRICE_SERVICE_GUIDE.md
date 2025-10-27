@@ -15,7 +15,7 @@ const priceService = new PriceService();
 ```javascript
 await priceService.saveTokenPrice({
   symbol: 'IAM',
-  address: '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D',
+  address: '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2',
   priceUsd: 0.001234,
   priceDai: 0.001234,
   marketCap: 1234567.89,
@@ -189,7 +189,7 @@ async function updatePrices() {
     // ذخیره قیمت توکن
     await priceService.saveTokenPrice({
       symbol: 'IAM',
-      address: '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D',
+      address: '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2',
       priceUsd: priceData.price_usd,
       priceDai: priceData.price_dai,
       marketCap: priceData.market_cap,
@@ -224,7 +224,7 @@ setInterval(updatePrices, 5 * 60 * 1000);
 
 ## 📈 استفاده در پروژه Web3
 
-### 1. در فایل utility.html
+### 1. در فایل اصلی
 ```javascript
 // اضافه کردن به utility.html
 import PriceService from './price-service.js';

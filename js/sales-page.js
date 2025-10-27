@@ -55,7 +55,7 @@ class SalesPageManager {
             
             this.currentUser = {
                 address,
-                index: user.num.toString(),
+                index: user.index.toString(),
                 likes: likesCount,
                 balance: balanceFormatted,
                 name: this.generateUserName(address)

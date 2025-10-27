@@ -49,7 +49,7 @@ async function sellTokens(tokenAmount) {
 }
 
 // تابع ثبت‌نام و فعال‌سازی
-async function registerAndActivate(referrerAddress, tokenAmount) {
+async function registerAndActivate(upperAddress, tokenAmount) {
     try {
         const connection = await window.connectWallet();
         if (!connection || !connection.contract) {
@@ -58,7 +58,7 @@ async function registerAndActivate(referrerAddress, tokenAmount) {
         
         const { contract } = connection;
         const tokenWei = ethers.parseUnits(tokenAmount.toString(), 18);
-        const tx = await contract.registerAndActivate(referrerAddress, referrerAddress, tokenWei);
+        const tx = await contract.registerAndActivate(upperAddress, upperAddress, tokenWei);
         const receipt = await tx.wait();
         
         return {

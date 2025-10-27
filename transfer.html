@@ -251,7 +251,7 @@
         border: 1px solid rgba(167, 134, 255, 0.3);
       }
       
-      #searchIndexStatus {
+      #searchUserNumberStatus {
         font-size: 0.75rem;
         word-break: break-all;
         line-height: 1.3;
@@ -325,7 +325,7 @@
           padding: 0.3rem;
         }
         
-        #searchIndexStatus {
+        #searchUserNumberStatus {
           font-size: 0.65rem;
           word-break: break-all;
           line-height: 1.2;
@@ -357,20 +357,25 @@
         <!-- Transfer Form -->
         <form id="transferForm">
             <!-- Destination Address -->
+            <!-- User Number Search -->
             <div class="form-group">
-                <label for="transferTo">Destination Address</label>
-                <input type="text" id="transferTo" placeholder="0x..." required>
+                <label>🔍 Search by User Number</label>
+                <div class="search-row">
+                    <input type="number" id="searchUserNumber" placeholder="Enter user number">
+                    <button type="button" id="searchUserNumberBtn">🔍 Search</button>
+                </div>
+                <div id="searchUserNumberStatus" style="text-align:center;padding:0.5rem;margin-top:0.5rem;border-radius:6px;"></div>
+                <small style="color: #666; font-size: 0.85rem; display: block; margin-top: 0.5rem;">
+                    ✅ User number search is now supported with the new contract's numToAddress mapping.
+                </small>
             </div>
 
-            <!-- Index Search -->
+            <!-- Transfer To -->
             <div class="form-group">
-                <label>🔍 Search by Index</label>
-                <div class="search-row">
-                    <input type="number" id="searchIndex" placeholder="Enter user index">
-                    <button type="button" id="searchIndexBtn">🔍 Search</button>
-                </div>
-                <div id="searchIndexStatus" style="text-align:center;padding:0.5rem;margin-top:0.5rem;border-radius:6px;"></div>
+                <label for="transferTo">Transfer To</label>
+                <input type="text" id="transferTo" placeholder="Enter recipient address (0x...)" required>
             </div>
+
 
             <!-- Amount -->
             <div class="form-group">
@@ -431,7 +436,7 @@
     <!-- Contract Configuration -->
     <script>
         // Contract Configuration - Updated to new contract
-        window.IAM_ADDRESS = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D';
+        window.IAM_ADDRESS = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26';
         
         // Use the full ABI from config.js instead of limited ABI
         // The full ABI will be loaded from config.js
@@ -466,9 +471,19 @@
             
             if (window.ethereum && window.IAM_ADDRESS && window.IAM_ABI) {
                 try {
-                    // Use ethers.js v5 syntax for compatibility
-                    const provider = new ethers.providers.Web3Provider(window.ethereum);
-                    const signer = provider.getSigner();
+                    // Use compatible ethers syntax for both v5 and v6
+                    let provider, signer;
+                    if (typeof ethers.providers !== 'undefined' && typeof ethers.providers.Web3Provider !== 'undefined') {
+                        // Ethers v5
+                        provider = new ethers.providers.Web3Provider(window.ethereum);
+                        signer = provider.getSigner();
+                    } else if (typeof ethers.BrowserProvider !== 'undefined') {
+                        // Ethers v6
+                        provider = new ethers.BrowserProvider(window.ethereum);
+                        signer = await provider.getSigner();
+                    } else {
+                        throw new Error('Unsupported ethers version');
+                    }
                     const contract = new ethers.Contract(window.IAM_ADDRESS, window.IAM_ABI, signer);
                     
                     console.log('✅ Contract connected successfully');
@@ -571,45 +586,41 @@
             }
         });
         
-        // Setup search functionality
+        // Setup search functionality - User Number search for new contract
         function setupSearchFunctionality() {
-            const searchIndexBtn = document.getElementById('searchIndexBtn');
-            const searchIndexInput = document.getElementById('searchIndex');
-            const searchIndexStatus = document.getElementById('searchIndexStatus');
+            const searchUserNumberBtn = document.getElementById('searchUserNumberBtn');
+            const searchUserNumberInput = document.getElementById('searchUserNumber');
+            const searchUserNumberStatus = document.getElementById('searchUserNumberStatus');
             const transferToInput = document.getElementById('transferTo');
             
-            if (!searchIndexBtn || !searchIndexInput || !searchIndexStatus || !transferToInput) {
+            if (!searchUserNumberBtn || !searchUserNumberInput || !searchUserNumberStatus || !transferToInput) {
+                console.log('⚠️ Search elements not found');
                 return;
             }
             
-            searchIndexBtn.addEventListener('click', performIndexSearch);
-            searchIndexInput.addEventListener('keypress', (e) => {
+            searchUserNumberBtn.addEventListener('click', performUserNumberSearch);
+            searchUserNumberInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
-                    performIndexSearch();
+                    performUserNumberSearch();
                 }
             });
             
-            async function performIndexSearch() {
-                const index = searchIndexInput.value.trim();
+            async function performUserNumberSearch() {
+                const userNumber = searchUserNumberInput.value.trim();
                 
-                if (!index || isNaN(index) || parseInt(index) < 1) {
-                    showSearchStatus('Please enter a valid index (number > 0)', 'error');
+                if (!userNumber || isNaN(userNumber) || parseInt(userNumber) < 1) {
+                    showSearchStatus('Please enter a valid user number (number > 0)', 'error');
                     return;
                 }
                 
                 try {
                     showSearchStatus('🔍 Searching for user...', 'loading');
-                    searchIndexBtn.disabled = true;
-                    searchIndexBtn.textContent = '🔄 Searching...';
+                    searchUserNumberBtn.disabled = true;
+                    searchUserNumberBtn.textContent = '🔄 Searching...';
                     
-                    console.log('🔍 Starting search for index:', index);
+                    console.log('🔍 Starting search for user number:', userNumber);
                     
-                    const timeoutPromise = new Promise((_, reject) => 
-                        setTimeout(() => reject(new Error('Search timeout after 15 seconds')), 15000)
-                    );
-                    
-                    const searchPromise = convertIndexToAddress(parseInt(index));
-                    const address = await Promise.race([searchPromise, timeoutPromise]);
+                    const address = await convertUserNumberToAddress(parseInt(userNumber));
                     
                     console.log('🎯 Search result:', address);
                     
@@ -617,7 +628,7 @@
                         transferToInput.value = address;
                         showSearchStatus(`✅ Found: ${address}`, 'success');
                     } else {
-                        showSearchStatus('❌ User not found for this index', 'error');
+                        showSearchStatus('❌ User not found for this number', 'error');
                     }
                     
                 } catch (error) {
@@ -631,65 +642,124 @@
                     } else if (error.message.includes('Contract')) {
                         errorMessage = '📋 Contract call failed';
                     } else if (error.message.includes('User not found')) {
-                        errorMessage = '👤 User not found for this index';
+                        errorMessage = '👤 User not found for this number';
+                    } else if (error.message.includes('Cannot get address from user number')) {
+                        errorMessage = '❌ Cannot get address from user number. Please use address directly.';
                     }
                     
                     showSearchStatus(errorMessage, 'error');
                 } finally {
-                    searchIndexBtn.disabled = false;
-                    searchIndexBtn.textContent = '🔍 Search';
+                    searchUserNumberBtn.disabled = false;
+                    searchUserNumberBtn.textContent = '🔍 Search';
                 }
             }
             
             function showSearchStatus(message, type) {
-                searchIndexStatus.textContent = message;
-                searchIndexStatus.className = `search-status ${type}`;
+                searchUserNumberStatus.textContent = message;
+                searchUserNumberStatus.className = `search-status ${type}`;
                 
                 switch (type) {
                     case 'success':
-                        searchIndexStatus.style.background = 'rgba(0, 255, 136, 0.1)';
-                        searchIndexStatus.style.color = '#00ff88';
-                        searchIndexStatus.style.border = '1px solid rgba(0, 255, 136, 0.3)';
+                        searchUserNumberStatus.style.background = 'rgba(0, 255, 136, 0.1)';
+                        searchUserNumberStatus.style.color = '#00ff88';
+                        searchUserNumberStatus.style.border = '1px solid rgba(0, 255, 136, 0.3)';
                         break;
                     case 'error':
-                        searchIndexStatus.style.background = 'rgba(255, 68, 68, 0.1)';
-                        searchIndexStatus.style.color = '#ff4444';
-                        searchIndexStatus.style.border = '1px solid rgba(255, 68, 68, 0.3)';
+                        searchUserNumberStatus.style.background = 'rgba(255, 68, 68, 0.1)';
+                        searchUserNumberStatus.style.color = '#ff4444';
+                        searchUserNumberStatus.style.border = '1px solid rgba(255, 68, 68, 0.3)';
                         break;
                     case 'loading':
-                        searchIndexStatus.style.background = 'rgba(255, 165, 0, 0.1)';
-                        searchIndexStatus.style.color = '#ffa500';
-                        searchIndexStatus.style.border = '1px solid rgba(255, 165, 0, 0.3)';
+                        searchUserNumberStatus.style.background = 'rgba(255, 165, 0, 0.1)';
+                        searchUserNumberStatus.style.color = '#ffa500';
+                        searchUserNumberStatus.style.border = '1px solid rgba(255, 165, 0, 0.3)';
                         break;
+                }
+                
+                // Auto-hide success messages after 5 seconds
+                if (type === 'success') {
+                    setTimeout(() => {
+                        searchUserNumberStatus.textContent = '';
+                        searchUserNumberStatus.className = 'search-status';
+                        searchUserNumberStatus.style.background = '';
+                        searchUserNumberStatus.style.color = '';
+                        searchUserNumberStatus.style.border = '';
+                    }, 5000);
                 }
             }
         }
         
-        // Convert index to address
-        async function convertIndexToAddress(index) {
+        // Convert user number to address - Updated for new contract with numToAddress mapping
+        async function convertUserNumberToAddress(userNumber) {
             try {
-                // Prefer using the already-connected TransferManager resolver
-                if (window.transferManager && typeof window.transferManager.resolveDestinationAddress === 'function') {
-                    const addr = await window.transferManager.resolveDestinationAddress(String(index));
-                    return addr;
-                }
-                // Fallback: ensure wallet connection and basic provider, then call indexToAddress if present
                 if (!window.ethereum) throw new Error('MetaMask not installed');
-                let accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                 if (!accounts || accounts.length === 0) throw new Error('Please connect your wallet first');
+                
                 const provider = (typeof ethers.providers !== 'undefined' && ethers.providers.Web3Provider)
                     ? new ethers.providers.Web3Provider(window.ethereum)
                     : new ethers.BrowserProvider(window.ethereum);
                 const signer = await provider.getSigner();
                 const abi = window.IAM_ABI || [];
                 const contract = new ethers.Contract(window.IAM_ADDRESS, abi, signer);
-                if (typeof contract.indexToAddress === 'function') {
-                    const addr = await contract.indexToAddress(parseInt(index, 10));
-                    return addr;
+                
+                console.log(`🔍 Looking up address for user number: ${userNumber}`);
+                
+                // Use the numToAddress mapping directly
+                try {
+                    const address = await contract.numToAddress(userNumber);
+                    console.log(`📍 numToAddress(${userNumber}) returned: ${address}`);
+                    
+                    if (address && address !== '0x0000000000000000000000000000000000000000') {
+                        console.log(`✅ Found address: ${address}`);
+                        return address;
+                    } else {
+                        throw new Error('User number not found or has no address');
+                    }
+                } catch (mappingError) {
+                    console.log(`❌ numToAddress failed: ${mappingError.message}`);
+                    
+                    // Fallback: try the old method if numToAddress doesn't work
+                    console.log('🔄 Trying fallback method...');
+                    
+                    // Get total users count
+                    const totalUsers = await contract.wallets();
+                    console.log(`📊 Total users: ${totalUsers}`);
+                    
+                    // Search through all users to find the one with matching user number
+                    for (let i = 1; i <= Number(totalUsers); i++) {
+                        try {
+                            const currentUserNumber = await contract.getUserNumber(i);
+                            console.log(`🔍 Index ${i}: User number ${currentUserNumber}`);
+                            
+                            if (currentUserNumber && Number(currentUserNumber) === userNumber) {
+                                console.log(`✅ Found user number ${userNumber} at index ${i}`);
+                                
+                                // Try to get address using indexToAddress if available
+                                try {
+                                    const address = await contract.indexToAddress(i);
+                                    if (address && address !== '0x0000000000000000000000000000000000000000') {
+                                        console.log(`✅ Got address: ${address}`);
+                                        return address;
+                                    }
+                                } catch (indexError) {
+                                    console.log(`❌ indexToAddress failed: ${indexError.message}`);
+                                }
+                                
+                                throw new Error('Cannot get address from user number. Please use address directly.');
+                            }
+                        } catch (error) {
+                            console.log(`⚠️ Error checking index ${i}: ${error.message}`);
+                            continue;
+                        }
+                    }
+                    
+                    throw new Error('User not found for this number');
                 }
-                throw new Error('indexToAddress not available in ABI');
+                
             } catch (error) {
-                console.error('❌ Error in convertIndexToAddress:', error);
+                console.error('❌ Error in convertUserNumberToAddress:', error);
                 throw error;
             }
         }
