@@ -3,208 +3,8 @@
 // Contract addresses
 const IAM_ADDRESS_OLD = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D'; // Old contract
 const IAM_ADDRESS_MIDDLE = '0xF473E4018cDf3dEbFb151cB50D6aB3a0292Ad658'; // Middle contract
-const IAM_ADDRESS_NEW = 'config.js:1843 ✅ Clean config loaded - Real Contracts Available
-config.js:1844 📍 Contract Addresses:
-config.js:1845    Contract 3 (Old): 0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D - Old contract
-config.js:1846    Contract 5 (New): 0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26 - New contract
-config.js:1847    Universal ABI: Same ABI for all contracts
-config.js:1848 🔧 ABI Functions: 80
-swap.js:1  Uncaught SyntaxError: Identifier 'DAI_ABI' has already been declared (at swap.js:1:1)
-network.js:1430 🔄 DOMContentLoaded event fired for network.js
-floating-token-card.js:644 🎯 Initializing floating token card...
-floating-token-card.js:37 🔨 Creating new floating token card...
-floating-token-card.js:88 ✅ Floating card HTML added to DOM
-floating-token-card.js:95 ✅ Card elements found: {card: true, percentage: true, status: true}
-floating-token-card.js:447 🔄 Starting floating card updates...
-floating-token-card.js:479 📊 Found contractConfig, setting up updates
-floating-token-card.js:646 ✅ Floating token card initialized successfully
-config.js:1771 🔍 Debugging wallet connection...
-config.js:1772 🔍 window.ethereum: object
-config.js:1757 ✅ Ethers v6 detected
-config.js:1779 ✅ Ethers v6 fully loaded after 0 ms
-config.js:1783 🔍 Using stored contract address: 0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26
-config.js:1785 🔍 Connecting wallet with contract address: 0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26
-config.js:1790 🔧 Using ethers v6
-index.html:3392 New contract selected - showing all pages
-index.html:1817 🔄 Force refreshing contract info...
-floating-token-card.js:165 🔍 Getting token growth data...
-floating-token-card.js:178 🔍 Contract type: New Base price: 0.00001
-floating-token-card.js:245 📊 Trying to get contract from connectWallet
-config.js:1771 🔍 Debugging wallet connection...
-config.js:1772 🔍 window.ethereum: object
-config.js:1757 ✅ Ethers v6 detected
-config.js:1771 🔍 Debugging wallet connection...
-config.js:1772 🔍 window.ethereum: object
-config.js:1757 ✅ Ethers v6 detected
-config.js:1779 ✅ Ethers v6 fully loaded after 0 ms
-config.js:1783 🔍 Using stored contract address: 0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26
-config.js:1785 🔍 Connecting wallet with contract address: 0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26
-config.js:1790 🔧 Using ethers v6
-config.js:1779 ✅ Ethers v6 fully loaded after 0 ms
-config.js:1783 🔍 Using stored contract address: 0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26
-config.js:1785 🔍 Connecting wallet with contract address: 0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26
-config.js:1790 🔧 Using ethers v6
-config.js:1801 ✅ Wallet connected successfully: 0xB6F844eFE62948647968196257B7DcD2323beF0C
-floating-token-card.js:416 ⚠️ Update already in progress, skipping
-config.js:1771 🔍 Debugging wallet connection...
-config.js:1772 🔍 window.ethereum: object
-config.js:1757 ✅ Ethers v6 detected
-config.js:1779 ✅ Ethers v6 fully loaded after 0 ms
-config.js:1783 🔍 Using stored contract address: 0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26
-config.js:1785 🔍 Connecting wallet with contract address: 0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26
-config.js:1790 🔧 Using ethers v6
-config.js:1801 ✅ Wallet connected successfully: 0xB6F844eFE62948647968196257B7DcD2323beF0C
-floating-token-card.js:416 ⚠️ Update already in progress, skipping
-floating-token-card.js:248 📊 Wallet result: {provider: BrowserProvider, signer: JsonRpcSigner, address: '0xB6F844eFE62948647968196257B7DcD2323beF0C', contract: Proxy(Contract), config: {…}}
-floating-token-card.js:250 📊 Using contract from connectWallet
-config.js:1801 ✅ Wallet connected successfully: 0xB6F844eFE62948647968196257B7DcD2323beF0C
-floating-token-card.js:416 ⚠️ Update already in progress, skipping
-config.js:1771 🔍 Debugging wallet connection...
-config.js:1772 🔍 window.ethereum: object
-config.js:1757 ✅ Ethers v6 detected
-config.js:1779 ✅ Ethers v6 fully loaded after 0 ms
-config.js:1783 🔍 Using stored contract address: 0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26
-config.js:1785 🔍 Connecting wallet with contract address: 0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26
-config.js:1790 🔧 Using ethers v6
-floating-token-card.js:252 📊 Token price raw: 15351175897030n
-floating-token-card.js:275 ✅ Price from connectWallet contract: 0.00001535117589703 Growth: 53.51175897029998
-config.js:1801 ✅ Wallet connected successfully: 0xB6F844eFE62948647968196257B7DcD2323beF0C
-floating-token-card.js:423 ⚠️ Update too recent, skipping (last update: 1761521247471 )
-index.html:1870 🔍 Fetching contract info for address: 0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26
-index.html:1881 📋 Contract header updated: New
-config.js:1801 ✅ Wallet connected successfully: 0xB6F844eFE62948647968196257B7DcD2323beF0C
-floating-token-card.js:423 ⚠️ Update too recent, skipping (last update: 1761521247471 )
-index.html:1870 🔍 Fetching contract info for address: 0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26
-index.html:1881 📋 Contract header updated: New
-floating-token-card.js:165 🔍 Getting token growth data...
-floating-token-card.js:178 🔍 Contract type: New Base price: 0.00001
-floating-token-card.js:201 📊 Using contract data
-floating-token-card.js:228 ✅ Price from contract: 0.00001535117589703 Growth: 53.51175897029998
-floating-token-card.js:423 ⚠️ Update too recent, skipping (last update: 1761521252274 )
-config.js:1771 🔍 Debugging wallet connection...
-config.js:1772 🔍 window.ethereum: object
-config.js:1757 ✅ Ethers v6 detected
-config.js:1779 ✅ Ethers v6 fully loaded after 0 ms
-config.js:1783 🔍 Using stored contract address: 0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26
-config.js:1785 🔍 Connecting wallet with contract address: 0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26
-config.js:1790 🔧 Using ethers v6
-index.html:1834 ✅ Contract info force refreshed
-config.js:1801 ✅ Wallet connected successfully: 0xB6F844eFE62948647968196257B7DcD2323beF0C
-floating-token-card.js:423 ⚠️ Update too recent, skipping (last update: 1761521252274 )
-config.js:1771 🔍 Debugging wallet connection...
-config.js:1772 🔍 window.ethereum: object
-config.js:1757 ✅ Ethers v6 detected
-config.js:1779 ✅ Ethers v6 fully loaded after 0 ms
-config.js:1783 🔍 Using stored contract address: 0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26
-config.js:1785 🔍 Connecting wallet with contract address: 0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26
-config.js:1790 🔧 Using ethers v6
-config.js:1801 ✅ Wallet connected successfully: 0xB6F844eFE62948647968196257B7DcD2323beF0C
-floating-token-card.js:423 ⚠️ Update too recent, skipping (last update: 1761521252274 )
-index.html:1870 🔍 Fetching contract info for address: 0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26
-index.html:1881 📋 Contract header updated: New
-config.js:1771 🔍 Debugging wallet connection...
-config.js:1772 🔍 window.ethereum: object
-config.js:1757 ✅ Ethers v6 detected
-config.js:1779 ✅ Ethers v6 fully loaded after 0 ms
-config.js:1783 🔍 Using stored contract address: 0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26
-config.js:1785 🔍 Connecting wallet with contract address: 0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26
-config.js:1790 🔧 Using ethers v6
-config.js:1801 ✅ Wallet connected successfully: 0xB6F844eFE62948647968196257B7DcD2323beF0C
-floating-token-card.js:165 🔍 Getting token growth data...
-floating-token-card.js:178 🔍 Contract type: New Base price: 0.00001
-floating-token-card.js:201 📊 Using contract data
-floating-token-card.js:228 ✅ Price from contract: 0.00001535117589703 Growth: 53.51175897029998
-index.html:2316 🔍 Raw user data: Proxy(Result) {0: 1n, 1: '0x0000000000000000000000000000000000000000', 2: '0x034e3d5cd0a4688847D3F6dec9B1EffFb5C45AEA', 3: '0x7695Fc2E069d86a8C4397f99E3C5aD0E98603072', 4: 10n, 5: 10n, 6: 0n, 7: 0n, 8: 1761512067n, 9: 1761512067n, 10: 83n, 11: 206n, 12: 1959089019116887505n, 13: 1761512067n, #names: Array(0)}
-index.html:2317 🔍 Raw binaryPoints: 10n
-index.html:2318 🔍 Raw lastClaimTime: 1761512067n
-index.html:2326 🔍 Checking claimable points for contract: 0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26
-index.html:2327 🔍 User points: 10 Time since last claim: 9187
-index.html:2328 🔍 Current time: 1761521254 Last claim time: 1761512067
-index.html:2337 ⏰ User has points but not enough time passed: 10 Time since last claim: 9187
-config.js:1771 🔍 Debugging wallet connection...
-config.js:1772 🔍 window.ethereum: object
-config.js:1757 ✅ Ethers v6 detected
-config.js:1779 ✅ Ethers v6 fully loaded after 0 ms
-config.js:1783 🔍 Using stored contract address: 0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26
-config.js:1785 🔍 Connecting wallet with contract address: 0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26
-config.js:1790 🔧 Using ethers v6
-config.js:1801 ✅ Wallet connected successfully: 0xB6F844eFE62948647968196257B7DcD2323beF0C
-floating-token-card.js:423 ⚠️ Update too recent, skipping (last update: 1761521254411 )
-index.html:2893 📊 Using contract from connectWallet: Proxy(Contract) {target: '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26', interface: Interface, runner: JsonRpcSigner, filters: Proxy(Object), fallback: null, …}
-index.html:2930 🌳 Starting binary tree exploration...
-index.html:2972 🌳 Starting tree traversal with contract: Proxy(Contract) {target: '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26', interface: Interface, runner: JsonRpcSigner, filters: Proxy(Object), fallback: null, …}
-index.html:3005 📊 Method 2 (numToAddress): Index 1 -> 0xB6F844eFE62948647968196257B7DcD2323beF0C
-index.html:3025 ✅ Found address for index 1: 0xB6F844eFE62948647968196257B7DcD2323beF0C
-index.html:3032 📊 User data for 0xB6F844eFE62948647968196257B7DcD2323beF0C: Proxy(Result) {0: 1n, 1: '0x0000000000000000000000000000000000000000', 2: '0x034e3d5cd0a4688847D3F6dec9B1EffFb5C45AEA', 3: '0x7695Fc2E069d86a8C4397f99E3C5aD0E98603072', 4: 10n, 5: 10n, 6: 0n, 7: 0n, 8: 1761512067n, 9: 1761512067n, 10: 83n, 11: 206n, 12: 1959089019116887505n, 13: 1761512067n, #names: Array(0)}
-index.html:3043 📊 Vote status for 0xB6F844eFE62948647968196257B7DcD2323beF0C: Proxy(Result) {0: 0n, 1: 0n, 2: 0n, #names: Array(0)}
-index.html:3067 ✅ Added user 0xB6F844eFE62948647968196257B7DcD2323beF0C with num 1
-index.html:3005 📊 Method 2 (numToAddress): Index 2 -> 0x034e3d5cd0a4688847D3F6dec9B1EffFb5C45AEA
-index.html:3025 ✅ Found address for index 2: 0x034e3d5cd0a4688847D3F6dec9B1EffFb5C45AEA
-index.html:3032 📊 User data for 0x034e3d5cd0a4688847D3F6dec9B1EffFb5C45AEA: Proxy(Result) {0: 2n, 1: '0xB6F844eFE62948647968196257B7DcD2323beF0C', 2: '0xD1E9D3502266677F9a58943D7264017036AFbDA6', 3: '0x8f41D78027C1D04C6C5ddd81D7f81b6B52a8AC32', 4: 5n, 5: 5n, 6: 0n, 7: 0n, 8: 1761512271n, 9: 1761512271n, 10: 64n, 11: 18n, 12: 1959304436616526231n, 13: 1761512271n, #names: Array(0)}
-index.html:3043 📊 Vote status for 0x034e3d5cd0a4688847D3F6dec9B1EffFb5C45AEA: Proxy(Result) {0: 0n, 1: 0n, 2: 0n, #names: Array(0)}
-index.html:3067 ✅ Added user 0x034e3d5cd0a4688847D3F6dec9B1EffFb5C45AEA with num 2
-index.html:3005 📊 Method 2 (numToAddress): Index 4 -> 0x133b2f3214a60B1cf579Fdc8A83C390A9C21f5D1
-index.html:3025 ✅ Found address for index 4: 0x133b2f3214a60B1cf579Fdc8A83C390A9C21f5D1
-index.html:3032 📊 User data for 0x133b2f3214a60B1cf579Fdc8A83C390A9C21f5D1: Proxy(Result) {0: 4n, 1: '0xD1E9D3502266677F9a58943D7264017036AFbDA6', 2: '0x053A195c859f18c2d53e76B9160302d3133c5609', 3: '0x3E521A2b8B98150F50aB1752886C82890349BFac', 4: 5n, 5: 5n, 6: 0n, 7: 0n, 8: 1761512303n, 9: 1761512303n, 10: 19n, 11: 30n, 12: 1959706034689232893n, 13: 1761512303n, #names: Array(0)}
-index.html:3043 📊 Vote status for 0x133b2f3214a60B1cf579Fdc8A83C390A9C21f5D1: Proxy(Result) {0: 0n, 1: 0n, 2: 0n, #names: Array(0)}
-index.html:3067 ✅ Added user 0x133b2f3214a60B1cf579Fdc8A83C390A9C21f5D1 with num 4
-index.html:3005 📊 Method 2 (numToAddress): Index 8 -> 0x95e60a827e8EA5954696c9e0430C0104F726f342
-index.html:3025 ✅ Found address for index 8: 0x95e60a827e8EA5954696c9e0430C0104F726f342
-index.html:3032 📊 User data for 0x95e60a827e8EA5954696c9e0430C0104F726f342: Proxy(Result) {0: 8n, 1: '0x5C6212244D7AD948b50b086ae7c14952824B92EE', 2: '0x8444aF9ef614eF5beC3d17FEfD231cB566148cd1', 3: '0x4edCb4d66D8005A8731058C5758CD4b85c47E185', 4: 2n, 5: 5n, 6: 0n, 7: 0n, 8: 1761512579n, 9: 1761512579n, 10: 0n, 11: 0n, 12: 1959843205585949038n, 13: 1761512579n, #names: Array(0)}
-index.html:3043 📊 Vote status for 0x95e60a827e8EA5954696c9e0430C0104F726f342: Proxy(Result) {0: 0n, 1: 0n, 2: 0n, #names: Array(0)}
-index.html:3067 ✅ Added user 0x95e60a827e8EA5954696c9e0430C0104F726f342 with num 8
-index.html:3005 📊 Method 2 (numToAddress): Index 16 -> 0xBDBc4353b879EE65b11e78829C3127C2629B0ECC
-index.html:3025 ✅ Found address for index 16: 0xBDBc4353b879EE65b11e78829C3127C2629B0ECC
-index.html:3032 📊 User data for 0xBDBc4353b879EE65b11e78829C3127C2629B0ECC: Proxy(Result) {0: 16n, 1: '0x1451483913CA969492A34b5a841223f561E5ea2B', 2: '0xDc6BB70F7c3D3902f9F291cfb36C05880c8C5C74', 3: '0x0000000000000000000000000000000000000000', 4: 0n, 5: 5n, 6: 0n, 7: 0n, 8: 1761512713n, 9: 1761512713n, 10: 1n, 11: 0n, 12: 979853010289638398n, 13: 1761512713n, #names: Array(0)}
-index.html:3043 📊 Vote status for 0xBDBc4353b879EE65b11e78829C3127C2629B0ECC: Proxy(Result) {0: 0n, 1: 0n, 2: 0n, #names: Array(0)}
-index.html:3067 ✅ Added user 0xBDBc4353b879EE65b11e78829C3127C2629B0ECC with num 16
-index.html:3005 📊 Method 2 (numToAddress): Index 32 -> 0x66e3a97F244D78fEC2267B87AE386c6117554f6f
-index.html:3025 ✅ Found address for index 32: 0x66e3a97F244D78fEC2267B87AE386c6117554f6f
-index.html:3032 📊 User data for 0x66e3a97F244D78fEC2267B87AE386c6117554f6f: Proxy(Result) {0: 32n, 1: '0xf1234a7a300C745F6345Bf756b08162545CCDAA9', 2: '0x093d9364061897a15aBDD46CFBaEae5445A7876C', 3: '0x0000000000000000000000000000000000000000', 4: 0n, 5: 5n, 6: 0n, 7: 0n, 8: 1761512939n, 9: 1761512939n, 10: 9n, 11: 0n, 12: 979696245565625044n, 13: 1761512939n, #names: Array(0)}
-index.html:3043 📊 Vote status for 0x66e3a97F244D78fEC2267B87AE386c6117554f6f: Proxy(Result) {0: 0n, 1: 0n, 2: 0n, #names: Array(0)}
-index.html:3067 ✅ Added user 0x66e3a97F244D78fEC2267B87AE386c6117554f6f with num 32
-index.html:3005 📊 Method 2 (numToAddress): Index 64 -> 0xb356F142CBa511dA4499F2e4A64e1a0105b3d118
-index.html:3025 ✅ Found address for index 64: 0xb356F142CBa511dA4499F2e4A64e1a0105b3d118
-index.html:3032 📊 User data for 0xb356F142CBa511dA4499F2e4A64e1a0105b3d118: Proxy(Result) {0: 64n, 1: '0xD1E9D3502266677F9a58943D7264017036AFbDA6', 2: '0xBA8B0FbBAa58e62e5abCF783c3bd20a318a66673', 3: '0x5DDaC406F1aDF4E62e73Ead067411A25720fA0ca', 4: 3n, 5: 5n, 6: 0n, 7: 0n, 8: 1761513473n, 9: 1761513473n, 10: 1n, 11: 0n, 12: 1958726407986220505n, 13: 1761513473n, #names: Array(0)}
-index.html:3043 📊 Vote status for 0xb356F142CBa511dA4499F2e4A64e1a0105b3d118: Proxy(Result) {0: 0n, 1: 0n, 2: 0n, #names: Array(0)}
-index.html:3067 ✅ Added user 0xb356F142CBa511dA4499F2e4A64e1a0105b3d118 with num 64
-index.html:3005 📊 Method 2 (numToAddress): Index 128 -> 0x039Abb163B1F404A875c0f569c2819D40Cbf3b51
-index.html:3025 ✅ Found address for index 128: 0x039Abb163B1F404A875c0f569c2819D40Cbf3b51
-index.html:3032 📊 User data for 0x039Abb163B1F404A875c0f569c2819D40Cbf3b51: Proxy(Result) {0: 128n, 1: '0xc85F65C0a6F2A870b35f318788EEE5Ce09E92424', 2: '0x6060A912e08660b0802D8Ef78F7c98A4017F3b28', 3: '0xad02D3857b1AD19734F8F3e8F1D3831452B96DB6', 4: 5n, 5: 5n, 6: 0n, 7: 0n, 8: 1761514505n, 9: 1761514505n, 10: 25n, 11: 53n, 12: 1957218783259654446n, 13: 1761514505n, #names: Array(0)}
-index.html:3043 📊 Vote status for 0x039Abb163B1F404A875c0f569c2819D40Cbf3b51: Proxy(Result) {0: 0n, 1: 0n, 2: 0n, #names: Array(0)}
-index.html:3067 ✅ Added user 0x039Abb163B1F404A875c0f569c2819D40Cbf3b51 with num 128
-index.html:3005 📊 Method 2 (numToAddress): Index 256 -> 0xC6cEF43761142593Fa7d26c3D9f81aeE19DE51F8
-index.html:3025 ✅ Found address for index 256: 0xC6cEF43761142593Fa7d26c3D9f81aeE19DE51F8
-index.html:3032 📊 User data for 0xC6cEF43761142593Fa7d26c3D9f81aeE19DE51F8: Proxy(Result) {0: 256n, 1: '0x99fd7D6439Ee16199CE29d83eF93D66F68BB54D9', 2: '0x7Bd3E26cc0215671241fAefd4CFa3Ef5d2Fd8073', 3: '0x0000000000000000000000000000000000000000', 4: 0n, 5: 5n, 6: 0n, 7: 0n, 8: 1761517297n, 9: 1761517297n, 10: 6n, 11: 0n, 12: 977504171055214453n, 13: 1761517297n, #names: Array(0)}
-index.html:3043 📊 Vote status for 0xC6cEF43761142593Fa7d26c3D9f81aeE19DE51F8: Proxy(Result) {0: 0n, 1: 0n, 2: 0n, #names: Array(0)}
-index.html:3067 ✅ Added user 0xC6cEF43761142593Fa7d26c3D9f81aeE19DE51F8 with num 256
-index.html:3005 📊 Method 2 (numToAddress): Index 512 -> 0x0000000000000000000000000000000000000000
-index.html:3017 📊 Method 3 (getAddressByNumber): Index 512 -> 0x0000000000000000000000000000000000000000
-index.html:3005 📊 Method 2 (numToAddress): Index 513 -> 0x0000000000000000000000000000000000000000
-index.html:3017 📊 Method 3 (getAddressByNumber): Index 513 -> 0x0000000000000000000000000000000000000000
-index.html:3005 📊 Method 2 (numToAddress): Index 257 -> 0x7Bd3E26cc0215671241fAefd4CFa3Ef5d2Fd8073
-index.html:3025 ✅ Found address for index 257: 0x7Bd3E26cc0215671241fAefd4CFa3Ef5d2Fd8073
-index.html:3032 📊 User data for 0x7Bd3E26cc0215671241fAefd4CFa3Ef5d2Fd8073: Proxy(Result) {0: 257n, 1: '0xC6cEF43761142593Fa7d26c3D9f81aeE19DE51F8', 2: '0x1F176CDE54caA09cee894B370751518681D5CbBE', 3: '0x0000000000000000000000000000000000000000', 4: 0n, 5: 5n, 6: 0n, 7: 0n, 8: 1761517313n, 9: 1761517313n, 10: 5n, 11: 0n, 12: 977494396013482752n, 13: 1761517313n, #names: Array(0)}
-index.html:3043 📊 Vote status for 0x7Bd3E26cc0215671241fAefd4CFa3Ef5d2Fd8073: Proxy(Result) {0: 0n, 1: 0n, 2: 0n, #names: Array(0)}
-index.html:3067 ✅ Added user 0x7Bd3E26cc0215671241fAefd4CFa3Ef5d2Fd8073 with num 257
-index.html:3005 📊 Method 2 (numToAddress): Index 514 -> 0x0000000000000000000000000000000000000000
-index.html:3017 📊 Method 3 (getAddressByNumber): Index 514 -> 0x0000000000000000000000000000000000000000
-index.html:3005 📊 Method 2 (numToAddress): Index 515 -> 0x0000000000000000000000000000000000000000
-index.html:3017 📊 Method 3 (getAddressByNumber): Index 515 -> 0x0000000000000000000000000000000000000000
-index.html:3005 📊 Method 2 (numToAddress): Index 129 -> 0x6060A912e08660b0802D8Ef78F7c98A4017F3b28
-index.html:3025 ✅ Found address for index 129: 0x6060A912e08660b0802D8Ef78F7c98A4017F3b28
-index.html:3032 📊 User data for 0x6060A912e08660b0802D8Ef78F7c98A4017F3b28: Proxy(Result) {0: 129n, 1: '0x039Abb163B1F404A875c0f569c2819D40Cbf3b51', 2: '0x496b552cFa5981DAD3abC60b5f2f24397f4744eD', 3: '0x0000000000000000000000000000000000000000', 4: 0n, 5: 5n, 6: 0n, 7: 0n, 8: 1761514519n, 9: 1761514519n, 10: 29n, 11: 0n, 12: 978746396209600220n, 13: 1761514519n, #names: Array(0)}
-index.html:3043 📊 Vote status for 0x6060A912e08660b0802D8Ef78F7c98A4017F3b28: Proxy(Result) {0: 0n, 1: 0n, 2: 0n, #names: Array(0)}
-index.html:3067 ✅ Added user 0x6060A912e08660b0802D8Ef78F7c98A4017F3b28 with num 129
-index.html:3005 📊 Method 2 (numToAddress): Index 258 -> 0x1F176CDE54caA09cee894B370751518681D5CbBE
-index.html:3025 ✅ Found address for index 258: 0x1F176CDE54caA09cee894B370751518681D5CbBE
-index.html:3032 📊 User data for 0x1F176CDE54caA09cee894B370751518681D5CbBE: Proxy(Result) {0: 258n, 1: '0x7Bd3E26cc0215671241fAefd4CFa3Ef5d2Fd8073', 2: '0x53BECbfF598C10466deEbe284Fc1882ffe4a9ea2', 3: '0x0000000000000000000000000000000000000000', 4: 0n, 5: 5n, 6: 0n, 7: 0n, 8: 1761517325n, 9: 1761517325n, 10: 4n, 11: 0n, 12: 977484621069504717n, 13: 1761517325n, #names: Array(0)}
-index.html:3043 📊 Vote status for 0x1F176CDE54caA09cee894B370751518681D5CbBE: Proxy(Result) {0: 0n, 1: 0n, 2: 0n, #names: Array(0)}
-index.html:3067 ✅ Added user 0x1F176CDE54caA09cee894B370751518681D5CbBE with num 258
-index.html:3005 📊 Method 2 (numToAddress): Index 516 -> 0x0000000000000000000000000000000000000000
-index.html:3017 📊 Method 3 (getAddressByNumber): Index 516 -> 0x0000000000000000000000000000000000000000
-index.html:3005 📊 Method 2 (numToAddress): Index 517 -> 0x0000000000000000000000000000000000000000
-'; // New contract
+const IAM_ADDRESS_NEW = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26';
+
 // Use global DAI address from config to avoid redeclaration conflicts
 const SWAP_DAI_ADDRESS = (typeof window !== 'undefined' && window.DAI_ADDRESS) ? window.DAI_ADDRESS : '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063';
 
@@ -2240,16 +2040,26 @@ class SwapManager {
             // Token price from contract
             console.log('🔄 Fetching token price...');
             try {
-                const tokenPrice = await Promise.race([
-                    this.contract.getTokenPrice(),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('Token price fetch timeout')), 10000))
-                ]);
-                this.tokenPrice = ethers.utils.formatUnits(tokenPrice, 18);
-            console.log('✅ Token price received:', this.tokenPrice);
-                console.log('🔍 this.tokenPrice set to:', this.tokenPrice);
+                // Check if getTokenPrice function exists and try to call it
+                if (typeof this.contract.getTokenPrice === 'function') {
+                    try {
+                        const tokenPrice = await Promise.race([
+                            this.contract.getTokenPrice(),
+                            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
+                        ]);
+                        this.tokenPrice = ethers.utils.formatUnits(tokenPrice, 18);
+                        console.log('✅ Token price received:', this.tokenPrice);
+                    } catch (priceError) {
+                        console.log('ℹ️ Token price not available from contract, using default');
+                        this.tokenPrice = '0.00001'; // Default price for old contracts
+                    }
+                } else {
+                    console.log('ℹ️ getTokenPrice function not available, using default');
+                    this.tokenPrice = '0.00001'; // Default price for old contracts
+                }
             } catch (error) {
-                console.warn('⚠️ Error fetching token price:', error);
-                this.tokenPrice = null;
+                console.log('ℹ️ Error fetching token price, using default');
+                this.tokenPrice = '0.00001'; // Fallback to default price
             }
 
             // IAM balance
@@ -2257,12 +2067,13 @@ class SwapManager {
             try {
                 const IAMBalance = await Promise.race([
                     this.contract.balanceOf(address),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('IAM balance fetch timeout')), 10000))
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
                 ]);
                 IAMBalanceFormatted = ethers.utils.formatUnits(IAMBalance, 18);
-            console.log('✅ IAM balance received:', IAMBalanceFormatted);
+                console.log('✅ IAM balance received:', IAMBalanceFormatted);
             } catch (error) {
-                console.warn('⚠️ Error fetching IAM balance:', error);
+                console.log('ℹ️ Could not fetch IAM balance, using 0');
+                IAMBalanceFormatted = '0';
             }
 
             // DAI balance
@@ -2270,12 +2081,13 @@ class SwapManager {
             try {
                 const daiBalance = await Promise.race([
                     this.daiContract.balanceOf(address),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('DAI balance fetch timeout')), 10000))
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
                 ]);
                 daiBalanceFormatted = ethers.utils.formatUnits(daiBalance, 18);
                 console.log('✅ DAI balance received:', daiBalanceFormatted);
             } catch (error) {
-                console.warn('⚠️ Error fetching DAI balance:', error);
+                console.log('ℹ️ Could not fetch DAI balance, using 0');
+                daiBalanceFormatted = '0';
             }
 
             // Function to shorten large numbers
