@@ -1214,164 +1214,170 @@
       } catch(_) {}
     }
     // Try to connect wallet on load and report status
-    (function(){
-      document.addEventListener('DOMContentLoaded', async function(){
-        // Add a small delay to let MetaMask fully initialize
-        await new Promise(resolve => setTimeout(resolve, 500));
+    // Wrapped in a named function for better debugging
+    async function initializeWalletConnection() {
+      console.log('🚀 Register page: Initializing wallet connection...');
+      
+      try {
+        // Wait for DOM to be ready
+        if (document.readyState === 'loading') {
+          await new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve));
+        }
         
-        try {
+        // Wait for scripts to load
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        if (typeof window.connectWallet === 'function') {
+          console.log('🔗 Attempting wallet connection (register)...');
           
-          if (typeof window.connectWallet === 'function') {
-            console.log('🔗 Attempting wallet connection (register)...');
-            
-            // Add retry logic for MetaMask connection issues
-            let conn = null;
-            let retryCount = 0;
-            const maxRetries = 3;
-            
-            while (retryCount < maxRetries && !conn) {
-              try {
-                // Add a small delay before each attempt to let MetaMask stabilize
-                if (retryCount > 0) {
-                  await new Promise(resolve => setTimeout(resolve, 1000));
-                }
-                
-                conn = await window.connectWallet();
-                if (conn && conn.address) {
-                  break;
-                }
-              } catch (error) {
-                console.warn(`⚠️ Wallet connection attempt ${retryCount + 1} failed:`, error.message);
-                retryCount++;
-                if (retryCount < maxRetries) {
-                  console.log(`⏳ Retrying wallet connection in 2 seconds... (${retryCount}/${maxRetries})`);
-                  await new Promise(resolve => setTimeout(resolve, 2000));
-                }
+          // Add retry logic for MetaMask connection issues
+          let conn = null;
+          let retryCount = 0;
+          const maxRetries = 3;
+          
+          while (retryCount < maxRetries && !conn) {
+            try {
+              // Add a small delay before each attempt to let MetaMask stabilize
+              if (retryCount > 0) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
               }
-            }
-            
-            if (conn && conn.address) {
-              console.log('✅ Wallet connected on register:', conn.address);
-              // Set new user field to connected address ONLY if user is inactive
-              try {
-                const nu = document.getElementById('new-user-address');
-                if (nu && conn.contract) {
-                  let userActive = false;
-                  let userIndex = null;
-                  try {
-                    const u = await conn.contract.users(conn.address);
-                    console.log('🔍 Checking user data:', u);
-                    
-                    // Try to get num (only field now)
-                    let userIndexValue = null;
-                    
-                    // Try u.num
-                    if (u && u.num !== undefined && u.num !== null) {
-                      userIndexValue = u.num;
-                      console.log('📍 Found num as u.num:', userIndexValue);
-                    }
-                    
-                    // User is active if index exists and is non-zero
-                    userActive = !!(userIndexValue && BigInt(userIndexValue) !== 0n);
-                    console.log('✅ User active:', userActive, 'Index value:', userIndexValue);
-                    if (userActive) {
-                      userIndex = Number(userIndexValue);
-                      console.log('📊 User index:', userIndex);
-                    }
-                  } catch(e) {
-                    console.log('❌ Error checking user:', e);
-                  }
-                  
-                  if (!userActive) {
-                    console.log('ℹ️ User is not active, setting new-user address to connected wallet');
-                    nu.value = conn.address;
-                    nu.setAttribute('data-full-address', conn.address);
-                  } else {
-                    // Always auto-fill upper fields with connected wallet address
-                    console.log('🔄 Auto-filling fields for active user...');
-                    await autoFillupperFields(conn.address, userIndex);
-                    console.log('✅ Auto-fill completed for active user');
-                  }
-                }
-              } catch(_) {}
-              // Fetch and show registration price
-              try {
-                const box = document.getElementById('reg-price-box');
-                const txt = document.getElementById('reg-price-text');
-                if (box && txt && conn.contract) {
-                  const wei = await (window.safeGetRegPrice ? window.safeGetRegPrice(conn.contract) : null);
-                  if (wei !== null && wei !== undefined) {
-                    const val = (typeof ethers !== 'undefined') ? ethers.formatUnits(wei, 18) : String(wei);
-                    txt.textContent = `${Number(val).toFixed(2)} IAM`;
-                    box.style.display = 'block';
-                  }
-                }
-              } catch(e) { console.warn('Reg price fetch failed:', e && (e.message||e)); }
-
-              // Also update required cost box now that we are connected
-              try { await updateRegistrationCost(); } catch(_) {}
-
-              // Fetch and populate balances box
-              try {
-                const mEl = document.getElementById('matic-balance');
-                const iEl = document.getElementById('IAM-balance');
-                if (mEl && iEl) {
-                  const provider = conn.provider || (window.contractConfig && window.contractConfig.provider);
-                  if (provider) {
-                    const mBal = await provider.getBalance(conn.address);
-                    const mNum = ethers.formatUnits(mBal, 18);
-                    mEl.textContent = Number(mNum).toFixed(4);
-                  }
-                  try {
-                    const c = conn.contract || (window.contractConfig && window.contractConfig.contract);
-                    if (c && typeof c.balanceOf === 'function') {
-                      const ib = await c.balanceOf(conn.address);
-                      const iNum = ethers.formatUnits(ib, 18);
-                      iEl.textContent = Number(iNum).toFixed(2);
-                    }
-                  } catch(_) {}
-                }
-              } catch(_) {}
-              enforceRegisterButtonState();
-            } else {
-              console.warn('⚠️ Wallet not connected on register after all retry attempts');
-              // Show user-friendly message and retry button
-              const statusEl = document.getElementById('status-message');
-              const retrySection = document.getElementById('wallet-retry-section');
-              if (statusEl) {
-                statusEl.className = 'register-form-status warning';
-                statusEl.textContent = '⚠️ Wallet connection failed. Please try again.';
+              
+              conn = await window.connectWallet();
+              if (conn && conn.address) {
+                break;
               }
-              if (retrySection) {
-                retrySection.style.display = 'block';
+            } catch (error) {
+              console.warn(`⚠️ Wallet connection attempt ${retryCount + 1} failed:`, error.message);
+              retryCount++;
+              if (retryCount < maxRetries) {
+                console.log(`⏳ Retrying wallet connection in 2 seconds... (${retryCount}/${maxRetries})`);
+                await new Promise(resolve => setTimeout(resolve, 2000));
               }
-            }
-          } else {
-            console.warn('⚠️ connectWallet is not available on register');
-            // Show user-friendly message
-            const statusEl = document.getElementById('status-message');
-            if (statusEl) {
-              statusEl.className = 'register-form-status error';
-              statusEl.textContent = '❌ Wallet connection not available. Please check if MetaMask is installed.';
             }
           }
-        } catch (e) {
-          console.warn('⚠️ Wallet connect attempt failed on register:', e && (e.message||e));
+          
+          if (conn && conn.address) {
+            console.log('✅ Wallet connected on register:', conn.address);
+            // Set new user field to connected address ONLY if user is inactive
+            try {
+              const nu = document.getElementById('new-user-address');
+              if (nu && conn.contract) {
+                let userActive = false;
+                let userIndex = null;
+                try {
+                  const u = await conn.contract.users(conn.address);
+                  console.log('🔍 Checking user data:', u);
+                  
+                  // Try to get num (only field now)
+                  let userIndexValue = null;
+                  
+                  // Try u.num
+                  if (u && u.num !== undefined && u.num !== null) {
+                    userIndexValue = u.num;
+                    console.log('📍 Found num as u.num:', userIndexValue);
+                  }
+                  
+                  // User is active if index exists and is non-zero
+                  userActive = !!(userIndexValue && BigInt(userIndexValue) !== 0n);
+                  console.log('✅ User active:', userActive, 'Index value:', userIndexValue);
+                  if (userActive) {
+                    userIndex = Number(userIndexValue);
+                    console.log('📊 User index:', userIndex);
+                  }
+                } catch(e) {
+                  console.log('❌ Error checking user:', e);
+                }
+                
+                if (!userActive) {
+                  console.log('ℹ️ User is not active, setting new-user address to connected wallet');
+                  nu.value = conn.address;
+                  nu.setAttribute('data-full-address', conn.address);
+                } else {
+                  // Always auto-fill upper fields with connected wallet address
+                  console.log('🔄 Auto-filling fields for active user...');
+                  await autoFillupperFields(conn.address, userIndex);
+                  console.log('✅ Auto-fill completed for active user');
+                }
+              }
+            } catch(_) {}
+            // Fetch and show registration price
+            try {
+              const box = document.getElementById('reg-price-box');
+              const txt = document.getElementById('reg-price-text');
+              if (box && txt && conn.contract) {
+                const wei = await (window.safeGetRegPrice ? window.safeGetRegPrice(conn.contract) : null);
+                if (wei !== null && wei !== undefined) {
+                  const val = (typeof ethers !== 'undefined') ? ethers.formatUnits(wei, 18) : String(wei);
+                  txt.textContent = `${Number(val).toFixed(2)} IAM`;
+                  box.style.display = 'block';
+                }
+              }
+            } catch(e) { console.warn('Reg price fetch failed:', e && (e.message||e)); }
+
+            // Also update required cost box now that we are connected
+            try { await updateRegistrationCost(); } catch(_) {}
+
+            // Fetch and populate balances box
+            try {
+              const mEl = document.getElementById('matic-balance');
+              const iEl = document.getElementById('IAM-balance');
+              if (mEl && iEl) {
+                const provider = conn.provider || (window.contractConfig && window.contractConfig.provider);
+                if (provider) {
+                  const mBal = await provider.getBalance(conn.address);
+                  const mNum = ethers.formatUnits(mBal, 18);
+                  mEl.textContent = Number(mNum).toFixed(4);
+                }
+                try {
+                  const c = conn.contract || (window.contractConfig && window.contractConfig.contract);
+                  if (c && typeof c.balanceOf === 'function') {
+                    const ib = await c.balanceOf(conn.address);
+                    const iNum = ethers.formatUnits(ib, 18);
+                    iEl.textContent = Number(iNum).toFixed(2);
+                  }
+                } catch(_) {}
+              }
+            } catch(_) {}
+            enforceRegisterButtonState();
+          } else {
+            console.warn('⚠️ Wallet not connected on register after all retry attempts');
+            // Show user-friendly message and retry button
+            const statusEl = document.getElementById('status-message');
+            const retrySection = document.getElementById('wallet-retry-section');
+            if (statusEl) {
+              statusEl.className = 'register-form-status warning';
+              statusEl.textContent = '⚠️ Wallet connection failed. Please try again.';
+            }
+            if (retrySection) {
+              retrySection.style.display = 'block';
+            }
+          }
+        } else {
+          console.warn('⚠️ connectWallet is not available on register');
           // Show user-friendly message
           const statusEl = document.getElementById('status-message');
           if (statusEl) {
             statusEl.className = 'register-form-status error';
-            statusEl.textContent = '❌ Wallet connection failed. Please refresh the page and try again.';
+            statusEl.textContent = '❌ Wallet connection not available. Please check if MetaMask is installed.';
           }
         }
+      } catch (e) {
+        console.warn('⚠️ Wallet connect attempt failed on register:', e && (e.message||e));
+        // Show user-friendly message
+        const statusEl = document.getElementById('status-message');
+        if (statusEl) {
+          statusEl.className = 'register-form-status error';
+          statusEl.textContent = '❌ Wallet connection failed. Please refresh the page and try again.';
+        }
+      }
 
-        // Add retry button functionality
-        const retryBtn = document.getElementById('retry-wallet-btn');
-        if (retryBtn) {
-          retryBtn.addEventListener('click', async function() {
-            console.log('🔄 Manual wallet retry requested...');
-            retryBtn.disabled = true;
-            retryBtn.textContent = '⏳ Connecting...';
+      // Add retry button functionality
+      const retryBtn = document.getElementById('retry-wallet-btn');
+      if (retryBtn) {
+        retryBtn.addEventListener('click', async function() {
+          console.log('🔄 Manual wallet retry requested...');
+          retryBtn.disabled = true;
+          retryBtn.textContent = '⏳ Connecting...';
             
             try {
               if (typeof window.connectWallet === 'function') {
