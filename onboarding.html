@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" id="html-root">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>راهنمای شروع — IAM</title>
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css" rel="stylesheet" type="text/css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Vazir', Tahoma, Arial, sans-serif;
+            background: linear-gradient(135deg, #0a0b0f 0%, #1a1b2e 50%, #16213e 100%);
+            color: #e6eaf0;
+            line-height: 1.9;
+            min-height: 100vh;
+        }
+
+        .container { max-width: 1100px; margin: 0 auto; padding: 32px 20px 80px; }
+
+        .header { text-align: center; margin-bottom: 28px; }
+        .title {
+            font-size: 2.2rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #00ff88, #00c2ff);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .subtitle { color: #aef3c6; margin-top: 8px; font-size: 1.1rem; }
+
+        .back { position: fixed; top: 16px; left: 16px; z-index: 10; }
+        .back a {
+            background: linear-gradient(135deg, #00ff88, #a786ff);
+            color: #0a0b0f; padding: 10px 16px; border-radius: 10px; text-decoration: none; font-weight: 600;
+            box-shadow: 0 6px 18px rgba(0,255,136,0.25);
+        }
+        .back a:hover { opacity: 0.9; }
+
+        /* Language switcher */
+        .language-switcher { position: fixed; top: 16px; right: 16px; z-index: 10; }
+        .language-select {
+            background: linear-gradient(135deg, #00ff88, #00c2ff);
+            color: #0a0b0f; border: none; padding: 10px 14px; border-radius: 10px; font-weight: 700;
+        }
+
+        .intro {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(0,255,136,0.14);
+            border-radius: 16px; padding: 20px; margin-bottom: 26px;
+        }
+
+        .steps {
+            display: grid; gap: 18px; grid-template-columns: repeat(3, 1fr);
+        }
+
+        .step {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(0,255,136,0.14);
+            border-radius: 16px; overflow: hidden; display: flex; flex-direction: column;
+        }
+        .step-header {
+            display: flex; align-items: center; gap: 10px; padding: 14px 16px;
+            background: linear-gradient(90deg, rgba(0,255,136,0.10), rgba(0,194,255,0.10));
+            border-bottom: 1px solid rgba(0,255,136,0.14);
+        }
+        .badge {
+            min-width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; font-weight: 700; color: #0a0b0f;
+            background: linear-gradient(135deg, #00ff88, #00c2ff);
+        }
+        .step-title { font-weight: 700; color: #e6eaf0; }
+        .step-body { padding: 14px 16px; flex: 1; }
+        .step-body p { color: #d9dfeb; margin-bottom: 10px; }
+        .placeholder {
+            background: rgba(0,194,255,0.10);
+            border: 1px dashed rgba(0,194,255,0.35);
+            border-radius: 12px; height: 150px; display: grid; place-items: center; color: #b8c1ec; font-size: 0.95rem;
+            margin-top: 8px;
+        }
+
+        .divider { height: 2px; margin: 28px 0; background: linear-gradient(90deg, transparent, #00ff88, transparent); }
+
+        .links { display: grid; gap: 14px; grid-template-columns: repeat(4, 1fr); }
+        .card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(0,255,136,0.14);
+            border-radius: 14px; padding: 16px;
+        }
+        .card h3 { color: #00ff88; font-weight: 600; margin-bottom: 8px; font-size: 1.05rem; text-align: center; }
+        .card p { color: #cfd6e6; font-size: 0.95rem; text-align: center; }
+
+        .faq { margin-top: 30px; }
+        .faq h2 { color: #00ff88; font-size: 1.2rem; margin-bottom: 10px; }
+        .faq-item { background: rgba(255,255,255,0.02); border: 1px solid rgba(0,255,136,0.14); border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+        .faq-item h4 { color: #aef3c6; margin-bottom: 6px; }
+        .faq-item p { color: #d9dfeb; }
+
+        
+
+        .tutorials { margin-top: 28px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+        .tutorial {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(0,255,136,0.14);
+            border-radius: 16px; padding: 16px; text-align: center;
+        }
+        .tutorial h3 { color: #00ff88; margin-bottom: 10px; text-align: center; }
+        .tutorial p { color: #cfd6e6; text-align: center; }
+        .tutorial .shot { border-radius: 12px; margin-top: 10px; background: rgba(0,194,255,0.10); border: 1px dashed rgba(0,194,255,0.35); display: inline-block; color: #b8c1ec; overflow: hidden; }
+        .tutorial .shot img { display: block; height: auto; max-width: 100%; }
+        .checklist { margin: 10px auto 0; padding: 0 18px; max-width: 760px; text-align: start; }
+        .checklist li { color: #d9dfeb; margin: 6px 0; line-height: 1.8; list-style: none; position: relative; padding-right: 22px; }
+        [dir="ltr"] .checklist li { padding-left: 22px; padding-right: 0; }
+        .checklist li:before { content: '✓'; position: absolute; right: 0; color: #00ff88; font-weight: 700; }
+        [dir="ltr"] .checklist li:before { left: 0; right: auto; }
+
+        @media (max-width: 992px) { .steps { grid-template-columns: repeat(2, 1fr); } .links { grid-template-columns: repeat(2, 1fr); } .tutorials { grid-template-columns: 1fr; } }
+        @media (max-width: 600px) { .steps { grid-template-columns: 1fr; } .links { grid-template-columns: 1fr; } .title { font-size: 1.8rem; } }
+    </style>
+    <script>
+        const i18n = {
+            fa: {
+                title: 'راهنمای شروع (Onboarding)',
+                subtitle: 'گام‌به‌گام: تامین DAI → سواپ به IAM → ثبت‌نام → آشنایی با بخش‌ها',
+                intro: 'در این صفحه، روال کامل شروع کار را می‌آموزید: ابتدا مقدار لازم DAI را از صرافی یا کیف‌پول خود تامین می‌کنید، سپس در بخش سواپ همین سایت آن را به توکن IAM تبدیل می‌نمایید، بعد با همان توکن، فرآیند ثبت‌نام را انجام می‌دهید و در پایان با سایر بخش‌ها آشنا می‌شوید.',
+                links: {
+                    profile: { h: 'داشبورد پروفایل', p: 'مدیریت اطلاعات، دارایی‌ها و پیگیری وضعیت.' },
+                    swap: { h: 'تبدیل و انتقال', p: 'سواپ، انتقال و ابزارهای مالی مرتبط.' },
+                    about: { h: 'سایر صفحات', p: 'معرفی، درباره، و راهنماهای تکمیلی.' }
+                },
+                faq: {
+                    title: 'سوالات متداول',
+                    q1: 'آیا می‌توان به‌جای DAI از استیبل‌کوین دیگری استفاده کرد؟',
+                    a1: 'در حال حاضر این راهنما بر DAI تمرکز دارد. اگر استیبل‌کوین دیگری پشتیبانی شود، در صفحه سواپ قابل مشاهده خواهد بود.',
+                    q2: 'در صورت خطا در اتصال کیف‌پول چه کنم؟',
+                    a2: 'از به‌روزبودن کیف‌پول و مرورگر اطمینان حاصل کرده و صفحه را رفرش کنید. سپس دوباره روی «اتصال کیف‌پول» کلیک کنید.'
+                },
+                steps: [
+                    { title: 'تامین DAI از صرافی یا کیف‌پول', body: 'از یک صرافی معتبر (مانند صرافی‌های داخلی/بین‌المللی) یا از کیف‌پول شخصی خود، مقدار موردنیاز DAI را تهیه کنید. شبکه را روی Polygon تنظیم کنید، سپس مقدار DAI را به آدرس همان کیف‌پولی که به سایت وصل می‌کنید انتقال دهید تا در فرآیند سواپ قابل استفاده باشد.' },
+                    { title: 'سواپ DAI به توکن IAM', body: 'در صفحه سواپ، ابتدا کیف‌پول را متصل کنید، سپس مقدار DAI را وارد و نرخ تقریبی را بررسی کنید. در صورت نیاز مجوز (Approve) را تایید کنید و سپس Swap را بزنید تا DAI شما به IAM تبدیل شود. پس از موفقیت، موجودی IAM در کیف‌پول‌تان قابل مشاهده است.' },
+                    { title: 'ثبت‌نام با توکن IAM', body: 'وارد صفحه ثبت‌نام شوید، قوانین را مطالعه کنید، معرف و بالاسری را بررسی و تایید کنید، سپس آدرس کاربر جدید را وارد نمایید. هزینه ثبت‌نام از موجودی IAM شما کسر می‌شود. بعد از تایید تراکنش، حساب فعال شده و به سایر بخش‌ها دسترسی خواهید داشت.' }
+                ],
+                tutorials: {
+                    swap: { h: 'سواپ (DAI → IAM)', p: 'کیف‌پول را وصل کنید، مقدار DAI را وارد نمایید، نرخ و کارمزد را بررسی کنید، در صورت نیاز مجوز Approve را تایید و سپس Swap را اجرا کنید. پس از تایید تراکنش در شبکه، موجودی IAM شما به‌روز خواهد شد.', list: ['شبکه کیف‌پول روی Polygon باشد.', 'موجودی کارمزد MATIC کافی باشد.', 'پس از Approve، دوباره Swap را بزنید.', 'در صورت خطا، صفحه را رفرش و کیف‌پول را reconnect کنید.'] },
+                    register: { h: 'ثبت‌نام', p: 'فرم ثبت‌نام را با دقت تکمیل کنید: معرف (upper) و بالاسری (Upline) را تایید کنید، شاخص‌ها به‌صورت خودکار پیشنهاد می‌شوند و آدرس کاربر جدید را وارد نمایید. در پایان با پرداخت IAM ثبت‌نام نهایی می‌شود.', list: ['upper و Upline را بررسی کنید.', 'آدرس کاربر جدید را بدون فاصله/غلط وارد کنید.', 'هزینه ثبت‌نام از IAM کسر می‌شود.', 'پس از تایید، وضعیت Active را در پروفایل چک کنید.'] },
+                    profile: { h: 'پروفایل کاربر', p: 'اطلاعات هویتی و مالی شما یکجا نمایش داده می‌شود: آدرس کیف‌پول، وضعیت فعال بودن، امتیازهای باینری، برداشت‌های انجام‌شده و مجموع خریدها. از این بخش وضعیت و رشد حساب خود را پایش کنید.', list: ['بررسی Active بودن حساب.', 'کنترل مجموع خریدها و برداشت‌ها.', 'مشاهده امتیازهای سمت چپ/راست.', 'دسترسی به عملیات‌های کلیدی از همین صفحه.'] },
+                    upgrade: { h: 'ارتقای سقف امتیاز دودویی', p: 'در این پنجره شرایط ارتقا به‌طور خودکار توسط قرارداد بررسی می‌شود. در صورت احراز شرایط (موجودی/زمان)، می‌توانید یک یا دو امتیاز جدید خرید و سقف امتیازهای باینری را افزایش دهید.', list: ['موجودی IAM کافی داشته باشید.', 'زمان/شرایط احراز توسط قرارداد تایید شود.', 'یک یا دو امتیاز قابل خرید است.', 'پس از خرید، سقف امتیاز به‌روز می‌شود.'] },
+                    transfer: { h: 'انتقال توکن', p: 'برای انتقال، آدرس مقصد یا شاخص کاربر را وارد کنید، مقدار و نوع توکن (DAI/IAM/...) را انتخاب و سپس تراکنش را تایید کنید. قبل از تایید آدرس مقصد را چندبار بررسی نمایید.', list: ['آدرس 0x مقصد را دوبار چک کنید.', 'نوع توکن و مقدار درست انتخاب شود.', 'هزینه کارمزد شبکه تامین باشد.', 'پس از ارسال، تراکنش برگشت‌ناپذیر است.'] },
+                    ownership: { h: 'انتقال مالکیت', p: 'با وارد کردن آدرس مالک جدید، مالکیت موقعیت خود را واگذار می‌کنید. این عملیات غیرقابل بازگشت است؛ بنابراین آدرس مقصد را با نهایت دقت کنترل کنید.', list: ['آدرس مالک جدید دقیق و معتبر باشد.', 'پیام غیرقابل بازگشت بودن را مدنظر داشته باشید.', 'پس از انتقال، دسترسی فعلی شما قطع می‌شود.', 'پیشنهاد: آدرس مقصد را چندبار بررسی کنید.'] },
+                    network: { h: 'مدیریت درخت شبکه', p: 'نمای درختی تیم را مشاهده کنید، شاخه‌ها و اسلات‌های خالی را شناسایی و برای ثبت اعضای جدید اقدام نمایید. ابزارهای بزرگ‌نمایی/کوچک‌نمایی و ناوبری برای مدیریت بهتر شبکه فراهم است.', list: ['از Root به شاخه‌ها ناوبری کنید.', 'اسلات‌های خالی را برای ثبت بیابید.', 'تعادل چپ/راست تیم را رعایت کنید.', 'برای هر عضو مسیر Index را بشناسید.'] },
+                    tools: { h: 'ابزارها و تبدیل‌ها', p: 'مجموعه ابزارهای کمکی: تبدیل آدرس ↔ شاخص کاربر، جستجوی تک‌کاربر، مبدل تقریبی IAM ↔ DAI، و رأی‌دهی (Like/Dislike) روی کاربران. این ابزارها مدیریت و تحلیل شبکه را ساده‌تر می‌کنند.', list: ['تبدیل Index↔Address برای صحت‌سنجی.', 'Lookup برای مشاهده پروفایل کاربر.', 'Converter برای برآورد تقریبی قیمت.', 'Vote برای امتیازدهی به اعضا.'] },
+                    contract: { h: 'اطلاعات قرارداد و لینک معرفی', p: 'مشخصات زنده قرارداد شامل آدرس، نام/نماد، قیمت‌ها، موجودی استخرها و قیمت ثبت‌نام را ببینید. لینک معرفی اختصاصی‌تان را کپی کنید و برای جذب اعضای جدید استفاده کنید.', list: ['Contract Address را از همین‌جا کپی کنید.', 'Registration Price و Token Price را ببینید.', 'Referral Link شخصی را کپی و به اشتراک بگذارید.', 'برخی مقادیر ممکن است در برخی قراردادها خالی باشد.'] },
+                    leaderboard: { h: 'رتبه‌بندی شبکه', p: 'جدول برترین‌ها و محبوب‌ترین‌ها را بررسی کنید تا عملکرد اعضا و توزیع امتیازها را بهتر بشناسید. این بخش به شما دید مناسبی از پویایی شبکه می‌دهد.', list: ['Top Performers را مرور کنید.', 'Member Popularity را بسنجید.', 'از داده‌ها برای برنامه تیم استفاده کنید.', 'وضعیت شبکه را دوره‌ای بررسی کنید.'] },
+                    dashboard: { h: 'داشبورد اصلی', p: 'از طریق میانبرها به بخش‌های کلیدی (Swap، Register، Profile، Transfer و …) دسترسی سریع داشته باشید و وضعیت موجودی‌ها و شاخص‌های اصلی را یکجا مشاهده کنید.', list: ['اتصال کیف‌پول از بالا سمت چپ.', 'وضعیت موجودی‌ها (POL/DAI/IAM) را ببینید.', 'میانبرهای اصلی را برای سرعت بیشتر به‌کار ببرید.', 'پیش از هر اقدام، شبکه/کیف‌پول را چک کنید.'] }
+                },
+                buttons: { back: 'بازگشت' }
+            },
+            ar: {
+                title: 'دليل البدء (Onboarding)',
+                subtitle: 'خطوة بخطوة: توفير DAI → مبادلة إلى IAM → التسجيل → التعرف على الأقسام',
+                intro: 'في هذه الصفحة ستتعلم العملية كاملة: قم بتوفير DAI من منصة تداول أو محفظتك، ثم قم بالمبادلة إلى رمز IAM عبر صفحة السواب، وبعدها أكمل التسجيل باستخدام IAM وتعرّف على باقي الأقسام.',
+                links: {
+                    profile: { h: 'لوحة الملف الشخصي', p: 'إدارة المعلومات والأرصدة وتتبع الحالة.' },
+                    swap: { h: 'التحويل والنقل', p: 'السواب، التحويل وأدوات التمويل.' },
+                    about: { h: 'صفحات أخرى', p: 'التعريف، عن المنصة، وأدلة إضافية.' }
+                },
+                faq: {
+                    title: 'الأسئلة الشائعة',
+                    q1: 'هل يمكن استخدام عملة مستقرة غير DAI؟',
+                    a1: 'يركّز هذا الدليل على DAI حالياً. إن تم دعم عملة أخرى ستظهر في صفحة السواب.',
+                    q2: 'ماذا أفعل إذا فشل اتصال المحفظة؟',
+                    a2: 'تأكد من تحديث المحفظة والمتصفح ثم حدّث الصفحة وأعد محاولة الاتصال.'
+                },
+                steps: [
+                    { title: 'توفير DAI من منصة أو محفظة', body: 'اقتَنِ DAI من منصة موثوقة واضبط الشبكة على Polygon ثم حوّل المبلغ إلى نفس المحفظة التي ستصل بها إلى الموقع ليكون جاهزاً للمبادلة.' },
+                    { title: 'المبادلة إلى IAM', body: 'في صفحة السواب، صِل المحفظة، أدخل المبلغ، راجع السعر والرسوم، وافق على السماح (Approve) إذا لزم الأمر ثم نفّذ السواب. بعد التأكيد على الشبكة سيُضاف IAM إلى رصيدك.' },
+                    { title: 'التسجيل باستخدام IAM', body: 'انتقل لصفحة التسجيل، راجع القواعد، ثبّت المعرّف والعلوي وأدخل عنوان المستخدم الجديد. تُخصم تكلفة التسجيل من رصيد IAM لديك وبعد التأكيد يصبح الحساب مفعّلاً.' }
+                ],
+                tutorials: {
+                    swap: { h: 'السواب (DAI → IAM)', p: 'صِل المحفظة، أدخل المبلغ، راجع التسعير والرسوم، وافق على Approve إن لزم ثم نفّذ السواب. بعد التأكيد ستُحدّث محفظتك برصيد IAM.', list: ['تأكد أن الشبكة Polygon.', 'وفر رصيد MATIC للرسوم.', 'الضغط على Swap بعد Approve.', 'في حال الخطأ: تحديث الصفحة وإعادة الاتصال.'] },
+                    register: { h: 'التسجيل', p: 'املأ نموذج التسجيل بدقّة: ثبّت المعرّف والعلوي، أدخل عنوان المستخدم الجديد، وادفع التكلفة بـ IAM لإكمال العملية.', list: ['تحقق من المعرّف والعلوي.', 'أدخل العنوان بدون أخطاء.', 'الدفع يتم برمز IAM.', 'تحقق من تفعيل الحساب بعد الإتمام.'] },
+                    profile: { h: 'الملف الشخصي', p: 'اعرض عنوان المحفظة، حالة التفعيل، نقاط الثنائية والسحوبات والمشتريات لقياس التقدّم.', list: ['تأكد من حالة Active.', 'اعرض النقاط يسار/يمين.', 'تحقق من السحوبات والمشتريات.', 'اختصر الوصول لباقي الأقسام.'] },
+                    upgrade: { h: 'ترقية حد نقاط الثنائية', p: 'يفحص العقد الأهلية تلقائياً. إذا توفرت الشروط يمكنك شراء نقاط إضافية لزيادة الحد.', list: ['رصيد IAM كافٍ.', 'تحقق من الأهلية أولاً.', 'شراء نقطة أو نقطتين.', 'تحديث الحد بعد الشراء.'] },
+                    transfer: { h: 'تحويل الرموز', p: 'أدخل عنوان الوجهة أو فهرس المستخدم وحدد نوع الرمز والمبلغ ثم أكّد التحويل.', list: ['تحقق من عنوان الوجهة.', 'اختر الرمز والمبلغ الصحيح.', 'تأكد من رسوم الشبكة.', 'التحويل غير قابل للعكس.'] },
+                    ownership: { h: 'نقل الملكية', p: 'تحويل الملكية إجراء غير قابل للعكس. أدخل عنوان المالك الجديد وتحقق منه بعناية قبل الإرسال.', list: ['تحقق من العنوان الجديد.', 'افهم عدم قابلية الرجوع.', 'ستنتهي صلاحياتك بعد النقل.', 'أعد التحقق قبل التنفيذ.'] },
+                    network: { h: 'إدارة شجرة الشبكة', p: 'تصفّح بنية الفريق، حدّد الخانات الشاغرة وسجّل الأعضاء الجدد مع أدوات تنقّل مريحة.', list: ['التنقل من الجذر إلى الفروع.', 'تحديد الخانات الشاغرة للتسجيل.', 'مراعاة توازن اليسار/اليمين.', 'معرفة مسار الفهرس لكل عضو.'] },
+                    tools: { h: 'الأدوات والتحويلات', p: 'تحويل العنوان ↔ الفهرس، بحث المستخدم، محوّل IAM↔DAI، والتصويت للمستخدمين.', list: ['تحويل Address↔Index للتحقق.', 'بحث مستخدم فردي.', 'محوّل تقديري للرموز.', 'نظام تصويت للأعضاء.'] },
+                    contract: { h: 'معلومات العقد ورابط الإحالة', p: 'اطّلع على بيانات العقد الحيّة وانسخ رابط الإحالة الخاص بك لمشاركته.', list: ['نسخ عنوان العقد.', 'مراجعة الأسعار والرصيد.', 'نسخ رابط الإحالة.', 'قد تكون بعض الحقول فارغة حسب العقد.'] },
+                    leaderboard: { h: 'لوحة المتصدرين', p: 'اعرف أفضل المنجزين والأعضاء الأكثر شعبية لرؤية ديناميكية الشبكة.', list: ['تتبع أفضل الأداء.', 'راقب الشعبية.', 'استخدمها للتخطيط.', 'حدّث البيانات دورياً.'] },
+                    dashboard: { h: 'لوحة التحكم الرئيسية', p: 'وصول سريع إلى الأقسام الأساسية ومؤشرات الرصيد.', list: ['اتصال المحفظة.', 'مراجعة الأرصدة.', 'استخدم الاختصارات.', 'تأكد من الشبكة قبل العمليات.'] }
+                },
+                buttons: { back: 'رجوع' }
+            },
+            en: {
+                title: 'Getting Started (Onboarding)',
+                subtitle: 'Step-by-step: Fund DAI → Swap to IAM → Register → Explore sections',
+                intro: 'This page guides you through the full flow: fund DAI from an exchange or wallet, swap to IAM on the site, complete registration using IAM, and explore other sections.',
+                links: {
+                    profile: { h: 'Profile Dashboard', p: 'Manage info, balances, and track status.' },
+                    swap: { h: 'Swap & Transfer', p: 'Swap, transfer, and related financial tools.' },
+                    about: { h: 'Other Pages', p: 'Intro, About, and additional guides.' }
+                },
+                faq: {
+                    title: 'FAQ',
+                    q1: 'Can I use a stablecoin other than DAI?',
+                    a1: 'This guide focuses on DAI. If another stablecoin is supported, it will appear on the Swap page.',
+                    q2: 'Wallet connection issues?',
+                    a2: 'Update your wallet/browser, hard refresh, then reconnect the wallet.'
+                },
+                steps: [
+                    { title: 'Fund DAI from exchange/wallet', body: 'Purchase DAI on a reputable exchange, set network to Polygon, and transfer the amount to the same wallet you will connect to the site, so it is available for swapping.' },
+                    { title: 'Swap DAI to IAM', body: 'On the Swap page, connect your wallet, enter the DAI amount, review the quote and fees, approve if required, then execute the swap. Once confirmed on-chain, your IAM balance updates.' },
+                    { title: 'Register with IAM', body: 'Open the registration page, read the rules, verify upper/upline, enter the new user address, and pay the fee in IAM. After confirmation, your account becomes active.' }
+                ],
+                tutorials: {
+                    swap: { h: 'Swap (DAI → IAM)', p: 'Connect wallet, enter amount, review price and fee, approve if needed, then execute. After on-chain confirmation, your IAM balance is updated.', list: ['Ensure Polygon network.', 'Have enough MATIC for gas.', 'Press Swap after Approve.', 'If issues arise, refresh and reconnect.'] },
+                    register: { h: 'Registration', p: 'Complete the form carefully: verify upper/upline, enter the new user address, and pay in IAM to finalize.', list: ['Double-check upper/upline.', 'Paste the exact new user address.', 'Fee is paid in IAM.', 'Verify activation in Profile.'] },
+                    profile: { h: 'User Profile', p: 'Centralized view of wallet address, activation status, binary points, withdrawals, and purchases to track progress.', list: ['Check Active status.', 'Monitor left/right points.', 'Review purchases and withdrawals.', 'Access key actions quickly.'] },
+                    upgrade: { h: 'Upgrade Binary Points Cap', p: 'Contract auto-checks eligibility. If allowed, buy one or two points to raise your cap.', list: ['Ensure IAM balance.', 'Eligibility must pass.', 'Buy 1–2 points.', 'Cap updates after purchase.'] },
+                    transfer: { h: 'Token Transfer', p: 'Provide destination address or user index, select token type and amount, then confirm. Double-check the address before submitting.', list: ['Verify destination 0x address.', 'Select correct token and amount.', 'Have gas for the network.', 'Irreversible after confirmation.'] },
+                    ownership: { h: 'Ownership Transfer', p: 'Irreversible action: transfer position ownership to a new address. Verify the destination meticulously.', list: ['Validate new owner address.', 'Acknowledge irreversibility.', 'Your access ends after transfer.', 'Re-check before sending.'] },
+                    network: { h: 'Network Tree Manager', p: 'Visualize team structure, find empty slots, and place new members with convenient navigation tools.', list: ['Navigate from root to branches.', 'Locate empty slots to place users.', 'Maintain left/right balance.', 'Know index path per member.'] },
+                    tools: { h: 'Tools & Converters', p: 'Address↔Index converters, single user lookup, IAM↔DAI estimator, and voting utilities.', list: ['Convert Address↔Index for checks.', 'Single user lookup.', 'Rough IAM↔DAI estimator.', 'Voting (likes/dislikes).'] },
+                    contract: { h: 'Contract Info & Referral', p: 'Live contract stats and your personal referral link to share and invite.', list: ['Copy contract address.', 'Check prices and pools.', 'Copy personal referral link.', 'Some fields may be empty depending on contract.'] },
+                    leaderboard: { h: 'Leaderboard', p: 'See top performers and popularity to understand network dynamics.', list: ['Track top performers.', 'Review popularity.', 'Use insights for planning.', 'Refresh periodically.'] },
+                    dashboard: { h: 'Main Dashboard', p: 'Quick access to core sections with key balances and indicators.', list: ['Connect wallet.', 'Review balances.', 'Use shortcuts.', 'Check network before actions.'] }
+                },
+                buttons: { back: 'Back' }
+            }
+        };
+
+        function applyI18n(lang) {
+            const t = i18n[lang] || i18n.fa;
+            document.getElementById('html-root').setAttribute('lang', lang);
+            document.getElementById('html-root').setAttribute('dir', (lang === 'fa' || lang === 'ar') ? 'rtl' : 'ltr');
+            document.querySelector('.title').textContent = t.title;
+            document.querySelector('.subtitle').textContent = t.subtitle;
+            document.getElementById('intro-text').textContent = t.intro;
+
+            // Quick links
+            if (t.links) {
+                document.getElementById('ql-h-profile').textContent = t.links.profile.h;
+                document.getElementById('ql-p-profile').textContent = t.links.profile.p;
+
+                document.getElementById('ql-h-swap').textContent = t.links.swap.h;
+                document.getElementById('ql-p-swap').textContent = t.links.swap.p;
+
+                document.getElementById('ql-h-about').textContent = t.links.about.h;
+                document.getElementById('ql-p-about').textContent = t.links.about.p;
+            }
+
+            // FAQ
+            if (t.faq) {
+                document.getElementById('faq-title').textContent = t.faq.title;
+                document.getElementById('faq-q1').textContent = t.faq.q1;
+                document.getElementById('faq-a1').textContent = t.faq.a1;
+                document.getElementById('faq-q2').textContent = t.faq.q2;
+                document.getElementById('faq-a2').textContent = t.faq.a2;
+            }
+
+            // Steps
+            const stepTitles = document.querySelectorAll('[data-step-title]');
+            const stepBodies = document.querySelectorAll('[data-step-body]');
+            t.steps.forEach((s, i) => {
+                if (stepTitles[i]) stepTitles[i].textContent = s.title;
+                if (stepBodies[i]) stepBodies[i].textContent = s.body;
+            });
+
+
+            // Buttons
+            document.getElementById('btn-back').textContent = t.buttons.back;
+
+            // Tutorials
+            const map = [
+                ['swap','sec-swap'], ['register','sec-register'], ['profile','sec-profile'], ['upgrade','sec-upgrade'],
+                ['transfer','sec-transfer'], ['ownership','sec-ownership'], ['network','sec-network'], ['tools','sec-tools'],
+                ['contract','sec-contract'], ['leaderboard','sec-leaderboard'], ['dashboard','sec-dashboard']
+            ];
+            map.forEach(([key, id]) => {
+                const sec = document.getElementById(id);
+                if (!sec) return;
+                sec.querySelector('h3').textContent = t.tutorials[key].h;
+                sec.querySelector('p').textContent = t.tutorials[key].p;
+                // checklist
+                const ul = sec.querySelector('.checklist');
+                if (ul && t.tutorials[key].list) {
+                    ul.innerHTML = '';
+                    t.tutorials[key].list.forEach(item => {
+                        const li = document.createElement('li');
+                        li.textContent = item;
+                        ul.appendChild(li);
+                    });
+                }
+            });
+        }
+
+        function setupImageFallbacks() {
+            const basePaths = [
+                'img/onboarding',
+                'img/onboard',
+                'onboarding',
+                'onboard',
+                'img/انبورد',
+                'انبورد'
+            ];
+            const imgs = document.querySelectorAll('.tutorial .shot img');
+            imgs.forEach(img => {
+                const raw = img.getAttribute('data-file');
+                const baseName = raw.replace(/\.(png|jpe?g|webp)$/i, '');
+                const variants = [
+                    `${baseName}.png`, `${baseName}.jpg`, `${baseName}.jpeg`, `${baseName}.webp`
+                ];
+                const candidates = [];
+                basePaths.forEach(bp => variants.forEach(v => candidates.push(`${bp}/${v}`)));
+                let i = 0;
+                function tryNext() {
+                    if (i < candidates.length) {
+                        const candidate = candidates[i++];
+                        img.setAttribute('data-src-candidate', candidate);
+                        img.src = candidate;
+                    } else {
+                        const note = `Upload ${basePaths[1] || basePaths[0]}/${variants[0]}`;
+                        const svg = encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='800' height='480'><rect width='100%' height='100%' fill='rgba(0,194,255,0.08)'/><rect x='10' y='10' width='780' height='460' fill='none' stroke='rgba(0,194,255,0.5)' stroke-dasharray='8,6'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='Tahoma, Arial' font-size='20' fill='#b8c1ec'>${note}</text></svg>`);
+                        img.src = `data:image/svg+xml;charset=UTF-8,${svg}`;
+                        img.alt = note;
+                    }
+                }
+                img.addEventListener('error', tryNext);
+                tryNext();
+            });
+        }
+
+        function checkAssets() { /* removed diagnostics */ }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const select = document.getElementById('languageSelect');
+            select.addEventListener('change', () => applyI18n(select.value));
+            applyI18n('ar');
+            setupImageFallbacks();
+            // Fit shot div to image natural size (bounded by container width)
+            const imgs = document.querySelectorAll('.tutorial .shot img');
+            imgs.forEach(img => {
+                img.addEventListener('load', () => {
+                    const parent = img.parentElement;
+                    const wrapper = parent.parentElement; // .tutorial
+                    const maxWidth = Math.min(wrapper.clientWidth - 32, 1000);
+                    const targetWidth = Math.min(img.naturalWidth, maxWidth);
+                    const ratio = img.naturalHeight / Math.max(1, img.naturalWidth);
+                    parent.style.width = targetWidth + 'px';
+                    parent.style.height = Math.round(targetWidth * ratio) + 'px';
+                });
+            });
+        });
+    </script>
+    <meta name="description" content="راهنمای شروع کار با IAM: تامین DAI، سواپ به توکن IAM، ثبت نام، و آشنایی با بخش‌های سایت.">
+</head>
+<body>
+    <div class="back"><a id="btn-back" href="index.html">بازگشت</a></div>
+    <div class="language-switcher">
+        <select class="language-select" id="languageSelect">
+            <option value="fa">🇮🇷 فارسی</option>
+            <option value="ar" selected>🇸🇦 العربية</option>
+            <option value="en">🇺🇸 English</option>
+        </select>
+    </div>
+    <div class="container">
+        <header class="header">
+            <h1 class="title">راهنمای شروع (Onboarding)</h1>
+            <p class="subtitle">گام‌به‌گام: تامین DAI → سواپ به IAM → ثبت‌نام → آشنایی با بخش‌ها</p>
+        </header>
+
+        <section class="intro">
+            <p id="intro-text">در این صفحه، روال کامل شروع کار را می‌آموزید...</p>
+        </section>
+
+        <section class="steps">
+            <div class="step">
+                <div class="step-header">
+                    <div class="badge">۱</div>
+                    <div class="step-title" data-step-title>تامین DAI از صرافی یا کیف‌پول</div>
+                </div>
+                <div class="step-body">
+                    <p data-step-body>از هر صرافی معتبر یا کیف‌پول شخصی، مقدار مورد نیاز DAI را تهیه و به کیف‌پول متصل به سایت منتقل کنید.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-header">
+                    <div class="badge">۲</div>
+                    <div class="step-title" data-step-title>سواپ DAI به توکن IAM</div>
+                </div>
+                <div class="step-body">
+                    <p data-step-body>از طریق صفحه سواپ، DAI خود را به توکن IAM تبدیل کنید. اطمینان یابید کیف‌پول شما متصل است.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-header">
+                    <div class="badge">۳</div>
+                    <div class="step-title" data-step-title>ثبت‌نام با توکن IAM</div>
+                </div>
+                <div class="step-body">
+                    <p data-step-body>پس از دریافت IAM، برای ساخت حساب و فعال‌سازی امکانات، ثبت‌نام را تکمیل کنید.</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <section class="links" id="quick-links">
+            <div class="card">
+                <h3 id="ql-h-profile">داشبورد پروفایل</h3>
+                <p id="ql-p-profile">مدیریت اطلاعات، دارایی‌ها و پیگیری وضعیت.</p>
+            </div>
+            <div class="card">
+                <h3 id="ql-h-swap">تبدیل و انتقال</h3>
+                <p id="ql-p-swap">سواپ، انتقال و ابزارهای مالی مرتبط.</p>
+            </div>
+            <div class="card">
+                <h3 id="ql-h-about">سایر صفحات</h3>
+                <p id="ql-p-about">معرفی، درباره، و راهنماهای تکمیلی.</p>
+            </div>
+        </section>
+
+        <section class="faq">
+            <h2 id="faq-title">سوالات متداول</h2>
+            <div class="faq-item">
+                <h4 id="faq-q1">آیا می‌توان به‌جای DAI از استیبل‌کوین دیگری استفاده کرد؟</h4>
+                <p id="faq-a1">در حال حاضر این راهنما بر DAI تمرکز دارد. اگر استیبل‌کوین دیگری پشتیبانی شود، در صفحه سواپ قابل مشاهده خواهد بود.</p>
+            </div>
+            <div class="faq-item">
+                <h4 id="faq-q2">در صورت خطا در اتصال کیف‌پول چه کنم؟</h4>
+                <p id="faq-a2">از به‌روزبودن کیف‌پول و مرورگر اطمینان حاصل کرده و صفحه را رفرش کنید. سپس دوباره روی «اتصال کیف‌پول» کلیک کنید.</p>
+            </div>
+        </section>
+
+        
+
+        <div class="divider"></div>
+
+        <section class="tutorials">
+            <div class="tutorial" id="sec-swap">
+                <h3>سواپ (DAI → IAM)</h3>
+                <p>مقدار را وارد کنید، نرخ تقریبی را بررسی کرده و Swap را اجرا نمایید.</p>
+                <div class="shot"><img data-file="swap.png" alt="Swap (DAI → IAM)"></div>
+                <ul class="checklist"></ul>
+            </div>
+            <div class="tutorial" id="sec-register">
+                <h3>ثبت‌نام</h3>
+                <p>قوانین را مطالعه کنید، معرف/بالاسری را تایید کرده و آدرس کاربر جدید را ثبت کنید.</p>
+                <div class="shot"><img data-file="register.png" alt="Registration"></div>
+                <ul class="checklist"></ul>
+            </div>
+            <div class="tutorial" id="sec-profile">
+                <h3>پروفایل کاربر</h3>
+                <p>کیف‌پول، وضعیت فعال، امتیازها و برداشت‌ها را در یک نگاه ببینید.</p>
+                <div class="shot"><img data-file="profile.png" alt="User Profile"></div>
+                <ul class="checklist"></ul>
+            </div>
+            <div class="tutorial" id="sec-upgrade">
+                <h3>ارتقای سقف امتیاز دودویی</h3>
+                <p>با توجه به موجودی و شرایط، امکان ارتقا به‌صورت خودکار بررسی می‌شود.</p>
+                <div class="shot"><img data-file="upgrade.png" alt="Upgrade Cap"></div>
+                <ul class="checklist"></ul>
+            </div>
+            <div class="tutorial" id="sec-transfer">
+                <h3>انتقال توکن</h3>
+                <p>آدرس مقصد یا شاخص کاربر را وارد و نوع توکن را انتخاب کنید.</p>
+                <div class="shot"><img data-file="transfer.png" alt="Transfer"></div>
+                <ul class="checklist"></ul>
+            </div>
+            <div class="tutorial" id="sec-ownership">
+                <h3>انتقال مالکیت</h3>
+                <p>آدرس مالک جدید را با دقت وارد کنید. این عملیات برگشت‌ناپذیر است.</p>
+                <div class="shot"><img data-file="ownership.png" alt="Ownership"></div>
+                <ul class="checklist"></ul>
+            </div>
+            <div class="tutorial" id="sec-network">
+                <h3>مدیریت درخت شبکه</h3>
+                <p>جایگاه اعضا را ببینید، اسلات‌های خالی را ثبت کنید و تیم را مدیریت کنید.</p>
+                <div class="shot"><img data-file="network.png" alt="Network Tree"></div>
+                <ul class="checklist"></ul>
+            </div>
+            <div class="tutorial" id="sec-tools">
+                <h3>ابزارها و تبدیل‌ها</h3>
+                <p>تبدیل آدرس↔شاخص، جستجو، تبدیل IAM↔DAI و رأی‌دهی.</p>
+                <div class="shot"><img data-file="tools.png" alt="Tools"></div>
+                <ul class="checklist"></ul>
+            </div>
+            <div class="tutorial" id="sec-contract">
+                <h3>اطلاعات قرارداد و لینک معرفی</h3>
+                <p>آدرس قرارداد، قیمت، استخرها و لینک معرف خود را مشاهده و کپی کنید.</p>
+                <div class="shot"><img data-file="contract-info.png" alt="Contract Info"></div>
+                <ul class="checklist"></ul>
+            </div>
+            <div class="tutorial" id="sec-leaderboard">
+                <h3>رتبه‌بندی شبکه</h3>
+                <p>برترین عملکردها و محبوبیت اعضا را مرور کنید.</p>
+                <div class="shot"><img data-file="leaderboard.png" alt="Leaderboard"></div>
+                <ul class="checklist"></ul>
+            </div>
+            <div class="tutorial" id="sec-dashboard">
+                <h3>داشبورد اصلی</h3>
+                <p>میانبرها به Swap، Register، Profile، Sales، Transfer و دیگر بخش‌ها.</p>
+                <div class="shot"><img data-file="dashboard.png" alt="Dashboard"></div>
+                <ul class="checklist"></ul>
+            </div>
+        </section>
+    </div>
+</body>
+</html>
+

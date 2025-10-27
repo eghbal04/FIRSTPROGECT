@@ -4,9 +4,10 @@ const DAI_ADDRESS_TRANSFER = '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063';
 const POL_ADDRESS = '0x0000000000000000000000000000000000000000'; // Native MATIC
 
 // Use the contract address from config.js
-let IAM_ADDRESS_TRANSFER = window.IAM_ADDRESS || '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D';
+let IAM_ADDRESS_TRANSFER = window.IAM_ADDRESS || '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2';
 
-const DAI_ABI_TRANSFER = [
+// Use DAI ABI from config.js to avoid conflicts
+const DAI_ABI_TRANSFER = window.DAI_ABI || [
     "function balanceOf(address owner) view returns (uint256)",
     "function transfer(address to, uint256 amount) returns (bool)",
     "function decimals() view returns (uint8)"

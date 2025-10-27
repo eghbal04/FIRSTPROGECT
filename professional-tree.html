@@ -395,12 +395,16 @@
         .flat-tree-node::before {
             content: attr(data-depth);
             position: absolute;
-            top: 2px;
-            right: 6px;
+            top: 0px;
+            right: 0px;
             font-size: 10px;
             font-weight: bold;
-            opacity: 0.7;
-            z-index: 1;
+            color: #ffffff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.7);
+            background: rgba(0, 0, 0, 0.6);
+            padding: 2px 4px;
+            border-radius: 0px 0px 0px 3px;
+            z-index: 10;
         }
         
         /* Hover effects for all levels */
@@ -589,6 +593,35 @@
             text-shadow: 0 0 8px rgba(0,255,136,0.2);
         }
 
+        .tree-node-label {
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8), 0 0 8px rgba(0,0,0,0.6);
+            color: #ffffff !important;
+        }
+
+        .star-rating {
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8), 0 0 8px rgba(255,215,0,0.6);
+            transition: all 0.3s ease;
+            font-size: 12px;
+            margin-top: 0px;
+            text-align: center;
+            color: #ffd700 !important;
+        }
+
+        .star-rating:hover {
+            transform: scale(1.1);
+            text-shadow: 2px 2px 6px rgba(0,0,0,0.9), 0 0 12px rgba(255,215,0,0.8);
+        }
+
+        .tree-node-info {
+            font-weight: 600;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8), 0 0 6px rgba(0,0,0,0.6);
+            color: #ffffff !important;
+        }
+
+
+
         /* Scrollbar */
         ::-webkit-scrollbar { height: 10px; width: 10px; }
         ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(0,255,136,0.5), rgba(0,212,255,0.5)); border-radius: 8px; }
@@ -679,31 +712,78 @@
     <script src="js/auto-wallet-connect.js"></script>
     <!-- <script src="js/auto-wallet-connect.js"></script> -->
             <script src="js/network.js?v=20250809-36"></script>
+    
+    <!-- Force Contract 5 for Tree -->
+    <script>
+        // Override to ensure Contract 5 is used for tree
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('🌳 Professional Tree - Ensuring Contract 5 usage');
+            
+            // Force Contract 5 address
+            if (window.CONTRACT_5_ADDRESS) {
+                window.IAM_ADDRESS = window.CONTRACT_5_ADDRESS;
+                window.DEFAULT_IAM_ADDRESS = window.CONTRACT_5_ADDRESS;
+                console.log('✅ Tree forced to Contract 5:', window.IAM_ADDRESS);
+            }
+            
+            // Override connectWallet to ensure Contract 5
+            const originalConnectWallet = window.connectWallet;
+            if (originalConnectWallet) {
+                window.connectWallet = async function() {
+                    // Force Contract 5 address
+                    window.IAM_ADDRESS = window.CONTRACT_5_ADDRESS;
+                    window.DEFAULT_IAM_ADDRESS = window.CONTRACT_5_ADDRESS;
+                    
+                    console.log('🔒 Tree wallet connection forced to Contract 5');
+                    
+                    // Call original function
+                    return await originalConnectWallet.apply(this, arguments);
+                };
+            }
+        });
+    </script>
+    
     <script>
         // Provide missing helpers expected by this page
+        // Get index by address - Updated for Contract 5
         window.getIndexByAddress = async function(contract, address) {
             if (!contract || !address) return 0n;
             try {
-                if (typeof contract.addressToIndex === 'function') {
-                    const idx = await contract.addressToIndex(address);
-                    if (idx && BigInt(idx) !== 0n) return BigInt(idx);
-                }
-            } catch {}
-            try {
-                if (typeof contract.getFunction === 'function') {
-                    const fn = contract.getFunction('getIndexByAddress(address)');
-                    if (fn) {
-                        const idx = await fn(address);
-                        if (idx && BigInt(idx) !== 0n) return BigInt(idx);
-                    }
-                }
-            } catch {}
-            try {
+                // Use users function to get index
                 if (typeof contract.users === 'function') {
                     const u = await contract.users(address);
-                    if (u && (u.index !== undefined)) return BigInt(u.index);
+                    console.log(`🔍 getIndexByAddress: users(${address}) =`, u);
+                    console.log(`🔍 Full struct:`, Object.keys(u));
+                    
+                    // Try to get index - could be object property or array index
+                    let indexValue = null;
+                    
+                    // Method 1: Try as object property
+                    if (u && u.index !== undefined) {
+                        indexValue = u.index;
+                        console.log(`✅ Found index as property: ${indexValue}`);
+                    }
+                    // Method 2: Try as array/tuple index (first element in struct)
+                    else if (u && Array.isArray(u) && u[0] !== undefined) {
+                        indexValue = u[0];
+                        console.log(`✅ Found index as array[0]: ${indexValue}`);
+                    }
+                    // Method 3: Try object with numeric key
+                    else if (u && u['0'] !== undefined) {
+                        indexValue = u['0'];
+                        console.log(`✅ Found index as u['0']: ${indexValue}`);
+                    }
+                    
+                    if (indexValue !== null && indexValue !== undefined && indexValue !== 0n && indexValue !== 0) {
+                        console.log(`✅ Returning index: ${indexValue}`);
+                        return BigInt(indexValue);
+                    }
                 }
-            } catch {}
+            } catch (error) {
+                console.warn('⚠️ Error getting index by address:', error);
+            }
+            
+            console.log(`❌ No index found for address: ${address}`);
             return 0n;
         };
 
@@ -711,8 +791,10 @@
         window.getAddressByIndex = async function(contract, index) {
             if (!contract || !index) return '0x0000000000000000000000000000000000000000';
             try {
+                // Use indexToAddress from ABI
                 if (typeof contract.indexToAddress === 'function') {
                     const address = await contract.indexToAddress(index);
+                    console.log(`📍 getAddressByIndex: indexToAddress(${index}) = ${address}`);
                     return address || '0x0000000000000000000000000000000000000000';
                 }
             } catch (error) {
@@ -973,13 +1055,22 @@
                 const currentUserAddress = window.contractConfig.userAddress;
                 console.log('📍 Using address:', currentUserAddress);
                 
-                // Get user's index (IAM ID)
+                // Get user's index (IAM ID) - Updated for new contract
                 const userIndex = await window.getIndexByAddress(contract, currentUserAddress);
                 console.log('🔍 Raw userIndex:', userIndex);
                 console.log('🔍 userIndex type:', typeof userIndex);
                 console.log('🔍 userIndex === 0n:', userIndex === 0n);
                 console.log('🔍 userIndex == 0:', userIndex == 0);
                 console.log('🔍 !userIndex:', !userIndex);
+                
+                // Debug: Check user data directly
+                try {
+                    const userData = await contract.users(currentUserAddress);
+                    console.log('🔍 Direct user data:', userData);
+                    console.log('🔍 userData.index:', userData.index);
+                } catch (error) {
+                    console.log('❌ Error getting user data:', error);
+                }
                 
                 if (!userIndex || userIndex === 0n || userIndex == 0 || userIndex.toString() === '0') {
                     console.log('❌ User not registered - returning null');
@@ -1016,22 +1107,8 @@
                         }
                     }
                     } catch (error) {
-                    console.log('⚠️ getUserTree failed, trying getLeftChild/getRightChild...');
-                    try {
-                        // Try using getLeftChild and getRightChild
-                        const leftChildIndex = await contract.getLeftChild(userIndex);
-                        const rightChildIndex = await contract.getRightChild(userIndex);
-                        
-                        if (leftChildIndex && leftChildIndex > 0n) {
-                            children.push(leftChildIndex);
-                        }
-                        if (rightChildIndex && rightChildIndex > 0n) {
-                            children.push(rightChildIndex);
-                        }
-                    } catch (error2) {
-                        console.log('⚠️ getLeftChild/getRightChild also failed, using empty children');
-                        children = [];
-                    }
+                    console.log('⚠️ getUserTree failed, using empty children');
+                    children = [];
                 }
                 console.log('✅ User children indices:', children);
                 
@@ -1056,7 +1133,111 @@
             }
         }
 
-                // Create pyramid node - Only render direct children (lazy loading)
+                // Calculate star rating based on binaryPointsClaimed
+        function calculateStarRating(binaryPointsClaimed) {
+            if (!binaryPointsClaimed || binaryPointsClaimed === '0' || binaryPointsClaimed === 0) {
+                return 0;
+            }
+            
+            const points = parseInt(binaryPointsClaimed.toString());
+            if (points >= 10000) return 5;
+            if (points >= 1000) return 4;
+            if (points >= 100) return 3;
+            if (points >= 10) return 2;
+            if (points >= 1) return 1;
+            return 0;
+        }
+
+        // Create star display element
+        function createStarDisplay(starRating) {
+            const starContainer = document.createElement('span');
+            starContainer.className = 'star-rating';
+            starContainer.style.color = '#ffd700';
+            
+            if (starRating > 0) {
+                const stars = '★'.repeat(starRating);
+                starContainer.textContent = stars;
+                starContainer.title = `${starRating} star${starRating > 1 ? 's' : ''} (${starRating === 1 ? '1+' : starRating === 2 ? '10+' : starRating === 3 ? '100+' : starRating === 4 ? '1000+' : '10000+'} points)`;
+            } else {
+                starContainer.textContent = '';
+            }
+            
+            return starContainer;
+        }
+
+        // Update star ratings for all visible nodes
+        async function updateAllNodeStarRatings() {
+            try {
+                const starElements = document.querySelectorAll('.star-rating');
+                console.log(`🔄 Updating star ratings for ${starElements.length} nodes`);
+                
+                for (const starElement of starElements) {
+                    const nodeId = starElement.id.replace('star-', '');
+                    const node = findNode(pyramidData.root, parseInt(nodeId));
+                    if (node) {
+                        await updateNodeStarRating(nodeId, node.index);
+                    }
+                }
+            } catch (error) {
+                console.log('⚠️ Error updating all star ratings:', error);
+            }
+        }
+
+        // Update star rating for a specific node
+        async function updateNodeStarRating(nodeId, nodeIndex) {
+            try {
+                if (!window.contractConfig || !window.contractConfig.contract) {
+                    console.log('⚠️ Contract not available for star rating');
+                    return;
+                }
+
+                const contract = window.contractConfig.contract;
+                let userAddress = null;
+                
+                // Get user address by index using the existing function
+                try {
+                    userAddress = await window.getAddressByIndex(contract, nodeIndex);
+                } catch (error) {
+                    console.log(`⚠️ Could not get address for index ${nodeIndex}:`, error);
+                    return;
+                }
+
+                if (!userAddress || userAddress === '0x0000000000000000000000000000000000000000') {
+                    console.log(`⚠️ No valid address for index ${nodeIndex}`);
+                    return;
+                }
+
+                // Get user data
+                let userData = null;
+                try {
+                    if (typeof contract.getUserByAddress === 'function') {
+                        userData = await contract.getUserByAddress(userAddress);
+                    } else if (typeof contract.users === 'function') {
+                        userData = await contract.users(userAddress);
+                    }
+                } catch (error) {
+                    console.log(`⚠️ Could not get user data for address ${userAddress}:`, error);
+                    return;
+                }
+
+                if (userData && userData.binaryPointsClaimed) {
+                    const starRating = calculateStarRating(userData.binaryPointsClaimed);
+                    const starElement = document.getElementById(`star-${nodeId}`);
+                    if (starElement) {
+                        const newStarDisplay = createStarDisplay(starRating);
+                        starElement.innerHTML = newStarDisplay.innerHTML;
+                        starElement.title = newStarDisplay.title;
+                        console.log(`✅ Updated star rating for node ${nodeId}: ${starRating} stars`);
+                    }
+                } else {
+                    console.log(`⚠️ No binaryPointsClaimed data for node ${nodeId}`);
+                }
+            } catch (error) {
+                console.log(`⚠️ Error updating star rating for node ${nodeId}:`, error);
+            }
+        }
+
+        // Create pyramid node - Only render direct children (lazy loading)
         function createPyramidNode(node, level = 0) {
             const nodeDiv = document.createElement('div');
             nodeDiv.className = 'pyramid-node';
@@ -1095,9 +1276,26 @@
                 showUserPopup(node);
             };
             
+            // Create star rating display (initially empty, will be updated when user data is loaded)
+            const starDisplay = createStarDisplay(0);
+            starDisplay.id = `star-${node.id}`;
+            
+            // Create a container for index and stars
+            const indexContainer = document.createElement('div');
+            indexContainer.style.display = 'flex';
+            indexContainer.style.flexDirection = 'column';
+            indexContainer.style.alignItems = 'center';
+            indexContainer.style.gap = '4px';
+            
+            indexContainer.appendChild(indexDisplay);
+            indexContainer.appendChild(starDisplay);
+            
             buttonContainer.appendChild(expandBtn);
-            buttonContainer.appendChild(indexDisplay);
+            buttonContainer.appendChild(indexContainer);
             nodeDiv.appendChild(buttonContainer);
+            
+            // Update star rating asynchronously
+            updateNodeStarRating(node.id, node.index);
             
             // Children container - Only render direct children (lazy loading)
             if (node.children && node.children.length > 0 && node.expanded) {
@@ -1210,22 +1408,8 @@
                         }
                     }
                 } catch (error) {
-                    console.log(`⚠️ getUserTree failed for ${iamId}, trying getLeftChild/getRightChild...`);
-                    try {
-                        // Try using getLeftChild and getRightChild
-                        const leftChildIndex = await contract.getLeftChild(iamId);
-                        const rightChildIndex = await contract.getRightChild(iamId);
-                        
-                        if (leftChildIndex && leftChildIndex > 0n) {
-                            children.push(leftChildIndex);
-                        }
-                        if (rightChildIndex && rightChildIndex > 0n) {
-                            children.push(rightChildIndex);
-                        }
-                    } catch (error2) {
-                        console.log(`⚠️ getLeftChild/getRightChild also failed for ${iamId}`);
-                        children = [];
-                    }
+                    console.log(`⚠️ getUserTree failed for ${iamId}, using empty children`);
+                    children = [];
                 }
                 console.log(`✅ Children indices for ${node.index}:`, children);
                 
@@ -1291,69 +1475,119 @@
             // Only the clicked button shows loading
         }
 
-        // Show user popup for a specific node
+        // Show user popup for a specific node - Updated for Contract 5
         async function showUserPopup(node) {
             try {
-                console.log('🔄 Showing user details for node:', node.index);
+                console.log('🔄 Showing user details for node:', node.index, 'address:', node.address);
 
-                // Get user address by index
-                let userAddress = null;
-                if (window.contractConfig && window.contractConfig.contract) {
+                // Get user address - prefer node.address if available
+                let userAddress = node.address;
+                if (!userAddress && window.contractConfig && window.contractConfig.contract) {
                     try {
                         userAddress = await window.getAddressByIndex(window.contractConfig.contract, node.index);
-                        console.log('✅ User address found:', userAddress);
+                        console.log('✅ User address found by index:', userAddress);
                     } catch (error) {
                         console.warn('⚠️ Could not get address for index:', node.index, error);
                     }
                 }
 
-                // Get user data
+                if (!userAddress) {
+                    console.error('❌ No user address available');
+                    const fallback = { 'IAM Index': String(node.index || 0), Note: 'No address available' };
+                    showTypewriterUserModal(fallback);
+                    return;
+                }
+
+                // Get complete user data from users struct
                 let userData = null;
-                if (userAddress && window.contractConfig && window.contractConfig.contract) {
+                let voteData = null;
+                let treeData = null;
+                
+                if (window.contractConfig && window.contractConfig.contract) {
                     try {
                         const contract = window.contractConfig.contract;
-                        if (typeof contract.getUserByAddress === 'function') {
-                            userData = await contract.getUserByAddress(userAddress);
-                        } else if (typeof contract.users === 'function') {
-                            userData = await contract.users(userAddress);
+                        
+                        // Get user data from users struct
+                        console.log('🔍 Getting user data from users struct...');
+                        userData = await contract.users(userAddress);
+                        console.log('✅ User data from users struct:', userData);
+                        
+                        // Get vote data (likes/dislikes)
+                        console.log('🔍 Getting vote data...');
+                        try {
+                            voteData = await contract.getVoteStatus(userAddress);
+                            console.log('✅ Vote data:', voteData);
+                        } catch (voteError) {
+                            console.warn('⚠️ Could not get vote data:', voteError);
                         }
-                        console.log('✅ User data found:', userData);
+                        
+                        // Get tree data (left/right children and binary points)
+                        console.log('🔍 Getting tree data...');
+                        try {
+                            treeData = await contract.getUserTree(userAddress);
+                            console.log('✅ Tree data:', treeData);
+                        } catch (treeError) {
+                            console.warn('⚠️ Could not get tree data:', treeError);
+                        }
+                        
                     } catch (error) {
-                        console.warn('⚠️ Could not get user data for address:', userAddress, error);
+                        console.error('❌ Error getting user data:', error);
                     }
                 }
 
-                const details = buildUserDetails(userData, node.index, userAddress);
+                // Build complete user details
+                const details = buildCompleteUserDetails(userData, voteData, treeData, node.index, userAddress);
                 showTypewriterUserModal(details);
-                // append USD lines for token fields (raw userData preferred for precision)
-                buildUserUsdLines(details).then(lines => { if (lines.length) appendTypewriterLines(lines); });
-                // Append placeholders immediately so we can update them reliably
+                
+                // Update star rating for this node
+                if (userData && userData.binaryPointsClaimed) {
+                    const starRating = calculateStarRating(userData.binaryPointsClaimed);
+                    const starElement = document.getElementById(`star-${node.id}`);
+                    if (starElement) {
+                        const newStarDisplay = createStarDisplay(starRating);
+                        starElement.innerHTML = newStarDisplay.innerHTML;
+                        starElement.title = newStarDisplay.title;
+                    }
+                }
+                
+                // Add USD lines for token fields
+                buildUserUsdLines(details).then(lines => { 
+                    if (lines.length) appendTypewriterLines(lines); 
+                });
+                
+                // Add wallet counts (left/right) - these will be calculated and updated
                 appendTypewriterLines([
-                    'IAM >> <span class="key">leftAddress:</span> <span class="kv">⏳ waiting...</span>',
-                    'IAM >> <span class="key">rightAddress:</span> <span class="kv">⏳ waiting...</span>',
                     'IAM >> <span class="key">leftWalletsCount:</span> <span class="kv">⏳ calculating...</span>',
                     'IAM >> <span class="key">rightWalletsCount:</span> <span class="kv">⏳ calculating...</span>'
                 ]);
+                
+                // Calculate and update wallet counts
                 if (window.contractConfig && window.contractConfig.contract) {
-                    // Defer heavy calls to allow UI to render placeholders first
                     setTimeout(async () => {
                         try {
-                            const rootIdx = parseInt(node.index, 10);
-                            const { leftAddress, rightAddress } = await getChildAddresses(window.contractConfig.contract, rootIdx);
-                            if (leftAddress) updateTypewriterLineStartsWith('IAM >> <span class="key">leftAddress:</span>', `IAM >> <span class=\"key\">leftAddress:</span> <span class=\"kv\">${shortenAddress(leftAddress)}</span>`);
-                            if (rightAddress) updateTypewriterLineStartsWith('IAM >> <span class="key">rightAddress:</span>', `IAM >> <span class=\"key\">rightAddress:</span> <span class=\"kv\">${shortenAddress(rightAddress)}</span>`);
-
-                            const { leftCount, rightCount } = await computeLeftRightCounts(window.contractConfig.contract, rootIdx);
-                            updateTypewriterLineStartsWith('IAM >> <span class="key">leftWalletsCount:</span>', `IAM >> <span class=\"key\">leftWalletsCount:</span> <span class=\"kv\">${leftCount}</span>`);
-                            updateTypewriterLineStartsWith('IAM >> <span class="key">rightWalletsCount:</span>', `IAM >> <span class=\"key\">rightWalletsCount:</span> <span class=\"kv\">${rightCount}</span>`);
-                        } catch (_) {}
-                    }, 0);
+                            const { leftCount, rightCount } = await computeLeftRightCounts(window.contractConfig.contract, parseInt(node.index));
+                            updateTypewriterLineStartsWith('IAM >> <span class="key">leftWalletsCount:</span>', 
+                                `IAM >> <span class="key">leftWalletsCount:</span> <span class="kv">${leftCount}</span>`);
+                            updateTypewriterLineStartsWith('IAM >> <span class="key">rightWalletsCount:</span>', 
+                                `IAM >> <span class="key">rightWalletsCount:</span> <span class="kv">${rightCount}</span>`);
+                        } catch (error) {
+                            console.warn('⚠️ Error calculating wallet counts:', error);
+                            updateTypewriterLineStartsWith('IAM >> <span class="key">leftWalletsCount:</span>', 
+                                'IAM >> <span class="key">leftWalletsCount:</span> <span class="kv">Error</span>');
+                            updateTypewriterLineStartsWith('IAM >> <span class="key">rightWalletsCount:</span>', 
+                                'IAM >> <span class="key">rightWalletsCount:</span> <span class="kv">Error</span>');
+                        }
+                    }, 100);
                 }
 
             } catch (error) {
                 console.error('❌ Error showing user popup:', error);
                 
-                const fallback = { 'IAM Index': String(node.index || 0), Note: 'No data available' };
+                const fallback = { 
+                    'IAM Index': String(node.index || 0), 
+                    'Address': node.address ? shortenAddress(node.address) : 'Unknown',
+                    Note: 'Error loading data' 
+                };
                 showTypewriterUserModal(fallback);
             }
         }
@@ -1490,8 +1724,13 @@
                 // Load root node
                 await loadRootNode();
                 
-                // Render tree view
+                // Render tree view after root node is loaded
                 renderTreeView();
+            
+            // Update star ratings for all visible nodes
+            setTimeout(() => {
+                updateAllNodeStarRatings();
+            }, 1000);
                 
             } catch (error) {
                 console.error('❌ Error loading file manager tree:', error);
@@ -1501,7 +1740,7 @@
             }
         }
 
-        // Load root node
+        // Load root node - Updated for Contract 5
         async function loadRootNode() {
             const contract = window.contractConfig.contract;
             const userAddress = window.contractConfig.userAddress;
@@ -1510,22 +1749,54 @@
                 throw new Error('No user address available');
             }
             
-            // Get user info
-            const user = await contract.users(userAddress);
-            const userIndex = user.index ? user.index.toString() : '1';
+            console.log('🌳 Loading root node for Contract 5...');
             
-            // Create root node
-            fileManagerData.treeData = {
-                id: 'root',
-                index: userIndex,
-                address: userAddress,
-                type: 'root',
-                expanded: false,
-                children: [],
-                hasChildren: true
-            };
-            
-            console.log('✅ Root node loaded:', fileManagerData.treeData);
+            try {
+                // Get user info using new contract methods
+                const user = await contract.users(userAddress);
+                // Try multiple methods to get index
+                const userIndex = (user.index || user[0] || user['0'] || 1).toString();
+                
+                // Get user tree data using new getUserTree function
+                const treeData = await contract.getUserTree(userAddress);
+                console.log('🌳 User tree data:', treeData);
+                
+                // Create root node with new contract data
+                fileManagerData.treeData = {
+                    id: 'root',
+                    index: userIndex,
+                    address: userAddress,
+                    type: 'root',
+                    expanded: false,
+                    children: [],
+                    hasChildren: true,
+                    // New contract data
+                    leftChild: treeData.left,
+                    rightChild: treeData.right,
+                    binaryPoints: treeData.binaryPoints.toString(),
+                    binaryPointCap: treeData.binaryPointCap.toString(),
+                    refClaimed: treeData.refclimed.toString()
+                };
+                
+                console.log('✅ Root node loaded with Contract 5 data:', fileManagerData.treeData);
+                
+            } catch (error) {
+                console.error('❌ Error loading root node:', error);
+                // Fallback to basic user data
+                const user = await contract.users(userAddress);
+                // Try multiple methods to get index
+                const userIndex = (user.index || user[0] || user['0'] || 1).toString();
+                
+                fileManagerData.treeData = {
+                    id: 'root',
+                    index: userIndex,
+                    address: userAddress,
+                    type: 'root',
+                    expanded: false,
+                    children: [],
+                    hasChildren: true
+                };
+            }
         }
 
         // Render tree view - Flat structure with auto-expansion
@@ -2108,10 +2379,13 @@
             console.log(`🔍 Node ${node.id} - expanded: ${isExpanded}, hasChildren: ${node.children && node.children.length > 0}, childrenCount: ${node.children ? node.children.length : 0}`);
             
             if (isExpanded && node.children && node.children.length > 0) {
+                console.log(`🔍 Node ${node.id} is expanded, rendering ${node.children.length} children`);
                 node.children.forEach(child => {
-                    console.log(`👶 Rendering child ${child.id} at depth ${depth + 1}`);
+                    console.log(`👶 Rendering child ${child.id} (type: ${child.type}, index: ${child.index}) at depth ${depth + 1}`);
                     renderFlatTree(child, container, depth + 1);
                 });
+            } else if (isExpanded && node.children) {
+                console.log(`⚠️ Node ${node.id} is expanded but has 0 children`);
             }
         }
 
@@ -2123,59 +2397,92 @@
             nodeElement.setAttribute('data-node-id', node.id);
             nodeElement.setAttribute('data-depth', depth);
             
-            // Dynamic color generation for very deep levels (26+)
-            if (depth >= 26) {
-                // Generate distinct colors for deeper levels
-                const colors = [
-                    '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57',
-                    '#ff9ff3', '#54a0ff', '#5f27cd', '#00d2d3', '#ff9f43',
-                    '#10ac84', '#ee5a24', '#0984e3', '#6c5ce7', '#a29bfe',
-                    '#fd79a8', '#fdcb6e', '#e17055', '#81ecec', '#74b9ff'
-                ];
-                
-                const colorIndex = (depth - 26) % colors.length;
-                const selectedColor = colors[colorIndex];
-                
-                // Convert hex to RGB
-                const r = parseInt(selectedColor.slice(1, 3), 16);
-                const g = parseInt(selectedColor.slice(3, 5), 16);
-                const b = parseInt(selectedColor.slice(5, 7), 16);
-                
-                const intensity = Math.max(0.02, 0.08 - (depth - 26) * 0.002);
-                const borderIntensity = Math.max(0.1, 0.3 - (depth - 26) * 0.005);
-                const shadowIntensity = Math.max(0.05, 0.15 - (depth - 26) * 0.003);
-                
-                nodeElement.style.background = `linear-gradient(135deg, rgba(${r}, ${g}, ${b}, ${intensity}), rgba(${r}, ${g}, ${b}, ${intensity * 0.5}))`;
-                nodeElement.style.border = `3px solid rgba(${r}, ${g}, ${b}, ${borderIntensity})`;
-                nodeElement.style.boxShadow = `0 2px 4px rgba(${r}, ${g}, ${b}, ${shadowIntensity})`;
-                nodeElement.style.color = selectedColor;
-            }
+            // Dynamic color generation with very distinct colors
+            const distinctColors = [
+                '#ff0000', // Level 0: Red
+                '#00ff00', // Level 1: Green
+                '#0000ff', // Level 2: Blue
+                '#ffff00', // Level 3: Yellow
+                '#ff00ff', // Level 4: Magenta
+                '#00ffff', // Level 5: Cyan
+                '#ff8000', // Level 6: Orange
+                '#8000ff', // Level 7: Purple
+                '#ff0080', // Level 8: Pink
+                '#80ff00', // Level 9: Lime
+                '#0080ff', // Level 10: Light Blue
+                '#ff8080', // Level 11: Light Red
+                '#80ff80', // Level 12: Light Green
+                '#8080ff', // Level 13: Light Blue
+                '#ffff80', // Level 14: Light Yellow
+                '#ff80ff', // Level 15: Light Magenta
+                '#80ffff', // Level 16: Light Cyan
+                '#ff4000', // Level 17: Dark Orange
+                '#4000ff', // Level 18: Dark Purple
+                '#ff0040', // Level 19: Dark Pink
+                '#40ff00'  // Level 20: Dark Lime
+            ];
+            
+            // Get color based on depth, cycle through colors for deeper levels
+            const colorIndex = depth % distinctColors.length;
+            const levelColor = distinctColors[colorIndex];
+            
+            // Convert hex to RGB
+            const r = parseInt(levelColor.slice(1, 3), 16);
+            const g = parseInt(levelColor.slice(3, 5), 16);
+            const b = parseInt(levelColor.slice(5, 7), 16);
+            
+            // Calculate intensity based on depth - make colors more visible
+            const intensity = Math.max(0.3, 0.8 - depth * 0.02);
+            const borderIntensity = Math.max(0.6, 0.9 - depth * 0.01);
+            const shadowIntensity = Math.max(0.4, 0.7 - depth * 0.01);
+            
+            // Apply level-based colors
+            nodeElement.style.background = `linear-gradient(135deg, rgba(${r}, ${g}, ${b}, ${intensity}), rgba(${r}, ${g}, ${b}, ${intensity * 0.7}))`;
+            nodeElement.style.border = `2px solid rgba(${r}, ${g}, ${b}, ${borderIntensity})`;
+            nodeElement.style.boxShadow = `0 2px 8px rgba(${r}, ${g}, ${b}, ${shadowIntensity})`;
+            nodeElement.style.color = `#${levelColor}`;
+            
+            // Add level indicator
+            nodeElement.setAttribute('data-level', depth);
+            nodeElement.setAttribute('data-level-color', levelColor);
             
             const isExpanded = fileManagerData.expandedNodes.has(node.id);
-            const hasChildren = node.hasChildren || (node.children && node.children.length > 0);
+            const hasChildren = (node.hasChildren || (node.children && node.children.length > 0)) && node.type !== 'empty';
             
             // Check if this is an empty node
             const isEmptyNode = node.type === 'empty';
             
+            console.log(`🎨 Rendering node ${node.id} (IAM ${node.index}, type: ${node.type}) at depth ${depth}`);
+            
+            // Apply special styling for empty nodes
+            if (isEmptyNode) {
+                nodeElement.classList.add('empty-node');
+                nodeElement.style.opacity = '0.6';
+                nodeElement.style.borderStyle = 'dashed';
+            }
+            
             nodeElement.innerHTML = `
-                <div class="tree-node-content ${isExpanded ? 'expanded' : ''} ${isEmptyNode ? 'empty-node' : ''}" data-node-id="${node.id}">
+                <div class="tree-node-content ${isExpanded ? 'expanded' : ''}" data-node-id="${node.id}">
                     ${hasChildren ? `
                         <button class="tree-expand-btn ${isExpanded ? 'expanded' : ''}" data-node-id="${node.id}">
                             ${isExpanded ? '−' : '+'}
                         </button>
                     ` : '<div style="width: 14px;"></div>'}
                     
-                    ${isEmptyNode ? `
-                        <span class="tree-node-label empty-label">📝 Empty Slot ${node.index}</span>
-                        <span class="tree-node-info empty-info" title="Click to register new user">Click to Register</span>
-                    ` : `
-                        <span class="tree-node-label">IAM ${node.index}</span>
-                        ${!isMobile() ? `<span class="tree-node-info" onclick="copyToClipboard('${node.address}')" title="Click to copy full address">${node.address ? node.address.substring(0, 6) + '...' + node.address.substring(node.address.length - 4) : ''}</span>` : ''}
-                    `}
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 1px;">
+                        <span class="tree-node-label">${isEmptyNode ? '📝 Empty Slot' : 'IAM ' + node.index}</span>
+                        <span class="star-rating" id="star-${node.id}" style="font-size: 12px; color: #ffd700; text-align: center;"></span>
+                    </div>
+                    ${!isMobile() ? `<span class="tree-node-info" onclick="copyToClipboard('${node.address || ''}')" title="Click to copy full address">${node.address ? node.address.substring(0, 6) + '...' + node.address.substring(node.address.length - 4) : ''}</span>` : ''}
                 </div>
             `;
             
             container.appendChild(nodeElement);
+            
+            // Update star rating for this node
+            setTimeout(() => {
+                updateNodeStarRating(node.id, node.index);
+            }, 100);
             
             // Add click listeners
             const expandBtn = nodeElement.querySelector('.tree-expand-btn');
@@ -2352,7 +2659,8 @@
             } catch(_) { return []; }
         }
 
-        function buildUserDetails(userData, iamIndex, address) {
+        // Build complete user details from Contract 5 data
+        function buildCompleteUserDetails(userData, voteData, treeData, iamIndex, address) {
             const toText = (v) => {
                 try {
                     if (typeof v === 'bigint') return v.toString();
@@ -2363,27 +2671,58 @@
             };
 
             const d = {};
+            
+            // Basic info
             d['IAM Index'] = iamIndex?.toString?.() || String(iamIndex ?? '');
             d['Address'] = shortenAddress(address || '');
-            d['index'] = toText(userData?.index);
-            d['binaryPoints'] = toText(userData?.binaryPoints);
-            d['binaryPointCap'] = toText(userData?.binaryPointCap);
-            d['binaryPointsClaimed'] = toText(userData?.binaryPointsClaimed);
-            d['totalPurchasedKind'] = toText(userData?.totalPurchasedKind);
-            d['upgradeTime'] = toText(userData?.upgradeTime);
-            d['lastClaimTime'] = toText(userData?.lastClaimTime);
-            d['leftPoints'] = toText(userData?.leftPoints);
-            d['rightPoints'] = toText(userData?.rightPoints);
-            d['lastMonthlyClaim'] = toText(userData?.lastMonthlyClaim);
-            d['totalMonthlyRewarded'] = toText(userData?.totalMonthlyRewarded);
-            d['refclimed'] = toText(userData?.refclimed);
-            d['depositedAmount'] = toText(userData?.depositedAmount);
+            
+            // User struct data
+            if (userData) {
+                d['index'] = toText(userData.index);
+                d['binaryPoints'] = toText(userData.binaryPoints);
+                d['binaryPointCap'] = toText(userData.binaryPointCap);
+                d['binaryPointsClaimed'] = toText(userData.binaryPointsClaimed);
+                d['totalPurchasedKind'] = toText(userData.totalPurchasedKind);
+                d['upgradeTime'] = toText(userData.upgradeTime);
+                d['lastClaimTime'] = toText(userData.lastClaimTime);
+                d['leftPoints'] = toText(userData.leftPoints);
+                d['rightPoints'] = toText(userData.rightPoints);
+                d['refclimed'] = toText(userData.refclimed);
+            }
+            
+            // Vote data (likes/dislikes)
+            if (voteData) {
+                d['totalLikes'] = toText(voteData[0] || voteData.totalLikes || 0);
+                d['totalDislikes'] = toText(voteData[1] || voteData.totalDislikes || 0);
+                d['myVote'] = toText(voteData[2] || voteData.myVote || 0);
+                
+                // Convert myVote to text
+                const myVoteNum = parseInt(d['myVote']);
+                if (myVoteNum === 1) d['myVote'] = 'Liked';
+                else if (myVoteNum === 2) d['myVote'] = 'Disliked';
+                else d['myVote'] = 'No vote';
+            } else {
+                d['totalLikes'] = '0';
+                d['totalDislikes'] = '0';
+                d['myVote'] = 'No data';
+            }
+            
+            // Tree data (left/right children)
+            if (treeData) {
+                d['leftChild'] = treeData.left ? shortenAddress(treeData.left) : 'None';
+                d['rightChild'] = treeData.right ? shortenAddress(treeData.right) : 'None';
+            } else {
+                d['leftChild'] = 'No data';
+                d['rightChild'] = 'No data';
+            }
+            
+            // Wallet counts (will be calculated and updated)
+            d['leftWalletsCount'] = '⏳ calculating...';
+            d['rightWalletsCount'] = '⏳ calculating...';
 
-            // Fields that represent token amounts: format to scientific
+            // Format token amounts to scientific notation
             const scientificKeys = new Set([
                 'totalPurchasedKind',
-                'depositedAmount',
-                'totalMonthlyRewarded',
                 'refclimed'
             ]);
             for (const key of Object.keys(d)) {
@@ -2393,39 +2732,83 @@
                 }
             }
 
-            // Human-readable dates for timestamp fields
-            const dateKeys = ['upgradeTime', 'lastClaimTime', 'lastMonthlyClaim'];
+            // Format dates for timestamp fields
+            const dateKeys = ['upgradeTime', 'lastClaimTime'];
             for (const k of dateKeys) {
                 d[k] = formatDateTimeFromSeconds(d[k]);
             }
+            
             return d;
         }
 
         // =============== DFS subtree counting (left/right) ===============
+        // Get child addresses
         async function getChildAddresses(contract, nodeIndex) {
             try {
                 const idx = (typeof nodeIndex === 'bigint') ? nodeIndex : BigInt(nodeIndex);
-                const [leftAddress, rightAddress] = await Promise.all([
-                    contract.getLeftAddress(idx),
-                    contract.getRightAddress(idx)
-                ]);
+                
+                let leftAddress = '0x0000000000000000000000000000000000000000';
+                let rightAddress = '0x0000000000000000000000000000000000000000';
+                
+                try {
+                    // First, get address by index
+                    const nodeAddress = await window.getAddressByIndex(contract, idx);
+                    console.log(`📍 getChildAddresses: getAddressByIndex(${idx}) = ${nodeAddress}`);
+                    
+                    if (nodeAddress && nodeAddress !== '0x0000000000000000000000000000000000000000') {
+                        // Get full tree data using getUserTree
+                        const treeData = await contract.getUserTree(nodeAddress);
+                        
+                        leftAddress = treeData[0] || treeData.left || '0x0000000000000000000000000000000000000000';
+                        rightAddress = treeData[1] || treeData.right || '0x0000000000000000000000000000000000000000';
+                    }
+                } catch (error) {
+                    console.warn('⚠️ Error using getUserTree:', error);
+                }
+                
+                // Fallback to getLeftAddress and getRightAddress if getUserTree fails
+                if (leftAddress === '0x0000000000000000000000000000000000000000' && 
+                    rightAddress === '0x0000000000000000000000000000000000000000') {
+                    try {
+                        const [leftAddr, rightAddr] = await Promise.all([
+                            contract.getLeftAddress(idx),
+                            contract.getRightAddress(idx)
+                        ]);
+                        leftAddress = leftAddr || '0x0000000000000000000000000000000000000000';
+                        rightAddress = rightAddr || '0x0000000000000000000000000000000000000000';
+                    } catch (fallbackError) {
+                        console.warn('⚠️ Fallback methods also failed:', fallbackError);
+                    }
+                }
+                
+                console.log(`📍 getChildAddresses(${idx}): left=${leftAddress}, right=${rightAddress}`);
                 return { leftAddress, rightAddress };
+                
             } catch (e) {
+                console.error('❌ Error in getChildAddresses:', e);
                 return { leftAddress: '0x0000000000000000000000000000000000000000', rightAddress: '0x0000000000000000000000000000000000000000' };
             }
         }
 
+        // Count subtree using DFS - Updated for Contract 5
         async function countSubtreeDFS(contract, startIndex, maxDepth = 1000000) {
             try {
                 if (!startIndex || startIndex <= 0) return 0;
                 const start = (typeof startIndex === 'bigint') ? startIndex : BigInt(startIndex);
                 const stack = [{ index: start, depth: 1 }];
                 let count = 0;
+                let processedCount = 0;
+                
+                console.log(`🔢 Starting DFS count from index ${start}, maxDepth: ${maxDepth}`);
+                
                 while (stack.length > 0) {
                     const { index, depth } = stack.pop();
                     if (depth > maxDepth) continue;
+                    
                     try {
                         const { leftAddress, rightAddress } = await getChildAddresses(contract, index);
+                        
+                        // Count valid addresses
                         if (leftAddress && leftAddress !== '0x0000000000000000000000000000000000000000') {
                             const leftIndex = index * 2n;
                             count++;
@@ -2436,31 +2819,80 @@
                             count++;
                             stack.push({ index: rightIndex, depth: depth + 1 });
                         }
+                        
+                        processedCount++;
+                        
+                        // Yield control every 200 operations to prevent blocking
+                        if (processedCount % 200 === 0) {
+                            await new Promise(r => setTimeout(r, 0));
+                        }
+                        
                     } catch (e) {
-                        // ignore and continue
-                    }
-                    if (count % 200 === 0) {
-                        await new Promise(r => setTimeout(r, 0));
+                        console.warn(`⚠️ Error processing index ${index}:`, e);
+                        // Continue with next node
                     }
                 }
+                
+                console.log(`✅ DFS count completed: ${count} wallets found from index ${start}`);
                 return count;
-            } catch (_) {
+                
+            } catch (error) {
+                console.error('❌ Error in countSubtreeDFS:', error);
                 return 0;
             }
         }
 
+        // Compute left and right wallet counts - Using Contract 5 getChildrenCount
         async function computeLeftRightCounts(contract, rootIndex) {
             try {
                 const root = (typeof rootIndex === 'bigint') ? rootIndex : BigInt(rootIndex);
+                console.log(`🔢 Computing wallet counts for root index: ${root}`);
+                
+                // Get root address
+                const rootAddress = await window.getAddressByIndex(contract, root);
+                if (!rootAddress || rootAddress === '0x0000000000000000000000000000000000000000') {
+                    console.log('❌ No address found for root index:', root);
+                    return { leftCount: 0, rightCount: 0 };
+                }
+                
+                console.log(`📍 Root address: ${rootAddress}`);
+                
+                // Get children addresses
                 const { leftAddress, rightAddress } = await getChildAddresses(contract, root);
-                const leftIndex = leftAddress && leftAddress !== '0x0000000000000000000000000000000000000000' ? root * 2n : 0n;
-                const rightIndex = rightAddress && rightAddress !== '0x0000000000000000000000000000000000000000' ? root * 2n + 1n : 0n;
-                const [leftCount, rightCount] = await Promise.all([
-                    countSubtreeDFS(contract, leftIndex),
-                    countSubtreeDFS(contract, rightIndex)
-                ]);
-                return { leftCount, rightCount };
-            } catch (e) {
+                console.log(`📍 Children: left=${leftAddress}, right=${rightAddress}`);
+                
+                let leftCount = 0;
+                let rightCount = 0;
+                
+                // Count left children if exists
+                if (leftAddress && leftAddress !== '0x0000000000000000000000000000000000000000') {
+                    try {
+                        console.log(`🔢 Getting children count for left address: ${leftAddress}`);
+                        leftCount = await contract.getChildrenCount(leftAddress);
+                        console.log(`✅ Left children count: ${leftCount}`);
+                    } catch (error) {
+                        console.warn('⚠️ Error getting left children count:', error);
+                        leftCount = 0;
+                    }
+                }
+                
+                // Count right children if exists
+                if (rightAddress && rightAddress !== '0x0000000000000000000000000000000000000000') {
+                    try {
+                        console.log(`🔢 Getting children count for right address: ${rightAddress}`);
+                        rightCount = await contract.getChildrenCount(rightAddress);
+                        console.log(`✅ Right children count: ${rightCount}`);
+                    } catch (error) {
+                        console.warn('⚠️ Error getting right children count:', error);
+                        rightCount = 0;
+                    }
+                }
+                
+                console.log(`✅ Final wallet counts: left=${leftCount}, right=${rightCount}`);
+                return { leftCount: Number(leftCount), rightCount: Number(rightCount) };
+                
+            } catch (error) {
+                console.error('❌ Error computing left/right counts:', error);
                 return { leftCount: 0, rightCount: 0 };
             }
         }
@@ -2678,39 +3110,71 @@
                 
                 console.log('👤 User data:', user);
                 
-                // Validate user data
-                if (!user || user.index === undefined) {
-                    console.log('❌ Invalid user data received');
+                // Validate user data - check if index exists in any form
+                const indexVal = user?.index || user?.[0] || user?.['0'];
+                if (!user || indexVal === undefined) {
+                    console.log('❌ Invalid user data received - no index field');
                     return;
                 }
                 
-                // Build details and show in typewriter modal
-                const details = buildUserDetails(user, node.index, node.address);
+                console.log('✅ Valid user data received');
+                
+                // Build details and show in typewriter modal - Updated for Contract 5
+                let voteData = null;
+                let treeData = null;
+                
+                try {
+                    // Get vote data
+                    voteData = await contract.getVoteStatus(node.address);
+                    console.log('✅ Vote data:', voteData);
+                } catch (voteError) {
+                    console.warn('⚠️ Could not get vote data:', voteError);
+                }
+                
+                try {
+                    // Get tree data
+                    treeData = await contract.getUserTree(node.address);
+                    console.log('✅ Tree data:', treeData);
+                } catch (treeError) {
+                    console.warn('⚠️ Could not get tree data:', treeError);
+                }
+                
+                const details = buildCompleteUserDetails(user, voteData, treeData, node.index, node.address);
                 showTypewriterUserModal(details);
-                buildUserUsdLines(details).then(lines => { if (lines.length) appendTypewriterLines(lines); });
-                appendTypewriterLines([
-                    'IAM >> <span class="key">leftAddress:</span> <span class="kv">⏳ waiting...</span>',
-                    'IAM >> <span class="key">rightAddress:</span> <span class="kv">⏳ waiting...</span>',
-                    'IAM >> <span class="key">leftWalletsCount:</span> <span class="kv">⏳ calculating...</span>',
-                    'IAM >> <span class="key">rightWalletsCount:</span> <span class="kv">⏳ calculating...</span>'
-                ]);
-                // Voting line placeholder
-                appendTypewriterLines([
-                    'IAM >> <span class="key">votes:</span> <span class="kv">⏳ loading...</span>'
-                ]);
+                
+                // Add USD lines for token fields
+                buildUserUsdLines(details).then(lines => { 
+                    if (lines.length) appendTypewriterLines(lines); 
+                });
+                
+                // Calculate and update wallet counts
                 if (window.contractConfig && window.contractConfig.contract) {
                     setTimeout(async () => {
                         try {
-                            const rootIdx = parseInt(node.index, 10);
-                            const { leftAddress, rightAddress } = await getChildAddresses(window.contractConfig.contract, rootIdx);
-                            if (leftAddress) updateTypewriterLineStartsWith('IAM >> <span class="key">leftAddress:</span>', `IAM >> <span class=\"key\">leftAddress:</span> <span class=\"kv\">${shortenAddress(leftAddress)}</span>`);
-                            if (rightAddress) updateTypewriterLineStartsWith('IAM >> <span class="key">rightAddress:</span>', `IAM >> <span class=\"key\">rightAddress:</span> <span class=\"kv\">${shortenAddress(rightAddress)}</span>`);
-
-                            const { leftCount, rightCount } = await computeLeftRightCounts(window.contractConfig.contract, rootIdx);
-                            updateTypewriterLineStartsWith('IAM >> <span class="key">leftWalletsCount:</span>', `IAM >> <span class=\"key\">leftWalletsCount:</span> <span class=\"kv\">${leftCount}</span>`);
-                            updateTypewriterLineStartsWith('IAM >> <span class="key">rightWalletsCount:</span>', `IAM >> <span class=\"key\">rightWalletsCount:</span> <span class=\"kv\">${rightCount}</span>`);
-                        } catch (_) {}
-                    }, 0);
+                            console.log(`🔢 Calculating wallet counts for node ${node.index}...`);
+                            const { leftCount, rightCount } = await computeLeftRightCounts(window.contractConfig.contract, parseInt(node.index));
+                            
+                            // Update the details object
+                            details.leftWalletsCount = leftCount;
+                            details.rightWalletsCount = rightCount;
+                            
+                            // Update the display
+                            updateTypewriterLineStartsWith('IAM >> <span class="key">leftWalletsCount:</span>', 
+                                `IAM >> <span class="key">leftWalletsCount:</span> <span class="kv">${leftCount}</span>`);
+                            updateTypewriterLineStartsWith('IAM >> <span class="key">rightWalletsCount:</span>', 
+                                `IAM >> <span class="key">rightWalletsCount:</span> <span class="kv">${rightCount}</span>`);
+                                
+                            console.log(`✅ Wallet counts updated: left=${leftCount}, right=${rightCount}`);
+                        } catch (error) {
+                            console.warn('⚠️ Error calculating wallet counts:', error);
+                            details.leftWalletsCount = 'Error';
+                            details.rightWalletsCount = 'Error';
+                            updateTypewriterLineStartsWith('IAM >> <span class="key">leftWalletsCount:</span>', 
+                                'IAM >> <span class="key">leftWalletsCount:</span> <span class="kv">Error</span>');
+                            updateTypewriterLineStartsWith('IAM >> <span class="key">rightWalletsCount:</span>', 
+                                'IAM >> <span class="key">rightWalletsCount:</span> <span class="kv">Error</span>');
+                        }
+                    }, 100);
                 }
                 
             } catch (error) {
@@ -2759,36 +3223,83 @@
         // Load node children for flat structure - UNLIMITED VERSION
         async function loadNodeChildren(node, depth) {
             try {
-                console.log(`🔄 UNLIMITED LOADING children for node ${node.id} (index: ${node.index}) at depth ${depth}`);
+                console.log(`🔄 UNLIMITED LOADING children for node ${node.id} (index: ${node.index}, address: ${node.address}) at depth ${depth}`);
                 
                 const contract = window.contractConfig.contract;
                 const nodeIndex = parseInt(node.index);
                 const zero = '0x0000000000000000000000000000000000000000';
                 
-                // Try primary methods
+                // Use contract methods - get children by index
                 let leftAddress = zero;
                 let rightAddress = zero;
-                try {
-                    if (typeof contract.getLeftAddress === 'function') {
-                        console.log(`🔥 FORCE CALLING getLeftAddress(${nodeIndex})...`);
-                        leftAddress = await contract.getLeftAddress(nodeIndex);
-                    }
-                } catch(_) {}
-                try {
-                    if (typeof contract.getRightAddress === 'function') {
-                        console.log(`🔥 FORCE CALLING getRightAddress(${nodeIndex})...`);
-                        rightAddress = await contract.getRightAddress(nodeIndex);
-                    }
-                } catch(_) {}
+                let treeData = null;
                 
-                // Fallback: derive from indices using indexToAddress
-                const leftIndexNum = nodeIndex * 2;
-                const rightIndexNum = nodeIndex * 2 + 1;
-                if (leftAddress === zero && typeof contract.indexToAddress === 'function') {
-                    try { leftAddress = await contract.indexToAddress(leftIndexNum); } catch(_) {}
-                }
-                if (rightAddress === zero && typeof contract.indexToAddress === 'function') {
-                    try { rightAddress = await contract.indexToAddress(rightIndexNum); } catch(_) {}
+                try {
+                    // First, get node address - prefer node.address if available, otherwise try getAddressByIndex
+                    let nodeAddress = node.address || null;
+                    
+                    console.log(`📍 Initial nodeAddress: ${nodeAddress}`);
+                    console.log(`📍 node.address check: ${node.address}, zero check: ${nodeAddress === zero}`);
+                    
+                    // CRITICAL: We MUST have node.address! Without it, we can't load children.
+                    // If node.address is missing, we can't load children for this node.
+                    if (!nodeAddress || nodeAddress === zero || nodeAddress.length < 20) {
+                        console.warn(`⚠️ Node ${node.id} has no valid address! Cannot load children without address.`);
+                        console.warn(`⚠️ Falling back to getAddressByIndex for index ${nodeIndex}...`);
+                        nodeAddress = await window.getAddressByIndex(contract, nodeIndex);
+                        console.log(`📍 Got address from index ${nodeIndex}: ${nodeAddress}`);
+                        
+                        // Update node.address if we got it from getAddressByIndex
+                        if (nodeAddress && nodeAddress !== zero) {
+                            node.address = nodeAddress;
+                        }
+                    } else {
+                        console.log(`✅ Using node address directly: ${nodeAddress}`);
+                    }
+                    
+                    if (nodeAddress && nodeAddress !== zero) {
+                        // Get full tree data using getUserTree
+                        if (typeof contract.getUserTree === 'function') {
+                            console.log(`🔥 CALLING getUserTree(${nodeAddress})...`);
+                            treeData = await contract.getUserTree(nodeAddress);
+                            console.log('🌳 Raw tree data:', treeData);
+                            console.log('🌳 Tree data type:', typeof treeData);
+                            console.log('🌳 Is Array?', Array.isArray(treeData));
+                            console.log('🌳 Has 0?', treeData[0]);
+                            console.log('🌳 Has 1?', treeData[1]);
+                            console.log('🌳 Has left?', treeData.left);
+                            console.log('🌳 Has right?', treeData.right);
+                            
+                            // Try multiple methods to extract addresses
+                            if (Array.isArray(treeData)) {
+                                leftAddress = treeData[0] || zero;
+                                rightAddress = treeData[1] || zero;
+                                console.log(`📍 Found addresses from array: left=${leftAddress}, right=${rightAddress}`);
+                            } else {
+                                // Try all possible extraction methods for tuple/object
+                                leftAddress = treeData[0] || treeData.left || treeData['0'] || zero;
+                                rightAddress = treeData[1] || treeData.right || treeData['1'] || zero;
+                                console.log(`📍 Extraction attempts:`);
+                                console.log(`   treeData[0]: ${treeData[0]}`);
+                                console.log(`   treeData.left: ${treeData.left}`);
+                                console.log(`   treeData['0']: ${treeData['0']}`);
+                                console.log(`   Result: left=${leftAddress}, right=${rightAddress}`);
+                            }
+                        }
+                        
+                        // Fallback: try getLeftAddress and getRightAddress with index
+                        if (leftAddress === zero && typeof contract.getLeftAddress === 'function') {
+                            console.log(`🔥 Fallback: CALLING getLeftAddress(${nodeIndex})...`);
+                            leftAddress = await contract.getLeftAddress(nodeIndex);
+                        }
+                        if (rightAddress === zero && typeof contract.getRightAddress === 'function') {
+                            console.log(`🔥 Fallback: CALLING getRightAddress(${nodeIndex})...`);
+                            rightAddress = await contract.getRightAddress(nodeIndex);
+                        }
+                    }
+                    
+                } catch (error) {
+                    console.warn('⚠️ Error calling contract methods:', error);
                 }
                 
                 console.log(`📍 Node ${node.id} - Left: ${leftAddress}, Right: ${rightAddress}`);
@@ -2798,62 +3309,112 @@
                 
                 // Left child
                 if (leftAddress !== zero) {
+                    // Get actual index from users struct for left child (don't use computed index!)
+                    let leftChildIndex = '0'; // Will be set from contract
+                    try {
+                        const leftUser = await contract.users(leftAddress);
+                        // Try multiple methods to get index
+                        let indexVal = leftUser.index || leftUser[0] || leftUser['0'];
+                        if (leftUser && indexVal) {
+                            leftChildIndex = Number(indexVal);
+                            console.log(`✅ Got left child index from struct: ${leftChildIndex}`);
+                        }
+                    } catch (e) {
+                        console.warn('⚠️ Could not get left child index from struct:', e);
+                    }
+                    
                     const leftChild = {
-                        id: `node_${leftIndexNum}`,
-                        index: String(leftIndexNum),
+                        id: `node_left_${leftAddress}`,
+                        index: String(leftChildIndex),
                         address: leftAddress,
                         type: 'node',
                         expanded: false,
                         children: [],
-                        hasChildren: true
+                        hasChildren: true,
+                        parent: node.id,
+                        depth: depth + 1
                     };
+                    
+                    // Add tree data if available
+                    if (treeData && treeData.left === leftAddress) {
+                        leftChild.binaryPoints = treeData.binaryPoints.toString();
+                        leftChild.binaryPointCap = treeData.binaryPointCap.toString();
+                        leftChild.refClaimed = treeData.refclimed.toString();
+                    }
+                    
                     children.push(leftChild);
-                    console.log(`✅ Added left child: ${leftChild.id} (index: ${leftChild.index})`);
+                    console.log(`✅ Added left child: ${leftChild.id} (index: ${leftChildIndex}, address: ${leftAddress})`);
                 } else {
                     // Create empty node for left position
                     const leftEmptyChild = {
-                        id: `empty_node_${leftIndexNum}`,
-                        index: String(leftIndexNum),
+                        id: `empty_left_${node.id}`,
+                        index: '', // Don't set computed index for empty nodes
                         address: null,
                         type: 'empty',
                         expanded: false,
                         children: [],
                         hasChildren: false,
-                        parentIndex: nodeIndex,
+                        parent: node.id,
+                        depth: depth + 1,
                         position: 'left'
                     };
                     children.push(leftEmptyChild);
-                    console.log(`📝 Added empty left child: ${leftEmptyChild.id} (index: ${leftEmptyChild.index})`);
+                    console.log(`📝 Added empty left child: ${leftEmptyChild.id}`);
                 }
                 
                 // Right child
                 if (rightAddress !== zero) {
+                    // Get actual index from users struct for right child (don't use computed index!)
+                    let rightChildIndex = '0'; // Will be set from contract
+                    try {
+                        const rightUser = await contract.users(rightAddress);
+                        // Try multiple methods to get index
+                        let indexVal = rightUser.index || rightUser[0] || rightUser['0'];
+                        if (rightUser && indexVal) {
+                            rightChildIndex = Number(indexVal);
+                            console.log(`✅ Got right child index from struct: ${rightChildIndex}`);
+                        }
+                    } catch (e) {
+                        console.warn('⚠️ Could not get right child index from struct:', e);
+                    }
+                    
                     const rightChild = {
-                        id: `node_${rightIndexNum}`,
-                        index: String(rightIndexNum),
+                        id: `node_right_${rightAddress}`,
+                        index: String(rightChildIndex),
                         address: rightAddress,
                         type: 'node',
                         expanded: false,
                         children: [],
-                        hasChildren: true
+                        hasChildren: true,
+                        parent: node.id,
+                        depth: depth + 1
                     };
+                    
+                    // Add tree data if available
+                    if (treeData && treeData.right === rightAddress) {
+                        rightChild.binaryPoints = treeData.binaryPoints.toString();
+                        rightChild.binaryPointCap = treeData.binaryPointCap.toString();
+                        rightChild.refClaimed = treeData.refclimed.toString();
+                    }
+                    
                     children.push(rightChild);
-                    console.log(`✅ Added right child: ${rightChild.id} (index: ${rightChild.index})`);
+                    console.log(`✅ Added right child: ${rightChild.id} (index: ${rightChildIndex}, address: ${rightAddress})`);
                 } else {
                     // Create empty node for right position
                     const rightEmptyChild = {
-                        id: `empty_node_${rightIndexNum}`,
-                        index: String(rightIndexNum),
+                        id: `empty_right_${node.id}`,
+                        index: '', // Don't set computed index for empty nodes
                         address: null,
                         type: 'empty',
                         expanded: false,
                         children: [],
                         hasChildren: false,
-                        parentIndex: nodeIndex,
+                        parent: node.id,
+                        depth: depth + 1,
                         position: 'right'
                     };
                     children.push(rightEmptyChild);
-                    console.log(`📝 Added empty right child: ${rightEmptyChild.id} (index: ${rightEmptyChild.index})`);
+                    console.log(`📝 Added empty right child: ${rightEmptyChild.id}`);
                 }
                 
                 // Update node with children (always two)
@@ -2861,9 +3422,9 @@
                 node.hasChildren = true;
                 
                 console.log(`🎯 Node ${node.id} now has ${children.length} children`);
+                console.log(`📝 Children list:`, children.map(c => ({id: c.id, type: c.type, index: c.index})));
                 
-                // Re-render the entire tree to show new children
-                renderTreeView();
+                // Don't call renderTreeView here - let toggleNodeExpansion do it
                 
             } catch (error) {
                 console.error('❌ Error loading node children:', error);
@@ -3436,8 +3997,8 @@
                         }
                     } else {
                         console.log('⚠️ IAM_ADDRESS or IAM_ABI not available, using fallback');
-                        // Use fallback contract address if available
-                        const fallbackAddress = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D'; // IAM contract address
+                        // Use Contract 5 as fallback (new contract)
+                        const fallbackAddress = '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2'; // Contract 5 address
                         if (fallbackAddress && (window.IAM_ABI || window.CONTRACT_ABI)) {
                             try {
                                 const provider = new ethers.BrowserProvider(window.ethereum);
@@ -3477,7 +4038,18 @@
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('🚀 Pyramid Tree page loaded');
             
-            
+            // Auto connect wallet on page load
+            console.log('🔗 Auto connecting wallet...');
+            try {
+                const connected = await simpleConnectWallet();
+                if (connected) {
+                    console.log('✅ Wallet auto-connected successfully');
+                } else {
+                    console.log('⚠️ Wallet auto-connection failed');
+                }
+            } catch (error) {
+                console.log('❌ Auto-connection error:', error.message);
+            }
             
             // Debug wallet connection
             console.log('🔍 Debug Wallet Connection:');

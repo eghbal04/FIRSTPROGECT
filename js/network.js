@@ -106,10 +106,10 @@ window.networkShowUserPopup = async function(address, user) {
     }
     
          // Required information
-     const IAMId = user && user.index !== undefined && user.index !== null ? 
-         (window.generateIAMId ? window.generateIAMId(user.index) : user.index) : '-';
+    const IAMId = user && user.num !== undefined && user.num !== null ? 
+        (window.generateIAMId ? window.generateIAMId(user.num) : user.num) : '-';
      const walletAddress = address ? shortAddress(address) : '-';
-     const isActive = user && user.index && BigInt(user.index) > 0n ? true : false;
+     const isActive = user && user.num && BigInt(user.num) > 0n ? true : false;
     
     // Function to calculate left and right wallet counts (active ones in subtree)
     async function calculateWalletCounts(userIndex, contract) {
@@ -120,20 +120,20 @@ window.networkShowUserPopup = async function(address, user) {
             const rightChildIndex = BigInt(userIndex) * 2n + 1n;
             // Left
             try {
-                const leftAddress = await contract.indexToAddress(leftChildIndex);
+                const leftAddress = await contract.numToAddress(leftChildIndex);
                 if (leftAddress && leftAddress !== '0x0000000000000000000000000000000000000000') {
                     const leftUser = await (async () => { try { return await contract.users(leftAddress); } catch(e){ return { index:0n }; } })();
-                    if (leftUser && leftUser.index && BigInt(leftUser.index) > 0n) {
+                    if (leftUser && leftUser.num && BigInt(leftUser.num) > 0n) {
                         leftCount = 1 + await calculateSubtreeCount(leftChildIndex, contract, 'left');
                     }
                 }
             } catch {}
             // Right
             try {
-                const rightAddress = await contract.indexToAddress(rightChildIndex);
+                const rightAddress = await contract.numToAddress(rightChildIndex);
                 if (rightAddress && rightAddress !== '0x0000000000000000000000000000000000000000') {
                     const rightUser = await (async () => { try { return await contract.users(rightAddress); } catch(e){ return { index:0n }; } })();
-                    if (rightUser && rightUser.index && BigInt(rightUser.index) > 0n) {
+                    if (rightUser && rightUser.num && BigInt(rightUser.num) > 0n) {
                         rightCount = 1 + await calculateSubtreeCount(rightChildIndex, contract, 'right');
                     }
                 }
@@ -153,10 +153,10 @@ window.networkShowUserPopup = async function(address, user) {
             let subtreeCount = 0;
             // Check left child
             try {
-                const leftAddress = await contract.indexToAddress(leftChildIndex);
+                const leftAddress = await contract.numToAddress(leftChildIndex);
                 if (leftAddress && leftAddress !== '0x0000000000000000000000000000000000000000') {
                     const leftUser = await (async () => { try { return await contract.users(leftAddress); } catch(e){ return { index:0n }; } })();
-                    if (leftUser && leftUser.index && BigInt(leftUser.index) > 0n) {
+                    if (leftUser && leftUser.num && BigInt(leftUser.num) > 0n) {
                         subtreeCount += 1;
                         subtreeCount += await countRecursive(leftChildIndex);
                     }
@@ -166,10 +166,10 @@ window.networkShowUserPopup = async function(address, user) {
             }
             // Check right child
             try {
-                const rightAddress = await contract.indexToAddress(rightChildIndex);
+                const rightAddress = await contract.numToAddress(rightChildIndex);
                 if (rightAddress && rightAddress !== '0x0000000000000000000000000000000000000000') {
                     const rightUser = await (async () => { try { return await contract.users(rightAddress); } catch(e){ return { index:0n }; } })();
-                    if (rightUser && rightUser.index && BigInt(rightUser.index) > 0n) {
+                    if (rightUser && rightUser.num && BigInt(rightUser.num) > 0n) {
                         subtreeCount += 1;
                         subtreeCount += await countRecursive(rightChildIndex);
                     }
@@ -189,14 +189,12 @@ window.networkShowUserPopup = async function(address, user) {
      const infoList = [
                {icon:'🎯', label:'Binary Points', val: (user && user.binaryPoints !== undefined) ? user.binaryPoints : '-'},
         {icon:'🏆', label:'Binary Cap', val: (user && user.binaryPointCap !== undefined) ? user.binaryPointCap : '-'},
-        {icon:'💎', label:'Total Binary Reward', val: (user && user.totalMonthlyRewarded !== undefined) ? user.totalMonthlyRewarded : '-'},
         {icon:'✅', label:'Claimed Points', val: (user && user.binaryPointsClaimed !== undefined) ? user.binaryPointsClaimed : '-'},
         {icon:'🤝', label:'Referral Income', val: (user && user.refclimed) ? Math.floor(Number(user.refclimed) / 1e18) : '-'},
-        {icon:'💰', label:'Total Deposit', val: (user && user.depositedAmount) ? Math.floor(Number(user.depositedAmount) / 1e18) : '-'},
         {icon:'⬅️', label:'Left Points', val: (user && user.leftPoints !== undefined) ? user.leftPoints : '-'},
         {icon:'➡️', label:'Right Points', val: (user && user.rightPoints !== undefined) ? user.rightPoints : '-'},
-        {icon:'👥⬅️', label:'Left Wallet Count', key:'left-wallet-count', userIndex: user && user.index ? user.index : 1n, val:(walletCounts && walletCounts.leftCount !== undefined) ? walletCounts.leftCount : '-'},
-        {icon:'👥➡️', label:'Right Wallet Count', key:'right-wallet-count', userIndex: user && user.index ? user.index : 1n, val:(walletCounts && walletCounts.rightCount !== undefined) ? walletCounts.rightCount : '-'}
+        {icon:'👥⬅️', label:'Left Wallet Count', key:'left-wallet-count', userIndex: user && user.num ? user.num : 1n, val:(walletCounts && walletCounts.leftCount !== undefined) ? walletCounts.leftCount : '-'},
+        {icon:'👥➡️', label:'Right Wallet Count', key:'right-wallet-count', userIndex: user && user.num ? user.num : 1n, val:(walletCounts && walletCounts.rightCount !== undefined) ? walletCounts.rightCount : '-'}
      ];
 
     const popupEl = document.createElement('div');
@@ -425,8 +423,8 @@ window.networkShowUserPopup = async function(address, user) {
     setTimeout(() => {
       (async () => {
         try {
-          if (user && user.index && window.contractConfig && window.contractConfig.contract) {
-            const counts = await calculateWalletCounts(user.index, window.contractConfig.contract);
+          if (user && user.num && window.contractConfig && window.contractConfig.contract) {
+            const counts = await calculateWalletCounts(user.num, window.contractConfig.contract);
             const leftLi = document.querySelector('.user-info-list li[data-key="left-wallet-count"] .value');
             const rightLi = document.querySelector('.user-info-list li[data-key="right-wallet-count"] .value');
             if (leftLi) leftLi.textContent = counts.leftCount;
@@ -522,8 +520,8 @@ window.networkShowUserPopup = async function(address, user) {
             
             // دریافت موجودی DAI
             try {
-                if (typeof DAI_ADDRESS !== 'undefined' && typeof DAI_ABI !== 'undefined') {
-                    const daiContract = new ethers.Contract(DAI_ADDRESS, DAI_ABI, provider);
+                if (typeof DAI_ADDRESS !== 'undefined' && typeof window.DAI_ABI !== 'undefined') {
+                    const daiContract = new ethers.Contract(DAI_ADDRESS, window.DAI_ABI, provider);
                     let daiRaw = await daiContract.balanceOf(addr);
                     dai = (typeof ethers !== 'undefined') ? Number(ethers.formatUnits(daiRaw, 18)).toFixed(2) : (Number(daiRaw)/1e18).toFixed(2);
                 }
@@ -587,7 +585,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
             console.log(`🔄 Getting address for index: ${index}`);
         let address = null;
             try {
-            address = await contract.indexToAddress(index);
+            address = await contract.numToAddress(index);
             } catch (error) {
                 console.error('Error getting address for index:', index, error);
                 address = null;
@@ -642,7 +640,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                         setTimeout(() => reject(new Error('Left user fetch timeout')), 60000)
                     );
                     leftUser = await Promise.race([leftUserPromise, leftTimeoutPromise]);
-                    if (leftUser && leftUser.index && BigInt(leftUser.index) > 0n) { 
+                    if (leftUser && leftUser.num && BigInt(leftUser.num) > 0n) { 
                         hasDirects = true; 
                         leftActive = true; 
                         console.log(`✅ Left child active for node ${index}, leftUser.index: ${leftUser.index}`);
@@ -661,7 +659,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                         setTimeout(() => reject(new Error('Right user fetch timeout')), 60000)
                     );
                     rightUser = await Promise.race([rightUserPromise, rightTimeoutPromise]);
-                    if (rightUser && rightUser.index && BigInt(rightUser.index) > 0n) { 
+                    if (rightUser && rightUser.num && BigInt(rightUser.num) > 0n) { 
                         hasDirects = true; 
                         rightActive = true; 
                         console.log(`✅ Right child active for node ${index}, rightUser.index: ${rightUser.index}`);
@@ -693,7 +691,7 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
          nodeDiv.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
          nodeDiv.style.transform = 'translateZ(0)';
          
-         const IAMId = window.generateIAMId ? window.generateIAMId(user.index) : user.index;
+         const IAMId = window.generateIAMId ? window.generateIAMId(user.num) : user.num;
          const formattedIAMId = `IAM${String(IAMId).padStart(5, '0')}`;
          // Responsive node sizing - Larger, more visible sizes
         const isMobile = window.innerWidth <= 480;
@@ -1121,10 +1119,8 @@ async function renderVerticalNodeLazy(index, container, level = 0, autoExpand = 
                         activated: user.activated,
                         binaryPoints: user.binaryPoints,
                         binaryPointCap: user.binaryPointCap,
-                        totalMonthlyRewarded: user.totalMonthlyRewarded,
                         binaryPointsClaimed: user.binaryPointsClaimed,
                         refclimed: user.refclimed,
-                        depositedAmount: user.depositedAmount,
                         lvlBalance: 'Loading...',
                         maticBalance: 'Loading...',
                         daiBalance: 'Loading...',
@@ -1329,8 +1325,8 @@ window.renderSimpleBinaryTree = async function() {
         let userIndex = 0n;
         try {
             user = await contract.users(address);
-            if (user && typeof user.index !== 'undefined' && user.index !== null) {
-                userIndex = BigInt(user.index);
+            if (user && typeof user.num !== 'undefined' && user.num !== null) {
+                userIndex = BigInt(user.num);
             }
         } catch {}
 
@@ -1597,27 +1593,27 @@ window.initializeNetworkTab = async function() {
     setTimeout(tryRender, 1000);
 };
 
-function getReferrerFromURL() {
+function getupperFromURL() {
   const urlParams = new URLSearchParams(window.location.search);
-  const referrer = urlParams.get('ref') || urlParams.get('referrer') || urlParams.get('r');
-  if (referrer && /^0x[a-fA-F0-9]{40}$/.test(referrer)) {
-    return referrer;
+  const upper = urlParams.get('ref') || urlParams.get('upper') || urlParams.get('r');
+  if (upper && /^0x[a-fA-F0-9]{40}$/.test(upper)) {
+    return upper;
   }
   return null;
 }
 
 // تابع گرفتن معرف نهایی (کد رفرال یا دیپلویر)
-async function getFinalReferrer(contract) {
+async function getFinalupper(contract) {
   // ابتدا از URL بررسی کن
-  const urlReferrer = getReferrerFromURL();
-  if (urlReferrer) {
+  const urlupper = getupperFromURL();
+  if (urlupper) {
     try {
-      const user = await contract.users(urlReferrer);
-      if (user && user.index && BigInt(user.index) > 0n) {
-        return urlReferrer;
+      const user = await contract.users(urlupper);
+      if (user && user.num && BigInt(user.num) > 0n) {
+        return urlupper;
       }
     } catch (e) {
-      console.warn('URL referrer not valid:', e);
+      console.warn('URL upper not valid:', e);
     }
   }
   
@@ -1626,11 +1622,11 @@ async function getFinalReferrer(contract) {
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
     const currentAddress = accounts[0];
     const user = await contract.users(currentAddress);
-    if (user && user.index && BigInt(user.index) > 0n) {
+    if (user && user.num && BigInt(user.num) > 0n) {
       return currentAddress;
     }
   } catch (e) {
-    console.error('Error getting current address as referrer:', e);
+    console.error('Error getting current address as upper:', e);
   }
   
   // اگر هیچ‌کدام نبود، دیپلویر را برگردان
@@ -1679,7 +1675,7 @@ window.forceRenderNetwork = async function() {
 // تابع نمایش اطلاعات struct کاربر به صورت تایپ‌رایت (فارسی)
 window.showUserStructTypewriter = function(address, user) {
   const infoLines = [
-    `IAM ID:  ${window.generateIAMId ? window.generateIAMId(user.index) : user.index}`,
+    `IAM ID:  ${window.generateIAMId ? window.generateIAMId(user.num) : user.num}`,
     `امتیاز باینری:  ${user.binaryPoints}`,
     `امتیاز باینری دریافت‌شده:  ${user.binaryPointsClaimed}`,
     `امتیاز باینری مانده:  ${user.binaryPoints && user.binaryPointsClaimed ? (Number(user.binaryPoints) - Number(user.binaryPointsClaimed)) : '0'}`,
@@ -2303,7 +2299,7 @@ function startTypewriter(popupEl, IAMId, walletAddress, isActive, infoList, addr
       
       // موجودی DAI
       const DAI_ADDRESS = window.DAI_ADDRESS || '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063';
-      const DAI_ABI = window.DAI_ABI || [
+      const DAI_ABI_NETWORK = window.DAI_ABI || [
         {
           "constant": true,
           "inputs": [{"name": "_owner", "type": "address"}],
@@ -2313,8 +2309,8 @@ function startTypewriter(popupEl, IAMId, walletAddress, isActive, infoList, addr
         }
       ];
       
-      if (provider && DAI_ADDRESS && DAI_ABI) {
-        const Dai = new ethers.Contract(DAI_ADDRESS, DAI_ABI, provider);
+      if (provider && DAI_ADDRESS && DAI_ABI_NETWORK) {
+        const Dai = new ethers.Contract(DAI_ADDRESS, DAI_ABI_NETWORK, provider);
         balancePromises.push(
           Dai.balanceOf(fullWalletAddress)
             .then(d => ({ type: 'DAI', value: Number(ethers.formatUnits(d, 18)).toFixed(2) }))
@@ -2446,7 +2442,7 @@ function startTypewriter(popupEl, IAMId, walletAddress, isActive, infoList, addr
           
           // دریافت آدرس‌ها به صورت همزمان
           const addressPromises = batch.map(index => 
-            contract.indexToAddress(index).catch(() => null)
+            contract.numToAddress(index).catch(() => null)
           );
           const addresses = await Promise.all(addressPromises);
           
@@ -2464,7 +2460,7 @@ function startTypewriter(popupEl, IAMId, walletAddress, isActive, infoList, addr
             
             // شمارش کاربران معتبر
             const validUsers = users.filter(user => 
-              user && user.index && BigInt(user.index) > 0n
+              user && user.num && BigInt(user.num) > 0n
             );
             count += validUsers.length;
             
@@ -2475,7 +2471,7 @@ function startTypewriter(popupEl, IAMId, walletAddress, isActive, infoList, addr
               
               if (address && address !== '0x0000000000000000000000000000000000000000') {
                 const user = users[validAddresses.indexOf(address)];
-                if (user && user.index && BigInt(user.index) > 0n) {
+                if (user && user.num && BigInt(user.num) > 0n) {
                   const leftChild = BigInt(currentIndex) * 2n;
                   const rightChild = BigInt(currentIndex) * 2n + 1n;
                   

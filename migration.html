@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Migration - Tree Structure Export</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.8;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #56ab2f 0%, #a8e6cf 100%);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(86, 171, 47, 0.4);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(45deg, #ff416c 0%, #ff4b2b 100%);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 65, 108, 0.4);
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #ff9800 0%, #ffc107 100%);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.4);
+        }
+
+        .btn-info {
+            background: linear-gradient(45deg, #17a2b8 0%, #20c997 100%);
+            color: white;
+        }
+
+        .btn-info:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(23, 162, 184, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .status-bar {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .status-bar.success {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid rgba(76, 175, 80, 0.5);
+        }
+
+        .status-bar.error {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid rgba(244, 67, 54, 0.5);
+        }
+
+        .status-bar.info {
+            background: rgba(33, 150, 243, 0.2);
+            border: 1px solid rgba(33, 150, 243, 0.5);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+            color: #4ecdc4;
+        }
+
+        .stat-card p {
+            opacity: 0.8;
+        }
+
+        .tree-table-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+
+        .tree-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .tree-table th {
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            padding: 15px;
+            text-align: center;
+            font-weight: 600;
+            color: white;
+        }
+
+        .tree-table td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tree-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .address {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .position-left {
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+
+        .position-right {
+            color: #4ecdc4;
+            font-weight: bold;
+        }
+
+        .log-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+
+        .log-entry.success {
+            color: #4caf50;
+        }
+
+        .log-entry.error {
+            color: #f44336;
+        }
+
+        .log-entry.info {
+            color: #2196f3;
+        }
+
+        .log-entry.warning {
+            color: #ff9800;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌳 Tree Structure Export & Position Check</h1>
+            <p>استخراج و ذخیره ساختار کامل درخت + بررسی جایگاه خالی کاربران</p>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" onclick="connectWallet()">🔗 اتصال کیف پول</button>
+            <button class="btn btn-success" onclick="extractTreeStructure()" id="extractBtn" disabled>🌳 استخراج درخت</button>
+            <button class="btn btn-primary" onclick="downloadJSON()" id="downloadBtn" disabled>💾 دانلود JSON</button>
+            <button class="btn btn-warning" onclick="testRegistrationWithRevert()" id="testRegBtn" disabled>🚫 تست ثبت با Revert</button>
+            <button class="btn btn-info" onclick="showRegistrationForm()" id="showFormBtn" disabled>📝 فرم ثبت دستی</button>
+            <button class="btn btn-danger" onclick="clearData()">🗑️ پاک کردن</button>
+        </div>
+
+        <div class="status-bar" id="statusBar" style="display: none;">
+            <span id="statusText">آماده</span>
+            <div class="progress-bar" id="progressBar" style="display: none;">
+                    <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <div class="stats" id="statsContainer" style="display: none;">
+            <div class="stat-card">
+                <h3 id="totalUsers">0</h3>
+                <p>کل کاربران</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="extractedUsers">0</h3>
+                <p>استخراج شده</p>
+                    </div>
+            <div class="stat-card">
+                <h3 id="activeUsers">0</h3>
+                <p>کاربران فعال</p>
+                    </div>
+            <div class="stat-card">
+                <h3 id="treeLevels">0</h3>
+                <p>سطح درخت</p>
+                    </div>
+                </div>
+                
+        <div class="tree-table-container" id="tableContainer" style="display: none;">
+            <h3 style="margin-bottom: 15px; text-align: center;">📊 ساختار درخت</h3>
+            <table class="tree-table" id="treeTable">
+                    <thead>
+                        <tr>
+                        <th>شماره ترتیب</th>
+                            <th>آدرس کاربر</th>
+                        <th>آدرس معرف</th>
+                        <th>موقعیت</th>
+                        <th>سطح</th>
+                        <th>وضعیت</th>
+                        </tr>
+                    </thead>
+                <tbody id="treeTableBody">
+                    </tbody>
+                </table>
+        </div>
+
+        <div class="tree-table-container" id="registrationContainer" style="display: none;">
+            <h3 style="margin-bottom: 15px; text-align: center;">📝 تست ثبت کاربر جدید</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">آدرس معرف (Referrer):</label>
+                    <input type="text" id="referrerInput" placeholder="0x..." style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">آدرس والد (Upper):</label>
+                    <input type="text" id="upperInput" placeholder="0x..." style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white;">
+                </div>
+                <div style="grid-column: 1 / -1;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">آدرس کاربر جدید:</label>
+                    <input type="text" id="newUserInput" placeholder="0x..." style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white;">
+                </div>
+            </div>
+            <div style="text-align: center;">
+                <button class="btn btn-success" onclick="testManualRegistration()">🚀 تست ثبت دستی</button>
+                <button class="btn btn-warning" onclick="fillTestData()">📋 پر کردن داده تست</button>
+            </div>
+        </div>
+
+        <div class="log-container" id="logContainer">
+            <div class="log-entry info">[سیستم] آماده برای استخراج درخت...</div>
+        </div>
+    </div>
+
+    <script src="js/ethers.min.js"></script>
+    <script src="js/iam-abi.js"></script>
+    <script>
+        // Global variables
+        let contract = null;
+        let signer = null;
+        let treeData = [];
+        let isExtracting = false;
+        let totalNodes = 0;
+        let processedNodes = 0;
+
+        // Contract configuration - Updated with new ABI
+        const CONTRACT_ADDRESS = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D';
+        
+        // Full ABI for Contract
+        const CONTRACT_ABI = window.IAM_ABI || [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"allowance","type":"uint256"},{"internalType":"uint256","name":"needed","type":"uint256"}],"name":"ERC20InsufficientAllowance","type":"error"},{"inputs":[{"internalType":"address","name":"sender","type":"address"},{"internalType":"uint256","name":"balance","type":"uint256"},{"internalType":"uint256","name":"needed","type":"uint256"}],"name":"ERC20InsufficientBalance","type":"error"},{"inputs":[{"internalType":"address","name":"approver","type":"address"}],"name":"ERC20InvalidApprover","type":"error"},{"inputs":[{"internalType":"address","name":"receiver","type":"address"}],"name":"ERC20InvalidReceiver","type":"error"},{"inputs":[{"internalType":"address","name":"sender","type":"address"}],"name":"ERC20InvalidSender","type":"error"},{"inputs":[{"internalType":"address","name":"spender","type":"address"}],"name":"ERC20InvalidSpender","type":"error"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"amountIAM","type":"uint256"}],"name":"Activated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"newPoints","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"newCap","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"BinaryPointsUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"newPoolSize","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"BinaryPoolUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"claimer","type":"address"},{"indexed":false,"internalType":"uint256","name":"totalDistributed","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"claimerReward","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"BinaryRewardDistributed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"},{"indexed":true,"internalType":"uint256","name":"index","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"IndexTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"reward","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"monthsPassed","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"MonthlyRewardClaimed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"string","name":"reason","type":"string"},{"indexed":false,"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"MonthlyRewardFailed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"amountIAM","type":"uint256"}],"name":"PurchaseKind","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"buyer","type":"address"},{"indexed":false,"internalType":"uint256","name":"daiAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"tokenAmount","type":"uint256"}],"name":"TokensBought","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"seller","type":"address"},{"indexed":false,"internalType":"uint256","name":"tokenAmount","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"daiAmount","type":"uint256"}],"name":"TokensSold","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":true,"internalType":"address","name":"parent","type":"address"},{"indexed":true,"internalType":"address","name":"referrer","type":"address"},{"indexed":false,"internalType":"uint256","name":"position","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"TreeStructureUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"voter","type":"address"},{"indexed":true,"internalType":"address","name":"target","type":"address"},{"indexed":false,"internalType":"bool","name":"isLike","type":"bool"},{"indexed":false,"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"VoteSubmitted","type":"event"},{"inputs":[],"name":"MAX_BINARY_POINT_CAP","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"REFERRAL_FEE_PERCENT","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"daiAmount","type":"uint256"}],"name":"buyTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"cashBack","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"cashback","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"claim","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"minReward","type":"uint256"}],"name":"claimMonthlyReward","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"contractTotalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"daiToken","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"dislikeCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"daiAmount","type":"uint256"}],"name":"estimateBuy","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenAmount","type":"uint256"}],"name":"estimateSell","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getContractTokenBalance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getContractdaiBalance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"index","type":"uint256"}],"name":"getLeftAddress","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"index","type":"uint256"}],"name":"getLeftChild","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"pure","type":"function"},{"inputs":[{"internalType":"uint256","name":"index","type":"uint256"}],"name":"getParent","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"pure","type":"function"},{"inputs":[],"name":"getPointValue","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"index","type":"uint256"}],"name":"getReferrer","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getRegPrice","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"index","type":"uint256"}],"name":"getRightAddress","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"index","type":"uint256"}],"name":"getRightChild","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"pure","type":"function"},{"inputs":[],"name":"getTokenPrice","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getUserTree","outputs":[{"internalType":"address","name":"left","type":"address"},{"internalType":"address","name":"right","type":"address"},{"internalType":"uint256","name":"binaryPoints","type":"uint256"},{"internalType":"uint256","name":"binaryPointCap","type":"uint256"},{"internalType":"uint256","name":"depositedAmount","type":"uint256"},{"internalType":"uint256","name":"lastMonthlyClaim","type":"uint256"},{"internalType":"uint256","name":"totalMonthlyRewarded","type":"uint256"},{"internalType":"uint256","name":"refclimed","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getVoteStatus","outputs":[{"internalType":"uint256","name":"totalLikes","type":"uint256"},{"internalType":"uint256","name":"totalDislikes","type":"uint256"},{"internalType":"uint8","name":"userVoteStatus","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"indexToAddress","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"likeCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"amountIAM","type":"uint256"},{"internalType":"uint256","name":"payout","type":"uint256"},{"internalType":"address","name":"seller","type":"address"}],"name":"purchase","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"referrer","type":"address"},{"internalType":"address","name":"upper","type":"address"},{"internalType":"address","name":"newUser","type":"address"}],"name":"registerAndActivate","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"referrer","type":"address"},{"internalType":"address","name":"newUser","type":"address"}],"name":"registerFree","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenAmount","type":"uint256"}],"name":"sellTokens","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalClaimableBinaryPoints","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalClaimablePoints","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferIndexOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"address","name":"","type":"address"}],"name":"userVotes","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"users","outputs":[{"internalType":"uint256","name":"index","type":"uint256"},{"internalType":"uint256","name":"binaryPoints","type":"uint256"},{"internalType":"uint256","name":"binaryPointCap","type":"uint256"},{"internalType":"uint256","name":"binaryPointsClaimed","type":"uint256"},{"internalType":"uint256","name":"totalPurchasedKind","type":"uint256"},{"internalType":"uint256","name":"upgradeTime","type":"uint256"},{"internalType":"uint256","name":"lastClaimTime","type":"uint256"},{"internalType":"uint256","name":"leftPoints","type":"uint256"},{"internalType":"uint256","name":"rightPoints","type":"uint256"},{"internalType":"uint256","name":"lastMonthlyClaim","type":"uint256"},{"internalType":"uint256","name":"totalMonthlyRewarded","type":"uint256"},{"internalType":"uint256","name":"refclimed","type":"uint256"},{"internalType":"uint256","name":"depositedAmount","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"target","type":"address"},{"internalType":"bool","name":"isLike","type":"bool"}],"name":"voteUser","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"wallets","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}];
+
+        // DOM elements
+        const statusBar = document.getElementById('statusBar');
+        const statusText = document.getElementById('statusText');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+        const extractBtn = document.getElementById('extractBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const statsContainer = document.getElementById('statsContainer');
+        const tableContainer = document.getElementById('tableContainer');
+        const treeTableBody = document.getElementById('treeTableBody');
+        const logContainer = document.getElementById('logContainer');
+
+        // Utility functions
+        function logMessage(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString('fa-IR');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function showStatus(message, type = 'info') {
+            statusText.textContent = message;
+            statusBar.className = `status-bar ${type}`;
+            statusBar.style.display = 'block';
+        }
+
+        function showProgress(show = true) {
+            if (show) {
+                progressBar.style.display = 'block';
+            } else {
+                progressBar.style.display = 'none';
+            }
+        }
+
+        function updateProgress(current, total) {
+            const percentage = total > 0 ? (current / total) * 100 : 0;
+            progressFill.style.width = `${percentage}%`;
+            statusText.textContent = `در حال پردازش: ${current}/${total} (${percentage.toFixed(1)}%)`;
+        }
+
+        function updateStats(totalUsers, extractedUsers, activeUsers, treeLevels) {
+            document.getElementById('totalUsers').textContent = totalUsers;
+            document.getElementById('extractedUsers').textContent = extractedUsers;
+            document.getElementById('activeUsers').textContent = activeUsers;
+            document.getElementById('treeLevels').textContent = treeLevels;
+            statsContainer.style.display = 'grid';
+        }
+
+        function addRowToTable(order, userAddress, upperAddress, position, level, status) {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${order}</td>
+                <td><span class="address">${userAddress}</span></td>
+                <td><span class="address">${upperAddress}</span></td>
+                <td><span class="position-${position.toLowerCase()}">${position}</span></td>
+                <td>${level}</td>
+                <td>${status}</td>
+            `;
+            treeTableBody.appendChild(row);
+        }
+
+        // Wallet connection
+        async function connectWallet() {
+            try {
+                if (typeof window.ethereum === 'undefined') {
+                    throw new Error('MetaMask not found');
+                }
+
+                logMessage('در حال اتصال به کیف پول...', 'info');
+                showStatus('در حال اتصال...', 'info');
+
+                const accounts = await window.ethereum.request({
+                    method: 'eth_requestAccounts'
+                });
+
+                if (accounts.length === 0) {
+                    throw new Error('No accounts found');
+                }
+
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+                contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+
+                const userAddress = await signer.getAddress();
+                logMessage(`✅ کیف پول متصل شد: ${userAddress}`, 'success');
+                showStatus('کیف پول متصل شد', 'success');
+
+                extractBtn.disabled = false;
+                document.getElementById('testRegBtn').disabled = false;
+                document.getElementById('showFormBtn').disabled = false;
+                logMessage('آماده برای استخراج درخت و تست ثبت', 'info');
+                    
+                } catch (error) {
+                logMessage(`❌ خطا در اتصال: ${error.message}`, 'error');
+                showStatus('خطا در اتصال کیف پول', 'error');
+            }
+        }
+
+        // DFS Tree traversal with progress tracking - Updated for Contract 5
+        async function dfsTraversal(index, level = 1, parentIndex = 0) {
+            try {
+                // Get user address from index
+                const userAddress = await contract.indexToAddress(index);
+                
+                if (userAddress === '0x0000000000000000000000000000000000000000') {
+                    return null;
+                }
+
+                // Get user data - Contract 5
+                const userData = await contract.users(userAddress);
+                // Get index from struct - try multiple methods
+                const userIndex = userData.index || userData[0] || userData['0'] || 0n;
+                
+                // Get upper address - Contract 5 doesn't have getupper, so we'll use parent from tree
+                let upperAddress = '0x0000000000000000000000000000000000000000';
+                try {
+                    // Try to get parent from tree structure
+                    if (index > 1) {
+                        // Parent index is floor(index / 2)
+                        const parentIdx = Math.floor(index / 2);
+                        if (parentIdx > 0) {
+                            upperAddress = await contract.indexToAddress(parentIdx);
+                            if (upperAddress === '0x0000000000000000000000000000000000000000') {
+                                upperAddress = 'Root';
+                            }
+                        } else {
+                            upperAddress = 'Root';
+                        }
+                    } else {
+                        upperAddress = 'Root';
+                    }
+                } catch (upperError) {
+                    logMessage(`خطا در دریافت upper برای کاربر ${index}: ${upperError.message}`, 'warning');
+                    upperAddress = 'Root';
+                }
+                
+                // Determine position (left/right)
+                let position = 'Root';
+                if (parentIndex > 0) {
+                    try {
+                        const leftChild = index * 2;
+                        const rightChild = index * 2 + 1;
+                        
+                        // Check if this is left child of parent
+                        if (leftChild === index) {
+                            position = 'Left';
+                        } else if (rightChild === index) {
+                            position = 'Right';
+                        } else {
+                            // For computed positions
+                            if (index % 2 === 0) {
+                                position = 'Left';
+                            } else {
+                                position = 'Right';
+                            }
+                        }
+                    } catch (posError) {
+                        logMessage(`خطا در تعیین موقعیت برای کاربر ${index}: ${posError.message}`, 'warning');
+                        // Fallback: use index to determine position
+                        position = (index % 2 === 0) ? 'Left' : 'Right';
+                    }
+                }
+
+                const isActive = userIndex > 0n;
+                const treeEntry = {
+                    order: index,
+                    user: userAddress,
+                    upper: upperAddress !== '0x0000000000000000000000000000000000000000' ? upperAddress : 'Root',
+                    position: position,
+                    level: level,
+                    status: isActive ? 'Active' : 'Inactive'
+                };
+
+                // Add to table immediately
+                addRowToTable(index, userAddress, treeEntry.upper, position, level, treeEntry.status);
+                
+                // Update progress
+                processedNodes++;
+                updateProgress(processedNodes, totalNodes);
+                
+                // Log progress every 10 nodes
+                if (processedNodes % 10 === 0) {
+                    logMessage(`پردازش شده: ${processedNodes}/${totalNodes} گره`, 'info');
+                }
+                
+                // Get children from getUserTree - Contract 5
+                let leftResult = null;
+                let rightResult = null;
+                
+                try {
+                    const treeData = await contract.getUserTree(userAddress);
+                    const leftChildAddress = treeData[0] || treeData.left || '0x0000000000000000000000000000000000000000';
+                    const rightChildAddress = treeData[1] || treeData.right || '0x0000000000000000000000000000000000000000';
+                    
+                    // Get children indices from addresses
+                    let leftChildIndex = 0;
+                    let rightChildIndex = 0;
+                    
+                    // Left child
+                    if (leftChildAddress !== '0x0000000000000000000000000000000000000000') {
+                        try {
+                            const leftUserData = await contract.users(leftChildAddress);
+                            leftChildIndex = leftUserData.index || leftUserData[0] || leftUserData['0'] || 0n;
+                            
+                            if (leftChildIndex > 0n) {
+                                leftResult = await dfsTraversal(Number(leftChildIndex), level + 1, index);
+                            }
+                        } catch (leftError) {
+                            logMessage(`خطا در دریافت فرزند چپ برای ${index}: ${leftError.message}`, 'warning');
+                        }
+                    }
+                    
+                    // Right child
+                    if (rightChildAddress !== '0x0000000000000000000000000000000000000000') {
+                        try {
+                            const rightUserData = await contract.users(rightChildAddress);
+                            rightChildIndex = rightUserData.index || rightUserData[0] || rightUserData['0'] || 0n;
+                            
+                            if (rightChildIndex > 0n) {
+                                rightResult = await dfsTraversal(Number(rightChildIndex), level + 1, index);
+                            }
+                        } catch (rightError) {
+                            logMessage(`خطا در دریافت فرزند راست برای ${index}: ${rightError.message}`, 'warning');
+                        }
+                    }
+                } catch (treeError) {
+                    logMessage(`خطا در دریافت tree data برای ${index}: ${treeError.message}`, 'warning');
+                }
+                
+                return {
+                    node: treeEntry,
+                    left: leftResult,
+                    right: rightResult
+                };
+                
+                } catch (error) {
+                logMessage(`خطا در DFS برای ایندکس ${index}: ${error.message}`, 'warning');
+                return null;
+            }
+        }
+
+        // Tree extraction using DFS with progress bar
+        async function extractTreeStructure() {
+            if (isExtracting) return;
+            
+            try {
+                isExtracting = true;
+                extractBtn.disabled = true;
+                extractBtn.textContent = '⏳ در حال استخراج...';
+
+                logMessage('شروع استخراج ساختار درخت با الگوریتم DFS...', 'info');
+                showStatus('در حال استخراج درخت...', 'info');
+                showProgress(true);
+
+                treeData = [];
+                treeTableBody.innerHTML = '';
+                processedNodes = 0;
+
+                // First, estimate total nodes by checking wallets count
+                const totalWallets = await contract.wallets();
+                totalNodes = totalWallets.toNumber();
+                
+                logMessage(`تخمین کل گره‌ها: ${totalNodes}`, 'info');
+                updateProgress(0, totalNodes);
+
+                // Start DFS from root (index 1)
+                logMessage('شروع پیمایش DFS از ریشه درخت...', 'info');
+                const treeRoot = await dfsTraversal(1, 1, 0);
+                
+                if (!treeRoot) {
+                    throw new Error('درخت خالی است یا خطا در پیمایش');
+                }
+
+                // Collect all nodes from DFS result
+                function collectNodes(node) {
+                    if (!node) return;
+                    
+                    treeData.push(node.node);
+                    
+                    if (node.left) {
+                        collectNodes(node.left);
+                    }
+                    if (node.right) {
+                        collectNodes(node.right);
+                    }
+                }
+                
+                collectNodes(treeRoot);
+                
+                // Keep the order as rendered in table (DFS order)
+                // Table was already populated during dfsTraversal
+                logMessage(`داده‌ها به ترتیب DFS استخراج شدند`, 'info');
+                
+                // JSON will be downloaded in the same order as displayed in table
+                // No sorting and no table rebuild - use existing table order
+                
+                // Calculate statistics
+                const totalUsers = treeData.length;
+                const activeUsers = treeData.filter(entry => entry.status === 'Active').length;
+                const maxLevel = Math.max(...treeData.map(entry => entry.level));
+
+                updateStats(totalUsers, totalUsers, activeUsers, maxLevel);
+                tableContainer.style.display = 'block';
+                downloadBtn.disabled = false;
+
+                showProgress(false);
+                logMessage(`✅ استخراج کامل شد! ${totalUsers} کاربر با الگوریتم DFS استخراج شد`, 'success');
+                showStatus('استخراج کامل شد', 'success');
+
+                        } catch (error) {
+                showProgress(false);
+                logMessage(`❌ خطا در استخراج: ${error.message}`, 'error');
+                showStatus('خطا در استخراج', 'error');
+            } finally {
+                isExtracting = false;
+                extractBtn.disabled = false;
+                extractBtn.textContent = '🌳 استخراج درخت';
+            }
+        }
+
+        // Download JSON
+        function downloadJSON() {
+            if (treeData.length === 0) {
+                logMessage('❌ هیچ داده‌ای برای دانلود وجود ندارد', 'error');
+                    return;
+                }
+                
+                try {
+                // Create simplified JSON structure (only order, upper, user)
+                const simplifiedData = treeData.map(entry => ({
+                    order: entry.order,
+                    upper: entry.upper,
+                    user: entry.user
+                }));
+
+                const jsonString = JSON.stringify(simplifiedData, null, 2);
+                    const blob = new Blob([jsonString], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                const filename = `tree-structure-${timestamp}.json`;
+                    
+                    const a = document.createElement('a');
+                    a.href = url;
+                a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                logMessage(`✅ فایل JSON دانلود شد: ${filename}`, 'success');
+                showStatus('فایل دانلود شد', 'success');
+
+                } catch (error) {
+                logMessage(`❌ خطا در دانلود: ${error.message}`, 'error');
+                showStatus('خطا در دانلود', 'error');
+            }
+        }
+
+        // Check if user has empty position - Updated for Contract 5
+        async function checkUserEmptyPosition(userAddress) {
+            try {
+                logMessage(`بررسی جایگاه خالی برای کاربر: ${userAddress}`, 'info');
+                
+                // Get user data from contract
+                const userData = await contract.users(userAddress);
+                // Get index from struct - try multiple methods
+                const userIndex = userData.index || userData[0] || userData['0'] || 0n;
+                
+                if (userIndex === 0n) {
+                    throw new Error('کاربر در سیستم ثبت نشده است');
+                }
+                
+                // Get left and right children using getUserTree - Contract 5
+                const treeData = await contract.getUserTree(userAddress);
+                const leftChild = treeData[0] || treeData.left || '0x0000000000000000000000000000000000000000';
+                const rightChild = treeData[1] || treeData.right || '0x0000000000000000000000000000000000000000';
+                
+                const leftEmpty = leftChild === '0x0000000000000000000000000000000000000000';
+                const rightEmpty = rightChild === '0x0000000000000000000000000000000000000000';
+                
+                logMessage(`فرزند چپ: ${leftChild} (${leftEmpty ? 'خالی' : 'پر'})`, 'info');
+                logMessage(`فرزند راست: ${rightChild} (${rightEmpty ? 'خالی' : 'پر'})`, 'info');
+                
+                if (!leftEmpty && !rightEmpty) {
+                    const errorMsg = `کاربر ${userAddress} جایگاه خالی ندارد - هر دو فرزند پر هستند`;
+                    logMessage(`❌ ${errorMsg}`, 'error');
+                    showStatus('کاربر جایگاه خالی ندارد', 'error');
+                    throw new Error(errorMsg);
+                }
+                
+                const availablePositions = [];
+                if (leftEmpty) availablePositions.push('چپ');
+                if (rightEmpty) availablePositions.push('راست');
+                
+                const successMsg = `✅ کاربر ${userAddress} دارای جایگاه خالی: ${availablePositions.join(' و ')}`;
+                logMessage(successMsg, 'success');
+                showStatus('کاربر جایگاه خالی دارد', 'success');
+                
+                return {
+                    hasEmptyPosition: true,
+                    leftEmpty: leftEmpty,
+                    rightEmpty: rightEmpty,
+                    availablePositions: availablePositions
+                };
+                
+            } catch (error) {
+                logMessage(`❌ خطا در بررسی جایگاه: ${error.message}`, 'error');
+                showStatus('خطا در بررسی جایگاه', 'error');
+                throw error;
+            }
+        }
+
+        // Register new user with position validation and revert logic - Updated for new ABI
+        async function registerNewUser(referrerAddress, upperAddress, newUserAddress) {
+            try {
+                logMessage(`شروع ثبت کاربر جدید: ${newUserAddress}`, 'info');
+                logMessage(`معرف (referrer): ${referrerAddress}`, 'info');
+                logMessage(`والد (upper): ${upperAddress}`, 'info');
+                
+                // First check if upper user has empty position - if not, revert
+                await checkUserEmptyPosition(upperAddress);
+                
+                // If we reach here, user has empty position, proceed with registration
+                logMessage('در حال ثبت کاربر در قرارداد...', 'info');
+                const tx = await contract.registerAndActivate(
+                    referrerAddress,  // referrer
+                    upperAddress,     // upper
+                    newUserAddress   // newUser
+                );
+                
+                logMessage(`✅ تراکنش ارسال شد: ${tx.hash}`, 'success');
+                showStatus('در انتظار تایید تراکنش...', 'info');
+                
+                const receipt = await tx.wait();
+                logMessage(`✅ کاربر با موفقیت ثبت شد! Block: ${receipt.blockNumber}`, 'success');
+                showStatus('کاربر با موفقیت ثبت شد', 'success');
+                
+                return receipt;
+                
+            } catch (error) {
+                // If error is about empty position, it's a revert - don't proceed to next level
+                if (error.message.includes('جایگاه خالی ندارد')) {
+                    logMessage(`🚫 ثبت Revert شد: ${error.message}`, 'error');
+                    showStatus('ثبت Revert شد - جایگاه خالی نیست', 'error');
+                    throw new Error(`Registration reverted: ${error.message}`);
+                }
+                
+                // Other errors (network, contract, etc.)
+                logMessage(`❌ خطا در ثبت کاربر: ${error.message}`, 'error');
+                showStatus('خطا در ثبت کاربر', 'error');
+                throw error;
+            }
+        }
+
+        // Clear data
+        function clearData() {
+            treeData = [];
+            treeTableBody.innerHTML = '';
+            statsContainer.style.display = 'none';
+            tableContainer.style.display = 'none';
+            downloadBtn.disabled = true;
+            logContainer.innerHTML = '<div class="log-entry info">[سیستم] داده‌ها پاک شدند...</div>';
+            showStatus('داده‌ها پاک شدند', 'info');
+        }
+
+        // Test registration with revert logic
+        async function testRegistrationWithRevert() {
+            try {
+                logMessage('🧪 شروع تست ثبت کاربر با منطق Revert...', 'info');
+                showStatus('در حال تست ثبت...', 'info');
+                
+                // Test case: Try to register under user that has no empty position
+                const upperUserAddress = '0x95EF8Cd4975400B8758D5Fe49DBF4620B9d957ee'; // User with no empty position
+                const upperAddress = '0x7253fDF13E11c70297BeE84cD91B925e74557768'; // Parent of upper user
+                const newUserAddress = '0x1234567890123456789012345678901234567890'; // Fake address for test
+                
+                logMessage(`🔍 تلاش برای ثبت کاربر جدید: ${newUserAddress}`, 'info');
+                logMessage(`📍 زیر کاربر: ${upperUserAddress}`, 'info');
+                logMessage(`👤 معرف: ${upperAddress}`, 'info');
+                
+                // First check if upper user has empty position
+                await checkUserEmptyPosition(upperUserAddress);
+                
+                // If we reach here, it means user has empty position (unexpected)
+                logMessage('⚠️ خطا: کاربر باید جایگاه خالی نداشته باشد!', 'warning');
+                
+            } catch (error) {
+                // This is expected - user has no empty position, so registration should revert
+                logMessage(`✅ تست موفق - ثبت Revert شد: ${error.message}`, 'success');
+                showStatus('تست موفق - ثبت Revert شد', 'success');
+                
+                // Now test with a user that has empty position
+                await testRegistrationWithValidPosition();
+            }
+        }
+
+        // Test registration with valid position
+        async function testRegistrationWithValidPosition() {
+            try {
+                logMessage('🧪 تست ثبت با جایگاه معتبر...', 'info');
+                
+                // Test with root user (usually has empty positions)
+                const upperUserAddress = '0xB6F844eFE62948647968196257B7DcD2323beF0C'; // Root user
+                const upperAddress = '0xB6F844eFE62948647968196257B7DcD2323beF0C'; // Same as upper
+                const newUserAddress = '0x9876543210987654321098765432109876543210'; // Another fake address
+                
+                logMessage(`🔍 تلاش برای ثبت کاربر جدید: ${newUserAddress}`, 'info');
+                logMessage(`📍 زیر کاربر: ${upperUserAddress}`, 'info');
+                
+                // Check if upper user has empty position
+                const result = await checkUserEmptyPosition(upperUserAddress);
+                
+                logMessage(`✅ کاربر دارای جایگاه خالی در موقعیت: ${result.availablePositions.join(' و ')}`, 'success');
+                logMessage('✅ ثبت کاربر در این جایگاه امکان‌پذیر است', 'success');
+                showStatus('تست موفق - جایگاه معتبر', 'success');
+                
+            } catch (error) {
+                logMessage(`❌ خطا در تست جایگاه معتبر: ${error.message}`, 'error');
+                showStatus('خطا در تست جایگاه معتبر', 'error');
+            }
+        }
+
+        // Fill test data in the form - Updated for new fields
+        function fillTestData() {
+            document.getElementById('referrerInput').value = '0x7253fDF13E11c70297BeE84cD91B925e74557768';
+            document.getElementById('upperInput').value = '0x95EF8Cd4975400B8758D5Fe49DBF4620B9d957ee';
+            document.getElementById('newUserInput').value = '0x1234567890123456789012345678901234567890';
+            
+            logMessage('📋 داده‌های تست پر شدند', 'info');
+        }
+
+        // Test manual registration - Updated for new ABI
+        async function testManualRegistration() {
+            try {
+                const referrerAddress = document.getElementById('referrerInput').value.trim();
+                const upperAddress = document.getElementById('upperInput').value.trim();
+                const newUserAddress = document.getElementById('newUserInput').value.trim();
+                
+                if (!referrerAddress || !upperAddress || !newUserAddress) {
+                    throw new Error('لطفاً تمام فیلدها را پر کنید');
+                }
+                
+                if (!referrerAddress.startsWith('0x') || !upperAddress.startsWith('0x') || !newUserAddress.startsWith('0x')) {
+                    throw new Error('آدرس‌ها باید با 0x شروع شوند');
+                }
+                
+                logMessage('🚀 شروع تست ثبت دستی...', 'info');
+                showStatus('در حال تست ثبت...', 'info');
+                
+                // Test registration with revert logic - Updated signature: (referrer, upper, newUser)
+                await registerNewUser(referrerAddress, upperAddress, newUserAddress);
+                
+            } catch (error) {
+                logMessage(`❌ خطا در تست ثبت دستی: ${error.message}`, 'error');
+                showStatus('خطا در تست ثبت', 'error');
+            }
+        }
+
+        // Show registration form
+        function showRegistrationForm() {
+            document.getElementById('registrationContainer').style.display = 'block';
+            logMessage('📝 فرم ثبت کاربر نمایش داده شد', 'info');
+        }
+
+        // Auto connect wallet
+        async function autoConnectWallet() {
+            try {
+                if (typeof window.ethereum === 'undefined') {
+                    logMessage('❌ MetaMask یافت نشد', 'error');
+                    return;
+                }
+
+                logMessage('در حال اتصال خودکار به کیف پول...', 'info');
+                showStatus('اتصال خودکار...', 'info');
+
+                const accounts = await window.ethereum.request({
+                    method: 'eth_accounts'
+                });
+
+                if (accounts.length === 0) {
+                    logMessage('❌ هیچ حساب فعالی یافت نشد', 'warning');
+                    return;
+                }
+
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+                contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+
+                const userAddress = await signer.getAddress();
+                logMessage(`✅ کیف پول خودکار متصل شد: ${userAddress}`, 'success');
+                showStatus('کیف پول متصل شد', 'success');
+
+                extractBtn.disabled = false;
+                document.getElementById('testRegBtn').disabled = false;
+                document.getElementById('showFormBtn').disabled = false;
+                logMessage('آماده برای استخراج درخت و تست ثبت', 'info');
+
+                        } catch (error) {
+                logMessage(`❌ خطا در اتصال خودکار: ${error.message}`, 'error');
+                showStatus('خطا در اتصال خودکار', 'error');
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            logMessage('صفحه Migration بارگذاری شد', 'info');
+            // Auto connect after 1 second
+            setTimeout(autoConnectWallet, 1000);
+        });
+    </script>
+</body>
+</html>

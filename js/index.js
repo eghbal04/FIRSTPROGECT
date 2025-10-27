@@ -1,24 +1,14 @@
 // Browser compatibility layer
 // این فایل برای جلوگیری از خطای "exports is not defined" ایجاد شده است
 
-// اطمینان از وجود متغیر سراسری exports
+// اگر exports تعریف نشده، آن را تعریف کن
 if (typeof exports === 'undefined') {
-  // استفاده از var تا در اسکوپ سراسری تعریف شود
-  var exports = {};
+  var exports = window.exports = {};
 }
 
-// تعریف exports در global scope
-if (typeof window !== 'undefined') {
-  window.exports = window.exports || {};
-} else {
-  global.exports = global.exports || {};
-}
-
-// تعریف module در global scope
-if (typeof window !== 'undefined') {
-  window.module = window.module || { exports: {} };
-} else {
-  global.module = global.module || { exports: {} };
+// اگر module تعریف نشده، آن را تعریف کن
+if (typeof module === 'undefined') {
+  window.module = { exports: {} };
 }
 
 // تعریف require در global scope
@@ -35,4 +25,3 @@ if (typeof window !== 'undefined') {
 }
 
 console.log('✅ Browser compatibility layer loaded');
-

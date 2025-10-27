@@ -53,9 +53,9 @@
                             <div class="form-group" style="margin-bottom:0.3rem;">
                                 <label for="contractSelector" style="display:block;color:#00ff88;margin-bottom:0.2rem;font-weight:600;font-size:0.85rem;">Contract:</label>
                                 <select id="contractSelector" required style="width:100%;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
-                                    <option value="new">New Contract</option>
-                                    <option value="old">Old Contract</option>
-                                    <option value="oldest">Oldest Contract</option>
+                                    <option value="old" style="color: #ff8c00;">Old Contract — 0x2D39...118D</option>
+                                    <option value="middle" style="color: #ff6b6b;">Middle Contract — 0xF473...2658</option>
+                                    <option value="new" style="color: #00ff88;">New Contract — 0x443d...443d</option>
                                 </select>
                             </div>
                             
@@ -73,19 +73,23 @@
                             
                             <!-- Amount Input -->
                             <div class="form-group" style="margin-bottom:0.3rem;">
-                                <label for="swapAmount" style="display:block;color:#00ff88;margin-bottom:0.2rem;font-weight:600;font-size:0.85rem;">Amount:</label>
+                                <label for="swapAmount" style="display:block;color:#00ff88;margin-bottom:0.2rem;font-weight:600;font-size:0.85rem;">Token Amount:</label>
                                 <div class="amount-input-group" style="display:flex;gap:0.5rem;align-items:center;">
-                                    <input type="number" id="swapAmount" placeholder="Enter amount" required step="1" inputmode="numeric" pattern="\\d*" style="flex:1;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
+                                    <input type="number" id="swapAmount" placeholder="Enter amount" required step="any" inputmode="decimal" style="flex:1;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
                                     <button type="button" id="maxBtn" class="max-btn" style="background:linear-gradient(135deg,#a786ff,#00ff88);color:#0a0f1c;border:none;padding:0.8rem 1rem;border-radius:12px;font-weight:600;cursor:pointer;transition:all 0.3s ease;white-space:nowrap;font-size:0.85rem;">Max</button>
                                 </div>
                             </div>
                             
-                            <!-- USD Converter -->
-                            <div id="swap-usd-converter-row" style="display:none;margin-bottom:0.3rem;">
-                                <label for="swapUsdAmount" style="display:block;color:#00ff88;margin-bottom:0.2rem;font-weight:600;font-size:0.85rem;">USD:</label>
+                            <!-- USD Amount Input -->
+                            <div class="form-group" style="margin-bottom:0.3rem;">
+                                <label for="swapUsdAmount" style="display:block;color:#00ff88;margin-bottom:0.2rem;font-weight:600;font-size:0.85rem;">Or Enter USD Amount:</label>
                                 <div class="usd-converter-container" style="display:flex;gap:0.5rem;align-items:center;">
-                                    <input type="number" id="swapUsdAmount" placeholder="5.00" style="flex:1;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
-                                    <button type="button" id="swapUsdToTokenBtn" style="background:linear-gradient(135deg,#00ff88,#a786ff);color:#0a0f1c;border:none;padding:0.8rem 1rem;border-radius:12px;font-weight:600;cursor:pointer;transition:all 0.3s ease;font-size:0.8rem;">🔄</button>
+                                    <input type="number" id="swapUsdAmount" placeholder="Enter USD amount" step="any" inputmode="decimal" min="0" formnovalidate style="flex:1;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
+                                    <button type="button" id="swapUsdToTokenBtn" style="background:linear-gradient(135deg,#00ff88,#a786ff);color:#0a0f1c;border:none;padding:0.8rem 1rem;border-radius:12px;font-weight:600;cursor:pointer;transition:all 0.3s ease;font-size:0.8rem;">Convert</button>
+                                </div>
+                                <!-- USD Equivalent Display -->
+                                <div id="usdEquivalent" style="color:#00ff88;font-size:0.75rem;margin-top:0.3rem;text-align:center;opacity:0.7;">
+                                    ≈ $0.00
                                 </div>
                             </div>
                         
@@ -104,8 +108,11 @@
                                 </div>
                             </div>
                             
-                            <!-- Exchange Button -->
-                            <button type="submit" class="exchange-btn" style="width:100%;background:linear-gradient(135deg,#00ff88,#00cc6a);color:#0a0f1c;border:none;border-radius:10px;padding:0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:0.9rem;margin-top:0.2rem;">💱 Swap</button>
+                            <!-- Exchange Button (Approval is now automatic) -->
+                            <button type="submit" class="exchange-btn" id="swapBtn" style="width:100%;background:linear-gradient(135deg,#00ff88,#00cc6a);color:#0a0f1c;border:none;border-radius:10px;padding:0.8rem;font-weight:bold;cursor:pointer;transition:all 0.3s ease;font-size:0.9rem;margin-top:0.2rem;">💱 Swap</button>
+                            <div style="text-align:center;color:#00ff88;font-size:0.75rem;margin-top:0.3rem;opacity:0.7;">
+                                ℹ️ Approval will be handled automatically
+                            </div>
                             
                         </form>
                     </div>

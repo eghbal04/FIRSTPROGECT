@@ -11,14 +11,16 @@ class FloatingTokenGrowthCard {
     this.initialTokenPrice = null;
     this.updateInterval = null;
     this.isInitialized = false;
+    this.isUpdating = false; // Prevent concurrent updates
+    this.lastUpdateTime = 0; // Track last update time
     
     this.init();
   }
   
   init() {
     this.createCard();
-        this.addEventListeners();
-        this.startUpdates();
+    this.addEventListeners();
+    this.startUpdates();
     
     this.isInitialized = true;
   }
@@ -28,9 +30,12 @@ class FloatingTokenGrowthCard {
       this.card = document.getElementById('floating-token-growth-card');
       this.percentageElement = document.getElementById('token-growth-percentage');
       this.statusElement = document.getElementById('token-growth-status');
+      console.log('✅ Found existing floating card');
       return;
     }
-        const cardHTML = `
+    
+    console.log('🔨 Creating new floating token card...');
+    const cardHTML = `
       <div id="floating-token-growth-card" style="
         position: fixed;
         bottom: 40px;
@@ -80,11 +85,18 @@ class FloatingTokenGrowthCard {
     
     // Add card to body for floating on all pages
     document.body.insertAdjacentHTML('beforeend', cardHTML);
+    console.log('✅ Floating card HTML added to DOM');
     
     // Get elements
     this.card = document.getElementById('floating-token-growth-card');
     this.percentageElement = document.getElementById('token-growth-percentage');
     this.statusElement = document.getElementById('token-growth-status');
+    
+    console.log('✅ Card elements found:', {
+      card: !!this.card,
+      percentage: !!this.percentageElement,
+      status: !!this.statusElement
+    });
   }
   
   addEventListeners() {
@@ -132,7 +144,7 @@ class FloatingTokenGrowthCard {
       </div>
       <div style="display:flex; gap:8px; align-items:center; justify-content:center; margin-top:4px;">
         <span style="opacity:.85">Initial Price:</span>
-        <span id="initial-token-price" style="font-weight:700">1e-15</span>
+        <span id="initial-token-price" style="font-weight:700">1e-5</span>
       </div>
     `;
   }
@@ -150,16 +162,31 @@ class FloatingTokenGrowthCard {
   
   async getTokenGrowthData() {
     try {
-    
-      const initialPrice = 1e-15;
-            let currentPrice = null;
+      console.log('🔍 Getting token growth data...');
       
-      if (window.priceHistoryManager && window.priceHistoryManager.tokenHistory.length > 0) {
+      // Check if ethers is loaded
+      if (typeof ethers === 'undefined') {
+        console.warn('⚠️ Ethers.js not loaded yet');
+        return null;
+      }
+      
+      // Get base price based on contract type
+      const selectedContractAddress = window.getIAMAddress();
+      const isOldContract = selectedContractAddress === window.CONTRACT_1_ADDRESS;
+      const initialPrice = isOldContract ? 1e-15 : 1e-5; // Old: 1e-15, New: 1e-5
+      
+      console.log('🔍 Contract type:', isOldContract ? 'Old' : 'New', 'Base price:', initialPrice);
+      let currentPrice = null;
+      
+      // Check if priceHistoryManager exists and has data
+      if (window.priceHistoryManager && window.priceHistoryManager.tokenHistory && window.priceHistoryManager.tokenHistory.length > 0) {
+        console.log('📊 Using priceHistoryManager data');
         const tokenHistory = window.priceHistoryManager.tokenHistory;
         currentPrice = tokenHistory[tokenHistory.length - 1];
         
         if (currentPrice && currentPrice > 0) {
           const growthPercentage = ((currentPrice - initialPrice) / initialPrice) * 100;
+          console.log('✅ Price from priceHistoryManager:', currentPrice, 'Growth:', growthPercentage);
           return {
             currentPrice,
             initialPrice,
@@ -169,10 +196,9 @@ class FloatingTokenGrowthCard {
         }
       }
       
-      // No localStorage caching - always fetch fresh data
-      
-      // Third priority: Try to get from contract.getTokenPrice (slower)
+      // Check if contractConfig exists and has contract
       if (window.contractConfig && window.contractConfig.contract && typeof window.contractConfig.contract.getTokenPrice === 'function') {
+        console.log('📊 Using contract data');
         try {
           const tokenPriceRaw = typeof window.retryRpcOperation === 'function' 
             ? await window.retryRpcOperation(() => window.contractConfig.contract.getTokenPrice(), 2)
@@ -181,7 +207,17 @@ class FloatingTokenGrowthCard {
           if (tokenPriceRaw) {
             // Convert from Wei to Ether (18 decimal)
             if (typeof ethers !== 'undefined') {
-              currentPrice = parseFloat(ethers.formatUnits(tokenPriceRaw, 18));
+              // Compatible with both ethers v5 and v6
+              if (typeof ethers.utils !== 'undefined' && typeof ethers.utils.formatUnits !== 'undefined') {
+                // Ethers v5
+                currentPrice = parseFloat(ethers.utils.formatUnits(tokenPriceRaw, 18));
+              } else if (typeof ethers.formatUnits !== 'undefined') {
+                // Ethers v6
+                currentPrice = parseFloat(ethers.formatUnits(tokenPriceRaw, 18));
+              } else {
+                // Fallback: Manual conversion from Wei to Ether
+                currentPrice = parseFloat(tokenPriceRaw) / Math.pow(10, 18);
+              }
             } else {
               // Fallback: Manual conversion from Wei to Ether
               currentPrice = parseFloat(tokenPriceRaw) / Math.pow(10, 18);
@@ -189,6 +225,7 @@ class FloatingTokenGrowthCard {
             
             if (currentPrice > 0) {
               const growthPercentage = ((currentPrice - initialPrice) / initialPrice) * 100;
+              console.log('✅ Price from contract:', currentPrice, 'Growth:', growthPercentage);
               return {
                 currentPrice,
                 initialPrice,
@@ -202,6 +239,120 @@ class FloatingTokenGrowthCard {
         }
       }
       
+      // Try to get contract from window.connectWallet result
+      // Skip if we already have contractConfig with a contract
+      if (!window.contractConfig?.contract && window.connectWallet && typeof window.connectWallet === 'function') {
+        console.log('📊 Trying to get contract from connectWallet');
+        try {
+          const walletResult = await window.connectWallet();
+          console.log('📊 Wallet result:', walletResult);
+          if (walletResult && walletResult.contract && typeof walletResult.contract.getTokenPrice === 'function') {
+            console.log('📊 Using contract from connectWallet');
+            const tokenPriceRaw = await walletResult.contract.getTokenPrice();
+            console.log('📊 Token price raw:', tokenPriceRaw);
+            
+            if (tokenPriceRaw) {
+              // Convert from Wei to Ether (18 decimal)
+              if (typeof ethers !== 'undefined') {
+                // Compatible with both ethers v5 and v6
+                if (typeof ethers.utils !== 'undefined' && typeof ethers.utils.formatUnits !== 'undefined') {
+                  // Ethers v5
+                  currentPrice = parseFloat(ethers.utils.formatUnits(tokenPriceRaw, 18));
+                } else if (typeof ethers.formatUnits !== 'undefined') {
+                  // Ethers v6
+                  currentPrice = parseFloat(ethers.formatUnits(tokenPriceRaw, 18));
+                } else {
+                  // Fallback: Manual conversion from Wei to Ether
+                  currentPrice = parseFloat(tokenPriceRaw) / Math.pow(10, 18);
+                }
+              } else {
+                // Fallback: Manual conversion from Wei to Ether
+                currentPrice = parseFloat(tokenPriceRaw) / Math.pow(10, 18);
+              }
+              
+              if (currentPrice > 0) {
+                const growthPercentage = ((currentPrice - initialPrice) / initialPrice) * 100;
+                console.log('✅ Price from connectWallet contract:', currentPrice, 'Growth:', growthPercentage);
+                return {
+                  currentPrice,
+                  initialPrice,
+                  growthPercentage,
+                  source: 'connectWallet'
+                };
+              }
+            }
+          } else {
+            console.log('📊 Wallet result does not have contract or getTokenPrice function');
+          }
+        } catch (connectError) {
+          console.warn('⚠️ Error getting contract from connectWallet:', connectError);
+        }
+      }
+      
+      // Try to create contract directly using selected contract address
+      if (selectedContractAddress && typeof ethers !== 'undefined') {
+        console.log('📊 Trying to create contract directly with selected address:', selectedContractAddress);
+        try {
+          let provider, signer;
+          
+          // Compatible with both ethers v5 and v6
+          if (typeof ethers.providers !== 'undefined' && typeof ethers.providers.Web3Provider !== 'undefined') {
+            // Ethers v5
+            provider = new ethers.providers.Web3Provider(window.ethereum);
+            signer = provider.getSigner();
+          } else if (typeof ethers.BrowserProvider !== 'undefined') {
+            // Ethers v6
+            provider = new ethers.BrowserProvider(window.ethereum);
+            signer = await provider.getSigner();
+          }
+          
+          if (provider && signer) {
+            // Use NEW_IAM_ABI if available, otherwise use IAM_ABI
+            const abi = window.NEW_IAM_ABI || window.IAM_ABI;
+            if (abi) {
+              const contract = new ethers.Contract(selectedContractAddress, abi, signer);
+              console.log('📊 Using direct contract creation with selected contract');
+              const tokenPriceRaw = await contract.getTokenPrice();
+              console.log('📊 Direct contract token price raw:', tokenPriceRaw);
+              
+              if (tokenPriceRaw) {
+                // Convert from Wei to Ether (18 decimal)
+                if (typeof ethers !== 'undefined') {
+                  // Compatible with both ethers v5 and v6
+                  if (typeof ethers.utils !== 'undefined' && typeof ethers.utils.formatUnits !== 'undefined') {
+                    // Ethers v5
+                    currentPrice = parseFloat(ethers.utils.formatUnits(tokenPriceRaw, 18));
+                  } else if (typeof ethers.formatUnits !== 'undefined') {
+                    // Ethers v6
+                    currentPrice = parseFloat(ethers.formatUnits(tokenPriceRaw, 18));
+                  } else {
+                    // Fallback: Manual conversion from Wei to Ether
+                    currentPrice = parseFloat(tokenPriceRaw) / Math.pow(10, 18);
+                  }
+                } else {
+                  // Fallback: Manual conversion from Wei to Ether
+                  currentPrice = parseFloat(tokenPriceRaw) / Math.pow(10, 18);
+                }
+                
+                if (currentPrice > 0) {
+                  const growthPercentage = ((currentPrice - initialPrice) / initialPrice) * 100;
+                  console.log('✅ Price from direct contract:', currentPrice, 'Growth:', growthPercentage);
+                  return {
+                    currentPrice,
+                    initialPrice,
+                    growthPercentage,
+                    source: 'direct'
+                  };
+                }
+              }
+            }
+          }
+        } catch (directError) {
+          console.warn('⚠️ Error creating contract directly:', directError);
+        }
+      }
+      
+      console.log('❌ No data sources available');
       return null;
     } catch (error) {
       console.error('❌ Error getting token growth data:', error);
@@ -243,7 +394,7 @@ class FloatingTokenGrowthCard {
     if (this.isExpanded) {
       this.statusElement.innerHTML = `
         <div style="margin-bottom: 8px;">Current Price: <span style="font-weight: bold;">${currentPrice.toExponential(4)}</span></div>
-        <div>Initial Price: <span style="font-weight: bold;">1e-15</span></div>
+        <div>Initial Price: <span style="font-weight: bold;">1e-5</span></div>
         <div style="margin-top: 5px; font-size: 0.6rem; opacity: 0.8;">Source: ${source}</div>
       `;
     } else {
@@ -260,13 +411,45 @@ class FloatingTokenGrowthCard {
   }
   
   async updateGrowthData() {
-    const data = await this.getTokenGrowthData();
-    this.updateDisplay(data);
+    // Prevent concurrent updates
+    if (this.isUpdating) {
+      console.log('⚠️ Update already in progress, skipping');
+      return;
+    }
+    
+    // Debounce: Don't update more than once per 2 seconds
+    const now = Date.now();
+    if (now - this.lastUpdateTime < 2000) {
+      console.log('⚠️ Update too recent, skipping (last update:', this.lastUpdateTime, ')');
+      return;
+    }
+    
+    this.isUpdating = true;
+    this.lastUpdateTime = now;
+    
+    try {
+      const data = await this.getTokenGrowthData();
+      this.updateDisplay(data);
+    } catch (error) {
+      console.error('❌ Error updating growth data:', error);
+    } finally {
+      this.isUpdating = false;
+    }
   }
   
   startUpdates() {
-    // Initial update only once
-    this.updateGrowthData();
+    // Prevent duplicate event listeners
+    if (this.updateInterval) {
+      console.log('⚠️ Updates already started, skipping');
+      return;
+    }
+    
+    console.log('🔄 Starting floating card updates...');
+    
+    // Initial update with longer delay to ensure contractConfig is ready
+    setTimeout(() => {
+      this.updateGrowthData();
+    }, 5000);
     
     // Update when page refreshes
     window.addEventListener('beforeunload', () => {
@@ -277,20 +460,23 @@ class FloatingTokenGrowthCard {
     window.addEventListener('load', () => {
       setTimeout(() => {
         this.updateGrowthData();
-      }, 1000);
+      }, 6000);
     });
     
     // Update when price data changes
-    if (window.priceHistoryManager) {
+    if (window.priceHistoryManager && !window.priceHistoryManager._floatingCardListenerAdded) {
+      console.log('📊 Found priceHistoryManager, setting up updates');
       const originalUpdateTokenPrice = window.priceHistoryManager.updateTokenPrice;
       window.priceHistoryManager.updateTokenPrice = async (price) => {
         await originalUpdateTokenPrice.call(window.priceHistoryManager, price);
         this.updateGrowthData();
       };
+      window.priceHistoryManager._floatingCardListenerAdded = true;
     }
     
     // Update when window.contractConfig changes
-    if (window.contractConfig) {
+    if (window.contractConfig && !window.contractConfig._floatingCardListenerAdded) {
+      console.log('📊 Found contractConfig, setting up updates');
       let originalContract = window.contractConfig.contract;
       Object.defineProperty(window.contractConfig, 'contract', {
         get() {
@@ -303,10 +489,13 @@ class FloatingTokenGrowthCard {
           }
         }
       });
+      window.contractConfig._floatingCardListenerAdded = true;
     }
     
-    // Update only once on page load - no intervals
-    this.updateGrowthData();
+    // Periodic update every 30 seconds
+    this.updateInterval = setInterval(() => {
+      this.updateGrowthData();
+    }, 30000);
   }
   
   // Public function for manual update
@@ -315,7 +504,16 @@ class FloatingTokenGrowthCard {
   }
   
   stopUpdates() {
-    // No intervals to stop - updates only happen on page load
+    if (this.updateInterval) {
+      clearInterval(this.updateInterval);
+      this.updateInterval = null;
+    }
+  }
+  
+  // Public method to manually trigger token price update
+  updateTokenPrice() {
+    console.log('📊 Manual token price update triggered');
+    this.updateTokenPriceData();
   }
   
   destroy() {
@@ -429,22 +627,37 @@ function initializeFloatingTokenCard() {
   return window.floatingTokenGrowthCard;
 }
 
+// Guard to prevent multiple initializations
+let isStarting = false;
+
 // Auto-initialize when DOM is loaded
 function startFloatingCard() {
+  // Prevent multiple starts
+  if (isStarting || window.floatingTokenGrowthCard) {
+    console.log('⚠️ Floating card already initialized or starting, skipping');
+    return;
+  }
+  
+  isStarting = true;
+  
   try {
     console.log('🎯 Initializing floating token card...');
     initializeFloatingTokenCard();
     console.log('✅ Floating token card initialized successfully');
   } catch (error) {
     console.error('❌ Error initializing floating token card:', error);
+  } finally {
+    isStarting = false;
   }
 }
 
+// Auto-initialize immediately if DOM is ready, otherwise wait
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', startFloatingCard);
 } else {
-  // If DOM is already loaded
-  setTimeout(startFloatingCard, 100); // Small delay to ensure complete loading
+  // If DOM is already loaded, start immediately
+  console.log('🚀 DOM already loaded, starting floating card immediately');
+  startFloatingCard();
 }
 
 // Export for use in other files

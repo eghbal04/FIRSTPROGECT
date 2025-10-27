@@ -81,7 +81,7 @@ await priceService.saveRealPointPrice('binary_points');
 
 ### آدرس کنترکت
 ```javascript
-const IAM_ADDRESS = '0x2D3923A5ba62B2bec13b9181B1E9AE0ea2C8118D';
+const IAM_ADDRESS = '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2';
 ```
 
 ### ABI مورد نیاز
