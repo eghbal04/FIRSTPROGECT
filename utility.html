@@ -24,14 +24,14 @@
     });
   </script>
   
-  <!-- Force connection to Contract 5 -->
+  <!-- Force connection to New Contract (Contract 5) -->
   <script>
-    // Force IAM_ADDRESS to Contract 5 before config.js loads
-    window.IAM_ADDRESS = '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2';
+    // Force IAM_ADDRESS to New Contract before config.js loads
+    window.IAM_ADDRESS = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26';
     
     // Clear localStorage to prevent interference
     localStorage.removeItem('iam_selected_address');
-    localStorage.setItem('iam_selected_address', '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2');
+    localStorage.setItem('iam_selected_address', '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26');
   </script>
   
   <!-- Load ethers.js version 6 from CDN -->
@@ -46,9 +46,9 @@
     // Override connectWallet to force Contract 5
     const originalConnectWallet = window.connectWallet;
     window.connectWallet = async function() {
-      // Force Contract 5 address
-      window.IAM_ADDRESS = '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2';
-      window.DEFAULT_IAM_ADDRESS = '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2';
+      // Force New Contract address
+      window.IAM_ADDRESS = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26';
+      window.DEFAULT_IAM_ADDRESS = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26';
       
       // Call original function
       if (originalConnectWallet) {
@@ -58,9 +58,9 @@
     
     // Final override after all scripts load
     window.addEventListener('load', function() {
-      window.IAM_ADDRESS = '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2';
-      window.DEFAULT_IAM_ADDRESS = '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2';
-      console.log('✅ Utility forced to Contract 5:', window.IAM_ADDRESS);
+      window.IAM_ADDRESS = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26';
+      window.DEFAULT_IAM_ADDRESS = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26';
+      console.log('✅ Utility forced to New Contract:', window.IAM_ADDRESS);
     });
 
     // Helper function to find address by number using users mapping
@@ -656,10 +656,10 @@
 
 
   <script>
-    // Contract address - using Contract 5
-    const UTILITY_IAM_ADDRESS = '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2'; // Contract 5
+    // Contract address - using New Contract
+    const UTILITY_IAM_ADDRESS = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26'; // New Contract
     
-    // Set global contract address to Contract 5
+    // Set global contract address to New Contract
     window.IAM_ADDRESS = UTILITY_IAM_ADDRESS;
 
     // Global variables for unclaimed points tracking

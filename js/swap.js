@@ -1770,15 +1770,64 @@ class SwapManager {
     updateSwapUsdValue() {
         const swapAmount = document.getElementById('swapAmount');
         const swapUsdAmount = document.getElementById('swapUsdAmount');
+        const usdEquivalent = document.getElementById('usdEquivalent');
         const direction = document.getElementById('swapDirection');
         
-        if (!swapAmount || !swapUsdAmount || !direction) {
+        if (!swapAmount || !direction) {
             return;
         }
         
         const tokenAmount = parseFloat(swapAmount.value) || 0;
         if (tokenAmount <= 0) {
-            swapUsdAmount.value = '';
+            if (usdEquivalent) usdEquivalent.textContent = '≈ $0.00';
+            return;
+        }
+        
+        if (!this.tokenPrice || Number(this.tokenPrice) <= 0) {
+            if (usdEquivalent) usdEquivalent.textContent = '≈ $0.00';
+            return;
+        }
+        
+        const tokenPrice = Number(this.tokenPrice);
+        let usdValue = 0;
+        
+        if (direction.value === 'dai-to-IAM') {
+            // DAI to USD (assuming 1 DAI = 1 USD)
+            usdValue = tokenAmount;
+        } else if (direction.value === 'IAM-to-dai') {
+            // IAM to USD
+            usdValue = tokenAmount * tokenPrice;
+        }
+        
+        // Update USD equivalent display (but don't update swapUsdAmount field to avoid conflicts)
+        if (usdEquivalent) {
+            usdEquivalent.textContent = `≈ $${usdValue.toFixed(2)}`;
+        }
+    }
+
+    // Show/hide USD field based on swap direction (now always visible)
+    toggleSwapUsdConverter() {
+        // USD field is now always visible, no need to hide it
+        // Update USD equivalent when direction changes
+        this.updateSwapUsdValue();
+    }
+
+    // Update USD preview
+    updateSwapUsdPreview() {
+        const swapUsdAmount = document.getElementById('swapUsdAmount');
+        const swapAmount = document.getElementById('swapAmount');
+        const usdEquivalent = document.getElementById('usdEquivalent');
+        const direction = document.getElementById('swapDirection');
+        
+        if (!swapUsdAmount || !swapAmount || !direction) {
+            return;
+        }
+        
+        const usdValue = parseFloat(swapUsdAmount.value) || 0;
+        if (usdValue <= 0) {
+            // Clear swapAmount if USD is empty
+            swapAmount.value = '';
+            if (usdEquivalent) usdEquivalent.textContent = '≈ $0.00';
             return;
         }
         
@@ -1789,56 +1838,18 @@ class SwapManager {
         const tokenPrice = Number(this.tokenPrice);
         
         if (direction.value === 'dai-to-IAM') {
-            // DAI to USD (assuming 1 DAI = 1 USD)
-            const usdValue = tokenAmount;
-            swapUsdAmount.value = usdValue.toFixed(2);
+            // Convert USD to DAI (assuming 1 USD = 1 DAI)
+            const daiAmount = usdValue;
+            swapAmount.value = daiAmount.toFixed(6);
         } else if (direction.value === 'IAM-to-dai') {
-            // IAM to USD
-            const usdValue = tokenAmount * tokenPrice;
-            swapUsdAmount.value = usdValue.toFixed(2);
-        }
-    }
-
-    // Show/hide USD field based on swap direction
-    toggleSwapUsdConverter() {
-        const direction = document.getElementById('swapDirection');
-        const usdConverterRow = document.getElementById('swap-usd-converter-row');
-        
-        if (!direction || !usdConverterRow) {
-            return;
-        }
-        
-        if (direction.value === 'IAM-to-dai') {
-            usdConverterRow.style.display = 'block';
-        } else {
-            usdConverterRow.style.display = 'none';
-        }
-    }
-
-    // Update USD preview
-    updateSwapUsdPreview() {
-        const swapUsdAmount = document.getElementById('swapUsdAmount');
-        const swapAmount = document.getElementById('swapAmount');
-        const direction = document.getElementById('swapDirection');
-        
-        if (!swapUsdAmount || !swapAmount || !direction) {
-            return;
-        }
-        
-        const usdValue = parseFloat(swapUsdAmount.value) || 0;
-        if (usdValue <= 0) {
-            return;
-        }
-        
-        if (!this.tokenPrice || Number(this.tokenPrice) <= 0) {
-            return;
-        }
-        
-        const tokenPrice = Number(this.tokenPrice);
-        
-        if (direction.value === 'IAM-to-dai') {
+            // Convert USD to IAM
             const IAMAmount = usdValue / tokenPrice;
             swapAmount.value = IAMAmount.toFixed(6);
+        }
+        
+        // Update USD equivalent display
+        if (usdEquivalent) {
+            usdEquivalent.textContent = `≈ $${usdValue.toFixed(2)}`;
         }
     }
 
@@ -2127,7 +2138,8 @@ class SwapManager {
             
             console.log('✅ User balances saved:', this.userBalances);
             
-
+            // Update USD equivalent display
+            this.updateSwapUsdValue();
             
         } catch (error) {
             console.error('❌ Error loading swap data:', error);
@@ -2220,10 +2232,15 @@ class SwapManager {
                     const safeIAMAmount = parseFloat(this.userBalances.IAM.toFixed(6)) * 0.999;
                     amount.value = safeIAMAmount.toFixed(6);
                 }
+                // Update USD equivalent after setting amount
+                this.updateSwapUsdValue();
             } catch (fallbackError) {
                 console.error('❌ Fallback also failed:', fallbackError);
             }
         }
+        
+        // Update USD equivalent after setting max amount
+        this.updateSwapUsdValue();
     }
 
     setUIBusy(busy) {

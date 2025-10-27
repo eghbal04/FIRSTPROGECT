@@ -12,14 +12,14 @@
   <!-- Load ethers.js version 6 from CDN -->
   <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.1/dist/ethers.umd.min.js"></script>
   
-  <!-- Force connection to Contract 5 -->
+  <!-- Force connection to New Contract -->
   <script>
-    // Force IAM_ADDRESS to Contract 5 before config.js loads
-    window.IAM_ADDRESS = '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2';
+    // Force IAM_ADDRESS to New Contract before config.js loads
+    window.IAM_ADDRESS = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26';
     
     // Clear localStorage to prevent interference
     localStorage.removeItem('iam_selected_address');
-    localStorage.setItem('iam_selected_address', '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2');
+    localStorage.setItem('iam_selected_address', '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26');
   </script>
   
   <!-- Main scripts -->
@@ -34,9 +34,9 @@
     // Override connectWallet to force Contract 5
     const originalConnectWallet = window.connectWallet;
     window.connectWallet = async function() {
-      // Force Contract 5 address
-      window.IAM_ADDRESS = '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2';
-      window.DEFAULT_IAM_ADDRESS = '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2';
+      // Force New Contract address
+      window.IAM_ADDRESS = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26';
+      window.DEFAULT_IAM_ADDRESS = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26';
       
       // Call original function
       if (originalConnectWallet) {
@@ -46,9 +46,9 @@
     
     // Final override after all scripts load
     window.addEventListener('load', function() {
-      window.IAM_ADDRESS = '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2';
-      window.DEFAULT_IAM_ADDRESS = '0x12155e0B8a536455d4AEe3eCa7Fbd3582c374cd2';
-      console.log('✅ Price Charts forced to Contract 5:', window.IAM_ADDRESS);
+      window.IAM_ADDRESS = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26';
+      window.DEFAULT_IAM_ADDRESS = '0x2DdDD3Bfc8B591296695fFA1EF74F7114140cC26';
+      console.log('✅ Price Charts forced to New Contract:', window.IAM_ADDRESS);
     });
   </script>
   
