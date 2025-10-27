@@ -2493,7 +2493,12 @@
     const registerBtnElement = document.getElementById('register-btn');
     console.log('🔍 Register button element:', registerBtnElement);
     
-    registerBtnElement.addEventListener('click', async function(e) {
+    // Remove any existing event listeners
+    registerBtnElement.replaceWith(registerBtnElement.cloneNode(true));
+    const newRegisterBtn = document.getElementById('register-btn');
+    console.log('🔍 New button element:', newRegisterBtn);
+    
+    newRegisterBtn.addEventListener('click', async function(e) {
       e.preventDefault();
       e.stopPropagation();
       console.log('🚀 Register button clicked!');
