@@ -782,8 +782,9 @@
                 const daiRaw = await dai.balanceOf(address);
                 daiBalance = ethers.formatUnits(daiRaw, 18);
             } catch {}
-            // Index
-            const IAMId = user.num ? `IAM${user.num.toString().padStart(5, '0')}` : '-';
+            // Index (contract uses user.index). Use helpers for consistency
+            const userIndexBig = (window.getUserNumValue && window.getUserNumValue(user)) || null;
+            const IAMId = userIndexBig !== null ? `IAM${userIndexBig.toString().padStart(5, '0')}` : '-';
             
             // Display
             content.innerHTML = `
@@ -838,8 +839,8 @@
                   </div>
                 <div class="profile-row"><span class="profile-label">Wallet Address:</span><span class="profile-value">${address}</span></div>
                                  <div class="profile-row"><span class="profile-label">ID:</span><span class="profile-value">${IAMId}</span></div>
-                                 <div class="profile-row"><span class="profile-label">ID Number:</span><span class="profile-value">${user.num}</span></div>
-                <div class="profile-row"><span class="profile-label">Active:</span><span class="profile-value">${(user.num && BigInt(user.num) > 0n) ? 'Yes' : 'No'}</span></div>
+                                 <div class="profile-row"><span class="profile-label">ID Number:</span><span class="profile-value">${userIndexBig !== null ? userIndexBig : '-'}</span></div>
+                <div class="profile-row"><span class="profile-label">Active:</span><span class="profile-value">${(window.isUserActive && window.isUserActive(user)) ? 'Yes' : 'No'}</span></div>
                 <div class="profile-row"><span class="profile-label">Binary Points:</span><span class="profile-value">${user.binaryPoints}</span></div>
                 <div class="profile-row"><span class="profile-label">Binary Points Cap:</span><span class="profile-value">${user.binaryPointCap.toString()}</span></div>
                 <div class="profile-row"><span class="profile-label">Claimed Points:</span><span class="profile-value">${user.binaryPointsClaimed}</span></div>
@@ -968,8 +969,9 @@
                 // Update wallet counts
                 async function updateWalletCounts() {
                     try {
-                        if (user && user.num && window.contractConfig && window.contractConfig.contract) {
-                            const counts = await calculateWalletCounts(user.num, window.contractConfig.contract);
+                        if (user && (window.isUserActive && window.isUserActive(user)) && window.contractConfig && window.contractConfig.contract) {
+                            const userIdx = Number((window.getUserNumValue && window.getUserNumValue(user)) || 0);
+                            const counts = await calculateWalletCounts(userIdx, window.contractConfig.contract);
                             
                             const leftEl = document.getElementById('profile-left-wallets');
                             const rightEl = document.getElementById('profile-right-wallets');
@@ -1029,7 +1031,7 @@
                     const now = Math.floor(Date.now() / 1000);
                     
                     // Check withdrawal conditions
-                    if (!(user.num && BigInt(user.num) > 0n)) {
+                    if (!(window.isUserActive && window.isUserActive(user))) {
                       throw new Error('Your account is not active. You must register first.');
                     }
                     

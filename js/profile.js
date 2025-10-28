@@ -107,7 +107,7 @@ function updateProfileUI(profile) {
         }
     }
     const upperEl = document.getElementById('profile-upper');
-    if (upperEl) upperEl.textContent = upperText;
+    // upper text is computed by updateProfileupper()
 
     const daiEl = document.getElementById('profile-dai');
             if (daiEl) daiEl.textContent = profile.daiBalance ? formatNumber(profile.daiBalance, 2) + ' DAI' : '0 DAI';
@@ -316,6 +316,7 @@ async function updateProfileupper() {
       let idx = user.index;
       if (typeof idx === 'bigint') idx = Number(idx);
       else idx = parseInt(idx);
+      let upper = '-';
       if (idx === 0) {
         upper = address; // Only if index is 0
       } else {
@@ -334,7 +335,7 @@ async function updateProfileupper() {
       } else if (upper.toLowerCase() === address.toLowerCase()) {
         refEl.textContent = 'خود شما';
       } else {
-        refEl.textContent = shorten(upper);
+        refEl.textContent = shortenAddress(upper);
       }
     }
   } catch (e) {
