@@ -2421,6 +2421,41 @@
       }
     }
     
+    // Helper function to check if 'descendant' is in the downline of 'referrer'
+    async function isReferrerDescendant(referrerAddress, descendantAddress, contract) {
+      try {
+        const referrerUser = await contract.users(referrerAddress);
+        const descendantUser = await contract.users(descendantAddress);
+        
+        if (!isUserActive(referrerUser) || !isUserActive(descendantUser)) {
+          return false;
+        }
+        
+        const referrerIndex = Number(referrerUser.index);
+        const descendantIndex = Number(descendantUser.index);
+        
+        // Check if descendant is in referrer's downline by checking index relationship
+        // A descendant must have a higher index and be in the binary tree under referrer
+        if (descendantIndex <= referrerIndex) {
+          return false;
+        }
+        
+        // Navigate up the tree from descendant to see if we reach referrer
+        let currentIndex = descendantIndex;
+        while (currentIndex > referrerIndex) {
+          currentIndex = Math.floor(currentIndex / 2);
+          if (currentIndex === referrerIndex) {
+            return true;
+          }
+        }
+        
+        return false;
+      } catch (error) {
+        console.error('Error checking if descendant:', error);
+        return false;
+      }
+    }
+    
     // Function to show where new user will be placed (using smart contract algorithm)
     async function showPlacementInfo(contract, upperAddress) {
       const placementEl = document.getElementById('placement-info');
@@ -2770,48 +2805,40 @@
         }
         console.log('✅ Parent is active');
         
-        // ========== اعتبارسنجی 2: Validate and determine the upper (direct parent) ==========
-        console.log('🔍 Validating upper and determining final upper...');
+        // ========== اعتبارسنجی 2: Upper باید خود referrer یا یکی از زیرمجموعه‌هایش باشه ==========
+        console.log('🔍 Validating upper (upper should be referrer or referrer descendant)...');
         
-        if (upperReferrer && upperReferrer !== 'root' && /^0x[a-fA-F0-9]{40}$/.test(upperReferrer)) {
+        // اگر upper خالی یا 'root' است، از referrer استفاده می‌کنیم
+        if (!upperReferrer || upperReferrer === 'root') {
+          console.log('ℹ️ Upper not provided, using referrer as upper');
+          upperReferrer = parentUpper;
+        } else {
+          // بررسی اینکه upper معتبر و فعال است
           try {
-            console.log('🔍 Fetching upper user data...');
             const upperUserData = await contract.users(upperReferrer);
-            console.log('✅ Upper user data retrieved');
-            
-            // User is active if num exists and is non-zero
             const isUpperActive = isUserActive(upperUserData);
-            console.log('🔍 Upper active status:', isUpperActive);
             
             if (!isUpperActive) {
-              console.log('⚠️ Upper is not active, will use referrer as upper');
-              upperReferrer = parentUpper; // Use referrer as upper if provided upper is invalid
+              console.log('⚠️ Upper is not active, using referrer as upper');
+              upperReferrer = parentUpper;
             } else {
-              console.log('✅ Upper is active and valid');
-              // Note: The contract does not have an isInDownline function to validate the relationship
-              // The provided upper address will be used as-is
+              // Upper باید یا خود referrer باشد یا زیرمجموعه‌اش
+              if (upperReferrer.toLowerCase() !== parentUpper.toLowerCase()) {
+                // بررسی اینکه upper زیرمجموعه referrer است
+                const isDescendant = await isReferrerDescendant(parentUpper, upperReferrer, contract);
+                if (!isDescendant) {
+                  throw new Error('Upper address must be the referrer or one of referrer\'s subordinates');
+                }
+              }
+              console.log('✅ Upper is valid and active');
             }
           } catch (error) {
-            console.error('❌ Error fetching upper user data:', error);
-            console.log('⚠️ Upper address error, will use referrer as upper');
-            upperReferrer = parentUpper;
+            console.error('❌ Error validating upper:', error);
+            throw new Error('Invalid upper address: ' + error.message);
           }
-        } else {
-          console.log('ℹ️ No upper provided, will use referrer as upper');
-          upperReferrer = parentUpper;
         }
         
         console.log('✅ Final upper (direct parent):', upperReferrer);
-        
-        // Check capacity of the final upper
-        console.log('🔍 Checking capacity of upper:', upperReferrer);
-        status.textContent = 'Checking upper capacity...';
-        const capacityCheck = await checkUpperCapacity(upperReferrer);
-        console.log('📊 Capacity check result:', capacityCheck);
-        if (!capacityCheck.hasCapacity) {
-          throw new Error(capacityCheck.message);
-        }
-        console.log('✅ Upper has capacity:', capacityCheck.message);
         
         // ========== اعتبارسنجی 3: مقدار کافی IAM داشته باشد ==========
         console.log('📊 Checking IAM balance...');
