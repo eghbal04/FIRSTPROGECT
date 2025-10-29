@@ -1516,33 +1516,24 @@ class SwapManager {
         this.updateSwapDirectionUI();
     }
     
-    // Update swap direction UI based on contract type
+    // Update swap direction UI - Only sell enabled for all contracts
     updateSwapDirectionUI() {
         const directionSelect = document.getElementById('swapDirection');
         if (!directionSelect) return;
         
-        // Only old contract supports buying tokens
-        if (this.selectedContract === 'old') {
-            // Enable buy option
-            if (directionSelect.querySelector('option[value="dai-to-IAM"]')) {
-                directionSelect.querySelector('option[value="dai-to-IAM"]').style.display = 'block';
-                directionSelect.querySelector('option[value="dai-to-IAM"]').disabled = false;
-            }
-            console.log('✅ Old contract: Buy and sell options enabled');
-        } else {
-            // Only sell option for middle and new contracts
-            if (directionSelect.querySelector('option[value="dai-to-IAM"]')) {
-                directionSelect.querySelector('option[value="dai-to-IAM"]').style.display = 'none';
-                directionSelect.querySelector('option[value="dai-to-IAM"]').disabled = true;
-            }
-            
-            // Set default to sell if currently on buy
-            if (directionSelect.value === 'dai-to-IAM') {
-                directionSelect.value = 'IAM-to-dai';
-            }
-            
-            console.log('⚠️ Non-default contract: Only sell option enabled');
+        // Disable buy option for all contracts - only sell is available
+        const buyOption = directionSelect.querySelector('option[value="dai-to-IAM"]');
+        if (buyOption) {
+            buyOption.style.display = 'none';
+            buyOption.disabled = true;
         }
+        
+        // Ensure only sell is selected
+        if (directionSelect.value === 'dai-to-IAM') {
+            directionSelect.value = 'IAM-to-dai';
+        }
+        
+        console.log('✅ Only sell (IAM → DAI) enabled for all contracts');
     }
 
     // Connect to wallet and initialize contracts
@@ -1691,16 +1682,15 @@ class SwapManager {
         
         const tokenPrice = Number(this.tokenPrice);
         
-        if (direction.value === 'dai-to-IAM') {
-            // Convert USD to DAI (assuming 1 USD = 1 DAI)
-            const daiAmount = usdValue;
-            swapAmount.value = daiAmount.toFixed(2);
-            console.log('✅ USD converted to DAI:', daiAmount);
-        } else if (direction.value === 'IAM-to-dai') {
+        // Only selling is available (buying is disabled)
+        if (direction.value === 'IAM-to-dai') {
             // Convert USD to IAM
             const IAMAmount = usdValue / tokenPrice;
             swapAmount.value = IAMAmount.toFixed(6);
             console.log('✅ USD converted to IAM:', IAMAmount);
+        } else {
+            this.showStatus('Token purchasing is currently disabled. Only selling is available.', 'error');
+            return;
         }
         
         this.showStatus(`✅ Successfully converted $${usdValue} to token amount. You can now proceed with your transaction.`, 'success');
@@ -1728,18 +1718,15 @@ class SwapManager {
         
         const tokenPrice = Number(this.tokenPrice);
         
-        if (direction.value === 'dai-to-IAM') {
-            // DAI to USD (assuming 1 DAI = 1 USD)
-            const usdValue = tokenAmount;
-            swapUsdAmount.value = usdValue.toFixed(2);
-        } else if (direction.value === 'IAM-to-dai') {
+        // Only selling is available (buying is disabled)
+        if (direction.value === 'IAM-to-dai') {
             // IAM to USD
             const usdValue = tokenAmount * tokenPrice;
             swapUsdAmount.value = usdValue.toFixed(2);
         }
     }
 
-    // Show/hide USD field based on swap direction
+    // Show/hide USD field based on swap direction (always show for sell)
     toggleSwapUsdConverter() {
         const direction = document.getElementById('swapDirection');
         const usdConverterRow = document.getElementById('swap-usd-converter-row');
@@ -1748,11 +1735,8 @@ class SwapManager {
             return;
         }
         
-        if (direction.value === 'IAM-to-dai') {
-            usdConverterRow.style.display = 'block';
-        } else {
-            usdConverterRow.style.display = 'none';
-        }
+        // Always show USD converter for selling (buying is disabled)
+        usdConverterRow.style.display = 'block';
     }
 
     // Update USD preview
@@ -2101,24 +2085,8 @@ class SwapManager {
             console.log('🔢 Setting maximum amount for direction:', direction.value);
             console.log('💰 Current user balances:', this.userBalances);
             
-            if (direction.value === 'dai-to-IAM') {
-                // For DAI to IAM (buying IAM)
-                if (this.userBalances.dai <= 0) {
-                    console.warn('⚠️ No DAI balance available');
-                    this.showStatus('No DAI balance available. Please add DAI to your wallet to make purchases.', 'error');
-                    return;
-                }
-                
-                // Use 99.9% of DAI balance (no decimals)
-                const safeDaiAmount = Math.floor(parseFloat(this.userBalances.dai.toFixed(2)) * 0.999);
-                amount.value = safeDaiAmount.toString();
-                
-                console.log('✅ Safe DAI amount set from balance card (99.9%):', {
-                    userBalance: this.userBalances.dai.toFixed(2),
-                    maxAmount: safeDaiAmount
-                });
-                
-            } else if (direction.value === 'IAM-to-dai') {
+            // Only selling is available (buying is disabled)
+            if (direction.value === 'IAM-to-dai') {
                 // For IAM to DAI (selling IAM) - Use 99.9% of balance
                 if (this.userBalances.IAM <= 0) {
                     console.warn('⚠️ No IAM balance available');
@@ -2142,13 +2110,9 @@ class SwapManager {
             console.error('❌ Error setting maximum amount:', error);
             this.showStatus('Error setting maximum amount: ' + error.message, 'error');
             
-            // Fallback: set to safe balance amounts
+            // Fallback: set to safe balance amounts (only for selling)
             try {
-                if (direction.value === 'dai-to-IAM' && this.userBalances.dai > 0) {
-                    // Use 99.9% of DAI balance to ensure transaction succeeds
-                    const safeDaiAmount = Math.floor(parseFloat(this.userBalances.dai.toFixed(2)) * 0.999);
-                    amount.value = safeDaiAmount.toString();
-                } else if (direction.value === 'IAM-to-dai' && this.userBalances.IAM > 0) {
+                if (direction.value === 'IAM-to-dai' && this.userBalances.IAM > 0) {
                     // Use 99.9% of IAM balance to ensure transaction succeeds
                     const safeIAMAmount = Math.floor(parseFloat(this.userBalances.IAM.toFixed(6)) * 0.999);
                     amount.value = safeIAMAmount.toString();
@@ -2480,16 +2444,12 @@ class SwapManager {
                 userBalances: this.userBalances
             });
             
-            // Restrict swap direction based on contract type
-            // Only old contract can buy tokens; other contracts can only sell
-            if (direction.value === 'dai-to-IAM' && this.selectedContract !== 'old') {
-                throw new Error(`Buying tokens is only available on the Old Contract. Please switch to Old Contract to purchase tokens.`);
+            // Buying is disabled for all contracts - only selling is available
+            if (direction.value === 'dai-to-IAM') {
+                throw new Error('Token purchasing is currently disabled. Only selling (IAM → DAI) is available.');
             }
             
-            // Check balance
-            if (direction.value === 'dai-to-IAM' && value > this.userBalances.dai) {
-                throw new Error(`Insufficient DAI balance. You have ${this.userBalances.dai.toFixed(6)} DAI, but trying to spend ${value.toFixed(6)} DAI. Please reduce the amount.`);
-            }
+            // Check balance (only for selling since buying is disabled)
             if (direction.value === 'IAM-to-dai' && value > this.userBalances.IAM) {
                 throw new Error(`Insufficient IAM balance. You have ${this.userBalances.IAM.toFixed(6)} IAM, but trying to sell ${value.toFixed(6)} IAM. Please reduce the amount.`);
             }
@@ -2512,18 +2472,14 @@ class SwapManager {
             let transactionType = '';
             let transactionDirection = '';
             
-            if (direction.value === 'dai-to-IAM') {
-                console.log('🛒 Starting IAM purchase with DAI...');
-                transactionType = 'Token Purchase';
-                transactionDirection = 'DAI → IAM';
-                transactionHash = await this.buyTokensWithDAI(value);
-            } else if (direction.value === 'IAM-to-dai') {
+            // Only selling is available (buying is disabled)
+            if (direction.value === 'IAM-to-dai') {
                 console.log('💰 Starting IAM sale and DAI receipt...');
                 transactionType = 'Token Sale';
                 transactionDirection = 'IAM → DAI';
                 transactionHash = await this.sellTokensForDAI(value);
             } else {
-                throw new Error('Invalid conversion type');
+                throw new Error('Token purchasing is currently disabled. Only selling (IAM → DAI) is available.');
             }
             
             // Show success popup with transaction details

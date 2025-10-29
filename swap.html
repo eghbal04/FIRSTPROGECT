@@ -62,13 +62,13 @@
                             <!-- Contract Info Display -->
                             <div id="contractInfo"></div>
                             
-                            <!-- Exchange Type -->
+                            <!-- Exchange Type (Only Sell Enabled) -->
                             <div class="form-group" style="margin-bottom:0.3rem;">
                                 <label for="swapDirection" style="display:block;color:#00ff88;margin-bottom:0.2rem;font-weight:600;font-size:0.85rem;">Type:</label>
-                                <select id="swapDirection" required style="width:100%;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;">
-                                    <option value="dai-to-IAM">DAI → IAM</option>
-                                    <option value="IAM-to-dai">IAM → DAI</option>
+                                <select id="swapDirection" required style="width:100%;background:#0a0f1c;border:2px solid #2a3441;color:#ffffff;padding:0.8rem;border-radius:12px;outline:none;transition:border-color 0.3s ease;font-size:0.85rem;opacity:0.7;cursor:not-allowed;" onchange="if(this.value!=='IAM-to-dai'){this.value='IAM-to-dai';alert('Only selling (IAM → DAI) is available.');}">
+                                    <option value="IAM-to-dai" selected>IAM → DAI (Sell Only)</option>
                                 </select>
+                                <div style="color:#ff6b6b;font-size:0.7rem;margin-top:0.2rem;">⚠️ Token purchasing is disabled. Only selling is available.</div>
                             </div>
                             
                             <!-- Amount Input -->
